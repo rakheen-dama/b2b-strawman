@@ -1,0 +1,71 @@
+# Terraform Files
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
+*.tfvars.json
+!example.tfvars
+!terraform.tfvars.example
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate.d/
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Terraform Cloud
+**/.terraform/*
+
+# SSH Keys
+*.pem
+*.key
+*.pub
+id_rsa*
+id_dsa*
+id_ecdsa*
+id_ed25519*
+
+# AWS
+.aws/
+aws-credentials
+
+# Azure
+.azure/
+
+# GCP
+.gcloud/
+*.json
+!*.template.json
+!example.json
+
+# Secrets and Sensitive Files
+secrets/
+*.secret
+*.secrets
+credentials
+credentials.json
+service-account.json
+
+# Environment specific
+*.auto.tfvars
+*.auto.tfvars.json
+environments/*/terraform.tfvars
+!environments/*/terraform.tfvars.example
+
+# Backup files
+*.backup
+*.bak
+*.old
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store

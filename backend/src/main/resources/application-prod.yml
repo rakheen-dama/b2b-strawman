@@ -1,0 +1,42 @@
+spring:
+  datasource:
+    url: ${DATABASE_URL}
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 10000
+      idle-timeout: 600000
+      max-lifetime: 1680000
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: false
+    locations: classpath:db/migration/global
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${CLERK_ISSUER}
+          jwk-set-uri: ${CLERK_JWKS_URI}
+
+aws:
+  s3:
+    region: ${AWS_REGION:us-east-1}
+    bucket-name: ${AWS_S3_BUCKET}
+
+internal:
+  api:
+    key: ${INTERNAL_API_KEY}
+
+logging:
+  level:
+    root: INFO
+    io.b2mash.b2b.b2bstrawman: INFO

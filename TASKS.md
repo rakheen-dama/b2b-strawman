@@ -2,24 +2,24 @@
 
 ## Epic Overview
 
-| Epic | Name | Goal | Dependencies | Effort |
-|------|------|------|--------------|--------|
-| 1 | Project Scaffolding & Local Dev | Monorepo structure, build tooling, Docker Compose local stack | None | M |
-| 2 | Authentication & Clerk Integration | Clerk auth in Next.js — sign-up, sign-in, session management, JWT extraction | 1 | M |
-| 3 | Organization Management | Org creation, switching, URL-based org context | 2 | S |
-| 4 | Webhook Infrastructure | Clerk webhook reception, signature verification, event routing, idempotency | 1, 2 | M |
-| 5 | Tenant Provisioning | Schema creation, Flyway tenant migrations, org-schema mapping, startup migration runner | 1, 6 | L |
-| 6 | Multitenancy Backend | Hibernate schema-per-tenant config, tenant context filter, JWT validation, RBAC mapping | 1 | L |
-| 7 | Core API — Projects | Project CRUD endpoints with authorization enforcement | 6 | M |
-| 8 | Core API — Documents | Document metadata endpoints, upload init, upload confirm, presigned download | 7, 9 | M |
-| 9 | S3 Integration | AWS SDK config, presigned URL service, LocalStack for local dev | 1 | S |
-| 10 | Frontend — Dashboard & Projects | Dashboard layout, project list, project create/edit, project detail | 3, 7 | M |
-| 11 | Frontend — Documents | Document list, file upload with progress, download functionality | 10, 8 | M |
-| 12 | Frontend — Team Management | Member list, invitation form, pending invitations, Clerk components | 3 | S |
-| 13 | Containerization | Multi-stage Dockerfiles, full Docker Compose stack, container optimization | 1 | S |
-| 14 | AWS Infrastructure | Terraform: VPC, ECS, ALB, ECR, Secrets Manager, S3, IAM | 13 | XL |
-| 15 | Deployment Pipeline | GitHub Actions CI/CD, ECR push, ECS deploy, environment promotion | 13, 14 | L |
-| 16 | Testing & Quality | Unit test setup, integration tests, tenant isolation tests, E2E framework | 7, 8, 10, 11 | L |
+| Epic | Name | Goal | Dependencies | Effort | Status |
+|------|------|------|--------------|--------|--------|
+| 1 | Project Scaffolding & Local Dev | Monorepo structure, build tooling, Docker Compose local stack | None | M | **Done** |
+| 2 | Authentication & Clerk Integration | Clerk auth in Next.js — sign-up, sign-in, session management, JWT extraction | 1 | M | |
+| 3 | Organization Management | Org creation, switching, URL-based org context | 2 | S | |
+| 4 | Webhook Infrastructure | Clerk webhook reception, signature verification, event routing, idempotency | 1, 2 | M | |
+| 5 | Tenant Provisioning | Schema creation, Flyway tenant migrations, org-schema mapping, startup migration runner | 1, 6 | L | |
+| 6 | Multitenancy Backend | Hibernate schema-per-tenant config, tenant context filter, JWT validation, RBAC mapping | 1 | L | |
+| 7 | Core API — Projects | Project CRUD endpoints with authorization enforcement | 6 | M | |
+| 8 | Core API — Documents | Document metadata endpoints, upload init, upload confirm, presigned download | 7, 9 | M | |
+| 9 | S3 Integration | AWS SDK config, presigned URL service, LocalStack for local dev | 1 | S | |
+| 10 | Frontend — Dashboard & Projects | Dashboard layout, project list, project create/edit, project detail | 3, 7 | M | |
+| 11 | Frontend — Documents | Document list, file upload with progress, download functionality | 10, 8 | M | |
+| 12 | Frontend — Team Management | Member list, invitation form, pending invitations, Clerk components | 3 | S | |
+| 13 | Containerization | Multi-stage Dockerfiles, full Docker Compose stack, container optimization | 1 | S | |
+| 14 | AWS Infrastructure | Terraform: VPC, ECS, ALB, ECR, Secrets Manager, S3, IAM | 13 | XL | |
+| 15 | Deployment Pipeline | GitHub Actions CI/CD, ECR push, ECS deploy, environment promotion | 13, 14 | L | |
+| 16 | Testing & Quality | Unit test setup, integration tests, tenant isolation tests, E2E framework | 7, 8, 10, 11 | L | |
 
 ---
 
@@ -31,20 +31,29 @@
 
 **Estimated Effort**: M
 
+**Status**: **Complete**
+
 ### Tasks
 
-| ID | Task | Description | Acceptance Criteria | Estimate | Dependencies |
-|----|------|-------------|---------------------|----------|--------------|
-| 1.1 | Initialize monorepo structure | Create root directory with `frontend/`, `backend/`, `infra/`, `.github/` directories. Add root `.gitignore`, `.editorconfig`, and `README.md`. | Directories exist; `.gitignore` covers Node, Java, IDE, and OS artifacts. | 1h | — |
-| 1.2 | Initialize Next.js project | Run `create-next-app` inside `frontend/` with TypeScript, Tailwind CSS, App Router, `src/` directory disabled (use `app/` at root). Configure `tsconfig.json` path aliases. | `npm run dev` starts Next.js on port 3000; TypeScript compiles; Tailwind utility classes render. | 2h | 1.1 |
-| 1.3 | Install and configure Shadcn UI | Initialize Shadcn UI in the frontend project. Install base components: Button, Card, Input, Dialog, Table, DropdownMenu, Separator, Badge. | Shadcn components importable; a test page renders a Button and Card correctly. | 1h | 1.2 |
-| 1.4 | Initialize Spring Boot project | Generate Spring Boot 4 project (Java 25, Gradle) with dependencies: Spring Web, Spring Security, Spring Data JPA, Flyway, PostgreSQL Driver, Validation. Configure `application.yml` with profiles (local, dev, prod). | `./gradlew bootRun` starts Spring Boot on port 8080 with `local` profile; health endpoint returns 200. | 2h | 1.1 |
-| 1.5 | Create Docker Compose for local services | Define `docker-compose.yml` at repo root with PostgreSQL 16 (port 5432, db: `docteams`) and LocalStack (port 4566, service: s3). Add healthchecks. | `docker compose up` starts both services; `psql` connects to local Postgres; `aws --endpoint-url=http://localhost:4566 s3 ls` works. | 2h | 1.1 |
-| 1.6 | Configure environment files | Create `.env.local.example` for frontend (Clerk keys, backend URL). Create `application-local.yml` for backend (local Postgres, LocalStack S3 endpoint). Document all variables. | Example env files exist with all required variables documented; `cp .env.local.example .env.local` + fill values is sufficient to run locally. | 1h | 1.2, 1.4 |
-| 1.7 | Set up frontend linting and formatting | Configure ESLint (Next.js config), Prettier. Add lint and format scripts to `package.json`. | `npm run lint` runs without errors on scaffolded code; `npm run format` formats files. | 1h | 1.2 |
-| 1.8 | Set up backend linting and formatting | Configure Checkstyle or Spotless for Java formatting. Add Gradle task for format check. | `./gradlew spotlessCheck` passes on scaffolded code. | 1h | 1.4 |
-| 1.9 | Create basic CI workflow | GitHub Actions workflow (`.github/workflows/ci.yml`) that on PR: installs deps, runs lint, runs tests, builds both projects. Use matrix strategy for frontend/backend. | PR triggers CI; both frontend and backend build successfully; lint passes. | 2h | 1.7, 1.8 |
-| 1.10 | Add LocalStack S3 init script | Create init script (or `docker-compose` command) that creates the dev S3 bucket on LocalStack startup. | After `docker compose up`, `aws --endpoint-url=http://localhost:4566 s3 ls` shows `docteams-dev` bucket. | 1h | 1.5 |
+| ID | Task | Status | Notes |
+|----|------|--------|-------|
+| 1.1 | Initialize monorepo structure | **Done** | Root `.gitignore`, `.editorconfig`, `README.md`. Directories: `frontend/`, `backend/`, `compose/`, `infra/`, `.github/`. |
+| 1.2 | Initialize Next.js project | **Done** | Next.js 16.1.6, TypeScript 5, Tailwind CSS v4, App Router. Path alias `@/*`. Package manager: pnpm. |
+| 1.3 | Install and configure Shadcn UI | **Done** | new-york style, 8 components: Button, Card, Input, Dialog, Table, DropdownMenu, Separator, Badge. |
+| 1.4 | Initialize Spring Boot project | **Done** | Spring Boot 4.0.2, Java 25, Maven (not Gradle). Profiles: `application.yml` + `-local.yml`, `-dev.yml`, `-prod.yml`. `LocalSecurityConfig.java` permits all requests in local profile (replaced in Epic 6). |
+| 1.5 | Create Docker Compose for local services | **Done** | `compose/docker-compose.yml` with Postgres 16 + LocalStack. Healthchecks configured. |
+| 1.6 | Configure environment files | **Done** | `frontend/.env.local.example` (Clerk keys, backend URL, API key). Backend config in `application-local.yml` (Postgres at `b2mash.local:5432`, LocalStack S3). |
+| 1.7 | Set up frontend linting and formatting | **Done** | ESLint (flat config), Prettier + `prettier-plugin-tailwindcss`. Scripts: `pnpm run lint`, `pnpm run format`, `pnpm run format:check`. |
+| 1.8 | Set up backend linting and formatting | **Done** | Spotless 3.2.1 + Google Java Format 1.28.0 (Java 25 compatible). `./mvnw spotless:check` and `./mvnw spotless:apply`. |
+| 1.9 | Create basic CI workflow | **Done** | `.github/workflows/ci.yml` — parallel frontend (pnpm lint, format:check, build) and backend (spotless:check, test, package) jobs. Triggers on PR and push to main. |
+| 1.10 | Add LocalStack S3 init script | **Done** | `compose/data/s3/init-s3.sh` creates `docteams-dev` bucket on startup. |
+
+### Deviations from Original Plan
+- **Maven instead of Gradle** — Spring Boot project was generated with Maven, not Gradle. Commands use `./mvnw` instead of `./gradlew`.
+- **pnpm instead of npm** — Standardized on pnpm for faster installs and strict dependency resolution.
+- **Docker Compose in `compose/`** — Lives in a subdirectory rather than repo root, with its own `.env`.
+- **Spotless 3.2.1** — Required for Java 25 compatibility (2.x has `NoSuchMethodError` on `DeferredDiagnosticHandler`).
+- **google-java-format 1.28.0** — Required for Java 25 (1.19.x incompatible).
 
 ---
 

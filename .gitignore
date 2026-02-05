@@ -1,0 +1,120 @@
+# IDE and Editor Files
+# JetBrains IDEs (IntelliJ IDEA, WebStorm, etc.)
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+.idea_modules/
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+.history/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# Environment Variables
+.env
+.env.*
+*.env
+*.env.*
+!.env.example
+!.env.template
+!.env.local.example
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage and Testing
+lib-cov
+coverage
+*.lcov
+.nyc_output
+.grunt
+bower_components
+.lock-wscript
+.npm
+.eslintcache
+.stylelintcache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+.cache
+.parcel-cache
+.nuxt
+.vuepress/dist
+.serverless/
+.fusebox/
+.dynamodb/
+.tern-port
+.vscode-test
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# Clerk Environment Variables (explicitly listed for security)
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+CLERK_SECRET_KEY
+CLERK_WEBHOOK_SIGNING_SECRET
+CLERK_ISSUER
+CLERK_JWKS_URI
+
+# Research and Documentation (local)
+.research/
+.notes/
+.tmp/

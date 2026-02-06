@@ -2,24 +2,24 @@
 
 ## Epic Overview
 
-| Epic | Name | Goal | Dependencies | Effort | Status |
-|------|------|------|--------------|--------|--------|
-| 1 | Project Scaffolding & Local Dev | Monorepo structure, build tooling, Docker Compose local stack | None | M | **Done** |
-| 2 | Authentication & Clerk Integration | Clerk auth in Next.js — sign-up, sign-in, session management, JWT extraction | 1 | M | **Done** |
-| 3 | Organization Management | Org creation, switching, URL-based org context | 2 | S | **Done** |
-| 4 | Webhook Infrastructure | Clerk webhook reception, signature verification, event routing, idempotency | 1, 2 | M | |
-| 5 | Tenant Provisioning | Schema creation, Flyway tenant migrations, org-schema mapping, startup migration runner | 1, 6 | L | |
-| 6 | Multitenancy Backend | Hibernate schema-per-tenant config, tenant context filter, JWT validation, RBAC mapping | 1 | L | **Done** |
-| 7 | Core API — Projects | Project CRUD endpoints with authorization enforcement | 6 | M | |
-| 8 | Core API — Documents | Document metadata endpoints, upload init, upload confirm, presigned download | 7, 9 | M | |
-| 9 | S3 Integration | AWS SDK config, presigned URL service, LocalStack for local dev | 1 | S | |
-| 10 | Frontend — Dashboard & Projects | Dashboard layout, project list, project create/edit, project detail | 3, 7 | M | |
-| 11 | Frontend — Documents | Document list, file upload with progress, download functionality | 10, 8 | M | |
-| 12 | Frontend — Team Management | Member list, invitation form, pending invitations, Clerk components | 3 | S | |
-| 13 | Containerization | Multi-stage Dockerfiles, full Docker Compose stack, container optimization | 1 | S | **Done** |
-| 14 | AWS Infrastructure | Terraform: VPC, ECS, ALB, ECR, Secrets Manager, S3, IAM | 13 | XL | |
-| 15 | Deployment Pipeline | GitHub Actions CI/CD, ECR push, ECS deploy, environment promotion | 13, 14 | L | |
-| 16 | Testing & Quality | Unit test setup, integration tests, tenant isolation tests, E2E framework | 7, 8, 10, 11 | L | |
+| Epic | Name | Scope | Deps | Effort | Slices | Status |
+|------|------|-------|------|--------|--------|--------|
+| 1 | Scaffolding & Local Dev | Both | — | M | — | **Done** |
+| 2 | Auth & Clerk Integration | Frontend | 1 | M | — | **Done** |
+| 3 | Organization Management | Frontend | 2 | S | — | **Done** |
+| 4 | Webhook Infrastructure | Frontend | 1, 2 | M | 4A, 4B | |
+| 5 | Tenant Provisioning | Backend | 1, 6 | L | 5A, 5B, 5C | |
+| 6 | Multitenancy Backend | Backend | 1 | L | — | **Done** |
+| 7 | Core API — Projects | Backend | 6 | M | 7A, 7B | |
+| 8 | Core API — Documents | Backend | 7, 9 | M | 8A, 8B | |
+| 9 | S3 Integration | Backend | 1 | S | — | |
+| 10 | Dashboard & Projects UI | Frontend | 3, 7 | M | 10A, 10B, 10C | |
+| 11 | Documents UI | Frontend | 10, 8 | M | 11A, 11B | |
+| 12 | Team Management UI | Frontend | 3 | S | — | |
+| 13 | Containerization | Both | 1 | S | — | **Done** |
+| 14 | AWS Infrastructure | Infra | 13 | XL | 14A–14D | |
+| 15 | Deployment Pipeline | Infra | 13, 14 | L | 15A, 15B | |
+| 16 | Testing & Quality | Both | 7, 8, 10, 11 | L | 16A–16C | |
 
 ---
 
@@ -123,7 +123,16 @@
 
 **Dependencies**: Epic 1, Epic 2
 
+**Scope**: Frontend
+
 **Estimated Effort**: M
+
+### Slices
+
+| Slice | Tasks | Summary |
+|-------|-------|---------|
+| **4A** | 4.1, 4.3, 4.4, 4.7 | Core webhook flow — route handler, event router, org.created handler, auth exclusion |
+| **4B** | 4.2, 4.5, 4.6, 4.8 | Clerk config, org.updated handler, idempotency layer, tests |
 
 ### Tasks
 
@@ -146,7 +155,17 @@
 
 **Dependencies**: Epic 1, Epic 6
 
+**Scope**: Backend
+
 **Estimated Effort**: L
+
+### Slices
+
+| Slice | Tasks | Summary |
+|-------|-------|---------|
+| **5A** | 5.1, 5.2, 5.3 | Global + tenant Flyway migrations, schema name generator |
+| **5B** | 5.4, 5.6, 5.7 | Provisioning service, provisioning controller, API key auth filter |
+| **5C** | 5.5, 5.8, 5.9, 5.10 | Dual data sources, startup migration runner, Resilience4j retry, integration tests |
 
 ### Tasks
 
@@ -173,6 +192,8 @@
 
 **Estimated Effort**: L
 
+**Status**: **Complete**
+
 ### Tasks
 
 | ID | Task | Description | Acceptance Criteria | Estimate | Dependencies |
@@ -197,7 +218,16 @@
 
 **Dependencies**: Epic 6
 
+**Scope**: Backend
+
 **Estimated Effort**: M
+
+### Slices
+
+| Slice | Tasks | Summary |
+|-------|-------|---------|
+| **7A** | 7.1, 7.2, 7.3 | Project entity, repository, service layer |
+| **7B** | 7.4, 7.5, 7.6, 7.7 | REST controller, input validation, RBAC authorization, tests |
 
 ### Tasks
 
@@ -219,7 +249,16 @@
 
 **Dependencies**: Epic 7, Epic 9
 
+**Scope**: Backend
+
 **Estimated Effort**: M
+
+### Slices
+
+| Slice | Tasks | Summary |
+|-------|-------|---------|
+| **8A** | 8.1, 8.2, 8.3, 8.4, 8.5 | Document entity, repo, service, upload-init + upload-confirm endpoints |
+| **8B** | 8.6, 8.7, 8.8, 8.9 | Document listing, presigned download, authorization, tests |
 
 ### Tasks
 
@@ -243,7 +282,9 @@
 
 **Dependencies**: Epic 1
 
-**Estimated Effort**: S
+**Scope**: Backend
+
+**Estimated Effort**: S (single slice — 4 tasks)
 
 ### Tasks
 
@@ -262,7 +303,17 @@
 
 **Dependencies**: Epic 3, Epic 7
 
+**Scope**: Frontend
+
 **Estimated Effort**: M
+
+### Slices
+
+| Slice | Tasks | Summary |
+|-------|-------|---------|
+| **10A** | 10.1, 10.2 | App shell layout (sidebar, header, responsive), typed API client |
+| **10B** | 10.3, 10.4, 10.8 | Projects list page, create dialog, dashboard page |
+| **10C** | 10.5, 10.6, 10.7 | Project detail page, edit functionality, delete with confirmation |
 
 ### Tasks
 
@@ -285,7 +336,16 @@
 
 **Dependencies**: Epic 10, Epic 8
 
+**Scope**: Frontend
+
 **Estimated Effort**: M
+
+### Slices
+
+| Slice | Tasks | Summary |
+|-------|-------|---------|
+| **11A** | 11.1, 11.2 | Document list component, drag-and-drop upload with presigned URL flow |
+| **11B** | 11.3, 11.4, 11.5, 11.6 | Upload progress tracking, download functionality, error handling, file validation |
 
 ### Tasks
 
@@ -306,7 +366,9 @@
 
 **Dependencies**: Epic 3
 
-**Estimated Effort**: S
+**Scope**: Frontend
+
+**Estimated Effort**: S (single slice — 5 tasks, mostly Clerk components)
 
 ### Tasks
 
@@ -354,7 +416,18 @@
 
 **Dependencies**: Epic 13
 
+**Scope**: Infra
+
 **Estimated Effort**: XL
+
+### Slices
+
+| Slice | Tasks | Summary |
+|-------|-------|---------|
+| **14A** | 14.1, 14.2, 14.3 | Terraform project structure, VPC (2 public + 2 private subnets), security groups |
+| **14B** | 14.4, 14.5, 14.6 | ALB (public + internal), ECR repositories, ECS cluster + Fargate services |
+| **14C** | 14.7, 14.8, 14.9 | S3 bucket, Secrets Manager, IAM roles (task execution + task) |
+| **14D** | 14.10, 14.11, 14.12 | Route 53 + ACM certificate, auto-scaling policies, deploy dev environment |
 
 ### Tasks
 
@@ -381,7 +454,16 @@
 
 **Dependencies**: Epic 13, Epic 14
 
+**Scope**: Infra
+
 **Estimated Effort**: L
+
+### Slices
+
+| Slice | Tasks | Summary |
+|-------|-------|---------|
+| **15A** | 15.1, 15.2, 15.6 | Docker build/push workflow, ECS deploy action, GitHub secrets + environments |
+| **15B** | 15.3, 15.4, 15.5, 15.7 | Dev/staging/prod deployment workflows, rollback procedure |
 
 ### Tasks
 
@@ -403,7 +485,17 @@
 
 **Dependencies**: Epic 7, Epic 8, Epic 10, Epic 11
 
+**Scope**: Both (frontend + backend)
+
 **Estimated Effort**: L
+
+### Slices
+
+| Slice | Tasks | Summary |
+|-------|-------|---------|
+| **16A** | 16.1, 16.2 | Frontend unit test setup (Vitest), backend unit test setup (JUnit 5 + Mockito) |
+| **16B** | 16.3, 16.4, 16.5 | Testcontainers integration infra, tenant isolation tests, provisioning tests |
+| **16C** | 16.6, 16.7, 16.8, 16.9 | API endpoint tests, Playwright E2E framework, E2E user journeys, CI integration |
 
 ### Tasks
 
@@ -528,11 +620,11 @@ flowchart LR
 
 ```
 Phase 1:  [E1]
-Phase 2:  [E2] [E6] [E9]      ← parallel
-Phase 3:  [E5] [E3] [E4]      ← parallel
-Phase 4:  [E7] → [E8]         ← sequential
-Phase 5:  [E10] → [E11] [E12] ← 11 after 10; 12 parallel
-Phase 6:  [E13] → [E14] [E15] ← 14/15 after 13
+Phase 2:  [E2] [E6] [E9]      <- parallel
+Phase 3:  [E5] [E3] [E4]      <- parallel
+Phase 4:  [E7] -> [E8]         <- sequential
+Phase 5:  [E10] -> [E11] [E12] <- 11 after 10; 12 parallel
+Phase 6:  [E13] -> [E14] [E15] <- 14/15 after 13
 Phase 7:  [E16]
 ```
 

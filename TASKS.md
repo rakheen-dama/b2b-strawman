@@ -6,7 +6,7 @@
 |------|------|------|--------------|--------|--------|
 | 1 | Project Scaffolding & Local Dev | Monorepo structure, build tooling, Docker Compose local stack | None | M | **Done** |
 | 2 | Authentication & Clerk Integration | Clerk auth in Next.js — sign-up, sign-in, session management, JWT extraction | 1 | M | **Done** |
-| 3 | Organization Management | Org creation, switching, URL-based org context | 2 | S | |
+| 3 | Organization Management | Org creation, switching, URL-based org context | 2 | S | **Done** |
 | 4 | Webhook Infrastructure | Clerk webhook reception, signature verification, event routing, idempotency | 1, 2 | M | |
 | 5 | Tenant Provisioning | Schema creation, Flyway tenant migrations, org-schema mapping, startup migration runner | 1, 6 | L | |
 | 6 | Multitenancy Backend | Hibernate schema-per-tenant config, tenant context filter, JWT validation, RBAC mapping | 1 | L | |
@@ -98,15 +98,22 @@
 
 **Estimated Effort**: S
 
+**Status**: **Complete**
+
 ### Tasks
 
-| ID | Task | Description | Acceptance Criteria | Estimate | Dependencies |
-|----|------|-------------|---------------------|----------|--------------|
-| 3.1 | Create org creation page | Build `app/(app)/create-org/page.tsx` using Clerk's `<CreateOrganization />` component. Redirect to `/org/[slug]/dashboard` after creation. | User can create an org; redirected to org-scoped dashboard URL after creation. | 2h | 2.7 |
-| 3.2 | Configure org-based URL routing | Add `organizationSyncOptions` to Clerk middleware with patterns: `/org/:slug`, `/org/:slug/(.*)`. Create `app/(app)/org/[slug]/layout.tsx` that validates the URL slug against the active org. | Navigating to `/org/acme/dashboard` activates the `acme` org in Clerk's session; mismatched slug redirects to correct URL. | 3h | 2.3 |
-| 3.3 | Implement org switcher | Add Clerk's `<OrganizationSwitcher />` to the app shell header. Configure `afterSelectOrganizationUrl` to navigate to `/org/[slug]/dashboard`. | Clicking org switcher shows all user orgs; selecting one navigates to the new org's dashboard URL. | 2h | 3.2 |
-| 3.4 | Create org-scoped dashboard page | Build `app/(app)/org/[slug]/dashboard/page.tsx` as a placeholder dashboard showing the active org name and a welcome message. | Dashboard renders with correct org name from route params; authenticated and org-scoped. | 1h | 3.2 |
-| 3.5 | Handle no-org state | Add redirect logic: after sign-in, if user has no orgs, redirect to `/create-org`. If user has orgs but navigates to `/`, redirect to `/org/[first-org-slug]/dashboard`. | New users land on org creation; returning users land on their last/first org dashboard. | 2h | 3.1, 3.2 |
+| ID | Task | Status | Notes |
+|----|------|--------|-------|
+| 3.1 | Create org creation page | **Done** | `app/(app)/create-org/page.tsx` with `<CreateOrganization />`. `afterCreateOrganizationUrl="/org/:slug/dashboard"`. |
+| 3.2 | Configure org-based URL routing | **Done** | `organizationSyncOptions` already configured in middleware (from Epic 2). Created `app/(app)/org/[slug]/layout.tsx` with sidebar, validates slug against active org, redirects on mismatch. |
+| 3.3 | Implement org switcher | **Done** | `<OrganizationSwitcher />` in org layout header with `afterSelectOrganizationUrl="/org/:slug/dashboard"` and `hidePersonal`. |
+| 3.4 | Create org-scoped dashboard page | **Done** | `app/(app)/org/[slug]/dashboard/page.tsx` showing org name. Placeholder pages added for `/projects` and `/team`. |
+| 3.5 | Handle no-org state | **Done** | `/dashboard` page acts as redirect: active org → `/org/[slug]/dashboard`, no active org but has memberships → first org's dashboard, no orgs → `/create-org`. |
+
+### Architecture Decisions
+- **Sidebar moved to org layout**: `(app)/layout.tsx` simplified to pass-through. Sidebar with org-scoped nav links lives in `org/[slug]/layout.tsx`. This means create-org and redirect pages render without the sidebar.
+- **Org switcher placement**: Header bar with `OrganizationSwitcher` (left) and `UserButton` (right).
+- **Redirect flow**: Post-auth fallback URL remains `/dashboard` which handles all redirect logic server-side using `clerkClient().users.getOrganizationMembershipList()`.
 
 ---
 

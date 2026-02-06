@@ -5,7 +5,7 @@
 | Epic | Name | Goal | Dependencies | Effort | Status |
 |------|------|------|--------------|--------|--------|
 | 1 | Project Scaffolding & Local Dev | Monorepo structure, build tooling, Docker Compose local stack | None | M | **Done** |
-| 2 | Authentication & Clerk Integration | Clerk auth in Next.js — sign-up, sign-in, session management, JWT extraction | 1 | M | |
+| 2 | Authentication & Clerk Integration | Clerk auth in Next.js — sign-up, sign-in, session management, JWT extraction | 1 | M | **Done** |
 | 3 | Organization Management | Org creation, switching, URL-based org context | 2 | S | |
 | 4 | Webhook Infrastructure | Clerk webhook reception, signature verification, event routing, idempotency | 1, 2 | M | |
 | 5 | Tenant Provisioning | Schema creation, Flyway tenant migrations, org-schema mapping, startup migration runner | 1, 6 | L | |
@@ -65,17 +65,28 @@
 
 **Estimated Effort**: M
 
+**Status**: **Complete**
+
 ### Tasks
 
-| ID | Task | Description | Acceptance Criteria | Estimate | Dependencies |
-|----|------|-------------|---------------------|----------|--------------|
-| 2.1 | Create Clerk development instance | Set up a Clerk application (dev instance). Enable Organizations feature. Configure allowed redirect URLs for localhost. Note publishable key and secret key. | Clerk dashboard shows app with Organizations enabled; keys available. | 1h | — |
-| 2.2 | Install Clerk Next.js SDK | Install `@clerk/nextjs`. Wrap root layout with `<ClerkProvider>`. Add `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` to `.env.local`. | App starts without errors; Clerk provider initializes. | 1h | 1.2, 2.1 |
-| 2.3 | Configure Clerk middleware | Create `middleware.ts` with `clerkMiddleware()`. Define public routes (landing page, webhooks). Protect all `/(app)/**` routes. | Unauthenticated users redirected to sign-in for protected routes; public routes accessible without auth. | 2h | 2.2 |
-| 2.4 | Create sign-up page | Create `app/(auth)/sign-up/[[...sign-up]]/page.tsx` with Clerk `<SignUp />` component. Style to match app design. | Users can create accounts; redirect to org creation after sign-up. | 2h | 2.2 |
-| 2.5 | Create sign-in page | Create `app/(auth)/sign-in/[[...sign-in]]/page.tsx` with Clerk `<SignIn />` component. | Users can sign in; redirect to dashboard after sign-in. | 1h | 2.2 |
-| 2.6 | Implement JWT extraction utility | Create `lib/api.ts` with a function that calls `auth().getToken()` to obtain a Clerk JWT with organization claims. Build an API client wrapper that attaches `Authorization: Bearer <jwt>` to all backend requests. | `apiClient.get('/api/projects')` sends request with valid JWT; JWT contains `org_id` and `org_role` claims. | 2h | 2.3 |
-| 2.7 | Create authenticated layout shell | Create `app/(app)/layout.tsx` with basic app shell (sidebar placeholder, header with user button). Use Clerk's `<UserButton />`. | Authenticated users see app shell; `<UserButton />` shows user menu with sign-out option. | 2h | 2.3 |
+| ID | Task | Status | Notes |
+|----|------|--------|-------|
+| 2.1 | Create Clerk development instance | **Done** | Clerk dev instance created with Organizations enabled. Keys in `.env.local`. |
+| 2.2 | Install Clerk Next.js SDK | **Done** | `@clerk/nextjs` ^6.37.2 already installed. `<ClerkProvider>` wraps root layout with `cssLayerName: "clerk"` for Tailwind v4 compatibility. |
+| 2.3 | Configure Clerk middleware | **Done** | `middleware.ts` with `clerkMiddleware()`. Public routes: `/`, `/sign-in(.*)`, `/sign-up(.*)`, `/api/webhooks(.*)`. `organizationSyncOptions` pre-configured for Epic 3. |
+| 2.4 | Create sign-up page | **Done** | `app/(auth)/sign-up/[[...sign-up]]/page.tsx` with Clerk `<SignUp />`. Centered auth layout. |
+| 2.5 | Create sign-in page | **Done** | `app/(auth)/sign-in/[[...sign-in]]/page.tsx` with Clerk `<SignIn />`. |
+| 2.6 | Implement JWT extraction utility | **Done** | `lib/api.ts` with typed `apiClient<T>()` — attaches Bearer JWT via `auth().getToken()`. Custom `ApiError` class. |
+| 2.7 | Create authenticated layout shell | **Done** | `app/(app)/layout.tsx` with sidebar (Dashboard, Projects, Team nav links), header with `<UserButton />`. Placeholder dashboard at `/dashboard`. |
+
+### Additional Items
+- **Webhook handler stub**: `app/api/webhooks/clerk/route.ts` using `verifyWebhook` from `@clerk/nextjs/webhooks`. Stubs for `organization.created` and `organization.updated` events (full implementation in Epic 4).
+- **Landing page fix**: Replaced `<a>` tags with Next.js `<Link>` to fix ESLint `no-html-link-for-pages` errors.
+- **Env vars**: Added `NEXT_PUBLIC_CLERK_SIGN_IN_URL`, `NEXT_PUBLIC_CLERK_SIGN_UP_URL`, and fallback redirect URLs to `.env.local` and `.env.local.example`.
+
+### Deviations from Original Plan
+- **Temporary `/dashboard` route**: Post-auth redirect goes to `/dashboard` (not org-scoped) since Epic 3 hasn't been implemented yet. Will be replaced with `/org/[slug]/dashboard` in Epic 3.
+- **Next.js 16 middleware deprecation**: Next.js 16 shows a warning that `middleware.ts` is deprecated in favor of `proxy.ts`. The middleware still works correctly but may need migration in a future update.
 
 ---
 

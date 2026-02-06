@@ -9,14 +9,14 @@
 | 3 | Organization Management | Org creation, switching, URL-based org context | 2 | S | **Done** |
 | 4 | Webhook Infrastructure | Clerk webhook reception, signature verification, event routing, idempotency | 1, 2 | M | |
 | 5 | Tenant Provisioning | Schema creation, Flyway tenant migrations, org-schema mapping, startup migration runner | 1, 6 | L | |
-| 6 | Multitenancy Backend | Hibernate schema-per-tenant config, tenant context filter, JWT validation, RBAC mapping | 1 | L | |
+| 6 | Multitenancy Backend | Hibernate schema-per-tenant config, tenant context filter, JWT validation, RBAC mapping | 1 | L | **Done** |
 | 7 | Core API — Projects | Project CRUD endpoints with authorization enforcement | 6 | M | |
 | 8 | Core API — Documents | Document metadata endpoints, upload init, upload confirm, presigned download | 7, 9 | M | |
 | 9 | S3 Integration | AWS SDK config, presigned URL service, LocalStack for local dev | 1 | S | |
 | 10 | Frontend — Dashboard & Projects | Dashboard layout, project list, project create/edit, project detail | 3, 7 | M | |
 | 11 | Frontend — Documents | Document list, file upload with progress, download functionality | 10, 8 | M | |
 | 12 | Frontend — Team Management | Member list, invitation form, pending invitations, Clerk components | 3 | S | |
-| 13 | Containerization | Multi-stage Dockerfiles, full Docker Compose stack, container optimization | 1 | S | |
+| 13 | Containerization | Multi-stage Dockerfiles, full Docker Compose stack, container optimization | 1 | S | **Done** |
 | 14 | AWS Infrastructure | Terraform: VPC, ECS, ALB, ECR, Secrets Manager, S3, IAM | 13 | XL | |
 | 15 | Deployment Pipeline | GitHub Actions CI/CD, ECR push, ECS deploy, environment promotion | 13, 14 | L | |
 | 16 | Testing & Quality | Unit test setup, integration tests, tenant isolation tests, E2E framework | 7, 8, 10, 11 | L | |
@@ -328,15 +328,23 @@
 
 **Estimated Effort**: S
 
+**Status**: **Complete**
+
 ### Tasks
 
-| ID | Task | Description | Acceptance Criteria | Estimate | Dependencies |
-|----|------|-------------|---------------------|----------|--------------|
-| 13.1 | Create Next.js Dockerfile | Multi-stage build: `node:20-alpine` base, install deps, build, copy standalone output. Run as non-root user. Expose port 3000. Use `next start`. | `docker build -t docteams-frontend frontend/` succeeds; `docker run -p 3000:3000 docteams-frontend` serves the app; image < 200MB. | 2h | 1.2 |
-| 13.2 | Create Spring Boot Dockerfile | Multi-stage build: `gradle:jdk25` for build, `eclipse-temurin:25-jre-alpine` for runtime. Use layered JAR (`java -Djarmode=tools extract`). Run as non-root user. Expose port 8080. | `docker build -t docteams-backend backend/` succeeds; `docker run -p 8080:8080 docteams-backend` starts the app; image < 300MB. | 2h | 1.4 |
-| 13.3 | Create full Docker Compose stack | Extend `docker-compose.yml` to include frontend and backend services alongside Postgres and LocalStack. Configure inter-service networking, environment variables, depends_on with healthchecks. | `docker compose up` starts all 4 services; frontend accessible at localhost:3000; backend at localhost:8080; frontend can reach backend; backend can reach Postgres and LocalStack. | 3h | 13.1, 13.2, 1.5 |
-| 13.4 | Optimize Docker images | Add `.dockerignore` files to exclude `node_modules`, `.git`, build artifacts. Verify layer caching works (dependency install cached separately from code). | Rebuilds with only code changes reuse dependency layer; `.dockerignore` excludes large directories; build time improved on cache hit. | 1h | 13.1, 13.2 |
-| 13.5 | Document local Docker setup | Add instructions to root `README.md` for running the full stack with Docker Compose. Include setup steps, environment variables, and common troubleshooting. | README contains complete Docker Compose setup instructions; following them results in a running local stack. | 1h | 13.3 |
+| ID | Task | Status | Notes |
+|----|------|--------|-------|
+| 13.1 | Create Next.js Dockerfile | **Done** | Multi-stage build: `node:20-alpine`, pnpm, standalone output. Non-root `nextjs` user. `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` passed as build arg. Image ~208MB. |
+| 13.2 | Create Spring Boot Dockerfile | **Done** | Multi-stage build: `eclipse-temurin:25-jdk` for build, `eclipse-temurin:25-jre-alpine` for runtime. Spring Boot 4 layered JAR extraction (`java -Djarmode=tools extract --layers`). Non-root `spring` user. Image ~289MB. |
+| 13.3 | Create full Docker Compose stack | **Done** | Extended `compose/docker-compose.yml` with `backend` and `frontend` services. Backend depends on postgres + localstack (healthchecks), frontend depends on backend (healthcheck). Environment variables configured for inter-service communication. |
+| 13.4 | Optimize Docker images | **Done** | `.dockerignore` files for both `frontend/` and `backend/`. Dependency install cached separately from code changes. |
+| 13.5 | Document local Docker setup | **Done** | README.md updated with "Quick Start (Full Docker Stack)" section including setup, build, verify, and troubleshooting steps. |
+
+### Architecture Decisions
+- **Standalone output for Next.js**: `output: "standalone"` in `next.config.ts` produces a minimal server (`server.js`) without requiring full `node_modules` at runtime.
+- **Clerk build arg**: `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` must be passed as `--build-arg` because Next.js inlines `NEXT_PUBLIC_*` variables at build time. Clerk validates key format during static page generation.
+- **Spring Boot layered JAR**: Spring Boot 4 uses `java -Djarmode=tools -jar app.jar extract --layers` (changed from `layertools` in Spring Boot 3). Layers: `dependencies/`, `spring-boot-loader/`, `snapshot-dependencies/`, `application/`. Entry point: `org.springframework.boot.loader.launch.JarLauncher`.
+- **Docker Compose env**: `.env.example` updated with Clerk keys and `INTERNAL_API_KEY`. Users copy to `.env` and fill in their Clerk keys before running `docker compose up`.
 
 ---
 

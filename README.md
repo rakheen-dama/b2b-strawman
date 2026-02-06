@@ -9,12 +9,15 @@ Multi-tenant B2B SaaS starter with schema-per-tenant isolation. Reference implem
 - Docker & Docker Compose (local services)
 - Maven 3.9+ (backend build, or use included `./mvnw` wrapper)
 
-## Quick Start
+## Quick Start (Native)
+
+Run services natively for development with hot-reload:
 
 1. **Start local services** (Postgres + LocalStack S3)
    ```bash
    cd compose
-   docker compose up -d
+   cp .env.example .env   # Edit if needed
+   docker compose up -d postgres localstack
    ```
 
 2. **Start backend** (port 8080)
@@ -30,6 +33,49 @@ Multi-tenant B2B SaaS starter with schema-per-tenant isolation. Reference implem
    pnpm install
    pnpm dev
    ```
+
+## Quick Start (Full Docker Stack)
+
+Run the entire stack in containers — no local Java or Node.js required:
+
+1. **Configure environment**
+   ```bash
+   cd compose
+   cp .env.example .env
+   ```
+   Edit `.env` and fill in your Clerk keys (`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`).
+
+2. **Build and start all services**
+   ```bash
+   docker compose up -d --build
+   ```
+   This starts all 4 services:
+   - **Postgres** on port 5432
+   - **LocalStack S3** on port 4566
+   - **Backend** (Spring Boot) on port 8080
+   - **Frontend** (Next.js) on port 3000
+
+3. **Verify services are running**
+   ```bash
+   docker compose ps
+   docker compose logs -f backend   # Watch backend logs
+   docker compose logs -f frontend  # Watch frontend logs
+   ```
+
+4. **Open the app** at [http://localhost:3000](http://localhost:3000)
+
+5. **Stop all services**
+   ```bash
+   docker compose down           # Stop containers
+   docker compose down -v        # Stop and remove volumes (reset data)
+   ```
+
+### Troubleshooting
+
+- **Backend fails to start**: Check Postgres is healthy first (`docker compose ps`). The backend waits for Postgres to be ready but may need longer on first build.
+- **Frontend shows auth errors**: Ensure Clerk keys are set in `compose/.env`. `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` are required.
+- **Rebuild after code changes**: `docker compose up -d --build` rebuilds images with your latest code.
+- **View logs**: `docker compose logs -f <service>` where service is `postgres`, `localstack`, `backend`, or `frontend`.
 
 ## Project Structure
 

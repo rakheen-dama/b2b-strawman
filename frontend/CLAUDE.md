@@ -5,10 +5,10 @@ Next.js 16 (App Router) / React 19 / TypeScript 5 frontend for a multi-tenant B2
 ## Build & Run
 
 ```bash
-npm install          # Install dependencies
-npm run dev          # Dev server on port 3000
-npm run build        # Production build
-npm run lint         # ESLint (flat config)
+pnpm install         # Install dependencies
+pnpm dev             # Dev server on port 3000
+pnpm run build       # Production build
+pnpm run lint        # ESLint (flat config)
 ```
 
 ## Project Structure
@@ -104,7 +104,45 @@ All authenticated routes are org-scoped under `(app)/org/[slug]/`.
 
 - Flat config (`eslint.config.mjs`)
 - Extends `eslint-config-next/core-web-vitals` and `eslint-config-next/typescript`
-- Run with `npm run lint`
+- Run with `pnpm run lint`
+
+## Anti-Patterns — Never Do This
+
+- Never use `@radix-ui/react-*` packages — use the unified `radix-ui` package instead
+- Never put `"use client"` on a component unless it uses hooks, event handlers, or browser APIs
+- Never call `auth()` in client components — it's server-only
+- Never access `params` without `await` — Next.js 16 params are Promises
+- Never skip `cssLayerName: "clerk"` on ClerkProvider — breaks Tailwind v4
+- Never use `npm` — this project uses `pnpm`
+
+## Next.js 16 Patterns
+
+### Async Params (Breaking Change from 15)
+
+Params are Promises in layouts and pages:
+```tsx
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+}
+```
+
+### Clerk + Tailwind v4 Compatibility
+
+ClerkProvider requires cssLayerName to prevent CSS conflicts:
+```tsx
+<ClerkProvider appearance={{ cssLayerName: "clerk" }}>
+```
+
+### Radix UI Imports
+
+Shadcn components use the bundled `radix-ui` package (not `@radix-ui/react-*`):
+```tsx
+import { Slot } from "radix-ui";
+```
 
 ## Authentication (Clerk)
 

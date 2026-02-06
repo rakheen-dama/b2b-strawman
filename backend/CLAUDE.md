@@ -49,6 +49,36 @@ Organize by **feature**, not by layer. Each feature package contains its entity,
 - Use Spring's `ProblemDetail` (RFC 9457) for error responses
 - No Lombok — Java 25 records and pattern matching cover most use cases
 
+## Anti-Patterns — Never Do This
+
+- Never use `@Autowired` on fields — use constructor injection
+- Never use Lombok — Java 25 records and pattern matching cover all cases
+- Never trust client headers for tenant resolution — always derive from validated JWT
+- Never use `org.springframework.boot.orm.jpa.HibernatePropertiesCustomizer` — it moved to `boot.hibernate.autoconfigure` in Spring Boot 4
+- Never set `hibernate.multiTenancy` property — Hibernate 7 auto-detects from registered provider
+- Never use `java -jar` for the Docker entry point — use `org.springframework.boot.loader.launch.JarLauncher`
+- Never make `TestcontainersConfiguration` package-private — it must be `public` for `@Import` from subpackages
+
+## Spring Boot 4 / Hibernate 7 Gotchas
+
+### Package Migrations (Breaking)
+
+| Class | Old Package (Boot 3) | New Package (Boot 4) |
+|-------|---------------------|---------------------|
+| `HibernatePropertiesCustomizer` | `boot.orm.jpa` | `boot.hibernate.autoconfigure` |
+| `AutoConfigureMockMvc` | `boot.test.autoconfigure.web.servlet` | `boot.webmvc.test.autoconfigure` |
+
+### Hibernate 7 Multitenancy
+- No `hibernate.multiTenancy` property — auto-detects from registered provider
+- `MultiTenantConnectionProvider<String>` requires `getReadOnlyConnection()` and `releaseReadOnlyConnection()`
+- Use `MultiTenancySettings.MULTI_TENANT_CONNECTION_PROVIDER` and `MULTI_TENANT_IDENTIFIER_RESOLVER`
+
+## Profile-Specific Security
+
+- **`local` profile**: `LocalSecurityConfig` permits all requests (no JWT validation). For fast local dev.
+- **`dev`/`prod` profiles**: `SecurityConfig` enforces full JWT + RBAC filter chain.
+- When debugging auth issues locally, verify which profile is active.
+
 ### Spring Profiles
 - `local` — Docker Compose Postgres, LocalStack S3
 - `dev` — Neon dev branch, AWS S3
@@ -136,6 +166,27 @@ src/main/resources/db/migration/
 - **REST tests**: MockMvc + Spring REST Docs (generates API documentation from tests)
 - **Test config**: `TestcontainersConfiguration.java` provides `@ServiceConnection` PostgreSQL container
 - Run `TestBackendApplication.main()` for local dev with Testcontainers (no Docker Compose needed)
+
+### Integration Test Setup
+```java
+@SpringBootTest
+@AutoConfigureMockMvc  // from boot.webmvc.test.autoconfigure
+@Import(TestcontainersConfiguration.class)
+class MyIntegrationTest {
+    @Autowired MockMvc mockMvc;
+    // Postgres auto-started, Flyway auto-applied
+}
+```
+
+### Multitenancy in Tests
+```java
+try {
+    TenantContext.setTenantId("tenant_test123");
+    // perform operations
+} finally {
+    TenantContext.clear();
+}
+```
 
 ## Error Handling & Resilience
 

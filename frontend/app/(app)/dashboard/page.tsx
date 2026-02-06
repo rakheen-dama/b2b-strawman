@@ -1,14 +1,27 @@
-import { currentUser } from "@clerk/nextjs/server";
+import { auth, clerkClient } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 
-export default async function DashboardPage() {
-  const user = await currentUser();
+export default async function DashboardRedirectPage() {
+  const { orgSlug, orgId, userId } = await auth();
 
-  return (
-    <div>
-      <h1 className="text-2xl font-bold">Welcome{user?.firstName ? `, ${user.firstName}` : ""}!</h1>
-      <p className="mt-2 text-neutral-600 dark:text-neutral-400">
-        This is your DocTeams dashboard. Organization management and projects are coming soon.
-      </p>
-    </div>
-  );
+  // User has an active org — redirect to org-scoped dashboard
+  if (orgId && orgSlug) {
+    redirect(`/org/${orgSlug}/dashboard`);
+  }
+
+  // No active org — check if user has any orgs
+  if (userId) {
+    const client = await clerkClient();
+    const memberships = await client.users.getOrganizationMembershipList({
+      userId,
+    });
+
+    if (memberships.data.length > 0) {
+      const firstOrg = memberships.data[0].organization;
+      redirect(`/org/${firstOrg.slug}/dashboard`);
+    }
+  }
+
+  // No orgs at all — redirect to create org
+  redirect("/create-org");
 }

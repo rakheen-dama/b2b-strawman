@@ -6,6 +6,7 @@ spring:
       connection-timeout: 10000
       idle-timeout: 600000
       max-lifetime: 1680000
+      connection-init-sql: SET search_path TO public
 
   jpa:
     hibernate:

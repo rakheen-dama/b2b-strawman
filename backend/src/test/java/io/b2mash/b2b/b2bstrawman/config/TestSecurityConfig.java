@@ -9,19 +9,14 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-/**
- * Security config for local development. Permits all public requests and disables CSRF.
- * /internal/** paths are protected by API key filter. Replaced in Epic 6 with full Clerk JWT
- * validation + multitenancy filters.
- */
 @Configuration
 @EnableWebSecurity
-@Profile("local")
-public class LocalSecurityConfig {
+@Profile("test")
+public class TestSecurityConfig {
 
   private final ApiKeyAuthFilter apiKeyAuthFilter;
 
-  public LocalSecurityConfig(ApiKeyAuthFilter apiKeyAuthFilter) {
+  public TestSecurityConfig(ApiKeyAuthFilter apiKeyAuthFilter) {
     this.apiKeyAuthFilter = apiKeyAuthFilter;
   }
 

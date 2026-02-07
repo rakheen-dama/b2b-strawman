@@ -593,6 +593,8 @@ Clerk → POST /api/webhooks/clerk (Next.js)
 
 **Estimated Effort**: L
 
+**Status**: **Complete**
+
 ### Slices
 
 | Slice | Tasks | Summary | Status |

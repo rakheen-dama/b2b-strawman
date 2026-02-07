@@ -1,30 +1,22 @@
 import { verifyWebhook } from "@clerk/nextjs/webhooks";
 import { NextRequest } from "next/server";
+import { routeWebhookEvent } from "@/lib/webhook-handlers";
 
 export async function POST(req: NextRequest) {
   try {
     const evt = await verifyWebhook(req);
 
-    const eventType = evt.type;
-    console.log(`Clerk webhook received: ${eventType}`);
+    const svixId = req.headers.get("svix-id");
 
-    // Event-specific handlers (implemented in Epic 4)
-    switch (eventType) {
-      case "organization.created":
-        // TODO (Epic 4): Call Spring Boot POST /internal/orgs/provision
-        console.log("Organization created:", evt.data.id);
-        break;
-      case "organization.updated":
-        // TODO (Epic 4): Call Spring Boot to upsert org metadata
-        console.log("Organization updated:", evt.data.id);
-        break;
-      default:
-        console.log(`Unhandled webhook event: ${eventType}`);
-    }
+    console.log(
+      `[webhook] Received event: type=${evt.type}, svixId=${svixId}`,
+    );
 
-    return new Response("Webhook received", { status: 200 });
+    await routeWebhookEvent(evt, svixId);
+
+    return new Response("Webhook processed", { status: 200 });
   } catch (err) {
-    console.error("Error verifying webhook:", err);
-    return new Response("Error verifying webhook", { status: 400 });
+    console.error("[webhook] Verification failed:", err);
+    return new Response("Webhook verification failed", { status: 400 });
   }
 }

@@ -13,7 +13,7 @@
 | 7 | Core API — Projects | Backend | 6 | M | 7A, 7B | **Done** |
 | 8 | Core API — Documents | Backend | 7, 9 | M | 8A, 8B | **Done** |
 | 9 | S3 Integration | Backend | 1 | S | — | **Done** |
-| 10 | Dashboard & Projects UI | Frontend | 3, 7 | M | 10A, 10B, 10C | |
+| 10 | Dashboard & Projects UI | Frontend | 3, 7 | M | 10A, 10B, 10C | **Done** |
 | 11 | Documents UI | Frontend | 10, 8 | M | 11A, 11B | |
 | 12 | Team Management UI | Frontend | 3 | S | — | **Done** |
 | 13 | Containerization | Both | 1 | S | — | **Done** |
@@ -365,13 +365,15 @@ Clerk → POST /api/webhooks/clerk (Next.js)
 
 **Estimated Effort**: M
 
+**Status**: **Complete**
+
 ### Slices
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **10A** | 10.1, 10.2 | App shell layout (sidebar, header, responsive), typed API client | **Done** |
 | **10B** | 10.3, 10.4, 10.8 | Projects list page, create dialog, dashboard page | **Done** |
-| **10C** | 10.5, 10.6, 10.7 | Project detail page, edit functionality, delete with confirmation | |
+| **10C** | 10.5, 10.6, 10.7 | Project detail page, edit functionality, delete with confirmation | **Done** |
 
 ### Tasks
 
@@ -381,9 +383,9 @@ Clerk → POST /api/webhooks/clerk (Next.js)
 | 10.2 | Implement API client | **Done** | Enhanced `lib/api.ts` with `server-only` guard, RFC 9457 ProblemDetail parsing, `handleApiError()` utility (401→redirect, 404→notFound), `api.*` convenience methods. Created `lib/types.ts` with Project, Document, ProblemDetail DTO interfaces. |
 | 10.3 | Build projects list page | **Done** | Server component fetching `GET /api/projects`. Responsive card grid (`1/2/3` columns). Empty state with CTA. Role-based "New Project" button (admin/owner). `handleApiError()` for 401/404. |
 | 10.4 | Build project create dialog | **Done** | Shadcn Dialog with name (Input) + description (Textarea) fields. Server Action calling `POST /api/projects`. Inline validation errors. `revalidatePath` refreshes projects list and dashboard. Form/error state reset on reopen. |
-| 10.5 | Build project detail page | | `projects/[id]/page.tsx`. Fetch `GET /api/projects/{id}`. Show name, description, created date. Document section placeholder. Deps: 10.3. |
-| 10.6 | Build project edit functionality | | Edit dialog for name/description. `PUT /api/projects/{id}`. Admin+ only. Deps: 10.5. |
-| 10.7 | Build project delete functionality | | Delete button (owner only). Confirmation dialog. `DELETE /api/projects/{id}`. Redirect to list. Deps: 10.5. |
+| 10.5 | Build project detail page | **Done** | Server component at `projects/[id]/page.tsx`. Fetches `GET /api/projects/{id}`. Shows name, description, created date. Back link to projects list. Role-based Edit/Delete buttons. Documents placeholder for Epic 11. |
+| 10.6 | Build project edit functionality | **Done** | `EditProjectDialog` client component with form pre-population. `updateProject` server action with `auth()` role check (admin+). Revalidates projects list, detail, and dashboard. |
+| 10.7 | Build project delete functionality | **Done** | `DeleteProjectDialog` using Shadcn AlertDialog for destructive confirmation. `deleteProject` server action with `auth()` role check (owner only). Redirects to projects list after deletion. |
 | 10.8 | Implement dashboard page | **Done** | Org name, project count stat card, recent projects list (top 5 sorted by `createdAt` desc), quick-action buttons (New Project, View Projects, Manage Team). Role-based "New Project" visibility. |
 
 ### Key Files (10A)
@@ -402,6 +404,18 @@ Clerk → POST /api/webhooks/clerk (Next.js)
 - `frontend/app/(app)/org/[slug]/dashboard/page.tsx` — Dashboard with stats, recent projects, quick actions
 - `frontend/components/ui/label.tsx` — Shadcn Label component
 - `frontend/components/ui/textarea.tsx` — Shadcn Textarea component
+
+### Key Files (10C)
+- `frontend/app/(app)/org/[slug]/projects/[id]/page.tsx` — Project detail page (server component, role-based actions)
+- `frontend/components/projects/edit-project-dialog.tsx` — Edit dialog with form pre-population
+- `frontend/components/projects/delete-project-dialog.tsx` — AlertDialog destructive confirmation
+- `frontend/components/ui/alert-dialog.tsx` — Shadcn AlertDialog component
+
+### Architecture Decisions (10C)
+- **AlertDialog for destructive actions**: Used Shadcn AlertDialog (not Dialog) for delete confirmation — prevents accidental dismissal via outside click or Escape key.
+- **Server Action auth checks**: `updateProject` and `deleteProject` call `auth()` to verify role before API call — defense-in-depth since Server Actions are HTTP POST endpoints that can be invoked directly.
+- **Trigger-as-children pattern**: Edit/Delete dialogs accept `children` as trigger buttons via `asChild`, keeping layout control in the server component while client components handle interactivity.
+- **Redirect after delete**: `deleteProject` calls `revalidatePath` then `redirect` — cache is invalidated before navigation so the projects list shows fresh data.
 
 ### Architecture Decisions (10B)
 - **Server Actions for mutations**: `api.ts` is `server-only`, so client components call server actions which internally call `api.post()`. `revalidatePath` invalidates both `/projects` and `/dashboard` after creation.

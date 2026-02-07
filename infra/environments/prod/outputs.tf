@@ -14,6 +14,11 @@ output "private_subnet_ids" {
   value       = module.vpc.private_subnet_ids
 }
 
+output "availability_zones" {
+  description = "Availability zones used"
+  value       = module.vpc.availability_zones
+}
+
 # Security group outputs
 output "public_alb_sg_id" {
   description = "Security group ID for the public ALB"

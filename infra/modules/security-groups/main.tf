@@ -25,6 +25,15 @@ resource "aws_vpc_security_group_ingress_rule" "public_alb_https" {
   cidr_ipv4         = "0.0.0.0/0"
 }
 
+resource "aws_vpc_security_group_ingress_rule" "public_alb_http" {
+  security_group_id = aws_security_group.public_alb.id
+  description       = "HTTP from internet (redirect to HTTPS)"
+  from_port         = 80
+  to_port           = 80
+  ip_protocol       = "tcp"
+  cidr_ipv4         = "0.0.0.0/0"
+}
+
 resource "aws_vpc_security_group_egress_rule" "public_alb_all" {
   security_group_id = aws_security_group.public_alb.id
   description       = "Allow all outbound"

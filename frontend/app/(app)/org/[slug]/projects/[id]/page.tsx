@@ -59,7 +59,7 @@ export default async function ProjectDetailPage({
           </p>
         </div>
 
-        {(isAdmin || isOwner) && (
+        {isAdmin && (
           <div className="flex shrink-0 gap-2">
             {isAdmin && (
               <EditProjectDialog project={project} slug={slug}>

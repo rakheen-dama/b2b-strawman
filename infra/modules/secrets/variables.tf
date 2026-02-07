@@ -8,8 +8,8 @@ variable "environment" {
   type        = string
 }
 
-variable "log_retention_days" {
-  description = "CloudWatch log retention in days"
+variable "recovery_window_in_days" {
+  description = "Recovery window for secret deletion (0 for immediate, 7-30 for production)"
   type        = number
-  default     = 30
+  default     = 7
 }

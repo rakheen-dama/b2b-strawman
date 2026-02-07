@@ -4,7 +4,7 @@ Terraform IaC for deploying the multi-tenant B2B SaaS platform to AWS. ECS Farga
 
 ## Status
 
-Early scaffolding — only `.gitignore` is in place. All Terraform modules and environment configs are planned but not yet implemented.
+All modules implemented. VPC + Security Groups (Epic 14A), ALB + ECR + ECS + Monitoring (Epic 14B), S3 + Secrets + IAM (Epic 14C), DNS + Auto-scaling (Epic 14D).
 
 ## Commands
 
@@ -17,20 +17,22 @@ terraform destroy -var-file=env.tfvars    # Tear down
 
 Always run `plan` before `apply`. Never apply without reviewing the plan output.
 
-## Planned Structure
+## Structure
 
 ```
 infra/
 ├── modules/
 │   ├── vpc/              # VPC, subnets, NAT gateways, route tables
-│   ├── ecs/              # ECS cluster, task definitions, services
-│   ├── alb/              # Public ALB + internal ALB, target groups, listeners
-│   ├── ecr/              # Container registries for frontend + backend
-│   ├── s3/               # S3 bucket with org-prefix structure
-│   ├── secrets/          # Secrets Manager entries
 │   ├── security-groups/  # SG definitions and rules
-│   ├── iam/              # Task roles, execution roles, policies
-│   └── monitoring/       # CloudWatch log groups, Container Insights
+│   ├── ecr/              # Container registries for frontend + backend
+│   ├── monitoring/       # CloudWatch log groups
+│   ├── s3/               # S3 bucket with CORS and versioning
+│   ├── secrets/          # Secrets Manager entries (placeholder values)
+│   ├── iam/              # Task execution role, task roles, policies
+│   ├── alb/              # Public ALB (HTTPS/HTTP) + internal ALB
+│   ├── ecs/              # ECS Fargate cluster, task definitions, services
+│   ├── dns/              # Route 53 + ACM certificate (conditional)
+│   └── autoscaling/      # ECS service auto-scaling policies
 ├── environments/
 │   ├── dev/
 │   │   ├── main.tf

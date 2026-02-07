@@ -45,6 +45,7 @@ aws-credentials
 
 # Secrets and Sensitive Files
 secrets/
+!modules/secrets/
 *.secret
 *.secrets
 credentials

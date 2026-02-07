@@ -8,11 +8,9 @@ import org.flywaydb.core.Flyway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.dao.TransientDataAccessException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class TenantProvisioningService {
@@ -33,34 +31,33 @@ public class TenantProvisioningService {
   }
 
   @Retryable(
-      retryFor = {SQLException.class, TransientDataAccessException.class},
-      noRetryFor = {IllegalArgumentException.class},
+      retryFor = ProvisioningException.class,
+      noRetryFor = IllegalArgumentException.class,
       maxAttempts = 3,
       backoff = @Backoff(delay = 1000, multiplier = 2))
-  @Transactional
   public ProvisioningResult provisionTenant(String clerkOrgId, String orgName) {
+    // Idempotency check: already fully provisioned?
     var existingMapping = mappingRepository.findByClerkOrgId(clerkOrgId);
     if (existingMapping.isPresent()) {
       log.info("Tenant already provisioned for org {}", clerkOrgId);
       return ProvisioningResult.alreadyProvisioned(existingMapping.get().getSchemaName());
     }
 
+    // Create or find organization record
     var org =
         organizationRepository
             .findByClerkOrgId(clerkOrgId)
-            .orElseGet(
-                () -> {
-                  var newOrg = new Organization(clerkOrgId, orgName);
-                  return organizationRepository.save(newOrg);
-                });
+            .orElseGet(() -> organizationRepository.save(new Organization(clerkOrgId, orgName)));
 
     org.markInProgress();
     organizationRepository.save(org);
+    organizationRepository.flush();
 
     try {
       String schemaName = SchemaNameGenerator.generateSchemaName(clerkOrgId);
       log.info("Provisioning tenant schema {} for org {}", schemaName, clerkOrgId);
 
+      // Each step is idempotent — safe to retry after partial failure
       createSchema(schemaName);
       createMapping(clerkOrgId, schemaName);
       runTenantMigrations(schemaName);
@@ -90,14 +87,13 @@ public class TenantProvisioningService {
     log.info("Ran tenant migrations for schema {}", schemaName);
   }
 
-  private void createSchema(String schemaName) {
+  private void createSchema(String schemaName) throws SQLException {
     validateSchemaName(schemaName);
     try (var conn = migrationDataSource.getConnection();
         var stmt = conn.createStatement()) {
-      stmt.execute("CREATE SCHEMA IF NOT EXISTS " + schemaName);
+      // Schema name is validated to match ^tenant_[0-9a-f]{12}$ — safe to concatenate
+      stmt.execute("CREATE SCHEMA IF NOT EXISTS \"" + schemaName + "\"");
       log.info("Created schema {}", schemaName);
-    } catch (SQLException e) {
-      throw new ProvisioningException("Failed to create schema " + schemaName, e);
     }
   }
 

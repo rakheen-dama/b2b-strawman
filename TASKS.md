@@ -17,7 +17,7 @@
 | 11 | Documents UI | Frontend | 10, 8 | M | 11A, 11B | |
 | 12 | Team Management UI | Frontend | 3 | S | — | **Done** |
 | 13 | Containerization | Both | 1 | S | — | **Done** |
-| 14 | AWS Infrastructure | Infra | 13 | XL | 14A–14D | 14A **Done** |
+| 14 | AWS Infrastructure | Infra | 13 | XL | 14A–14D | **Done** |
 | 15 | Deployment Pipeline | Infra | 13, 14 | L | 15A, 15B | |
 | 16 | Testing & Quality | Both | 7, 8, 10, 11 | L | 16A–16C | |
 
@@ -491,6 +491,8 @@ Clerk → POST /api/webhooks/clerk (Next.js)
 
 **Estimated Effort**: XL
 
+**Status**: **Complete**
+
 ### Slices
 
 | Slice | Tasks | Summary |
@@ -504,33 +506,50 @@ Clerk → POST /api/webhooks/clerk (Next.js)
 
 | ID | Task | Status | Notes |
 |----|------|--------|-------|
-| 14.1 | Set up Terraform project structure | **Done** | 9 module dirs (`vpc`, `security-groups`, `ecs`, `alb`, `ecr`, `s3`, `secrets`, `iam`, `monitoring`), 3 environment configs (`dev/`, `staging/`, `prod/`). S3 backend with DynamoDB locking. `terraform init` and `terraform validate` pass. |
+| 14.1 | Set up Terraform project structure | **Done** | 11 module dirs (`vpc`, `security-groups`, `ecs`, `alb`, `ecr`, `s3`, `secrets`, `iam`, `monitoring`, `dns`, `autoscaling`), 3 environment configs (`dev/`, `staging/`, `prod/`). S3 backend with DynamoDB locking. |
 | 14.2 | Create VPC module | **Done** | VPC with non-overlapping CIDRs per env (dev=`10.0.0.0/16`, staging=`10.1.0.0/16`, prod=`10.2.0.0/16`). 2 public + 2 private subnets across 2 AZs, IGW, 2 NAT gateways, route tables. All resources tagged. |
 | 14.3 | Create security groups | **Done** | `sg-public-alb` (80+443 from internet), `sg-internal-alb` (8080 from frontend SG), `sg-frontend` (3000 from public ALB), `sg-backend` (8080 from both ALBs). Uses standalone `aws_vpc_security_group_ingress_rule` resources. |
-| 14.4 | Create ALB module | Define public ALB (HTTPS:443 with ACM cert) and internal ALB (HTTP:8080). Target groups for frontend (port 3000) and backend (port 8080). Path-based routing: `/api/*` → backend, `/*` → frontend. Health checks. | Public ALB routes traffic correctly; internal ALB reachable from private subnets only; health checks configured for both targets. | 4h | 14.2, 14.3 |
-| 14.5 | Create ECR module | Define ECR repositories: `docteams-frontend`, `docteams-backend`. Configure lifecycle policy to keep last 10 images. | ECR repos created; lifecycle policy attached; image push succeeds. | 1h | 14.1 |
-| 14.6 | Create ECS module | Define ECS cluster (Fargate). Task definitions for frontend and backend (CPU, memory, container definitions, log configuration, secrets references). ECS services with desired count = 2, deployment circuit breaker. | ECS cluster, task definitions, and services created; tasks run on Fargate; logs stream to CloudWatch; secrets injected from Secrets Manager. | 6h | 14.2, 14.3, 14.4, 14.5 |
-| 14.7 | Create S3 module | Define S3 bucket per environment (`docteams-{env}`). Block public access. Enable versioning. Configure CORS for presigned uploads from browser. | S3 bucket created; public access blocked; CORS configured; versioning enabled. | 2h | 14.1 |
-| 14.8 | Create Secrets Manager module | Define secrets: `docteams/database-url`, `docteams/database-migration-url`, `docteams/clerk-secret-key`, `docteams/clerk-webhook-secret`, `docteams/internal-api-key`. Create placeholder values. | Secrets created in Secrets Manager; ECS task definitions reference them; placeholder values populated. | 2h | 14.1 |
-| 14.9 | Create IAM module | Define ECS task execution role (ECR pull, CloudWatch logs, Secrets Manager read). Define ECS task role (S3 read/write scoped to app bucket). Follow least-privilege. | Task execution role can pull images and read secrets; task role can read/write S3 bucket; no wildcard permissions. | 3h | 14.5, 14.7, 14.8 |
-| 14.10 | Create Route 53 and ACM resources | Define ACM certificate for the domain. Create Route 53 alias record pointing to public ALB. DNS validation for ACM. | Certificate provisioned and validated; domain resolves to ALB; HTTPS works end-to-end. | 2h | 14.4 |
-| 14.11 | Configure auto-scaling | Define ECS Service Auto Scaling for both services. Target tracking policies for CPU (70%) and memory (80%). Min capacity 2, max capacity 10. | Auto-scaling policies attached; scale-out triggers at 70% CPU; minimum 2 tasks running at all times. | 2h | 14.6 |
-| 14.12 | Deploy dev environment | Run `terraform apply` for dev environment. Verify all resources created. Manually push images and verify services start. | Dev environment fully deployed; ALB accessible; ECS tasks running; logs flowing to CloudWatch. | 3h | 14.2–14.11 |
+| 14.4 | Create ALB module | **Done** | Public ALB with conditional HTTPS:443 (when ACM cert provided) + HTTP:80 (redirect or forward). Internal ALB on HTTP:8080. Path-based routing: `/api/*` → backend, `/*` → frontend, `/internal/*` → backend (internal). 3 target groups (IP type for Fargate). Health checks on `/` and `/actuator/health`. |
+| 14.5 | Create ECR module | **Done** | `docteams-{env}-frontend` and `docteams-{env}-backend` repos. Immutable tags, scan on push, AES256 encryption. Lifecycle: keep last 10 images, expire untagged after 1 day. |
+| 14.6 | Create ECS module | **Done** | Fargate cluster with Container Insights. Frontend task def (512/1024, port 3000), backend task def (1024/2048, port 8080). Services: desired=2, circuit breaker with rollback, rolling deploy (min 100%, max 200%). Backend registers with both public and internal target groups. CloudWatch log groups in separate monitoring module (configurable retention: dev=7d, staging=14d, prod=30d). |
+| 14.7 | Create S3 module | **Done** | Bucket `docteams-{env}` with versioning, all public access blocked, AES256 SSE, CORS for presigned PUT/GET, lifecycle to abort incomplete multipart uploads after 7 days. |
+| 14.8 | Create Secrets Manager module | **Done** | 6 secrets via `for_each`: database-url, database-migration-url, clerk-secret-key, clerk-webhook-secret, clerk-publishable-key, internal-api-key. Named `docteams/{env}/{key}`. Placeholder values with `ignore_changes = [secret_string]` lifecycle. Recovery window: dev=0, staging=7, prod=30 days. |
+| 14.9 | Create IAM module | **Done** | Execution role: ECR pull, CloudWatch logs, Secrets Manager read — all scoped to specific ARNs (except `ecr:GetAuthorizationToken` which requires `*`). Backend task role: S3 GetObject/PutObject/DeleteObject + ListBucket/GetBucketLocation. Frontend task role: minimal (ECS requires one). |
+| 14.10 | Create Route 53 and ACM resources | **Done** | Fully conditional via `create_dns` boolean (default: false). ACM cert with DNS validation, Route 53 alias record → public ALB. Usable without a domain. |
+| 14.11 | Configure auto-scaling | **Done** | `for_each` over frontend + backend services. CPU target tracking (70%), memory target tracking (80%). Min 2, max configurable per env (dev=4, staging=6, prod=10). Cooldowns: scale-in 300s, scale-out 60s. |
+| 14.12 | Wire dev environment | **Done** | All modules wired in dev/staging/prod `main.tf`. Variables with env-specific defaults. `terraform validate` passes for all 3 environments. `terraform.tfvars.example` updated. Actual `terraform apply` is manual (requires AWS credentials). |
 
-### Architecture Decisions (14A)
+### Architecture Decisions
 - **Non-overlapping VPC CIDRs**: Each environment gets a distinct `/16` block (dev=`10.0`, staging=`10.1`, prod=`10.2`) to enable future VPC peering without CIDR conflicts.
 - **Standalone SG ingress rules**: Uses `aws_vpc_security_group_ingress_rule` resources instead of inline `ingress {}` blocks — the AWS provider v5.x recommended pattern to avoid perpetual diffs.
-- **HTTP:80 on public ALB**: SG permits both 80 and 443 inbound so the ALB listener (Epic 14B) can redirect HTTP→HTTPS.
+- **HTTP:80 on public ALB**: SG permits both 80 and 443 inbound so the ALB listener can redirect HTTP→HTTPS.
 - **Provider default_tags**: Tags (`Project`, `Environment`, `ManagedBy`) applied at the provider level via `default_tags` block, so every resource inherits them automatically.
+- **Conditional HTTPS**: ALB supports both HTTPS (with ACM cert from DNS module) and HTTP-only (without cert) for dev flexibility.
+- **Secrets `ignore_changes`**: Terraform creates secrets with placeholders; operators update values manually. Terraform never overwrites real values.
+- **Separate auto-scaling module**: Keeps ECS module focused on compute; scaling policies are a distinct concern.
+- **DNS module fully conditional**: `create_dns = false` by default — infrastructure is usable without a registered domain.
+- **Backend dual target groups**: ECS backend service registers with both public ALB (for `/api/*`) and internal ALB (for `/internal/*`).
 
-### Key Files (14A)
+### Key Files
 - `infra/modules/vpc/main.tf` — VPC, subnets, IGW, NAT gateways, route tables
 - `infra/modules/security-groups/main.tf` — 4 security groups with least-privilege rules
-- `infra/environments/{dev,staging,prod}/main.tf` — Environment root configs wiring modules
+- `infra/modules/alb/main.tf` — Public + internal ALBs, conditional HTTPS, path-based routing
+- `infra/modules/ecr/main.tf` — Frontend + backend repos with lifecycle policies
+- `infra/modules/ecs/main.tf` — Fargate cluster, task definitions, services
+- `infra/modules/s3/main.tf` — Document bucket with versioning, CORS, lifecycle
+- `infra/modules/secrets/main.tf` — 6 Secrets Manager entries with `for_each`
+- `infra/modules/iam/main.tf` — Execution role + task roles with least-privilege
+- `infra/modules/monitoring/main.tf` — CloudWatch log groups
+- `infra/modules/dns/main.tf` — Conditional ACM + Route 53
+- `infra/modules/autoscaling/main.tf` — CPU/memory target tracking policies
+- `infra/environments/{dev,staging,prod}/main.tf` — Environment root configs wiring all modules
 
 ### Deviations from Original Plan
-- **Added `security-groups` and `monitoring` modules**: CLAUDE.md specified these as separate modules rather than embedding in VPC/ECS modules.
+- **Added `security-groups`, `monitoring`, `dns`, `autoscaling` as separate modules**: Original spec embedded some in VPC/ECS. Separate modules give better separation of concerns.
 - **Non-overlapping CIDRs**: Original spec used `10.0.0.0/16` for all environments. Changed to unique CIDRs per env after code review.
+- **Per-environment ECR repos**: Named `docteams-{env}-frontend` instead of shared repos, consistent with per-environment Terraform state pattern.
+- **Added `clerk-publishable-key` secret**: Not in original spec but needed by frontend ECS task definition.
+- **Task 14.12 scoped to validation**: Actual `terraform apply` requires AWS credentials and manual review — not run as part of the PR.
 
 ---
 

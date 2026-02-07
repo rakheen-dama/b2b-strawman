@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -36,8 +37,7 @@ class SecurityIntegrationTest {
                         .jwt(
                             j ->
                                 j.subject("user_123")
-                                    .claim("org_id", "org_test")
-                                    .claim("org_role", "org:member"))))
+                                    .claim("o", Map.of("id", "org_test", "rol", "member")))))
         .andExpect(status().isForbidden()); // 403 because org_test is not provisioned, not 401
   }
 
@@ -72,7 +72,7 @@ class SecurityIntegrationTest {
     mockMvc
         .perform(
             get("/unknown")
-                .with(jwt().jwt(j -> j.subject("user_123").claim("org_role", "org:member"))))
+                .with(jwt().jwt(j -> j.subject("user_123").claim("o", Map.of("rol", "member")))))
         .andExpect(status().isForbidden());
   }
 }

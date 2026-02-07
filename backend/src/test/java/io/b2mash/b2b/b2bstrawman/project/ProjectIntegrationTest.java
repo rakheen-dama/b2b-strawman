@@ -14,6 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -417,29 +418,25 @@ class ProjectIntegrationTest {
 
   private JwtRequestPostProcessor memberJwt() {
     return jwt()
-        .jwt(j -> j.subject("user_member").claim("org_id", ORG_ID).claim("org_role", "org:member"))
+        .jwt(j -> j.subject("user_member").claim("o", Map.of("id", ORG_ID, "rol", "member")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
   }
 
   private JwtRequestPostProcessor adminJwt() {
     return jwt()
-        .jwt(j -> j.subject("user_admin").claim("org_id", ORG_ID).claim("org_role", "org:admin"))
+        .jwt(j -> j.subject("user_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_ADMIN")));
   }
 
   private JwtRequestPostProcessor ownerJwt() {
     return jwt()
-        .jwt(j -> j.subject("user_owner").claim("org_id", ORG_ID).claim("org_role", "org:owner"))
+        .jwt(j -> j.subject("user_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
   }
 
   private JwtRequestPostProcessor tenantBMemberJwt() {
     return jwt()
-        .jwt(
-            j ->
-                j.subject("user_tenant_b")
-                    .claim("org_id", ORG_B_ID)
-                    .claim("org_role", "org:member"))
+        .jwt(j -> j.subject("user_tenant_b").claim("o", Map.of("id", ORG_B_ID, "rol", "member")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
   }
 }

@@ -33,7 +33,7 @@ public class TenantFilter extends OncePerRequestFilter {
 
       if (authentication instanceof JwtAuthenticationToken jwtAuth) {
         Jwt jwt = jwtAuth.getToken();
-        String orgId = jwt.getClaimAsString("org_id");
+        String orgId = extractOrgId(jwt);
 
         if (orgId != null) {
           String schemaName = resolveSchema(orgId);
@@ -67,5 +67,15 @@ public class TenantFilter extends OncePerRequestFilter {
         .findByClerkOrgId(clerkOrgId)
         .map(OrgSchemaMapping::getSchemaName)
         .orElse(null);
+  }
+
+  @SuppressWarnings("unchecked")
+  private String extractOrgId(Jwt jwt) {
+    // Clerk JWT v2: org claims nested under "o"
+    Map<String, Object> orgClaim = jwt.getClaim("o");
+    if (orgClaim != null) {
+      return (String) orgClaim.get("id");
+    }
+    return null;
   }
 }

@@ -1,0 +1,64 @@
+// ---- Projects (from ProjectController.java) ----
+
+export interface Project {
+  id: string;
+  name: string;
+  description: string | null;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateProjectRequest {
+  name: string;
+  description?: string;
+}
+
+export interface UpdateProjectRequest {
+  name: string;
+  description?: string;
+}
+
+// ---- Documents (from DocumentController.java) ----
+
+export type DocumentStatus = "PENDING" | "UPLOADED" | "FAILED";
+
+export interface Document {
+  id: string;
+  projectId: string;
+  fileName: string;
+  contentType: string;
+  size: number;
+  status: DocumentStatus;
+  uploadedBy: string | null;
+  uploadedAt: string | null;
+  createdAt: string;
+}
+
+export interface UploadInitRequest {
+  fileName: string;
+  contentType: string;
+  size: number;
+}
+
+export interface UploadInitResponse {
+  documentId: string;
+  presignedUrl: string;
+  expiresInSeconds: number;
+}
+
+export interface PresignDownloadResponse {
+  presignedUrl: string;
+  expiresInSeconds: number;
+}
+
+// ---- Error (RFC 9457 ProblemDetail) ----
+
+export interface ProblemDetail {
+  type?: string;
+  title?: string;
+  status?: number;
+  detail?: string;
+  instance?: string;
+  [key: string]: unknown;
+}

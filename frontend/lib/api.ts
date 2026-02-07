@@ -1,22 +1,29 @@
+import "server-only";
+
 import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
+import type { ProblemDetail } from "@/lib/types";
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
-
-export interface ApiRequestOptions {
-  method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
-  body?: unknown;
-  cache?: RequestCache;
-  headers?: Record<string, string>;
-}
 
 export class ApiError extends Error {
   constructor(
     public status: number,
-    message: string
+    message: string,
+    public detail?: ProblemDetail,
   ) {
     super(message);
     this.name = "ApiError";
   }
+}
+
+interface ApiRequestOptions {
+  method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+  body?: unknown;
+  cache?: RequestCache;
+  next?: NextFetchRequestConfig;
+  headers?: Record<string, string>;
 }
 
 /**
@@ -24,12 +31,15 @@ export class ApiError extends Error {
  * Automatically attaches Clerk JWT as Bearer token.
  * Use only in Server Components, Server Actions, or Route Handlers.
  */
-export async function apiClient<T>(endpoint: string, options: ApiRequestOptions = {}): Promise<T> {
+async function apiRequest<T>(
+  endpoint: string,
+  options: ApiRequestOptions = {},
+): Promise<T> {
   const { getToken } = await auth();
   const token = await getToken();
 
   if (!token) {
-    throw new ApiError(401, "No authentication token available");
+    redirect("/sign-in");
   }
 
   const response = await fetch(`${BACKEND_URL}${endpoint}`, {
@@ -41,10 +51,29 @@ export async function apiClient<T>(endpoint: string, options: ApiRequestOptions 
     },
     body: options.body ? JSON.stringify(options.body) : undefined,
     cache: options.cache,
+    next: options.next,
   });
 
   if (!response.ok) {
-    throw new ApiError(response.status, `API request failed: ${response.statusText}`);
+    let detail: ProblemDetail | undefined;
+    let message = response.statusText;
+
+    try {
+      const contentType = response.headers.get("content-type");
+      if (
+        contentType?.includes("application/json") ||
+        contentType?.includes("application/problem+json")
+      ) {
+        detail = await response.json();
+        message = detail?.detail || detail?.title || message;
+      } else {
+        message = (await response.text()) || message;
+      }
+    } catch {
+      // Failed to parse error body — use statusText
+    }
+
+    throw new ApiError(response.status, message, detail);
   }
 
   if (response.status === 204) {
@@ -53,3 +82,57 @@ export async function apiClient<T>(endpoint: string, options: ApiRequestOptions 
 
   return response.json() as Promise<T>;
 }
+
+/**
+ * Handles ApiError by performing appropriate navigation for
+ * known HTTP error statuses. Call this in catch blocks of
+ * server components and server actions.
+ *
+ * - 401 → redirect to sign-in
+ * - 404 → trigger Next.js not-found page
+ * - All others → re-throws the error
+ */
+export function handleApiError(error: unknown): never {
+  if (error instanceof ApiError) {
+    if (error.status === 401) {
+      redirect("/sign-in");
+    }
+    if (error.status === 404) {
+      notFound();
+    }
+  }
+  throw error;
+}
+
+export const api = {
+  get: <T>(
+    endpoint: string,
+    options?: Omit<ApiRequestOptions, "method" | "body">,
+  ) => apiRequest<T>(endpoint, { ...options, method: "GET" }),
+
+  post: <T>(
+    endpoint: string,
+    body?: unknown,
+    options?: Omit<ApiRequestOptions, "method" | "body">,
+  ) => apiRequest<T>(endpoint, { ...options, method: "POST", body }),
+
+  put: <T>(
+    endpoint: string,
+    body?: unknown,
+    options?: Omit<ApiRequestOptions, "method" | "body">,
+  ) => apiRequest<T>(endpoint, { ...options, method: "PUT", body }),
+
+  patch: <T>(
+    endpoint: string,
+    body?: unknown,
+    options?: Omit<ApiRequestOptions, "method" | "body">,
+  ) => apiRequest<T>(endpoint, { ...options, method: "PATCH", body }),
+
+  delete: <T>(
+    endpoint: string,
+    options?: Omit<ApiRequestOptions, "method" | "body">,
+  ) => apiRequest<T>(endpoint, { ...options, method: "DELETE" }),
+};
+
+// Backward-compatible alias for existing code
+export { apiRequest as apiClient };

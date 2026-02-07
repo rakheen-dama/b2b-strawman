@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -25,6 +25,7 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   async function handleSubmit(formData: FormData) {
     setError(null);
@@ -33,6 +34,7 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
     try {
       const result = await createProject(slug, formData);
       if (result.success) {
+        formRef.current?.reset();
         setOpen(false);
       } else {
         setError(result.error ?? "Failed to create project.");
@@ -44,8 +46,15 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
     }
   }
 
+  function handleOpenChange(newOpen: boolean) {
+    if (newOpen) {
+      setError(null);
+    }
+    setOpen(newOpen);
+  }
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button size="sm">
           <Plus className="mr-1.5 size-4" />
@@ -59,7 +68,7 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
             Add a new project to your organization.
           </DialogDescription>
         </DialogHeader>
-        <form action={handleSubmit} className="space-y-4">
+        <form ref={formRef} action={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="project-name">Name</Label>
             <Input

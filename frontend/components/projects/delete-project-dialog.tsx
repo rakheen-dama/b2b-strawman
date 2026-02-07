@@ -55,22 +55,14 @@ export function DeleteProjectDialog({
           <AlertDialogTitle>Delete Project</AlertDialogTitle>
           <AlertDialogDescription>
             This will permanently delete{" "}
-            <span className="font-semibold text-foreground">
-              {projectName}
-            </span>{" "}
-            and all its documents. This action cannot be undone.
+            <span className="text-foreground font-semibold">{projectName}</span> and all its
+            documents. This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        {error && (
-          <p className="text-sm text-destructive">{error}</p>
-        )}
+        {error && <p className="text-destructive text-sm">{error}</p>}
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-          <Button
-            variant="destructive"
-            onClick={handleDelete}
-            disabled={isDeleting}
-          >
+          <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
             {isDeleting ? "Deleting..." : "Delete Project"}
           </Button>
         </AlertDialogFooter>

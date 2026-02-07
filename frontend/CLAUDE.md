@@ -120,12 +120,9 @@ All authenticated routes are org-scoped under `(app)/org/[slug]/`.
 ### Async Params (Breaking Change from 15)
 
 Params are Promises in layouts and pages:
+
 ```tsx
-export default async function Page({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 }
 ```
@@ -133,6 +130,7 @@ export default async function Page({
 ### Clerk + Tailwind v4 Compatibility
 
 ClerkProvider requires cssLayerName to prevent CSS conflicts:
+
 ```tsx
 <ClerkProvider appearance={{ cssLayerName: "clerk" }}>
 ```
@@ -140,6 +138,7 @@ ClerkProvider requires cssLayerName to prevent CSS conflicts:
 ### Radix UI Imports
 
 Shadcn components use the bundled `radix-ui` package (not `@radix-ui/react-*`):
+
 ```tsx
 import { Slot } from "radix-ui";
 ```

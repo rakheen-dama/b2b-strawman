@@ -22,7 +22,7 @@ interface OrgDeletedEventData {
 
 export async function handleOrganizationCreated(
   data: OrgEventData,
-  svixId: string | null,
+  svixId: string | null
 ): Promise<void> {
   const payload: ProvisionOrgRequest = {
     clerkOrgId: data.id,
@@ -30,36 +30,33 @@ export async function handleOrganizationCreated(
   };
 
   console.log(
-    `[webhook] organization.created: clerkOrgId=${data.id}, name=${data.name}, svixId=${svixId}`,
+    `[webhook] organization.created: clerkOrgId=${data.id}, name=${data.name}, svixId=${svixId}`
   );
 
   try {
-    const result = await internalApiClient<ProvisionOrgResponse>(
-      "/internal/orgs/provision",
-      { body: payload },
-    );
+    const result = await internalApiClient<ProvisionOrgResponse>("/internal/orgs/provision", {
+      body: payload,
+    });
     console.log(
-      `[webhook] Provisioning result: schemaName=${result.schemaName}, status=${result.status}`,
+      `[webhook] Provisioning result: schemaName=${result.schemaName}, status=${result.status}`
     );
   } catch (error) {
     if (error instanceof InternalApiError && error.status === 409) {
-      console.log(
-        `[webhook] Org ${data.id} already provisioned (409 Conflict)`,
-      );
+      console.log(`[webhook] Org ${data.id} already provisioned (409 Conflict)`);
       return;
     }
     console.error(
       `[webhook] Failed to provision org ${data.id}:`,
       error instanceof InternalApiError
         ? `${error.status} ${error.statusText} - ${error.body}`
-        : error,
+        : error
     );
   }
 }
 
 export async function handleOrganizationUpdated(
   data: OrgEventData,
-  svixId: string | null,
+  svixId: string | null
 ): Promise<void> {
   const payload: UpdateOrgRequest = {
     clerkOrgId: data.id,
@@ -68,7 +65,7 @@ export async function handleOrganizationUpdated(
   };
 
   console.log(
-    `[webhook] organization.updated: clerkOrgId=${data.id}, name=${data.name}, svixId=${svixId}`,
+    `[webhook] organization.updated: clerkOrgId=${data.id}, name=${data.name}, svixId=${svixId}`
   );
 
   try {
@@ -82,24 +79,19 @@ export async function handleOrganizationUpdated(
       `[webhook] Failed to update org ${data.id}:`,
       error instanceof InternalApiError
         ? `${error.status} ${error.statusText} - ${error.body}`
-        : error,
+        : error
     );
   }
 }
 
 export async function handleOrganizationDeleted(
   data: OrgDeletedEventData,
-  svixId: string | null,
+  svixId: string | null
 ): Promise<void> {
-  console.log(
-    `[webhook] organization.deleted: id=${data.id}, svixId=${svixId}`,
-  );
+  console.log(`[webhook] organization.deleted: id=${data.id}, svixId=${svixId}`);
 }
 
-export async function routeWebhookEvent(
-  event: WebhookEvent,
-  svixId: string | null,
-): Promise<void> {
+export async function routeWebhookEvent(event: WebhookEvent, svixId: string | null): Promise<void> {
   switch (event.type) {
     case "organization.created":
       await handleOrganizationCreated(event.data, svixId);
@@ -114,22 +106,16 @@ export async function routeWebhookEvent(
     case "organizationMembership.created":
     case "organizationMembership.updated":
     case "organizationMembership.deleted":
-      console.log(
-        `[webhook] ${event.type}: memberId=${event.data.id} (no-op for MVP)`,
-      );
+      console.log(`[webhook] ${event.type}: memberId=${event.data.id} (no-op for MVP)`);
       break;
 
     case "organizationInvitation.created":
     case "organizationInvitation.revoked":
-      console.log(
-        `[webhook] ${event.type}: invitationId=${event.data.id} (no-op for MVP)`,
-      );
+      console.log(`[webhook] ${event.type}: invitationId=${event.data.id} (no-op for MVP)`);
       break;
 
     case "organizationInvitation.accepted":
-      console.log(
-        `[webhook] ${event.type}: invitationId=${event.data.id} (no-op for MVP)`,
-      );
+      console.log(`[webhook] ${event.type}: invitationId=${event.data.id} (no-op for MVP)`);
       break;
 
     default:

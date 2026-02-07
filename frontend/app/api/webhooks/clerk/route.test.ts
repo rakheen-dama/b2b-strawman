@@ -16,9 +16,7 @@ import { NextRequest } from "next/server";
 const mockVerifyWebhook = vi.mocked(verifyWebhook);
 const mockRouteWebhookEvent = vi.mocked(routeWebhookEvent);
 
-function createMockRequest(
-  headers?: Record<string, string>,
-): NextRequest {
+function createMockRequest(headers?: Record<string, string>): NextRequest {
   return new NextRequest("http://localhost:3000/api/webhooks/clerk", {
     method: "POST",
     headers: {
@@ -59,10 +57,7 @@ describe("POST /api/webhooks/clerk", () => {
     const response = await POST(createMockRequest());
 
     expect(response.status).toBe(200);
-    expect(mockRouteWebhookEvent).toHaveBeenCalledWith(
-      mockEvent,
-      "msg_test123",
-    );
+    expect(mockRouteWebhookEvent).toHaveBeenCalledWith(mockEvent, "msg_test123");
   });
 
   it("extracts svix-id from headers and passes to router", async () => {
@@ -74,13 +69,8 @@ describe("POST /api/webhooks/clerk", () => {
     } as never);
     mockRouteWebhookEvent.mockResolvedValue(undefined);
 
-    await POST(
-      createMockRequest({ "svix-id": "msg_custom_id" }),
-    );
+    await POST(createMockRequest({ "svix-id": "msg_custom_id" }));
 
-    expect(mockRouteWebhookEvent).toHaveBeenCalledWith(
-      expect.anything(),
-      "msg_custom_id",
-    );
+    expect(mockRouteWebhookEvent).toHaveBeenCalledWith(expect.anything(), "msg_custom_id");
   });
 });

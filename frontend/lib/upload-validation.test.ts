@@ -1,15 +1,7 @@
 import { describe, it, expect } from "vitest";
-import {
-  validateFile,
-  MAX_FILE_SIZE,
-  ALLOWED_MIME_TYPES,
-} from "./upload-validation";
+import { validateFile, MAX_FILE_SIZE, ALLOWED_MIME_TYPES } from "./upload-validation";
 
-function createFile(
-  name: string,
-  size: number,
-  type: string = "",
-): File {
+function createFile(name: string, size: number, type: string = ""): File {
   const content = new Uint8Array(Math.min(size, 1));
   const file = new File([content], name, { type });
   // File constructor doesn't let us set arbitrary sizes, so use defineProperty
@@ -44,17 +36,13 @@ describe("validateFile", () => {
   });
 
   it("rejects a file exceeding MAX_FILE_SIZE", () => {
-    const result = validateFile(
-      createFile("huge.pdf", MAX_FILE_SIZE + 1, "application/pdf"),
-    );
+    const result = validateFile(createFile("huge.pdf", MAX_FILE_SIZE + 1, "application/pdf"));
     expect(result.valid).toBe(false);
     expect(result.error).toContain("maximum size");
   });
 
   it("rejects an unsupported MIME type", () => {
-    const result = validateFile(
-      createFile("virus.exe", 1024, "application/x-msdownload"),
-    );
+    const result = validateFile(createFile("virus.exe", 1024, "application/x-msdownload"));
     expect(result.valid).toBe(false);
     expect(result.error).toBe("File type .exe is not supported.");
   });

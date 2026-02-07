@@ -11,7 +11,7 @@ export class ApiError extends Error {
   constructor(
     public status: number,
     message: string,
-    public detail?: ProblemDetail,
+    public detail?: ProblemDetail
   ) {
     super(message);
     this.name = "ApiError";
@@ -31,10 +31,7 @@ interface ApiRequestOptions {
  * Automatically attaches Clerk JWT as Bearer token.
  * Use only in Server Components, Server Actions, or Route Handlers.
  */
-async function apiRequest<T>(
-  endpoint: string,
-  options: ApiRequestOptions = {},
-): Promise<T> {
+async function apiRequest<T>(endpoint: string, options: ApiRequestOptions = {}): Promise<T> {
   const { getToken } = await auth();
   const token = await getToken();
 
@@ -105,33 +102,29 @@ export function handleApiError(error: unknown): never {
 }
 
 export const api = {
-  get: <T>(
-    endpoint: string,
-    options?: Omit<ApiRequestOptions, "method" | "body">,
-  ) => apiRequest<T>(endpoint, { ...options, method: "GET" }),
+  get: <T>(endpoint: string, options?: Omit<ApiRequestOptions, "method" | "body">) =>
+    apiRequest<T>(endpoint, { ...options, method: "GET" }),
 
   post: <T>(
     endpoint: string,
     body?: unknown,
-    options?: Omit<ApiRequestOptions, "method" | "body">,
+    options?: Omit<ApiRequestOptions, "method" | "body">
   ) => apiRequest<T>(endpoint, { ...options, method: "POST", body }),
 
   put: <T>(
     endpoint: string,
     body?: unknown,
-    options?: Omit<ApiRequestOptions, "method" | "body">,
+    options?: Omit<ApiRequestOptions, "method" | "body">
   ) => apiRequest<T>(endpoint, { ...options, method: "PUT", body }),
 
   patch: <T>(
     endpoint: string,
     body?: unknown,
-    options?: Omit<ApiRequestOptions, "method" | "body">,
+    options?: Omit<ApiRequestOptions, "method" | "body">
   ) => apiRequest<T>(endpoint, { ...options, method: "PATCH", body }),
 
-  delete: <T>(
-    endpoint: string,
-    options?: Omit<ApiRequestOptions, "method" | "body">,
-  ) => apiRequest<T>(endpoint, { ...options, method: "DELETE" }),
+  delete: <T>(endpoint: string, options?: Omit<ApiRequestOptions, "method" | "body">) =>
+    apiRequest<T>(endpoint, { ...options, method: "DELETE" }),
 };
 
 // Backward-compatible alias for existing code

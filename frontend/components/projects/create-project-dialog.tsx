@@ -64,9 +64,7 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create Project</DialogTitle>
-          <DialogDescription>
-            Add a new project to your organization.
-          </DialogDescription>
+          <DialogDescription>Add a new project to your organization.</DialogDescription>
         </DialogHeader>
         <form ref={formRef} action={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -82,10 +80,7 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="project-description">
-              Description{" "}
-              <span className="text-muted-foreground font-normal">
-                (optional)
-              </span>
+              Description <span className="text-muted-foreground font-normal">(optional)</span>
             </Label>
             <Textarea
               id="project-description"
@@ -95,9 +90,7 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
               rows={3}
             />
           </div>
-          {error && (
-            <p className="text-sm text-destructive">{error}</p>
-          )}
+          {error && <p className="text-destructive text-sm">{error}</p>}
           <DialogFooter>
             <Button
               type="button"

@@ -12,7 +12,7 @@ vi.mock("@/lib/internal-api", () => ({
     constructor(
       public status: number,
       public statusText: string,
-      public body?: string,
+      public body?: string
     ) {
       super(`Internal API request failed: ${status} ${statusText}`);
       this.name = "InternalApiError";
@@ -59,41 +59,32 @@ describe("handleOrganizationCreated", () => {
 
     await handleOrganizationCreated(orgCreatedData(), "msg_abc123");
 
-    expect(mockInternalApiClient).toHaveBeenCalledWith(
-      "/internal/orgs/provision",
-      {
-        body: { clerkOrgId: "org_123", orgName: "Acme Corp" },
-      },
-    );
+    expect(mockInternalApiClient).toHaveBeenCalledWith("/internal/orgs/provision", {
+      body: { clerkOrgId: "org_123", orgName: "Acme Corp" },
+    });
   });
 
   it("handles 409 Conflict (already provisioned) gracefully", async () => {
-    mockInternalApiClient.mockRejectedValue(
-      new InternalApiError(409, "Conflict"),
-    );
+    mockInternalApiClient.mockRejectedValue(new InternalApiError(409, "Conflict"));
 
     await expect(
-      handleOrganizationCreated(orgCreatedData(), "msg_abc123"),
+      handleOrganizationCreated(orgCreatedData(), "msg_abc123")
     ).resolves.toBeUndefined();
   });
 
   it("logs error but does not throw on provisioning failure", async () => {
-    mockInternalApiClient.mockRejectedValue(
-      new InternalApiError(500, "Internal Server Error"),
-    );
+    mockInternalApiClient.mockRejectedValue(new InternalApiError(500, "Internal Server Error"));
 
     await expect(
-      handleOrganizationCreated(orgCreatedData(), "msg_abc123"),
+      handleOrganizationCreated(orgCreatedData(), "msg_abc123")
     ).resolves.toBeUndefined();
   });
 
   it("logs error but does not throw on network failure", async () => {
-    mockInternalApiClient.mockRejectedValue(
-      new TypeError("fetch failed"),
-    );
+    mockInternalApiClient.mockRejectedValue(new TypeError("fetch failed"));
 
     await expect(
-      handleOrganizationCreated(orgCreatedData(), "msg_abc123"),
+      handleOrganizationCreated(orgCreatedData(), "msg_abc123")
     ).resolves.toBeUndefined();
   });
 });
@@ -108,26 +99,21 @@ describe("handleOrganizationUpdated", () => {
 
     await handleOrganizationUpdated(orgUpdatedData(), "msg_def456");
 
-    expect(mockInternalApiClient).toHaveBeenCalledWith(
-      "/internal/orgs/update",
-      {
-        method: "PUT",
-        body: {
-          clerkOrgId: "org_123",
-          orgName: "Acme Corp v2",
-          updatedAt: 1700000001000,
-        },
+    expect(mockInternalApiClient).toHaveBeenCalledWith("/internal/orgs/update", {
+      method: "PUT",
+      body: {
+        clerkOrgId: "org_123",
+        orgName: "Acme Corp v2",
+        updatedAt: 1700000001000,
       },
-    );
+    });
   });
 
   it("logs error but does not throw on update failure", async () => {
-    mockInternalApiClient.mockRejectedValue(
-      new InternalApiError(500, "Internal Server Error"),
-    );
+    mockInternalApiClient.mockRejectedValue(new InternalApiError(500, "Internal Server Error"));
 
     await expect(
-      handleOrganizationUpdated(orgUpdatedData(), "msg_def456"),
+      handleOrganizationUpdated(orgUpdatedData(), "msg_def456")
     ).resolves.toBeUndefined();
   });
 });
@@ -136,9 +122,7 @@ describe("handleOrganizationDeleted", () => {
   it("does not throw (no-op for MVP)", async () => {
     const data = { id: "org_123", object: "organization" as const, slug: "acme", deleted: true };
 
-    await expect(
-      handleOrganizationDeleted(data as never, "msg_ghi789"),
-    ).resolves.toBeUndefined();
+    await expect(handleOrganizationDeleted(data as never, "msg_ghi789")).resolves.toBeUndefined();
   });
 });
 
@@ -161,12 +145,12 @@ describe("routeWebhookEvent", () => {
         data: orgCreatedData(),
         event_attributes: { http_request: { client_ip: "", user_agent: "" } },
       },
-      "msg_xyz",
+      "msg_xyz"
     );
 
     expect(mockInternalApiClient).toHaveBeenCalledWith(
       "/internal/orgs/provision",
-      expect.any(Object),
+      expect.any(Object)
     );
   });
 
@@ -180,13 +164,10 @@ describe("routeWebhookEvent", () => {
         data: orgUpdatedData(),
         event_attributes: { http_request: { client_ip: "", user_agent: "" } },
       },
-      "msg_xyz",
+      "msg_xyz"
     );
 
-    expect(mockInternalApiClient).toHaveBeenCalledWith(
-      "/internal/orgs/update",
-      expect.any(Object),
-    );
+    expect(mockInternalApiClient).toHaveBeenCalledWith("/internal/orgs/update", expect.any(Object));
   });
 
   it("handles unknown event types without throwing", async () => {
@@ -198,8 +179,8 @@ describe("routeWebhookEvent", () => {
           data: { id: "user_123" } as never,
           event_attributes: { http_request: { client_ip: "", user_agent: "" } },
         },
-        "msg_unknown",
-      ),
+        "msg_unknown"
+      )
     ).resolves.toBeUndefined();
   });
 });

@@ -34,17 +34,13 @@ export function PendingInvitations({ isAdmin }: { isAdmin: boolean }) {
 
   if (!isLoaded) {
     return (
-      <div className="py-8 text-center text-sm text-muted-foreground">
-        Loading invitations...
-      </div>
+      <div className="text-muted-foreground py-8 text-center text-sm">Loading invitations...</div>
     );
   }
 
   if (!invitations?.data?.length) {
     return (
-      <div className="py-8 text-center text-sm text-muted-foreground">
-        No pending invitations.
-      </div>
+      <div className="text-muted-foreground py-8 text-center text-sm">No pending invitations.</div>
     );
   }
 
@@ -55,10 +51,7 @@ export function PendingInvitations({ isAdmin }: { isAdmin: boolean }) {
     setRevokingId(invitationId);
     try {
       await invitation.revoke();
-      await Promise.all([
-        invitations.revalidate?.(),
-        memberships?.revalidate?.(),
-      ]);
+      await Promise.all([invitations.revalidate?.(), memberships?.revalidate?.()]);
     } catch (err) {
       console.error("Failed to revoke invitation:", err);
     } finally {
@@ -80,18 +73,12 @@ export function PendingInvitations({ isAdmin }: { isAdmin: boolean }) {
         <TableBody>
           {invitations.data.map((inv) => (
             <TableRow key={inv.id}>
-              <TableCell className="font-medium">
-                {inv.emailAddress}
-              </TableCell>
+              <TableCell className="font-medium">{inv.emailAddress}</TableCell>
               <TableCell>
-                <Badge variant="outline">
-                  {ROLE_LABELS[inv.role] ?? inv.role}
-                </Badge>
+                <Badge variant="outline">{ROLE_LABELS[inv.role] ?? inv.role}</Badge>
               </TableCell>
               <TableCell className="text-muted-foreground">
-                {inv.createdAt
-                  ? new Date(inv.createdAt).toLocaleDateString()
-                  : "—"}
+                {inv.createdAt ? new Date(inv.createdAt).toLocaleDateString() : "—"}
               </TableCell>
               {isAdmin && (
                 <TableCell>

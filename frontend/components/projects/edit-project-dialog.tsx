@@ -23,11 +23,7 @@ interface EditProjectDialogProps {
   children: React.ReactNode;
 }
 
-export function EditProjectDialog({
-  project,
-  slug,
-  children,
-}: EditProjectDialogProps) {
+export function EditProjectDialog({ project, slug, children }: EditProjectDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -63,9 +59,7 @@ export function EditProjectDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Edit Project</DialogTitle>
-          <DialogDescription>
-            Update your project&apos;s name and description.
-          </DialogDescription>
+          <DialogDescription>Update your project&apos;s name and description.</DialogDescription>
         </DialogHeader>
         <form action={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -81,10 +75,7 @@ export function EditProjectDialog({
           </div>
           <div className="space-y-2">
             <Label htmlFor="edit-project-description">
-              Description{" "}
-              <span className="text-muted-foreground font-normal">
-                (optional)
-              </span>
+              Description <span className="text-muted-foreground font-normal">(optional)</span>
             </Label>
             <Textarea
               id="edit-project-description"
@@ -94,9 +85,7 @@ export function EditProjectDialog({
               rows={3}
             />
           </div>
-          {error && (
-            <p className="text-sm text-destructive">{error}</p>
-          )}
+          {error && <p className="text-destructive text-sm">{error}</p>}
           <DialogFooter>
             <Button
               type="button"

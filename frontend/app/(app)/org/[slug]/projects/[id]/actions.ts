@@ -2,11 +2,7 @@
 
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
-import type {
-  UploadInitRequest,
-  UploadInitResponse,
-  PresignDownloadResponse,
-} from "@/lib/types";
+import type { UploadInitRequest, UploadInitResponse, PresignDownloadResponse } from "@/lib/types";
 
 interface ActionResult {
   success: boolean;
@@ -31,14 +27,14 @@ export async function initiateUpload(
   projectId: string,
   fileName: string,
   contentType: string,
-  size: number,
+  size: number
 ): Promise<UploadInitResult> {
   const body: UploadInitRequest = { fileName, contentType, size };
 
   try {
     const result = await api.post<UploadInitResponse>(
       `/api/projects/${projectId}/documents/upload-init`,
-      body,
+      body
     );
     return {
       success: true,
@@ -56,7 +52,7 @@ export async function initiateUpload(
 export async function confirmUpload(
   slug: string,
   projectId: string,
-  documentId: string,
+  documentId: string
 ): Promise<ActionResult> {
   try {
     await api.post(`/api/documents/${documentId}/confirm`);
@@ -72,12 +68,10 @@ export async function confirmUpload(
   return { success: true };
 }
 
-export async function getDownloadUrl(
-  documentId: string,
-): Promise<DownloadUrlResult> {
+export async function getDownloadUrl(documentId: string): Promise<DownloadUrlResult> {
   try {
     const result = await api.get<PresignDownloadResponse>(
-      `/api/documents/${documentId}/presign-download`,
+      `/api/documents/${documentId}/presign-download`
     );
     return { success: true, presignedUrl: result.presignedUrl };
   } catch (error) {

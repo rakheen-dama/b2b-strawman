@@ -6,11 +6,7 @@ import { CreateProjectDialog } from "@/components/projects/create-project-dialog
 import { FolderOpen } from "lucide-react";
 import Link from "next/link";
 
-export default async function ProjectsPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function ProjectsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const { orgRole } = await auth();
 
@@ -28,7 +24,7 @@ export default async function ProjectsPage({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Projects</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="text-muted-foreground mt-1 text-sm">
             Manage your organization&apos;s projects.
           </p>
         </div>
@@ -37,9 +33,9 @@ export default async function ProjectsPage({
 
       {projects.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
-          <FolderOpen className="size-12 text-muted-foreground" />
+          <FolderOpen className="text-muted-foreground size-12" />
           <h2 className="mt-4 text-lg font-semibold">No projects yet</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="text-muted-foreground mt-1 text-sm">
             {isAdmin
               ? "Create your first project to get started."
               : "Ask an admin to create a project."}
@@ -53,28 +49,20 @@ export default async function ProjectsPage({
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {projects.map((project) => (
-            <Link
-              key={project.id}
-              href={`/org/${slug}/projects/${project.id}`}
-              className="group"
-            >
-              <Card className="transition-colors group-hover:border-foreground/20">
+            <Link key={project.id} href={`/org/${slug}/projects/${project.id}`} className="group">
+              <Card className="group-hover:border-foreground/20 transition-colors">
                 <CardHeader>
-                  <CardTitle className="line-clamp-1 text-base">
-                    {project.name}
-                  </CardTitle>
+                  <CardTitle className="line-clamp-1 text-base">{project.name}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {project.description ? (
-                    <p className="line-clamp-2 text-sm text-muted-foreground">
+                    <p className="text-muted-foreground line-clamp-2 text-sm">
                       {project.description}
                     </p>
                   ) : (
-                    <p className="text-sm italic text-muted-foreground/60">
-                      No description
-                    </p>
+                    <p className="text-muted-foreground/60 text-sm italic">No description</p>
                   )}
-                  <p className="mt-3 text-xs text-muted-foreground">
+                  <p className="text-muted-foreground mt-3 text-xs">
                     Created{" "}
                     {new Date(project.createdAt).toLocaleDateString(undefined, {
                       month: "short",

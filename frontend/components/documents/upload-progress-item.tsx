@@ -39,11 +39,7 @@ const STATUS_LABELS: Record<UploadStatus, string> = {
   error: "Failed",
 };
 
-export function UploadProgressItem({
-  item,
-  onRetry,
-  onRemove,
-}: UploadProgressItemProps) {
+export function UploadProgressItem({ item, onRetry, onRemove }: UploadProgressItemProps) {
   const isRetryable =
     item.status === "error" &&
     !item.error?.includes("not supported") &&
@@ -57,16 +53,12 @@ export function UploadProgressItem({
           {item.status === "complete" && (
             <CheckCircle2 className="size-4 shrink-0 text-emerald-600" />
           )}
-          {item.status === "error" && (
-            <AlertCircle className="size-4 shrink-0 text-destructive" />
-          )}
+          {item.status === "error" && <AlertCircle className="text-destructive size-4 shrink-0" />}
           {item.status !== "complete" && item.status !== "error" && (
-            <Loader2 className="size-4 shrink-0 animate-spin text-muted-foreground" />
+            <Loader2 className="text-muted-foreground size-4 shrink-0 animate-spin" />
           )}
-          <span className="truncate text-sm font-medium">
-            {item.file.name}
-          </span>
-          <span className="shrink-0 text-xs text-muted-foreground">
+          <span className="truncate text-sm font-medium">{item.file.name}</span>
+          <span className="text-muted-foreground shrink-0 text-xs">
             {formatFileSize(item.file.size)}
           </span>
         </div>
@@ -74,9 +66,7 @@ export function UploadProgressItem({
         {item.status === "uploading" && (
           <div className="mt-1.5 flex items-center gap-2">
             <Progress value={item.progress} className="h-1.5" />
-            <span className="shrink-0 text-xs text-muted-foreground">
-              {item.progress}%
-            </span>
+            <span className="text-muted-foreground shrink-0 text-xs">{item.progress}%</span>
           </div>
         )}
 
@@ -85,37 +75,23 @@ export function UploadProgressItem({
         )}
 
         {item.status === "error" && item.error && (
-          <p className="mt-1 text-xs text-destructive">{item.error}</p>
+          <p className="text-destructive mt-1 text-xs">{item.error}</p>
         )}
 
-        {item.status !== "error" &&
-          item.status !== "complete" &&
-          item.status !== "uploading" && (
-            <p className="mt-1 text-xs text-muted-foreground">
-              {STATUS_LABELS[item.status]}
-            </p>
-          )}
+        {item.status !== "error" && item.status !== "complete" && item.status !== "uploading" && (
+          <p className="text-muted-foreground mt-1 text-xs">{STATUS_LABELS[item.status]}</p>
+        )}
       </div>
 
       <div className="flex shrink-0 gap-1">
         {isRetryable && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-7"
-            onClick={() => onRetry(item.id)}
-          >
+          <Button variant="ghost" size="icon" className="size-7" onClick={() => onRetry(item.id)}>
             <RotateCcw className="size-3.5" />
             <span className="sr-only">Retry</span>
           </Button>
         )}
         {(item.status === "complete" || item.status === "error") && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-7"
-            onClick={() => onRemove(item.id)}
-          >
+          <Button variant="ghost" size="icon" className="size-7" onClick={() => onRemove(item.id)}>
             <X className="size-3.5" />
             <span className="sr-only">Dismiss</span>
           </Button>

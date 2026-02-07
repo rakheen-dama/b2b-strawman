@@ -10,10 +10,7 @@ interface FileUploadZoneProps {
   disabled?: boolean;
 }
 
-export function FileUploadZone({
-  onFilesSelected,
-  disabled = false,
-}: FileUploadZoneProps) {
+export function FileUploadZone({ onFilesSelected, disabled = false }: FileUploadZoneProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -23,7 +20,7 @@ export function FileUploadZone({
       e.stopPropagation();
       if (!disabled) setIsDragOver(true);
     },
-    [disabled],
+    [disabled]
   );
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
@@ -38,7 +35,7 @@ export function FileUploadZone({
       e.stopPropagation();
       if (!disabled) setIsDragOver(true);
     },
-    [disabled],
+    [disabled]
   );
 
   const handleDrop = useCallback(
@@ -53,7 +50,7 @@ export function FileUploadZone({
         onFilesSelected(files);
       }
     },
-    [disabled, onFilesSelected],
+    [disabled, onFilesSelected]
   );
 
   const handleClick = useCallback(() => {
@@ -69,7 +66,7 @@ export function FileUploadZone({
       // Reset so the same file can be re-selected
       e.target.value = "";
     },
-    [onFilesSelected],
+    [onFilesSelected]
   );
 
   return (
@@ -92,7 +89,7 @@ export function FileUploadZone({
         isDragOver
           ? "border-primary bg-primary/5"
           : "border-muted-foreground/25 hover:border-muted-foreground/50",
-        disabled && "cursor-not-allowed opacity-50",
+        disabled && "cursor-not-allowed opacity-50"
       )}
     >
       <input
@@ -104,13 +101,9 @@ export function FileUploadZone({
         className="hidden"
         disabled={disabled}
       />
-      <Upload className="mx-auto size-8 text-muted-foreground" />
-      <p className="mt-2 text-sm font-medium">
-        Drag and drop files here, or click to browse
-      </p>
-      <p className="mt-1 text-xs text-muted-foreground">
-        Max 100 MB per file
-      </p>
+      <Upload className="text-muted-foreground mx-auto size-8" />
+      <p className="mt-2 text-sm font-medium">Drag and drop files here, or click to browse</p>
+      <p className="text-muted-foreground mt-1 text-xs">Max 100 MB per file</p>
     </div>
   );
 }

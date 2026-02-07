@@ -35,17 +35,13 @@ export function MobileSidebar({ slug }: MobileSidebarProps) {
       <SheetContent side="left" className="w-60 gap-0 p-0">
         <div className="flex h-14 items-center px-4">
           <SheetTitle className="font-semibold">DocTeams</SheetTitle>
-          <SheetDescription className="sr-only">
-            Main navigation menu
-          </SheetDescription>
+          <SheetDescription className="sr-only">Main navigation menu</SheetDescription>
         </div>
         <Separator />
         <nav className="flex flex-col gap-1 p-2">
           {NAV_ITEMS.map((item) => {
             const href = item.href(slug);
-            const isActive = item.exact
-              ? pathname === href
-              : pathname.startsWith(href);
+            const isActive = item.exact ? pathname === href : pathname.startsWith(href);
 
             return (
               <Link
@@ -55,8 +51,8 @@ export function MobileSidebar({ slug }: MobileSidebarProps) {
                 className={cn(
                   "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
                   isActive
-                    ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
                 )}
               >
                 <item.icon className="h-4 w-4" />

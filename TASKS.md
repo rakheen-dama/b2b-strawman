@@ -12,7 +12,7 @@
 | 6 | Multitenancy Backend | Backend | 1 | L | — | **Done** |
 | 7 | Core API — Projects | Backend | 6 | M | 7A, 7B | **Done** |
 | 8 | Core API — Documents | Backend | 7, 9 | M | 8A, 8B | |
-| 9 | S3 Integration | Backend | 1 | S | — | |
+| 9 | S3 Integration | Backend | 1 | S | — | **Done** |
 | 10 | Dashboard & Projects UI | Frontend | 3, 7 | M | 10A, 10B, 10C | |
 | 11 | Documents UI | Frontend | 10, 8 | M | 11A, 11B | |
 | 12 | Team Management UI | Frontend | 3 | S | — | **Done** |
@@ -330,14 +330,26 @@ Clerk → POST /api/webhooks/clerk (Next.js)
 
 **Estimated Effort**: S (single slice — 4 tasks)
 
+**Status**: **Complete**
+
 ### Tasks
 
-| ID | Task | Description | Acceptance Criteria | Estimate | Dependencies |
-|----|------|-------------|---------------------|----------|--------------|
-| 9.1 | Add AWS SDK dependencies | Add AWS SDK v2 dependencies to Gradle: `s3`, `s3-transfer-manager`, `sts` (for role assumption). | Dependencies resolve; project compiles. | 1h | 1.4 |
-| 9.2 | Create S3 configuration | Create `S3Config` that builds `S3Client` and `S3Presigner` beans. For local profile, configure endpoint override to LocalStack (`http://localhost:4566`). For prod, use default AWS credentials chain. | `S3Client` bean available; local profile points to LocalStack; prod profile uses IAM credentials. | 2h | 9.1 |
-| 9.3 | Implement S3PresignedUrlService | Create service with methods: `generateUploadUrl(orgId, projectId, documentId, contentType)` — returns presigned PUT URL with 1h expiry; `generateDownloadUrl(s3Key)` — returns presigned GET URL with 1h expiry. Key format: `org/{orgId}/project/{projectId}/{documentId}`. | Upload URL allows PUT with correct content type; download URL allows GET; both expire after 1 hour; keys follow correct format. | 3h | 9.2 |
-| 9.4 | Add S3 integration tests | Test presigned URL generation against LocalStack: generate upload URL, PUT a file, generate download URL, GET the file, verify content matches. | End-to-end test passes: file uploaded via presigned URL is downloadable via separate presigned URL with matching content. | 2h | 9.3, 1.10 |
+| ID | Task | Status | Notes |
+|----|------|--------|-------|
+| 9.1 | Add AWS SDK dependencies | **Done** | AWS SDK v2 BOM 2.31.23, `software.amazon.awssdk:s3` (compile), `testcontainers-localstack` (test). Maven, not Gradle. No `sts` or `s3-transfer-manager` needed for presigned URLs. |
+| 9.2 | Create S3 configuration | **Done** | `S3Config.java` with `@ConfigurationProperties` records (`S3Properties`, `AwsCredentialsProperties`). `S3Client` + `S3Presigner` beans with `destroyMethod="close"`. Conditional LocalStack endpoint override when `aws.s3.endpoint` is set. |
+| 9.3 | Implement S3PresignedUrlService | **Done** | `generateUploadUrl(orgId, projectId, documentId, contentType)` → presigned PUT with 1hr expiry and content-type constraint. `generateDownloadUrl(s3Key)` → presigned GET with 1hr expiry and key format validation. Key format: `org/{orgId}/project/{projectId}/{documentId}`. |
+| 9.4 | Add S3 integration tests | **Done** | 5 integration tests with Testcontainers LocalStack. End-to-end upload/download via presigned URLs, key format verification, org isolation, key validation rejection. 53 total tests pass (48 existing + 5 new). |
+
+### Key Files
+- `backend/src/main/java/.../config/S3Config.java` — S3Client + S3Presigner beans with `@ConfigurationProperties` records
+- `backend/src/main/java/.../s3/S3PresignedUrlService.java` — Presigned URL generation service
+- `backend/src/test/java/.../s3/S3PresignedUrlServiceTest.java` — Integration tests with LocalStack
+
+### Deviations from Original Plan
+- **Maven instead of Gradle**: Task 9.1 description referenced Gradle, but project uses Maven. Added AWS SDK v2 BOM in `<dependencyManagement>`.
+- **No `sts` or `s3-transfer-manager`**: Not needed for presigned URL generation. `s3` module includes the presigner.
+- **S3 key format validation**: Added regex validation (`^org/[^/]+/project/[^/]+/[^/]+$`) on `generateDownloadUrl` to prevent path traversal — not in original spec but added during code review.
 
 ---
 

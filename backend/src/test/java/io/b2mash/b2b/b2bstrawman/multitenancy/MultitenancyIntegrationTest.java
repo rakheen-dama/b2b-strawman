@@ -14,7 +14,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
-@ActiveProfiles("local")
+@ActiveProfiles("test")
 class MultitenancyIntegrationTest {
 
   @Autowired private DataSource dataSource;

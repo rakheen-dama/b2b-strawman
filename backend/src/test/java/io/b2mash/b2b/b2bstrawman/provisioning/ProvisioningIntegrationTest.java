@@ -15,7 +15,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
-@ActiveProfiles("local")
+@ActiveProfiles("test")
 class ProvisioningIntegrationTest {
 
   @Autowired private TenantProvisioningService provisioningService;

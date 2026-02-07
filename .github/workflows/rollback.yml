@@ -1,0 +1,309 @@
+name: Rollback
+
+# Rollback intentionally bypasses GitHub environment protection rules (approval
+# gates and wait timers) for speed during incidents. The manual "rollback"
+# confirmation input provides the safety gate instead.
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+      service:
+        description: "Service to rollback"
+        required: true
+        type: choice
+        options:
+          - frontend
+          - backend
+          - both
+      confirm:
+        description: 'Type "rollback" to confirm'
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Validate confirmation
+  # ---------------------------------------------------------------------------
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check confirmation input
+        env:
+          CONFIRM: ${{ inputs.confirm }}
+        run: |
+          if [ "$CONFIRM" != "rollback" ]; then
+            echo "::error::Confirmation failed. You must type 'rollback' to proceed."
+            exit 1
+          fi
+          echo "Confirmation accepted."
+
+  # ---------------------------------------------------------------------------
+  # Rollback frontend service
+  # ---------------------------------------------------------------------------
+  rollback-frontend:
+    name: Rollback Frontend
+    needs: validate
+    if: inputs.service == 'frontend' || inputs.service == 'both'
+    runs-on: ubuntu-latest
+    env:
+      CLUSTER: docteams-${{ inputs.environment }}
+      SERVICE: docteams-${{ inputs.environment }}-frontend
+      FAMILY: docteams-${{ inputs.environment }}-frontend
+      CONTAINER: frontend
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get current task definition
+        id: current
+        run: |
+          CURRENT_ARN=$(aws ecs describe-services \
+            --cluster "$CLUSTER" \
+            --services "$SERVICE" \
+            --query 'services[0].taskDefinition' \
+            --output text)
+
+          echo "current-arn=${CURRENT_ARN}" >> "$GITHUB_OUTPUT"
+
+          CURRENT_REV=$(echo "$CURRENT_ARN" | grep -o '[0-9]*$')
+          echo "current-revision=${CURRENT_REV}" >> "$GITHUB_OUTPUT"
+          echo "Current task definition: ${CURRENT_ARN} (revision ${CURRENT_REV})"
+
+      - name: Find previous task definition
+        id: previous
+        env:
+          CURRENT_REV: ${{ steps.current.outputs.current-revision }}
+        run: |
+          PREV_REV=$((CURRENT_REV - 1))
+
+          if [ "$PREV_REV" -lt 1 ]; then
+            echo "::error::No previous revision to rollback to (current is revision ${CURRENT_REV})."
+            exit 1
+          fi
+
+          PREV_ARN=$(aws ecs describe-task-definition \
+            --task-definition "${FAMILY}:${PREV_REV}" \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text 2>/dev/null || echo "")
+
+          if [ -z "$PREV_ARN" ] || [ "$PREV_ARN" = "None" ]; then
+            echo "::error::Previous revision ${FAMILY}:${PREV_REV} not found. It may have been deregistered."
+            exit 1
+          fi
+
+          echo "previous-arn=${PREV_ARN}" >> "$GITHUB_OUTPUT"
+          echo "Rolling back to: ${PREV_ARN}"
+
+          # Show image diff (query by container name, not index)
+          echo "--- Current image ---"
+          aws ecs describe-task-definition \
+            --task-definition "${FAMILY}:${CURRENT_REV}" \
+            --query "taskDefinition.containerDefinitions[?name=='${CONTAINER}'].image | [0]" \
+            --output text 2>/dev/null || echo "Unable to retrieve"
+
+          echo "--- Rollback image ---"
+          aws ecs describe-task-definition \
+            --task-definition "${FAMILY}:${PREV_REV}" \
+            --query "taskDefinition.containerDefinitions[?name=='${CONTAINER}'].image | [0]" \
+            --output text 2>/dev/null || echo "Unable to retrieve"
+
+      - name: Update service to previous revision
+        env:
+          PREV_ARN: ${{ steps.previous.outputs.previous-arn }}
+        run: |
+          aws ecs update-service \
+            --cluster "$CLUSTER" \
+            --service "$SERVICE" \
+            --task-definition "$PREV_ARN" \
+            --output text \
+            --query 'service.serviceName'
+
+          echo "Updated service '${SERVICE}' to use: ${PREV_ARN}"
+
+      - name: Wait for service stability
+        run: |
+          echo "Waiting for service '${SERVICE}' to stabilize (up to 10 minutes)..."
+          if ! aws ecs wait services-stable \
+            --cluster "$CLUSTER" \
+            --services "$SERVICE"; then
+            echo "::error::Service '${SERVICE}' failed to stabilize after rollback. Recent events:"
+            aws ecs describe-services \
+              --cluster "$CLUSTER" \
+              --services "$SERVICE" \
+              --query 'services[0].events[0:5]' \
+              --output json
+            exit 1
+          fi
+          echo "Service '${SERVICE}' is stable after rollback."
+
+  # ---------------------------------------------------------------------------
+  # Rollback backend service
+  # ---------------------------------------------------------------------------
+  rollback-backend:
+    name: Rollback Backend
+    needs: validate
+    if: inputs.service == 'backend' || inputs.service == 'both'
+    runs-on: ubuntu-latest
+    env:
+      CLUSTER: docteams-${{ inputs.environment }}
+      SERVICE: docteams-${{ inputs.environment }}-backend
+      FAMILY: docteams-${{ inputs.environment }}-backend
+      CONTAINER: backend
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get current task definition
+        id: current
+        run: |
+          CURRENT_ARN=$(aws ecs describe-services \
+            --cluster "$CLUSTER" \
+            --services "$SERVICE" \
+            --query 'services[0].taskDefinition' \
+            --output text)
+
+          echo "current-arn=${CURRENT_ARN}" >> "$GITHUB_OUTPUT"
+
+          CURRENT_REV=$(echo "$CURRENT_ARN" | grep -o '[0-9]*$')
+          echo "current-revision=${CURRENT_REV}" >> "$GITHUB_OUTPUT"
+          echo "Current task definition: ${CURRENT_ARN} (revision ${CURRENT_REV})"
+
+      - name: Find previous task definition
+        id: previous
+        env:
+          CURRENT_REV: ${{ steps.current.outputs.current-revision }}
+        run: |
+          PREV_REV=$((CURRENT_REV - 1))
+
+          if [ "$PREV_REV" -lt 1 ]; then
+            echo "::error::No previous revision to rollback to (current is revision ${CURRENT_REV})."
+            exit 1
+          fi
+
+          PREV_ARN=$(aws ecs describe-task-definition \
+            --task-definition "${FAMILY}:${PREV_REV}" \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text 2>/dev/null || echo "")
+
+          if [ -z "$PREV_ARN" ] || [ "$PREV_ARN" = "None" ]; then
+            echo "::error::Previous revision ${FAMILY}:${PREV_REV} not found. It may have been deregistered."
+            exit 1
+          fi
+
+          echo "previous-arn=${PREV_ARN}" >> "$GITHUB_OUTPUT"
+          echo "Rolling back to: ${PREV_ARN}"
+
+          # Show image diff (query by container name, not index)
+          echo "--- Current image ---"
+          aws ecs describe-task-definition \
+            --task-definition "${FAMILY}:${CURRENT_REV}" \
+            --query "taskDefinition.containerDefinitions[?name=='${CONTAINER}'].image | [0]" \
+            --output text 2>/dev/null || echo "Unable to retrieve"
+
+          echo "--- Rollback image ---"
+          aws ecs describe-task-definition \
+            --task-definition "${FAMILY}:${PREV_REV}" \
+            --query "taskDefinition.containerDefinitions[?name=='${CONTAINER}'].image | [0]" \
+            --output text 2>/dev/null || echo "Unable to retrieve"
+
+      - name: Update service to previous revision
+        env:
+          PREV_ARN: ${{ steps.previous.outputs.previous-arn }}
+        run: |
+          aws ecs update-service \
+            --cluster "$CLUSTER" \
+            --service "$SERVICE" \
+            --task-definition "$PREV_ARN" \
+            --output text \
+            --query 'service.serviceName'
+
+          echo "Updated service '${SERVICE}' to use: ${PREV_ARN}"
+
+      - name: Wait for service stability
+        run: |
+          echo "Waiting for service '${SERVICE}' to stabilize (up to 10 minutes)..."
+          if ! aws ecs wait services-stable \
+            --cluster "$CLUSTER" \
+            --services "$SERVICE"; then
+            echo "::error::Service '${SERVICE}' failed to stabilize after rollback. Recent events:"
+            aws ecs describe-services \
+              --cluster "$CLUSTER" \
+              --services "$SERVICE" \
+              --query 'services[0].events[0:5]' \
+              --output json
+            exit 1
+          fi
+          echo "Service '${SERVICE}' is stable after rollback."
+
+  # ---------------------------------------------------------------------------
+  # Smoke tests after rollback
+  # ---------------------------------------------------------------------------
+  smoke-test:
+    name: Smoke Test
+    needs: [rollback-frontend, rollback-backend]
+    if: always() && (needs.rollback-frontend.result == 'success' || needs.rollback-frontend.result == 'skipped') && (needs.rollback-backend.result == 'success' || needs.rollback-backend.result == 'skipped') && !(needs.rollback-frontend.result == 'skipped' && needs.rollback-backend.result == 'skipped')
+    runs-on: ubuntu-latest
+    env:
+      ENV: ${{ inputs.environment }}
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get ALB DNS name
+        id: alb
+        run: |
+          ALB_DNS=$(aws elbv2 describe-load-balancers \
+            --names "docteams-${ENV}-public" \
+            --query 'LoadBalancers[0].DNSName' \
+            --output text 2>/dev/null || echo "")
+
+          if [ -z "$ALB_DNS" ] || [ "$ALB_DNS" = "None" ]; then
+            echo "::warning::Could not find ALB DNS name — skipping smoke tests"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "dns=${ALB_DNS}" >> "$GITHUB_OUTPUT"
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check frontend health
+        if: steps.alb.outputs.skip != 'true'
+        env:
+          ALB_DNS: ${{ steps.alb.outputs.dns }}
+        run: |
+          echo "Checking frontend at http://${ALB_DNS}/ ..."
+          curl -sf --retry 3 --retry-delay 10 --max-time 30 "http://${ALB_DNS}/" > /dev/null
+          echo "Frontend is healthy."
+
+      - name: Check backend health
+        if: steps.alb.outputs.skip != 'true'
+        env:
+          ALB_DNS: ${{ steps.alb.outputs.dns }}
+        run: |
+          echo "Checking backend at http://${ALB_DNS}/actuator/health ..."
+          curl -sf --retry 3 --retry-delay 10 --max-time 30 "http://${ALB_DNS}/actuator/health"
+          echo ""
+          echo "Backend is healthy."

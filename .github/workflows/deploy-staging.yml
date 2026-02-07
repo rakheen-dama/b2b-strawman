@@ -1,0 +1,235 @@
+name: Deploy Staging
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git ref to deploy (SHA, branch, or tag)"
+        required: false
+        default: "main"
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: us-east-1
+  ENVIRONMENT: staging
+  ECS_CLUSTER: docteams-staging
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Resolve the ref to a full SHA for consistent image tagging
+  # ---------------------------------------------------------------------------
+  resolve:
+    name: Resolve ref
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.sha.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Get full SHA
+        id: sha
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  # ---------------------------------------------------------------------------
+  # Build and push frontend Docker image to staging ECR
+  # ---------------------------------------------------------------------------
+  build-frontend:
+    name: Build Frontend
+    needs: resolve
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve.outputs.sha }}
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - id: meta
+        env:
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          SHA: ${{ needs.resolve.outputs.sha }}
+        run: |
+          IMAGE="${ECR_REGISTRY}/docteams-${ENVIRONMENT}-frontend"
+          echo "image=${IMAGE}:${SHA}" >> "$GITHUB_OUTPUT"
+          echo "repository=${IMAGE}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: frontend
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.repository }}:${{ needs.resolve.outputs.sha }}
+            ${{ steps.meta.outputs.repository }}:latest
+          build-args: |
+            NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          cache-from: type=gha,scope=frontend-staging
+          cache-to: type=gha,mode=max,scope=frontend-staging
+
+  # ---------------------------------------------------------------------------
+  # Build and push backend Docker image to staging ECR
+  # ---------------------------------------------------------------------------
+  build-backend:
+    name: Build Backend
+    needs: resolve
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve.outputs.sha }}
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - id: meta
+        env:
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          SHA: ${{ needs.resolve.outputs.sha }}
+        run: |
+          IMAGE="${ECR_REGISTRY}/docteams-${ENVIRONMENT}-backend"
+          echo "image=${IMAGE}:${SHA}" >> "$GITHUB_OUTPUT"
+          echo "repository=${IMAGE}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: backend
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.repository }}:${{ needs.resolve.outputs.sha }}
+            ${{ steps.meta.outputs.repository }}:latest
+          cache-from: type=gha,scope=backend-staging
+          cache-to: type=gha,mode=max,scope=backend-staging
+
+  # ---------------------------------------------------------------------------
+  # Deploy frontend to ECS (triggers GitHub environment approval)
+  # ---------------------------------------------------------------------------
+  deploy-frontend:
+    name: Deploy Frontend
+    needs: [resolve, build-frontend]
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Deploy frontend
+        uses: ./.github/actions/ecs-deploy
+        with:
+          cluster: ${{ env.ECS_CLUSTER }}
+          service: docteams-${{ env.ENVIRONMENT }}-frontend
+          task-definition-family: docteams-${{ env.ENVIRONMENT }}-frontend
+          container-name: frontend
+          image: ${{ steps.ecr-login.outputs.registry }}/docteams-${{ env.ENVIRONMENT }}-frontend:${{ needs.resolve.outputs.sha }}
+
+  # ---------------------------------------------------------------------------
+  # Deploy backend to ECS (triggers GitHub environment approval)
+  # ---------------------------------------------------------------------------
+  deploy-backend:
+    name: Deploy Backend
+    needs: [resolve, build-backend]
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Deploy backend
+        uses: ./.github/actions/ecs-deploy
+        with:
+          cluster: ${{ env.ECS_CLUSTER }}
+          service: docteams-${{ env.ENVIRONMENT }}-backend
+          task-definition-family: docteams-${{ env.ENVIRONMENT }}-backend
+          container-name: backend
+          image: ${{ steps.ecr-login.outputs.registry }}/docteams-${{ env.ENVIRONMENT }}-backend:${{ needs.resolve.outputs.sha }}
+
+  # ---------------------------------------------------------------------------
+  # Smoke tests after deployment
+  # ---------------------------------------------------------------------------
+  smoke-test:
+    name: Smoke Test
+    needs: [deploy-frontend, deploy-backend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get ALB DNS name
+        id: alb
+        env:
+          ENV: ${{ env.ENVIRONMENT }}
+        run: |
+          ALB_DNS=$(aws elbv2 describe-load-balancers \
+            --names "docteams-${ENV}-public" \
+            --query 'LoadBalancers[0].DNSName' \
+            --output text 2>/dev/null || echo "")
+
+          if [ -z "$ALB_DNS" ] || [ "$ALB_DNS" = "None" ]; then
+            echo "::warning::Could not find ALB DNS name — skipping smoke tests"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "dns=${ALB_DNS}" >> "$GITHUB_OUTPUT"
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check frontend health
+        if: steps.alb.outputs.skip != 'true'
+        env:
+          ALB_DNS: ${{ steps.alb.outputs.dns }}
+        run: |
+          echo "Checking frontend at http://${ALB_DNS}/ ..."
+          curl -sf --retry 3 --retry-delay 10 --max-time 30 "http://${ALB_DNS}/" > /dev/null
+          echo "Frontend is healthy."
+
+      - name: Check backend health
+        if: steps.alb.outputs.skip != 'true'
+        env:
+          ALB_DNS: ${{ steps.alb.outputs.dns }}
+        run: |
+          echo "Checking backend at http://${ALB_DNS}/actuator/health ..."
+          curl -sf --retry 3 --retry-delay 10 --max-time 30 "http://${ALB_DNS}/actuator/health"
+          echo ""
+          echo "Backend is healthy."

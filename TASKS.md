@@ -15,7 +15,7 @@
 | 9 | S3 Integration | Backend | 1 | S | — | |
 | 10 | Dashboard & Projects UI | Frontend | 3, 7 | M | 10A, 10B, 10C | |
 | 11 | Documents UI | Frontend | 10, 8 | M | 11A, 11B | |
-| 12 | Team Management UI | Frontend | 3 | S | — | |
+| 12 | Team Management UI | Frontend | 3 | S | — | **Done** |
 | 13 | Containerization | Both | 1 | S | — | **Done** |
 | 14 | AWS Infrastructure | Infra | 13 | XL | 14A–14D | |
 | 15 | Deployment Pipeline | Infra | 13, 14 | L | 15A, 15B | |
@@ -407,15 +407,28 @@ Clerk → POST /api/webhooks/clerk (Next.js)
 
 **Estimated Effort**: S (single slice — 5 tasks, mostly Clerk components)
 
+**Status**: **Complete**
+
 ### Tasks
 
-| ID | Task | Description | Acceptance Criteria | Estimate | Dependencies |
-|----|------|-------------|---------------------|----------|--------------|
-| 12.1 | Build team management page | Create `app/(app)/org/[slug]/team/page.tsx` with tabs or sections: Members, Invitations. | Team page renders with navigation between members and invitations sections. | 2h | 10.1 |
-| 12.2 | Build member list | Use Clerk's `<OrganizationMembershipList />` or custom component fetching members via Clerk SDK. Show name, email, role, joined date. | All org members listed with correct roles; list updates when members are added/removed. | 2h | 12.1 |
-| 12.3 | Build invitation form | Create form for inviting users: email input, role selector (member/admin). Use Clerk's `<OrganizationInvitationList />` or `organization.invitations.create()` API. Only visible to admin+. | Admin/owner can send invitations; role selector shows available roles; success shows confirmation; form validates email format. | 3h | 12.1 |
-| 12.4 | Build pending invitations list | Display pending invitations with email, role, invited date. Allow admin+ to revoke invitations. Use Clerk SDK to fetch and manage invitations. | Pending invitations listed; revoke button works; list updates after revocation. | 2h | 12.1 |
-| 12.5 | Add role-based visibility | Hide invitation form and revoke buttons for members. Show role management options only for owners. | Members see read-only member list; admins can invite; owners can invite and manage roles. | 1h | 12.2, 12.3, 12.4 |
+| ID | Task | Status | Notes |
+|----|------|--------|-------|
+| 12.1 | Build team management page | **Done** | `app/(app)/org/[slug]/team/page.tsx` — server component with Shadcn Tabs (Members, Invitations). Reads `orgRole` via `auth()` for role-based visibility. |
+| 12.2 | Build member list | **Done** | `components/team/member-list.tsx` — client component using `useOrganization({ memberships: { infinite: true } })`. Shadcn Table with role badges (Owner/Admin/Member). Load-more pagination. |
+| 12.3 | Build invitation form | **Done** | `components/team/invite-member-form.tsx` — client component with email input + role selector (Member/Admin). Uses `organization.inviteMember()`. Only rendered for admin+. Success/error feedback. |
+| 12.4 | Build pending invitations list | **Done** | `components/team/pending-invitations.tsx` — client component using `useOrganization({ invitations })`. Revoke via `invitation.revoke()` with revalidation. Pagination (Previous/Next). |
+| 12.5 | Add role-based visibility | **Done** | Server component passes `isAdmin` prop. Invite form hidden for `org:member`. Revoke buttons hidden for `org:member`. Member list always visible (read-only for members). |
+
+### Architecture Decisions
+- **Custom components over Clerk pre-built**: Used Clerk's `useOrganization()` hook with custom Shadcn-styled components instead of `<OrganizationMembershipList />`. Gives full styling control while Clerk remains source of truth for data.
+- **Server/client split**: Team page is a server component (reads `orgRole` via `auth()`). Interactive children (member list, invite form, invitations) are client components using `useOrganization()` hook.
+- **No backend integration**: Clerk handles all membership/invitation CRUD directly — no Spring Boot API calls needed.
+
+### Key Files
+- `frontend/app/(app)/org/[slug]/team/page.tsx` — Team page with tabs and role-based rendering
+- `frontend/components/team/member-list.tsx` — Organization member table
+- `frontend/components/team/invite-member-form.tsx` — Invitation form (admin+ only)
+- `frontend/components/team/pending-invitations.tsx` — Pending invitation list with revoke
 
 ---
 

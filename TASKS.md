@@ -17,7 +17,7 @@
 | 11 | Documents UI | Frontend | 10, 8 | M | 11A, 11B | |
 | 12 | Team Management UI | Frontend | 3 | S | — | **Done** |
 | 13 | Containerization | Both | 1 | S | — | **Done** |
-| 14 | AWS Infrastructure | Infra | 13 | XL | 14A–14D | |
+| 14 | AWS Infrastructure | Infra | 13 | XL | 14A–14D | 14A **Done** |
 | 15 | Deployment Pipeline | Infra | 13, 14 | L | 15A, 15B | |
 | 16 | Testing & Quality | Both | 7, 8, 10, 11 | L | 16A–16C | |
 
@@ -500,11 +500,11 @@ Clerk → POST /api/webhooks/clerk (Next.js)
 
 ### Tasks
 
-| ID | Task | Description | Acceptance Criteria | Estimate | Dependencies |
-|----|------|-------------|---------------------|----------|--------------|
-| 14.1 | Set up Terraform project structure | Create `infra/` directory with modules: `vpc`, `ecs`, `alb`, `ecr`, `secrets`, `s3`, `iam`. Create environment configs: `environments/dev/`, `environments/staging/`, `environments/prod/`. Configure S3 backend for state. | Terraform project structure exists; `terraform init` succeeds; remote state configured. | 3h | — |
-| 14.2 | Create VPC module | Define VPC with 2 public subnets and 2 private subnets across 2 AZs. Internet gateway, NAT gateways (one per AZ), route tables. CIDR: `10.0.0.0/16`. | `terraform plan` shows VPC with 4 subnets, IGW, 2 NAT gateways, correct route tables. Resources tagged with environment. | 4h | 14.1 |
-| 14.3 | Create security groups | Define security groups per the security architecture: `sg-public-alb`, `sg-internal-alb`, `sg-frontend`, `sg-backend`. Least-privilege ingress rules. | Security groups created with correct ingress rules; backend only reachable from ALB and frontend SGs; no overly permissive rules. | 2h | 14.2 |
+| ID | Task | Status | Notes |
+|----|------|--------|-------|
+| 14.1 | Set up Terraform project structure | **Done** | 9 module dirs (`vpc`, `security-groups`, `ecs`, `alb`, `ecr`, `s3`, `secrets`, `iam`, `monitoring`), 3 environment configs (`dev/`, `staging/`, `prod/`). S3 backend with DynamoDB locking. `terraform init` and `terraform validate` pass. |
+| 14.2 | Create VPC module | **Done** | VPC with non-overlapping CIDRs per env (dev=`10.0.0.0/16`, staging=`10.1.0.0/16`, prod=`10.2.0.0/16`). 2 public + 2 private subnets across 2 AZs, IGW, 2 NAT gateways, route tables. All resources tagged. |
+| 14.3 | Create security groups | **Done** | `sg-public-alb` (80+443 from internet), `sg-internal-alb` (8080 from frontend SG), `sg-frontend` (3000 from public ALB), `sg-backend` (8080 from both ALBs). Uses standalone `aws_vpc_security_group_ingress_rule` resources. |
 | 14.4 | Create ALB module | Define public ALB (HTTPS:443 with ACM cert) and internal ALB (HTTP:8080). Target groups for frontend (port 3000) and backend (port 8080). Path-based routing: `/api/*` → backend, `/*` → frontend. Health checks. | Public ALB routes traffic correctly; internal ALB reachable from private subnets only; health checks configured for both targets. | 4h | 14.2, 14.3 |
 | 14.5 | Create ECR module | Define ECR repositories: `docteams-frontend`, `docteams-backend`. Configure lifecycle policy to keep last 10 images. | ECR repos created; lifecycle policy attached; image push succeeds. | 1h | 14.1 |
 | 14.6 | Create ECS module | Define ECS cluster (Fargate). Task definitions for frontend and backend (CPU, memory, container definitions, log configuration, secrets references). ECS services with desired count = 2, deployment circuit breaker. | ECS cluster, task definitions, and services created; tasks run on Fargate; logs stream to CloudWatch; secrets injected from Secrets Manager. | 6h | 14.2, 14.3, 14.4, 14.5 |
@@ -514,6 +514,21 @@ Clerk → POST /api/webhooks/clerk (Next.js)
 | 14.10 | Create Route 53 and ACM resources | Define ACM certificate for the domain. Create Route 53 alias record pointing to public ALB. DNS validation for ACM. | Certificate provisioned and validated; domain resolves to ALB; HTTPS works end-to-end. | 2h | 14.4 |
 | 14.11 | Configure auto-scaling | Define ECS Service Auto Scaling for both services. Target tracking policies for CPU (70%) and memory (80%). Min capacity 2, max capacity 10. | Auto-scaling policies attached; scale-out triggers at 70% CPU; minimum 2 tasks running at all times. | 2h | 14.6 |
 | 14.12 | Deploy dev environment | Run `terraform apply` for dev environment. Verify all resources created. Manually push images and verify services start. | Dev environment fully deployed; ALB accessible; ECS tasks running; logs flowing to CloudWatch. | 3h | 14.2–14.11 |
+
+### Architecture Decisions (14A)
+- **Non-overlapping VPC CIDRs**: Each environment gets a distinct `/16` block (dev=`10.0`, staging=`10.1`, prod=`10.2`) to enable future VPC peering without CIDR conflicts.
+- **Standalone SG ingress rules**: Uses `aws_vpc_security_group_ingress_rule` resources instead of inline `ingress {}` blocks — the AWS provider v5.x recommended pattern to avoid perpetual diffs.
+- **HTTP:80 on public ALB**: SG permits both 80 and 443 inbound so the ALB listener (Epic 14B) can redirect HTTP→HTTPS.
+- **Provider default_tags**: Tags (`Project`, `Environment`, `ManagedBy`) applied at the provider level via `default_tags` block, so every resource inherits them automatically.
+
+### Key Files (14A)
+- `infra/modules/vpc/main.tf` — VPC, subnets, IGW, NAT gateways, route tables
+- `infra/modules/security-groups/main.tf` — 4 security groups with least-privilege rules
+- `infra/environments/{dev,staging,prod}/main.tf` — Environment root configs wiring modules
+
+### Deviations from Original Plan
+- **Added `security-groups` and `monitoring` modules**: CLAUDE.md specified these as separate modules rather than embedding in VPC/ECS modules.
+- **Non-overlapping CIDRs**: Original spec used `10.0.0.0/16` for all environments. Changed to unique CIDRs per env after code review.
 
 ---
 

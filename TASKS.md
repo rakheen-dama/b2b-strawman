@@ -367,24 +367,40 @@ Clerk → POST /api/webhooks/clerk (Next.js)
 
 ### Slices
 
-| Slice | Tasks | Summary |
-|-------|-------|---------|
-| **10A** | 10.1, 10.2 | App shell layout (sidebar, header, responsive), typed API client |
-| **10B** | 10.3, 10.4, 10.8 | Projects list page, create dialog, dashboard page |
-| **10C** | 10.5, 10.6, 10.7 | Project detail page, edit functionality, delete with confirmation |
+| Slice | Tasks | Summary | Status |
+|-------|-------|---------|--------|
+| **10A** | 10.1, 10.2 | App shell layout (sidebar, header, responsive), typed API client | **Done** |
+| **10B** | 10.3, 10.4, 10.8 | Projects list page, create dialog, dashboard page | |
+| **10C** | 10.5, 10.6, 10.7 | Project detail page, edit functionality, delete with confirmation | |
 
 ### Tasks
 
-| ID | Task | Description | Acceptance Criteria | Estimate | Dependencies |
-|----|------|-------------|---------------------|----------|--------------|
-| 10.1 | Build app shell layout | Create `app/(app)/org/[slug]/layout.tsx` with responsive sidebar navigation (Dashboard, Projects, Team, Settings), header with org switcher and user button, main content area. Use Shadcn UI components. | Layout renders on all org-scoped pages; sidebar highlights active route; org switcher and user button visible in header; responsive on mobile. | 4h | 3.2, 1.3 |
-| 10.2 | Implement API client | Create `lib/api.ts` with typed fetch wrapper: attaches Bearer JWT, sets `Content-Type`, handles error responses (401 → redirect to sign-in, 403 → forbidden page, 404 → not found). Base URL from `BACKEND_URL` env var. | API client sends authenticated requests to backend; error handling works for all status codes; TypeScript types for request/response. | 3h | 2.6 |
-| 10.3 | Build projects list page | Create `app/(app)/org/[slug]/projects/page.tsx` as a server component. Fetch projects from `GET /api/projects`. Display as card grid or table. Show empty state with CTA to create first project. | Projects page lists all org projects; empty state shown when no projects; each card links to project detail. | 3h | 10.1, 10.2 |
-| 10.4 | Build project create dialog | Create a dialog/modal component for creating a new project (name + description fields). Call `POST /api/projects` on submit. Show validation errors. Refresh project list on success. | Dialog opens from "New Project" button; form validates name required; success creates project and refreshes list; errors shown inline. | 3h | 10.3 |
-| 10.5 | Build project detail page | Create `app/(app)/org/[slug]/projects/[id]/page.tsx`. Fetch project details from `GET /api/projects/{id}`. Show project name, description, created date. Include document section (placeholder for Epic 11). Tab or section for documents. | Project detail page shows correct project; 404 page for invalid project IDs; document section placeholder visible. | 3h | 10.3 |
-| 10.6 | Build project edit functionality | Add edit capability to project detail page: inline edit or edit dialog for name/description. Call `PUT /api/projects/{id}`. Show only for admin+ roles. | Edit button visible for admin/owner; form pre-filled with current values; save updates project; changes reflected immediately. | 2h | 10.5 |
-| 10.7 | Build project delete functionality | Add delete button to project detail page (owner only). Confirmation dialog before deletion. Call `DELETE /api/projects/{id}`. Redirect to projects list on success. | Delete button visible only for owner role; confirmation dialog prevents accidental deletion; successful delete redirects to list. | 2h | 10.5 |
-| 10.8 | Implement dashboard page | Build `app/(app)/org/[slug]/dashboard/page.tsx` showing: org name, project count, recent projects (top 5), quick-action buttons (create project, invite member). | Dashboard shows accurate project count; recent projects link to detail pages; quick actions work. | 3h | 10.1, 10.2 |
+| ID | Task | Status | Notes |
+|----|------|--------|-------|
+| 10.1 | Build app shell layout | **Done** | Extracted sidebar into `DesktopSidebar` (desktop) and `MobileSidebar` (Sheet drawer) client components. Active route highlighting via `usePathname()`. 4 nav items (Dashboard, Projects, Team, Settings). Shadcn sidebar CSS variables. Settings placeholder page. |
+| 10.2 | Implement API client | **Done** | Enhanced `lib/api.ts` with `server-only` guard, RFC 9457 ProblemDetail parsing, `handleApiError()` utility (401→redirect, 404→notFound), `api.*` convenience methods. Created `lib/types.ts` with Project, Document, ProblemDetail DTO interfaces. |
+| 10.3 | Build projects list page | | Server component fetching `GET /api/projects`. Card grid or table. Empty state with CTA. Deps: 10.1, 10.2. |
+| 10.4 | Build project create dialog | | Dialog with name + description fields. `POST /api/projects`. Validation errors. Refresh list on success. Deps: 10.3. |
+| 10.5 | Build project detail page | | `projects/[id]/page.tsx`. Fetch `GET /api/projects/{id}`. Show name, description, created date. Document section placeholder. Deps: 10.3. |
+| 10.6 | Build project edit functionality | | Edit dialog for name/description. `PUT /api/projects/{id}`. Admin+ only. Deps: 10.5. |
+| 10.7 | Build project delete functionality | | Delete button (owner only). Confirmation dialog. `DELETE /api/projects/{id}`. Redirect to list. Deps: 10.5. |
+| 10.8 | Implement dashboard page | | Org name, project count, recent projects (top 5), quick-action buttons. Deps: 10.1, 10.2. |
+
+### Key Files (10A)
+- `frontend/components/desktop-sidebar.tsx` — Desktop sidebar with active route highlighting
+- `frontend/components/mobile-sidebar.tsx` — Mobile Sheet-based sidebar with hamburger trigger
+- `frontend/lib/nav-items.ts` — Shared navigation item config (4 items)
+- `frontend/components/ui/sheet.tsx` — Shadcn Sheet component (Radix Dialog drawer)
+- `frontend/app/(app)/org/[slug]/settings/page.tsx` — Settings placeholder page
+- `frontend/lib/types.ts` — TypeScript interfaces for Project, Document, ProblemDetail DTOs
+- `frontend/lib/api.ts` — Enhanced server-side API client with ProblemDetail parsing and error utilities
+
+### Architecture Decisions (10A)
+- **Server/client split**: Layout stays a server component (calls `await auth()` and `await params`). Sidebar extracted into two client components (`DesktopSidebar`, `MobileSidebar`) that use `usePathname()` for active route detection and `useState()` for mobile toggle.
+- **Shadcn Sheet for mobile**: Uses Radix Dialog-based Sheet component instead of custom drawer — provides accessibility (focus trapping, keyboard dismiss), animations, and overlay behavior for free.
+- **Sidebar CSS variables**: Replaced hard-coded `bg-neutral-50 dark:bg-neutral-950` with Shadcn sidebar tokens (`bg-sidebar`, `bg-sidebar-accent`, etc.) already defined in `globals.css`.
+- **No client-side API wrapper**: Client components use Server Actions that call the server-side `api` internally. Standard Next.js 16 pattern.
+- **Backward-compatible API alias**: `apiClient` kept as alias for `apiRequest` so existing webhook handler code is not broken.
 
 ---
 

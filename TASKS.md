@@ -14,7 +14,7 @@
 | 8 | Core API — Documents | Backend | 7, 9 | M | 8A, 8B | **Done** |
 | 9 | S3 Integration | Backend | 1 | S | — | **Done** |
 | 10 | Dashboard & Projects UI | Frontend | 3, 7 | M | 10A, 10B, 10C | **Done** |
-| 11 | Documents UI | Frontend | 10, 8 | M | 11A, 11B | |
+| 11 | Documents UI | Frontend | 10, 8 | M | 11A, 11B | **Done** |
 | 12 | Team Management UI | Frontend | 3 | S | — | **Done** |
 | 13 | Containerization | Both | 1 | S | — | **Done** |
 | 14 | AWS Infrastructure | Infra | 13 | XL | 14A–14D | **Done** |
@@ -442,23 +442,46 @@ Clerk → POST /api/webhooks/clerk (Next.js)
 
 **Estimated Effort**: M
 
+**Status**: **Complete**
+
 ### Slices
 
-| Slice | Tasks | Summary |
-|-------|-------|---------|
-| **11A** | 11.1, 11.2 | Document list component, drag-and-drop upload with presigned URL flow |
-| **11B** | 11.3, 11.4, 11.5, 11.6 | Upload progress tracking, download functionality, error handling, file validation |
+| Slice | Tasks | Summary | Status |
+|-------|-------|---------|--------|
+| **11A** | 11.1, 11.2 | Document list component, drag-and-drop upload with presigned URL flow | **Done** |
+| **11B** | 11.3, 11.4, 11.5, 11.6 | Upload progress tracking, download functionality, error handling, file validation | **Done** |
 
 ### Tasks
 
-| ID | Task | Description | Acceptance Criteria | Estimate | Dependencies |
-|----|------|-------------|---------------------|----------|--------------|
-| 11.1 | Build document list component | Create a component that fetches and displays documents for a project (`GET /api/projects/{id}/documents`). Show file name, size, upload date, uploader, status. | Document list renders within project detail page; shows all document metadata; empty state when no documents. | 3h | 10.5 |
-| 11.2 | Build file upload component | Create a drag-and-drop (and click-to-browse) file upload component. On file selection: call upload-init API, upload to S3 via presigned URL (using `fetch` with PUT), call confirm API on success. | User can drag-and-drop or browse for files; file uploads to S3 via presigned URL; document appears in list after confirmation. | 4h | 11.1 |
-| 11.3 | Add upload progress tracking | Track upload progress using `XMLHttpRequest` or `fetch` with `ReadableStream`. Show progress bar during upload. Handle states: selecting → uploading → confirming → complete / error. | Progress bar shows real-time upload percentage; state transitions are visible to user; completion triggers list refresh. | 3h | 11.2 |
-| 11.4 | Implement download functionality | Add download button to each document in the list. On click: call presign-download API, open presigned URL in new tab or trigger browser download. | Clicking download fetches presigned URL and initiates browser download; works for all file types. | 2h | 11.1 |
-| 11.5 | Handle upload errors | Show error messages for: file too large, network failure during upload, S3 errors, confirmation failures. Allow retry. | Error states shown with clear messages; retry button re-initiates the upload; failed uploads show PENDING status in list. | 2h | 11.2, 11.3 |
-| 11.6 | Add file type and size validation | Client-side validation before upload: max file size (e.g., 100MB), allowed file types (configurable). Show error if validation fails. | Files exceeding max size show error before upload; disallowed file types show error; valid files proceed to upload. | 1h | 11.2 |
+| ID | Task | Status | Notes |
+|----|------|--------|-------|
+| 11.1 | Build document list component | **Done** | `DocumentsPanel` client component with Shadcn Table. File-type icons (lucide), size formatting, status badges (UPLOADED/PENDING/FAILED), upload date. Empty state with upload CTA. Server component fetches `GET /api/projects/{id}/documents`. |
+| 11.2 | Build file upload component | **Done** | `FileUploadZone` drag-and-drop + click-to-browse. 3-phase upload: server action `initiateUpload` → XHR PUT to presigned S3 URL → server action `confirmUpload`. Upload state managed via `useReducer`. Multiple concurrent uploads supported. |
+| 11.3 | Add upload progress tracking | **Done** | `XMLHttpRequest.upload.onprogress` for real-time percentage. Shadcn `<Progress>` bar. `UploadProgressItem` component with state machine: validating → initiating → uploading → confirming → complete / error. Indeterminate progress for server-side phases. |
+| 11.4 | Implement download functionality | **Done** | `DownloadButton` per document (UPLOADED only). Server action `getDownloadUrl` calls presign-download API. Anchor element triggers browser download. Loading spinner during fetch, auto-clearing error on failure. |
+| 11.5 | Handle upload errors | **Done** | Error display per upload item with `text-destructive`. Retry button re-initiates from scratch (new presigned URL). Validation errors (wrong type, too large) show dismiss only. XHR abort handler prevents memory leak. `useEffect` cleanup aborts in-flight uploads on unmount. |
+| 11.6 | Add file type and size validation | **Done** | `validateFile()` in `lib/upload-validation.ts`. Max 100MB, 17 allowed MIME types (PDF, Office, images, text, CSV, archives). Extension-to-MIME fallback when `file.type` is empty. Synchronous validation before any server call. |
+
+### Key Files
+- `frontend/components/documents/documents-panel.tsx` — Main documents client component with upload state management (`useReducer`), document table, and upload orchestration
+- `frontend/components/documents/file-upload-zone.tsx` — Drag-and-drop zone with visual feedback and accessibility
+- `frontend/components/documents/upload-progress-item.tsx` — Per-file progress bar, status indicators, retry/remove
+- `frontend/app/(app)/org/[slug]/projects/[id]/actions.ts` — Server actions: `initiateUpload`, `confirmUpload`, `getDownloadUrl`
+- `frontend/lib/upload-validation.ts` — File validation with MIME type and extension checking
+- `frontend/lib/format.ts` — `formatFileSize()` utility
+
+### Architecture Decisions
+- **Single client component for documents panel**: Upload zone and document list are tightly coupled — uploading adds items to the list, in-progress uploads display alongside completed ones. A single `useReducer` manages the upload queue.
+- **XMLHttpRequest for S3 upload**: `fetch()` does not expose upload progress. `XMLHttpRequest.upload.onprogress` is the only browser API for upload progress tracking. XHR is used only for the S3 PUT; all other calls go through server actions.
+- **Server Actions as API gateway**: `initiateUpload` returns the presigned URL to the client. The Next.js server never touches file bytes — browser uploads directly to S3.
+- **Retry re-initiates from scratch**: On retry, a new `documentId` and presigned URL are obtained. Old PENDING records are harmless orphans. Avoids complex bookkeeping about expired URLs.
+- **Non-fatal document fetch**: If project loads but document listing fails, the page shows an empty documents section rather than erroring out.
+- **fileMapRef for stale-closure-free retry**: File objects stored in a `useRef` map so `handleRetry` doesn't depend on `uploads` reducer state, avoiding stale closures and unnecessary re-renders.
+
+### Deviations from Original Plan
+- **No separate `DocumentDownloadButton` file**: Download button implemented as an inline function component within `documents-panel.tsx` since it's small and tightly coupled to the panel's server action imports.
+- **`mimeType` stored in UploadItem**: Added `mimeType` field to carry the resolved MIME type from validation through the upload flow, since `file.type` can be empty for some file extensions.
+- **`useEffect` cleanup for XHR abort**: Added after code review — aborts all in-flight XMLHttpRequest objects when the component unmounts to prevent React state updates on unmounted components.
 
 ---
 

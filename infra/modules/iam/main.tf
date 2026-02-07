@@ -77,20 +77,24 @@ resource "aws_iam_role" "backend_task" {
 }
 
 data "aws_iam_policy_document" "backend_task_policy" {
-  # S3: Read/write objects in the app bucket
+  # S3: Read/write/delete objects in the app bucket
   statement {
     sid = "S3Objects"
     actions = [
       "s3:GetObject",
       "s3:PutObject",
+      "s3:DeleteObject",
     ]
     resources = ["${var.s3_bucket_arn}/*"]
   }
 
   # S3: Bucket-level operations
   statement {
-    sid       = "S3Bucket"
-    actions   = ["s3:GetBucketLocation"]
+    sid = "S3Bucket"
+    actions = [
+      "s3:GetBucketLocation",
+      "s3:ListBucket",
+    ]
     resources = [var.s3_bucket_arn]
   }
 }

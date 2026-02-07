@@ -10,7 +10,7 @@
 | 4 | Webhook Infrastructure | Frontend | 1, 2 | M | 4A, 4B | **Done** |
 | 5 | Tenant Provisioning | Backend | 1, 6 | L | 5A, 5B, 5C | **Done** |
 | 6 | Multitenancy Backend | Backend | 1 | L | — | **Done** |
-| 7 | Core API — Projects | Backend | 6 | M | 7A, 7B | |
+| 7 | Core API — Projects | Backend | 6 | M | 7A, 7B | **Done** |
 | 8 | Core API — Documents | Backend | 7, 9 | M | 8A, 8B | |
 | 9 | S3 Integration | Backend | 1 | S | — | |
 | 10 | Dashboard & Projects UI | Frontend | 3, 7 | M | 10A, 10B, 10C | |
@@ -259,24 +259,31 @@ Clerk → POST /api/webhooks/clerk (Next.js)
 
 **Estimated Effort**: M
 
-### Slices
-
-| Slice | Tasks | Summary |
-|-------|-------|---------|
-| **7A** | 7.1, 7.2, 7.3 | Project entity, repository, service layer |
-| **7B** | 7.4, 7.5, 7.6, 7.7 | REST controller, input validation, RBAC authorization, tests |
+**Status**: **Complete**
 
 ### Tasks
 
-| ID | Task | Description | Acceptance Criteria | Estimate | Dependencies |
-|----|------|-------------|---------------------|----------|--------------|
-| 7.1 | Create Project entity | Define `Project` JPA entity with fields: `id` (UUID), `name`, `description`, `createdAt`, `updatedAt`, `createdBy`. Map to `projects` table (tenant schema). | Entity compiles; Hibernate maps it to `projects` table in current tenant schema. | 1h | 6.4 |
-| 7.2 | Create ProjectRepository | Define Spring Data JPA repository for Project entity. | Repository interface extends `JpaRepository<Project, UUID>`; standard CRUD methods available. | 1h | 7.1 |
-| 7.3 | Implement ProjectService | Create service layer with methods: `listProjects()`, `getProject(id)`, `createProject(name, desc)`, `updateProject(id, name, desc)`, `deleteProject(id)`. Set `createdBy` from SecurityContext. | Service methods correctly delegate to repository; `createdBy` set from authenticated user ID. | 2h | 7.2 |
-| 7.4 | Implement ProjectController | Create REST controller with endpoints: `GET /api/projects`, `POST /api/projects`, `GET /api/projects/{id}`, `PUT /api/projects/{id}`, `DELETE /api/projects/{id}`. Add request/response DTOs. | All 5 endpoints reachable; correct HTTP status codes (200, 201, 204, 404); JSON request/response bodies. | 3h | 7.3 |
-| 7.5 | Add input validation | Add `@Valid` and Bean Validation annotations to project DTOs: `name` required (max 255 chars), `description` optional (max 2000 chars). Return 400 with field-level errors on invalid input. | Missing name → 400 with error details; name > 255 chars → 400; valid input → success. | 1h | 7.4 |
-| 7.6 | Add role-based authorization | Configure endpoint authorization: `POST /api/projects` requires `ROLE_ORG_ADMIN+`; `DELETE /api/projects/{id}` requires `ROLE_ORG_OWNER`; `GET` endpoints allow `ROLE_ORG_MEMBER+`. Use `@PreAuthorize` or SecurityFilterChain. | Member can list/view projects but not create/delete; admin can create but not delete; owner can do all. Forbidden → 403. | 2h | 7.4, 6.8 |
-| 7.7 | Add project endpoint tests | Unit tests for controller (mock service) and integration tests with test tenant schema. Cover: CRUD operations, validation errors, authorization (member vs admin vs owner). | All tests pass; coverage for happy path, validation errors, and authorization rules. | 3h | 7.4, 7.5, 7.6 |
+| ID | Task | Status | Notes |
+|----|------|--------|-------|
+| 7.1 | Create Project entity | **Done** | `Project.java` — JPA entity mapping to tenant `projects` table. UUID id, name, description, createdBy, createdAt/updatedAt (Instant). No `@Table(schema=...)` — Hibernate resolves tenant schema dynamically. |
+| 7.2 | Create ProjectRepository | **Done** | `ProjectRepository.java` — extends `JpaRepository<Project, UUID>`. No custom queries needed. |
+| 7.3 | Implement ProjectService | **Done** | `ProjectService.java` — thin service layer with `@Transactional` (readOnly for reads). CRUD methods delegate to repository. `createdBy` passed from controller (extracted from JWT `sub`). |
+| 7.4 | Implement ProjectController | **Done** | `ProjectController.java` — 5 REST endpoints. Nested record DTOs (`CreateProjectRequest`, `UpdateProjectRequest`, `ProjectResponse`). Returns `ResponseEntity` with explicit status codes. `ProblemDetail` (RFC 9457) for 404 errors. |
+| 7.5 | Add input validation | **Done** | `@NotBlank` + `@Size(max=255)` on name, `@Size(max=2000)` on description. `@Valid @RequestBody` triggers Bean Validation. Returns 400 with field-level errors. |
+| 7.6 | Add role-based authorization | **Done** | `@PreAuthorize` annotations: MEMBER+ for GET, ADMIN+ for POST/PUT, OWNER for DELETE. No changes to `SecurityConfig` — `@EnableMethodSecurity` already configured. |
+| 7.7 | Add project endpoint tests | **Done** | 19 integration tests (MockMvc + Testcontainers, `@ActiveProfiles("test")`). Covers: CRUD happy path, validation errors, 404 not found, RBAC (member/admin/owner), tenant isolation (cross-tenant invisible), unauthenticated access. 48 total tests pass. |
+
+### Key Files
+- `backend/src/main/java/.../project/Project.java` — JPA entity
+- `backend/src/main/java/.../project/ProjectRepository.java` — Spring Data JPA repository
+- `backend/src/main/java/.../project/ProjectService.java` — Service layer
+- `backend/src/main/java/.../project/ProjectController.java` — REST controller with DTOs
+- `backend/src/test/java/.../project/ProjectIntegrationTest.java` — Integration tests
+
+### Deviations from Original Plan
+- **Integration tests only (no unit tests)**: Used MockMvc + Testcontainers integration tests instead of separate unit tests for controller and service. Integration tests exercise the full stack (security filters → tenant resolution → CRUD → DB) providing higher confidence than isolated unit tests.
+- **`@ActiveProfiles("test")` for RBAC testing**: Required to activate `SecurityConfig` (which is `@Profile("!local")`). Mock JWT `jwt()` post-processor bypasses `JwtAuthenticationConverter`, so authorities must be set explicitly via `.authorities()`.
+- **`Location` header for ID extraction in tests**: `ObjectMapper` bean unavailable in test context. Used `Location` header from 201 responses and `jsonPath()` assertions instead.
 
 ---
 

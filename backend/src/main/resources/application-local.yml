@@ -1,15 +1,22 @@
 spring:
   datasource:
-    url: jdbc:postgresql://b2mash.local:5432/app
-    username: postgres
-    password: changeme
-    driver-class-name: org.postgresql.Driver
-    hikari:
+    app:
+      jdbc-url: jdbc:postgresql://b2mash.local:5432/app
+      username: postgres
+      password: changeme
+      driver-class-name: org.postgresql.Driver
       maximum-pool-size: 5
       connection-timeout: 10000
       idle-timeout: 300000
       max-lifetime: 1200000
       connection-init-sql: SET search_path TO public
+    migration:
+      jdbc-url: jdbc:postgresql://b2mash.local:5432/app
+      username: postgres
+      password: changeme
+      driver-class-name: org.postgresql.Driver
+      maximum-pool-size: 2
+      connection-timeout: 30000
 
   jpa:
     hibernate:
@@ -21,16 +28,13 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
   flyway:
-    enabled: true
-    baseline-on-migrate: true
-    locations: classpath:db/migration/global
+    enabled: false
 
   security:
     oauth2:
       resourceserver:
         jwt:
           # Placeholder — overridden by LocalSecurityConfig which permits all requests.
-          # Real Clerk JWKS configured in Epic 2.
           issuer-uri: http://localhost:8080/mock-issuer
 
 # LocalStack S3

@@ -1,12 +1,18 @@
 spring:
   datasource:
-    url: ${DATABASE_URL}
-    hikari:
+    app:
+      jdbc-url: ${DATABASE_URL}
+      driver-class-name: org.postgresql.Driver
       maximum-pool-size: 10
       connection-timeout: 10000
       idle-timeout: 600000
       max-lifetime: 1680000
       connection-init-sql: SET search_path TO public
+    migration:
+      jdbc-url: ${DATABASE_MIGRATION_URL:${DATABASE_URL}}
+      driver-class-name: org.postgresql.Driver
+      maximum-pool-size: 2
+      connection-timeout: 30000
 
   jpa:
     hibernate:
@@ -17,9 +23,7 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
   flyway:
-    enabled: true
-    baseline-on-migrate: false
-    locations: classpath:db/migration/global
+    enabled: false
 
   security:
     oauth2:

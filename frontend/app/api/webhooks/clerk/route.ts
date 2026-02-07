@@ -8,9 +8,7 @@ export async function POST(req: NextRequest) {
 
     const svixId = req.headers.get("svix-id");
 
-    console.log(
-      `[webhook] Received event: type=${evt.type}, svixId=${svixId}`,
-    );
+    console.log(`[webhook] Received event: type=${evt.type}, svixId=${svixId}`);
 
     await routeWebhookEvent(evt, svixId);
 

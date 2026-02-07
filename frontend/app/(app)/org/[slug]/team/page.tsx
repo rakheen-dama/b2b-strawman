@@ -13,7 +13,7 @@ export default async function TeamPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Team</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="text-muted-foreground mt-1 text-sm">
           Manage your organization&apos;s members and invitations.
         </p>
       </div>

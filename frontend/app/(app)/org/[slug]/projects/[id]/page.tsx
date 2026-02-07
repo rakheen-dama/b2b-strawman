@@ -28,9 +28,7 @@ export default async function ProjectDetailPage({
 
   let documents: Document[] = [];
   try {
-    documents = await api.get<Document[]>(
-      `/api/projects/${id}/documents`,
-    );
+    documents = await api.get<Document[]>(`/api/projects/${id}/documents`);
   } catch {
     // Non-fatal: show empty documents list if fetch fails
   }
@@ -40,7 +38,7 @@ export default async function ProjectDetailPage({
       <div>
         <Link
           href={`/org/${slug}/projects`}
-          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
+          className="text-muted-foreground hover:text-foreground inline-flex items-center text-sm"
         >
           <ArrowLeft className="mr-1.5 size-4" />
           Back to Projects
@@ -51,15 +49,11 @@ export default async function ProjectDetailPage({
         <div className="min-w-0">
           <h1 className="text-2xl font-bold">{project.name}</h1>
           {project.description ? (
-            <p className="mt-2 text-muted-foreground">
-              {project.description}
-            </p>
+            <p className="text-muted-foreground mt-2">{project.description}</p>
           ) : (
-            <p className="mt-2 text-sm italic text-muted-foreground/60">
-              No description
-            </p>
+            <p className="text-muted-foreground/60 mt-2 text-sm italic">No description</p>
           )}
-          <p className="mt-3 text-xs text-muted-foreground">
+          <p className="text-muted-foreground mt-3 text-xs">
             Created{" "}
             {new Date(project.createdAt).toLocaleDateString(undefined, {
               month: "short",
@@ -80,11 +74,7 @@ export default async function ProjectDetailPage({
               </EditProjectDialog>
             )}
             {isOwner && (
-              <DeleteProjectDialog
-                slug={slug}
-                projectId={project.id}
-                projectName={project.name}
-              >
+              <DeleteProjectDialog slug={slug} projectId={project.id} projectName={project.name}>
                 <Button variant="outline" size="sm">
                   <Trash2 className="mr-1.5 size-4" />
                   Delete
@@ -95,11 +85,7 @@ export default async function ProjectDetailPage({
         )}
       </div>
 
-      <DocumentsPanel
-        documents={documents}
-        projectId={id}
-        slug={slug}
-      />
+      <DocumentsPanel documents={documents} projectId={id} slug={slug} />
     </div>
   );
 }

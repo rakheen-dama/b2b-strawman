@@ -4,7 +4,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.TenantFilter;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantLoggingFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -15,7 +14,6 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-@Profile("!local")
 public class SecurityConfig {
 
   private final ClerkJwtAuthenticationConverter jwtAuthConverter;

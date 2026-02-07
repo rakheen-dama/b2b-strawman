@@ -15,11 +15,12 @@ import org.springframework.stereotype.Component;
 public class ClerkJwtAuthenticationConverter
     implements Converter<Jwt, AbstractAuthenticationToken> {
 
+  // Clerk JWT v2 uses short role names inside the "o" claim
   private static final Map<String, String> ROLE_MAPPING =
       Map.of(
-          "org:owner", "ROLE_ORG_OWNER",
-          "org:admin", "ROLE_ORG_ADMIN",
-          "org:member", "ROLE_ORG_MEMBER");
+          "owner", "ROLE_ORG_OWNER",
+          "admin", "ROLE_ORG_ADMIN",
+          "member", "ROLE_ORG_MEMBER");
 
   @Override
   public AbstractAuthenticationToken convert(Jwt jwt) {
@@ -27,8 +28,16 @@ public class ClerkJwtAuthenticationConverter
     return new JwtAuthenticationToken(jwt, authorities, jwt.getSubject());
   }
 
+  @SuppressWarnings("unchecked")
   private Collection<GrantedAuthority> extractAuthorities(Jwt jwt) {
-    String orgRole = jwt.getClaimAsString("org_role");
+    String orgRole = null;
+
+    // Clerk JWT v2: org claims nested under "o"
+    Map<String, Object> orgClaim = jwt.getClaim("o");
+    if (orgClaim != null) {
+      orgRole = (String) orgClaim.get("rol");
+    }
+
     if (orgRole == null) {
       return List.of();
     }

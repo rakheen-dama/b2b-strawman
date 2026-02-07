@@ -34,8 +34,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          # Placeholder — overridden by LocalSecurityConfig which permits all requests.
-          issuer-uri: http://localhost:8080/mock-issuer
+          issuer-uri: https://crucial-sturgeon-38.clerk.accounts.dev
+          jwk-set-uri: https://crucial-sturgeon-38.clerk.accounts.dev/.well-known/jwks.json
 
 # LocalStack S3
 aws:

@@ -58,7 +58,8 @@ Organize by **feature**, not by layer. Each feature package contains its entity,
 - Never set `hibernate.multiTenancy` property — Hibernate 7 auto-detects from registered provider
 - Never use `java -jar` for the Docker entry point — use `org.springframework.boot.loader.launch.JarLauncher`
 - Never make `TestcontainersConfiguration` package-private — it must be `public` for `@Import` from subpackages
-- Never use `@ActiveProfiles("local")` in tests — use `@ActiveProfiles("test")`. The "local" profile connects to Docker Compose Postgres and activates `LocalSecurityConfig` (permit-all). Tests must run against ephemeral Testcontainers only.
+- Never use `@ActiveProfiles("local")` in tests — use `@ActiveProfiles("test")`. The "local" profile connects to Docker Compose Postgres. Tests must run against ephemeral Testcontainers only.
+- Never use flat JWT claims (`org_id`, `org_role`) — Clerk JWT v2 nests org claims under `"o"`: `jwt.getClaim("o")` returns `Map<String, Object>` with keys `id`, `rol`, `slg`
 
 ## Spring Boot 4 / Hibernate 7 Gotchas
 
@@ -76,9 +77,8 @@ Organize by **feature**, not by layer. Each feature package contains its entity,
 
 ## Profile-Specific Security
 
-- **`local` profile**: `LocalSecurityConfig` permits all requests (no JWT validation). For fast local dev.
-- **`dev`/`prod` profiles**: `SecurityConfig` enforces full JWT + RBAC filter chain.
-- When debugging auth issues locally, verify which profile is active.
+- All profiles (including `local`) use `SecurityConfig` with full JWT + RBAC filter chain.
+- The `local` profile uses Clerk dev instance URLs in `application-local.yml` for JWT validation.
 
 ### Spring Profiles
 - `local` — Docker Compose Postgres, LocalStack S3
@@ -92,7 +92,7 @@ Schema-per-tenant isolation within a single Postgres database.
 - **Schema naming**: `tenant_<12-hex-chars>` — deterministic hash of Clerk org ID
 - **Global tables** (`public` schema): `organizations`, `org_schema_mapping`, `processed_webhooks`
 - **Tenant tables** (per `tenant_*` schema): `projects`, `documents`
-- **Tenant resolution**: JWT `org_id` claim → `org_schema_mapping` lookup → `TenantContext` ThreadLocal → Hibernate `search_path`
+- **Tenant resolution**: JWT `o.id` claim → `org_schema_mapping` lookup → `TenantContext` ThreadLocal → Hibernate `search_path`
 - **Connection provider** sets `search_path` on checkout, resets to `public` on release
 - Never trust client-supplied headers for tenant resolution — always derive from validated JWT
 
@@ -124,19 +124,25 @@ src/main/resources/db/migration/
 ### Authentication
 - Clerk JWTs validated via Spring Security OAuth2 Resource Server
 - JWKS endpoint for signature verification
-- Claims extracted: `sub` (user ID), `org_id`, `org_role`
+- **Clerk JWT v2 format** (`"v": 2`): org claims nested under `"o"` object
+  - `o.id` — Clerk org ID (e.g., `org_abc123`)
+  - `o.rol` — short role name: `owner`, `admin`, `member`
+  - `o.slg` — org slug
+  - Access via: `Map<String, Object> org = jwt.getClaim("o"); org.get("id");`
+- Top-level claims: `sub` (user ID), `sid` (session ID), `azp` (authorized party)
 
 ### Role Mapping
-| Clerk Role | Spring Authority | Access Level |
-|------------|------------------|--------------|
-| `org:owner` | `ROLE_ORG_OWNER` | Full access including delete |
-| `org:admin` | `ROLE_ORG_ADMIN` | CRUD on projects and settings |
-| `org:member` | `ROLE_ORG_MEMBER` | Read projects, upload documents |
+| Clerk JWT `o.rol` | Spring Authority | Access Level |
+|--------------------|------------------|--------------|
+| `owner` | `ROLE_ORG_OWNER` | Full access including delete |
+| `admin` | `ROLE_ORG_ADMIN` | CRUD on projects and settings |
+| `member` | `ROLE_ORG_MEMBER` | Read projects, upload documents |
 
 ### Filter Chain Order
-1. `ClerkJwtAuthFilter` — JWT validation, claim extraction
-2. `TenantFilter` — tenant context resolution from JWT org_id
-3. `TenantLoggingFilter` — MDC setup (tenantId, userId, requestId)
+1. `ApiKeyAuthFilter` — API key validation for `/internal/*` endpoints
+2. `BearerTokenAuthenticationFilter` + `ClerkJwtAuthenticationConverter` — JWT validation, role extraction from `o.rol`
+3. `TenantFilter` — tenant context resolution from JWT `o.id`
+4. `TenantLoggingFilter` — MDC setup (tenantId, userId, requestId)
 
 ### Internal API (`/internal/*`)
 - Secured by `ApiKeyAuthFilter` validating `X-API-KEY` header
@@ -188,6 +194,17 @@ try {
     TenantContext.clear();
 }
 ```
+
+### JWT Mocks in Tests (Clerk v2 format)
+```java
+// Mock JWT with v2 nested org claims
+private JwtRequestPostProcessor memberJwt() {
+    return jwt()
+        .jwt(j -> j.subject("user_member").claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+}
+```
+Note: Spring Security Test `jwt()` mock does NOT invoke `ClerkJwtAuthenticationConverter` — set `.authorities()` explicitly.
 
 ## Error Handling & Resilience
 

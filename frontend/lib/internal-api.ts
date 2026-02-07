@@ -7,7 +7,7 @@ export class InternalApiError extends Error {
   constructor(
     public status: number,
     public statusText: string,
-    public body?: string,
+    public body?: string
   ) {
     super(`Internal API request failed: ${status} ${statusText}`);
     this.name = "InternalApiError";
@@ -41,7 +41,7 @@ export async function internalApiClient<T>(
   options: {
     method?: "GET" | "POST" | "PUT" | "DELETE";
     body?: unknown;
-  } = {},
+  } = {}
 ): Promise<T> {
   if (!INTERNAL_API_KEY) {
     throw new Error("INTERNAL_API_KEY environment variable is not set");

@@ -41,8 +41,7 @@ export function InviteMemberForm() {
       setEmailAddress("");
       setSuccess(`Invitation sent to ${trimmedEmail}.`);
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to send invitation.";
+      const message = err instanceof Error ? err.message : "Failed to send invitation.";
       setError(message);
     } finally {
       setIsSubmitting(false);
@@ -87,7 +86,7 @@ export function InviteMemberForm() {
           {isSubmitting ? "Sending..." : "Send invite"}
         </Button>
       </form>
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <p className="text-destructive text-sm">{error}</p>}
       {success && <p className="text-sm text-emerald-600">{success}</p>}
     </div>
   );

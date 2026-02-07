@@ -50,22 +50,17 @@ type UploadAction =
     }
   | { type: "REMOVE"; id: string };
 
-function uploadReducer(
-  state: UploadItem[],
-  action: UploadAction,
-): UploadItem[] {
+function uploadReducer(state: UploadItem[], action: UploadAction): UploadItem[] {
   switch (action.type) {
     case "ADD":
       return [...state, ...action.items];
     case "SET_STATUS":
       return state.map((item) =>
-        item.id === action.id
-          ? { ...item, status: action.status, error: action.error }
-          : item,
+        item.id === action.id ? { ...item, status: action.status, error: action.error } : item
       );
     case "SET_PROGRESS":
       return state.map((item) =>
-        item.id === action.id ? { ...item, progress: action.progress } : item,
+        item.id === action.id ? { ...item, progress: action.progress } : item
       );
     case "SET_INIT_RESULT":
       return state.map((item) =>
@@ -75,7 +70,7 @@ function uploadReducer(
               documentId: action.documentId,
               presignedUrl: action.presignedUrl,
             }
-          : item,
+          : item
       );
     case "REMOVE":
       return state.filter((item) => item.id !== action.id);
@@ -95,11 +90,7 @@ function getFileIcon(contentType: string) {
     contentType.includes("csv")
   )
     return FileSpreadsheet;
-  if (
-    contentType.includes("zip") ||
-    contentType.includes("gzip") ||
-    contentType.includes("tar")
-  )
+  if (contentType.includes("zip") || contentType.includes("gzip") || contentType.includes("tar"))
     return FileArchive;
   return File;
 }
@@ -121,11 +112,7 @@ interface DocumentsPanelProps {
   slug: string;
 }
 
-export function DocumentsPanel({
-  documents,
-  projectId,
-  slug,
-}: DocumentsPanelProps) {
+export function DocumentsPanel({ documents, projectId, slug }: DocumentsPanelProps) {
   const router = useRouter();
   const [uploads, dispatch] = useReducer(uploadReducer, []);
   const xhrMapRef = useRef<Map<string, XMLHttpRequest>>(new Map());
@@ -151,7 +138,7 @@ export function DocumentsPanel({
         projectId,
         item.file.name,
         contentType,
-        item.file.size,
+        item.file.size
       );
 
       if (!initResult.success || !initResult.documentId || !initResult.presignedUrl) {
@@ -228,11 +215,7 @@ export function DocumentsPanel({
 
       // Step 3: Confirm
       dispatch({ type: "SET_STATUS", id: item.id, status: "confirming" });
-      const confirmResult = await confirmUpload(
-        slug,
-        projectId,
-        initResult.documentId,
-      );
+      const confirmResult = await confirmUpload(slug, projectId, initResult.documentId);
 
       if (!confirmResult.success) {
         dispatch({
@@ -247,7 +230,7 @@ export function DocumentsPanel({
       dispatch({ type: "SET_STATUS", id: item.id, status: "complete" });
       router.refresh();
     },
-    [slug, projectId, router],
+    [slug, projectId, router]
   );
 
   const handleFilesSelected = useCallback(
@@ -284,7 +267,7 @@ export function DocumentsPanel({
         }
       }
     },
-    [processUpload],
+    [processUpload]
   );
 
   const handleRetry = useCallback(
@@ -306,7 +289,7 @@ export function DocumentsPanel({
         progress: 0,
       });
     },
-    [processUpload],
+    [processUpload]
   );
 
   const handleRemove = useCallback((id: string) => {
@@ -326,11 +309,9 @@ export function DocumentsPanel({
       {documents.length === 0 && uploads.length === 0 ? (
         <div className="rounded-lg border border-dashed p-8">
           <div className="flex flex-col items-center text-center">
-            <FileText className="size-10 text-muted-foreground" />
+            <FileText className="text-muted-foreground size-10" />
             <p className="mt-3 text-sm font-medium">No documents yet</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Upload files to get started
-            </p>
+            <p className="text-muted-foreground mt-1 text-xs">Upload files to get started</p>
           </div>
         </div>
       ) : (
@@ -341,9 +322,7 @@ export function DocumentsPanel({
                 <TableHead>File</TableHead>
                 <TableHead className="hidden sm:table-cell">Size</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="hidden sm:table-cell">
-                  Uploaded
-                </TableHead>
+                <TableHead className="hidden sm:table-cell">Uploaded</TableHead>
                 <TableHead className="w-[70px]" />
               </TableRow>
             </TableHeader>
@@ -355,14 +334,12 @@ export function DocumentsPanel({
                   <TableRow key={doc.id}>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Icon className="size-4 shrink-0 text-muted-foreground" />
-                        <span className="truncate text-sm">
-                          {doc.fileName}
-                        </span>
+                        <Icon className="text-muted-foreground size-4 shrink-0" />
+                        <span className="truncate text-sm">{doc.fileName}</span>
                       </div>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-muted-foreground text-sm">
                         {formatFileSize(doc.size)}
                       </span>
                     </TableCell>
@@ -370,25 +347,19 @@ export function DocumentsPanel({
                       <Badge variant={badge.variant}>{badge.label}</Badge>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-muted-foreground text-sm">
                         {doc.uploadedAt
-                          ? new Date(doc.uploadedAt).toLocaleDateString(
-                              undefined,
-                              {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              },
-                            )
+                          ? new Date(doc.uploadedAt).toLocaleDateString(undefined, {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })
                           : "—"}
                       </span>
                     </TableCell>
                     <TableCell>
                       {doc.status === "UPLOADED" && (
-                        <DownloadButton
-                          documentId={doc.id}
-                          fileName={doc.fileName}
-                        />
+                        <DownloadButton documentId={doc.id} fileName={doc.fileName} />
                       )}
                     </TableCell>
                   </TableRow>
@@ -419,13 +390,7 @@ export function DocumentsPanel({
 
 // --- Download button (inline client component) ---
 
-function DownloadButton({
-  documentId,
-  fileName,
-}: {
-  documentId: string;
-  fileName: string;
-}) {
+function DownloadButton({ documentId, fileName }: { documentId: string; fileName: string }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -460,17 +425,10 @@ function DownloadButton({
         onClick={handleDownload}
         disabled={isLoading}
       >
-        {isLoading ? (
-          <Loader2 className="size-4 animate-spin" />
-        ) : (
-          <Download className="size-4" />
-        )}
+        {isLoading ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
         <span className="sr-only">Download {fileName}</span>
       </Button>
-      {error && (
-        <span className="text-xs text-destructive">{error}</span>
-      )}
+      {error && <span className="text-destructive text-xs">{error}</span>}
     </div>
   );
 }
-

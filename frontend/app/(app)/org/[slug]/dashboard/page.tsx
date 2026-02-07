@@ -1,22 +1,12 @@
 import { auth } from "@clerk/nextjs/server";
 import { api, handleApiError } from "@/lib/api";
 import type { Project } from "@/lib/types";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FolderOpen, Users, ArrowRight, Plus } from "lucide-react";
 import Link from "next/link";
 
-export default async function OrgDashboardPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function OrgDashboardPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const { orgSlug, orgRole } = await auth();
 
@@ -30,20 +20,15 @@ export default async function OrgDashboardPage({
   }
 
   const recentProjects = [...projects]
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    )
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5);
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Welcome to your{" "}
-          <span className="font-medium text-foreground">{orgSlug}</span>{" "}
-          workspace.
+        <p className="text-muted-foreground mt-1 text-sm">
+          Welcome to your <span className="text-foreground font-medium">{orgSlug}</span> workspace.
         </p>
       </div>
 
@@ -52,7 +37,7 @@ export default async function OrgDashboardPage({
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardDescription>Total Projects</CardDescription>
-            <FolderOpen className="size-4 text-muted-foreground" />
+            <FolderOpen className="text-muted-foreground size-4" />
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{projects.length}</p>
@@ -101,7 +86,7 @@ export default async function OrgDashboardPage({
         </CardHeader>
         <CardContent>
           {recentProjects.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               No projects yet.{" "}
               {isAdmin && (
                 <Link
@@ -118,26 +103,21 @@ export default async function OrgDashboardPage({
                 <li key={project.id}>
                   <Link
                     href={`/org/${slug}/projects/${project.id}`}
-                    className="flex items-center justify-between py-3 transition-colors hover:bg-muted/50 -mx-2 px-2 rounded-md"
+                    className="hover:bg-muted/50 -mx-2 flex items-center justify-between rounded-md px-2 py-3 transition-colors"
                   >
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">
-                        {project.name}
-                      </p>
+                      <p className="truncate text-sm font-medium">{project.name}</p>
                       {project.description && (
-                        <p className="truncate text-xs text-muted-foreground">
+                        <p className="text-muted-foreground truncate text-xs">
                           {project.description}
                         </p>
                       )}
                     </div>
-                    <span className="ml-4 shrink-0 text-xs text-muted-foreground">
-                      {new Date(project.createdAt).toLocaleDateString(
-                        undefined,
-                        {
-                          month: "short",
-                          day: "numeric",
-                        },
-                      )}
+                    <span className="text-muted-foreground ml-4 shrink-0 text-xs">
+                      {new Date(project.createdAt).toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                      })}
                     </span>
                   </Link>
                 </li>

@@ -4,21 +4,14 @@ import { auth } from "@clerk/nextjs/server";
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import type {
-  Project,
-  CreateProjectRequest,
-  UpdateProjectRequest,
-} from "@/lib/types";
+import type { Project, CreateProjectRequest, UpdateProjectRequest } from "@/lib/types";
 
 interface ActionResult {
   success: boolean;
   error?: string;
 }
 
-export async function createProject(
-  slug: string,
-  formData: FormData,
-): Promise<ActionResult> {
+export async function createProject(slug: string, formData: FormData): Promise<ActionResult> {
   const name = formData.get("name")?.toString().trim() ?? "";
   const description = formData.get("description")?.toString().trim() || undefined;
 
@@ -46,7 +39,7 @@ export async function createProject(
 export async function updateProject(
   slug: string,
   id: string,
-  formData: FormData,
+  formData: FormData
 ): Promise<ActionResult> {
   const { orgRole } = await auth();
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
@@ -78,10 +71,7 @@ export async function updateProject(
   return { success: true };
 }
 
-export async function deleteProject(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function deleteProject(slug: string, id: string): Promise<ActionResult> {
   const { orgRole } = await auth();
   if (orgRole !== "org:owner") {
     return { success: false, error: "Only organization owners can delete projects." };

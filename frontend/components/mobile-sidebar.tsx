@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
@@ -34,6 +35,9 @@ export function MobileSidebar({ slug }: MobileSidebarProps) {
       <SheetContent side="left" className="w-60 gap-0 p-0">
         <div className="flex h-14 items-center px-4">
           <SheetTitle className="font-semibold">DocTeams</SheetTitle>
+          <SheetDescription className="sr-only">
+            Main navigation menu
+          </SheetDescription>
         </div>
         <Separator />
         <nav className="flex flex-col gap-1 p-2">

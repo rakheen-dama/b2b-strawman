@@ -370,7 +370,7 @@ Clerk → POST /api/webhooks/clerk (Next.js)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **10A** | 10.1, 10.2 | App shell layout (sidebar, header, responsive), typed API client | **Done** |
-| **10B** | 10.3, 10.4, 10.8 | Projects list page, create dialog, dashboard page | |
+| **10B** | 10.3, 10.4, 10.8 | Projects list page, create dialog, dashboard page | **Done** |
 | **10C** | 10.5, 10.6, 10.7 | Project detail page, edit functionality, delete with confirmation | |
 
 ### Tasks
@@ -379,12 +379,12 @@ Clerk → POST /api/webhooks/clerk (Next.js)
 |----|------|--------|-------|
 | 10.1 | Build app shell layout | **Done** | Extracted sidebar into `DesktopSidebar` (desktop) and `MobileSidebar` (Sheet drawer) client components. Active route highlighting via `usePathname()`. 4 nav items (Dashboard, Projects, Team, Settings). Shadcn sidebar CSS variables. Settings placeholder page. |
 | 10.2 | Implement API client | **Done** | Enhanced `lib/api.ts` with `server-only` guard, RFC 9457 ProblemDetail parsing, `handleApiError()` utility (401→redirect, 404→notFound), `api.*` convenience methods. Created `lib/types.ts` with Project, Document, ProblemDetail DTO interfaces. |
-| 10.3 | Build projects list page | | Server component fetching `GET /api/projects`. Card grid or table. Empty state with CTA. Deps: 10.1, 10.2. |
-| 10.4 | Build project create dialog | | Dialog with name + description fields. `POST /api/projects`. Validation errors. Refresh list on success. Deps: 10.3. |
+| 10.3 | Build projects list page | **Done** | Server component fetching `GET /api/projects`. Responsive card grid (`1/2/3` columns). Empty state with CTA. Role-based "New Project" button (admin/owner). `handleApiError()` for 401/404. |
+| 10.4 | Build project create dialog | **Done** | Shadcn Dialog with name (Input) + description (Textarea) fields. Server Action calling `POST /api/projects`. Inline validation errors. `revalidatePath` refreshes projects list and dashboard. Form/error state reset on reopen. |
 | 10.5 | Build project detail page | | `projects/[id]/page.tsx`. Fetch `GET /api/projects/{id}`. Show name, description, created date. Document section placeholder. Deps: 10.3. |
 | 10.6 | Build project edit functionality | | Edit dialog for name/description. `PUT /api/projects/{id}`. Admin+ only. Deps: 10.5. |
 | 10.7 | Build project delete functionality | | Delete button (owner only). Confirmation dialog. `DELETE /api/projects/{id}`. Redirect to list. Deps: 10.5. |
-| 10.8 | Implement dashboard page | | Org name, project count, recent projects (top 5), quick-action buttons. Deps: 10.1, 10.2. |
+| 10.8 | Implement dashboard page | **Done** | Org name, project count stat card, recent projects list (top 5 sorted by `createdAt` desc), quick-action buttons (New Project, View Projects, Manage Team). Role-based "New Project" visibility. |
 
 ### Key Files (10A)
 - `frontend/components/desktop-sidebar.tsx` — Desktop sidebar with active route highlighting
@@ -394,6 +394,20 @@ Clerk → POST /api/webhooks/clerk (Next.js)
 - `frontend/app/(app)/org/[slug]/settings/page.tsx` — Settings placeholder page
 - `frontend/lib/types.ts` — TypeScript interfaces for Project, Document, ProblemDetail DTOs
 - `frontend/lib/api.ts` — Enhanced server-side API client with ProblemDetail parsing and error utilities
+
+### Key Files (10B)
+- `frontend/app/(app)/org/[slug]/projects/page.tsx` — Projects list page (server component, card grid)
+- `frontend/app/(app)/org/[slug]/projects/actions.ts` — Server Action for `POST /api/projects`
+- `frontend/components/projects/create-project-dialog.tsx` — Client dialog with form, validation, state reset
+- `frontend/app/(app)/org/[slug]/dashboard/page.tsx` — Dashboard with stats, recent projects, quick actions
+- `frontend/components/ui/label.tsx` — Shadcn Label component
+- `frontend/components/ui/textarea.tsx` — Shadcn Textarea component
+
+### Architecture Decisions (10B)
+- **Server Actions for mutations**: `api.ts` is `server-only`, so client components call server actions which internally call `api.post()`. `revalidatePath` invalidates both `/projects` and `/dashboard` after creation.
+- **Card grid over table**: Projects use responsive card grid (`grid-cols-1 sm:2 lg:3`) — more visual and mobile-friendly than table layout used for team members.
+- **Role-based UI gating**: "New Project" button visible only to admin/owner. Backend still enforces RBAC (403 for members) — defense in depth.
+- **Form state management**: `useRef` for native form reset + `handleOpenChange` clears error state on dialog reopen — prevents stale form values and error messages.
 
 ### Architecture Decisions (10A)
 - **Server/client split**: Layout stays a server component (calls `await auth()` and `await params`). Sidebar extracted into two client components (`DesktopSidebar`, `MobileSidebar`) that use `usePathname()` for active route detection and `useState()` for mobile toggle.

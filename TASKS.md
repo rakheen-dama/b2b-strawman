@@ -738,17 +738,17 @@ Manual trigger (workflow_dispatch)
 
 ### Tasks
 
-| ID | Task | Description | Acceptance Criteria | Estimate | Dependencies |
-|----|------|-------------|---------------------|----------|--------------|
-| 16.1 | Set up frontend unit testing | Configure Vitest (or Jest) with React Testing Library for the frontend. Add test scripts to `package.json`. Write example test for a component. | `npm run test` runs tests; example component test passes; coverage report generated. | 2h | 1.2 |
-| 16.2 | Set up backend unit testing | Configure JUnit 5 + Mockito for the backend. Add test source sets. Write example test for a service class. | `./gradlew test` runs tests; example service test passes with mocked dependencies; coverage report generated. | 2h | 1.4 |
-| 16.3 | Set up backend integration testing | Configure Testcontainers with PostgreSQL for integration tests. Create base test class that starts Postgres container, runs migrations, and provides data source. | Integration tests run against real Postgres (Testcontainers); schema created; migrations applied; tests pass. | 3h | 5.1, 5.2 |
-| 16.4 | Write tenant isolation tests | Integration tests that: create 2 tenant schemas, insert data in each, verify queries in tenant A don't return tenant B data, verify cross-tenant access is impossible via API. | Tests prove complete tenant isolation; data in schema A invisible from schema B; API enforces tenant boundary from JWT. | 4h | 6.4, 16.3 |
-| 16.5 | Write provisioning tests | Integration tests for full provisioning flow: receive org ID → create schema → run migrations → verify tables → verify mapping. Test idempotency and error recovery. | Provisioning flow works end-to-end; re-provisioning same org is idempotent; partial failure leaves state recoverable. | 3h | 5.4, 16.3 |
-| 16.6 | Write API endpoint tests | Integration tests for all project and document endpoints: CRUD operations, authorization rules, input validation, error cases. | All API endpoints tested; authorization rules verified (member vs admin vs owner); validation errors tested; 404 and 403 cases covered. | 4h | 7.4, 8.4, 16.3 |
-| 16.7 | Set up E2E test framework | Configure Playwright for E2E tests against the running application. Create test helpers for authentication (Clerk test tokens). Write one smoke test (sign in → create org → create project). | Playwright configured; smoke test passes against local stack; auth helper creates authenticated sessions. | 4h | 13.3 |
-| 16.8 | Write key user journey E2E tests | E2E tests for: onboarding (sign up → create org → dashboard), project CRUD, document upload/download, org switching, team invitation. | E2E tests cover 5 key user journeys; all pass against local Docker Compose stack. | 6h | 16.7 |
-| 16.9 | Add CI test integration | Update CI workflow to run: frontend unit tests, backend unit tests, backend integration tests (Testcontainers). E2E tests run in staging deploy workflow. | CI runs all test suites; PR blocked if tests fail; integration tests run with Testcontainers in CI. | 2h | 16.1, 16.2, 16.3, 1.9 |
+| ID | Task | Status | Notes |
+|----|------|--------|-------|
+| 16.1 | Set up frontend unit testing | **Done** | Vitest + React Testing Library configured. `pnpm run test` runs tests. Coverage via `vitest --coverage`. |
+| 16.2 | Set up backend unit testing | **Done** | JUnit 5 + Mockito configured. `./mvnw test` runs tests. Unit tests for ProjectService, DocumentService, TenantProvisioningService, SchemaNameGenerator. |
+| 16.3 | Set up backend integration testing | **Done** | Completed in Epic 5. `TestcontainersConfiguration` with `@ServiceConnection` + `DynamicPropertyRegistrar` for dual datasources. `application-test.yml` for test profile. All integration tests use `@Import(TestcontainersConfiguration.class)`. |
+| 16.4 | Write tenant isolation tests | **Done** | Completed in Epics 6–8. `MultitenancyIntegrationTest` (schema isolation, connection provider), `ProjectIntegrationTest` (cross-tenant project invisibility via API), `DocumentIntegrationTest` (cross-tenant document isolation via API). |
+| 16.5 | Write provisioning tests | **Done** | Completed in Epic 5. `ProvisioningIntegrationTest` (end-to-end flow, idempotency, schema verification), `ProvisioningControllerTest` (REST API 201/409/401/400), `TenantProvisioningServiceTest` (failure handling, error recovery). |
+| 16.6 | Write API endpoint tests | | Integration tests for all project and document endpoints: CRUD, authorization, validation, error cases. |
+| 16.7 | Set up E2E test framework | | Configure Playwright for E2E tests. Create auth helpers. Write smoke test. |
+| 16.8 | Write key user journey E2E tests | | E2E tests for onboarding, project CRUD, document upload/download, org switching, team invitation. |
+| 16.9 | Add CI test integration | | Update CI workflow to run all test suites. E2E in staging deploy workflow. |
 
 ---
 

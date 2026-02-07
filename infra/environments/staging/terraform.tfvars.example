@@ -5,3 +5,26 @@ aws_region  = "us-east-1"
 vpc_cidr             = "10.1.0.0/16"
 public_subnet_cidrs  = ["10.1.1.0/24", "10.1.2.0/24"]
 private_subnet_cidrs = ["10.1.10.0/24", "10.1.20.0/24"]
+
+# Docker images — updated by CI/CD pipeline
+frontend_image = "123456789012.dkr.ecr.us-east-1.amazonaws.com/docteams-staging-frontend:latest"
+backend_image  = "123456789012.dkr.ecr.us-east-1.amazonaws.com/docteams-staging-backend:latest"
+
+# Clerk configuration
+clerk_issuer   = "https://your-clerk-instance.clerk.accounts.dev"
+clerk_jwks_uri = "https://your-clerk-instance.clerk.accounts.dev/.well-known/jwks.json"
+
+# DNS (set to true and fill in values when domain is available)
+create_dns     = false
+domain_name    = ""
+hosted_zone_id = ""
+
+# Monitoring
+log_retention_days = 14
+
+# Secrets
+secrets_recovery_window = 7
+
+# Auto Scaling
+autoscaling_min_capacity = 2
+autoscaling_max_capacity = 6

@@ -1,0 +1,142 @@
+name: Deploy Dev
+
+on:
+  workflow_run:
+    workflows: ["Build & Push"]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: us-east-1
+  ENVIRONMENT: dev
+  ECS_CLUSTER: docteams-dev
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Gate: only deploy if the build workflow succeeded
+  # ---------------------------------------------------------------------------
+  check:
+    name: Check build status
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.sha.outputs.sha }}
+    if: github.event.workflow_run.conclusion == 'success'
+    steps:
+      - name: Extract SHA from triggering workflow
+        id: sha
+        env:
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: echo "sha=${HEAD_SHA}" >> "$GITHUB_OUTPUT"
+
+  # ---------------------------------------------------------------------------
+  # Deploy frontend to ECS
+  # ---------------------------------------------------------------------------
+  deploy-frontend:
+    name: Deploy Frontend
+    needs: check
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Deploy frontend
+        uses: ./.github/actions/ecs-deploy
+        with:
+          cluster: ${{ env.ECS_CLUSTER }}
+          service: docteams-${{ env.ENVIRONMENT }}-frontend
+          task-definition-family: docteams-${{ env.ENVIRONMENT }}-frontend
+          container-name: frontend
+          image: ${{ steps.ecr-login.outputs.registry }}/docteams-${{ env.ENVIRONMENT }}-frontend:${{ needs.check.outputs.sha }}
+
+  # ---------------------------------------------------------------------------
+  # Deploy backend to ECS
+  # ---------------------------------------------------------------------------
+  deploy-backend:
+    name: Deploy Backend
+    needs: check
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Deploy backend
+        uses: ./.github/actions/ecs-deploy
+        with:
+          cluster: ${{ env.ECS_CLUSTER }}
+          service: docteams-${{ env.ENVIRONMENT }}-backend
+          task-definition-family: docteams-${{ env.ENVIRONMENT }}-backend
+          container-name: backend
+          image: ${{ steps.ecr-login.outputs.registry }}/docteams-${{ env.ENVIRONMENT }}-backend:${{ needs.check.outputs.sha }}
+
+  # ---------------------------------------------------------------------------
+  # Smoke tests after deployment
+  # ---------------------------------------------------------------------------
+  smoke-test:
+    name: Smoke Test
+    needs: [deploy-frontend, deploy-backend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get ALB DNS name
+        id: alb
+        env:
+          ENV: ${{ env.ENVIRONMENT }}
+        run: |
+          ALB_DNS=$(aws elbv2 describe-load-balancers \
+            --names "docteams-${ENV}-public" \
+            --query 'LoadBalancers[0].DNSName' \
+            --output text 2>/dev/null || echo "")
+
+          if [ -z "$ALB_DNS" ] || [ "$ALB_DNS" = "None" ]; then
+            echo "::warning::Could not find ALB DNS name — skipping smoke tests"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "dns=${ALB_DNS}" >> "$GITHUB_OUTPUT"
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check frontend health
+        if: steps.alb.outputs.skip != 'true'
+        env:
+          ALB_DNS: ${{ steps.alb.outputs.dns }}
+        run: |
+          echo "Checking frontend at http://${ALB_DNS}/ ..."
+          curl -sf --retry 3 --retry-delay 10 --max-time 30 "http://${ALB_DNS}/" > /dev/null
+          echo "Frontend is healthy."
+
+      - name: Check backend health
+        if: steps.alb.outputs.skip != 'true'
+        env:
+          ALB_DNS: ${{ steps.alb.outputs.dns }}
+        run: |
+          echo "Checking backend at http://${ALB_DNS}/actuator/health ..."
+          curl -sf --retry 3 --retry-delay 10 --max-time 30 "http://${ALB_DNS}/actuator/health"
+          echo ""
+          echo "Backend is healthy."

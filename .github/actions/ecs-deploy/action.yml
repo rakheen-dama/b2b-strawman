@@ -1,0 +1,102 @@
+name: Deploy to ECS
+description: Update ECS task definition with a new image and wait for service stability
+
+inputs:
+  cluster:
+    description: ECS cluster name
+    required: true
+  service:
+    description: ECS service name
+    required: true
+  task-definition-family:
+    description: ECS task definition family name
+    required: true
+  container-name:
+    description: Container name within the task definition
+    required: true
+  image:
+    description: Full ECR image URI with tag (e.g., 123456789012.dkr.ecr.us-east-1.amazonaws.com/repo:sha)
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Get current task definition
+      id: current-task-def
+      shell: bash
+      env:
+        TASK_DEF_FAMILY: ${{ inputs.task-definition-family }}
+      run: |
+        aws ecs describe-task-definition \
+          --task-definition "$TASK_DEF_FAMILY" \
+          --query 'taskDefinition' \
+          --output json > /tmp/task-def.json
+
+        echo "Current task definition:"
+        jq -r '.taskDefinitionArn' /tmp/task-def.json
+
+    - name: Update image in task definition
+      shell: bash
+      env:
+        CONTAINER_NAME: ${{ inputs.container-name }}
+        NEW_IMAGE: ${{ inputs.image }}
+      run: |
+        # Update the image for the target container
+        jq --arg name "$CONTAINER_NAME" \
+           --arg image "$NEW_IMAGE" \
+           '.containerDefinitions |= map(if .name == $name then .image = $image else . end)' \
+           /tmp/task-def.json > /tmp/task-def-updated.json
+
+        # Strip metadata fields that register-task-definition doesn't accept
+        jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)' \
+           /tmp/task-def-updated.json > /tmp/task-def-clean.json
+
+        echo "Updated image for container '${CONTAINER_NAME}' to: ${NEW_IMAGE}"
+
+    - name: Register new task definition
+      id: register
+      shell: bash
+      run: |
+        NEW_ARN=$(aws ecs register-task-definition \
+          --cli-input-json file:///tmp/task-def-clean.json \
+          --query 'taskDefinition.taskDefinitionArn' \
+          --output text)
+
+        echo "task-definition-arn=${NEW_ARN}" >> "$GITHUB_OUTPUT"
+        echo "Registered new task definition: ${NEW_ARN}"
+
+    - name: Update ECS service
+      shell: bash
+      env:
+        CLUSTER: ${{ inputs.cluster }}
+        SERVICE: ${{ inputs.service }}
+        TASK_DEF_ARN: ${{ steps.register.outputs.task-definition-arn }}
+      run: |
+        aws ecs update-service \
+          --cluster "$CLUSTER" \
+          --service "$SERVICE" \
+          --task-definition "$TASK_DEF_ARN" \
+          --output text \
+          --query 'service.serviceName'
+
+        echo "Updated service '${SERVICE}' with task definition: ${TASK_DEF_ARN}"
+
+    - name: Wait for service stability
+      shell: bash
+      env:
+        CLUSTER: ${{ inputs.cluster }}
+        SERVICE: ${{ inputs.service }}
+      run: |
+        echo "Waiting for service '${SERVICE}' to stabilize (up to 10 minutes)..."
+        if ! aws ecs wait services-stable \
+          --cluster "$CLUSTER" \
+          --services "$SERVICE"; then
+          echo "::error::Service '${SERVICE}' failed to stabilize. Recent events:"
+          aws ecs describe-services \
+            --cluster "$CLUSTER" \
+            --services "$SERVICE" \
+            --query 'services[0].events[0:5]' \
+            --output json
+          exit 1
+        fi
+        echo "Service '${SERVICE}' is stable."

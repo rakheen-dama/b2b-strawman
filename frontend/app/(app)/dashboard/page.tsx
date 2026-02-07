@@ -1,27 +1,33 @@
-import { auth, clerkClient } from "@clerk/nextjs/server";
+"use client";
+
+import { useAuth, useOrganizationList } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 
-export default async function DashboardRedirectPage() {
-  const { orgSlug, orgId, userId } = await auth();
+export default function DashboardRedirectPage() {
+  const { orgSlug, orgId, isLoaded: authLoaded } = useAuth();
+  const { isLoaded: orgListLoaded, userMemberships } = useOrganizationList({
+    userMemberships: { pageSize: 1 },
+  });
 
-  // User has an active org — redirect to org-scoped dashboard
+  if (!authLoaded || !orgListLoaded) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-muted-foreground text-sm">Redirecting...</p>
+      </div>
+    );
+  }
+
+  // Active org exists — go to its dashboard
   if (orgId && orgSlug) {
     redirect(`/org/${orgSlug}/dashboard`);
   }
 
-  // No active org — check if user has any orgs
-  if (userId) {
-    const client = await clerkClient();
-    const memberships = await client.users.getOrganizationMembershipList({
-      userId,
-    });
-
-    if (memberships.data.length > 0) {
-      const firstOrg = memberships.data[0].organization;
-      redirect(`/org/${firstOrg.slug}/dashboard`);
-    }
+  // No active org — pick first membership with a valid slug
+  const firstSlug = userMemberships.data?.[0]?.organization.slug;
+  if (firstSlug) {
+    redirect(`/org/${firstSlug}/dashboard`);
   }
 
-  // No orgs at all — redirect to create org
+  // No orgs — create one
   redirect("/create-org");
 }

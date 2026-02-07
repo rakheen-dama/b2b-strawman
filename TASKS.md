@@ -581,22 +581,48 @@ Clerk → POST /api/webhooks/clerk (Next.js)
 
 ### Slices
 
-| Slice | Tasks | Summary |
-|-------|-------|---------|
-| **15A** | 15.1, 15.2, 15.6 | Docker build/push workflow, ECS deploy action, GitHub secrets + environments |
-| **15B** | 15.3, 15.4, 15.5, 15.7 | Dev/staging/prod deployment workflows, rollback procedure |
+| Slice | Tasks | Summary | Status |
+|-------|-------|---------|--------|
+| **15A** | 15.1, 15.2, 15.3, 15.6 | Docker build/push workflow, ECS deploy action, dev deploy, GitHub secrets + environments | **Done** |
+| **15B** | 15.4, 15.5, 15.7 | Staging/prod deployment workflows, rollback procedure | |
 
 ### Tasks
 
-| ID | Task | Description | Acceptance Criteria | Estimate | Dependencies |
-|----|------|-------------|---------------------|----------|--------------|
-| 15.1 | Create Docker build and push workflow | GitHub Actions workflow that builds frontend and backend Docker images, tags with git SHA, pushes to ECR. Trigger on push to main. | Push to main triggers build; images tagged with SHA appear in ECR; build uses layer caching for speed. | 3h | 14.5 |
-| 15.2 | Create ECS deploy action | Reusable GitHub Actions workflow that updates ECS service with new task definition (new image tag). Wait for deployment stability. | ECS service updated with new image; deployment waits for healthy tasks; rollback on failure (circuit breaker). | 3h | 14.6 |
-| 15.3 | Create dev deployment workflow | Workflow that triggers after successful build: deploys to dev ECS services, runs smoke tests (health check endpoints). | Push to main → build → deploy to dev → smoke tests pass. | 2h | 15.1, 15.2 |
-| 15.4 | Create staging deployment workflow | Manual or auto-trigger workflow: deploys to staging ECS services, runs E2E tests against staging. | Staging deployment works; E2E tests run against staging environment. | 2h | 15.2 |
-| 15.5 | Create production deployment workflow | Manual trigger with approval: deploys to prod ECS services. Requires GitHub environment protection rule (approval). | Prod deploy requires manual approval; deployment succeeds; services healthy after deploy. | 2h | 15.2 |
-| 15.6 | Configure GitHub secrets and environments | Set up GitHub repository secrets for AWS credentials. Create GitHub environments (dev, staging, prod) with appropriate protection rules. | Secrets configured; environment protection rules active; prod requires approval. | 1h | — |
-| 15.7 | Add rollback procedure | Document and test rollback: update ECS service to previous task definition revision. Add manual rollback workflow. | Rollback workflow exists; executing it reverts to previous image; documented in README. | 2h | 15.2 |
+| ID | Task | Status | Notes |
+|----|------|--------|-------|
+| 15.1 | Create Docker build and push workflow | **Done** | `build-and-push.yml` — path-filtered builds (`dorny/paths-filter`), Docker Buildx with GHA layer caching, SHA + latest tags, parallel frontend/backend builds. Triggers on push to main. |
+| 15.2 | Create ECS deploy action | **Done** | `.github/actions/ecs-deploy/action.yml` — composite action: describe task def → update image via `jq` → strip metadata → register new revision → update service → wait for stability with error diagnostics. |
+| 15.3 | Create dev deployment workflow | **Done** | `deploy-dev.yml` — triggered by `workflow_run` on Build & Push success. Uses `head_sha` for image tag consistency. Parallel frontend/backend deploy, then ALB health check smoke tests (graceful skip if ALB not found). |
+| 15.4 | Create staging deployment workflow | | Manual or auto-trigger, deploys to staging, runs E2E tests. |
+| 15.5 | Create production deployment workflow | | Manual trigger with approval, GitHub environment protection rule. |
+| 15.6 | Configure GitHub secrets and environments | **Done** | `docs/github-environments-setup.md` — documents required secrets (AWS creds, Clerk key), GitHub environments (dev/staging/prod) with protection rules, IAM permissions, OIDC migration guide. |
+| 15.7 | Add rollback procedure | | Manual rollback workflow, documentation. |
+
+### Key Files (15A)
+- `.github/workflows/build-and-push.yml` — Docker build & push to ECR on merge to main
+- `.github/actions/ecs-deploy/action.yml` — Reusable ECS deploy composite action
+- `.github/workflows/deploy-dev.yml` — Auto-deploy to dev with smoke tests
+- `docs/github-environments-setup.md` — GitHub environments and secrets setup guide
+
+### Architecture (15A)
+```
+Push to main
+  ├─→ CI (ci.yml) — lint, test, build
+  └─→ Build & Push (build-and-push.yml)
+        ├─ Detect changes (dorny/paths-filter)
+        ├─ Build frontend → ECR (SHA + latest tags, Buildx cache)
+        └─ Build backend  → ECR (SHA + latest tags, Buildx cache)
+              └─→ Deploy Dev (deploy-dev.yml, workflow_run trigger)
+                    ├─ Deploy frontend → ECS update + wait
+                    ├─ Deploy backend  → ECS update + wait
+                    └─ Smoke test → ALB health checks
+```
+
+### Deviations from Original Plan
+- **Task 15.3 pulled into 15A**: Dev deployment workflow is the natural consumer of 15.1 + 15.2. Including it completes the end-to-end pipeline. 15B now only covers staging/prod/rollback.
+- **Composite action over reusable workflow**: Used a composite action (`.github/actions/ecs-deploy/`) instead of a reusable workflow (`workflow_call`). Composite actions run as steps within a job — more flexible and lower overhead.
+- **AWS CLI over `aws-actions/amazon-ecs-deploy-task-definition`**: Direct `aws ecs` CLI gives full transparency over task definition manipulation. The action strips metadata fields (`taskDefinitionArn`, `revision`, `status`, etc.) with `jq` before re-registering.
+- **`id-token: write` permission**: Added proactively for future OIDC authentication migration (documented in setup guide).
 
 ---
 

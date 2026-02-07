@@ -7,8 +7,8 @@
 | 1 | Scaffolding & Local Dev | Both | — | M | — | **Done** |
 | 2 | Auth & Clerk Integration | Frontend | 1 | M | — | **Done** |
 | 3 | Organization Management | Frontend | 2 | S | — | **Done** |
-| 4 | Webhook Infrastructure | Frontend | 1, 2 | M | 4A, 4B | |
-| 5 | Tenant Provisioning | Backend | 1, 6 | L | 5A, 5B, 5C | |
+| 4 | Webhook Infrastructure | Frontend | 1, 2 | M | 4A, 4B | **Done** |
+| 5 | Tenant Provisioning | Backend | 1, 6 | L | 5A, 5B, 5C | **Done** |
 | 6 | Multitenancy Backend | Backend | 1 | L | — | **Done** |
 | 7 | Core API — Projects | Backend | 6 | M | 7A, 7B | |
 | 8 | Core API — Documents | Backend | 7, 9 | M | 8A, 8B | |
@@ -127,25 +127,46 @@
 
 **Estimated Effort**: M
 
-### Slices
-
-| Slice | Tasks | Summary |
-|-------|-------|---------|
-| **4A** | 4.1, 4.3, 4.4, 4.7 | Core webhook flow — route handler, event router, org.created handler, auth exclusion |
-| **4B** | 4.2, 4.5, 4.6, 4.8 | Clerk config, org.updated handler, idempotency layer, tests |
+**Status**: **Complete**
 
 ### Tasks
 
-| ID | Task | Description | Acceptance Criteria | Estimate | Dependencies |
-|----|------|-------------|---------------------|----------|--------------|
-| 4.1 | Create webhook route handler | Create `app/api/webhooks/clerk/route.ts` as a POST handler. Use `verifyWebhook(req)` from `@clerk/nextjs/webhooks` for signature verification. Parse event type and payload. | Route accepts POST requests; invalid signatures return 400; valid signatures return 200. | 2h | 2.2 |
-| 4.2 | Configure Clerk webhook endpoint | In Clerk Dashboard, add webhook endpoint pointing to the app's `/api/webhooks/clerk` URL. Subscribe to org, membership, and invitation events. Note the signing secret. | Clerk Dashboard shows endpoint configured with all 9 event types subscribed. | 1h | 4.1 |
-| 4.3 | Implement event router | Build a switch/map that routes verified events to handler functions by event type (`organization.created`, `organization.updated`, etc.). Log unhandled event types. | Each event type dispatches to its handler function; unknown events are logged and acknowledged with 200. | 2h | 4.1 |
-| 4.4 | Implement organization.created handler | On `organization.created`: call Spring Boot `POST /internal/orgs/provision` with `clerkOrgId` and `orgName`. Include `X-API-KEY` header. Handle success/failure. | Org creation in Clerk triggers provisioning call to Spring Boot; errors are logged; webhook returns 200 regardless (fire-and-forget for MVP). | 3h | 4.3 |
-| 4.5 | Implement organization.updated handler | On `organization.updated`: call Spring Boot to upsert org metadata. Compare `updated_at` to handle out-of-order events. | Org name changes in Clerk are reflected in backend; stale events are discarded. | 2h | 4.3 |
-| 4.6 | Implement idempotency layer | Extract `svix-id` from headers. Before processing, check if ID exists in `processed_webhooks` table (via backend API or direct DB call). Skip if already processed. Store after successful processing. | Duplicate webhook deliveries are detected and skipped; `processed_webhooks` table populated. | 3h | 4.3 |
-| 4.7 | Exclude webhook route from Clerk auth | Ensure `middleware.ts` marks `/api/webhooks/clerk` as a public route so Clerk middleware does not reject the Svix-signed requests. | Webhook requests from Clerk (no Clerk session cookie) are not blocked by middleware. | 1h | 2.3, 4.1 |
-| 4.8 | Add webhook handler tests | Write tests for signature verification (mock valid/invalid signatures), event routing, and idempotency (duplicate detection). | Tests cover: valid signature → 200, invalid signature → 400, duplicate svix-id → skipped, unknown event → 200. | 3h | 4.1, 4.6 |
+| ID | Task | Status | Notes |
+|----|------|--------|-------|
+| 4.1 | Create webhook route handler | **Done** | `app/api/webhooks/clerk/route.ts` — full implementation with `verifyWebhook()`, svix-id extraction, event routing. |
+| 4.2 | Configure Clerk webhook endpoint | **Done** | Documented in `frontend/docs/webhook-setup.md`. Manual Clerk Dashboard step. |
+| 4.3 | Implement event router | **Done** | `lib/webhook-handlers.ts` — `routeWebhookEvent()` dispatches 9 event types (org CRUD, membership CRUD, invitation events). |
+| 4.4 | Implement organization.created handler | **Done** | Calls `POST /internal/orgs/provision` via `lib/internal-api.ts` with X-API-KEY. Treats 409 as success (idempotent). Fire-and-forget error handling. |
+| 4.5 | Implement organization.updated handler | **Done** | Calls `PUT /internal/orgs/update` with `updatedAt` for out-of-order event detection. |
+| 4.6 | Implement idempotency layer | **Done** | Frontend extracts `svix-id` from headers and passes through. Backend-side dedup via `processed_webhooks` table deferred to Epic 5. Frontend handles 409 Conflict as implicit idempotency. |
+| 4.7 | Exclude webhook route from Clerk auth | **Done** | Already configured in `middleware.ts` (Epic 2) — `/api/webhooks(.*)` is a public route. |
+| 4.8 | Add webhook handler tests | **Done** | 13 tests across 2 files using vitest. Covers: signature verification, event routing, provisioning calls, 409 handling, error resilience, unknown events. |
+
+### Architecture
+
+```
+Clerk → POST /api/webhooks/clerk (Next.js)
+         ↓ verifyWebhook() signature check (400 on failure)
+         ↓ Extract svix-id from headers
+         ↓ routeWebhookEvent() dispatches by event type
+         ↓ organization.created →
+    POST /internal/orgs/provision (Spring Boot, Epic 5)
+         ↓ X-API-KEY header authentication
+         ↓ Return 201 Created / 409 Conflict
+```
+
+### Key Files
+- `frontend/lib/internal-api.ts` — Server-only API client with `X-API-KEY` auth and `server-only` guard
+- `frontend/lib/webhook-handlers.ts` — Event router and per-event handler functions
+- `frontend/app/api/webhooks/clerk/route.ts` — Webhook route handler
+- `frontend/vitest.config.ts` — Test configuration with `@/*` path alias
+- `frontend/docs/webhook-setup.md` — Clerk Dashboard configuration guide
+
+### Deviations from Original Plan
+- **Frontend-only scope**: Previous PR (#4) was closed because it incorrectly included backend changes (entities, migrations, controllers). Re-implemented as frontend-only.
+- **Idempotency scoped to frontend role**: The `processed_webhooks` table is a backend concern (Epic 5). Frontend's idempotency is: extract `svix-id`, pass to backend, handle 409 Conflict as success.
+- **Local type interfaces**: Used local `OrgEventData`/`OrgDeletedEventData` interfaces instead of Clerk's `Extract<WebhookEvent, ...>` because TypeScript's `Extract` utility resolves to `never` when the discriminated union has combined string literal types (e.g., `'organization.created' | 'organization.updated'`).
+- **vitest added**: Test infrastructure set up as part of this epic (originally planned for Epic 16).
 
 ---
 
@@ -159,28 +180,44 @@
 
 **Estimated Effort**: L
 
-### Slices
-
-| Slice | Tasks | Summary |
-|-------|-------|---------|
-| **5A** | 5.1, 5.2, 5.3 | Global + tenant Flyway migrations, schema name generator |
-| **5B** | 5.4, 5.6, 5.7 | Provisioning service, provisioning controller, API key auth filter |
-| **5C** | 5.5, 5.8, 5.9, 5.10 | Dual data sources, startup migration runner, Resilience4j retry, integration tests |
+**Status**: **Complete**
 
 ### Tasks
 
-| ID | Task | Description | Acceptance Criteria | Estimate | Dependencies |
-|----|------|-------------|---------------------|----------|--------------|
-| 5.1 | Create global schema migrations | Write Flyway migrations in `db/migration/global/` for `public` schema tables: `organizations`, `org_schema_mapping`, `processed_webhooks`. | `flyway migrate` creates all three tables in `public` schema with correct columns, constraints, and indexes. | 2h | 1.4 |
-| 5.2 | Create tenant schema migrations | Write Flyway migrations in `db/migration/tenant/` for tenant tables: `projects`, `documents`. | Flyway migrations create `projects` and `documents` tables with correct columns, FKs, and indexes when run against any schema. | 2h | 1.4 |
-| 5.3 | Implement schema name generator | Create `SchemaNameGenerator` that derives a deterministic schema name (`tenant_<12-char-hex>`) from a Clerk org ID using UUID v5 or equivalent hash. | Same org ID always produces the same schema name; name matches pattern `tenant_[a-f0-9]{12}`; different org IDs produce different names. | 2h | 1.4 |
-| 5.4 | Implement provisioning service | Create `ProvisioningService` with method `provisionTenant(clerkOrgId, orgName)`: insert org, generate schema name, insert mapping, create schema, run Flyway tenant migrations, update status to COMPLETED. Each step idempotent. | New org ID → schema created and migrated, status COMPLETED. Existing org ID → returns existing mapping (idempotent). Failed step → status FAILED, safe to retry. | 4h | 5.1, 5.2, 5.3 |
-| 5.5 | Configure dual data sources | Set up two Spring data sources: `appDataSource` (pooled Neon connection for app traffic) and `migrationDataSource` (direct Neon connection for Flyway). Configure HikariCP pool settings per ADR-006. | App queries use pooled connection; Flyway migrations use direct connection; HikariCP pool size 10, max-lifetime 28 min. | 3h | 1.4 |
-| 5.6 | Implement provisioning controller | Create `POST /internal/orgs/provision` endpoint. Validate request body (clerkOrgId required). Secure with `ApiKeyAuthFilter`. Return 201 on success, 409 if already provisioned. | Authenticated requests provision tenants; unauthenticated requests get 401; duplicate requests get 409 with existing mapping. | 2h | 5.4 |
-| 5.7 | Implement API key auth filter | Create `ApiKeyAuthFilter` that validates `X-API-KEY` header against expected value (from Secrets Manager / env var) for `/internal/**` paths. Skip filter for other paths. | Requests to `/internal/**` without valid API key receive 401; requests with valid key pass through; `/api/**` routes unaffected. | 2h | 1.4 |
-| 5.8 | Implement startup migration runner | Create `TenantMigrationRunner` (`@PostConstruct` or `ApplicationRunner`) that on startup: runs global migrations, queries all tenant schemas, runs tenant migrations for each. | Application startup applies pending global migrations then applies pending tenant migrations to all existing tenants. New migration file → all tenants updated on next deploy. | 3h | 5.1, 5.2, 5.5 |
-| 5.9 | Add Resilience4j retry to provisioning | Add `@Retry` annotation to provisioning service method with config: maxAttempts=3, waitDuration=1s, multiplier=2. Retry on `SQLException` and `TransientDataAccessException`. | Transient DB failures retry up to 3 times with exponential backoff; permanent failures (e.g., invalid input) fail immediately. | 2h | 5.4 |
-| 5.10 | Add provisioning integration tests | Test full provisioning flow against local Postgres: create schema, run migrations, verify tables exist, verify idempotency (re-provisioning same org ID). | Tests pass against Docker Postgres; schema created; tables exist; re-provision returns existing mapping. | 3h | 5.4, 5.8 |
+| ID | Task | Status | Notes |
+|----|------|--------|-------|
+| 5.1 | Create global schema migrations | **Done** | `V2__create_organizations.sql` (with provisioning_status tracking), `V3__create_processed_webhooks.sql` (webhook idempotency). `V1__create_org_schema_mapping.sql` already existed from Epic 6. |
+| 5.2 | Create tenant schema migrations | **Done** | `V1__create_projects.sql` and `V2__create_documents.sql` in `db/migration/tenant/`. Documents has FK to projects, status tracking, S3 key. |
+| 5.3 | Implement schema name generator | **Done** | `SchemaNameGenerator` uses UUID v3 (`nameUUIDFromBytes`) with DNS namespace salt. Deterministic `tenant_<12hex>` from Clerk org ID. Unit tests cover determinism, format, uniqueness. |
+| 5.4 | Implement provisioning service | **Done** | `TenantProvisioningService` with idempotent steps: check existing → create org → mark IN_PROGRESS → generate schema → CREATE SCHEMA → insert mapping → Flyway tenant migrate → mark COMPLETED. No `@Transactional` (mixed datasource operations). |
+| 5.5 | Configure dual data sources | **Done** | `DataSourceConfig` with two `HikariDataSource` beans via `@ConfigurationProperties` (Spring Boot 4 removed `DataSourceProperties`). `appDataSource` (primary, pooled) + `migrationDataSource` (for Flyway DDL). Uses `jdbc-url` (HikariCP native property). |
+| 5.6 | Implement provisioning controller | **Done** | `POST /internal/orgs/provision` — 201 Created / 409 Conflict. Request validation with `@Valid` + `@NotBlank`. |
+| 5.7 | Implement API key auth filter | **Done** | Already implemented in Epic 6 (`ApiKeyAuthFilter`). No changes needed. |
+| 5.8 | Implement startup migration runner | **Done** | `TenantMigrationRunner` (`ApplicationRunner`) iterates all `OrgSchemaMapping` entries, runs tenant Flyway per schema. Continues on individual failure (doesn't block startup). |
+| 5.9 | Add retry to provisioning | **Done** | Spring Retry (`@Retryable`) instead of Resilience4j (no Spring Boot 4 support). `maxAttempts=3, backoff=@Backoff(delay=1000, multiplier=2)`, retries on `ProvisioningException`. |
+| 5.10 | Add provisioning integration tests | **Done** | Integration tests: full provisioning flow, idempotency (second provision returns same schema), different orgs get different schemas. Controller tests: 201, 409, 401, 400. All 29 tests pass (8 new + 21 existing). |
+
+### Architecture Decisions
+- **Dual DataSource**: `appDataSource` for Hibernate/JPA (pooled), `migrationDataSource` for Flyway DDL. Spring Boot 4 removed `DataSourceProperties` from `boot.autoconfigure.jdbc` — used `@ConfigurationProperties` directly on `HikariDataSource` beans with `jdbc-url` (not `url`).
+- **Manual Flyway management**: Disabled Spring auto-Flyway (`spring.flyway.enabled: false`). `FlywayConfig` runs global migrations at startup via `@Bean(initMethod = "migrate")`. `TenantMigrationRunner` runs tenant migrations per schema.
+- **Spring Retry over Resilience4j**: Resilience4j has no Spring Boot 4 support. Used `spring-retry` 2.0.12 with `@Retryable`.
+- **No @Transactional on provisioning**: Service mixes two datasources (migrationDataSource for DDL, entityManager for JPA). Transaction management is per-step instead.
+- **Identifier quoting for schema DDL**: Schema creation uses `"CREATE SCHEMA IF NOT EXISTS \"" + schemaName + "\""` to prevent SQL injection.
+- **Testcontainers DynamicPropertyRegistrar**: `@ServiceConnection` only auto-configures default `spring.datasource.*`. Custom datasource beans need `DynamicPropertyRegistrar` to bridge container properties.
+
+### Key Files
+- `backend/src/main/java/.../config/DataSourceConfig.java` — Dual HikariDataSource beans
+- `backend/src/main/java/.../config/FlywayConfig.java` — Manual global Flyway on startup
+- `backend/src/main/java/.../provisioning/TenantProvisioningService.java` — Core provisioning logic
+- `backend/src/main/java/.../provisioning/ProvisioningController.java` — Internal API endpoint
+- `backend/src/main/java/.../provisioning/TenantMigrationRunner.java` — Startup migration runner
+- `backend/src/main/java/.../provisioning/SchemaNameGenerator.java` — Deterministic schema naming
+
+### Deviations from Original Plan
+- **Spring Retry instead of Resilience4j** (task 5.9): Resilience4j lacks Spring Boot 4 support. Used `spring-retry` 2.0.12 with `@Retryable` annotation.
+- **`@ConfigurationProperties` on HikariDataSource** (task 5.5): Spring Boot 4 removed `DataSourceProperties` from `boot.autoconfigure.jdbc`. Bound directly to `HikariDataSource` using HikariCP native property names (`jdbc-url`).
+- **No separate `organizations` table migration**: Merged into existing global migrations as `V2__create_organizations.sql` (V1 was already taken by `org_schema_mapping` from Epic 6).
+- **DynamicPropertyRegistrar for tests**: Testcontainers `@ServiceConnection` doesn't auto-configure custom datasource beans — added `DynamicPropertyRegistrar` in `TestcontainersConfiguration`.
 
 ---
 

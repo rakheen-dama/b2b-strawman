@@ -3,6 +3,10 @@
 Multi-tenant B2B SaaS starter (DocTeams) with schema-per-tenant isolation.
 Monorepo: `frontend/`, `backend/`, `compose/`, `infra/`.
 
+## General Rules
+When asked to create documents (architecture docs, implementation plans, TASKS.md, etc.), ONLY create the documents. Do NOT implement any code unless explicitly asked to do so.
+When implementing epics, check TASKS.md and recent PRs to understand which parts have already been completed by other agents. Only implement the scope described — do not duplicate work from other epics/branches.
+
 ## Service-Specific Guides
 
 - `frontend/CLAUDE.md` — Next.js 16, Clerk, Shadcn conventions

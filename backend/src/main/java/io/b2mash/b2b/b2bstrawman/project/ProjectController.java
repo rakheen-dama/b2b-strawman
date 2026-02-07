@@ -72,7 +72,7 @@ public class ProjectController {
     if (projectService.deleteProject(id)) {
       return ResponseEntity.noContent().build();
     }
-    return ResponseEntity.of(ProblemDetail.forStatus(404)).build();
+    return ResponseEntity.of(notFound(id)).build();
   }
 
   private ProblemDetail notFound(UUID id) {

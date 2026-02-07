@@ -11,3 +11,12 @@ spring:
 internal:
   api:
     key: test-api-key
+
+aws:
+  s3:
+    endpoint: http://localhost:4566
+    region: us-east-1
+    bucket-name: test-bucket
+  credentials:
+    access-key-id: test
+    secret-access-key: test

@@ -29,7 +29,7 @@ import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
-@ActiveProfiles("local")
+@ActiveProfiles("test")
 @Testcontainers
 class S3PresignedUrlServiceTest {
 

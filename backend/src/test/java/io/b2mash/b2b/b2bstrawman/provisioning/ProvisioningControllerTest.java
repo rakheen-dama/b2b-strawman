@@ -17,10 +17,10 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
-@ActiveProfiles("local")
+@ActiveProfiles("test")
 class ProvisioningControllerTest {
 
-  private static final String API_KEY = "local-dev-api-key-change-in-production";
+  private static final String API_KEY = "test-api-key";
 
   @Autowired private MockMvc mockMvc;
 

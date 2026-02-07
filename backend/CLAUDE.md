@@ -58,6 +58,7 @@ Organize by **feature**, not by layer. Each feature package contains its entity,
 - Never set `hibernate.multiTenancy` property — Hibernate 7 auto-detects from registered provider
 - Never use `java -jar` for the Docker entry point — use `org.springframework.boot.loader.launch.JarLauncher`
 - Never make `TestcontainersConfiguration` package-private — it must be `public` for `@Import` from subpackages
+- Never use `@ActiveProfiles("local")` in tests — use `@ActiveProfiles("test")`. The "local" profile connects to Docker Compose Postgres and activates `LocalSecurityConfig` (permit-all). Tests must run against ephemeral Testcontainers only.
 
 ## Spring Boot 4 / Hibernate 7 Gotchas
 

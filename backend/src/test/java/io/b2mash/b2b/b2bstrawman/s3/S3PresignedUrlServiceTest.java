@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.s3;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import java.io.IOException;
@@ -132,5 +133,17 @@ class S3PresignedUrlServiceTest {
 
     assertThat(result.url()).contains(TEST_BUCKET);
     assertThat(result.url()).contains("org/org_x/project/proj-y/doc-z");
+  }
+
+  @Test
+  void downloadUrlRejectsInvalidKeyFormat() {
+    assertThatThrownBy(() -> service.generateDownloadUrl("../../etc/passwd"))
+        .isInstanceOf(IllegalArgumentException.class);
+
+    assertThatThrownBy(() -> service.generateDownloadUrl("arbitrary-key"))
+        .isInstanceOf(IllegalArgumentException.class);
+
+    assertThatThrownBy(() -> service.generateDownloadUrl(null))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 }

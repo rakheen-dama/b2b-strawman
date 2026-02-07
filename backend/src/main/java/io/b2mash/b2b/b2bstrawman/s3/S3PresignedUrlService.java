@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.s3;
 
 import io.b2mash.b2b.b2bstrawman.config.S3Config.S3Properties;
 import java.time.Duration;
+import java.util.regex.Pattern;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -13,6 +14,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 public class S3PresignedUrlService {
 
   private static final Duration URL_EXPIRY = Duration.ofHours(1);
+  private static final Pattern S3_KEY_PATTERN = Pattern.compile("^org/[^/]+/project/[^/]+/[^/]+$");
 
   private final S3Presigner presigner;
   private final String bucketName;
@@ -41,6 +43,10 @@ public class S3PresignedUrlService {
   }
 
   public PresignedDownloadResult generateDownloadUrl(String s3Key) {
+    if (s3Key == null || !S3_KEY_PATTERN.matcher(s3Key).matches()) {
+      throw new IllegalArgumentException("Invalid S3 key format: " + s3Key);
+    }
+
     var getRequest = GetObjectRequest.builder().bucket(bucketName).key(s3Key).build();
 
     var presignRequest =

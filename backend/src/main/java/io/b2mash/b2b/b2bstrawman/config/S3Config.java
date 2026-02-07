@@ -26,7 +26,7 @@ public class S3Config {
   @ConfigurationProperties("aws.credentials")
   public record AwsCredentialsProperties(String accessKeyId, String secretAccessKey) {}
 
-  @Bean
+  @Bean(destroyMethod = "close")
   S3Client s3Client(S3Properties s3Props, AwsCredentialsProperties credProps) {
     var builder = S3Client.builder().region(Region.of(s3Props.region()));
 
@@ -45,7 +45,7 @@ public class S3Config {
     return builder.build();
   }
 
-  @Bean
+  @Bean(destroyMethod = "close")
   S3Presigner s3Presigner(S3Properties s3Props, AwsCredentialsProperties credProps) {
     var builder = S3Presigner.builder().region(Region.of(s3Props.region()));
 

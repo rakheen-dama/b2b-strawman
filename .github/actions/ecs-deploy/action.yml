@@ -88,7 +88,15 @@ runs:
         SERVICE: ${{ inputs.service }}
       run: |
         echo "Waiting for service '${SERVICE}' to stabilize (up to 10 minutes)..."
-        aws ecs wait services-stable \
+        if ! aws ecs wait services-stable \
           --cluster "$CLUSTER" \
-          --services "$SERVICE"
+          --services "$SERVICE"; then
+          echo "::error::Service '${SERVICE}' failed to stabilize. Recent events:"
+          aws ecs describe-services \
+            --cluster "$CLUSTER" \
+            --services "$SERVICE" \
+            --query 'services[0].events[0:5]' \
+            --output json
+          exit 1
+        fi
         echo "Service '${SERVICE}' is stable."

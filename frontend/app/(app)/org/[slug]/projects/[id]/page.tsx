@@ -1,10 +1,11 @@
 import { auth } from "@clerk/nextjs/server";
 import { api, handleApiError } from "@/lib/api";
-import type { Project } from "@/lib/types";
+import type { Project, Document } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { EditProjectDialog } from "@/components/projects/edit-project-dialog";
 import { DeleteProjectDialog } from "@/components/projects/delete-project-dialog";
-import { ArrowLeft, FileText, Pencil, Trash2 } from "lucide-react";
+import { DocumentsPanel } from "@/components/documents/documents-panel";
+import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 
 export default async function ProjectDetailPage({
@@ -23,6 +24,15 @@ export default async function ProjectDetailPage({
     project = await api.get<Project>(`/api/projects/${id}`);
   } catch (error) {
     handleApiError(error);
+  }
+
+  let documents: Document[] = [];
+  try {
+    documents = await api.get<Document[]>(
+      `/api/projects/${id}/documents`,
+    );
+  } catch {
+    // Non-fatal: show empty documents list if fetch fails
   }
 
   return (
@@ -85,15 +95,11 @@ export default async function ProjectDetailPage({
         )}
       </div>
 
-      <div className="rounded-lg border border-dashed p-8">
-        <div className="flex flex-col items-center text-center">
-          <FileText className="size-10 text-muted-foreground" />
-          <h2 className="mt-3 text-lg font-semibold">Documents</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Document management will be available in a future update.
-          </p>
-        </div>
-      </div>
+      <DocumentsPanel
+        documents={documents}
+        projectId={id}
+        slug={slug}
+      />
     </div>
   );
 }

@@ -24,6 +24,7 @@ Comprehensive acceptance test plan covering both **UI (Playwright browser tests)
 - [15. Navigation & Routing](#15-navigation--routing)
 - [16. Error Handling & Edge Cases](#16-error-handling--edge-cases)
 - [17. Responsive Layout](#17-responsive-layout)
+- [Test Infrastructure & Cleanup Strategy](#test-infrastructure--cleanup-strategy)
 
 ---
 
@@ -477,6 +478,187 @@ These are critical security tests ensuring one organization's data is never visi
 | RESP-04 | Dashboard responsive | 375x812 | Dashboard stats and recent projects stack vertically |
 | RESP-05 | Team page responsive | 375x812 | Member table scrollable or cards layout |
 | RESP-06 | Document upload zone responsive | 375x812 | Upload zone fits mobile width, still functional |
+
+---
+
+## Test Infrastructure & Cleanup Strategy
+
+The application has no built-in tenant deletion or data cleanup functionality (explicitly out of MVP scope). Additionally, the Clerk development environment imposes limits on the number of organizations that can exist simultaneously. This section documents the strategies for managing test data lifecycle without hitting these constraints.
+
+### Problem Statement
+
+| Constraint | Impact |
+|------------|--------|
+| No `DELETE /api/orgs` endpoint | Test-created orgs and tenant schemas accumulate |
+| Clerk dev org limits | Cannot create unlimited orgs per test run |
+| No S3 cleanup API | Uploaded test files persist in LocalStack |
+| `processed_webhooks` table | Idempotency deduplication blocks re-running webhook tests |
+
+### Strategy 1: Fixture Organizations (Recommended Core Approach)
+
+Instead of creating Clerk organizations per test, **pre-provision 2–3 long-lived orgs** that persist across all test runs. The vast majority of test scenarios (projects, documents, RBAC, navigation) operate *within* an existing org and never need to create one.
+
+**Fixture Orgs:**
+
+| Fixture | Clerk Org | Tenant Schema | Purpose |
+|---------|-----------|---------------|---------|
+| **Org A** (primary) | `test-org-alpha` | `tenant_<hash_a>` | Main test org — all CRUD, upload, RBAC, dashboard tests |
+| **Org B** (isolation) | `test-org-beta` | `tenant_<hash_b>` | Second org for tenant isolation tests (Section 12) |
+| **Org C** (switching) | `test-org-gamma` | `tenant_<hash_c>` | Optional — org switching tests (Section 2) |
+
+**Setup:** Create these orgs once via Clerk Backend API + provisioning endpoint in a one-time bootstrap script (or `globalSetup` with idempotent checks). They are never deleted.
+
+**Impact on Clerk limits:** Only 2–3 org slots consumed, regardless of how many times the test suite runs.
+
+### Strategy 2: Per-Test Cleanup at Project/Document Level
+
+Tests that create projects and documents clean up after themselves using the existing API:
+
+```
+// In Playwright afterEach or afterAll
+// DELETE cascades to documents, so this single call cleans up everything
+await apiClient.delete(`/api/projects/${createdProjectId}`, {
+  headers: { Authorization: `Bearer ${ownerToken}` }
+});
+```
+
+**Cleanup hierarchy:**
+1. Deleting a **project** automatically cascades to all its **documents** (DB `ON DELETE CASCADE`)
+2. S3 objects from deleted documents become orphans — cleaned separately (Strategy 4)
+
+This keeps fixture orgs clean between runs without any new backend code.
+
+### Strategy 3: Clerk Backend API for Provisioning Tests
+
+The provisioning tests (Section 3: `PROV-API-*`, `PROV-WH-*`) are the only scenarios that genuinely need to create and destroy Clerk orgs. Use the Clerk Backend SDK to manage their lifecycle:
+
+```
+// globalSetup or test-specific setup
+const org = await clerkClient.organizations.createOrganization({
+  name: `e2e-provision-test-${Date.now()}`,
+});
+
+// ... run provisioning tests ...
+
+// globalTeardown or test-specific teardown
+await clerkClient.organizations.deleteOrganization(org.id);
+```
+
+After deleting the Clerk org, clean up the orphaned DB state:
+
+```sql
+-- Remove tenant schema and mapping
+DROP SCHEMA IF EXISTS tenant_<hash> CASCADE;
+DELETE FROM public.org_schema_mapping WHERE clerk_org_id = '<org_id>';
+DELETE FROM public.organizations WHERE clerk_org_id = '<org_id>';
+```
+
+**Isolate these tests:** Run provisioning tests in a dedicated Playwright project or test file so they can be skipped during rapid iteration on other tests.
+
+### Strategy 4: Global Teardown Script
+
+A `globalTeardown.ts` that runs after the full test suite to reset accumulated state:
+
+**Database cleanup (direct SQL via `pg` client):**
+
+```
+-- Clear project/document data from fixture org schemas (not dropping schemas)
+TRUNCATE tenant_<hash_a>.projects CASCADE;
+TRUNCATE tenant_<hash_b>.projects CASCADE;
+
+-- Reset webhook deduplication so idempotency tests can re-run
+TRUNCATE public.processed_webhooks;
+
+-- Remove any orphaned provisioning-test schemas
+-- (query public.org_schema_mapping for non-fixture schemas and DROP them)
+```
+
+**S3/LocalStack cleanup:**
+
+```bash
+aws --endpoint-url=http://localhost:4566 s3 rm s3://docteams-dev/ --recursive
+```
+
+**What NOT to clean up:**
+- Fixture org rows in `public.organizations` and `public.org_schema_mapping` — these are permanent
+- Fixture tenant schemas (`tenant_<hash_a>`, etc.) — only truncate their tables
+- Clerk fixture orgs — these persist across runs
+
+### Strategy 5: Ephemeral Database for API Tests
+
+For API-level tests that don't need a browser, spin up a fresh PostgreSQL via **Testcontainers** in `globalSetup`:
+
+1. Start a Testcontainers Postgres instance
+2. Point the Spring Boot backend at it (override `DATABASE_URL`)
+3. Run global + tenant migrations
+4. Execute all API tests against a blank database
+5. Container is destroyed automatically after the suite
+
+This gives perfect test isolation with zero cleanup logic. The backend already supports this pattern via `spring-boot:test-run`.
+
+**Trade-off:** Requires the backend to be started per test run (slower), but guarantees a pristine state every time.
+
+### Recommended Combination
+
+| Data Layer | Strategy | Lifecycle |
+|------------|----------|-----------|
+| **Clerk orgs** | 2–3 fixture orgs (Strategy 1) | Permanent — never deleted |
+| **Projects & documents** | Created per test, deleted in `afterEach` (Strategy 2) | Per-test |
+| **Provisioning test orgs** | Clerk Backend API create + delete (Strategy 3) | Per-test, isolated suite |
+| **S3 objects** | Wiped in `globalTeardown` (Strategy 4) | Per-suite |
+| **Webhook dedup table** | Truncated in `globalTeardown` (Strategy 4) | Per-suite |
+| **API-only tests** | Ephemeral Testcontainers DB (Strategy 5) | Per-suite |
+
+### Playwright Configuration for Test Isolation
+
+Structure the Playwright config to separate concerns:
+
+```
+projects: [
+  {
+    name: 'setup',
+    testMatch: /global\.setup\.ts/,    // Bootstrap fixture orgs, auth state
+  },
+  {
+    name: 'api',
+    testDir: './tests/api',             // API-level tests (no browser)
+    dependencies: ['setup'],
+  },
+  {
+    name: 'ui-chromium',
+    testDir: './tests/ui',              // UI tests (browser)
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['setup'],
+  },
+  {
+    name: 'provisioning',
+    testDir: './tests/provisioning',    // Isolated provisioning tests
+    dependencies: ['setup'],
+  },
+  {
+    name: 'teardown',
+    testMatch: /global\.teardown\.ts/,  // DB truncate, S3 wipe
+    dependencies: ['api', 'ui-chromium', 'provisioning'],
+  },
+]
+```
+
+This ensures setup runs first, teardown runs last, and provisioning tests are isolated from the main suite.
+
+### Test Data Factories
+
+To keep test code DRY, implement lightweight factory helpers:
+
+```
+// e2e-tests/helpers/factories.ts
+
+createProject(overrides?)    → calls POST /api/projects, returns { id, cleanup() }
+uploadDocument(projectId)    → runs full 3-phase upload, returns { id, cleanup() }
+getAuthToken(persona)        → returns cached JWT for owner/admin/member
+withCleanup(fn)              → wraps test body, auto-cleans created resources in finally block
+```
+
+The `cleanup()` pattern ensures resources are deleted even if the test fails mid-execution.
 
 ---
 

@@ -21,6 +21,8 @@ Rollback reverts an ECS service to its previous task definition revision. This i
 4. Type `rollback` in the confirmation field
 5. Click **Run workflow**
 
+**Note:** The rollback workflow intentionally bypasses GitHub environment protection rules (approval gates and wait timers) for speed during incidents. The `rollback` confirmation input provides the safety gate.
+
 The workflow will:
 - Look up the current task definition revision
 - Find the previous revision (N-1)
@@ -108,6 +110,53 @@ aws ecs describe-services \
 - **Task definition history**: ECS keeps all revisions unless explicitly deregistered. If someone deregistered old revisions, rollback to those revisions will fail.
 - **Database migrations**: Rollback only affects the application code (Docker image). If a deployment included database migrations, rolling back the application may cause issues if the new schema is incompatible with the old code. Always ensure migrations are backward-compatible.
 - **Environment variables**: If a deployment changed environment variables or secrets in the task definition, rolling back restores the previous environment variables too.
+
+## Troubleshooting
+
+### Service Update Succeeds But Stability Wait Times Out
+
+The rollback was applied but new tasks are failing to start or pass health checks.
+
+1. Check recent service events:
+   ```bash
+   aws ecs describe-services \
+     --cluster docteams-prod \
+     --services docteams-prod-backend \
+     --query 'services[0].events[0:10]' \
+     --output json
+   ```
+2. If tasks are failing health checks, check application logs:
+   ```bash
+   aws logs tail /ecs/docteams-prod-backend --follow
+   ```
+3. If the previous revision is also broken, roll back further (see "Rolling Back Multiple Revisions").
+
+### Previous Revision Not Found
+
+ECS retains all revisions unless manually deregistered. If the previous revision is missing:
+
+1. List available revisions:
+   ```bash
+   aws ecs list-task-definitions \
+     --family-prefix docteams-prod-backend \
+     --sort DESC \
+     --query 'taskDefinitionArns[0:10]'
+   ```
+2. Pick the last known-good revision and update the service manually:
+   ```bash
+   aws ecs update-service \
+     --cluster docteams-prod \
+     --service docteams-prod-backend \
+     --task-definition docteams-prod-backend:<REVISION>
+   ```
+
+### Rollback Completes But Application Still Broken
+
+This usually indicates a backward-incompatible database migration was applied as part of the failed deployment. The old code can't work with the new schema.
+
+1. Check for recent Flyway migrations in the deployment logs
+2. If a migration was applied, you may need to apply a compensating migration or fix-forward
+3. See the "Database migrations" item under Limitations
 
 ## Post-Rollback Checklist
 

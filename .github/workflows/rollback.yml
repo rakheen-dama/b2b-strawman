@@ -1,5 +1,9 @@
 name: Rollback
 
+# Rollback intentionally bypasses GitHub environment protection rules (approval
+# gates and wait timers) for speed during incidents. The manual "rollback"
+# confirmation input provides the safety gate instead.
+
 on:
   workflow_dispatch:
     inputs:
@@ -56,11 +60,11 @@ jobs:
     needs: validate
     if: inputs.service == 'frontend' || inputs.service == 'both'
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
     env:
       CLUSTER: docteams-${{ inputs.environment }}
       SERVICE: docteams-${{ inputs.environment }}-frontend
       FAMILY: docteams-${{ inputs.environment }}-frontend
+      CONTAINER: frontend
     steps:
       - uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -108,18 +112,18 @@ jobs:
           echo "previous-arn=${PREV_ARN}" >> "$GITHUB_OUTPUT"
           echo "Rolling back to: ${PREV_ARN}"
 
-          # Show image diff
+          # Show image diff (query by container name, not index)
           echo "--- Current image ---"
           aws ecs describe-task-definition \
             --task-definition "${FAMILY}:${CURRENT_REV}" \
-            --query 'taskDefinition.containerDefinitions[0].image' \
-            --output text
+            --query "taskDefinition.containerDefinitions[?name=='${CONTAINER}'].image | [0]" \
+            --output text 2>/dev/null || echo "Unable to retrieve"
 
           echo "--- Rollback image ---"
           aws ecs describe-task-definition \
             --task-definition "${FAMILY}:${PREV_REV}" \
-            --query 'taskDefinition.containerDefinitions[0].image' \
-            --output text
+            --query "taskDefinition.containerDefinitions[?name=='${CONTAINER}'].image | [0]" \
+            --output text 2>/dev/null || echo "Unable to retrieve"
 
       - name: Update service to previous revision
         env:
@@ -158,11 +162,11 @@ jobs:
     needs: validate
     if: inputs.service == 'backend' || inputs.service == 'both'
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
     env:
       CLUSTER: docteams-${{ inputs.environment }}
       SERVICE: docteams-${{ inputs.environment }}-backend
       FAMILY: docteams-${{ inputs.environment }}-backend
+      CONTAINER: backend
     steps:
       - uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -210,18 +214,18 @@ jobs:
           echo "previous-arn=${PREV_ARN}" >> "$GITHUB_OUTPUT"
           echo "Rolling back to: ${PREV_ARN}"
 
-          # Show image diff
+          # Show image diff (query by container name, not index)
           echo "--- Current image ---"
           aws ecs describe-task-definition \
             --task-definition "${FAMILY}:${CURRENT_REV}" \
-            --query 'taskDefinition.containerDefinitions[0].image' \
-            --output text
+            --query "taskDefinition.containerDefinitions[?name=='${CONTAINER}'].image | [0]" \
+            --output text 2>/dev/null || echo "Unable to retrieve"
 
           echo "--- Rollback image ---"
           aws ecs describe-task-definition \
             --task-definition "${FAMILY}:${PREV_REV}" \
-            --query 'taskDefinition.containerDefinitions[0].image' \
-            --output text
+            --query "taskDefinition.containerDefinitions[?name=='${CONTAINER}'].image | [0]" \
+            --output text 2>/dev/null || echo "Unable to retrieve"
 
       - name: Update service to previous revision
         env:
@@ -251,3 +255,55 @@ jobs:
             exit 1
           fi
           echo "Service '${SERVICE}' is stable after rollback."
+
+  # ---------------------------------------------------------------------------
+  # Smoke tests after rollback
+  # ---------------------------------------------------------------------------
+  smoke-test:
+    name: Smoke Test
+    needs: [rollback-frontend, rollback-backend]
+    if: always() && (needs.rollback-frontend.result == 'success' || needs.rollback-frontend.result == 'skipped') && (needs.rollback-backend.result == 'success' || needs.rollback-backend.result == 'skipped') && !(needs.rollback-frontend.result == 'skipped' && needs.rollback-backend.result == 'skipped')
+    runs-on: ubuntu-latest
+    env:
+      ENV: ${{ inputs.environment }}
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get ALB DNS name
+        id: alb
+        run: |
+          ALB_DNS=$(aws elbv2 describe-load-balancers \
+            --names "docteams-${ENV}-public" \
+            --query 'LoadBalancers[0].DNSName' \
+            --output text 2>/dev/null || echo "")
+
+          if [ -z "$ALB_DNS" ] || [ "$ALB_DNS" = "None" ]; then
+            echo "::warning::Could not find ALB DNS name — skipping smoke tests"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "dns=${ALB_DNS}" >> "$GITHUB_OUTPUT"
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check frontend health
+        if: steps.alb.outputs.skip != 'true'
+        env:
+          ALB_DNS: ${{ steps.alb.outputs.dns }}
+        run: |
+          echo "Checking frontend at http://${ALB_DNS}/ ..."
+          curl -sf --retry 3 --retry-delay 10 --max-time 30 "http://${ALB_DNS}/" > /dev/null
+          echo "Frontend is healthy."
+
+      - name: Check backend health
+        if: steps.alb.outputs.skip != 'true'
+        env:
+          ALB_DNS: ${{ steps.alb.outputs.dns }}
+        run: |
+          echo "Checking backend at http://${ALB_DNS}/actuator/health ..."
+          curl -sf --retry 3 --retry-delay 10 --max-time 30 "http://${ALB_DNS}/actuator/health"
+          echo ""
+          echo "Backend is healthy."

@@ -11,7 +11,7 @@
 | 5 | Tenant Provisioning | Backend | 1, 6 | L | 5A, 5B, 5C | **Done** |
 | 6 | Multitenancy Backend | Backend | 1 | L | — | **Done** |
 | 7 | Core API — Projects | Backend | 6 | M | 7A, 7B | **Done** |
-| 8 | Core API — Documents | Backend | 7, 9 | M | 8A, 8B | |
+| 8 | Core API — Documents | Backend | 7, 9 | M | 8A, 8B | **Done** |
 | 9 | S3 Integration | Backend | 1 | S | — | **Done** |
 | 10 | Dashboard & Projects UI | Frontend | 3, 7 | M | 10A, 10B, 10C | |
 | 11 | Documents UI | Frontend | 10, 8 | M | 11A, 11B | |
@@ -297,26 +297,28 @@ Clerk → POST /api/webhooks/clerk (Next.js)
 
 **Estimated Effort**: M
 
-### Slices
-
-| Slice | Tasks | Summary |
-|-------|-------|---------|
-| **8A** | 8.1, 8.2, 8.3, 8.4, 8.5 | Document entity, repo, service, upload-init + upload-confirm endpoints |
-| **8B** | 8.6, 8.7, 8.8, 8.9 | Document listing, presigned download, authorization, tests |
+**Status**: **Complete**
 
 ### Tasks
 
-| ID | Task | Description | Acceptance Criteria | Estimate | Dependencies |
-|----|------|-------------|---------------------|----------|--------------|
-| 8.1 | Create Document entity | Define `Document` JPA entity with fields: `id` (UUID), `projectId` (FK), `fileName`, `contentType`, `size`, `s3Key`, `status` (PENDING/UPLOADED/FAILED), `uploadedAt`, `uploadedBy`. | Entity compiles; Hibernate maps to `documents` table with FK to `projects`. | 1h | 7.1 |
-| 8.2 | Create DocumentRepository | Define Spring Data JPA repository for Document. Add query method: `findByProjectId(UUID projectId)`. | Repository methods work; `findByProjectId` returns documents for a given project. | 1h | 8.1 |
-| 8.3 | Implement DocumentService | Service methods: `listDocuments(projectId)`, `initiateUpload(projectId, fileName, contentType, size)`, `confirmUpload(documentId)`, `getPresignedDownloadUrl(documentId)`. Validate project exists in same tenant. | Upload init creates PENDING document and returns presigned URL; confirm sets status to UPLOADED; download returns presigned GET URL. | 3h | 8.2, 9.3 |
-| 8.4 | Implement upload-init endpoint | `POST /api/projects/{projectId}/documents/upload-init` — accepts `{fileName, contentType, size}`, returns `{documentId, presignedUrl, expiresIn}`. | Endpoint returns 201 with presigned URL; document created in DB with status PENDING; S3 key follows `org/{orgId}/project/{projId}/{docId}` format. | 2h | 8.3 |
-| 8.5 | Implement upload-confirm endpoint | `POST /api/documents/{documentId}/confirm` — validates document exists and belongs to current tenant, updates status to UPLOADED. | Confirm on PENDING document → status UPLOADED, 200; confirm on already-UPLOADED → 200 (idempotent); confirm on non-existent → 404. | 2h | 8.3 |
-| 8.6 | Implement document listing endpoint | `GET /api/projects/{projectId}/documents` — returns list of documents for a project. Include all metadata fields. | Returns array of document objects for the given project; only returns documents in the current tenant schema. | 1h | 8.3 |
-| 8.7 | Implement presigned download endpoint | `GET /api/documents/{documentId}/presign-download` — validates document exists, status is UPLOADED, generates presigned GET URL. | Returns presigned URL with 1-hour expiry; 404 if document not found; 400 if document status is not UPLOADED. | 2h | 8.3 |
-| 8.8 | Add authorization to document endpoints | Upload init requires `ROLE_ORG_MEMBER+`; download requires `ROLE_ORG_MEMBER+`; validate project belongs to current tenant. | Members can upload and download; non-members get 403; cross-tenant project IDs return 404. | 2h | 8.4, 8.5, 8.6, 8.7, 6.8 |
-| 8.9 | Add document endpoint tests | Unit and integration tests: upload flow (init → confirm), listing, download URL generation, authorization, cross-tenant isolation. | All tests pass; upload flow works end-to-end against test S3 (LocalStack); tenant isolation verified. | 3h | 8.4, 8.5, 8.6, 8.7, 8.8 |
+| ID | Task | Status | Notes |
+|----|------|--------|-------|
+| 8.1 | Create Document entity | **Done** | JPA entity with UUID id, projectId (FK), fileName, contentType, size, s3Key, status enum (PENDING/UPLOADED/FAILED), uploadedBy, uploadedAt, createdAt. `assignS3Key()` method for post-save S3 key assignment. |
+| 8.2 | Create DocumentRepository | **Done** | `JpaRepository<Document, UUID>` with `findByProjectId(UUID projectId)`. |
+| 8.3 | Implement DocumentService | **Done** | `listDocuments`, `initiateUpload`, `confirmUpload`, `getPresignedDownloadUrl`. Validates project exists in current tenant schema. Uses `S3PresignedUrlService` for presigned URL generation. |
+| 8.4 | Implement upload-init endpoint | **Done** | `POST /api/projects/{projectId}/documents/upload-init` — returns 201 with `{documentId, presignedUrl, expiresInSeconds}`. S3 key format: `org/{orgId}/project/{projId}/{docId}`. |
+| 8.5 | Implement upload-confirm endpoint | **Done** | `POST /api/documents/{documentId}/confirm` — transitions PENDING → UPLOADED. Idempotent (re-confirm on UPLOADED returns 200). 404 on non-existent. |
+| 8.6 | Implement document listing endpoint | **Done** | `GET /api/projects/{projectId}/documents` — returns array of document metadata. 404 if project not found in tenant. |
+| 8.7 | Implement presigned download endpoint | **Done** | `GET /api/documents/{documentId}/presign-download` — returns presigned GET URL with 1hr expiry. 400 if not UPLOADED, 404 if not found. |
+| 8.8 | Add authorization to document endpoints | **Done** | All endpoints require `ROLE_ORG_MEMBER+` via `@PreAuthorize`. Cross-tenant project IDs return 404 (Hibernate schema isolation). |
+| 8.9 | Add document endpoint tests | **Done** | 17 integration tests: upload flow (init → confirm), idempotent confirm, listing, presigned download, 400 for pending, RBAC, validation (fileName, contentType, size), cross-tenant isolation. 70 total tests pass. |
+
+### Key Files
+- `backend/src/main/java/.../document/Document.java` — JPA entity with status enum
+- `backend/src/main/java/.../document/DocumentRepository.java` — Spring Data JPA repository
+- `backend/src/main/java/.../document/DocumentService.java` — Business logic + S3 presigned URL coordination
+- `backend/src/main/java/.../document/DocumentController.java` — REST endpoints with RBAC
+- `backend/src/test/java/.../document/DocumentIntegrationTest.java` — 17 integration tests
 
 ---
 

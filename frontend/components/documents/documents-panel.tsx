@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   FileText,
@@ -129,16 +129,28 @@ export function DocumentsPanel({
   const router = useRouter();
   const [uploads, dispatch] = useReducer(uploadReducer, []);
   const xhrMapRef = useRef<Map<string, XMLHttpRequest>>(new Map());
+  const fileMapRef = useRef<Map<string, { file: File; mimeType: string }>>(new Map());
+
+  // Cleanup: abort all in-flight uploads on unmount
+  useEffect(() => {
+    const xhrMap = xhrMapRef.current;
+    return () => {
+      xhrMap.forEach((xhr) => xhr.abort());
+      xhrMap.clear();
+    };
+  }, []);
 
   const processUpload = useCallback(
     async (item: UploadItem) => {
+      const contentType = item.mimeType || item.file.type || "application/octet-stream";
+
       // Step 1: Initiate
       dispatch({ type: "SET_STATUS", id: item.id, status: "initiating" });
       const initResult = await initiateUpload(
         slug,
         projectId,
         item.file.name,
-        item.file.type || "application/octet-stream",
+        contentType,
         item.file.size,
       );
 
@@ -202,11 +214,13 @@ export function DocumentsPanel({
           resolve(false);
         };
 
+        xhr.onabort = () => {
+          xhrMapRef.current.delete(item.id);
+          resolve(false);
+        };
+
         xhr.open("PUT", initResult.presignedUrl!);
-        xhr.setRequestHeader(
-          "Content-Type",
-          item.file.type || "application/octet-stream",
-        );
+        xhr.setRequestHeader("Content-Type", contentType);
         xhr.send(item.file);
       });
 
@@ -245,11 +259,20 @@ export function DocumentsPanel({
         const item: UploadItem = {
           id: crypto.randomUUID(),
           file,
+          mimeType: validation.mimeType,
           status: validation.valid ? "validating" : "error",
           progress: 0,
           error: validation.valid ? undefined : validation.error,
         };
         newItems.push(item);
+      }
+
+      // Store files in ref for retry access without stale closures
+      for (const item of newItems) {
+        fileMapRef.current.set(item.id, {
+          file: item.file,
+          mimeType: item.mimeType || item.file.type || "application/octet-stream",
+        });
       }
 
       dispatch({ type: "ADD", items: newItems });
@@ -266,8 +289,8 @@ export function DocumentsPanel({
 
   const handleRetry = useCallback(
     (id: string) => {
-      const item = uploads.find((u) => u.id === id);
-      if (!item) return;
+      const entry = fileMapRef.current.get(id);
+      if (!entry) return;
       dispatch({
         type: "SET_STATUS",
         id,
@@ -275,9 +298,15 @@ export function DocumentsPanel({
         error: undefined,
       });
       dispatch({ type: "SET_PROGRESS", id, progress: 0 });
-      processUpload({ ...item, status: "validating", progress: 0, error: undefined });
+      processUpload({
+        id,
+        file: entry.file,
+        mimeType: entry.mimeType,
+        status: "validating",
+        progress: 0,
+      });
     },
-    [uploads, processUpload],
+    [processUpload],
   );
 
   const handleRemove = useCallback((id: string) => {
@@ -286,6 +315,7 @@ export function DocumentsPanel({
       xhr.abort();
       xhrMapRef.current.delete(id);
     }
+    fileMapRef.current.delete(id);
     dispatch({ type: "REMOVE", id });
   }, []);
 
@@ -415,7 +445,10 @@ function DownloadButton({
     const a = document.createElement("a");
     a.href = result.presignedUrl;
     a.download = fileName;
+    a.style.display = "none";
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
   };
 
   return (

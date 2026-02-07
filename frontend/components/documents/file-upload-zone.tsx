@@ -78,7 +78,10 @@ export function FileUploadZone({
       tabIndex={disabled ? -1 : 0}
       onClick={handleClick}
       onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") handleClick();
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleClick();
+        }
       }}
       onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}

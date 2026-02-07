@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.document;
 
-import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
@@ -21,11 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class DocumentController {
 
   private final DocumentService documentService;
-  private final S3PresignedUrlService s3Service;
 
-  public DocumentController(DocumentService documentService, S3PresignedUrlService s3Service) {
+  public DocumentController(DocumentService documentService) {
     this.documentService = documentService;
-    this.s3Service = s3Service;
   }
 
   @PostMapping("/api/projects/{projectId}/documents/upload-init")
@@ -75,18 +72,17 @@ public class DocumentController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<?> presignDownload(@PathVariable UUID documentId) {
     return documentService
-        .getDocument(documentId)
+        .getPresignedDownloadUrl(documentId)
         .map(
-            document -> {
-              if (document.getStatus() != Document.Status.UPLOADED) {
+            result -> {
+              if (!result.uploaded()) {
                 var problem = ProblemDetail.forStatus(400);
                 problem.setTitle("Document not uploaded");
                 problem.setDetail("Document has not been uploaded yet");
                 return ResponseEntity.of(problem).build();
               }
-              var presigned = s3Service.generateDownloadUrl(document.getS3Key());
               return ResponseEntity.ok(
-                  new PresignDownloadResponse(presigned.url(), presigned.expiresInSeconds()));
+                  new PresignDownloadResponse(result.url(), result.expiresInSeconds()));
             })
         .orElseGet(() -> ResponseEntity.of(documentNotFound(documentId)).build());
   }

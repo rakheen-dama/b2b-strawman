@@ -73,9 +73,29 @@ public class DocumentService {
   }
 
   @Transactional(readOnly = true)
-  public Optional<Document> getDocument(UUID documentId) {
-    return documentRepository.findById(documentId);
+  public Optional<PresignDownloadResult> getPresignedDownloadUrl(UUID documentId) {
+    return documentRepository
+        .findById(documentId)
+        .map(
+            document -> {
+              if (document.getStatus() != Document.Status.UPLOADED) {
+                return PresignDownloadResult.notUploaded();
+              }
+              var presigned = s3Service.generateDownloadUrl(document.getS3Key());
+              return PresignDownloadResult.success(presigned.url(), presigned.expiresInSeconds());
+            });
   }
 
   public record UploadInitResult(UUID documentId, String presignedUrl, long expiresInSeconds) {}
+
+  public record PresignDownloadResult(boolean uploaded, String url, long expiresInSeconds) {
+
+    static PresignDownloadResult success(String url, long expiresInSeconds) {
+      return new PresignDownloadResult(true, url, expiresInSeconds);
+    }
+
+    static PresignDownloadResult notUploaded() {
+      return new PresignDownloadResult(false, null, 0);
+    }
+  }
 }

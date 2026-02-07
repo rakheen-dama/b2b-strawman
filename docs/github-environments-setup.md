@@ -37,12 +37,14 @@ Configure at **Settings → Environments**:
 
 - **Protection rules:** Required reviewers (1 approval)
 - **Wait timer:** None
+- **Deployment trigger:** Manual via `workflow_dispatch` (Actions → Deploy Staging → Run workflow)
 - **Environment secrets:** Override `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` if staging uses a different Clerk instance
 
 ### `prod`
 
 - **Protection rules:** Required reviewers (2 approvals)
 - **Wait timer:** 5 minutes (allows cancellation window)
+- **Deployment trigger:** Manual via `workflow_dispatch` with confirmation (Actions → Deploy Production → Run workflow)
 - **Environment secrets:** Override `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` with production Clerk key
 
 ## IAM Permissions for CI/CD
@@ -170,13 +172,39 @@ Push to main
   │
   └─→ Build & Push (build-and-push.yml)
         ├─ Detect changes (path filter)
-        ├─ Build frontend → Push to ECR (tagged with SHA)
-        └─ Build backend  → Push to ECR (tagged with SHA)
+        ├─ Build frontend → Push to dev ECR (tagged with SHA)
+        └─ Build backend  → Push to dev ECR (tagged with SHA)
               │
               └─→ Deploy Dev (deploy-dev.yml, automatic)
                     ├─ Deploy frontend to ECS
                     ├─ Deploy backend to ECS
                     └─ Smoke tests (health endpoints)
+
+Manual trigger (workflow_dispatch)
+  ├─→ Deploy Staging (deploy-staging.yml)
+  │     ├─ Resolve git ref → SHA
+  │     ├─ Build frontend → Push to staging ECR
+  │     ├─ Build backend  → Push to staging ECR
+  │     ├─ [1 reviewer approval]
+  │     ├─ Deploy frontend + backend to staging ECS
+  │     └─ Smoke tests
+  │
+  └─→ Deploy Production (deploy-prod.yml)
+        ├─ Require "deploy-prod" confirmation
+        ├─ Resolve git ref → SHA
+        ├─ Build frontend → Push to prod ECR
+        ├─ Build backend  → Push to prod ECR
+        ├─ [2 reviewer approvals + 5-min wait]
+        ├─ Deploy frontend + backend to prod ECS
+        └─ Smoke tests
+
+Manual trigger (workflow_dispatch)
+  └─→ Rollback (rollback.yml)
+        ├─ Select environment + service
+        ├─ Require "rollback" confirmation
+        ├─ Find previous task definition revision
+        ├─ Update ECS service to previous revision
+        └─ Wait for stability
 ```
 
-Staging and production deployment workflows are added in Epic 15B.
+See also: [Rollback Procedure](rollback-procedure.md)

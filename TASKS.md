@@ -18,7 +18,7 @@
 | 12 | Team Management UI | Frontend | 3 | S | — | **Done** |
 | 13 | Containerization | Both | 1 | S | — | **Done** |
 | 14 | AWS Infrastructure | Infra | 13 | XL | 14A–14D | **Done** |
-| 15 | Deployment Pipeline | Infra | 13, 14 | L | 15A, 15B | |
+| 15 | Deployment Pipeline | Infra | 13, 14 | L | 15A, 15B | **Done** |
 | 16 | Testing & Quality | Both | 7, 8, 10, 11 | L | 16A–16C | |
 
 ---
@@ -598,7 +598,7 @@ Clerk → POST /api/webhooks/clerk (Next.js)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **15A** | 15.1, 15.2, 15.3, 15.6 | Docker build/push workflow, ECS deploy action, dev deploy, GitHub secrets + environments | **Done** |
-| **15B** | 15.4, 15.5, 15.7 | Staging/prod deployment workflows, rollback procedure | |
+| **15B** | 15.4, 15.5, 15.7 | Staging/prod deployment workflows, rollback procedure | **Done** |
 
 ### Tasks
 
@@ -607,10 +607,10 @@ Clerk → POST /api/webhooks/clerk (Next.js)
 | 15.1 | Create Docker build and push workflow | **Done** | `build-and-push.yml` — path-filtered builds (`dorny/paths-filter`), Docker Buildx with GHA layer caching, SHA + latest tags, parallel frontend/backend builds. Triggers on push to main. |
 | 15.2 | Create ECS deploy action | **Done** | `.github/actions/ecs-deploy/action.yml` — composite action: describe task def → update image via `jq` → strip metadata → register new revision → update service → wait for stability with error diagnostics. |
 | 15.3 | Create dev deployment workflow | **Done** | `deploy-dev.yml` — triggered by `workflow_run` on Build & Push success. Uses `head_sha` for image tag consistency. Parallel frontend/backend deploy, then ALB health check smoke tests (graceful skip if ALB not found). |
-| 15.4 | Create staging deployment workflow | | Manual or auto-trigger, deploys to staging, runs E2E tests. |
-| 15.5 | Create production deployment workflow | | Manual trigger with approval, GitHub environment protection rule. |
-| 15.6 | Configure GitHub secrets and environments | **Done** | `docs/github-environments-setup.md` — documents required secrets (AWS creds, Clerk key), GitHub environments (dev/staging/prod) with protection rules, IAM permissions, OIDC migration guide. |
-| 15.7 | Add rollback procedure | | Manual rollback workflow, documentation. |
+| 15.4 | Create staging deployment workflow | **Done** | `deploy-staging.yml` — manual `workflow_dispatch` with git ref input. Builds images for staging ECR, deploys to `docteams-staging` ECS via reusable composite action. GitHub environment `staging` (1 approval). Smoke tests on ALB. |
+| 15.5 | Create production deployment workflow | **Done** | `deploy-prod.yml` — manual `workflow_dispatch` with git ref + `deploy-prod` confirmation. Builds images for prod ECR, deploys to `docteams-prod` ECS. GitHub environment `prod` (2 approvals + 5-min wait). Smoke tests on ALB. |
+| 15.6 | Configure GitHub secrets and environments | **Done** | `docs/github-environments-setup.md` — documents required secrets (AWS creds, Clerk key), GitHub environments (dev/staging/prod) with protection rules, IAM permissions, OIDC migration guide. Updated with staging/prod workflow details. |
+| 15.7 | Add rollback procedure | **Done** | `rollback.yml` — manual `workflow_dispatch` with environment/service/confirmation inputs. Reverts ECS service to previous task definition revision. `docs/rollback-procedure.md` — operational runbook with CLI fallback and post-rollback checklist. |
 
 ### Key Files (15A)
 - `.github/workflows/build-and-push.yml` — Docker build & push to ECR on merge to main
@@ -637,6 +637,45 @@ Push to main
 - **Composite action over reusable workflow**: Used a composite action (`.github/actions/ecs-deploy/`) instead of a reusable workflow (`workflow_call`). Composite actions run as steps within a job — more flexible and lower overhead.
 - **AWS CLI over `aws-actions/amazon-ecs-deploy-task-definition`**: Direct `aws ecs` CLI gives full transparency over task definition manipulation. The action strips metadata fields (`taskDefinitionArn`, `revision`, `status`, etc.) with `jq` before re-registering.
 - **`id-token: write` permission**: Added proactively for future OIDC authentication migration (documented in setup guide).
+
+### Key Files (15B)
+- `.github/workflows/deploy-staging.yml` — Manual staging deploy (build → deploy → smoke test)
+- `.github/workflows/deploy-prod.yml` — Manual prod deploy with confirmation + approval gate
+- `.github/workflows/rollback.yml` — Manual rollback to previous ECS task definition revision
+- `docs/rollback-procedure.md` — Operational runbook for rollbacks (workflow + CLI fallback)
+
+### Architecture (15B)
+```
+Manual trigger (workflow_dispatch)
+  ├─→ Deploy Staging (deploy-staging.yml)
+  │     ├─ Resolve git ref → SHA
+  │     ├─ Build frontend + backend → staging ECR
+  │     ├─ [1 reviewer approval — GitHub environment]
+  │     ├─ Deploy to docteams-staging ECS
+  │     └─ Smoke tests (ALB health checks)
+  │
+  └─→ Deploy Production (deploy-prod.yml)
+        ├─ Require "deploy-prod" confirmation input
+        ├─ Resolve git ref → SHA
+        ├─ Build frontend + backend → prod ECR
+        ├─ [2 reviewer approvals + 5-min wait — GitHub environment]
+        ├─ Deploy to docteams-prod ECS
+        └─ Smoke tests (ALB health checks)
+
+Manual trigger (workflow_dispatch)
+  └─→ Rollback (rollback.yml)
+        ├─ Select environment (dev/staging/prod) + service (frontend/backend/both)
+        ├─ Require "rollback" confirmation input
+        ├─ Find previous task definition revision (N-1)
+        ├─ Update ECS service to previous revision
+        └─ Wait for stability
+```
+
+### Deviations from Original Plan (15B)
+- **Self-contained workflows over reusable build**: Staging and prod workflows each include their own build jobs rather than calling `build-and-push.yml` via `workflow_call`. This keeps each environment's pipeline independent and avoids risk of breaking the existing dev pipeline. The frontend Docker image bakes in `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` at build time — different Clerk instances per env require separate builds.
+- **Confirmation input for prod**: Added `confirm: "deploy-prod"` text input as an additional safety layer beyond GitHub environment protection rules.
+- **Rollback uses task definition history**: Instead of rebuilding old images, rollback simply points the ECS service at the previous task definition revision (N-1). This is fast (~2-3 min) and doesn't require Docker builds.
+- **Per-environment GHA cache scopes**: Each environment uses its own Buildx cache scope (e.g., `frontend-staging`, `backend-prod`) to avoid cache pollution across environments.
 
 ---
 

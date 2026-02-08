@@ -34,13 +34,15 @@ class ProjectServiceTest {
   @Test
   void listProjects_adminSeesAll() {
     var project = new Project("Test", "Desc", MEMBER_ID);
-    when(repository.findAll()).thenReturn(List.of(project));
+    when(repository.findAllProjectsWithRole(MEMBER_ID))
+        .thenReturn(List.of(new ProjectWithRole(project, null)));
 
     var result = service.listProjects(MEMBER_ID, "admin");
 
     assertThat(result).hasSize(1);
     assertThat(result.getFirst().project().getName()).isEqualTo("Test");
-    verify(repository).findAll();
+    assertThat(result.getFirst().projectRole()).isNull();
+    verify(repository).findAllProjectsWithRole(MEMBER_ID);
   }
 
   @Test

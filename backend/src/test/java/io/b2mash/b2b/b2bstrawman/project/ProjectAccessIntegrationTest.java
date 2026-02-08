@@ -199,6 +199,28 @@ class ProjectAccessIntegrationTest {
         .andExpect(jsonPath("$.projectRole").value("lead"));
   }
 
+  @Test
+  void adminNotOnProjectSeesNullRole() throws Exception {
+    var projectId = createProjectAs(leadJwt(), "Admin Not Member");
+
+    mockMvc
+        .perform(get("/api/projects/" + projectId).with(adminJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.name").value("Admin Not Member"))
+        .andExpect(jsonPath("$.projectRole").isEmpty());
+  }
+
+  @Test
+  void ownerNotOnProjectSeesNullRole() throws Exception {
+    var projectId = createProjectAs(leadJwt(), "Owner Not Member");
+
+    mockMvc
+        .perform(get("/api/projects/" + projectId).with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.name").value("Owner Not Member"))
+        .andExpect(jsonPath("$.projectRole").isEmpty());
+  }
+
   // --- Create project (all members can) ---
 
   @Test

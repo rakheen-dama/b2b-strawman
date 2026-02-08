@@ -18,4 +18,15 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
       ORDER BY p.createdAt DESC
       """)
   List<ProjectWithRole> findProjectsForMember(@Param("memberId") UUID memberId);
+
+  @Query(
+      """
+      SELECT new io.b2mash.b2b.b2bstrawman.project.ProjectWithRole(
+          p, pm.projectRole
+      )
+      FROM Project p LEFT JOIN ProjectMember pm
+        ON p.id = pm.projectId AND pm.memberId = :memberId
+      ORDER BY p.createdAt DESC
+      """)
+  List<ProjectWithRole> findAllProjectsWithRole(@Param("memberId") UUID memberId);
 }

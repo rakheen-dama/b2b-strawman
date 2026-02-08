@@ -35,13 +35,7 @@ public class ProjectService {
   @Transactional(readOnly = true)
   public List<ProjectWithRole> listProjects(UUID memberId, String orgRole) {
     if ("owner".equals(orgRole) || "admin".equals(orgRole)) {
-      return repository.findAll().stream()
-          .map(
-              p -> {
-                var role = lookupProjectRole(p.getId(), memberId);
-                return new ProjectWithRole(p, role);
-              })
-          .toList();
+      return repository.findAllProjectsWithRole(memberId);
     }
     return repository.findProjectsForMember(memberId);
   }
@@ -98,13 +92,6 @@ public class ProjectService {
               return true;
             })
         .orElse(false);
-  }
-
-  private String lookupProjectRole(UUID projectId, UUID memberId) {
-    return projectMemberRepository
-        .findByProjectIdAndMemberId(projectId, memberId)
-        .map(ProjectMember::getProjectRole)
-        .orElse(null);
   }
 
   private ErrorResponseException forbidden(String title, String detail) {

@@ -70,7 +70,7 @@ Follow all conventions, patterns, and anti-patterns described there.
 
 ## Step 5 — Build & Test
 
-Run the appropriate verification commands from within the worktree:
+Run the appropriate verification commands using tasks or seperate subagents if possible from within the worktree:
 
 **Backend** (from worktree `backend/` directory):
 ```bash

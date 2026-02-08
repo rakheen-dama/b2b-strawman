@@ -37,7 +37,7 @@ export default async function OrgDashboardPage({ params }: { params: Promise<{ s
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardDescription>Total Projects</CardDescription>
+            <CardDescription>{isAdmin ? "All Projects" : "Your Projects"}</CardDescription>
             <FolderOpen className="text-muted-foreground size-4" />
           </CardHeader>
           <CardContent>
@@ -48,14 +48,12 @@ export default async function OrgDashboardPage({ params }: { params: Promise<{ s
 
       {/* Quick Actions */}
       <div className="flex flex-wrap gap-2">
-        {isAdmin && (
-          <Button asChild size="sm">
-            <Link href={`/org/${slug}/projects`}>
-              <Plus className="mr-1.5 size-4" />
-              New Project
-            </Link>
-          </Button>
-        )}
+        <Button asChild size="sm">
+          <Link href={`/org/${slug}/projects`}>
+            <Plus className="mr-1.5 size-4" />
+            New Project
+          </Link>
+        </Button>
         <Button asChild variant="outline" size="sm">
           <Link href={`/org/${slug}/projects`}>
             <FolderOpen className="mr-1.5 size-4" />
@@ -89,14 +87,12 @@ export default async function OrgDashboardPage({ params }: { params: Promise<{ s
           {recentProjects.length === 0 ? (
             <p className="text-muted-foreground text-sm">
               No projects yet.{" "}
-              {isAdmin && (
-                <Link
-                  href={`/org/${slug}/projects`}
-                  className="text-foreground underline underline-offset-4"
-                >
-                  Create your first project
-                </Link>
-              )}
+              <Link
+                href={`/org/${slug}/projects`}
+                className="text-foreground underline underline-offset-4"
+              >
+                Create your first project
+              </Link>
             </p>
           ) : (
             <ul className="divide-y">

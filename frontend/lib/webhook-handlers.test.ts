@@ -168,7 +168,7 @@ describe("handleMembershipCreated", () => {
 
   it("fetches user from Clerk and calls sync endpoint", async () => {
     mockGetUser.mockResolvedValue(mockClerkUser());
-    mockInternalApiClient.mockResolvedValue({ memberId: "uuid-1", action: "created" });
+    mockInternalApiClient.mockResolvedValue({ memberId: "uuid-1", clerkUserId: "user_789", action: "created" });
 
     await handleMembershipCreated(membershipEventData(), "msg_mem1");
 
@@ -187,7 +187,7 @@ describe("handleMembershipCreated", () => {
 
   it("strips 'org:' prefix from role", async () => {
     mockGetUser.mockResolvedValue(mockClerkUser());
-    mockInternalApiClient.mockResolvedValue({ memberId: "uuid-1", action: "created" });
+    mockInternalApiClient.mockResolvedValue({ memberId: "uuid-1", clerkUserId: "user_789", action: "created" });
 
     await handleMembershipCreated(membershipEventData({ role: "org:admin" }), "msg_mem2");
 
@@ -201,7 +201,7 @@ describe("handleMembershipCreated", () => {
 
   it("handles user with no last name", async () => {
     mockGetUser.mockResolvedValue(mockClerkUser({ lastName: null }));
-    mockInternalApiClient.mockResolvedValue({ memberId: "uuid-1", action: "created" });
+    mockInternalApiClient.mockResolvedValue({ memberId: "uuid-1", clerkUserId: "user_789", action: "created" });
 
     await handleMembershipCreated(membershipEventData(), "msg_mem3");
 
@@ -215,7 +215,7 @@ describe("handleMembershipCreated", () => {
 
   it("sends undefined name when user has no first or last name", async () => {
     mockGetUser.mockResolvedValue(mockClerkUser({ firstName: null, lastName: null }));
-    mockInternalApiClient.mockResolvedValue({ memberId: "uuid-1", action: "created" });
+    mockInternalApiClient.mockResolvedValue({ memberId: "uuid-1", clerkUserId: "user_789", action: "created" });
 
     await handleMembershipCreated(membershipEventData(), "msg_mem4");
 
@@ -225,6 +225,16 @@ describe("handleMembershipCreated", () => {
         body: expect.objectContaining({ name: undefined }),
       })
     );
+  });
+
+  it("skips sync when user has no email address", async () => {
+    mockGetUser.mockResolvedValue(mockClerkUser({ emailAddresses: [] }));
+
+    await expect(
+      handleMembershipCreated(membershipEventData(), "msg_mem_noemail")
+    ).resolves.toBeUndefined();
+
+    expect(mockInternalApiClient).not.toHaveBeenCalled();
   });
 
   it("logs error but does not throw on sync failure", async () => {
@@ -252,7 +262,7 @@ describe("handleMembershipUpdated", () => {
 
   it("fetches user from Clerk and calls sync endpoint with updated role", async () => {
     mockGetUser.mockResolvedValue(mockClerkUser());
-    mockInternalApiClient.mockResolvedValue({ memberId: "uuid-1", action: "updated" });
+    mockInternalApiClient.mockResolvedValue({ memberId: "uuid-1", clerkUserId: "user_789", action: "updated" });
 
     await handleMembershipUpdated(
       membershipEventData({ role: "org:admin" }),
@@ -356,7 +366,7 @@ describe("routeWebhookEvent", () => {
 
   it("routes organizationMembership.created to member sync", async () => {
     mockGetUser.mockResolvedValue(mockClerkUser());
-    mockInternalApiClient.mockResolvedValue({ memberId: "uuid-1", action: "created" });
+    mockInternalApiClient.mockResolvedValue({ memberId: "uuid-1", clerkUserId: "user_789", action: "created" });
 
     await routeWebhookEvent(
       {
@@ -376,7 +386,7 @@ describe("routeWebhookEvent", () => {
 
   it("routes organizationMembership.updated to member sync", async () => {
     mockGetUser.mockResolvedValue(mockClerkUser());
-    mockInternalApiClient.mockResolvedValue({ memberId: "uuid-1", action: "updated" });
+    mockInternalApiClient.mockResolvedValue({ memberId: "uuid-1", clerkUserId: "user_789", action: "updated" });
 
     await routeWebhookEvent(
       {

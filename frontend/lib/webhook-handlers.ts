@@ -6,6 +6,7 @@ import {
   type ProvisionOrgRequest,
   type ProvisionOrgResponse,
   type SyncMemberRequest,
+  type SyncMemberResponse,
   type UpdateOrgRequest,
 } from "@/lib/internal-api";
 
@@ -108,32 +109,41 @@ export async function handleOrganizationDeleted(
   console.log(`[webhook] organization.deleted: id=${data.id}, svixId=${svixId}`);
 }
 
-export async function handleMembershipCreated(
+async function syncMember(
   data: MembershipEventData,
-  svixId: string | null
+  svixId: string | null,
+  eventType: "created" | "updated"
 ): Promise<void> {
   const clerkOrgId = data.organization.id;
   const clerkUserId = data.public_user_data.user_id;
   const orgRole = mapClerkRole(data.role);
 
   console.log(
-    `[webhook] organizationMembership.created: orgId=${clerkOrgId}, userId=${clerkUserId}, role=${orgRole}, svixId=${svixId}`
+    `[webhook] organizationMembership.${eventType}: orgId=${clerkOrgId}, userId=${clerkUserId}, role=${orgRole}, svixId=${svixId}`
   );
 
   try {
     const client = await clerkClient();
     const user = await client.users.getUser(clerkUserId);
 
+    const email = user.emailAddresses[0]?.emailAddress;
+    if (!email) {
+      console.error(
+        `[webhook] Cannot sync member ${clerkUserId}: no email address found in Clerk`
+      );
+      return;
+    }
+
     const payload: SyncMemberRequest = {
       clerkOrgId,
       clerkUserId,
-      email: user.emailAddresses[0]?.emailAddress ?? "",
+      email,
       name: [user.firstName, user.lastName].filter(Boolean).join(" ") || undefined,
       avatarUrl: user.imageUrl || undefined,
       orgRole,
     };
 
-    const result = await internalApiClient<{ memberId: string; action: string }>(
+    const result = await internalApiClient<SyncMemberResponse>(
       "/internal/members/sync",
       { body: payload }
     );
@@ -150,46 +160,18 @@ export async function handleMembershipCreated(
   }
 }
 
+export async function handleMembershipCreated(
+  data: MembershipEventData,
+  svixId: string | null
+): Promise<void> {
+  return syncMember(data, svixId, "created");
+}
+
 export async function handleMembershipUpdated(
   data: MembershipEventData,
   svixId: string | null
 ): Promise<void> {
-  const clerkOrgId = data.organization.id;
-  const clerkUserId = data.public_user_data.user_id;
-  const orgRole = mapClerkRole(data.role);
-
-  console.log(
-    `[webhook] organizationMembership.updated: orgId=${clerkOrgId}, userId=${clerkUserId}, role=${orgRole}, svixId=${svixId}`
-  );
-
-  try {
-    const client = await clerkClient();
-    const user = await client.users.getUser(clerkUserId);
-
-    const payload: SyncMemberRequest = {
-      clerkOrgId,
-      clerkUserId,
-      email: user.emailAddresses[0]?.emailAddress ?? "",
-      name: [user.firstName, user.lastName].filter(Boolean).join(" ") || undefined,
-      avatarUrl: user.imageUrl || undefined,
-      orgRole,
-    };
-
-    const result = await internalApiClient<{ memberId: string; action: string }>(
-      "/internal/members/sync",
-      { body: payload }
-    );
-    console.log(
-      `[webhook] Member synced: memberId=${result.memberId}, action=${result.action}`
-    );
-  } catch (error) {
-    console.error(
-      `[webhook] Failed to sync member ${clerkUserId} in org ${clerkOrgId}:`,
-      error instanceof InternalApiError
-        ? `${error.status} ${error.statusText} - ${error.body}`
-        : error
-    );
-  }
+  return syncMember(data, svixId, "updated");
 }
 
 export async function handleMembershipDeleted(

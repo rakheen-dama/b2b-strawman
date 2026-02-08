@@ -40,6 +40,12 @@ export interface SyncMemberRequest {
   orgRole: string;
 }
 
+export interface SyncMemberResponse {
+  memberId: string;
+  clerkUserId: string;
+  action: string;
+}
+
 /**
  * Server-only API client for Spring Boot internal endpoints.
  * Authenticates via X-API-KEY header (not JWT).

@@ -2,30 +2,30 @@
 
 ## Epic Overview
 
-| Epic | Name | Scope | Deps | Effort | Slices | Status  |
-|------|------|-------|------|--------|--------|---------|
-| 1 | Scaffolding & Local Dev | Both | — | M | — | **Done** |
-| 2 | Auth & Clerk Integration | Frontend | 1 | M | — | **Done** |
-| 3 | Organization Management | Frontend | 2 | S | — | **Done** |
-| 4 | Webhook Infrastructure | Frontend | 1, 2 | M | 4A, 4B | **Done** |
+| Epic | Name | Scope | Deps | Effort | Slices   | Status  |
+|------|------|-------|------|--------|----------|---------|
+| 1 | Scaffolding & Local Dev | Both | — | M | —        | **Done** |
+| 2 | Auth & Clerk Integration | Frontend | 1 | M | —        | **Done** |
+| 3 | Organization Management | Frontend | 2 | S | —        | **Done** |
+| 4 | Webhook Infrastructure | Frontend | 1, 2 | M | 4A, 4B   | **Done** |
 | 5 | Tenant Provisioning | Backend | 1, 6 | L | 5A, 5B, 5C | **Done** |
-| 6 | Multitenancy Backend | Backend | 1 | L | — | **Done** |
-| 7 | Core API — Projects | Backend | 6 | M | 7A, 7B | **Done** |
-| 8 | Core API — Documents | Backend | 7, 9 | M | 8A, 8B | **Done** |
-| 9 | S3 Integration | Backend | 1 | S | — | **Done** |
+| 6 | Multitenancy Backend | Backend | 1 | L | —        | **Done** |
+| 7 | Core API — Projects | Backend | 6 | M | 7A, 7B   | **Done** |
+| 8 | Core API — Documents | Backend | 7, 9 | M | 8A, 8B   | **Done** |
+| 9 | S3 Integration | Backend | 1 | S | —        | **Done** |
 | 10 | Dashboard & Projects UI | Frontend | 3, 7 | M | 10A, 10B, 10C | **Done** |
 | 11 | Documents UI | Frontend | 10, 8 | M | 11A, 11B | **Done** |
-| 12 | Team Management UI | Frontend | 3 | S | — | **Done** |
-| 13 | Containerization | Both | 1 | S | — | **Done** |
-| 14 | AWS Infrastructure | Infra | 13 | XL | 14A–14D | **Done** |
+| 12 | Team Management UI | Frontend | 3 | S | —        | **Done** |
+| 13 | Containerization | Both | 1 | S | —        | **Done** |
+| 14 | AWS Infrastructure | Infra | 13 | XL | 14A–14D  | **Done** |
 | 15 | Deployment Pipeline | Infra | 13, 14 | L | 15A, 15B | **Done** |
-| 16 | Testing & Quality | Both | 7, 8, 10, 11 | L | 16A–16C |         |
+| 16 | Testing & Quality | Both | 7, 8, 10, 11 | L | 16A–16C  |         |
 | 17 | Members Table + Webhook Sync | Both | 4, 5 | M | 17A, 17B | **Done** |
 | 18 | MemberFilter + MemberContext | Backend | 17 | M | 18A, 18B | **Done** |
 | 19 | Project Members Table + API | Backend | 18 | M | 19A, 19B | **Done**|
-| 20 | Project Access Control | Backend | 19 | L | 20A, 20B |         |
-| 21 | Frontend — Project Members Panel | Frontend | 19, 20 | M | — |         |
-| 22 | Frontend — Filtered Project List | Frontend | 20, 21 | S | — |         |
+| 20 | Project Access Control | Backend | 19 | L | 20A, 20B | **Done** |
+| 21 | Frontend — Project Members Panel | Frontend | 19, 20 | M | 21A, 21B | **Done** |
+| 22 | Frontend — Filtered Project List | Frontend | 20, 21 | S | —        |         |
 
 ---
 
@@ -944,7 +944,7 @@ Manual trigger (workflow_dispatch)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **20A** | 20.1–20.5, 20.7, 20.8a | ProjectAccessService + project endpoint access control + tests | **Done** |
-| **20B** | 20.6, 20.8b | Document endpoint access control + tests | |
+| **20B** | 20.6, 20.8b | Document endpoint access control + tests | **Done** |
 
 ### Tasks
 
@@ -955,10 +955,10 @@ Manual trigger (workflow_dispatch)
 | 20.3 | Modify GET /api/projects/{id} | 20A | **Done** | Call `ProjectAccessService.checkAccess()`. If `!canView`, return 404 (not 403 — prevents info leakage). Add `projectRole` to response. |
 | 20.4 | Modify POST /api/projects | 20A | **Done** | Change `@PreAuthorize` from `ADMIN+` to `MEMBER+`. All org members can create projects. Creator auto-becomes lead (Epic 19). |
 | 20.5 | Modify PUT /api/projects/{id} | 20A | **Done** | Change `@PreAuthorize` to `MEMBER+`. Service checks `canEdit` via ProjectAccessService — allows project leads to edit (previously admin+ only). |
-| 20.6 | Modify document endpoints | 20B | | All document endpoints check project membership via ProjectAccessService. Upload-init/list (take projectId): check `canView`. Confirm/presign-download (take documentId): look up projectId first, then check. Non-member → 404. |
+| 20.6 | Modify document endpoints | 20B | **Done** | All document endpoints check project membership via ProjectAccessService. Upload-init/list (take projectId): check `canView`. Confirm/presign-download (take documentId): look up projectId first, then check. Non-member → 404. |
 | 20.7 | Update ProjectResponse DTO | 20A | **Done** | Add `projectRole` field (String, nullable). Non-null when user is a project member. Null for admin/owner viewing non-member projects. |
 | 20.8a | Project access control tests | 20A | **Done** | Member without project membership → 404 on GET single. Member creates project → lead → can GET/PUT. Regular member → view only (403 on PUT). Admin/owner → full access regardless. GET /api/projects filtered for members. Update existing ProjectIntegrationTest for new RBAC rules. |
-| 20.8b | Document access control tests | 20B | | Document upload-init/list check project membership. Confirm/presign-download/cancel look up projectId first, then check. Non-member → 404. Update existing DocumentIntegrationTest for new RBAC rules. |
+| 20.8b | Document access control tests | 20B | **Done** | Document upload-init/list check project membership. Confirm/presign-download/cancel look up projectId first, then check. Non-member → 404. Update existing DocumentIntegrationTest for new RBAC rules. |
 
 ### Slice 20A: ProjectAccessService + Project Endpoint Access Control
 
@@ -1010,33 +1010,35 @@ Manual trigger (workflow_dispatch)
 
 **Estimated Effort**: M
 
+**Status**: **Complete**
+
 ### Slices
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **21A** | 21.1–21.3, 21.6–21.7 | Types, server actions, read-only panel, page integration, role badges | **Done** |
-| **21B** | 21.4–21.5, 21.3 (wiring), 21.8 | AddMemberDialog, TransferLeadDialog, action buttons, tests | |
+| **21B** | 21.4–21.5, 21.3 (wiring), 21.8 | AddMemberDialog, TransferLeadDialog, action buttons, tests | **Done** |
 
 ### Tasks
 
 | ID | Task | Slice | Status | Notes |
 |----|------|-------|--------|-------|
-| 21.1 | Add TypeScript types | A | **Done** | In `lib/types.ts`: `OrgMember { id, name, email, avatarUrl, orgRole }`, `ProjectMember { id, memberId, name, email, avatarUrl, projectRole, createdAt }`, `ProjectRole = "lead" \| "member"`. Updated `Project` to include `projectRole: ProjectRole \| null`. |
+| 21.1 | Add TypeScript types | A | **Done** | In `lib/types.ts`: `Member { id, name, email, avatarUrl, orgRole }`, `ProjectMember { id, memberId, name, email, avatarUrl, projectRole, createdAt }`, `ProjectRole = "lead" \| "member"`. Update `Project` to include `projectRole: string \| null`. |
 | 21.2 | Create project members server actions | A | **Done** | `projects/[id]/member-actions.ts` — `fetchProjectMembers(projectId)`, `fetchOrgMembers()`, `addProjectMember(slug, projectId, memberId)`, `removeProjectMember(slug, projectId, memberId)`, `transferLead(slug, projectId, memberId)`. Standard ActionResult pattern with revalidatePath. |
 | 21.3 | Build ProjectMembersPanel | A+B | **Done** | **Slice A**: Read-only client component — member table with avatar, name, email, role badge (Lead/Member via Shadcn Badge). No action buttons yet. **Slice B**: Wire up "Add Member" button (lead/admin/owner), "Remove" button per row (not on lead's row), "Transfer Lead" per row (current lead only). `useTransition()` for loading states. |
-| 21.4 | Build AddMemberDialog | B | | `components/projects/add-member-dialog.tsx` — Shadcn Dialog with searchable org member list via Shadcn Command (cmdk). Fetches `GET /api/members`, filters out existing project members. Shows name + email + avatar. Install `command` Shadcn component. |
-| 21.5 | Build TransferLeadDialog | B | | `components/projects/transfer-lead-dialog.tsx` — Shadcn AlertDialog (destructive action). "Transfer lead role to {name}? You will become a regular member." |
+| 21.4 | Build AddMemberDialog | B | **Done** | `components/projects/add-member-dialog.tsx` — Shadcn Dialog with searchable org member list via Shadcn Command (cmdk). Fetches `GET /api/members`, filters out existing project members. Shows name + email + avatar. Install `command` Shadcn component. |
+| 21.5 | Build TransferLeadDialog | B | **Done** | `components/projects/transfer-lead-dialog.tsx` — Shadcn AlertDialog (destructive action). "Transfer lead role to {name}? You will become a regular member." |
 | 21.6 | Update project detail page | A | **Done** | Add `ProjectMembersPanel` below DocumentsPanel. Pass `projectRole` from updated project response. Fetch project members on server side. Update edit button: visible for lead + admin/owner (was admin+ only). |
 | 21.7 | Add role badge to project detail header | A | **Done** | Badge next to project name showing user's project role (Lead/Member). Nothing for admin/owner viewing non-member projects. |
-| 21.8 | Add frontend tests | B | | Member list renders with roles. AddMemberDialog filters existing members. Action button visibility by role. Remove and transfer actions. |
+| 21.8 | Add frontend tests | B | **Done** | Member list renders with roles. AddMemberDialog filters existing members. Action button visibility by role. Remove and transfer actions. |
 
 ### Key Files
 
 **Create:**
 - `frontend/app/(app)/org/[slug]/projects/[id]/member-actions.ts`
 - `frontend/components/projects/project-members-panel.tsx`
-- `frontend/components/projects/add-member-dialog.tsx`
-- `frontend/components/projects/transfer-lead-dialog.tsx`
+- `frontend/components/projects/add-member-dialog.tsx` *(Slice B)*
+- `frontend/components/projects/transfer-lead-dialog.tsx` *(Slice B)*
 
 **Modify:**
 - `frontend/lib/types.ts` — New interfaces
@@ -1044,6 +1046,7 @@ Manual trigger (workflow_dispatch)
 
 ### Architecture Decisions
 
+- **Two-slice decomposition**: Slice A (display) is independently deployable — members panel renders as a read-only table showing who's on the project and their roles. Slice B adds all interactive CRUD (add/remove/transfer) via dialogs. This minimizes blast radius per PR and allows early visual verification.
 - **Client component for members panel**: Interactive state (add/remove, loading, transitions) requires client component. Server component fetches initial data and passes props — same pattern as DocumentsPanel.
 - **Shadcn Command for member picker**: Keyboard-navigable, searchable list. Standard Shadcn pattern for combobox/search UIs.
 - **AlertDialog for lead transfer**: Destructive/irreversible action — prevents accidental clicks. Consistent with DeleteProjectDialog pattern.
@@ -1060,15 +1063,17 @@ Manual trigger (workflow_dispatch)
 
 **Estimated Effort**: S
 
+**Status**: **Done**
+
 ### Tasks
 
 | ID | Task | Status | Notes |
 |----|------|--------|-------|
-| 22.1 | Update projects list page | | Backend already filters by membership. Show "New Project" for ALL org roles (was admin+ only). Show `projectRole` badge on project cards. Update empty state for members: "You're not on any projects yet." |
-| 22.2 | Update dashboard page | | Backend returns filtered projects so stats are correct. Show "New Project" quick action for all roles. Label: "Your Projects" for members, "All Projects" for admin/owner. |
-| 22.3 | Update createProject server action | | Remove admin-only role check in `projects/actions.ts` (was checking `orgRole !== "org:admin" && orgRole !== "org:owner"`). All members can create. Backend enforces auth. |
-| 22.4 | Update project detail edit/delete visibility | | Edit button: `projectRole === "lead"` OR admin+. Delete: owner only (unchanged). Update `updateProject` server action role check to allow leads. |
-| 22.5 | Add frontend tests | | "New Project" renders for all roles. Project cards show role badges. Edit visible for lead. |
+| 22.1 | Update projects list page | **Done** | Backend already filters by membership. Show "New Project" for ALL org roles (was admin+ only). Show `projectRole` badge on project cards. Update empty state for members: "You're not on any projects yet." |
+| 22.2 | Update dashboard page | **Done** | Backend returns filtered projects so stats are correct. Show "New Project" quick action for all roles. Label: "Your Projects" for members, "All Projects" for admin/owner. |
+| 22.3 | Update createProject server action | **Done** | Already removed by Epic 21 — `updateProject` no longer has admin-only check. Backend enforces auth. |
+| 22.4 | Update project detail edit/delete visibility | **Done** | Already done by Epic 21 — `canEdit = isAdmin \|\| project.projectRole === "lead"`. Delete: owner only (unchanged). |
+| 22.5 | Add frontend tests | **Done** | 9 tests: "New Project" renders for all roles, project cards show role badges, empty state messaging. |
 
 ### Key Files
 

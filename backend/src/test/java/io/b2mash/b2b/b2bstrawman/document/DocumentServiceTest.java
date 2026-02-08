@@ -127,6 +127,21 @@ class DocumentServiceTest {
   }
 
   @Test
+  void initiateUpload_returnsEmptyWhenAccessDenied() {
+    when(projectRepository.existsById(PROJECT_ID)).thenReturn(true);
+    when(projectAccessService.checkAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
+        .thenReturn(ProjectAccess.DENIED);
+
+    var result =
+        service.initiateUpload(
+            PROJECT_ID, "doc.pdf", "application/pdf", 5000, ORG_ID, MEMBER_ID, ORG_ROLE);
+
+    assertThat(result).isEmpty();
+    verify(documentRepository, never()).save(any());
+    verify(s3Service, never()).generateUploadUrl(any(), any(), any(), any());
+  }
+
+  @Test
   void confirmUpload_transitionsPendingToUploaded() {
     var docId = UUID.randomUUID();
     var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, MEMBER_ID);
@@ -182,6 +197,62 @@ class DocumentServiceTest {
 
     assertThat(result).isEmpty();
     verify(documentRepository, never()).save(any());
+  }
+
+  @Test
+  void cancelUpload_deletesDocumentWhenPending() {
+    var docId = UUID.randomUUID();
+    var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, MEMBER_ID);
+
+    when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
+    when(projectAccessService.checkAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE)).thenReturn(GRANTED);
+
+    var result = service.cancelUpload(docId, MEMBER_ID, ORG_ROLE);
+
+    assertThat(result).isPresent();
+    assertThat(result.get()).isEqualTo(DocumentService.CancelResult.DELETED);
+    verify(documentRepository).delete(doc);
+  }
+
+  @Test
+  void cancelUpload_returnsNotPendingForUploadedDocument() {
+    var docId = UUID.randomUUID();
+    var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, MEMBER_ID);
+    doc.confirmUpload(); // status is UPLOADED
+
+    when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
+    when(projectAccessService.checkAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE)).thenReturn(GRANTED);
+
+    var result = service.cancelUpload(docId, MEMBER_ID, ORG_ROLE);
+
+    assertThat(result).isPresent();
+    assertThat(result.get()).isEqualTo(DocumentService.CancelResult.NOT_PENDING);
+    verify(documentRepository, never()).delete(any());
+  }
+
+  @Test
+  void cancelUpload_returnsEmptyWhenAccessDenied() {
+    var docId = UUID.randomUUID();
+    var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, MEMBER_ID);
+
+    when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
+    when(projectAccessService.checkAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
+        .thenReturn(ProjectAccess.DENIED);
+
+    var result = service.cancelUpload(docId, MEMBER_ID, ORG_ROLE);
+
+    assertThat(result).isEmpty();
+    verify(documentRepository, never()).delete(any());
+  }
+
+  @Test
+  void cancelUpload_returnsEmptyForUnknownDocument() {
+    var docId = UUID.randomUUID();
+    when(documentRepository.findById(docId)).thenReturn(Optional.empty());
+
+    var result = service.cancelUpload(docId, MEMBER_ID, ORG_ROLE);
+
+    assertThat(result).isEmpty();
   }
 
   @Test

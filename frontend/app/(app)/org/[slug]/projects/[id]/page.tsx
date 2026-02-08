@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { api, handleApiError } from "@/lib/api";
-import type { Project, Document, ProjectMember } from "@/lib/types";
+import type { Project, Document, ProjectMember, ProjectRole } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EditProjectDialog } from "@/components/projects/edit-project-dialog";
@@ -11,7 +11,7 @@ import { formatDate } from "@/lib/format";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 
-const PROJECT_ROLE_BADGE: Record<string, { label: string; variant: "default" | "outline" }> = {
+const PROJECT_ROLE_BADGE: Record<ProjectRole, { label: string; variant: "default" | "outline" }> = {
   lead: { label: "Lead", variant: "default" },
   member: { label: "Member", variant: "outline" },
 };
@@ -105,7 +105,7 @@ export default async function ProjectDetailPage({
 
       <DocumentsPanel documents={documents} projectId={id} slug={slug} />
 
-      <ProjectMembersPanel members={members} projectId={id} slug={slug} />
+      <ProjectMembersPanel members={members} />
     </div>
   );
 }

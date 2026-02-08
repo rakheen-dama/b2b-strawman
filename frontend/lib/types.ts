@@ -7,7 +7,7 @@ export interface Project {
   createdBy: string;
   createdAt: string;
   updatedAt: string;
-  projectRole: string | null;
+  projectRole: ProjectRole | null;
 }
 
 export interface CreateProjectRequest {

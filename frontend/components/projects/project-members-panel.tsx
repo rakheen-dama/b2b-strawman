@@ -29,8 +29,6 @@ function MemberAvatar({ name }: { name: string }) {
 
 interface ProjectMembersPanelProps {
   members: ProjectMember[];
-  projectId: string;
-  slug: string;
 }
 
 export function ProjectMembersPanel({ members }: ProjectMembersPanelProps) {

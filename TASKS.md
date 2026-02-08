@@ -23,7 +23,7 @@
 | 17 | Members Table + Webhook Sync | Both | 4, 5 | M | 17A, 17B | **Done** |
 | 18 | MemberFilter + MemberContext | Backend | 17 | M | 18A, 18B | **Done** |
 | 19 | Project Members Table + API | Backend | 18 | M | 19A, 19B | **Done**|
-| 20 | Project Access Control | Backend | 19 | L | 20A, 20B |         |
+| 20 | Project Access Control | Backend | 19 | L | 20A, 20B | **Done** |
 | 21 | Frontend — Project Members Panel | Frontend | 19, 20 | M | 21A, 21B |         |
 | 22 | Frontend — Filtered Project List | Frontend | 20, 21 | S | —        |         |
 
@@ -944,7 +944,7 @@ Manual trigger (workflow_dispatch)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **20A** | 20.1–20.5, 20.7, 20.8a | ProjectAccessService + project endpoint access control + tests | **Done** |
-| **20B** | 20.6, 20.8b | Document endpoint access control + tests | |
+| **20B** | 20.6, 20.8b | Document endpoint access control + tests | **Done** |
 
 ### Tasks
 
@@ -955,10 +955,10 @@ Manual trigger (workflow_dispatch)
 | 20.3 | Modify GET /api/projects/{id} | 20A | **Done** | Call `ProjectAccessService.checkAccess()`. If `!canView`, return 404 (not 403 — prevents info leakage). Add `projectRole` to response. |
 | 20.4 | Modify POST /api/projects | 20A | **Done** | Change `@PreAuthorize` from `ADMIN+` to `MEMBER+`. All org members can create projects. Creator auto-becomes lead (Epic 19). |
 | 20.5 | Modify PUT /api/projects/{id} | 20A | **Done** | Change `@PreAuthorize` to `MEMBER+`. Service checks `canEdit` via ProjectAccessService — allows project leads to edit (previously admin+ only). |
-| 20.6 | Modify document endpoints | 20B | | All document endpoints check project membership via ProjectAccessService. Upload-init/list (take projectId): check `canView`. Confirm/presign-download (take documentId): look up projectId first, then check. Non-member → 404. |
+| 20.6 | Modify document endpoints | 20B | **Done** | All document endpoints check project membership via ProjectAccessService. Upload-init/list (take projectId): check `canView`. Confirm/presign-download (take documentId): look up projectId first, then check. Non-member → 404. |
 | 20.7 | Update ProjectResponse DTO | 20A | **Done** | Add `projectRole` field (String, nullable). Non-null when user is a project member. Null for admin/owner viewing non-member projects. |
 | 20.8a | Project access control tests | 20A | **Done** | Member without project membership → 404 on GET single. Member creates project → lead → can GET/PUT. Regular member → view only (403 on PUT). Admin/owner → full access regardless. GET /api/projects filtered for members. Update existing ProjectIntegrationTest for new RBAC rules. |
-| 20.8b | Document access control tests | 20B | | Document upload-init/list check project membership. Confirm/presign-download/cancel look up projectId first, then check. Non-member → 404. Update existing DocumentIntegrationTest for new RBAC rules. |
+| 20.8b | Document access control tests | 20B | **Done** | Document upload-init/list check project membership. Confirm/presign-download/cancel look up projectId first, then check. Non-member → 404. Update existing DocumentIntegrationTest for new RBAC rules. |
 
 ### Slice 20A: ProjectAccessService + Project Endpoint Access Control
 

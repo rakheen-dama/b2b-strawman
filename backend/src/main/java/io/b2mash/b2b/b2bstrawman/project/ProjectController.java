@@ -6,7 +6,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -32,22 +31,35 @@ public class ProjectController {
 
   @GetMapping
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
-  public ResponseEntity<List<ProjectResponse>> listProjects() {
-    var projects = projectService.listProjects().stream().map(ProjectResponse::from).toList();
+  public ResponseEntity<?> listProjects() {
+    UUID memberId = MemberContext.getCurrentMemberId();
+    String orgRole = MemberContext.getOrgRole();
+    if (memberId == null) {
+      return ResponseEntity.of(memberContextMissing()).build();
+    }
+    var projects =
+        projectService.listProjects(memberId, orgRole).stream()
+            .map(pwr -> ProjectResponse.from(pwr.project(), pwr.projectRole()))
+            .toList();
     return ResponseEntity.ok(projects);
   }
 
   @GetMapping("/{id}")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<?> getProject(@PathVariable UUID id) {
+    UUID memberId = MemberContext.getCurrentMemberId();
+    String orgRole = MemberContext.getOrgRole();
+    if (memberId == null) {
+      return ResponseEntity.of(memberContextMissing()).build();
+    }
     return projectService
-        .getProject(id)
-        .map(project -> ResponseEntity.ok(ProjectResponse.from(project)))
+        .getProject(id, memberId, orgRole)
+        .map(pwr -> ResponseEntity.ok(ProjectResponse.from(pwr.project(), pwr.projectRole())))
         .orElseGet(() -> ResponseEntity.of(notFound(id)).build());
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<?> createProject(@Valid @RequestBody CreateProjectRequest request) {
     UUID createdBy = MemberContext.getCurrentMemberId();
     if (createdBy == null) {
@@ -55,16 +67,21 @@ public class ProjectController {
     }
     var project = projectService.createProject(request.name(), request.description(), createdBy);
     return ResponseEntity.created(URI.create("/api/projects/" + project.getId()))
-        .body(ProjectResponse.from(project));
+        .body(ProjectResponse.from(project, "lead"));
   }
 
   @PutMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<?> updateProject(
       @PathVariable UUID id, @Valid @RequestBody UpdateProjectRequest request) {
+    UUID memberId = MemberContext.getCurrentMemberId();
+    String orgRole = MemberContext.getOrgRole();
+    if (memberId == null) {
+      return ResponseEntity.of(memberContextMissing()).build();
+    }
     return projectService
-        .updateProject(id, request.name(), request.description())
-        .map(project -> ResponseEntity.ok(ProjectResponse.from(project)))
+        .updateProject(id, request.name(), request.description(), memberId, orgRole)
+        .map(pwr -> ResponseEntity.ok(ProjectResponse.from(pwr.project(), pwr.projectRole())))
         .orElseGet(() -> ResponseEntity.of(notFound(id)).build());
   }
 
@@ -111,7 +128,8 @@ public class ProjectController {
       String description,
       UUID createdBy,
       Instant createdAt,
-      Instant updatedAt) {
+      Instant updatedAt,
+      String projectRole) {
 
     public static ProjectResponse from(Project project) {
       return new ProjectResponse(
@@ -120,7 +138,19 @@ public class ProjectController {
           project.getDescription(),
           project.getCreatedBy(),
           project.getCreatedAt(),
-          project.getUpdatedAt());
+          project.getUpdatedAt(),
+          null);
+    }
+
+    public static ProjectResponse from(Project project, String projectRole) {
+      return new ProjectResponse(
+          project.getId(),
+          project.getName(),
+          project.getDescription(),
+          project.getCreatedBy(),
+          project.getCreatedAt(),
+          project.getUpdatedAt(),
+          projectRole);
     }
   }
 }

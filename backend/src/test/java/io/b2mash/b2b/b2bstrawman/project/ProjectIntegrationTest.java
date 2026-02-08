@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
@@ -37,6 +38,7 @@ import org.springframework.test.web.servlet.MvcResult;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ProjectIntegrationTest {
 
+  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_project_test";
   private static final String ORG_B_ID = "org_project_test_b";
   private static final String UUID_PATTERN =
@@ -46,9 +48,14 @@ class ProjectIntegrationTest {
   @Autowired private TenantProvisioningService provisioningService;
 
   @BeforeAll
-  void provisionTenants() {
+  void provisionTenants() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Project Test Org");
     provisioningService.provisionTenant(ORG_B_ID, "Project Test Org B");
+
+    syncMember(ORG_ID, "user_owner", "proj_owner@test.com", "Owner", "owner");
+    syncMember(ORG_ID, "user_admin", "proj_admin@test.com", "Admin", "admin");
+    syncMember(ORG_ID, "user_member", "proj_member@test.com", "Member", "member");
+    syncMember(ORG_B_ID, "user_tenant_b", "proj_tenantb@test.com", "Tenant B User", "member");
   }
 
   // --- CRUD happy path ---
@@ -72,12 +79,14 @@ class ProjectIntegrationTest {
             .andExpect(jsonPath("$.id").exists())
             .andExpect(jsonPath("$.createdAt").exists())
             .andExpect(jsonPath("$.updatedAt").exists())
+            .andExpect(jsonPath("$.projectRole").value("lead"))
             .andReturn();
 
     var id = extractIdFromLocation(createResult);
 
+    // Owner can always get any project
     mockMvc
-        .perform(get("/api/projects/" + id).with(memberJwt()))
+        .perform(get("/api/projects/" + id).with(ownerJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Test Project"))
         .andExpect(jsonPath("$.description").value("A test project"));
@@ -96,8 +105,9 @@ class ProjectIntegrationTest {
                     """))
         .andExpect(status().isCreated());
 
+    // Admin sees all projects
     mockMvc
-        .perform(get("/api/projects").with(memberJwt()))
+        .perform(get("/api/projects").with(adminJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$.length()").value(greaterThanOrEqualTo(1)));
@@ -155,7 +165,7 @@ class ProjectIntegrationTest {
         .perform(delete("/api/projects/" + id).with(ownerJwt()))
         .andExpect(status().isNoContent());
 
-    mockMvc.perform(get("/api/projects/" + id).with(memberJwt())).andExpect(status().isNotFound());
+    mockMvc.perform(get("/api/projects/" + id).with(ownerJwt())).andExpect(status().isNotFound());
   }
 
   // --- Validation errors ---
@@ -221,7 +231,7 @@ class ProjectIntegrationTest {
   @Test
   void shouldReturn404ForNonexistentProject() throws Exception {
     mockMvc
-        .perform(get("/api/projects/00000000-0000-0000-0000-000000000000").with(memberJwt()))
+        .perform(get("/api/projects/00000000-0000-0000-0000-000000000000").with(ownerJwt()))
         .andExpect(status().isNotFound());
   }
 
@@ -249,12 +259,7 @@ class ProjectIntegrationTest {
   // --- RBAC ---
 
   @Test
-  void memberCanListProjects() throws Exception {
-    mockMvc.perform(get("/api/projects").with(memberJwt())).andExpect(status().isOk());
-  }
-
-  @Test
-  void memberCannotCreateProject() throws Exception {
+  void memberCanCreateProject() throws Exception {
     mockMvc
         .perform(
             post("/api/projects")
@@ -262,9 +267,10 @@ class ProjectIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"name": "Forbidden", "description": null}
+                    {"name": "Member Created", "description": null}
                     """))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.projectRole").value("lead"));
   }
 
   @Test
@@ -341,35 +347,6 @@ class ProjectIntegrationTest {
   }
 
   @Test
-  void memberCannotUpdateProject() throws Exception {
-    var createResult =
-        mockMvc
-            .perform(
-                post("/api/projects")
-                    .with(ownerJwt())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "Member Update Test", "description": null}
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-
-    var id = extractIdFromLocation(createResult);
-
-    mockMvc
-        .perform(
-            put("/api/projects/" + id)
-                .with(memberJwt())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"name": "Should Fail", "description": null}
-                    """))
-        .andExpect(status().isForbidden());
-  }
-
-  @Test
   void unauthenticatedUserCannotAccessProjects() throws Exception {
     mockMvc.perform(get("/api/projects")).andExpect(status().isUnauthorized());
   }
@@ -394,9 +371,9 @@ class ProjectIntegrationTest {
 
     var projectId = extractIdFromLocation(createResult);
 
-    // Verify visible from tenant A
+    // Verify visible from tenant A (owner can see all)
     mockMvc
-        .perform(get("/api/projects/" + projectId).with(memberJwt()))
+        .perform(get("/api/projects/" + projectId).with(ownerJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Tenant A Isolation"));
 
@@ -417,6 +394,33 @@ class ProjectIntegrationTest {
   private String extractIdFromLocation(MvcResult result) {
     String location = result.getResponse().getHeader("Location");
     return location.substring(location.lastIndexOf('/') + 1);
+  }
+
+  private String syncMember(
+      String orgId, String clerkUserId, String email, String name, String orgRole)
+      throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                post("/internal/members/sync")
+                    .header("X-API-KEY", API_KEY)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "clerkOrgId": "%s",
+                          "clerkUserId": "%s",
+                          "email": "%s",
+                          "name": "%s",
+                          "avatarUrl": null,
+                          "orgRole": "%s"
+                        }
+                        """
+                            .formatted(orgId, clerkUserId, email, name, orgRole)))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 
   private JwtRequestPostProcessor memberJwt() {

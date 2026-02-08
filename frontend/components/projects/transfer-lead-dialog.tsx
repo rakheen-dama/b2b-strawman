@@ -29,6 +29,7 @@ export function TransferLeadDialog({
   targetMemberName,
   children,
 }: TransferLeadDialogProps) {
+  const [open, setOpen] = useState(false);
   const [isTransferring, setIsTransferring] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,19 +39,28 @@ export function TransferLeadDialog({
 
     try {
       const result = await transferLead(slug, projectId, targetMemberId);
-      if (!result.success) {
+      if (result.success) {
+        setOpen(false);
+      } else {
         setError(result.error ?? "Failed to transfer lead role.");
-        setIsTransferring(false);
       }
-      // On success, server action revalidates path — page refreshes
     } catch {
       setError("An unexpected error occurred.");
+    } finally {
       setIsTransferring(false);
     }
   }
 
+  function handleOpenChange(newOpen: boolean) {
+    if (isTransferring) return;
+    if (newOpen) {
+      setError(null);
+    }
+    setOpen(newOpen);
+  }
+
   return (
-    <AlertDialog>
+    <AlertDialog open={open} onOpenChange={handleOpenChange}>
       <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

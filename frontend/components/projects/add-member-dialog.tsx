@@ -88,6 +88,7 @@ export function AddMemberDialog({
   }
 
   function handleOpenChange(newOpen: boolean) {
+    if (isAdding) return;
     if (newOpen) {
       setFetchError(null);
       setAddError(null);

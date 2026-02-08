@@ -22,7 +22,7 @@ export default async function ProjectDetailPage({
   params: Promise<{ slug: string; id: string }>;
 }) {
   const { slug, id } = await params;
-  const { orgRole } = await auth();
+  const { orgRole, userId } = await auth();
 
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
   const isOwner = orgRole === "org:owner";
@@ -35,6 +35,8 @@ export default async function ProjectDetailPage({
   }
 
   const canEdit = isAdmin || project.projectRole === "lead";
+  const isCurrentLead = project.projectRole === "lead";
+  const canManage = isAdmin || isCurrentLead;
 
   let documents: Document[] = [];
   try {
@@ -105,7 +107,14 @@ export default async function ProjectDetailPage({
 
       <DocumentsPanel documents={documents} projectId={id} slug={slug} />
 
-      <ProjectMembersPanel members={members} />
+      <ProjectMembersPanel
+        members={members}
+        slug={slug}
+        projectId={id}
+        canManage={canManage}
+        isCurrentLead={isCurrentLead}
+        currentUserId={userId ?? ""}
+      />
     </div>
   );
 }

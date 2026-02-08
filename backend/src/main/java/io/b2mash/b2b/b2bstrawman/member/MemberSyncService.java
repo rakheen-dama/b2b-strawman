@@ -17,14 +17,17 @@ public class MemberSyncService {
 
   private final MemberRepository memberRepository;
   private final OrgSchemaMappingRepository mappingRepository;
+  private final MemberFilter memberFilter;
   private final TransactionTemplate txTemplate;
 
   public MemberSyncService(
       MemberRepository memberRepository,
       OrgSchemaMappingRepository mappingRepository,
+      MemberFilter memberFilter,
       PlatformTransactionManager txManager) {
     this.memberRepository = memberRepository;
     this.mappingRepository = mappingRepository;
+    this.memberFilter = memberFilter;
     this.txTemplate = new TransactionTemplate(txManager);
     this.txTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
   }
@@ -67,18 +70,24 @@ public class MemberSyncService {
     try {
       TenantContext.setTenantId(schemaName);
 
-      return Boolean.TRUE.equals(
-          txTemplate.execute(
-              status -> {
-                if (!memberRepository.existsByClerkUserId(clerkUserId)) {
-                  log.info("Member {} not found in tenant {}", clerkUserId, schemaName);
-                  return false;
-                }
+      boolean deleted =
+          Boolean.TRUE.equals(
+              txTemplate.execute(
+                  status -> {
+                    if (!memberRepository.existsByClerkUserId(clerkUserId)) {
+                      log.info("Member {} not found in tenant {}", clerkUserId, schemaName);
+                      return false;
+                    }
 
-                memberRepository.deleteByClerkUserId(clerkUserId);
-                log.info("Deleted member {} from tenant {}", clerkUserId, schemaName);
-                return true;
-              }));
+                    memberRepository.deleteByClerkUserId(clerkUserId);
+                    log.info("Deleted member {} from tenant {}", clerkUserId, schemaName);
+                    return true;
+                  }));
+
+      if (deleted) {
+        memberFilter.evictFromCache(schemaName, clerkUserId);
+      }
+      return deleted;
 
     } finally {
       TenantContext.clear();

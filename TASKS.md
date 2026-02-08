@@ -2,8 +2,8 @@
 
 ## Epic Overview
 
-| Epic | Name | Scope | Deps | Effort | Slices | Status |
-|------|------|-------|------|--------|--------|--------|
+| Epic | Name | Scope | Deps | Effort | Slices | Status  |
+|------|------|-------|------|--------|--------|---------|
 | 1 | Scaffolding & Local Dev | Both | — | M | — | **Done** |
 | 2 | Auth & Clerk Integration | Frontend | 1 | M | — | **Done** |
 | 3 | Organization Management | Frontend | 2 | S | — | **Done** |
@@ -19,13 +19,13 @@
 | 13 | Containerization | Both | 1 | S | — | **Done** |
 | 14 | AWS Infrastructure | Infra | 13 | XL | 14A–14D | **Done** |
 | 15 | Deployment Pipeline | Infra | 13, 14 | L | 15A, 15B | **Done** |
-| 16 | Testing & Quality | Both | 7, 8, 10, 11 | L | 16A–16C | |
+| 16 | Testing & Quality | Both | 7, 8, 10, 11 | L | 16A–16C |         |
 | 17 | Members Table + Webhook Sync | Both | 4, 5 | M | 17A, 17B | **Done** |
 | 18 | MemberFilter + MemberContext | Backend | 17 | M | 18A, 18B | **Done** |
-| 19 | Project Members Table + API | Backend | 18 | M | 19A, 19B | |
-| 20 | Project Access Control | Backend | 19 | L | — | |
-| 21 | Frontend — Project Members Panel | Frontend | 19, 20 | M | — | |
-| 22 | Frontend — Filtered Project List | Frontend | 20, 21 | S | — | |
+| 19 | Project Members Table + API | Backend | 18 | M | 19A, 19B | **Done**|
+| 20 | Project Access Control | Backend | 19 | L | — |         |
+| 21 | Frontend — Project Members Panel | Frontend | 19, 20 | M | — |         |
+| 22 | Frontend — Filtered Project List | Frontend | 20, 21 | S | — |         |
 
 ---
 

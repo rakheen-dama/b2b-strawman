@@ -1,4 +1,5 @@
 #!/bin/bash
+# LocalStack-only init script. Production CORS is managed by Terraform (infra/modules/s3/main.tf).
 awslocal s3 mb "s3://${S3_BUCKET_NAME}"
 echo "Created bucket: ${S3_BUCKET_NAME}"
 

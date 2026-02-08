@@ -213,7 +213,7 @@ export function DocumentsPanel({ documents, projectId, slug }: DocumentsPanelPro
       });
 
       if (!uploadSuccess) {
-        if (initResult.documentId) cancelUpload(initResult.documentId);
+        if (initResult.documentId) await cancelUpload(initResult.documentId);
         return;
       }
 
@@ -222,7 +222,7 @@ export function DocumentsPanel({ documents, projectId, slug }: DocumentsPanelPro
       const confirmResult = await confirmUpload(slug, projectId, initResult.documentId);
 
       if (!confirmResult.success) {
-        if (initResult.documentId) cancelUpload(initResult.documentId);
+        if (initResult.documentId) await cancelUpload(initResult.documentId);
         dispatch({
           type: "SET_STATUS",
           id: item.id,

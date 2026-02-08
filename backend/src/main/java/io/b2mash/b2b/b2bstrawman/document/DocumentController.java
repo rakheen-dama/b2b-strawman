@@ -35,7 +35,13 @@ public class DocumentController {
       JwtAuthenticationToken auth) {
     @SuppressWarnings("unchecked")
     Map<String, Object> orgClaim = auth.getToken().getClaim("o");
-    String orgId = orgClaim != null ? (String) orgClaim.get("id") : null;
+    if (orgClaim == null || orgClaim.get("id") == null) {
+      var problem = ProblemDetail.forStatus(401);
+      problem.setTitle("Missing organization context");
+      problem.setDetail("JWT token does not contain organization claim");
+      return ResponseEntity.of(problem).build();
+    }
+    String orgId = (String) orgClaim.get("id");
     String uploadedBy = auth.getName();
 
     return documentService

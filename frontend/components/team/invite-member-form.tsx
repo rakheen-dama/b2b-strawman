@@ -4,6 +4,7 @@ import { useOrganization } from "@clerk/nextjs";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { inviteMember } from "@/app/(app)/org/[slug]/team/actions";
 
 export function InviteMemberForm() {
   const { organization, invitations } = useOrganization({
@@ -33,11 +34,11 @@ export function InviteMemberForm() {
 
     setIsSubmitting(true);
     try {
-      await organization.inviteMember({
-        emailAddress: trimmedEmail,
-        role,
-        redirect_url: `${window.location.origin}/dashboard`,
-      });
+      const result = await inviteMember(trimmedEmail, role);
+      if (!result.success) {
+        setError(result.error ?? "Failed to send invitation.");
+        return;
+      }
       await invitations?.revalidate?.();
       setEmailAddress("");
       setSuccess(`Invitation sent to ${trimmedEmail}.`);

@@ -5,6 +5,9 @@ spring:
         jwt:
           issuer-uri: https://test-issuer.example.com
 
+  jpa:
+    open-in-view: false
+
   flyway:
     enabled: false
 

@@ -57,10 +57,12 @@ public class TenantProvisioningService {
       String schemaName = SchemaNameGenerator.generateSchemaName(clerkOrgId);
       log.info("Provisioning tenant schema {} for org {}", schemaName, clerkOrgId);
 
-      // Each step is idempotent — safe to retry after partial failure
+      // Each step is idempotent — safe to retry after partial failure.
+      // Mapping is created LAST so TenantFilter only resolves to this
+      // schema once all tables exist (prevents race with first request).
       createSchema(schemaName);
-      createMapping(clerkOrgId, schemaName);
       runTenantMigrations(schemaName);
+      createMapping(clerkOrgId, schemaName);
 
       org.markCompleted();
       organizationRepository.save(org);

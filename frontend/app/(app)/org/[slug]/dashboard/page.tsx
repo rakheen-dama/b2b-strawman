@@ -1,11 +1,12 @@
 import { auth } from "@clerk/nextjs/server";
-import { api, handleApiError } from "@/lib/api";
+import { api, ApiError, handleApiError } from "@/lib/api";
 import type { Project } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatDateShort } from "@/lib/format";
-import { FolderOpen, Users, ArrowRight, Plus } from "lucide-react";
+import { FolderOpen, Users, ArrowRight, Plus, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { ProvisioningPendingRefresh } from "./provisioning-pending-refresh";
 
 export default async function OrgDashboardPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -17,6 +18,20 @@ export default async function OrgDashboardPage({ params }: { params: Promise<{ s
   try {
     projects = await api.get<Project[]>("/api/projects");
   } catch (error) {
+    if (error instanceof ApiError && error.status === 403) {
+      return (
+        <div className="flex min-h-[40vh] flex-col items-center justify-center gap-4">
+          <Loader2 className="text-muted-foreground size-8 animate-spin" />
+          <div className="text-center">
+            <h2 className="text-lg font-semibold">Setting up your workspace</h2>
+            <p className="text-muted-foreground mt-1 text-sm">
+              This usually takes just a few seconds.
+            </p>
+          </div>
+          <ProvisioningPendingRefresh />
+        </div>
+      );
+    }
     handleApiError(error);
   }
 

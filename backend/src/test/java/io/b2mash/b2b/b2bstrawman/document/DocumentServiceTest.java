@@ -32,11 +32,12 @@ class DocumentServiceTest {
   @InjectMocks private DocumentService service;
 
   private static final UUID PROJECT_ID = UUID.randomUUID();
+  private static final UUID MEMBER_ID = UUID.randomUUID();
   private static final String ORG_ID = "org_test";
 
   @Test
   void listDocuments_returnsDocumentsForExistingProject() {
-    var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, "user_1");
+    var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, MEMBER_ID);
     when(projectRepository.existsById(PROJECT_ID)).thenReturn(true);
     when(documentRepository.findByProjectId(PROJECT_ID)).thenReturn(List.of(doc));
 
@@ -80,7 +81,7 @@ class DocumentServiceTest {
             new PresignedUploadResult("https://s3.example.com/upload", "org/test/key", 3600));
 
     var result =
-        service.initiateUpload(PROJECT_ID, "doc.pdf", "application/pdf", 5000, ORG_ID, "user_1");
+        service.initiateUpload(PROJECT_ID, "doc.pdf", "application/pdf", 5000, ORG_ID, MEMBER_ID);
 
     assertThat(result).isPresent();
     assertThat(result.get().presignedUrl()).isEqualTo("https://s3.example.com/upload");
@@ -98,7 +99,7 @@ class DocumentServiceTest {
     when(projectRepository.existsById(PROJECT_ID)).thenReturn(false);
 
     var result =
-        service.initiateUpload(PROJECT_ID, "doc.pdf", "application/pdf", 5000, ORG_ID, "user_1");
+        service.initiateUpload(PROJECT_ID, "doc.pdf", "application/pdf", 5000, ORG_ID, MEMBER_ID);
 
     assertThat(result).isEmpty();
     verify(documentRepository, never()).save(any());
@@ -107,7 +108,7 @@ class DocumentServiceTest {
   @Test
   void confirmUpload_transitionsPendingToUploaded() {
     var docId = UUID.randomUUID();
-    var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, "user_1");
+    var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, MEMBER_ID);
     assertThat(doc.getStatus()).isEqualTo(Document.Status.PENDING);
 
     when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
@@ -123,7 +124,7 @@ class DocumentServiceTest {
   @Test
   void confirmUpload_isIdempotentForAlreadyUploadedDocument() {
     var docId = UUID.randomUUID();
-    var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, "user_1");
+    var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, MEMBER_ID);
     doc.confirmUpload(); // already UPLOADED
 
     when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
@@ -148,7 +149,7 @@ class DocumentServiceTest {
   @Test
   void getPresignedDownloadUrl_returnsUrlForUploadedDocument() {
     var docId = UUID.randomUUID();
-    var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, "user_1");
+    var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, MEMBER_ID);
     doc.assignS3Key("org/test/project/123/abc");
     doc.confirmUpload();
 
@@ -166,7 +167,7 @@ class DocumentServiceTest {
   @Test
   void getPresignedDownloadUrl_returnsNotUploadedForPendingDocument() {
     var docId = UUID.randomUUID();
-    var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, "user_1");
+    var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, MEMBER_ID);
     // status is PENDING
 
     when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));

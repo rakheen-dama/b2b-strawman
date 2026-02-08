@@ -24,7 +24,7 @@ public class Project {
   private String description;
 
   @Column(name = "created_by", nullable = false)
-  private String createdBy;
+  private UUID createdBy;
 
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
@@ -34,7 +34,7 @@ public class Project {
 
   protected Project() {}
 
-  public Project(String name, String description, String createdBy) {
+  public Project(String name, String description, UUID createdBy) {
     this.name = name;
     this.description = description;
     this.createdBy = createdBy;
@@ -54,7 +54,7 @@ public class Project {
     return description;
   }
 
-  public String getCreatedBy() {
+  public UUID getCreatedBy() {
     return createdBy;
   }
 

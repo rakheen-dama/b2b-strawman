@@ -39,7 +39,7 @@ public class DocumentService {
       String contentType,
       long size,
       String orgId,
-      String uploadedBy) {
+      UUID uploadedBy) {
     if (!projectRepository.existsById(projectId)) {
       return Optional.empty();
     }

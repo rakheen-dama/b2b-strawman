@@ -43,17 +43,21 @@ public class DocumentController {
       return ResponseEntity.of(problem).build();
     }
     String orgId = (String) orgClaim.get("id");
-    UUID uploadedBy = MemberContext.getCurrentMemberId();
-    if (uploadedBy == null) {
-      var problem = ProblemDetail.forStatus(500);
-      problem.setTitle("Member context not available");
-      problem.setDetail("Unable to resolve member identity for request");
-      return ResponseEntity.of(problem).build();
+    UUID memberId = MemberContext.getCurrentMemberId();
+    String orgRole = MemberContext.getOrgRole();
+    if (memberId == null) {
+      return ResponseEntity.of(memberContextMissing()).build();
     }
 
     return documentService
         .initiateUpload(
-            projectId, request.fileName(), request.contentType(), request.size(), orgId, uploadedBy)
+            projectId,
+            request.fileName(),
+            request.contentType(),
+            request.size(),
+            orgId,
+            memberId,
+            orgRole)
         .map(
             result ->
                 ResponseEntity.status(201)
@@ -66,8 +70,13 @@ public class DocumentController {
   @PostMapping("/api/documents/{documentId}/confirm")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<?> confirmUpload(@PathVariable UUID documentId) {
+    UUID memberId = MemberContext.getCurrentMemberId();
+    String orgRole = MemberContext.getOrgRole();
+    if (memberId == null) {
+      return ResponseEntity.of(memberContextMissing()).build();
+    }
     return documentService
-        .confirmUpload(documentId)
+        .confirmUpload(documentId, memberId, orgRole)
         .map(document -> ResponseEntity.ok(DocumentResponse.from(document)))
         .orElseGet(() -> ResponseEntity.of(documentNotFound(documentId)).build());
   }
@@ -75,8 +84,13 @@ public class DocumentController {
   @DeleteMapping("/api/documents/{documentId}/cancel")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<?> cancelUpload(@PathVariable UUID documentId) {
+    UUID memberId = MemberContext.getCurrentMemberId();
+    String orgRole = MemberContext.getOrgRole();
+    if (memberId == null) {
+      return ResponseEntity.of(memberContextMissing()).build();
+    }
     return documentService
-        .cancelUpload(documentId)
+        .cancelUpload(documentId, memberId, orgRole)
         .map(
             status ->
                 switch (status) {
@@ -94,8 +108,13 @@ public class DocumentController {
   @GetMapping("/api/projects/{projectId}/documents")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<?> listDocuments(@PathVariable UUID projectId) {
+    UUID memberId = MemberContext.getCurrentMemberId();
+    String orgRole = MemberContext.getOrgRole();
+    if (memberId == null) {
+      return ResponseEntity.of(memberContextMissing()).build();
+    }
     return documentService
-        .listDocuments(projectId)
+        .listDocuments(projectId, memberId, orgRole)
         .map(
             documents -> {
               var response = documents.stream().map(DocumentResponse::from).toList();
@@ -107,8 +126,13 @@ public class DocumentController {
   @GetMapping("/api/documents/{documentId}/presign-download")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<?> presignDownload(@PathVariable UUID documentId) {
+    UUID memberId = MemberContext.getCurrentMemberId();
+    String orgRole = MemberContext.getOrgRole();
+    if (memberId == null) {
+      return ResponseEntity.of(memberContextMissing()).build();
+    }
     return documentService
-        .getPresignedDownloadUrl(documentId)
+        .getPresignedDownloadUrl(documentId, memberId, orgRole)
         .map(
             result -> {
               if (!result.uploaded()) {
@@ -134,6 +158,13 @@ public class DocumentController {
     var problem = ProblemDetail.forStatus(404);
     problem.setTitle("Document not found");
     problem.setDetail("No document found with id " + documentId);
+    return problem;
+  }
+
+  private ProblemDetail memberContextMissing() {
+    var problem = ProblemDetail.forStatus(500);
+    problem.setTitle("Member context not available");
+    problem.setDetail("Unable to resolve member identity for request");
     return problem;
   }
 

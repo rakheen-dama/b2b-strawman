@@ -26,7 +26,7 @@ public class ProjectService {
   }
 
   @Transactional
-  public Project createProject(String name, String description, String createdBy) {
+  public Project createProject(String name, String description, UUID createdBy) {
     return repository.save(new Project(name, description, createdBy));
   }
 

@@ -39,7 +39,7 @@ public class Document {
   private Status status;
 
   @Column(name = "uploaded_by", nullable = false)
-  private String uploadedBy;
+  private UUID uploadedBy;
 
   @Column(name = "uploaded_at")
   private Instant uploadedAt;
@@ -49,8 +49,7 @@ public class Document {
 
   protected Document() {}
 
-  public Document(
-      UUID projectId, String fileName, String contentType, long size, String uploadedBy) {
+  public Document(UUID projectId, String fileName, String contentType, long size, UUID uploadedBy) {
     this.projectId = projectId;
     this.fileName = fileName;
     this.contentType = contentType;
@@ -98,7 +97,7 @@ public class Document {
     return status;
   }
 
-  public String getUploadedBy() {
+  public UUID getUploadedBy() {
     return uploadedBy;
   }
 

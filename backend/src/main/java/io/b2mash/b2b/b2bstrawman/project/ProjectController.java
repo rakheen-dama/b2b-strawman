@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.project;
 
+import io.b2mash.b2b.b2bstrawman.member.MemberContext;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -10,7 +11,6 @@ import java.util.UUID;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -49,8 +49,8 @@ public class ProjectController {
   @PostMapping
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ProjectResponse> createProject(
-      @Valid @RequestBody CreateProjectRequest request, JwtAuthenticationToken auth) {
-    String createdBy = auth.getName();
+      @Valid @RequestBody CreateProjectRequest request) {
+    UUID createdBy = MemberContext.getCurrentMemberId();
     var project = projectService.createProject(request.name(), request.description(), createdBy);
     return ResponseEntity.created(URI.create("/api/projects/" + project.getId()))
         .body(ProjectResponse.from(project));
@@ -100,7 +100,7 @@ public class ProjectController {
       UUID id,
       String name,
       String description,
-      String createdBy,
+      UUID createdBy,
       Instant createdAt,
       Instant updatedAt) {
 

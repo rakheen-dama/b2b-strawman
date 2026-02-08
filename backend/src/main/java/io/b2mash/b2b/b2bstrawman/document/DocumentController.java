@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.document;
 
+import io.b2mash.b2b.b2bstrawman.member.MemberContext;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
@@ -42,7 +43,7 @@ public class DocumentController {
       return ResponseEntity.of(problem).build();
     }
     String orgId = (String) orgClaim.get("id");
-    String uploadedBy = auth.getName();
+    UUID uploadedBy = MemberContext.getCurrentMemberId();
 
     return documentService
         .initiateUpload(
@@ -150,7 +151,7 @@ public class DocumentController {
       String contentType,
       long size,
       String status,
-      String uploadedBy,
+      UUID uploadedBy,
       Instant uploadedAt,
       Instant createdAt) {
 

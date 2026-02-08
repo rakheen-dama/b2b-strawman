@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.project;
 
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -38,6 +39,8 @@ class ProjectIntegrationTest {
 
   private static final String ORG_ID = "org_project_test";
   private static final String ORG_B_ID = "org_project_test_b";
+  private static final String UUID_PATTERN =
+      "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
@@ -65,7 +68,7 @@ class ProjectIntegrationTest {
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.name").value("Test Project"))
             .andExpect(jsonPath("$.description").value("A test project"))
-            .andExpect(jsonPath("$.createdBy").value("user_owner"))
+            .andExpect(jsonPath("$.createdBy").value(matchesPattern(UUID_PATTERN)))
             .andExpect(jsonPath("$.id").exists())
             .andExpect(jsonPath("$.createdAt").exists())
             .andExpect(jsonPath("$.updatedAt").exists())

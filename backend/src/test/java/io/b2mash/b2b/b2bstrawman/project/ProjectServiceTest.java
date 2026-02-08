@@ -18,12 +18,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class ProjectServiceTest {
 
+  private static final UUID MEMBER_ID = UUID.randomUUID();
+
   @Mock private ProjectRepository repository;
   @InjectMocks private ProjectService service;
 
   @Test
   void listProjects_delegatesToRepository() {
-    var project = new Project("Test", "Desc", "user_1");
+    var project = new Project("Test", "Desc", MEMBER_ID);
     when(repository.findAll()).thenReturn(List.of(project));
 
     var result = service.listProjects();
@@ -36,7 +38,7 @@ class ProjectServiceTest {
   @Test
   void getProject_returnsProjectWhenFound() {
     var id = UUID.randomUUID();
-    var project = new Project("Found", "Desc", "user_1");
+    var project = new Project("Found", "Desc", MEMBER_ID);
     when(repository.findById(id)).thenReturn(Optional.of(project));
 
     var result = service.getProject(id);
@@ -57,21 +59,21 @@ class ProjectServiceTest {
 
   @Test
   void createProject_savesNewEntity() {
-    var project = new Project("New", "Description", "user_1");
+    var project = new Project("New", "Description", MEMBER_ID);
     when(repository.save(any(Project.class))).thenReturn(project);
 
-    var result = service.createProject("New", "Description", "user_1");
+    var result = service.createProject("New", "Description", MEMBER_ID);
 
     assertThat(result.getName()).isEqualTo("New");
     assertThat(result.getDescription()).isEqualTo("Description");
-    assertThat(result.getCreatedBy()).isEqualTo("user_1");
+    assertThat(result.getCreatedBy()).isEqualTo(MEMBER_ID);
     verify(repository).save(any(Project.class));
   }
 
   @Test
   void updateProject_updatesExistingProject() {
     var id = UUID.randomUUID();
-    var existing = new Project("Old", "Old Desc", "user_1");
+    var existing = new Project("Old", "Old Desc", MEMBER_ID);
     when(repository.findById(id)).thenReturn(Optional.of(existing));
     when(repository.save(existing)).thenReturn(existing);
 
@@ -97,7 +99,7 @@ class ProjectServiceTest {
   @Test
   void deleteProject_returnsTrueWhenDeleted() {
     var id = UUID.randomUUID();
-    var project = new Project("ToDelete", null, "user_1");
+    var project = new Project("ToDelete", null, MEMBER_ID);
     when(repository.findById(id)).thenReturn(Optional.of(project));
 
     var result = service.deleteProject(id);

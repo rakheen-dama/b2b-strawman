@@ -21,7 +21,7 @@
 | 15 | Deployment Pipeline | Infra | 13, 14 | L | 15A, 15B | **Done** |
 | 16 | Testing & Quality | Both | 7, 8, 10, 11 | L | 16A–16C | |
 | 17 | Members Table + Webhook Sync | Both | 4, 5 | M | 17A, 17B | **Done** |
-| 18 | MemberFilter + MemberContext | Backend | 17 | M | 18A, 18B | |
+| 18 | MemberFilter + MemberContext | Backend | 17 | M | 18A, 18B | **Done** |
 | 19 | Project Members Table + API | Backend | 18 | M | 19A, 19B | |
 | 20 | Project Access Control | Backend | 19 | L | — | |
 | 21 | Frontend — Project Members Panel | Frontend | 19, 20 | M | — | |
@@ -826,7 +826,7 @@ Manual trigger (workflow_dispatch)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **18A** | 18.1–18.3, 18.8, 18.9a | MemberContext, MemberFilter, SecurityConfig wiring, MDC, filter tests | Done |
-| **18B** | 18.4–18.7, 18.9b | V4 FK migration, entity type changes, DTO updates, existing test updates | |
+| **18B** | 18.4–18.7, 18.9b | V4 FK migration, entity type changes, DTO updates, existing test updates | Done |
 
 ### Tasks
 
@@ -835,13 +835,13 @@ Manual trigger (workflow_dispatch)
 | 18.1 | Create MemberContext | 18A | Done | `member/MemberContext.java` — Static ThreadLocal with `setCurrentMemberId(UUID)`, `getCurrentMemberId()`, `setOrgRole(String)`, `getOrgRole()`, `clear()`. Same pattern as `TenantContext`. |
 | 18.2 | Create MemberFilter | 18A | Done | `member/MemberFilter.java` — `OncePerRequestFilter`, after TenantFilter. Extracts JWT `sub` (Clerk user ID), queries `MemberRepository.findByClerkUserId()` in current tenant. If found: sets `MemberContext`. If NOT found: **lazy-creates** a minimal member (clerkUserId from `sub`, orgRole from `o.rol`, placeholder name/email — webhook will upsert full data later). Cache: `ConcurrentHashMap<String, UUID>` keyed by `tenantId:clerkUserId`. `shouldNotFilter` for `/internal/*` and `/actuator/*`. |
 | 18.3 | Wire MemberFilter into SecurityConfig | 18A | Done | Add to filter chain: `.addFilterAfter(memberFilter, TenantFilter.class)` and move `.addFilterAfter(tenantLoggingFilter, MemberFilter.class)`. New order: ApiKeyAuthFilter → BearerTokenAuth → TenantFilter → MemberFilter → TenantLoggingFilter. |
-| 18.4 | Create V4 tenant migration for FK changes | 18B | | `V4__migrate_ownership_to_members.sql`: (1) Backfill: INSERT INTO members from DISTINCT created_by/uploaded_by with placeholder email/name, ON CONFLICT DO NOTHING. (2) Add temp columns `created_by_member_id UUID` / `uploaded_by_member_id UUID`. (3) Populate via JOIN on members.clerk_user_id. (4) Drop old VARCHAR columns, rename temp columns, add FK constraints → `members(id)`. |
-| 18.5 | Update Project entity | 18B | | Change `createdBy` from `String` to `UUID`. Update `ProjectController` to use `MemberContext.getCurrentMemberId()` instead of `auth.getName()`. |
-| 18.6 | Update Document entity | 18B | | Change `uploadedBy` from `String` to `UUID`. Update `DocumentController` to use `MemberContext.getCurrentMemberId()`. |
-| 18.7 | Update response DTOs | 18B | | `ProjectResponse.createdBy` and document DTOs change from String to UUID (serialized as string in JSON — backward compatible). |
+| 18.4 | Create V4 tenant migration for FK changes | 18B | Done | `V4__migrate_ownership_to_members.sql`: (1) Backfill: INSERT INTO members from DISTINCT created_by/uploaded_by with placeholder email/name, ON CONFLICT DO NOTHING. (2) Add temp columns `created_by_member_id UUID` / `uploaded_by_member_id UUID`. (3) Populate via JOIN on members.clerk_user_id. (4) Drop old VARCHAR columns, rename temp columns, add FK constraints → `members(id)`. |
+| 18.5 | Update Project entity | 18B | Done | Change `createdBy` from `String` to `UUID`. Update `ProjectController` to use `MemberContext.getCurrentMemberId()` instead of `auth.getName()`. |
+| 18.6 | Update Document entity | 18B | Done | Change `uploadedBy` from `String` to `UUID`. Update `DocumentController` to use `MemberContext.getCurrentMemberId()`. |
+| 18.7 | Update response DTOs | 18B | Done | `ProjectResponse.createdBy` and document DTOs change from String to UUID (serialized as string in JSON — backward compatible). |
 | 18.8 | Update TenantLoggingFilter | 18A | Done | Add `MDC.put("memberId", MemberContext.getCurrentMemberId())` alongside existing userId entry. Null-guard for `/internal/*` requests where MemberContext is unset. |
 | 18.9a | Add MemberFilter integration tests | 18A | Done | `MemberFilterIntegrationTest.java`: valid member → context set, unknown user → lazy-created, `/internal/*` skipped, cache hit on second request. Existing tests should pass unchanged (lazy-create handles missing members). |
-| 18.9b | Update existing integration tests | 18B | | **Breaking change**: `ProjectIntegrationTest` and `DocumentIntegrationTest` must seed member records in `@BeforeAll`. Assertions change: `$.createdBy` returns UUID string (not Clerk user ID). |
+| 18.9b | Update existing integration tests | 18B | Done | **Breaking change**: `ProjectIntegrationTest` and `DocumentIntegrationTest` must seed member records in `@BeforeAll`. Assertions change: `$.createdBy` returns UUID string (not Clerk user ID). |
 
 ### Key Files
 

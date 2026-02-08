@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.document;
 
+import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
 import java.util.List;
@@ -13,20 +14,27 @@ public class DocumentService {
 
   private final DocumentRepository documentRepository;
   private final ProjectRepository projectRepository;
+  private final ProjectAccessService projectAccessService;
   private final S3PresignedUrlService s3Service;
 
   public DocumentService(
       DocumentRepository documentRepository,
       ProjectRepository projectRepository,
+      ProjectAccessService projectAccessService,
       S3PresignedUrlService s3Service) {
     this.documentRepository = documentRepository;
     this.projectRepository = projectRepository;
+    this.projectAccessService = projectAccessService;
     this.s3Service = s3Service;
   }
 
   @Transactional(readOnly = true)
-  public Optional<List<Document>> listDocuments(UUID projectId) {
+  public Optional<List<Document>> listDocuments(UUID projectId, UUID memberId, String orgRole) {
     if (!projectRepository.existsById(projectId)) {
+      return Optional.empty();
+    }
+    var access = projectAccessService.checkAccess(projectId, memberId, orgRole);
+    if (!access.canView()) {
       return Optional.empty();
     }
     return Optional.of(documentRepository.findByProjectId(projectId));
@@ -39,13 +47,18 @@ public class DocumentService {
       String contentType,
       long size,
       String orgId,
-      UUID uploadedBy) {
+      UUID memberId,
+      String orgRole) {
     if (!projectRepository.existsById(projectId)) {
+      return Optional.empty();
+    }
+    var access = projectAccessService.checkAccess(projectId, memberId, orgRole);
+    if (!access.canView()) {
       return Optional.empty();
     }
 
     var document =
-        documentRepository.save(new Document(projectId, fileName, contentType, size, uploadedBy));
+        documentRepository.save(new Document(projectId, fileName, contentType, size, memberId));
 
     var presigned =
         s3Service.generateUploadUrl(
@@ -59,44 +72,61 @@ public class DocumentService {
   }
 
   @Transactional
-  public Optional<Document> confirmUpload(UUID documentId) {
+  public Optional<Document> confirmUpload(UUID documentId, UUID memberId, String orgRole) {
     return documentRepository
         .findById(documentId)
-        .map(
+        .flatMap(
             document -> {
+              var access =
+                  projectAccessService.checkAccess(document.getProjectId(), memberId, orgRole);
+              if (!access.canView()) {
+                return Optional.empty();
+              }
               if (document.getStatus() != Document.Status.UPLOADED) {
                 document.confirmUpload();
-                return documentRepository.save(document);
+                return Optional.of(documentRepository.save(document));
               }
-              return document;
+              return Optional.of(document);
             });
   }
 
   @Transactional
-  public Optional<CancelResult> cancelUpload(UUID documentId) {
+  public Optional<CancelResult> cancelUpload(UUID documentId, UUID memberId, String orgRole) {
     return documentRepository
         .findById(documentId)
-        .map(
+        .flatMap(
             document -> {
+              var access =
+                  projectAccessService.checkAccess(document.getProjectId(), memberId, orgRole);
+              if (!access.canView()) {
+                return Optional.empty();
+              }
               if (document.getStatus() != Document.Status.PENDING) {
-                return CancelResult.NOT_PENDING;
+                return Optional.of(CancelResult.NOT_PENDING);
               }
               documentRepository.delete(document);
-              return CancelResult.DELETED;
+              return Optional.of(CancelResult.DELETED);
             });
   }
 
   @Transactional(readOnly = true)
-  public Optional<PresignDownloadResult> getPresignedDownloadUrl(UUID documentId) {
+  public Optional<PresignDownloadResult> getPresignedDownloadUrl(
+      UUID documentId, UUID memberId, String orgRole) {
     return documentRepository
         .findById(documentId)
-        .map(
+        .flatMap(
             document -> {
+              var access =
+                  projectAccessService.checkAccess(document.getProjectId(), memberId, orgRole);
+              if (!access.canView()) {
+                return Optional.empty();
+              }
               if (document.getStatus() != Document.Status.UPLOADED) {
-                return PresignDownloadResult.notUploaded();
+                return Optional.of(PresignDownloadResult.notUploaded());
               }
               var presigned = s3Service.generateDownloadUrl(document.getS3Key());
-              return PresignDownloadResult.success(presigned.url(), presigned.expiresInSeconds());
+              return Optional.of(
+                  PresignDownloadResult.success(presigned.url(), presigned.expiresInSeconds()));
             });
   }
 

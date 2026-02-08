@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
@@ -35,19 +36,27 @@ class DocumentIntegrationTest {
 
   private static final String ORG_ID = "org_document_test";
   private static final String ORG_B_ID = "org_document_test_b";
+  private static final String API_KEY = "test-api-key";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
 
   private String projectId;
   private String projectBId;
+  private String memberMemberId;
 
   @BeforeAll
   void provisionTenantsAndProjects() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Document Test Org");
     provisioningService.provisionTenant(ORG_B_ID, "Document Test Org B");
 
-    // Create a project in tenant A
+    // Sync members so MemberContext is populated and we know member IDs
+    syncMember(ORG_ID, "user_owner", "doc_owner@test.com", "Owner", "owner");
+    syncMember(ORG_ID, "user_admin", "doc_admin@test.com", "Admin", "admin");
+    memberMemberId = syncMember(ORG_ID, "user_member", "doc_member@test.com", "Member", "member");
+    syncMember(ORG_ID, "user_nonmember", "doc_nonmember@test.com", "NonMember", "member");
+
+    // Create a project in tenant A (owner becomes lead)
     var result =
         mockMvc
             .perform(
@@ -61,6 +70,15 @@ class DocumentIntegrationTest {
             .andExpect(status().isCreated())
             .andReturn();
     projectId = extractIdFromLocation(result);
+
+    // Add member user to the project so they can access documents
+    mockMvc
+        .perform(
+            post("/api/projects/" + projectId + "/members")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"memberId\": \"%s\"}".formatted(memberMemberId)))
+        .andExpect(status().isCreated());
 
     // Create a project in tenant B
     var resultB =
@@ -525,6 +543,62 @@ class DocumentIntegrationTest {
         .andExpect(status().isNotFound());
   }
 
+  // --- Document access control ---
+
+  @Test
+  void nonMemberCannotInitiateUpload() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/projects/" + projectId + "/documents/upload-init")
+                .with(nonMemberJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"fileName": "denied.pdf", "contentType": "application/pdf", "size": 100}
+                    """))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void nonMemberCannotListDocuments() throws Exception {
+    mockMvc
+        .perform(get("/api/projects/" + projectId + "/documents").with(nonMemberJwt()))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void nonMemberCannotAccessDocumentById() throws Exception {
+    // Owner uploads a document (owner has access as project lead)
+    var initResult =
+        mockMvc
+            .perform(
+                post("/api/projects/" + projectId + "/documents/upload-init")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"fileName": "access-test.pdf", "contentType": "application/pdf", "size": 100}
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+    var documentId = extractJsonField(initResult, "documentId");
+
+    // Non-member cannot confirm
+    mockMvc
+        .perform(post("/api/documents/" + documentId + "/confirm").with(nonMemberJwt()))
+        .andExpect(status().isNotFound());
+
+    // Non-member cannot download
+    mockMvc
+        .perform(get("/api/documents/" + documentId + "/presign-download").with(nonMemberJwt()))
+        .andExpect(status().isNotFound());
+
+    // Non-member cannot cancel
+    mockMvc
+        .perform(delete("/api/documents/" + documentId + "/cancel").with(nonMemberJwt()))
+        .andExpect(status().isNotFound());
+  }
+
   // --- Helpers ---
 
   private String extractIdFromLocation(MvcResult result) {
@@ -539,6 +613,33 @@ class DocumentIntegrationTest {
     int start = body.indexOf(search) + search.length();
     int end = body.indexOf("\"", start);
     return body.substring(start, end);
+  }
+
+  private String syncMember(
+      String orgId, String clerkUserId, String email, String name, String orgRole)
+      throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                post("/internal/members/sync")
+                    .header("X-API-KEY", API_KEY)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "clerkOrgId": "%s",
+                          "clerkUserId": "%s",
+                          "email": "%s",
+                          "name": "%s",
+                          "avatarUrl": null,
+                          "orgRole": "%s"
+                        }
+                        """
+                            .formatted(orgId, clerkUserId, email, name, orgRole)))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 
   private JwtRequestPostProcessor memberJwt() {
@@ -557,6 +658,12 @@ class DocumentIntegrationTest {
     return jwt()
         .jwt(j -> j.subject("user_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
+  }
+
+  private JwtRequestPostProcessor nonMemberJwt() {
+    return jwt()
+        .jwt(j -> j.subject("user_nonmember").claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
   }
 
   private JwtRequestPostProcessor tenantBMemberJwt() {

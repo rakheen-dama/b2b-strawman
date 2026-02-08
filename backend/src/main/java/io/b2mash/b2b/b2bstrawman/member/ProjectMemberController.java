@@ -55,9 +55,11 @@ public class ProjectMemberController {
 
   @DeleteMapping("/{memberId}")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
-  public ResponseEntity<Void> removeMember(
-      @PathVariable UUID projectId, @PathVariable UUID memberId) {
+  public ResponseEntity<?> removeMember(@PathVariable UUID projectId, @PathVariable UUID memberId) {
     UUID requestedBy = MemberContext.getCurrentMemberId();
+    if (requestedBy == null) {
+      return ResponseEntity.of(memberContextMissing()).build();
+    }
     String orgRole = MemberContext.getOrgRole();
 
     projectMemberService.removeMember(projectId, memberId, requestedBy, orgRole);

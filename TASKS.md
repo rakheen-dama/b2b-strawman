@@ -20,6 +20,12 @@
 | 14 | AWS Infrastructure | Infra | 13 | XL | 14A–14D | **Done** |
 | 15 | Deployment Pipeline | Infra | 13, 14 | L | 15A, 15B | **Done** |
 | 16 | Testing & Quality | Both | 7, 8, 10, 11 | L | 16A–16C | |
+| 17 | Members Table + Webhook Sync | Both | 4, 5 | M | 17A, 17B | |
+| 18 | MemberFilter + MemberContext | Backend | 17 | M | — | |
+| 19 | Project Members Table + API | Backend | 18 | M | 19A, 19B | |
+| 20 | Project Access Control | Backend | 19 | L | — | |
+| 21 | Frontend — Project Members Panel | Frontend | 19, 20 | M | — | |
+| 22 | Frontend — Filtered Project List | Frontend | 20, 21 | S | — | |
 
 ---
 
@@ -752,6 +758,281 @@ Manual trigger (workflow_dispatch)
 
 ---
 
+## Epic 17: Members Table + Webhook Sync
+
+**Goal**: Create the `members` table in each tenant schema, implement internal API endpoints for member sync, and wire up the `organizationMembership.*` webhook handlers (currently no-ops).
+
+**Dependencies**: Epic 4 (Webhooks), Epic 5 (Provisioning)
+
+**Scope**: Both (Backend + Frontend)
+
+**Estimated Effort**: M
+
+### Slices
+
+| Slice | Tasks | Summary | Status |
+|-------|-------|---------|--------|
+| **17A** | 17.1–17.5 | Backend: migration, entity, repository, service, controller | |
+| **17B** | 17.6–17.9 | Frontend: webhook handlers, types, tests | |
+
+### Tasks
+
+| ID | Task | Status | Notes |
+|----|------|--------|-------|
+| 17.1 | Create V3 tenant migration for members table | | `V3__create_members.sql` in `db/migration/tenant/`. Columns: `id` (UUID PK DEFAULT gen_random_uuid()), `clerk_user_id` (VARCHAR(255) UNIQUE NOT NULL), `email` (VARCHAR(255) NOT NULL), `name` (VARCHAR(255)), `avatar_url` (VARCHAR(1000)), `org_role` (VARCHAR(50) NOT NULL), `created_at` (TIMESTAMPTZ NOT NULL DEFAULT now()), `updated_at` (TIMESTAMPTZ NOT NULL DEFAULT now()). Index on `clerk_user_id`. |
+| 17.2 | Create Member entity | | `member/Member.java` — JPA entity mapped to `members` table. UUID id, clerkUserId, email, name, avatarUrl, orgRole, createdAt, updatedAt. No `@Table(schema=...)` (Hibernate resolves tenant schema). `updateFrom(email, name, avatarUrl, orgRole)` method for upsert. |
+| 17.3 | Create MemberRepository | | `member/MemberRepository.java` — `JpaRepository<Member, UUID>`. Methods: `Optional<Member> findByClerkUserId(String)`, `void deleteByClerkUserId(String)`, `boolean existsByClerkUserId(String)`. |
+| 17.4 | Create MemberSyncService | | `member/MemberSyncService.java` — `syncMember(clerkOrgId, clerkUserId, email, name, avatarUrl, orgRole)`: resolves tenant via `OrgSchemaMappingRepository.findByClerkOrgId()`, manually sets/clears `TenantContext` in try/finally (internal endpoints skip TenantFilter), upserts member. `deleteMember(clerkOrgId, clerkUserId)`: resolves tenant, deletes by clerkUserId. `@Transactional` per operation. |
+| 17.5 | Create MemberSyncController | | `member/MemberSyncController.java` — `POST /internal/members/sync` with `SyncMemberRequest(clerkOrgId, clerkUserId, email, name, avatarUrl, orgRole)`, returns 201/200. `DELETE /internal/members/{clerkUserId}?clerkOrgId={orgId}`, returns 204/404. All `@Valid` with `@NotBlank` on required fields. |
+| 17.6 | Implement organizationMembership.created handler | | Replace no-op in `webhook-handlers.ts`. Extract `organization.id` and `public_user_data.user_id` from event. Call `clerkClient.users.getUser(userId)` for name/email/avatar. Map role (`org:admin` → `admin`). Call `POST /internal/members/sync` via `internalApiClient`. |
+| 17.7 | Implement organizationMembership.updated handler | | Same extraction pattern. Call `POST /internal/members/sync` (upsert) with updated role. |
+| 17.8 | Implement organizationMembership.deleted handler | | Call `DELETE /internal/members/{clerkUserId}?clerkOrgId={orgId}`. Handle 404 gracefully (member may already be deleted). |
+| 17.9 | Add tests | | Backend: integration tests for MemberSyncController (sync creates member, re-sync updates, delete removes, tenant isolation). Frontend: update webhook handler tests for membership events. Add `SyncMemberRequest` type to `lib/internal-api.ts`. |
+
+### Key Files
+
+**Backend (create):**
+- `backend/src/main/resources/db/migration/tenant/V3__create_members.sql`
+- `backend/src/main/java/.../member/Member.java`
+- `backend/src/main/java/.../member/MemberRepository.java`
+- `backend/src/main/java/.../member/MemberSyncService.java`
+- `backend/src/main/java/.../member/MemberSyncController.java`
+- `backend/src/test/java/.../member/MemberSyncIntegrationTest.java`
+
+**Frontend (modify):**
+- `frontend/lib/webhook-handlers.ts` — Replace no-op stubs (lines 106-109)
+- `frontend/lib/internal-api.ts` — Add SyncMemberRequest type
+
+### Architecture Decisions
+
+- **Upsert via single POST endpoint**: A single `POST /internal/members/sync` handles both create and update. The service does `findByClerkUserId` — if found, updates; if not, creates. Simpler than separate POST/PUT and naturally idempotent.
+- **clerkOrgId in request body**: Internal endpoints use API key auth (not JWT), so TenantFilter skips them. `clerkOrgId` is passed in the request body, consistent with `ProvisioningController` pattern. Service manually resolves tenant.
+- **Clerk user details via clerkClient**: Membership events provide `public_user_data` with limited info. Handler calls `clerkClient.users.getUser()` for full details. Single API call per event — acceptable since membership events are infrequent.
+
+---
+
+## Epic 18: MemberFilter + MemberContext
+
+**Goal**: Add request-level member resolution so every authenticated API request knows the current member's UUID. Migrate `projects.created_by` and `documents.uploaded_by` to UUID FKs referencing `members(id)`.
+
+**Dependencies**: Epic 17
+
+**Scope**: Backend
+
+**Estimated Effort**: M
+
+### Tasks
+
+| ID | Task | Status | Notes |
+|----|------|--------|-------|
+| 18.1 | Create MemberContext | | `member/MemberContext.java` — Static ThreadLocal with `setCurrentMemberId(UUID)`, `getCurrentMemberId()`, `setOrgRole(String)`, `getOrgRole()`, `clear()`. Same pattern as `TenantContext`. |
+| 18.2 | Create MemberFilter | | `member/MemberFilter.java` — `OncePerRequestFilter`, after TenantFilter. Extracts JWT `sub` (Clerk user ID), queries `MemberRepository.findByClerkUserId()` in current tenant. If found: sets `MemberContext`. If NOT found: **lazy-creates** a minimal member (clerkUserId from `sub`, orgRole from `o.rol`, placeholder name/email — webhook will upsert full data later). Cache: `ConcurrentHashMap<String, UUID>` keyed by `tenantId:clerkUserId`. `shouldNotFilter` for `/internal/*` and `/actuator/*`. |
+| 18.3 | Wire MemberFilter into SecurityConfig | | Add to filter chain: `.addFilterAfter(memberFilter, TenantFilter.class)` and move `.addFilterAfter(tenantLoggingFilter, MemberFilter.class)`. New order: ApiKeyAuthFilter → BearerTokenAuth → TenantFilter → MemberFilter → TenantLoggingFilter. |
+| 18.4 | Create V4 tenant migration for FK changes | | `V4__migrate_ownership_to_members.sql`: (1) Backfill: INSERT INTO members from DISTINCT created_by/uploaded_by with placeholder email/name, ON CONFLICT DO NOTHING. (2) Add temp columns `created_by_member_id UUID` / `uploaded_by_member_id UUID`. (3) Populate via JOIN on members.clerk_user_id. (4) Drop old VARCHAR columns, rename temp columns, add FK constraints → `members(id)`. |
+| 18.5 | Update Project entity | | Change `createdBy` from `String` to `UUID`. Update `ProjectController` to use `MemberContext.getCurrentMemberId()` instead of `auth.getName()`. |
+| 18.6 | Update Document entity | | Change `uploadedBy` from `String` to `UUID`. Update `DocumentController` to use `MemberContext.getCurrentMemberId()`. |
+| 18.7 | Update response DTOs | | `ProjectResponse.createdBy` and document DTOs change from String to UUID (serialized as string in JSON — backward compatible). |
+| 18.8 | Update TenantLoggingFilter | | Add `MDC.put("memberId", MemberContext.getCurrentMemberId())` alongside existing userId entry. |
+| 18.9 | Update existing tests + add MemberFilter tests | | **Breaking change**: All existing integration tests (`ProjectIntegrationTest`, `DocumentIntegrationTest`) must provision member records in `@BeforeAll` since MemberFilter now requires them. Add dedicated MemberFilter tests: valid member → context set, unknown user → lazy-created, `/internal/*` skipped, cache hit on second request. |
+
+### Key Files
+
+**Create:**
+- `backend/src/main/java/.../member/MemberContext.java`
+- `backend/src/main/java/.../member/MemberFilter.java`
+- `backend/src/main/resources/db/migration/tenant/V4__migrate_ownership_to_members.sql`
+- `backend/src/test/java/.../member/MemberFilterIntegrationTest.java`
+
+**Modify:**
+- `backend/src/main/java/.../security/SecurityConfig.java` — Add MemberFilter to chain
+- `backend/src/main/java/.../project/Project.java` — createdBy type change
+- `backend/src/main/java/.../project/ProjectController.java` — Use MemberContext
+- `backend/src/main/java/.../document/Document.java` — uploadedBy type change
+- `backend/src/main/java/.../document/DocumentController.java` — Use MemberContext
+- `backend/src/main/java/.../multitenancy/TenantLoggingFilter.java` — Add memberId MDC
+- `backend/src/test/java/.../project/ProjectIntegrationTest.java` — Member provisioning in setup
+- `backend/src/test/java/.../document/DocumentIntegrationTest.java` — Member provisioning in setup
+
+### Architecture Decisions
+
+- **Lazy-create in MemberFilter**: When JWT user not found in members table, creates a minimal record (clerkUserId, orgRole from JWT). Webhook handler upserts full data later. Solves the deployment window where users hit the API before their membership webhook is processed.
+- **ConcurrentHashMap cache**: Keyed by `tenantId:clerkUserId`, consistent with TenantFilter's cache pattern. No TTL needed — member IDs are immutable. `MemberSyncService.deleteMember()` clears the entry.
+- **Multi-step migration**: V4 uses temp columns → populate → drop → rename pattern rather than in-place ALTER. Safer for data preservation and works with empty tables too.
+
+---
+
+## Epic 19: Project Members Table + API
+
+**Goal**: Create the `project_members` junction table, implement CRUD endpoints for project membership, add an org member list endpoint, and backfill existing projects (creator becomes lead).
+
+**Dependencies**: Epic 18
+
+**Scope**: Backend
+
+**Estimated Effort**: M
+
+### Slices
+
+| Slice | Tasks | Summary | Status |
+|-------|-------|---------|--------|
+| **19A** | 19.1–19.4 | Migration, entity, repository, service | |
+| **19B** | 19.5–19.8 | Controllers, backfill, tests | |
+
+### Tasks
+
+| ID | Task | Status | Notes |
+|----|------|--------|-------|
+| 19.1 | Create V5 tenant migration for project_members | | `V5__create_project_members.sql`: Table with `id` (UUID PK), `project_id` (UUID FK → projects ON DELETE CASCADE), `member_id` (UUID FK → members ON DELETE CASCADE), `project_role` (VARCHAR(50) NOT NULL — `lead` or `member`), `added_by` (UUID FK → members, nullable), `created_at` (TIMESTAMPTZ NOT NULL DEFAULT now()). UNIQUE(project_id, member_id). Backfill: INSERT from projects — creator becomes lead. |
+| 19.2 | Create ProjectMember entity | | `member/ProjectMember.java` — UUID id, projectId (UUID), memberId (UUID), projectRole (String), addedBy (UUID nullable), createdAt. No bidirectional JPA relationships — use explicit queries. |
+| 19.3 | Create ProjectMemberRepository | | `member/ProjectMemberRepository.java` — Methods: `findByProjectId`, `findByProjectIdAndMemberId`, `existsByProjectIdAndMemberId`, `findByProjectIdAndProjectRole`, `findByMemberId`, `deleteByProjectIdAndMemberId`. |
+| 19.4 | Create ProjectMemberService | | Methods: `listProjectMembers(projectId)` — joins with members for display data. `addMember(projectId, memberId, addedBy)` — validates member exists, not already on project (409). `removeMember(projectId, memberId, requestedBy, orgRole)` — cannot remove lead. `transferLead(projectId, currentLeadId, newLeadId)` — atomic `@Transactional`: demote old lead, promote new. `isProjectMember(projectId, memberId)` — boolean. |
+| 19.5 | Create ProjectMemberController | | `@RequestMapping("/api/projects/{projectId}/members")`. GET (list, MEMBER+), POST `{memberId}` (add, MEMBER+ with service permission check), DELETE `/{memberId}` (remove), PUT `/{memberId}/role` `{role: "lead"}` (transfer). DTOs: `ProjectMemberResponse(id, memberId, name, email, avatarUrl, projectRole, createdAt)`. |
+| 19.6 | Create OrgMemberController | | `GET /api/members` — returns all org members (from tenant's members table). Response: `OrgMemberResponse(id, name, email, avatarUrl, orgRole)`. Purpose: populate "add member to project" picker. |
+| 19.7 | Auto-create lead on project creation | | Modify `ProjectService.createProject()`: after saving project, insert `ProjectMember(projectRole="lead", memberId=MemberContext.getCurrentMemberId())`. Inject `ProjectMemberRepository`. |
+| 19.8 | Add integration tests | | Creator becomes lead, add/remove member, duplicate 409, cannot remove lead, lead transfer atomicity, admin/owner bypass, GET /api/members, org member deletion cascades to project_members. |
+
+### Key Files
+
+**Create:**
+- `backend/src/main/resources/db/migration/tenant/V5__create_project_members.sql`
+- `backend/src/main/java/.../member/ProjectMember.java`
+- `backend/src/main/java/.../member/ProjectMemberRepository.java`
+- `backend/src/main/java/.../member/ProjectMemberService.java`
+- `backend/src/main/java/.../member/ProjectMemberController.java`
+- `backend/src/main/java/.../member/OrgMemberController.java`
+- `backend/src/test/java/.../member/ProjectMemberIntegrationTest.java`
+
+**Modify:**
+- `backend/src/main/java/.../project/ProjectService.java` — Auto-create project lead
+
+### Architecture Decisions
+
+- **All member classes in `member/` package**: Groups the bounded context (Member, ProjectMember, services, controllers). `project/` package stays focused on core CRUD.
+- **No bidirectional JPA relationships**: ProjectMember uses plain UUID references. Joins done via JPQL when display data needed. Avoids lazy-loading pitfalls and N+1.
+- **Permission checks in service layer**: `@PreAuthorize` does org-level checks only. Project-level checks (is user the lead?) happen in `ProjectMemberService` — testable, consolidated.
+- **Lead transfer as atomic transaction**: Single `@Transactional` ensures a project never has zero or two leads.
+
+---
+
+## Epic 20: Project Access Control
+
+**Goal**: Modify existing project and document endpoints to enforce project membership. Members see only their projects; admins/owners see all. Allow all members to create projects.
+
+**Dependencies**: Epic 19
+
+**Scope**: Backend
+
+**Estimated Effort**: L
+
+### Tasks
+
+| ID | Task | Status | Notes |
+|----|------|--------|-------|
+| 20.1 | Create ProjectAccessService | | `member/ProjectAccessService.java` — `checkAccess(projectId, memberId, orgRole)` returns `ProjectAccess(canView, canEdit, canManageMembers, canDelete, projectRole)`. Owner/Admin → all true (canDelete owner-only). Member+lead → view, edit, manageMembers. Member+member → view only. Member+not-on-project → all false. |
+| 20.2 | Modify GET /api/projects (filtered listing) | | Admin/owner: return all projects (unchanged). Member: query only projects where user has a `project_members` row. New `ProjectRepository` method with JPQL join. Response includes `projectRole` field. |
+| 20.3 | Modify GET /api/projects/{id} | | Call `ProjectAccessService.checkAccess()`. If `!canView`, return 404 (not 403 — prevents info leakage). Add `projectRole` to response. |
+| 20.4 | Modify POST /api/projects | | Change `@PreAuthorize` from `ADMIN+` to `MEMBER+`. All org members can create projects. Creator auto-becomes lead (Epic 19). |
+| 20.5 | Modify PUT /api/projects/{id} | | Change `@PreAuthorize` to `MEMBER+`. Service checks `canEdit` via ProjectAccessService — allows project leads to edit (previously admin+ only). |
+| 20.6 | Modify document endpoints | | All document endpoints check project membership via ProjectAccessService. Upload-init/list (take projectId): check `canView`. Confirm/presign-download (take documentId): look up projectId first, then check. Non-member → 404. |
+| 20.7 | Update ProjectResponse DTO | | Add `projectRole` field (String, nullable). Non-null when user is a project member. Null for admin/owner viewing non-member projects. |
+| 20.8 | Update tests + add access control tests | | Member without project membership → 404 on GET. Member creates project → lead → can GET/PUT. Regular member → view only (403 on PUT). Admin/owner → full access regardless. GET /api/projects filtered for members. Document access respects project membership. |
+
+### Key Files
+
+**Create:**
+- `backend/src/main/java/.../member/ProjectAccessService.java`
+- `backend/src/test/java/.../member/ProjectAccessIntegrationTest.java`
+
+**Modify:**
+- `backend/src/main/java/.../project/ProjectController.java` — Access checks, response DTO, @PreAuthorize
+- `backend/src/main/java/.../project/ProjectService.java` — Filtered listing
+- `backend/src/main/java/.../project/ProjectRepository.java` — JPQL join query
+- `backend/src/main/java/.../document/DocumentController.java` — Project access checks
+- `backend/src/main/java/.../document/DocumentService.java` — Project access checks
+- `backend/src/test/java/.../project/ProjectIntegrationTest.java` — Major test updates
+
+### Architecture Decisions
+
+- **ProjectAccessService as central authority**: Single service encapsulates all access logic. Controllers/services call `checkAccess()` — makes authorization explicit, testable, auditable.
+- **404 over 403 for non-members**: Prevents information leakage. A member who isn't on a project shouldn't know it exists.
+- **Service-layer checks over @PreAuthorize for project-level**: Project-level checks require DB lookups too complex for SpEL. `@PreAuthorize` remains for org-level only.
+- **JPQL join for filtered listing**: Efficient single query joining `projects` + `project_members` for member visibility. Avoids N+1.
+
+---
+
+## Epic 21: Frontend — Project Members Panel
+
+**Goal**: Add a members panel on the project detail page with add/remove member, lead transfer, and role badges.
+
+**Dependencies**: Epic 19, Epic 20
+
+**Scope**: Frontend
+
+**Estimated Effort**: M
+
+### Tasks
+
+| ID | Task | Status | Notes |
+|----|------|--------|-------|
+| 21.1 | Add TypeScript types | | In `lib/types.ts`: `Member { id, name, email, avatarUrl, orgRole }`, `ProjectMember { id, memberId, name, email, avatarUrl, projectRole, createdAt }`, `ProjectRole = "lead" \| "member"`. Update `Project` to include `projectRole: string \| null`. |
+| 21.2 | Create project members server actions | | `projects/[id]/member-actions.ts` — `fetchProjectMembers(projectId)`, `fetchOrgMembers()`, `addProjectMember(slug, projectId, memberId)`, `removeProjectMember(slug, projectId, memberId)`, `transferLead(slug, projectId, memberId)`. Standard ActionResult pattern with revalidatePath. |
+| 21.3 | Build ProjectMembersPanel | | `components/projects/project-members-panel.tsx` — Client component. Member table with avatar, name, email, role badge (Lead/Member via Shadcn Badge). "Add Member" button (lead/admin/owner). "Remove" button per row (not on lead's row). "Transfer Lead" per row (current lead only). `useTransition()` for loading states. |
+| 21.4 | Build AddMemberDialog | | `components/projects/add-member-dialog.tsx` — Shadcn Dialog with searchable org member list via Shadcn Command (cmdk). Fetches `GET /api/members`, filters out existing project members. Shows name + email + avatar. |
+| 21.5 | Build TransferLeadDialog | | `components/projects/transfer-lead-dialog.tsx` — Shadcn AlertDialog (destructive action). "Transfer lead role to {name}? You will become a regular member." |
+| 21.6 | Update project detail page | | Add `ProjectMembersPanel` below DocumentsPanel. Pass `projectRole` from updated project response. Update edit button: visible for lead + admin/owner (was admin+ only). |
+| 21.7 | Add role badge to project detail header | | Badge next to project name showing user's project role (Lead/Member). Nothing for admin/owner viewing non-member projects. |
+| 21.8 | Add frontend tests | | Member list renders with roles. AddMemberDialog filters existing members. Action button visibility by role. |
+
+### Key Files
+
+**Create:**
+- `frontend/app/(app)/org/[slug]/projects/[id]/member-actions.ts`
+- `frontend/components/projects/project-members-panel.tsx`
+- `frontend/components/projects/add-member-dialog.tsx`
+- `frontend/components/projects/transfer-lead-dialog.tsx`
+
+**Modify:**
+- `frontend/lib/types.ts` — New interfaces
+- `frontend/app/(app)/org/[slug]/projects/[id]/page.tsx` — Add members panel, role badges, edit visibility
+
+### Architecture Decisions
+
+- **Client component for members panel**: Interactive state (add/remove, loading, transitions) requires client component. Server component fetches initial data and passes props — same pattern as DocumentsPanel.
+- **Shadcn Command for member picker**: Keyboard-navigable, searchable list. Standard Shadcn pattern for combobox/search UIs.
+- **AlertDialog for lead transfer**: Destructive/irreversible action — prevents accidental clicks. Consistent with DeleteProjectDialog pattern.
+
+---
+
+## Epic 22: Frontend — Filtered Project List
+
+**Goal**: Update projects list and dashboard to show only user's projects (members) or all (admin/owner). Make "New Project" visible to all org members.
+
+**Dependencies**: Epic 20, Epic 21
+
+**Scope**: Frontend
+
+**Estimated Effort**: S
+
+### Tasks
+
+| ID | Task | Status | Notes |
+|----|------|--------|-------|
+| 22.1 | Update projects list page | | Backend already filters by membership. Show "New Project" for ALL org roles (was admin+ only). Show `projectRole` badge on project cards. Update empty state for members: "You're not on any projects yet." |
+| 22.2 | Update dashboard page | | Backend returns filtered projects so stats are correct. Show "New Project" quick action for all roles. Label: "Your Projects" for members, "All Projects" for admin/owner. |
+| 22.3 | Update createProject server action | | Remove admin-only role check in `projects/actions.ts` (was checking `orgRole !== "org:admin" && orgRole !== "org:owner"`). All members can create. Backend enforces auth. |
+| 22.4 | Update project detail edit/delete visibility | | Edit button: `projectRole === "lead"` OR admin+. Delete: owner only (unchanged). Update `updateProject` server action role check to allow leads. |
+| 22.5 | Add frontend tests | | "New Project" renders for all roles. Project cards show role badges. Edit visible for lead. |
+
+### Key Files
+
+**Modify:**
+- `frontend/app/(app)/org/[slug]/projects/page.tsx` — New Project for all, role badges
+- `frontend/app/(app)/org/[slug]/dashboard/page.tsx` — New Project for all, label change
+- `frontend/app/(app)/org/[slug]/projects/actions.ts` — Remove admin-only check
+- `frontend/app/(app)/org/[slug]/projects/[id]/page.tsx` — Edit visibility for leads
+
+---
+
 ## Epic Dependency Graph
 
 ```mermaid
@@ -786,6 +1067,16 @@ flowchart LR
     E8 --> E16
     E10 --> E16
     E11 --> E16
+
+    E4 --> E17["Epic 17<br/>Members + Sync"]
+    E5 --> E17
+    E17 --> E18["Epic 18<br/>MemberFilter"]
+    E18 --> E19["Epic 19<br/>Project Members"]
+    E19 --> E20["Epic 20<br/>Access Control"]
+    E19 --> E21["Epic 21<br/>Members Panel UI"]
+    E20 --> E21
+    E20 --> E22["Epic 22<br/>Filtered Lists UI"]
+    E21 --> E22
 ```
 
 ---
@@ -855,6 +1146,19 @@ flowchart LR
 
 **Rationale**: While unit tests are written alongside each epic, the dedicated testing epic sets up integration test infrastructure (Testcontainers), writes cross-cutting tests (tenant isolation), and establishes E2E coverage. This runs last because it tests the full assembled system.
 
+### Phase 8: Members & Project Ownership
+
+| Order | Epic | Rationale |
+|-------|------|-----------|
+| 8a | Epic 17: Members + Webhook Sync | Foundation — creates the members table and sync infrastructure. Must exist before MemberFilter can resolve users. |
+| 8b | Epic 18: MemberFilter + MemberContext | Request-level member resolution. Modifies existing entities (breaking change to created_by/uploaded_by types). Lazy-create handles the gap between deployment and webhook sync. |
+| 8c | Epic 19: Project Members + API | Creates project_members table and CRUD endpoints. Must come after MemberFilter since it uses MemberContext. |
+| 8d | Epic 20: Project Access Control | Modifies existing endpoints to enforce project membership. Highest behavioral risk — changes what data users see. |
+| 8e | Epic 21: Project Members Panel UI | New UI components for project membership management. Requires backend APIs from Epics 19 and 20. |
+| 8f | Epic 22: Filtered Project List | Updates existing pages to reflect the new access model. Depends on both backend access control and new types from Epic 21. |
+
+**Rationale**: All epics are sequential — each depends on its predecessor. Backend foundation (17-18) must land before features (19-20), and backend APIs must exist before frontend (21-22). Each epic is independently deployable and testable.
+
 ### Summary Timeline
 
 ```
@@ -865,6 +1169,7 @@ Phase 4:  [E7] -> [E8]         <- sequential
 Phase 5:  [E10] -> [E11] [E12] <- 11 after 10; 12 parallel
 Phase 6:  [E13] -> [E14] [E15] <- 14/15 after 13
 Phase 7:  [E16]
+Phase 8:  [E17] -> [E18] -> [E19] -> [E20] -> [E21] -> [E22]  <- sequential
 ```
 
 ---
@@ -883,3 +1188,8 @@ Phase 7:  [E16]
 | R8 | Terraform state management conflicts in team development | M | M | Use S3 backend with DynamoDB state locking from day one. One environment per developer is overkill for MVP — use shared dev environment with coordinated applies. Document Terraform workflow. |
 | R9 | LocalStack S3 behavior diverges from real AWS S3 | L | M | LocalStack S3 is mature and reliable for presigned URLs. Run integration tests against real S3 in CI staging environment. Document known LocalStack limitations. |
 | R10 | Clerk rate limits hit during bulk webhook processing | L | L | Clerk webhook rate limits are generous. Our system doesn't call Clerk API during webhook processing (we only receive events). Risk is theoretical — monitor if org creation volume is unusually high. |
+| R11 | Lazy-create in MemberFilter produces incomplete member records (no name/email) | L | M | Webhook handler upserts full data shortly after. Frontend displays placeholder for incomplete records. Add admin endpoint to re-sync if needed. |
+| R12 | V4 migration (created_by/uploaded_by type change) fails on existing data | H | L | Multi-step migration with temp columns and backfill. Test with production-like data before deploying. `ON CONFLICT DO NOTHING` makes backfill idempotent. Add rollback migration. |
+| R13 | Existing integration tests break after MemberFilter introduction (Epic 18) | M | H | Expected and planned for — task 18.9 explicitly addresses updating all existing tests to provision member records in `@BeforeAll`. Run full test suite before merging. |
+| R14 | Membership webhook arrives before tenant is provisioned (org.created not processed yet) | M | L | `MemberSyncService` returns 404 if tenant not found. Svix retries 8 times over 32 hours — will succeed once provisioning completes. Log the failure for monitoring. |
+| R15 | ProjectAccessService database lookups add latency to every project request | M | L | Single indexed query on `project_members(project_id, member_id)` covered by UNIQUE constraint index. For listing, JPQL join is a single query. No N+1 risk. Monitor query performance. |

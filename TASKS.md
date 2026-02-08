@@ -2,30 +2,30 @@
 
 ## Epic Overview
 
-| Epic | Name | Scope | Deps | Effort | Slices | Status  |
-|------|------|-------|------|--------|--------|---------|
-| 1 | Scaffolding & Local Dev | Both | — | M | — | **Done** |
-| 2 | Auth & Clerk Integration | Frontend | 1 | M | — | **Done** |
-| 3 | Organization Management | Frontend | 2 | S | — | **Done** |
-| 4 | Webhook Infrastructure | Frontend | 1, 2 | M | 4A, 4B | **Done** |
+| Epic | Name | Scope | Deps | Effort | Slices   | Status  |
+|------|------|-------|------|--------|----------|---------|
+| 1 | Scaffolding & Local Dev | Both | — | M | —        | **Done** |
+| 2 | Auth & Clerk Integration | Frontend | 1 | M | —        | **Done** |
+| 3 | Organization Management | Frontend | 2 | S | —        | **Done** |
+| 4 | Webhook Infrastructure | Frontend | 1, 2 | M | 4A, 4B   | **Done** |
 | 5 | Tenant Provisioning | Backend | 1, 6 | L | 5A, 5B, 5C | **Done** |
-| 6 | Multitenancy Backend | Backend | 1 | L | — | **Done** |
-| 7 | Core API — Projects | Backend | 6 | M | 7A, 7B | **Done** |
-| 8 | Core API — Documents | Backend | 7, 9 | M | 8A, 8B | **Done** |
-| 9 | S3 Integration | Backend | 1 | S | — | **Done** |
+| 6 | Multitenancy Backend | Backend | 1 | L | —        | **Done** |
+| 7 | Core API — Projects | Backend | 6 | M | 7A, 7B   | **Done** |
+| 8 | Core API — Documents | Backend | 7, 9 | M | 8A, 8B   | **Done** |
+| 9 | S3 Integration | Backend | 1 | S | —        | **Done** |
 | 10 | Dashboard & Projects UI | Frontend | 3, 7 | M | 10A, 10B, 10C | **Done** |
 | 11 | Documents UI | Frontend | 10, 8 | M | 11A, 11B | **Done** |
-| 12 | Team Management UI | Frontend | 3 | S | — | **Done** |
-| 13 | Containerization | Both | 1 | S | — | **Done** |
-| 14 | AWS Infrastructure | Infra | 13 | XL | 14A–14D | **Done** |
+| 12 | Team Management UI | Frontend | 3 | S | —        | **Done** |
+| 13 | Containerization | Both | 1 | S | —        | **Done** |
+| 14 | AWS Infrastructure | Infra | 13 | XL | 14A–14D  | **Done** |
 | 15 | Deployment Pipeline | Infra | 13, 14 | L | 15A, 15B | **Done** |
-| 16 | Testing & Quality | Both | 7, 8, 10, 11 | L | 16A–16C |         |
+| 16 | Testing & Quality | Both | 7, 8, 10, 11 | L | 16A–16C  |         |
 | 17 | Members Table + Webhook Sync | Both | 4, 5 | M | 17A, 17B | **Done** |
 | 18 | MemberFilter + MemberContext | Backend | 17 | M | 18A, 18B | **Done** |
 | 19 | Project Members Table + API | Backend | 18 | M | 19A, 19B | **Done**|
 | 20 | Project Access Control | Backend | 19 | L | 20A, 20B |         |
-| 21 | Frontend — Project Members Panel | Frontend | 19, 20 | M | — |         |
-| 22 | Frontend — Filtered Project List | Frontend | 20, 21 | S | — |         |
+| 21 | Frontend — Project Members Panel | Frontend | 19, 20 | M | 21A, 21B |         |
+| 22 | Frontend — Filtered Project List | Frontend | 20, 21 | S | —        |         |
 
 ---
 
@@ -1010,26 +1010,33 @@ Manual trigger (workflow_dispatch)
 
 **Estimated Effort**: M
 
+### Slices
+
+| Slice | Tasks | Summary | Status |
+|-------|-------|---------|--------|
+| **21A** | 21.1–21.3, 21.6–21.7 | Types, server actions, read-only panel, page integration, role badges | |
+| **21B** | 21.4–21.5, 21.3 (wiring), 21.8 | AddMemberDialog, TransferLeadDialog, action buttons, tests | |
+
 ### Tasks
 
-| ID | Task | Status | Notes |
-|----|------|--------|-------|
-| 21.1 | Add TypeScript types | | In `lib/types.ts`: `Member { id, name, email, avatarUrl, orgRole }`, `ProjectMember { id, memberId, name, email, avatarUrl, projectRole, createdAt }`, `ProjectRole = "lead" \| "member"`. Update `Project` to include `projectRole: string \| null`. |
-| 21.2 | Create project members server actions | | `projects/[id]/member-actions.ts` — `fetchProjectMembers(projectId)`, `fetchOrgMembers()`, `addProjectMember(slug, projectId, memberId)`, `removeProjectMember(slug, projectId, memberId)`, `transferLead(slug, projectId, memberId)`. Standard ActionResult pattern with revalidatePath. |
-| 21.3 | Build ProjectMembersPanel | | `components/projects/project-members-panel.tsx` — Client component. Member table with avatar, name, email, role badge (Lead/Member via Shadcn Badge). "Add Member" button (lead/admin/owner). "Remove" button per row (not on lead's row). "Transfer Lead" per row (current lead only). `useTransition()` for loading states. |
-| 21.4 | Build AddMemberDialog | | `components/projects/add-member-dialog.tsx` — Shadcn Dialog with searchable org member list via Shadcn Command (cmdk). Fetches `GET /api/members`, filters out existing project members. Shows name + email + avatar. |
-| 21.5 | Build TransferLeadDialog | | `components/projects/transfer-lead-dialog.tsx` — Shadcn AlertDialog (destructive action). "Transfer lead role to {name}? You will become a regular member." |
-| 21.6 | Update project detail page | | Add `ProjectMembersPanel` below DocumentsPanel. Pass `projectRole` from updated project response. Update edit button: visible for lead + admin/owner (was admin+ only). |
-| 21.7 | Add role badge to project detail header | | Badge next to project name showing user's project role (Lead/Member). Nothing for admin/owner viewing non-member projects. |
-| 21.8 | Add frontend tests | | Member list renders with roles. AddMemberDialog filters existing members. Action button visibility by role. |
+| ID | Task | Slice | Status | Notes |
+|----|------|-------|--------|-------|
+| 21.1 | Add TypeScript types | A | | In `lib/types.ts`: `Member { id, name, email, avatarUrl, orgRole }`, `ProjectMember { id, memberId, name, email, avatarUrl, projectRole, createdAt }`, `ProjectRole = "lead" \| "member"`. Update `Project` to include `projectRole: string \| null`. |
+| 21.2 | Create project members server actions | A | | `projects/[id]/member-actions.ts` — `fetchProjectMembers(projectId)`, `fetchOrgMembers()`, `addProjectMember(slug, projectId, memberId)`, `removeProjectMember(slug, projectId, memberId)`, `transferLead(slug, projectId, memberId)`. Standard ActionResult pattern with revalidatePath. |
+| 21.3 | Build ProjectMembersPanel | A+B | | **Slice A**: Read-only client component — member table with avatar, name, email, role badge (Lead/Member via Shadcn Badge). No action buttons yet. **Slice B**: Wire up "Add Member" button (lead/admin/owner), "Remove" button per row (not on lead's row), "Transfer Lead" per row (current lead only). `useTransition()` for loading states. |
+| 21.4 | Build AddMemberDialog | B | | `components/projects/add-member-dialog.tsx` — Shadcn Dialog with searchable org member list via Shadcn Command (cmdk). Fetches `GET /api/members`, filters out existing project members. Shows name + email + avatar. Install `command` Shadcn component. |
+| 21.5 | Build TransferLeadDialog | B | | `components/projects/transfer-lead-dialog.tsx` — Shadcn AlertDialog (destructive action). "Transfer lead role to {name}? You will become a regular member." |
+| 21.6 | Update project detail page | A | | Add `ProjectMembersPanel` below DocumentsPanel. Pass `projectRole` from updated project response. Fetch project members on server side. Update edit button: visible for lead + admin/owner (was admin+ only). |
+| 21.7 | Add role badge to project detail header | A | | Badge next to project name showing user's project role (Lead/Member). Nothing for admin/owner viewing non-member projects. |
+| 21.8 | Add frontend tests | B | | Member list renders with roles. AddMemberDialog filters existing members. Action button visibility by role. Remove and transfer actions. |
 
 ### Key Files
 
 **Create:**
 - `frontend/app/(app)/org/[slug]/projects/[id]/member-actions.ts`
 - `frontend/components/projects/project-members-panel.tsx`
-- `frontend/components/projects/add-member-dialog.tsx`
-- `frontend/components/projects/transfer-lead-dialog.tsx`
+- `frontend/components/projects/add-member-dialog.tsx` *(Slice B)*
+- `frontend/components/projects/transfer-lead-dialog.tsx` *(Slice B)*
 
 **Modify:**
 - `frontend/lib/types.ts` — New interfaces
@@ -1037,6 +1044,7 @@ Manual trigger (workflow_dispatch)
 
 ### Architecture Decisions
 
+- **Two-slice decomposition**: Slice A (display) is independently deployable — members panel renders as a read-only table showing who's on the project and their roles. Slice B adds all interactive CRUD (add/remove/transfer) via dialogs. This minimizes blast radius per PR and allows early visual verification.
 - **Client component for members panel**: Interactive state (add/remove, loading, transitions) requires client component. Server component fetches initial data and passes props — same pattern as DocumentsPanel.
 - **Shadcn Command for member picker**: Keyboard-navigable, searchable list. Standard Shadcn pattern for combobox/search UIs.
 - **AlertDialog for lead transfer**: Destructive/irreversible action — prevents accidental clicks. Consistent with DeleteProjectDialog pattern.

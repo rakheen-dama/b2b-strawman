@@ -73,11 +73,17 @@ async function apiRequest<T>(endpoint: string, options: ApiRequestOptions = {}):
     throw new ApiError(response.status, message, detail);
   }
 
-  if (response.status === 204) {
+  const contentLength = response.headers.get("content-length");
+  if (response.status === 204 || contentLength === "0") {
     return undefined as T;
   }
 
-  return response.json() as Promise<T>;
+  const text = await response.text();
+  if (!text) {
+    return undefined as T;
+  }
+
+  return JSON.parse(text) as T;
 }
 
 /**

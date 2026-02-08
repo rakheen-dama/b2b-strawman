@@ -23,7 +23,7 @@
 | 17 | Members Table + Webhook Sync | Both | 4, 5 | M | 17A, 17B | **Done** |
 | 18 | MemberFilter + MemberContext | Backend | 17 | M | 18A, 18B | **Done** |
 | 19 | Project Members Table + API | Backend | 18 | M | 19A, 19B | **Done**|
-| 20 | Project Access Control | Backend | 19 | L | — |         |
+| 20 | Project Access Control | Backend | 19 | L | 20A, 20B |         |
 | 21 | Frontend — Project Members Panel | Frontend | 19, 20 | M | — |         |
 | 22 | Frontend — Filtered Project List | Frontend | 20, 21 | S | — |         |
 
@@ -939,32 +939,56 @@ Manual trigger (workflow_dispatch)
 
 **Estimated Effort**: L
 
+### Slices
+
+| Slice | Tasks | Summary | Status |
+|-------|-------|---------|--------|
+| **20A** | 20.1–20.5, 20.7, 20.8a | ProjectAccessService + project endpoint access control + tests | **Done** |
+| **20B** | 20.6, 20.8b | Document endpoint access control + tests | |
+
 ### Tasks
 
-| ID | Task | Status | Notes |
-|----|------|--------|-------|
-| 20.1 | Create ProjectAccessService | | `member/ProjectAccessService.java` — `checkAccess(projectId, memberId, orgRole)` returns `ProjectAccess(canView, canEdit, canManageMembers, canDelete, projectRole)`. Owner/Admin → all true (canDelete owner-only). Member+lead → view, edit, manageMembers. Member+member → view only. Member+not-on-project → all false. |
-| 20.2 | Modify GET /api/projects (filtered listing) | | Admin/owner: return all projects (unchanged). Member: query only projects where user has a `project_members` row. New `ProjectRepository` method with JPQL join. Response includes `projectRole` field. |
-| 20.3 | Modify GET /api/projects/{id} | | Call `ProjectAccessService.checkAccess()`. If `!canView`, return 404 (not 403 — prevents info leakage). Add `projectRole` to response. |
-| 20.4 | Modify POST /api/projects | | Change `@PreAuthorize` from `ADMIN+` to `MEMBER+`. All org members can create projects. Creator auto-becomes lead (Epic 19). |
-| 20.5 | Modify PUT /api/projects/{id} | | Change `@PreAuthorize` to `MEMBER+`. Service checks `canEdit` via ProjectAccessService — allows project leads to edit (previously admin+ only). |
-| 20.6 | Modify document endpoints | | All document endpoints check project membership via ProjectAccessService. Upload-init/list (take projectId): check `canView`. Confirm/presign-download (take documentId): look up projectId first, then check. Non-member → 404. |
-| 20.7 | Update ProjectResponse DTO | | Add `projectRole` field (String, nullable). Non-null when user is a project member. Null for admin/owner viewing non-member projects. |
-| 20.8 | Update tests + add access control tests | | Member without project membership → 404 on GET. Member creates project → lead → can GET/PUT. Regular member → view only (403 on PUT). Admin/owner → full access regardless. GET /api/projects filtered for members. Document access respects project membership. |
+| ID | Task | Slice | Status | Notes |
+|----|------|-------|--------|-------|
+| 20.1 | Create ProjectAccessService | 20A | **Done** | `member/ProjectAccessService.java` — `checkAccess(projectId, memberId, orgRole)` returns `ProjectAccess(canView, canEdit, canManageMembers, canDelete, projectRole)`. Owner/Admin → all true (canDelete owner-only). Member+lead → view, edit, manageMembers. Member+member → view only. Member+not-on-project → all false. |
+| 20.2 | Modify GET /api/projects (filtered listing) | 20A | **Done** | Admin/owner: return all projects (unchanged). Member: query only projects where user has a `project_members` row. New `ProjectRepository` method with JPQL join. Response includes `projectRole` field. |
+| 20.3 | Modify GET /api/projects/{id} | 20A | **Done** | Call `ProjectAccessService.checkAccess()`. If `!canView`, return 404 (not 403 — prevents info leakage). Add `projectRole` to response. |
+| 20.4 | Modify POST /api/projects | 20A | **Done** | Change `@PreAuthorize` from `ADMIN+` to `MEMBER+`. All org members can create projects. Creator auto-becomes lead (Epic 19). |
+| 20.5 | Modify PUT /api/projects/{id} | 20A | **Done** | Change `@PreAuthorize` to `MEMBER+`. Service checks `canEdit` via ProjectAccessService — allows project leads to edit (previously admin+ only). |
+| 20.6 | Modify document endpoints | 20B | | All document endpoints check project membership via ProjectAccessService. Upload-init/list (take projectId): check `canView`. Confirm/presign-download (take documentId): look up projectId first, then check. Non-member → 404. |
+| 20.7 | Update ProjectResponse DTO | 20A | **Done** | Add `projectRole` field (String, nullable). Non-null when user is a project member. Null for admin/owner viewing non-member projects. |
+| 20.8a | Project access control tests | 20A | **Done** | Member without project membership → 404 on GET single. Member creates project → lead → can GET/PUT. Regular member → view only (403 on PUT). Admin/owner → full access regardless. GET /api/projects filtered for members. Update existing ProjectIntegrationTest for new RBAC rules. |
+| 20.8b | Document access control tests | 20B | | Document upload-init/list check project membership. Confirm/presign-download/cancel look up projectId first, then check. Non-member → 404. Update existing DocumentIntegrationTest for new RBAC rules. |
 
-### Key Files
+### Slice 20A: ProjectAccessService + Project Endpoint Access Control
 
-**Create:**
+**Goal**: Introduce the central access control service and apply it to all project CRUD endpoints. After this slice, project listing is filtered by membership for regular members, single-project access is gated, and create/update permissions are widened to all org members (with project-level role checks for edit).
+
+**Key Files:**
+
+*Create:*
 - `backend/src/main/java/.../member/ProjectAccessService.java`
-- `backend/src/test/java/.../member/ProjectAccessIntegrationTest.java`
+- `backend/src/main/java/.../member/ProjectAccess.java` (record)
+- `backend/src/main/java/.../project/ProjectWithRole.java` (record)
+- `backend/src/test/java/.../project/ProjectAccessIntegrationTest.java`
 
-**Modify:**
-- `backend/src/main/java/.../project/ProjectController.java` — Access checks, response DTO, @PreAuthorize
-- `backend/src/main/java/.../project/ProjectService.java` — Filtered listing
-- `backend/src/main/java/.../project/ProjectRepository.java` — JPQL join query
-- `backend/src/main/java/.../document/DocumentController.java` — Project access checks
-- `backend/src/main/java/.../document/DocumentService.java` — Project access checks
-- `backend/src/test/java/.../project/ProjectIntegrationTest.java` — Major test updates
+*Modify:*
+- `backend/src/main/java/.../project/ProjectController.java` — Inject ProjectAccessService, change @PreAuthorize, add projectRole to response
+- `backend/src/main/java/.../project/ProjectService.java` — Add filtered listing method for members
+- `backend/src/main/java/.../project/ProjectRepository.java` — JPQL join query for member-visible projects
+- `backend/src/test/java/.../project/ProjectIntegrationTest.java` — Major test updates for new RBAC
+- `backend/src/test/java/.../project/ProjectServiceTest.java` — Updated unit tests
+
+### Slice 20B: Document Endpoint Access Control
+
+**Goal**: Extend project access control to all document endpoints. After this slice, uploading, listing, confirming, downloading, and cancelling documents all require project membership (or admin/owner org role).
+
+**Key Files:**
+
+*Modify:*
+- `backend/src/main/java/.../document/DocumentController.java` — Inject ProjectAccessService, gate all endpoints
+- `backend/src/main/java/.../document/DocumentService.java` — Add projectId lookup for document-level endpoints
+- `backend/src/test/java/.../document/DocumentIntegrationTest.java` — Major test updates for new RBAC
 
 ### Architecture Decisions
 
@@ -972,6 +996,7 @@ Manual trigger (workflow_dispatch)
 - **404 over 403 for non-members**: Prevents information leakage. A member who isn't on a project shouldn't know it exists.
 - **Service-layer checks over @PreAuthorize for project-level**: Project-level checks require DB lookups too complex for SpEL. `@PreAuthorize` remains for org-level only.
 - **JPQL join for filtered listing**: Efficient single query joining `projects` + `project_members` for member visibility. Avoids N+1.
+- **Two-slice decomposition**: Slice A (projects) is independently deployable — documents temporarily keep org-level auth until Slice B lands. This minimizes blast radius per PR.
 
 ---
 

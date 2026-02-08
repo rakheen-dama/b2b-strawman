@@ -1,3 +1,18 @@
+export function formatDate(date: string | Date): string {
+  return new Date(date).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+export function formatDateShort(date: string | Date): string {
+  return new Date(date).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}
+
 export function formatFileSize(bytes: number): string {
   if (bytes === 0) return "0 B";
   const units = ["B", "KB", "MB", "GB"];

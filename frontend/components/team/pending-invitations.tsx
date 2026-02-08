@@ -12,6 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { formatDate } from "@/lib/format";
 
 const ROLE_LABELS: Record<string, string> = {
   "org:owner": "Owner",
@@ -78,7 +79,7 @@ export function PendingInvitations({ isAdmin }: { isAdmin: boolean }) {
                 <Badge variant="outline">{ROLE_LABELS[inv.role] ?? inv.role}</Badge>
               </TableCell>
               <TableCell className="text-muted-foreground">
-                {inv.createdAt ? new Date(inv.createdAt).toLocaleDateString() : "—"}
+                {inv.createdAt ? formatDate(inv.createdAt) : "—"}
               </TableCell>
               {isAdmin && (
                 <TableCell>

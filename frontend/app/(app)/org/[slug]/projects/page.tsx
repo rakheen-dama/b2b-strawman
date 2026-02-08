@@ -3,6 +3,7 @@ import { api, handleApiError } from "@/lib/api";
 import type { Project } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
+import { formatDate } from "@/lib/format";
 import { FolderOpen } from "lucide-react";
 import Link from "next/link";
 
@@ -64,11 +65,7 @@ export default async function ProjectsPage({ params }: { params: Promise<{ slug:
                   )}
                   <p className="text-muted-foreground mt-3 text-xs">
                     Created{" "}
-                    {new Date(project.createdAt).toLocaleDateString(undefined, {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
+                    {formatDate(project.createdAt)}
                   </p>
                 </CardContent>
               </Card>

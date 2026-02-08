@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.document;
 
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -381,6 +382,94 @@ class DocumentIntegrationTest {
                     """
                     {"fileName": "cross-tenant.pdf", "contentType": "application/pdf", "size": 100}
                     """))
+        .andExpect(status().isNotFound());
+  }
+
+  // --- Cancel upload ---
+
+  @Test
+  void shouldCancelPendingDocument() throws Exception {
+    var initResult =
+        mockMvc
+            .perform(
+                post("/api/projects/" + projectId + "/documents/upload-init")
+                    .with(memberJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"fileName": "cancel-test.pdf", "contentType": "application/pdf", "size": 512}
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    var documentId = extractJsonField(initResult, "documentId");
+
+    mockMvc
+        .perform(delete("/api/documents/" + documentId + "/cancel").with(memberJwt()))
+        .andExpect(status().isNoContent());
+
+    // Document should no longer exist
+    mockMvc
+        .perform(get("/api/documents/" + documentId + "/presign-download").with(memberJwt()))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void shouldReturn409WhenCancellingUploadedDocument() throws Exception {
+    var initResult =
+        mockMvc
+            .perform(
+                post("/api/projects/" + projectId + "/documents/upload-init")
+                    .with(memberJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"fileName": "cancel-uploaded.pdf", "contentType": "application/pdf", "size": 512}
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    var documentId = extractJsonField(initResult, "documentId");
+
+    // Confirm upload first
+    mockMvc
+        .perform(post("/api/documents/" + documentId + "/confirm").with(memberJwt()))
+        .andExpect(status().isOk());
+
+    // Cancel should fail with 409
+    mockMvc
+        .perform(delete("/api/documents/" + documentId + "/cancel").with(memberJwt()))
+        .andExpect(status().isConflict());
+  }
+
+  @Test
+  void shouldReturn404WhenCancellingNonexistentDocument() throws Exception {
+    mockMvc
+        .perform(
+            delete("/api/documents/00000000-0000-0000-0000-000000000000/cancel").with(memberJwt()))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void shouldReturn404WhenCancellingCrossTenantDocument() throws Exception {
+    var initResult =
+        mockMvc
+            .perform(
+                post("/api/projects/" + projectId + "/documents/upload-init")
+                    .with(memberJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"fileName": "cross-cancel.pdf", "contentType": "application/pdf", "size": 100}
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    var documentId = extractJsonField(initResult, "documentId");
+
+    // Tenant B cannot cancel tenant A's document
+    mockMvc
+        .perform(delete("/api/documents/" + documentId + "/cancel").with(tenantBMemberJwt()))
         .andExpect(status().isNotFound());
   }
 

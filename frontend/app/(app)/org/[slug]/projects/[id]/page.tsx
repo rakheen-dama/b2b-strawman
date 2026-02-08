@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { EditProjectDialog } from "@/components/projects/edit-project-dialog";
 import { DeleteProjectDialog } from "@/components/projects/delete-project-dialog";
 import { DocumentsPanel } from "@/components/documents/documents-panel";
+import { formatDate } from "@/lib/format";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 
@@ -55,11 +56,7 @@ export default async function ProjectDetailPage({
           )}
           <p className="text-muted-foreground mt-3 text-xs">
             Created{" "}
-            {new Date(project.createdAt).toLocaleDateString(undefined, {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })}
+            {formatDate(project.createdAt)}
           </p>
         </div>
 

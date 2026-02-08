@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { formatDate } from "@/lib/format";
 
 const ROLE_LABELS: Record<string, { label: string; variant: "default" | "secondary" | "outline" }> =
   {
@@ -64,7 +65,7 @@ export function MemberList() {
                   <Badge variant={roleInfo.variant}>{roleInfo.label}</Badge>
                 </TableCell>
                 <TableCell className="text-muted-foreground">
-                  {member.createdAt ? new Date(member.createdAt).toLocaleDateString() : "—"}
+                  {member.createdAt ? formatDate(member.createdAt) : "—"}
                 </TableCell>
               </TableRow>
             );

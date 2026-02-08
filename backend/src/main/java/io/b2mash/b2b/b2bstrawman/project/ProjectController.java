@@ -48,9 +48,11 @@ public class ProjectController {
 
   @PostMapping
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
-  public ResponseEntity<ProjectResponse> createProject(
-      @Valid @RequestBody CreateProjectRequest request) {
+  public ResponseEntity<?> createProject(@Valid @RequestBody CreateProjectRequest request) {
     UUID createdBy = MemberContext.getCurrentMemberId();
+    if (createdBy == null) {
+      return ResponseEntity.of(memberContextMissing()).build();
+    }
     var project = projectService.createProject(request.name(), request.description(), createdBy);
     return ResponseEntity.created(URI.create("/api/projects/" + project.getId()))
         .body(ProjectResponse.from(project));
@@ -79,6 +81,13 @@ public class ProjectController {
     var problem = ProblemDetail.forStatus(404);
     problem.setTitle("Project not found");
     problem.setDetail("No project found with id " + id);
+    return problem;
+  }
+
+  private ProblemDetail memberContextMissing() {
+    var problem = ProblemDetail.forStatus(500);
+    problem.setTitle("Member context not available");
+    problem.setDetail("Unable to resolve member identity for request");
     return problem;
   }
 

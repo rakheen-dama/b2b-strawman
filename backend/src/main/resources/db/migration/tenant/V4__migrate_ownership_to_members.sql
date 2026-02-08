@@ -4,13 +4,13 @@
 INSERT INTO members (clerk_user_id, email, name, org_role)
 SELECT DISTINCT created_by, created_by || '@placeholder.internal', created_by, 'member'
 FROM projects
-WHERE created_by IS NOT NULL
+WHERE created_by IS NOT NULL AND created_by <> ''
 ON CONFLICT (clerk_user_id) DO NOTHING;
 
 INSERT INTO members (clerk_user_id, email, name, org_role)
 SELECT DISTINCT uploaded_by, uploaded_by || '@placeholder.internal', uploaded_by, 'member'
 FROM documents
-WHERE uploaded_by IS NOT NULL
+WHERE uploaded_by IS NOT NULL AND uploaded_by <> ''
 ON CONFLICT (clerk_user_id) DO NOTHING;
 
 -- Step 2: Add temporary UUID columns
@@ -27,6 +27,17 @@ UPDATE documents d
 SET uploaded_by_member_id = m.id
 FROM members m
 WHERE m.clerk_user_id = d.uploaded_by;
+
+-- Step 3b: Validate all records were migrated (fail fast if any orphans)
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM projects WHERE created_by_member_id IS NULL) THEN
+        RAISE EXCEPTION 'Migration failed: some projects have no matching member record for created_by';
+    END IF;
+    IF EXISTS (SELECT 1 FROM documents WHERE uploaded_by_member_id IS NULL) THEN
+        RAISE EXCEPTION 'Migration failed: some documents have no matching member record for uploaded_by';
+    END IF;
+END $$;
 
 -- Step 4: Drop old VARCHAR columns, rename temp columns
 ALTER TABLE projects DROP COLUMN created_by;

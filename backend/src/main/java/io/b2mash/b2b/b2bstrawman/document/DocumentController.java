@@ -44,6 +44,12 @@ public class DocumentController {
     }
     String orgId = (String) orgClaim.get("id");
     UUID uploadedBy = MemberContext.getCurrentMemberId();
+    if (uploadedBy == null) {
+      var problem = ProblemDetail.forStatus(500);
+      problem.setTitle("Member context not available");
+      problem.setDetail("Unable to resolve member identity for request");
+      return ResponseEntity.of(problem).build();
+    }
 
     return documentService
         .initiateUpload(

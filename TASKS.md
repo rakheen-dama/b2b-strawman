@@ -1010,18 +1010,25 @@ Manual trigger (workflow_dispatch)
 
 **Estimated Effort**: M
 
+### Slices
+
+| Slice | Tasks | Summary | Status |
+|-------|-------|---------|--------|
+| **21A** | 21.1–21.3, 21.6–21.7 | Types, server actions, read-only panel, page integration, role badges | **Done** |
+| **21B** | 21.4–21.5, 21.3 (wiring), 21.8 | AddMemberDialog, TransferLeadDialog, action buttons, tests | |
+
 ### Tasks
 
-| ID | Task | Status | Notes |
-|----|------|--------|-------|
-| 21.1 | Add TypeScript types | | In `lib/types.ts`: `Member { id, name, email, avatarUrl, orgRole }`, `ProjectMember { id, memberId, name, email, avatarUrl, projectRole, createdAt }`, `ProjectRole = "lead" \| "member"`. Update `Project` to include `projectRole: string \| null`. |
-| 21.2 | Create project members server actions | | `projects/[id]/member-actions.ts` — `fetchProjectMembers(projectId)`, `fetchOrgMembers()`, `addProjectMember(slug, projectId, memberId)`, `removeProjectMember(slug, projectId, memberId)`, `transferLead(slug, projectId, memberId)`. Standard ActionResult pattern with revalidatePath. |
-| 21.3 | Build ProjectMembersPanel | | `components/projects/project-members-panel.tsx` — Client component. Member table with avatar, name, email, role badge (Lead/Member via Shadcn Badge). "Add Member" button (lead/admin/owner). "Remove" button per row (not on lead's row). "Transfer Lead" per row (current lead only). `useTransition()` for loading states. |
-| 21.4 | Build AddMemberDialog | | `components/projects/add-member-dialog.tsx` — Shadcn Dialog with searchable org member list via Shadcn Command (cmdk). Fetches `GET /api/members`, filters out existing project members. Shows name + email + avatar. |
-| 21.5 | Build TransferLeadDialog | | `components/projects/transfer-lead-dialog.tsx` — Shadcn AlertDialog (destructive action). "Transfer lead role to {name}? You will become a regular member." |
-| 21.6 | Update project detail page | | Add `ProjectMembersPanel` below DocumentsPanel. Pass `projectRole` from updated project response. Update edit button: visible for lead + admin/owner (was admin+ only). |
-| 21.7 | Add role badge to project detail header | | Badge next to project name showing user's project role (Lead/Member). Nothing for admin/owner viewing non-member projects. |
-| 21.8 | Add frontend tests | | Member list renders with roles. AddMemberDialog filters existing members. Action button visibility by role. |
+| ID | Task | Slice | Status | Notes |
+|----|------|-------|--------|-------|
+| 21.1 | Add TypeScript types | A | **Done** | In `lib/types.ts`: `OrgMember { id, name, email, avatarUrl, orgRole }`, `ProjectMember { id, memberId, name, email, avatarUrl, projectRole, createdAt }`, `ProjectRole = "lead" \| "member"`. Updated `Project` to include `projectRole: ProjectRole \| null`. |
+| 21.2 | Create project members server actions | A | **Done** | `projects/[id]/member-actions.ts` — `fetchProjectMembers(projectId)`, `fetchOrgMembers()`, `addProjectMember(slug, projectId, memberId)`, `removeProjectMember(slug, projectId, memberId)`, `transferLead(slug, projectId, memberId)`. Standard ActionResult pattern with revalidatePath. |
+| 21.3 | Build ProjectMembersPanel | A+B | **Done** | **Slice A**: Read-only client component — member table with avatar, name, email, role badge (Lead/Member via Shadcn Badge). No action buttons yet. **Slice B**: Wire up "Add Member" button (lead/admin/owner), "Remove" button per row (not on lead's row), "Transfer Lead" per row (current lead only). `useTransition()` for loading states. |
+| 21.4 | Build AddMemberDialog | B | | `components/projects/add-member-dialog.tsx` — Shadcn Dialog with searchable org member list via Shadcn Command (cmdk). Fetches `GET /api/members`, filters out existing project members. Shows name + email + avatar. Install `command` Shadcn component. |
+| 21.5 | Build TransferLeadDialog | B | | `components/projects/transfer-lead-dialog.tsx` — Shadcn AlertDialog (destructive action). "Transfer lead role to {name}? You will become a regular member." |
+| 21.6 | Update project detail page | A | **Done** | Add `ProjectMembersPanel` below DocumentsPanel. Pass `projectRole` from updated project response. Fetch project members on server side. Update edit button: visible for lead + admin/owner (was admin+ only). |
+| 21.7 | Add role badge to project detail header | A | **Done** | Badge next to project name showing user's project role (Lead/Member). Nothing for admin/owner viewing non-member projects. |
+| 21.8 | Add frontend tests | B | | Member list renders with roles. AddMemberDialog filters existing members. Action button visibility by role. Remove and transfer actions. |
 
 ### Key Files
 

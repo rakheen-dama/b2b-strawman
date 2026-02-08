@@ -7,6 +7,7 @@ export interface Project {
   createdBy: string;
   createdAt: string;
   updatedAt: string;
+  projectRole: ProjectRole | null;
 }
 
 export interface CreateProjectRequest {
@@ -50,6 +51,30 @@ export interface UploadInitResponse {
 export interface PresignDownloadResponse {
   presignedUrl: string;
   expiresInSeconds: number;
+}
+
+// ---- Members (from OrgMemberController.java) ----
+
+export interface OrgMember {
+  id: string;
+  name: string;
+  email: string;
+  avatarUrl: string | null;
+  orgRole: string;
+}
+
+// ---- Project Members (from ProjectMemberController.java) ----
+
+export type ProjectRole = "lead" | "member";
+
+export interface ProjectMember {
+  id: string;
+  memberId: string;
+  name: string;
+  email: string;
+  avatarUrl: string | null;
+  projectRole: ProjectRole;
+  createdAt: string;
 }
 
 // ---- Error (RFC 9457 ProblemDetail) ----

@@ -41,11 +41,6 @@ export async function updateProject(
   id: string,
   formData: FormData
 ): Promise<ActionResult> {
-  const { orgRole } = await auth();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
-    return { success: false, error: "You must be an admin to edit projects." };
-  }
-
   const name = formData.get("name")?.toString().trim() ?? "";
   const description = formData.get("description")?.toString().trim() || undefined;
 

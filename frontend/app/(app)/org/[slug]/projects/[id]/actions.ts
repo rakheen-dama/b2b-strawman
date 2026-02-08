@@ -68,6 +68,15 @@ export async function confirmUpload(
   return { success: true };
 }
 
+export async function cancelUpload(documentId: string): Promise<ActionResult> {
+  try {
+    await api.delete(`/api/documents/${documentId}/cancel`);
+    return { success: true };
+  } catch {
+    return { success: false, error: "Failed to cancel upload." };
+  }
+}
+
 export async function getDownloadUrl(documentId: string): Promise<DownloadUrlResult> {
   try {
     const result = await api.get<PresignDownloadResponse>(

@@ -5,11 +5,13 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,7 +33,15 @@ public class DocumentController {
       @PathVariable UUID projectId,
       @Valid @RequestBody UploadInitRequest request,
       JwtAuthenticationToken auth) {
-    String orgId = auth.getToken().getClaimAsString("org_id");
+    @SuppressWarnings("unchecked")
+    Map<String, Object> orgClaim = auth.getToken().getClaim("o");
+    if (orgClaim == null || orgClaim.get("id") == null) {
+      var problem = ProblemDetail.forStatus(401);
+      problem.setTitle("Missing organization context");
+      problem.setDetail("JWT token does not contain organization claim");
+      return ResponseEntity.of(problem).build();
+    }
+    String orgId = (String) orgClaim.get("id");
     String uploadedBy = auth.getName();
 
     return documentService
@@ -52,6 +62,25 @@ public class DocumentController {
     return documentService
         .confirmUpload(documentId)
         .map(document -> ResponseEntity.ok(DocumentResponse.from(document)))
+        .orElseGet(() -> ResponseEntity.of(documentNotFound(documentId)).build());
+  }
+
+  @DeleteMapping("/api/documents/{documentId}/cancel")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<?> cancelUpload(@PathVariable UUID documentId) {
+    return documentService
+        .cancelUpload(documentId)
+        .map(
+            status ->
+                switch (status) {
+                  case DELETED -> ResponseEntity.noContent().build();
+                  case NOT_PENDING -> {
+                    var problem = ProblemDetail.forStatus(409);
+                    problem.setTitle("Document not pending");
+                    problem.setDetail("Only pending documents can be cancelled");
+                    yield ResponseEntity.of(problem).build();
+                  }
+                })
         .orElseGet(() -> ResponseEntity.of(documentNotFound(documentId)).build());
   }
 

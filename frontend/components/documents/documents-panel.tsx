@@ -27,11 +27,12 @@ import {
   type UploadItem,
   type UploadStatus,
 } from "@/components/documents/upload-progress-item";
-import { formatFileSize } from "@/lib/format";
+import { formatDate, formatFileSize } from "@/lib/format";
 import { validateFile } from "@/lib/upload-validation";
 import {
   initiateUpload,
   confirmUpload,
+  cancelUpload,
   getDownloadUrl,
 } from "@/app/(app)/org/[slug]/projects/[id]/actions";
 import type { Document, DocumentStatus } from "@/lib/types";
@@ -211,13 +212,17 @@ export function DocumentsPanel({ documents, projectId, slug }: DocumentsPanelPro
         xhr.send(item.file);
       });
 
-      if (!uploadSuccess) return;
+      if (!uploadSuccess) {
+        if (initResult.documentId) await cancelUpload(initResult.documentId);
+        return;
+      }
 
       // Step 3: Confirm
       dispatch({ type: "SET_STATUS", id: item.id, status: "confirming" });
       const confirmResult = await confirmUpload(slug, projectId, initResult.documentId);
 
       if (!confirmResult.success) {
+        if (initResult.documentId) await cancelUpload(initResult.documentId);
         dispatch({
           type: "SET_STATUS",
           id: item.id,
@@ -348,13 +353,7 @@ export function DocumentsPanel({ documents, projectId, slug }: DocumentsPanelPro
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
                       <span className="text-muted-foreground text-sm">
-                        {doc.uploadedAt
-                          ? new Date(doc.uploadedAt).toLocaleDateString(undefined, {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })
-                          : "—"}
+                        {doc.uploadedAt ? formatDate(doc.uploadedAt) : "—"}
                       </span>
                     </TableCell>
                     <TableCell>

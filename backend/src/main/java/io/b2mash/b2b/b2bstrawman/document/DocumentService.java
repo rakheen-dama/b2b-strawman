@@ -72,6 +72,20 @@ public class DocumentService {
             });
   }
 
+  @Transactional
+  public Optional<CancelResult> cancelUpload(UUID documentId) {
+    return documentRepository
+        .findById(documentId)
+        .map(
+            document -> {
+              if (document.getStatus() != Document.Status.PENDING) {
+                return CancelResult.NOT_PENDING;
+              }
+              documentRepository.delete(document);
+              return CancelResult.DELETED;
+            });
+  }
+
   @Transactional(readOnly = true)
   public Optional<PresignDownloadResult> getPresignedDownloadUrl(UUID documentId) {
     return documentRepository
@@ -84,6 +98,11 @@ public class DocumentService {
               var presigned = s3Service.generateDownloadUrl(document.getS3Key());
               return PresignDownloadResult.success(presigned.url(), presigned.expiresInSeconds());
             });
+  }
+
+  public enum CancelResult {
+    DELETED,
+    NOT_PENDING
   }
 
   public record UploadInitResult(UUID documentId, String presignedUrl, long expiresInSeconds) {}

@@ -3,6 +3,7 @@ import { api, handleApiError } from "@/lib/api";
 import type { Project } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { formatDateShort } from "@/lib/format";
 import { FolderOpen, Users, ArrowRight, Plus } from "lucide-react";
 import Link from "next/link";
 
@@ -114,10 +115,7 @@ export default async function OrgDashboardPage({ params }: { params: Promise<{ s
                       )}
                     </div>
                     <span className="text-muted-foreground ml-4 shrink-0 text-xs">
-                      {new Date(project.createdAt).toLocaleDateString(undefined, {
-                        month: "short",
-                        day: "numeric",
-                      })}
+                      {formatDateShort(project.createdAt)}
                     </span>
                   </Link>
                 </li>

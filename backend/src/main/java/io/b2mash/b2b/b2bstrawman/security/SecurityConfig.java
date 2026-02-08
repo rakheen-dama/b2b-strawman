@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.security;
 
+import io.b2mash.b2b.b2bstrawman.member.MemberFilter;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantFilter;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantLoggingFilter;
 import org.springframework.context.annotation.Bean;
@@ -19,16 +20,19 @@ public class SecurityConfig {
   private final ClerkJwtAuthenticationConverter jwtAuthConverter;
   private final ApiKeyAuthFilter apiKeyAuthFilter;
   private final TenantFilter tenantFilter;
+  private final MemberFilter memberFilter;
   private final TenantLoggingFilter tenantLoggingFilter;
 
   public SecurityConfig(
       ClerkJwtAuthenticationConverter jwtAuthConverter,
       ApiKeyAuthFilter apiKeyAuthFilter,
       TenantFilter tenantFilter,
+      MemberFilter memberFilter,
       TenantLoggingFilter tenantLoggingFilter) {
     this.jwtAuthConverter = jwtAuthConverter;
     this.apiKeyAuthFilter = apiKeyAuthFilter;
     this.tenantFilter = tenantFilter;
+    this.memberFilter = memberFilter;
     this.tenantLoggingFilter = tenantLoggingFilter;
   }
 
@@ -51,7 +55,8 @@ public class SecurityConfig {
             oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthConverter)))
         .addFilterBefore(apiKeyAuthFilter, BearerTokenAuthenticationFilter.class)
         .addFilterAfter(tenantFilter, BearerTokenAuthenticationFilter.class)
-        .addFilterAfter(tenantLoggingFilter, TenantFilter.class);
+        .addFilterAfter(memberFilter, TenantFilter.class)
+        .addFilterAfter(tenantLoggingFilter, MemberFilter.class);
 
     return http.build();
   }

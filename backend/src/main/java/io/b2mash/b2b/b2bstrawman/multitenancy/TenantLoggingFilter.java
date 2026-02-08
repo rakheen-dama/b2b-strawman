@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.multitenancy;
 
+import io.b2mash.b2b.b2bstrawman.member.MemberContext;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,6 +19,7 @@ public class TenantLoggingFilter extends OncePerRequestFilter {
 
   private static final String MDC_TENANT_ID = "tenantId";
   private static final String MDC_USER_ID = "userId";
+  private static final String MDC_MEMBER_ID = "memberId";
   private static final String MDC_REQUEST_ID = "requestId";
 
   @Override
@@ -37,10 +39,16 @@ public class TenantLoggingFilter extends OncePerRequestFilter {
         MDC.put(MDC_USER_ID, jwtAuth.getToken().getSubject());
       }
 
+      UUID memberId = MemberContext.getCurrentMemberId();
+      if (memberId != null) {
+        MDC.put(MDC_MEMBER_ID, memberId.toString());
+      }
+
       filterChain.doFilter(request, response);
     } finally {
       MDC.remove(MDC_TENANT_ID);
       MDC.remove(MDC_USER_ID);
+      MDC.remove(MDC_MEMBER_ID);
       MDC.remove(MDC_REQUEST_ID);
     }
   }

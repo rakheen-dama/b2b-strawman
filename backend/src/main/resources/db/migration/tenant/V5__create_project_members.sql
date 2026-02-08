@@ -13,6 +13,10 @@ CREATE TABLE IF NOT EXISTS project_members (
 CREATE INDEX IF NOT EXISTS idx_project_members_member_id
     ON project_members (member_id);
 
+-- Enforce exactly one lead per project at the database level
+CREATE UNIQUE INDEX IF NOT EXISTS idx_project_members_unique_lead
+    ON project_members (project_id) WHERE project_role = 'lead';
+
 -- Backfill: project creator becomes lead (added_by is NULL for backfilled rows)
 INSERT INTO project_members (project_id, member_id, project_role)
 SELECT id, created_by, 'lead'

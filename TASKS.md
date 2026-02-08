@@ -890,17 +890,17 @@ Manual trigger (workflow_dispatch)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **19A** | 19.1–19.4 | Migration, entity, repository, service | |
+| **19A** | 19.1–19.4 | Migration, entity, repository, service | **Done** |
 | **19B** | 19.5–19.8 | Controllers, backfill, tests | |
 
 ### Tasks
 
 | ID | Task | Status | Notes |
 |----|------|--------|-------|
-| 19.1 | Create V5 tenant migration for project_members | | `V5__create_project_members.sql`: Table with `id` (UUID PK), `project_id` (UUID FK → projects ON DELETE CASCADE), `member_id` (UUID FK → members ON DELETE CASCADE), `project_role` (VARCHAR(50) NOT NULL — `lead` or `member`), `added_by` (UUID FK → members, nullable), `created_at` (TIMESTAMPTZ NOT NULL DEFAULT now()). UNIQUE(project_id, member_id). Backfill: INSERT from projects — creator becomes lead. |
-| 19.2 | Create ProjectMember entity | | `member/ProjectMember.java` — UUID id, projectId (UUID), memberId (UUID), projectRole (String), addedBy (UUID nullable), createdAt. No bidirectional JPA relationships — use explicit queries. |
-| 19.3 | Create ProjectMemberRepository | | `member/ProjectMemberRepository.java` — Methods: `findByProjectId`, `findByProjectIdAndMemberId`, `existsByProjectIdAndMemberId`, `findByProjectIdAndProjectRole`, `findByMemberId`, `deleteByProjectIdAndMemberId`. |
-| 19.4 | Create ProjectMemberService | | Methods: `listProjectMembers(projectId)` — joins with members for display data. `addMember(projectId, memberId, addedBy)` — validates member exists, not already on project (409). `removeMember(projectId, memberId, requestedBy, orgRole)` — cannot remove lead. `transferLead(projectId, currentLeadId, newLeadId)` — atomic `@Transactional`: demote old lead, promote new. `isProjectMember(projectId, memberId)` — boolean. |
+| 19.1 | Create V5 tenant migration for project_members | **Done** | `V5__create_project_members.sql`: Table with `id` (UUID PK), `project_id` (UUID FK → projects ON DELETE CASCADE), `member_id` (UUID FK → members ON DELETE CASCADE), `project_role` (VARCHAR(50) NOT NULL — `lead` or `member`), `added_by` (UUID FK → members, nullable), `created_at` (TIMESTAMPTZ NOT NULL DEFAULT now()). UNIQUE(project_id, member_id). Backfill: INSERT from projects — creator becomes lead. |
+| 19.2 | Create ProjectMember entity | **Done** | `member/ProjectMember.java` — UUID id, projectId (UUID), memberId (UUID), projectRole (String), addedBy (UUID nullable), createdAt. No bidirectional JPA relationships — use explicit queries. |
+| 19.3 | Create ProjectMemberRepository | **Done** | `member/ProjectMemberRepository.java` — Methods: `findByProjectId`, `findByProjectIdAndMemberId`, `existsByProjectIdAndMemberId`, `findByProjectIdAndProjectRole`, `findByMemberId`, `deleteByProjectIdAndMemberId`. |
+| 19.4 | Create ProjectMemberService | **Done** | Methods: `listProjectMembers(projectId)` — joins with members for display data. `addMember(projectId, memberId, addedBy)` — validates member exists, not already on project (409). `removeMember(projectId, memberId, requestedBy, orgRole)` — cannot remove lead. `transferLead(projectId, currentLeadId, newLeadId)` — atomic `@Transactional`: demote old lead, promote new. `isProjectMember(projectId, memberId)` — boolean. |
 | 19.5 | Create ProjectMemberController | | `@RequestMapping("/api/projects/{projectId}/members")`. GET (list, MEMBER+), POST `{memberId}` (add, MEMBER+ with service permission check), DELETE `/{memberId}` (remove), PUT `/{memberId}/role` `{role: "lead"}` (transfer). DTOs: `ProjectMemberResponse(id, memberId, name, email, avatarUrl, projectRole, createdAt)`. |
 | 19.6 | Create OrgMemberController | | `GET /api/members` — returns all org members (from tenant's members table). Response: `OrgMemberResponse(id, name, email, avatarUrl, orgRole)`. Purpose: populate "add member to project" picker. |
 | 19.7 | Auto-create lead on project creation | | Modify `ProjectService.createProject()`: after saving project, insert `ProjectMember(projectRole="lead", memberId=MemberContext.getCurrentMemberId())`. Inject `ProjectMemberRepository`. |

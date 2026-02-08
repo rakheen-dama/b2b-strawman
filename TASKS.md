@@ -20,7 +20,7 @@
 | 14 | AWS Infrastructure | Infra | 13 | XL | 14A–14D | **Done** |
 | 15 | Deployment Pipeline | Infra | 13, 14 | L | 15A, 15B | **Done** |
 | 16 | Testing & Quality | Both | 7, 8, 10, 11 | L | 16A–16C | |
-| 17 | Members Table + Webhook Sync | Both | 4, 5 | M | 17A, 17B | |
+| 17 | Members Table + Webhook Sync | Both | 4, 5 | M | 17A, 17B | **Done** |
 | 18 | MemberFilter + MemberContext | Backend | 17 | M | — | |
 | 19 | Project Members Table + API | Backend | 18 | M | 19A, 19B | |
 | 20 | Project Access Control | Backend | 19 | L | — | |
@@ -772,22 +772,22 @@ Manual trigger (workflow_dispatch)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **17A** | 17.1–17.5 | Backend: migration, entity, repository, service, controller | |
-| **17B** | 17.6–17.9 | Frontend: webhook handlers, types, tests | |
+| **17A** | 17.1–17.5 | Backend: migration, entity, repository, service, controller | **Done** |
+| **17B** | 17.6–17.9 | Frontend: webhook handlers, types, tests | **Done** |
 
 ### Tasks
 
 | ID | Task | Status | Notes |
 |----|------|--------|-------|
-| 17.1 | Create V3 tenant migration for members table | | `V3__create_members.sql` in `db/migration/tenant/`. Columns: `id` (UUID PK DEFAULT gen_random_uuid()), `clerk_user_id` (VARCHAR(255) UNIQUE NOT NULL), `email` (VARCHAR(255) NOT NULL), `name` (VARCHAR(255)), `avatar_url` (VARCHAR(1000)), `org_role` (VARCHAR(50) NOT NULL), `created_at` (TIMESTAMPTZ NOT NULL DEFAULT now()), `updated_at` (TIMESTAMPTZ NOT NULL DEFAULT now()). Index on `clerk_user_id`. |
-| 17.2 | Create Member entity | | `member/Member.java` — JPA entity mapped to `members` table. UUID id, clerkUserId, email, name, avatarUrl, orgRole, createdAt, updatedAt. No `@Table(schema=...)` (Hibernate resolves tenant schema). `updateFrom(email, name, avatarUrl, orgRole)` method for upsert. |
-| 17.3 | Create MemberRepository | | `member/MemberRepository.java` — `JpaRepository<Member, UUID>`. Methods: `Optional<Member> findByClerkUserId(String)`, `void deleteByClerkUserId(String)`, `boolean existsByClerkUserId(String)`. |
-| 17.4 | Create MemberSyncService | | `member/MemberSyncService.java` — `syncMember(clerkOrgId, clerkUserId, email, name, avatarUrl, orgRole)`: resolves tenant via `OrgSchemaMappingRepository.findByClerkOrgId()`, manually sets/clears `TenantContext` in try/finally (internal endpoints skip TenantFilter), upserts member. `deleteMember(clerkOrgId, clerkUserId)`: resolves tenant, deletes by clerkUserId. `@Transactional` per operation. |
-| 17.5 | Create MemberSyncController | | `member/MemberSyncController.java` — `POST /internal/members/sync` with `SyncMemberRequest(clerkOrgId, clerkUserId, email, name, avatarUrl, orgRole)`, returns 201/200. `DELETE /internal/members/{clerkUserId}?clerkOrgId={orgId}`, returns 204/404. All `@Valid` with `@NotBlank` on required fields. |
-| 17.6 | Implement organizationMembership.created handler | | Replace no-op in `webhook-handlers.ts`. Extract `organization.id` and `public_user_data.user_id` from event. Call `clerkClient.users.getUser(userId)` for name/email/avatar. Map role (`org:admin` → `admin`). Call `POST /internal/members/sync` via `internalApiClient`. |
-| 17.7 | Implement organizationMembership.updated handler | | Same extraction pattern. Call `POST /internal/members/sync` (upsert) with updated role. |
-| 17.8 | Implement organizationMembership.deleted handler | | Call `DELETE /internal/members/{clerkUserId}?clerkOrgId={orgId}`. Handle 404 gracefully (member may already be deleted). |
-| 17.9 | Add tests | | Backend: integration tests for MemberSyncController (sync creates member, re-sync updates, delete removes, tenant isolation). Frontend: update webhook handler tests for membership events. Add `SyncMemberRequest` type to `lib/internal-api.ts`. |
+| 17.1 | Create V3 tenant migration for members table | **Done** | `V3__create_members.sql` in `db/migration/tenant/`. Columns: `id` (UUID PK DEFAULT gen_random_uuid()), `clerk_user_id` (VARCHAR(255) UNIQUE NOT NULL), `email` (VARCHAR(255) NOT NULL), `name` (VARCHAR(255)), `avatar_url` (VARCHAR(1000)), `org_role` (VARCHAR(50) NOT NULL), `created_at` (TIMESTAMPTZ NOT NULL DEFAULT now()), `updated_at` (TIMESTAMPTZ NOT NULL DEFAULT now()). Index on `clerk_user_id`. |
+| 17.2 | Create Member entity | **Done** | `member/Member.java` — JPA entity mapped to `members` table. UUID id, clerkUserId, email, name, avatarUrl, orgRole, createdAt, updatedAt. No `@Table(schema=...)` (Hibernate resolves tenant schema). `updateFrom(email, name, avatarUrl, orgRole)` method for upsert. |
+| 17.3 | Create MemberRepository | **Done** | `member/MemberRepository.java` — `JpaRepository<Member, UUID>`. Methods: `Optional<Member> findByClerkUserId(String)`, `void deleteByClerkUserId(String)`, `boolean existsByClerkUserId(String)`. |
+| 17.4 | Create MemberSyncService | **Done** | `member/MemberSyncService.java` — `syncMember(clerkOrgId, clerkUserId, email, name, avatarUrl, orgRole)`: resolves tenant via `OrgSchemaMappingRepository.findByClerkOrgId()`, manually sets/clears `TenantContext` in try/finally (internal endpoints skip TenantFilter), upserts member. `deleteMember(clerkOrgId, clerkUserId)`: resolves tenant, deletes by clerkUserId. `@Transactional` per operation. |
+| 17.5 | Create MemberSyncController | **Done** | `member/MemberSyncController.java` — `POST /internal/members/sync` with `SyncMemberRequest(clerkOrgId, clerkUserId, email, name, avatarUrl, orgRole)`, returns 201/200. `DELETE /internal/members/{clerkUserId}?clerkOrgId={orgId}`, returns 204/404. All `@Valid` with `@NotBlank` on required fields. |
+| 17.6 | Implement organizationMembership.created handler | **Done** | Replace no-op in `webhook-handlers.ts`. Extract `organization.id` and `public_user_data.user_id` from event. Call `clerkClient.users.getUser(userId)` for name/email/avatar. Map role (`org:admin` → `admin`). Call `POST /internal/members/sync` via `internalApiClient`. |
+| 17.7 | Implement organizationMembership.updated handler | **Done** | Same extraction pattern. Call `POST /internal/members/sync` (upsert) with updated role. |
+| 17.8 | Implement organizationMembership.deleted handler | **Done** | Call `DELETE /internal/members/{clerkUserId}?clerkOrgId={orgId}`. Handle 404 gracefully (member may already be deleted). |
+| 17.9 | Add tests | **Done** | Backend: integration tests for MemberSyncController (sync creates member, re-sync updates, delete removes, tenant isolation). Frontend: update webhook handler tests for membership events. Add `SyncMemberRequest` type to `lib/internal-api.ts`. |
 
 ### Key Files
 

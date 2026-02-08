@@ -72,8 +72,18 @@ public class MemberFilter extends OncePerRequestFilter {
     }
 
     String cacheKey = tenantId + ":" + clerkUserId;
-    UUID memberId =
-        memberCache.computeIfAbsent(cacheKey, k -> resolveOrCreateMember(clerkUserId, orgRole));
+    UUID memberId;
+    try {
+      memberId =
+          memberCache.computeIfAbsent(cacheKey, k -> resolveOrCreateMember(clerkUserId, orgRole));
+    } catch (Exception e) {
+      log.warn(
+          "Failed to resolve/create member for user {} in tenant {}: {}",
+          clerkUserId,
+          tenantId,
+          e.getMessage());
+      return;
+    }
 
     MemberContext.setCurrentMemberId(memberId);
     if (orgRole != null) {

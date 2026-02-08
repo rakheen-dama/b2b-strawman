@@ -25,7 +25,7 @@ export async function inviteMember(
   const headersList = await headers();
   const host = headersList.get("host") ?? "localhost:3000";
   const protocol = headersList.get("x-forwarded-proto") ?? "http";
-  const redirectUrl = `${protocol}://${host}/dashboard`;
+  const redirectUrl = `${protocol}://${host}/sign-up`;
 
   try {
     const client = await clerkClient();

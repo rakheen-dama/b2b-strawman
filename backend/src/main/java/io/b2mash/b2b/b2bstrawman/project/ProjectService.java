@@ -1,18 +1,27 @@
 package io.b2mash.b2b.b2bstrawman.project;
 
+import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
+import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ProjectService {
 
-  private final ProjectRepository repository;
+  private static final Logger log = LoggerFactory.getLogger(ProjectService.class);
 
-  public ProjectService(ProjectRepository repository) {
+  private final ProjectRepository repository;
+  private final ProjectMemberRepository projectMemberRepository;
+
+  public ProjectService(
+      ProjectRepository repository, ProjectMemberRepository projectMemberRepository) {
     this.repository = repository;
+    this.projectMemberRepository = projectMemberRepository;
   }
 
   @Transactional(readOnly = true)
@@ -27,7 +36,11 @@ public class ProjectService {
 
   @Transactional
   public Project createProject(String name, String description, UUID createdBy) {
-    return repository.save(new Project(name, description, createdBy));
+    var project = repository.save(new Project(name, description, createdBy));
+    var lead = new ProjectMember(project.getId(), createdBy, "lead", null);
+    projectMemberRepository.save(lead);
+    log.info("Created project {} with lead member {}", project.getId(), createdBy);
+    return project;
   }
 
   @Transactional

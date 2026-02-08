@@ -6,6 +6,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
+import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -21,6 +23,7 @@ class ProjectServiceTest {
   private static final UUID MEMBER_ID = UUID.randomUUID();
 
   @Mock private ProjectRepository repository;
+  @Mock private ProjectMemberRepository projectMemberRepository;
   @InjectMocks private ProjectService service;
 
   @Test
@@ -61,6 +64,8 @@ class ProjectServiceTest {
   void createProject_savesNewEntity() {
     var project = new Project("New", "Description", MEMBER_ID);
     when(repository.save(any(Project.class))).thenReturn(project);
+    when(projectMemberRepository.save(any(ProjectMember.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
 
     var result = service.createProject("New", "Description", MEMBER_ID);
 
@@ -68,6 +73,7 @@ class ProjectServiceTest {
     assertThat(result.getDescription()).isEqualTo("Description");
     assertThat(result.getCreatedBy()).isEqualTo(MEMBER_ID);
     verify(repository).save(any(Project.class));
+    verify(projectMemberRepository).save(any(ProjectMember.class));
   }
 
   @Test

@@ -36,6 +36,7 @@ export function InviteMemberForm() {
       await organization.inviteMember({
         emailAddress: trimmedEmail,
         role,
+        redirect_url: `${window.location.origin}/dashboard`,
       });
       await invitations?.revalidate?.();
       setEmailAddress("");

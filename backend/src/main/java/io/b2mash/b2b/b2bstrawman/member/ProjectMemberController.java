@@ -7,7 +7,6 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -41,12 +40,9 @@ public class ProjectMemberController {
 
   @PostMapping
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
-  public ResponseEntity<?> addMember(
+  public ResponseEntity<Void> addMember(
       @PathVariable UUID projectId, @Valid @RequestBody AddMemberRequest request) {
-    if (!RequestScopes.MEMBER_ID.isBound()) {
-      return ResponseEntity.of(memberContextMissing()).build();
-    }
-    UUID addedBy = RequestScopes.MEMBER_ID.get();
+    UUID addedBy = RequestScopes.requireMemberId();
 
     var projectMember = projectMemberService.addMember(projectId, request.memberId(), addedBy);
     return ResponseEntity.created(
@@ -56,12 +52,10 @@ public class ProjectMemberController {
 
   @DeleteMapping("/{memberId}")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
-  public ResponseEntity<?> removeMember(@PathVariable UUID projectId, @PathVariable UUID memberId) {
-    if (!RequestScopes.MEMBER_ID.isBound()) {
-      return ResponseEntity.of(memberContextMissing()).build();
-    }
-    UUID requestedBy = RequestScopes.MEMBER_ID.get();
-    String orgRole = RequestScopes.ORG_ROLE.isBound() ? RequestScopes.ORG_ROLE.get() : null;
+  public ResponseEntity<Void> removeMember(
+      @PathVariable UUID projectId, @PathVariable UUID memberId) {
+    UUID requestedBy = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
 
     projectMemberService.removeMember(projectId, memberId, requestedBy, orgRole);
     return ResponseEntity.noContent().build();
@@ -73,20 +67,10 @@ public class ProjectMemberController {
       @PathVariable UUID projectId,
       @PathVariable UUID memberId,
       @Valid @RequestBody TransferLeadRequest request) {
-    if (!RequestScopes.MEMBER_ID.isBound()) {
-      return ResponseEntity.of(memberContextMissing()).build();
-    }
-    UUID currentLeadId = RequestScopes.MEMBER_ID.get();
+    UUID currentLeadId = RequestScopes.requireMemberId();
 
     projectMemberService.transferLead(projectId, currentLeadId, memberId);
     return ResponseEntity.noContent().build();
-  }
-
-  private ProblemDetail memberContextMissing() {
-    var problem = ProblemDetail.forStatus(500);
-    problem.setTitle("Member context not available");
-    problem.setDetail("Unable to resolve member identity for request");
-    return problem;
   }
 
   public record AddMemberRequest(@NotNull(message = "memberId is required") UUID memberId) {}

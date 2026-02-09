@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.document;
 
+import io.b2mash.b2b.b2bstrawman.exception.MissingOrganizationContextException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -8,7 +9,6 @@ import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
-import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -30,142 +30,70 @@ public class DocumentController {
 
   @PostMapping("/api/projects/{projectId}/documents/upload-init")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
-  public ResponseEntity<?> initiateUpload(
+  public ResponseEntity<UploadInitResponse> initiateUpload(
       @PathVariable UUID projectId,
       @Valid @RequestBody UploadInitRequest request,
       JwtAuthenticationToken auth) {
     @SuppressWarnings("unchecked")
     Map<String, Object> orgClaim = auth.getToken().getClaim("o");
     if (orgClaim == null || orgClaim.get("id") == null) {
-      var problem = ProblemDetail.forStatus(401);
-      problem.setTitle("Missing organization context");
-      problem.setDetail("JWT token does not contain organization claim");
-      return ResponseEntity.of(problem).build();
+      throw new MissingOrganizationContextException();
     }
     String orgId = (String) orgClaim.get("id");
-    if (!RequestScopes.MEMBER_ID.isBound()) {
-      return ResponseEntity.of(memberContextMissing()).build();
-    }
-    UUID memberId = RequestScopes.MEMBER_ID.get();
-    String orgRole = RequestScopes.ORG_ROLE.isBound() ? RequestScopes.ORG_ROLE.get() : null;
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
 
-    return documentService
-        .initiateUpload(
+    var result =
+        documentService.initiateUpload(
             projectId,
             request.fileName(),
             request.contentType(),
             request.size(),
             orgId,
             memberId,
-            orgRole)
-        .map(
-            result ->
-                ResponseEntity.status(201)
-                    .body(
-                        new UploadInitResponse(
-                            result.documentId(), result.presignedUrl(), result.expiresInSeconds())))
-        .orElseGet(() -> ResponseEntity.of(projectNotFound(projectId)).build());
+            orgRole);
+    return ResponseEntity.status(201)
+        .body(
+            new UploadInitResponse(
+                result.documentId(), result.presignedUrl(), result.expiresInSeconds()));
   }
 
   @PostMapping("/api/documents/{documentId}/confirm")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
-  public ResponseEntity<?> confirmUpload(@PathVariable UUID documentId) {
-    if (!RequestScopes.MEMBER_ID.isBound()) {
-      return ResponseEntity.of(memberContextMissing()).build();
-    }
-    UUID memberId = RequestScopes.MEMBER_ID.get();
-    String orgRole = RequestScopes.ORG_ROLE.isBound() ? RequestScopes.ORG_ROLE.get() : null;
-    return documentService
-        .confirmUpload(documentId, memberId, orgRole)
-        .map(document -> ResponseEntity.ok(DocumentResponse.from(document)))
-        .orElseGet(() -> ResponseEntity.of(documentNotFound(documentId)).build());
+  public ResponseEntity<DocumentResponse> confirmUpload(@PathVariable UUID documentId) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+    var document = documentService.confirmUpload(documentId, memberId, orgRole);
+    return ResponseEntity.ok(DocumentResponse.from(document));
   }
 
   @DeleteMapping("/api/documents/{documentId}/cancel")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
-  public ResponseEntity<?> cancelUpload(@PathVariable UUID documentId) {
-    if (!RequestScopes.MEMBER_ID.isBound()) {
-      return ResponseEntity.of(memberContextMissing()).build();
-    }
-    UUID memberId = RequestScopes.MEMBER_ID.get();
-    String orgRole = RequestScopes.ORG_ROLE.isBound() ? RequestScopes.ORG_ROLE.get() : null;
-    return documentService
-        .cancelUpload(documentId, memberId, orgRole)
-        .map(
-            status ->
-                switch (status) {
-                  case DELETED -> ResponseEntity.noContent().build();
-                  case NOT_PENDING -> {
-                    var problem = ProblemDetail.forStatus(409);
-                    problem.setTitle("Document not pending");
-                    problem.setDetail("Only pending documents can be cancelled");
-                    yield ResponseEntity.of(problem).build();
-                  }
-                })
-        .orElseGet(() -> ResponseEntity.of(documentNotFound(documentId)).build());
+  public ResponseEntity<Void> cancelUpload(@PathVariable UUID documentId) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+    documentService.cancelUpload(documentId, memberId, orgRole);
+    return ResponseEntity.noContent().build();
   }
 
   @GetMapping("/api/projects/{projectId}/documents")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
-  public ResponseEntity<?> listDocuments(@PathVariable UUID projectId) {
-    if (!RequestScopes.MEMBER_ID.isBound()) {
-      return ResponseEntity.of(memberContextMissing()).build();
-    }
-    UUID memberId = RequestScopes.MEMBER_ID.get();
-    String orgRole = RequestScopes.ORG_ROLE.isBound() ? RequestScopes.ORG_ROLE.get() : null;
-    return documentService
-        .listDocuments(projectId, memberId, orgRole)
-        .map(
-            documents -> {
-              var response = documents.stream().map(DocumentResponse::from).toList();
-              return ResponseEntity.ok(response);
-            })
-        .orElseGet(() -> ResponseEntity.of(projectNotFound(projectId)).build());
+  public ResponseEntity<java.util.List<DocumentResponse>> listDocuments(
+      @PathVariable UUID projectId) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+    var documents = documentService.listDocuments(projectId, memberId, orgRole);
+    var response = documents.stream().map(DocumentResponse::from).toList();
+    return ResponseEntity.ok(response);
   }
 
   @GetMapping("/api/documents/{documentId}/presign-download")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
-  public ResponseEntity<?> presignDownload(@PathVariable UUID documentId) {
-    if (!RequestScopes.MEMBER_ID.isBound()) {
-      return ResponseEntity.of(memberContextMissing()).build();
-    }
-    UUID memberId = RequestScopes.MEMBER_ID.get();
-    String orgRole = RequestScopes.ORG_ROLE.isBound() ? RequestScopes.ORG_ROLE.get() : null;
-    return documentService
-        .getPresignedDownloadUrl(documentId, memberId, orgRole)
-        .map(
-            result -> {
-              if (!result.uploaded()) {
-                var problem = ProblemDetail.forStatus(400);
-                problem.setTitle("Document not uploaded");
-                problem.setDetail("Document has not been uploaded yet");
-                return ResponseEntity.of(problem).build();
-              }
-              return ResponseEntity.ok(
-                  new PresignDownloadResponse(result.url(), result.expiresInSeconds()));
-            })
-        .orElseGet(() -> ResponseEntity.of(documentNotFound(documentId)).build());
-  }
-
-  private ProblemDetail projectNotFound(UUID projectId) {
-    var problem = ProblemDetail.forStatus(404);
-    problem.setTitle("Project not found");
-    problem.setDetail("No project found with id " + projectId);
-    return problem;
-  }
-
-  private ProblemDetail documentNotFound(UUID documentId) {
-    var problem = ProblemDetail.forStatus(404);
-    problem.setTitle("Document not found");
-    problem.setDetail("No document found with id " + documentId);
-    return problem;
-  }
-
-  private ProblemDetail memberContextMissing() {
-    var problem = ProblemDetail.forStatus(500);
-    problem.setTitle("Member context not available");
-    problem.setDetail("Unable to resolve member identity for request");
-    return problem;
+  public ResponseEntity<PresignDownloadResponse> presignDownload(@PathVariable UUID documentId) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+    var result = documentService.getPresignedDownloadUrl(documentId, memberId, orgRole);
+    return ResponseEntity.ok(new PresignDownloadResponse(result.url(), result.expiresInSeconds()));
   }
 
   public record UploadInitRequest(

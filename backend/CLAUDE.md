@@ -18,11 +18,13 @@ Requires Docker running for Testcontainers (tests and local dev). Postgres avail
 ```
 src/main/java/io/b2mash/b2b/b2bstrawman/
 ├── config/           # Spring configuration beans (Security, Hibernate, S3, Resilience4j)
+├── exception/        # Shared semantic exceptions (ResourceNotFoundException, ForbiddenException, etc.)
 ├── multitenancy/     # RequestScopes (ScopedValue), identifier resolver, connection provider, filters
 ├── security/         # JWT auth filter, API key filter, role converter
 ├── provisioning/     # Tenant provisioning controller, service, schema name generator
 ├── project/          # Project entity, repository, service, controller
 ├── document/         # Document entity, repository, service, controller
+├── member/           # Member sync, project members — entities, repositories, services, controllers
 ├── s3/               # S3 presigned URL service
 └── BackendApplication.java
 ```
@@ -62,6 +64,9 @@ Organize by **feature**, not by layer. Each feature package contains its entity,
 - Never use flat JWT claims (`org_id`, `org_role`) — Clerk JWT v2 nests org claims under `"o"`: `jwt.getClaim("o")` returns `Map<String, Object>` with keys `id`, `rol`, `slg`
 - Never use `ThreadLocal` for request-scoped context — use `ScopedValue` via `RequestScopes` (guaranteed cleanup, virtual thread safe)
 - Never call `RequestScopes.TENANT_ID.get()` without checking `isBound()` first or accepting `NoSuchElementException`
+- Never build `ProblemDetail` directly in controllers or services — throw semantic exceptions from `exception/` package instead
+- Never return `Optional` from services for "not found" or "access denied" — throw `ResourceNotFoundException`
+- Never duplicate error helper methods in controllers — use `RequestScopes.requireMemberId()` and the shared exception classes
 
 ## Spring Boot 4 / Hibernate 7 Gotchas
 
@@ -208,10 +213,23 @@ Note: Spring Security Test `jwt()` mock does NOT invoke `ClerkJwtAuthenticationC
 
 ## Error Handling & Resilience
 
-- Tenant provisioning uses Resilience4j `@Retry` (maxAttempts=3, exponential backoff)
+### Exception Pattern
+Services throw semantic exceptions from the `exception/` package — Spring auto-renders them as RFC 9457 ProblemDetail responses. Controllers should be pure delegation with no error mapping.
+
+| Exception | HTTP Status | When to use |
+|-----------|-------------|-------------|
+| `ResourceNotFoundException` | 404 | Resource not found **or** access denied (security-by-obscurity) |
+| `ResourceConflictException` | 409 | Duplicate or state conflict |
+| `ForbiddenException` | 403 | Authenticated but insufficient permissions |
+| `InvalidStateException` | 400 | Invalid state transition or bad request |
+| `MissingOrganizationContextException` | 401 | JWT missing org claim |
+
+Use `RequestScopes.requireMemberId()` and `RequestScopes.getOrgRole()` in controllers instead of manual `MEMBER_ID.isBound()` checks.
+
+### Resilience
+- Tenant provisioning uses `@Retry` (maxAttempts=3, exponential backoff)
 - Provisioning status tracked in DB: `PENDING` → `IN_PROGRESS` → `COMPLETED` / `FAILED`
 - All provisioning steps are idempotent (safe to retry)
-- Use Spring's `ProblemDetail` for structured error responses
 
 ## Observability
 

@@ -90,4 +90,34 @@ class RequestScopesTest {
               assertThat(RequestScopes.ORG_ROLE.get()).isEqualTo("admin");
             });
   }
+
+  @Test
+  void requireMemberId_throwsWhenNotBound() {
+    assertThatThrownBy(RequestScopes::requireMemberId)
+        .isInstanceOf(MemberContextNotBoundException.class);
+  }
+
+  @Test
+  void requireMemberId_returnsValueWhenBound() {
+    UUID id = UUID.randomUUID();
+    ScopedValue.where(RequestScopes.MEMBER_ID, id)
+        .run(
+            () -> {
+              assertThat(RequestScopes.requireMemberId()).isEqualTo(id);
+            });
+  }
+
+  @Test
+  void getOrgRole_returnsNullWhenNotBound() {
+    assertThat(RequestScopes.getOrgRole()).isNull();
+  }
+
+  @Test
+  void getOrgRole_returnsValueWhenBound() {
+    ScopedValue.where(RequestScopes.ORG_ROLE, "admin")
+        .run(
+            () -> {
+              assertThat(RequestScopes.getOrgRole()).isEqualTo("admin");
+            });
+  }
 }

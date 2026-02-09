@@ -1,10 +1,12 @@
 package io.b2mash.b2b.b2bstrawman.document;
 
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,19 +31,19 @@ public class DocumentService {
   }
 
   @Transactional(readOnly = true)
-  public Optional<List<Document>> listDocuments(UUID projectId, UUID memberId, String orgRole) {
+  public List<Document> listDocuments(UUID projectId, UUID memberId, String orgRole) {
     if (!projectRepository.existsById(projectId)) {
-      return Optional.empty();
+      throw new ResourceNotFoundException("Project", projectId);
     }
     var access = projectAccessService.checkAccess(projectId, memberId, orgRole);
     if (!access.canView()) {
-      return Optional.empty();
+      throw new ResourceNotFoundException("Project", projectId);
     }
-    return Optional.of(documentRepository.findByProjectId(projectId));
+    return documentRepository.findByProjectId(projectId);
   }
 
   @Transactional
-  public Optional<UploadInitResult> initiateUpload(
+  public UploadInitResult initiateUpload(
       UUID projectId,
       String fileName,
       String contentType,
@@ -50,11 +52,11 @@ public class DocumentService {
       UUID memberId,
       String orgRole) {
     if (!projectRepository.existsById(projectId)) {
-      return Optional.empty();
+      throw new ResourceNotFoundException("Project", projectId);
     }
     var access = projectAccessService.checkAccess(projectId, memberId, orgRole);
     if (!access.canView()) {
-      return Optional.empty();
+      throw new ResourceNotFoundException("Project", projectId);
     }
 
     var document =
@@ -67,84 +69,63 @@ public class DocumentService {
     document.assignS3Key(presigned.s3Key());
     documentRepository.save(document);
 
-    return Optional.of(
-        new UploadInitResult(document.getId(), presigned.url(), presigned.expiresInSeconds()));
+    return new UploadInitResult(document.getId(), presigned.url(), presigned.expiresInSeconds());
   }
 
   @Transactional
-  public Optional<Document> confirmUpload(UUID documentId, UUID memberId, String orgRole) {
-    return documentRepository
-        .findById(documentId)
-        .flatMap(
-            document -> {
-              var access =
-                  projectAccessService.checkAccess(document.getProjectId(), memberId, orgRole);
-              if (!access.canView()) {
-                return Optional.empty();
-              }
-              if (document.getStatus() != Document.Status.UPLOADED) {
-                document.confirmUpload();
-                return Optional.of(documentRepository.save(document));
-              }
-              return Optional.of(document);
-            });
+  public Document confirmUpload(UUID documentId, UUID memberId, String orgRole) {
+    var document =
+        documentRepository
+            .findById(documentId)
+            .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
+    var access = projectAccessService.checkAccess(document.getProjectId(), memberId, orgRole);
+    if (!access.canView()) {
+      throw new ResourceNotFoundException("Document", documentId);
+    }
+    if (document.getStatus() != Document.Status.UPLOADED) {
+      document.confirmUpload();
+      return documentRepository.save(document);
+    }
+    return document;
   }
 
   @Transactional
-  public Optional<CancelResult> cancelUpload(UUID documentId, UUID memberId, String orgRole) {
-    return documentRepository
-        .findById(documentId)
-        .flatMap(
-            document -> {
-              var access =
-                  projectAccessService.checkAccess(document.getProjectId(), memberId, orgRole);
-              if (!access.canView()) {
-                return Optional.empty();
-              }
-              if (document.getStatus() != Document.Status.PENDING) {
-                return Optional.of(CancelResult.NOT_PENDING);
-              }
-              documentRepository.delete(document);
-              return Optional.of(CancelResult.DELETED);
-            });
+  public void cancelUpload(UUID documentId, UUID memberId, String orgRole) {
+    var document =
+        documentRepository
+            .findById(documentId)
+            .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
+    var access = projectAccessService.checkAccess(document.getProjectId(), memberId, orgRole);
+    if (!access.canView()) {
+      throw new ResourceNotFoundException("Document", documentId);
+    }
+    if (document.getStatus() != Document.Status.PENDING) {
+      throw new ResourceConflictException(
+          "Document not pending", "Only pending documents can be cancelled");
+    }
+    documentRepository.delete(document);
   }
 
   @Transactional(readOnly = true)
-  public Optional<PresignDownloadResult> getPresignedDownloadUrl(
+  public PresignDownloadResult getPresignedDownloadUrl(
       UUID documentId, UUID memberId, String orgRole) {
-    return documentRepository
-        .findById(documentId)
-        .flatMap(
-            document -> {
-              var access =
-                  projectAccessService.checkAccess(document.getProjectId(), memberId, orgRole);
-              if (!access.canView()) {
-                return Optional.empty();
-              }
-              if (document.getStatus() != Document.Status.UPLOADED) {
-                return Optional.of(PresignDownloadResult.notUploaded());
-              }
-              var presigned = s3Service.generateDownloadUrl(document.getS3Key());
-              return Optional.of(
-                  PresignDownloadResult.success(presigned.url(), presigned.expiresInSeconds()));
-            });
-  }
-
-  public enum CancelResult {
-    DELETED,
-    NOT_PENDING
+    var document =
+        documentRepository
+            .findById(documentId)
+            .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
+    var access = projectAccessService.checkAccess(document.getProjectId(), memberId, orgRole);
+    if (!access.canView()) {
+      throw new ResourceNotFoundException("Document", documentId);
+    }
+    if (document.getStatus() != Document.Status.UPLOADED) {
+      throw new InvalidStateException(
+          "Document not uploaded", "Document has not been uploaded yet");
+    }
+    var presigned = s3Service.generateDownloadUrl(document.getS3Key());
+    return new PresignDownloadResult(presigned.url(), presigned.expiresInSeconds());
   }
 
   public record UploadInitResult(UUID documentId, String presignedUrl, long expiresInSeconds) {}
 
-  public record PresignDownloadResult(boolean uploaded, String url, long expiresInSeconds) {
-
-    static PresignDownloadResult success(String url, long expiresInSeconds) {
-      return new PresignDownloadResult(true, url, expiresInSeconds);
-    }
-
-    static PresignDownloadResult notUploaded() {
-      return new PresignDownloadResult(false, null, 0);
-    }
-  }
+  public record PresignDownloadResult(String url, long expiresInSeconds) {}
 }

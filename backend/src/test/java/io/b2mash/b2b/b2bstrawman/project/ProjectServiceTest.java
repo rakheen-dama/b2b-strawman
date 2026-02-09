@@ -7,6 +7,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccess;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
@@ -19,7 +21,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.ErrorResponseException;
 
 @ExtendWith(MockitoExtension.class)
 class ProjectServiceTest {
@@ -68,32 +69,29 @@ class ProjectServiceTest {
 
     var result = service.getProject(id, MEMBER_ID, "member");
 
-    assertThat(result).isPresent();
-    assertThat(result.get().project().getName()).isEqualTo("Found");
-    assertThat(result.get().projectRole()).isEqualTo("member");
+    assertThat(result.project().getName()).isEqualTo("Found");
+    assertThat(result.projectRole()).isEqualTo("member");
   }
 
   @Test
-  void getProject_returnsEmptyWhenNotFound() {
+  void getProject_throwsWhenNotFound() {
     var id = UUID.randomUUID();
     when(repository.findById(id)).thenReturn(Optional.empty());
 
-    var result = service.getProject(id, MEMBER_ID, "member");
-
-    assertThat(result).isEmpty();
+    assertThatThrownBy(() -> service.getProject(id, MEMBER_ID, "member"))
+        .isInstanceOf(ResourceNotFoundException.class);
   }
 
   @Test
-  void getProject_returnsEmptyWhenAccessDenied() {
+  void getProject_throwsWhenAccessDenied() {
     var id = UUID.randomUUID();
     var project = new Project("Secret", "Desc", MEMBER_ID);
     when(repository.findById(id)).thenReturn(Optional.of(project));
     when(projectAccessService.checkAccess(id, MEMBER_ID, "member"))
         .thenReturn(ProjectAccess.DENIED);
 
-    var result = service.getProject(id, MEMBER_ID, "member");
-
-    assertThat(result).isEmpty();
+    assertThatThrownBy(() -> service.getProject(id, MEMBER_ID, "member"))
+        .isInstanceOf(ResourceNotFoundException.class);
   }
 
   @Test
@@ -123,20 +121,18 @@ class ProjectServiceTest {
 
     var result = service.updateProject(id, "Updated", "New Desc", MEMBER_ID, "admin");
 
-    assertThat(result).isPresent();
-    assertThat(result.get().project().getName()).isEqualTo("Updated");
-    assertThat(result.get().project().getDescription()).isEqualTo("New Desc");
+    assertThat(result.project().getName()).isEqualTo("Updated");
+    assertThat(result.project().getDescription()).isEqualTo("New Desc");
     verify(repository).save(existing);
   }
 
   @Test
-  void updateProject_returnsEmptyWhenNotFound() {
+  void updateProject_throwsWhenNotFound() {
     var id = UUID.randomUUID();
     when(repository.findById(id)).thenReturn(Optional.empty());
 
-    var result = service.updateProject(id, "Name", "Desc", MEMBER_ID, "admin");
-
-    assertThat(result).isEmpty();
+    assertThatThrownBy(() -> service.updateProject(id, "Name", "Desc", MEMBER_ID, "admin"))
+        .isInstanceOf(ResourceNotFoundException.class);
     verify(repository, never()).save(any());
   }
 
@@ -149,42 +145,39 @@ class ProjectServiceTest {
         .thenReturn(new ProjectAccess(true, false, false, false, "member"));
 
     assertThatThrownBy(() -> service.updateProject(id, "Name", "Desc", MEMBER_ID, "member"))
-        .isInstanceOf(ErrorResponseException.class);
+        .isInstanceOf(ForbiddenException.class);
   }
 
   @Test
-  void updateProject_returnsEmptyWhenAccessDenied() {
+  void updateProject_throwsWhenAccessDenied() {
     var id = UUID.randomUUID();
     var existing = new Project("Secret", "Desc", MEMBER_ID);
     when(repository.findById(id)).thenReturn(Optional.of(existing));
     when(projectAccessService.checkAccess(id, MEMBER_ID, "member"))
         .thenReturn(ProjectAccess.DENIED);
 
-    var result = service.updateProject(id, "Name", "Desc", MEMBER_ID, "member");
-
-    assertThat(result).isEmpty();
+    assertThatThrownBy(() -> service.updateProject(id, "Name", "Desc", MEMBER_ID, "member"))
+        .isInstanceOf(ResourceNotFoundException.class);
   }
 
   @Test
-  void deleteProject_returnsTrueWhenDeleted() {
+  void deleteProject_deletesWhenFound() {
     var id = UUID.randomUUID();
     var project = new Project("ToDelete", null, MEMBER_ID);
     when(repository.findById(id)).thenReturn(Optional.of(project));
 
-    var result = service.deleteProject(id);
+    service.deleteProject(id);
 
-    assertThat(result).isTrue();
     verify(repository).delete(project);
   }
 
   @Test
-  void deleteProject_returnsFalseWhenNotFound() {
+  void deleteProject_throwsWhenNotFound() {
     var id = UUID.randomUUID();
     when(repository.findById(id)).thenReturn(Optional.empty());
 
-    var result = service.deleteProject(id);
-
-    assertThat(result).isFalse();
+    assertThatThrownBy(() -> service.deleteProject(id))
+        .isInstanceOf(ResourceNotFoundException.class);
     verify(repository, never()).delete(any());
   }
 }

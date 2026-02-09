@@ -22,5 +22,18 @@ public final class RequestScopes {
 
   public static final String DEFAULT_TENANT = "public";
 
+  /** Returns the current member's UUID. Throws if not bound by filter chain. */
+  public static UUID requireMemberId() {
+    if (!MEMBER_ID.isBound()) {
+      throw new MemberContextNotBoundException();
+    }
+    return MEMBER_ID.get();
+  }
+
+  /** Returns the current member's org role, or null if not bound. */
+  public static String getOrgRole() {
+    return ORG_ROLE.isBound() ? ORG_ROLE.get() : null;
+  }
+
   private RequestScopes() {}
 }

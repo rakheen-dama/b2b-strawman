@@ -6,8 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
-import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -31,12 +31,9 @@ public class ProjectController {
 
   @GetMapping
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
-  public ResponseEntity<?> listProjects() {
-    if (!RequestScopes.MEMBER_ID.isBound()) {
-      return ResponseEntity.of(memberContextMissing()).build();
-    }
-    UUID memberId = RequestScopes.MEMBER_ID.get();
-    String orgRole = RequestScopes.ORG_ROLE.isBound() ? RequestScopes.ORG_ROLE.get() : null;
+  public ResponseEntity<List<ProjectResponse>> listProjects() {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
     var projects =
         projectService.listProjects(memberId, orgRole).stream()
             .map(pwr -> ProjectResponse.from(pwr.project(), pwr.projectRole()))
@@ -46,25 +43,18 @@ public class ProjectController {
 
   @GetMapping("/{id}")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
-  public ResponseEntity<?> getProject(@PathVariable UUID id) {
-    if (!RequestScopes.MEMBER_ID.isBound()) {
-      return ResponseEntity.of(memberContextMissing()).build();
-    }
-    UUID memberId = RequestScopes.MEMBER_ID.get();
-    String orgRole = RequestScopes.ORG_ROLE.isBound() ? RequestScopes.ORG_ROLE.get() : null;
-    return projectService
-        .getProject(id, memberId, orgRole)
-        .map(pwr -> ResponseEntity.ok(ProjectResponse.from(pwr.project(), pwr.projectRole())))
-        .orElseGet(() -> ResponseEntity.of(notFound(id)).build());
+  public ResponseEntity<ProjectResponse> getProject(@PathVariable UUID id) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+    var pwr = projectService.getProject(id, memberId, orgRole);
+    return ResponseEntity.ok(ProjectResponse.from(pwr.project(), pwr.projectRole()));
   }
 
   @PostMapping
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
-  public ResponseEntity<?> createProject(@Valid @RequestBody CreateProjectRequest request) {
-    if (!RequestScopes.MEMBER_ID.isBound()) {
-      return ResponseEntity.of(memberContextMissing()).build();
-    }
-    UUID createdBy = RequestScopes.MEMBER_ID.get();
+  public ResponseEntity<ProjectResponse> createProject(
+      @Valid @RequestBody CreateProjectRequest request) {
+    UUID createdBy = RequestScopes.requireMemberId();
     var project = projectService.createProject(request.name(), request.description(), createdBy);
     return ResponseEntity.created(URI.create("/api/projects/" + project.getId()))
         .body(ProjectResponse.from(project, "lead"));
@@ -72,40 +62,20 @@ public class ProjectController {
 
   @PutMapping("/{id}")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
-  public ResponseEntity<?> updateProject(
+  public ResponseEntity<ProjectResponse> updateProject(
       @PathVariable UUID id, @Valid @RequestBody UpdateProjectRequest request) {
-    if (!RequestScopes.MEMBER_ID.isBound()) {
-      return ResponseEntity.of(memberContextMissing()).build();
-    }
-    UUID memberId = RequestScopes.MEMBER_ID.get();
-    String orgRole = RequestScopes.ORG_ROLE.isBound() ? RequestScopes.ORG_ROLE.get() : null;
-    return projectService
-        .updateProject(id, request.name(), request.description(), memberId, orgRole)
-        .map(pwr -> ResponseEntity.ok(ProjectResponse.from(pwr.project(), pwr.projectRole())))
-        .orElseGet(() -> ResponseEntity.of(notFound(id)).build());
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+    var pwr =
+        projectService.updateProject(id, request.name(), request.description(), memberId, orgRole);
+    return ResponseEntity.ok(ProjectResponse.from(pwr.project(), pwr.projectRole()));
   }
 
   @DeleteMapping("/{id}")
   @PreAuthorize("hasRole('ORG_OWNER')")
   public ResponseEntity<Void> deleteProject(@PathVariable UUID id) {
-    if (projectService.deleteProject(id)) {
-      return ResponseEntity.noContent().build();
-    }
-    return ResponseEntity.of(notFound(id)).build();
-  }
-
-  private ProblemDetail notFound(UUID id) {
-    var problem = ProblemDetail.forStatus(404);
-    problem.setTitle("Project not found");
-    problem.setDetail("No project found with id " + id);
-    return problem;
-  }
-
-  private ProblemDetail memberContextMissing() {
-    var problem = ProblemDetail.forStatus(500);
-    problem.setTitle("Member context not available");
-    problem.setDetail("Unable to resolve member identity for request");
-    return problem;
+    projectService.deleteProject(id);
+    return ResponseEntity.noContent().build();
   }
 
   public record CreateProjectRequest(

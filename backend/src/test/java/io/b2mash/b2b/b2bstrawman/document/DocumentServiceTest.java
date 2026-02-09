@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.document;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -8,6 +9,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccess;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
@@ -49,30 +53,27 @@ class DocumentServiceTest {
 
     var result = service.listDocuments(PROJECT_ID, MEMBER_ID, ORG_ROLE);
 
-    assertThat(result).isPresent();
-    assertThat(result.get()).hasSize(1);
-    assertThat(result.get().getFirst().getFileName()).isEqualTo("file.pdf");
+    assertThat(result).hasSize(1);
+    assertThat(result.getFirst().getFileName()).isEqualTo("file.pdf");
   }
 
   @Test
-  void listDocuments_returnsEmptyOptionalForMissingProject() {
+  void listDocuments_throwsForMissingProject() {
     when(projectRepository.existsById(PROJECT_ID)).thenReturn(false);
 
-    var result = service.listDocuments(PROJECT_ID, MEMBER_ID, ORG_ROLE);
-
-    assertThat(result).isEmpty();
+    assertThatThrownBy(() -> service.listDocuments(PROJECT_ID, MEMBER_ID, ORG_ROLE))
+        .isInstanceOf(ResourceNotFoundException.class);
     verify(documentRepository, never()).findByProjectId(any());
   }
 
   @Test
-  void listDocuments_returnsEmptyOptionalWhenAccessDenied() {
+  void listDocuments_throwsWhenAccessDenied() {
     when(projectRepository.existsById(PROJECT_ID)).thenReturn(true);
     when(projectAccessService.checkAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
         .thenReturn(ProjectAccess.DENIED);
 
-    var result = service.listDocuments(PROJECT_ID, MEMBER_ID, ORG_ROLE);
-
-    assertThat(result).isEmpty();
+    assertThatThrownBy(() -> service.listDocuments(PROJECT_ID, MEMBER_ID, ORG_ROLE))
+        .isInstanceOf(ResourceNotFoundException.class);
     verify(documentRepository, never()).findByProjectId(any());
   }
 
@@ -103,10 +104,9 @@ class DocumentServiceTest {
         service.initiateUpload(
             PROJECT_ID, "doc.pdf", "application/pdf", 5000, ORG_ID, MEMBER_ID, ORG_ROLE);
 
-    assertThat(result).isPresent();
-    assertThat(result.get().presignedUrl()).isEqualTo("https://s3.example.com/upload");
-    assertThat(result.get().expiresInSeconds()).isEqualTo(3600);
-    assertThat(result.get().documentId()).isNotNull();
+    assertThat(result.presignedUrl()).isEqualTo("https://s3.example.com/upload");
+    assertThat(result.expiresInSeconds()).isEqualTo(3600);
+    assertThat(result.documentId()).isNotNull();
 
     // Verify document saved twice: initial creation + S3 key assignment
     var captor = ArgumentCaptor.forClass(Document.class);
@@ -115,28 +115,28 @@ class DocumentServiceTest {
   }
 
   @Test
-  void initiateUpload_returnsEmptyForMissingProject() {
+  void initiateUpload_throwsForMissingProject() {
     when(projectRepository.existsById(PROJECT_ID)).thenReturn(false);
 
-    var result =
-        service.initiateUpload(
-            PROJECT_ID, "doc.pdf", "application/pdf", 5000, ORG_ID, MEMBER_ID, ORG_ROLE);
-
-    assertThat(result).isEmpty();
+    assertThatThrownBy(
+            () ->
+                service.initiateUpload(
+                    PROJECT_ID, "doc.pdf", "application/pdf", 5000, ORG_ID, MEMBER_ID, ORG_ROLE))
+        .isInstanceOf(ResourceNotFoundException.class);
     verify(documentRepository, never()).save(any());
   }
 
   @Test
-  void initiateUpload_returnsEmptyWhenAccessDenied() {
+  void initiateUpload_throwsWhenAccessDenied() {
     when(projectRepository.existsById(PROJECT_ID)).thenReturn(true);
     when(projectAccessService.checkAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
         .thenReturn(ProjectAccess.DENIED);
 
-    var result =
-        service.initiateUpload(
-            PROJECT_ID, "doc.pdf", "application/pdf", 5000, ORG_ID, MEMBER_ID, ORG_ROLE);
-
-    assertThat(result).isEmpty();
+    assertThatThrownBy(
+            () ->
+                service.initiateUpload(
+                    PROJECT_ID, "doc.pdf", "application/pdf", 5000, ORG_ID, MEMBER_ID, ORG_ROLE))
+        .isInstanceOf(ResourceNotFoundException.class);
     verify(documentRepository, never()).save(any());
     verify(s3Service, never()).generateUploadUrl(any(), any(), any(), any());
   }
@@ -153,8 +153,7 @@ class DocumentServiceTest {
 
     var result = service.confirmUpload(docId, MEMBER_ID, ORG_ROLE);
 
-    assertThat(result).isPresent();
-    assertThat(result.get().getStatus()).isEqualTo(Document.Status.UPLOADED);
+    assertThat(result.getStatus()).isEqualTo(Document.Status.UPLOADED);
     verify(documentRepository).save(doc);
   }
 
@@ -169,23 +168,21 @@ class DocumentServiceTest {
 
     var result = service.confirmUpload(docId, MEMBER_ID, ORG_ROLE);
 
-    assertThat(result).isPresent();
-    assertThat(result.get().getStatus()).isEqualTo(Document.Status.UPLOADED);
+    assertThat(result.getStatus()).isEqualTo(Document.Status.UPLOADED);
     verify(documentRepository, never()).save(any());
   }
 
   @Test
-  void confirmUpload_returnsEmptyForUnknownDocument() {
+  void confirmUpload_throwsForUnknownDocument() {
     var docId = UUID.randomUUID();
     when(documentRepository.findById(docId)).thenReturn(Optional.empty());
 
-    var result = service.confirmUpload(docId, MEMBER_ID, ORG_ROLE);
-
-    assertThat(result).isEmpty();
+    assertThatThrownBy(() -> service.confirmUpload(docId, MEMBER_ID, ORG_ROLE))
+        .isInstanceOf(ResourceNotFoundException.class);
   }
 
   @Test
-  void confirmUpload_returnsEmptyWhenAccessDenied() {
+  void confirmUpload_throwsWhenAccessDenied() {
     var docId = UUID.randomUUID();
     var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, MEMBER_ID);
 
@@ -193,9 +190,8 @@ class DocumentServiceTest {
     when(projectAccessService.checkAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
         .thenReturn(ProjectAccess.DENIED);
 
-    var result = service.confirmUpload(docId, MEMBER_ID, ORG_ROLE);
-
-    assertThat(result).isEmpty();
+    assertThatThrownBy(() -> service.confirmUpload(docId, MEMBER_ID, ORG_ROLE))
+        .isInstanceOf(ResourceNotFoundException.class);
     verify(documentRepository, never()).save(any());
   }
 
@@ -207,15 +203,13 @@ class DocumentServiceTest {
     when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
     when(projectAccessService.checkAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE)).thenReturn(GRANTED);
 
-    var result = service.cancelUpload(docId, MEMBER_ID, ORG_ROLE);
+    service.cancelUpload(docId, MEMBER_ID, ORG_ROLE);
 
-    assertThat(result).isPresent();
-    assertThat(result.get()).isEqualTo(DocumentService.CancelResult.DELETED);
     verify(documentRepository).delete(doc);
   }
 
   @Test
-  void cancelUpload_returnsNotPendingForUploadedDocument() {
+  void cancelUpload_throwsConflictForUploadedDocument() {
     var docId = UUID.randomUUID();
     var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, MEMBER_ID);
     doc.confirmUpload(); // status is UPLOADED
@@ -223,15 +217,13 @@ class DocumentServiceTest {
     when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
     when(projectAccessService.checkAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE)).thenReturn(GRANTED);
 
-    var result = service.cancelUpload(docId, MEMBER_ID, ORG_ROLE);
-
-    assertThat(result).isPresent();
-    assertThat(result.get()).isEqualTo(DocumentService.CancelResult.NOT_PENDING);
+    assertThatThrownBy(() -> service.cancelUpload(docId, MEMBER_ID, ORG_ROLE))
+        .isInstanceOf(ResourceConflictException.class);
     verify(documentRepository, never()).delete(any());
   }
 
   @Test
-  void cancelUpload_returnsEmptyWhenAccessDenied() {
+  void cancelUpload_throwsWhenAccessDenied() {
     var docId = UUID.randomUUID();
     var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, MEMBER_ID);
 
@@ -239,20 +231,18 @@ class DocumentServiceTest {
     when(projectAccessService.checkAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
         .thenReturn(ProjectAccess.DENIED);
 
-    var result = service.cancelUpload(docId, MEMBER_ID, ORG_ROLE);
-
-    assertThat(result).isEmpty();
+    assertThatThrownBy(() -> service.cancelUpload(docId, MEMBER_ID, ORG_ROLE))
+        .isInstanceOf(ResourceNotFoundException.class);
     verify(documentRepository, never()).delete(any());
   }
 
   @Test
-  void cancelUpload_returnsEmptyForUnknownDocument() {
+  void cancelUpload_throwsForUnknownDocument() {
     var docId = UUID.randomUUID();
     when(documentRepository.findById(docId)).thenReturn(Optional.empty());
 
-    var result = service.cancelUpload(docId, MEMBER_ID, ORG_ROLE);
-
-    assertThat(result).isEmpty();
+    assertThatThrownBy(() -> service.cancelUpload(docId, MEMBER_ID, ORG_ROLE))
+        .isInstanceOf(ResourceNotFoundException.class);
   }
 
   @Test
@@ -269,13 +259,11 @@ class DocumentServiceTest {
 
     var result = service.getPresignedDownloadUrl(docId, MEMBER_ID, ORG_ROLE);
 
-    assertThat(result).isPresent();
-    assertThat(result.get().uploaded()).isTrue();
-    assertThat(result.get().url()).isEqualTo("https://s3.example.com/download");
+    assertThat(result.url()).isEqualTo("https://s3.example.com/download");
   }
 
   @Test
-  void getPresignedDownloadUrl_returnsNotUploadedForPendingDocument() {
+  void getPresignedDownloadUrl_throwsForPendingDocument() {
     var docId = UUID.randomUUID();
     var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, MEMBER_ID);
     // status is PENDING
@@ -283,25 +271,22 @@ class DocumentServiceTest {
     when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
     when(projectAccessService.checkAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE)).thenReturn(GRANTED);
 
-    var result = service.getPresignedDownloadUrl(docId, MEMBER_ID, ORG_ROLE);
-
-    assertThat(result).isPresent();
-    assertThat(result.get().uploaded()).isFalse();
+    assertThatThrownBy(() -> service.getPresignedDownloadUrl(docId, MEMBER_ID, ORG_ROLE))
+        .isInstanceOf(InvalidStateException.class);
     verify(s3Service, never()).generateDownloadUrl(any());
   }
 
   @Test
-  void getPresignedDownloadUrl_returnsEmptyForUnknownDocument() {
+  void getPresignedDownloadUrl_throwsForUnknownDocument() {
     var docId = UUID.randomUUID();
     when(documentRepository.findById(docId)).thenReturn(Optional.empty());
 
-    var result = service.getPresignedDownloadUrl(docId, MEMBER_ID, ORG_ROLE);
-
-    assertThat(result).isEmpty();
+    assertThatThrownBy(() -> service.getPresignedDownloadUrl(docId, MEMBER_ID, ORG_ROLE))
+        .isInstanceOf(ResourceNotFoundException.class);
   }
 
   @Test
-  void getPresignedDownloadUrl_returnsEmptyWhenAccessDenied() {
+  void getPresignedDownloadUrl_throwsWhenAccessDenied() {
     var docId = UUID.randomUUID();
     var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, MEMBER_ID);
     doc.assignS3Key("org/test/project/123/abc");
@@ -311,9 +296,8 @@ class DocumentServiceTest {
     when(projectAccessService.checkAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
         .thenReturn(ProjectAccess.DENIED);
 
-    var result = service.getPresignedDownloadUrl(docId, MEMBER_ID, ORG_ROLE);
-
-    assertThat(result).isEmpty();
+    assertThatThrownBy(() -> service.getPresignedDownloadUrl(docId, MEMBER_ID, ORG_ROLE))
+        .isInstanceOf(ResourceNotFoundException.class);
     verify(s3Service, never()).generateDownloadUrl(any());
   }
 }

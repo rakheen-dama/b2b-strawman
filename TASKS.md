@@ -1111,10 +1111,10 @@ Phase 2 introduces a tiered tenancy model powered by Clerk Billing. Organization
 
 #### Slices
 
-| Slice | Tasks | Summary | Status |
-|-------|-------|---------|--------|
-| **23A** | 23.1–23.3 | Backend data model: Tier enum, Organization changes, V4 global migration, supporting types | |
-| **23B** | 23.4–23.7 | Plan sync pipeline: internal endpoint, cache eviction, webhook handlers, tests | |
+| Slice | Tasks     | Summary                                                                                                                         | Status |
+|-------|-----------|---------------------------------------------------------------------------------------------------------------------------------|--------|
+| **23A** | 23.1–23.5 | Backend data model: Tier enum, Organization changes, V4 global migration, supporting types, internal endpoint, cache eviction   | |
+| **23B** | 23.6–23.7 | Plan sync pipeline: webhook handlers, tests                                                                                     | |
 
 #### Tasks
 

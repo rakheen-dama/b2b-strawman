@@ -36,6 +36,9 @@ spring:
         jwt:
           issuer-uri: https://crucial-sturgeon-38.clerk.accounts.dev
           jwk-set-uri: https://crucial-sturgeon-38.clerk.accounts.dev/.well-known/jwks.json
+  threads:
+    virtual:
+      enabled: true
 
 # LocalStack S3
 aws:

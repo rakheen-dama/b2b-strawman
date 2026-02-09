@@ -20,6 +20,9 @@ public final class RequestScopes {
   /** Current member's org role ("owner", "admin", "member"). Bound by MemberFilter. */
   public static final ScopedValue<String> ORG_ROLE = ScopedValue.newInstance();
 
+  /** Clerk organization ID (e.g., "org_abc123"). Bound by TenantFilter. */
+  public static final ScopedValue<String> ORG_ID = ScopedValue.newInstance();
+
   public static final String DEFAULT_TENANT = "public";
 
   /** Returns the current member's UUID. Throws if not bound by filter chain. */

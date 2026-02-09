@@ -29,6 +29,13 @@ public class Organization {
   @Column(name = "provisioning_status", nullable = false)
   private ProvisioningStatus provisioningStatus;
 
+  @Enumerated(EnumType.STRING)
+  @Column(name = "tier", nullable = false)
+  private Tier tier;
+
+  @Column(name = "plan_slug")
+  private String planSlug;
+
   @Column(name = "created_at", nullable = false)
   private Instant createdAt;
 
@@ -41,6 +48,7 @@ public class Organization {
     this.clerkOrgId = clerkOrgId;
     this.name = name;
     this.provisioningStatus = ProvisioningStatus.PENDING;
+    this.tier = Tier.STARTER;
     this.createdAt = Instant.now();
     this.updatedAt = Instant.now();
   }
@@ -67,6 +75,20 @@ public class Organization {
 
   public Instant getUpdatedAt() {
     return updatedAt;
+  }
+
+  public Tier getTier() {
+    return tier;
+  }
+
+  public String getPlanSlug() {
+    return planSlug;
+  }
+
+  public void updatePlan(Tier tier, String planSlug) {
+    this.tier = tier;
+    this.planSlug = planSlug;
+    this.updatedAt = Instant.now();
   }
 
   public void markInProgress() {

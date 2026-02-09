@@ -27,6 +27,11 @@ public class TenantFilter extends OncePerRequestFilter {
     this.mappingRepository = mappingRepository;
   }
 
+  /** Evicts the cached schema mapping for the given Clerk org ID. */
+  public void evictSchema(String clerkOrgId) {
+    schemaCache.invalidate(clerkOrgId);
+  }
+
   @Override
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)

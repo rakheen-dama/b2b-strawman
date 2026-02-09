@@ -60,7 +60,7 @@ public class DocumentService {
   public Document confirmUpload(UUID documentId, UUID memberId, String orgRole) {
     var document =
         documentRepository
-            .findById(documentId)
+            .findOneById(documentId)
             .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
     projectAccessService.requireViewAccess(document.getProjectId(), memberId, orgRole);
     if (document.getStatus() != Document.Status.UPLOADED) {
@@ -74,7 +74,7 @@ public class DocumentService {
   public void cancelUpload(UUID documentId, UUID memberId, String orgRole) {
     var document =
         documentRepository
-            .findById(documentId)
+            .findOneById(documentId)
             .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
     projectAccessService.requireViewAccess(document.getProjectId(), memberId, orgRole);
     if (document.getStatus() != Document.Status.PENDING) {
@@ -89,7 +89,7 @@ public class DocumentService {
       UUID documentId, UUID memberId, String orgRole) {
     var document =
         documentRepository
-            .findById(documentId)
+            .findOneById(documentId)
             .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
     projectAccessService.requireViewAccess(document.getProjectId(), memberId, orgRole);
     if (document.getStatus() != Document.Status.UPLOADED) {

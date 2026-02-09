@@ -63,7 +63,7 @@ class ProjectServiceTest {
   void getProject_returnsProjectWhenAccessible() {
     var id = UUID.randomUUID();
     var project = new Project("Found", "Desc", MEMBER_ID);
-    when(repository.findById(id)).thenReturn(Optional.of(project));
+    when(repository.findOneById(id)).thenReturn(Optional.of(project));
     when(projectAccessService.requireViewAccess(id, MEMBER_ID, "member"))
         .thenReturn(new ProjectAccess(true, false, false, false, "member"));
 
@@ -76,7 +76,7 @@ class ProjectServiceTest {
   @Test
   void getProject_throwsWhenNotFound() {
     var id = UUID.randomUUID();
-    when(repository.findById(id)).thenReturn(Optional.empty());
+    when(repository.findOneById(id)).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> service.getProject(id, MEMBER_ID, "member"))
         .isInstanceOf(ResourceNotFoundException.class);
@@ -86,7 +86,7 @@ class ProjectServiceTest {
   void getProject_throwsWhenAccessDenied() {
     var id = UUID.randomUUID();
     var project = new Project("Secret", "Desc", MEMBER_ID);
-    when(repository.findById(id)).thenReturn(Optional.of(project));
+    when(repository.findOneById(id)).thenReturn(Optional.of(project));
     when(projectAccessService.requireViewAccess(id, MEMBER_ID, "member"))
         .thenThrow(new ResourceNotFoundException("Project", id));
 
@@ -114,7 +114,7 @@ class ProjectServiceTest {
   void updateProject_updatesWhenCanEdit() {
     var id = UUID.randomUUID();
     var existing = new Project("Old", "Old Desc", MEMBER_ID);
-    when(repository.findById(id)).thenReturn(Optional.of(existing));
+    when(repository.findOneById(id)).thenReturn(Optional.of(existing));
     when(repository.save(existing)).thenReturn(existing);
     when(projectAccessService.requireEditAccess(id, MEMBER_ID, "admin"))
         .thenReturn(new ProjectAccess(true, true, true, false, null));
@@ -129,7 +129,7 @@ class ProjectServiceTest {
   @Test
   void updateProject_throwsWhenNotFound() {
     var id = UUID.randomUUID();
-    when(repository.findById(id)).thenReturn(Optional.empty());
+    when(repository.findOneById(id)).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> service.updateProject(id, "Name", "Desc", MEMBER_ID, "admin"))
         .isInstanceOf(ResourceNotFoundException.class);
@@ -140,7 +140,7 @@ class ProjectServiceTest {
   void updateProject_throwsForbiddenWhenCannotEdit() {
     var id = UUID.randomUUID();
     var existing = new Project("No Edit", "Desc", MEMBER_ID);
-    when(repository.findById(id)).thenReturn(Optional.of(existing));
+    when(repository.findOneById(id)).thenReturn(Optional.of(existing));
     when(projectAccessService.requireEditAccess(id, MEMBER_ID, "member"))
         .thenThrow(
             new ForbiddenException(
@@ -154,7 +154,7 @@ class ProjectServiceTest {
   void updateProject_throwsWhenAccessDenied() {
     var id = UUID.randomUUID();
     var existing = new Project("Secret", "Desc", MEMBER_ID);
-    when(repository.findById(id)).thenReturn(Optional.of(existing));
+    when(repository.findOneById(id)).thenReturn(Optional.of(existing));
     when(projectAccessService.requireEditAccess(id, MEMBER_ID, "member"))
         .thenThrow(new ResourceNotFoundException("Project", id));
 
@@ -166,7 +166,7 @@ class ProjectServiceTest {
   void deleteProject_deletesWhenFound() {
     var id = UUID.randomUUID();
     var project = new Project("ToDelete", null, MEMBER_ID);
-    when(repository.findById(id)).thenReturn(Optional.of(project));
+    when(repository.findOneById(id)).thenReturn(Optional.of(project));
 
     service.deleteProject(id);
 
@@ -176,7 +176,7 @@ class ProjectServiceTest {
   @Test
   void deleteProject_throwsWhenNotFound() {
     var id = UUID.randomUUID();
-    when(repository.findById(id)).thenReturn(Optional.empty());
+    when(repository.findOneById(id)).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> service.deleteProject(id))
         .isInstanceOf(ResourceNotFoundException.class);

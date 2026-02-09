@@ -41,7 +41,7 @@ public class ProjectService {
   @Transactional(readOnly = true)
   public ProjectWithRole getProject(UUID id, UUID memberId, String orgRole) {
     var project =
-        repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
+        repository.findOneById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
     var access = projectAccessService.requireViewAccess(id, memberId, orgRole);
     return new ProjectWithRole(project, access.projectRole());
   }
@@ -59,7 +59,7 @@ public class ProjectService {
   public ProjectWithRole updateProject(
       UUID id, String name, String description, UUID memberId, String orgRole) {
     var project =
-        repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
+        repository.findOneById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
     var access = projectAccessService.requireEditAccess(id, memberId, orgRole);
     project.update(name, description);
     project = repository.save(project);
@@ -69,7 +69,7 @@ public class ProjectService {
   @Transactional
   public void deleteProject(UUID id) {
     var project =
-        repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
+        repository.findOneById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
     repository.delete(project);
   }
 }

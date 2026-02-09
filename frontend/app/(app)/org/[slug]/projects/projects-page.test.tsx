@@ -26,6 +26,15 @@ vi.mock("@/components/projects/create-project-dialog", () => ({
   ),
 }));
 
+// Mock UpgradePrompt
+vi.mock("@/components/billing/upgrade-prompt", () => ({
+  UpgradePrompt: ({ slug }: { slug: string }) => (
+    <div data-testid="upgrade-prompt" data-slug={slug}>
+      Upgrade to Pro
+    </div>
+  ),
+}));
+
 // Mock next/link
 vi.mock("next/link", () => ({
   default: ({
@@ -65,7 +74,7 @@ beforeEach(() => {
 describe("ProjectsPage", () => {
   describe("New Project button", () => {
     it("renders for org:member role", async () => {
-      mockAuth.mockResolvedValue({ orgRole: "org:member" });
+      mockAuth.mockResolvedValue({ orgRole: "org:member", has: () => false });
       mockApiGet.mockResolvedValue([makeProject()]);
 
       const jsx = await ProjectsPage({ params });
@@ -75,7 +84,7 @@ describe("ProjectsPage", () => {
     });
 
     it("renders for org:admin role", async () => {
-      mockAuth.mockResolvedValue({ orgRole: "org:admin" });
+      mockAuth.mockResolvedValue({ orgRole: "org:admin", has: () => false });
       mockApiGet.mockResolvedValue([makeProject()]);
 
       const jsx = await ProjectsPage({ params });
@@ -85,7 +94,7 @@ describe("ProjectsPage", () => {
     });
 
     it("renders for org:owner role", async () => {
-      mockAuth.mockResolvedValue({ orgRole: "org:owner" });
+      mockAuth.mockResolvedValue({ orgRole: "org:owner", has: () => false });
       mockApiGet.mockResolvedValue([makeProject()]);
 
       const jsx = await ProjectsPage({ params });
@@ -97,7 +106,7 @@ describe("ProjectsPage", () => {
 
   describe("role badges on project cards", () => {
     it("shows Lead badge when projectRole is lead", async () => {
-      mockAuth.mockResolvedValue({ orgRole: "org:member" });
+      mockAuth.mockResolvedValue({ orgRole: "org:member", has: () => false });
       mockApiGet.mockResolvedValue([makeProject({ projectRole: "lead" })]);
 
       const jsx = await ProjectsPage({ params });
@@ -107,7 +116,7 @@ describe("ProjectsPage", () => {
     });
 
     it("shows Member badge when projectRole is member", async () => {
-      mockAuth.mockResolvedValue({ orgRole: "org:member" });
+      mockAuth.mockResolvedValue({ orgRole: "org:member", has: () => false });
       mockApiGet.mockResolvedValue([makeProject({ projectRole: "member" })]);
 
       const jsx = await ProjectsPage({ params });
@@ -117,7 +126,7 @@ describe("ProjectsPage", () => {
     });
 
     it("shows no role badge when projectRole is null", async () => {
-      mockAuth.mockResolvedValue({ orgRole: "org:admin" });
+      mockAuth.mockResolvedValue({ orgRole: "org:admin", has: () => false });
       mockApiGet.mockResolvedValue([makeProject({ projectRole: null })]);
 
       const jsx = await ProjectsPage({ params });
@@ -130,7 +139,7 @@ describe("ProjectsPage", () => {
 
   describe("empty state", () => {
     it("shows member-specific message for org:member", async () => {
-      mockAuth.mockResolvedValue({ orgRole: "org:member" });
+      mockAuth.mockResolvedValue({ orgRole: "org:member", has: () => false });
       mockApiGet.mockResolvedValue([]);
 
       const jsx = await ProjectsPage({ params });
@@ -140,7 +149,7 @@ describe("ProjectsPage", () => {
     });
 
     it("shows admin message for org:admin", async () => {
-      mockAuth.mockResolvedValue({ orgRole: "org:admin" });
+      mockAuth.mockResolvedValue({ orgRole: "org:admin", has: () => false });
       mockApiGet.mockResolvedValue([]);
 
       const jsx = await ProjectsPage({ params });
@@ -150,7 +159,7 @@ describe("ProjectsPage", () => {
     });
 
     it("shows New Project button in empty state for members", async () => {
-      mockAuth.mockResolvedValue({ orgRole: "org:member" });
+      mockAuth.mockResolvedValue({ orgRole: "org:member", has: () => false });
       mockApiGet.mockResolvedValue([]);
 
       const jsx = await ProjectsPage({ params });
@@ -158,6 +167,28 @@ describe("ProjectsPage", () => {
 
       // Header button + empty state button = 2
       expect(screen.getAllByTestId("create-project-dialog")).toHaveLength(2);
+    });
+  });
+
+  describe("plan-aware feature gating", () => {
+    it("shows upgrade prompt for starter orgs", async () => {
+      mockAuth.mockResolvedValue({ orgRole: "org:member", has: () => false });
+      mockApiGet.mockResolvedValue([makeProject()]);
+
+      const jsx = await ProjectsPage({ params });
+      render(jsx);
+
+      expect(screen.getByTestId("upgrade-prompt")).toBeInTheDocument();
+    });
+
+    it("hides upgrade prompt for pro orgs", async () => {
+      mockAuth.mockResolvedValue({ orgRole: "org:member", has: () => true });
+      mockApiGet.mockResolvedValue([makeProject()]);
+
+      const jsx = await ProjectsPage({ params });
+      render(jsx);
+
+      expect(screen.queryByTestId("upgrade-prompt")).not.toBeInTheDocument();
     });
   });
 });

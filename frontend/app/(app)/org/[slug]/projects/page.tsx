@@ -4,6 +4,7 @@ import type { Project, ProjectRole } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
+import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import { formatDate } from "@/lib/format";
 import { FolderOpen } from "lucide-react";
 import Link from "next/link";
@@ -15,9 +16,10 @@ const PROJECT_ROLE_BADGE: Record<ProjectRole, { label: string; variant: "default
 
 export default async function ProjectsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const { orgRole } = await auth();
+  const { orgRole, has } = await auth();
 
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+  const isPro = has?.({ plan: "pro" }) ?? false;
 
   let projects: Project[] = [];
   try {
@@ -93,6 +95,8 @@ export default async function ProjectsPage({ params }: { params: Promise<{ slug:
           })}
         </div>
       )}
+
+      {!isPro && <UpgradePrompt slug={slug} />}
     </div>
   );
 }

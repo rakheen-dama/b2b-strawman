@@ -2,6 +2,8 @@
 
 import { useOrganization } from "@clerk/nextjs";
 import { useState } from "react";
+import Link from "next/link";
+import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { inviteMember } from "@/app/(app)/org/[slug]/team/actions";
@@ -20,6 +22,30 @@ export function InviteMemberForm() {
   const [success, setSuccess] = useState<string | null>(null);
 
   if (!organization) return null;
+
+  const maxMembers = organization.maxAllowedMemberships;
+  const isAtLimit =
+    maxMembers != null &&
+    maxMembers > 0 &&
+    (organization.membersCount ?? 0) + (organization.pendingInvitationsCount ?? 0) >= maxMembers;
+
+  if (isAtLimit) {
+    return (
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <Sparkles className="h-4 w-4 shrink-0" />
+        <p>
+          Your organization has reached its member limit ({maxMembers}).{" "}
+          <Link
+            href={`/org/${organization.slug}/settings/billing`}
+            className="font-medium text-primary underline underline-offset-4 hover:text-primary/80"
+          >
+            Upgrade your plan
+          </Link>{" "}
+          to invite more members.
+        </p>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

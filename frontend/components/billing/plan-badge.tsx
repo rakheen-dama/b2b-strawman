@@ -17,7 +17,7 @@ export function PlanBadgeDisplay({ isPro }: PlanBadgeDisplayProps) {
 /** Server component that auto-detects the org's plan from Clerk session. */
 export async function PlanBadge() {
   const { has } = await auth();
-  const isPro = has({ plan: "pro" }) ?? false;
+  const isPro = has?.({ plan: "pro" }) ?? false;
 
   return <PlanBadgeDisplay isPro={isPro} />;
 }

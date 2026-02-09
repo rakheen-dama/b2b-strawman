@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";
 import { DesktopSidebar } from "@/components/desktop-sidebar";
 import { MobileSidebar } from "@/components/mobile-sidebar";
+import { PlanBadge } from "@/components/billing/plan-badge";
 
 export default async function OrgLayout({
   children,
@@ -33,6 +34,7 @@ export default async function OrgLayout({
             afterCreateOrganizationUrl="/org/:slug/dashboard"
             hidePersonal
           />
+          <PlanBadge />
           <div className="ml-auto">
             <UserButton />
           </div>

@@ -20,21 +20,38 @@ public class PlanSyncService {
     this.tenantFilter = tenantFilter;
   }
 
+  /**
+   * Updates the organization's tier and plan slug. Returns the result indicating whether a tier
+   * upgrade is needed (STARTER → PRO transition). The caller is responsible for triggering the
+   * actual schema migration via TenantUpgradeService after this transaction commits.
+   */
   @Transactional
-  public void syncPlan(String clerkOrgId, String planSlug) {
+  public PlanSyncResult syncPlan(String clerkOrgId, String planSlug) {
     var org =
         organizationRepository
             .findByClerkOrgId(clerkOrgId)
             .orElseThrow(() -> new ResourceNotFoundException("Organization", clerkOrgId));
 
-    Tier tier = deriveTier(planSlug);
-    org.updatePlan(tier, planSlug);
+    Tier previousTier = org.getTier();
+    Tier newTier = deriveTier(planSlug);
+    org.updatePlan(newTier, planSlug);
     organizationRepository.save(org);
 
     tenantFilter.evictSchema(clerkOrgId);
 
-    log.info("Plan synced: clerkOrgId={}, tier={}, planSlug={}", clerkOrgId, tier, planSlug);
+    boolean upgradeNeeded = previousTier == Tier.STARTER && newTier == Tier.PRO;
+    log.info(
+        "Plan synced: clerkOrgId={}, tier={} → {}, planSlug={}, upgradeNeeded={}",
+        clerkOrgId,
+        previousTier,
+        newTier,
+        planSlug,
+        upgradeNeeded);
+
+    return new PlanSyncResult(previousTier, newTier, upgradeNeeded);
   }
+
+  public record PlanSyncResult(Tier previousTier, Tier newTier, boolean upgradeNeeded) {}
 
   private Tier deriveTier(String planSlug) {
     if (planSlug != null && planSlug.toLowerCase().contains("pro")) {

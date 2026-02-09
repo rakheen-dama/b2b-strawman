@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.member;
 
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -11,19 +12,28 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProjectAccessService {
 
   private final ProjectMemberRepository projectMemberRepository;
+  private final ProjectRepository projectRepository;
 
-  public ProjectAccessService(ProjectMemberRepository projectMemberRepository) {
+  public ProjectAccessService(
+      ProjectMemberRepository projectMemberRepository, ProjectRepository projectRepository) {
     this.projectMemberRepository = projectMemberRepository;
+    this.projectRepository = projectRepository;
   }
 
   @Transactional(readOnly = true)
   public ProjectAccess checkAccess(UUID projectId, UUID memberId, String orgRole) {
     if (Roles.ORG_OWNER.equals(orgRole)) {
+      if (!projectExistsInTenant(projectId)) {
+        return ProjectAccess.DENIED;
+      }
       var projectRole = lookupProjectRole(projectId, memberId);
       return new ProjectAccess(true, true, true, true, projectRole);
     }
 
     if (Roles.ORG_ADMIN.equals(orgRole)) {
+      if (!projectExistsInTenant(projectId)) {
+        return ProjectAccess.DENIED;
+      }
       var projectRole = lookupProjectRole(projectId, memberId);
       return new ProjectAccess(true, true, true, false, projectRole);
     }
@@ -64,6 +74,14 @@ public class ProjectAccessService {
           "Cannot edit project", "You do not have permission to edit project " + projectId);
     }
     return access;
+  }
+
+  /**
+   * Verifies the project exists in the current tenant using a filter-aware JPQL query. Required for
+   * shared-schema isolation where admin/owner roles would otherwise bypass row-level filtering.
+   */
+  private boolean projectExistsInTenant(UUID projectId) {
+    return projectRepository.findOneById(projectId).isPresent();
   }
 
   private String lookupProjectRole(UUID projectId, UUID memberId) {

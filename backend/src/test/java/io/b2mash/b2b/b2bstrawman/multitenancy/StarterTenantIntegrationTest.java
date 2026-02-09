@@ -406,13 +406,4 @@ class StarterTenantIntegrationTest {
                     .claim("o", Map.of("id", ORG_B_ID, "rol", "admin")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_ADMIN")));
   }
-
-  private JwtRequestPostProcessor orgBOwnerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_starter_b_owner")
-                    .claim("o", Map.of("id", ORG_B_ID, "rol", "owner")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
-  }
 }

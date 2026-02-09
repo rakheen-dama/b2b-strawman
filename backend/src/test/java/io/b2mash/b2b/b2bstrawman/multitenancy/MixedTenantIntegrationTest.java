@@ -50,7 +50,6 @@ class MixedTenantIntegrationTest {
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrganizationRepository organizationRepository;
   @Autowired private ProjectRepository projectRepository;
-  @Autowired private OrgSchemaMappingRepository mappingRepository;
 
   private String proSchemaName;
 
@@ -257,27 +256,9 @@ class MixedTenantIntegrationTest {
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_ADMIN")));
   }
 
-  private JwtRequestPostProcessor starterOwnerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_mixed_starter_owner")
-                    .claim("o", Map.of("id", STARTER_ORG_ID, "rol", "owner")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
-  }
-
   private JwtRequestPostProcessor proAdminJwt() {
     return jwt()
         .jwt(j -> j.subject("user_mixed_pro").claim("o", Map.of("id", PRO_ORG_ID, "rol", "admin")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_ADMIN")));
-  }
-
-  private JwtRequestPostProcessor proOwnerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_mixed_pro_owner")
-                    .claim("o", Map.of("id", PRO_ORG_ID, "rol", "owner")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
   }
 }

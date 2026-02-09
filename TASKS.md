@@ -29,7 +29,7 @@
 | **Phase 2 — Billing & Tiered Tenancy** | | | | | |          |
 | 23 | Tier Data Model & Plan Sync | Both | — | M | 23A, 23B | **Done** |
 | 24 | Shared Schema & Row-Level Isolation | Backend | 23 | L | 24A, 24B, 24C | **Done** |
-| 25 | Plan Enforcement | Both | 24 | S | — |          |
+| 25 | Plan Enforcement | Both | 24 | S | — | **Done** |
 | 26 | Billing UI & Feature Gating | Frontend | 23 | M | 26A, 26B | **Done** |
 | 27 | Tier Upgrade — Starter to Pro | Backend | 23, 24 | M | — | Done (PR #53) |
 
@@ -1229,7 +1229,7 @@ Phase 2 introduces a tiered tenancy model powered by Clerk Billing. Organization
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **25A** | 25.1, 25.2, 25.4 | Backend enforcement: MemberSyncService limit check, PlanEnforcementIntegrationTest, Clerk setup docs | Done |
-| **25B** | 25.3 | Frontend enforcement: gate invite form behind member limit, UpgradePrompt | |
+| **25B** | 25.3 | Frontend enforcement: gate invite form behind member limit, UpgradePrompt | Done |
 
 #### Tasks
 
@@ -1237,7 +1237,7 @@ Phase 2 introduces a tiered tenancy model powered by Clerk Billing. Organization
 |----|------|-------|--------|-------|
 | 25.1 | Add member count validation to MemberSyncService | 25A | Done | Added `PlanLimits.maxMembers(Tier)` switch method. Injected `OrganizationRepository` into `MemberSyncService`. Added `enforceMemberLimit()` — looks up org tier, counts members via `JpaRepository.count()` (Hibernate `@Filter` scopes to tenant), throws `PlanLimitExceededException` if at limit. Only enforced on creation, not updates. Fixed `GlobalExceptionHandler` to extend `ResponseEntityExceptionHandler` for proper ProblemDetail JSON rendering. Updated 6 existing integration tests to upgrade test orgs to PRO tier via `planSyncService.syncPlan()`. |
 | 25.2 | Configure Clerk Dashboard member limits | 25A | Done | Created `frontend/docs/clerk-billing-setup.md` documenting Clerk Dashboard configuration: Starter limit 2, Pro limit 10, feature keys `max_members_2`/`max_members_10`/`dedicated_schema`. |
-| 25.3 | Gate invite form behind member limit on team page | 25B | | In `components/team/invite-member-form.tsx`: check organization member count against plan limit. Use Clerk's `useOrganization()` for current count and `has({ feature: 'max_members_10' })` or equivalent to determine limit. When at limit: disable the invite form and show an inline `<UpgradePrompt />` (from Epic 26, or a simple text link as a temporary measure). Per ADR-014 §Frontend Layer and ARCHITECTURE.md §9.8.1. |
+| 25.3 | Gate invite form behind member limit on team page | 25B | Done | In `components/team/invite-member-form.tsx`: check `organization.membersCount + pendingInvitationsCount` against `maxAllowedMemberships` from Clerk. When at limit: replace invite form with inline upgrade prompt (Sparkles icon + link to billing page). Uses Clerk `OrganizationResource` properties directly — no hardcoded constants. 7 tests added. PR #54. |
 | 25.4 | Write PlanEnforcementTest | 25A | Done | `PlanEnforcementIntegrationTest.java` with 6 ordered tests: Starter 2 members succeed, 3rd rejected (403), update at limit succeeds, error includes upgradeUrl, Pro 10 members succeed, 11th rejected. All 201 backend tests pass. |
 
 #### Key Files

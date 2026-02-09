@@ -467,7 +467,8 @@ backend/src/main/java/com/docteams/
 │   ├── S3Config.java
 │   └── ResilienceConfig.java
 ├── multitenancy/
-│   ├── TenantContext.java
+│   ├── RequestScopes.java
+│   ├── ScopedFilterChain.java
 │   ├── TenantIdentifierResolver.java
 │   ├── SchemaMultiTenantConnectionProvider.java
 │   ├── TenantFilter.java
@@ -879,7 +880,7 @@ flowchart TB
 flowchart TB
     Request[Incoming Request<br/>+ Bearer JWT] --> JWTFilter[JWT Auth Filter]
     JWTFilter -->|Extract org_id<br/>from claims| TenantFilter[Tenant Context Filter]
-    TenantFilter -->|Store in ThreadLocal| TenantCtx[TenantContext<br/>ThreadLocal]
+    TenantFilter -->|Bind ScopedValue| TenantCtx[RequestScopes.TENANT_ID<br/>ScopedValue]
 
     TenantCtx --> Resolver[CurrentTenantIdentifierResolver]
     Resolver -->|Read tenant ID| Hibernate[Hibernate Session]

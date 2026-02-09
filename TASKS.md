@@ -28,7 +28,7 @@
 | 22 | Frontend — Filtered Project List | Frontend | 20, 21 | S | —        | **Done** |
 | **Phase 2 — Billing & Tiered Tenancy** | | | | | |          |
 | 23 | Tier Data Model & Plan Sync | Both | — | M | 23A, 23B | **Done** |
-| 24 | Shared Schema & Row-Level Isolation | Backend | 23 | L | 24A, 24B, 24C |          |
+| 24 | Shared Schema & Row-Level Isolation | Backend | 23 | L | 24A, 24B, 24C | **Done** |
 | 25 | Plan Enforcement | Both | 24 | S | — |          |
 | 26 | Billing UI & Feature Gating | Frontend | 23 | M | 26A, 26B | **Done** |
 | 27 | Tier Upgrade — Starter to Pro | Backend | 23, 24 | M | — |          |
@@ -1166,7 +1166,7 @@ Phase 2 introduces a tiered tenancy model powered by Clerk Billing. Organization
 |-------|-------|---------|--------|
 | **24A** | 24.1–24.4 | Database migrations, entity annotations, entity listener, `tenant_shared` bootstrap | Done |
 | **24B** | 24.5–24.8 | Filter chain: TenantFilterTransactionManager, connection provider, TenantFilter tier resolution, provisioning simplification | Done |
-| **24C** | 24.9–24.11 | Integration tests: Starter row isolation, mixed Starter+Pro coexistence, existing test compatibility | |
+| **24C** | 24.9–24.11 | Integration tests: Starter row isolation, mixed Starter+Pro coexistence, existing test compatibility | Done |
 
 #### Tasks
 
@@ -1180,9 +1180,9 @@ Phase 2 introduces a tiered tenancy model powered by Clerk Billing. Organization
 | 24.6 | Update SchemaMultiTenantConnectionProvider | 24B | Done | Uses parameterized `SELECT set_config('app.current_tenant', ?, false)` for RLS defense-in-depth (not `SET` which doesn't support placeholders). Accepts `tenant_shared` in `sanitizeSchema()`. Connection leak protection via try-catch in `getConnection()`. |
 | 24.7 | Update TenantFilter for tier-aware resolution | 24B | Done | Cache type changed from `String` to `TenantInfo(schemaName, tier)`. Added `findTenantInfoByClerkOrgId` JPQL query (JOIN org_schema_mapping + organizations). Binds both `TENANT_ID` and `ORG_ID` ScopedValues. Fixed Caffeine NPE with `getIfPresent()` + manual `put()`. V5 global migration drops UNIQUE on `schema_name`. |
 | 24.8 | Simplify TenantProvisioningService for Starter-first flow | 24B | Done | Starter: maps to `tenant_shared` (no schema creation/migration). Pro: retains dedicated schema flow. V8 tenant migration widens members unique constraint to `UNIQUE(clerk_user_id, tenant_id)`. MemberSyncService binds `ORG_ID` alongside `TENANT_ID`. |
-| 24.9 | Write StarterTenantIntegrationTest | 24C | | Provision two Starter orgs (both map to `tenant_shared`). CRUD projects/documents for each org. Verify row isolation: org A's data invisible to org B within the same schema. Verify `tenant_id` is populated correctly on insert. Test pattern: `ScopedValue.where(TENANT_ID, "tenant_shared").where(ORG_ID, orgIdA).run(...)`. Per ARCHITECTURE.md §9.8.4. |
-| 24.10 | Write MixedTenantIntegrationTest | 24C | | Provision one Starter org + one Pro org. Starter uses `tenant_shared`, Pro uses `tenant_<hash>`. Create data in both. Verify complete cross-tier isolation. Verify Pro org's entities have null `tenantId`. Per ARCHITECTURE.md §9.8.4. |
-| 24.11 | Update existing integration tests | 24C | | All existing tests (ProjectIntegrationTest, DocumentIntegrationTest, MemberSyncIntegrationTest, etc.) operate on Pro-tier dedicated schemas. Verify they pass without modification — nullable `tenantId` column should be transparent to existing test flows. If `TenantAwareEntityListener` fires for Pro schemas, ensure the null-guard prevents setting `tenantId`. |
+| 24.9 | Write StarterTenantIntegrationTest | 24C | Done | 7 tests: CRUD isolation for two Starter orgs in `tenant_shared`, document isolation, `tenant_id` verification. Also fixed `findById()` bypassing Hibernate `@Filter` — added JPQL `findOneById()` to ProjectRepository/DocumentRepository. Fixed ProjectAccessService admin/owner access check for shared schema. |
+| 24.10 | Write MixedTenantIntegrationTest | 24C | Done | 5 tests: cross-tier isolation (Starter vs Pro), Pro entities have null `tenantId`, Starter entities have org ID as `tenantId`. |
+| 24.11 | Update existing integration tests | 24C | Done | All 183 existing tests pass unchanged. Unit test mocks updated for `findOneById()`. 195 total tests, 0 failures. |
 
 #### Architecture Decisions
 

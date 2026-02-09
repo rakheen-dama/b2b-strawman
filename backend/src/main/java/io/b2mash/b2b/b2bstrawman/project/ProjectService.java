@@ -1,10 +1,10 @@
 package io.b2mash.b2b.b2bstrawman.project;
 
-import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
+import io.b2mash.b2b.b2bstrawman.security.Roles;
 import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -32,7 +32,7 @@ public class ProjectService {
 
   @Transactional(readOnly = true)
   public List<ProjectWithRole> listProjects(UUID memberId, String orgRole) {
-    if ("owner".equals(orgRole) || "admin".equals(orgRole)) {
+    if (Roles.ORG_OWNER.equals(orgRole) || Roles.ORG_ADMIN.equals(orgRole)) {
       return repository.findAllProjectsWithRole(memberId);
     }
     return repository.findProjectsForMember(memberId);
@@ -42,17 +42,14 @@ public class ProjectService {
   public ProjectWithRole getProject(UUID id, UUID memberId, String orgRole) {
     var project =
         repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
-    var access = projectAccessService.checkAccess(id, memberId, orgRole);
-    if (!access.canView()) {
-      throw new ResourceNotFoundException("Project", id);
-    }
+    var access = projectAccessService.requireViewAccess(id, memberId, orgRole);
     return new ProjectWithRole(project, access.projectRole());
   }
 
   @Transactional
   public Project createProject(String name, String description, UUID createdBy) {
     var project = repository.save(new Project(name, description, createdBy));
-    var lead = new ProjectMember(project.getId(), createdBy, "lead", null);
+    var lead = new ProjectMember(project.getId(), createdBy, Roles.PROJECT_LEAD, null);
     projectMemberRepository.save(lead);
     log.info("Created project {} with lead member {}", project.getId(), createdBy);
     return project;
@@ -63,14 +60,7 @@ public class ProjectService {
       UUID id, String name, String description, UUID memberId, String orgRole) {
     var project =
         repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
-    var access = projectAccessService.checkAccess(id, memberId, orgRole);
-    if (!access.canView()) {
-      throw new ResourceNotFoundException("Project", id);
-    }
-    if (!access.canEdit()) {
-      throw new ForbiddenException(
-          "Cannot edit project", "You do not have permission to edit project " + id);
-    }
+    var access = projectAccessService.requireEditAccess(id, memberId, orgRole);
     project.update(name, description);
     project = repository.save(project);
     return new ProjectWithRole(project, access.projectRole());

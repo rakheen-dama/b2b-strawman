@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.member;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.security.Roles;
 import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -14,9 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProjectMemberService {
 
   private static final Logger log = LoggerFactory.getLogger(ProjectMemberService.class);
-
-  static final String ROLE_LEAD = "lead";
-  static final String ROLE_MEMBER = "member";
 
   private final ProjectMemberRepository projectMemberRepository;
   private final MemberRepository memberRepository;
@@ -44,9 +42,9 @@ public class ProjectMemberService {
           "Member " + memberId + " is already a member of project " + projectId);
     }
 
-    var projectMember = new ProjectMember(projectId, memberId, ROLE_MEMBER, addedBy);
+    var projectMember = new ProjectMember(projectId, memberId, Roles.PROJECT_MEMBER, addedBy);
     projectMember = projectMemberRepository.save(projectMember);
-    log.info("Added member {} to project {} as {}", memberId, projectId, ROLE_MEMBER);
+    log.info("Added member {} to project {} as {}", memberId, projectId, Roles.PROJECT_MEMBER);
     return projectMember;
   }
 
@@ -61,7 +59,7 @@ public class ProjectMemberService {
                         "Project member not found",
                         "Member " + memberId + " is not a member of project " + projectId));
 
-    if (ROLE_LEAD.equals(projectMember.getProjectRole())) {
+    if (Roles.PROJECT_LEAD.equals(projectMember.getProjectRole())) {
       throw new InvalidStateException(
           "Cannot remove project lead",
           "Transfer lead role to another member before removing the current lead");
@@ -82,7 +80,7 @@ public class ProjectMemberService {
                         "Current lead not found",
                         "Member " + currentLeadId + " is not a member of project " + projectId));
 
-    if (!ROLE_LEAD.equals(currentLead.getProjectRole())) {
+    if (!Roles.PROJECT_LEAD.equals(currentLead.getProjectRole())) {
       throw new InvalidStateException(
           "Not the project lead",
           "Member " + currentLeadId + " is not the lead of project " + projectId);
@@ -97,8 +95,8 @@ public class ProjectMemberService {
                         "New lead not found",
                         "Member " + newLeadId + " is not a member of project " + projectId));
 
-    currentLead.setProjectRole(ROLE_MEMBER);
-    newLead.setProjectRole(ROLE_LEAD);
+    currentLead.setProjectRole(Roles.PROJECT_MEMBER);
+    newLead.setProjectRole(Roles.PROJECT_LEAD);
 
     projectMemberRepository.save(currentLead);
     projectMemberRepository.save(newLead);

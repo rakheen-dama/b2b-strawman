@@ -14,7 +14,6 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccess;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
-import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
 import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService.PresignedDownloadResult;
 import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService.PresignedUploadResult;
@@ -33,7 +32,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class DocumentServiceTest {
 
   @Mock private DocumentRepository documentRepository;
-  @Mock private ProjectRepository projectRepository;
   @Mock private ProjectAccessService projectAccessService;
   @Mock private S3PresignedUrlService s3Service;
   @InjectMocks private DocumentService service;
@@ -47,8 +45,8 @@ class DocumentServiceTest {
   @Test
   void listDocuments_returnsDocumentsForExistingProject() {
     var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, MEMBER_ID);
-    when(projectRepository.existsById(PROJECT_ID)).thenReturn(true);
-    when(projectAccessService.checkAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE)).thenReturn(GRANTED);
+    when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
+        .thenReturn(GRANTED);
     when(documentRepository.findByProjectId(PROJECT_ID)).thenReturn(List.of(doc));
 
     var result = service.listDocuments(PROJECT_ID, MEMBER_ID, ORG_ROLE);
@@ -59,7 +57,8 @@ class DocumentServiceTest {
 
   @Test
   void listDocuments_throwsForMissingProject() {
-    when(projectRepository.existsById(PROJECT_ID)).thenReturn(false);
+    when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
+        .thenThrow(new ResourceNotFoundException("Project", PROJECT_ID));
 
     assertThatThrownBy(() -> service.listDocuments(PROJECT_ID, MEMBER_ID, ORG_ROLE))
         .isInstanceOf(ResourceNotFoundException.class);
@@ -68,9 +67,8 @@ class DocumentServiceTest {
 
   @Test
   void listDocuments_throwsWhenAccessDenied() {
-    when(projectRepository.existsById(PROJECT_ID)).thenReturn(true);
-    when(projectAccessService.checkAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
-        .thenReturn(ProjectAccess.DENIED);
+    when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
+        .thenThrow(new ResourceNotFoundException("Project", PROJECT_ID));
 
     assertThatThrownBy(() -> service.listDocuments(PROJECT_ID, MEMBER_ID, ORG_ROLE))
         .isInstanceOf(ResourceNotFoundException.class);
@@ -79,8 +77,8 @@ class DocumentServiceTest {
 
   @Test
   void initiateUpload_createsDocumentAndGeneratesPresignedUrl() throws Exception {
-    when(projectRepository.existsById(PROJECT_ID)).thenReturn(true);
-    when(projectAccessService.checkAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE)).thenReturn(GRANTED);
+    when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
+        .thenReturn(GRANTED);
 
     // Simulate JPA ID generation: set the id field via reflection on save
     when(documentRepository.save(any(Document.class)))
@@ -116,7 +114,8 @@ class DocumentServiceTest {
 
   @Test
   void initiateUpload_throwsForMissingProject() {
-    when(projectRepository.existsById(PROJECT_ID)).thenReturn(false);
+    when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
+        .thenThrow(new ResourceNotFoundException("Project", PROJECT_ID));
 
     assertThatThrownBy(
             () ->
@@ -128,9 +127,8 @@ class DocumentServiceTest {
 
   @Test
   void initiateUpload_throwsWhenAccessDenied() {
-    when(projectRepository.existsById(PROJECT_ID)).thenReturn(true);
-    when(projectAccessService.checkAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
-        .thenReturn(ProjectAccess.DENIED);
+    when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
+        .thenThrow(new ResourceNotFoundException("Project", PROJECT_ID));
 
     assertThatThrownBy(
             () ->
@@ -148,7 +146,8 @@ class DocumentServiceTest {
     assertThat(doc.getStatus()).isEqualTo(Document.Status.PENDING);
 
     when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
-    when(projectAccessService.checkAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE)).thenReturn(GRANTED);
+    when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
+        .thenReturn(GRANTED);
     when(documentRepository.save(doc)).thenReturn(doc);
 
     var result = service.confirmUpload(docId, MEMBER_ID, ORG_ROLE);
@@ -164,7 +163,8 @@ class DocumentServiceTest {
     doc.confirmUpload(); // already UPLOADED
 
     when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
-    when(projectAccessService.checkAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE)).thenReturn(GRANTED);
+    when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
+        .thenReturn(GRANTED);
 
     var result = service.confirmUpload(docId, MEMBER_ID, ORG_ROLE);
 
@@ -187,8 +187,8 @@ class DocumentServiceTest {
     var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, MEMBER_ID);
 
     when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
-    when(projectAccessService.checkAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
-        .thenReturn(ProjectAccess.DENIED);
+    when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
+        .thenThrow(new ResourceNotFoundException("Project", PROJECT_ID));
 
     assertThatThrownBy(() -> service.confirmUpload(docId, MEMBER_ID, ORG_ROLE))
         .isInstanceOf(ResourceNotFoundException.class);
@@ -201,7 +201,8 @@ class DocumentServiceTest {
     var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, MEMBER_ID);
 
     when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
-    when(projectAccessService.checkAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE)).thenReturn(GRANTED);
+    when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
+        .thenReturn(GRANTED);
 
     service.cancelUpload(docId, MEMBER_ID, ORG_ROLE);
 
@@ -215,7 +216,8 @@ class DocumentServiceTest {
     doc.confirmUpload(); // status is UPLOADED
 
     when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
-    when(projectAccessService.checkAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE)).thenReturn(GRANTED);
+    when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
+        .thenReturn(GRANTED);
 
     assertThatThrownBy(() -> service.cancelUpload(docId, MEMBER_ID, ORG_ROLE))
         .isInstanceOf(ResourceConflictException.class);
@@ -228,8 +230,8 @@ class DocumentServiceTest {
     var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, MEMBER_ID);
 
     when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
-    when(projectAccessService.checkAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
-        .thenReturn(ProjectAccess.DENIED);
+    when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
+        .thenThrow(new ResourceNotFoundException("Project", PROJECT_ID));
 
     assertThatThrownBy(() -> service.cancelUpload(docId, MEMBER_ID, ORG_ROLE))
         .isInstanceOf(ResourceNotFoundException.class);
@@ -253,7 +255,8 @@ class DocumentServiceTest {
     doc.confirmUpload();
 
     when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
-    when(projectAccessService.checkAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE)).thenReturn(GRANTED);
+    when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
+        .thenReturn(GRANTED);
     when(s3Service.generateDownloadUrl("org/test/project/123/abc"))
         .thenReturn(new PresignedDownloadResult("https://s3.example.com/download", 3600));
 
@@ -269,7 +272,8 @@ class DocumentServiceTest {
     // status is PENDING
 
     when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
-    when(projectAccessService.checkAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE)).thenReturn(GRANTED);
+    when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
+        .thenReturn(GRANTED);
 
     assertThatThrownBy(() -> service.getPresignedDownloadUrl(docId, MEMBER_ID, ORG_ROLE))
         .isInstanceOf(InvalidStateException.class);
@@ -293,8 +297,8 @@ class DocumentServiceTest {
     doc.confirmUpload();
 
     when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
-    when(projectAccessService.checkAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
-        .thenReturn(ProjectAccess.DENIED);
+    when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
+        .thenThrow(new ResourceNotFoundException("Project", PROJECT_ID));
 
     assertThatThrownBy(() -> service.getPresignedDownloadUrl(docId, MEMBER_ID, ORG_ROLE))
         .isInstanceOf(ResourceNotFoundException.class);

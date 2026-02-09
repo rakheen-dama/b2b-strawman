@@ -2,13 +2,13 @@ package io.b2mash.b2b.b2bstrawman.multitenancy;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import io.b2mash.b2b.b2bstrawman.security.ClerkJwtUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Map;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -35,7 +35,7 @@ public class TenantFilter extends OncePerRequestFilter {
 
     if (authentication instanceof JwtAuthenticationToken jwtAuth) {
       Jwt jwt = jwtAuth.getToken();
-      String orgId = extractOrgId(jwt);
+      String orgId = ClerkJwtUtils.extractOrgId(jwt);
 
       if (orgId != null) {
         String schemaName = resolveSchema(orgId);
@@ -72,15 +72,5 @@ public class TenantFilter extends OncePerRequestFilter {
         .findByClerkOrgId(clerkOrgId)
         .map(OrgSchemaMapping::getSchemaName)
         .orElse(null);
-  }
-
-  @SuppressWarnings("unchecked")
-  private String extractOrgId(Jwt jwt) {
-    // Clerk JWT v2: org claims nested under "o"
-    Map<String, Object> orgClaim = jwt.getClaim("o");
-    if (orgClaim != null) {
-      return (String) orgClaim.get("id");
-    }
-    return null;
   }
 }

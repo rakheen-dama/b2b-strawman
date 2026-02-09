@@ -4,7 +4,6 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
-import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
 import java.util.List;
 import java.util.UUID;
@@ -15,30 +14,21 @@ import org.springframework.transaction.annotation.Transactional;
 public class DocumentService {
 
   private final DocumentRepository documentRepository;
-  private final ProjectRepository projectRepository;
   private final ProjectAccessService projectAccessService;
   private final S3PresignedUrlService s3Service;
 
   public DocumentService(
       DocumentRepository documentRepository,
-      ProjectRepository projectRepository,
       ProjectAccessService projectAccessService,
       S3PresignedUrlService s3Service) {
     this.documentRepository = documentRepository;
-    this.projectRepository = projectRepository;
     this.projectAccessService = projectAccessService;
     this.s3Service = s3Service;
   }
 
   @Transactional(readOnly = true)
   public List<Document> listDocuments(UUID projectId, UUID memberId, String orgRole) {
-    if (!projectRepository.existsById(projectId)) {
-      throw new ResourceNotFoundException("Project", projectId);
-    }
-    var access = projectAccessService.checkAccess(projectId, memberId, orgRole);
-    if (!access.canView()) {
-      throw new ResourceNotFoundException("Project", projectId);
-    }
+    projectAccessService.requireViewAccess(projectId, memberId, orgRole);
     return documentRepository.findByProjectId(projectId);
   }
 
@@ -51,13 +41,7 @@ public class DocumentService {
       String orgId,
       UUID memberId,
       String orgRole) {
-    if (!projectRepository.existsById(projectId)) {
-      throw new ResourceNotFoundException("Project", projectId);
-    }
-    var access = projectAccessService.checkAccess(projectId, memberId, orgRole);
-    if (!access.canView()) {
-      throw new ResourceNotFoundException("Project", projectId);
-    }
+    projectAccessService.requireViewAccess(projectId, memberId, orgRole);
 
     var document =
         documentRepository.save(new Document(projectId, fileName, contentType, size, memberId));
@@ -78,10 +62,7 @@ public class DocumentService {
         documentRepository
             .findById(documentId)
             .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
-    var access = projectAccessService.checkAccess(document.getProjectId(), memberId, orgRole);
-    if (!access.canView()) {
-      throw new ResourceNotFoundException("Document", documentId);
-    }
+    projectAccessService.requireViewAccess(document.getProjectId(), memberId, orgRole);
     if (document.getStatus() != Document.Status.UPLOADED) {
       document.confirmUpload();
       return documentRepository.save(document);
@@ -95,10 +76,7 @@ public class DocumentService {
         documentRepository
             .findById(documentId)
             .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
-    var access = projectAccessService.checkAccess(document.getProjectId(), memberId, orgRole);
-    if (!access.canView()) {
-      throw new ResourceNotFoundException("Document", documentId);
-    }
+    projectAccessService.requireViewAccess(document.getProjectId(), memberId, orgRole);
     if (document.getStatus() != Document.Status.PENDING) {
       throw new ResourceConflictException(
           "Document not pending", "Only pending documents can be cancelled");
@@ -113,10 +91,7 @@ public class DocumentService {
         documentRepository
             .findById(documentId)
             .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
-    var access = projectAccessService.checkAccess(document.getProjectId(), memberId, orgRole);
-    if (!access.canView()) {
-      throw new ResourceNotFoundException("Document", documentId);
-    }
+    projectAccessService.requireViewAccess(document.getProjectId(), memberId, orgRole);
     if (document.getStatus() != Document.Status.UPLOADED) {
       throw new InvalidStateException(
           "Document not uploaded", "Document has not been uploaded yet");

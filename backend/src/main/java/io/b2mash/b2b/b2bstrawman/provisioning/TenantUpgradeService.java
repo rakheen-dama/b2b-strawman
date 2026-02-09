@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.provisioning;
 
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantFilter;
 import java.sql.SQLException;
 import javax.sql.DataSource;
@@ -22,6 +23,7 @@ public class TenantUpgradeService {
   private static final String SHARED_SCHEMA = "tenant_shared";
 
   private final OrganizationRepository organizationRepository;
+  private final OrgSchemaMappingRepository mappingRepository;
   private final DataSource migrationDataSource;
   private final JdbcTemplate migrationJdbc;
   private final TransactionTemplate migrationTxTemplate;
@@ -29,9 +31,11 @@ public class TenantUpgradeService {
 
   public TenantUpgradeService(
       OrganizationRepository organizationRepository,
+      OrgSchemaMappingRepository mappingRepository,
       @Qualifier("migrationDataSource") DataSource migrationDataSource,
       TenantFilter tenantFilter) {
     this.organizationRepository = organizationRepository;
+    this.mappingRepository = mappingRepository;
     this.migrationDataSource = migrationDataSource;
     this.migrationJdbc = new JdbcTemplate(migrationDataSource);
     this.tenantFilter = tenantFilter;
@@ -55,6 +59,16 @@ public class TenantUpgradeService {
     if (org.getTier() != Tier.PRO) {
       throw new InvalidStateException(
           "Invalid tier for upgrade", "Organization " + clerkOrgId + " is not on the Pro tier");
+    }
+
+    // Already on a dedicated schema — idempotent no-op
+    var currentMapping = mappingRepository.findByClerkOrgId(clerkOrgId);
+    if (currentMapping.isPresent() && !SHARED_SCHEMA.equals(currentMapping.get().getSchemaName())) {
+      log.info(
+          "Organization {} already on dedicated schema {}, skipping",
+          clerkOrgId,
+          currentMapping.get().getSchemaName());
+      return;
     }
 
     log.info("Starting Starter → Pro upgrade for org {}", clerkOrgId);
@@ -197,15 +211,28 @@ public class TenantUpgradeService {
           }
 
           // Delete shared data in reverse FK order
-          migrationJdbc.update(
-              "DELETE FROM tenant_shared.project_members WHERE tenant_id = ?", clerkOrgId);
-          migrationJdbc.update(
-              "DELETE FROM tenant_shared.documents WHERE tenant_id = ?", clerkOrgId);
-          migrationJdbc.update(
-              "DELETE FROM tenant_shared.projects WHERE tenant_id = ?", clerkOrgId);
-          migrationJdbc.update("DELETE FROM tenant_shared.members WHERE tenant_id = ?", clerkOrgId);
+          int pm =
+              migrationJdbc.update(
+                  "DELETE FROM tenant_shared.project_members WHERE tenant_id = ?", clerkOrgId);
+          int docs =
+              migrationJdbc.update(
+                  "DELETE FROM tenant_shared.documents WHERE tenant_id = ?", clerkOrgId);
+          int proj =
+              migrationJdbc.update(
+                  "DELETE FROM tenant_shared.projects WHERE tenant_id = ?", clerkOrgId);
+          int mem =
+              migrationJdbc.update(
+                  "DELETE FROM tenant_shared.members WHERE tenant_id = ?", clerkOrgId);
 
-          log.info("Atomic cutover completed for org {} → {}", clerkOrgId, newSchema);
+          log.info(
+              "Atomic cutover for org {} → {}: deleted {} project_members, {} documents,"
+                  + " {} projects, {} members from shared",
+              clerkOrgId,
+              newSchema,
+              pm,
+              docs,
+              proj,
+              mem);
         });
   }
 

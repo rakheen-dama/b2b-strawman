@@ -1,14 +1,14 @@
 package io.b2mash.b2b.b2bstrawman.member;
 
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ProblemDetail;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.ErrorResponseException;
 
 @Service
 public class ProjectMemberService {
@@ -35,11 +35,11 @@ public class ProjectMemberService {
   @Transactional
   public ProjectMember addMember(UUID projectId, UUID memberId, UUID addedBy) {
     if (!memberRepository.existsById(memberId)) {
-      throw notFound("Member not found", "No member found with id " + memberId);
+      throw new ResourceNotFoundException("Member", memberId);
     }
 
     if (projectMemberRepository.existsByProjectIdAndMemberId(projectId, memberId)) {
-      throw conflict(
+      throw new ResourceConflictException(
           "Member already on project",
           "Member " + memberId + " is already a member of project " + projectId);
     }
@@ -57,12 +57,12 @@ public class ProjectMemberService {
             .findByProjectIdAndMemberId(projectId, memberId)
             .orElseThrow(
                 () ->
-                    notFound(
+                    ResourceNotFoundException.withDetail(
                         "Project member not found",
                         "Member " + memberId + " is not a member of project " + projectId));
 
     if (ROLE_LEAD.equals(projectMember.getProjectRole())) {
-      throw badRequest(
+      throw new InvalidStateException(
           "Cannot remove project lead",
           "Transfer lead role to another member before removing the current lead");
     }
@@ -78,12 +78,12 @@ public class ProjectMemberService {
             .findByProjectIdAndMemberId(projectId, currentLeadId)
             .orElseThrow(
                 () ->
-                    notFound(
+                    ResourceNotFoundException.withDetail(
                         "Current lead not found",
                         "Member " + currentLeadId + " is not a member of project " + projectId));
 
     if (!ROLE_LEAD.equals(currentLead.getProjectRole())) {
-      throw badRequest(
+      throw new InvalidStateException(
           "Not the project lead",
           "Member " + currentLeadId + " is not the lead of project " + projectId);
     }
@@ -93,7 +93,7 @@ public class ProjectMemberService {
             .findByProjectIdAndMemberId(projectId, newLeadId)
             .orElseThrow(
                 () ->
-                    notFound(
+                    ResourceNotFoundException.withDetail(
                         "New lead not found",
                         "Member " + newLeadId + " is not a member of project " + projectId));
 
@@ -109,26 +109,5 @@ public class ProjectMemberService {
   @Transactional(readOnly = true)
   public boolean isProjectMember(UUID projectId, UUID memberId) {
     return projectMemberRepository.existsByProjectIdAndMemberId(projectId, memberId);
-  }
-
-  private ErrorResponseException notFound(String title, String detail) {
-    var problem = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
-    problem.setTitle(title);
-    problem.setDetail(detail);
-    return new ErrorResponseException(HttpStatus.NOT_FOUND, problem, null);
-  }
-
-  private ErrorResponseException conflict(String title, String detail) {
-    var problem = ProblemDetail.forStatus(HttpStatus.CONFLICT);
-    problem.setTitle(title);
-    problem.setDetail(detail);
-    return new ErrorResponseException(HttpStatus.CONFLICT, problem, null);
-  }
-
-  private ErrorResponseException badRequest(String title, String detail) {
-    var problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
-    problem.setTitle(title);
-    problem.setDetail(detail);
-    return new ErrorResponseException(HttpStatus.BAD_REQUEST, problem, null);
   }
 }

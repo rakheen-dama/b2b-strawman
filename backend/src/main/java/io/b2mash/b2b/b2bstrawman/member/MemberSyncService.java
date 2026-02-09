@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.member;
 
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import java.util.UUID;
@@ -61,29 +62,22 @@ public class MemberSyncService {
                     }));
   }
 
-  public boolean deleteMember(String clerkOrgId, String clerkUserId) {
+  public void deleteMember(String clerkOrgId, String clerkUserId) {
     String schemaName = resolveSchema(clerkOrgId);
-    return ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+    ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
         .call(
             () -> {
-              boolean deleted =
-                  Boolean.TRUE.equals(
-                      txTemplate.execute(
-                          status -> {
-                            if (!memberRepository.existsByClerkUserId(clerkUserId)) {
-                              log.info("Member {} not found in tenant {}", clerkUserId, schemaName);
-                              return false;
-                            }
-
-                            memberRepository.deleteByClerkUserId(clerkUserId);
-                            log.info("Deleted member {} from tenant {}", clerkUserId, schemaName);
-                            return true;
-                          }));
-
-              if (deleted) {
-                memberFilter.evictFromCache(schemaName, clerkUserId);
-              }
-              return deleted;
+              txTemplate.executeWithoutResult(
+                  status -> {
+                    if (!memberRepository.existsByClerkUserId(clerkUserId)) {
+                      throw ResourceNotFoundException.withDetail(
+                          "Member not found", "No member found with clerkUserId: " + clerkUserId);
+                    }
+                    memberRepository.deleteByClerkUserId(clerkUserId);
+                    log.info("Deleted member {} from tenant {}", clerkUserId, schemaName);
+                  });
+              memberFilter.evictFromCache(schemaName, clerkUserId);
+              return null;
             });
   }
 

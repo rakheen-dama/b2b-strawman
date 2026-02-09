@@ -6,7 +6,6 @@ import java.net.URI;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -58,19 +57,11 @@ public class MemberSyncController {
   }
 
   @DeleteMapping("/{clerkUserId}")
-  public ResponseEntity<?> deleteMember(
+  public ResponseEntity<Void> deleteMember(
       @PathVariable String clerkUserId, @RequestParam String clerkOrgId) {
     log.info("Received member delete: clerkOrgId={}, clerkUserId={}", clerkOrgId, clerkUserId);
-
-    boolean deleted = syncService.deleteMember(clerkOrgId, clerkUserId);
-    if (deleted) {
-      return ResponseEntity.noContent().build();
-    }
-
-    var problem = ProblemDetail.forStatus(404);
-    problem.setTitle("Member not found");
-    problem.setDetail("No member found with clerkUserId: " + clerkUserId);
-    return ResponseEntity.of(problem).build();
+    syncService.deleteMember(clerkOrgId, clerkUserId);
+    return ResponseEntity.noContent().build();
   }
 
   public record SyncMemberRequest(

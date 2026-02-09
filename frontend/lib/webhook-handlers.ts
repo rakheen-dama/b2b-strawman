@@ -3,6 +3,7 @@ import { clerkClient } from "@clerk/nextjs/server";
 import {
   internalApiClient,
   InternalApiError,
+  type PlanSyncRequest,
   type ProvisionOrgRequest,
   type ProvisionOrgResponse,
   type SyncMemberRequest,
@@ -28,6 +29,12 @@ interface MembershipEventData {
   role: string;
   organization: { id: string };
   public_user_data: { user_id: string };
+}
+
+interface SubscriptionEventData {
+  id: string;
+  organization_id: string;
+  plan: { slug: string };
 }
 
 /**
@@ -207,6 +214,48 @@ export async function handleMembershipDeleted(
   }
 }
 
+async function syncPlan(
+  data: SubscriptionEventData,
+  svixId: string | null,
+  eventType: "created" | "updated"
+): Promise<void> {
+  const clerkOrgId = data.organization_id;
+  const planSlug = data.plan.slug;
+
+  console.log(
+    `[webhook] subscription.${eventType}: orgId=${clerkOrgId}, planSlug=${planSlug}, svixId=${svixId}`
+  );
+
+  try {
+    const payload: PlanSyncRequest = { clerkOrgId, planSlug };
+    await internalApiClient<void>("/internal/orgs/plan-sync", {
+      body: payload,
+    });
+    console.log(`[webhook] Plan synced for org ${clerkOrgId}: planSlug=${planSlug}`);
+  } catch (error) {
+    console.error(
+      `[webhook] Failed to sync plan for org ${clerkOrgId}:`,
+      error instanceof InternalApiError
+        ? `${error.status} ${error.statusText} - ${error.body}`
+        : error
+    );
+  }
+}
+
+export async function handleSubscriptionCreated(
+  data: SubscriptionEventData,
+  svixId: string | null
+): Promise<void> {
+  return syncPlan(data, svixId, "created");
+}
+
+export async function handleSubscriptionUpdated(
+  data: SubscriptionEventData,
+  svixId: string | null
+): Promise<void> {
+  return syncPlan(data, svixId, "updated");
+}
+
 export async function routeWebhookEvent(event: WebhookEvent, svixId: string | null): Promise<void> {
   switch (event.type) {
     case "organization.created":
@@ -227,6 +276,13 @@ export async function routeWebhookEvent(event: WebhookEvent, svixId: string | nu
       break;
     case "organizationMembership.deleted":
       await handleMembershipDeleted(event.data as unknown as MembershipEventData, svixId);
+      break;
+
+    case "subscription.created" as string:
+      await handleSubscriptionCreated(event.data as unknown as SubscriptionEventData, svixId);
+      break;
+    case "subscription.updated" as string:
+      await handleSubscriptionUpdated(event.data as unknown as SubscriptionEventData, svixId);
       break;
 
     case "organizationInvitation.created":

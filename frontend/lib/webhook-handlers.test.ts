@@ -6,6 +6,8 @@ import {
   handleMembershipCreated,
   handleMembershipUpdated,
   handleMembershipDeleted,
+  handleSubscriptionCreated,
+  handleSubscriptionUpdated,
   routeWebhookEvent,
 } from "./webhook-handlers";
 
@@ -72,6 +74,15 @@ function mockClerkUser(overrides = {}) {
     lastName: "Doe",
     emailAddresses: [{ emailAddress: "jane@example.com" }],
     imageUrl: "https://img.clerk.com/avatar.jpg",
+    ...overrides,
+  };
+}
+
+function subscriptionEventData(overrides = {}) {
+  return {
+    id: "sub_123",
+    organization_id: "org_456",
+    plan: { slug: "pro" },
     ...overrides,
   };
 }
@@ -318,6 +329,67 @@ describe("handleMembershipDeleted", () => {
   });
 });
 
+// ─── Subscription Handlers ──────────────────────────────────────────────────
+
+describe("handleSubscriptionCreated", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("calls plan-sync endpoint with correct payload", async () => {
+    mockInternalApiClient.mockResolvedValue(undefined);
+
+    await handleSubscriptionCreated(subscriptionEventData(), "msg_sub1");
+
+    expect(mockInternalApiClient).toHaveBeenCalledWith("/internal/orgs/plan-sync", {
+      body: { clerkOrgId: "org_456", planSlug: "pro" },
+    });
+  });
+
+  it("logs error but does not throw on failure", async () => {
+    mockInternalApiClient.mockRejectedValue(new InternalApiError(500, "Internal Server Error"));
+
+    await expect(
+      handleSubscriptionCreated(subscriptionEventData(), "msg_sub2")
+    ).resolves.toBeUndefined();
+  });
+
+  it("logs error but does not throw on network failure", async () => {
+    mockInternalApiClient.mockRejectedValue(new TypeError("fetch failed"));
+
+    await expect(
+      handleSubscriptionCreated(subscriptionEventData(), "msg_sub3")
+    ).resolves.toBeUndefined();
+  });
+});
+
+describe("handleSubscriptionUpdated", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("calls plan-sync endpoint with correct payload", async () => {
+    mockInternalApiClient.mockResolvedValue(undefined);
+
+    await handleSubscriptionUpdated(
+      subscriptionEventData({ plan: { slug: "starter-monthly" } }),
+      "msg_sub_upd1"
+    );
+
+    expect(mockInternalApiClient).toHaveBeenCalledWith("/internal/orgs/plan-sync", {
+      body: { clerkOrgId: "org_456", planSlug: "starter-monthly" },
+    });
+  });
+
+  it("logs error but does not throw on failure", async () => {
+    mockInternalApiClient.mockRejectedValue(new InternalApiError(500, "Internal Server Error"));
+
+    await expect(
+      handleSubscriptionUpdated(subscriptionEventData(), "msg_sub_upd2")
+    ).resolves.toBeUndefined();
+  });
+});
+
 // ─── Router ──────────────────────────────────────────────────────────────────
 
 describe("routeWebhookEvent", () => {
@@ -420,6 +492,44 @@ describe("routeWebhookEvent", () => {
     expect(mockInternalApiClient).toHaveBeenCalledWith(
       "/internal/members/user_789?clerkOrgId=org_456",
       expect.objectContaining({ method: "DELETE" })
+    );
+  });
+
+  it("routes subscription.created to plan-sync", async () => {
+    mockInternalApiClient.mockResolvedValue(undefined);
+
+    await routeWebhookEvent(
+      {
+        type: "subscription.created" as never,
+        object: "event",
+        data: subscriptionEventData() as never,
+        event_attributes: { http_request: { client_ip: "", user_agent: "" } },
+      },
+      "msg_sub_route1"
+    );
+
+    expect(mockInternalApiClient).toHaveBeenCalledWith(
+      "/internal/orgs/plan-sync",
+      expect.any(Object)
+    );
+  });
+
+  it("routes subscription.updated to plan-sync", async () => {
+    mockInternalApiClient.mockResolvedValue(undefined);
+
+    await routeWebhookEvent(
+      {
+        type: "subscription.updated" as never,
+        object: "event",
+        data: subscriptionEventData({ plan: { slug: "starter" } }) as never,
+        event_attributes: { http_request: { client_ip: "", user_agent: "" } },
+      },
+      "msg_sub_route2"
+    );
+
+    expect(mockInternalApiClient).toHaveBeenCalledWith(
+      "/internal/orgs/plan-sync",
+      expect.any(Object)
     );
   });
 

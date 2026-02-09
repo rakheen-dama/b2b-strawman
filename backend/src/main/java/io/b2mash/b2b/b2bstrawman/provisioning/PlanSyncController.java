@@ -53,7 +53,7 @@ public class PlanSyncController {
   }
 
   private Tier deriveTier(String planSlug) {
-    if (planSlug != null && planSlug.contains("pro")) {
+    if (planSlug != null && planSlug.toLowerCase().contains("pro")) {
       return Tier.PRO;
     }
     return Tier.STARTER;

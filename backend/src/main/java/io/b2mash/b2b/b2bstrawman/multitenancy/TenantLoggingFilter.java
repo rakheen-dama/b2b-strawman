@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.multitenancy;
 
-import io.b2mash.b2b.b2bstrawman.member.MemberContext;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,9 +28,8 @@ public class TenantLoggingFilter extends OncePerRequestFilter {
     try {
       MDC.put(MDC_REQUEST_ID, UUID.randomUUID().toString());
 
-      String tenantId = TenantContext.getTenantId();
-      if (tenantId != null) {
-        MDC.put(MDC_TENANT_ID, tenantId);
+      if (RequestScopes.TENANT_ID.isBound()) {
+        MDC.put(MDC_TENANT_ID, RequestScopes.TENANT_ID.get());
       }
 
       Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -39,9 +37,8 @@ public class TenantLoggingFilter extends OncePerRequestFilter {
         MDC.put(MDC_USER_ID, jwtAuth.getToken().getSubject());
       }
 
-      UUID memberId = MemberContext.getCurrentMemberId();
-      if (memberId != null) {
-        MDC.put(MDC_MEMBER_ID, memberId.toString());
+      if (RequestScopes.MEMBER_ID.isBound()) {
+        MDC.put(MDC_MEMBER_ID, RequestScopes.MEMBER_ID.get().toString());
       }
 
       filterChain.doFilter(request, response);

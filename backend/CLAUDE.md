@@ -18,7 +18,7 @@ Requires Docker running for Testcontainers (tests and local dev). Postgres avail
 ```
 src/main/java/io/b2mash/b2b/b2bstrawman/
 ├── config/           # Spring configuration beans (Security, Hibernate, S3, Resilience4j)
-├── multitenancy/     # TenantContext, identifier resolver, connection provider, filters
+├── multitenancy/     # RequestScopes (ScopedValue), identifier resolver, connection provider, filters
 ├── security/         # JWT auth filter, API key filter, role converter
 ├── provisioning/     # Tenant provisioning controller, service, schema name generator
 ├── project/          # Project entity, repository, service, controller
@@ -60,6 +60,8 @@ Organize by **feature**, not by layer. Each feature package contains its entity,
 - Never make `TestcontainersConfiguration` package-private — it must be `public` for `@Import` from subpackages
 - Never use `@ActiveProfiles("local")` in tests — use `@ActiveProfiles("test")`. The "local" profile connects to Docker Compose Postgres. Tests must run against ephemeral Testcontainers only.
 - Never use flat JWT claims (`org_id`, `org_role`) — Clerk JWT v2 nests org claims under `"o"`: `jwt.getClaim("o")` returns `Map<String, Object>` with keys `id`, `rol`, `slg`
+- Never use `ThreadLocal` for request-scoped context — use `ScopedValue` via `RequestScopes` (guaranteed cleanup, virtual thread safe)
+- Never call `RequestScopes.TENANT_ID.get()` without checking `isBound()` first or accepting `NoSuchElementException`
 
 ## Spring Boot 4 / Hibernate 7 Gotchas
 
@@ -92,7 +94,7 @@ Schema-per-tenant isolation within a single Postgres database.
 - **Schema naming**: `tenant_<12-hex-chars>` — deterministic hash of Clerk org ID
 - **Global tables** (`public` schema): `organizations`, `org_schema_mapping`, `processed_webhooks`
 - **Tenant tables** (per `tenant_*` schema): `projects`, `documents`
-- **Tenant resolution**: JWT `o.id` claim → `org_schema_mapping` lookup → `TenantContext` ThreadLocal → Hibernate `search_path`
+- **Tenant resolution**: JWT `o.id` claim → `org_schema_mapping` lookup → `RequestScopes.TENANT_ID` ScopedValue → Hibernate `search_path`
 - **Connection provider** sets `search_path` on checkout, resets to `public` on release
 - Never trust client-supplied headers for tenant resolution — always derive from validated JWT
 
@@ -141,8 +143,9 @@ src/main/resources/db/migration/
 ### Filter Chain Order
 1. `ApiKeyAuthFilter` — API key validation for `/internal/*` endpoints
 2. `BearerTokenAuthenticationFilter` + `ClerkJwtAuthenticationConverter` — JWT validation, role extraction from `o.rol`
-3. `TenantFilter` — tenant context resolution from JWT `o.id`
-4. `TenantLoggingFilter` — MDC setup (tenantId, userId, requestId)
+3. `TenantFilter` — binds `RequestScopes.TENANT_ID` ScopedValue from JWT `o.id`
+4. `MemberFilter` — binds `RequestScopes.MEMBER_ID` and `RequestScopes.ORG_ROLE` ScopedValues
+5. `TenantLoggingFilter` — MDC setup (tenantId, userId, memberId, requestId)
 
 ### Internal API (`/internal/*`)
 - Secured by `ApiKeyAuthFilter` validating `X-API-KEY` header
@@ -187,12 +190,9 @@ class MyIntegrationTest {
 
 ### Multitenancy in Tests
 ```java
-try {
-    TenantContext.setTenantId("tenant_test123");
-    // perform operations
-} finally {
-    TenantContext.clear();
-}
+ScopedValue.where(RequestScopes.TENANT_ID, "tenant_test123").run(() -> {
+    // perform operations — auto-cleans up when lambda exits
+});
 ```
 
 ### JWT Mocks in Tests (Clerk v2 format)

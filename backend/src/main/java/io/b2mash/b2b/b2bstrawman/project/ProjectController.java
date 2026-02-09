@@ -1,6 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.project;
 
-import io.b2mash.b2b.b2bstrawman.member.MemberContext;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -32,11 +32,11 @@ public class ProjectController {
   @GetMapping
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<?> listProjects() {
-    UUID memberId = MemberContext.getCurrentMemberId();
-    String orgRole = MemberContext.getOrgRole();
-    if (memberId == null) {
+    if (!RequestScopes.MEMBER_ID.isBound()) {
       return ResponseEntity.of(memberContextMissing()).build();
     }
+    UUID memberId = RequestScopes.MEMBER_ID.get();
+    String orgRole = RequestScopes.ORG_ROLE.isBound() ? RequestScopes.ORG_ROLE.get() : null;
     var projects =
         projectService.listProjects(memberId, orgRole).stream()
             .map(pwr -> ProjectResponse.from(pwr.project(), pwr.projectRole()))
@@ -47,11 +47,11 @@ public class ProjectController {
   @GetMapping("/{id}")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<?> getProject(@PathVariable UUID id) {
-    UUID memberId = MemberContext.getCurrentMemberId();
-    String orgRole = MemberContext.getOrgRole();
-    if (memberId == null) {
+    if (!RequestScopes.MEMBER_ID.isBound()) {
       return ResponseEntity.of(memberContextMissing()).build();
     }
+    UUID memberId = RequestScopes.MEMBER_ID.get();
+    String orgRole = RequestScopes.ORG_ROLE.isBound() ? RequestScopes.ORG_ROLE.get() : null;
     return projectService
         .getProject(id, memberId, orgRole)
         .map(pwr -> ResponseEntity.ok(ProjectResponse.from(pwr.project(), pwr.projectRole())))
@@ -61,10 +61,10 @@ public class ProjectController {
   @PostMapping
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<?> createProject(@Valid @RequestBody CreateProjectRequest request) {
-    UUID createdBy = MemberContext.getCurrentMemberId();
-    if (createdBy == null) {
+    if (!RequestScopes.MEMBER_ID.isBound()) {
       return ResponseEntity.of(memberContextMissing()).build();
     }
+    UUID createdBy = RequestScopes.MEMBER_ID.get();
     var project = projectService.createProject(request.name(), request.description(), createdBy);
     return ResponseEntity.created(URI.create("/api/projects/" + project.getId()))
         .body(ProjectResponse.from(project, "lead"));
@@ -74,11 +74,11 @@ public class ProjectController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<?> updateProject(
       @PathVariable UUID id, @Valid @RequestBody UpdateProjectRequest request) {
-    UUID memberId = MemberContext.getCurrentMemberId();
-    String orgRole = MemberContext.getOrgRole();
-    if (memberId == null) {
+    if (!RequestScopes.MEMBER_ID.isBound()) {
       return ResponseEntity.of(memberContextMissing()).build();
     }
+    UUID memberId = RequestScopes.MEMBER_ID.get();
+    String orgRole = RequestScopes.ORG_ROLE.isBound() ? RequestScopes.ORG_ROLE.get() : null;
     return projectService
         .updateProject(id, request.name(), request.description(), memberId, orgRole)
         .map(pwr -> ResponseEntity.ok(ProjectResponse.from(pwr.project(), pwr.projectRole())))

@@ -1,6 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.document;
 
-import io.b2mash.b2b.b2bstrawman.member.MemberContext;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
@@ -43,11 +43,11 @@ public class DocumentController {
       return ResponseEntity.of(problem).build();
     }
     String orgId = (String) orgClaim.get("id");
-    UUID memberId = MemberContext.getCurrentMemberId();
-    String orgRole = MemberContext.getOrgRole();
-    if (memberId == null) {
+    if (!RequestScopes.MEMBER_ID.isBound()) {
       return ResponseEntity.of(memberContextMissing()).build();
     }
+    UUID memberId = RequestScopes.MEMBER_ID.get();
+    String orgRole = RequestScopes.ORG_ROLE.isBound() ? RequestScopes.ORG_ROLE.get() : null;
 
     return documentService
         .initiateUpload(
@@ -70,11 +70,11 @@ public class DocumentController {
   @PostMapping("/api/documents/{documentId}/confirm")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<?> confirmUpload(@PathVariable UUID documentId) {
-    UUID memberId = MemberContext.getCurrentMemberId();
-    String orgRole = MemberContext.getOrgRole();
-    if (memberId == null) {
+    if (!RequestScopes.MEMBER_ID.isBound()) {
       return ResponseEntity.of(memberContextMissing()).build();
     }
+    UUID memberId = RequestScopes.MEMBER_ID.get();
+    String orgRole = RequestScopes.ORG_ROLE.isBound() ? RequestScopes.ORG_ROLE.get() : null;
     return documentService
         .confirmUpload(documentId, memberId, orgRole)
         .map(document -> ResponseEntity.ok(DocumentResponse.from(document)))
@@ -84,11 +84,11 @@ public class DocumentController {
   @DeleteMapping("/api/documents/{documentId}/cancel")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<?> cancelUpload(@PathVariable UUID documentId) {
-    UUID memberId = MemberContext.getCurrentMemberId();
-    String orgRole = MemberContext.getOrgRole();
-    if (memberId == null) {
+    if (!RequestScopes.MEMBER_ID.isBound()) {
       return ResponseEntity.of(memberContextMissing()).build();
     }
+    UUID memberId = RequestScopes.MEMBER_ID.get();
+    String orgRole = RequestScopes.ORG_ROLE.isBound() ? RequestScopes.ORG_ROLE.get() : null;
     return documentService
         .cancelUpload(documentId, memberId, orgRole)
         .map(
@@ -108,11 +108,11 @@ public class DocumentController {
   @GetMapping("/api/projects/{projectId}/documents")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<?> listDocuments(@PathVariable UUID projectId) {
-    UUID memberId = MemberContext.getCurrentMemberId();
-    String orgRole = MemberContext.getOrgRole();
-    if (memberId == null) {
+    if (!RequestScopes.MEMBER_ID.isBound()) {
       return ResponseEntity.of(memberContextMissing()).build();
     }
+    UUID memberId = RequestScopes.MEMBER_ID.get();
+    String orgRole = RequestScopes.ORG_ROLE.isBound() ? RequestScopes.ORG_ROLE.get() : null;
     return documentService
         .listDocuments(projectId, memberId, orgRole)
         .map(
@@ -126,11 +126,11 @@ public class DocumentController {
   @GetMapping("/api/documents/{documentId}/presign-download")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<?> presignDownload(@PathVariable UUID documentId) {
-    UUID memberId = MemberContext.getCurrentMemberId();
-    String orgRole = MemberContext.getOrgRole();
-    if (memberId == null) {
+    if (!RequestScopes.MEMBER_ID.isBound()) {
       return ResponseEntity.of(memberContextMissing()).build();
     }
+    UUID memberId = RequestScopes.MEMBER_ID.get();
+    String orgRole = RequestScopes.ORG_ROLE.isBound() ? RequestScopes.ORG_ROLE.get() : null;
     return documentService
         .getPresignedDownloadUrl(documentId, memberId, orgRole)
         .map(

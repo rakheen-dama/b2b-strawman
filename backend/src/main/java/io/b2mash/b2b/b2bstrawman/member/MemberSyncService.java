@@ -1,7 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.member;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
-import io.b2mash.b2b.b2bstrawman.multitenancy.TenantContext;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,58 +40,51 @@ public class MemberSyncService {
       String avatarUrl,
       String orgRole) {
     String schemaName = resolveSchema(clerkOrgId);
-    try {
-      TenantContext.setTenantId(schemaName);
+    return ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+        .call(
+            () ->
+                txTemplate.execute(
+                    status -> {
+                      var existing = memberRepository.findByClerkUserId(clerkUserId);
+                      if (existing.isPresent()) {
+                        var member = existing.get();
+                        member.updateFrom(email, name, avatarUrl, orgRole);
+                        memberRepository.save(member);
+                        log.info("Updated member {} in tenant {}", clerkUserId, schemaName);
+                        return new SyncResult(member.getId(), false);
+                      }
 
-      return txTemplate.execute(
-          status -> {
-            var existing = memberRepository.findByClerkUserId(clerkUserId);
-            if (existing.isPresent()) {
-              var member = existing.get();
-              member.updateFrom(email, name, avatarUrl, orgRole);
-              memberRepository.save(member);
-              log.info("Updated member {} in tenant {}", clerkUserId, schemaName);
-              return new SyncResult(member.getId(), false);
-            }
-
-            var member = new Member(clerkUserId, email, name, avatarUrl, orgRole);
-            memberRepository.save(member);
-            log.info("Created member {} in tenant {}", clerkUserId, schemaName);
-            return new SyncResult(member.getId(), true);
-          });
-
-    } finally {
-      TenantContext.clear();
-    }
+                      var member = new Member(clerkUserId, email, name, avatarUrl, orgRole);
+                      memberRepository.save(member);
+                      log.info("Created member {} in tenant {}", clerkUserId, schemaName);
+                      return new SyncResult(member.getId(), true);
+                    }));
   }
 
   public boolean deleteMember(String clerkOrgId, String clerkUserId) {
     String schemaName = resolveSchema(clerkOrgId);
-    try {
-      TenantContext.setTenantId(schemaName);
+    return ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+        .call(
+            () -> {
+              boolean deleted =
+                  Boolean.TRUE.equals(
+                      txTemplate.execute(
+                          status -> {
+                            if (!memberRepository.existsByClerkUserId(clerkUserId)) {
+                              log.info("Member {} not found in tenant {}", clerkUserId, schemaName);
+                              return false;
+                            }
 
-      boolean deleted =
-          Boolean.TRUE.equals(
-              txTemplate.execute(
-                  status -> {
-                    if (!memberRepository.existsByClerkUserId(clerkUserId)) {
-                      log.info("Member {} not found in tenant {}", clerkUserId, schemaName);
-                      return false;
-                    }
+                            memberRepository.deleteByClerkUserId(clerkUserId);
+                            log.info("Deleted member {} from tenant {}", clerkUserId, schemaName);
+                            return true;
+                          }));
 
-                    memberRepository.deleteByClerkUserId(clerkUserId);
-                    log.info("Deleted member {} from tenant {}", clerkUserId, schemaName);
-                    return true;
-                  }));
-
-      if (deleted) {
-        memberFilter.evictFromCache(schemaName, clerkUserId);
-      }
-      return deleted;
-
-    } finally {
-      TenantContext.clear();
-    }
+              if (deleted) {
+                memberFilter.evictFromCache(schemaName, clerkUserId);
+              }
+              return deleted;
+            });
   }
 
   private String resolveSchema(String clerkOrgId) {

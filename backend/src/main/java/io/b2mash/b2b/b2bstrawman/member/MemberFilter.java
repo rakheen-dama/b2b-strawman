@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.member;
 
-import io.b2mash.b2b.b2bstrawman.multitenancy.TenantContext;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ScopedFilterChain;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,16 +36,23 @@ public class MemberFilter extends OncePerRequestFilter {
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
-    try {
-      String tenantId = TenantContext.getTenantId();
-      if (tenantId != null) {
-        resolveMember(tenantId);
-      }
 
-      filterChain.doFilter(request, response);
-    } finally {
-      MemberContext.clear();
+    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+
+    if (tenantId != null) {
+      MemberInfo info = resolveMember(tenantId);
+      if (info != null) {
+        var carrier = ScopedValue.where(RequestScopes.MEMBER_ID, info.memberId());
+        if (info.orgRole() != null) {
+          carrier = carrier.where(RequestScopes.ORG_ROLE, info.orgRole());
+        }
+        ScopedFilterChain.runScoped(carrier, filterChain, request, response);
+        return;
+      }
     }
+
+    // No tenant or member resolution failed — continue unbound
+    filterChain.doFilter(request, response);
   }
 
   @Override
@@ -57,10 +65,12 @@ public class MemberFilter extends OncePerRequestFilter {
     memberCache.remove(tenantId + ":" + clerkUserId);
   }
 
-  private void resolveMember(String tenantId) {
+  private record MemberInfo(UUID memberId, String orgRole) {}
+
+  private MemberInfo resolveMember(String tenantId) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (!(authentication instanceof JwtAuthenticationToken jwtAuth)) {
-      return;
+      return null;
     }
 
     Jwt jwt = jwtAuth.getToken();
@@ -68,7 +78,7 @@ public class MemberFilter extends OncePerRequestFilter {
     String orgRole = extractOrgRole(jwt);
 
     if (clerkUserId == null) {
-      return;
+      return null;
     }
 
     String cacheKey = tenantId + ":" + clerkUserId;
@@ -82,13 +92,10 @@ public class MemberFilter extends OncePerRequestFilter {
           clerkUserId,
           tenantId,
           e.getMessage());
-      return;
+      return null;
     }
 
-    MemberContext.setCurrentMemberId(memberId);
-    if (orgRole != null) {
-      MemberContext.setOrgRole(orgRole);
-    }
+    return new MemberInfo(memberId, orgRole);
   }
 
   private UUID resolveOrCreateMember(String clerkUserId, String orgRole) {
@@ -112,7 +119,7 @@ public class MemberFilter extends OncePerRequestFilter {
           "Lazy-created member {} for user {} in tenant {}",
           member.getId(),
           clerkUserId,
-          TenantContext.getTenantId());
+          RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : "unknown");
       return member.getId();
     } catch (DataIntegrityViolationException e) {
       // Race condition: another instance already created this member

@@ -6,9 +6,12 @@ spring:
       password: changeme
       driver-class-name: org.postgresql.Driver
       maximum-pool-size: 5
+      minimum-idle: 2
       connection-timeout: 10000
+      validation-timeout: 5000
       idle-timeout: 300000
       max-lifetime: 1200000
+      leak-detection-threshold: 30000
       connection-init-sql: SET search_path TO public
     migration:
       jdbc-url: jdbc:postgresql://b2mash.local:5432/app

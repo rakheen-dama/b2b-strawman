@@ -4,10 +4,17 @@ spring:
       jdbc-url: ${DATABASE_URL}
       driver-class-name: org.postgresql.Driver
       maximum-pool-size: 10
+      minimum-idle: 3
       connection-timeout: 10000
+      validation-timeout: 5000
       idle-timeout: 600000
       max-lifetime: 1680000
+      keepalive-time: 300000
+      leak-detection-threshold: 60000
       connection-init-sql: SET search_path TO public
+      data-source-properties:
+        preparedStatementCacheQueries: 256
+        preparedStatementCacheSizeMiB: 5
     migration:
       jdbc-url: ${DATABASE_MIGRATION_URL:${DATABASE_URL}}
       driver-class-name: org.postgresql.Driver

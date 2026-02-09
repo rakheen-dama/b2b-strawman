@@ -2,12 +2,15 @@ package io.b2mash.b2b.b2bstrawman.multitenancy;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.regex.Pattern;
 import javax.sql.DataSource;
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
 import org.springframework.stereotype.Component;
 
 @Component
 public class SchemaMultiTenantConnectionProvider implements MultiTenantConnectionProvider<String> {
+
+  private static final Pattern SCHEMA_PATTERN = Pattern.compile("^tenant_[0-9a-f]{12}$");
 
   private final DataSource dataSource;
 
@@ -85,7 +88,7 @@ public class SchemaMultiTenantConnectionProvider implements MultiTenantConnectio
   }
 
   private String sanitizeSchema(String schema) {
-    if ("public".equals(schema) || schema.matches("^tenant_[0-9a-f]{12}$")) {
+    if ("public".equals(schema) || SCHEMA_PATTERN.matcher(schema).matches()) {
       return schema;
     }
     throw new IllegalArgumentException("Invalid schema name: " + schema);

@@ -1,12 +1,14 @@
 package io.b2mash.b2b.b2bstrawman.multitenancy;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -18,7 +20,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class TenantFilter extends OncePerRequestFilter {
 
   private final OrgSchemaMappingRepository mappingRepository;
-  private final Map<String, String> schemaCache = new ConcurrentHashMap<>();
+  private final Cache<String, String> schemaCache =
+      Caffeine.newBuilder().maximumSize(10_000).expireAfterWrite(Duration.ofHours(1)).build();
 
   public TenantFilter(OrgSchemaMappingRepository mappingRepository) {
     this.mappingRepository = mappingRepository;
@@ -61,7 +64,7 @@ public class TenantFilter extends OncePerRequestFilter {
   }
 
   private String resolveSchema(String clerkOrgId) {
-    return schemaCache.computeIfAbsent(clerkOrgId, this::lookupSchema);
+    return schemaCache.get(clerkOrgId, this::lookupSchema);
   }
 
   private String lookupSchema(String clerkOrgId) {

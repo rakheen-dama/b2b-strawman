@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.member;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ScopedFilterChain;
 import jakarta.servlet.FilterChain;
@@ -7,9 +9,9 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -26,7 +28,8 @@ public class MemberFilter extends OncePerRequestFilter {
   private static final Logger log = LoggerFactory.getLogger(MemberFilter.class);
 
   private final MemberRepository memberRepository;
-  private final Map<String, UUID> memberCache = new ConcurrentHashMap<>();
+  private final Cache<String, UUID> memberCache =
+      Caffeine.newBuilder().maximumSize(50_000).expireAfterWrite(Duration.ofHours(1)).build();
 
   public MemberFilter(MemberRepository memberRepository) {
     this.memberRepository = memberRepository;
@@ -62,7 +65,7 @@ public class MemberFilter extends OncePerRequestFilter {
   }
 
   public void evictFromCache(String tenantId, String clerkUserId) {
-    memberCache.remove(tenantId + ":" + clerkUserId);
+    memberCache.invalidate(tenantId + ":" + clerkUserId);
   }
 
   private record MemberInfo(UUID memberId, String orgRole) {}
@@ -84,8 +87,7 @@ public class MemberFilter extends OncePerRequestFilter {
     String cacheKey = tenantId + ":" + clerkUserId;
     UUID memberId;
     try {
-      memberId =
-          memberCache.computeIfAbsent(cacheKey, k -> resolveOrCreateMember(clerkUserId, orgRole));
+      memberId = memberCache.get(cacheKey, k -> resolveOrCreateMember(clerkUserId, orgRole));
     } catch (Exception e) {
       log.warn(
           "Failed to resolve/create member for user {} in tenant {}: {}",

@@ -1224,25 +1224,33 @@ Phase 2 introduces a tiered tenancy model powered by Clerk Billing. Organization
 
 **Estimated Effort**: S
 
+#### Slices
+
+| Slice | Tasks | Summary | Status |
+|-------|-------|---------|--------|
+| **25A** | 25.1, 25.2, 25.4 | Backend enforcement: MemberSyncService limit check, PlanEnforcementIntegrationTest, Clerk setup docs | Done |
+| **25B** | 25.3 | Frontend enforcement: gate invite form behind member limit, UpgradePrompt | |
+
 #### Tasks
 
-| ID | Task | Status | Notes |
-|----|------|--------|-------|
-| 25.1 | Add member count validation to MemberSyncService | | Modify `syncMember()`: before creating a **new** member, count existing members for the tenant. Look up `Organization.tier` to determine the limit via `PlanLimits.maxMembers(tier)`. If at limit, throw `PlanLimitExceededException`. Skip the count check on updates (existing member). For shared schema: count by `tenantId`; for dedicated schema: count all rows. Add `countByTenantId(String)` or `count()` to `MemberRepository` as needed. Per ADR-014 §Backend Layer. |
-| 25.2 | Configure Clerk Dashboard member limits | | Operational task. In Clerk Dashboard → Billing → Plans: set Starter plan member limit to 2, Pro plan member limit to 10. Enable the `dedicated_schema`, `max_members_2`, `max_members_10` feature keys per plan. Document the configuration steps in `frontend/docs/clerk-billing-setup.md`. This is the first line of defense — Clerk blocks invitations when at limit. Per ADR-014 §Clerk Layer and ARCHITECTURE.md §9.1 plan table. |
-| 25.3 | Gate invite form behind member limit on team page | | In `components/team/invite-member-form.tsx`: check organization member count against plan limit. Use Clerk's `useOrganization()` for current count and `has({ feature: 'max_members_10' })` or equivalent to determine limit. When at limit: disable the invite form and show an inline `<UpgradePrompt />` (from Epic 26, or a simple text link as a temporary measure). Per ADR-014 §Frontend Layer and ARCHITECTURE.md §9.8.1. |
-| 25.4 | Write PlanEnforcementTest | | `PlanEnforcementIntegrationTest.java`: Provision Starter org, sync 2 members (succeeds), attempt 3rd member sync → 403 `PlanLimitExceededException`. Provision Pro org, sync 10 members (succeeds), attempt 11th → 403. Verify error response body includes upgrade prompt message. Verify that **updating** an existing member at the limit succeeds (not a new member). Per ARCHITECTURE.md §9.8.4 test matrix. |
+| ID | Task | Slice | Status | Notes |
+|----|------|-------|--------|-------|
+| 25.1 | Add member count validation to MemberSyncService | 25A | Done | Added `PlanLimits.maxMembers(Tier)` switch method. Injected `OrganizationRepository` into `MemberSyncService`. Added `enforceMemberLimit()` — looks up org tier, counts members via `JpaRepository.count()` (Hibernate `@Filter` scopes to tenant), throws `PlanLimitExceededException` if at limit. Only enforced on creation, not updates. Fixed `GlobalExceptionHandler` to extend `ResponseEntityExceptionHandler` for proper ProblemDetail JSON rendering. Updated 6 existing integration tests to upgrade test orgs to PRO tier via `planSyncService.syncPlan()`. |
+| 25.2 | Configure Clerk Dashboard member limits | 25A | Done | Created `frontend/docs/clerk-billing-setup.md` documenting Clerk Dashboard configuration: Starter limit 2, Pro limit 10, feature keys `max_members_2`/`max_members_10`/`dedicated_schema`. |
+| 25.3 | Gate invite form behind member limit on team page | 25B | | In `components/team/invite-member-form.tsx`: check organization member count against plan limit. Use Clerk's `useOrganization()` for current count and `has({ feature: 'max_members_10' })` or equivalent to determine limit. When at limit: disable the invite form and show an inline `<UpgradePrompt />` (from Epic 26, or a simple text link as a temporary measure). Per ADR-014 §Frontend Layer and ARCHITECTURE.md §9.8.1. |
+| 25.4 | Write PlanEnforcementTest | 25A | Done | `PlanEnforcementIntegrationTest.java` with 6 ordered tests: Starter 2 members succeed, 3rd rejected (403), update at limit succeeds, error includes upgradeUrl, Pro 10 members succeed, 11th rejected. All 201 backend tests pass. |
 
 #### Key Files
 
 **Create:**
-- `frontend/docs/clerk-billing-setup.md`
-- `backend/src/test/java/.../member/PlanEnforcementIntegrationTest.java`
+- `frontend/docs/clerk-billing-setup.md` ✓
+- `backend/src/test/java/.../member/PlanEnforcementIntegrationTest.java` ✓
 
 **Modify:**
-- `backend/src/main/java/.../member/MemberSyncService.java` — Add member count check before creation
-- `backend/src/main/java/.../member/MemberRepository.java` — Add count query if needed
-- `frontend/components/team/invite-member-form.tsx` — Member limit UX gating
+- `backend/src/main/java/.../member/MemberSyncService.java` — Added member count check before creation ✓
+- `backend/src/main/java/.../provisioning/PlanLimits.java` — Added `maxMembers(Tier)` method ✓
+- `backend/src/main/java/.../exception/GlobalExceptionHandler.java` — Extended `ResponseEntityExceptionHandler` ✓
+- `frontend/components/team/invite-member-form.tsx` — Member limit UX gating (25B)
 
 ---
 

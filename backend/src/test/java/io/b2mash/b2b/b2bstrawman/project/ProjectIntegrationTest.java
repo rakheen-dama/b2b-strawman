@@ -14,6 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
 import java.util.Map;
@@ -46,10 +47,12 @@ class ProjectIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
+  @Autowired private PlanSyncService planSyncService;
 
   @BeforeAll
   void provisionTenants() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Project Test Org");
+    planSyncService.syncPlan(ORG_ID, "pro-plan");
     provisioningService.provisionTenant(ORG_B_ID, "Project Test Org B");
 
     syncMember(ORG_ID, "user_owner", "proj_owner@test.com", "Owner", "owner");

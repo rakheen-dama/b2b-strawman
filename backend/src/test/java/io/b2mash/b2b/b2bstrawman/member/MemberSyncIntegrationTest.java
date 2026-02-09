@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -31,11 +32,14 @@ class MemberSyncIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
+  @Autowired private PlanSyncService planSyncService;
 
   @BeforeAll
   void provisionTenants() {
     provisioningService.provisionTenant(ORG_A, "Member Test Org A");
+    planSyncService.syncPlan(ORG_A, "pro-plan");
     provisioningService.provisionTenant(ORG_B, "Member Test Org B");
+    planSyncService.syncPlan(ORG_B, "pro-plan");
   }
 
   // --- Sync (create) ---

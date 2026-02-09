@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,7 @@ class DocumentIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
+  @Autowired private PlanSyncService planSyncService;
 
   private String projectId;
   private String projectBId;
@@ -48,6 +50,7 @@ class DocumentIntegrationTest {
   @BeforeAll
   void provisionTenantsAndProjects() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Document Test Org");
+    planSyncService.syncPlan(ORG_ID, "pro-plan");
     provisioningService.provisionTenant(ORG_B_ID, "Document Test Org B");
 
     // Sync members so MemberContext is populated and we know member IDs

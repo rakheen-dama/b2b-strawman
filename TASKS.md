@@ -27,7 +27,7 @@
 | 21 | Frontend — Project Members Panel | Frontend | 19, 20 | M | 21A, 21B | **Done** |
 | 22 | Frontend — Filtered Project List | Frontend | 20, 21 | S | —        | **Done** |
 | **Phase 2 — Billing & Tiered Tenancy** | | | | | |          |
-| 23 | Tier Data Model & Plan Sync | Both | — | M | 23A, 23B |          |
+| 23 | Tier Data Model & Plan Sync | Both | — | M | 23A, 23B | **Done** |
 | 24 | Shared Schema & Row-Level Isolation | Backend | 23 | L | 24A, 24B, 24C |          |
 | 25 | Plan Enforcement | Both | 24 | S | — |          |
 | 26 | Billing UI & Feature Gating | Frontend | 23 | M | 26A, 26B |          |
@@ -1114,7 +1114,7 @@ Phase 2 introduces a tiered tenancy model powered by Clerk Billing. Organization
 | Slice | Tasks     | Summary                                                                                                                         | Status |
 |-------|-----------|---------------------------------------------------------------------------------------------------------------------------------|--------|
 | **23A** | 23.1–23.5 | Backend data model: Tier enum, Organization changes, V4 global migration, supporting types, internal endpoint, cache eviction   | Done (PR #44) |
-| **23B** | 23.6–23.7 | Plan sync pipeline: webhook handlers, tests                                                                                     | |
+| **23B** | 23.6–23.7 | Plan sync pipeline: webhook handlers, tests                                                                                     | Done (PR #45) |
 
 #### Tasks
 
@@ -1125,8 +1125,8 @@ Phase 2 introduces a tiered tenancy model powered by Clerk Billing. Organization
 | 23.3 | Add ORG_ID ScopedValue to RequestScopes | 23A   | Done | Add `public static final ScopedValue<String> ORG_ID = ScopedValue.newInstance();` to `multitenancy/RequestScopes.java`. Carries the Clerk org ID for row-level filtering in the shared schema. Consumed by SharedTenantFilterAspect (Epic 24), TenantAwareEntityListener (Epic 24), and SchemaMultiTenantConnectionProvider (Epic 24). Per ADR-012 and ARCHITECTURE.md §9.5.3. |
 | 23.4 | Create PlanSyncController | 23A   | Done | `provisioning/PlanSyncController.java` — `POST /internal/orgs/plan-sync` with `PlanSyncRequest(String clerkOrgId, String planSlug)`. Looks up `Organization` by `clerkOrgId`. Derives tier from planSlug (`"pro"` → `PRO`, anything else → `STARTER`). Updates `tier` and `planSlug`, persists. Evicts TenantFilter cache (task 23.5). Returns 200 OK. If org not found, 404. Secured by `ApiKeyAuthFilter` (existing). Per ARCHITECTURE.md §9.4 flow diagram. |
 | 23.5 | Add TenantFilter cache eviction support | 23A   | Done | Add `evictSchema(String clerkOrgId)` method to `TenantFilter`. Removes the cached entry for the given org so the next request fetches fresh `TenantInfo` from the database. Called by `PlanSyncController` after updating tier. Also called by `TenantUpgradeService` (Epic 27) after schema mapping changes. Per ADR-016 §Cache Invalidation. |
-| 23.6 | Add subscription webhook handlers in frontend | 23B   | | In `lib/webhook-handlers.ts`: add handlers for `subscription.created` and `subscription.updated` events. Extract `org_id` and plan slug from the Clerk subscription event payload. Call `POST /internal/orgs/plan-sync` via `internalApiClient` with `{clerkOrgId, planSlug}`. Follow existing event handler patterns (fire-and-forget error handling, 200 OK). Add event types to `routeWebhookEvent()` dispatch. Per ARCHITECTURE.md §9.4 and §9.8.1. |
-| 23.7 | Add plan sync tests | 23B   | | **Backend**: `PlanSyncIntegrationTest.java` — plan update persists tier + planSlug, unknown org returns 404, cache eviction occurs on update, API key required (401 without key). **Frontend**: Update `webhook-handlers.test.ts` — `subscription.created` routes to plan-sync handler, `subscription.updated` routes to plan-sync handler, payload extraction verified. |
+| 23.6 | Add subscription webhook handlers in frontend | 23B   | Done | In `lib/webhook-handlers.ts`: add handlers for `subscription.created` and `subscription.updated` events. Extract `org_id` and plan slug from the Clerk subscription event payload. Call `POST /internal/orgs/plan-sync` via `internalApiClient` with `{clerkOrgId, planSlug}`. Follow existing event handler patterns (fire-and-forget error handling, 200 OK). Add event types to `routeWebhookEvent()` dispatch. Per ARCHITECTURE.md §9.4 and §9.8.1. |
+| 23.7 | Add plan sync tests | 23B   | Done | **Backend**: `PlanSyncIntegrationTest.java` — plan update persists tier + planSlug, unknown org returns 404, cache eviction occurs on update, API key required (401 without key). **Frontend**: Update `webhook-handlers.test.ts` — `subscription.created` routes to plan-sync handler, `subscription.updated` routes to plan-sync handler, payload extraction verified. |
 
 #### Key Files
 

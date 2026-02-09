@@ -135,6 +135,9 @@ If approved:
 gh pr merge --squash --delete-branch
 ```
 
+Update the task status in TASKS.md.
+commit and push the change.
+
 Then clean up the worktree:
 ```bash
 git worktree remove ../worktree-epic-<N>

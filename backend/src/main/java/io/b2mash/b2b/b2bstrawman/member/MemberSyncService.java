@@ -42,6 +42,7 @@ public class MemberSyncService {
       String orgRole) {
     String schemaName = resolveSchema(clerkOrgId);
     return ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+        .where(RequestScopes.ORG_ID, clerkOrgId)
         .call(
             () ->
                 txTemplate.execute(
@@ -65,6 +66,7 @@ public class MemberSyncService {
   public void deleteMember(String clerkOrgId, String clerkUserId) {
     String schemaName = resolveSchema(clerkOrgId);
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+        .where(RequestScopes.ORG_ID, clerkOrgId)
         .call(
             () -> {
               txTemplate.executeWithoutResult(

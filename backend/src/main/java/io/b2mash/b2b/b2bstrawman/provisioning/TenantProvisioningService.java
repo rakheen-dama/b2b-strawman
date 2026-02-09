@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 public class TenantProvisioningService {
 
   private static final Logger log = LoggerFactory.getLogger(TenantProvisioningService.class);
+  private static final String SHARED_SCHEMA = "tenant_shared";
 
   private final OrganizationRepository organizationRepository;
   private final OrgSchemaMappingRepository mappingRepository;
@@ -43,7 +44,7 @@ public class TenantProvisioningService {
       return ProvisioningResult.alreadyProvisioned(existingMapping.get().getSchemaName());
     }
 
-    // Create or find organization record
+    // Create or find organization record (default tier is STARTER)
     var org =
         organizationRepository
             .findByClerkOrgId(clerkOrgId)
@@ -54,28 +55,52 @@ public class TenantProvisioningService {
     organizationRepository.flush();
 
     try {
-      String schemaName = SchemaNameGenerator.generateSchemaName(clerkOrgId);
-      log.info("Provisioning tenant schema {} for org {}", schemaName, clerkOrgId);
-
-      // Each step is idempotent — safe to retry after partial failure.
-      // Mapping is created LAST so TenantFilter only resolves to this
-      // schema once all tables exist (prevents race with first request).
-      createSchema(schemaName);
-      runTenantMigrations(schemaName);
-      createMapping(clerkOrgId, schemaName);
-
-      org.markCompleted();
-      organizationRepository.save(org);
-
-      log.info("Successfully provisioned tenant {} for org {}", schemaName, clerkOrgId);
-      return ProvisioningResult.success(schemaName);
-
+      if (org.getTier() == Tier.STARTER) {
+        return provisionStarter(clerkOrgId, org);
+      } else {
+        return provisionPro(clerkOrgId, org);
+      }
     } catch (Exception e) {
       log.error("Failed to provision tenant for org {}", clerkOrgId, e);
       org.markFailed();
       organizationRepository.save(org);
       throw new ProvisioningException("Provisioning failed for org " + clerkOrgId, e);
     }
+  }
+
+  /**
+   * Starter provisioning: map to the shared schema (already bootstrapped by TenantMigrationRunner).
+   * No schema creation or migration needed.
+   */
+  private ProvisioningResult provisionStarter(String clerkOrgId, Organization org) {
+    log.info("Provisioning Starter tenant for org {} → {}", clerkOrgId, SHARED_SCHEMA);
+
+    createMapping(clerkOrgId, SHARED_SCHEMA);
+
+    org.markCompleted();
+    organizationRepository.save(org);
+
+    log.info("Successfully provisioned Starter tenant for org {}", clerkOrgId);
+    return ProvisioningResult.success(SHARED_SCHEMA);
+  }
+
+  /** Pro provisioning: create a dedicated schema and run migrations. */
+  private ProvisioningResult provisionPro(String clerkOrgId, Organization org) throws SQLException {
+    String schemaName = SchemaNameGenerator.generateSchemaName(clerkOrgId);
+    log.info("Provisioning Pro tenant schema {} for org {}", schemaName, clerkOrgId);
+
+    // Each step is idempotent — safe to retry after partial failure.
+    // Mapping is created LAST so TenantFilter only resolves to this
+    // schema once all tables exist (prevents race with first request).
+    createSchema(schemaName);
+    runTenantMigrations(schemaName);
+    createMapping(clerkOrgId, schemaName);
+
+    org.markCompleted();
+    organizationRepository.save(org);
+
+    log.info("Successfully provisioned Pro tenant {} for org {}", schemaName, clerkOrgId);
+    return ProvisioningResult.success(schemaName);
   }
 
   void runTenantMigrations(String schemaName) {

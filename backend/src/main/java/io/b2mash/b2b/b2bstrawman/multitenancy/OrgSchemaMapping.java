@@ -20,7 +20,7 @@ public class OrgSchemaMapping {
   @Column(name = "clerk_org_id", nullable = false, unique = true)
   private String clerkOrgId;
 
-  @Column(name = "schema_name", nullable = false, unique = true)
+  @Column(name = "schema_name", nullable = false)
   private String schemaName;
 
   @Column(name = "created_at", nullable = false)

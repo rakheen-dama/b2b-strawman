@@ -20,7 +20,8 @@ public class TenantAwareEntityListener {
   public void setTenantId(Object entity) {
     if (entity instanceof TenantAware tenantAware
         && RequestScopes.TENANT_ID.isBound()
-        && SHARED_SCHEMA.equals(RequestScopes.TENANT_ID.get())) {
+        && SHARED_SCHEMA.equals(RequestScopes.TENANT_ID.get())
+        && RequestScopes.ORG_ID.isBound()) {
       tenantAware.setTenantId(RequestScopes.ORG_ID.get());
     }
   }

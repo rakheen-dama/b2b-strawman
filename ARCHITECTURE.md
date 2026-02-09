@@ -360,6 +360,52 @@ b2b-strawman/
 
 ---
 
+### ADR-009: ScopedValue for Request Context (Replacing ThreadLocal)
+
+**Status**: Accepted
+
+**Context**: The backend uses request-scoped context holders — `TenantContext` (tenant schema name) and `MemberContext` (member ID, org role) — to propagate identity from servlet filters through to controllers, services, and Hibernate's `CurrentTenantIdentifierResolver`. These were implemented as `ThreadLocal` wrappers with manual `set()` / `clear()` in try-finally blocks.
+
+Java 25 finalised `ScopedValue` (JEP 506), a purpose-built replacement for `ThreadLocal` in request-scoped, one-way data flow scenarios. The project plans to enable virtual threads (`spring.threads.virtual.enabled=true`), which makes `ThreadLocal` problematic: each virtual thread copies the parent's `ThreadLocalMap`, causing O(n) memory overhead per thread and risking stale data leaks if `remove()` is missed.
+
+**Options Considered**:
+
+1. **Keep ThreadLocal** — Continue with the current pattern; add `InheritableThreadLocal` if context propagation to child threads is needed.
+   - Pros: No migration effort; well-understood pattern.
+   - Cons: Memory amplification with virtual threads (millions of map copies); manual cleanup is fragile (one missed `clear()` = cross-request data bleed); mutable — any code can call `set()` mid-request; prevents safe adoption of virtual threads.
+
+2. **Micrometer Context Propagation** — Use `io.micrometer.context.ContextRegistry` to bridge ThreadLocal values across async boundaries.
+   - Pros: Works with existing ThreadLocal; integrates with Reactor and Spring WebFlux.
+   - Cons: Adds a dependency for a problem we can solve at the language level; still relies on ThreadLocal underneath; does not solve the memory amplification issue with virtual threads.
+
+3. **ScopedValue (JEP 506)** — Replace ThreadLocal with `java.lang.ScopedValue`. Bind values via `ScopedValue.where(key, value).run(() -> ...)` in filters; read via `key.get()` in downstream code.
+   - Pros: Automatic cleanup (binding removed when lambda exits — no try-finally needed); immutable within scope (no accidental mid-request mutation); O(1) memory with virtual threads (shared bindings, zero copying); designed for structured concurrency (`StructuredTaskScope` inherits bindings automatically); JIT-optimisable (`get()` can be inlined/hoisted since value is immutable).
+   - Cons: Lambda-based API requires checked exception bridging in servlet filters (`doFilter()` throws `IOException`/`ServletException`); no `set()` method — value can only change via nested rebinding; Spring Framework has no native ScopedValue integration (our filters manage bindings manually).
+
+**Decision**: Replace `ThreadLocal` with `ScopedValue` for all request-scoped context.
+
+**Rationale**: Our filter chain already wraps `filterChain.doFilter()` in try-finally, which maps directly to `ScopedValue.where().run()`. The codebase has no async or cross-thread context propagation, making this the simplest possible migration path. OSIV is disabled, so Hibernate's `TenantIdentifierResolver` is always called within the filter's scoped binding. The checked-exception bridging is centralised in a single `ScopedFilterChain` helper. With ScopedValue in place, enabling virtual threads becomes safe — the primary blocker (ThreadLocal memory amplification and data leaks) is eliminated.
+
+**Implementation**:
+
+| Component | Role |
+|-----------|------|
+| `RequestScopes` | Central holder: `TENANT_ID`, `MEMBER_ID`, `ORG_ROLE` as `static final ScopedValue<>` fields |
+| `ScopedFilterChain` | Helper that bridges `ScopedValue.Carrier.run(Runnable)` with servlet filter checked exceptions |
+| `TenantFilter` | Binds `RequestScopes.TENANT_ID` via `ScopedFilterChain.runScoped()` |
+| `MemberFilter` | Binds `RequestScopes.MEMBER_ID` and `ORG_ROLE` via `ScopedFilterChain.runScoped()` |
+| `TenantIdentifierResolver` | Reads `RequestScopes.TENANT_ID.isBound()` with `"public"` fallback |
+| `MemberSyncService` | Uses `ScopedValue.where().call()` for internal endpoints that bypass filters |
+
+**Consequences**:
+- `TenantContext.java` and `MemberContext.java` deleted — zero `ThreadLocal` in application code.
+- All request-scoped context accessed via `RequestScopes.TENANT_ID.get()`, `RequestScopes.MEMBER_ID.get()`, `RequestScopes.ORG_ROLE.get()`.
+- Callers must check `isBound()` before `get()`, or accept `NoSuchElementException` — no more silent nulls.
+- Enabling `spring.threads.virtual.enabled=true` is now safe from the application's side (Spring's own internal ThreadLocals remain, managed by the framework).
+- Future adoption of `StructuredTaskScope` for parallel operations (e.g., batch member sync) will automatically inherit all `RequestScopes` bindings in forked subtasks.
+
+---
+
 ## 3. Component Architecture
 
 ### 3.1 Next.js Frontend

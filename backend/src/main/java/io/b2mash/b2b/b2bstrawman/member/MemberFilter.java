@@ -4,13 +4,14 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ScopedFilterChain;
+import io.b2mash.b2b.b2bstrawman.security.ClerkJwtUtils;
+import io.b2mash.b2b.b2bstrawman.security.Roles;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,7 +79,7 @@ public class MemberFilter extends OncePerRequestFilter {
 
     Jwt jwt = jwtAuth.getToken();
     String clerkUserId = jwt.getSubject();
-    String orgRole = extractOrgRole(jwt);
+    String orgRole = ClerkJwtUtils.extractOrgRole(jwt);
 
     if (clerkUserId == null) {
       return null;
@@ -115,7 +116,7 @@ public class MemberFilter extends OncePerRequestFilter {
               clerkUserId + "@placeholder.internal",
               clerkUserId,
               null,
-              orgRole != null ? orgRole : "member");
+              orgRole != null ? orgRole : Roles.ORG_MEMBER);
       member = memberRepository.save(member);
       log.info(
           "Lazy-created member {} for user {} in tenant {}",
@@ -133,14 +134,5 @@ public class MemberFilter extends OncePerRequestFilter {
                   new IllegalStateException(
                       "Member not found after constraint violation for: " + clerkUserId));
     }
-  }
-
-  @SuppressWarnings("unchecked")
-  private String extractOrgRole(Jwt jwt) {
-    Map<String, Object> orgClaim = jwt.getClaim("o");
-    if (orgClaim != null) {
-      return (String) orgClaim.get("rol");
-    }
-    return null;
   }
 }

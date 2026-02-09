@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.project;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.security.Roles;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -57,7 +58,7 @@ public class ProjectController {
     UUID createdBy = RequestScopes.requireMemberId();
     var project = projectService.createProject(request.name(), request.description(), createdBy);
     return ResponseEntity.created(URI.create("/api/projects/" + project.getId()))
-        .body(ProjectResponse.from(project, "lead"));
+        .body(ProjectResponse.from(project, Roles.PROJECT_LEAD));
   }
 
   @PutMapping("/{id}")

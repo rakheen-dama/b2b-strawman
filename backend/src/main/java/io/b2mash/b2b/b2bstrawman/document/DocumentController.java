@@ -2,12 +2,12 @@ package io.b2mash.b2b.b2bstrawman.document;
 
 import io.b2mash.b2b.b2bstrawman.exception.MissingOrganizationContextException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.security.ClerkJwtUtils;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
-import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -34,12 +34,10 @@ public class DocumentController {
       @PathVariable UUID projectId,
       @Valid @RequestBody UploadInitRequest request,
       JwtAuthenticationToken auth) {
-    @SuppressWarnings("unchecked")
-    Map<String, Object> orgClaim = auth.getToken().getClaim("o");
-    if (orgClaim == null || orgClaim.get("id") == null) {
+    String orgId = ClerkJwtUtils.extractOrgId(auth.getToken());
+    if (orgId == null) {
       throw new MissingOrganizationContextException();
     }
-    String orgId = (String) orgClaim.get("id");
     UUID memberId = RequestScopes.requireMemberId();
     String orgRole = RequestScopes.getOrgRole();
 

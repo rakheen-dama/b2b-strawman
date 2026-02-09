@@ -18,9 +18,9 @@ public class ClerkJwtAuthenticationConverter
   // Clerk JWT v2 uses short role names inside the "o" claim
   private static final Map<String, String> ROLE_MAPPING =
       Map.of(
-          "owner", "ROLE_ORG_OWNER",
-          "admin", "ROLE_ORG_ADMIN",
-          "member", "ROLE_ORG_MEMBER");
+          Roles.ORG_OWNER, Roles.AUTHORITY_ORG_OWNER,
+          Roles.ORG_ADMIN, Roles.AUTHORITY_ORG_ADMIN,
+          Roles.ORG_MEMBER, Roles.AUTHORITY_ORG_MEMBER);
 
   @Override
   public AbstractAuthenticationToken convert(Jwt jwt) {
@@ -28,16 +28,8 @@ public class ClerkJwtAuthenticationConverter
     return new JwtAuthenticationToken(jwt, authorities, jwt.getSubject());
   }
 
-  @SuppressWarnings("unchecked")
   private Collection<GrantedAuthority> extractAuthorities(Jwt jwt) {
-    String orgRole = null;
-
-    // Clerk JWT v2: org claims nested under "o"
-    Map<String, Object> orgClaim = jwt.getClaim("o");
-    if (orgClaim != null) {
-      orgRole = (String) orgClaim.get("rol");
-    }
-
+    String orgRole = ClerkJwtUtils.extractOrgRole(jwt);
     if (orgRole == null) {
       return List.of();
     }

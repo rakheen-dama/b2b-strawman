@@ -64,7 +64,7 @@ class ProjectServiceTest {
     var id = UUID.randomUUID();
     var project = new Project("Found", "Desc", MEMBER_ID);
     when(repository.findById(id)).thenReturn(Optional.of(project));
-    when(projectAccessService.checkAccess(id, MEMBER_ID, "member"))
+    when(projectAccessService.requireViewAccess(id, MEMBER_ID, "member"))
         .thenReturn(new ProjectAccess(true, false, false, false, "member"));
 
     var result = service.getProject(id, MEMBER_ID, "member");
@@ -87,8 +87,8 @@ class ProjectServiceTest {
     var id = UUID.randomUUID();
     var project = new Project("Secret", "Desc", MEMBER_ID);
     when(repository.findById(id)).thenReturn(Optional.of(project));
-    when(projectAccessService.checkAccess(id, MEMBER_ID, "member"))
-        .thenReturn(ProjectAccess.DENIED);
+    when(projectAccessService.requireViewAccess(id, MEMBER_ID, "member"))
+        .thenThrow(new ResourceNotFoundException("Project", id));
 
     assertThatThrownBy(() -> service.getProject(id, MEMBER_ID, "member"))
         .isInstanceOf(ResourceNotFoundException.class);
@@ -116,7 +116,7 @@ class ProjectServiceTest {
     var existing = new Project("Old", "Old Desc", MEMBER_ID);
     when(repository.findById(id)).thenReturn(Optional.of(existing));
     when(repository.save(existing)).thenReturn(existing);
-    when(projectAccessService.checkAccess(id, MEMBER_ID, "admin"))
+    when(projectAccessService.requireEditAccess(id, MEMBER_ID, "admin"))
         .thenReturn(new ProjectAccess(true, true, true, false, null));
 
     var result = service.updateProject(id, "Updated", "New Desc", MEMBER_ID, "admin");
@@ -141,8 +141,10 @@ class ProjectServiceTest {
     var id = UUID.randomUUID();
     var existing = new Project("No Edit", "Desc", MEMBER_ID);
     when(repository.findById(id)).thenReturn(Optional.of(existing));
-    when(projectAccessService.checkAccess(id, MEMBER_ID, "member"))
-        .thenReturn(new ProjectAccess(true, false, false, false, "member"));
+    when(projectAccessService.requireEditAccess(id, MEMBER_ID, "member"))
+        .thenThrow(
+            new ForbiddenException(
+                "Cannot edit project", "You do not have permission to edit project " + id));
 
     assertThatThrownBy(() -> service.updateProject(id, "Name", "Desc", MEMBER_ID, "member"))
         .isInstanceOf(ForbiddenException.class);
@@ -153,8 +155,8 @@ class ProjectServiceTest {
     var id = UUID.randomUUID();
     var existing = new Project("Secret", "Desc", MEMBER_ID);
     when(repository.findById(id)).thenReturn(Optional.of(existing));
-    when(projectAccessService.checkAccess(id, MEMBER_ID, "member"))
-        .thenReturn(ProjectAccess.DENIED);
+    when(projectAccessService.requireEditAccess(id, MEMBER_ID, "member"))
+        .thenThrow(new ResourceNotFoundException("Project", id));
 
     assertThatThrownBy(() -> service.updateProject(id, "Name", "Desc", MEMBER_ID, "member"))
         .isInstanceOf(ResourceNotFoundException.class);

@@ -1,17 +1,26 @@
 package io.b2mash.b2b.b2bstrawman.member;
 
+import io.b2mash.b2b.b2bstrawman.multitenancy.TenantAware;
+import io.b2mash.b2b.b2bstrawman.multitenancy.TenantAwareEntityListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 
 @Entity
 @Table(name = "members")
-public class Member {
+@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "tenantId", type = String.class))
+@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
+@EntityListeners(TenantAwareEntityListener.class)
+public class Member implements TenantAware {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
@@ -31,6 +40,9 @@ public class Member {
 
   @Column(name = "org_role", nullable = false, length = 50)
   private String orgRole;
+
+  @Column(name = "tenant_id")
+  private String tenantId;
 
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
@@ -72,6 +84,16 @@ public class Member {
 
   public String getOrgRole() {
     return orgRole;
+  }
+
+  @Override
+  public String getTenantId() {
+    return tenantId;
+  }
+
+  @Override
+  public void setTenantId(String tenantId) {
+    this.tenantId = tenantId;
   }
 
   public Instant getCreatedAt() {

@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.member;
 
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
@@ -42,10 +43,10 @@ public class ProjectMemberController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<?> addMember(
       @PathVariable UUID projectId, @Valid @RequestBody AddMemberRequest request) {
-    UUID addedBy = MemberContext.getCurrentMemberId();
-    if (addedBy == null) {
+    if (!RequestScopes.MEMBER_ID.isBound()) {
       return ResponseEntity.of(memberContextMissing()).build();
     }
+    UUID addedBy = RequestScopes.MEMBER_ID.get();
 
     var projectMember = projectMemberService.addMember(projectId, request.memberId(), addedBy);
     return ResponseEntity.created(
@@ -56,11 +57,11 @@ public class ProjectMemberController {
   @DeleteMapping("/{memberId}")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<?> removeMember(@PathVariable UUID projectId, @PathVariable UUID memberId) {
-    UUID requestedBy = MemberContext.getCurrentMemberId();
-    if (requestedBy == null) {
+    if (!RequestScopes.MEMBER_ID.isBound()) {
       return ResponseEntity.of(memberContextMissing()).build();
     }
-    String orgRole = MemberContext.getOrgRole();
+    UUID requestedBy = RequestScopes.MEMBER_ID.get();
+    String orgRole = RequestScopes.ORG_ROLE.isBound() ? RequestScopes.ORG_ROLE.get() : null;
 
     projectMemberService.removeMember(projectId, memberId, requestedBy, orgRole);
     return ResponseEntity.noContent().build();
@@ -72,10 +73,10 @@ public class ProjectMemberController {
       @PathVariable UUID projectId,
       @PathVariable UUID memberId,
       @Valid @RequestBody TransferLeadRequest request) {
-    UUID currentLeadId = MemberContext.getCurrentMemberId();
-    if (currentLeadId == null) {
+    if (!RequestScopes.MEMBER_ID.isBound()) {
       return ResponseEntity.of(memberContextMissing()).build();
     }
+    UUID currentLeadId = RequestScopes.MEMBER_ID.get();
 
     projectMemberService.transferLead(projectId, currentLeadId, memberId);
     return ResponseEntity.noContent().build();

@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
-import io.b2mash.b2b.b2bstrawman.multitenancy.TenantContext;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
 import java.util.Map;
@@ -70,15 +70,15 @@ class MemberFilterIntegrationTest {
     mockMvc.perform(get("/api/projects").with(unknownUserJwt())).andExpect(status().isOk());
 
     // Verify member was lazy-created in tenant schema
-    try {
-      TenantContext.setTenantId(schemaName);
-      var member = memberRepository.findByClerkUserId("user_lazy_create");
-      assertThat(member).isPresent();
-      assertThat(member.get().getOrgRole()).isEqualTo("member");
-      assertThat(member.get().getEmail()).isEqualTo("user_lazy_create@placeholder.internal");
-    } finally {
-      TenantContext.clear();
-    }
+    ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+        .run(
+            () -> {
+              var member = memberRepository.findByClerkUserId("user_lazy_create");
+              assertThat(member).isPresent();
+              assertThat(member.get().getOrgRole()).isEqualTo("member");
+              assertThat(member.get().getEmail())
+                  .isEqualTo("user_lazy_create@placeholder.internal");
+            });
   }
 
   @Test
@@ -113,13 +113,12 @@ class MemberFilterIntegrationTest {
     mockMvc.perform(get("/api/projects").with(cacheTestJwt())).andExpect(status().isOk());
 
     // Verify exactly one member record exists (not duplicated)
-    try {
-      TenantContext.setTenantId(schemaName);
-      var member = memberRepository.findByClerkUserId("user_cache_test");
-      assertThat(member).isPresent();
-    } finally {
-      TenantContext.clear();
-    }
+    ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+        .run(
+            () -> {
+              var member = memberRepository.findByClerkUserId("user_cache_test");
+              assertThat(member).isPresent();
+            });
   }
 
   // --- JWT helpers ---

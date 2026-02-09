@@ -28,28 +28,30 @@ public class TenantFilter extends OncePerRequestFilter {
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
-    try {
-      Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-      if (authentication instanceof JwtAuthenticationToken jwtAuth) {
-        Jwt jwt = jwtAuth.getToken();
-        String orgId = extractOrgId(jwt);
+    if (authentication instanceof JwtAuthenticationToken jwtAuth) {
+      Jwt jwt = jwtAuth.getToken();
+      String orgId = extractOrgId(jwt);
 
-        if (orgId != null) {
-          String schemaName = resolveSchema(orgId);
-          if (schemaName != null) {
-            TenantContext.setTenantId(schemaName);
-          } else {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Organization not provisioned");
-            return;
-          }
+      if (orgId != null) {
+        String schemaName = resolveSchema(orgId);
+        if (schemaName != null) {
+          ScopedFilterChain.runScoped(
+              ScopedValue.where(RequestScopes.TENANT_ID, schemaName),
+              filterChain,
+              request,
+              response);
+          return;
+        } else {
+          response.sendError(HttpServletResponse.SC_FORBIDDEN, "Organization not provisioned");
+          return;
         }
       }
-
-      filterChain.doFilter(request, response);
-    } finally {
-      TenantContext.clear();
     }
+
+    // No JWT or no org claim — continue unbound (actuator, unauthenticated paths)
+    filterChain.doFilter(request, response);
   }
 
   @Override

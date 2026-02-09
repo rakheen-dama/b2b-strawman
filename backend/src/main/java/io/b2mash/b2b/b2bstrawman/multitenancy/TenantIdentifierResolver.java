@@ -8,8 +8,9 @@ public class TenantIdentifierResolver implements CurrentTenantIdentifierResolver
 
   @Override
   public String resolveCurrentTenantIdentifier() {
-    String tenantId = TenantContext.getTenantId();
-    return tenantId != null ? tenantId : TenantContext.DEFAULT_TENANT;
+    return RequestScopes.TENANT_ID.isBound()
+        ? RequestScopes.TENANT_ID.get()
+        : RequestScopes.DEFAULT_TENANT;
   }
 
   @Override
@@ -19,6 +20,6 @@ public class TenantIdentifierResolver implements CurrentTenantIdentifierResolver
 
   @Override
   public boolean isRoot(String tenantId) {
-    return TenantContext.DEFAULT_TENANT.equals(tenantId);
+    return RequestScopes.DEFAULT_TENANT.equals(tenantId);
   }
 }

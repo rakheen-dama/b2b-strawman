@@ -1262,17 +1262,17 @@ Phase 2 introduces a tiered tenancy model powered by Clerk Billing. Organization
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **26A** | 26.1–26.4 | Billing page, settings link, PlanBadge component, UpgradePrompt component | |
+| **26A** | 26.1–26.4 | Billing page, settings link, PlanBadge component, UpgradePrompt component | Done (PR #47) |
 | **26B** | 26.5–26.7 | Feature gating on existing pages, plan badge in layout, tests | |
 
 #### Tasks
 
 | ID | Task | Slice | Status | Notes |
 |----|------|-------|--------|-------|
-| 26.1 | Create billing settings page | 26A | | `app/(app)/org/[slug]/settings/billing/page.tsx` — Server component rendering `<PricingTable for="organization" />` from Clerk's billing SDK (currently under `@clerk/nextjs/experimental`). Shows current plan and allows subscription management via Clerk's hosted checkout. Per ARCHITECTURE.md §9.8.1 file listing. |
-| 26.2 | Add billing link to settings page and navigation | 26A | | Update `app/(app)/org/[slug]/settings/page.tsx` to include a card/link navigating to the billing sub-page. Add "Billing" entry to `lib/nav-items.ts` (as sub-item under Settings or separate nav entry, consistent with existing nav structure). |
-| 26.3 | Create PlanBadge component | 26A | | `components/billing/plan-badge.tsx` — Reusable Shadcn Badge showing "Starter" (default/gray variant) or "Pro" (blue/accent variant). Server component usage: `const { has } = await auth(); const isPro = has({ plan: 'pro' });`. Client component usage: `useAuth()` hook. Per ARCHITECTURE.md §9.8.1. |
-| 26.4 | Create UpgradePrompt component | 26A | | `components/billing/upgrade-prompt.tsx` — Reusable CTA card with plan benefits summary and link to billing page (`/org/{slug}/settings/billing`). Accepts `slug` prop for link construction. Used as `fallback` prop in `<Protect>` wrappers. Per ARCHITECTURE.md §9.8.1. |
+| 26.1 | Create billing settings page | 26A | Done | `app/(app)/org/[slug]/settings/billing/page.tsx` — Server component rendering `<PricingTable for="organization" />` from Clerk's billing SDK (currently under `@clerk/nextjs/experimental`). Shows current plan and allows subscription management via Clerk's hosted checkout. Per ARCHITECTURE.md §9.8.1 file listing. |
+| 26.2 | Add billing link to settings page and navigation | 26A | Done | Update `app/(app)/org/[slug]/settings/page.tsx` to include a card/link navigating to the billing sub-page. Add "Billing" entry to `lib/nav-items.ts` (as sub-item under Settings or separate nav entry, consistent with existing nav structure). |
+| 26.3 | Create PlanBadge component | 26A | Done | `components/billing/plan-badge.tsx` — Reusable Shadcn Badge showing "Starter" (default/gray variant) or "Pro" (blue/accent variant). Server component usage: `const { has } = await auth(); const isPro = has({ plan: 'pro' });`. Client component usage: `useAuth()` hook. Per ARCHITECTURE.md §9.8.1. |
+| 26.4 | Create UpgradePrompt component | 26A | Done | `components/billing/upgrade-prompt.tsx` — Reusable CTA card with plan benefits summary and link to billing page (`/org/{slug}/settings/billing`). Accepts `slug` prop for link construction. Used as `fallback` prop in `<Protect>` wrappers. Per ARCHITECTURE.md §9.8.1. |
 | 26.5 | Add plan badge to org layout header | 26B | | Update `app/(app)/org/[slug]/layout.tsx` to render `<PlanBadge />` next to the `<OrganizationSwitcher />` in the header bar. Per ARCHITECTURE.md §9.8.1. |
 | 26.6 | Add plan-aware feature gating to existing pages | 26B | | Wrap Pro-only features (if any exist in current pages) with `<Protect plan="pro" fallback={<UpgradePrompt />}>`. In server components, use `const isPro = has({ plan: 'pro' })` for conditional rendering. Initially this may apply to: advanced settings, or serve as reference examples for future Pro features. Per ARCHITECTURE.md §9.8.1 code examples. |
 | 26.7 | Add frontend tests | 26B | | Test `PlanBadge` renders correct tier label. Test `UpgradePrompt` renders with correct billing link. Test billing page mounts `PricingTable`. Test `<Protect>` gate shows `UpgradePrompt` fallback for Starter orgs. |

@@ -3,9 +3,9 @@ import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { PlanBadgeDisplay, PlanBadge } from "./plan-badge";
 
-const mockHas = vi.fn();
+const mockAuth = vi.fn();
 vi.mock("@clerk/nextjs/server", () => ({
-  auth: () => Promise.resolve({ has: mockHas }),
+  auth: () => mockAuth(),
 }));
 
 afterEach(() => cleanup());
@@ -25,7 +25,8 @@ describe("PlanBadgeDisplay", () => {
 
 describe("PlanBadge", () => {
   it("renders 'Pro' when org has pro plan", async () => {
-    mockHas.mockReturnValue(true);
+    const mockHas = vi.fn().mockReturnValue(true);
+    mockAuth.mockResolvedValue({ has: mockHas });
 
     const jsx = await PlanBadge();
     render(jsx);
@@ -35,7 +36,16 @@ describe("PlanBadge", () => {
   });
 
   it("renders 'Starter' when org does not have pro plan", async () => {
-    mockHas.mockReturnValue(false);
+    mockAuth.mockResolvedValue({ has: vi.fn().mockReturnValue(false) });
+
+    const jsx = await PlanBadge();
+    render(jsx);
+
+    expect(screen.getByText("Starter")).toBeInTheDocument();
+  });
+
+  it("renders 'Starter' when has is undefined", async () => {
+    mockAuth.mockResolvedValue({ has: undefined });
 
     const jsx = await PlanBadge();
     render(jsx);

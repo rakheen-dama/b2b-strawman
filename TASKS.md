@@ -2,8 +2,8 @@
 
 ## Epic Overview
 
-| Epic | Name | Scope | Deps | Effort | Slices   | Status  |
-|------|------|-------|------|--------|----------|---------|
+| Epic | Name | Scope | Deps | Effort | Slices   | Status   |
+|------|------|-------|------|--------|----------|----------|
 | 1 | Scaffolding & Local Dev | Both | — | M | —        | **Done** |
 | 2 | Auth & Clerk Integration | Frontend | 1 | M | —        | **Done** |
 | 3 | Organization Management | Frontend | 2 | S | —        | **Done** |
@@ -19,13 +19,19 @@
 | 13 | Containerization | Both | 1 | S | —        | **Done** |
 | 14 | AWS Infrastructure | Infra | 13 | XL | 14A–14D  | **Done** |
 | 15 | Deployment Pipeline | Infra | 13, 14 | L | 15A, 15B | **Done** |
-| 16 | Testing & Quality | Both | 7, 8, 10, 11 | L | 16A–16C  |         |
+| 16 | Testing & Quality | Both | 7, 8, 10, 11 | L | 16A–16C  |          |
 | 17 | Members Table + Webhook Sync | Both | 4, 5 | M | 17A, 17B | **Done** |
 | 18 | MemberFilter + MemberContext | Backend | 17 | M | 18A, 18B | **Done** |
-| 19 | Project Members Table + API | Backend | 18 | M | 19A, 19B | **Done**|
+| 19 | Project Members Table + API | Backend | 18 | M | 19A, 19B | **Done** |
 | 20 | Project Access Control | Backend | 19 | L | 20A, 20B | **Done** |
 | 21 | Frontend — Project Members Panel | Frontend | 19, 20 | M | 21A, 21B | **Done** |
-| 22 | Frontend — Filtered Project List | Frontend | 20, 21 | S | —        |         |
+| 22 | Frontend — Filtered Project List | Frontend | 20, 21 | S | —        | **Done** |
+| **Phase 2 — Billing & Tiered Tenancy** | | | | | |          |
+| 23 | Tier Data Model & Plan Sync | Both | — | M | 23A, 23B |          |
+| 24 | Shared Schema & Row-Level Isolation | Backend | 23 | L | 24A, 24B, 24C |          |
+| 25 | Plan Enforcement | Both | 24 | S | — |          |
+| 26 | Billing UI & Feature Gating | Frontend | 23 | M | 26A, 26B |          |
+| 27 | Tier Upgrade — Starter to Pro | Backend | 23, 24 | M | — |          |
 
 ---
 
@@ -1085,6 +1091,282 @@ Manual trigger (workflow_dispatch)
 
 ---
 
+## Phase 2 — Billing & Tiered Tenancy
+
+Phase 2 introduces a tiered tenancy model powered by Clerk Billing. Organizations on the free **Starter** plan share a single `tenant_shared` schema with row-level isolation. Organizations on the paid **Pro** plan retain the existing schema-per-tenant model. See ARCHITECTURE.md §9 for the full design and [ADR-010](adr/ADR-010-billing-integration.md)–[ADR-016](adr/ADR-016-tier-upgrade-migration.md) for decision records.
+
+---
+
+### Epic 23: Tier Data Model & Plan Sync
+
+**Goal**: Extend the `Organization` entity with tier awareness, add supporting value types, and wire Clerk Billing subscription webhooks to propagate plan state to the backend. This is the foundation all other Phase 2 epics build on.
+
+**References**: [ADR-010](adr/ADR-010-billing-integration.md), [ADR-013](adr/ADR-013-plan-state-propagation.md), ARCHITECTURE.md §9.1, §9.3, §9.4
+
+**Dependencies**: None (builds on existing Phase 1 infrastructure)
+
+**Scope**: Both (Backend + Frontend)
+
+**Estimated Effort**: M
+
+#### Slices
+
+| Slice | Tasks | Summary | Status |
+|-------|-------|---------|--------|
+| **23A** | 23.1–23.3 | Backend data model: Tier enum, Organization changes, V4 global migration, supporting types | |
+| **23B** | 23.4–23.7 | Plan sync pipeline: internal endpoint, cache eviction, webhook handlers, tests | |
+
+#### Tasks
+
+| ID | Task | Slice | Status | Notes |
+|----|------|-------|--------|-------|
+| 23.1 | Create tier-related value types | 23A | | `provisioning/Tier.java` — enum (`STARTER`, `PRO`). `multitenancy/TenantInfo.java` — record (`String schemaName`, `Tier tier`); replaces plain `String` in TenantFilter cache. `provisioning/PlanLimits.java` — utility class with tier limit constants (`STARTER_MAX_MEMBERS = 2`, `PRO_MAX_MEMBERS = 10`). `exception/PlanLimitExceededException.java` — extends `ResponseStatusException` with HTTP 403, includes upgrade prompt message in body. Per ADR-014 §Enforcement. |
+| 23.2 | Add tier + planSlug to Organization entity and V4 global migration | 23A | | `Organization.java`: add `tier` (`Tier` enum, NOT NULL DEFAULT STARTER, `@Enumerated(EnumType.STRING)`) and `planSlug` (`String`, nullable). Create `db/migration/global/V4__add_org_tier.sql`: `ALTER TABLE organizations ADD COLUMN tier VARCHAR(20) NOT NULL DEFAULT 'STARTER'; ALTER TABLE organizations ADD COLUMN plan_slug VARCHAR(100);`. Per ARCHITECTURE.md §9.3 global schema additions. |
+| 23.3 | Add ORG_ID ScopedValue to RequestScopes | 23A | | Add `public static final ScopedValue<String> ORG_ID = ScopedValue.newInstance();` to `multitenancy/RequestScopes.java`. Carries the Clerk org ID for row-level filtering in the shared schema. Consumed by SharedTenantFilterAspect (Epic 24), TenantAwareEntityListener (Epic 24), and SchemaMultiTenantConnectionProvider (Epic 24). Per ADR-012 and ARCHITECTURE.md §9.5.3. |
+| 23.4 | Create PlanSyncController | 23B | | `provisioning/PlanSyncController.java` — `POST /internal/orgs/plan-sync` with `PlanSyncRequest(String clerkOrgId, String planSlug)`. Looks up `Organization` by `clerkOrgId`. Derives tier from planSlug (`"pro"` → `PRO`, anything else → `STARTER`). Updates `tier` and `planSlug`, persists. Evicts TenantFilter cache (task 23.5). Returns 200 OK. If org not found, 404. Secured by `ApiKeyAuthFilter` (existing). Per ARCHITECTURE.md §9.4 flow diagram. |
+| 23.5 | Add TenantFilter cache eviction support | 23B | | Add `evictSchema(String clerkOrgId)` method to `TenantFilter`. Removes the cached entry for the given org so the next request fetches fresh `TenantInfo` from the database. Called by `PlanSyncController` after updating tier. Also called by `TenantUpgradeService` (Epic 27) after schema mapping changes. Per ADR-016 §Cache Invalidation. |
+| 23.6 | Add subscription webhook handlers in frontend | 23B | | In `lib/webhook-handlers.ts`: add handlers for `subscription.created` and `subscription.updated` events. Extract `org_id` and plan slug from the Clerk subscription event payload. Call `POST /internal/orgs/plan-sync` via `internalApiClient` with `{clerkOrgId, planSlug}`. Follow existing event handler patterns (fire-and-forget error handling, 200 OK). Add event types to `routeWebhookEvent()` dispatch. Per ARCHITECTURE.md §9.4 and §9.8.1. |
+| 23.7 | Add plan sync tests | 23B | | **Backend**: `PlanSyncIntegrationTest.java` — plan update persists tier + planSlug, unknown org returns 404, cache eviction occurs on update, API key required (401 without key). **Frontend**: Update `webhook-handlers.test.ts` — `subscription.created` routes to plan-sync handler, `subscription.updated` routes to plan-sync handler, payload extraction verified. |
+
+#### Key Files
+
+**Create:**
+- `backend/src/main/java/.../provisioning/Tier.java`
+- `backend/src/main/java/.../multitenancy/TenantInfo.java`
+- `backend/src/main/java/.../provisioning/PlanLimits.java`
+- `backend/src/main/java/.../exception/PlanLimitExceededException.java`
+- `backend/src/main/java/.../provisioning/PlanSyncController.java`
+- `backend/src/main/resources/db/migration/global/V4__add_org_tier.sql`
+- `backend/src/test/java/.../provisioning/PlanSyncIntegrationTest.java`
+
+**Modify:**
+- `backend/src/main/java/.../provisioning/Organization.java` — Add `tier` + `planSlug` fields
+- `backend/src/main/java/.../multitenancy/RequestScopes.java` — Add `ORG_ID`
+- `backend/src/main/java/.../multitenancy/TenantFilter.java` — Add `evictSchema()` method
+- `frontend/lib/webhook-handlers.ts` — Add subscription event handlers
+- `frontend/__tests__/webhook-handlers.test.ts` — Add subscription event tests
+
+---
+
+### Epic 24: Shared Schema & Row-Level Isolation
+
+**Goal**: Implement the shared-schema tenant model for Starter-tier orgs with dual-layer isolation: Hibernate `@Filter` for application-level row filtering and Postgres RLS as defense-in-depth. Update the filter chain and provisioning flow for tier-aware resolution.
+
+**References**: [ADR-011](adr/ADR-011-tiered-tenancy.md), [ADR-012](adr/ADR-012-row-level-isolation.md), [ADR-015](adr/ADR-015-provisioning-per-tier.md), ARCHITECTURE.md §9.2, §9.3, §9.5.1, §9.5.3
+
+**Dependencies**: Epic 23
+
+**Scope**: Backend
+
+**Estimated Effort**: L
+
+#### Slices
+
+| Slice | Tasks | Summary | Status |
+|-------|-------|---------|--------|
+| **24A** | 24.1–24.4 | Database migrations, entity annotations, entity listener, `tenant_shared` bootstrap | |
+| **24B** | 24.5–24.8 | Filter chain: SharedTenantFilterAspect, connection provider, TenantFilter tier resolution, provisioning simplification | |
+| **24C** | 24.9–24.11 | Integration tests: Starter row isolation, mixed Starter+Pro coexistence, existing test compatibility | |
+
+#### Tasks
+
+| ID | Task | Slice | Status | Notes |
+|----|------|-------|--------|-------|
+| 24.1 | Create V7 tenant migration | 24A | | `db/migration/tenant/V7__add_tenant_id_for_shared.sql`: Add nullable `tenant_id VARCHAR(255)` column to `projects`, `documents`, `members`, `project_members` (using `IF NOT EXISTS`). Create indexes (`idx_projects_tenant_id`, `idx_documents_tenant_id`, `idx_members_tenant_id`, `idx_project_members_tenant_id`). Enable RLS on all four tables. Create RLS policies using `current_setting('app.current_tenant', true)` with `OR tenant_id IS NULL` guard (allows Pro schemas where `tenant_id` is NULL). Per ARCHITECTURE.md §9.3 SQL listing. |
+| 24.2 | Add tenantId + @FilterDef/@Filter to all tenant entities | 24A | | Annotate `Project`, `Document`, `Member`, `ProjectMember` with `@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "tenantId", type = String.class))` and `@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")`. Add `@Column(name = "tenant_id") private String tenantId` field to each. Register `TenantAwareEntityListener` via `@EntityListeners`. Per ADR-012 §Hibernate Layer and ARCHITECTURE.md §9.8.2 entity annotation pattern. |
+| 24.3 | Create TenantAwareEntityListener | 24A | | `multitenancy/TenantAwareEntityListener.java` — JPA `@EntityListener` with `@PrePersist` callback. If `RequestScopes.TENANT_ID.isBound()` and value equals `"tenant_shared"`, sets `entity.tenantId = RequestScopes.ORG_ID.get()`. No-op for dedicated schemas (tenantId stays null). Requires entities to have a `setTenantId()` method or use a shared interface. Per ARCHITECTURE.md §9.8.2. |
+| 24.4 | Bootstrap `tenant_shared` in TenantMigrationRunner | 24A | | Enhance `TenantMigrationRunner`: before iterating per-tenant schemas, (1) `CREATE SCHEMA IF NOT EXISTS tenant_shared`, (2) Run Flyway V1–V7 against `tenant_shared`. Subsequent startups are no-ops (Flyway tracks applied versions). Add to `@Bean(initMethod)` or `ApplicationRunner` ordering so `tenant_shared` exists before any request is served. Per ADR-015 §Shared Schema Bootstrap and ARCHITECTURE.md §9.8.3. |
+| 24.5 | Create SharedTenantFilterAspect | 24B | | `multitenancy/SharedTenantFilterAspect.java` — Spring AOP `@Aspect`. Intercepts service/repository methods when `RequestScopes.TENANT_ID.get()` equals `"tenant_shared"`: obtains `Session` from `EntityManager.unwrap(Session.class)`, calls `session.enableFilter("tenantFilter").setParameter("tenantId", RequestScopes.ORG_ID.get())`. No-op when tenant is a dedicated schema. Consider using `@Around` on `@Transactional` methods or a repository-layer pointcut. Per ADR-012 §Hibernate Layer and ARCHITECTURE.md §9.5.3 flow. |
+| 24.6 | Update SchemaMultiTenantConnectionProvider | 24B | | When schema is `"tenant_shared"`, additionally execute `SET app.current_tenant = '<orgId>'` on connection checkout (reads from `RequestScopes.ORG_ID`). On release, execute `RESET app.current_tenant`. This enables Postgres RLS policies as defense-in-depth. Dedicated schemas: existing `SET search_path` behavior unchanged. Per ADR-012 §Postgres RLS Layer and ARCHITECTURE.md §9.5.3. |
+| 24.7 | Update TenantFilter for tier-aware resolution | 24B | | Change cache value type from `String` (schema name) to `TenantInfo(schemaName, tier)` (from Epic 23). On cache miss, query `JOIN org_schema_mapping + organizations` to fetch both schema and tier. For both tiers: bind `RequestScopes.TENANT_ID` (schema name) and `RequestScopes.ORG_ID` (Clerk org ID). The ORG_ID binding enables downstream components (SharedTenantFilterAspect, TenantAwareEntityListener, ConnectionProvider) to know the Clerk org ID. Per ARCHITECTURE.md §9.5.3 flowchart. |
+| 24.8 | Simplify TenantProvisioningService for Starter-first flow | 24B | | Modify `provisionTenant()`: skip `SchemaNameGenerator`, `CREATE SCHEMA`, and Flyway execution for Starter provisioning. Instead, always insert `org_schema_mapping(clerkOrgId → "tenant_shared")`. Set `Organization.tier = STARTER` (already the default). The dedicated schema creation logic moves to `TenantUpgradeService` (Epic 27). Per ADR-015 §Starter Provisioning Flow and ARCHITECTURE.md §9.5.1. |
+| 24.9 | Write StarterTenantIntegrationTest | 24C | | Provision two Starter orgs (both map to `tenant_shared`). CRUD projects/documents for each org. Verify row isolation: org A's data invisible to org B within the same schema. Verify `tenant_id` is populated correctly on insert. Test pattern: `ScopedValue.where(TENANT_ID, "tenant_shared").where(ORG_ID, orgIdA).run(...)`. Per ARCHITECTURE.md §9.8.4. |
+| 24.10 | Write MixedTenantIntegrationTest | 24C | | Provision one Starter org + one Pro org. Starter uses `tenant_shared`, Pro uses `tenant_<hash>`. Create data in both. Verify complete cross-tier isolation. Verify Pro org's entities have null `tenantId`. Per ARCHITECTURE.md §9.8.4. |
+| 24.11 | Update existing integration tests | 24C | | All existing tests (ProjectIntegrationTest, DocumentIntegrationTest, MemberSyncIntegrationTest, etc.) operate on Pro-tier dedicated schemas. Verify they pass without modification — nullable `tenantId` column should be transparent to existing test flows. If `TenantAwareEntityListener` fires for Pro schemas, ensure the null-guard prevents setting `tenantId`. |
+
+#### Architecture Decisions
+
+- **Dual-layer isolation**: Hibernate `@Filter` is the primary isolation mechanism (application-controlled, testable, predictable). Postgres RLS is defense-in-depth — catches native SQL queries, direct DB access, and any @Filter activation failures. Neither layer alone is sufficient; together they eliminate single points of failure. Per ADR-012.
+- **`tenant_id` nullable on all schemas**: V7 migration adds the column to ALL tenant schemas (shared + dedicated). In dedicated schemas it stays NULL and is never read. This allows the same entity classes to work in both tiers without conditional annotations. Small storage overhead per row is acceptable. Per ADR-011.
+- **AOP for filter activation**: SharedTenantFilterAspect uses AOP rather than explicit `session.enableFilter()` calls in every repository method. This keeps the isolation concern centralized and out of business logic. Per ADR-012.
+- **Three-slice decomposition**: 24A is purely additive (migrations + annotations, no behavioral change to existing code). 24B modifies runtime behavior (filter chain, provisioning). 24C validates everything. Each slice is independently deployable.
+
+#### Key Files
+
+**Create:**
+- `backend/src/main/resources/db/migration/tenant/V7__add_tenant_id_for_shared.sql`
+- `backend/src/main/java/.../multitenancy/TenantAwareEntityListener.java`
+- `backend/src/main/java/.../multitenancy/SharedTenantFilterAspect.java`
+- `backend/src/test/java/.../multitenancy/StarterTenantIntegrationTest.java`
+- `backend/src/test/java/.../multitenancy/MixedTenantIntegrationTest.java`
+
+**Modify:**
+- `backend/src/main/java/.../project/Project.java` — Add `tenantId` + filter annotations + entity listener
+- `backend/src/main/java/.../document/Document.java` — Add `tenantId` + filter annotations + entity listener
+- `backend/src/main/java/.../member/Member.java` — Add `tenantId` + filter annotations + entity listener
+- `backend/src/main/java/.../member/ProjectMember.java` — Add `tenantId` + filter annotations + entity listener
+- `backend/src/main/java/.../multitenancy/SchemaMultiTenantConnectionProvider.java` — `app.current_tenant` for shared schema
+- `backend/src/main/java/.../multitenancy/TenantFilter.java` — `TenantInfo` cache, tier resolution, `ORG_ID` binding
+- `backend/src/main/java/.../provisioning/TenantProvisioningService.java` — Simplify for Starter-first
+- `backend/src/main/java/.../provisioning/TenantMigrationRunner.java` — Bootstrap `tenant_shared`
+
+---
+
+### Epic 25: Plan Enforcement
+
+**Goal**: Enforce member limits per tier at all three layers: Clerk Dashboard configuration, backend service validation, and frontend UX gating. This prevents organizations from exceeding their plan's member allocation.
+
+**References**: [ADR-014](adr/ADR-014-plan-enforcement.md), ARCHITECTURE.md §9.7
+
+**Dependencies**: Epic 24
+
+**Scope**: Both (Backend + Frontend)
+
+**Estimated Effort**: S
+
+#### Tasks
+
+| ID | Task | Status | Notes |
+|----|------|--------|-------|
+| 25.1 | Add member count validation to MemberSyncService | | Modify `syncMember()`: before creating a **new** member, count existing members for the tenant. Look up `Organization.tier` to determine the limit via `PlanLimits.maxMembers(tier)`. If at limit, throw `PlanLimitExceededException`. Skip the count check on updates (existing member). For shared schema: count by `tenantId`; for dedicated schema: count all rows. Add `countByTenantId(String)` or `count()` to `MemberRepository` as needed. Per ADR-014 §Backend Layer. |
+| 25.2 | Configure Clerk Dashboard member limits | | Operational task. In Clerk Dashboard → Billing → Plans: set Starter plan member limit to 2, Pro plan member limit to 10. Enable the `dedicated_schema`, `max_members_2`, `max_members_10` feature keys per plan. Document the configuration steps in `frontend/docs/clerk-billing-setup.md`. This is the first line of defense — Clerk blocks invitations when at limit. Per ADR-014 §Clerk Layer and ARCHITECTURE.md §9.1 plan table. |
+| 25.3 | Gate invite form behind member limit on team page | | In `components/team/invite-member-form.tsx`: check organization member count against plan limit. Use Clerk's `useOrganization()` for current count and `has({ feature: 'max_members_10' })` or equivalent to determine limit. When at limit: disable the invite form and show an inline `<UpgradePrompt />` (from Epic 26, or a simple text link as a temporary measure). Per ADR-014 §Frontend Layer and ARCHITECTURE.md §9.8.1. |
+| 25.4 | Write PlanEnforcementTest | | `PlanEnforcementIntegrationTest.java`: Provision Starter org, sync 2 members (succeeds), attempt 3rd member sync → 403 `PlanLimitExceededException`. Provision Pro org, sync 10 members (succeeds), attempt 11th → 403. Verify error response body includes upgrade prompt message. Verify that **updating** an existing member at the limit succeeds (not a new member). Per ARCHITECTURE.md §9.8.4 test matrix. |
+
+#### Key Files
+
+**Create:**
+- `frontend/docs/clerk-billing-setup.md`
+- `backend/src/test/java/.../member/PlanEnforcementIntegrationTest.java`
+
+**Modify:**
+- `backend/src/main/java/.../member/MemberSyncService.java` — Add member count check before creation
+- `backend/src/main/java/.../member/MemberRepository.java` — Add count query if needed
+- `frontend/components/team/invite-member-form.tsx` — Member limit UX gating
+
+---
+
+### Epic 26: Billing UI & Feature Gating
+
+**Goal**: Add a billing/subscription management page using Clerk's `<PricingTable>` component and implement plan-aware feature gating across the frontend using `has()` and `<Protect>`.
+
+**References**: [ADR-010](adr/ADR-010-billing-integration.md), ARCHITECTURE.md §9.8.1
+
+**Dependencies**: Epic 23
+
+**Scope**: Frontend
+
+**Estimated Effort**: M
+
+#### Slices
+
+| Slice | Tasks | Summary | Status |
+|-------|-------|---------|--------|
+| **26A** | 26.1–26.4 | Billing page, settings link, PlanBadge component, UpgradePrompt component | |
+| **26B** | 26.5–26.7 | Feature gating on existing pages, plan badge in layout, tests | |
+
+#### Tasks
+
+| ID | Task | Slice | Status | Notes |
+|----|------|-------|--------|-------|
+| 26.1 | Create billing settings page | 26A | | `app/(app)/org/[slug]/settings/billing/page.tsx` — Server component rendering `<PricingTable for="organization" />` from Clerk's billing SDK (currently under `@clerk/nextjs/experimental`). Shows current plan and allows subscription management via Clerk's hosted checkout. Per ARCHITECTURE.md §9.8.1 file listing. |
+| 26.2 | Add billing link to settings page and navigation | 26A | | Update `app/(app)/org/[slug]/settings/page.tsx` to include a card/link navigating to the billing sub-page. Add "Billing" entry to `lib/nav-items.ts` (as sub-item under Settings or separate nav entry, consistent with existing nav structure). |
+| 26.3 | Create PlanBadge component | 26A | | `components/billing/plan-badge.tsx` — Reusable Shadcn Badge showing "Starter" (default/gray variant) or "Pro" (blue/accent variant). Server component usage: `const { has } = await auth(); const isPro = has({ plan: 'pro' });`. Client component usage: `useAuth()` hook. Per ARCHITECTURE.md §9.8.1. |
+| 26.4 | Create UpgradePrompt component | 26A | | `components/billing/upgrade-prompt.tsx` — Reusable CTA card with plan benefits summary and link to billing page (`/org/{slug}/settings/billing`). Accepts `slug` prop for link construction. Used as `fallback` prop in `<Protect>` wrappers. Per ARCHITECTURE.md §9.8.1. |
+| 26.5 | Add plan badge to org layout header | 26B | | Update `app/(app)/org/[slug]/layout.tsx` to render `<PlanBadge />` next to the `<OrganizationSwitcher />` in the header bar. Per ARCHITECTURE.md §9.8.1. |
+| 26.6 | Add plan-aware feature gating to existing pages | 26B | | Wrap Pro-only features (if any exist in current pages) with `<Protect plan="pro" fallback={<UpgradePrompt />}>`. In server components, use `const isPro = has({ plan: 'pro' })` for conditional rendering. Initially this may apply to: advanced settings, or serve as reference examples for future Pro features. Per ARCHITECTURE.md §9.8.1 code examples. |
+| 26.7 | Add frontend tests | 26B | | Test `PlanBadge` renders correct tier label. Test `UpgradePrompt` renders with correct billing link. Test billing page mounts `PricingTable`. Test `<Protect>` gate shows `UpgradePrompt` fallback for Starter orgs. |
+
+#### Key Files
+
+**Create:**
+- `frontend/app/(app)/org/[slug]/settings/billing/page.tsx`
+- `frontend/components/billing/plan-badge.tsx`
+- `frontend/components/billing/upgrade-prompt.tsx`
+- `frontend/__tests__/components/billing/` — Test files
+
+**Modify:**
+- `frontend/app/(app)/org/[slug]/settings/page.tsx` — Add billing link
+- `frontend/app/(app)/org/[slug]/layout.tsx` — Add plan badge in header
+- `frontend/lib/nav-items.ts` — Add billing nav entry
+
+---
+
+### Epic 27: Tier Upgrade — Starter to Pro
+
+**Goal**: Implement the synchronous data migration that promotes a Starter organization from the shared `tenant_shared` schema to a dedicated `tenant_<hash>` schema when they subscribe to the Pro plan.
+
+**References**: [ADR-016](adr/ADR-016-tier-upgrade-migration.md), ARCHITECTURE.md §9.5.2, §9.9
+
+**Dependencies**: Epic 23, Epic 24
+
+**Scope**: Backend
+
+**Estimated Effort**: M
+
+#### Tasks
+
+| ID | Task | Status | Notes |
+|----|------|--------|-------|
+| 27.1 | Create TenantUpgradeService — schema creation | | `provisioning/TenantUpgradeService.java` — Orchestrates the Starter → Pro upgrade. Phase 1: (1) Set `Organization.provisioningStatus = IN_PROGRESS`. (2) Generate `tenant_<hash>` via `SchemaNameGenerator`. (3) `CREATE SCHEMA IF NOT EXISTS tenant_<hash>`. (4) Run Flyway V1–V7 against new schema (V7 adds nullable `tenant_id` columns for Hibernate consistency). Uses `migrationDataSource` (direct connection) for DDL. Per ADR-016 steps 1–4. |
+| 27.2 | Implement data copy from shared to dedicated schema | | Within `TenantUpgradeService`: Use `JdbcTemplate` with raw SQL `INSERT INTO tenant_<hash>.{table} SELECT {cols minus tenant_id} FROM tenant_shared.{table} WHERE tenant_id = ?` for all 4 tables. Copy order respects FK constraints: `members` → `projects` → `documents` + `project_members`. Excludes `tenant_id` from INSERT (defaults to NULL in dedicated schemas). Per ADR-016 step 5. |
+| 27.3 | Implement atomic cutover | | Within `TenantUpgradeService`, in a single `TransactionTemplate` (`PROPAGATION_REQUIRES_NEW`) block: (1) `UPDATE org_schema_mapping SET schema_name = 'tenant_<hash>' WHERE clerk_org_id = ?`. (2) `DELETE FROM tenant_shared.project_members WHERE tenant_id = ?`. (3) `DELETE FROM tenant_shared.documents WHERE tenant_id = ?`. (4) `DELETE FROM tenant_shared.projects WHERE tenant_id = ?`. (5) `DELETE FROM tenant_shared.members WHERE tenant_id = ?`. Delete order respects FK constraints (reverse of copy). Per ADR-016 step 6. |
+| 27.4 | Wire upgrade into PlanSyncController | | Modify `PlanSyncController`: after updating `Organization.tier`, if previous tier was `STARTER` and new tier is `PRO`, call `TenantUpgradeService.upgrade(clerkOrgId)`. After upgrade completes, call `TenantFilter.evictSchema(clerkOrgId)` (task 23.5) and set `Organization.provisioningStatus = COMPLETED`. Per ARCHITECTURE.md §9.5.2 sequence diagram. |
+| 27.5 | Write TierUpgradeIntegrationTest | | Provision a Starter org with test data: 2 members, several projects, documents, project_members. Trigger upgrade to Pro. Verify: (1) New `tenant_<hash>` schema exists with all migrated data. (2) `org_schema_mapping` points to `tenant_<hash>`. (3) All shared schema rows for this org are deleted. (4) `Organization.tier = PRO, provisioningStatus = COMPLETED`. (5) Subsequent requests resolve to the dedicated schema. Per ARCHITECTURE.md §9.8.4. |
+| 27.6 | Verify rollback and idempotency | | Test that a failed upgrade (e.g., simulate Flyway failure mid-migration) leaves the org on Starter with data intact in `tenant_shared`. Verify `provisioningStatus` reflects the failure state. Verify an idempotent retry succeeds (schema `IF NOT EXISTS`, Flyway `baselineOnMigrate`). Per ADR-016 §Rollback Scenarios. |
+
+#### Architecture Decisions
+
+- **Synchronous migration**: Starter orgs are bounded (2 members, limited data). Migration completes in < 1s via direct SQL `INSERT INTO ... SELECT`. No background job infrastructure needed. Revisit for async if data volumes grow beyond 5s threshold. Per ADR-016.
+- **Raw SQL over ORM for data copy**: `JdbcTemplate` avoids ORM overhead, Hibernate filter interference, and entity lifecycle callbacks during the bulk copy. Direct SQL is also more explicit about exactly which columns are copied.
+- **Atomic cutover in single transaction**: The mapping update + shared data deletion must be atomic. If either fails, the transaction rolls back and the org remains on Starter with data intact. No partial state possible.
+- **Brief data-less window**: Between cutover (mapping update + delete) and cache eviction, cached requests may resolve to `tenant_shared` but find no rows — returning empty results rather than leaking data. Acceptable for Starter traffic volumes. Per ADR-016 §Availability.
+
+#### Key Files
+
+**Create:**
+- `backend/src/main/java/.../provisioning/TenantUpgradeService.java`
+- `backend/src/test/java/.../provisioning/TierUpgradeIntegrationTest.java`
+
+**Modify:**
+- `backend/src/main/java/.../provisioning/PlanSyncController.java` — Wire upgrade trigger for STARTER → PRO transitions
+
+---
+
+### Phase 2 Implementation Order
+
+#### Stage 1: Billing Foundation
+
+| Order | Epic | Rationale |
+|-------|------|-----------|
+| 1 | Epic 23: Tier Data Model & Plan Sync | Foundation — all Phase 2 epics depend on the tier model and plan sync pipeline. |
+
+#### Stage 2: Infrastructure (Parallel Tracks)
+
+| Order | Epic | Rationale |
+|-------|------|-----------|
+| 2a | Epic 24: Shared Schema & Row-Level Isolation | Core infrastructure — must complete before enforcement and upgrade. Highest technical risk (dual-layer isolation). |
+| 2b | Epic 26: Billing UI & Feature Gating | Independent of shared schema — only needs plan state from Epic 23. Can develop in parallel with Epic 24. |
+
+**Rationale**: Epic 24 (shared schema + RLS) and Epic 26 (billing UI) are independent of each other. Developing them in parallel maximizes throughput. Epic 24 carries the highest technical risk in Phase 2 (Hibernate @Filter + AOP + Postgres RLS), so starting it early maximizes time for course correction.
+
+#### Stage 3: Enforcement & Upgrade (Parallel Tracks)
+
+| Order | Epic | Rationale |
+|-------|------|-----------|
+| 3a | Epic 25: Plan Enforcement | Depends on shared schema (member count per-tenant). Validates limits work correctly. |
+| 3b | Epic 27: Tier Upgrade | Depends on shared schema + plan sync. Completes the Starter → Pro lifecycle. |
+
+**Rationale**: Both epics depend on Epic 24 and can be developed in parallel. Epic 25 is a small epic (S effort) that validates the constraint model. Epic 27 is the capstone — after it lands, the full billing lifecycle is operational.
+
+#### Phase 2 Summary Timeline
+
+```
+Stage 1:  [E23]
+Stage 2:  [E24] [E26]           <- parallel
+Stage 3:  [E25] [E27]           <- parallel (after E24)
+```
+
 ## Epic Dependency Graph
 
 ```mermaid
@@ -1129,6 +1411,13 @@ flowchart LR
     E20 --> E21
     E20 --> E22["Epic 22<br/>Filtered Lists UI"]
     E21 --> E22
+
+    %% Phase 2 — Billing & Tiered Tenancy
+    E23["Epic 23<br/>Tier Data Model<br/>& Plan Sync"] --> E24["Epic 24<br/>Shared Schema<br/>& Row-Level Isolation"]
+    E23 --> E26["Epic 26<br/>Billing UI<br/>& Feature Gating"]
+    E24 --> E25["Epic 25<br/>Plan Enforcement"]
+    E23 --> E27["Epic 27<br/>Tier Upgrade<br/>Starter to Pro"]
+    E24 --> E27
 ```
 
 ---
@@ -1245,3 +1534,11 @@ Phase 8:  [E17] -> [E18] -> [E19] -> [E20] -> [E21] -> [E22]  <- sequential
 | R13 | Existing integration tests break after MemberFilter introduction (Epic 18) | M | H | Expected and planned for — task 18.9 explicitly addresses updating all existing tests to provision member records in `@BeforeAll`. Run full test suite before merging. |
 | R14 | Membership webhook arrives before tenant is provisioned (org.created not processed yet) | M | L | `MemberSyncService` returns 404 if tenant not found. Svix retries 8 times over 32 hours — will succeed once provisioning completes. Log the failure for monitoring. |
 | R15 | ProjectAccessService database lookups add latency to every project request | M | L | Single indexed query on `project_members(project_id, member_id)` covered by UNIQUE constraint index. For listing, JPQL join is a single query. No N+1 risk. Monitor query performance. |
+| **Phase 2 Risks** | | | | |
+| R16 | Clerk Billing SDK is in beta (`@clerk/nextjs/experimental`) — may have breaking changes | H | M | Pin `@clerk/nextjs` version. Wrap billing components (`<PricingTable>`) in thin wrappers for easy replacement. Fallback: migrate to direct Stripe integration per ADR-010. Monitor Clerk Billing release notes. |
+| R17 | Hibernate `@Filter` not activated for native SQL queries in shared schema | H | L | Postgres RLS provides defense-in-depth for all queries including native SQL. All repository methods use JPQL (Hibernate-managed). Add integration test covering native query scenarios. Avoid native queries against tenant tables. Per ADR-012. |
+| R18 | Concurrent requests during tier upgrade see empty data briefly | M | L | Migration < 1s for Starter data volumes (2 members, bounded data). Brief window returns empty results, not data leak. Acceptable for low-traffic Starter orgs. Per ADR-016 §Availability. |
+| R19 | Shared schema (`tenant_shared`) row count grows unboundedly as Starter orgs scale | M | L | Single schema regardless of org count. Indexes on `tenant_id` keep query performance stable. Monitor row count and index sizes. Promote high-traffic Starter orgs to Pro. Partition tables by `tenant_id` if needed (future). |
+| R20 | Postgres RLS session variable (`app.current_tenant`) not reset between pooled connections | H | L | `SchemaMultiTenantConnectionProvider` explicitly RESETs on connection release. HikariCP connection leak detection is enabled. Add integration test verifying cleanup across consecutive requests with different orgs. |
+| R21 | Subscription webhook arrives before org provisioning completes (race condition) | M | L | `PlanSyncController` returns 404 if org not found — webhook retries via Svix. Brief period (< 5s) where org operates on Starter is acceptable (Hibernate filter ensures data isolation). Per ADR-015. |
+| R22 | `SharedTenantFilterAspect` AOP pointcut matches too broadly or too narrowly | M | M | Define precise pointcut targeting `@Transactional` service methods or repository calls. Verify with integration tests that filter activates for all shared-schema CRUD paths. Use `@Order` to control aspect precedence. |

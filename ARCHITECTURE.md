@@ -1341,6 +1341,536 @@ erDiagram
 
 ---
 
+## 9. Phase 2 — Billing & Tiered Tenancy
+
+Phase 2 evolves the platform from uniform schema-per-tenant isolation to a **tiered tenancy model** powered by **Clerk Billing**. Organizations on the free Starter plan share a single `tenant_shared` schema with row-level isolation. Organizations on the paid Pro plan retain the existing schema-per-tenant model with full schema isolation.
+
+### 9.1 Clerk Billing Integration
+
+Clerk Billing is a managed billing product built on Stripe that integrates with Clerk's auth and organization infrastructure. It provides:
+
+- **Plan management** in the Clerk Dashboard (no code deploys for pricing changes).
+- **Pre-built React components** (`<PricingTable>`, checkout flows) for subscription management.
+- **Session-aware billing** — `has({ plan: 'pro' })` for feature gating in the frontend.
+- **Subscription webhooks** — `subscription.created`, `subscription.updated` events for backend sync.
+- **Member limit enforcement** — configurable per-plan in the Clerk Dashboard.
+
+**Plans defined in Clerk Dashboard**:
+
+| Plan | Slug | Member Limit | Tenancy Model | Price |
+|------|------|-------------|---------------|-------|
+| Starter | `starter` | 2 | Shared schema (`tenant_shared`) | Free |
+| Pro | `pro` | 10 | Dedicated schema (`tenant_<hash>`) | Paid |
+
+**Features/entitlements defined per plan**:
+
+| Feature Key | Starter | Pro | Purpose |
+|-------------|---------|-----|---------|
+| `dedicated_schema` | No | Yes | Gates schema-per-tenant isolation |
+| `max_members_2` | Yes | No | Member limit marker |
+| `max_members_10` | No | Yes | Member limit marker |
+
+See [ADR-010](adr/ADR-010-billing-integration.md) for the full decision record.
+
+### 9.2 Tiered Tenancy Model
+
+The tiered model reuses the existing `org_schema_mapping` table as the pivot point. The `TenantFilter` resolves the schema identically for both tiers — the differentiation happens downstream.
+
+| Tier | Schema | Isolation Mechanism | Max Members |
+|------|--------|-------------------|-------------|
+| Starter | `tenant_shared` (shared) | Row-level: Hibernate `@Filter` + Postgres RLS | 2 |
+| Pro | `tenant_<hash>` (dedicated) | Schema-level: `SET search_path` | 10 |
+
+**How it works**:
+- The `Organization` entity gains a `tier` column (enum: `STARTER`, `PRO`) and a `planSlug` column.
+- `org_schema_mapping` maps Starter orgs to `"tenant_shared"` and Pro orgs to `"tenant_<hash>"`.
+- `TenantFilter` caches `TenantInfo(schemaName, tier)` instead of just the schema name.
+- For shared-schema tenants, `RequestScopes.ORG_ID` (new ScopedValue) carries the Clerk org ID for row-level filtering.
+- Hibernate `@Filter` is conditionally activated for shared-schema transactions.
+- Postgres RLS on `tenant_shared` provides defense-in-depth.
+
+See [ADR-011](adr/ADR-011-tiered-tenancy.md) and [ADR-012](adr/ADR-012-row-level-isolation.md).
+
+### 9.3 Updated Database Schema
+
+**Global Schema (`public`) — Phase 2 additions**:
+
+```sql
+-- V4__add_org_tier.sql (global migration)
+ALTER TABLE organizations ADD COLUMN tier VARCHAR(20) NOT NULL DEFAULT 'STARTER';
+ALTER TABLE organizations ADD COLUMN plan_slug VARCHAR(100);
+```
+
+**Tenant Schema — Phase 2 additions** (applied to ALL schemas including dedicated):
+
+```sql
+-- V7__add_tenant_id_for_shared.sql (tenant migration)
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS tenant_id VARCHAR(255);
+ALTER TABLE documents ADD COLUMN IF NOT EXISTS tenant_id VARCHAR(255);
+ALTER TABLE members ADD COLUMN IF NOT EXISTS tenant_id VARCHAR(255);
+ALTER TABLE project_members ADD COLUMN IF NOT EXISTS tenant_id VARCHAR(255);
+
+-- Indexes for row-level filtering (used by tenant_shared, harmless on dedicated)
+CREATE INDEX IF NOT EXISTS idx_projects_tenant_id ON projects (tenant_id);
+CREATE INDEX IF NOT EXISTS idx_documents_tenant_id ON documents (tenant_id);
+CREATE INDEX IF NOT EXISTS idx_members_tenant_id ON members (tenant_id);
+CREATE INDEX IF NOT EXISTS idx_project_members_tenant_id ON project_members (tenant_id);
+
+-- RLS policies (only effective on tenant_shared where tenant_id is populated)
+ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
+ALTER TABLE members ENABLE ROW LEVEL SECURITY;
+ALTER TABLE project_members ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY tenant_isolation_projects ON projects
+  USING (tenant_id = current_setting('app.current_tenant', true) OR tenant_id IS NULL)
+  WITH CHECK (tenant_id = current_setting('app.current_tenant', true) OR tenant_id IS NULL);
+
+-- (Similar policies for documents, members, project_members)
+```
+
+**Updated ER Diagram — Global Schema**:
+
+```mermaid
+erDiagram
+    organizations {
+        uuid id PK
+        varchar clerk_org_id UK "NOT NULL"
+        varchar name "NOT NULL"
+        varchar tier "NOT NULL DEFAULT 'STARTER' (STARTER, PRO)"
+        varchar plan_slug "Clerk plan slug"
+        varchar provisioning_status "NOT NULL (PENDING, IN_PROGRESS, COMPLETED, FAILED)"
+        timestamp created_at "NOT NULL"
+        timestamp updated_at "NOT NULL"
+    }
+
+    org_schema_mapping {
+        uuid id PK
+        varchar clerk_org_id UK "NOT NULL"
+        varchar schema_name UK "NOT NULL (tenant_shared or tenant_hash)"
+        timestamp created_at "NOT NULL"
+    }
+
+    processed_webhooks {
+        varchar svix_id PK
+        varchar event_type "NOT NULL"
+        timestamp processed_at "NOT NULL"
+    }
+
+    organizations ||--|| org_schema_mapping : "maps to"
+```
+
+**Updated ER Diagram — Shared Tenant Schema (`tenant_shared`)**:
+
+```mermaid
+erDiagram
+    projects {
+        uuid id PK
+        varchar tenant_id "NOT NULL — Clerk org ID"
+        varchar name "NOT NULL"
+        text description
+        uuid created_by "NOT NULL"
+        timestamp created_at "NOT NULL"
+        timestamp updated_at "NOT NULL"
+    }
+
+    documents {
+        uuid id PK
+        varchar tenant_id "NOT NULL — Clerk org ID"
+        uuid project_id FK "NOT NULL"
+        varchar file_name "NOT NULL"
+        varchar content_type "NOT NULL"
+        bigint size "NOT NULL"
+        varchar s3_key "NOT NULL"
+        varchar status "NOT NULL"
+        timestamp uploaded_at "NOT NULL"
+        uuid uploaded_by "NOT NULL"
+    }
+
+    members {
+        uuid id PK
+        varchar tenant_id "NOT NULL — Clerk org ID"
+        varchar clerk_user_id UK "NOT NULL"
+        varchar email UK "NOT NULL"
+        varchar name
+        varchar avatar_url
+        varchar org_role "NOT NULL"
+        timestamp created_at "NOT NULL"
+        timestamp updated_at "NOT NULL"
+    }
+
+    project_members {
+        uuid id PK
+        varchar tenant_id "NOT NULL — Clerk org ID"
+        uuid project_id FK "NOT NULL"
+        uuid member_id FK "NOT NULL"
+        varchar project_role "NOT NULL"
+        uuid added_by
+        timestamp created_at "NOT NULL"
+    }
+
+    projects ||--o{ documents : "contains"
+    projects ||--o{ project_members : "has"
+    members ||--o{ project_members : "assigned to"
+```
+
+### 9.4 Plan State Data Flow
+
+```mermaid
+flowchart TB
+    subgraph "Clerk Cloud"
+        Dashboard["Clerk Dashboard<br/>(Plan & Feature config)"]
+        Billing["Clerk Billing<br/>(Stripe)"]
+        WebhookSvc["Webhook Delivery<br/>(Svix)"]
+    end
+
+    subgraph "Next.js Frontend"
+        PricingPage["Settings / Billing Page<br/><PricingTable for='organization' />"]
+        ProtectComp["Feature Gates<br/>has() / <Protect>"]
+        WebhookRoute["POST /api/webhooks/clerk"]
+    end
+
+    subgraph "Spring Boot Backend"
+        PlanSync["POST /internal/orgs/plan-sync"]
+        OrgEntity["Organization Entity<br/>(tier, planSlug)"]
+        SchemaCache["TenantFilter Cache<br/>TenantInfo(schema, tier)"]
+    end
+
+    subgraph "Neon Postgres"
+        OrgTable["public.organizations<br/>(tier column)"]
+    end
+
+    Dashboard -->|Define plans & features| Billing
+    PricingPage -->|User subscribes| Billing
+    Billing -->|subscription.created/updated| WebhookSvc
+    WebhookSvc -->|Webhook POST| WebhookRoute
+    WebhookRoute -->|Forward plan change| PlanSync
+    PlanSync -->|Update tier & planSlug| OrgEntity
+    OrgEntity -->|Persist| OrgTable
+    PlanSync -->|Evict cache| SchemaCache
+    SchemaCache -->|Read on request| OrgTable
+
+    Billing -->|Session claims| ProtectComp
+    ProtectComp -->|has plan: pro| PricingPage
+```
+
+### 9.5 Provisioning Flows
+
+All organizations start as Starter. Pro provisioning is triggered by a subscription webhook.
+
+See [ADR-015](adr/ADR-015-provisioning-per-tier.md) and [ADR-016](adr/ADR-016-tier-upgrade-migration.md).
+
+#### 9.5.1 Starter Org Signup
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Clerk
+    participant NextJS as Next.js<br/>Webhook Handler
+    participant API as Spring Boot
+    participant DB as Neon Postgres
+
+    User->>Clerk: Create organization
+    Clerk->>NextJS: organization.created webhook
+
+    NextJS->>API: POST /internal/orgs/provision<br/>{clerkOrgId, orgName}
+
+    API->>DB: INSERT INTO public.organizations<br/>(tier = STARTER, status = PENDING)
+    API->>DB: INSERT INTO public.org_schema_mapping<br/>(clerkOrgId → "tenant_shared")
+    API->>DB: UPDATE organizations<br/>SET status = COMPLETED
+    API-->>NextJS: 201 Created
+
+    Note over User,DB: tenant_shared schema already exists (bootstrapped at startup)
+
+    User->>NextJS: GET /org/{slug}/dashboard
+    NextJS->>API: GET /api/projects (Bearer JWT)
+    API->>API: TenantFilter: resolve orgId → "tenant_shared"<br/>Bind TENANT_ID + ORG_ID
+    API->>DB: SET search_path TO tenant_shared<br/>SET app.current_tenant = clerkOrgId
+    API->>API: Hibernate @Filter: WHERE tenant_id = clerkOrgId
+    API->>DB: SELECT * FROM projects WHERE tenant_id = ?
+    DB-->>API: [] (empty)
+    API-->>NextJS: 200 OK []
+```
+
+#### 9.5.2 Pro Org Signup (Starter → Pro Upgrade)
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Clerk
+    participant NextJS as Next.js<br/>Webhook Handler
+    participant API as Spring Boot
+    participant DB as Neon Postgres
+
+    Note over User,DB: Org already provisioned as Starter (see 9.5.1)
+
+    User->>Clerk: Subscribe to Pro plan<br/>via <PricingTable>
+    Clerk->>NextJS: subscription.created webhook<br/>{orgId, plan: "pro"}
+
+    NextJS->>API: POST /internal/orgs/plan-sync<br/>{clerkOrgId, planSlug: "pro"}
+
+    API->>DB: Read Organization: tier = STARTER
+    API->>DB: UPDATE organizations SET status = IN_PROGRESS
+
+    rect rgb(240, 248, 255)
+        Note over API,DB: TenantUpgradeService
+        API->>API: Generate schema: tenant_<12hex>
+        API->>DB: CREATE SCHEMA IF NOT EXISTS tenant_<hash>
+        API->>DB: Flyway: run V1-V7 against tenant_<hash>
+
+        API->>DB: Copy data from tenant_shared<br/>WHERE tenant_id = clerkOrgId<br/>→ INSERT INTO tenant_<hash>.projects/docs/members/...
+
+        rect rgb(255, 240, 240)
+            Note over API,DB: Atomic cutover (single transaction)
+            API->>DB: UPDATE org_schema_mapping<br/>SET schema_name = 'tenant_<hash>'
+            API->>DB: DELETE FROM tenant_shared.*<br/>WHERE tenant_id = clerkOrgId
+        end
+    end
+
+    API->>API: Evict TenantFilter cache
+    API->>DB: UPDATE organizations<br/>SET tier = PRO, status = COMPLETED
+    API-->>NextJS: 200 OK
+
+    Note over User,DB: Subsequent requests resolve to tenant_<hash>
+```
+
+#### 9.5.3 Request-Time Tenant Resolution (Phase 2)
+
+```mermaid
+flowchart TB
+    Request["Incoming Request<br/>+ Bearer JWT"] --> JWTFilter["JWT Auth Filter<br/>Validate signature, extract claims"]
+    JWTFilter --> TenantFilter["TenantFilter"]
+
+    TenantFilter --> CacheLookup{"Schema Cache<br/>Lookup"}
+    CacheLookup -->|Cache hit| TenantInfo["TenantInfo<br/>(schemaName, tier)"]
+    CacheLookup -->|Cache miss| DBLookup["JOIN org_schema_mapping<br/>+ organizations"]
+    DBLookup --> TenantInfo
+
+    TenantInfo --> TierCheck{"tier?"}
+
+    TierCheck -->|STARTER| SharedPath["Bind ScopedValues:<br/>TENANT_ID = tenant_shared<br/>ORG_ID = clerkOrgId"]
+    TierCheck -->|PRO| DedicatedPath["Bind ScopedValues:<br/>TENANT_ID = tenant_hash<br/>ORG_ID = clerkOrgId"]
+
+    SharedPath --> MemberFilter["MemberFilter<br/>Bind MEMBER_ID, ORG_ROLE"]
+    DedicatedPath --> MemberFilter
+
+    MemberFilter --> Controller["Controller → Service → Repository"]
+
+    Controller --> ConnProvider["SchemaMultiTenantConnectionProvider"]
+
+    ConnProvider --> SchemaCheck{"schema?"}
+    SchemaCheck -->|tenant_shared| SharedConn["SET search_path TO tenant_shared<br/>SET app.current_tenant = clerkOrgId"]
+    SchemaCheck -->|tenant_hash| DedicatedConn["SET search_path TO tenant_hash"]
+
+    SharedConn --> FilterAspect["SharedTenantFilterAspect<br/>Enable Hibernate @Filter<br/>tenantId = ORG_ID"]
+    FilterAspect --> Query["Query with WHERE tenant_id = ?<br/>+ RLS safety net"]
+
+    DedicatedConn --> DirectQuery["Query without tenant_id filter<br/>(schema isolation)"]
+
+    Query --> Response["Response"]
+    DirectQuery --> Response
+```
+
+### 9.6 High-Level Component Diagram (Phase 2)
+
+```mermaid
+flowchart TB
+    subgraph Browser
+        UI["React App"]
+    end
+
+    subgraph "Clerk Cloud"
+        Auth["Auth + Orgs"]
+        Billing["Billing (Stripe)"]
+    end
+
+    subgraph "Next.js 16"
+        Pages["App Router Pages"]
+        PricingUI["<PricingTable /><br/><Protect plan=pro>"]
+        Webhooks["Webhook Handler<br/>/api/webhooks/clerk"]
+        ServerActions["Server Actions<br/>+ API Client"]
+    end
+
+    subgraph "Spring Boot 4"
+        RestAPI["REST API<br/>/api/*"]
+        InternalAPI["Internal API<br/>/internal/*"]
+        TenantFilter2["TenantFilter<br/>(schema + tier resolution)"]
+        FilterAspect2["SharedTenantFilterAspect<br/>(row-level filtering)"]
+        UpgradeService["TenantUpgradeService<br/>(data migration)"]
+    end
+
+    subgraph "Neon Postgres"
+        PublicSchema["public schema<br/>organizations (tier column)<br/>org_schema_mapping"]
+        SharedSchema["tenant_shared schema<br/>projects + tenant_id<br/>documents + tenant_id<br/>members + tenant_id<br/>RLS enabled"]
+        DedicatedSchemas["tenant_<hash> schemas<br/>projects<br/>documents<br/>members<br/>(schema isolation)"]
+    end
+
+    S3["AWS S3<br/>File Storage"]
+
+    UI --> Auth
+    UI --> PricingUI
+    Auth --> Pages
+    Billing --> Webhooks
+
+    Pages --> ServerActions
+    ServerActions --> RestAPI
+    Webhooks --> InternalAPI
+
+    RestAPI --> TenantFilter2
+    TenantFilter2 -->|Starter| FilterAspect2
+    TenantFilter2 -->|Pro| DedicatedSchemas
+    FilterAspect2 --> SharedSchema
+    InternalAPI --> UpgradeService
+    UpgradeService --> SharedSchema
+    UpgradeService --> DedicatedSchemas
+
+    TenantFilter2 --> PublicSchema
+    RestAPI --> S3
+```
+
+### 9.7 Enforcement Model
+
+Plan limits and feature entitlements are enforced at three layers:
+
+| Layer | Mechanism | What It Catches |
+|-------|-----------|-----------------|
+| **Clerk** | Per-plan member limit in Dashboard | Blocks invitations when at limit |
+| **Backend** | `Organization.tier` checks in services | Rejects operations that violate plan limits |
+| **Frontend** | `has({ plan: 'pro' })` + `<Protect>` | Hides features; shows upgrade prompts |
+
+See [ADR-013](adr/ADR-013-plan-state-propagation.md) and [ADR-014](adr/ADR-014-plan-enforcement.md).
+
+### 9.8 Implementation Guidance
+
+This section describes where Phase 2 changes land in the codebase. It is not production code — see the epic breakdown in TASKS.md for implementation slices.
+
+#### 9.8.1 Frontend Changes
+
+| File / Area | Change |
+|-------------|--------|
+| `app/(app)/org/[slug]/settings/billing/page.tsx` (new) | Billing page with `<PricingTable for="organization" />` |
+| `app/(app)/org/[slug]/settings/page.tsx` | Add link to billing page |
+| `app/(app)/org/[slug]/layout.tsx` | Optionally show plan badge (Starter/Pro) in header |
+| `lib/webhook-handlers.ts` | Add handlers for `subscription.created`, `subscription.updated` |
+| `components/billing/upgrade-prompt.tsx` (new) | Reusable "Upgrade to Pro" CTA component |
+| `components/billing/plan-badge.tsx` (new) | Plan tier badge (Starter/Pro) |
+| `components/team/` | Gate "Invite member" button behind member limit check |
+
+**Frontend plan checks**:
+```tsx
+// Server component (RSC)
+const { has } = await auth();
+const isPro = has({ plan: 'pro' });
+
+// Client component
+<Protect plan="pro" fallback={<UpgradePrompt />}>
+  <ProOnlyFeature />
+</Protect>
+```
+
+#### 9.8.2 Backend Changes
+
+| File / Area | Change |
+|-------------|--------|
+| `provisioning/Organization.java` | Add `tier` (enum) and `planSlug` fields |
+| `provisioning/Tier.java` (new) | Enum: `STARTER`, `PRO` |
+| `provisioning/TenantProvisioningService.java` | Simplify: always map to `tenant_shared` |
+| `provisioning/PlanSyncController.java` (new) | `POST /internal/orgs/plan-sync` |
+| `provisioning/TenantUpgradeService.java` (new) | Starter → Pro data migration |
+| `provisioning/PlanLimits.java` (new) | Tier limit constants (member counts) |
+| `multitenancy/RequestScopes.java` | Add `ORG_ID` ScopedValue |
+| `multitenancy/TenantFilter.java` | Cache `TenantInfo(schema, tier)`, bind `ORG_ID` |
+| `multitenancy/SchemaMultiTenantConnectionProvider.java` | Accept `tenant_shared`, set `app.current_tenant` |
+| `multitenancy/SharedTenantFilterAspect.java` (new) | Enable Hibernate `@Filter` for shared schema |
+| `multitenancy/TenantAwareEntityListener.java` (new) | `@PrePersist` sets `tenant_id` |
+| `project/Project.java` | Add `tenantId` + `@FilterDef`/`@Filter` |
+| `document/Document.java` | Add `tenantId` + `@FilterDef`/`@Filter` |
+| `member/Member.java` | Add `tenantId` + `@FilterDef`/`@Filter` |
+| `member/ProjectMember.java` | Add `tenantId` + `@FilterDef`/`@Filter` |
+| `member/MemberSyncService.java` | Add member count validation against tier limit |
+| `exception/PlanLimitExceededException.java` (new) | HTTP 403 with upgrade prompt |
+
+**Entity annotation pattern** (applied to all 4 tenant entities):
+```java
+@FilterDef(name = "tenantFilter",
+    parameters = @ParamDef(name = "tenantId", type = String.class))
+@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
+@Entity
+@Table(name = "projects")
+public class Project {
+    @Column(name = "tenant_id")
+    private String tenantId;
+    // ... existing fields
+}
+```
+
+#### 9.8.3 Database Migrations
+
+| Migration | Type | Description |
+|-----------|------|-------------|
+| `V4__add_org_tier.sql` | Global | Add `tier`, `plan_slug` to `organizations` |
+| `V7__add_tenant_id_for_shared.sql` | Tenant | Add `tenant_id` columns, indexes, RLS policies |
+
+**Shared schema bootstrap** (at application startup):
+```
+TenantMigrationRunner:
+1. CREATE SCHEMA IF NOT EXISTS tenant_shared
+2. Flyway: run V1-V7 against tenant_shared
+3. (existing) Flyway: run V1-V7 against each tenant_<hash>
+```
+
+#### 9.8.4 Testing Strategy
+
+| Test Type | Scope |
+|-----------|-------|
+| `StarterTenantIntegrationTest` | Provision Starter org, CRUD in shared schema, verify row isolation |
+| `ProTenantIntegrationTest` | Existing tests remain valid (Pro path unchanged) |
+| `MixedTenantIntegrationTest` | One Starter + one Pro org coexist; verify complete isolation |
+| `TierUpgradeIntegrationTest` | Provision Starter with data, trigger upgrade, verify migration |
+| `PlanEnforcementTest` | Verify member limit rejection for both tiers |
+
+**Test pattern for shared schema**:
+```java
+ScopedValue.where(RequestScopes.TENANT_ID, "tenant_shared")
+    .where(RequestScopes.ORG_ID, "org_test_starter_1")
+    .run(() -> {
+        // Operations scoped to this org within tenant_shared
+    });
+```
+
+### 9.9 Upgrade Path: Starter to Pro (Conceptual)
+
+When a Starter org subscribes to Pro:
+
+1. **Trigger**: `subscription.created` webhook with `plan: "pro"`.
+2. **Schema creation**: Generate `tenant_<hash>`, `CREATE SCHEMA`, Flyway V1-V7.
+3. **Data copy**: `INSERT INTO tenant_<hash>.* SELECT * FROM tenant_shared.* WHERE tenant_id = clerkOrgId`.
+4. **Atomic cutover**: In one transaction — update `org_schema_mapping`, delete shared rows.
+5. **Cache invalidation**: Evict `TenantFilter` cache entry.
+6. **Completion**: `Organization.tier = PRO`, `provisioningStatus = COMPLETED`.
+
+**Constraints and risks**:
+- Starter orgs have bounded data (2 members, limited projects) — migration is fast (< 1s).
+- Brief data-less window (< 1s) during cutover — acceptable for Starter traffic volumes.
+- Rollback: if migration fails before cutover, org remains on Starter with no data loss.
+- Downgrade (Pro → Starter) is not implemented in Phase 2 — deferred to Phase 3.
+
+See [ADR-016](adr/ADR-016-tier-upgrade-migration.md) for the full decision record.
+
+### 9.10 Phase 2 ADR Index
+
+| ADR | Title | Status |
+|-----|-------|--------|
+| [ADR-010](adr/ADR-010-billing-integration.md) | Billing Integration Approach | Accepted |
+| [ADR-011](adr/ADR-011-tiered-tenancy.md) | Tier-Dependent Tenancy Model | Accepted |
+| [ADR-012](adr/ADR-012-row-level-isolation.md) | Row-Level Isolation for Starter Tier | Accepted |
+| [ADR-013](adr/ADR-013-plan-state-propagation.md) | Plan State Propagation | Accepted |
+| [ADR-014](adr/ADR-014-plan-enforcement.md) | Plan Enforcement Strategy | Accepted |
+| [ADR-015](adr/ADR-015-provisioning-per-tier.md) | Org Provisioning Per Tier | Accepted |
+| [ADR-016](adr/ADR-016-tier-upgrade-migration.md) | Tier Upgrade Data Migration | Accepted |
+
+---
+
 ## Appendix A: Clerk JWT Claims
 
 The JWT issued by Clerk for API calls contains these claims (relevant subset):

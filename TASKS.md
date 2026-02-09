@@ -30,7 +30,7 @@
 | 23 | Tier Data Model & Plan Sync | Both | — | M | 23A, 23B | **Done** |
 | 24 | Shared Schema & Row-Level Isolation | Backend | 23 | L | 24A, 24B, 24C |          |
 | 25 | Plan Enforcement | Both | 24 | S | — |          |
-| 26 | Billing UI & Feature Gating | Frontend | 23 | M | 26A, 26B |          |
+| 26 | Billing UI & Feature Gating | Frontend | 23 | M | 26A, 26B | **Done** |
 | 27 | Tier Upgrade — Starter to Pro | Backend | 23, 24 | M | — |          |
 
 ---
@@ -1263,7 +1263,7 @@ Phase 2 introduces a tiered tenancy model powered by Clerk Billing. Organization
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **26A** | 26.1–26.4 | Billing page, settings link, PlanBadge component, UpgradePrompt component | Done (PR #47) |
-| **26B** | 26.5–26.7 | Feature gating on existing pages, plan badge in layout, tests | |
+| **26B** | 26.5–26.7 | Feature gating on existing pages, plan badge in layout, tests | Done (PR #49) |
 
 #### Tasks
 
@@ -1273,9 +1273,9 @@ Phase 2 introduces a tiered tenancy model powered by Clerk Billing. Organization
 | 26.2 | Add billing link to settings page and navigation | 26A | Done | Update `app/(app)/org/[slug]/settings/page.tsx` to include a card/link navigating to the billing sub-page. Add "Billing" entry to `lib/nav-items.ts` (as sub-item under Settings or separate nav entry, consistent with existing nav structure). |
 | 26.3 | Create PlanBadge component | 26A | Done | `components/billing/plan-badge.tsx` — Reusable Shadcn Badge showing "Starter" (default/gray variant) or "Pro" (blue/accent variant). Server component usage: `const { has } = await auth(); const isPro = has({ plan: 'pro' });`. Client component usage: `useAuth()` hook. Per ARCHITECTURE.md §9.8.1. |
 | 26.4 | Create UpgradePrompt component | 26A | Done | `components/billing/upgrade-prompt.tsx` — Reusable CTA card with plan benefits summary and link to billing page (`/org/{slug}/settings/billing`). Accepts `slug` prop for link construction. Used as `fallback` prop in `<Protect>` wrappers. Per ARCHITECTURE.md §9.8.1. |
-| 26.5 | Add plan badge to org layout header | 26B | | Update `app/(app)/org/[slug]/layout.tsx` to render `<PlanBadge />` next to the `<OrganizationSwitcher />` in the header bar. Per ARCHITECTURE.md §9.8.1. |
-| 26.6 | Add plan-aware feature gating to existing pages | 26B | | Wrap Pro-only features (if any exist in current pages) with `<Protect plan="pro" fallback={<UpgradePrompt />}>`. In server components, use `const isPro = has({ plan: 'pro' })` for conditional rendering. Initially this may apply to: advanced settings, or serve as reference examples for future Pro features. Per ARCHITECTURE.md §9.8.1 code examples. |
-| 26.7 | Add frontend tests | 26B | | Test `PlanBadge` renders correct tier label. Test `UpgradePrompt` renders with correct billing link. Test billing page mounts `PricingTable`. Test `<Protect>` gate shows `UpgradePrompt` fallback for Starter orgs. |
+| 26.5 | Add plan badge to org layout header | 26B | Done | Update `app/(app)/org/[slug]/layout.tsx` to render `<PlanBadge />` next to the `<OrganizationSwitcher />` in the header bar. Per ARCHITECTURE.md §9.8.1. |
+| 26.6 | Add plan-aware feature gating to existing pages | 26B | Done | Wrap Pro-only features (if any exist in current pages) with `<Protect plan="pro" fallback={<UpgradePrompt />}>`. In server components, use `const isPro = has({ plan: 'pro' })` for conditional rendering. Initially this may apply to: advanced settings, or serve as reference examples for future Pro features. Per ARCHITECTURE.md §9.8.1 code examples. |
+| 26.7 | Add frontend tests | 26B | Done | Test `PlanBadge` renders correct tier label. Test `UpgradePrompt` renders with correct billing link. Test billing page mounts `PricingTable`. Test `<Protect>` gate shows `UpgradePrompt` fallback for Starter orgs. |
 
 #### Key Files
 

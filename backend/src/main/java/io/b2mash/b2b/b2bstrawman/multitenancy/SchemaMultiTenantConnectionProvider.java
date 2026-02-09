@@ -110,8 +110,12 @@ public class SchemaMultiTenantConnectionProvider implements MultiTenantConnectio
     if (SHARED_SCHEMA.equals(schema) && RequestScopes.ORG_ID.isBound()) {
       String orgId = RequestScopes.ORG_ID.get();
       validateOrgId(orgId);
-      try (var stmt = connection.createStatement()) {
-        stmt.execute("SET app.current_tenant = '" + orgId + "'");
+      // Use set_config() with parameterized query to prevent SQL injection.
+      // SET does not support placeholders, but set_config() does.
+      try (var stmt =
+          connection.prepareStatement("SELECT set_config('app.current_tenant', ?, false)")) {
+        stmt.setString(1, orgId);
+        stmt.execute();
       }
     }
   }

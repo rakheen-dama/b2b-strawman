@@ -56,12 +56,33 @@ class TenantProvisioningServiceTest {
   }
 
   @Test
-  void provisionTenant_createsNewOrgWhenNoneExists() throws SQLException {
+  void provisionTenant_starterMapsToSharedSchema() {
     when(mappingRepository.findByClerkOrgId("org_new")).thenReturn(Optional.empty());
     when(organizationRepository.findByClerkOrgId("org_new")).thenReturn(Optional.empty());
 
     var org = new Organization("org_new", "New Org");
+    // Default tier is STARTER
     when(organizationRepository.save(any(Organization.class))).thenReturn(org);
+
+    when(mappingRepository.save(any(OrgSchemaMapping.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    var result = service.provisionTenant("org_new", "New Org");
+
+    assertThat(result.success()).isTrue();
+    assertThat(result.alreadyProvisioned()).isFalse();
+    assertThat(result.schemaName()).isEqualTo("tenant_shared");
+    assertThat(org.getProvisioningStatus()).isEqualTo(Organization.ProvisioningStatus.COMPLETED);
+  }
+
+  @Test
+  void provisionTenant_proCreatesNewDedicatedSchema() throws SQLException {
+    when(mappingRepository.findByClerkOrgId("org_pro")).thenReturn(Optional.empty());
+
+    var org = new Organization("org_pro", "Pro Org");
+    org.updatePlan(Tier.PRO, "pro_plan");
+    when(organizationRepository.findByClerkOrgId("org_pro")).thenReturn(Optional.of(org));
+    when(organizationRepository.save(org)).thenReturn(org);
 
     var mockConn = mock(Connection.class);
     var mockStmt = mock(Statement.class);
@@ -73,7 +94,7 @@ class TenantProvisioningServiceTest {
 
     doNothing().when(service).runTenantMigrations(anyString());
 
-    var result = service.provisionTenant("org_new", "New Org");
+    var result = service.provisionTenant("org_pro", "Pro Org");
 
     assertThat(result.success()).isTrue();
     assertThat(result.alreadyProvisioned()).isFalse();
@@ -83,36 +104,12 @@ class TenantProvisioningServiceTest {
   }
 
   @Test
-  void provisionTenant_resumesWithExistingOrg() throws SQLException {
-    when(mappingRepository.findByClerkOrgId("org_existing")).thenReturn(Optional.empty());
-
-    var existingOrg = new Organization("org_existing", "Existing Org");
-    when(organizationRepository.findByClerkOrgId("org_existing"))
-        .thenReturn(Optional.of(existingOrg));
-    when(organizationRepository.save(existingOrg)).thenReturn(existingOrg);
-
-    var mockConn = mock(Connection.class);
-    var mockStmt = mock(Statement.class);
-    when(migrationDataSource.getConnection()).thenReturn(mockConn);
-    when(mockConn.createStatement()).thenReturn(mockStmt);
-
-    when(mappingRepository.save(any(OrgSchemaMapping.class)))
-        .thenAnswer(invocation -> invocation.getArgument(0));
-
-    doNothing().when(service).runTenantMigrations(anyString());
-
-    var result = service.provisionTenant("org_existing", "Existing Org");
-
-    assertThat(result.success()).isTrue();
-    assertThat(result.alreadyProvisioned()).isFalse();
-  }
-
-  @Test
-  void provisionTenant_marksOrgFailedOnSchemaCreationError() throws SQLException {
+  void provisionTenant_proMarksOrgFailedOnSchemaCreationError() throws SQLException {
     when(mappingRepository.findByClerkOrgId("org_fail")).thenReturn(Optional.empty());
 
     var org = new Organization("org_fail", "Fail Org");
-    when(organizationRepository.findByClerkOrgId("org_fail")).thenReturn(Optional.empty());
+    org.updatePlan(Tier.PRO, "pro_plan");
+    when(organizationRepository.findByClerkOrgId("org_fail")).thenReturn(Optional.of(org));
     when(organizationRepository.save(any(Organization.class))).thenReturn(org);
 
     when(migrationDataSource.getConnection()).thenThrow(new SQLException("Connection refused"));
@@ -125,42 +122,19 @@ class TenantProvisioningServiceTest {
   }
 
   @Test
-  void provisionTenant_idempotentMappingCheckInCreateMapping() throws SQLException {
+  void provisionTenant_idempotentMappingCheckInCreateMapping() {
     when(mappingRepository.findByClerkOrgId("org_idem"))
         .thenReturn(Optional.empty()) // first call in main method
         .thenReturn(
-            Optional.of(
-                new OrgSchemaMapping("org_idem", "tenant_abc123def456"))); // in createMapping
+            Optional.of(new OrgSchemaMapping("org_idem", "tenant_shared"))); // in createMapping
 
     var org = new Organization("org_idem", "Idem Org");
     when(organizationRepository.findByClerkOrgId("org_idem")).thenReturn(Optional.empty());
     when(organizationRepository.save(any(Organization.class))).thenReturn(org);
 
-    var mockConn = mock(Connection.class);
-    var mockStmt = mock(Statement.class);
-    when(migrationDataSource.getConnection()).thenReturn(mockConn);
-    when(mockConn.createStatement()).thenReturn(mockStmt);
-
-    doNothing().when(service).runTenantMigrations(anyString());
-
     var result = service.provisionTenant("org_idem", "Idem Org");
 
     assertThat(result.success()).isTrue();
     verify(mappingRepository, never()).save(any(OrgSchemaMapping.class));
-  }
-
-  @Test
-  void provisionTenant_marksOrgFailedOnAnyException() {
-    when(mappingRepository.findByClerkOrgId("org_det")).thenReturn(Optional.empty());
-    when(organizationRepository.findByClerkOrgId("org_det")).thenReturn(Optional.empty());
-
-    var org = new Organization("org_det", "Det Org");
-    when(organizationRepository.save(any(Organization.class))).thenReturn(org);
-
-    // No JDBC mock → NullPointerException on getConnection()
-    assertThatThrownBy(() -> service.provisionTenant("org_det", "Det Org"))
-        .isInstanceOf(ProvisioningException.class);
-
-    assertThat(org.getProvisioningStatus()).isEqualTo(Organization.ProvisioningStatus.FAILED);
   }
 }

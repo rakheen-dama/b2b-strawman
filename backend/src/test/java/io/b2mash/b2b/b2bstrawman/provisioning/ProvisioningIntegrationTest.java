@@ -29,7 +29,7 @@ class ProvisioningIntegrationTest {
   private DataSource migrationDataSource;
 
   @Test
-  void shouldProvisionNewTenant() throws SQLException {
+  void shouldProvisionStarterTenantToSharedSchema() {
     String clerkOrgId = "org_provision_test";
     String orgName = "Provision Test Org";
 
@@ -37,20 +37,17 @@ class ProvisioningIntegrationTest {
 
     assertThat(result.success()).isTrue();
     assertThat(result.alreadyProvisioned()).isFalse();
-    assertThat(result.schemaName()).matches("tenant_[0-9a-f]{12}");
+    assertThat(result.schemaName()).isEqualTo("tenant_shared");
 
     var org = organizationRepository.findByClerkOrgId(clerkOrgId);
     assertThat(org).isPresent();
     assertThat(org.get().getProvisioningStatus())
         .isEqualTo(Organization.ProvisioningStatus.COMPLETED);
+    assertThat(org.get().getTier()).isEqualTo(Tier.STARTER);
 
     var mapping = mappingRepository.findByClerkOrgId(clerkOrgId);
     assertThat(mapping).isPresent();
-    assertThat(mapping.get().getSchemaName()).isEqualTo(result.schemaName());
-
-    assertThat(schemaExists(result.schemaName())).isTrue();
-    assertThat(tableExists(result.schemaName(), "projects")).isTrue();
-    assertThat(tableExists(result.schemaName(), "documents")).isTrue();
+    assertThat(mapping.get().getSchemaName()).isEqualTo("tenant_shared");
   }
 
   @Test
@@ -69,13 +66,29 @@ class ProvisioningIntegrationTest {
   }
 
   @Test
-  void shouldCreateDifferentSchemasForDifferentOrgs() throws SQLException {
+  void shouldProvisionProTenantWithDedicatedSchema() throws SQLException {
+    // Set up a Pro org first
+    var org = new Organization("org_pro_test", "Pro Org");
+    org.updatePlan(Tier.PRO, "pro_plan");
+    organizationRepository.save(org);
+
+    var result = provisioningService.provisionTenant("org_pro_test", "Pro Org");
+
+    assertThat(result.success()).isTrue();
+    assertThat(result.alreadyProvisioned()).isFalse();
+    assertThat(result.schemaName()).matches("tenant_[0-9a-f]{12}");
+    assertThat(schemaExists(result.schemaName())).isTrue();
+    assertThat(tableExists(result.schemaName(), "projects")).isTrue();
+    assertThat(tableExists(result.schemaName(), "documents")).isTrue();
+  }
+
+  @Test
+  void starterOrgsShouldShareSchema() {
     var result1 = provisioningService.provisionTenant("org_diff_a", "Org A");
     var result2 = provisioningService.provisionTenant("org_diff_b", "Org B");
 
-    assertThat(result1.schemaName()).isNotEqualTo(result2.schemaName());
-    assertThat(schemaExists(result1.schemaName())).isTrue();
-    assertThat(schemaExists(result2.schemaName())).isTrue();
+    assertThat(result1.schemaName()).isEqualTo("tenant_shared");
+    assertThat(result2.schemaName()).isEqualTo("tenant_shared");
   }
 
   private boolean schemaExists(String schemaName) throws SQLException {

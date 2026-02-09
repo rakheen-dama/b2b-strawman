@@ -20,16 +20,16 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class TenantFilter extends OncePerRequestFilter {
 
   private final OrgSchemaMappingRepository mappingRepository;
-  private final Cache<String, String> schemaCache =
+  private final Cache<String, TenantInfo> tenantCache =
       Caffeine.newBuilder().maximumSize(10_000).expireAfterWrite(Duration.ofHours(1)).build();
 
   public TenantFilter(OrgSchemaMappingRepository mappingRepository) {
     this.mappingRepository = mappingRepository;
   }
 
-  /** Evicts the cached schema mapping for the given Clerk org ID. */
+  /** Evicts the cached tenant info for the given Clerk org ID. */
   public void evictSchema(String clerkOrgId) {
-    schemaCache.invalidate(clerkOrgId);
+    tenantCache.invalidate(clerkOrgId);
   }
 
   @Override
@@ -43,10 +43,11 @@ public class TenantFilter extends OncePerRequestFilter {
       String orgId = ClerkJwtUtils.extractOrgId(jwt);
 
       if (orgId != null) {
-        String schemaName = resolveSchema(orgId);
-        if (schemaName != null) {
+        TenantInfo info = resolveTenant(orgId);
+        if (info != null) {
           ScopedFilterChain.runScoped(
-              ScopedValue.where(RequestScopes.TENANT_ID, schemaName),
+              ScopedValue.where(RequestScopes.TENANT_ID, info.schemaName())
+                  .where(RequestScopes.ORG_ID, orgId),
               filterChain,
               request,
               response);
@@ -68,14 +69,21 @@ public class TenantFilter extends OncePerRequestFilter {
     return path.startsWith("/internal/") || path.startsWith("/actuator/");
   }
 
-  private String resolveSchema(String clerkOrgId) {
-    return schemaCache.get(clerkOrgId, this::lookupSchema);
+  private TenantInfo resolveTenant(String clerkOrgId) {
+    // Caffeine's cache.get(key, loader) throws NPE if loader returns null.
+    // Use getIfPresent + manual put to handle unprovisioned orgs gracefully.
+    TenantInfo cached = tenantCache.getIfPresent(clerkOrgId);
+    if (cached != null) {
+      return cached;
+    }
+    TenantInfo info = lookupTenant(clerkOrgId);
+    if (info != null) {
+      tenantCache.put(clerkOrgId, info);
+    }
+    return info;
   }
 
-  private String lookupSchema(String clerkOrgId) {
-    return mappingRepository
-        .findByClerkOrgId(clerkOrgId)
-        .map(OrgSchemaMapping::getSchemaName)
-        .orElse(null);
+  private TenantInfo lookupTenant(String clerkOrgId) {
+    return mappingRepository.findTenantInfoByClerkOrgId(clerkOrgId).orElse(null);
   }
 }

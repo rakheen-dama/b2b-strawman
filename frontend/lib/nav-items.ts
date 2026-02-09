@@ -30,6 +30,5 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Settings",
     href: (slug) => `/org/${slug}/settings`,
     icon: Settings,
-    exact: true,
   },
 ];

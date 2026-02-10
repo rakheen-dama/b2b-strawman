@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.provisioning;
 
+import io.b2mash.b2b.b2bstrawman.billing.SubscriptionService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import java.sql.SQLException;
@@ -21,14 +22,17 @@ public class TenantProvisioningService {
   private final OrganizationRepository organizationRepository;
   private final OrgSchemaMappingRepository mappingRepository;
   private final DataSource migrationDataSource;
+  private final SubscriptionService subscriptionService;
 
   public TenantProvisioningService(
       OrganizationRepository organizationRepository,
       OrgSchemaMappingRepository mappingRepository,
-      @Qualifier("migrationDataSource") DataSource migrationDataSource) {
+      @Qualifier("migrationDataSource") DataSource migrationDataSource,
+      SubscriptionService subscriptionService) {
     this.organizationRepository = organizationRepository;
     this.mappingRepository = mappingRepository;
     this.migrationDataSource = migrationDataSource;
+    this.subscriptionService = subscriptionService;
   }
 
   @Retryable(
@@ -76,6 +80,7 @@ public class TenantProvisioningService {
     log.info("Provisioning Starter tenant for org {} → {}", clerkOrgId, SHARED_SCHEMA);
 
     createMapping(clerkOrgId, SHARED_SCHEMA);
+    subscriptionService.createSubscription(org.getId(), "starter");
 
     org.markCompleted();
     organizationRepository.save(org);
@@ -95,6 +100,8 @@ public class TenantProvisioningService {
     createSchema(schemaName);
     runTenantMigrations(schemaName);
     createMapping(clerkOrgId, schemaName);
+    String planSlug = org.getPlanSlug() != null ? org.getPlanSlug() : "starter";
+    subscriptionService.createSubscription(org.getId(), planSlug);
 
     org.markCompleted();
     organizationRepository.save(org);

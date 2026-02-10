@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.multitenancy;
 
+import io.b2mash.b2b.b2bstrawman.exception.MissingOrganizationContextException;
 import java.util.UUID;
 
 /**
@@ -31,6 +32,14 @@ public final class RequestScopes {
       throw new MemberContextNotBoundException();
     }
     return MEMBER_ID.get();
+  }
+
+  /** Returns the Clerk org ID. Throws if not bound by filter chain. */
+  public static String requireOrgId() {
+    if (!ORG_ID.isBound()) {
+      throw new MissingOrganizationContextException();
+    }
+    return ORG_ID.get();
   }
 
   /** Returns the current member's org role, or null if not bound. */

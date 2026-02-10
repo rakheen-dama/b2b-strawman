@@ -33,15 +33,15 @@ public class SubscriptionService {
     this.memberRepository = memberRepository;
   }
 
-  /** Creates an ACTIVE starter subscription for a newly provisioned org. Idempotent. */
+  /** Creates an ACTIVE subscription for a newly provisioned org. Idempotent. */
   @Transactional
-  public void createStarterSubscription(UUID organizationId) {
+  public void createSubscription(UUID organizationId, String planSlug) {
     if (subscriptionRepository.findByOrganizationId(organizationId).isPresent()) {
       log.info("Subscription already exists for organization {}", organizationId);
       return;
     }
-    subscriptionRepository.save(new Subscription(organizationId, "starter"));
-    log.info("Created starter subscription for organization {}", organizationId);
+    subscriptionRepository.save(new Subscription(organizationId, planSlug));
+    log.info("Created {} subscription for organization {}", planSlug, organizationId);
   }
 
   /**
@@ -71,6 +71,7 @@ public class SubscriptionService {
    * Returns billing info for an org. Must be called within tenant context (for member count).
    * Returns a synthetic STARTER response if no subscription exists (defensive).
    */
+  @Transactional(readOnly = true)
   public BillingResponse getSubscription(String clerkOrgId) {
     var org =
         organizationRepository

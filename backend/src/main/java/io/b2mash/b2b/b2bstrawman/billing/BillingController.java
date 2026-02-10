@@ -21,7 +21,7 @@ public class BillingController {
   @GetMapping("/subscription")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<BillingResponse> getSubscription() {
-    String clerkOrgId = RequestScopes.ORG_ID.get();
+    String clerkOrgId = RequestScopes.requireOrgId();
     return ResponseEntity.ok(subscriptionService.getSubscription(clerkOrgId));
   }
 }

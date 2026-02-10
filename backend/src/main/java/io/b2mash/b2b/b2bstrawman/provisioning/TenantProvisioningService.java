@@ -80,7 +80,7 @@ public class TenantProvisioningService {
     log.info("Provisioning Starter tenant for org {} → {}", clerkOrgId, SHARED_SCHEMA);
 
     createMapping(clerkOrgId, SHARED_SCHEMA);
-    subscriptionService.createStarterSubscription(org.getId());
+    subscriptionService.createSubscription(org.getId(), "starter");
 
     org.markCompleted();
     organizationRepository.save(org);
@@ -100,7 +100,8 @@ public class TenantProvisioningService {
     createSchema(schemaName);
     runTenantMigrations(schemaName);
     createMapping(clerkOrgId, schemaName);
-    subscriptionService.createStarterSubscription(org.getId());
+    String planSlug = org.getPlanSlug() != null ? org.getPlanSlug() : "starter";
+    subscriptionService.createSubscription(org.getId(), planSlug);
 
     org.markCompleted();
     organizationRepository.save(org);

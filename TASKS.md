@@ -33,7 +33,7 @@
 | 26 | Billing UI & Feature Gating | Frontend | 23 | M | 26A, 26B | **Done** |
 | 27 | Tier Upgrade — Starter to Pro | Backend | 23, 24 | M | — | Done (PR #53) |
 | **Change Request — Self-Managed Subscriptions** | | | | | |          |
-| 28 | Self-Hosted Subscriptions & Clerk Billing Removal | Both | 23, 25 | M | 28A, 28B, 28C |          |
+| 28 | Self-Hosted Subscriptions & Clerk Billing Removal | Both | 23, 25 | M | 28A, 28B, 28C | **Done** |
 
 ---
 
@@ -1369,7 +1369,7 @@ Stripe is not available for South African entities. Clerk Billing hard-depends o
 |-------|-------|---------|------|--------|
 | **28A** | 28.1–28.7 | Backend: subscriptions table, entity, service, billing + admin endpoints, provisioning hook, integration tests | E23, E25 | Done (PR #56) |
 | **28B** | 28.8–28.10 | Frontend removal: strip Clerk Billing webhook handlers, types, and docs | None (pure deletion) | Done (PR #55) |
-| **28C** | 28.11–28.14 | Frontend replacement: custom billing page, invite form limit source change, new API types, tests | 28A | |
+| **28C** | 28.11–28.14 | Frontend replacement: custom billing page, invite form limit source change, new API types, tests | 28A | Done (PR #57) |
 
 **Parallelism**: 28A and 28B can be developed and merged in parallel (separate PRs). 28C ships after 28A merges since it consumes the new `GET /api/billing/subscription` endpoint.
 
@@ -1387,10 +1387,10 @@ Stripe is not available for South African entities. Clerk Billing hard-depends o
 | 28.8 | Remove Clerk subscription webhook handlers | 28B | Done | Modify `lib/webhook-handlers.ts` — remove `SubscriptionEventData` interface, `syncPlan()` function, `handleSubscriptionCreated()`, `handleSubscriptionUpdated()`, and the `subscription.created`/`subscription.updated` cases from `routeWebhookEvent()`. All other Clerk webhook handlers (org CRUD, membership CRUD) are unrelated to billing and stay unchanged. |
 | 28.9 | Remove PlanSyncRequest from internal-api.ts | 28B | Done | Check if `PlanSyncRequest` type in `lib/internal-api.ts` is used by anything other than the removed subscription handlers. If not, remove it. No new types added here — those belong in 28C. |
 | 28.10 | Delete clerk-billing-setup.md | 28B | Done | Delete `frontend/docs/clerk-billing-setup.md` — Clerk Dashboard billing configuration is no longer relevant. Member limits are now enforced entirely by our backend. |
-| 28.11 | Replace billing page with custom plan display | 28C | | Replace `app/(app)/org/[slug]/settings/billing/page.tsx` — remove `<PricingTable>` import and rendering. New server component: fetch `GET /api/billing/subscription` via `apiClient`, display current plan name (with existing `PlanBadge` component), member usage (e.g., "1 of 2 members"), and plan features summary. Show a "Contact us to upgrade" CTA for Starter orgs (placeholder until PSP is selected). Pro orgs see "You're on the Pro plan" confirmation. Reuse existing `UpgradePrompt` component where appropriate. |
-| 28.12 | Replace maxAllowedMemberships in InviteMemberForm | 28C | | Modify `components/team/invite-member-form.tsx` — remove dependency on `organization.maxAllowedMemberships` (populated by Clerk Billing). Instead, accept `maxMembers` and `currentMembers` as props from the team page server component. The team page fetches limits from `GET /api/billing/subscription` and passes them down. The limit check logic (`currentMembers + pendingInvitations >= maxMembers`) stays the same, just sourced from our API instead of Clerk. |
-| 28.13 | Add BillingResponse and SetPlanRequest types to internal-api.ts | 28C | | Add `BillingResponse` and `SetPlanRequest` TypeScript types to `lib/internal-api.ts` for the new backend endpoints. `BillingResponse`: `{ planSlug: string, tier: string, status: string, limits: { maxMembers: number, currentMembers: number } }`. `SetPlanRequest`: `{ clerkOrgId: string, planSlug: string }`. |
-| 28.14 | Write frontend tests | 28C | | (1) Billing page renders plan name and member usage from API response. (2) Billing page shows upgrade CTA for Starter orgs. (3) Billing page shows Pro confirmation for Pro orgs. (4) `InviteMemberForm` hides form when `currentMembers >= maxMembers` (props-based). (5) `InviteMemberForm` shows form when under limit. (6) Webhook handler no longer dispatches `subscription.created`/`subscription.updated` events (regression guard from 28B). |
+| 28.11 | Replace billing page with custom plan display | 28C | Done | Replace `app/(app)/org/[slug]/settings/billing/page.tsx` — remove `<PricingTable>` import and rendering. New server component: fetch `GET /api/billing/subscription` via `apiClient`, display current plan name (with existing `PlanBadge` component), member usage (e.g., "1 of 2 members"), and plan features summary. Show a "Contact us to upgrade" CTA for Starter orgs (placeholder until PSP is selected). Pro orgs see "You're on the Pro plan" confirmation. Reuse existing `UpgradePrompt` component where appropriate. |
+| 28.12 | Replace maxAllowedMemberships in InviteMemberForm | 28C | Done | Modify `components/team/invite-member-form.tsx` — remove dependency on `organization.maxAllowedMemberships` (populated by Clerk Billing). Instead, accept `maxMembers` and `currentMembers` as props from the team page server component. The team page fetches limits from `GET /api/billing/subscription` and passes them down. The limit check logic (`currentMembers + pendingInvitations >= maxMembers`) stays the same, just sourced from our API instead of Clerk. |
+| 28.13 | Add BillingResponse and SetPlanRequest types to internal-api.ts | 28C | Done | Add `BillingResponse` and `SetPlanRequest` TypeScript types to `lib/internal-api.ts` for the new backend endpoints. `BillingResponse`: `{ planSlug: string, tier: string, status: string, limits: { maxMembers: number, currentMembers: number } }`. `SetPlanRequest`: `{ clerkOrgId: string, planSlug: string }`. |
+| 28.14 | Write frontend tests | 28C | Done | (1) Billing page renders plan name and member usage from API response. (2) Billing page shows upgrade CTA for Starter orgs. (3) Billing page shows Pro confirmation for Pro orgs. (4) `InviteMemberForm` hides form when `currentMembers >= maxMembers` (props-based). (5) `InviteMemberForm` shows form when under limit. (6) Webhook handler no longer dispatches `subscription.created`/`subscription.updated` events (regression guard from 28B). |
 
 #### Architecture Decisions
 

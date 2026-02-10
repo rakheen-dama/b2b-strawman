@@ -11,6 +11,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.b2mash.b2b.b2bstrawman.billing.SubscriptionService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import java.sql.Connection;
@@ -30,6 +31,7 @@ class TenantProvisioningServiceTest {
   @Mock private OrganizationRepository organizationRepository;
   @Mock private OrgSchemaMappingRepository mappingRepository;
   @Mock private DataSource migrationDataSource;
+  @Mock private SubscriptionService subscriptionService;
 
   private TenantProvisioningService service;
 
@@ -39,7 +41,10 @@ class TenantProvisioningServiceTest {
     service =
         spy(
             new TenantProvisioningService(
-                organizationRepository, mappingRepository, migrationDataSource));
+                organizationRepository,
+                mappingRepository,
+                migrationDataSource,
+                subscriptionService));
   }
 
   @Test

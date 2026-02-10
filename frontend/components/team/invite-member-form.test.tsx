@@ -29,9 +29,7 @@ function mockOrg(overrides: Record<string, unknown> = {}) {
   return {
     organization: {
       slug: "acme",
-      membersCount: 1,
       pendingInvitationsCount: 0,
-      maxAllowedMemberships: 2,
       ...overrides,
     },
     invitations: { revalidate: vi.fn() },
@@ -40,18 +38,16 @@ function mockOrg(overrides: Record<string, unknown> = {}) {
 
 describe("InviteMemberForm", () => {
   it("renders form when under member limit", () => {
-    mockUseOrganization.mockReturnValue(mockOrg({ membersCount: 1 }));
-    render(<InviteMemberForm />);
+    mockUseOrganization.mockReturnValue(mockOrg());
+    render(<InviteMemberForm maxMembers={2} currentMembers={1} />);
 
     expect(screen.getByLabelText("Email address")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Send invite" })).toBeInTheDocument();
   });
 
   it("shows upgrade message when at member limit", () => {
-    mockUseOrganization.mockReturnValue(
-      mockOrg({ membersCount: 2, pendingInvitationsCount: 0 }),
-    );
-    render(<InviteMemberForm />);
+    mockUseOrganization.mockReturnValue(mockOrg());
+    render(<InviteMemberForm maxMembers={2} currentMembers={2} />);
 
     expect(screen.queryByLabelText("Email address")).not.toBeInTheDocument();
     expect(
@@ -60,10 +56,8 @@ describe("InviteMemberForm", () => {
   });
 
   it("counts pending invitations toward the limit", () => {
-    mockUseOrganization.mockReturnValue(
-      mockOrg({ membersCount: 1, pendingInvitationsCount: 1 }),
-    );
-    render(<InviteMemberForm />);
+    mockUseOrganization.mockReturnValue(mockOrg({ pendingInvitationsCount: 1 }));
+    render(<InviteMemberForm maxMembers={2} currentMembers={1} />);
 
     expect(screen.queryByLabelText("Email address")).not.toBeInTheDocument();
     expect(
@@ -71,29 +65,16 @@ describe("InviteMemberForm", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders form when maxAllowedMemberships is not set (unlimited)", () => {
-    mockUseOrganization.mockReturnValue(
-      mockOrg({ membersCount: 50, maxAllowedMemberships: undefined }),
-    );
-    render(<InviteMemberForm />);
-
-    expect(screen.getByLabelText("Email address")).toBeInTheDocument();
-  });
-
-  it("renders form when maxAllowedMemberships is 0 (unlimited)", () => {
-    mockUseOrganization.mockReturnValue(
-      mockOrg({ membersCount: 50, maxAllowedMemberships: 0 }),
-    );
-    render(<InviteMemberForm />);
+  it("renders form when maxMembers is 0 (unlimited)", () => {
+    mockUseOrganization.mockReturnValue(mockOrg());
+    render(<InviteMemberForm maxMembers={0} currentMembers={50} />);
 
     expect(screen.getByLabelText("Email address")).toBeInTheDocument();
   });
 
   it("shows billing link with correct slug", () => {
-    mockUseOrganization.mockReturnValue(
-      mockOrg({ membersCount: 2, slug: "my-org" }),
-    );
-    render(<InviteMemberForm />);
+    mockUseOrganization.mockReturnValue(mockOrg({ slug: "my-org" }));
+    render(<InviteMemberForm maxMembers={2} currentMembers={2} />);
 
     const link = screen.getByRole("link", { name: "Upgrade your plan" });
     expect(link).toHaveAttribute("href", "/org/my-org/settings/billing");
@@ -104,7 +85,7 @@ describe("InviteMemberForm", () => {
       organization: null,
       invitations: null,
     });
-    const { container } = render(<InviteMemberForm />);
+    const { container } = render(<InviteMemberForm maxMembers={2} currentMembers={1} />);
 
     expect(container.innerHTML).toBe("");
   });

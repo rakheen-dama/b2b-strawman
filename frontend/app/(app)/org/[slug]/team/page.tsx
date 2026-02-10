@@ -3,11 +3,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MemberList } from "@/components/team/member-list";
 import { InviteMemberForm } from "@/components/team/invite-member-form";
 import { PendingInvitations } from "@/components/team/pending-invitations";
+import { api } from "@/lib/api";
+import type { BillingResponse } from "@/lib/internal-api";
 
 export default async function TeamPage() {
   const { orgRole } = await auth();
 
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+
+  const billing = await api.get<BillingResponse>("/api/billing/subscription");
 
   return (
     <div className="space-y-6">
@@ -21,7 +25,10 @@ export default async function TeamPage() {
       {isAdmin && (
         <div className="rounded-lg border p-4">
           <h2 className="mb-3 text-sm font-semibold">Invite a team member</h2>
-          <InviteMemberForm />
+          <InviteMemberForm
+            maxMembers={billing.limits.maxMembers}
+            currentMembers={billing.limits.currentMembers}
+          />
         </div>
       )}
 

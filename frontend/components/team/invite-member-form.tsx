@@ -8,7 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { inviteMember } from "@/app/(app)/org/[slug]/team/actions";
 
-export function InviteMemberForm() {
+interface InviteMemberFormProps {
+  maxMembers: number;
+  currentMembers: number;
+}
+
+export function InviteMemberForm({ maxMembers, currentMembers }: InviteMemberFormProps) {
   const { organization, invitations } = useOrganization({
     invitations: {
       pageSize: 5,
@@ -23,11 +28,9 @@ export function InviteMemberForm() {
 
   if (!organization) return null;
 
-  const maxMembers = organization.maxAllowedMemberships;
+  const pendingInvitations = organization.pendingInvitationsCount ?? 0;
   const isAtLimit =
-    maxMembers != null &&
-    maxMembers > 0 &&
-    (organization.membersCount ?? 0) + (organization.pendingInvitationsCount ?? 0) >= maxMembers;
+    maxMembers > 0 && currentMembers + pendingInvitations >= maxMembers;
 
   if (isAtLimit) {
     return (

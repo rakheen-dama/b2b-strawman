@@ -46,6 +46,25 @@ export interface SyncMemberResponse {
   action: string;
 }
 
+// ---- Billing (from BillingController.java / AdminBillingController.java) ----
+
+export interface BillingLimits {
+  maxMembers: number;
+  currentMembers: number;
+}
+
+export interface BillingResponse {
+  planSlug: string;
+  tier: string;
+  status: string;
+  limits: BillingLimits;
+}
+
+export interface SetPlanRequest {
+  clerkOrgId: string;
+  planSlug: string;
+}
+
 /**
  * Server-only API client for Spring Boot internal endpoints.
  * Authenticates via X-API-KEY header (not JWT).

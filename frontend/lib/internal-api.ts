@@ -46,11 +46,6 @@ export interface SyncMemberResponse {
   action: string;
 }
 
-export interface PlanSyncRequest {
-  clerkOrgId: string;
-  planSlug: string;
-}
-
 /**
  * Server-only API client for Spring Boot internal endpoints.
  * Authenticates via X-API-KEY header (not JWT).

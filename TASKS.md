@@ -34,6 +34,7 @@
 | 27 | Tier Upgrade — Starter to Pro | Backend | 23, 24 | M | — | Done (PR #53) |
 | **Change Request — Self-Managed Subscriptions** | | | | | |          |
 | 28 | Self-Hosted Subscriptions & Clerk Billing Removal | Both | 23, 25 | M | 28A, 28B, 28C | **Done** |
+| 29 | Self-Service Plan Upgrade (Simulated) | Both | 28 | S | 29A, 29B |          |
 
 ---
 
@@ -1430,6 +1431,61 @@ Stripe is not available for South African entities. Clerk Billing hard-depends o
 
 ---
 
+### Epic 29: Self-Service Plan Upgrade (Simulated)
+
+**Goal**: Allow org admins to upgrade from Starter to Pro directly from the billing page. Since no PSP is integrated yet, the upgrade executes immediately (simulated checkout). When a PSP is added later, the upgrade endpoint becomes the redirect-to-checkout entry point — the frontend flow stays the same.
+
+**Dependencies**: Epic 28 (subscriptions table, billing API)
+
+**Scope**: Both (Backend thin, Frontend heavy)
+
+**Estimated Effort**: S
+
+#### Slices
+
+| Slice | Tasks | Summary | Deps | Status |
+|-------|-------|---------|------|--------|
+| **29A** | 29.1–29.2 | Backend: public upgrade endpoint on BillingController + integration tests | E28 | |
+| **29B** | 29.3–29.7 | Frontend: upgrade dialog, server action, pricing comparison, billing page wiring, tests | 29A | |
+
+#### Tasks
+
+| ID | Task | Slice | Status | Notes |
+|----|------|-------|--------|-------|
+| 29.1 | Add `POST /api/billing/upgrade` to BillingController | 29A | | Add to existing `billing/BillingController.java` — no new file. `@PostMapping("/upgrade")` with `@PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")`. Request body: `UpgradeRequest(String planSlug)`. Resolves org via `RequestScopes.requireOrgId()`. Calls `subscriptionService.changePlan(clerkOrgId, planSlug)`. If `result.upgradeNeeded()`, calls `tenantUpgradeService.upgrade(clerkOrgId)`. Returns updated `BillingResponse` so the frontend can immediately render the new state. Guard: if org is already on the requested tier, return 200 with current state (idempotent, no error). This is intentionally a direct upgrade with no payment gate — when a PSP is added, this endpoint will instead create a checkout session and return a redirect URL. |
+| 29.2 | Write upgrade integration tests | 29A | | Add to existing `SubscriptionIntegrationTest.java` or new `BillingUpgradeIntegrationTest.java`. Tests: (1) Starter admin calls upgrade with "pro" → 200, tier is PRO, schema migrated. (2) Starter member calls upgrade → 403 Forbidden. (3) Pro admin calls upgrade with "pro" → 200 idempotent, no error. (4) Upgrade returns updated BillingResponse with correct limits (maxMembers=10). (5) Unauthenticated request → 401. |
+| 29.3 | Create UpgradeConfirmDialog component | 29B | | `components/billing/upgrade-confirm-dialog.tsx` — Client component. AlertDialog (Shadcn) with: title "Upgrade to Pro", description listing key Pro benefits (dedicated infrastructure, 10 members, priority support), confirm button "Upgrade Now", cancel button. Accepts `onConfirm` callback (async) and `slug` prop for revalidation. Shows loading state on confirm button while upgrade is in progress. On success: close dialog and trigger page revalidation via `router.refresh()`. On error: show inline error message in dialog. |
+| 29.4 | Create upgrade server action | 29B | | `app/(app)/org/[slug]/settings/billing/actions.ts` — Server action `upgradeToPro()`. Calls `api.post<BillingResponse>("/api/billing/upgrade", { planSlug: "pro" })`. Revalidates `/org/[slug]/settings/billing` path. Returns `{ success: true, billing: BillingResponse }` or `{ success: false, error: string }`. Follows existing server action patterns (see `team/actions.ts`). |
+| 29.5 | Add pricing comparison to billing page | 29B | | Add a feature comparison section to the billing page (below the current plan card, above the upgrade CTA). Simple two-column layout: Starter vs Pro. Features to compare: member limit (2 vs 10), infrastructure (shared vs dedicated), data isolation (row-level vs schema-level). Use a clean table or side-by-side cards. Only shown for Starter orgs (Pro orgs already know what they have). |
+| 29.6 | Wire upgrade button and dialog into billing page | 29B | | Replace the "Contact us" mailto CTA in the billing page's upgrade card with the `UpgradeConfirmDialog`. The billing page is a server component, so: extract the upgrade card into a client component (`UpgradeCard`) that wraps the dialog trigger button + `UpgradeConfirmDialog`. Pass `slug` as prop. The upgrade button text: "Upgrade to Pro". After successful upgrade, the page revalidates and shows the Pro state (plan badge changes, upgrade card disappears, limits update). |
+| 29.7 | Write frontend tests | 29B | | (1) `UpgradeConfirmDialog` renders with Pro benefits description. (2) Confirm button calls `onConfirm` callback. (3) Dialog shows loading state during upgrade. (4) Billing page shows upgrade button for Starter orgs. (5) Billing page hides upgrade section for Pro orgs. (6) Server action calls correct API endpoint with "pro" planSlug. |
+
+#### Architecture Decisions
+
+- **Public endpoint, not internal**: The upgrade is user-initiated, so it goes through JWT auth + `@PreAuthorize` role check via `POST /api/billing/upgrade`. This is more secure than having a server action call the internal API with the API key — Spring Security handles authorization properly.
+- **Endpoint returns BillingResponse**: After upgrade completes, the endpoint returns the new billing state. This avoids a separate fetch and lets the frontend optimistically update the UI.
+- **Idempotent upgrade**: Calling upgrade when already on Pro returns 200 with current state, not an error. This handles double-clicks, retries, and race conditions gracefully.
+- **Future PSP integration point**: When a PSP is chosen, `POST /api/billing/upgrade` changes from direct-upgrade to create-checkout-session + return redirect URL. The frontend flow changes minimally: instead of showing a confirmation dialog, it redirects to the PSP checkout page. The confirmation dialog becomes the PSP's checkout UI.
+- **Server action wraps API call**: The upgrade action is a Next.js server action (not a direct client-side fetch) so it can attach the JWT, revalidate server-cached data, and handle errors consistently with other actions in the app.
+
+#### Key Files
+
+**Slice 29A — Modify:**
+- `backend/src/main/java/.../billing/BillingController.java` — Add `POST /upgrade` endpoint
+
+**Slice 29A — Create or Modify:**
+- `backend/src/test/java/.../billing/SubscriptionIntegrationTest.java` or new `BillingUpgradeIntegrationTest.java` — Upgrade tests
+
+**Slice 29B — Create:**
+- `frontend/components/billing/upgrade-confirm-dialog.tsx`
+- `frontend/app/(app)/org/[slug]/settings/billing/actions.ts`
+
+**Slice 29B — Modify:**
+- `frontend/app/(app)/org/[slug]/settings/billing/page.tsx` — Pricing comparison + wire upgrade dialog
+- `frontend/lib/internal-api.ts` — Add `UpgradeRequest` type
+
+---
+
 ### Phase 2 Implementation Order
 
 #### Stage 1: Billing Foundation
@@ -1520,6 +1576,7 @@ flowchart LR
     E23 --> E28["Epic 28<br/>Self-Hosted Subs<br/>& Clerk Billing Removal"]
     E25 --> E28
     E26 -.->|replaced by| E28
+    E28 --> E29["Epic 29<br/>Self-Service<br/>Plan Upgrade"]
 ```
 
 ---

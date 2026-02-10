@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.billing;
 
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
@@ -7,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.provisioning.PlanLimits;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService.PlanSyncResult;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantUpgradeService;
+import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class SubscriptionService {
 
   private static final Logger log = LoggerFactory.getLogger(SubscriptionService.class);
+  private static final Set<String> UPGRADEABLE_PLANS = Set.of("pro");
 
   private final SubscriptionRepository subscriptionRepository;
   private final OrganizationRepository organizationRepository;
@@ -77,6 +80,11 @@ public class SubscriptionService {
    * current state without error.
    */
   public BillingResponse upgradePlan(String clerkOrgId, String planSlug) {
+    if (!UPGRADEABLE_PLANS.contains(planSlug.toLowerCase())) {
+      throw new InvalidStateException(
+          "Invalid plan", "Plan '%s' is not a valid upgrade target".formatted(planSlug));
+    }
+
     var result = changePlan(clerkOrgId, planSlug);
 
     if (result.upgradeNeeded()) {

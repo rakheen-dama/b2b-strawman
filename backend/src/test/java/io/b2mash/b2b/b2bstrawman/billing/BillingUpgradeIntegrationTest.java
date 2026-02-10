@@ -130,7 +130,39 @@ class BillingUpgradeIntegrationTest {
         .andExpect(jsonPath("$.limits.currentMembers").isNumber());
   }
 
-  // --- 5. Unauthenticated request → 401 ---
+  // --- 5. Invalid plan slug → 400 ---
+
+  @Test
+  void invalidPlanSlugReturnsBadRequest() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/billing/upgrade")
+                .with(adminJwt(ORG_PRO, "user_pro_admin"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"planSlug": "platinum"}
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
+  // --- 6. Downgrade attempt → 400 ---
+
+  @Test
+  void downgradeToStarterReturnsBadRequest() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/billing/upgrade")
+                .with(adminJwt(ORG_PRO, "user_pro_admin"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"planSlug": "starter"}
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
+  // --- 7. Unauthenticated request → 401 ---
 
   @Test
   void unauthenticatedRequestIsRejected() throws Exception {

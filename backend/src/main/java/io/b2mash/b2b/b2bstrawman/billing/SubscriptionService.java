@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanLimits;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService.PlanSyncResult;
+import io.b2mash.b2b.b2bstrawman.provisioning.TenantUpgradeService;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,16 +22,19 @@ public class SubscriptionService {
   private final OrganizationRepository organizationRepository;
   private final PlanSyncService planSyncService;
   private final MemberRepository memberRepository;
+  private final TenantUpgradeService tenantUpgradeService;
 
   public SubscriptionService(
       SubscriptionRepository subscriptionRepository,
       OrganizationRepository organizationRepository,
       PlanSyncService planSyncService,
-      MemberRepository memberRepository) {
+      MemberRepository memberRepository,
+      TenantUpgradeService tenantUpgradeService) {
     this.subscriptionRepository = subscriptionRepository;
     this.organizationRepository = organizationRepository;
     this.planSyncService = planSyncService;
     this.memberRepository = memberRepository;
+    this.tenantUpgradeService = tenantUpgradeService;
   }
 
   /** Creates an ACTIVE subscription for a newly provisioned org. Idempotent. */
@@ -65,6 +69,22 @@ public class SubscriptionService {
 
     log.info("Updated subscription plan to {} for org {}", planSlug, clerkOrgId);
     return planSyncService.syncPlan(clerkOrgId, planSlug);
+  }
+
+  /**
+   * Upgrades the org to the given plan. Handles plan change, schema migration if needed, and
+   * returns the updated billing state. Idempotent — if already on the requested plan, returns
+   * current state without error.
+   */
+  public BillingResponse upgradePlan(String clerkOrgId, String planSlug) {
+    var result = changePlan(clerkOrgId, planSlug);
+
+    if (result.upgradeNeeded()) {
+      log.info("Tier upgrade needed for org {}, starting migration", clerkOrgId);
+      tenantUpgradeService.upgrade(clerkOrgId);
+    }
+
+    return getSubscription(clerkOrgId);
   }
 
   /**

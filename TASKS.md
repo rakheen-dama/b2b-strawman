@@ -32,6 +32,8 @@
 | 25 | Plan Enforcement | Both | 24 | S | — | **Done** |
 | 26 | Billing UI & Feature Gating | Frontend | 23 | M | 26A, 26B | **Done** |
 | 27 | Tier Upgrade — Starter to Pro | Backend | 23, 24 | M | — | Done (PR #53) |
+| **Change Request — Self-Managed Subscriptions** | | | | | |          |
+| 28 | Self-Hosted Subscriptions & Clerk Billing Removal | Both | 23, 25 | M | 28A, 28B, 28C |          |
 
 ---
 
@@ -1341,6 +1343,93 @@ Phase 2 introduces a tiered tenancy model powered by Clerk Billing. Organization
 
 ---
 
+---
+
+## Change Request — Self-Managed Subscriptions
+
+Stripe is not available for South African entities. Clerk Billing hard-depends on Stripe, making it non-viable for production. This change request removes all Clerk Billing integration and replaces it with a self-hosted `subscriptions` table. The plan/tier/tenancy model (Starter shared-schema, Pro schema-per-tenant, member limits, upgrade pipeline) is **unchanged**. PSP choice is deferred — the system operates with admin-managed plans until a payment provider is selected.
+
+**Analysis**: See [`tasks/billing-psp-analysis.md`](tasks/billing-psp-analysis.md) for the full dependency audit, design rationale, and future PSP integration surface.
+
+---
+
+### Epic 28: Self-Hosted Subscriptions & Clerk Billing Removal
+
+**Goal**: Own subscription state in our database via a `subscriptions` table. Expose a billing API for the frontend and an admin API for plan management. Remove all Clerk Billing integration (PricingTable, subscription webhooks, maxAllowedMemberships). No PSP dependency — plans are managed via internal API.
+
+**Dependencies**: Epic 23 (tier data model), Epic 25 (plan enforcement)
+
+**Scope**: Both (Backend + Frontend)
+
+**Estimated Effort**: M
+
+#### Slices
+
+| Slice | Tasks | Summary | Deps | Status |
+|-------|-------|---------|------|--------|
+| **28A** | 28.1–28.7 | Backend: subscriptions table, entity, service, billing + admin endpoints, provisioning hook, integration tests | E23, E25 | |
+| **28B** | 28.8–28.10 | Frontend removal: strip Clerk Billing webhook handlers, types, and docs | None (pure deletion) | |
+| **28C** | 28.11–28.14 | Frontend replacement: custom billing page, invite form limit source change, new API types, tests | 28A | |
+
+**Parallelism**: 28A and 28B can be developed and merged in parallel (separate PRs). 28C ships after 28A merges since it consumes the new `GET /api/billing/subscription` endpoint.
+
+#### Tasks
+
+| ID | Task | Slice | Status | Notes |
+|----|------|-------|--------|-------|
+| 28.1 | Create V5 global migration for subscriptions table | 28A | | `db/migration/global/V5__add_subscriptions.sql` — `subscriptions` table with columns: `id` (UUID PK), `organization_id` (FK → organizations, UNIQUE), `plan_slug` (VARCHAR NOT NULL), `status` (VARCHAR NOT NULL DEFAULT 'ACTIVE'), `current_period_start` (TIMESTAMPTZ), `current_period_end` (TIMESTAMPTZ), `cancelled_at` (TIMESTAMPTZ), `created_at`, `updated_at`. Seed existing organizations with a STARTER subscription: `INSERT INTO subscriptions (organization_id, plan_slug, status) SELECT id, COALESCE(plan_slug, 'starter'), 'ACTIVE' FROM organizations ON CONFLICT DO NOTHING`. Status values: `ACTIVE`, `CANCELLED` only — more statuses added when a PSP defines what they mean. No `psp_*` columns — added when a PSP is chosen. |
+| 28.2 | Create Subscription entity and SubscriptionRepository | 28A | | `billing/Subscription.java` — JPA entity mapped to `subscriptions` table in `public` schema. Fields: `id`, `organizationId` (UUID), `planSlug` (String), `status` (enum: ACTIVE, CANCELLED), `currentPeriodStart`, `currentPeriodEnd`, `cancelledAt`, `createdAt`, `updatedAt`. `billing/SubscriptionRepository.java` — `findByOrganizationId(UUID)` returning `Optional<Subscription>`. |
+| 28.3 | Create SubscriptionService | 28A | | `billing/SubscriptionService.java` — (1) `createStarterSubscription(UUID organizationId)` — creates an ACTIVE subscription with `plan_slug = "starter"`. Called during provisioning. (2) `changePlan(String clerkOrgId, String planSlug)` — updates subscription row, then delegates to existing `PlanSyncService.syncPlan()` for tier resolution + upgrade trigger. (3) `getSubscription(String clerkOrgId)` — returns subscription + computed limits (via `PlanLimits.maxMembers()`) + current member count for the billing API response. |
+| 28.4 | Create BillingController — public billing endpoint | 28A | | `billing/BillingController.java` — `GET /api/billing/subscription` (JWT-authenticated). Resolves org from JWT `o.id` claim, returns `BillingResponse` record: `{ planSlug, tier, status, limits: { maxMembers, currentMembers } }`. Uses `SubscriptionService.getSubscription()`. If no subscription found, returns a synthetic STARTER response (defensive). |
+| 28.5 | Create AdminBillingController — internal plan management | 28A | | `billing/AdminBillingController.java` — `POST /internal/billing/set-plan` (API key-authenticated). Request body: `SetPlanRequest(String clerkOrgId, String planSlug)`. Updates subscription via `SubscriptionService.changePlan()` which calls `PlanSyncService.syncPlan()` + `TenantUpgradeService.upgrade()` if needed. Returns 200 OK. This is the admin entry point for plan changes — replaces the Clerk subscription webhook path. |
+| 28.6 | Hook subscription creation into TenantProvisioningService | 28A | | Modify `TenantProvisioningService.provision()` — after creating the Organization and schema mapping, call `SubscriptionService.createStarterSubscription(org.getId())`. Every new org gets a subscription row from day one. |
+| 28.7 | Write SubscriptionIntegrationTest | 28A | | `billing/SubscriptionIntegrationTest.java` — (1) Subscription created on org provisioning (verify row exists with STARTER). (2) `GET /api/billing/subscription` returns correct plan + limits for Starter org. (3) `POST /internal/billing/set-plan` with "pro" updates subscription + org tier. (4) `GET /api/billing/subscription` reflects PRO after plan change. (5) Admin set-plan triggers Starter→Pro upgrade (verify schema migration). (6) Set-plan for unknown org returns 404. (7) API key required for internal endpoint (401 without). |
+| 28.8 | Remove Clerk subscription webhook handlers | 28B | | Modify `lib/webhook-handlers.ts` — remove `SubscriptionEventData` interface, `syncPlan()` function, `handleSubscriptionCreated()`, `handleSubscriptionUpdated()`, and the `subscription.created`/`subscription.updated` cases from `routeWebhookEvent()`. All other Clerk webhook handlers (org CRUD, membership CRUD) are unrelated to billing and stay unchanged. |
+| 28.9 | Remove PlanSyncRequest from internal-api.ts | 28B | | Check if `PlanSyncRequest` type in `lib/internal-api.ts` is used by anything other than the removed subscription handlers. If not, remove it. No new types added here — those belong in 28C. |
+| 28.10 | Delete clerk-billing-setup.md | 28B | | Delete `frontend/docs/clerk-billing-setup.md` — Clerk Dashboard billing configuration is no longer relevant. Member limits are now enforced entirely by our backend. |
+| 28.11 | Replace billing page with custom plan display | 28C | | Replace `app/(app)/org/[slug]/settings/billing/page.tsx` — remove `<PricingTable>` import and rendering. New server component: fetch `GET /api/billing/subscription` via `apiClient`, display current plan name (with existing `PlanBadge` component), member usage (e.g., "1 of 2 members"), and plan features summary. Show a "Contact us to upgrade" CTA for Starter orgs (placeholder until PSP is selected). Pro orgs see "You're on the Pro plan" confirmation. Reuse existing `UpgradePrompt` component where appropriate. |
+| 28.12 | Replace maxAllowedMemberships in InviteMemberForm | 28C | | Modify `components/team/invite-member-form.tsx` — remove dependency on `organization.maxAllowedMemberships` (populated by Clerk Billing). Instead, accept `maxMembers` and `currentMembers` as props from the team page server component. The team page fetches limits from `GET /api/billing/subscription` and passes them down. The limit check logic (`currentMembers + pendingInvitations >= maxMembers`) stays the same, just sourced from our API instead of Clerk. |
+| 28.13 | Add BillingResponse and SetPlanRequest types to internal-api.ts | 28C | | Add `BillingResponse` and `SetPlanRequest` TypeScript types to `lib/internal-api.ts` for the new backend endpoints. `BillingResponse`: `{ planSlug: string, tier: string, status: string, limits: { maxMembers: number, currentMembers: number } }`. `SetPlanRequest`: `{ clerkOrgId: string, planSlug: string }`. |
+| 28.14 | Write frontend tests | 28C | | (1) Billing page renders plan name and member usage from API response. (2) Billing page shows upgrade CTA for Starter orgs. (3) Billing page shows Pro confirmation for Pro orgs. (4) `InviteMemberForm` hides form when `currentMembers >= maxMembers` (props-based). (5) `InviteMemberForm` shows form when under limit. (6) Webhook handler no longer dispatches `subscription.created`/`subscription.updated` events (regression guard from 28B). |
+
+#### Architecture Decisions
+
+- **No premature PSP abstraction**: No `BillingProvider` interface, no checkout URLs, no webhook parsers. When a PSP is chosen, the actual API shape will inform the integration design. The future PSP surface is ~100 lines: one webhook endpoint, one checkout redirect, one migration adding `psp_*` columns to `subscriptions`.
+- **Subscriptions table is minimal**: Only `plan_slug`, `status`, and period timestamps. No PSP-specific columns. More fields added when they have concrete meaning from a chosen PSP.
+- **Admin API replaces webhook-driven plan sync**: Instead of `Clerk Billing → webhook → plan sync`, plans are set via `POST /internal/billing/set-plan`. This works for manual/sales-led B2B billing and becomes the internal target for any future PSP webhook handler.
+- **Existing PlanSyncService untouched**: `SubscriptionService.changePlan()` delegates to `PlanSyncService.syncPlan()` which handles tier derivation, org update, cache eviction, and upgrade triggering. No changes to the existing pipeline.
+- **Frontend member limits from backend**: Replacing `maxAllowedMemberships` (Clerk Billing property) with our `GET /api/billing/subscription` response makes the frontend fully independent of any billing provider.
+- **Three-slice decomposition by dependency profile**: 28A (backend foundation) and 28B (frontend removal) are independent — parallel PRs. 28C (frontend replacement) depends on 28A's API. This maximizes throughput while keeping each PR small and reviewable.
+
+#### Key Files
+
+**Slice 28A — Create:**
+- `backend/src/main/resources/db/migration/global/V5__add_subscriptions.sql`
+- `backend/src/main/java/.../billing/Subscription.java`
+- `backend/src/main/java/.../billing/SubscriptionRepository.java`
+- `backend/src/main/java/.../billing/SubscriptionService.java`
+- `backend/src/main/java/.../billing/BillingController.java`
+- `backend/src/main/java/.../billing/AdminBillingController.java`
+- `backend/src/test/java/.../billing/SubscriptionIntegrationTest.java`
+
+**Slice 28A — Modify:**
+- `backend/src/main/java/.../provisioning/TenantProvisioningService.java` — Hook subscription creation
+
+**Slice 28B — Modify:**
+- `frontend/lib/webhook-handlers.ts` — Remove subscription event handlers
+- `frontend/lib/internal-api.ts` — Remove PlanSyncRequest type
+
+**Slice 28B — Delete:**
+- `frontend/docs/clerk-billing-setup.md`
+
+**Slice 28C — Modify:**
+- `frontend/app/(app)/org/[slug]/settings/billing/page.tsx` — Replace PricingTable with custom display
+- `frontend/components/team/invite-member-form.tsx` — Props-based limits instead of Clerk property
+- `frontend/lib/internal-api.ts` — Add BillingResponse + SetPlanRequest types
+- `frontend/app/(app)/org/[slug]/team/page.tsx` — Fetch and pass billing limits to InviteMemberForm
+
+---
+
 ### Phase 2 Implementation Order
 
 #### Stage 1: Billing Foundation
@@ -1426,6 +1515,11 @@ flowchart LR
     E24 --> E25["Epic 25<br/>Plan Enforcement"]
     E23 --> E27["Epic 27<br/>Tier Upgrade<br/>Starter to Pro"]
     E24 --> E27
+
+    %% Change Request — Self-Managed Subscriptions
+    E23 --> E28["Epic 28<br/>Self-Hosted Subs<br/>& Clerk Billing Removal"]
+    E25 --> E28
+    E26 -.->|replaced by| E28
 ```
 
 ---
@@ -1543,7 +1637,7 @@ Phase 8:  [E17] -> [E18] -> [E19] -> [E20] -> [E21] -> [E22]  <- sequential
 | R14 | Membership webhook arrives before tenant is provisioned (org.created not processed yet) | M | L | `MemberSyncService` returns 404 if tenant not found. Svix retries 8 times over 32 hours — will succeed once provisioning completes. Log the failure for monitoring. |
 | R15 | ProjectAccessService database lookups add latency to every project request | M | L | Single indexed query on `project_members(project_id, member_id)` covered by UNIQUE constraint index. For listing, JPQL join is a single query. No N+1 risk. Monitor query performance. |
 | **Phase 2 Risks** | | | | |
-| R16 | Clerk Billing SDK is in beta (`@clerk/nextjs/experimental`) — may have breaking changes | H | M | Pin `@clerk/nextjs` version. Wrap billing components (`<PricingTable>`) in thin wrappers for easy replacement. Fallback: migrate to direct Stripe integration per ADR-010. Monitor Clerk Billing release notes. |
+| R16 | ~~Clerk Billing SDK is in beta~~ | — | — | **Resolved by Epic 28**: Clerk Billing removed entirely. Self-hosted subscriptions table replaces all Clerk Billing integration. |
 | R17 | Hibernate `@Filter` not activated for native SQL queries in shared schema | H | L | Postgres RLS provides defense-in-depth for all queries including native SQL. All repository methods use JPQL (Hibernate-managed). Add integration test covering native query scenarios. Avoid native queries against tenant tables. Per ADR-012. |
 | R18 | Concurrent requests during tier upgrade see empty data briefly | M | L | Migration < 1s for Starter data volumes (2 members, bounded data). Brief window returns empty results, not data leak. Acceptable for low-traffic Starter orgs. Per ADR-016 §Availability. |
 | R19 | Shared schema (`tenant_shared`) row count grows unboundedly as Starter orgs scale | M | L | Single schema regardless of org count. Indexes on `tenant_id` keep query performance stable. Monitor row count and index sizes. Promote high-traffic Starter orgs to Pro. Partition tables by `tenant_id` if needed (future). |

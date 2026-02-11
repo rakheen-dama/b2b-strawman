@@ -149,6 +149,7 @@ export function CustomerDocumentsPanel({
                           visibility={doc.visibility}
                           slug={slug}
                           customerId={customerId}
+                          disabled={doc.status !== "UPLOADED"}
                         />
                       ) : (
                         <span className="text-sm text-olive-600 dark:text-olive-400">

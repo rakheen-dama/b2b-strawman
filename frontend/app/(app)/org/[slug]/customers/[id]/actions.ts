@@ -147,6 +147,11 @@ export async function toggleDocumentVisibility(
   documentId: string,
   visibility: DocumentVisibility
 ): Promise<ActionResult> {
+  const { orgRole } = await auth();
+  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+    return { success: false, error: "Only admins and owners can toggle visibility." };
+  }
+
   try {
     await api.patch(`/api/documents/${documentId}/visibility`, { visibility });
   } catch (error) {

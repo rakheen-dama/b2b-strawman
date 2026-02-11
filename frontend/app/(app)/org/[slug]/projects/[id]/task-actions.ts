@@ -30,14 +30,7 @@ export async function createTask(
   projectId: string,
   formData: FormData
 ): Promise<ActionResult> {
-  const { orgRole } = await auth();
-  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
-
-  // Defense-in-depth: backend enforces too, but check role on the frontend
-  if (!isAdmin && !orgRole) {
-    return { success: false, error: "You do not have permission to create tasks." };
-  }
-
+  // Backend enforces access via ProjectAccessService — any project member can create tasks
   const title = formData.get("title")?.toString().trim() ?? "";
   if (!title) {
     return { success: false, error: "Task title is required." };
@@ -64,6 +57,8 @@ export async function createTask(
   return { success: true };
 }
 
+// Backend enforces update permissions: assignee can update their own task,
+// lead/admin/owner can update any task in the project.
 export async function updateTask(
   slug: string,
   taskId: string,
@@ -119,8 +114,8 @@ export async function claimTask(
     await api.post<Task>(`/api/tasks/${taskId}/claim`);
   } catch (error) {
     if (error instanceof ApiError) {
-      if (error.status === 409) {
-        return { success: false, error: "This task was just claimed by someone else." };
+      if (error.status === 400 || error.status === 409) {
+        return { success: false, error: "This task was just claimed by someone else. Please refresh." };
       }
       return { success: false, error: error.message };
     }

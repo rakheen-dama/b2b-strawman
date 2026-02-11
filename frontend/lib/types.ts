@@ -150,10 +150,10 @@ export interface CreateTaskRequest {
 }
 
 export interface UpdateTaskRequest {
-  title?: string;
+  title: string;
   description?: string;
-  priority?: TaskPriority;
-  status?: TaskStatus;
+  priority: TaskPriority;
+  status: TaskStatus;
   type?: string;
   dueDate?: string;
   assigneeId?: string;

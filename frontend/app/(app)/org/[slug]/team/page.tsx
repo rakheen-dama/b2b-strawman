@@ -16,7 +16,7 @@ export default async function TeamPage() {
       {/* Page header */}
       <div className="flex items-center gap-3">
         <h1 className="font-display text-3xl">Team</h1>
-        <span className="rounded-full bg-olive-200 px-2.5 py-0.5 text-sm text-olive-700">
+        <span className="rounded-full bg-olive-200 px-2.5 py-0.5 text-sm text-olive-700 dark:bg-olive-800 dark:text-olive-300">
           {billing.limits.currentMembers} member{billing.limits.currentMembers !== 1 ? "s" : ""}
         </span>
       </div>

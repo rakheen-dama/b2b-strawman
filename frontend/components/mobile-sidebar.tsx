@@ -60,7 +60,7 @@ export function MobileSidebar({ slug }: MobileSidebarProps) {
         <div className="mx-4 border-t border-white/10" />
 
         {/* Nav body */}
-        <nav className="flex flex-1 flex-col gap-1 p-2">
+        <nav aria-label="Main navigation" className="flex flex-1 flex-col gap-1 p-2">
           {NAV_ITEMS.map((item) => {
             const href = item.href(slug);
             const isActive = item.exact
@@ -73,7 +73,7 @@ export function MobileSidebar({ slug }: MobileSidebarProps) {
                 href={href}
                 onClick={() => setOpen(false)}
                 className={cn(
-                  "relative flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
+                  "relative flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
                   isActive
                     ? "bg-white/5 text-white"
                     : "text-white/60 hover:bg-olive-800 hover:text-white"

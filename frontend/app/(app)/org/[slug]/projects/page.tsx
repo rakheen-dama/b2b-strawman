@@ -80,7 +80,7 @@ export default async function ProjectsPage({ params }: { params: Promise<{ slug:
               <Link
                 key={project.id}
                 href={`/org/${slug}/projects/${project.id}`}
-                className="group"
+                className="group rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-olive-600"
               >
                 <div className="rounded-lg border border-olive-200 bg-white p-6 transition-all duration-150 hover:border-olive-300 hover:shadow-sm dark:border-olive-800 dark:bg-olive-950 dark:hover:border-olive-700">
                   {/* Top: name + role badge */}

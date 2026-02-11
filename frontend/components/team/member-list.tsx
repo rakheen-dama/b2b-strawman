@@ -22,7 +22,7 @@ export function MemberList() {
   });
 
   if (!isLoaded) {
-    return <div className="py-8 text-center text-sm text-olive-600">Loading members...</div>;
+    return <div className="py-8 text-center text-sm text-olive-600 dark:text-olive-400">Loading members...</div>;
   }
 
   if (!memberships?.data?.length) {
@@ -42,16 +42,16 @@ export function MemberList() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-olive-200 dark:border-olive-800">
-              <th className="pb-3 pr-4 text-left text-xs font-medium tracking-wide text-olive-600 uppercase">
+              <th className="pb-3 pr-4 text-left text-xs font-medium tracking-wide text-olive-600 uppercase dark:text-olive-400">
                 Member
               </th>
-              <th className="w-[200px] pb-3 pr-4 text-left text-xs font-medium tracking-wide text-olive-600 uppercase">
+              <th className="w-[200px] pb-3 pr-4 text-left text-xs font-medium tracking-wide text-olive-600 uppercase dark:text-olive-400">
                 Email
               </th>
-              <th className="w-[100px] pb-3 pr-4 text-left text-xs font-medium tracking-wide text-olive-600 uppercase">
+              <th className="w-[100px] pb-3 pr-4 text-left text-xs font-medium tracking-wide text-olive-600 uppercase dark:text-olive-400">
                 Role
               </th>
-              <th className="w-[140px] pb-3 text-left text-xs font-medium tracking-wide text-olive-600 uppercase">
+              <th className="w-[140px] pb-3 text-left text-xs font-medium tracking-wide text-olive-600 uppercase dark:text-olive-400">
                 Joined
               </th>
             </tr>
@@ -99,7 +99,7 @@ export function MemberList() {
           <button
             onClick={() => memberships.fetchNext?.()}
             disabled={memberships.isFetching}
-            className="text-sm font-medium text-olive-600 hover:text-olive-900 disabled:opacity-50 dark:text-olive-400 dark:hover:text-olive-200"
+            className="text-sm font-medium text-olive-600 hover:text-olive-900 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-olive-600 dark:text-olive-400 dark:hover:text-olive-200"
           >
             {memberships.isFetching ? "Loading..." : "Load more"}
           </button>

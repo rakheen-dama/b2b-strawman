@@ -13,22 +13,22 @@ export function AuthPage({ heading, subtitle, children }: AuthPageProps) {
       <h1 className="sr-only md:hidden">{heading}</h1>
 
       {/* Left panel — desktop only */}
-      <div className="hidden flex-col bg-olive-100 md:flex md:w-[55%]">
+      <div className="hidden flex-col bg-olive-100 md:flex md:w-[55%] dark:bg-olive-900">
         <div className="p-8">
-          <Link href="/" className="font-display text-xl text-olive-900">
+          <Link href="/" className="font-display text-xl text-olive-900 dark:text-olive-100">
             DocTeams
           </Link>
         </div>
         <div className="flex flex-1 flex-col items-center justify-center px-12">
-          <h1 className="font-display text-3xl text-olive-900" aria-hidden="true">
+          <h1 className="font-display text-3xl text-olive-900 dark:text-olive-100" aria-hidden="true">
             {heading}
           </h1>
-          <p className="mt-3 text-olive-700">{subtitle}</p>
+          <p className="mt-3 text-olive-700 dark:text-olive-300">{subtitle}</p>
         </div>
       </div>
 
       {/* Right panel — always visible */}
-      <div className="flex w-full flex-col items-center justify-center bg-white md:w-[45%]">
+      <div className="flex w-full flex-col items-center justify-center bg-white md:w-[45%] dark:bg-olive-950">
         {children}
       </div>
     </div>

@@ -14,9 +14,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -27,6 +29,8 @@ public class DocumentController {
   public DocumentController(DocumentService documentService) {
     this.documentService = documentService;
   }
+
+  // --- PROJECT-scoped upload-init (existing) ---
 
   @PostMapping("/api/projects/{projectId}/documents/upload-init")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
@@ -55,6 +59,76 @@ public class DocumentController {
             new UploadInitResponse(
                 result.documentId(), result.presignedUrl(), result.expiresInSeconds()));
   }
+
+  // --- ORG-scoped upload-init ---
+
+  @PostMapping("/api/documents/upload-init")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<UploadInitResponse> initiateOrgUpload(
+      @Valid @RequestBody UploadInitRequest request, JwtAuthenticationToken auth) {
+    String orgId = ClerkJwtUtils.extractOrgId(auth.getToken());
+    if (orgId == null) {
+      throw new MissingOrganizationContextException();
+    }
+    UUID memberId = RequestScopes.requireMemberId();
+
+    var result =
+        documentService.initiateOrgUpload(
+            request.fileName(), request.contentType(), request.size(), orgId, memberId);
+    return ResponseEntity.status(201)
+        .body(
+            new UploadInitResponse(
+                result.documentId(), result.presignedUrl(), result.expiresInSeconds()));
+  }
+
+  // --- CUSTOMER-scoped upload-init ---
+
+  @PostMapping("/api/customers/{customerId}/documents/upload-init")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<UploadInitResponse> initiateCustomerUpload(
+      @PathVariable UUID customerId,
+      @Valid @RequestBody UploadInitRequest request,
+      JwtAuthenticationToken auth) {
+    String orgId = ClerkJwtUtils.extractOrgId(auth.getToken());
+    if (orgId == null) {
+      throw new MissingOrganizationContextException();
+    }
+    UUID memberId = RequestScopes.requireMemberId();
+
+    var result =
+        documentService.initiateCustomerUpload(
+            customerId, request.fileName(), request.contentType(), request.size(), orgId, memberId);
+    return ResponseEntity.status(201)
+        .body(
+            new UploadInitResponse(
+                result.documentId(), result.presignedUrl(), result.expiresInSeconds()));
+  }
+
+  // --- Document listing by scope ---
+
+  @GetMapping("/api/documents")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<java.util.List<DocumentResponse>> listDocumentsByScope(
+      @RequestParam String scope, @RequestParam(required = false) UUID customerId) {
+    var documents =
+        switch (scope.toUpperCase()) {
+          case "ORG" -> documentService.listOrgDocuments();
+          case "CUSTOMER" -> {
+            if (customerId == null) {
+              throw new io.b2mash.b2b.b2bstrawman.exception.InvalidStateException(
+                  "Missing customerId", "customerId is required when scope is CUSTOMER");
+            }
+            yield documentService.listCustomerDocuments(customerId);
+          }
+          default ->
+              throw new io.b2mash.b2b.b2bstrawman.exception.InvalidStateException(
+                  "Invalid scope", "scope must be 'ORG' or 'CUSTOMER'");
+        };
+    var response = documents.stream().map(DocumentResponse::from).toList();
+    return ResponseEntity.ok(response);
+  }
+
+  // --- Confirm, cancel, project listing, download (existing) ---
 
   @PostMapping("/api/documents/{documentId}/confirm")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
@@ -94,6 +168,18 @@ public class DocumentController {
     return ResponseEntity.ok(new PresignDownloadResponse(result.url(), result.expiresInSeconds()));
   }
 
+  // --- Visibility toggle ---
+
+  @PatchMapping("/api/documents/{documentId}/visibility")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<DocumentResponse> toggleVisibility(
+      @PathVariable UUID documentId, @Valid @RequestBody VisibilityRequest request) {
+    var document = documentService.toggleVisibility(documentId, request.visibility());
+    return ResponseEntity.ok(DocumentResponse.from(document));
+  }
+
+  // --- DTOs ---
+
   public record UploadInitRequest(
       @NotBlank(message = "fileName is required")
           @Size(max = 500, message = "fileName must be at most 500 characters")
@@ -106,6 +192,9 @@ public class DocumentController {
   public record UploadInitResponse(UUID documentId, String presignedUrl, long expiresInSeconds) {}
 
   public record PresignDownloadResponse(String presignedUrl, long expiresInSeconds) {}
+
+  public record VisibilityRequest(
+      @NotBlank(message = "visibility is required") String visibility) {}
 
   public record DocumentResponse(
       UUID id,

@@ -14,7 +14,8 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 public class S3PresignedUrlService {
 
   private static final Duration URL_EXPIRY = Duration.ofHours(1);
-  private static final Pattern S3_KEY_PATTERN = Pattern.compile("^org/[^/]+/project/[^/]+/[^/]+$");
+  private static final Pattern S3_KEY_PATTERN =
+      Pattern.compile("^org/[^/]+/(project/[^/]+|org-docs|customer/[^/]+)/[^/]+$");
 
   private final S3Presigner presigner;
   private final String bucketName;
@@ -24,10 +25,34 @@ public class S3PresignedUrlService {
     this.bucketName = s3Properties.bucketName();
   }
 
+  /**
+   * Generate a presigned upload URL for PROJECT-scoped documents:
+   * org/{orgId}/project/{projectId}/{docId}.
+   */
   public PresignedUploadResult generateUploadUrl(
       String orgId, String projectId, String documentId, String contentType) {
     String s3Key = buildKey(orgId, projectId, documentId);
+    return presignUpload(s3Key, contentType);
+  }
 
+  /** Generate a presigned upload URL for ORG-scoped documents: org/{orgId}/org-docs/{docId}. */
+  public PresignedUploadResult generateOrgUploadUrl(
+      String orgId, String documentId, String contentType) {
+    String s3Key = buildOrgKey(orgId, documentId);
+    return presignUpload(s3Key, contentType);
+  }
+
+  /**
+   * Generate a presigned upload URL for CUSTOMER-scoped documents:
+   * org/{orgId}/customer/{customerId}/{docId}.
+   */
+  public PresignedUploadResult generateCustomerUploadUrl(
+      String orgId, String customerId, String documentId, String contentType) {
+    String s3Key = buildCustomerKey(orgId, customerId, documentId);
+    return presignUpload(s3Key, contentType);
+  }
+
+  private PresignedUploadResult presignUpload(String s3Key, String contentType) {
     var putRequest =
         PutObjectRequest.builder().bucket(bucketName).key(s3Key).contentType(contentType).build();
 
@@ -61,6 +86,14 @@ public class S3PresignedUrlService {
 
   static String buildKey(String orgId, String projectId, String documentId) {
     return "org/" + orgId + "/project/" + projectId + "/" + documentId;
+  }
+
+  static String buildOrgKey(String orgId, String documentId) {
+    return "org/" + orgId + "/org-docs/" + documentId;
+  }
+
+  static String buildCustomerKey(String orgId, String customerId, String documentId) {
+    return "org/" + orgId + "/customer/" + customerId + "/" + documentId;
   }
 
   public record PresignedUploadResult(String url, String s3Key, long expiresInSeconds) {}

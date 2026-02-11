@@ -16,9 +16,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -68,6 +70,38 @@ public class TimeEntryController {
     return ResponseEntity.ok(response);
   }
 
+  @PutMapping("/api/time-entries/{id}")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<TimeEntryResponse> updateTimeEntry(
+      @PathVariable UUID id, @Valid @RequestBody UpdateTimeEntryRequest request) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+
+    var entry =
+        timeEntryService.updateTimeEntry(
+            id,
+            request.date(),
+            request.durationMinutes(),
+            request.billable(),
+            request.rateCents(),
+            request.description(),
+            memberId,
+            orgRole);
+
+    var names = resolveNames(List.of(entry));
+    return ResponseEntity.ok(TimeEntryResponse.from(entry, names));
+  }
+
+  @DeleteMapping("/api/time-entries/{id}")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<Void> deleteTimeEntry(@PathVariable UUID id) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+
+    timeEntryService.deleteTimeEntry(id, memberId, orgRole);
+    return ResponseEntity.noContent().build();
+  }
+
   /**
    * Batch-loads member names for all member IDs referenced by the given time entries. Returns a map
    * of member UUID to display name.
@@ -91,6 +125,13 @@ public class TimeEntryController {
       @NotNull(message = "durationMinutes is required")
           @Positive(message = "durationMinutes must be positive")
           Integer durationMinutes,
+      Boolean billable,
+      Integer rateCents,
+      String description) {}
+
+  public record UpdateTimeEntryRequest(
+      LocalDate date,
+      @Positive(message = "durationMinutes must be positive") Integer durationMinutes,
       Boolean billable,
       Integer rateCents,
       String description) {}

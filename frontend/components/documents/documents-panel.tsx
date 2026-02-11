@@ -36,7 +36,7 @@ import {
   cancelUpload,
   getDownloadUrl,
 } from "@/app/(app)/org/[slug]/projects/[id]/actions";
-import type { Document, DocumentStatus } from "@/lib/types";
+import type { Document, DocumentStatus, DocumentScope } from "@/lib/types";
 
 // --- Upload state reducer ---
 
@@ -106,15 +106,26 @@ const STATUS_BADGE: Record<
   FAILED: { label: "Failed", variant: "destructive" },
 };
 
+const SCOPE_BADGE: Record<
+  DocumentScope,
+  { label: string; variant: "neutral" | "default" | "lead" }
+> = {
+  ORG: { label: "Org", variant: "neutral" },
+  PROJECT: { label: "Project", variant: "default" },
+  CUSTOMER: { label: "Customer", variant: "lead" },
+};
+
 // --- Component ---
 
 interface DocumentsPanelProps {
   documents: Document[];
   projectId: string;
   slug: string;
+  /** Show scope badge column (for mixed-scope views) */
+  showScope?: boolean;
 }
 
-export function DocumentsPanel({ documents, projectId, slug }: DocumentsPanelProps) {
+export function DocumentsPanel({ documents, projectId, slug, showScope = false }: DocumentsPanelProps) {
   const router = useRouter();
   const [uploads, dispatch] = useReducer(uploadReducer, []);
   const xhrMapRef = useRef<Map<string, XMLHttpRequest>>(new Map());
@@ -329,6 +340,11 @@ export function DocumentsPanel({ documents, projectId, slug }: DocumentsPanelPro
                 <TableHead className="hidden text-xs uppercase tracking-wide text-olive-600 sm:table-cell dark:text-olive-400">
                   Size
                 </TableHead>
+                {showScope && (
+                  <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                    Scope
+                  </TableHead>
+                )}
                 <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
                   Status
                 </TableHead>
@@ -341,7 +357,8 @@ export function DocumentsPanel({ documents, projectId, slug }: DocumentsPanelPro
             <TableBody>
               {documents.map((doc) => {
                 const Icon = getFileIcon(doc.contentType);
-                const badge = STATUS_BADGE[doc.status];
+                const statusBadge = STATUS_BADGE[doc.status];
+                const scopeBadge = doc.scope ? SCOPE_BADGE[doc.scope] : null;
                 return (
                   <TableRow
                     key={doc.id}
@@ -360,8 +377,13 @@ export function DocumentsPanel({ documents, projectId, slug }: DocumentsPanelPro
                         {formatFileSize(doc.size)}
                       </span>
                     </TableCell>
+                    {showScope && scopeBadge && (
+                      <TableCell>
+                        <Badge variant={scopeBadge.variant}>{scopeBadge.label}</Badge>
+                      </TableCell>
+                    )}
                     <TableCell>
-                      <Badge variant={badge.variant}>{badge.label}</Badge>
+                      <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
                       <span className="text-sm text-olive-600 dark:text-olive-400">

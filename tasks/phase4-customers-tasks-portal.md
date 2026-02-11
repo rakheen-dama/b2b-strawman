@@ -152,7 +152,7 @@ Stage 4:  [E43]                       <- after E37 + E41
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **38A** | 38.1–38.5 | Types, server actions, customer list page, create dialog, page integration | **Done** (PR #75) |
-| **38B** | 38.6–38.10 | Customer detail page, edit dialog, link-to-project dialog, project list, tests | |
+| **38B** | 38.6–38.10 | Customer detail page, edit dialog, link-to-project dialog, project list, tests | **Done** (PR #76) |
 
 ### Tasks
 

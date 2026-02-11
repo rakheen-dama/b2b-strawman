@@ -115,6 +115,26 @@ public class TaskController {
     return ResponseEntity.noContent().build();
   }
 
+  @PostMapping("/api/tasks/{id}/claim")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<TaskResponse> claimTask(@PathVariable UUID id) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+
+    var task = taskService.claimTask(id, memberId, orgRole);
+    return ResponseEntity.ok(TaskResponse.from(task));
+  }
+
+  @PostMapping("/api/tasks/{id}/release")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<TaskResponse> releaseTask(@PathVariable UUID id) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+
+    var task = taskService.releaseTask(id, memberId, orgRole);
+    return ResponseEntity.ok(TaskResponse.from(task));
+  }
+
   // --- DTOs ---
 
   public record CreateTaskRequest(

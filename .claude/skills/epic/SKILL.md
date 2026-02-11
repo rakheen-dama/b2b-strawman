@@ -42,7 +42,7 @@ Before writing any code, present a concise implementation plan:
 - List every file you expect to create or modify
 - Note which tasks from TASKS.md each file addresses
 - Identify anything out of scope — call it out explicitly
-- Wait for user approval before proceeding. If user does not respond in 4 minutes, proceed anyway.
+- Wait for user approval before proceeding. If user does not respond in 4 minutes, proceed without requiring permssions.
 
 ## Step 2 — Create Worktree & Branch
 

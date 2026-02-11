@@ -84,7 +84,7 @@ Stage 4:  [E43]                       <- after E37 + E41
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **37A** | 37.1–37.6 | Migrations, entities, repositories, Customer service + CRUD controller, integration tests | **Done** (PR #73) |
-| **37B** | 37.7–37.12 | CustomerProject linking, access control, project-side customer listing, integration tests | |
+| **37B** | 37.7–37.12 | CustomerProject linking, access control, project-side customer listing, integration tests | **Done** (PR #74) |
 
 ### Tasks
 

@@ -69,7 +69,7 @@ export function LogTimeDialog({ slug, projectId, taskId, children }: LogTimeDial
   }
 
   // Default date to today in YYYY-MM-DD format
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toLocaleDateString('en-CA');
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>

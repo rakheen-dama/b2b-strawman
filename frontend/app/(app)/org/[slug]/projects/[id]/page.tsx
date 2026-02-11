@@ -161,6 +161,7 @@ export default async function ProjectDetailPage({
             projectId={id}
             canManage={canManage}
             currentMemberId={currentMemberId}
+            orgRole={orgRole}
           />
         }
       />

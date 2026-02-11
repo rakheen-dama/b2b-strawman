@@ -2,7 +2,7 @@
 
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
-import type { TimeEntry, CreateTimeEntryRequest } from "@/lib/types";
+import type { TimeEntry, CreateTimeEntryRequest, UpdateTimeEntryRequest } from "@/lib/types";
 
 interface ActionResult {
   success: boolean;
@@ -49,6 +49,57 @@ export async function createTimeEntry(
     await api.post<TimeEntry>(`/api/tasks/${taskId}/time-entries`, body);
   } catch (error) {
     if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${slug}/projects/${projectId}`);
+
+  return { success: true };
+}
+
+export async function updateTimeEntry(
+  slug: string,
+  projectId: string,
+  timeEntryId: string,
+  data: UpdateTimeEntryRequest
+): Promise<ActionResult> {
+  try {
+    await api.put<TimeEntry>(`/api/time-entries/${timeEntryId}`, data);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 403) {
+        return {
+          success: false,
+          error: "You do not have permission to edit this time entry.",
+        };
+      }
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${slug}/projects/${projectId}`);
+
+  return { success: true };
+}
+
+export async function deleteTimeEntry(
+  slug: string,
+  projectId: string,
+  timeEntryId: string
+): Promise<ActionResult> {
+  try {
+    await api.delete(`/api/time-entries/${timeEntryId}`);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 403) {
+        return {
+          success: false,
+          error: "You do not have permission to delete this time entry.",
+        };
+      }
       return { success: false, error: error.message };
     }
     return { success: false, error: "An unexpected error occurred." };

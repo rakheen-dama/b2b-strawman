@@ -79,6 +79,7 @@ interface TaskListPanelProps {
   projectId: string;
   canManage: boolean;
   currentMemberId: string | null;
+  orgRole?: string | null;
 }
 
 export function TaskListPanel({
@@ -87,6 +88,7 @@ export function TaskListPanel({
   projectId,
   canManage,
   currentMemberId,
+  orgRole,
 }: TaskListPanelProps) {
   const router = useRouter();
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
@@ -498,7 +500,14 @@ export function TaskListPanel({
                             Loading time entries...
                           </p>
                         ) : (
-                          <TimeEntryList entries={taskEntries ?? []} />
+                          <TimeEntryList
+                            entries={taskEntries ?? []}
+                            slug={slug}
+                            projectId={projectId}
+                            currentMemberId={currentMemberId}
+                            orgRole={orgRole}
+                            canManage={canManage}
+                          />
                         )}
                       </TableCell>
                     </TableRow>

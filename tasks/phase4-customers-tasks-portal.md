@@ -207,7 +207,7 @@ Stage 4:  [E43]                       <- after E37 + E41
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **39A** | 39.1–39.5 | Migration, entity, repository, Task service + CRUD controller, integration tests | **Done** (PR #77) |
-| **39B** | 39.6–39.10 | Claim/release endpoints, optimistic locking, filtered listing, race condition tests | |
+| **39B** | 39.6–39.10 | Claim/release endpoints, optimistic locking, filtered listing, race condition tests | **Done** (PR #78) |
 
 ### Tasks
 

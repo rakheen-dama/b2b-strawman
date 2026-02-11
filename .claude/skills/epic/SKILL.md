@@ -25,7 +25,11 @@ This gives the user a live progress view of the epic implementation.
 ## Step 0 — Validate & Gather Context
 
 1. Extract the epic number from the user's input.
-2. Read `TASKS.md` and locate the epic section. If the epic is marked **Done**, stop and inform the user.
+2. Find the epic definition:
+   - Read the Epic Overview table in `TASKS.md` to identify the epic and check for a phase-specific task file link (e.g., `tasks/phase4-customers-tasks-portal.md`).
+   - If the overview row links to an external file, read that file for the full epic detail.
+   - Otherwise, locate the epic section within `TASKS.md` itself.
+   - If the epic is marked **Done**, stop and inform the user.
 3. Identify:
    - **Scope**: Frontend, Backend, Both, or Infra (from the Epic Overview table)
    - **Dependencies**: Which epics must be complete first — verify they are marked Done
@@ -130,18 +134,32 @@ Run the code-reviewer agent on the PR diff:
 
 **Ask the user before merging.** Do not auto-merge.
 
-If approved:
+If approved, follow this exact sequence to avoid worktree/branch conflicts:
+
 ```bash
+# 1. Merge the PR (this deletes the remote branch)
 gh pr merge --squash --delete-branch
 ```
 
-Update the task status in TASKS.md.
-commit and push the change.
-
-Then clean up the worktree:
 ```bash
-git worktree remove ../worktree-epic-<N>
+# 2. Navigate back to the main repo BEFORE cleaning up
+cd /Users/rakheendama/Projects/2026/b2b-strawman
+
+# 3. Remove the worktree (the branch ref was deleted by --delete-branch)
+git worktree remove ../worktree-epic-<N> --force
+
+# 4. Pull the squash-merged commit into main
+git pull origin main
+
+# 5. Prune stale branch refs
+git fetch --prune
 ```
+
+Then update the task status in the appropriate task file:
+- For epics 1–36: update status in `TASKS.md`
+- For epics 37+: update status in the linked phase file (e.g., `tasks/phase4-customers-tasks-portal.md`) AND the overview row in `TASKS.md`
+
+Commit and push the status update from the main repo (not the worktree).
 
 ## Guardrails
 

@@ -43,6 +43,14 @@
 | 34 | Supporting Pages Redesign | Frontend | 30, 31 | M | 34A, 34B | **Done** |
 | 35 | Auth Pages & Dialog Restyling | Frontend | 30 | M | 35A, 35B | **Done** |
 | 36 | Polish & Accessibility | Frontend | 30–35 | M | — | **Done** |
+| **Phase 4 — Customers, Document Scopes & Tasks** | | | | | | See [tasks/phase4-customers-tasks-portal.md](tasks/phase4-customers-tasks-portal.md) |
+| 37 | Customer Backend — Entity, CRUD & Linking | Backend | — | M | 37A, 37B | |
+| 38 | Customer Frontend — List, Detail & Dialogs | Frontend | 37 | M | 38A, 38B | |
+| 39 | Task Backend — Entity, CRUD, Claim & Release | Backend | — | M | 39A, 39B | |
+| 40 | Task Frontend — List, Creation & Claim UI | Frontend | 39 | M | 40A, 40B | |
+| 41 | Document Scope Extension — Backend | Backend | 37 | M | 41A, 41B | |
+| 42 | Document Scope Extension — Frontend | Frontend | 38, 41 | M | 42A, 42B | |
+| 43 | Customer Portal Groundwork | Both | 37, 41 | L | 43A, 43B, 43C | |
 
 ---
 

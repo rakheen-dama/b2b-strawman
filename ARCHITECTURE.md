@@ -1871,7 +1871,7 @@ See [ADR-016](adr/ADR-016-tier-upgrade-migration.md) for the full decision recor
 
 ---
 
-## 10. Phase 3 — Customers, Document Scopes & Tasks
+## 10. Phase 4 — Customers, Document Scopes & Tasks
 
 Phase 3 extends the platform from an internal staff-collaboration tool to a client-aware system. It introduces three new domain concepts — **Customers**, **document scopes**, and **Tasks** — and lays the groundwork for a future customer-facing portal. All additions are evolutionary: they reuse the existing tenant isolation model and add new entities alongside the current Project/Document/Member model.
 

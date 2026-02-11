@@ -1,5 +1,9 @@
 import { HeroSection } from "@/components/marketing/hero-section";
 import { LogoBar } from "@/components/marketing/logo-bar";
+import { FeaturesSection } from "@/components/marketing/features-section";
+import { StatsSection } from "@/components/marketing/stats-section";
+import { PricingPreview } from "@/components/marketing/pricing-preview";
+import { TestimonialsSection } from "@/components/marketing/testimonials-section";
 import { CtaSection } from "@/components/marketing/cta-section";
 import { Footer } from "@/components/marketing/footer";
 
@@ -9,7 +13,10 @@ export default function LandingPage() {
       <main className="flex-1">
         <HeroSection />
         <LogoBar />
-        {/* Features, Stats, Pricing, Testimonials sections added in Epic 32B */}
+        <FeaturesSection />
+        <StatsSection />
+        <PricingPreview />
+        <TestimonialsSection />
         <CtaSection />
       </main>
       <Footer />

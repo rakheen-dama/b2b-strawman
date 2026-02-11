@@ -53,7 +53,7 @@ function proBilling(): BillingResponse {
     planSlug: "pro",
     tier: "PRO",
     status: "ACTIVE",
-    limits: { maxMembers: 25, currentMembers: 5 },
+    limits: { maxMembers: 10, currentMembers: 5 },
   };
 }
 
@@ -128,7 +128,7 @@ describe("BillingPage", () => {
     render(page);
 
     expect(screen.getByText("Pro Plan")).toBeInTheDocument();
-    expect(screen.getByText("5 of 25")).toBeInTheDocument();
+    expect(screen.getByText("5 of 10")).toBeInTheDocument();
 
     const proBadge = screen.getAllByTestId("badge").find(
       (el) => el.getAttribute("data-variant") === "pro" && el.textContent === "Pro"

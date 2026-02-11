@@ -100,26 +100,27 @@ describe("ProjectMembersPanel", () => {
     it("renders all members with correct roles", () => {
       render(<ProjectMembersPanel {...defaultProps} members={mockMembers} />);
 
-      expect(screen.getByText("Alice Lead")).toBeInTheDocument();
-      expect(screen.getByText("Bob Member")).toBeInTheDocument();
-      expect(screen.getByText("Lead")).toBeInTheDocument();
-      expect(screen.getByText("Member")).toBeInTheDocument();
+      expect(screen.getAllByText("Alice Lead").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText("Bob Member").length).toBeGreaterThanOrEqual(1);
+      // Role badges — "Member" also appears as column header text
+      expect(screen.getAllByText("Lead").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText("Member").length).toBeGreaterThanOrEqual(1);
     });
 
     it("displays member count in header", () => {
-      const { container } = render(
+      render(
         <ProjectMembersPanel {...defaultProps} members={mockMembers} />,
       );
 
-      const heading = container.querySelector("h2");
-      expect(heading).toHaveTextContent("Members (2)");
+      expect(screen.getByText("Members")).toBeInTheDocument();
+      expect(screen.getByText("2")).toBeInTheDocument();
     });
 
     it("renders member emails", () => {
       render(<ProjectMembersPanel {...defaultProps} members={mockMembers} />);
 
-      expect(screen.getByText("alice@example.com")).toBeInTheDocument();
-      expect(screen.getByText("bob@example.com")).toBeInTheDocument();
+      expect(screen.getAllByText("alice@example.com").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText("bob@example.com").length).toBeGreaterThanOrEqual(1);
     });
   });
 

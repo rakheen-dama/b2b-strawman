@@ -1,6 +1,6 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { api, handleApiError } from "@/lib/api";
-import type { Project, Document, ProjectMember, ProjectRole, Task } from "@/lib/types";
+import type { OrgMember, Project, Document, ProjectMember, ProjectRole, Task } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EditProjectDialog } from "@/components/projects/edit-project-dialog";
@@ -59,6 +59,23 @@ export default async function ProjectDetailPage({
     tasks = await api.get<Task[]>(`/api/projects/${id}/tasks`);
   } catch {
     // Non-fatal: show empty tasks list if fetch fails
+  }
+
+  // Resolve current user's backend member ID for "My Tasks" filter and claim/release actions.
+  // Match Clerk user email against org members list from the backend.
+  let currentMemberId: string | null = null;
+  try {
+    const [user, orgMembers] = await Promise.all([
+      currentUser(),
+      api.get<OrgMember[]>("/api/members"),
+    ]);
+    const email = user?.primaryEmailAddress?.emailAddress;
+    if (email) {
+      const match = orgMembers.find((m) => m.email === email);
+      if (match) currentMemberId = match.id;
+    }
+  } catch {
+    // Non-fatal: "My Tasks" filter won't work without member ID
   }
 
   const roleBadge = project.projectRole ? ROLE_BADGE[project.projectRole] : null;
@@ -143,6 +160,7 @@ export default async function ProjectDetailPage({
             slug={slug}
             projectId={id}
             canManage={canManage}
+            currentMemberId={currentMemberId}
           />
         }
       />

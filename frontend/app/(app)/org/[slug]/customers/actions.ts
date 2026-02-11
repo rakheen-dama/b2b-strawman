@@ -1,5 +1,6 @@
 "use server";
 
+import { auth } from "@clerk/nextjs/server";
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import type { Customer, CreateCustomerRequest, UpdateCustomerRequest } from "@/lib/types";
@@ -9,11 +10,12 @@ interface ActionResult {
   error?: string;
 }
 
-export async function fetchCustomers(): Promise<Customer[]> {
-  return api.get<Customer[]>("/api/customers");
-}
-
 export async function createCustomer(slug: string, formData: FormData): Promise<ActionResult> {
+  const { orgRole } = await auth();
+  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+    return { success: false, error: "Only admins and owners can manage customers." };
+  }
+
   const name = formData.get("name")?.toString().trim() ?? "";
   const email = formData.get("email")?.toString().trim() ?? "";
   const phone = formData.get("phone")?.toString().trim() || undefined;
@@ -49,6 +51,11 @@ export async function updateCustomer(
   id: string,
   formData: FormData
 ): Promise<ActionResult> {
+  const { orgRole } = await auth();
+  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+    return { success: false, error: "Only admins and owners can manage customers." };
+  }
+
   const name = formData.get("name")?.toString().trim() ?? "";
   const email = formData.get("email")?.toString().trim() ?? "";
   const phone = formData.get("phone")?.toString().trim() || undefined;
@@ -81,6 +88,11 @@ export async function updateCustomer(
 }
 
 export async function archiveCustomer(slug: string, id: string): Promise<ActionResult> {
+  const { orgRole } = await auth();
+  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+    return { success: false, error: "Only admins and owners can manage customers." };
+  }
+
   try {
     await api.delete(`/api/customers/${id}`);
   } catch (error) {

@@ -1,6 +1,6 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { api, handleApiError } from "@/lib/api";
-import type { OrgMember, Project, Document, ProjectMember, ProjectRole, Task } from "@/lib/types";
+import type { OrgMember, Project, Document, ProjectMember, ProjectRole, Task, ProjectTimeSummary, MemberTimeSummary, TaskTimeSummary } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EditProjectDialog } from "@/components/projects/edit-project-dialog";
@@ -8,6 +8,7 @@ import { DeleteProjectDialog } from "@/components/projects/delete-project-dialog
 import { DocumentsPanel } from "@/components/documents/documents-panel";
 import { ProjectMembersPanel } from "@/components/projects/project-members-panel";
 import { TaskListPanel } from "@/components/tasks/task-list-panel";
+import { TimeSummaryPanel } from "@/components/projects/time-summary-panel";
 import { ProjectTabs } from "@/components/projects/project-tabs";
 import { formatDate } from "@/lib/format";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
@@ -59,6 +60,31 @@ export default async function ProjectDetailPage({
     tasks = await api.get<Task[]>(`/api/projects/${id}/tasks`);
   } catch {
     // Non-fatal: show empty tasks list if fetch fails
+  }
+
+  // Time summary data for the "Time" tab
+  let timeSummary: ProjectTimeSummary = {
+    billableMinutes: 0,
+    nonBillableMinutes: 0,
+    totalMinutes: 0,
+    contributorCount: 0,
+    entryCount: 0,
+  };
+  let timeSummaryByTask: TaskTimeSummary[] = [];
+  let timeSummaryByMember: MemberTimeSummary[] | null = null;
+  try {
+    const [summaryRes, byTaskRes, byMemberRes] = await Promise.all([
+      api.get<ProjectTimeSummary>(`/api/projects/${id}/time-summary`),
+      api.get<TaskTimeSummary[]>(`/api/projects/${id}/time-summary/by-task`),
+      api
+        .get<MemberTimeSummary[]>(`/api/projects/${id}/time-summary/by-member`)
+        .catch(() => null),
+    ]);
+    timeSummary = summaryRes;
+    timeSummaryByTask = byTaskRes;
+    timeSummaryByMember = byMemberRes;
+  } catch {
+    // Non-fatal: show empty time summary if fetch fails
   }
 
   // Resolve current user's backend member ID for "My Tasks" filter and claim/release actions.
@@ -162,6 +188,14 @@ export default async function ProjectDetailPage({
             canManage={canManage}
             currentMemberId={currentMemberId}
             orgRole={orgRole}
+          />
+        }
+        timePanel={
+          <TimeSummaryPanel
+            projectId={id}
+            initialSummary={timeSummary}
+            initialByTask={timeSummaryByTask}
+            initialByMember={timeSummaryByMember}
           />
         }
       />

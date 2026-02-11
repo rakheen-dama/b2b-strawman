@@ -28,7 +28,7 @@ public class Document implements TenantAware {
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
-  @Column(name = "project_id", nullable = false)
+  @Column(name = "project_id")
   private UUID projectId;
 
   @Column(name = "file_name", nullable = false, length = 500)
@@ -53,6 +53,15 @@ public class Document implements TenantAware {
   @Column(name = "uploaded_at")
   private Instant uploadedAt;
 
+  @Column(name = "scope", nullable = false, length = 20)
+  private String scope;
+
+  @Column(name = "customer_id")
+  private UUID customerId;
+
+  @Column(name = "visibility", nullable = false, length = 20)
+  private String visibility;
+
   @Column(name = "tenant_id")
   private String tenantId;
 
@@ -61,6 +70,7 @@ public class Document implements TenantAware {
 
   protected Document() {}
 
+  /** Constructor for PROJECT-scoped documents (backward compatible). */
   public Document(UUID projectId, String fileName, String contentType, long size, UUID uploadedBy) {
     this.projectId = projectId;
     this.fileName = fileName;
@@ -69,6 +79,31 @@ public class Document implements TenantAware {
     this.s3Key = "pending";
     this.status = Status.PENDING;
     this.uploadedBy = uploadedBy;
+    this.scope = Scope.PROJECT;
+    this.visibility = Visibility.INTERNAL;
+    this.createdAt = Instant.now();
+  }
+
+  /** Constructor for scope-aware document creation. */
+  public Document(
+      String scope,
+      UUID projectId,
+      UUID customerId,
+      String fileName,
+      String contentType,
+      long size,
+      UUID uploadedBy,
+      String visibility) {
+    this.scope = scope;
+    this.projectId = projectId;
+    this.customerId = customerId;
+    this.fileName = fileName;
+    this.contentType = contentType;
+    this.size = size;
+    this.s3Key = "pending";
+    this.status = Status.PENDING;
+    this.uploadedBy = uploadedBy;
+    this.visibility = visibility;
     this.createdAt = Instant.now();
   }
 
@@ -79,6 +114,18 @@ public class Document implements TenantAware {
   public void confirmUpload() {
     this.status = Status.UPLOADED;
     this.uploadedAt = Instant.now();
+  }
+
+  public boolean isOrgScoped() {
+    return Scope.ORG.equals(scope);
+  }
+
+  public boolean isProjectScoped() {
+    return Scope.PROJECT.equals(scope);
+  }
+
+  public boolean isCustomerScoped() {
+    return Scope.CUSTOMER.equals(scope);
   }
 
   public UUID getId() {
@@ -117,6 +164,22 @@ public class Document implements TenantAware {
     return uploadedAt;
   }
 
+  public String getScope() {
+    return scope;
+  }
+
+  public UUID getCustomerId() {
+    return customerId;
+  }
+
+  public String getVisibility() {
+    return visibility;
+  }
+
+  public void setVisibility(String visibility) {
+    this.visibility = visibility;
+  }
+
   @Override
   public String getTenantId() {
     return tenantId;
@@ -135,5 +198,22 @@ public class Document implements TenantAware {
     PENDING,
     UPLOADED,
     FAILED
+  }
+
+  /** Document scope constants. */
+  public static final class Scope {
+    public static final String PROJECT = "PROJECT";
+    public static final String ORG = "ORG";
+    public static final String CUSTOMER = "CUSTOMER";
+
+    private Scope() {}
+  }
+
+  /** Document visibility constants. */
+  public static final class Visibility {
+    public static final String INTERNAL = "INTERNAL";
+    public static final String SHARED = "SHARED";
+
+    private Visibility() {}
   }
 }

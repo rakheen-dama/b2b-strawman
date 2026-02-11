@@ -26,10 +26,26 @@ public class DocumentService {
     this.s3Service = s3Service;
   }
 
+  /**
+   * List PROJECT-scoped documents for a project. Explicitly filters scope='PROJECT' so that
+   * ORG-scoped or CUSTOMER-scoped documents are not returned through project document listing.
+   */
   @Transactional(readOnly = true)
   public List<Document> listDocuments(UUID projectId, UUID memberId, String orgRole) {
     projectAccessService.requireViewAccess(projectId, memberId, orgRole);
-    return documentRepository.findByProjectId(projectId);
+    return documentRepository.findProjectScopedByProjectId(projectId);
+  }
+
+  /** List ORG-scoped documents. Any authenticated org member can list. */
+  @Transactional(readOnly = true)
+  public List<Document> listOrgDocuments() {
+    return documentRepository.findByScope(Document.Scope.ORG);
+  }
+
+  /** List CUSTOMER-scoped documents for a specific customer. */
+  @Transactional(readOnly = true)
+  public List<Document> listCustomerDocuments(UUID customerId) {
+    return documentRepository.findByScopeAndCustomerId(Document.Scope.CUSTOMER, customerId);
   }
 
   @Transactional
@@ -56,13 +72,17 @@ public class DocumentService {
     return new UploadInitResult(document.getId(), presigned.url(), presigned.expiresInSeconds());
   }
 
+  /**
+   * Confirm upload — scope-aware. For PROJECT-scoped documents, checks project access. For ORG and
+   * CUSTOMER scoped documents, the document is already tenant-isolated via Hibernate @Filter.
+   */
   @Transactional
   public Document confirmUpload(UUID documentId, UUID memberId, String orgRole) {
     var document =
         documentRepository
             .findOneById(documentId)
             .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
-    projectAccessService.requireViewAccess(document.getProjectId(), memberId, orgRole);
+    requireDocumentAccess(document, memberId, orgRole);
     if (document.getStatus() != Document.Status.UPLOADED) {
       document.confirmUpload();
       return documentRepository.save(document);
@@ -70,13 +90,17 @@ public class DocumentService {
     return document;
   }
 
+  /**
+   * Cancel upload — scope-aware. For PROJECT-scoped documents, checks project access. For ORG and
+   * CUSTOMER scoped documents, the document is already tenant-isolated via Hibernate @Filter.
+   */
   @Transactional
   public void cancelUpload(UUID documentId, UUID memberId, String orgRole) {
     var document =
         documentRepository
             .findOneById(documentId)
             .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
-    projectAccessService.requireViewAccess(document.getProjectId(), memberId, orgRole);
+    requireDocumentAccess(document, memberId, orgRole);
     if (document.getStatus() != Document.Status.PENDING) {
       throw new ResourceConflictException(
           "Document not pending", "Only pending documents can be cancelled");
@@ -91,13 +115,25 @@ public class DocumentService {
         documentRepository
             .findOneById(documentId)
             .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
-    projectAccessService.requireViewAccess(document.getProjectId(), memberId, orgRole);
+    requireDocumentAccess(document, memberId, orgRole);
     if (document.getStatus() != Document.Status.UPLOADED) {
       throw new InvalidStateException(
           "Document not uploaded", "Document has not been uploaded yet");
     }
     var presigned = s3Service.generateDownloadUrl(document.getS3Key());
     return new PresignDownloadResult(presigned.url(), presigned.expiresInSeconds());
+  }
+
+  /**
+   * Scope-aware access check. PROJECT-scoped documents check project membership. ORG and CUSTOMER
+   * scoped documents rely on tenant isolation (Hibernate @Filter already restricts to current
+   * tenant).
+   */
+  private void requireDocumentAccess(Document document, UUID memberId, String orgRole) {
+    if (document.isProjectScoped() && document.getProjectId() != null) {
+      projectAccessService.requireViewAccess(document.getProjectId(), memberId, orgRole);
+    }
+    // ORG and CUSTOMER scoped: tenant isolation is sufficient — any org member can access
   }
 
   public record UploadInitResult(UUID documentId, String presignedUrl, long expiresInSeconds) {}

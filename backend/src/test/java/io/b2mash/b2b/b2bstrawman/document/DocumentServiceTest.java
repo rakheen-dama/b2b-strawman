@@ -47,7 +47,7 @@ class DocumentServiceTest {
     var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, MEMBER_ID);
     when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
         .thenReturn(GRANTED);
-    when(documentRepository.findByProjectId(PROJECT_ID)).thenReturn(List.of(doc));
+    when(documentRepository.findProjectScopedByProjectId(PROJECT_ID)).thenReturn(List.of(doc));
 
     var result = service.listDocuments(PROJECT_ID, MEMBER_ID, ORG_ROLE);
 
@@ -62,7 +62,7 @@ class DocumentServiceTest {
 
     assertThatThrownBy(() -> service.listDocuments(PROJECT_ID, MEMBER_ID, ORG_ROLE))
         .isInstanceOf(ResourceNotFoundException.class);
-    verify(documentRepository, never()).findByProjectId(any());
+    verify(documentRepository, never()).findProjectScopedByProjectId(any());
   }
 
   @Test
@@ -72,7 +72,7 @@ class DocumentServiceTest {
 
     assertThatThrownBy(() -> service.listDocuments(PROJECT_ID, MEMBER_ID, ORG_ROLE))
         .isInstanceOf(ResourceNotFoundException.class);
-    verify(documentRepository, never()).findByProjectId(any());
+    verify(documentRepository, never()).findProjectScopedByProjectId(any());
   }
 
   @Test

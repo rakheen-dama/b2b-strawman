@@ -602,6 +602,88 @@ class DocumentIntegrationTest {
         .andExpect(status().isNotFound());
   }
 
+  // --- Backward compatibility after V12 scope extension ---
+
+  @Test
+  void projectListingReturnsOnlyProjectScopedDocuments() throws Exception {
+    // Upload a PROJECT-scoped document via the standard project upload-init
+    mockMvc
+        .perform(
+            post("/api/projects/" + projectId + "/documents/upload-init")
+                .with(memberJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"fileName": "scope-compat.pdf", "contentType": "application/pdf", "size": 256}
+                    """))
+        .andExpect(status().isCreated());
+
+    // Listing documents for the project should return documents with scope=PROJECT
+    mockMvc
+        .perform(get("/api/projects/" + projectId + "/documents").with(memberJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray())
+        .andExpect(jsonPath("$[0].scope").value("PROJECT"))
+        .andExpect(jsonPath("$[0].visibility").value("INTERNAL"));
+  }
+
+  @Test
+  void confirmResponseIncludesScopeAndVisibilityFields() throws Exception {
+    var initResult =
+        mockMvc
+            .perform(
+                post("/api/projects/" + projectId + "/documents/upload-init")
+                    .with(memberJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"fileName": "scope-fields.pdf", "contentType": "application/pdf", "size": 128}
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    var documentId = extractJsonField(initResult, "documentId");
+
+    mockMvc
+        .perform(post("/api/documents/" + documentId + "/confirm").with(memberJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.scope").value("PROJECT"))
+        .andExpect(jsonPath("$.customerId").isEmpty())
+        .andExpect(jsonPath("$.visibility").value("INTERNAL"))
+        .andExpect(jsonPath("$.status").value("UPLOADED"))
+        .andExpect(jsonPath("$.projectId").value(projectId));
+  }
+
+  @Test
+  void presignDownloadStillWorksAfterScopeExtension() throws Exception {
+    var initResult =
+        mockMvc
+            .perform(
+                post("/api/projects/" + projectId + "/documents/upload-init")
+                    .with(memberJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"fileName": "compat-download.pdf", "contentType": "application/pdf", "size": 512}
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    var documentId = extractJsonField(initResult, "documentId");
+
+    // Confirm
+    mockMvc
+        .perform(post("/api/documents/" + documentId + "/confirm").with(memberJwt()))
+        .andExpect(status().isOk());
+
+    // Presign-download should still work for PROJECT-scoped documents
+    mockMvc
+        .perform(get("/api/documents/" + documentId + "/presign-download").with(memberJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.presignedUrl").exists())
+        .andExpect(jsonPath("$.expiresInSeconds").value(3600));
+  }
+
   // --- Helpers ---
 
   private String extractIdFromLocation(MvcResult result) {

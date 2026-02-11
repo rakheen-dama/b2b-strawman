@@ -37,7 +37,7 @@
 | 29 | Self-Service Plan Upgrade (Simulated) | Both | 28 | S | 29A, 29B | **Done** |
 | **Phase 3 — Frontend Design Overhaul** | | | | | |          |
 | 30 | Design Foundation | Frontend | — | M | 30A, 30B | **Done** |
-| 31 | App Shell Redesign | Frontend | 30 | M | — | |
+| 31 | App Shell Redesign | Frontend | 30 | M | — | **Done** |
 | 32 | Landing Page | Frontend | 30 | L | 32A, 32B | |
 | 33 | Core App Pages Redesign | Frontend | 30, 31 | L | 33A, 33B | |
 | 34 | Supporting Pages Redesign | Frontend | 30, 31 | M | 34A, 34B | |

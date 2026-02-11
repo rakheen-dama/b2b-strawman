@@ -45,4 +45,37 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
       @Param("projectId") UUID projectId,
       @Param("status") String status,
       @Param("priority") String priority);
+
+  // --- Cross-project queries for My Work (Epic 48A) ---
+
+  /**
+   * Finds tasks assigned to a specific member with active statuses (OPEN, IN_PROGRESS). Ordered by
+   * due date ascending (nulls last) then created date descending. Naturally respects @Filter for
+   * tenant isolation.
+   */
+  @Query(
+      """
+      SELECT t FROM Task t
+      WHERE t.assigneeId = :memberId
+        AND t.status IN ('OPEN', 'IN_PROGRESS')
+      ORDER BY t.dueDate ASC NULLS LAST, t.createdAt DESC
+      """)
+  List<Task> findAssignedToMember(@Param("memberId") UUID memberId);
+
+  /**
+   * Finds unassigned OPEN tasks in projects where the member is a ProjectMember. Ordered by
+   * priority descending then created date descending. Naturally respects @Filter for tenant
+   * isolation.
+   */
+  @Query(
+      """
+      SELECT t FROM Task t
+      WHERE t.assigneeId IS NULL
+        AND t.status = 'OPEN'
+        AND t.projectId IN (
+          SELECT pm.projectId FROM ProjectMember pm WHERE pm.memberId = :memberId
+        )
+      ORDER BY t.createdAt DESC
+      """)
+  List<Task> findUnassignedInMemberProjects(@Param("memberId") UUID memberId);
 }

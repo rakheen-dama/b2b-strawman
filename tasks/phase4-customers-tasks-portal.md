@@ -323,7 +323,7 @@ Stage 4:  [E43]                       <- after E37 + E41
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **41A** | 41.1–41.5 | V11 migration, entity changes, updated service for scope-aware queries, backward compatibility tests | |
+| **41A** | 41.1–41.5 | V12 migration, entity changes, updated service for scope-aware queries, backward compatibility tests | **Done** (PR #81) |
 | **41B** | 41.6–41.11 | New upload-init endpoints (org, customer), visibility toggle, S3 key extension, integration tests | |
 
 ### Tasks

@@ -170,6 +170,10 @@ public class TaskService {
             .findOneById(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
 
+    if (task.getAssigneeId() == null) {
+      throw new InvalidStateException("Cannot release task", "Task is not currently claimed");
+    }
+
     var access = projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
 
     // Current assignee or lead/admin/owner can release

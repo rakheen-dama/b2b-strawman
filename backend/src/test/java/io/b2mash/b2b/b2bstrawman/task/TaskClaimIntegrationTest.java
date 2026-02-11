@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.task;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -12,6 +13,9 @@ import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -213,10 +217,9 @@ class TaskClaimIntegrationTest {
   }
 
   @Test
-  void shouldReturn409OnConcurrentClaimSimulation() throws Exception {
-    var taskId = createTask("Concurrent Claim Task");
+  void shouldAllowReclaimAfterRelease() throws Exception {
+    var taskId = createTask("Reclaim After Release Task");
 
-    // Simulate concurrent claim by claiming, then trying to update with stale version
     // First claim succeeds (version goes from 0 to 1)
     mockMvc
         .perform(post("/api/tasks/" + taskId + "/claim").with(memberJwt()))
@@ -233,6 +236,56 @@ class TaskClaimIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("IN_PROGRESS"))
         .andExpect(jsonPath("$.assigneeId").value(memberIdMember2));
+  }
+
+  @Test
+  void shouldReturn400WhenReleasingUnclaimedTask() throws Exception {
+    var taskId = createTask("Unclaimed Release Task");
+
+    // Task is OPEN with no assignee — release should fail with state guard
+    mockMvc
+        .perform(post("/api/tasks/" + taskId + "/release").with(ownerJwt()))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.detail").value("Task is not currently claimed"));
+  }
+
+  @Test
+  void shouldReturn409OrStateErrorOnConcurrentClaim() throws Exception {
+    var taskId = createTask("Concurrent Claim Task");
+
+    var barrier = new CyclicBarrier(2);
+    var executor = Executors.newFixedThreadPool(2);
+
+    Future<Integer> future1 =
+        executor.submit(
+            () -> {
+              barrier.await();
+              return mockMvc
+                  .perform(post("/api/tasks/" + taskId + "/claim").with(memberJwt()))
+                  .andReturn()
+                  .getResponse()
+                  .getStatus();
+            });
+
+    Future<Integer> future2 =
+        executor.submit(
+            () -> {
+              barrier.await();
+              return mockMvc
+                  .perform(post("/api/tasks/" + taskId + "/claim").with(member2Jwt()))
+                  .andReturn()
+                  .getResponse()
+                  .getStatus();
+            });
+
+    int status1 = future1.get();
+    int status2 = future2.get();
+    executor.shutdown();
+
+    // Exactly one should succeed (200); the other gets 400 (state guard) or 409 (optimistic lock)
+    var statuses = List.of(status1, status2);
+    assertThat(statuses).containsOnlyOnce(200);
+    assertThat(statuses.stream().filter(s -> s != 200).findFirst().orElseThrow()).isIn(400, 409);
   }
 
   // --- Helpers ---

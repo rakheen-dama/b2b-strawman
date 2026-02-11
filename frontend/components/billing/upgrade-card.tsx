@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,14 +17,11 @@ interface UpgradeCardProps {
 }
 
 export function UpgradeCard({ slug }: UpgradeCardProps) {
-  const router = useRouter();
-
   async function handleUpgrade() {
     const result = await upgradeToPro(slug);
     if (!result.success) {
       throw new Error(result.error ?? "Failed to upgrade plan.");
     }
-    router.refresh();
   }
 
   return (

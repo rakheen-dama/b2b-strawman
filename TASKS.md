@@ -55,7 +55,7 @@
 | 44 | TimeEntry Backend — Entity, CRUD & Validation | Backend | — | M | 44A, 44B | **Done** (PR #88, #89) |
 | 45 | TimeEntry Frontend — Log Time Dialog & Task Time List | Frontend | 44 | M | 45A, 45B | **Done** (PR #90, #91) |
 | 46 | Project Time Summary — Backend | Backend | 44 | M | 46A | **Done** (PR #92) |
-| 47 | Project Time Summary — Frontend | Frontend | 46 | S | 47A | |
+| 47 | Project Time Summary — Frontend | Frontend | 46 | S | 47A | **Done** (PR #94) |
 | 48 | My Work — Backend | Backend | 44 | M | 48A | **Done** (PR #93) |
 | 49 | My Work — Frontend | Frontend | 48 | M | 49A, 49B | |
 | **Phase 6 — Audit & Compliance Foundations** | | | | | | See [tasks/phase6-audit-compliance-foundations.md](tasks/phase6-audit-compliance-foundations.md) |

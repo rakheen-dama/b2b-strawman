@@ -271,7 +271,7 @@ Stage 3:  [E47] [E49]                <- parallel (after their respective Stage 2
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **47A** | 47.1--47.6 | TypeScript types, server actions, TimeSummaryPanel component, tab integration, tests | |
+| **47A** | 47.1--47.6 | TypeScript types, server actions, TimeSummaryPanel component, tab integration, tests | **Done** (PR #94) |
 
 ### Tasks
 

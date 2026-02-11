@@ -269,7 +269,7 @@ Stage 4:  [E43]                       <- after E37 + E41
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **40A** | 40.1–40.5 | Types, server actions, task list component, create dialog, project detail integration | |
+| **40A** | 40.1–40.5 | Types, server actions, task list component, create dialog, project detail integration | **Done** (PR #79) |
 | **40B** | 40.6–40.10 | Claim/release buttons, status filters, priority badges, optimistic UI, tests | |
 
 ### Tasks

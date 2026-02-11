@@ -1,23 +1,14 @@
 "use client";
 
 import { useOrganization } from "@clerk/nextjs";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { formatDate } from "@/lib/format";
 
-const ROLE_LABELS: Record<string, string> = {
-  "org:owner": "Owner",
-  "org:admin": "Admin",
-  "org:member": "Member",
+const ROLE_BADGES: Record<string, { label: string; variant: "owner" | "admin" | "member" }> = {
+  "org:owner": { label: "Owner", variant: "owner" },
+  "org:admin": { label: "Admin", variant: "admin" },
+  "org:member": { label: "Member", variant: "member" },
 };
 
 export function PendingInvitations({ isAdmin }: { isAdmin: boolean }) {
@@ -34,15 +25,11 @@ export function PendingInvitations({ isAdmin }: { isAdmin: boolean }) {
   const [revokingId, setRevokingId] = useState<string | null>(null);
 
   if (!isLoaded) {
-    return (
-      <div className="text-muted-foreground py-8 text-center text-sm">Loading invitations...</div>
-    );
+    return <div className="py-8 text-center text-sm text-olive-600">Loading invitations...</div>;
   }
 
   if (!invitations?.data?.length) {
-    return (
-      <div className="text-muted-foreground py-8 text-center text-sm">No pending invitations.</div>
-    );
+    return <div className="py-8 text-center text-sm text-olive-600">No pending invitations.</div>;
   }
 
   const handleRevoke = async (invitationId: string) => {
@@ -62,61 +49,80 @@ export function PendingInvitations({ isAdmin }: { isAdmin: boolean }) {
 
   return (
     <div className="space-y-4">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Email</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead>Invited</TableHead>
-            {isAdmin && <TableHead>Actions</TableHead>}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {invitations.data.map((inv) => (
-            <TableRow key={inv.id}>
-              <TableCell className="font-medium">{inv.emailAddress}</TableCell>
-              <TableCell>
-                <Badge variant="outline">{ROLE_LABELS[inv.role] ?? inv.role}</Badge>
-              </TableCell>
-              <TableCell className="text-muted-foreground">
-                {inv.createdAt ? formatDate(inv.createdAt) : "—"}
-              </TableCell>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-olive-200 dark:border-olive-800">
+              <th className="pb-3 pr-4 text-left text-xs font-medium tracking-wide text-olive-600 uppercase">
+                Email
+              </th>
+              <th className="w-[100px] pb-3 pr-4 text-left text-xs font-medium tracking-wide text-olive-600 uppercase">
+                Role
+              </th>
+              <th className="w-[140px] pb-3 pr-4 text-left text-xs font-medium tracking-wide text-olive-600 uppercase">
+                Invited
+              </th>
               {isAdmin && (
-                <TableCell>
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => handleRevoke(inv.id)}
-                    disabled={revokingId === inv.id}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    {revokingId === inv.id ? "Revoking..." : "Revoke"}
-                  </Button>
-                </TableCell>
+                <th className="w-[80px] pb-3 text-left text-xs font-medium tracking-wide text-olive-600 uppercase">
+                  Actions
+                </th>
               )}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+            </tr>
+          </thead>
+          <tbody>
+            {invitations.data.map((inv) => {
+              const roleInfo = ROLE_BADGES[inv.role] ?? {
+                label: inv.role,
+                variant: "member" as const,
+              };
+              return (
+                <tr
+                  key={inv.id}
+                  className="border-b border-olive-100 transition-colors hover:bg-olive-50 dark:border-olive-800/50 dark:hover:bg-olive-900/30"
+                >
+                  <td className="py-3 pr-4 font-medium text-olive-900 dark:text-olive-100">
+                    {inv.emailAddress}
+                  </td>
+                  <td className="py-3 pr-4">
+                    <Badge variant={roleInfo.variant}>{roleInfo.label}</Badge>
+                  </td>
+                  <td className="py-3 pr-4 text-olive-600 dark:text-olive-400">
+                    {inv.createdAt ? formatDate(inv.createdAt) : "—"}
+                  </td>
+                  {isAdmin && (
+                    <td className="py-3">
+                      <button
+                        onClick={() => handleRevoke(inv.id)}
+                        disabled={revokingId === inv.id}
+                        className="text-sm font-medium text-red-600 hover:text-red-700 disabled:opacity-50 dark:text-red-400 dark:hover:text-red-300"
+                      >
+                        {revokingId === inv.id ? "Revoking..." : "Revoke"}
+                      </button>
+                    </td>
+                  )}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
 
       {(invitations.hasPreviousPage || invitations.hasNextPage) && (
-        <div className="flex justify-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
+        <div className="flex justify-center gap-4">
+          <button
             disabled={!invitations.hasPreviousPage || invitations.isFetching}
             onClick={() => invitations.fetchPrevious?.()}
+            className="text-sm font-medium text-olive-600 hover:text-olive-900 disabled:opacity-50 dark:text-olive-400 dark:hover:text-olive-200"
           >
             Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
+          </button>
+          <button
             disabled={!invitations.hasNextPage || invitations.isFetching}
             onClick={() => invitations.fetchNext?.()}
+            className="text-sm font-medium text-olive-600 hover:text-olive-900 disabled:opacity-50 dark:text-olive-400 dark:hover:text-olive-200"
           >
             Next
-          </Button>
+          </button>
         </div>
       )}
     </div>

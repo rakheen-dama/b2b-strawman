@@ -1,8 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MemberList } from "@/components/team/member-list";
 import { InviteMemberForm } from "@/components/team/invite-member-form";
-import { PendingInvitations } from "@/components/team/pending-invitations";
+import { TeamTabs } from "@/components/team/team-tabs";
 import { api } from "@/lib/api";
 import type { BillingResponse } from "@/lib/internal-api";
 
@@ -14,36 +12,29 @@ export default async function TeamPage() {
   const billing = await api.get<BillingResponse>("/api/billing/subscription");
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Team</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Manage your organization&apos;s members and invitations.
-        </p>
+    <div className="space-y-8">
+      {/* Page header */}
+      <div className="flex items-center gap-3">
+        <h1 className="font-display text-3xl">Team</h1>
+        <span className="rounded-full bg-olive-200 px-2.5 py-0.5 text-sm text-olive-700">
+          {billing.limits.currentMembers} member{billing.limits.currentMembers !== 1 ? "s" : ""}
+        </span>
       </div>
 
+      {/* Invite section (admin only) */}
       {isAdmin && (
-        <div className="rounded-lg border p-4">
-          <h2 className="mb-3 text-sm font-semibold">Invite a team member</h2>
+        <div className="rounded-lg border border-olive-200 bg-olive-50 p-6 dark:border-olive-800 dark:bg-olive-900/50">
+          <h2 className="mb-4 font-semibold">Invite a team member</h2>
           <InviteMemberForm
             maxMembers={billing.limits.maxMembers}
             currentMembers={billing.limits.currentMembers}
+            planTier={billing.tier}
           />
         </div>
       )}
 
-      <Tabs defaultValue="members">
-        <TabsList>
-          <TabsTrigger value="members">Members</TabsTrigger>
-          <TabsTrigger value="invitations">Invitations</TabsTrigger>
-        </TabsList>
-        <TabsContent value="members">
-          <MemberList />
-        </TabsContent>
-        <TabsContent value="invitations">
-          <PendingInvitations isAdmin={isAdmin} />
-        </TabsContent>
-      </Tabs>
+      {/* Members / Pending Invitations tabs */}
+      <TeamTabs isAdmin={isAdmin} />
     </div>
   );
 }

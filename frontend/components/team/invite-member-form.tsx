@@ -3,7 +3,6 @@
 import { useOrganization } from "@clerk/nextjs";
 import { useState } from "react";
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { inviteMember } from "@/app/(app)/org/[slug]/team/actions";
@@ -11,9 +10,10 @@ import { inviteMember } from "@/app/(app)/org/[slug]/team/actions";
 interface InviteMemberFormProps {
   maxMembers: number;
   currentMembers: number;
+  planTier: string;
 }
 
-export function InviteMemberForm({ maxMembers, currentMembers }: InviteMemberFormProps) {
+export function InviteMemberForm({ maxMembers, currentMembers, planTier }: InviteMemberFormProps) {
   const { organization, invitations } = useOrganization({
     invitations: {
       pageSize: 5,
@@ -29,26 +29,10 @@ export function InviteMemberForm({ maxMembers, currentMembers }: InviteMemberFor
   if (!organization) return null;
 
   const pendingInvitations = organization.pendingInvitationsCount ?? 0;
-  const isAtLimit =
-    maxMembers > 0 && currentMembers + pendingInvitations >= maxMembers;
-
-  if (isAtLimit) {
-    return (
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Sparkles className="h-4 w-4 shrink-0" />
-        <p>
-          Your organization has reached its member limit ({maxMembers}).{" "}
-          <Link
-            href={`/org/${organization.slug}/settings/billing`}
-            className="font-medium text-primary underline underline-offset-4 hover:text-primary/80"
-          >
-            Upgrade your plan
-          </Link>{" "}
-          to invite more members.
-        </p>
-      </div>
-    );
-  }
+  const totalUsed = currentMembers + pendingInvitations;
+  const isAtLimit = maxMembers > 0 && totalUsed >= maxMembers;
+  const fillPercent = maxMembers > 0 ? Math.min((totalUsed / maxMembers) * 100, 100) : 0;
+  const isPro = planTier === "DEDICATED";
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -80,43 +64,77 @@ export function InviteMemberForm({ maxMembers, currentMembers }: InviteMemberFor
   };
 
   return (
-    <div className="space-y-2">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row sm:items-end">
-        <div className="flex-1 space-y-1.5">
-          <label htmlFor="invite-email" className="text-sm font-medium">
-            Email address
-          </label>
-          <Input
-            id="invite-email"
-            type="email"
-            placeholder="colleague@company.com"
-            value={emailAddress}
-            onChange={(e) => {
-              setEmailAddress(e.target.value);
-              setError(null);
-              setSuccess(null);
-            }}
-            required
-          />
-        </div>
-        <div className="space-y-1.5">
-          <label htmlFor="invite-role" className="text-sm font-medium">
-            Role
-          </label>
-          <select
-            id="invite-role"
-            value={role}
-            onChange={(e) => setRole(e.target.value as "org:member" | "org:admin")}
-            className="border-input bg-background h-9 rounded-md border px-3 text-sm shadow-xs"
+    <div className="space-y-4">
+      {/* Form row */}
+      {!isAtLimit && (
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <div className="flex-1 space-y-1.5">
+            <label htmlFor="invite-email" className="text-sm font-medium">
+              Email address
+            </label>
+            <Input
+              id="invite-email"
+              type="email"
+              placeholder="colleague@company.com"
+              value={emailAddress}
+              onChange={(e) => {
+                setEmailAddress(e.target.value);
+                setError(null);
+                setSuccess(null);
+              }}
+              required
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label htmlFor="invite-role" className="text-sm font-medium">
+              Role
+            </label>
+            <select
+              id="invite-role"
+              value={role}
+              onChange={(e) => setRole(e.target.value as "org:member" | "org:admin")}
+              className="border-input bg-background h-9 rounded-md border px-3 text-sm shadow-xs"
+            >
+              <option value="org:member">Member</option>
+              <option value="org:admin">Admin</option>
+            </select>
+          </div>
+          <Button type="submit" disabled={isSubmitting} size="sm">
+            {isSubmitting ? "Sending..." : "Send Invite"}
+          </Button>
+        </form>
+      )}
+
+      {/* At-limit message */}
+      {isAtLimit && (
+        <p className="text-sm text-olive-600">
+          Member limit reached.{" "}
+          <Link
+            href={`/org/${organization.slug}/settings/billing`}
+            className="font-medium text-indigo-600 underline underline-offset-4 hover:text-indigo-500"
           >
-            <option value="org:member">Member</option>
-            <option value="org:admin">Admin</option>
-          </select>
+            Upgrade
+          </Link>{" "}
+          to invite more members.
+        </p>
+      )}
+
+      {/* Plan limit progress bar */}
+      {maxMembers > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-sm text-olive-600">
+            {totalUsed} of {maxMembers} members
+          </p>
+          <div className="h-2 w-full overflow-hidden rounded-full bg-olive-200 dark:bg-olive-800">
+            <div
+              className={`h-full rounded-full transition-all ${isPro ? "bg-indigo-500" : "bg-olive-500"}`}
+              style={{ width: `${fillPercent}%` }}
+            />
+          </div>
         </div>
-        <Button type="submit" disabled={isSubmitting} size="sm">
-          {isSubmitting ? "Sending..." : "Send invite"}
-        </Button>
-      </form>
+      )}
+
+      {/* Feedback messages */}
       {error && <p className="text-destructive text-sm">{error}</p>}
       {success && <p className="text-sm text-emerald-600">{success}</p>}
     </div>

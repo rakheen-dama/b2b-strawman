@@ -19,6 +19,14 @@ vi.mock("@/app/(app)/org/[slug]/projects/[id]/task-actions", () => ({
   fetchTasks: (...args: unknown[]) => mockFetchTasks(...args),
 }));
 
+const mockFetchTimeEntries = vi.fn();
+
+vi.mock("@/app/(app)/org/[slug]/projects/[id]/time-entry-actions", () => ({
+  fetchTimeEntries: (...args: unknown[]) => mockFetchTimeEntries(...args),
+  updateTimeEntry: vi.fn(),
+  deleteTimeEntry: vi.fn(),
+}));
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: vi.fn(),
@@ -150,14 +158,11 @@ describe("TaskListPanel", () => {
     );
 
     const table = screen.getByRole("table");
+    // Claim/Release/Done task management buttons should not appear for other people's tasks
     expect(within(table).queryByRole("button", { name: /Claim/i })).not.toBeInTheDocument();
     expect(within(table).queryByRole("button", { name: /Release/i })).not.toBeInTheDocument();
-    // Only check inside the table — the filter bar has a "Done" pill but that's not an action button
-    const actionCells = table.querySelectorAll("td:last-child");
-    const hasActionButton = Array.from(actionCells).some(
-      (cell) => cell.querySelector("button") !== null,
-    );
-    expect(hasActionButton).toBe(false);
+    expect(within(table).queryByRole("button", { name: /^Done$/i })).not.toBeInTheDocument();
+    // "Log Time" button is always available regardless of task ownership (added in 45A)
   });
 
   // 40.10: Filter toggles

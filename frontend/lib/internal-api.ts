@@ -65,6 +65,10 @@ export interface SetPlanRequest {
   planSlug: string;
 }
 
+export interface UpgradeRequest {
+  planSlug: string;
+}
+
 /**
  * Server-only API client for Spring Boot internal endpoints.
  * Authenticates via X-API-KEY header (not JWT).

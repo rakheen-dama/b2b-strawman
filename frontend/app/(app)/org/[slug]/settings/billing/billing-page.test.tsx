@@ -21,6 +21,14 @@ vi.mock("@/components/ui/progress", () => ({
   ),
 }));
 
+vi.mock("@/components/billing/upgrade-card", () => ({
+  UpgradeCard: ({ slug }: { slug: string }) => (
+    <div data-testid="upgrade-card" data-slug={slug}>
+      <button>Upgrade to Pro</button>
+    </div>
+  ),
+}));
+
 afterEach(() => cleanup());
 
 function starterBilling(): BillingResponse {
@@ -54,19 +62,31 @@ describe("BillingPage", () => {
     expect(screen.getByText("1 of 2")).toBeInTheDocument();
   });
 
-  it("shows upgrade CTA for Starter orgs", async () => {
+  it("shows upgrade button for Starter orgs", async () => {
     mockGet.mockResolvedValue(starterBilling());
 
     const page = await BillingPage({ params: Promise.resolve({ slug: "acme" }) });
     render(page);
 
-    expect(screen.getByText("Upgrade to Pro")).toBeInTheDocument();
-    expect(screen.getByText(/Contact us/)).toBeInTheDocument();
-    const mailto = screen.getByRole("link", { name: "sales@docteams.com" });
-    expect(mailto).toHaveAttribute("href", "mailto:sales@docteams.com?subject=Upgrade acme to Pro");
+    expect(screen.getByTestId("upgrade-card")).toBeInTheDocument();
+    expect(screen.getByTestId("upgrade-card")).toHaveAttribute("data-slug", "acme");
+    expect(screen.getByRole("button", { name: "Upgrade to Pro" })).toBeInTheDocument();
   });
 
-  it("shows Pro confirmation and hides upgrade CTA for Pro orgs", async () => {
+  it("shows pricing comparison for Starter orgs", async () => {
+    mockGet.mockResolvedValue(starterBilling());
+
+    const page = await BillingPage({ params: Promise.resolve({ slug: "acme" }) });
+    render(page);
+
+    expect(screen.getByText("Compare Plans")).toBeInTheDocument();
+    expect(screen.getByText("Up to 2")).toBeInTheDocument();
+    expect(screen.getByText("Up to 10")).toBeInTheDocument();
+    expect(screen.getByText("Shared")).toBeInTheDocument();
+    expect(screen.getByText("Dedicated")).toBeInTheDocument();
+  });
+
+  it("hides upgrade section and pricing comparison for Pro orgs", async () => {
     mockGet.mockResolvedValue(proBilling());
 
     const page = await BillingPage({ params: Promise.resolve({ slug: "acme" }) });
@@ -77,6 +97,7 @@ describe("BillingPage", () => {
       screen.getByText(/Pro plan with dedicated infrastructure/)
     ).toBeInTheDocument();
     expect(screen.getByText("5 of 25")).toBeInTheDocument();
-    expect(screen.queryByText("Upgrade to Pro")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("upgrade-card")).not.toBeInTheDocument();
+    expect(screen.queryByText("Compare Plans")).not.toBeInTheDocument();
   });
 });

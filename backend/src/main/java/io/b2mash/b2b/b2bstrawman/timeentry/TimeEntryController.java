@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -87,7 +88,9 @@ public class TimeEntryController {
 
   public record CreateTimeEntryRequest(
       @NotNull(message = "date is required") LocalDate date,
-      @NotNull(message = "durationMinutes is required") Integer durationMinutes,
+      @NotNull(message = "durationMinutes is required")
+          @Positive(message = "durationMinutes must be positive")
+          Integer durationMinutes,
       Boolean billable,
       Integer rateCents,
       String description) {}

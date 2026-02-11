@@ -46,7 +46,6 @@ class TimeEntryIntegrationTest {
   private String taskId;
   private String memberIdOwner;
   private String memberIdMember;
-  private String projectBId;
   private String taskBId;
 
   @BeforeAll
@@ -123,7 +122,7 @@ class TimeEntryIntegrationTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    projectBId = extractIdFromLocation(projectBResult);
+    var projectBId = extractIdFromLocation(projectBResult);
 
     var taskBResult =
         mockMvc

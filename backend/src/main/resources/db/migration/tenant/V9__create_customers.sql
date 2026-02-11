@@ -33,6 +33,9 @@ CREATE INDEX IF NOT EXISTS idx_customers_tenant_id_status
 CREATE INDEX IF NOT EXISTS idx_customers_tenant_id_email
     ON customers (tenant_id, email);
 
+CREATE INDEX IF NOT EXISTS idx_customers_created_by
+    ON customers (created_by);
+
 -- Row-Level Security
 ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
 

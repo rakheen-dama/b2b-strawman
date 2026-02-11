@@ -28,6 +28,9 @@ CREATE INDEX IF NOT EXISTS idx_customer_projects_project_id
 CREATE INDEX IF NOT EXISTS idx_customer_projects_tenant_id
     ON customer_projects (tenant_id);
 
+CREATE INDEX IF NOT EXISTS idx_customer_projects_linked_by
+    ON customer_projects (linked_by);
+
 -- Row-Level Security
 ALTER TABLE customer_projects ENABLE ROW LEVEL SECURITY;
 

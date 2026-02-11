@@ -33,14 +33,21 @@ export default async function OrgDashboardPage({
     const [projectsData, billing] = await Promise.all([
       api.get<Project[]>("/api/projects"),
       api.get<BillingResponse>("/api/billing/subscription").catch((e) => {
-        console.error("Failed to fetch billing data:", e);
-        return null;
+        if (e instanceof ApiError && (e.status === 403 || e.status === 500)) return null;
+        throw e;
       }),
     ]);
     projects = projectsData;
     memberCount = billing?.limits.currentMembers ?? 0;
   } catch (error) {
-    if (error instanceof ApiError && error.status === 403) {
+    // 403 = tenant not provisioned yet.
+    // 500 + "Member context not available" = provisioned but member not synced yet.
+    // Both are transient states during the webhook processing window after org creation.
+    const isProvisioning =
+      error instanceof ApiError &&
+      (error.status === 403 ||
+        (error.status === 500 && error.detail?.title === "Member context not available"));
+    if (isProvisioning) {
       return (
         <div className="flex min-h-[40vh] flex-col items-center justify-center gap-4">
           <Loader2 className="text-muted-foreground size-8 animate-spin" />

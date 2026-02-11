@@ -198,6 +198,32 @@ export interface UpdateTimeEntryRequest {
   description?: string;
 }
 
+// ---- Time Summaries (from ProjectTimeSummaryController.java) ----
+
+export interface ProjectTimeSummary {
+  billableMinutes: number;
+  nonBillableMinutes: number;
+  totalMinutes: number;
+  contributorCount: number;
+  entryCount: number;
+}
+
+export interface MemberTimeSummary {
+  memberId: string;
+  memberName: string;
+  billableMinutes: number;
+  nonBillableMinutes: number;
+  totalMinutes: number;
+}
+
+export interface TaskTimeSummary {
+  taskId: string;
+  taskTitle: string;
+  billableMinutes: number;
+  totalMinutes: number;
+  entryCount: number;
+}
+
 // ---- Portal (from PortalAuthController, PortalProjectController, PortalDocumentController) ----
 
 export interface PortalProject {

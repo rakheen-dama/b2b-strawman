@@ -9,17 +9,19 @@ interface ProjectTabsProps {
   documentsPanel: ReactNode;
   membersPanel: ReactNode;
   tasksPanel: ReactNode;
+  timePanel: ReactNode;
 }
 
 const tabs = [
   { id: "documents", label: "Documents" },
   { id: "members", label: "Members" },
   { id: "tasks", label: "Tasks" },
+  { id: "time", label: "Time" },
 ] as const;
 
 type TabId = (typeof tabs)[number]["id"];
 
-export function ProjectTabs({ documentsPanel, membersPanel, tasksPanel }: ProjectTabsProps) {
+export function ProjectTabs({ documentsPanel, membersPanel, tasksPanel, timePanel }: ProjectTabsProps) {
   const [activeTab, setActiveTab] = useState<TabId>("documents");
 
   return (
@@ -59,6 +61,9 @@ export function ProjectTabs({ documentsPanel, membersPanel, tasksPanel }: Projec
       </TabsPrimitive.Content>
       <TabsPrimitive.Content value="tasks" className="pt-6 outline-none">
         {tasksPanel}
+      </TabsPrimitive.Content>
+      <TabsPrimitive.Content value="time" className="pt-6 outline-none">
+        {timePanel}
       </TabsPrimitive.Content>
     </TabsPrimitive.Root>
   );

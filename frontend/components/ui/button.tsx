@@ -11,7 +11,7 @@ const buttonVariants = cva(
       variant: {
         default:
           "bg-primary text-primary-foreground hover:bg-primary/90 rounded-full",
-        soft: "bg-olive-950/10 text-olive-950 hover:bg-olive-950/15 rounded-full",
+        soft: "bg-olive-950/10 text-olive-950 hover:bg-olive-950/15 rounded-full dark:bg-white/10 dark:text-white dark:hover:bg-white/15",
         accent:
           "bg-indigo-600 text-white hover:bg-indigo-700 rounded-full",
         destructive:

@@ -378,7 +378,7 @@ Stage 3:  [E47] [E49]                <- parallel (after their respective Stage 2
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **49A** | 49.1--49.5 | Types, server actions, My Work page, AssignedTaskList, sidebar nav link | |
+| **49A** | 49.1--49.5 | Types, server actions, My Work page, AssignedTaskList, sidebar nav link | **Done** (PR #95) |
 | **49B** | 49.6--49.10 | AvailableTaskList, TimeEntrySummary panel, weekly time chart, loading state, tests | |
 
 ### Tasks

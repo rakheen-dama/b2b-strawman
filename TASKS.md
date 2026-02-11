@@ -57,7 +57,7 @@
 | 46 | Project Time Summary — Backend | Backend | 44 | M | 46A | **Done** (PR #92) |
 | 47 | Project Time Summary — Frontend | Frontend | 46 | S | 47A | **Done** (PR #94) |
 | 48 | My Work — Backend | Backend | 44 | M | 48A | **Done** (PR #93) |
-| 49 | My Work — Frontend | Frontend | 48 | M | 49A, 49B | |
+| 49 | My Work — Frontend | Frontend | 48 | M | 49A, 49B | 49A **Done** (PR #95) |
 | **Phase 6 — Audit & Compliance Foundations** | | | | | | See [tasks/phase6-audit-compliance-foundations.md](tasks/phase6-audit-compliance-foundations.md) |
 | 50 | Audit Infrastructure — Entity, Service & Migration | Backend | — | M | 50A, 50B | |
 | 51 | Domain Event Integration — Services | Backend | 50 | L | 51A, 51B | |

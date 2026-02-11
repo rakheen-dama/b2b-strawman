@@ -213,7 +213,7 @@ Stage 3:  [E47] [E49]                <- parallel (after their respective Stage 2
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **46A** | 46.1--46.7 | Aggregation queries in repository, ProjectTimeSummaryController with 3 endpoints, access control, integration tests | |
+| **46A** | 46.1--46.7 | Aggregation queries in repository, ProjectTimeSummaryController with 3 endpoints, access control, integration tests | **Done** (PR #92) |
 
 ### Tasks
 

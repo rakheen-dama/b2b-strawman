@@ -26,6 +26,8 @@ interface TimeEntryListProps {
   projectId?: string;
   currentMemberId?: string | null;
   orgRole?: string | null;
+  /** Whether the current user can manage the project (lead, admin, or owner) */
+  canManage?: boolean;
 }
 
 export function TimeEntryList({
@@ -34,11 +36,12 @@ export function TimeEntryList({
   projectId,
   currentMemberId,
   orgRole,
+  canManage = false,
 }: TimeEntryListProps) {
   const totalMinutes = entries.reduce((sum, e) => sum + e.durationMinutes, 0);
 
   // Determine if the current user has elevated privileges (lead/admin/owner)
-  const isElevated = orgRole ? ELEVATED_ROLES.has(orgRole) : false;
+  const isElevated = canManage || (orgRole ? ELEVATED_ROLES.has(orgRole) : false);
 
   // Whether any actions are possible (need slug + projectId to wire up actions)
   const actionsEnabled = !!slug && !!projectId;

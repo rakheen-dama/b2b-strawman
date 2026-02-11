@@ -42,10 +42,10 @@ export function DeleteTimeEntryDialog({
         setOpen(false);
       } else {
         setError(result.error ?? "Failed to delete time entry.");
-        setIsDeleting(false);
       }
     } catch {
       setError("An unexpected error occurred.");
+    } finally {
       setIsDeleting(false);
     }
   }

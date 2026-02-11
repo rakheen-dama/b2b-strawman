@@ -169,4 +169,54 @@ describe("TimeEntryList", () => {
       within(table).getByRole("button", { name: /delete time entry by bob/i }),
     ).toBeInTheDocument();
   });
+
+  it("shows edit/delete buttons for all entries when user is project lead (canManage)", () => {
+    render(
+      <TimeEntryList
+        entries={[ownEntry, otherEntry]}
+        slug="acme"
+        projectId="p1"
+        currentMemberId="current-member"
+        orgRole="org:member"
+        canManage={true}
+      />,
+    );
+
+    const table = screen.getByRole("table");
+    // Project lead (canManage=true) should see edit/delete on all entries
+    // even with org:member role
+    expect(
+      within(table).getByRole("button", { name: /edit time entry by me/i }),
+    ).toBeInTheDocument();
+    expect(
+      within(table).getByRole("button", { name: /edit time entry by bob/i }),
+    ).toBeInTheDocument();
+    expect(
+      within(table).getByRole("button", { name: /delete time entry by me/i }),
+    ).toBeInTheDocument();
+    expect(
+      within(table).getByRole("button", { name: /delete time entry by bob/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("hides edit/delete for other entries when canManage is false and role is member", () => {
+    render(
+      <TimeEntryList
+        entries={[otherEntry]}
+        slug="acme"
+        projectId="p1"
+        currentMemberId="current-member"
+        orgRole="org:member"
+        canManage={false}
+      />,
+    );
+
+    // Non-lead member should not see edit/delete on other member's entries
+    expect(
+      screen.queryByRole("button", { name: /edit time entry/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /delete time entry/i }),
+    ).not.toBeInTheDocument();
+  });
 });

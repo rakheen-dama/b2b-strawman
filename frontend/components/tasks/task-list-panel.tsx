@@ -506,6 +506,7 @@ export function TaskListPanel({
                             projectId={projectId}
                             currentMemberId={currentMemberId}
                             orgRole={orgRole}
+                            canManage={canManage}
                           />
                         )}
                       </TableCell>

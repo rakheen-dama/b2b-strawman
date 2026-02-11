@@ -7,13 +7,14 @@ import { EditProjectDialog } from "@/components/projects/edit-project-dialog";
 import { DeleteProjectDialog } from "@/components/projects/delete-project-dialog";
 import { DocumentsPanel } from "@/components/documents/documents-panel";
 import { ProjectMembersPanel } from "@/components/projects/project-members-panel";
+import { ProjectTabs } from "@/components/projects/project-tabs";
 import { formatDate } from "@/lib/format";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 
-const PROJECT_ROLE_BADGE: Record<ProjectRole, { label: string; variant: "default" | "outline" }> = {
-  lead: { label: "Lead", variant: "default" },
-  member: { label: "Member", variant: "outline" },
+const ROLE_BADGE: Record<ProjectRole, { label: string; variant: "lead" | "member" }> = {
+  lead: { label: "Lead", variant: "lead" },
+  member: { label: "Member", variant: "member" },
 };
 
 export default async function ProjectDetailPage({
@@ -52,34 +53,41 @@ export default async function ProjectDetailPage({
     // Non-fatal: show empty members list if fetch fails
   }
 
-  const roleBadge = project.projectRole ? PROJECT_ROLE_BADGE[project.projectRole] : null;
+  const roleBadge = project.projectRole ? ROLE_BADGE[project.projectRole] : null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* Back link */}
       <div>
         <Link
           href={`/org/${slug}/projects`}
-          className="text-muted-foreground hover:text-foreground inline-flex items-center text-sm"
+          className="inline-flex items-center text-sm text-olive-600 transition-colors hover:text-olive-900 dark:text-olive-400 dark:hover:text-olive-100"
         >
           <ArrowLeft className="mr-1.5 size-4" />
           Back to Projects
         </Link>
       </div>
 
+      {/* Project Header (33.6) */}
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold">{project.name}</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="font-display text-2xl text-olive-950 dark:text-olive-50">
+              {project.name}
+            </h1>
             {roleBadge && <Badge variant={roleBadge.variant}>{roleBadge.label}</Badge>}
           </div>
           {project.description ? (
-            <p className="text-muted-foreground mt-2">{project.description}</p>
+            <p className="mt-2 text-olive-600 dark:text-olive-400">{project.description}</p>
           ) : (
-            <p className="text-muted-foreground/60 mt-2 text-sm italic">No description</p>
+            <p className="mt-2 text-sm italic text-olive-400 dark:text-olive-600">
+              No description
+            </p>
           )}
-          <p className="text-muted-foreground mt-3 text-xs">
-            Created{" "}
-            {formatDate(project.createdAt)}
+          <p className="mt-3 text-sm text-olive-400 dark:text-olive-600">
+            Created {formatDate(project.createdAt)} &middot; {documents.length}{" "}
+            {documents.length === 1 ? "document" : "documents"} &middot; {members.length}{" "}
+            {members.length === 1 ? "member" : "members"}
           </p>
         </div>
 
@@ -95,7 +103,7 @@ export default async function ProjectDetailPage({
             )}
             {isOwner && (
               <DeleteProjectDialog slug={slug} projectId={project.id} projectName={project.name}>
-                <Button variant="outline" size="sm">
+                <Button variant="ghost" size="sm" className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300">
                   <Trash2 className="mr-1.5 size-4" />
                   Delete
                 </Button>
@@ -105,15 +113,21 @@ export default async function ProjectDetailPage({
         )}
       </div>
 
-      <DocumentsPanel documents={documents} projectId={id} slug={slug} />
-
-      <ProjectMembersPanel
-        members={members}
-        slug={slug}
-        projectId={id}
-        canManage={canManage}
-        isCurrentLead={isCurrentLead}
-        currentUserId={userId ?? ""}
+      {/* Tabbed Content (33.7) */}
+      <ProjectTabs
+        documentsPanel={
+          <DocumentsPanel documents={documents} projectId={id} slug={slug} />
+        }
+        membersPanel={
+          <ProjectMembersPanel
+            members={members}
+            slug={slug}
+            projectId={id}
+            canManage={canManage}
+            isCurrentLead={isCurrentLead}
+            currentUserId={userId ?? ""}
+          />
+        }
       />
     </div>
   );

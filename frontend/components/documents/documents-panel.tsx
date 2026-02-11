@@ -98,10 +98,10 @@ function getFileIcon(contentType: string) {
 
 const STATUS_BADGE: Record<
   DocumentStatus,
-  { label: string; variant: "secondary" | "outline" | "destructive" }
+  { label: string; variant: "success" | "warning" | "destructive" }
 > = {
-  UPLOADED: { label: "Uploaded", variant: "secondary" },
-  PENDING: { label: "Pending", variant: "outline" },
+  UPLOADED: { label: "Uploaded", variant: "success" },
+  PENDING: { label: "Pending", variant: "warning" },
   FAILED: { label: "Failed", variant: "destructive" },
 };
 
@@ -309,26 +309,38 @@ export function DocumentsPanel({ documents, projectId, slug }: DocumentsPanelPro
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold">Documents</h2>
+      <h2 className="font-semibold text-olive-900 dark:text-olive-100">Documents</h2>
 
       {documents.length === 0 && uploads.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-8">
+        <div className="rounded-lg border border-dashed border-olive-300 p-8 dark:border-olive-700">
           <div className="flex flex-col items-center text-center">
-            <FileText className="text-muted-foreground size-10" />
-            <p className="mt-3 text-sm font-medium">No documents yet</p>
-            <p className="text-muted-foreground mt-1 text-xs">Upload files to get started</p>
+            <FileText className="size-10 text-olive-300 dark:text-olive-600" />
+            <p className="mt-3 text-sm font-medium text-olive-900 dark:text-olive-100">
+              No documents yet
+            </p>
+            <p className="mt-1 text-xs text-olive-600 dark:text-olive-400">
+              Upload your first file above
+            </p>
           </div>
         </div>
       ) : (
-        <div className="rounded-md border">
+        <div className="rounded-lg border border-olive-200 dark:border-olive-800">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>File</TableHead>
-                <TableHead className="hidden sm:table-cell">Size</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="hidden sm:table-cell">Uploaded</TableHead>
-                <TableHead className="w-[70px]" />
+              <TableRow className="border-olive-200 hover:bg-transparent dark:border-olive-800">
+                <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                  File
+                </TableHead>
+                <TableHead className="hidden text-xs uppercase tracking-wide text-olive-600 sm:table-cell dark:text-olive-400">
+                  Size
+                </TableHead>
+                <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                  Status
+                </TableHead>
+                <TableHead className="hidden text-xs uppercase tracking-wide text-olive-600 sm:table-cell dark:text-olive-400">
+                  Uploaded
+                </TableHead>
+                <TableHead className="w-[60px]" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -336,15 +348,20 @@ export function DocumentsPanel({ documents, projectId, slug }: DocumentsPanelPro
                 const Icon = getFileIcon(doc.contentType);
                 const badge = STATUS_BADGE[doc.status];
                 return (
-                  <TableRow key={doc.id}>
+                  <TableRow
+                    key={doc.id}
+                    className="border-olive-100 transition-colors hover:bg-olive-50 dark:border-olive-800/50 dark:hover:bg-olive-900"
+                  >
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Icon className="text-muted-foreground size-4 shrink-0" />
-                        <span className="truncate text-sm">{doc.fileName}</span>
+                        <Icon className="size-4 shrink-0 text-olive-400 dark:text-olive-500" />
+                        <span className="truncate text-sm font-medium text-olive-950 dark:text-olive-50">
+                          {doc.fileName}
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
-                      <span className="text-muted-foreground text-sm">
+                      <span className="text-sm text-olive-600 dark:text-olive-400">
                         {formatFileSize(doc.size)}
                       </span>
                     </TableCell>
@@ -352,8 +369,8 @@ export function DocumentsPanel({ documents, projectId, slug }: DocumentsPanelPro
                       <Badge variant={badge.variant}>{badge.label}</Badge>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
-                      <span className="text-muted-foreground text-sm">
-                        {doc.uploadedAt ? formatDate(doc.uploadedAt) : "—"}
+                      <span className="text-sm text-olive-600 dark:text-olive-400">
+                        {doc.uploadedAt ? formatDate(doc.uploadedAt) : "\u2014"}
                       </span>
                     </TableCell>
                     <TableCell>

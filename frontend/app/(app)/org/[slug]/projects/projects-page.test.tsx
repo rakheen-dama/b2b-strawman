@@ -26,14 +26,7 @@ vi.mock("@/components/projects/create-project-dialog", () => ({
   ),
 }));
 
-// Mock UpgradePrompt
-vi.mock("@/components/billing/upgrade-prompt", () => ({
-  UpgradePrompt: ({ slug }: { slug: string }) => (
-    <div data-testid="upgrade-prompt" data-slug={slug}>
-      Upgrade to Pro
-    </div>
-  ),
-}));
+// UpgradePrompt no longer used (inline upgrade banner in page)
 
 // Mock next/link
 vi.mock("next/link", () => ({

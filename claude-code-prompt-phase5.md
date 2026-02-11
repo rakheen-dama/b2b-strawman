@@ -217,6 +217,6 @@ Use the ADR format we’ve been using (Status, Context, Options, Decision, Ratio
 - Keep everything generic and reusable across business domains.
 - Focus on clarity and implementability: an engineer should be able to derive Epics and Tasks from this without re‑asking requirements.
 
-Return a single markdown document as your answer, ready to be merged as the new “Phase 3 — Task & Time Lifecycle” section (plus ADRs).
+Return a single markdown document as your answer, ready to be merged as the new “Phase 5 — Task & Time Lifecycle” section (plus ADRs).
 
 Sources

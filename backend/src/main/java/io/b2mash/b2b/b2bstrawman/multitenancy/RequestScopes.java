@@ -24,6 +24,9 @@ public final class RequestScopes {
   /** Clerk organization ID (e.g., "org_abc123"). Bound by TenantFilter. */
   public static final ScopedValue<String> ORG_ID = ScopedValue.newInstance();
 
+  /** Authenticated customer's UUID. Bound by CustomerAuthFilter for portal requests. */
+  public static final ScopedValue<UUID> CUSTOMER_ID = ScopedValue.newInstance();
+
   public static final String DEFAULT_TENANT = "public";
 
   /** Returns the current member's UUID. Throws if not bound by filter chain. */
@@ -45,6 +48,14 @@ public final class RequestScopes {
   /** Returns the current member's org role, or null if not bound. */
   public static String getOrgRole() {
     return ORG_ROLE.isBound() ? ORG_ROLE.get() : null;
+  }
+
+  /** Returns the authenticated customer's UUID. Throws if not bound by CustomerAuthFilter. */
+  public static UUID requireCustomerId() {
+    if (!CUSTOMER_ID.isBound()) {
+      throw new IllegalStateException("Customer context not available — CUSTOMER_ID not bound");
+    }
+    return CUSTOMER_ID.get();
   }
 
   private RequestScopes() {}

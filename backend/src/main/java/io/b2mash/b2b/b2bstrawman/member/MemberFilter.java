@@ -62,7 +62,9 @@ public class MemberFilter extends OncePerRequestFilter {
   @Override
   protected boolean shouldNotFilter(HttpServletRequest request) {
     String path = request.getRequestURI();
-    return path.startsWith("/internal/") || path.startsWith("/actuator/");
+    return path.startsWith("/internal/")
+        || path.startsWith("/actuator/")
+        || path.startsWith("/portal/");
   }
 
   public void evictFromCache(String tenantId, String clerkUserId) {

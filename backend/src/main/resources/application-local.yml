@@ -58,6 +58,11 @@ internal:
   api:
     key: local-dev-api-key-change-in-production
 
+# Customer portal JWT signing secret (min 32 bytes for HMAC-SHA256)
+portal:
+  jwt:
+    secret: local-dev-portal-secret-change-in-production-min32bytes
+
 logging:
   level:
     org.hibernate.SQL: DEBUG

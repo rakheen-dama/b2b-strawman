@@ -47,7 +47,10 @@ export function WeeklyTimeSummary({
   initialFrom,
 }: WeeklyTimeSummaryProps) {
   const [summary, setSummary] = useState(initialSummary);
-  const [weekStart, setWeekStart] = useState(() => new Date(initialFrom));
+  const [weekStart, setWeekStart] = useState(() => {
+    const [y, m, d] = initialFrom.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  });
   const [isPending, startTransition] = useTransition();
 
   const weekEnd = getSunday(weekStart);

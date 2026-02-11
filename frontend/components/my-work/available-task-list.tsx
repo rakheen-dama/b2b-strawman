@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { ChevronDown, ChevronRight, Inbox, AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
@@ -45,6 +46,7 @@ interface AvailableTaskListProps {
 }
 
 export function AvailableTaskList({ tasks, slug }: AvailableTaskListProps) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(tasks.length > 0);
 
   return (
@@ -104,7 +106,7 @@ export function AvailableTaskList({ tasks, slug }: AvailableTaskListProps) {
                         key={task.id}
                         className="cursor-pointer border-olive-100 transition-colors hover:bg-olive-50 dark:border-olive-800/50 dark:hover:bg-olive-900"
                         onClick={() =>
-                          window.location.href = `/org/${slug}/projects/${task.projectId}`
+                          router.push(`/org/${slug}/projects/${task.projectId}`)
                         }
                       >
                         <TableCell>

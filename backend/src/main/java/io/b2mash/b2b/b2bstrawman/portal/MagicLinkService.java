@@ -11,6 +11,7 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.time.Duration;
 import java.time.Instant;
@@ -38,8 +39,8 @@ public class MagicLinkService {
   private final Cache<String, Boolean> consumedTokens =
       Caffeine.newBuilder().maximumSize(100_000).expireAfterWrite(Duration.ofMinutes(30)).build();
 
-  public MagicLinkService(@Value("${portal.jwt.secret}") String portalJwtSecret) {
-    this.secret = portalJwtSecret.getBytes();
+  public MagicLinkService(@Value("${portal.magic-link.secret}") String magicLinkSecret) {
+    this.secret = magicLinkSecret.getBytes(StandardCharsets.UTF_8);
   }
 
   /** Identity extracted from a verified magic link token. */
@@ -111,10 +112,10 @@ public class MagicLinkService {
       if (jti == null) {
         throw new PortalAuthException("Token missing JTI");
       }
-      if (consumedTokens.getIfPresent(jti) != null) {
+      Boolean prev = consumedTokens.asMap().putIfAbsent(jti, Boolean.TRUE);
+      if (prev != null) {
         throw new PortalAuthException("Magic link has already been used");
       }
-      consumedTokens.put(jti, Boolean.TRUE);
 
       UUID customerId = UUID.fromString(claims.getSubject());
       String orgId = claims.getStringClaim("org_id");

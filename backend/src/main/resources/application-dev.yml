@@ -50,3 +50,5 @@ internal:
 portal:
   jwt:
     secret: ${PORTAL_JWT_SECRET}
+  magic-link:
+    secret: ${PORTAL_MAGIC_LINK_SECRET}

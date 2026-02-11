@@ -9,6 +9,7 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.time.Duration;
 import java.time.Instant;
@@ -32,7 +33,7 @@ public class PortalJwtService {
   private final byte[] secret;
 
   public PortalJwtService(@Value("${portal.jwt.secret}") String portalJwtSecret) {
-    this.secret = portalJwtSecret.getBytes();
+    this.secret = portalJwtSecret.getBytes(StandardCharsets.UTF_8);
   }
 
   /** Claims extracted from a verified portal JWT. */

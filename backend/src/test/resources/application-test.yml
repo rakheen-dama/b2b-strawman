@@ -18,6 +18,8 @@ internal:
 portal:
   jwt:
     secret: test-portal-secret-must-be-at-least-32-bytes-long
+  magic-link:
+    secret: test-magic-link-secret-must-be-at-least-32-bytes-long
 
 aws:
   s3:

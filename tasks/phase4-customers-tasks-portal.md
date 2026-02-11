@@ -386,7 +386,7 @@ Stage 4:  [E43]                       <- after E37 + E41
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **42A** | 42.1–42.5 | Updated types, org documents page, org document upload, scope badges | |
+| **42A** | 42.1–42.5 | Updated types, org documents page, org document upload, scope badges | **Done** (PR #83) |
 | **42B** | 42.6–42.10 | Customer documents tab, customer doc upload, visibility toggle, tests | |
 
 ### Tasks

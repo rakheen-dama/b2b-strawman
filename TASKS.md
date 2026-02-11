@@ -49,7 +49,7 @@
 | 39 | Task Backend — Entity, CRUD, Claim & Release | Backend | — | M | 39A, 39B | **Done** (PR #77, #78) |
 | 40 | Task Frontend — List, Creation & Claim UI | Frontend | 39 | M | 40A, 40B | **Done** (PR #79, #80) |
 | 41 | Document Scope Extension — Backend | Backend | 37 | M | 41A, 41B | **Done** (PR #81, #82) |
-| 42 | Document Scope Extension — Frontend | Frontend | 38, 41 | M | 42A, 42B | |
+| 42 | Document Scope Extension — Frontend | Frontend | 38, 41 | M | 42A, 42B | 42A Done (PR #83) |
 | 43 | Customer Portal Groundwork | Both | 37, 41 | L | 43A, 43B, 43C | |
 
 ---

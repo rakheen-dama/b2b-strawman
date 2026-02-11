@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { Fragment, useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, Check, ClipboardList, Hand, Plus, Undo2 } from "lucide-react";
+import { AlertTriangle, Check, ChevronDown, ChevronRight, Clock, ClipboardList, Hand, Plus, Undo2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
@@ -15,6 +15,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { CreateTaskDialog } from "@/components/tasks/create-task-dialog";
+import { LogTimeDialog } from "@/components/tasks/log-time-dialog";
+import { TimeEntryList } from "@/components/tasks/time-entry-list";
 import { formatDate } from "@/lib/format";
 import {
   claimTask,
@@ -22,8 +24,9 @@ import {
   updateTask,
   fetchTasks,
 } from "@/app/(app)/org/[slug]/projects/[id]/task-actions";
+import { fetchTimeEntries } from "@/app/(app)/org/[slug]/projects/[id]/time-entry-actions";
 import { cn } from "@/lib/utils";
-import type { Task, TaskPriority, TaskStatus } from "@/lib/types";
+import type { Task, TaskPriority, TaskStatus, TimeEntry } from "@/lib/types";
 
 // --- Priority badge config (40.8): HIGH=red, MEDIUM=amber, LOW=olive ---
 
@@ -91,10 +94,15 @@ export function TaskListPanel({
   const [isPending, startTransition] = useTransition();
   const [actionTaskId, setActionTaskId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
+  const [timeEntries, setTimeEntries] = useState<Record<string, TimeEntry[]>>({});
+  const [loadingTimeEntries, setLoadingTimeEntries] = useState<string | null>(null);
 
-  // Sync state when parent Server Component re-renders with fresh data
+  // Sync state when parent Server Component re-renders with fresh data.
+  // Clear time entry cache so expanded tasks re-fetch after mutations.
   useEffect(() => {
     setTasks(initialTasks);
+    setTimeEntries({});
   }, [initialTasks]);
 
   // --- Filter handler (40.7) ---
@@ -219,6 +227,32 @@ export function TaskListPanel({
     return filters;
   }
 
+  // --- Expand / collapse handler for time entries ---
+
+  function handleToggleExpand(taskId: string) {
+    if (expandedTaskId === taskId) {
+      setExpandedTaskId(null);
+      return;
+    }
+
+    setExpandedTaskId(taskId);
+
+    // Fetch time entries if not already cached
+    if (!timeEntries[taskId]) {
+      setLoadingTimeEntries(taskId);
+      fetchTimeEntries(taskId)
+        .then((entries) => {
+          setTimeEntries((prev) => ({ ...prev, [taskId]: entries }));
+        })
+        .catch(() => {
+          setTimeEntries((prev) => ({ ...prev, [taskId]: [] }));
+        })
+        .finally(() => {
+          setLoadingTimeEntries(null);
+        });
+    }
+  }
+
   // --- Render ---
 
   const header = (
@@ -318,6 +352,9 @@ export function TaskListPanel({
                 const statusBadge = STATUS_BADGE[task.status];
                 const overdue = isOverdue(task.dueDate, task.status);
                 const isActioning = actionTaskId === task.id && isPending;
+                const isExpanded = expandedTaskId === task.id;
+                const taskEntries = timeEntries[task.id];
+                const isLoadingEntries = loadingTimeEntries === task.id;
 
                 // 40.6: Determine available actions
                 const canClaim =
@@ -328,10 +365,16 @@ export function TaskListPanel({
                   currentMemberId != null &&
                   task.assigneeId === currentMemberId;
 
+                // Column count for expanded row (all visible columns)
+                const colSpan = 6;
+
                 return (
+                  <Fragment key={task.id}>
                   <TableRow
-                    key={task.id}
-                    className="border-olive-100 transition-colors hover:bg-olive-50 dark:border-olive-800/50 dark:hover:bg-olive-900"
+                    className={cn(
+                      "border-olive-100 transition-colors hover:bg-olive-50 dark:border-olive-800/50 dark:hover:bg-olive-900",
+                      isExpanded && "bg-olive-50/50 dark:bg-olive-900/50",
+                    )}
                   >
                     {/* 40.8: Priority badge */}
                     <TableCell>
@@ -340,16 +383,29 @@ export function TaskListPanel({
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-medium text-olive-950 dark:text-olive-50">
-                          {task.title}
-                        </p>
-                        {task.type && (
-                          <p className="truncate text-xs text-olive-500 dark:text-olive-500">
-                            {task.type}
-                          </p>
+                      <button
+                        type="button"
+                        className="flex min-w-0 items-center gap-1.5 text-left"
+                        onClick={() => handleToggleExpand(task.id)}
+                        aria-expanded={isExpanded}
+                        aria-label={`${isExpanded ? "Collapse" : "Expand"} time entries for ${task.title}`}
+                      >
+                        {isExpanded ? (
+                          <ChevronDown className="size-3.5 shrink-0 text-olive-400" />
+                        ) : (
+                          <ChevronRight className="size-3.5 shrink-0 text-olive-400" />
                         )}
-                      </div>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium text-olive-950 dark:text-olive-50">
+                            {task.title}
+                          </p>
+                          {task.type && (
+                            <p className="truncate text-xs text-olive-500 dark:text-olive-500">
+                              {task.type}
+                            </p>
+                          )}
+                        </div>
+                      </button>
                     </TableCell>
                     <TableCell>
                       <Badge variant={statusBadge.variant}>
@@ -377,9 +433,26 @@ export function TaskListPanel({
                         {task.dueDate ? formatDate(task.dueDate) : "\u2014"}
                       </span>
                     </TableCell>
-                    {/* 40.6: Action buttons */}
+                    {/* 40.6 + 45.5: Action buttons */}
                     <TableCell>
                       <div className="flex items-center gap-1.5">
+                        <LogTimeDialog
+                          slug={slug}
+                          projectId={projectId}
+                          taskId={task.id}
+                        >
+                          <Button
+                            size="xs"
+                            variant="outline"
+                            onClick={(e) => {
+                              // Prevent row expand when clicking Log Time button
+                              e.stopPropagation();
+                            }}
+                          >
+                            <Clock className="size-3" />
+                            Log Time
+                          </Button>
+                        </LogTimeDialog>
                         {canClaim && (
                           <Button
                             size="xs"
@@ -416,6 +489,21 @@ export function TaskListPanel({
                       </div>
                     </TableCell>
                   </TableRow>
+                  {/* 45.5: Expanded time entries row */}
+                  {isExpanded && (
+                    <TableRow className="border-olive-100 dark:border-olive-800/50">
+                      <TableCell colSpan={colSpan} className="bg-olive-50/30 px-6 py-4 dark:bg-olive-900/30">
+                        {isLoadingEntries ? (
+                          <p className="text-sm text-olive-500 dark:text-olive-400">
+                            Loading time entries...
+                          </p>
+                        ) : (
+                          <TimeEntryList entries={taskEntries ?? []} />
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  </Fragment>
                 );
               })}
             </TableBody>

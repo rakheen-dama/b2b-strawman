@@ -166,6 +166,38 @@ export interface UpdateTaskRequest {
   assigneeId?: string;
 }
 
+// ---- Time Entries (from TimeEntryController.java) ----
+
+export interface TimeEntry {
+  id: string;
+  taskId: string;
+  memberId: string;
+  memberName: string;
+  date: string;
+  durationMinutes: number;
+  billable: boolean;
+  rateCents: number | null;
+  description: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateTimeEntryRequest {
+  date: string;
+  durationMinutes: number;
+  billable?: boolean;
+  rateCents?: number;
+  description?: string;
+}
+
+export interface UpdateTimeEntryRequest {
+  date?: string;
+  durationMinutes?: number;
+  billable?: boolean;
+  rateCents?: number;
+  description?: string;
+}
+
 // ---- Portal (from PortalAuthController, PortalProjectController, PortalDocumentController) ----
 
 export interface PortalProject {

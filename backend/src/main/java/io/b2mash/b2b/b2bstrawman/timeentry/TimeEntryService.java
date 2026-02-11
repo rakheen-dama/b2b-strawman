@@ -138,6 +138,34 @@ public class TimeEntryService {
     log.info("Deleted time entry {} by member {}", timeEntryId, memberId);
   }
 
+  // --- Project time summary aggregation methods (Epic 46A) ---
+
+  @Transactional(readOnly = true)
+  public ProjectTimeSummaryProjection getProjectTimeSummary(
+      UUID projectId, UUID memberId, String orgRole, LocalDate from, LocalDate to) {
+    projectAccessService.requireViewAccess(projectId, memberId, orgRole);
+    return timeEntryRepository.projectTimeSummary(projectId, from, to);
+  }
+
+  @Transactional(readOnly = true)
+  public List<MemberTimeSummaryProjection> getProjectTimeSummaryByMember(
+      UUID projectId, UUID memberId, String orgRole, LocalDate from, LocalDate to) {
+    var access = projectAccessService.requireViewAccess(projectId, memberId, orgRole);
+    if (!access.canEdit()) {
+      throw new ForbiddenException(
+          "Cannot view member breakdown",
+          "Per-member time breakdown is restricted to project leads, org admins, and org owners");
+    }
+    return timeEntryRepository.projectTimeSummaryByMember(projectId, from, to);
+  }
+
+  @Transactional(readOnly = true)
+  public List<TaskTimeSummaryProjection> getProjectTimeSummaryByTask(
+      UUID projectId, UUID memberId, String orgRole, LocalDate from, LocalDate to) {
+    projectAccessService.requireViewAccess(projectId, memberId, orgRole);
+    return timeEntryRepository.projectTimeSummaryByTask(projectId, from, to);
+  }
+
   /**
    * Checks that the caller has permission to edit/delete the given time entry. The creator can
    * always modify their own entries. Otherwise, the caller must have canEdit() access on the

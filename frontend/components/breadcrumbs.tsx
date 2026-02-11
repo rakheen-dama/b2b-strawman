@@ -12,6 +12,15 @@ const SEGMENT_LABELS: Record<string, string> = {
   billing: "Billing",
 };
 
+/** Segments that contain dynamic child routes (e.g. /projects/[id]) */
+const PARENT_SEGMENT_FALLBACKS: Record<string, string> = {
+  projects: "Project",
+};
+
+function isUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+}
+
 interface BreadcrumbsProps {
   slug: string;
 }
@@ -40,7 +49,12 @@ export function Breadcrumbs({ slug }: BreadcrumbsProps) {
 
       {segments.map((segment, index) => {
         const isLast = index === segments.length - 1;
-        const label = SEGMENT_LABELS[segment] ?? segment;
+        const parentSegment = index > 0 ? segments[index - 1] : undefined;
+        const label =
+          SEGMENT_LABELS[segment] ??
+          (isUuid(segment) && parentSegment
+            ? PARENT_SEGMENT_FALLBACKS[parentSegment] ?? segment
+            : segment);
 
         // Build the href for intermediate segments
         const href = `/org/${slug}/${segments.slice(0, index + 1).join("/")}`;

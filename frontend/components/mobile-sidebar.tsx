@@ -82,6 +82,7 @@ export function MobileSidebar({ slug }: MobileSidebarProps) {
                 {isActive && (
                   <motion.div
                     layoutId="mobile-sidebar-indicator"
+                    aria-hidden="true"
                     className="absolute left-0 top-1 bottom-1 w-0.5 rounded-full bg-indigo-500"
                     transition={{
                       type: "spring",

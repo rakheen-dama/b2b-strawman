@@ -5,6 +5,7 @@ import { DesktopSidebar } from "@/components/desktop-sidebar";
 import { MobileSidebar } from "@/components/mobile-sidebar";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { PlanBadge } from "@/components/billing/plan-badge";
+import { PageTransition } from "@/components/page-transition";
 
 export default async function OrgLayout({
   children,
@@ -43,7 +44,7 @@ export default async function OrgLayout({
         </header>
         <main className="flex-1 bg-olive-50 dark:bg-olive-950">
           <div className="mx-auto max-w-7xl px-6 py-6 lg:px-10">
-            {children}
+            <PageTransition>{children}</PageTransition>
           </div>
         </main>
       </div>

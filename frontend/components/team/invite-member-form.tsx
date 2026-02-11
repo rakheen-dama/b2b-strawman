@@ -107,7 +107,7 @@ export function InviteMemberForm({ maxMembers, currentMembers, planTier }: Invit
 
       {/* At-limit message */}
       {isAtLimit && (
-        <p className="text-sm text-olive-600">
+        <p className="text-sm text-olive-600 dark:text-olive-400">
           Member limit reached.{" "}
           <Link
             href={`/org/${organization.slug}/settings/billing`}
@@ -122,7 +122,7 @@ export function InviteMemberForm({ maxMembers, currentMembers, planTier }: Invit
       {/* Plan limit progress bar */}
       {maxMembers > 0 && (
         <div className="space-y-1.5">
-          <p className="text-sm text-olive-600">
+          <p className="text-sm text-olive-600 dark:text-olive-400">
             {totalUsed} of {maxMembers} members
           </p>
           <div className="h-2 w-full overflow-hidden rounded-full bg-olive-200 dark:bg-olive-800">

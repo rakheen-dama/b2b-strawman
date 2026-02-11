@@ -22,7 +22,7 @@ export function MemberList() {
   });
 
   if (!isLoaded) {
-    return <div className="py-8 text-center text-sm text-olive-600">Loading members...</div>;
+    return <div className="py-8 text-center text-sm text-olive-600 dark:text-olive-400">Loading members...</div>;
   }
 
   if (!memberships?.data?.length) {
@@ -42,16 +42,16 @@ export function MemberList() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-olive-200 dark:border-olive-800">
-              <th className="pb-3 pr-4 text-left text-xs font-medium tracking-wide text-olive-600 uppercase">
+              <th className="pb-3 pr-4 text-left text-xs font-medium tracking-wide text-olive-600 uppercase dark:text-olive-400">
                 Member
               </th>
-              <th className="w-[200px] pb-3 pr-4 text-left text-xs font-medium tracking-wide text-olive-600 uppercase">
+              <th className="w-[200px] pb-3 pr-4 text-left text-xs font-medium tracking-wide text-olive-600 uppercase dark:text-olive-400">
                 Email
               </th>
-              <th className="w-[100px] pb-3 pr-4 text-left text-xs font-medium tracking-wide text-olive-600 uppercase">
+              <th className="w-[100px] pb-3 pr-4 text-left text-xs font-medium tracking-wide text-olive-600 uppercase dark:text-olive-400">
                 Role
               </th>
-              <th className="w-[140px] pb-3 text-left text-xs font-medium tracking-wide text-olive-600 uppercase">
+              <th className="w-[140px] pb-3 text-left text-xs font-medium tracking-wide text-olive-600 uppercase dark:text-olive-400">
                 Joined
               </th>
             </tr>

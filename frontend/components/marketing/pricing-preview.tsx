@@ -33,7 +33,7 @@ export function PricingPreview() {
   return (
     <section className="px-6 py-24">
       <div className="mx-auto max-w-4xl">
-        <h2 className="text-center font-display text-3xl text-olive-950">
+        <h2 className="text-center font-display text-3xl text-olive-950 dark:text-olive-50">
           Simple, transparent pricing
         </h2>
 
@@ -41,7 +41,7 @@ export function PricingPreview() {
           {plans.map((plan) => (
             <div
               key={plan.name}
-              className={`relative rounded-lg bg-olive-950/[0.025] p-8 ${
+              className={`relative rounded-lg bg-olive-950/[0.025] p-8 dark:bg-olive-50/[0.05] ${
                 plan.highlighted ? "border-2 border-indigo-200" : ""
               }`}
             >
@@ -51,8 +51,8 @@ export function PricingPreview() {
                 </span>
               )}
 
-              <p className="font-semibold text-olive-950">{plan.name}</p>
-              <p className="mt-2 font-display text-3xl text-olive-950">
+              <p className="font-semibold text-olive-950 dark:text-olive-50">{plan.name}</p>
+              <p className="mt-2 font-display text-3xl text-olive-950 dark:text-olive-50">
                 {plan.price}
               </p>
 
@@ -66,7 +66,7 @@ export function PricingPreview() {
                           : "text-olive-500"
                       }`}
                     />
-                    <span className="text-sm text-olive-700">{feature}</span>
+                    <span className="text-sm text-olive-700 dark:text-olive-300">{feature}</span>
                   </li>
                 ))}
               </ul>

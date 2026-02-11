@@ -27,7 +27,7 @@ export function PendingInvitations({ isAdmin }: { isAdmin: boolean }) {
   const [revokingId, setRevokingId] = useState<string | null>(null);
 
   if (!isLoaded) {
-    return <div className="py-8 text-center text-sm text-olive-600">Loading invitations...</div>;
+    return <div className="py-8 text-center text-sm text-olive-600 dark:text-olive-400">Loading invitations...</div>;
   }
 
   if (!invitations?.data?.length) {
@@ -61,17 +61,17 @@ export function PendingInvitations({ isAdmin }: { isAdmin: boolean }) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-olive-200 dark:border-olive-800">
-              <th className="pb-3 pr-4 text-left text-xs font-medium tracking-wide text-olive-600 uppercase">
+              <th className="pb-3 pr-4 text-left text-xs font-medium tracking-wide text-olive-600 uppercase dark:text-olive-400">
                 Email
               </th>
-              <th className="w-[100px] pb-3 pr-4 text-left text-xs font-medium tracking-wide text-olive-600 uppercase">
+              <th className="w-[100px] pb-3 pr-4 text-left text-xs font-medium tracking-wide text-olive-600 uppercase dark:text-olive-400">
                 Role
               </th>
-              <th className="w-[140px] pb-3 pr-4 text-left text-xs font-medium tracking-wide text-olive-600 uppercase">
+              <th className="w-[140px] pb-3 pr-4 text-left text-xs font-medium tracking-wide text-olive-600 uppercase dark:text-olive-400">
                 Invited
               </th>
               {isAdmin && (
-                <th className="w-[80px] pb-3 text-left text-xs font-medium tracking-wide text-olive-600 uppercase">
+                <th className="w-[80px] pb-3 text-left text-xs font-medium tracking-wide text-olive-600 uppercase dark:text-olive-400">
                   Actions
                 </th>
               )}

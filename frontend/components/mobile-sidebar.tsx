@@ -60,7 +60,7 @@ export function MobileSidebar({ slug }: MobileSidebarProps) {
         <div className="mx-4 border-t border-white/10" />
 
         {/* Nav body */}
-        <nav className="flex flex-1 flex-col gap-1 p-2">
+        <nav aria-label="Main navigation" className="flex flex-1 flex-col gap-1 p-2">
           {NAV_ITEMS.map((item) => {
             const href = item.href(slug);
             const isActive = item.exact

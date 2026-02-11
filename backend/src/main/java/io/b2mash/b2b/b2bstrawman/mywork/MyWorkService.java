@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.mywork;
 
-import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.task.Task;
@@ -30,17 +29,14 @@ public class MyWorkService {
 
   private final TaskRepository taskRepository;
   private final TimeEntryRepository timeEntryRepository;
-  private final MemberRepository memberRepository;
   private final ProjectRepository projectRepository;
 
   public MyWorkService(
       TaskRepository taskRepository,
       TimeEntryRepository timeEntryRepository,
-      MemberRepository memberRepository,
       ProjectRepository projectRepository) {
     this.taskRepository = taskRepository;
     this.timeEntryRepository = timeEntryRepository;
-    this.memberRepository = memberRepository;
     this.projectRepository = projectRepository;
   }
 

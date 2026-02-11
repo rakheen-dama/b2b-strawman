@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, Check, ClipboardList, Hand, Plus, Undo2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -92,6 +92,11 @@ export function TaskListPanel({
   const [actionTaskId, setActionTaskId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Sync state when parent Server Component re-renders with fresh data
+  useEffect(() => {
+    setTasks(initialTasks);
+  }, [initialTasks]);
+
   // --- Filter handler (40.7) ---
 
   function handleFilterChange(key: FilterKey) {
@@ -103,7 +108,11 @@ export function TaskListPanel({
         const filters: { status?: string; assigneeId?: string } = {};
         if (key === "OPEN" || key === "IN_PROGRESS" || key === "DONE") {
           filters.status = key;
-        } else if (key === "my" && currentMemberId) {
+        } else if (key === "my") {
+          if (!currentMemberId) {
+            setTasks([]);
+            return;
+          }
           filters.assigneeId = currentMemberId;
         }
         const fetched = await fetchTasks(projectId, filters);
@@ -151,6 +160,7 @@ export function TaskListPanel({
         const result = await releaseTask(slug, taskId, projectId);
         if (!result.success) {
           setError(result.error ?? "Failed to release task.");
+          router.refresh();
         } else {
           const fetched = await fetchTasks(projectId, buildCurrentFilters());
           setTasks(fetched);
@@ -173,11 +183,16 @@ export function TaskListPanel({
       try {
         const result = await updateTask(slug, task.id, projectId, {
           title: task.title,
+          description: task.description,
           priority: task.priority,
           status: "DONE",
+          type: task.type,
+          dueDate: task.dueDate,
+          assigneeId: task.assigneeId,
         });
         if (!result.success) {
           setError(result.error ?? "Failed to mark task as done.");
+          router.refresh();
         } else {
           const fetched = await fetchTasks(projectId, buildCurrentFilters());
           setTasks(fetched);

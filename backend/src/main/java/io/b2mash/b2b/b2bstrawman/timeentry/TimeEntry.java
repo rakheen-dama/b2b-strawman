@@ -127,4 +127,28 @@ public class TimeEntry implements TenantAware {
   public Instant getUpdatedAt() {
     return updatedAt;
   }
+
+  public void setDate(LocalDate date) {
+    this.date = date;
+  }
+
+  public void setDurationMinutes(int durationMinutes) {
+    this.durationMinutes = durationMinutes;
+  }
+
+  public void setBillable(boolean billable) {
+    this.billable = billable;
+  }
+
+  public void setRateCents(Integer rateCents) {
+    this.rateCents = rateCents;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public void setUpdatedAt(Instant updatedAt) {
+    this.updatedAt = updatedAt;
+  }
 }

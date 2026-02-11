@@ -31,7 +31,7 @@ export function TestimonialsSection() {
             key={testimonial.name}
             className="rounded-lg bg-olive-950/[0.025] p-6"
           >
-            <span className="font-serif text-4xl leading-none text-olive-300">
+            <span className="font-display text-4xl leading-none text-olive-300">
               &ldquo;
             </span>
             <p className="mt-2 text-olive-800">{testimonial.quote}</p>

@@ -444,7 +444,7 @@ Stage 4:  [E43]                       <- after E37 + E41
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **43A** | 43.1–43.5 | Backend: magic link service, CustomerAuthFilter, portal JWT, `/portal/*` security filter chain | |
+| **43A** | 43.1–43.5 | Backend: magic link service, CustomerAuthFilter, portal JWT, `/portal/*` security filter chain | **Done** (PR #85) |
 | **43B** | 43.6–43.10 | Backend: portal endpoints (projects, documents), scoped query services, integration tests | |
 | **43C** | 43.11–43.15 | Frontend: portal login page, portal layout, project list, document list, tests | |
 

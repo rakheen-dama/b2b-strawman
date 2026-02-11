@@ -50,7 +50,7 @@
 | 40 | Task Frontend — List, Creation & Claim UI | Frontend | 39 | M | 40A, 40B | **Done** (PR #79, #80) |
 | 41 | Document Scope Extension — Backend | Backend | 37 | M | 41A, 41B | **Done** (PR #81, #82) |
 | 42 | Document Scope Extension — Frontend | Frontend | 38, 41 | M | 42A, 42B | **Done** (PR #83, #84) |
-| 43 | Customer Portal Groundwork | Both | 37, 41 | L | 43A, 43B, 43C | |
+| 43 | Customer Portal Groundwork | Both | 37, 41 | L | 43A, 43B, 43C | 43A Done (PR #85) |
 
 ---
 

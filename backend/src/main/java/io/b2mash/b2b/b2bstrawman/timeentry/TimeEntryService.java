@@ -99,6 +99,10 @@ public class TimeEntryService {
           "Invalid duration", "Duration must be greater than 0 minutes");
     }
 
+    if (rateCents != null && rateCents < 0) {
+      throw new InvalidStateException("Invalid rate", "Rate cents must be non-negative");
+    }
+
     if (date != null) {
       entry.setDate(date);
     }

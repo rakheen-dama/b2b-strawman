@@ -2,6 +2,7 @@ import { api, handleApiError } from "@/lib/api";
 import type { MyWorkTasksResponse, MyWorkTimeSummary } from "@/lib/types";
 import { AssignedTaskList } from "@/components/my-work/assigned-task-list";
 import { ApiError } from "@/lib/api";
+import { formatDuration } from "@/lib/format";
 
 /** Returns Monday (start) and Sunday (end) of the current week as 'YYYY-MM-DD'. */
 function getCurrentWeekRange(): { from: string; to: string } {
@@ -85,7 +86,7 @@ export default async function MyWorkPage({
                       Billable
                     </p>
                     <p className="font-display text-2xl text-emerald-600 dark:text-emerald-400">
-                      {formatMinutes(timeSummary.billableMinutes)}
+                      {formatDuration(timeSummary.billableMinutes)}
                     </p>
                   </div>
                   <div>
@@ -93,7 +94,7 @@ export default async function MyWorkPage({
                       Non-billable
                     </p>
                     <p className="font-display text-2xl text-olive-600 dark:text-olive-400">
-                      {formatMinutes(timeSummary.nonBillableMinutes)}
+                      {formatDuration(timeSummary.nonBillableMinutes)}
                     </p>
                   </div>
                 </div>
@@ -103,7 +104,7 @@ export default async function MyWorkPage({
                     Total
                   </p>
                   <p className="font-display text-2xl text-olive-900 dark:text-olive-100">
-                    {formatMinutes(timeSummary.totalMinutes)}
+                    {formatDuration(timeSummary.totalMinutes)}
                   </p>
                 </div>
 
@@ -123,7 +124,7 @@ export default async function MyWorkPage({
                             {project.projectName}
                           </span>
                           <span className="shrink-0 font-medium text-olive-900 dark:text-olive-100">
-                            {formatMinutes(project.totalMinutes)}
+                            {formatDuration(project.totalMinutes)}
                           </span>
                         </div>
                       ))}
@@ -141,14 +142,4 @@ export default async function MyWorkPage({
       </div>
     </div>
   );
-}
-
-/** Simple minutes-to-display formatter for the summary panel. */
-function formatMinutes(minutes: number): string {
-  if (minutes <= 0) return "0m";
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  if (h > 0 && m > 0) return `${h}h ${m}m`;
-  if (h > 0) return `${h}h`;
-  return `${m}m`;
 }

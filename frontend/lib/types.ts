@@ -77,6 +77,46 @@ export interface ProjectMember {
   createdAt: string;
 }
 
+// ---- Customers (from CustomerController.java) ----
+
+export type CustomerStatus = "ACTIVE" | "ARCHIVED";
+
+export interface Customer {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  idNumber: string | null;
+  status: CustomerStatus;
+  notes: string | null;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCustomerRequest {
+  name: string;
+  email: string;
+  phone?: string;
+  idNumber?: string;
+  notes?: string;
+}
+
+export interface UpdateCustomerRequest {
+  name: string;
+  email: string;
+  phone?: string;
+  idNumber?: string;
+  notes?: string;
+}
+
+export interface CustomerProject {
+  customerId: string;
+  projectId: string;
+  linkedBy: string | null;
+  createdAt: string;
+}
+
 // ---- Error (RFC 9457 ProblemDetail) ----
 
 export interface ProblemDetail {

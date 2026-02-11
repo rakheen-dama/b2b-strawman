@@ -117,6 +117,48 @@ export interface CustomerProject {
   createdAt: string;
 }
 
+// ---- Tasks (from TaskController.java) ----
+
+export type TaskStatus = "OPEN" | "IN_PROGRESS" | "DONE" | "CANCELLED";
+
+export type TaskPriority = "LOW" | "MEDIUM" | "HIGH";
+
+export interface Task {
+  id: string;
+  projectId: string;
+  title: string;
+  description: string | null;
+  status: TaskStatus;
+  priority: TaskPriority;
+  type: string | null;
+  assigneeId: string | null;
+  assigneeName: string | null;
+  createdBy: string;
+  createdByName: string | null;
+  dueDate: string | null;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateTaskRequest {
+  title: string;
+  description?: string;
+  priority?: TaskPriority;
+  type?: string;
+  dueDate?: string;
+}
+
+export interface UpdateTaskRequest {
+  title: string;
+  description?: string;
+  priority: TaskPriority;
+  status: TaskStatus;
+  type?: string;
+  dueDate?: string;
+  assigneeId?: string;
+}
+
 // ---- Error (RFC 9457 ProblemDetail) ----
 
 export interface ProblemDetail {

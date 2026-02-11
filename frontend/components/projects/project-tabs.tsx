@@ -8,16 +8,18 @@ import { cn } from "@/lib/utils";
 interface ProjectTabsProps {
   documentsPanel: ReactNode;
   membersPanel: ReactNode;
+  tasksPanel: ReactNode;
 }
 
 const tabs = [
   { id: "documents", label: "Documents" },
   { id: "members", label: "Members" },
+  { id: "tasks", label: "Tasks" },
 ] as const;
 
 type TabId = (typeof tabs)[number]["id"];
 
-export function ProjectTabs({ documentsPanel, membersPanel }: ProjectTabsProps) {
+export function ProjectTabs({ documentsPanel, membersPanel, tasksPanel }: ProjectTabsProps) {
   const [activeTab, setActiveTab] = useState<TabId>("documents");
 
   return (
@@ -54,6 +56,9 @@ export function ProjectTabs({ documentsPanel, membersPanel }: ProjectTabsProps) 
       </TabsPrimitive.Content>
       <TabsPrimitive.Content value="members" className="pt-6 outline-none">
         {membersPanel}
+      </TabsPrimitive.Content>
+      <TabsPrimitive.Content value="tasks" className="pt-6 outline-none">
+        {tasksPanel}
       </TabsPrimitive.Content>
     </TabsPrimitive.Root>
   );

@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.task;
 
+import io.b2mash.b2b.b2bstrawman.member.Member;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -8,7 +10,11 @@ import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,9 +30,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class TaskController {
 
   private final TaskService taskService;
+  private final MemberRepository memberRepository;
 
-  public TaskController(TaskService taskService) {
+  public TaskController(TaskService taskService, MemberRepository memberRepository) {
     this.taskService = taskService;
+    this.memberRepository = memberRepository;
   }
 
   @PostMapping("/api/projects/{projectId}/tasks")
@@ -47,8 +55,9 @@ public class TaskController {
             createdBy,
             orgRole);
 
+    var names = resolveNames(List.of(task));
     return ResponseEntity.created(URI.create("/api/tasks/" + task.getId()))
-        .body(TaskResponse.from(task));
+        .body(TaskResponse.from(task, names));
   }
 
   @GetMapping("/api/projects/{projectId}/tasks")
@@ -62,12 +71,11 @@ public class TaskController {
     UUID memberId = RequestScopes.requireMemberId();
     String orgRole = RequestScopes.getOrgRole();
 
-    var tasks =
-        taskService
-            .listTasks(projectId, memberId, orgRole, status, assigneeId, priority, assigneeFilter)
-            .stream()
-            .map(TaskResponse::from)
-            .toList();
+    var taskEntities =
+        taskService.listTasks(
+            projectId, memberId, orgRole, status, assigneeId, priority, assigneeFilter);
+    var names = resolveNames(taskEntities);
+    var tasks = taskEntities.stream().map(t -> TaskResponse.from(t, names)).toList();
 
     return ResponseEntity.ok(tasks);
   }
@@ -79,7 +87,8 @@ public class TaskController {
     String orgRole = RequestScopes.getOrgRole();
 
     var task = taskService.getTask(id, memberId, orgRole);
-    return ResponseEntity.ok(TaskResponse.from(task));
+    var names = resolveNames(List.of(task));
+    return ResponseEntity.ok(TaskResponse.from(task, names));
   }
 
   @PutMapping("/api/tasks/{id}")
@@ -102,7 +111,8 @@ public class TaskController {
             memberId,
             orgRole);
 
-    return ResponseEntity.ok(TaskResponse.from(task));
+    var names = resolveNames(List.of(task));
+    return ResponseEntity.ok(TaskResponse.from(task, names));
   }
 
   @DeleteMapping("/api/tasks/{id}")
@@ -122,7 +132,8 @@ public class TaskController {
     String orgRole = RequestScopes.getOrgRole();
 
     var task = taskService.claimTask(id, memberId, orgRole);
-    return ResponseEntity.ok(TaskResponse.from(task));
+    var names = resolveNames(List.of(task));
+    return ResponseEntity.ok(TaskResponse.from(task, names));
   }
 
   @PostMapping("/api/tasks/{id}/release")
@@ -132,7 +143,28 @@ public class TaskController {
     String orgRole = RequestScopes.getOrgRole();
 
     var task = taskService.releaseTask(id, memberId, orgRole);
-    return ResponseEntity.ok(TaskResponse.from(task));
+    var names = resolveNames(List.of(task));
+    return ResponseEntity.ok(TaskResponse.from(task, names));
+  }
+
+  /**
+   * Batch-loads member names for all assignee and createdBy IDs referenced by the given tasks.
+   * Returns a map of member UUID to display name.
+   */
+  private Map<UUID, String> resolveNames(List<Task> tasks) {
+    var ids =
+        tasks.stream()
+            .flatMap(t -> Stream.of(t.getAssigneeId(), t.getCreatedBy()))
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+
+    if (ids.isEmpty()) {
+      return Map.of();
+    }
+
+    return memberRepository.findAllById(ids).stream()
+        .collect(Collectors.toMap(Member::getId, Member::getName, (a, b) -> a));
   }
 
   // --- DTOs ---
@@ -170,13 +202,15 @@ public class TaskController {
       String priority,
       String type,
       UUID assigneeId,
+      String assigneeName,
       UUID createdBy,
+      String createdByName,
       LocalDate dueDate,
       int version,
       Instant createdAt,
       Instant updatedAt) {
 
-    public static TaskResponse from(Task task) {
+    public static TaskResponse from(Task task, Map<UUID, String> memberNames) {
       return new TaskResponse(
           task.getId(),
           task.getProjectId(),
@@ -186,7 +220,9 @@ public class TaskController {
           task.getPriority(),
           task.getType(),
           task.getAssigneeId(),
+          task.getAssigneeId() != null ? memberNames.get(task.getAssigneeId()) : null,
           task.getCreatedBy(),
+          memberNames.get(task.getCreatedBy()),
           task.getDueDate(),
           task.getVersion(),
           task.getCreatedAt(),

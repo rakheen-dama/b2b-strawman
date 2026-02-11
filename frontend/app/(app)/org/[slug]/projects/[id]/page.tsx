@@ -1,12 +1,13 @@
 import { auth } from "@clerk/nextjs/server";
 import { api, handleApiError } from "@/lib/api";
-import type { Project, Document, ProjectMember, ProjectRole } from "@/lib/types";
+import type { Project, Document, ProjectMember, ProjectRole, Task } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EditProjectDialog } from "@/components/projects/edit-project-dialog";
 import { DeleteProjectDialog } from "@/components/projects/delete-project-dialog";
 import { DocumentsPanel } from "@/components/documents/documents-panel";
 import { ProjectMembersPanel } from "@/components/projects/project-members-panel";
+import { TaskListPanel } from "@/components/tasks/task-list-panel";
 import { ProjectTabs } from "@/components/projects/project-tabs";
 import { formatDate } from "@/lib/format";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
@@ -53,6 +54,13 @@ export default async function ProjectDetailPage({
     // Non-fatal: show empty members list if fetch fails
   }
 
+  let tasks: Task[] = [];
+  try {
+    tasks = await api.get<Task[]>(`/api/projects/${id}/tasks`);
+  } catch {
+    // Non-fatal: show empty tasks list if fetch fails
+  }
+
   const roleBadge = project.projectRole ? ROLE_BADGE[project.projectRole] : null;
 
   return (
@@ -87,7 +95,8 @@ export default async function ProjectDetailPage({
           <p className="mt-3 text-sm text-olive-400 dark:text-olive-600">
             Created {formatDate(project.createdAt)} &middot; {documents.length}{" "}
             {documents.length === 1 ? "document" : "documents"} &middot; {members.length}{" "}
-            {members.length === 1 ? "member" : "members"}
+            {members.length === 1 ? "member" : "members"} &middot; {tasks.length}{" "}
+            {tasks.length === 1 ? "task" : "tasks"}
           </p>
         </div>
 
@@ -126,6 +135,14 @@ export default async function ProjectDetailPage({
             canManage={canManage}
             isCurrentLead={isCurrentLead}
             currentUserId={userId ?? ""}
+          />
+        }
+        tasksPanel={
+          <TaskListPanel
+            tasks={tasks}
+            slug={slug}
+            projectId={id}
+            canManage={canManage}
           />
         }
       />

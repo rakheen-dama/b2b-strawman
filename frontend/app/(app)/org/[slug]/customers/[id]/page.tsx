@@ -1,0 +1,129 @@
+import { auth } from "@clerk/nextjs/server";
+import { api, handleApiError } from "@/lib/api";
+import type { Customer, CustomerStatus, Project } from "@/lib/types";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { EditCustomerDialog } from "@/components/customers/edit-customer-dialog";
+import { ArchiveCustomerDialog } from "@/components/customers/archive-customer-dialog";
+import { CustomerProjectsPanel } from "@/components/customers/customer-projects-panel";
+import { CustomerTabs } from "@/components/customers/customer-tabs";
+import { formatDate } from "@/lib/format";
+import { ArrowLeft, Pencil, Archive } from "lucide-react";
+import Link from "next/link";
+
+const STATUS_BADGE: Record<CustomerStatus, { label: string; variant: "success" | "neutral" }> = {
+  ACTIVE: { label: "Active", variant: "success" },
+  ARCHIVED: { label: "Archived", variant: "neutral" },
+};
+
+export default async function CustomerDetailPage({
+  params,
+}: {
+  params: Promise<{ slug: string; id: string }>;
+}) {
+  const { slug, id } = await params;
+  const { orgRole } = await auth();
+
+  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+
+  let customer: Customer;
+  try {
+    customer = await api.get<Customer>(`/api/customers/${id}`);
+  } catch (error) {
+    handleApiError(error);
+  }
+
+  let linkedProjects: Project[] = [];
+  try {
+    linkedProjects = await api.get<Project[]>(`/api/customers/${id}/projects`);
+  } catch {
+    // Non-fatal: show empty projects list if fetch fails
+  }
+
+  const statusBadge = STATUS_BADGE[customer.status];
+
+  return (
+    <div className="space-y-8">
+      {/* Back link */}
+      <div>
+        <Link
+          href={`/org/${slug}/customers`}
+          className="inline-flex items-center text-sm text-olive-600 transition-colors hover:text-olive-900 dark:text-olive-400 dark:hover:text-olive-100"
+        >
+          <ArrowLeft className="mr-1.5 size-4" />
+          Back to Customers
+        </Link>
+      </div>
+
+      {/* Customer Header */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <div className="flex items-center gap-3">
+            <h1 className="font-display text-2xl text-olive-950 dark:text-olive-50">
+              {customer.name}
+            </h1>
+            <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
+          </div>
+          <p className="mt-1 text-olive-600 dark:text-olive-400">{customer.email}</p>
+          <p className="mt-3 text-sm text-olive-400 dark:text-olive-600">
+            {customer.phone && (
+              <>
+                {customer.phone} &middot;{" "}
+              </>
+            )}
+            {customer.idNumber && (
+              <>
+                {customer.idNumber} &middot;{" "}
+              </>
+            )}
+            Created {formatDate(customer.createdAt)} &middot; {linkedProjects.length}{" "}
+            {linkedProjects.length === 1 ? "project" : "projects"}
+          </p>
+          {customer.notes && (
+            <p className="mt-3 text-sm text-olive-600 dark:text-olive-400">{customer.notes}</p>
+          )}
+        </div>
+
+        {isAdmin && customer.status === "ACTIVE" && (
+          <div className="flex shrink-0 gap-2">
+            <EditCustomerDialog customer={customer} slug={slug}>
+              <Button variant="outline" size="sm">
+                <Pencil className="mr-1.5 size-4" />
+                Edit
+              </Button>
+            </EditCustomerDialog>
+            <ArchiveCustomerDialog slug={slug} customerId={customer.id} customerName={customer.name}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300"
+              >
+                <Archive className="mr-1.5 size-4" />
+                Archive
+              </Button>
+            </ArchiveCustomerDialog>
+          </div>
+        )}
+      </div>
+
+      {/* Tabbed Content */}
+      <CustomerTabs
+        projectsPanel={
+          <CustomerProjectsPanel
+            projects={linkedProjects}
+            slug={slug}
+            customerId={id}
+            canManage={isAdmin && customer.status === "ACTIVE"}
+          />
+        }
+        documentsPanel={
+          <div className="flex flex-col items-center py-16 text-center">
+            <p className="text-sm text-olive-400 dark:text-olive-600">
+              Customer documents will be available in a future update.
+            </p>
+          </div>
+        }
+      />
+    </div>
+  );
+}

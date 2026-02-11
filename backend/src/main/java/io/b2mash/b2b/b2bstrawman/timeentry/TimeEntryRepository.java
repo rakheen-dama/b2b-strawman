@@ -116,4 +116,74 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
       @Param("projectId") UUID projectId,
       @Param("fromDate") LocalDate from,
       @Param("toDate") LocalDate to);
+
+  // --- My Work: member time summary queries (Epic 48A) ---
+
+  /**
+   * Aggregates total billable/non-billable minutes for a member across all projects. Date range
+   * parameters are optional — when null, all-time data is returned. RLS handles tenant isolation.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+      SELECT
+        COALESCE(SUM(CASE WHEN te.billable = true THEN te.duration_minutes ELSE 0 END), 0) AS billableMinutes,
+        COALESCE(SUM(CASE WHEN te.billable = false THEN te.duration_minutes ELSE 0 END), 0) AS nonBillableMinutes,
+        COALESCE(SUM(te.duration_minutes), 0) AS totalMinutes
+      FROM time_entries te
+      WHERE te.member_id = CAST(:memberId AS UUID)
+        AND (CAST(:fromDate AS DATE) IS NULL OR te.date >= CAST(:fromDate AS DATE))
+        AND (CAST(:toDate AS DATE) IS NULL OR te.date <= CAST(:toDate AS DATE))
+      """)
+  MyWorkMemberTimeSummaryProjection memberTimeSummary(
+      @Param("memberId") UUID memberId,
+      @Param("fromDate") LocalDate from,
+      @Param("toDate") LocalDate to);
+
+  /**
+   * Aggregates billable/non-billable minutes per project for a member. Joins through tasks to get
+   * project_id and projects to get project name. Date range parameters are optional. RLS handles
+   * tenant isolation.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+      SELECT
+        t.project_id AS projectId,
+        p.name AS projectName,
+        COALESCE(SUM(CASE WHEN te.billable = true THEN te.duration_minutes ELSE 0 END), 0) AS billableMinutes,
+        COALESCE(SUM(CASE WHEN te.billable = false THEN te.duration_minutes ELSE 0 END), 0) AS nonBillableMinutes,
+        COALESCE(SUM(te.duration_minutes), 0) AS totalMinutes
+      FROM time_entries te
+        JOIN tasks t ON te.task_id = t.id
+        JOIN projects p ON t.project_id = p.id
+      WHERE te.member_id = CAST(:memberId AS UUID)
+        AND (CAST(:fromDate AS DATE) IS NULL OR te.date >= CAST(:fromDate AS DATE))
+        AND (CAST(:toDate AS DATE) IS NULL OR te.date <= CAST(:toDate AS DATE))
+      GROUP BY t.project_id, p.name
+      ORDER BY totalMinutes DESC
+      """)
+  List<MyWorkProjectTimeSummaryProjection> memberTimeSummaryByProject(
+      @Param("memberId") UUID memberId,
+      @Param("fromDate") LocalDate from,
+      @Param("toDate") LocalDate to);
+
+  /**
+   * Sums total duration per task for a batch of task IDs. Used to enrich My Work task items with
+   * total logged time without N+1 queries. RLS handles tenant isolation.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+      SELECT
+        te.task_id AS taskId,
+        COALESCE(SUM(te.duration_minutes), 0) AS totalMinutes
+      FROM time_entries te
+      WHERE te.task_id IN (:taskIds)
+      GROUP BY te.task_id
+      """)
+  List<TaskDurationProjection> sumDurationByTaskIds(@Param("taskIds") List<UUID> taskIds);
 }

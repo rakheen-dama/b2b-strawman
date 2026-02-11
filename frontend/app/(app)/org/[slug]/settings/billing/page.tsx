@@ -1,6 +1,7 @@
-import { Sparkles, Users } from "lucide-react";
+import { Check, Users } from "lucide-react";
 import { api } from "@/lib/api";
 import { PlanBadgeDisplay } from "@/components/billing/plan-badge";
+import { UpgradeCard } from "@/components/billing/upgrade-card";
 import { Progress } from "@/components/ui/progress";
 import {
   Card,
@@ -10,6 +11,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import type { BillingResponse } from "@/lib/internal-api";
+
+const PLAN_FEATURES = [
+  { feature: "Team members", starter: "Up to 2", pro: "Up to 10" },
+  { feature: "Infrastructure", starter: "Shared", pro: "Dedicated" },
+  { feature: "Data isolation", starter: "Row-level", pro: "Schema-level" },
+  { feature: "Support", starter: "Community", pro: "Priority" },
+];
 
 export default async function BillingPage({
   params,
@@ -61,30 +69,35 @@ export default async function BillingPage({
       </Card>
 
       {!isPro && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5" />
-              Upgrade to Pro
-            </CardTitle>
-            <CardDescription>
-              Unlock dedicated infrastructure, higher member limits, and priority
-              support for your team.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Contact us at{" "}
-              <a
-                href={`mailto:sales@docteams.com?subject=Upgrade ${slug} to Pro`}
-                className="font-medium text-primary underline underline-offset-4 hover:text-primary/80"
-              >
-                sales@docteams.com
-              </a>{" "}
-              to upgrade your organization.
-            </p>
-          </CardContent>
-        </Card>
+        <>
+          <Card>
+            <CardHeader>
+              <CardTitle>Compare Plans</CardTitle>
+              <CardDescription>
+                See what you get with each plan.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-3 gap-4 text-sm">
+                <div />
+                <div className="font-medium">Starter</div>
+                <div className="font-medium">Pro</div>
+                {PLAN_FEATURES.map(({ feature, starter, pro }) => (
+                  <div key={feature} className="contents">
+                    <div className="text-muted-foreground">{feature}</div>
+                    <div>{starter}</div>
+                    <div className="flex items-center gap-1.5">
+                      <Check className="h-3.5 w-3.5 text-green-600" />
+                      {pro}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <UpgradeCard slug={slug} />
+        </>
       )}
     </div>
   );

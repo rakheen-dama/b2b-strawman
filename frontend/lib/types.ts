@@ -166,6 +166,38 @@ export interface UpdateTaskRequest {
   assigneeId?: string;
 }
 
+// ---- Portal (from PortalAuthController, PortalProjectController, PortalDocumentController) ----
+
+export interface PortalProject {
+  id: string;
+  name: string;
+  description: string | null;
+  documentCount: number;
+}
+
+export interface PortalDocument {
+  id: string;
+  fileName: string;
+  contentType: string;
+  size: number;
+  scope: DocumentScope;
+  projectId: string | null;
+  projectName: string | null;
+  uploadedAt: string | null;
+  createdAt: string;
+}
+
+export interface PortalAuthResponse {
+  token: string;
+  customerName: string;
+  expiresIn: number;
+}
+
+export interface MagicLinkResponse {
+  message: string;
+  magicLink?: string;
+}
+
 // ---- Error (RFC 9457 ProblemDetail) ----
 
 export interface ProblemDetail {

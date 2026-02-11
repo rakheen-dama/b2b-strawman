@@ -93,7 +93,7 @@ export function InviteMemberForm({ maxMembers, currentMembers, planTier }: Invit
               id="invite-role"
               value={role}
               onChange={(e) => setRole(e.target.value as "org:member" | "org:admin")}
-              className="border-input bg-background h-9 rounded-md border px-3 text-sm shadow-xs"
+              className="border-input bg-background h-9 rounded-md border px-3 text-sm shadow-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-olive-500"
             >
               <option value="org:member">Member</option>
               <option value="org:admin">Admin</option>

@@ -99,7 +99,7 @@ export function MemberList() {
           <button
             onClick={() => memberships.fetchNext?.()}
             disabled={memberships.isFetching}
-            className="text-sm font-medium text-olive-600 hover:text-olive-900 disabled:opacity-50 dark:text-olive-400 dark:hover:text-olive-200"
+            className="text-sm font-medium text-olive-600 hover:text-olive-900 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-olive-600 dark:text-olive-400 dark:hover:text-olive-200"
           >
             {memberships.isFetching ? "Loading..." : "Load more"}
           </button>

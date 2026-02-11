@@ -25,9 +25,9 @@ export async function upgradeToPro(slug: string): Promise<UpgradeResult> {
     revalidatePath(`/org/${slug}/dashboard`);
     return { success: true, billing };
   } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
+    if (error instanceof ApiError && error.status === 403) {
+      return { success: false, error: "You don't have permission to upgrade this plan." };
     }
-    return { success: false, error: "An unexpected error occurred." };
+    return { success: false, error: "Something went wrong. Please try again later." };
   }
 }

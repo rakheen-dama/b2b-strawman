@@ -9,6 +9,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -33,6 +34,7 @@ class DocumentServiceTest {
 
   @Mock private DocumentRepository documentRepository;
   @Mock private ProjectAccessService projectAccessService;
+  @Mock private CustomerRepository customerRepository;
   @Mock private S3PresignedUrlService s3Service;
   @InjectMocks private DocumentService service;
 

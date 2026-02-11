@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.document;
 
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -16,14 +17,17 @@ public class DocumentService {
 
   private final DocumentRepository documentRepository;
   private final ProjectAccessService projectAccessService;
+  private final CustomerRepository customerRepository;
   private final S3PresignedUrlService s3Service;
 
   public DocumentService(
       DocumentRepository documentRepository,
       ProjectAccessService projectAccessService,
+      CustomerRepository customerRepository,
       S3PresignedUrlService s3Service) {
     this.documentRepository = documentRepository;
     this.projectAccessService = projectAccessService;
+    this.customerRepository = customerRepository;
     this.s3Service = s3Service;
   }
 
@@ -71,6 +75,89 @@ public class DocumentService {
     documentRepository.save(document);
 
     return new UploadInitResult(document.getId(), presigned.url(), presigned.expiresInSeconds());
+  }
+
+  /** Initiate an ORG-scoped document upload. S3 key: org/{orgId}/org-docs/{docId}. */
+  @Transactional
+  public UploadInitResult initiateOrgUpload(
+      String fileName, String contentType, long size, String orgId, UUID memberId) {
+    var document =
+        new Document(
+            Document.Scope.ORG,
+            null,
+            null,
+            fileName,
+            contentType,
+            size,
+            memberId,
+            Document.Visibility.INTERNAL);
+    document = documentRepository.save(document);
+
+    var presigned = s3Service.generateOrgUploadUrl(orgId, document.getId().toString(), contentType);
+
+    document.assignS3Key(presigned.s3Key());
+    documentRepository.save(document);
+
+    return new UploadInitResult(document.getId(), presigned.url(), presigned.expiresInSeconds());
+  }
+
+  /**
+   * Initiate a CUSTOMER-scoped document upload. S3 key: org/{orgId}/customer/{customerId}/{docId}.
+   * Validates that the customer exists.
+   */
+  @Transactional
+  public UploadInitResult initiateCustomerUpload(
+      UUID customerId,
+      String fileName,
+      String contentType,
+      long size,
+      String orgId,
+      UUID memberId) {
+    customerRepository
+        .findOneById(customerId)
+        .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+
+    var document =
+        new Document(
+            Document.Scope.CUSTOMER,
+            null,
+            customerId,
+            fileName,
+            contentType,
+            size,
+            memberId,
+            Document.Visibility.INTERNAL);
+    document = documentRepository.save(document);
+
+    var presigned =
+        s3Service.generateCustomerUploadUrl(
+            orgId, customerId.toString(), document.getId().toString(), contentType);
+
+    document.assignS3Key(presigned.s3Key());
+    documentRepository.save(document);
+
+    return new UploadInitResult(document.getId(), presigned.url(), presigned.expiresInSeconds());
+  }
+
+  /** Toggle document visibility between INTERNAL and SHARED. */
+  @Transactional
+  public Document toggleVisibility(UUID documentId, String visibility) {
+    if (!Document.Visibility.INTERNAL.equals(visibility)
+        && !Document.Visibility.SHARED.equals(visibility)) {
+      throw new InvalidStateException(
+          "Invalid visibility",
+          "Visibility must be '"
+              + Document.Visibility.INTERNAL
+              + "' or '"
+              + Document.Visibility.SHARED
+              + "'");
+    }
+    var document =
+        documentRepository
+            .findOneById(documentId)
+            .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
+    document.setVisibility(visibility);
+    return documentRepository.save(document);
   }
 
   /**

@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.customer;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
@@ -83,21 +84,33 @@ public class CustomerProjectService {
       throw new ResourceNotFoundException("CustomerProject link", customerId);
     }
 
-    customerProjectRepository.deleteByCustomerIdAndProjectId(customerId, projectId);
+    customerProjectRepository.deleteByCustomerIdAndProjectId(
+        customerId, projectId, RequestScopes.TENANT_ID.get());
     log.info("Unlinked customer {} from project {} by member {}", customerId, projectId, memberId);
   }
 
   @Transactional(readOnly = true)
-  public List<Project> listProjectsForCustomer(UUID customerId) {
+  public List<Project> listProjectsForCustomer(UUID customerId, UUID memberId, String orgRole) {
     // Validate customer exists in tenant
     customerRepository
         .findOneById(customerId)
         .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
 
     var links = customerProjectRepository.findByCustomerId(customerId);
-    return links.stream()
-        .map(link -> projectRepository.findOneById(link.getProjectId()))
-        .flatMap(java.util.Optional::stream)
+    var projects =
+        links.stream()
+            .map(link -> projectRepository.findOneById(link.getProjectId()))
+            .flatMap(java.util.Optional::stream);
+
+    // Owner/Admin can see all linked projects; regular members only see projects they have access
+    // to
+    if (Roles.ORG_OWNER.equals(orgRole) || Roles.ORG_ADMIN.equals(orgRole)) {
+      return projects.toList();
+    }
+    return projects
+        .filter(
+            project ->
+                projectAccessService.checkAccess(project.getId(), memberId, orgRole).canView())
         .toList();
   }
 

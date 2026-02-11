@@ -116,7 +116,9 @@ public class CustomerController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<LinkedProjectResponse>> listProjectsForCustomer(
       @PathVariable UUID id) {
-    var projects = customerProjectService.listProjectsForCustomer(id);
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+    var projects = customerProjectService.listProjectsForCustomer(id, memberId, orgRole);
     return ResponseEntity.ok(projects.stream().map(LinkedProjectResponse::from).toList());
   }
 

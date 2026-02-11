@@ -17,7 +17,9 @@ public interface CustomerProjectRepository extends JpaRepository<CustomerProject
 
   @Modifying
   @Query(
-      "DELETE FROM CustomerProject cp WHERE cp.customerId = :customerId AND cp.projectId = :projectId")
+      "DELETE FROM CustomerProject cp WHERE cp.customerId = :customerId AND cp.projectId = :projectId AND cp.tenantId = :tenantId")
   void deleteByCustomerIdAndProjectId(
-      @Param("customerId") UUID customerId, @Param("projectId") UUID projectId);
+      @Param("customerId") UUID customerId,
+      @Param("projectId") UUID projectId,
+      @Param("tenantId") String tenantId);
 }

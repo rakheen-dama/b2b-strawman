@@ -52,7 +52,7 @@ describe("TransferLeadDialog", () => {
 
     await user.click(screen.getByText("Open Transfer"));
 
-    const confirmButton = screen.getByRole("button", { name: /transfer lead/i });
+    const confirmButton = screen.getByRole("button", { name: /^transfer$/i });
     await user.click(confirmButton);
 
     expect(mockTransferLead).toHaveBeenCalledWith("acme", "proj1", "user2");
@@ -69,7 +69,7 @@ describe("TransferLeadDialog", () => {
     );
 
     await user.click(screen.getByText("Open Transfer"));
-    await user.click(screen.getByRole("button", { name: /transfer lead/i }));
+    await user.click(screen.getByRole("button", { name: /^transfer$/i }));
 
     await waitFor(() => {
       expect(screen.getByText("Not authorized")).toBeInTheDocument();
@@ -89,7 +89,7 @@ describe("TransferLeadDialog", () => {
     );
 
     await user.click(screen.getByText("Open Transfer"));
-    const confirmButton = screen.getByRole("button", { name: /transfer lead/i });
+    const confirmButton = screen.getByRole("button", { name: /^transfer$/i });
     await user.click(confirmButton);
 
     expect(screen.getByText("Transferring...")).toBeInTheDocument();

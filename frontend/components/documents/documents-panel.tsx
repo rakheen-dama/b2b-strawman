@@ -12,6 +12,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -312,17 +313,11 @@ export function DocumentsPanel({ documents, projectId, slug }: DocumentsPanelPro
       <h2 className="font-semibold text-olive-900 dark:text-olive-100">Documents</h2>
 
       {documents.length === 0 && uploads.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-olive-300 p-8 dark:border-olive-700">
-          <div className="flex flex-col items-center text-center">
-            <FileText className="size-10 text-olive-300 dark:text-olive-600" />
-            <p className="mt-3 text-sm font-medium text-olive-900 dark:text-olive-100">
-              No documents yet
-            </p>
-            <p className="mt-1 text-xs text-olive-600 dark:text-olive-400">
-              Upload your first file above
-            </p>
-          </div>
-        </div>
+        <EmptyState
+          icon={FileText}
+          title="No documents yet"
+          description="Upload your first file above"
+        />
       ) : (
         <div className="rounded-lg border border-olive-200 dark:border-olive-800">
           <Table>

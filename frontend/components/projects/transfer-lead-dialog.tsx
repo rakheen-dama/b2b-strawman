@@ -73,9 +73,11 @@ export function TransferLeadDialog({
         </AlertDialogHeader>
         {error && <p className="text-destructive text-sm">{error}</p>}
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isTransferring}>Cancel</AlertDialogCancel>
-          <Button variant="destructive" onClick={handleTransfer} disabled={isTransferring}>
-            {isTransferring ? "Transferring..." : "Transfer Lead"}
+          <AlertDialogCancel variant="plain" disabled={isTransferring}>
+            Cancel
+          </AlertDialogCancel>
+          <Button variant="accent" onClick={handleTransfer} disabled={isTransferring}>
+            {isTransferring ? "Transferring..." : "Transfer"}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

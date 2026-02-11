@@ -94,7 +94,7 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
           <DialogFooter>
             <Button
               type="button"
-              variant="outline"
+              variant="plain"
               onClick={() => setOpen(false)}
               disabled={isSubmitting}
             >

@@ -1,8 +1,10 @@
 "use client";
 
 import { useOrganization } from "@clerk/nextjs";
+import { Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AvatarCircle } from "@/components/ui/avatar-circle";
+import { EmptyState } from "@/components/empty-state";
 import { formatDate } from "@/lib/format";
 
 const ROLE_BADGES: Record<string, { label: string; variant: "owner" | "admin" | "member" }> = {
@@ -24,7 +26,13 @@ export function MemberList() {
   }
 
   if (!memberships?.data?.length) {
-    return <div className="py-8 text-center text-sm text-olive-600">No members found.</div>;
+    return (
+      <EmptyState
+        icon={Users}
+        title="No members found"
+        description="Organization members will appear here"
+      />
+    );
   }
 
   return (

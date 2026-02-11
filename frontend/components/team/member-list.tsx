@@ -1,24 +1,15 @@
 "use client";
 
 import { useOrganization } from "@clerk/nextjs";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { AvatarCircle } from "@/components/ui/avatar-circle";
 import { formatDate } from "@/lib/format";
 
-const ROLE_LABELS: Record<string, { label: string; variant: "default" | "secondary" | "outline" }> =
-  {
-    "org:owner": { label: "Owner", variant: "default" },
-    "org:admin": { label: "Admin", variant: "secondary" },
-    "org:member": { label: "Member", variant: "outline" },
-  };
+const ROLE_BADGES: Record<string, { label: string; variant: "owner" | "admin" | "member" }> = {
+  "org:owner": { label: "Owner", variant: "owner" },
+  "org:admin": { label: "Admin", variant: "admin" },
+  "org:member": { label: "Member", variant: "member" },
+};
 
 export function MemberList() {
   const { memberships, isLoaded } = useOrganization({
@@ -29,60 +20,81 @@ export function MemberList() {
   });
 
   if (!isLoaded) {
-    return <div className="text-muted-foreground py-8 text-center text-sm">Loading members...</div>;
+    return <div className="py-8 text-center text-sm text-olive-600">Loading members...</div>;
   }
 
   if (!memberships?.data?.length) {
-    return <div className="text-muted-foreground py-8 text-center text-sm">No members found.</div>;
+    return <div className="py-8 text-center text-sm text-olive-600">No members found.</div>;
   }
 
   return (
     <div className="space-y-4">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead>Joined</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {memberships.data.map((member) => {
-            const roleInfo = ROLE_LABELS[member.role] ?? {
-              label: member.role,
-              variant: "outline" as const,
-            };
-            return (
-              <TableRow key={member.id}>
-                <TableCell className="font-medium">
-                  {member.publicUserData?.firstName ?? ""} {member.publicUserData?.lastName ?? ""}
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {member.publicUserData?.identifier ?? "—"}
-                </TableCell>
-                <TableCell>
-                  <Badge variant={roleInfo.variant}>{roleInfo.label}</Badge>
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {member.createdAt ? formatDate(member.createdAt) : "—"}
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+      {/* Catalyst-style table */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-olive-200 dark:border-olive-800">
+              <th className="pb-3 pr-4 text-left text-xs font-medium tracking-wide text-olive-600 uppercase">
+                Member
+              </th>
+              <th className="w-[200px] pb-3 pr-4 text-left text-xs font-medium tracking-wide text-olive-600 uppercase">
+                Email
+              </th>
+              <th className="w-[100px] pb-3 pr-4 text-left text-xs font-medium tracking-wide text-olive-600 uppercase">
+                Role
+              </th>
+              <th className="w-[140px] pb-3 text-left text-xs font-medium tracking-wide text-olive-600 uppercase">
+                Joined
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {memberships.data.map((member) => {
+              const fullName =
+                `${member.publicUserData?.firstName ?? ""} ${member.publicUserData?.lastName ?? ""}`.trim() ||
+                "Unknown";
+              const roleInfo = ROLE_BADGES[member.role] ?? {
+                label: member.role,
+                variant: "member" as const,
+              };
+              return (
+                <tr
+                  key={member.id}
+                  className="border-b border-olive-100 transition-colors hover:bg-olive-50 dark:border-olive-800/50 dark:hover:bg-olive-900/30"
+                >
+                  <td className="py-3 pr-4">
+                    <div className="flex items-center gap-3">
+                      <AvatarCircle name={fullName} size={32} />
+                      <span className="font-medium text-olive-900 dark:text-olive-100">
+                        {fullName}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="py-3 pr-4 text-olive-600 dark:text-olive-400">
+                    {member.publicUserData?.identifier ?? "—"}
+                  </td>
+                  <td className="py-3 pr-4">
+                    <Badge variant={roleInfo.variant}>{roleInfo.label}</Badge>
+                  </td>
+                  <td className="py-3 text-olive-600 dark:text-olive-400">
+                    {member.createdAt ? formatDate(member.createdAt) : "—"}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
 
       {memberships.hasNextPage && (
         <div className="flex justify-center">
-          <Button
-            variant="outline"
-            size="sm"
+          <button
             onClick={() => memberships.fetchNext?.()}
             disabled={memberships.isFetching}
+            className="text-sm font-medium text-olive-600 hover:text-olive-900 disabled:opacity-50 dark:text-olive-400 dark:hover:text-olive-200"
           >
             {memberships.isFetching ? "Loading..." : "Load more"}
-          </Button>
+          </button>
         </div>
       )}
     </div>

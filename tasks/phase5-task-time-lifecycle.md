@@ -72,7 +72,7 @@ Stage 3:  [E47] [E49]                <- parallel (after their respective Stage 2
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **44A** | 44.1--44.5 | V13 migration, TimeEntry entity, TimeEntryRepository, basic service (create + list by task), integration tests | |
+| **44A** | 44.1--44.5 | V13 migration, TimeEntry entity, TimeEntryRepository, basic service (create + list by task), integration tests | **Done** (PR #88) |
 | **44B** | 44.6--44.11 | TimeEntry update, delete, permission enforcement (creator or lead+), top-level controller endpoints, access control tests, shared schema isolation tests | |
 
 ### Tasks

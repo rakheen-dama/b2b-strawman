@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { MoreVertical, Plus, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -118,17 +119,11 @@ export function ProjectMembersPanel({
     return (
       <div className="space-y-4">
         {header}
-        <div className="rounded-lg border border-dashed border-olive-300 p-8 dark:border-olive-700">
-          <div className="flex flex-col items-center text-center">
-            <Users className="size-10 text-olive-300 dark:text-olive-600" />
-            <p className="mt-3 text-sm font-medium text-olive-900 dark:text-olive-100">
-              No members yet
-            </p>
-            <p className="mt-1 text-xs text-olive-600 dark:text-olive-400">
-              Add team members to collaborate on this project
-            </p>
-          </div>
-        </div>
+        <EmptyState
+          icon={Users}
+          title="No members yet"
+          description="Add team members to collaborate on this project"
+        />
       </div>
     );
   }

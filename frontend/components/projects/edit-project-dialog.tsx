@@ -89,7 +89,7 @@ export function EditProjectDialog({ project, slug, children }: EditProjectDialog
           <DialogFooter>
             <Button
               type="button"
-              variant="outline"
+              variant="plain"
               onClick={() => setOpen(false)}
               disabled={isSubmitting}
             >

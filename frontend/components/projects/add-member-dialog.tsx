@@ -26,7 +26,7 @@ import type { OrgMember, ProjectMember } from "@/lib/types";
 function MemberAvatar({ name }: { name: string }) {
   const initial = name.charAt(0).toUpperCase();
   return (
-    <div className="bg-muted text-muted-foreground flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-medium">
+    <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-olive-100 text-xs font-medium text-olive-700 dark:bg-olive-800 dark:text-olive-300">
       {initial}
     </div>
   );
@@ -131,12 +131,12 @@ export function AddMemberDialog({
                     value={`${member.name} ${member.email}`}
                     onSelect={() => handleAddMember(member.id)}
                     disabled={isAdding}
-                    className="gap-3 py-3"
+                    className="gap-3 py-3 data-[selected=true]:bg-olive-100 dark:data-[selected=true]:bg-olive-800"
                   >
                     <MemberAvatar name={member.name} />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">{member.name}</p>
-                      <p className="text-muted-foreground truncate text-xs">{member.email}</p>
+                      <p className="truncate text-sm font-semibold">{member.name}</p>
+                      <p className="truncate text-xs text-olive-600 dark:text-olive-400">{member.email}</p>
                     </div>
                   </CommandItem>
                 ))}

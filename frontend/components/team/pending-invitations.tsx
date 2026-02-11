@@ -1,7 +1,9 @@
 "use client";
 
 import { useOrganization } from "@clerk/nextjs";
+import { Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/empty-state";
 import { useState } from "react";
 import { formatDate } from "@/lib/format";
 
@@ -29,7 +31,13 @@ export function PendingInvitations({ isAdmin }: { isAdmin: boolean }) {
   }
 
   if (!invitations?.data?.length) {
-    return <div className="py-8 text-center text-sm text-olive-600">No pending invitations.</div>;
+    return (
+      <EmptyState
+        icon={Mail}
+        title="No pending invitations"
+        description="Invited members will appear here"
+      />
+    );
   }
 
   const handleRevoke = async (invitationId: string) => {

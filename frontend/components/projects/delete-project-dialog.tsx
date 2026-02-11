@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { deleteProject } from "@/app/(app)/org/[slug]/projects/actions";
+import { AlertTriangle } from "lucide-react";
 
 interface DeleteProjectDialogProps {
   slug: string;
@@ -50,20 +51,27 @@ export function DeleteProjectDialog({
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent className="border-t-4 border-t-red-500">
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete Project</AlertDialogTitle>
-          <AlertDialogDescription>
-            This will permanently delete{" "}
-            <span className="text-foreground font-semibold">{projectName}</span> and all its
-            documents. This action cannot be undone.
+          <div className="flex justify-center">
+            <div className="flex size-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-950">
+              <AlertTriangle className="size-6 text-red-600 dark:text-red-400" />
+            </div>
+          </div>
+          <AlertDialogTitle className="text-center">Delete Project</AlertDialogTitle>
+          <AlertDialogDescription className="text-center">
+            This action cannot be undone. This will permanently delete{" "}
+            <span className="text-foreground font-semibold">{projectName}</span> and all associated
+            documents.
           </AlertDialogDescription>
         </AlertDialogHeader>
         {error && <p className="text-destructive text-sm">{error}</p>}
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel variant="plain" disabled={isDeleting}>
+            Cancel
+          </AlertDialogCancel>
           <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
-            {isDeleting ? "Deleting..." : "Delete Project"}
+            {isDeleting ? "Deleting..." : "Delete"}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

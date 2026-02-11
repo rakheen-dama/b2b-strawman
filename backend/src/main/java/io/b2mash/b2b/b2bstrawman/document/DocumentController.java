@@ -114,6 +114,9 @@ public class DocumentController {
       String contentType,
       long size,
       String status,
+      String scope,
+      UUID customerId,
+      String visibility,
       UUID uploadedBy,
       Instant uploadedAt,
       Instant createdAt) {
@@ -126,6 +129,9 @@ public class DocumentController {
           document.getContentType(),
           document.getSize(),
           document.getStatus().name(),
+          document.getScope(),
+          document.getCustomerId(),
+          document.getVisibility(),
           document.getUploadedBy(),
           document.getUploadedAt(),
           document.getCreatedAt());

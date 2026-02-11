@@ -47,7 +47,7 @@ class DocumentServiceTest {
     var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, MEMBER_ID);
     when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
         .thenReturn(GRANTED);
-    when(documentRepository.findByProjectId(PROJECT_ID)).thenReturn(List.of(doc));
+    when(documentRepository.findProjectScopedByProjectId(PROJECT_ID)).thenReturn(List.of(doc));
 
     var result = service.listDocuments(PROJECT_ID, MEMBER_ID, ORG_ROLE);
 
@@ -62,7 +62,7 @@ class DocumentServiceTest {
 
     assertThatThrownBy(() -> service.listDocuments(PROJECT_ID, MEMBER_ID, ORG_ROLE))
         .isInstanceOf(ResourceNotFoundException.class);
-    verify(documentRepository, never()).findByProjectId(any());
+    verify(documentRepository, never()).findProjectScopedByProjectId(any());
   }
 
   @Test
@@ -72,7 +72,7 @@ class DocumentServiceTest {
 
     assertThatThrownBy(() -> service.listDocuments(PROJECT_ID, MEMBER_ID, ORG_ROLE))
         .isInstanceOf(ResourceNotFoundException.class);
-    verify(documentRepository, never()).findByProjectId(any());
+    verify(documentRepository, never()).findProjectScopedByProjectId(any());
   }
 
   @Test
@@ -303,5 +303,111 @@ class DocumentServiceTest {
     assertThatThrownBy(() -> service.getPresignedDownloadUrl(docId, MEMBER_ID, ORG_ROLE))
         .isInstanceOf(ResourceNotFoundException.class);
     verify(s3Service, never()).generateDownloadUrl(any());
+  }
+
+  // --- ORG-scoped and CUSTOMER-scoped document access tests ---
+
+  @Test
+  void confirmUpload_orgScopedDocument_doesNotCheckProjectAccess() {
+    var docId = UUID.randomUUID();
+    var doc =
+        new Document(
+            Document.Scope.ORG,
+            null,
+            null,
+            "org-doc.pdf",
+            "application/pdf",
+            2048,
+            MEMBER_ID,
+            Document.Visibility.INTERNAL);
+    doc.confirmUpload(); // already UPLOADED — idempotent path
+
+    when(documentRepository.findOneById(docId)).thenReturn(Optional.of(doc));
+
+    var result = service.confirmUpload(docId, MEMBER_ID, ORG_ROLE);
+
+    assertThat(result.getStatus()).isEqualTo(Document.Status.UPLOADED);
+    verify(projectAccessService, never()).requireViewAccess(any(), any(), any());
+  }
+
+  @Test
+  void confirmUpload_customerScopedDocument_doesNotCheckProjectAccess() {
+    var docId = UUID.randomUUID();
+    var customerId = UUID.randomUUID();
+    var doc =
+        new Document(
+            Document.Scope.CUSTOMER,
+            null,
+            customerId,
+            "customer-doc.pdf",
+            "application/pdf",
+            4096,
+            MEMBER_ID,
+            Document.Visibility.INTERNAL);
+    doc.confirmUpload(); // already UPLOADED — idempotent path
+
+    when(documentRepository.findOneById(docId)).thenReturn(Optional.of(doc));
+
+    var result = service.confirmUpload(docId, MEMBER_ID, ORG_ROLE);
+
+    assertThat(result.getStatus()).isEqualTo(Document.Status.UPLOADED);
+    verify(projectAccessService, never()).requireViewAccess(any(), any(), any());
+  }
+
+  @Test
+  void getPresignedDownloadUrl_orgScopedDocument_doesNotCheckProjectAccess() {
+    var docId = UUID.randomUUID();
+    var doc =
+        new Document(
+            Document.Scope.ORG,
+            null,
+            null,
+            "org-doc.pdf",
+            "application/pdf",
+            2048,
+            MEMBER_ID,
+            Document.Visibility.INTERNAL);
+    doc.assignS3Key("org/test/org-level/abc");
+    doc.confirmUpload();
+
+    when(documentRepository.findOneById(docId)).thenReturn(Optional.of(doc));
+    when(s3Service.generateDownloadUrl("org/test/org-level/abc"))
+        .thenReturn(
+            new S3PresignedUrlService.PresignedDownloadResult(
+                "https://s3.example.com/download", 3600));
+
+    var result = service.getPresignedDownloadUrl(docId, MEMBER_ID, ORG_ROLE);
+
+    assertThat(result.url()).isEqualTo("https://s3.example.com/download");
+    verify(projectAccessService, never()).requireViewAccess(any(), any(), any());
+  }
+
+  @Test
+  void getPresignedDownloadUrl_customerScopedDocument_doesNotCheckProjectAccess() {
+    var docId = UUID.randomUUID();
+    var customerId = UUID.randomUUID();
+    var doc =
+        new Document(
+            Document.Scope.CUSTOMER,
+            null,
+            customerId,
+            "customer-doc.pdf",
+            "application/pdf",
+            4096,
+            MEMBER_ID,
+            Document.Visibility.INTERNAL);
+    doc.assignS3Key("org/test/customer/abc");
+    doc.confirmUpload();
+
+    when(documentRepository.findOneById(docId)).thenReturn(Optional.of(doc));
+    when(s3Service.generateDownloadUrl("org/test/customer/abc"))
+        .thenReturn(
+            new S3PresignedUrlService.PresignedDownloadResult(
+                "https://s3.example.com/download", 3600));
+
+    var result = service.getPresignedDownloadUrl(docId, MEMBER_ID, ORG_ROLE);
+
+    assertThat(result.url()).isEqualTo("https://s3.example.com/download");
+    verify(projectAccessService, never()).requireViewAccess(any(), any(), any());
   }
 }

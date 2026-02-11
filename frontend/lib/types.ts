@@ -24,13 +24,20 @@ export interface UpdateProjectRequest {
 
 export type DocumentStatus = "PENDING" | "UPLOADED" | "FAILED";
 
+export type DocumentScope = "ORG" | "PROJECT" | "CUSTOMER";
+
+export type DocumentVisibility = "INTERNAL" | "SHARED";
+
 export interface Document {
   id: string;
-  projectId: string;
+  projectId: string | null;
   fileName: string;
   contentType: string;
   size: number;
   status: DocumentStatus;
+  scope: DocumentScope;
+  customerId: string | null;
+  visibility: DocumentVisibility;
   uploadedBy: string | null;
   uploadedAt: string | null;
   createdAt: string;

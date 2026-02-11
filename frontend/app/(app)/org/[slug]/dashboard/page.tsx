@@ -32,7 +32,10 @@ export default async function OrgDashboardPage({
   try {
     const [projectsData, billing] = await Promise.all([
       api.get<Project[]>("/api/projects"),
-      api.get<BillingResponse>("/api/billing/subscription").catch(() => null),
+      api.get<BillingResponse>("/api/billing/subscription").catch((e) => {
+        console.error("Failed to fetch billing data:", e);
+        return null;
+      }),
     ]);
     projects = projectsData;
     memberCount = billing?.limits.currentMembers ?? 0;

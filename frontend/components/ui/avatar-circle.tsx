@@ -1,9 +1,9 @@
 import { cn } from "@/lib/utils";
 
 const PALETTES = [
-  "bg-olive-200 text-olive-700",
-  "bg-indigo-100 text-indigo-700",
-  "bg-amber-100 text-amber-700",
+  "bg-olive-200 text-olive-700 dark:bg-olive-700 dark:text-olive-200",
+  "bg-indigo-100 text-indigo-700 dark:bg-indigo-800 dark:text-indigo-200",
+  "bg-amber-100 text-amber-700 dark:bg-amber-800 dark:text-amber-200",
 ] as const;
 
 function hashName(name: string): number {

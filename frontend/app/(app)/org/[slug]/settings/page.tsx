@@ -1,11 +1,52 @@
 import Link from "next/link";
-import { CreditCard } from "lucide-react";
 import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+  CreditCard,
+  Building2,
+  Shield,
+  Puzzle,
+  ChevronRight,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import type { LucideIcon } from "lucide-react";
+
+interface SettingsCard {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  href: string | null;
+  comingSoon: boolean;
+}
+
+const settingsCards: SettingsCard[] = [
+  {
+    icon: CreditCard,
+    title: "Billing",
+    description: "Manage your subscription and view usage",
+    href: "billing",
+    comingSoon: false,
+  },
+  {
+    icon: Building2,
+    title: "Organization",
+    description: "Update org name, logo, and details",
+    href: null,
+    comingSoon: true,
+  },
+  {
+    icon: Shield,
+    title: "Security",
+    description: "Configure authentication and access policies",
+    href: null,
+    comingSoon: true,
+  },
+  {
+    icon: Puzzle,
+    title: "Integrations",
+    description: "Connect third-party tools and services",
+    href: null,
+    comingSoon: true,
+  },
+];
 
 export default async function SettingsPage({
   params,
@@ -15,27 +56,52 @@ export default async function SettingsPage({
   const { slug } = await params;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Settings</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Manage your organization settings.
-        </p>
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Link href={`/org/${slug}/settings/billing`} className="block">
-          <Card className="hover:border-primary/50 h-full transition-colors">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                Billing
-              </CardTitle>
-              <CardDescription>
-                Manage your subscription plan and billing details.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </Link>
+    <div className="space-y-8">
+      <h1 className="font-display text-3xl text-olive-950">Settings</h1>
+
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        {settingsCards.map((card) => {
+          const Icon = card.icon;
+          const content = (
+            <div
+              className={`flex items-center gap-4 rounded-lg border border-olive-200 bg-white p-6 transition-all ${
+                card.comingSoon
+                  ? "cursor-not-allowed opacity-50"
+                  : "hover:border-olive-300 hover:shadow-sm"
+              }`}
+            >
+              <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-olive-100">
+                <Icon className="size-6 text-olive-600" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="font-semibold text-olive-950">{card.title}</p>
+                  {card.comingSoon && (
+                    <Badge variant="neutral">Coming soon</Badge>
+                  )}
+                </div>
+                <p className="mt-0.5 text-sm text-olive-600">
+                  {card.description}
+                </p>
+              </div>
+              <ChevronRight className="size-5 shrink-0 text-olive-400" />
+            </div>
+          );
+
+          if (card.comingSoon || !card.href) {
+            return <div key={card.title}>{content}</div>;
+          }
+
+          return (
+            <Link
+              key={card.title}
+              href={`/org/${slug}/settings/${card.href}`}
+              className="block"
+            >
+              {content}
+            </Link>
+          );
+        })}
       </div>
     </div>
   );

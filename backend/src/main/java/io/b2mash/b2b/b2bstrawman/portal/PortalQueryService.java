@@ -153,7 +153,7 @@ public class PortalQueryService {
 
   /** Counts SHARED documents in a project that are visible to a portal customer. */
   @Transactional(readOnly = true)
-  public long countSharedProjectDocuments(UUID projectId) {
+  long countSharedProjectDocuments(UUID projectId) {
     return documentRepository.findProjectScopedByProjectId(projectId).stream()
         .filter(doc -> Document.Visibility.SHARED.equals(doc.getVisibility()))
         .count();

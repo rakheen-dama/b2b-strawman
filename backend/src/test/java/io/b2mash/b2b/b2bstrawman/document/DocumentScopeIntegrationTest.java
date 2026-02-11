@@ -423,6 +423,40 @@ class DocumentScopeIntegrationTest {
         .andExpect(jsonPath("$.customerId").value(customerId));
   }
 
+  // --- ORG-scoped download presign ---
+
+  @Test
+  void shouldPresignDownloadForConfirmedOrgScopedDocument() throws Exception {
+    // Upload an ORG-scoped document
+    var initResult =
+        mockMvc
+            .perform(
+                post("/api/documents/upload-init")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"fileName": "download-org.pdf", "contentType": "application/pdf", "size": 512}
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    var documentId = extractJsonField(initResult, "documentId");
+
+    // Confirm the document
+    mockMvc
+        .perform(post("/api/documents/" + documentId + "/confirm").with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("UPLOADED"));
+
+    // Request presigned download URL
+    mockMvc
+        .perform(get("/api/documents/" + documentId + "/presign-download").with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.presignedUrl").exists())
+        .andExpect(jsonPath("$.expiresInSeconds").value(3600));
+  }
+
   // --- S3 key format verification ---
 
   @Test
@@ -471,11 +505,7 @@ class DocumentScopeIntegrationTest {
   // --- Helpers ---
 
   private String extractJsonField(MvcResult result, String field) throws Exception {
-    String body = result.getResponse().getContentAsString();
-    String search = "\"" + field + "\":\"";
-    int start = body.indexOf(search) + search.length();
-    int end = body.indexOf("\"", start);
-    return body.substring(start, end);
+    return JsonPath.read(result.getResponse().getContentAsString(), "$." + field);
   }
 
   private String syncMember(

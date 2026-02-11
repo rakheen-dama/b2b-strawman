@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.document;
 
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.MissingOrganizationContextException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.security.ClerkJwtUtils;
@@ -8,6 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -108,21 +110,20 @@ public class DocumentController {
 
   @GetMapping("/api/documents")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
-  public ResponseEntity<java.util.List<DocumentResponse>> listDocumentsByScope(
+  public ResponseEntity<List<DocumentResponse>> listDocumentsByScope(
       @RequestParam String scope, @RequestParam(required = false) UUID customerId) {
     var documents =
         switch (scope.toUpperCase()) {
           case "ORG" -> documentService.listOrgDocuments();
           case "CUSTOMER" -> {
             if (customerId == null) {
-              throw new io.b2mash.b2b.b2bstrawman.exception.InvalidStateException(
+              throw new InvalidStateException(
                   "Missing customerId", "customerId is required when scope is CUSTOMER");
             }
             yield documentService.listCustomerDocuments(customerId);
           }
           default ->
-              throw new io.b2mash.b2b.b2bstrawman.exception.InvalidStateException(
-                  "Invalid scope", "scope must be 'ORG' or 'CUSTOMER'");
+              throw new InvalidStateException("Invalid scope", "scope must be 'ORG' or 'CUSTOMER'");
         };
     var response = documents.stream().map(DocumentResponse::from).toList();
     return ResponseEntity.ok(response);
@@ -150,8 +151,7 @@ public class DocumentController {
 
   @GetMapping("/api/projects/{projectId}/documents")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
-  public ResponseEntity<java.util.List<DocumentResponse>> listDocuments(
-      @PathVariable UUID projectId) {
+  public ResponseEntity<List<DocumentResponse>> listDocuments(@PathVariable UUID projectId) {
     UUID memberId = RequestScopes.requireMemberId();
     String orgRole = RequestScopes.getOrgRole();
     var documents = documentService.listDocuments(projectId, memberId, orgRole);

@@ -1,11 +1,12 @@
 import { auth } from "@clerk/nextjs/server";
 import { api, handleApiError } from "@/lib/api";
-import type { Customer, CustomerStatus, Project } from "@/lib/types";
+import type { Customer, CustomerStatus, Document, Project } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EditCustomerDialog } from "@/components/customers/edit-customer-dialog";
 import { ArchiveCustomerDialog } from "@/components/customers/archive-customer-dialog";
 import { CustomerProjectsPanel } from "@/components/customers/customer-projects-panel";
+import { CustomerDocumentsPanel } from "@/components/documents/customer-documents-panel";
 import { CustomerTabs } from "@/components/customers/customer-tabs";
 import { formatDate } from "@/lib/format";
 import { ArrowLeft, Pencil, Archive } from "lucide-react";
@@ -38,6 +39,15 @@ export default async function CustomerDetailPage({
     linkedProjects = await api.get<Project[]>(`/api/customers/${id}/projects`);
   } catch {
     // Non-fatal: show empty projects list if fetch fails
+  }
+
+  let customerDocuments: Document[] = [];
+  try {
+    customerDocuments = await api.get<Document[]>(
+      `/api/documents?scope=CUSTOMER&customerId=${id}`
+    );
+  } catch {
+    // Non-fatal: show empty documents list if fetch fails
   }
 
   const statusBadge = STATUS_BADGE[customer.status];
@@ -117,11 +127,12 @@ export default async function CustomerDetailPage({
           />
         }
         documentsPanel={
-          <div className="flex flex-col items-center py-16 text-center">
-            <p className="text-sm text-olive-400 dark:text-olive-600">
-              Customer documents will be available in a future update.
-            </p>
-          </div>
+          <CustomerDocumentsPanel
+            documents={customerDocuments}
+            slug={slug}
+            customerId={id}
+            canManage={isAdmin && customer.status === "ACTIVE"}
+          />
         }
       />
     </div>

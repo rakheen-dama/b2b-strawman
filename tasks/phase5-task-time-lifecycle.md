@@ -149,7 +149,7 @@ Stage 3:  [E47] [E49]                <- parallel (after their respective Stage 2
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **45A** | 45.1--45.5 | TypeScript types, server actions (create/list), LogTimeDialog, TimeEntryList component, integration into task detail | **Done** (PR #90) |
-| **45B** | 45.6--45.10 | Edit/delete actions, EditTimeEntryDialog, permission-based action visibility, duration formatting, tests | |
+| **45B** | 45.6--45.10 | Edit/delete actions, EditTimeEntryDialog, permission-based action visibility, duration formatting, tests | **Done** (PR #91) |
 
 ### Tasks
 

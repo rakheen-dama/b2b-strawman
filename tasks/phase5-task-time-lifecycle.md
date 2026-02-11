@@ -320,7 +320,7 @@ Stage 3:  [E47] [E49]                <- parallel (after their respective Stage 2
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **48A** | 48.1--48.7 | New TaskRepository queries, MyWorkService, MyWorkController with 3 endpoints, integration tests | |
+| **48A** | 48.1--48.7 | New TaskRepository queries, MyWorkService, MyWorkController with 3 endpoints, integration tests | **Done** (PR #93) |
 
 ### Tasks
 

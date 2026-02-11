@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -130,7 +131,8 @@ public class DocumentService {
    * tenant).
    */
   private void requireDocumentAccess(Document document, UUID memberId, String orgRole) {
-    if (document.isProjectScoped() && document.getProjectId() != null) {
+    if (document.isProjectScoped()) {
+      Objects.requireNonNull(document.getProjectId(), "PROJECT-scoped document missing projectId");
       projectAccessService.requireViewAccess(document.getProjectId(), memberId, orgRole);
     }
     // ORG and CUSTOMER scoped: tenant isolation is sufficient — any org member can access

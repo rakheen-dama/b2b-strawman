@@ -5,7 +5,7 @@
 ALTER TABLE documents ADD COLUMN IF NOT EXISTS scope VARCHAR(20) NOT NULL DEFAULT 'PROJECT';
 
 -- Add customer_id column — nullable FK to customers table (for CUSTOMER-scoped docs)
-ALTER TABLE documents ADD COLUMN IF NOT EXISTS customer_id UUID REFERENCES customers(id) ON DELETE SET NULL;
+ALTER TABLE documents ADD COLUMN IF NOT EXISTS customer_id UUID REFERENCES customers(id) ON DELETE RESTRICT;
 
 -- Add visibility column (INTERNAL, SHARED) — existing documents default to INTERNAL
 ALTER TABLE documents ADD COLUMN IF NOT EXISTS visibility VARCHAR(20) NOT NULL DEFAULT 'INTERNAL';

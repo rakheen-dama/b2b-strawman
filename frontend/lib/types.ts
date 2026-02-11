@@ -224,6 +224,54 @@ export interface TaskTimeSummary {
   entryCount: number;
 }
 
+// ---- My Work (from MyWorkController.java) ----
+
+export interface MyWorkTaskItem {
+  id: string;
+  projectId: string;
+  projectName: string;
+  title: string;
+  status: string;
+  priority: string;
+  dueDate: string | null;
+  totalTimeMinutes: number;
+}
+
+export interface MyWorkTasksResponse {
+  assigned: MyWorkTaskItem[];
+  unassigned: MyWorkTaskItem[];
+}
+
+export interface MyWorkTimeEntryItem {
+  id: string;
+  taskId: string;
+  taskTitle: string;
+  projectId: string;
+  projectName: string;
+  date: string;
+  durationMinutes: number;
+  billable: boolean;
+  description: string | null;
+}
+
+export interface MyWorkProjectSummary {
+  projectId: string;
+  projectName: string;
+  billableMinutes: number;
+  nonBillableMinutes: number;
+  totalMinutes: number;
+}
+
+export interface MyWorkTimeSummary {
+  memberId: string;
+  fromDate: string;
+  toDate: string;
+  billableMinutes: number;
+  nonBillableMinutes: number;
+  totalMinutes: number;
+  byProject: MyWorkProjectSummary[];
+}
+
 // ---- Portal (from PortalAuthController, PortalProjectController, PortalDocumentController) ----
 
 export interface PortalProject {

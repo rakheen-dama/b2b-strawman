@@ -161,7 +161,7 @@ export default function PortalLoginPage() {
           )}
 
           {step === "sent" && (
-            <div className="space-y-4">
+            <form onSubmit={handleExchangeToken} className="space-y-4">
               <div className="flex flex-col items-center gap-3 text-center">
                 <CheckCircle2 className="size-12 text-green-600 dark:text-green-400" />
                 <h2 className="text-lg font-semibold text-olive-900 dark:text-olive-100">
@@ -207,7 +207,7 @@ export default function PortalLoginPage() {
               )}
 
               <Button
-                onClick={handleExchangeToken}
+                type="submit"
                 className="w-full"
                 disabled={isPending || !token.trim()}
               >
@@ -228,7 +228,7 @@ export default function PortalLoginPage() {
               >
                 Request a new link
               </button>
-            </div>
+            </form>
           )}
 
           {step === "token" && (

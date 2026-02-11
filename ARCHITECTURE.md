@@ -1871,6 +1871,578 @@ See [ADR-016](adr/ADR-016-tier-upgrade-migration.md) for the full decision recor
 
 ---
 
+## 10. Phase 3 — Customers, Document Scopes & Tasks
+
+Phase 3 extends the platform from an internal staff-collaboration tool to a client-aware system. It introduces three new domain concepts — **Customers**, **document scopes**, and **Tasks** — and lays the groundwork for a future customer-facing portal. All additions are evolutionary: they reuse the existing tenant isolation model and add new entities alongside the current Project/Document/Member model.
+
+### 10.1 Domain Model
+
+The following diagram shows the complete tenant-schema entity relationships after Phase 3. New entities are marked with `(new)`.
+
+```mermaid
+erDiagram
+    projects {
+        uuid id PK
+        varchar name "NOT NULL"
+        text description
+        uuid created_by FK "NOT NULL → members"
+        varchar tenant_id
+        timestamp created_at "NOT NULL"
+        timestamp updated_at "NOT NULL"
+    }
+
+    members {
+        uuid id PK
+        varchar clerk_user_id "NOT NULL"
+        varchar email "NOT NULL"
+        varchar name
+        varchar avatar_url
+        varchar org_role "NOT NULL"
+        varchar tenant_id
+        timestamp created_at "NOT NULL"
+        timestamp updated_at "NOT NULL"
+    }
+
+    project_members {
+        uuid id PK
+        uuid project_id FK "NOT NULL → projects"
+        uuid member_id FK "NOT NULL → members"
+        varchar project_role "NOT NULL (lead, contributor)"
+        uuid added_by FK "→ members"
+        varchar tenant_id
+        timestamp created_at "NOT NULL"
+    }
+
+    customers {
+        uuid id PK
+        varchar name "NOT NULL"
+        varchar email "NOT NULL"
+        varchar phone
+        varchar id_number "Optional external ID"
+        varchar status "NOT NULL (ACTIVE, ARCHIVED)"
+        varchar notes "TEXT"
+        uuid created_by FK "NOT NULL → members"
+        varchar tenant_id
+        timestamp created_at "NOT NULL"
+        timestamp updated_at "NOT NULL"
+    }
+
+    customer_projects {
+        uuid id PK
+        uuid customer_id FK "NOT NULL → customers"
+        uuid project_id FK "NOT NULL → projects"
+        uuid linked_by FK "→ members"
+        varchar tenant_id
+        timestamp created_at "NOT NULL"
+    }
+
+    documents {
+        uuid id PK
+        varchar scope "NOT NULL (ORG, PROJECT, CUSTOMER)"
+        uuid project_id FK "→ projects (nullable)"
+        uuid customer_id FK "→ customers (nullable)"
+        varchar file_name "NOT NULL"
+        varchar content_type
+        bigint size "NOT NULL"
+        varchar s3_key "NOT NULL"
+        varchar status "NOT NULL (PENDING, UPLOADED, FAILED)"
+        varchar visibility "NOT NULL (INTERNAL, SHARED)"
+        uuid uploaded_by FK "NOT NULL → members"
+        varchar tenant_id
+        timestamp uploaded_at
+        timestamp created_at "NOT NULL"
+    }
+
+    tasks {
+        uuid id PK
+        uuid project_id FK "NOT NULL → projects"
+        varchar title "NOT NULL"
+        text description
+        varchar status "NOT NULL (OPEN, IN_PROGRESS, DONE, CANCELLED)"
+        varchar priority "NOT NULL (LOW, MEDIUM, HIGH)"
+        varchar type "Optional free-form"
+        uuid assignee_id FK "→ members (nullable)"
+        uuid created_by FK "NOT NULL → members"
+        date due_date
+        integer version "Optimistic lock"
+        varchar tenant_id
+        timestamp created_at "NOT NULL"
+        timestamp updated_at "NOT NULL"
+    }
+
+    projects ||--o{ documents : "scope = PROJECT"
+    projects ||--o{ project_members : "has"
+    projects ||--o{ customer_projects : "linked to"
+    projects ||--o{ tasks : "contains"
+    members ||--o{ project_members : "assigned to"
+    members ||--o{ tasks : "assigned (optional)"
+    customers ||--o{ customer_projects : "linked to"
+    customers ||--o{ documents : "scope = CUSTOMER"
+```
+
+### 10.2 New Entities
+
+#### 10.2.1 Customer
+
+A Customer represents an external client of the Organization — the person or entity whose projects and documents are being managed. Customers are **data records**, not identity/auth primitives. See [ADR-017](adr/ADR-017-customer-as-org-child.md).
+
+| Field | Type | Constraints | Notes |
+|-------|------|-------------|-------|
+| `id` | UUID | PK, generated | |
+| `name` | VARCHAR(255) | NOT NULL | Full name or entity name |
+| `email` | VARCHAR(255) | NOT NULL | Primary contact; future portal identity anchor |
+| `phone` | VARCHAR(50) | Nullable | |
+| `id_number` | VARCHAR(100) | Nullable | External ID (national ID, company reg, etc.) |
+| `status` | VARCHAR(20) | NOT NULL, default ACTIVE | ACTIVE, ARCHIVED |
+| `notes` | TEXT | Nullable | Free-form staff notes |
+| `created_by` | UUID FK → members | NOT NULL | Staff member who created the record |
+| `tenant_id` | VARCHAR(255) | | Shared-schema discriminator |
+| `created_at` | TIMESTAMPTZ | NOT NULL | |
+| `updated_at` | TIMESTAMPTZ | NOT NULL | |
+
+**Constraints**:
+- `UNIQUE(email, tenant_id)` — one Customer per email per org (allows same email across orgs in shared schema).
+- Hibernate `@FilterDef` / `@Filter` for shared-schema isolation.
+- RLS policy: `tenant_id = current_setting('app.current_tenant', true)`.
+
+#### 10.2.2 CustomerProject (Junction)
+
+Links Customers to Projects in a many-to-many relationship. A Customer can be linked to multiple Projects; a Project can serve multiple Customers.
+
+| Field | Type | Constraints | Notes |
+|-------|------|-------------|-------|
+| `id` | UUID | PK, generated | |
+| `customer_id` | UUID FK → customers | NOT NULL, CASCADE | |
+| `project_id` | UUID FK → projects | NOT NULL, CASCADE | |
+| `linked_by` | UUID FK → members | Nullable | Staff who created the link |
+| `tenant_id` | VARCHAR(255) | | Shared-schema discriminator |
+| `created_at` | TIMESTAMPTZ | NOT NULL | |
+
+**Constraints**:
+- `UNIQUE(customer_id, project_id)` — one link per customer-project pair.
+
+**Note**: Junction tables (`customer_projects`, `project_members`) use `created_at` only — no `updated_at`. Links are immutable once created; to change a link, delete and recreate.
+
+#### 10.2.3 Task
+
+A Task represents a unit of work within a Project. Tasks support a "claim" workflow where unassigned tasks are visible to all project members and can be claimed by any eligible staff member. See [ADR-019](adr/ADR-019-task-claim-workflow.md).
+
+| Field | Type | Constraints | Notes |
+|-------|------|-------------|-------|
+| `id` | UUID | PK, generated | |
+| `project_id` | UUID FK → projects | NOT NULL, CASCADE | |
+| `title` | VARCHAR(500) | NOT NULL | |
+| `description` | TEXT | Nullable | |
+| `status` | VARCHAR(20) | NOT NULL, default OPEN | OPEN, IN_PROGRESS, DONE, CANCELLED |
+| `priority` | VARCHAR(20) | NOT NULL, default MEDIUM | LOW, MEDIUM, HIGH |
+| `type` | VARCHAR(100) | Nullable | Free-form task categorization |
+| `assignee_id` | UUID FK → members | Nullable, SET NULL | NULL = unclaimed (in pool) |
+| `created_by` | UUID FK → members | NOT NULL | |
+| `due_date` | DATE | Nullable | |
+| `version` | INTEGER | NOT NULL, default 0 | `@Version` for optimistic locking |
+| `tenant_id` | VARCHAR(255) | | Shared-schema discriminator |
+| `created_at` | TIMESTAMPTZ | NOT NULL | |
+| `updated_at` | TIMESTAMPTZ | NOT NULL | |
+
+**Claim semantics**: The `version` column enables optimistic locking. When two members attempt to claim the same task simultaneously, one succeeds and the other receives a 409 Conflict.
+
+#### 10.2.4 Document (Extended)
+
+The existing `documents` table gains three new columns. See [ADR-018](adr/ADR-018-document-scope-model.md).
+
+| New Column | Type | Constraints | Notes |
+|------------|------|-------------|-------|
+| `scope` | VARCHAR(20) | NOT NULL, default PROJECT | ORG, PROJECT, CUSTOMER |
+| `customer_id` | UUID FK → customers | Nullable, SET NULL | Required when scope = CUSTOMER |
+| `visibility` | VARCHAR(20) | NOT NULL, default INTERNAL | INTERNAL (staff-only), SHARED (portal-visible) |
+
+**Existing change**: `project_id` becomes nullable (was NOT NULL). Org-scoped documents have no project.
+
+**CHECK constraint**:
+```sql
+(scope = 'ORG'      AND project_id IS NULL AND customer_id IS NULL) OR
+(scope = 'PROJECT'  AND project_id IS NOT NULL) OR
+(scope = 'CUSTOMER' AND customer_id IS NOT NULL)
+```
+
+**Scope flexibility notes**:
+- `PROJECT` scope: `customer_id` is unconstrained — a project document may optionally reference a customer (e.g., a contract drafted for a specific client within a matter).
+- `CUSTOMER` scope with `project_id IS NULL`: global customer document (e.g., KYC/ID docs), reusable across all projects the customer is linked to.
+- `CUSTOMER` scope with `project_id IS NOT NULL`: project-specific customer document (e.g., signed engagement letter for a particular matter).
+
+### 10.3 API Surface
+
+#### 10.3.1 Customer Endpoints
+
+| Method | Path | Description | Auth |
+|--------|------|-------------|------|
+| `POST` | `/api/customers` | Create a new customer | Owner, Admin |
+| `GET` | `/api/customers` | List all customers in the org | All staff |
+| `GET` | `/api/customers/{id}` | Get customer details | All staff |
+| `PUT` | `/api/customers/{id}` | Update customer details | Owner, Admin |
+| `DELETE` | `/api/customers/{id}` | Archive a customer | Owner, Admin |
+| `POST` | `/api/customers/{id}/projects/{projectId}` | Link customer to project | Owner, Admin, Project Lead |
+| `DELETE` | `/api/customers/{id}/projects/{projectId}` | Unlink customer from project | Owner, Admin, Project Lead |
+| `GET` | `/api/customers/{id}/projects` | List projects for a customer | All staff |
+| `GET` | `/api/projects/{id}/customers` | List customers for a project | Project members |
+
+#### 10.3.2 Task Endpoints
+
+| Method | Path | Description | Auth |
+|--------|------|-------------|------|
+| `POST` | `/api/projects/{id}/tasks` | Create a task | Project members (edit access) |
+| `GET` | `/api/projects/{id}/tasks` | List tasks for a project | Project members |
+| `GET` | `/api/tasks/{id}` | Get task details | Project members |
+| `PUT` | `/api/tasks/{id}` | Update task (title, desc, priority, status, assignee) | Project Lead, or current assignee |
+| `DELETE` | `/api/tasks/{id}` | Delete a task | Project Lead |
+| `POST` | `/api/tasks/{id}/claim` | Claim an unassigned task | Project members |
+| `POST` | `/api/tasks/{id}/release` | Release a claimed task | Current assignee, Project Lead |
+
+**Query parameters for task listing**:
+- `status` — filter by status (e.g., `?status=OPEN`)
+- `assigneeId` — filter by assignee (e.g., `?assigneeId=<uuid>` or `?assigneeId=unassigned`)
+- `priority` — filter by priority
+- `sort` — sort by `dueDate`, `priority`, `createdAt` (default)
+
+#### 10.3.3 Scoped Document Endpoints
+
+Existing document endpoints are extended. New upload-init variants support each scope:
+
+| Method | Path | Description | Auth |
+|--------|------|-------------|------|
+| `POST` | `/api/projects/{id}/documents/upload-init` | Upload project-scoped doc (existing) | Project members |
+| `POST` | `/api/documents/upload-init` | Upload org-scoped doc | Owner, Admin |
+| `POST` | `/api/customers/{id}/documents/upload-init` | Upload customer-scoped doc | Owner, Admin |
+| `GET` | `/api/documents?scope=ORG` | List org-scoped documents | All staff |
+| `GET` | `/api/documents?scope=CUSTOMER&customerId={id}` | List customer's documents | All staff |
+| `GET` | `/api/projects/{id}/documents` | List project-scoped docs (existing) | Project members |
+| `PATCH` | `/api/documents/{id}/visibility` | Toggle INTERNAL/SHARED | Owner, Admin |
+
+### 10.4 Sequence Diagrams
+
+#### 10.4.1 Staff Onboards a Customer and Links to a Project
+
+```mermaid
+sequenceDiagram
+    actor Staff
+    participant Browser
+    participant NextJS as Next.js
+    participant API as Spring Boot
+    participant DB as Neon Postgres
+
+    Staff->>Browser: Navigate to Customers page
+    Browser->>NextJS: GET /org/{slug}/customers
+    NextJS->>API: GET /api/customers (Bearer JWT)
+    API->>DB: SELECT * FROM customers WHERE tenant_id = ?
+    DB-->>API: [existing customers]
+    API-->>NextJS: 200 OK
+    NextJS-->>Browser: Render customer list
+
+    Staff->>Browser: Click "Add Customer"
+    Staff->>Browser: Fill in name, email, phone
+    Browser->>NextJS: Server Action: createCustomer
+    NextJS->>API: POST /api/customers (Bearer JWT)<br/>{name, email, phone}
+    API->>API: Validate JWT, resolve tenant, check role (owner/admin)
+    API->>DB: INSERT INTO customers (name, email, phone, tenant_id, created_by)
+    DB-->>API: Customer created (id: cust_123)
+    API-->>NextJS: 201 Created {id, name, email}
+    NextJS-->>Browser: Show customer created
+
+    Staff->>Browser: Open customer detail, click "Link to Project"
+    Staff->>Browser: Select project from dropdown
+    Browser->>NextJS: Server Action: linkCustomerToProject
+    NextJS->>API: POST /api/customers/cust_123/projects/proj_456 (Bearer JWT)
+    API->>API: Verify customer exists in tenant, verify project exists
+    API->>DB: INSERT INTO customer_projects (customer_id, project_id, linked_by, tenant_id)
+    DB-->>API: Link created
+    API-->>NextJS: 201 Created
+    NextJS-->>Browser: Project linked to customer
+```
+
+#### 10.4.2 Staff Uploads a Customer-Scoped Document
+
+```mermaid
+sequenceDiagram
+    actor Staff
+    participant Browser
+    participant NextJS as Next.js
+    participant API as Spring Boot
+    participant S3 as AWS S3
+    participant DB as Neon Postgres
+
+    Staff->>Browser: Navigate to customer detail page
+    Staff->>Browser: Click "Upload Document" on customer section
+    Staff->>Browser: Select file (e.g., proof_of_id.pdf)
+
+    Browser->>NextJS: Server Action: initCustomerDocUpload
+    NextJS->>API: POST /api/customers/cust_123/documents/upload-init<br/>Authorization: Bearer <jwt><br/>{fileName: "proof_of_id.pdf", contentType: "application/pdf", size: 524288}
+
+    API->>API: Validate JWT, resolve tenant, check role (owner/admin)
+    API->>API: Verify customer cust_123 exists in tenant
+    API->>DB: INSERT INTO documents<br/>(scope='CUSTOMER', customer_id=cust_123,<br/>project_id=NULL, visibility='INTERNAL',<br/>status='PENDING', tenant_id=...)
+    API->>S3: Generate presigned PUT URL<br/>Key: org/{orgId}/customer/cust_123/{docId}
+    S3-->>API: Presigned URL
+    API-->>NextJS: {documentId, presignedUrl, expiresIn}
+    NextJS-->>Browser: Return presigned URL
+
+    Browser->>S3: PUT file directly (presigned URL)
+    S3-->>Browser: 200 OK
+
+    Browser->>NextJS: Confirm upload
+    NextJS->>API: POST /api/documents/{docId}/confirm
+    API->>DB: UPDATE documents SET status = 'UPLOADED'
+    API-->>NextJS: {documentId, status: UPLOADED}
+    NextJS-->>Browser: Upload complete — doc visible on customer profile
+```
+
+#### 10.4.3 Staff Creates and Claims a Task
+
+```mermaid
+sequenceDiagram
+    actor Lead as Project Lead
+    actor Member as Team Member
+    participant Browser
+    participant NextJS as Next.js
+    participant API as Spring Boot
+    participant DB as Neon Postgres
+
+    Lead->>Browser: Navigate to project tasks
+    Lead->>Browser: Click "New Task"
+    Lead->>Browser: Fill in title, description, priority=HIGH, due date
+
+    Browser->>NextJS: Server Action: createTask
+    NextJS->>API: POST /api/projects/proj_456/tasks<br/>Authorization: Bearer <jwt><br/>{title, description, priority: "HIGH", dueDate: "2026-03-15"}
+    API->>API: Validate JWT, check project edit access
+    API->>DB: INSERT INTO tasks<br/>(project_id, title, description, priority,<br/>status='OPEN', assignee_id=NULL, created_by=lead_id)
+    DB-->>API: Task created (id: task_789)
+    API-->>NextJS: 201 Created {id, title, status: OPEN}
+    NextJS-->>Browser: Task appears in "Open" column
+
+    Note over Lead,Member: Later, team member sees the task
+
+    Member->>Browser: View project task board
+    Browser->>NextJS: GET /org/{slug}/projects/proj_456/tasks
+    NextJS->>API: GET /api/projects/proj_456/tasks?status=OPEN
+    API->>DB: SELECT * FROM tasks WHERE project_id = ? AND status = 'OPEN'
+    DB-->>API: [task_789 (unassigned), ...]
+    API-->>NextJS: 200 OK
+    NextJS-->>Browser: Show open tasks
+
+    Member->>Browser: Click "Claim" on task_789
+    Browser->>NextJS: Server Action: claimTask
+    NextJS->>API: POST /api/tasks/task_789/claim<br/>Authorization: Bearer <jwt>
+    API->>API: Validate: task.assignee_id IS NULL, member has project access
+    API->>DB: UPDATE tasks SET assignee_id = member_id,<br/>status = 'IN_PROGRESS', version = version + 1<br/>WHERE id = task_789 AND version = 0
+    DB-->>API: 1 row updated (optimistic lock OK)
+    API-->>NextJS: 200 OK {id, status: IN_PROGRESS, assignee: member}
+    NextJS-->>Browser: Task moves to "In Progress", assigned to member
+
+    alt Concurrent Claim (Race Condition)
+        Note over Member,DB: Another member tries to claim simultaneously
+        API->>DB: UPDATE tasks ... WHERE version = 0
+        DB-->>API: 0 rows updated (version mismatch)
+        API-->>NextJS: 409 Conflict "Task already claimed"
+    end
+```
+
+### 10.5 Permission Model
+
+#### 10.5.1 Staff Access
+
+Staff access to the new entities integrates with the existing `ProjectAccessService` pattern and org-level role checks.
+
+**Customer access** (org-level — customers are not project-scoped):
+
+| Operation | Owner | Admin | Member |
+|-----------|-------|-------|--------|
+| Create customer | Yes | Yes | No |
+| View customer list | Yes | Yes | Yes |
+| View customer detail | Yes | Yes | Yes |
+| Update customer | Yes | Yes | No |
+| Archive customer | Yes | Yes | No |
+| Link/unlink customer ↔ project | Yes | Yes | Project Lead only |
+
+**Task access** (project-scoped — inherits from `ProjectAccessService`):
+
+| Operation | Owner | Admin | Project Lead | Contributor |
+|-----------|-------|-------|-------------|-------------|
+| View tasks | Yes | Yes | Yes | Yes |
+| Create task | Yes | Yes | Yes | Yes |
+| Update own task | Yes | Yes | Yes | Yes (if assigned) |
+| Assign/reassign | Yes | Yes | Yes | No |
+| Claim unassigned | Yes | Yes | Yes | Yes |
+| Release (own) | Yes | Yes | Yes | Yes |
+| Release (other's) | Yes | Yes | Yes | No |
+| Delete task | Yes | Yes | Yes | No |
+
+**Document access by scope**:
+
+| Scope | Who can upload | Who can view | Who can delete |
+|-------|---------------|-------------|----------------|
+| ORG | Owner, Admin | All staff | Owner, Admin |
+| PROJECT | Project members (edit access) | Project members | Owner, Admin, Project Lead |
+| CUSTOMER | Owner, Admin | All staff | Owner, Admin |
+
+#### 10.5.2 Future Customer Portal Access (Conceptual)
+
+See [ADR-020](adr/ADR-020-customer-portal-approach.md) for the full auth approach.
+
+When the customer portal is built, Customers will authenticate via email-based magic links and receive a JWT with `customer_id` and `org_id`. The portal filter chain resolves the tenant from `org_id` (same as staff) but restricts access via `customer_id`:
+
+| Data | Visible to Customer | Condition |
+|------|-------------------|-----------|
+| Projects | Yes | Linked via `customer_projects` |
+| Project documents | Yes | `visibility = 'SHARED'` AND project linked to customer |
+| Customer documents (own) | Yes | `customer_id = self` AND `visibility = 'SHARED'` |
+| Org documents | Yes | `visibility = 'SHARED'` (all org customers, regardless of project links — policies, terms, FAQs) |
+| Tasks | No | Staff-only |
+| Other customers | No | Never |
+| Team members | No | Never |
+
+**API separation**: Portal endpoints live under `/portal/*` with a dedicated Spring Security filter chain. Staff endpoints under `/api/*` are unaffected.
+
+### 10.6 S3 Key Structure (Extended)
+
+The S3 key prefix `org/{clerkOrgId}/` remains the org-level isolation boundary. Sub-paths vary by document scope:
+
+```
+{bucket}/
+└── org/
+    └── {clerkOrgId}/
+        ├── project/
+        │   └── {projectId}/
+        │       └── {documentId}          ← scope = PROJECT (unchanged)
+        ├── org-docs/
+        │   └── {documentId}              ← scope = ORG (new)
+        └── customer/
+            └── {customerId}/
+                └── {documentId}          ← scope = CUSTOMER (new)
+```
+
+The `s3_key` column in `documents` stores the full path. Key generation logic branches on `scope` at upload-init time.
+
+### 10.7 Database Migrations
+
+All new migrations are **tenant-scoped** (applied to both `tenant_shared` and each `tenant_<hash>`). No global migrations needed.
+
+| Migration | Description |
+|-----------|-------------|
+| `V9__create_customers.sql` | Create `customers` table, UNIQUE(email, tenant_id), indexes on `(tenant_id, status)` and `(tenant_id, email)`, RLS policy |
+| `V10__create_customer_projects.sql` | Create `customer_projects` junction table, UNIQUE(customer_id, project_id), indexes on `customer_id` and `project_id`, RLS policy |
+| `V11__extend_documents_scope.sql` | Add `scope`, `customer_id`, `visibility` to documents; make `project_id` nullable; backfill scope='PROJECT'; CHECK constraint; indexes on `scope`, `customer_id`, `(scope, visibility)`; updated RLS |
+| `V12__create_tasks.sql` | Create `tasks` table, indexes on `project_id`, `assignee_id`, `(project_id, status)`, `(project_id, assignee_id)`, RLS policy, optimistic lock version column |
+
+**Backfill strategy for V11**: All existing documents get `scope = 'PROJECT'` (via DEFAULT), `visibility = 'INTERNAL'` (via DEFAULT), `customer_id = NULL`. The migration is fully backward-compatible — existing queries continue to work because all existing documents have `project_id IS NOT NULL` and `scope = 'PROJECT'`.
+
+### 10.8 Customer Portal Architecture (Conceptual)
+
+This section describes the architectural design for a future customer portal. **Nothing in this section is implemented in Phase 3** — it documents the target state so that current design decisions are portal-ready.
+
+#### 10.8.1 Identity Mapping
+
+```mermaid
+flowchart TB
+    subgraph "Current (Phase 3)"
+        Staff["Staff (Clerk org member)"]
+        Customer["Customer (data record)<br/>customers.email"]
+        StaffAPI["/api/* endpoints"]
+    end
+
+    subgraph "Future (Portal)"
+        MagicLink["Magic Link Email"]
+        PortalJWT["Portal JWT<br/>{customer_id, org_id, type: customer}"]
+        PortalAPI["/portal/* endpoints"]
+        PortalUI["Portal UI<br/>/portal/*"]
+    end
+
+    Staff -->|Clerk JWT| StaffAPI
+    Customer -.->|email match| MagicLink
+    MagicLink -->|verify token| PortalJWT
+    PortalJWT -->|read-only access| PortalAPI
+    PortalAPI -->|scoped queries| PortalUI
+```
+
+**Flow**: Customer enters email at `/portal` → backend verifies email exists in `customers` table → sends magic link → customer clicks link → backend issues short-lived JWT with `customer_id` and `org_id` → portal pages use JWT for API calls.
+
+#### 10.8.2 Filter Chain Separation
+
+```
+Staff request path:
+  Request → JwtAuthFilter → TenantFilter → MemberFilter → /api/* controller
+
+Customer portal request path (future):
+  Request → CustomerAuthFilter → TenantFilter → /portal/* controller
+                                  (no MemberFilter — customers are not members)
+```
+
+The `CustomerAuthFilter` (future) reads the portal JWT, validates it, and binds `RequestScopes.CUSTOMER_ID` (new ScopedValue). `TenantFilter` resolves the schema from `org_id` in the JWT — identical to staff requests. Portal controllers query only data linked to the customer and marked `visibility = 'SHARED'`.
+
+#### 10.8.3 Upgrade Path to Clerk
+
+If customer access patterns outgrow magic links (e.g., customers need MFA, profile management, or write access), the magic link auth can be replaced with a **separate Clerk application instance** for customers. The mapping layer (`customers.email` → Clerk customer user ID) provides the bridge. No schema or data model changes needed — only the auth filter implementation changes.
+
+### 10.9 Phase 3 ADR Index
+
+| ADR | Title | Status |
+|-----|-------|--------|
+| [ADR-017](adr/ADR-017-customer-as-org-child.md) | Customers as Children of Organization | Accepted |
+| [ADR-018](adr/ADR-018-document-scope-model.md) | Document Scope Representation | Accepted |
+| [ADR-019](adr/ADR-019-task-claim-workflow.md) | Task Entity and Claim Workflow | Accepted |
+| [ADR-020](adr/ADR-020-customer-portal-approach.md) | Customer Portal Authentication Approach | Accepted |
+
+### 10.10 Capability Slices (Backlog Input)
+
+The following capability slices are designed to be turned into Epics by a task planner. Each slice is self-contained and produces a deployable increment.
+
+#### Slice A: Customer Lifecycle and Project Linking
+- **Backend**: `Customer` entity, `CustomerProject` entity, repositories, services, controllers.
+- **Migrations**: V9 (customers), V10 (customer_projects).
+- **Endpoints**: Full CRUD for customers; link/unlink customer ↔ project; list customers by project and projects by customer.
+- **Access control**: `CustomerAccessService` — org owner/admin for mutations, all staff for reads, project lead for linking.
+- **Tests**: Integration tests for CRUD, linking, tenant isolation (shared + dedicated schemas), access control.
+
+#### Slice B: Customer Frontend
+- **Frontend**: Customers list page, customer detail page, create/edit customer dialog, link-to-project dialog.
+- **Route**: `/org/[slug]/customers` (list), `/org/[slug]/customers/[id]` (detail).
+- **Components**: CustomerCard, CustomerForm, LinkProjectDialog.
+- **Server actions**: createCustomer, updateCustomer, archiveCustomer, linkProject, unlinkProject.
+- **Tests**: Component tests for dialogs, form validation.
+
+#### Slice C: Scoped Document Handling
+- **Backend**: Extend Document entity with `scope`, `customer_id`, `visibility`. Update DocumentService and DocumentController for scope-aware operations.
+- **Migration**: V11 (extend_documents_scope).
+- **Endpoints**: Org-scoped upload-init, customer-scoped upload-init, scope-filtered listing, visibility toggle.
+- **S3**: Extended key generation per scope.
+- **Access control**: Scope-aware permission checks in DocumentService.
+- **Tests**: Upload and query tests for all three scopes; verify backward compatibility (existing project-scoped docs unchanged).
+
+#### Slice D: Document Scope Frontend
+- **Frontend**: Org documents section (settings or dedicated page), customer documents tab on customer detail page, scope indicator badges on document lists.
+- **Components**: OrgDocumentUploader, CustomerDocumentUploader, ScopeBadge, VisibilityToggle.
+- **Tests**: Component tests for upload flows per scope.
+
+#### Slice E: Project Task Management Backend
+- **Backend**: `Task` entity, repository, service, controller. Claim and release endpoints. Optimistic locking for concurrent claims.
+- **Migration**: V12 (create_tasks).
+- **Endpoints**: CRUD, claim, release, filtered listing (by status, assignee, priority).
+- **Access control**: Task mutations follow project access model (leads can manage all tasks, contributors can claim/update assigned tasks).
+- **Tests**: Integration tests for CRUD, claim race conditions, tenant isolation, access control.
+
+#### Slice F: Project Task Management Frontend
+- **Frontend**: Task board or list view within project detail page. Task creation dialog. Claim/release buttons. Status columns or filters.
+- **Route**: `/org/[slug]/projects/[id]/tasks` (or tab within project detail).
+- **Components**: TaskBoard/TaskList, TaskCard, CreateTaskDialog, ClaimButton.
+- **Server actions**: createTask, updateTask, claimTask, releaseTask, deleteTask.
+- **Tests**: Component tests for task interactions, optimistic UI for claim.
+
+#### Slice G: Customer Portal Groundwork
+- **Backend**: `CustomerAuthFilter`, portal JWT issuance (magic link), `/portal/*` endpoint skeleton, scoped query services for customer visibility.
+- **Frontend**: `/portal` login page, portal layout, project list (read-only), document list (SHARED only), document download.
+- **Auth**: Magic link email sending, token verification, short-lived JWT issuance.
+- **Tests**: Auth flow tests, scoped visibility tests, cross-customer isolation tests.
+
+---
+
 ## Appendix A: Clerk JWT Claims
 
 The JWT issued by Clerk for API calls contains these claims (relevant subset):

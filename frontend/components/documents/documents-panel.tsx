@@ -377,9 +377,13 @@ export function DocumentsPanel({ documents, projectId, slug, showScope = false }
                         {formatFileSize(doc.size)}
                       </span>
                     </TableCell>
-                    {showScope && scopeBadge && (
+                    {showScope && (
                       <TableCell>
-                        <Badge variant={scopeBadge.variant}>{scopeBadge.label}</Badge>
+                        {scopeBadge ? (
+                          <Badge variant={scopeBadge.variant}>{scopeBadge.label}</Badge>
+                        ) : (
+                          <span className="text-sm text-olive-400">{"\u2014"}</span>
+                        )}
                       </TableCell>
                     )}
                     <TableCell>

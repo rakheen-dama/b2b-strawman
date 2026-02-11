@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.customer;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.project.Project;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -25,9 +26,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class CustomerController {
 
   private final CustomerService customerService;
+  private final CustomerProjectService customerProjectService;
 
-  public CustomerController(CustomerService customerService) {
+  public CustomerController(
+      CustomerService customerService, CustomerProjectService customerProjectService) {
     this.customerService = customerService;
+    this.customerProjectService = customerProjectService;
   }
 
   @GetMapping
@@ -83,6 +87,43 @@ public class CustomerController {
     return ResponseEntity.ok(CustomerResponse.from(customer));
   }
 
+  // --- Customer-Project linking endpoints ---
+
+  @PostMapping("/{id}/projects/{projectId}")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<CustomerProjectResponse> linkProject(
+      @PathVariable UUID id, @PathVariable UUID projectId) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+
+    var link =
+        customerProjectService.linkCustomerToProject(id, projectId, memberId, memberId, orgRole);
+    return ResponseEntity.created(URI.create("/api/customers/" + id + "/projects/" + projectId))
+        .body(CustomerProjectResponse.from(link));
+  }
+
+  @DeleteMapping("/{id}/projects/{projectId}")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<Void> unlinkProject(@PathVariable UUID id, @PathVariable UUID projectId) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+
+    customerProjectService.unlinkCustomerFromProject(id, projectId, memberId, orgRole);
+    return ResponseEntity.noContent().build();
+  }
+
+  @GetMapping("/{id}/projects")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<List<LinkedProjectResponse>> listProjectsForCustomer(
+      @PathVariable UUID id) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+    var projects = customerProjectService.listProjectsForCustomer(id, memberId, orgRole);
+    return ResponseEntity.ok(projects.stream().map(LinkedProjectResponse::from).toList());
+  }
+
+  // --- DTOs ---
+
   public record CreateCustomerRequest(
       @NotBlank(message = "name is required")
           @Size(max = 255, message = "name must be at most 255 characters")
@@ -131,6 +172,23 @@ public class CustomerController {
           customer.getCreatedBy(),
           customer.getCreatedAt(),
           customer.getUpdatedAt());
+    }
+  }
+
+  public record CustomerProjectResponse(
+      UUID customerId, UUID projectId, UUID linkedBy, Instant createdAt) {
+
+    public static CustomerProjectResponse from(CustomerProject link) {
+      return new CustomerProjectResponse(
+          link.getCustomerId(), link.getProjectId(), link.getLinkedBy(), link.getCreatedAt());
+    }
+  }
+
+  public record LinkedProjectResponse(UUID id, String name, String description, Instant createdAt) {
+
+    public static LinkedProjectResponse from(Project project) {
+      return new LinkedProjectResponse(
+          project.getId(), project.getName(), project.getDescription(), project.getCreatedAt());
     }
   }
 }

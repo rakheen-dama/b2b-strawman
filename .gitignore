@@ -127,3 +127,5 @@ node_modules/
 /playwright/.cache/
 /playwright/.auth/
 /ui-web-templates/
+/web-templates/catalyst-ui-kit 2/
+/web-templates/

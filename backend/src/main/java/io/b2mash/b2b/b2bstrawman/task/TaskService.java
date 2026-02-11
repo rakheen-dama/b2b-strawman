@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.task;
 
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
@@ -129,5 +130,62 @@ public class TaskService {
 
     taskRepository.delete(task);
     log.info("Deleted task {} from project {}", taskId, task.getProjectId());
+  }
+
+  @Transactional
+  public Task claimTask(UUID taskId, UUID memberId, String orgRole) {
+    var task =
+        taskRepository
+            .findOneById(taskId)
+            .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
+
+    projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
+
+    // Verify claimant is a project member
+    if (!projectMemberRepository.existsByProjectIdAndMemberId(task.getProjectId(), memberId)) {
+      throw new ResourceNotFoundException("Task", taskId);
+    }
+
+    if (!"OPEN".equals(task.getStatus())) {
+      throw new InvalidStateException(
+          "Cannot claim task",
+          "Task can only be claimed when status is OPEN. Current status: " + task.getStatus());
+    }
+
+    if (task.getAssigneeId() != null) {
+      throw new InvalidStateException(
+          "Cannot claim task", "Task is already assigned to another member");
+    }
+
+    task.claim(memberId);
+    task = taskRepository.save(task);
+    log.info("Task {} claimed by member {}", taskId, memberId);
+    return task;
+  }
+
+  @Transactional
+  public Task releaseTask(UUID taskId, UUID memberId, String orgRole) {
+    var task =
+        taskRepository
+            .findOneById(taskId)
+            .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
+
+    if (task.getAssigneeId() == null) {
+      throw new InvalidStateException("Cannot release task", "Task is not currently claimed");
+    }
+
+    var access = projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
+
+    // Current assignee or lead/admin/owner can release
+    boolean isAssignee = memberId.equals(task.getAssigneeId());
+    if (!isAssignee && !access.canEdit()) {
+      throw new ForbiddenException(
+          "Cannot release task", "Only the current assignee or a lead/admin/owner can release");
+    }
+
+    task.release();
+    task = taskRepository.save(task);
+    log.info("Task {} released by member {}", taskId, memberId);
+    return task;
   }
 }

@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -23,5 +24,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     problem.setTitle("Member context not available");
     problem.setDetail("Unable to resolve member identity for request");
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problem);
+  }
+
+  @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+  public ResponseEntity<ProblemDetail> handleOptimisticLock(
+      ObjectOptimisticLockingFailureException ex) {
+    log.warn("Optimistic locking failure: {}", ex.getMessage());
+    var problem = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+    problem.setTitle("Concurrent modification");
+    problem.setDetail("Resource was modified concurrently. Please retry.");
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(problem);
   }
 }

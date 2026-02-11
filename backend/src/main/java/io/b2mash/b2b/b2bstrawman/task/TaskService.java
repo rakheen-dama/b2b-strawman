@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.task;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
+import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -18,10 +19,15 @@ public class TaskService {
 
   private final TaskRepository taskRepository;
   private final ProjectAccessService projectAccessService;
+  private final ProjectMemberRepository projectMemberRepository;
 
-  public TaskService(TaskRepository taskRepository, ProjectAccessService projectAccessService) {
+  public TaskService(
+      TaskRepository taskRepository,
+      ProjectAccessService projectAccessService,
+      ProjectMemberRepository projectMemberRepository) {
     this.taskRepository = taskRepository;
     this.projectAccessService = projectAccessService;
+    this.projectMemberRepository = projectMemberRepository;
   }
 
   @Transactional(readOnly = true)
@@ -95,6 +101,11 @@ public class TaskService {
     if (!access.canEdit() && !memberId.equals(task.getAssigneeId())) {
       throw new ForbiddenException(
           "Cannot update task", "You do not have permission to update task " + taskId);
+    }
+
+    if (assigneeId != null
+        && !projectMemberRepository.existsByProjectIdAndMemberId(task.getProjectId(), assigneeId)) {
+      throw new ResourceNotFoundException("ProjectMember", assigneeId);
     }
 
     task.update(title, description, priority, status, type, dueDate, assigneeId);

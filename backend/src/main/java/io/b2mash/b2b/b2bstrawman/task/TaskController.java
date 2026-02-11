@@ -131,8 +131,12 @@ public class TaskController {
           @Size(max = 500, message = "title must be at most 500 characters")
           String title,
       String description,
-      @Size(max = 20, message = "priority must be at most 20 characters") String priority,
-      @Size(max = 20, message = "status must be at most 20 characters") String status,
+      @NotBlank(message = "priority is required")
+          @Size(max = 20, message = "priority must be at most 20 characters")
+          String priority,
+      @NotBlank(message = "status is required")
+          @Size(max = 20, message = "status must be at most 20 characters")
+          String status,
       @Size(max = 100, message = "type must be at most 100 characters") String type,
       LocalDate dueDate,
       UUID assigneeId) {}

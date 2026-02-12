@@ -9,6 +9,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
@@ -36,6 +37,7 @@ class DocumentServiceTest {
   @Mock private ProjectAccessService projectAccessService;
   @Mock private CustomerRepository customerRepository;
   @Mock private S3PresignedUrlService s3Service;
+  @Mock private AuditService auditService;
   @InjectMocks private DocumentService service;
 
   private static final UUID PROJECT_ID = UUID.randomUUID();
@@ -43,6 +45,17 @@ class DocumentServiceTest {
   private static final String ORG_ID = "org_test";
   private static final String ORG_ROLE = "member";
   private static final ProjectAccess GRANTED = new ProjectAccess(true, true, true, false, "member");
+
+  /** Set the JPA-managed id field via reflection (unit tests bypass JPA auto-generation). */
+  private static void setDocumentId(Document doc, UUID id) {
+    try {
+      Field idField = Document.class.getDeclaredField("id");
+      idField.setAccessible(true);
+      idField.set(doc, id);
+    } catch (ReflectiveOperationException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
   @Test
   void listDocuments_returnsDocumentsForExistingProject() {
@@ -145,6 +158,7 @@ class DocumentServiceTest {
   void confirmUpload_transitionsPendingToUploaded() {
     var docId = UUID.randomUUID();
     var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, MEMBER_ID);
+    setDocumentId(doc, docId);
     assertThat(doc.getStatus()).isEqualTo(Document.Status.PENDING);
 
     when(documentRepository.findOneById(docId)).thenReturn(Optional.of(doc));
@@ -201,6 +215,7 @@ class DocumentServiceTest {
   void cancelUpload_deletesDocumentWhenPending() {
     var docId = UUID.randomUUID();
     var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, MEMBER_ID);
+    setDocumentId(doc, docId);
 
     when(documentRepository.findOneById(docId)).thenReturn(Optional.of(doc));
     when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
@@ -253,6 +268,7 @@ class DocumentServiceTest {
   void getPresignedDownloadUrl_returnsUrlForUploadedDocument() {
     var docId = UUID.randomUUID();
     var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, MEMBER_ID);
+    setDocumentId(doc, docId);
     doc.assignS3Key("org/test/project/123/abc");
     doc.confirmUpload();
 
@@ -369,6 +385,7 @@ class DocumentServiceTest {
             2048,
             MEMBER_ID,
             Document.Visibility.INTERNAL);
+    setDocumentId(doc, docId);
     doc.assignS3Key("org/test/org-level/abc");
     doc.confirmUpload();
 
@@ -398,6 +415,7 @@ class DocumentServiceTest {
             4096,
             MEMBER_ID,
             Document.Visibility.INTERNAL);
+    setDocumentId(doc, docId);
     doc.assignS3Key("org/test/customer/abc");
     doc.confirmUpload();
 

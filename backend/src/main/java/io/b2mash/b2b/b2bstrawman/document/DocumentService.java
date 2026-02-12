@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.document;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
+import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
@@ -7,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -19,16 +22,19 @@ public class DocumentService {
   private final ProjectAccessService projectAccessService;
   private final CustomerRepository customerRepository;
   private final S3PresignedUrlService s3Service;
+  private final AuditService auditService;
 
   public DocumentService(
       DocumentRepository documentRepository,
       ProjectAccessService projectAccessService,
       CustomerRepository customerRepository,
-      S3PresignedUrlService s3Service) {
+      S3PresignedUrlService s3Service,
+      AuditService auditService) {
     this.documentRepository = documentRepository;
     this.projectAccessService = projectAccessService;
     this.customerRepository = customerRepository;
     this.s3Service = s3Service;
+    this.auditService = auditService;
   }
 
   /**
@@ -74,6 +80,14 @@ public class DocumentService {
     document.assignS3Key(presigned.s3Key());
     documentRepository.save(document);
 
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("document.created")
+            .entityType("document")
+            .entityId(document.getId())
+            .details(Map.of("scope", "PROJECT", "file_name", fileName))
+            .build());
+
     return new UploadInitResult(document.getId(), presigned.url(), presigned.expiresInSeconds());
   }
 
@@ -97,6 +111,14 @@ public class DocumentService {
 
     document.assignS3Key(presigned.s3Key());
     documentRepository.save(document);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("document.created")
+            .entityType("document")
+            .entityId(document.getId())
+            .details(Map.of("scope", "ORG", "file_name", fileName))
+            .build());
 
     return new UploadInitResult(document.getId(), presigned.url(), presigned.expiresInSeconds());
   }
@@ -136,6 +158,14 @@ public class DocumentService {
     document.assignS3Key(presigned.s3Key());
     documentRepository.save(document);
 
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("document.created")
+            .entityType("document")
+            .entityId(document.getId())
+            .details(Map.of("scope", "CUSTOMER", "file_name", fileName))
+            .build());
+
     return new UploadInitResult(document.getId(), presigned.url(), presigned.expiresInSeconds());
   }
 
@@ -156,8 +186,22 @@ public class DocumentService {
         documentRepository
             .findOneById(documentId)
             .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
+
+    // Capture old visibility before mutation
+    String oldVisibility = document.getVisibility();
+
     document.setVisibility(visibility);
-    return documentRepository.save(document);
+    document = documentRepository.save(document);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("document.visibility_changed")
+            .entityType("document")
+            .entityId(document.getId())
+            .details(Map.of("visibility", Map.of("from", oldVisibility, "to", visibility)))
+            .build());
+
+    return document;
   }
 
   /**
@@ -173,7 +217,16 @@ public class DocumentService {
     requireDocumentAccess(document, memberId, orgRole);
     if (document.getStatus() != Document.Status.UPLOADED) {
       document.confirmUpload();
-      return documentRepository.save(document);
+      document = documentRepository.save(document);
+
+      auditService.log(
+          AuditEventBuilder.builder()
+              .eventType("document.uploaded")
+              .entityType("document")
+              .entityId(document.getId())
+              .build());
+
+      return document;
     }
     return document;
   }
@@ -194,9 +247,17 @@ public class DocumentService {
           "Document not pending", "Only pending documents can be cancelled");
     }
     documentRepository.delete(document);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("document.deleted")
+            .entityType("document")
+            .entityId(document.getId())
+            .details(Map.of("file_name", document.getFileName()))
+            .build());
   }
 
-  @Transactional(readOnly = true)
+  @Transactional
   public PresignDownloadResult getPresignedDownloadUrl(
       UUID documentId, UUID memberId, String orgRole) {
     var document =
@@ -209,6 +270,15 @@ public class DocumentService {
           "Document not uploaded", "Document has not been uploaded yet");
     }
     var presigned = s3Service.generateDownloadUrl(document.getS3Key());
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("document.accessed")
+            .entityType("document")
+            .entityId(document.getId())
+            .details(Map.of("scope", document.getScope(), "file_name", document.getFileName()))
+            .build());
+
     return new PresignDownloadResult(presigned.url(), presigned.expiresInSeconds());
   }
 

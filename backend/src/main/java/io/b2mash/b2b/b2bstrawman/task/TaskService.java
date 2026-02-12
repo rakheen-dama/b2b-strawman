@@ -1,12 +1,17 @@
 package io.b2mash.b2b.b2bstrawman.task;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
+import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,14 +26,17 @@ public class TaskService {
   private final TaskRepository taskRepository;
   private final ProjectAccessService projectAccessService;
   private final ProjectMemberRepository projectMemberRepository;
+  private final AuditService auditService;
 
   public TaskService(
       TaskRepository taskRepository,
       ProjectAccessService projectAccessService,
-      ProjectMemberRepository projectMemberRepository) {
+      ProjectMemberRepository projectMemberRepository,
+      AuditService auditService) {
     this.taskRepository = taskRepository;
     this.projectAccessService = projectAccessService;
     this.projectMemberRepository = projectMemberRepository;
+    this.auditService = auditService;
   }
 
   @Transactional(readOnly = true)
@@ -76,6 +84,15 @@ public class TaskService {
     var task = new Task(projectId, title, description, priority, type, dueDate, createdBy);
     task = taskRepository.save(task);
     log.info("Created task {} in project {}", task.getId(), projectId);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("task.created")
+            .entityType("task")
+            .entityId(task.getId())
+            .details(Map.of("title", task.getTitle(), "project_id", projectId.toString()))
+            .build());
+
     return task;
   }
 
@@ -109,8 +126,72 @@ public class TaskService {
       throw new ResourceNotFoundException("ProjectMember", assigneeId);
     }
 
+    // Capture old values before mutation
+    String oldTitle = task.getTitle();
+    String oldDescription = task.getDescription();
+    String oldStatus = task.getStatus();
+    String oldPriority = task.getPriority();
+    UUID oldAssigneeId = task.getAssigneeId();
+    LocalDate oldDueDate = task.getDueDate();
+    String oldType = task.getType();
+
     task.update(title, description, priority, status, type, dueDate, assigneeId);
-    return taskRepository.save(task);
+    task = taskRepository.save(task);
+
+    // Build delta map -- only include changed fields
+    var details = new LinkedHashMap<String, Object>();
+    if (!Objects.equals(oldTitle, title)) {
+      details.put(
+          "title",
+          Map.of("from", oldTitle != null ? oldTitle : "", "to", title != null ? title : ""));
+    }
+    if (!Objects.equals(oldDescription, description)) {
+      details.put(
+          "description",
+          Map.of(
+              "from", oldDescription != null ? oldDescription : "",
+              "to", description != null ? description : ""));
+    }
+    if (!Objects.equals(oldStatus, status)) {
+      details.put(
+          "status",
+          Map.of("from", oldStatus != null ? oldStatus : "", "to", status != null ? status : ""));
+    }
+    if (!Objects.equals(oldPriority, priority)) {
+      details.put(
+          "priority",
+          Map.of(
+              "from", oldPriority != null ? oldPriority : "",
+              "to", priority != null ? priority : ""));
+    }
+    if (!Objects.equals(oldAssigneeId, assigneeId)) {
+      details.put(
+          "assignee_id",
+          Map.of(
+              "from", oldAssigneeId != null ? oldAssigneeId.toString() : "",
+              "to", assigneeId != null ? assigneeId.toString() : ""));
+    }
+    if (!Objects.equals(oldDueDate, dueDate)) {
+      details.put(
+          "due_date",
+          Map.of(
+              "from", oldDueDate != null ? oldDueDate.toString() : "",
+              "to", dueDate != null ? dueDate.toString() : ""));
+    }
+    if (!Objects.equals(oldType, type)) {
+      details.put(
+          "type", Map.of("from", oldType != null ? oldType : "", "to", type != null ? type : ""));
+    }
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("task.updated")
+            .entityType("task")
+            .entityId(task.getId())
+            .details(details.isEmpty() ? null : details)
+            .build());
+
+    return task;
   }
 
   @Transactional
@@ -130,6 +211,14 @@ public class TaskService {
 
     taskRepository.delete(task);
     log.info("Deleted task {} from project {}", taskId, task.getProjectId());
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("task.deleted")
+            .entityType("task")
+            .entityId(task.getId())
+            .details(Map.of("title", task.getTitle(), "project_id", task.getProjectId().toString()))
+            .build());
   }
 
   @Transactional
@@ -160,6 +249,15 @@ public class TaskService {
     task.claim(memberId);
     task = taskRepository.save(task);
     log.info("Task {} claimed by member {}", taskId, memberId);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("task.claimed")
+            .entityType("task")
+            .entityId(task.getId())
+            .details(Map.of("assignee_id", memberId.toString()))
+            .build());
+
     return task;
   }
 
@@ -183,9 +281,21 @@ public class TaskService {
           "Cannot release task", "Only the current assignee or a lead/admin/owner can release");
     }
 
+    // Capture assignee before release clears it
+    UUID previousAssigneeId = task.getAssigneeId();
+
     task.release();
     task = taskRepository.save(task);
     log.info("Task {} released by member {}", taskId, memberId);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("task.released")
+            .entityType("task")
+            .entityId(task.getId())
+            .details(Map.of("previous_assignee_id", previousAssigneeId.toString()))
+            .build());
+
     return task;
   }
 }

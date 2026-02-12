@@ -64,6 +64,15 @@
 | 51 | Domain Event Integration — Services | Backend | 50 | L | 51A, 51B | **Done** (PR #102, #103) |
 | 52 | Security Event Integration | Backend | 50 | S | 52A | **Done** (PR #104) |
 | 53 | Audit Query API | Backend | 50 | M | 53A, 53B | **Done** (PR #105, #106) |
+| **Phase 6.5 — Notifications, Comments & Activity** | | | | | | See [tasks/phase6.5-notifications-comments-activity.md](tasks/phase6.5-notifications-comments-activity.md) |
+| 59 | Comment Backend — Entity, Migration & CRUD API | Backend | — | M | 59A, 59B | |
+| 60 | Comment Frontend — CommentSection & Integration | Frontend | 59 | M | 60A, 60B | |
+| 61 | Domain Events & Notification Backend — Events, Entity, Migration & Handler | Backend | — | L | 61A, 61B, 61C | |
+| 62 | Notification API & Preferences Backend | Backend | 61 | M | 62A, 62B | |
+| 63 | Notification Frontend — Bell, Page & Preferences UI | Frontend | 62 | M | 63A, 63B | |
+| 64 | Activity Feed Backend — Service, Formatter & API | Backend | 59 (V15) | M | 64A, 64B | |
+| 65 | Activity Feed Frontend — Activity Tab & Components | Frontend | 64 | S | 65A | |
+| 66 | Email Notification Stubs — Channel Abstraction & Templates | Backend | 61 | S | 66A | |
 | **Phase 7 — Customer Portal Backend Prototype** | | | | | | See [tasks/phase7-customer-portal-backend.md](tasks/phase7-customer-portal-backend.md) |
 | 54 | PortalContact & Persistent Magic Links | Backend | -- | M | 54A, 54B | |
 | 55 | Portal Read-Model Schema & DataSource | Backend | 54 | M | 55A, 55B | |

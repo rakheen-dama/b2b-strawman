@@ -65,7 +65,7 @@
 | 52 | Security Event Integration | Backend | 50 | S | 52A | **Done** (PR #104) |
 | 53 | Audit Query API | Backend | 50 | M | 53A, 53B | **Done** (PR #105, #106) |
 | **Phase 6.5 — Notifications, Comments & Activity** | | | | | | See [tasks/phase6.5-notifications-comments-activity.md](tasks/phase6.5-notifications-comments-activity.md) |
-| 59 | Comment Backend — Entity, Migration & CRUD API | Backend | — | M | 59A, 59B | |
+| 59 | Comment Backend — Entity, Migration & CRUD API | Backend | — | M | 59A, 59B | 59A Done (PR #107) |
 | 60 | Comment Frontend — CommentSection & Integration | Frontend | 59 | M | 60A, 60B | |
 | 61 | Domain Events & Notification Backend — Events, Entity, Migration & Handler | Backend | — | L | 61A, 61B, 61C | |
 | 62 | Notification API & Preferences Backend | Backend | 61 | M | 62A, 62B | |

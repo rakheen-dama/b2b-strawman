@@ -12,10 +12,12 @@ import io.b2mash.b2b.b2bstrawman.event.MemberAddedToProjectEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskAssignedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskClaimedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -23,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
@@ -34,8 +37,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 /**
  * Integration test verifying that domain events carry the orgId field and that the
- * NotificationEventHandler processes events without error (stubs log only in 61B; real fan-out in
- * 61C).
+ * NotificationEventHandler processes events, creating actual Notification rows via fan-out logic.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -52,19 +54,25 @@ class NotificationEventHandlerIntegrationTest {
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
   @Autowired private ApplicationEvents events;
+  @Autowired private NotificationRepository notificationRepository;
 
+  private String tenantSchema;
   private String projectId;
-  private String memberIdOwner;
-  private String memberIdMember;
+  private UUID memberIdOwner;
+  private UUID memberIdMember;
 
   @BeforeAll
   void provisionTenantAndSeedData() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Notif Handler Test Org");
+    tenantSchema =
+        provisioningService.provisionTenant(ORG_ID, "Notif Handler Test Org").schemaName();
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
-    memberIdOwner = syncMember(ORG_ID, "user_nh_owner", "nh_owner@test.com", "NH Owner", "owner");
+    memberIdOwner =
+        UUID.fromString(
+            syncMember(ORG_ID, "user_nh_owner", "nh_owner@test.com", "NH Owner", "owner"));
     memberIdMember =
-        syncMember(ORG_ID, "user_nh_member", "nh_member@test.com", "NH Member", "member");
+        UUID.fromString(
+            syncMember(ORG_ID, "user_nh_member", "nh_member@test.com", "NH Member", "member"));
 
     var projectResult =
         mockMvc
@@ -129,6 +137,108 @@ class NotificationEventHandlerIntegrationTest {
   }
 
   @Test
+  void taskAssigned_createsNotificationForAssignee() throws Exception {
+    var taskResult =
+        mockMvc
+            .perform(
+                post("/api/projects/" + projectId + "/tasks")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"title": "Notif assign test", "priority": "HIGH"}
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+    var taskId = extractIdFromLocation(taskResult);
+
+    // Assign task to member (actor = owner)
+    mockMvc
+        .perform(
+            put("/api/tasks/" + taskId)
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"title": "Notif assign test", "priority": "HIGH", "status": "OPEN", "assigneeId": "%s"}
+                    """
+                        .formatted(memberIdMember)))
+        .andExpect(status().isOk());
+
+    // Verify notification created for assignee (member), not for actor (owner)
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () -> {
+              var memberNotifs =
+                  notificationRepository.findByRecipientMemberId(
+                      memberIdMember, PageRequest.of(0, 100));
+              assertThat(memberNotifs.getContent())
+                  .anyMatch(
+                      n ->
+                          "TASK_ASSIGNED".equals(n.getType())
+                              && n.getTitle().contains("assigned you to task")
+                              && n.getTitle().contains("Notif assign test")
+                              && n.getReferenceEntityId().equals(UUID.fromString(taskId)));
+
+              // Actor (owner) should NOT receive a notification for their own action
+              var ownerNotifs =
+                  notificationRepository.findByRecipientMemberId(
+                      memberIdOwner, PageRequest.of(0, 100));
+              assertThat(ownerNotifs.getContent())
+                  .noneMatch(
+                      n ->
+                          "TASK_ASSIGNED".equals(n.getType())
+                              && n.getReferenceEntityId().equals(UUID.fromString(taskId)));
+            });
+  }
+
+  @Test
+  void taskAssigned_actorAssignsToSelf_noNotification() throws Exception {
+    var taskResult =
+        mockMvc
+            .perform(
+                post("/api/projects/" + projectId + "/tasks")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"title": "Self assign test", "priority": "MEDIUM"}
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+    var taskId = extractIdFromLocation(taskResult);
+
+    // Owner assigns to self
+    mockMvc
+        .perform(
+            put("/api/tasks/" + taskId)
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"title": "Self assign test", "priority": "MEDIUM", "status": "OPEN", "assigneeId": "%s"}
+                    """
+                        .formatted(memberIdOwner)))
+        .andExpect(status().isOk());
+
+    // No notification for self-assignment
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () -> {
+              var ownerNotifs =
+                  notificationRepository.findByRecipientMemberId(
+                      memberIdOwner, PageRequest.of(0, 100));
+              assertThat(ownerNotifs.getContent())
+                  .noneMatch(
+                      n ->
+                          "TASK_ASSIGNED".equals(n.getType())
+                              && n.getReferenceEntityId().equals(UUID.fromString(taskId)));
+            });
+  }
+
+  @Test
   void taskClaimedEvent_carriesOrgId() throws Exception {
     var taskResult =
         mockMvc
@@ -190,6 +300,64 @@ class NotificationEventHandlerIntegrationTest {
   }
 
   @Test
+  void taskStatusChanged_createsNotificationForAssignee() throws Exception {
+    var taskResult =
+        mockMvc
+            .perform(
+                post("/api/projects/" + projectId + "/tasks")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"title": "Status notif test", "priority": "HIGH"}
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+    var taskId = extractIdFromLocation(taskResult);
+
+    // Assign to member first
+    mockMvc
+        .perform(
+            put("/api/tasks/" + taskId)
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"title": "Status notif test", "priority": "HIGH", "status": "OPEN", "assigneeId": "%s"}
+                    """
+                        .formatted(memberIdMember)))
+        .andExpect(status().isOk());
+
+    // Owner changes status — assignee (member) should get notification
+    mockMvc
+        .perform(
+            put("/api/tasks/" + taskId)
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"title": "Status notif test", "priority": "HIGH", "status": "IN_PROGRESS", "assigneeId": "%s"}
+                    """
+                        .formatted(memberIdMember)))
+        .andExpect(status().isOk());
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () -> {
+              var memberNotifs =
+                  notificationRepository.findByRecipientMemberId(
+                      memberIdMember, PageRequest.of(0, 100));
+              assertThat(memberNotifs.getContent())
+                  .anyMatch(
+                      n ->
+                          "TASK_UPDATED".equals(n.getType())
+                              && n.getTitle().contains("changed task")
+                              && n.getTitle().contains("IN_PROGRESS"));
+            });
+  }
+
+  @Test
   void memberAddedEvent_carriesOrgId() throws Exception {
     var newMemberId =
         syncMember(ORG_ID, "user_nh_new", "nh_new@test.com", "NH New Member", "member");
@@ -207,6 +375,34 @@ class NotificationEventHandlerIntegrationTest {
     var addedEvents = events.stream(MemberAddedToProjectEvent.class).toList();
     assertThat(addedEvents).hasSize(1);
     assertThat(addedEvents.getFirst().orgId()).isEqualTo(ORG_ID);
+  }
+
+  @Test
+  void memberAdded_createsNotificationForAddedMember() throws Exception {
+    var newMemberId =
+        syncMember(ORG_ID, "user_nh_added", "nh_added@test.com", "NH Added Member", "member");
+
+    mockMvc
+        .perform(
+            post("/api/projects/" + projectId + "/members")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"memberId\": \"%s\"}".formatted(newMemberId)))
+        .andExpect(status().isCreated());
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () -> {
+              var notifs =
+                  notificationRepository.findByRecipientMemberId(
+                      UUID.fromString(newMemberId), PageRequest.of(0, 100));
+              assertThat(notifs.getContent())
+                  .anyMatch(
+                      n ->
+                          "MEMBER_INVITED".equals(n.getType())
+                              && n.getTitle().contains("You were added to project"));
+            });
   }
 
   // --- Helpers ---

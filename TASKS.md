@@ -67,7 +67,7 @@
 | **Phase 6.5 — Notifications, Comments & Activity** | | | | | | See [tasks/phase6.5-notifications-comments-activity.md](tasks/phase6.5-notifications-comments-activity.md) |
 | 59 | Comment Backend — Entity, Migration & CRUD API | Backend | — | M | 59A, 59B | **Done** (PR #107, #109) |
 | 60 | Comment Frontend — CommentSection & Integration | Frontend | 59 | M | 60A, 60B | |
-| 61 | Domain Events & Notification Backend — Events, Entity, Migration & Handler | Backend | — | L | 61A, 61B, 61C | |
+| 61 | Domain Events & Notification Backend — Events, Entity, Migration & Handler | Backend | — | L | 61A, 61B, 61C | 61A Done (PR #110) |
 | 62 | Notification API & Preferences Backend | Backend | 61 | M | 62A, 62B | |
 | 63 | Notification Frontend — Bell, Page & Preferences UI | Frontend | 62 | M | 63A, 63B | |
 | 64 | Activity Feed Backend — Service, Formatter & API | Backend | 59 (V15) | M | 64A, 64B | |

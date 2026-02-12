@@ -31,8 +31,8 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
         AND (:entityId IS NULL OR e.entityId = :entityId)
         AND (:actorId IS NULL OR e.actorId = :actorId)
         AND (:eventTypePrefix IS NULL OR e.eventType LIKE CONCAT(:eventTypePrefix, '%'))
-        AND (CAST(:from AS instant) IS NULL OR e.occurredAt >= :from)
-        AND (CAST(:to AS instant) IS NULL OR e.occurredAt <= :to)
+        AND (:from IS NULL OR e.occurredAt >= :from)
+        AND (:to IS NULL OR e.occurredAt <= :to)
       ORDER BY e.occurredAt DESC
       """)
   Page<AuditEvent> findByFilter(

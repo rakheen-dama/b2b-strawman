@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.audit;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -99,6 +100,10 @@ public class AuditEventBuilder {
    * </ul>
    */
   public AuditEventRecord build() {
+    Objects.requireNonNull(eventType, "eventType is required");
+    Objects.requireNonNull(entityType, "entityType is required");
+    Objects.requireNonNull(entityId, "entityId is required");
+
     UUID resolvedActorId = this.actorId;
     if (!actorIdExplicitlySet && RequestScopes.MEMBER_ID.isBound()) {
       resolvedActorId = RequestScopes.MEMBER_ID.get();

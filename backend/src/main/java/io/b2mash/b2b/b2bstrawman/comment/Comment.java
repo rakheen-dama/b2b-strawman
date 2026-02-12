@@ -9,6 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
 import java.time.Instant;
 import java.util.UUID;
 import org.hibernate.annotations.Filter;
@@ -38,6 +39,7 @@ public class Comment implements TenantAware {
   @Column(name = "author_member_id", nullable = false)
   private UUID authorMemberId;
 
+  @NotBlank
   @Column(name = "body", nullable = false, columnDefinition = "TEXT")
   private String body;
 
@@ -115,6 +117,10 @@ public class Comment implements TenantAware {
 
   public UUID getParentId() {
     return parentId;
+  }
+
+  public void setParentId(UUID parentId) {
+    this.parentId = parentId;
   }
 
   public Instant getCreatedAt() {

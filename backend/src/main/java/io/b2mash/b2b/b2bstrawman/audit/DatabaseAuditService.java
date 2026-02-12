@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.audit;
 
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -51,5 +52,11 @@ public class DatabaseAuditService implements AuditService {
         filter.from(),
         filter.to(),
         pageable);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public List<AuditEventRepository.EventTypeCount> countEventsByType() {
+    return auditEventRepository.countByEventType();
   }
 }

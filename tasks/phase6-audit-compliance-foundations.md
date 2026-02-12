@@ -278,7 +278,7 @@ Stage 2:  [E51] [E52] [E53]          <- parallel (after E50)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **53A** | 53.1--53.4 | AuditEventController (tenant-scoped GET /api/audit-events endpoints), role-based access (owner/admin only), pagination, integration tests | |
+| **53A** | 53.1--53.4 | AuditEventController (tenant-scoped GET /api/audit-events endpoints), role-based access (owner/admin only), pagination, integration tests | **Done** (PR #105) |
 | **53B** | 53.5--53.8 | InternalAuditController (GET /internal/audit-events, /stats), cross-tenant query via ScopedValue, SecurityConfig update, integration tests | |
 
 ### Tasks

@@ -57,21 +57,21 @@ Existing patterns to match:
 - `backend/CLAUDE.md` and `frontend/CLAUDE.md` — Conventions and anti-patterns to respect.
 
 Reference implementations (study to calibrate slice sizes):
-- Read 2-3 completed epics from the most recent phase task file to understand the expected level of detail per task row.
-- Examine existing backend entities, controllers, and test files to gauge what fits in one slice.
+- Read ONE completed epic from the most recent phase task file — just its Tasks table and Key Files section (~50-80 lines). Don't read more than one; the format repeats.
+- Do NOT read full backend/frontend source files. You are planning, not implementing.
 
-Existing code to understand scope:
-- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/` — entity, repository, service, controller patterns
-- `backend/src/main/resources/db/migration/tenant/` — migration numbering (find the latest VN number)
-- `frontend/app/(app)/org/[slug]/` — page and component patterns
-- `frontend/lib/actions/` — server action patterns
+Existing code to understand scope (LIGHTWEIGHT — just list files, don't read contents):
+- `ls backend/src/main/java/io/b2mash/b2b/b2bstrawman/` — package structure only
+- Find the latest migration number: `ls backend/src/main/resources/db/migration/tenant/ | tail -3`
+- `ls frontend/app/(app)/org/[slug]/` — route structure only
 
 ## Task
 
 Create the Phase {PHASE_NUMBER} epic breakdown. Follow these rules:
 
 ### Slice Sizing Rules (CRITICAL)
-Each slice must be completable by a coding agent within ~60% of its context window:
+Each slice is implemented by a Builder agent that receives only a pre-written implementation
+brief (~40-50KB). The builder must complete ALL work within its remaining context:
 - A backend slice (entity + repo + service + controller + tests) should touch 6-10 files
 - A frontend slice (page + components + actions + tests) should touch 6-10 files
 - NEVER combine backend + frontend in the same slice
@@ -79,6 +79,7 @@ Each slice must be completable by a coding agent within ~60% of its context wind
 - Each slice should touch at most 8-12 files
 - Integration tests belong in the SAME slice as the code they test
 - If a slice would require reading >15 existing files for context, it's too big — split it
+- A slice should produce no more than ~800 lines of new code (the builder needs context room for build/test fix cycles)
 
 ### Epic Structure Rules
 - Number epics starting from {STARTING_EPIC_NUMBER}

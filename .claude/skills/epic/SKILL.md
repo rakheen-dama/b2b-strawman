@@ -5,165 +5,373 @@ description: Implement a specific epic end-to-end — worktree, code, test, PR, 
 
 # Epic Implementation Workflow
 
-Implement the specified epic number end-to-end using git worktrees.
+Implement the specified epic using a **Scout → Builder pipeline** for context efficiency.
+
+## Architecture
+
+You are the **orchestrator**. You stay lean and delegate all heavy work to subagents:
+
+1. **Scout agent** — explores codebase, reads docs, studies patterns → writes a self-contained implementation brief to a file
+2. **Builder agent** — reads ONLY the brief file → implements, tests, commits, pushes, creates PR
+
+This prevents the builder from burning 50%+ of its context on research it only needs the conclusions from. The scout's context is discarded after it produces the brief.
+
+**Context budget rule**: The orchestrator NEVER reads ARCHITECTURE.md, full phase task files, or CLAUDE.md subdirectory files. That is exclusively the scout's job.
 
 ## Arguments
 
-This skill requires an epic number (e.g., `/epic 7` or `/epic 5A` for slices).
+Epic number (e.g., `/epic 7` or `/epic 5A` for slices).
 
 ## Task Tracking
 
-Use Claude Code task tools throughout this workflow to give the user visibility into progress:
+Create high-level tasks for visibility:
+- "Scout Epic {N}" — while scout researches and writes brief
+- "Implement Epic {N}" — while builder codes
+- "Review PR #{num}" — while reviewer checks
+- "Merge Epic {N}" — after user approves
 
-1. **At the start** (after Step 0): Create one task per epic task from TASKS.md (e.g., "Implement task 7.1: Create Project entity"). Use the task ID from TASKS.md as a prefix in the subject.
-2. **As you work**: Mark each task `in_progress` before starting it, `completed` when done.
-3. **Add workflow tasks** for non-code steps: "Create worktree & branch", "Build & verify", "Create PR", "Code review", "Merge".
-4. **If blocked**: Keep the task `in_progress` and create a new task describing the blocker.
-
-This gives the user a live progress view of the epic implementation.
-
-## Step 0 — Validate & Gather Context
+## Step 0 — Validate (Orchestrator, Lightweight)
 
 1. Extract the epic number from the user's input.
-2. Find the epic definition:
-   - Read `TASKS.md` (overview-only, ~76 lines) to identify the epic's phase and its linked task file (e.g., `tasks/phase4-customers-tasks-portal.md`).
-   - Every phase links to an external task file — read that file for the full epic detail.
-   - If the epic is marked **Done**, stop and inform the user.
-3. Identify:
-   - **Scope**: Frontend, Backend, Both, or Infra (from the Epic Overview table)
-   - **Dependencies**: Which epics must be complete first — verify they are marked Done
-   - **Tasks**: The specific task table for this epic — these define the ONLY work to do
-4. Run `git branch -a` and `gh pr list --state all` to check for existing branches/PRs for this epic. If work already exists, inform the user and ask how to proceed.
+2. Read `TASKS.md` (overview-only, ~76 lines) to identify the phase and linked task file.
+3. Read ONLY the **first 60 lines** of the phase task file (`Read(file, limit=60)`) to get the Epic Overview table.
+4. If the epic is marked **Done**, stop and inform the user.
+5. Extract: **scope** (Frontend/Backend/Both), **dependencies** (verify Done), **task IDs**.
+6. Check for existing work:
+```bash
+git branch -a | grep "epic-{N}" ; gh pr list --state all --search "Epic {N}" | head -5
+```
+If work exists, inform the user and ask how to proceed.
 
-## Step 1 — Plan
-
-Before writing any code, present a concise implementation plan:
-- List every file you expect to create or modify
-- Note which tasks from TASKS.md each file addresses
-- Identify anything out of scope — call it out explicitly
-- Wait for user approval before proceeding. If user does not respond in 4 minutes, proceed without requiring permssions.
-
-## Step 2 — Create Worktree & Branch
+## Step 1 — Create Worktree (Orchestrator)
 
 ```bash
-# Branch naming convention: epic-N/descriptive-name (kebab-case)
-# Examples: epic-7/core-api-projects, epic-5A/tenant-provisioning-schema
+cd /Users/rakheendama/Projects/2026/b2b-strawman
 git worktree add ../worktree-epic-<N> -b epic-<N>/<descriptive-name>
 ```
 
-All implementation work happens inside the worktree directory.
+Create this BEFORE dispatching agents so the scout can write the brief into it.
 
-## Step 3 — Read Subdirectory CLAUDE.md
+## Step 2 — Dispatch Scout Agent
 
-Before writing code, read the relevant CLAUDE.md:
-- **Backend scope** → `backend/CLAUDE.md`
-- **Frontend scope** → `frontend/CLAUDE.md`
-- **Both** → read both
-- **Infra** → `infra/CLAUDE.md` (if it exists)
+Launch a **blocking** `general-purpose` subagent. The scout explores the main repo and writes a brief file into the worktree.
 
-Follow all conventions, patterns, and anti-patterns described there.
+### Scout Prompt Template
 
-## Step 4 — Implement
+```
+You are a **codebase scout** preparing an implementation brief for Epic {SLICE}.
 
-- Implement ONLY the tasks listed in the epic's task table in TASKS.md
-- Do NOT touch files outside the epic's scope
-- Do NOT implement tasks belonging to other epics
-- If a task is already marked Done, skip it
-- Follow existing code patterns — check similar completed epics for reference
+Your job: explore the codebase thoroughly and write a SELF-CONTAINED brief to:
+  /Users/rakheendama/Projects/2026/worktree-epic-{SLICE}/.epic-brief.md
 
-## Step 5 — Build & Test
+The brief must give an implementer EVERYTHING they need to build this epic correctly
+WITHOUT reading any other files. Include actual code — not summaries.
 
-Run the appropriate verification commands using tasks or seperate subagents if possible from within the worktree:
+## Research Steps (in this order)
 
-**Backend** (from worktree `backend/` directory):
-```bash
-./mvnw spotless:apply    # Format first
-./mvnw clean verify      # Compile + test
+### 1. Task Specifications
+Read `{TASK_FILE}` — extract FULL task descriptions and acceptance criteria for tasks {TASK_IDS}.
+Include exact field names, SQL schemas, API endpoints, and test scenarios from the spec.
+
+### 2. Conventions & Anti-Patterns
+Read `backend/CLAUDE.md` and/or `frontend/CLAUDE.md` (scope: {SCOPE}).
+Extract ALL conventions and the COMPLETE anti-patterns section verbatim. These prevent
+debugging spirals — missing even one can cost hours.
+
+### 3. Architecture Context
+Search ARCHITECTURE.md for sections relevant to this epic (grep for keywords, don't read
+the full 2400-line file). Extract relevant ADRs (check `adr/` directory too).
+Include only what directly impacts this epic's implementation decisions.
+
+### 4. Reference Patterns (CRITICAL)
+Find the most similar RECENTLY IMPLEMENTED feature and extract ONE complete example of each:
+
+**Backend** (if in scope):
+- Entity (with @FilterDef, @Filter, tenant awareness, constructors)
+- Repository interface (with custom JPQL queries like findOneById)
+- Service class (with @Transactional, ScopedValue access, validation)
+- Controller (with @PreAuthorize, DTO records, response patterns)
+- Integration test (with FULL @BeforeAll setup: provisionTenant, planSyncService, MockMvc config)
+- Flyway migration SQL (naming convention, tenant_id columns, indexes)
+
+**Frontend** (if in scope):
+- Server component (data fetching, permission checks)
+- Client component ("use client", form handling, Shadcn UI)
+- Server action (revalidation, error handling)
+- Test file (with afterEach cleanup, mock patterns, render helpers)
+
+Prefer the MOST RECENTLY modified examples (check git log if needed).
+Include the FULL source code of each pattern — not excerpts or summaries.
+Prefix each with its file path so the implementer knows the naming convention.
+
+### 5. Integration Points
+Identify existing services, entities, repositories, and API endpoints the new code must
+interact with. Include their key method signatures and class locations.
+
+### 6. File Structure
+Determine exact file paths for all new files, following existing package/directory conventions.
+Check where similar files live and mirror that structure.
+
+## Brief Format
+
+Write the brief to `/Users/rakheendama/Projects/2026/worktree-epic-{SLICE}/.epic-brief.md`
+using this exact structure:
+
+---
+# Implementation Brief: Epic {SLICE} — {TITLE}
+
+## Scope
+{Backend | Frontend | Both}
+
+## Tasks
+{Numbered list with FULL descriptions and acceptance criteria from the task file}
+
+## File Plan
+### Create
+{Exact paths with one-line purpose}
+### Modify
+{Exact paths with what to change}
+
+## Reference Patterns
+### {Pattern Type} (from {source file path})
+```{lang}
+{FULL source code — not excerpts}
+```
+{Repeat for each pattern type}
+
+## Conventions
+{ALL relevant rules from CLAUDE.md — include anti-patterns VERBATIM}
+
+## Integration Points
+{Classes and method signatures the new code calls or extends}
+
+## Migration Notes
+{Schema, table structure, naming convention — if applicable}
+
+## Build & Verify
+{Exact commands — see below}
+
+## Environment
+- Postgres host: b2mash.local:5432
+- LocalStack host: b2mash.local:4566
+- pnpm: /opt/homebrew/bin/pnpm
+- NODE_OPTIONS="" needed before pnpm commands
+- SHELL=/bin/bash prefix for docker build
+- Maven wrapper: ./mvnw from backend dir
+---
+
+## Build Commands (include these exactly in the brief)
+
+### Backend — Two-Pass Strategy (minimizes context usage)
+
+All commands run from: cd /Users/rakheendama/Projects/2026/worktree-epic-{SLICE}/backend
+
+**Step 1: Format**
+  ./mvnw spotless:apply 2>&1 | tail -3
+
+**Step 2: Silent full build (Pass 1)**
+  ./mvnw clean verify -q > /tmp/mvn-epic-{SLICE}.log 2>&1; MVN_EXIT=$?; if [ $MVN_EXIT -eq 0 ]; then echo "BUILD SUCCESS"; grep 'Tests run:' /tmp/mvn-epic-{SLICE}.log | tail -1; else echo "BUILD FAILED (exit $MVN_EXIT)"; FAILED=$(grep -rl 'failures="[1-9]\|errors="[1-9]' target/surefire-reports/TEST-*.xml target/failsafe-reports/TEST-*.xml 2>/dev/null | sed 's|.*/TEST-||;s|\.xml||' | paste -sd,); if [ -n "$FAILED" ]; then echo "FAILED TESTS: $FAILED"; else grep -E '\[ERROR\]' /tmp/mvn-epic-{SLICE}.log | head -20; fi; fi
+
+**Step 3: Re-run ONLY failed tests with full output (only if Pass 1 failed with test failures)**
+  ./mvnw verify -Dit.test="{FAILED_CLASSES}" -Dtest="{FAILED_CLASSES}" 2>&1 | tail -80
+
+  (Replace {FAILED_CLASSES} with the comma-separated list from Step 2's FAILED TESTS output)
+  This gives the agent full stack traces for ONLY the failing tests — typically 50-80 lines
+  instead of 500-1100 for the full suite.
+
+**Step 4: Silent re-verify after fixing (Pass 2)**
+  ./mvnw clean verify -q > /tmp/mvn-epic-{SLICE}.log 2>&1; MVN_EXIT=$?; if [ $MVN_EXIT -eq 0 ]; then echo "BUILD SUCCESS"; grep 'Tests run:' /tmp/mvn-epic-{SLICE}.log | tail -1; else echo "STILL FAILING"; FAILED=$(grep -rl 'failures="[1-9]\|errors="[1-9]' target/surefire-reports/TEST-*.xml target/failsafe-reports/TEST-*.xml 2>/dev/null | sed 's|.*/TEST-||;s|\.xml||' | paste -sd,); echo "FAILED: $FAILED"; fi
+
+IMPORTANT: NEVER run ./mvnw clean verify without -q — full output burns 30-60KB of context per run.
+If you need to debug a compilation error, read the log file with grep:
+  grep -n 'ERROR\|cannot find symbol\|Caused by' /tmp/mvn-epic-{SLICE}.log | head -30
+
+### Frontend
+
+All commands run from: cd /Users/rakheendama/Projects/2026/worktree-epic-{SLICE}/frontend
+
+  NODE_OPTIONS="" /opt/homebrew/bin/pnpm install > /dev/null 2>&1
+  NODE_OPTIONS="" /opt/homebrew/bin/pnpm run lint > /tmp/lint-epic-{SLICE}.log 2>&1; LINT_EXIT=$?; if [ $LINT_EXIT -ne 0 ]; then echo "LINT FAILED"; tail -20 /tmp/lint-epic-{SLICE}.log; fi
+  NODE_OPTIONS="" /opt/homebrew/bin/pnpm run build > /tmp/build-epic-{SLICE}.log 2>&1; BUILD_EXIT=$?; if [ $BUILD_EXIT -ne 0 ]; then echo "BUILD FAILED"; tail -30 /tmp/build-epic-{SLICE}.log; fi
+  NODE_OPTIONS="" /opt/homebrew/bin/pnpm test > /tmp/test-epic-{SLICE}.log 2>&1; TEST_EXIT=$?; if [ $TEST_EXIT -ne 0 ]; then echo "TESTS FAILED"; tail -30 /tmp/test-epic-{SLICE}.log; else echo "ALL TESTS PASSED"; tail -3 /tmp/test-epic-{SLICE}.log; fi
+
+IMPORTANT: Include FULL code for reference patterns. The implementer's ONLY reference
+material is this brief. Be generous with code, strict with structure.
+
+When finished, confirm: "Brief written to {path}" and list the section sizes (line counts).
 ```
 
-**Frontend** (from worktree `frontend/` directory):
-```bash
-pnpm install
-pnpm run lint
-pnpm run build
+## Step 3 — Dispatch Builder Agent
+
+Verify the brief file exists, then launch a **blocking** `general-purpose` subagent:
+
+### Builder Prompt Template
+
 ```
+You are implementing **Epic {SLICE}** in the worktree at:
+  /Users/rakheendama/Projects/2026/worktree-epic-{SLICE}
 
-If tests fail, fix them. Iterate until green. Do not skip or disable tests.
+## First Step — Read Your Brief
+Read: /Users/rakheendama/Projects/2026/worktree-epic-{SLICE}/.epic-brief.md
+This file contains EVERYTHING you need: tasks, file plan, code patterns, conventions,
+build commands, and integration points. Do NOT read ARCHITECTURE.md, TASKS.md, or
+CLAUDE.md files — the brief already contains the relevant extracts.
 
-## Step 6 — Commit
+## Workflow
 
-- Use conventional commit messages: `feat(epic-N): <description>`
-- Stage only the files you changed — do not use `git add -A`
-- One commit per logical unit of work (multiple commits are fine)
+### 1. Implement
+- Follow the File Plan from the brief exactly
+- Adapt Reference Patterns to the new feature (don't copy-paste variable names blindly)
+- Respect ALL Conventions and Anti-Patterns from the brief
+- Implement ONLY the tasks in the brief — nothing more
+- If the brief mentions files to modify, read those specific files before editing
 
-## Step 7 — Push & Create PR
+### 2. Build & Verify
+Run the exact build commands from the brief's "Build & Verify" section.
+Build output is redirected to log files — only summaries enter your context.
+If the build fails:
+  1. Read the relevant log file to understand the error
+  2. Fix the root cause (not symptoms)
+  3. Re-run. Max 3 fix cycles.
+  4. If still failing after 3 cycles, stop and report what's failing and your hypotheses.
 
-```bash
-git push -u origin epic-<N>/<descriptive-name>
-```
+When reading log files for errors, use targeted reads:
+  grep -n "ERROR\|FAILURE\|Caused by" /tmp/mvn-epic-{SLICE}.log | tail -20
+  NOT: cat /tmp/mvn-epic-{SLICE}.log (this defeats the purpose of output redirection)
 
-Create the PR targeting `main`:
-```bash
-gh pr create --title "Epic <N>: <Epic Name>" --body "$(cat <<'EOF'
+### 3. Commit & Push
+- Stage only files you changed: `git add <specific files>`
+- Commit: `git commit -m "feat(epic-{SLICE}): {DESCRIPTION}"`
+- Push: `git push -u origin epic-{SLICE}/{BRANCH_NAME}`
+
+### 4. Create PR
+gh pr create --title "Epic {SLICE}: {TITLE}" --body "$(cat <<'EOF'
 ## Summary
-<What this epic implements — reference TASKS.md>
+{What this epic implements — from the brief's Tasks section}
 
 ## Changes
-<Bulleted list of key files/components added or modified>
+{Bulleted list of key files/components added or modified}
 
-## Epic Tasks Completed
-<Checklist of task IDs from TASKS.md that this PR addresses>
+## Tasks Completed
+{Checklist of task IDs from the brief}
 
 ## Test plan
-<How to verify — build commands, manual testing steps>
+{Build commands and manual verification steps}
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 EOF
 )"
+
+### 5. Report Back
+When done, report:
+- PR number and URL
+- Files created/modified count
+- Test results summary
+- Any deviations from the brief or issues encountered
+
+Do NOT stop to ask questions. Use the brief to resolve ambiguity.
+If the brief is genuinely missing critical info, note it in the PR description
+and make your best judgment call.
 ```
 
-## Step 8 — Code Review
+## Step 4 — Code Review
 
-Run the code-reviewer agent on the PR diff:
-- Check for bugs, security issues, and adherence to project conventions
-- Fix any critical issues found
-- Push fixes as additional commits
+Extract the PR number from the builder's response. Write the diff to a file, then dispatch review:
 
-## Step 9 — Merge (With Confirmation)
+```bash
+gh pr diff {PR_NUMBER} > /tmp/pr-{PR_NUMBER}.diff
+```
+
+Launch a **blocking** `general-purpose` subagent:
+
+```
+You are reviewing PR #{PR_NUMBER} for the DocTeams multi-tenant SaaS platform.
+
+## Setup
+1. Read the diff: /tmp/pr-{PR_NUMBER}.diff
+2. Read conventions: backend/CLAUDE.md {and/or frontend/CLAUDE.md based on scope}
+
+## What to Check
+
+### Critical (blocks merge)
+- **Tenant isolation**: Missing @FilterDef/@Filter on new entities, using findById() instead
+  of findOneById() (bypasses @Filter), missing tenant_id, missing RLS for shared-schema
+- **Security**: Missing @PreAuthorize, SQL injection (never string concat in native queries,
+  use set_config for session vars), exposed internal endpoints, missing access control
+- **Data corruption**: Missing @Transactional, race conditions, incorrect cascade types
+
+### High (should fix)
+- **Convention violations**: Anti-patterns from CLAUDE.md — ThreadLocal instead of ScopedValue,
+  OSIV issues, wrong exception patterns, missing bean validation
+- **Test gaps**: New endpoints without tests, integration tests missing tenant isolation
+  assertions, tests without provisionTenant/planSyncService setup
+- **Frontend/backend parity**: Permission logic doesn't match across layers
+
+### Medium
+- Dead code, duplicated logic, missing error handling at system boundaries
+
+## Output Format
+Return structured findings:
+
+# Review: PR #{PR_NUMBER}
+## Verdict: {APPROVE | REQUEST_CHANGES}
+## Critical
+- **[file:line]** Issue → Fix: suggestion
+## High
+{same}
+## Medium
+{same}
+## Summary
+- Issues: N critical, N high, N medium
+- {1-2 sentence assessment}
+
+Only report issues you're >80% confident about. Include file:line for every finding.
+```
+
+If critical or high issues are found, dispatch another `general-purpose` subagent to fix them in the worktree. Pass the review findings AND the brief file path so the fixer has full context.
+
+## Step 5 — Merge (With Confirmation)
 
 **Ask the user before merging.** Do not auto-merge.
 
-If approved, follow this exact sequence to avoid worktree/branch conflicts:
+If approved:
 
 ```bash
-# 1. Merge the PR (this deletes the remote branch)
-gh pr merge --squash --delete-branch
-```
+# 1. Merge the PR
+gh pr merge {PR_NUMBER} --squash --delete-branch
 
-```bash
-# 2. Navigate back to the main repo BEFORE cleaning up
+# 2. Clean up worktree
 cd /Users/rakheendama/Projects/2026/b2b-strawman
-
-# 3. Remove the worktree (the branch ref was deleted by --delete-branch)
 git worktree remove ../worktree-epic-<N> --force
-
-# 4. Pull the squash-merged commit into main
 git pull origin main
-
-# 5. Prune stale branch refs
 git fetch --prune
 ```
 
-Then update the task status:
-- Mark the slice/epic **Done** in the phase task file (e.g., `tasks/phase4-customers-tasks-portal.md`)
-- Update the status column in the overview row in `TASKS.md`
-
-Commit and push the status update from the main repo (not the worktree).
+Then update task status:
+- Mark the slice/epic **Done** in the phase task file
+- Update the status column in `TASKS.md`
+- Commit and push from main repo
 
 ## Guardrails
 
-- **Scope boundary**: If you're unsure whether something is in scope, STOP and ask
-- **No over-implementation**: Resist the urge to "improve" adjacent code
-- **No duplicate work**: If another branch/PR already implemented something, skip it
-- **Verify before done**: Never mark complete without a green build
-- **Config preservation**: When editing config files, preserve existing content
+- **Context hygiene**: Orchestrator NEVER reads ARCHITECTURE.md, full task files, or subdirectory CLAUDE.md files
+- **Brief is the contract**: Builder works from the brief only — if the brief is wrong, re-run the scout, don't have the builder explore
+- **Build output stays in files**: All build/test output goes to `/tmp/` log files — only summaries enter agent context
+- **No over-implementation**: Builder implements ONLY the brief's task list
+- **Verify before done**: Green build required before PR creation
+- **No duplicate work**: Check `git branch -a` and `gh pr list` before starting
+- **Scope boundary**: If uncertain, STOP and ask the user
+
+## Recovery
+
+If the builder fails:
+1. Check its output summary for error details
+2. If fixable: dispatch a new `general-purpose` agent with the same brief path + the error context
+3. If the brief was insufficient: re-run the scout with additional guidance (e.g., "also extract the auth filter pattern")
+4. If worktree is broken:
+```bash
+cd /Users/rakheendama/Projects/2026/b2b-strawman
+git worktree remove ../worktree-epic-<N> --force
+git branch -D epic-<N>/<branch-name> 2>/dev/null
+```
+Then restart from Step 1.

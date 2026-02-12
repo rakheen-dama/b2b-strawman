@@ -1370,7 +1370,7 @@ Clerk Billing is a managed billing product built on Stripe that integrates with 
 | `max_members_2` | Yes | No | Member limit marker |
 | `max_members_10` | No | Yes | Member limit marker |
 
-See [ADR-010](adr/ADR-010-billing-integration.md) for the full decision record.
+See [ADR-010](../adr/ADR-010-billing-integration.md) for the full decision record.
 
 ### 9.2 Tiered Tenancy Model
 
@@ -1389,7 +1389,7 @@ The tiered model reuses the existing `org_schema_mapping` table as the pivot poi
 - Hibernate `@Filter` is conditionally activated for shared-schema transactions.
 - Postgres RLS on `tenant_shared` provides defense-in-depth.
 
-See [ADR-011](adr/ADR-011-tiered-tenancy.md) and [ADR-012](adr/ADR-012-row-level-isolation.md).
+See [ADR-011](../adr/ADR-011-tiered-tenancy.md) and [ADR-012](../adr/ADR-012-row-level-isolation.md).
 
 ### 9.3 Updated Database Schema
 
@@ -1558,7 +1558,7 @@ flowchart TB
 
 All organizations start as Starter. Pro provisioning is triggered by a subscription webhook.
 
-See [ADR-015](adr/ADR-015-provisioning-per-tier.md) and [ADR-016](adr/ADR-016-tier-upgrade-migration.md).
+See [ADR-015](../adr/ADR-015-provisioning-per-tier.md) and [ADR-016](../adr/ADR-016-tier-upgrade-migration.md).
 
 #### 9.5.1 Starter Org Signup
 
@@ -1738,7 +1738,7 @@ Plan limits and feature entitlements are enforced at three layers:
 | **Backend** | `Organization.tier` checks in services | Rejects operations that violate plan limits |
 | **Frontend** | `has({ plan: 'pro' })` + `<Protect>` | Hides features; shows upgrade prompts |
 
-See [ADR-013](adr/ADR-013-plan-state-propagation.md) and [ADR-014](adr/ADR-014-plan-enforcement.md).
+See [ADR-013](../adr/ADR-013-plan-state-propagation.md) and [ADR-014](../adr/ADR-014-plan-enforcement.md).
 
 ### 9.8 Implementation Guidance
 
@@ -1855,19 +1855,19 @@ When a Starter org subscribes to Pro:
 - Rollback: if migration fails before cutover, org remains on Starter with no data loss.
 - Downgrade (Pro → Starter) is not implemented in Phase 2 — deferred to Phase 3.
 
-See [ADR-016](adr/ADR-016-tier-upgrade-migration.md) for the full decision record.
+See [ADR-016](../adr/ADR-016-tier-upgrade-migration.md) for the full decision record.
 
 ### 9.10 Phase 2 ADR Index
 
 | ADR | Title | Status |
 |-----|-------|--------|
-| [ADR-010](adr/ADR-010-billing-integration.md) | Billing Integration Approach | Accepted |
-| [ADR-011](adr/ADR-011-tiered-tenancy.md) | Tier-Dependent Tenancy Model | Accepted |
-| [ADR-012](adr/ADR-012-row-level-isolation.md) | Row-Level Isolation for Starter Tier | Accepted |
-| [ADR-013](adr/ADR-013-plan-state-propagation.md) | Plan State Propagation | Accepted |
-| [ADR-014](adr/ADR-014-plan-enforcement.md) | Plan Enforcement Strategy | Accepted |
-| [ADR-015](adr/ADR-015-provisioning-per-tier.md) | Org Provisioning Per Tier | Accepted |
-| [ADR-016](adr/ADR-016-tier-upgrade-migration.md) | Tier Upgrade Data Migration | Accepted |
+| [ADR-010](../adr/ADR-010-billing-integration.md) | Billing Integration Approach | Accepted |
+| [ADR-011](../adr/ADR-011-tiered-tenancy.md) | Tier-Dependent Tenancy Model | Accepted |
+| [ADR-012](../adr/ADR-012-row-level-isolation.md) | Row-Level Isolation for Starter Tier | Accepted |
+| [ADR-013](../adr/ADR-013-plan-state-propagation.md) | Plan State Propagation | Accepted |
+| [ADR-014](../adr/ADR-014-plan-enforcement.md) | Plan Enforcement Strategy | Accepted |
+| [ADR-015](../adr/ADR-015-provisioning-per-tier.md) | Org Provisioning Per Tier | Accepted |
+| [ADR-016](../adr/ADR-016-tier-upgrade-migration.md) | Tier Upgrade Data Migration | Accepted |
 
 ---
 
@@ -1984,7 +1984,7 @@ erDiagram
 
 #### 10.2.1 Customer
 
-A Customer represents an external client of the Organization — the person or entity whose projects and documents are being managed. Customers are **data records**, not identity/auth primitives. See [ADR-017](adr/ADR-017-customer-as-org-child.md).
+A Customer represents an external client of the Organization — the person or entity whose projects and documents are being managed. Customers are **data records**, not identity/auth primitives. See [ADR-017](../adr/ADR-017-customer-as-org-child.md).
 
 | Field | Type | Constraints | Notes |
 |-------|------|-------------|-------|
@@ -2025,7 +2025,7 @@ Links Customers to Projects in a many-to-many relationship. A Customer can be li
 
 #### 10.2.3 Task
 
-A Task represents a unit of work within a Project. Tasks support a "claim" workflow where unassigned tasks are visible to all project members and can be claimed by any eligible staff member. See [ADR-019](adr/ADR-019-task-claim-workflow.md).
+A Task represents a unit of work within a Project. Tasks support a "claim" workflow where unassigned tasks are visible to all project members and can be claimed by any eligible staff member. See [ADR-019](../adr/ADR-019-task-claim-workflow.md).
 
 | Field | Type | Constraints | Notes |
 |-------|------|-------------|-------|
@@ -2048,7 +2048,7 @@ A Task represents a unit of work within a Project. Tasks support a "claim" workf
 
 #### 10.2.4 Document (Extended)
 
-The existing `documents` table gains three new columns. See [ADR-018](adr/ADR-018-document-scope-model.md).
+The existing `documents` table gains three new columns. See [ADR-018](../adr/ADR-018-document-scope-model.md).
 
 | New Column | Type | Constraints | Notes |
 |------------|------|-------------|-------|
@@ -2285,7 +2285,7 @@ Staff access to the new entities integrates with the existing `ProjectAccessServ
 
 #### 10.5.2 Future Customer Portal Access (Conceptual)
 
-See [ADR-020](adr/ADR-020-customer-portal-approach.md) for the full auth approach.
+See [ADR-020](../adr/ADR-020-customer-portal-approach.md) for the full auth approach.
 
 When the customer portal is built, Customers will authenticate via email-based magic links and receive a JWT with `customer_id` and `org_id`. The portal filter chain resolves the tenant from `org_id` (same as staff) but restricts access via `customer_id`:
 
@@ -2385,10 +2385,10 @@ If customer access patterns outgrow magic links (e.g., customers need MFA, profi
 
 | ADR | Title | Status |
 |-----|-------|--------|
-| [ADR-017](adr/ADR-017-customer-as-org-child.md) | Customers as Children of Organization | Accepted |
-| [ADR-018](adr/ADR-018-document-scope-model.md) | Document Scope Representation | Accepted |
-| [ADR-019](adr/ADR-019-task-claim-workflow.md) | Task Entity and Claim Workflow | Accepted |
-| [ADR-020](adr/ADR-020-customer-portal-approach.md) | Customer Portal Authentication Approach | Accepted |
+| [ADR-017](../adr/ADR-017-customer-as-org-child.md) | Customers as Children of Organization | Accepted |
+| [ADR-018](../adr/ADR-018-document-scope-model.md) | Document Scope Representation | Accepted |
+| [ADR-019](../adr/ADR-019-task-claim-workflow.md) | Task Entity and Claim Workflow | Accepted |
+| [ADR-020](../adr/ADR-020-customer-portal-approach.md) | Customer Portal Authentication Approach | Accepted |
 
 ### 10.10 Capability Slices (Backlog Input)
 

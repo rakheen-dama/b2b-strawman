@@ -40,6 +40,8 @@ pnpm install && pnpm dev      # Port 3000
 
 ## Reference Docs
 
-- `ARCHITECTURE.md` — Technical architecture, ADRs, sequence diagrams
+- `architecture/ARCHITECTURE.md` — Technical architecture, ADRs, sequence diagrams
 - `TASKS.md` — Epic breakdown and implementation status
-- `multi-tenant-saas-starter-spec.md` — Functional requirements and API specs
+- `requirements/multi-tenant-saas-starter-spec.md` — Functional requirements and API specs
+- `requirements/` — Phase requirement prompt files (claude-code-prompt-*.md)
+- `architecture/` — Phase architecture docs (phase*-*.md)

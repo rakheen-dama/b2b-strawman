@@ -1,6 +1,6 @@
 # Phase 7 -- Customer Portal Backend Prototype
 
-Phase 7 takes the existing customer portal MVP (built in Phase 4, Epic 43) and evolves it into a **production-grade backend prototype** with persistent magic-link authentication, a dedicated read-model schema driven by domain events, new portal API endpoints (comments, summaries, profile), and a Thymeleaf developer test harness. All changes are backend-only -- no frontend epics in this phase. See `phase7-customer-portal-backend.md` (Section 13 of ARCHITECTURE.md) and [ADR-030](../adr/ADR-030-magic-link-auth-for-customers.md)--[ADR-033](../adr/ADR-033-local-only-thymeleaf-test-harness.md) for design details.
+Phase 7 takes the existing customer portal MVP (built in Phase 4, Epic 43) and evolves it into a **production-grade backend prototype** with persistent magic-link authentication, a dedicated read-model schema driven by domain events, new portal API endpoints (comments, summaries, profile), and a Thymeleaf developer test harness. All changes are backend-only -- no frontend epics in this phase. See `architecture/phase7-customer-portal-backend.md` (Section 13 of architecture/ARCHITECTURE.md) and [ADR-030](../adr/ADR-030-magic-link-auth-for-customers.md)--[ADR-033](../adr/ADR-033-local-only-thymeleaf-test-harness.md) for design details.
 
 ## Epic Overview
 
@@ -70,7 +70,7 @@ Stage 5:  [E58]                              <- dev harness (after E54 + E57)
 
 **Goal**: Create the `portal_contacts` and `magic_link_tokens` tables in the tenant schema, implement `PortalContact` and `MagicLinkToken` entities, refactor `MagicLinkService` to use DB-backed tokens with SHA-256 hashing, update `PortalAuthController` to resolve via `PortalContact` instead of direct `Customer` lookup, add `PORTAL_CONTACT_ID` to `RequestScopes`, and add `customer_visible` column to tasks. Includes rate limiting (3 tokens per contact per 5 minutes) and audit fields (`created_ip`, `used_at`).
 
-**References**: [ADR-030](../adr/ADR-030-magic-link-auth-for-customers.md), `phase7-customer-portal-backend.md` Section 13.2.1, 13.3.1, 13.8.1
+**References**: [ADR-030](../adr/ADR-030-magic-link-auth-for-customers.md), `architecture/phase7-customer-portal-backend.md` Section 13.2.1, 13.3.1, 13.8.1
 
 **Dependencies**: None (builds on existing portal package from Phase 4)
 
@@ -154,7 +154,7 @@ Stage 5:  [E58]                              <- dev harness (after E54 + E57)
 
 **Goal**: Create the dedicated `portal` schema in the global database, define the four read-model tables (`portal_projects`, `portal_documents`, `portal_comments`, `portal_project_summaries`), configure a second DataSource and `JdbcClient` for the portal schema, and implement the `PortalReadModelRepository` with JDBC-based CRUD operations. This epic provides the write/read infrastructure that event handlers (Epic 56) will use.
 
-**References**: [ADR-031](../adr/ADR-031-separate-portal-read-model-schema.md), `phase7-customer-portal-backend.md` Section 13.2.2, 13.8.2, 13.9.4
+**References**: [ADR-031](../adr/ADR-031-separate-portal-read-model-schema.md), `architecture/phase7-customer-portal-backend.md` Section 13.2.2, 13.8.2, 13.9.4
 
 **Dependencies**: Epic 54 (PortalContact entity needed for customer_id references in read-model design)
 
@@ -204,7 +204,7 @@ Stage 5:  [E58]                              <- dev harness (after E54 + E57)
 - `backend/src/test/java/io/b2mash/b2b/b2bstrawman/customerbackend/repository/PortalReadModelRepositoryIntegrationTest.java`
 
 **Slice 55B -- Read for context:**
-- `phase7-customer-portal-backend.md` Section 13.9.4 -- Repository code pattern
+- `architecture/phase7-customer-portal-backend.md` Section 13.9.4 -- Repository code pattern
 - `backend/src/main/java/io/b2mash/b2b/b2bstrawman/portal/PortalQueryService.java` -- Existing query patterns
 
 ### Architecture Decisions
@@ -221,7 +221,7 @@ Stage 5:  [E58]                              <- dev harness (after E54 + E57)
 
 **Goal**: Define the `PortalDomainEvent` sealed hierarchy, instrument core services (`DocumentService`, `ProjectService`, `CustomerService`, `CustomerProjectService`) to publish Spring `ApplicationEvent` instances after mutations, and implement `PortalEventHandler` with `@TransactionalEventListener(phase = AFTER_COMMIT)` handlers that update the portal read-model schema. Includes a manual resync endpoint for disaster recovery.
 
-**References**: [ADR-032](../adr/ADR-032-spring-application-events-for-portal.md), `phase7-customer-portal-backend.md` Section 13.6, 13.3.2
+**References**: [ADR-032](../adr/ADR-032-spring-application-events-for-portal.md), `architecture/phase7-customer-portal-backend.md` Section 13.6, 13.3.2
 
 **Dependencies**: Epic 55 (PortalReadModelRepository must exist for handlers to write to)
 
@@ -279,7 +279,7 @@ Stage 5:  [E58]                              <- dev harness (after E54 + E57)
 
 **Slice 56A -- Read for context:**
 - `backend/src/main/java/io/b2mash/b2b/b2bstrawman/multitenancy/RequestScopes.java` -- `requireOrgId()`, `TENANT_ID.get()`
-- `phase7-customer-portal-backend.md` Section 13.6 -- Event types and publication points
+- `architecture/phase7-customer-portal-backend.md` Section 13.6 -- Event types and publication points
 
 **Slice 56B -- Create:**
 - `backend/src/main/java/io/b2mash/b2b/b2bstrawman/customerbackend/handler/PortalEventHandler.java`
@@ -319,7 +319,7 @@ Stage 5:  [E58]                              <- dev harness (after E54 + E57)
 
 **Goal**: Implement the new portal API endpoints that read from the portal read-model schema: project detail, comments listing, time/billing summary stub, and current contact profile. Create `PortalReadModelService` as the query facade. Update the existing `PortalProjectController` with a detail endpoint.
 
-**References**: `phase7-customer-portal-backend.md` Section 13.4.2, 13.3.3
+**References**: `architecture/phase7-customer-portal-backend.md` Section 13.4.2, 13.3.3
 
 **Dependencies**: Epic 56 (event handlers must be populating the read model for queries to return data)
 
@@ -387,7 +387,7 @@ Stage 5:  [E58]                              <- dev harness (after E54 + E57)
 
 **Goal**: Add a dev/local-only Thymeleaf test harness that serves server-rendered views for testing the full portal flow: magic link generation, dashboard with projects/documents/comments, and project detail. The harness exercises the same backend services as the real portal and is gated by `@Profile({"local", "dev"})`.
 
-**References**: [ADR-033](../adr/ADR-033-local-only-thymeleaf-test-harness.md), `phase7-customer-portal-backend.md` Section 13.3.4, 13.4.4
+**References**: [ADR-033](../adr/ADR-033-local-only-thymeleaf-test-harness.md), `architecture/phase7-customer-portal-backend.md` Section 13.3.4, 13.4.4
 
 **Dependencies**: Epic 54 (MagicLinkService), Epic 57 (portal APIs to exercise)
 

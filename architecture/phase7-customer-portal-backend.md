@@ -86,7 +86,7 @@ Persistent, auditable token records replacing the current stateless JWT + Caffei
 
 ### 13.2.2 Read-Model Entities (Portal Schema)
 
-These entities live in a **dedicated `portal` schema** (not a tenant schema). They are **denormalized projections** maintained by event handlers. See [ADR-031](adr/ADR-031-separate-portal-read-model-schema.md) for the schema separation rationale.
+These entities live in a **dedicated `portal` schema** (not a tenant schema). They are **denormalized projections** maintained by event handlers. See [ADR-031](../adr/ADR-031-separate-portal-read-model-schema.md) for the schema separation rationale.
 
 #### PortalProject
 
@@ -376,7 +376,7 @@ All portal endpoints follow the same access pattern:
 
 ### 13.3.4 Thymeleaf Test Harness
 
-A dev/local-only UI served by Spring Boot for backend-focused testing. See [ADR-033](adr/ADR-033-local-only-thymeleaf-test-harness.md).
+A dev/local-only UI served by Spring Boot for backend-focused testing. See [ADR-033](../adr/ADR-033-local-only-thymeleaf-test-harness.md).
 
 **Profile guard:** All Thymeleaf controllers and template resolution are conditional on `@Profile({"local", "dev"})`. In production profiles, these beans are not created and the templates are not served.
 
@@ -617,7 +617,7 @@ sequenceDiagram
 
 ### 13.6.1 Event Types
 
-All events extend a common `PortalDomainEvent` base class. Events are **shaped for future out-of-process messaging** (SQS, etc.) — they carry all necessary data and avoid entity references. See [ADR-032](adr/ADR-032-spring-application-events-for-portal.md).
+All events extend a common `PortalDomainEvent` base class. Events are **shaped for future out-of-process messaging** (SQS, etc.) — they carry all necessary data and avoid entity references. See [ADR-032](../adr/ADR-032-spring-application-events-for-portal.md).
 
 ```java
 public abstract sealed class PortalDomainEvent {
@@ -1215,11 +1215,11 @@ The production customer portal will be a **separate frontend application** (sepa
 
 | ADR | Title | Status |
 |-----|-------|--------|
-| [ADR-017](adr/ADR-017-customer-as-org-child.md) | Customers as Children of Organization | Accepted |
-| [ADR-018](adr/ADR-018-document-scope-model.md) | Document Scope Representation | Accepted |
-| [ADR-019](adr/ADR-019-task-claim-workflow.md) | Task Claim Workflow | Accepted |
-| [ADR-020](adr/ADR-020-customer-portal-approach.md) | Customer Portal Authentication Approach | Accepted |
-| [ADR-030](adr/ADR-030-magic-link-auth-for-customers.md) | Magic Link Auth for Customers | Accepted |
-| [ADR-031](adr/ADR-031-separate-portal-read-model-schema.md) | Separate Portal Read-Model Schema | Accepted |
-| [ADR-032](adr/ADR-032-spring-application-events-for-portal.md) | Spring Application Events for Portal Sync | Accepted |
-| [ADR-033](adr/ADR-033-local-only-thymeleaf-test-harness.md) | Local-Only Thymeleaf Test Harness | Accepted |
+| [ADR-017](../adr/ADR-017-customer-as-org-child.md) | Customers as Children of Organization | Accepted |
+| [ADR-018](../adr/ADR-018-document-scope-model.md) | Document Scope Representation | Accepted |
+| [ADR-019](../adr/ADR-019-task-claim-workflow.md) | Task Claim Workflow | Accepted |
+| [ADR-020](../adr/ADR-020-customer-portal-approach.md) | Customer Portal Authentication Approach | Accepted |
+| [ADR-030](../adr/ADR-030-magic-link-auth-for-customers.md) | Magic Link Auth for Customers | Accepted |
+| [ADR-031](../adr/ADR-031-separate-portal-read-model-schema.md) | Separate Portal Read-Model Schema | Accepted |
+| [ADR-032](../adr/ADR-032-spring-application-events-for-portal.md) | Spring Application Events for Portal Sync | Accepted |
+| [ADR-033](../adr/ADR-033-local-only-thymeleaf-test-harness.md) | Local-Only Thymeleaf Test Harness | Accepted |

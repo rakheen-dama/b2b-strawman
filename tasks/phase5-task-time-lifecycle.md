@@ -1,6 +1,6 @@
 # Phase 5 — Task & Time Lifecycle
 
-Phase 5 extends the existing task management capability (Phase 4) with **time tracking** and **cross-project work views**. It adds a `TimeEntry` entity for billable/non-billable time recording, a "My Work" aggregation layer for staff, and per-project time rollups. All additions are evolutionary -- they reuse the existing tenant isolation model, follow the same entity patterns, and require no changes to the core multi-tenant or billing architecture. See `phase5-task-time-lifecycle.md` (Section 11 of ARCHITECTURE.md) and [ADR-021](../adr/ADR-021-time-tracking-model.md)--[ADR-024](../adr/ADR-024-portal-task-time-seams.md) for design details.
+Phase 5 extends the existing task management capability (Phase 4) with **time tracking** and **cross-project work views**. It adds a `TimeEntry` entity for billable/non-billable time recording, a "My Work" aggregation layer for staff, and per-project time rollups. All additions are evolutionary -- they reuse the existing tenant isolation model, follow the same entity patterns, and require no changes to the core multi-tenant or billing architecture. See `architecture/phase5-task-time-lifecycle.md` (Section 11 of architecture/ARCHITECTURE.md) and [ADR-021](../adr/ADR-021-time-tracking-model.md)--[ADR-024](../adr/ADR-024-portal-task-time-seams.md) for design details.
 
 ## Epic Overview
 
@@ -60,7 +60,7 @@ Stage 3:  [E47] [E49]                <- parallel (after their respective Stage 2
 
 **Goal**: Create the `time_entries` table, implement TimeEntry entity with full CRUD endpoints nested under tasks, enforce permission model (creator or project lead+ for edit/delete), and validate inputs. Includes tenant isolation verification for both Pro (dedicated schema) and Starter (shared schema + `@Filter`).
 
-**References**: [ADR-021](../adr/ADR-021-time-tracking-model.md), `phase5-task-time-lifecycle.md` Section 11.1.1, 11.2.3, 11.3.2, 11.7.1
+**References**: [ADR-021](../adr/ADR-021-time-tracking-model.md), `architecture/phase5-task-time-lifecycle.md` Section 11.1.1, 11.2.3, 11.3.2, 11.7.1
 
 **Dependencies**: None (builds on existing Phase 4 Task entity and ProjectAccessService)
 
@@ -136,7 +136,7 @@ Stage 3:  [E47] [E49]                <- parallel (after their respective Stage 2
 
 **Goal**: Build the frontend for logging time against tasks. Includes `LogTimeDialog` for creating entries, `TimeEntryList` for viewing entries on a task, edit/delete actions with permission-based visibility, and duration formatting utilities.
 
-**References**: `phase5-task-time-lifecycle.md` Section 11.7.2, 11.2.3
+**References**: `architecture/phase5-task-time-lifecycle.md` Section 11.7.2, 11.2.3
 
 **Dependencies**: Epic 44 (TimeEntry API)
 
@@ -201,7 +201,7 @@ Stage 3:  [E47] [E49]                <- parallel (after their respective Stage 2
 
 **Goal**: Implement backend aggregation queries and controller endpoints for per-project time summaries: total billable/non-billable rollup, per-member breakdown (lead+ only), and per-task breakdown. On-the-fly SQL aggregation per ADR-022.
 
-**References**: [ADR-022](../adr/ADR-022-time-aggregation-strategy.md), `phase5-task-time-lifecycle.md` Section 11.2.4, 11.3.3, 11.8.2
+**References**: [ADR-022](../adr/ADR-022-time-aggregation-strategy.md), `architecture/phase5-task-time-lifecycle.md` Section 11.2.4, 11.3.3, 11.8.2
 
 **Dependencies**: Epic 44 (TimeEntry entity and repository)
 
@@ -259,7 +259,7 @@ Stage 3:  [E47] [E49]                <- parallel (after their respective Stage 2
 
 **Goal**: Build a `TimeSummaryPanel` component for the project detail page showing total billable/non-billable time, per-task breakdown, and per-member breakdown (for leads/admins/owners). Adds a "Time" tab to the existing project detail tabs.
 
-**References**: `phase5-task-time-lifecycle.md` Section 11.7.2
+**References**: `architecture/phase5-task-time-lifecycle.md` Section 11.7.2
 
 **Dependencies**: Epic 46 (Project Time Summary API)
 
@@ -308,7 +308,7 @@ Stage 3:  [E47] [E49]                <- parallel (after their respective Stage 2
 
 **Goal**: Implement the "My Work" backend with cross-project task aggregation and member-scoped time summaries. Three endpoints: my tasks (assigned + unassigned in my projects), my time entries, and my time summary. Self-scoped -- no ProjectAccessService needed. Per ADR-023.
 
-**References**: [ADR-023](../adr/ADR-023-my-work-cross-project-query.md), `phase5-task-time-lifecycle.md` Section 11.2.1, 11.3.1
+**References**: [ADR-023](../adr/ADR-023-my-work-cross-project-query.md), `architecture/phase5-task-time-lifecycle.md` Section 11.2.1, 11.3.1
 
 **Dependencies**: Epic 44 (TimeEntry entity and repository)
 
@@ -366,7 +366,7 @@ Stage 3:  [E47] [E49]                <- parallel (after their respective Stage 2
 
 **Goal**: Build the "My Work" dashboard page with assigned tasks, available (unassigned) tasks in the member's projects, and a weekly time summary. Add sidebar navigation link.
 
-**References**: `phase5-task-time-lifecycle.md` Section 11.4.1, 11.7.2
+**References**: `architecture/phase5-task-time-lifecycle.md` Section 11.4.1, 11.7.2
 
 **Dependencies**: Epic 48 (My Work API)
 

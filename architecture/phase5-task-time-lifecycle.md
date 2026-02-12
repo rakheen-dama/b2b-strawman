@@ -44,7 +44,7 @@ A TimeEntry records a block of time spent by a staff member on a specific task. 
 - **Duration in minutes** (not hours or decimal hours): avoids floating-point rounding. 1h 30m = 90 minutes. Display formatting is a frontend concern.
 - **`date` (not `start_time`/`end_time`)**: Staff log time retrospectively ("I spent 2 hours on this today"), not as a live timer. A date + duration model is simpler and matches the UX pattern. A timer-based model can be layered on later without schema changes.
 - **`rate_cents` is nullable**: Not every org tracks rates. When null, the time entry contributes to duration summaries but not monetary calculations. Rate enforcement can be a future plan-gated feature.
-- **`task_id` NOT NULL**: Time is always attributed to a task. If a staff member needs to log time not tied to a specific task, they create a general task (e.g., "Admin overhead") on the project. This avoids the complexity of orphan time entries with no project context. See [ADR-021](adr/ADR-021-time-tracking-model.md).
+- **`task_id` NOT NULL**: Time is always attributed to a task. If a staff member needs to log time not tied to a specific task, they create a general task (e.g., "Admin overhead") on the project. This avoids the complexity of orphan time entries with no project context. See [ADR-021](../adr/ADR-021-time-tracking-model.md).
 - **No `project_id` column**: The project is derived from `task.project_id`. This avoids data duplication and the risk of inconsistency between `time_entry.project_id` and `task.project_id`. Aggregation queries join through `tasks`.
 
 **Constraints**:
@@ -58,7 +58,7 @@ A TimeEntry records a block of time spent by a staff member on a specific task. 
 
 #### 11.1.2 Task Entity (Unchanged)
 
-The Task entity defined in Phase 4 (Section 10.2.3, [ADR-019](adr/ADR-019-task-claim-workflow.md)) is unchanged. No new columns are added to `tasks`. The relationship is:
+The Task entity defined in Phase 4 (Section 10.2.3, [ADR-019](../adr/ADR-019-task-claim-workflow.md)) is unchanged. No new columns are added to `tasks`. The relationship is:
 
 - A Task has zero or more TimeEntries.
 - A TimeEntry belongs to exactly one Task.
@@ -192,7 +192,7 @@ erDiagram
 3. **My time today** — time entries logged by the member for the current date.
 4. **My time this week/period** — summary of time entries for a configurable date range.
 
-**Query strategy** (see [ADR-023](adr/ADR-023-my-work-cross-project-query.md)):
+**Query strategy** (see [ADR-023](../adr/ADR-023-my-work-cross-project-query.md)):
 
 ```
 -- My assigned tasks (across all projects in tenant)
@@ -253,7 +253,7 @@ public class MyWorkService {
 
 #### 11.2.2 Task Lifecycle (Reference)
 
-Task creation, status transitions, and claim/release are unchanged from Phase 4. See Section 10.2.3 and [ADR-019](adr/ADR-019-task-claim-workflow.md) for the full specification.
+Task creation, status transitions, and claim/release are unchanged from Phase 4. See Section 10.2.3 and [ADR-019](../adr/ADR-019-task-claim-workflow.md) for the full specification.
 
 **Lifecycle recap**:
 
@@ -308,7 +308,7 @@ Task creation, status transitions, and claim/release are unchanged from Phase 4.
 
 #### 11.2.4 Project Rollups
 
-Project-level time summaries aggregate TimeEntry data across all tasks in a project. These are computed **on the fly** via SQL queries — no materialized summaries or cached columns. See [ADR-022](adr/ADR-022-time-aggregation-strategy.md).
+Project-level time summaries aggregate TimeEntry data across all tasks in a project. These are computed **on the fly** via SQL queries — no materialized summaries or cached columns. See [ADR-022](../adr/ADR-022-time-aggregation-strategy.md).
 
 **Rollup queries**:
 
@@ -354,7 +354,7 @@ GROUP BY te.task_id, t.title
 ORDER BY total_minutes DESC;
 ```
 
-**Why on-the-fly** (see [ADR-022](adr/ADR-022-time-aggregation-strategy.md)):
+**Why on-the-fly** (see [ADR-022](../adr/ADR-022-time-aggregation-strategy.md)):
 - Data volume is bounded: a project with 200 tasks and 2,000 time entries is trivial for Postgres to aggregate.
 - No write overhead — no triggers, no cache invalidation, no stale-data risk.
 - Works identically for Starter (shared schema + `@Filter`) and Pro (dedicated schema).
@@ -655,7 +655,7 @@ sequenceDiagram
 
 ### 11.5 Minimal Seams for Future Customer Portal
 
-The customer portal (conceptual — see [ADR-020](adr/ADR-020-customer-portal-approach.md)) will eventually allow customers to see project status. This phase adds **minimal seams** — clearly defined interfaces that future portal endpoints can consume. No portal code is built.
+The customer portal (conceptual — see [ADR-020](../adr/ADR-020-customer-portal-approach.md)) will eventually allow customers to see project status. This phase adds **minimal seams** — clearly defined interfaces that future portal endpoints can consume. No portal code is built.
 
 #### 11.5.1 Read-Only Summary Endpoints
 
@@ -744,7 +744,7 @@ One new tenant migration is required. It applies to both `tenant_shared` and eac
 |-----------|-------------|
 | `V13__create_time_entries.sql` | Create `time_entries` table with indexes and RLS |
 
-**Index prerequisite**: The "My Work" queries ([ADR-023](adr/ADR-023-my-work-cross-project-query.md)) require indexes on `tasks(assignee_id)` and `tasks(project_id, status)`. Both already exist in `V11__create_tasks.sql` as `idx_tasks_assignee_id` and `idx_tasks_project_id_status`. No additional task indexes are needed.
+**Index prerequisite**: The "My Work" queries ([ADR-023](../adr/ADR-023-my-work-cross-project-query.md)) require indexes on `tasks(assignee_id)` and `tasks(project_id, status)`. Both already exist in `V11__create_tasks.sql` as `idx_tasks_assignee_id` and `idx_tasks_project_id_status`. No additional task indexes are needed.
 
 **V13 migration SQL**:
 
@@ -1003,8 +1003,8 @@ The following slices are designed to be turned into Epics. Each is deployable in
 
 | ADR | Title | Status |
 |-----|-------|--------|
-| [ADR-019](adr/ADR-019-task-claim-workflow.md) | Task Entity and Claim Workflow | Accepted (Phase 4) |
-| [ADR-021](adr/ADR-021-time-tracking-model.md) | Time Tracking Model | Accepted |
-| [ADR-022](adr/ADR-022-time-aggregation-strategy.md) | Time Aggregation Strategy | Accepted |
-| [ADR-023](adr/ADR-023-my-work-cross-project-query.md) | "My Work" Cross-Project Query Pattern | Accepted |
-| [ADR-024](adr/ADR-024-portal-task-time-seams.md) | Portal-Ready Seams for Task & Time Data | Accepted |
+| [ADR-019](../adr/ADR-019-task-claim-workflow.md) | Task Entity and Claim Workflow | Accepted (Phase 4) |
+| [ADR-021](../adr/ADR-021-time-tracking-model.md) | Time Tracking Model | Accepted |
+| [ADR-022](../adr/ADR-022-time-aggregation-strategy.md) | Time Aggregation Strategy | Accepted |
+| [ADR-023](../adr/ADR-023-my-work-cross-project-query.md) | "My Work" Cross-Project Query Pattern | Accepted |
+| [ADR-024](../adr/ADR-024-portal-task-time-seams.md) | Portal-Ready Seams for Task & Time Data | Accepted |

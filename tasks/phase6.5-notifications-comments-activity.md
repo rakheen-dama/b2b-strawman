@@ -1,6 +1,6 @@
 # Phase 6.5 — Notifications, Comments & Activity
 
-Phase 6.5 adds the **communication and awareness layer** to the DocTeams platform: a comments system for annotating tasks and documents, a project activity feed that surfaces audit events as a human-readable timeline, an in-app notification system that alerts users when things relevant to them change, and email notification stubs for future SES integration. All capabilities are built on Spring `ApplicationEvent` introduced for the first time in this phase (per [ADR-032](../adr/ADR-032-spring-application-events-for-portal.md)). See `phase6.5-notifications-comments-activity.md` (Section 11 of ARCHITECTURE.md) and [ADR-034](../adr/ADR-034-flat-comments-with-threading-schema.md)–[ADR-038](../adr/ADR-038-polling-for-notification-delivery.md) for design details.
+Phase 6.5 adds the **communication and awareness layer** to the DocTeams platform: a comments system for annotating tasks and documents, a project activity feed that surfaces audit events as a human-readable timeline, an in-app notification system that alerts users when things relevant to them change, and email notification stubs for future SES integration. All capabilities are built on Spring `ApplicationEvent` introduced for the first time in this phase (per [ADR-032](../adr/ADR-032-spring-application-events-for-portal.md)). See `architecture/phase6.5-notifications-comments-activity.md` (Section 11 of architecture/ARCHITECTURE.md) and [ADR-034](../adr/ADR-034-flat-comments-with-threading-schema.md)–[ADR-038](../adr/ADR-038-polling-for-notification-delivery.md) for design details.
 
 ## Epic Overview
 
@@ -68,7 +68,7 @@ Stage 3:  [E60]  [E63]  [E65]            ← parallel frontend (after respective
 
 **Goal**: Create the `comments` table (V15 migration including the `idx_audit_project` expression index on `audit_events`), implement the `Comment` entity with standard `@FilterDef`/`@Filter`/`TenantAware` pattern, `CommentRepository` with JPQL queries, `CommentService` with CRUD operations + authorization + audit logging + event publication, `CommentController` with REST endpoints, and integration tests. Includes `CommentCreatedEvent`, `CommentUpdatedEvent`, `CommentDeletedEvent`, and `CommentVisibilityChangedEvent` record types.
 
-**References**: [ADR-034](../adr/ADR-034-flat-comments-with-threading-schema.md), [ADR-037](../adr/ADR-037-comment-visibility-model.md), `phase6.5-notifications-comments-activity.md` Sections 11.2.1, 11.3.1, 11.4.1, 11.9.1–11.9.3
+**References**: [ADR-034](../adr/ADR-034-flat-comments-with-threading-schema.md), [ADR-037](../adr/ADR-037-comment-visibility-model.md), `architecture/phase6.5-notifications-comments-activity.md` Sections 11.2.1, 11.3.1, 11.4.1, 11.9.1–11.9.3
 
 **Dependencies**: None (builds on existing multi-tenant infrastructure and audit service from Phase 6)
 
@@ -155,7 +155,7 @@ Stage 3:  [E60]  [E63]  [E65]            ← parallel frontend (after respective
 
 **Goal**: Build the `CommentSection` reusable component with `AddCommentForm`, `CommentItem`, and `EditCommentDialog` sub-components. Integrate into the task detail view and document detail view on the project page. Create server actions for comment CRUD. Includes frontend tests.
 
-**References**: `phase6.5-notifications-comments-activity.md` Sections 11.9.6
+**References**: `architecture/phase6.5-notifications-comments-activity.md` Sections 11.9.6
 
 **Dependencies**: Epic 59 (Comment backend API must exist)
 
@@ -230,7 +230,7 @@ Stage 3:  [E60]  [E63]  [E65]            ← parallel frontend (after respective
 
 **Goal**: Implement the notification infrastructure: publish Spring `ApplicationEvent` instances from existing services (`TaskService`, `DocumentService`, `ProjectMemberService`), create `Notification` and `NotificationPreference` entities with V16 and V17 migrations, implement `NotificationEventHandler` with `@TransactionalEventListener(phase = AFTER_COMMIT)` for notification fan-out, and `NotificationService` for creating notification rows. This is the core plumbing that all other notification features depend on.
 
-**References**: [ADR-032](../adr/ADR-032-spring-application-events-for-portal.md), [ADR-036](../adr/ADR-036-synchronous-notification-fanout.md), `phase6.5-notifications-comments-activity.md` Sections 11.2.2, 11.2.3, 11.3.3, 11.6
+**References**: [ADR-032](../adr/ADR-032-spring-application-events-for-portal.md), [ADR-036](../adr/ADR-036-synchronous-notification-fanout.md), `architecture/phase6.5-notifications-comments-activity.md` Sections 11.2.2, 11.2.3, 11.3.3, 11.6
 
 **Dependencies**: None (the `event/` package with DomainEvent and event records is created in Epic 59A, but this epic can also create them if 61 starts before 59 — the sealed interface permits clause can be updated in whichever epic merges second)
 
@@ -325,7 +325,7 @@ Stage 3:  [E60]  [E63]  [E65]            ← parallel frontend (after respective
 
 **Goal**: Implement `NotificationController` with REST endpoints for listing, reading, dismissing notifications, and `NotificationPreferenceController` for viewing and updating notification preferences. All endpoints are self-scoped to the authenticated user.
 
-**References**: `phase6.5-notifications-comments-activity.md` Sections 11.4.3, 11.4.4
+**References**: `architecture/phase6.5-notifications-comments-activity.md` Sections 11.4.3, 11.4.4
 
 **Dependencies**: Epic 61 (Notification entity, repository, and service must exist)
 
@@ -393,7 +393,7 @@ Stage 3:  [E60]  [E63]  [E65]            ← parallel frontend (after respective
 
 **Goal**: Build the `NotificationBell` component for the app header (with polling and dropdown), the full notifications page at `/notifications`, and the notification preferences settings page. Includes server actions and frontend tests.
 
-**References**: `phase6.5-notifications-comments-activity.md` Sections 11.3.4, 11.9.6, [ADR-038](../adr/ADR-038-polling-for-notification-delivery.md)
+**References**: `architecture/phase6.5-notifications-comments-activity.md` Sections 11.3.4, 11.9.6, [ADR-038](../adr/ADR-038-polling-for-notification-delivery.md)
 
 **Dependencies**: Epic 62 (Notification API endpoints must exist)
 
@@ -475,7 +475,7 @@ Stage 3:  [E60]  [E63]  [E65]            ← parallel frontend (after respective
 
 **Goal**: Implement `ActivityService` that queries `audit_events` by `project_id` (using the expression index from V15), `ActivityMessageFormatter` that maps `(eventType, entityType)` pairs to human-readable templates, `ActivityController` with the REST endpoint, and audit event enrichment (adding `project_id` to existing services' audit details). Includes integration and unit tests.
 
-**References**: [ADR-035](../adr/ADR-035-activity-feed-direct-audit-query.md), `phase6.5-notifications-comments-activity.md` Sections 11.3.2, 11.4.2, 11.9.4, 11.9.5
+**References**: [ADR-035](../adr/ADR-035-activity-feed-direct-audit-query.md), `architecture/phase6.5-notifications-comments-activity.md` Sections 11.3.2, 11.4.2, 11.9.4, 11.9.5
 
 **Dependencies**: Epic 59 (V15 migration that creates `idx_audit_project` expression index)
 
@@ -548,7 +548,7 @@ Stage 3:  [E60]  [E63]  [E65]            ← parallel frontend (after respective
 
 **Goal**: Add an "Activity" tab to the project detail page, implement `ActivityFeed`, `ActivityItem`, and `ActivityFilter` components that display the project activity timeline with entity type filter chips and "Load more" pagination.
 
-**References**: `phase6.5-notifications-comments-activity.md` Sections 11.9.6
+**References**: `architecture/phase6.5-notifications-comments-activity.md` Sections 11.9.6
 
 **Dependencies**: Epic 64 (Activity feed API must exist)
 
@@ -607,7 +607,7 @@ Stage 3:  [E60]  [E63]  [E65]            ← parallel frontend (after respective
 
 **Goal**: Implement the `NotificationChannel` interface, `InAppNotificationChannel` (no-op), `EmailNotificationChannel` (stub that logs), `NotificationDispatcher` that routes to channels based on preferences, `EmailTemplate` enum with template definitions, and `TemplateRenderer`. Includes unit tests.
 
-**References**: `phase6.5-notifications-comments-activity.md` Sections 11.7.1–11.7.6
+**References**: `architecture/phase6.5-notifications-comments-activity.md` Sections 11.7.1–11.7.6
 
 **Dependencies**: Epic 61 (Notification entity and NotificationPreferenceRepository must exist)
 

@@ -1,11 +1,11 @@
 ---
 name: architecture
-description: Produce a self-contained architecture section and ADRs from a requirements prompt file. Usage: /architecture <requirements-file>. Example: /architecture claude-code-prompt-phase5.md
+description: Produce a self-contained architecture section and ADRs from a requirements prompt file. Usage: /architecture <requirements-file>. Example: /architecture requirements/claude-code-prompt-phase5.md
 ---
 
 # Architecture Document Generation Workflow
 
-Read a requirements/prompt file and produce a comprehensive architecture section (ready to merge into `ARCHITECTURE.md`) plus standalone ADR files in `adr/`.
+Read a requirements/prompt file and produce a comprehensive architecture section (ready to merge into `architecture/ARCHITECTURE.md`) plus standalone ADR files in `adr/`.
 
 ## Arguments
 
@@ -17,7 +17,7 @@ The requirements file should describe what to design — domain model, flows, AP
 
 1. **Existing-architecture-first**: Before writing anything, deeply understand the current system — entities, conventions, ADR numbering, section numbering, migration numbering, coding patterns. New output must feel like a natural continuation.
 2. **Delegate research**: Use subagents for codebase exploration. Keep the main context focused on writing.
-3. **Self-contained output**: The main document should be mergeable into `ARCHITECTURE.md` as-is. ADRs should be standalone files following the established format.
+3. **Self-contained output**: The main document should be mergeable into `architecture/ARCHITECTURE.md` as-is. ADRs should be standalone files following the established format.
 4. **No code implementation**: Produce only architecture documents, ADRs, and implementation guidance. Never write Java, TypeScript, or SQL implementation files.
 5. **Engineer-ready**: An engineer (or the `/breakdown` skill) should be able to derive epics, slices, and tasks from the output without re-asking requirements.
 
@@ -31,7 +31,7 @@ Explore the current state of the codebase and write a context inventory to:
 
 I need:
 
-1. ARCHITECTURE.md — Read ONLY the section headers (grep for "^## ") and identify:
+1. architecture/ARCHITECTURE.md — Read ONLY the section headers (grep for "^## ") and identify:
    - The last section number (e.g., "## 10. Phase 4 — ...")
    - The next available section number
 2. ADR numbering — List all ADR files in adr/ and find the highest ADR number
@@ -44,7 +44,7 @@ I need:
 8. Recent ADR format — Read the most recent ADR file and include it as a format template
 
 Write all findings to the context inventory file. Format as structured markdown.
-Do NOT read ARCHITECTURE.md in full (2400+ lines) — only grep section headers.
+Do NOT read architecture/ARCHITECTURE.md in full (2400+ lines) — only grep section headers.
 
 Working directory: /Users/rakheendama/Projects/2026/b2b-strawman
 ```
@@ -64,7 +64,7 @@ Launch a **general-purpose** agent to write the architecture doc. Pass it:
 
 The writing agent reads these two files and produces the architecture document. This keeps the orchestrator from holding the full architecture + requirements in its own context.
 
-The output file goes to the project root: `{kebab-case-title}.md` (e.g., `phase6-notifications.md`).
+The output file goes to the `architecture/` directory: `architecture/{kebab-case-title}.md` (e.g., `architecture/phase6-notifications.md`).
 
 ### Required Sections (adapt headings to content)
 
@@ -131,11 +131,11 @@ The document MUST include all of these, adapted to whatever the requirements ask
 
 ### Writing Style Rules
 
-- Match the voice and formatting of existing ARCHITECTURE.md sections
+- Match the voice and formatting of existing architecture/ARCHITECTURE.md sections
 - Use `code blocks` for SQL, Java, JSON, and file paths
 - Use Mermaid for all diagrams (ER, sequence, flowchart)
-- Reference existing ADRs by number and link: `[ADR-019](adr/ADR-019-task-claim-workflow.md)`
-- Include a merge instruction at the top: `> Merge into ARCHITECTURE.md as **Section N**.`
+- Reference existing ADRs by number and link: `[ADR-019](../adr/ADR-019-task-claim-workflow.md)` (relative from `architecture/`)
+- Include a merge instruction at the top: `> Merge into architecture/ARCHITECTURE.md as **Section N**.`
 - Every design decision should state *why*, not just *what*
 - Explicitly call out what's out of scope
 
@@ -199,7 +199,7 @@ Fix any issues found by the reviewer.
 Show the user:
 - Output file path (main document)
 - ADR files created (with titles)
-- Section number for ARCHITECTURE.md merge
+- Section number for architecture/ARCHITECTURE.md merge
 - Migration number(s)
 - Capability slice count
 - Any open questions or assumptions made

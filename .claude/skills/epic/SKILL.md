@@ -26,9 +26,8 @@ This gives the user a live progress view of the epic implementation.
 
 1. Extract the epic number from the user's input.
 2. Find the epic definition:
-   - Read the Epic Overview table in `TASKS.md` to identify the epic and check for a phase-specific task file link (e.g., `tasks/phase4-customers-tasks-portal.md`).
-   - If the overview row links to an external file, read that file for the full epic detail.
-   - Otherwise, locate the epic section within `TASKS.md` itself.
+   - Read `TASKS.md` (overview-only, ~76 lines) to identify the epic's phase and its linked task file (e.g., `tasks/phase4-customers-tasks-portal.md`).
+   - Every phase links to an external task file — read that file for the full epic detail.
    - If the epic is marked **Done**, stop and inform the user.
 3. Identify:
    - **Scope**: Frontend, Backend, Both, or Infra (from the Epic Overview table)
@@ -155,9 +154,9 @@ git pull origin main
 git fetch --prune
 ```
 
-Then update the task status in the appropriate task file:
-- For epics 1–36: update status in `TASKS.md`
-- For epics 37+: update status in the linked phase file (e.g., `tasks/phase4-customers-tasks-portal.md`) AND the overview row in `TASKS.md`
+Then update the task status:
+- Mark the slice/epic **Done** in the phase task file (e.g., `tasks/phase4-customers-tasks-portal.md`)
+- Update the status column in the overview row in `TASKS.md`
 
 Commit and push the status update from the main repo (not the worktree).
 

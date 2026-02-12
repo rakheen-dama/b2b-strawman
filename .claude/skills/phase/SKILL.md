@@ -5,7 +5,7 @@ description: Orchestrate an entire development phase — runs each epic slice se
 
 # Phase Orchestration Workflow
 
-Run all remaining epic slices in a development phase, one at a time, using subagents for implementation. The orchestrator (you) stays lean — delegating all heavy work to background agents.
+Run all remaining epic slices in a development phase, one at a time, using subagents for implementation. The orchestrator (you) stays lean — delegating all heavy work to subagents.
 
 ## Arguments
 
@@ -15,13 +15,13 @@ Phase number (e.g., `/phase 4`). Optionally append a starting slice: `/phase 4 f
 
 1. **Context hygiene**: Your main context is precious. NEVER read large files, diffs, or codebases yourself. Delegate ALL research and implementation to subagents.
 2. **One slice at a time**: Complete one slice fully (implement → review → fix → merge) before starting the next. Speed is not the objective — correctness is.
-3. **Background agents**: Run implementation agents with `run_in_background: true`. Monitor via notifications. Only read output files if you need specifics.
+3. **Blocking agents**: Run implementation and review agents as **blocking** Task calls (do NOT use `run_in_background`). The orchestrator has nothing to do while a subagent works, so blocking is correct. Background agents cause the orchestrator to freeze because there is no reliable resume mechanism.
 4. **Minimal task tracking**: Create high-level tasks per slice (not per sub-task). Update as slices complete.
 5. **No code writing**: You are the orchestrator. You approve, dispatch, and merge. You do not write code.
 
 ## Step 0 — Build the Execution Plan
 
-1. Find the phase in TASKS.md using `Grep(pattern="^\| \*\*Phase {N}", path="TASKS.md", output_mode="content", -A=12)`. This returns ONLY the phase header row and the epic rows beneath it. **NEVER** `Read("TASKS.md")` — it is 2000+ lines / 196KB and will bloat your context and cause freezing.
+1. Read `TASKS.md` to find the phase and its epic rows (overview-only file, safe to read in full).
 2. The phase header row contains a `See [tasks/phase{N}-*.md]` link. Read ONLY that file's **Epic Overview table and dependency graph** — use `Read(file, limit=50)`. The subagent reads the full task details, NOT you.
 3. Build an ordered list of slices, respecting dependencies and skip any marked **Done**.
 4. Present the execution plan to the user and wait for approval.
@@ -42,7 +42,7 @@ git branch -D epic-{SLICE}/{BRANCH_NAME} 2>/dev/null || true
 
 ### 1b. Dispatch Implementation Agent
 
-Launch a `general-purpose` background agent with this prompt template:
+Launch a **blocking** `general-purpose` agent (do NOT set `run_in_background`) with this prompt template:
 
 ```
 You are implementing **Epic {SLICE}** end-to-end.
@@ -76,13 +76,13 @@ gh pr create --title "Epic {SLICE}: {TITLE}" --body "..."
 Do NOT stop to ask questions. Read the task file and codebase patterns to resolve ambiguity.
 ```
 
-### 1c. Wait for Completion
+### 1c. Process Result
 
-Wait for the background agent notification. Check the result summary.
+The blocking Task call returns the agent's summary. Extract the PR number from it. If the agent failed, go to Recovery.
 
 ### 1d. Code Review
 
-Launch a `general-purpose` agent (NOT `code-reviewer` — it lacks Bash access):
+Launch a **blocking** `general-purpose` agent (NOT `code-reviewer` — it lacks Bash access):
 
 ```
 Review PR #{PR_NUMBER} at /Users/rakheendama/Projects/2026/b2b-strawman.
@@ -140,8 +140,8 @@ Move to the next slice. Repeat from 1a.
 
 ## Anti-Patterns
 
-- **Do NOT** call `Read("TASKS.md")` — the file is 2000+ lines (196KB). Use `Grep` to find the phase rows only.
-- **Do NOT** read full phase task files in your own context — use `limit=50` for overview, delegate full reads to subagents
+- **Do NOT** use `run_in_background: true` for Task calls — the orchestrator has no reliable way to resume after a background agent completes, causing it to freeze
+- **Do NOT** read phase task files in full in your own context — use `limit=50` for overview, delegate full reads to subagents
 - **Do NOT** implement multiple slices in parallel — one at a time, verify each
 - **Do NOT** write code yourself — you are the orchestrator
 - **Do NOT** skip code review — every PR gets reviewed before merge

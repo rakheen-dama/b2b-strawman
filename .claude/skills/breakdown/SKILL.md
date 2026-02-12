@@ -24,7 +24,7 @@ If no requirements file is given, the skill looks for the phase section in `ARCH
 ## Step 0 — Gather Inputs
 
 1. Extract the phase number from the user's input.
-2. Read the **TASKS.md overview table** (first ~60 lines) to determine:
+2. Read `TASKS.md` (overview-only, ~76 lines) to determine:
    - The last epic number (so the new phase starts at N+1).
    - The existing phase naming pattern.
    - Which phases/epics are already Done.
@@ -52,11 +52,12 @@ Architecture & requirements:
 - {ADR_FILES} (list each ADR file path)
 
 Existing patterns to match:
-- `TASKS.md` — Study the FULL epic format (table structure, slice naming, task ID conventions, status columns). Your output MUST match this format exactly.
+- `TASKS.md` — Read the overview table (~76 lines) for epic numbering, phase naming, and status conventions.
+- The most recent phase task file (e.g., `tasks/phase5-task-time-lifecycle.md` or `tasks/phase4-customers-tasks-portal.md`) — Study 2-3 completed epics there for the FULL epic format (table structure, slice naming, task ID conventions, Key Files sections, Architecture Decisions sections). Your output MUST match this format exactly.
 - `backend/CLAUDE.md` and `frontend/CLAUDE.md` — Conventions and anti-patterns to respect.
 
 Reference implementations (study to calibrate slice sizes):
-- Read 2-3 completed epics from TASKS.md or the most recent phase task file to understand the expected level of detail per task row.
+- Read 2-3 completed epics from the most recent phase task file to understand the expected level of detail per task row.
 - Examine existing backend entities, controllers, and test files to gauge what fits in one slice.
 
 Existing code to understand scope:

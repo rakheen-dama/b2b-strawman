@@ -33,8 +33,8 @@ Create high-level tasks for visibility:
 ## Step 0 — Validate (Orchestrator, Lightweight)
 
 1. Extract the epic number from the user's input.
-2. Read `TASKS.md` (overview-only, ~76 lines) to identify the phase and linked task file.
-3. Read ONLY the **first 60 lines** of the phase task file (`Read(file, limit=60)`) to get the Epic Overview table.
+2. Read `TASKS.md` (overview-only) to identify the phase and linked task file.
+3. Read ONLY the Epic overview, Dependency Graph and Implementation order of the phase task file to get the Epic Overview table.
 4. If the epic is marked **Done**, stop and inform the user.
 5. Extract: **scope** (Frontend/Backend/Both), **dependencies** (verify Done), **task IDs**.
 6. Check for existing work:

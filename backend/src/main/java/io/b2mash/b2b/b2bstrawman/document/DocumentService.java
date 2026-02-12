@@ -279,6 +279,22 @@ public class DocumentService {
             .details(Map.of("scope", document.getScope(), "file_name", document.getFileName()))
             .build());
 
+    // Security audit for customer-scoped documents
+    if (Document.Scope.CUSTOMER.equals(document.getScope())) {
+      auditService.log(
+          AuditEventBuilder.builder()
+              .eventType("security.document_accessed")
+              .entityType("document")
+              .entityId(document.getId())
+              .details(
+                  Map.of(
+                      "document_id", document.getId().toString(),
+                      "scope", "CUSTOMER",
+                      "customer_id", document.getCustomerId().toString(),
+                      "file_name", document.getFileName()))
+              .build());
+    }
+
     return new PresignDownloadResult(presigned.url(), presigned.expiresInSeconds());
   }
 

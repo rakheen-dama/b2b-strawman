@@ -2,11 +2,17 @@ package io.b2mash.b2b.b2bstrawman.task;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.event.TaskAssignedEvent;
+import io.b2mash.b2b.b2bstrawman.event.TaskClaimedEvent;
+import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,6 +21,7 @@ import java.util.Objects;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,16 +34,22 @@ public class TaskService {
   private final ProjectAccessService projectAccessService;
   private final ProjectMemberRepository projectMemberRepository;
   private final AuditService auditService;
+  private final ApplicationEventPublisher eventPublisher;
+  private final MemberRepository memberRepository;
 
   public TaskService(
       TaskRepository taskRepository,
       ProjectAccessService projectAccessService,
       ProjectMemberRepository projectMemberRepository,
-      AuditService auditService) {
+      AuditService auditService,
+      ApplicationEventPublisher eventPublisher,
+      MemberRepository memberRepository) {
     this.taskRepository = taskRepository;
     this.projectAccessService = projectAccessService;
     this.projectMemberRepository = projectMemberRepository;
     this.auditService = auditService;
+    this.eventPublisher = eventPublisher;
+    this.memberRepository = memberRepository;
   }
 
   @Transactional(readOnly = true)
@@ -191,6 +204,52 @@ public class TaskService {
             .details(details.isEmpty() ? null : details)
             .build());
 
+    // Event publication for notification fan-out
+    boolean assigneeChanged = !Objects.equals(oldAssigneeId, assigneeId);
+    boolean statusChanged = !Objects.equals(oldStatus, status);
+    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+
+    if (assigneeChanged && assigneeId != null) {
+      String actorName = resolveActorName(memberId);
+      eventPublisher.publishEvent(
+          new TaskAssignedEvent(
+              "task.assigned",
+              "task",
+              task.getId(),
+              task.getProjectId(),
+              memberId,
+              actorName,
+              tenantId,
+              Instant.now(),
+              Map.of("title", task.getTitle()),
+              assigneeId,
+              task.getTitle()));
+    }
+    if (statusChanged && status != null) {
+      String actorName = resolveActorName(memberId);
+      eventPublisher.publishEvent(
+          new TaskStatusChangedEvent(
+              "task.status_changed",
+              "task",
+              task.getId(),
+              task.getProjectId(),
+              memberId,
+              actorName,
+              tenantId,
+              Instant.now(),
+              Map.of(
+                  "title",
+                  task.getTitle(),
+                  "old_status",
+                  oldStatus != null ? oldStatus : "",
+                  "new_status",
+                  status),
+              oldStatus != null ? oldStatus : "",
+              status,
+              task.getAssigneeId(),
+              task.getTitle()));
+    }
+
     return task;
   }
 
@@ -258,6 +317,22 @@ public class TaskService {
             .details(Map.of("assignee_id", memberId.toString()))
             .build());
 
+    String actorName = resolveActorName(memberId);
+    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    eventPublisher.publishEvent(
+        new TaskClaimedEvent(
+            "task.claimed",
+            "task",
+            task.getId(),
+            task.getProjectId(),
+            memberId,
+            actorName,
+            tenantId,
+            Instant.now(),
+            Map.of("title", task.getTitle()),
+            null, // previousAssigneeId (always null — claim only works on unassigned tasks)
+            task.getTitle()));
+
     return task;
   }
 
@@ -297,5 +372,9 @@ public class TaskService {
             .build());
 
     return task;
+  }
+
+  private String resolveActorName(UUID memberId) {
+    return memberRepository.findOneById(memberId).map(m -> m.getName()).orElse("Unknown");
   }
 }

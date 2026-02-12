@@ -3,15 +3,20 @@ package io.b2mash.b2b.b2bstrawman.document;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.event.DocumentUploadedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,18 +28,24 @@ public class DocumentService {
   private final CustomerRepository customerRepository;
   private final S3PresignedUrlService s3Service;
   private final AuditService auditService;
+  private final ApplicationEventPublisher eventPublisher;
+  private final MemberRepository memberRepository;
 
   public DocumentService(
       DocumentRepository documentRepository,
       ProjectAccessService projectAccessService,
       CustomerRepository customerRepository,
       S3PresignedUrlService s3Service,
-      AuditService auditService) {
+      AuditService auditService,
+      ApplicationEventPublisher eventPublisher,
+      MemberRepository memberRepository) {
     this.documentRepository = documentRepository;
     this.projectAccessService = projectAccessService;
     this.customerRepository = customerRepository;
     this.s3Service = s3Service;
     this.auditService = auditService;
+    this.eventPublisher = eventPublisher;
+    this.memberRepository = memberRepository;
   }
 
   /**
@@ -226,6 +237,24 @@ public class DocumentService {
               .entityId(document.getId())
               .build());
 
+      // Only publish event for PROJECT-scoped documents (notifications are project-scoped)
+      if (document.isProjectScoped() && document.getProjectId() != null) {
+        String actorName = resolveActorName(memberId);
+        String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+        eventPublisher.publishEvent(
+            new DocumentUploadedEvent(
+                "document.uploaded",
+                "document",
+                document.getId(),
+                document.getProjectId(),
+                memberId,
+                actorName,
+                tenantId,
+                Instant.now(),
+                Map.of("file_name", document.getFileName()),
+                document.getFileName()));
+      }
+
       return document;
     }
     return document;
@@ -309,6 +338,10 @@ public class DocumentService {
       projectAccessService.requireViewAccess(document.getProjectId(), memberId, orgRole);
     }
     // ORG and CUSTOMER scoped: tenant isolation is sufficient — any org member can access
+  }
+
+  private String resolveActorName(UUID memberId) {
+    return memberRepository.findOneById(memberId).map(m -> m.getName()).orElse("Unknown");
   }
 
   public record UploadInitResult(UUID documentId, String presignedUrl, long expiresInSeconds) {}

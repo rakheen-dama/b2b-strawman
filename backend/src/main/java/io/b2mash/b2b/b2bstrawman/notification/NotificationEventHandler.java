@@ -40,6 +40,7 @@ public class NotificationEventHandler {
   public void onCommentCreated(CommentCreatedEvent event) {
     handleInTenantScope(
         event.tenantId(),
+        event.orgId(),
         () -> {
           try {
             notificationService.handleCommentCreated(event);
@@ -54,6 +55,7 @@ public class NotificationEventHandler {
   public void onTaskAssigned(TaskAssignedEvent event) {
     handleInTenantScope(
         event.tenantId(),
+        event.orgId(),
         () -> {
           try {
             notificationService.handleTaskAssigned(event);
@@ -68,6 +70,7 @@ public class NotificationEventHandler {
   public void onTaskClaimed(TaskClaimedEvent event) {
     handleInTenantScope(
         event.tenantId(),
+        event.orgId(),
         () -> {
           try {
             notificationService.handleTaskClaimed(event);
@@ -82,6 +85,7 @@ public class NotificationEventHandler {
   public void onTaskStatusChanged(TaskStatusChangedEvent event) {
     handleInTenantScope(
         event.tenantId(),
+        event.orgId(),
         () -> {
           try {
             notificationService.handleTaskStatusChanged(event);
@@ -98,6 +102,7 @@ public class NotificationEventHandler {
   public void onDocumentUploaded(DocumentUploadedEvent event) {
     handleInTenantScope(
         event.tenantId(),
+        event.orgId(),
         () -> {
           try {
             notificationService.handleDocumentUploaded(event);
@@ -114,6 +119,7 @@ public class NotificationEventHandler {
   public void onMemberAddedToProject(MemberAddedToProjectEvent event) {
     handleInTenantScope(
         event.tenantId(),
+        event.orgId(),
         () -> {
           try {
             notificationService.handleMemberAddedToProject(event);
@@ -127,12 +133,19 @@ public class NotificationEventHandler {
   }
 
   /**
-   * Binds the tenant ScopedValue so that Hibernate {@code @Filter} and RLS work correctly in the
-   * handler's new transaction.
+   * Binds tenant and org ScopedValues so that Hibernate {@code @Filter}, RLS, and {@code
+   * TenantAwareEntityListener} work correctly in the handler's new transaction. ORG_ID is required
+   * for shared-schema (Starter tier) tenants where {@code TenantFilterTransactionManager} enables
+   * the Hibernate filter and {@code TenantAwareEntityListener} sets {@code tenant_id} on new
+   * entities.
    */
-  private void handleInTenantScope(String tenantId, Runnable action) {
+  private void handleInTenantScope(String tenantId, String orgId, Runnable action) {
     if (tenantId != null) {
-      ScopedValue.where(RequestScopes.TENANT_ID, tenantId).run(action);
+      var carrier = ScopedValue.where(RequestScopes.TENANT_ID, tenantId);
+      if (orgId != null) {
+        carrier = carrier.where(RequestScopes.ORG_ID, orgId);
+      }
+      carrier.run(action);
     } else {
       action.run();
     }

@@ -107,6 +107,8 @@ public class CommentService {
             .build());
 
     String actorName = resolveActorName(memberId);
+    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
     eventPublisher.publishEvent(
         new CommentCreatedEvent(
             "comment.created",
@@ -115,7 +117,8 @@ public class CommentService {
             projectId,
             memberId,
             actorName,
-            RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null,
+            tenantId,
+            orgId,
             Instant.now(),
             Map.of("body", body),
             entityType,
@@ -194,6 +197,8 @@ public class CommentService {
             .build());
 
     String actorName = resolveActorName(memberId);
+    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
     eventPublisher.publishEvent(
         new CommentUpdatedEvent(
             "comment.updated",
@@ -202,7 +207,8 @@ public class CommentService {
             projectId,
             memberId,
             actorName,
-            RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null,
+            tenantId,
+            orgId,
             Instant.now(),
             Map.of("old_body", oldBody, "new_body", body != null ? body : oldBody)));
 
@@ -227,7 +233,8 @@ public class CommentService {
               projectId,
               memberId,
               actorName,
-              RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null,
+              tenantId,
+              orgId,
               Instant.now(),
               Map.of("old_visibility", oldVisibility, "new_visibility", visibility),
               oldVisibility,
@@ -283,6 +290,8 @@ public class CommentService {
             .build());
 
     String actorName = resolveActorName(memberId);
+    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
     eventPublisher.publishEvent(
         new CommentDeletedEvent(
             "comment.deleted",
@@ -291,7 +300,8 @@ public class CommentService {
             projectId,
             memberId,
             actorName,
-            RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null,
+            tenantId,
+            orgId,
             Instant.now(),
             Map.of("body", deletedBody),
             entityType,

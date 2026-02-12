@@ -12,6 +12,7 @@ public record CommentUpdatedEvent(
     UUID actorMemberId,
     String actorName,
     String tenantId,
+    String orgId,
     Instant occurredAt,
     Map<String, Object> details)
     implements DomainEvent {}

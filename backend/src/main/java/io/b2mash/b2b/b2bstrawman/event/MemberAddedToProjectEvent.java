@@ -12,6 +12,7 @@ public record MemberAddedToProjectEvent(
     UUID actorMemberId,
     String actorName,
     String tenantId,
+    String orgId,
     Instant occurredAt,
     Map<String, Object> details,
     UUID addedMemberId,

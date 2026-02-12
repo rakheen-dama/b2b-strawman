@@ -208,6 +208,7 @@ public class TaskService {
     boolean assigneeChanged = !Objects.equals(oldAssigneeId, assigneeId);
     boolean statusChanged = !Objects.equals(oldStatus, status);
     String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
 
     if (assigneeChanged && assigneeId != null) {
       String actorName = resolveActorName(memberId);
@@ -220,6 +221,7 @@ public class TaskService {
               memberId,
               actorName,
               tenantId,
+              orgId,
               Instant.now(),
               Map.of("title", task.getTitle()),
               assigneeId,
@@ -236,6 +238,7 @@ public class TaskService {
               memberId,
               actorName,
               tenantId,
+              orgId,
               Instant.now(),
               Map.of(
                   "title",
@@ -319,6 +322,7 @@ public class TaskService {
 
     String actorName = resolveActorName(memberId);
     String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
     eventPublisher.publishEvent(
         new TaskClaimedEvent(
             "task.claimed",
@@ -328,6 +332,7 @@ public class TaskService {
             memberId,
             actorName,
             tenantId,
+            orgId,
             Instant.now(),
             Map.of("title", task.getTitle()),
             null, // previousAssigneeId (always null — claim only works on unassigned tasks)

@@ -1,11 +1,16 @@
 package io.b2mash.b2b.b2bstrawman.project;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
+import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,14 +25,17 @@ public class ProjectService {
   private final ProjectRepository repository;
   private final ProjectMemberRepository projectMemberRepository;
   private final ProjectAccessService projectAccessService;
+  private final AuditService auditService;
 
   public ProjectService(
       ProjectRepository repository,
       ProjectMemberRepository projectMemberRepository,
-      ProjectAccessService projectAccessService) {
+      ProjectAccessService projectAccessService,
+      AuditService auditService) {
     this.repository = repository;
     this.projectMemberRepository = projectMemberRepository;
     this.projectAccessService = projectAccessService;
+    this.auditService = auditService;
   }
 
   @Transactional(readOnly = true)
@@ -52,6 +60,15 @@ public class ProjectService {
     var lead = new ProjectMember(project.getId(), createdBy, Roles.PROJECT_LEAD, null);
     projectMemberRepository.save(lead);
     log.info("Created project {} with lead member {}", project.getId(), createdBy);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("project.created")
+            .entityType("project")
+            .entityId(project.getId())
+            .details(Map.of("name", project.getName()))
+            .build());
+
     return project;
   }
 
@@ -61,8 +78,35 @@ public class ProjectService {
     var project =
         repository.findOneById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
     var access = projectAccessService.requireEditAccess(id, memberId, orgRole);
+
+    // Capture old values before mutation
+    String oldName = project.getName();
+    String oldDescription = project.getDescription();
+
     project.update(name, description);
     project = repository.save(project);
+
+    // Build delta map -- only include changed fields
+    var details = new LinkedHashMap<String, Object>();
+    if (!Objects.equals(oldName, name)) {
+      details.put("name", Map.of("from", oldName, "to", name));
+    }
+    if (!Objects.equals(oldDescription, description)) {
+      details.put(
+          "description",
+          Map.of(
+              "from", oldDescription != null ? oldDescription : "",
+              "to", description != null ? description : ""));
+    }
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("project.updated")
+            .entityType("project")
+            .entityId(project.getId())
+            .details(details.isEmpty() ? null : details)
+            .build());
+
     return new ProjectWithRole(project, access.projectRole());
   }
 
@@ -71,5 +115,13 @@ public class ProjectService {
     var project =
         repository.findOneById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
     repository.delete(project);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("project.deleted")
+            .entityType("project")
+            .entityId(project.getId())
+            .details(Map.of("name", project.getName()))
+            .build());
   }
 }

@@ -42,3 +42,9 @@ logging:
   structured:
     format:
       console: ecs
+
+audit:
+  retention:
+    domain-events-days: 1095
+    security-events-days: 365
+    purge-enabled: false

@@ -2,15 +2,20 @@ package io.b2mash.b2b.b2bstrawman.member;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.event.MemberAddedToProjectEvent;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,14 +27,20 @@ public class ProjectMemberService {
   private final ProjectMemberRepository projectMemberRepository;
   private final MemberRepository memberRepository;
   private final AuditService auditService;
+  private final ApplicationEventPublisher eventPublisher;
+  private final ProjectRepository projectRepository;
 
   public ProjectMemberService(
       ProjectMemberRepository projectMemberRepository,
       MemberRepository memberRepository,
-      AuditService auditService) {
+      AuditService auditService,
+      ApplicationEventPublisher eventPublisher,
+      ProjectRepository projectRepository) {
     this.projectMemberRepository = projectMemberRepository;
     this.memberRepository = memberRepository;
     this.auditService = auditService;
+    this.eventPublisher = eventPublisher;
+    this.projectRepository = projectRepository;
   }
 
   @Transactional(readOnly = true)
@@ -64,6 +75,24 @@ public class ProjectMemberService {
                     "member_id", memberId.toString(),
                     "role", Roles.PROJECT_MEMBER))
             .build());
+
+    String actorName = resolveActorName(addedBy);
+    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    String projectName =
+        projectRepository.findOneById(projectId).map(p -> p.getName()).orElse("Unknown Project");
+    eventPublisher.publishEvent(
+        new MemberAddedToProjectEvent(
+            "project_member.added",
+            "project_member",
+            projectMember.getId(),
+            projectId,
+            addedBy,
+            actorName,
+            tenantId,
+            Instant.now(),
+            Map.of("member_id", memberId.toString(), "role", Roles.PROJECT_MEMBER),
+            memberId,
+            projectName));
 
     return projectMember;
   }
@@ -162,5 +191,9 @@ public class ProjectMemberService {
   @Transactional(readOnly = true)
   public boolean isProjectMember(UUID projectId, UUID memberId) {
     return projectMemberRepository.existsByProjectIdAndMemberId(projectId, memberId);
+  }
+
+  private String resolveActorName(UUID memberId) {
+    return memberRepository.findOneById(memberId).map(m -> m.getName()).orElse("Unknown");
   }
 }

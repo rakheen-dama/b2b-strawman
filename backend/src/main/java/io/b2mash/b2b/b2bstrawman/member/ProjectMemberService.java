@@ -1,10 +1,13 @@
 package io.b2mash.b2b.b2bstrawman.member;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
+import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,11 +21,15 @@ public class ProjectMemberService {
 
   private final ProjectMemberRepository projectMemberRepository;
   private final MemberRepository memberRepository;
+  private final AuditService auditService;
 
   public ProjectMemberService(
-      ProjectMemberRepository projectMemberRepository, MemberRepository memberRepository) {
+      ProjectMemberRepository projectMemberRepository,
+      MemberRepository memberRepository,
+      AuditService auditService) {
     this.projectMemberRepository = projectMemberRepository;
     this.memberRepository = memberRepository;
+    this.auditService = auditService;
   }
 
   @Transactional(readOnly = true)
@@ -45,6 +52,19 @@ public class ProjectMemberService {
     var projectMember = new ProjectMember(projectId, memberId, Roles.PROJECT_MEMBER, addedBy);
     projectMember = projectMemberRepository.save(projectMember);
     log.info("Added member {} to project {} as {}", memberId, projectId, Roles.PROJECT_MEMBER);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("project_member.added")
+            .entityType("project_member")
+            .entityId(projectMember.getId())
+            .details(
+                Map.of(
+                    "project_id", projectId.toString(),
+                    "member_id", memberId.toString(),
+                    "role", Roles.PROJECT_MEMBER))
+            .build());
+
     return projectMember;
   }
 
@@ -67,6 +87,17 @@ public class ProjectMemberService {
 
     projectMemberRepository.delete(projectMember);
     log.info("Removed member {} from project {}", memberId, projectId);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("project_member.removed")
+            .entityType("project_member")
+            .entityId(projectMember.getId())
+            .details(
+                Map.of(
+                    "project_id", projectId.toString(),
+                    "member_id", memberId.toString()))
+            .build());
   }
 
   @Transactional
@@ -102,6 +133,30 @@ public class ProjectMemberService {
     projectMemberRepository.save(newLead);
 
     log.info("Transferred lead of project {} from {} to {}", projectId, currentLeadId, newLeadId);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("project_member.role_changed")
+            .entityType("project_member")
+            .entityId(currentLead.getId())
+            .details(
+                Map.of(
+                    "role", Map.of("from", "lead", "to", "member"),
+                    "project_id", projectId.toString(),
+                    "member_id", currentLeadId.toString()))
+            .build());
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("project_member.role_changed")
+            .entityType("project_member")
+            .entityId(newLead.getId())
+            .details(
+                Map.of(
+                    "role", Map.of("from", "member", "to", "lead"),
+                    "project_id", projectId.toString(),
+                    "member_id", newLeadId.toString()))
+            .build());
   }
 
   @Transactional(readOnly = true)

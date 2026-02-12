@@ -7,6 +7,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccess;
@@ -30,6 +31,7 @@ class ProjectServiceTest {
   @Mock private ProjectRepository repository;
   @Mock private ProjectMemberRepository projectMemberRepository;
   @Mock private ProjectAccessService projectAccessService;
+  @Mock private AuditService auditService;
   @InjectMocks private ProjectService service;
 
   @Test
@@ -96,7 +98,7 @@ class ProjectServiceTest {
 
   @Test
   void createProject_savesNewEntity() {
-    var project = new Project("New", "Description", MEMBER_ID);
+    var project = projectWithId("New", "Description", MEMBER_ID);
     when(repository.save(any(Project.class))).thenReturn(project);
     when(projectMemberRepository.save(any(ProjectMember.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
@@ -113,7 +115,7 @@ class ProjectServiceTest {
   @Test
   void updateProject_updatesWhenCanEdit() {
     var id = UUID.randomUUID();
-    var existing = new Project("Old", "Old Desc", MEMBER_ID);
+    var existing = projectWithId(id, "Old", "Old Desc", MEMBER_ID);
     when(repository.findOneById(id)).thenReturn(Optional.of(existing));
     when(repository.save(existing)).thenReturn(existing);
     when(projectAccessService.requireEditAccess(id, MEMBER_ID, "admin"))
@@ -165,7 +167,7 @@ class ProjectServiceTest {
   @Test
   void deleteProject_deletesWhenFound() {
     var id = UUID.randomUUID();
-    var project = new Project("ToDelete", null, MEMBER_ID);
+    var project = projectWithId(id, "ToDelete", null, MEMBER_ID);
     when(repository.findOneById(id)).thenReturn(Optional.of(project));
 
     service.deleteProject(id);
@@ -181,5 +183,22 @@ class ProjectServiceTest {
     assertThatThrownBy(() -> service.deleteProject(id))
         .isInstanceOf(ResourceNotFoundException.class);
     verify(repository, never()).delete(any());
+  }
+
+  /** Creates a Project with a random ID set via reflection (JPA @GeneratedValue has no setter). */
+  private static Project projectWithId(String name, String description, UUID createdBy) {
+    return projectWithId(UUID.randomUUID(), name, description, createdBy);
+  }
+
+  private static Project projectWithId(UUID id, String name, String description, UUID createdBy) {
+    var project = new Project(name, description, createdBy);
+    try {
+      var idField = Project.class.getDeclaredField("id");
+      idField.setAccessible(true);
+      idField.set(project, id);
+    } catch (ReflectiveOperationException e) {
+      throw new RuntimeException("Failed to set project ID", e);
+    }
+    return project;
   }
 }

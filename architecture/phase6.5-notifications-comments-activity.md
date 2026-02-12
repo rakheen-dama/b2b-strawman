@@ -8,7 +8,7 @@
 
 Phase 6.5 adds the **communication and awareness layer** to the DocTeams platform. Until now, the platform captures what happens (audit events) but does not help users stay aware of changes or discuss their work. This phase introduces three interconnected capabilities: a comments system for annotating tasks and documents, a project activity feed that surfaces audit events as a human-readable timeline, and an in-app notification system that alerts users when things relevant to them change.
 
-These three capabilities share a common foundation: the **Spring ApplicationEvent** pattern introduced in this phase. Domain services publish events after mutations; independent consumers (notification handler, and in the future, portal projection handler) subscribe to these events without coupling to the publisher. This event pattern was designed in [ADR-032](adr/ADR-032-spring-application-events-for-portal.md) for Phase 7's customer portal and is implemented here for the first time. Phase 6.5 uses a pragmatic dual-write approach: existing services continue calling `auditService.log()` directly while also publishing Spring events for notification fan-out. New services (CommentService) publish events that the notification handler consumes.
+These three capabilities share a common foundation: the **Spring ApplicationEvent** pattern introduced in this phase. Domain services publish events after mutations; independent consumers (notification handler, and in the future, portal projection handler) subscribe to these events without coupling to the publisher. This event pattern was designed in [ADR-032](../adr/ADR-032-spring-application-events-for-portal.md) for Phase 7's customer portal and is implemented here for the first time. Phase 6.5 uses a pragmatic dual-write approach: existing services continue calling `auditService.log()` directly while also publishing Spring events for notification fan-out. New services (CommentService) publish events that the notification handler consumes.
 
 Phase 6.5 also includes **email notification stubs** — the abstraction layer for future email delivery (SES) with templates and user preferences. Actual email sending is not wired in this phase; the stub logs email content in local/dev profiles.
 
@@ -35,10 +35,10 @@ Phase 6.5 also includes **email notification stubs** — the abstraction layer f
 - Notification polling (30-second interval)
 
 **Out of scope** (explicitly deferred):
-- Threaded/nested comment replies — `parent_id` column reserved but unused ([ADR-034](adr/ADR-034-flat-comments-with-threading-schema.md))
+- Threaded/nested comment replies — `parent_id` column reserved but unused ([ADR-034](../adr/ADR-034-flat-comments-with-threading-schema.md))
 - Rich text or markdown in comments — plain text `TEXT` column for now
 - @-mention parsing and notification targeting
-- Real-time push (WebSocket, SSE) — polling only ([ADR-038](adr/ADR-038-polling-for-notification-delivery.md))
+- Real-time push (WebSocket, SSE) — polling only ([ADR-038](../adr/ADR-038-polling-for-notification-delivery.md))
 - Email delivery integration (SES wiring) — stub only
 - Comment reactions (emoji, thumbs up)
 - Cross-org notification aggregation
@@ -62,8 +62,8 @@ Comments attach to tasks or documents within a project. The `entity_type` + `ent
 | `projectId` | `UUID` | `project_id` | `UUID` | NOT NULL | Denormalized for project-scoped queries; avoids join to tasks/documents |
 | `authorMemberId` | `UUID` | `author_member_id` | `UUID` | NOT NULL | The member who wrote the comment; loose UUID reference to `members` |
 | `body` | `String` | `body` | `TEXT` | NOT NULL | Plain text content; no length limit |
-| `visibility` | `String` | `visibility` | `VARCHAR(20)` | NOT NULL, default `'INTERNAL'` | `INTERNAL` (staff-only) or `SHARED` (portal-visible) — see [ADR-037](adr/ADR-037-comment-visibility-model.md) |
-| `parentId` | `UUID` | `parent_id` | `UUID` | Nullable | Reserved for future threading; always NULL in Phase 6.5 — see [ADR-034](adr/ADR-034-flat-comments-with-threading-schema.md) |
+| `visibility` | `String` | `visibility` | `VARCHAR(20)` | NOT NULL, default `'INTERNAL'` | `INTERNAL` (staff-only) or `SHARED` (portal-visible) — see [ADR-037](../adr/ADR-037-comment-visibility-model.md) |
+| `parentId` | `UUID` | `parent_id` | `UUID` | Nullable | Reserved for future threading; always NULL in Phase 6.5 — see [ADR-034](../adr/ADR-034-flat-comments-with-threading-schema.md) |
 | `tenantId` | `String` | `tenant_id` | `VARCHAR(255)` | Nullable | Set by `TenantAwareEntityListener` for shared-schema tenants; NULL for dedicated-schema |
 | `createdAt` | `Instant` | `created_at` | `TIMESTAMPTZ` | NOT NULL, default `now()` | Set on construction |
 | `updatedAt` | `Instant` | `updated_at` | `TIMESTAMPTZ` | NOT NULL, default `now()` | Updated on edit |
@@ -104,7 +104,7 @@ Notifications are individual alerts delivered to a specific member. Each notific
 **Design decisions**:
 - **No `updatedAt`**: Notifications are write-once except for `is_read` toggle. A separate `read_at` timestamp could be added later if analytics require it.
 - **Hard delete for dismiss**: When a user dismisses a notification, it is physically deleted. Notifications are not compliance-critical; the events that created them are preserved in `audit_events`.
-- **Self-scoped queries only**: All notification queries filter by `recipient_member_id = :currentMemberId`. There is no admin view of other users' notifications. This follows the [ADR-023](adr/ADR-023-my-work-cross-project-query.md) pattern where the `WHERE` clause IS the authorization.
+- **Self-scoped queries only**: All notification queries filter by `recipient_member_id = :currentMemberId`. There is no admin view of other users' notifications. This follows the [ADR-023](../adr/ADR-023-my-work-cross-project-query.md) pattern where the `WHERE` clause IS the authorization.
 - **`referenceProjectId` for URL construction**: The frontend needs the project slug/ID to build a deep-link URL like `/org/{slug}/projects/{projectId}/tasks?selected={taskId}`. Storing `referenceProjectId` avoids a lookup at render time.
 
 #### 11.2.3 NotificationPreference Entity
@@ -315,7 +315,7 @@ erDiagram
 
 #### 11.3.2 Activity Feed Flow
 
-The activity feed reads from the existing `audit_events` table and formats entries into human-readable messages. See [ADR-035](adr/ADR-035-activity-feed-direct-audit-query.md) for the design rationale.
+The activity feed reads from the existing `audit_events` table and formats entries into human-readable messages. See [ADR-035](../adr/ADR-035-activity-feed-direct-audit-query.md) for the design rationale.
 
 **Query Flow**
 
@@ -378,7 +378,7 @@ For avatar URLs, the same batch approach applies: `Member` entities store `avata
 
 #### 11.3.3 Notification Creation Flow
 
-When a domain event occurs, the `NotificationEventHandler` determines recipients and creates `Notification` rows. See [ADR-036](adr/ADR-036-synchronous-notification-fanout.md) for the synchronous fan-out design rationale.
+When a domain event occurs, the `NotificationEventHandler` determines recipients and creates `Notification` rows. See [ADR-036](../adr/ADR-036-synchronous-notification-fanout.md) for the synchronous fan-out design rationale.
 
 **Notification Trigger Table**
 
@@ -621,7 +621,7 @@ Activity items are ordered by `occurred_at DESC` (most recent first).
 
 #### 11.4.3 Notifications API
 
-All notification endpoints are self-scoped to the authenticated user. No `ProjectAccessService` checks — the `WHERE recipient_member_id = :currentMemberId` clause IS the authorization (same pattern as [ADR-023](adr/ADR-023-my-work-cross-project-query.md)).
+All notification endpoints are self-scoped to the authenticated user. No `ProjectAccessService` checks — the `WHERE recipient_member_id = :currentMemberId` clause IS the authorization (same pattern as [ADR-023](../adr/ADR-023-my-work-cross-project-query.md)).
 
 | Method | Path | Description | Authorization | R/W |
 |--------|------|-------------|--------------|-----|
@@ -874,7 +874,7 @@ sequenceDiagram
 
 ### 11.6 Event Publication Pattern
 
-Phase 6.5 introduces Spring `ApplicationEvent` to the codebase for the first time, implementing the pattern accepted in [ADR-032](adr/ADR-032-spring-application-events-for-portal.md). This section defines the event hierarchy, publication points, consumer conventions, and the dual-write strategy for transitioning from direct audit logging.
+Phase 6.5 introduces Spring `ApplicationEvent` to the codebase for the first time, implementing the pattern accepted in [ADR-032](../adr/ADR-032-spring-application-events-for-portal.md). This section defines the event hierarchy, publication points, consumer conventions, and the dual-write strategy for transitioning from direct audit logging.
 
 #### 11.6.1 DomainEvent Base Record
 
@@ -2059,7 +2059,7 @@ This enrichment work is a **prerequisite for Slice E** (Activity Feed) and shoul
 | Dismiss own notification | Yes | No | No |
 | View others' notifications | No | No | No |
 
-**Authorization logic**: All queries include `WHERE recipient_member_id = :currentMemberId`. There is no admin view of other users' notifications. Self-scoped queries ARE the authorization ([ADR-023](adr/ADR-023-my-work-cross-project-query.md) pattern).
+**Authorization logic**: All queries include `WHERE recipient_member_id = :currentMemberId`. There is no admin view of other users' notifications. Self-scoped queries ARE the authorization ([ADR-023](../adr/ADR-023-my-work-cross-project-query.md) pattern).
 
 #### Activity Feed Permissions
 
@@ -2113,12 +2113,12 @@ graph LR
 
 | ADR | Title | File | Summary |
 |-----|-------|------|---------|
-| [ADR-034](adr/ADR-034-flat-comments-with-threading-schema.md) | Flat Comments with Threading-Ready Schema | `adr/ADR-034-flat-comments-with-threading-schema.md` | Flat comments now, `parent_id` nullable column reserved for future threading without migration |
-| [ADR-035](adr/ADR-035-activity-feed-direct-audit-query.md) | Activity Feed via Direct Audit Query | `adr/ADR-035-activity-feed-direct-audit-query.md` | Activity feed reads from `audit_events` directly with expression index on `details->>'project_id'` |
-| [ADR-036](adr/ADR-036-synchronous-notification-fanout.md) | Synchronous In-Process Notification Fan-Out | `adr/ADR-036-synchronous-notification-fanout.md` | `@TransactionalEventListener(AFTER_COMMIT)` for notification creation — synchronous, in-process, no message queue |
-| [ADR-037](adr/ADR-037-comment-visibility-model.md) | Comment Visibility Model | `adr/ADR-037-comment-visibility-model.md` | INTERNAL/SHARED enum — simple binary model mapping directly to Phase 7 portal projection |
-| [ADR-038](adr/ADR-038-polling-for-notification-delivery.md) | Polling for Notification Delivery | `adr/ADR-038-polling-for-notification-delivery.md` | 30-second short polling for notification badge — simplest delivery mechanism, acceptable latency for B2B |
+| [ADR-034](../adr/ADR-034-flat-comments-with-threading-schema.md) | Flat Comments with Threading-Ready Schema | `../adr/ADR-034-flat-comments-with-threading-schema.md` | Flat comments now, `parent_id` nullable column reserved for future threading without migration |
+| [ADR-035](../adr/ADR-035-activity-feed-direct-audit-query.md) | Activity Feed via Direct Audit Query | `../adr/ADR-035-activity-feed-direct-audit-query.md` | Activity feed reads from `audit_events` directly with expression index on `details->>'project_id'` |
+| [ADR-036](../adr/ADR-036-synchronous-notification-fanout.md) | Synchronous In-Process Notification Fan-Out | `../adr/ADR-036-synchronous-notification-fanout.md` | `@TransactionalEventListener(AFTER_COMMIT)` for notification creation — synchronous, in-process, no message queue |
+| [ADR-037](../adr/ADR-037-comment-visibility-model.md) | Comment Visibility Model | `../adr/ADR-037-comment-visibility-model.md` | INTERNAL/SHARED enum — simple binary model mapping directly to Phase 7 portal projection |
+| [ADR-038](../adr/ADR-038-polling-for-notification-delivery.md) | Polling for Notification Delivery | `../adr/ADR-038-polling-for-notification-delivery.md` | 30-second short polling for notification badge — simplest delivery mechanism, acceptable latency for B2B |
 
 **Referenced ADRs from previous phases**:
-- [ADR-023](adr/ADR-023-my-work-cross-project-query.md) — Self-scoped query pattern (notifications follow this pattern)
-- [ADR-032](adr/ADR-032-spring-application-events-for-portal.md) — Spring ApplicationEvent decision (Phase 6.5 is the first implementation)
+- [ADR-023](../adr/ADR-023-my-work-cross-project-query.md) — Self-scoped query pattern (notifications follow this pattern)
+- [ADR-032](../adr/ADR-032-spring-application-events-for-portal.md) — Spring ApplicationEvent decision (Phase 6.5 is the first implementation)

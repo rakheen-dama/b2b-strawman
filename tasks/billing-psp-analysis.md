@@ -196,7 +196,7 @@ The webhook handler calls `SubscriptionService.changePlan()` which calls `PlanSy
 #### Cleanup
 
 - [ ] Remove `PlanSyncRequest` type from `internal-api.ts` (if only used by subscription handlers)
-- [ ] Update ARCHITECTURE.md — billing section, remove Clerk Billing references
+- [ ] Update architecture/ARCHITECTURE.md — billing section, remove Clerk Billing references
 - [ ] Update ADR-010 or add ADR-017 documenting the billing decoupling decision
 
 ---

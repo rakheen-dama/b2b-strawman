@@ -1,6 +1,6 @@
 # Phase 6 -- Audit & Compliance Foundations
 
-Phase 6 adds **backend-only audit trail and compliance infrastructure** to the platform. It introduces a generic `AuditEvent` entity, a service abstraction for recording events, and a retention/integrity strategy -- all scoped within the existing multi-tenant model. No new UI is added in this phase; the infrastructure is designed for future dashboards, SIEM integration, and compliance reporting. See `phase6-audit-compliance-foundations.md` (Section 12 of ARCHITECTURE.md) and [ADR-025](../adr/ADR-025-audit-storage-location.md)--[ADR-029](../adr/ADR-029-audit-logging-abstraction.md) for design details.
+Phase 6 adds **backend-only audit trail and compliance infrastructure** to the platform. It introduces a generic `AuditEvent` entity, a service abstraction for recording events, and a retention/integrity strategy -- all scoped within the existing multi-tenant model. No new UI is added in this phase; the infrastructure is designed for future dashboards, SIEM integration, and compliance reporting. See `architecture/phase6-audit-compliance-foundations.md` (Section 12 of architecture/ARCHITECTURE.md) and [ADR-025](../adr/ADR-025-audit-storage-location.md)--[ADR-029](../adr/ADR-029-audit-logging-abstraction.md) for design details.
 
 ## Epic Overview
 
@@ -50,7 +50,7 @@ Stage 2:  [E51] [E52] [E53]          <- parallel (after E50)
 
 **Goal**: Create the `audit_events` table, implement the `AuditEvent` entity with the standard `@FilterDef`/`@Filter`/`TenantAware` pattern, build the `AuditService` interface and `DatabaseAuditService` implementation, the `AuditEventRecord` DTO, the `AuditEventBuilder` convenience builder, and the `AuditEventFilter` query record. Includes tenant isolation verification for both Pro (dedicated schema) and Starter (shared schema + `@Filter`), and append-only integrity verification (update trigger enforcement).
 
-**References**: [ADR-025](../adr/ADR-025-audit-storage-location.md), [ADR-026](../adr/ADR-026-audit-event-granularity.md), [ADR-028](../adr/ADR-028-audit-integrity-approach.md), [ADR-029](../adr/ADR-029-audit-logging-abstraction.md), `phase6-audit-compliance-foundations.md` Sections 12.1.1, 12.2, 12.4, 12.5.2, 12.8, 12.9.2--12.9.3
+**References**: [ADR-025](../adr/ADR-025-audit-storage-location.md), [ADR-026](../adr/ADR-026-audit-event-granularity.md), [ADR-028](../adr/ADR-028-audit-integrity-approach.md), [ADR-029](../adr/ADR-029-audit-logging-abstraction.md), `architecture/phase6-audit-compliance-foundations.md` Sections 12.1.1, 12.2, 12.4, 12.5.2, 12.8, 12.9.2--12.9.3
 
 **Dependencies**: None (builds on existing multi-tenant infrastructure)
 
@@ -129,7 +129,7 @@ Stage 2:  [E51] [E52] [E53]          <- parallel (after E50)
 
 **Goal**: Add `AuditService` injection and `auditService.log()` calls to all service methods that perform mutating operations on tenant-scoped entities. After this epic, every create/update/delete/claim/release/archive/link/unlink/sync operation across all domain entities automatically produces an audit event with the correct `eventType`, `entityType`, `entityId`, and `details` JSONB.
 
-**References**: [ADR-029](../adr/ADR-029-audit-logging-abstraction.md), `phase6-audit-compliance-foundations.md` Section 12.3.1, 12.3.3
+**References**: [ADR-029](../adr/ADR-029-audit-logging-abstraction.md), `architecture/phase6-audit-compliance-foundations.md` Section 12.3.1, 12.3.3
 
 **Dependencies**: Epic 50 (AuditService + AuditEventBuilder)
 
@@ -212,7 +212,7 @@ Stage 2:  [E51] [E52] [E53]          <- parallel (after E50)
 
 **Goal**: Add audit logging for security-relevant events: permission-denied responses (403), authentication failures (401), and sensitive document access (customer-scoped documents). After this epic, all security-relevant actions are captured in the audit trail for incident investigation and compliance.
 
-**References**: `phase6-audit-compliance-foundations.md` Section 12.3.2, 12.3.3
+**References**: `architecture/phase6-audit-compliance-foundations.md` Section 12.3.2, 12.3.3
 
 **Dependencies**: Epic 50 (AuditService + AuditEventBuilder)
 
@@ -266,7 +266,7 @@ Stage 2:  [E51] [E52] [E53]          <- parallel (after E50)
 
 **Goal**: Expose audit events via REST API endpoints. Tenant-scoped endpoints allow org owners and admins to query their organization's audit trail. Internal endpoints allow platform operators to query across tenants and view aggregate statistics. Includes proper role-based access control and pagination.
 
-**References**: `phase6-audit-compliance-foundations.md` Section 12.6
+**References**: `architecture/phase6-audit-compliance-foundations.md` Section 12.6
 
 **Dependencies**: Epic 50 (AuditService + AuditEventRepository + DatabaseAuditService)
 

@@ -18,7 +18,7 @@ You are the **orchestrator**. You dispatch a review agent and present findings. 
 
 **Context rules**:
 - Read CLAUDE.md files yourself (they're small, ~12KB each) — you need them to validate findings
-- NEVER read ARCHITECTURE.md or task files — not needed for code review
+- NEVER read architecture/ARCHITECTURE.md or task files — not needed for code review
 - The PR diff is the primary input — fetch it via `gh pr diff`
 
 ## Step 0 — Gather PR Metadata
@@ -195,7 +195,7 @@ Show the user:
 ## Guardrails
 
 - **Confidence filter**: Only report issues the agent is >80% sure about. False positives waste more time than they save.
-- **No ARCHITECTURE.md reads**: Review is about code quality, not architecture compliance.
+- **No architecture/ARCHITECTURE.md reads**: Review is about code quality, not architecture compliance.
 - **Diff to file**: Write the diff to `/tmp/` so it stays out of the orchestrator's context.
 - **Build output to file**: All build commands redirect to `/tmp/` log files — never stream full Maven output.
 - **Don't over-fix**: In fix mode, only address critical and high issues. Leave medium/low for the author.

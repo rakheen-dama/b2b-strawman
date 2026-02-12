@@ -12,11 +12,11 @@ Turn architecture documentation into a detailed epic/slice/task breakdown, produ
 - **Required**: Phase number (e.g., `/breakdown 5`)
 - **Optional**: Path to a requirements or spec file (e.g., `/breakdown 5 docs/phase5-requirements.md`)
 
-If no requirements file is given, the skill looks for the phase section in `ARCHITECTURE.md`.
+If no requirements file is given, the skill looks for the phase section in `architecture/ARCHITECTURE.md`.
 
 ## Principles
 
-1. **Architecture-driven**: Every epic traces back to a section in ARCHITECTURE.md or the requirements doc. No invented features.
+1. **Architecture-driven**: Every epic traces back to a section in architecture/ARCHITECTURE.md or the requirements doc. No invented features.
 2. **Agent-sized slices**: Each slice must be completable by a coding agent within ~60% of its context window — roughly 8–12 files touched, single scope (backend OR frontend, never both).
 3. **Format consistency**: Output matches the exact format of existing phase task files (e.g., `tasks/phase4-customers-tasks-portal.md`).
 4. **Delegate the heavy work**: Use a Plan agent for the actual breakdown. Keep your own context lean.
@@ -29,7 +29,7 @@ If no requirements file is given, the skill looks for the phase section in `ARCH
    - The existing phase naming pattern.
    - Which phases/epics are already Done.
 3. If a requirements file was provided, read it. Otherwise:
-   - Search `ARCHITECTURE.md` for a section matching "Phase {N}" (e.g., `## 10. Phase 5 — ...`).
+   - Search `architecture/ARCHITECTURE.md` for a section matching "Phase {N}" (e.g., `## 10. Phase 5 — ...`).
    - If found, note the section number and any linked ADRs.
    - If not found, ask the user where the architecture for this phase lives.
 4. Find any ADRs referenced by the architecture section:
@@ -48,7 +48,7 @@ You are a senior technical program manager creating an implementation plan for P
 ## Context to Read First (MANDATORY — read ALL before planning)
 
 Architecture & requirements:
-- {ARCHITECTURE_SOURCE} (e.g., "ARCHITECTURE.md — Section 10" or the requirements file path)
+- {ARCHITECTURE_SOURCE} (e.g., "architecture/ARCHITECTURE.md — Section 10" or the requirements file path)
 - {ADR_FILES} (list each ADR file path)
 
 Existing patterns to match:

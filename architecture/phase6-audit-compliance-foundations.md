@@ -50,10 +50,10 @@ An AuditEvent records a single auditable action performed on a tenant-scoped ent
 **Design decisions**:
 
 - **No FK to audited entities**: `entity_id` is a UUID stored as-is. This means audit records survive entity deletion — you can always see that a project was deleted even after the row is gone. It also avoids cascading deletes from the audited table into the audit log.
-- **`event_type` as string, not enum**: Using a string allows new event types to be added without schema changes. The naming convention `{entity}.{action}` is enforced by the `AuditService` abstraction, not the database. See [ADR-026](adr/ADR-026-audit-event-granularity.md).
+- **`event_type` as string, not enum**: Using a string allows new event types to be added without schema changes. The naming convention `{entity}.{action}` is enforced by the `AuditService` abstraction, not the database. See [ADR-026](../adr/ADR-026-audit-event-granularity.md).
 - **`details` as JSONB, not TEXT**: JSONB enables future indexed queries (e.g., "find all events where `details->>'status'->>'to' = 'DONE'`") without full-text scanning. It also enforces valid JSON at the DB level.
 - **`actor_type` + `actor_id` separation**: When Clerk webhooks trigger provisioning, the actor is `WEBHOOK` with no member ID. When scheduled maintenance runs, the actor is `SYSTEM`. This avoids nullable-member-id ambiguity.
-- **PII minimization**: IP addresses and user agents are the only request metadata stored. No authorization headers, JWT tokens, request bodies, or response bodies are captured. See [ADR-028](adr/ADR-028-audit-integrity-approach.md).
+- **PII minimization**: IP addresses and user agents are the only request metadata stored. No authorization headers, JWT tokens, request bodies, or response bodies are captured. See [ADR-028](../adr/ADR-028-audit-integrity-approach.md).
 
 **Indexes**:
 
@@ -85,7 +85,7 @@ For tamper-evidence, batches of audit events can be periodically hashed into che
 | `tenant_id` | VARCHAR(255) | | Shared-schema discriminator |
 | `created_at` | TIMESTAMPTZ | NOT NULL | |
 
-**How it works**: A scheduled job runs daily/weekly, selects all `audit_events` in the time window ordered by `occurred_at, id`, hashes a canonical representation, and stores the checkpoint. To verify integrity, re-hash the events and compare to the stored checkpoint. The `previous_hash` field chains checkpoints for sequential tamper detection. See [ADR-028](adr/ADR-028-audit-integrity-approach.md) for the full design rationale.
+**How it works**: A scheduled job runs daily/weekly, selects all `audit_events` in the time window ordered by `occurred_at, id`, hashes a canonical representation, and stores the checkpoint. To verify integrity, re-hash the events and compare to the stored checkpoint. The `previous_hash` field chains checkpoints for sequential tamper detection. See [ADR-028](../adr/ADR-028-audit-integrity-approach.md) for the full design rationale.
 
 #### 12.1.3 Updated ER Diagram
 
@@ -229,7 +229,7 @@ erDiagram
 
 ### 12.2 Storage and Multi-Tenant Strategy
 
-See [ADR-025](adr/ADR-025-audit-storage-location.md) for the full decision record.
+See [ADR-025](../adr/ADR-025-audit-storage-location.md) for the full decision record.
 
 **Decision**: Audit events are stored **in each tenant's schema** using the same pattern as all other tenant-scoped entities. The `audit_events` table is created by a tenant migration (`V14__create_audit_events.sql`) and is subject to the same Hibernate `@Filter`, `TenantAware` listener, and RLS policies as every other tenant entity.
 
@@ -273,7 +273,7 @@ The `audit_events` table has the same lifecycle as all other tenant tables: crea
 
 ### 12.3 What We Log — Domain and Security Events
 
-See [ADR-026](adr/ADR-026-audit-event-granularity.md) for the decision on which entities and actions are logged.
+See [ADR-026](../adr/ADR-026-audit-event-granularity.md) for the decision on which entities and actions are logged.
 
 #### 12.3.1 Domain Events (Phase 6 Minimum Set)
 
@@ -328,7 +328,7 @@ Security events use the `security.` prefix instead of an entity name.
 
 #### 12.3.3 How Events Are Captured
 
-See [ADR-029](adr/ADR-029-audit-logging-abstraction.md) for why we use explicit service calls over AOP.
+See [ADR-029](../adr/ADR-029-audit-logging-abstraction.md) for why we use explicit service calls over AOP.
 
 **Approach**: Explicit `AuditService.log()` calls in service methods. Each service method that performs a mutating operation calls `AuditService.log()` after the successful mutation, within the same transaction.
 
@@ -370,7 +370,7 @@ public Task claimTask(UUID taskId) {
 
 ### 12.4 AuditService Abstraction and Extension Points
 
-See [ADR-029](adr/ADR-029-audit-logging-abstraction.md) for the full design rationale.
+See [ADR-029](../adr/ADR-029-audit-logging-abstraction.md) for the full design rationale.
 
 #### 12.4.1 Service Interface (Conceptual)
 
@@ -489,7 +489,7 @@ The builder reads request context at build time, so service methods only need to
 
 ### 12.5 Retention and Integrity
 
-See [ADR-027](adr/ADR-027-audit-retention-strategy.md) and [ADR-028](adr/ADR-028-audit-integrity-approach.md) for the full decision records.
+See [ADR-027](../adr/ADR-027-audit-retention-strategy.md) and [ADR-028](../adr/ADR-028-audit-integrity-approach.md) for the full decision records.
 
 #### 12.5.1 Retention Policy
 
@@ -1069,8 +1069,8 @@ The following capability slices are designed to be turned into Epics by a task p
 
 | ADR | Title | Status |
 |-----|-------|--------|
-| [ADR-025](adr/ADR-025-audit-storage-location.md) | Audit Storage Location | Accepted |
-| [ADR-026](adr/ADR-026-audit-event-granularity.md) | Audit Event Granularity | Accepted |
-| [ADR-027](adr/ADR-027-audit-retention-strategy.md) | Audit Retention Strategy | Accepted |
-| [ADR-028](adr/ADR-028-audit-integrity-approach.md) | Audit Integrity Approach | Accepted |
-| [ADR-029](adr/ADR-029-audit-logging-abstraction.md) | Audit Logging Abstraction | Accepted |
+| [ADR-025](../adr/ADR-025-audit-storage-location.md) | Audit Storage Location | Accepted |
+| [ADR-026](../adr/ADR-026-audit-event-granularity.md) | Audit Event Granularity | Accepted |
+| [ADR-027](../adr/ADR-027-audit-retention-strategy.md) | Audit Retention Strategy | Accepted |
+| [ADR-028](../adr/ADR-028-audit-integrity-approach.md) | Audit Integrity Approach | Accepted |
+| [ADR-029](../adr/ADR-029-audit-logging-abstraction.md) | Audit Logging Abstraction | Accepted |

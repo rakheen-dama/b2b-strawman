@@ -1,6 +1,6 @@
 # Phase 4 — Customers, Document Scopes & Tasks
 
-Phase 4 extends the platform from an internal staff-collaboration tool to a client-aware system. It introduces three new domain concepts — **Customers**, **document scopes**, and **Tasks** — and lays the groundwork for a future customer-facing portal. All additions are evolutionary: they reuse the existing tenant isolation model (schema-per-tenant for Pro, shared schema + RLS for Starter) and add new entities alongside the existing Project/Document/Member model. See ARCHITECTURE.md §10 for the full design and [ADR-017](../adr/ADR-017-customer-as-org-child.md)–[ADR-020](../adr/ADR-020-customer-portal-approach.md) for decision records.
+Phase 4 extends the platform from an internal staff-collaboration tool to a client-aware system. It introduces three new domain concepts — **Customers**, **document scopes**, and **Tasks** — and lays the groundwork for a future customer-facing portal. All additions are evolutionary: they reuse the existing tenant isolation model (schema-per-tenant for Pro, shared schema + RLS for Starter) and add new entities alongside the existing Project/Document/Member model. See architecture/ARCHITECTURE.md §10 for the full design and [ADR-017](../adr/ADR-017-customer-as-org-child.md)–[ADR-020](../adr/ADR-020-customer-portal-approach.md) for decision records.
 
 ## Epic Overview
 
@@ -71,7 +71,7 @@ Stage 4:  [E43]                       <- after E37 + E41
 
 **Goal**: Create the `customers` and `customer_projects` tables, implement Customer entity with full CRUD endpoints, and provide customer-project linking/unlinking. Includes access control following the existing `ProjectAccessService` pattern.
 
-**References**: [ADR-017](../adr/ADR-017-customer-as-org-child.md), ARCHITECTURE.md §10.2.1, §10.2.2, §10.3.1, §10.5.1
+**References**: [ADR-017](../adr/ADR-017-customer-as-org-child.md), architecture/ARCHITECTURE.md §10.2.1, §10.2.2, §10.3.1, §10.5.1
 
 **Dependencies**: None (builds on existing Phase 1+2 infrastructure)
 
@@ -139,7 +139,7 @@ Stage 4:  [E43]                       <- after E37 + E41
 
 **Goal**: Build the customer list page, customer detail page, create/edit customer dialog, and link-to-project dialog. Staff can manage customers and their project associations through the UI.
 
-**References**: ARCHITECTURE.md §10.10 Slice B, §10.4.1
+**References**: architecture/ARCHITECTURE.md §10.10 Slice B, §10.4.1
 
 **Dependencies**: Epic 37
 
@@ -194,7 +194,7 @@ Stage 4:  [E43]                       <- after E37 + E41
 
 **Goal**: Create the `tasks` table, implement Task entity with full CRUD, claim/release endpoints with optimistic locking, and filtered listing with query parameters (status, assignee, priority, sort).
 
-**References**: [ADR-019](../adr/ADR-019-task-claim-workflow.md), ARCHITECTURE.md §10.2.3, §10.3.2, §10.5.1
+**References**: [ADR-019](../adr/ADR-019-task-claim-workflow.md), architecture/ARCHITECTURE.md §10.2.3, §10.3.2, §10.5.1
 
 **Dependencies**: None (builds on existing Phase 1+2 infrastructure; tasks are project-scoped and use existing `ProjectAccessService`)
 
@@ -213,7 +213,7 @@ Stage 4:  [E43]                       <- after E37 + E41
 
 | ID | Task | Slice | Status | Notes |
 |----|------|-------|--------|-------|
-| 39.1 | Create V12 tenant migration for tasks table | 39A | | `db/migration/tenant/V12__create_tasks.sql`. Columns per ARCHITECTURE.md §10.2.3: `id` (UUID PK DEFAULT gen_random_uuid()), `project_id` (UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE), `title` (VARCHAR(500) NOT NULL), `description` (TEXT), `status` (VARCHAR(20) NOT NULL DEFAULT 'OPEN'), `priority` (VARCHAR(20) NOT NULL DEFAULT 'MEDIUM'), `type` (VARCHAR(100)), `assignee_id` (UUID REFERENCES members(id) ON DELETE SET NULL), `created_by` (UUID NOT NULL REFERENCES members(id)), `due_date` (DATE), `version` (INTEGER NOT NULL DEFAULT 0), `tenant_id` (VARCHAR(255)), `created_at` (TIMESTAMPTZ NOT NULL DEFAULT now()), `updated_at` (TIMESTAMPTZ NOT NULL DEFAULT now()). Indexes: `idx_tasks_project_id`, `idx_tasks_assignee_id`, `idx_tasks_project_id_status`, `idx_tasks_project_id_assignee_id`, `idx_tasks_tenant_id`. RLS policy matching V9 pattern. Pattern: follow `V5__create_project_members.sql` structure. |
+| 39.1 | Create V12 tenant migration for tasks table | 39A | | `db/migration/tenant/V12__create_tasks.sql`. Columns per architecture/ARCHITECTURE.md §10.2.3: `id` (UUID PK DEFAULT gen_random_uuid()), `project_id` (UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE), `title` (VARCHAR(500) NOT NULL), `description` (TEXT), `status` (VARCHAR(20) NOT NULL DEFAULT 'OPEN'), `priority` (VARCHAR(20) NOT NULL DEFAULT 'MEDIUM'), `type` (VARCHAR(100)), `assignee_id` (UUID REFERENCES members(id) ON DELETE SET NULL), `created_by` (UUID NOT NULL REFERENCES members(id)), `due_date` (DATE), `version` (INTEGER NOT NULL DEFAULT 0), `tenant_id` (VARCHAR(255)), `created_at` (TIMESTAMPTZ NOT NULL DEFAULT now()), `updated_at` (TIMESTAMPTZ NOT NULL DEFAULT now()). Indexes: `idx_tasks_project_id`, `idx_tasks_assignee_id`, `idx_tasks_project_id_status`, `idx_tasks_project_id_assignee_id`, `idx_tasks_tenant_id`. RLS policy matching V9 pattern. Pattern: follow `V5__create_project_members.sql` structure. |
 | 39.2 | Create Task entity | 39A | | `task/Task.java` — JPA entity. UUID id, projectId (UUID), title, description, status (String: OPEN/IN_PROGRESS/DONE/CANCELLED), priority (String: LOW/MEDIUM/HIGH), type (String nullable), assigneeId (UUID nullable), createdBy (UUID), dueDate (LocalDate nullable), version (int, `@Version`), tenantId, createdAt, updatedAt. `@FilterDef`/`@Filter`, `@EntityListeners(TenantAwareEntityListener.class)`, implements `TenantAware`. Add `claim(UUID memberId)` method (sets assigneeId + status=IN_PROGRESS), `release()` method (clears assigneeId + status=OPEN). Pattern: follow `Document.java` entity structure. |
 | 39.3 | Create TaskRepository | 39A | | `task/TaskRepository.java` — extends `JpaRepository<Task, UUID>`. Methods: `List<Task> findByProjectId(UUID projectId)`, `Optional<Task> findOneById(UUID id)` (JPQL `@Query` for `@Filter` compatibility), custom JPQL for filtered listing: `findByProjectIdWithFilters(UUID projectId, String status, UUID assigneeId, String priority, Sort sort)` using `@Query` with optional WHERE clauses via Specification or dynamic JPQL. Pattern: follow `ProjectRepository.java` with JPQL `findOneById`. |
 | 39.4 | Create TaskService and TaskController (CRUD) | 39A | | **Service** (`task/TaskService.java`): `listTasks(projectId, memberId, orgRole, status, assigneeId, priority, sort)` — checks project view access via `ProjectAccessService`, queries with filters. `getTask(taskId, memberId, orgRole)` — looks up task, checks project access. `createTask(projectId, title, description, priority, type, dueDate, createdBy, orgRole)` — checks project edit access. `updateTask(taskId, title, description, priority, status, type, dueDate, assigneeId, memberId, orgRole)` — checks permission (lead/admin/owner can update any, contributor can update own assigned). `deleteTask(taskId, memberId, orgRole)` — checks project lead/admin/owner. **Controller** (`task/TaskController.java`): `POST /api/projects/{projectId}/tasks` (201), `GET /api/projects/{projectId}/tasks` (200, supports `?status=&assigneeId=&priority=&sort=`), `GET /api/tasks/{id}` (200), `PUT /api/tasks/{id}` (200), `DELETE /api/tasks/{id}` (204). DTOs: `CreateTaskRequest(title, description, priority, type, dueDate)`, `UpdateTaskRequest(title, description, priority, status, type, dueDate, assigneeId)`, `TaskResponse(id, projectId, title, description, status, priority, type, assigneeId, assigneeName, createdBy, createdByName, dueDate, version, createdAt, updatedAt)`. Pattern: follow `ProjectMemberController.java` for project-scoped endpoints. |
@@ -257,7 +257,7 @@ Stage 4:  [E43]                       <- after E37 + E41
 
 **Goal**: Build the task list/board view within the project detail page, task creation dialog, claim/release buttons, and status filtering. Tasks integrate as a third tab alongside Documents and Members.
 
-**References**: ARCHITECTURE.md §10.10 Slice F, §10.4.3
+**References**: architecture/ARCHITECTURE.md §10.10 Slice F, §10.4.3
 
 **Dependencies**: Epic 39
 
@@ -311,7 +311,7 @@ Stage 4:  [E43]                       <- after E37 + E41
 
 **Goal**: Extend the Document entity with `scope`, `customer_id`, and `visibility` columns. Add org-scoped and customer-scoped upload-init endpoints. Add visibility toggle. Update existing document queries for backward compatibility.
 
-**References**: [ADR-018](../adr/ADR-018-document-scope-model.md), ARCHITECTURE.md §10.2.4, §10.3.3, §10.6, §10.7
+**References**: [ADR-018](../adr/ADR-018-document-scope-model.md), architecture/ARCHITECTURE.md §10.2.4, §10.3.3, §10.6, §10.7
 
 **Dependencies**: Epic 37 (V11 migration references `customers` table from V9)
 
@@ -374,7 +374,7 @@ Stage 4:  [E43]                       <- after E37 + E41
 
 **Goal**: Add UI for org-scoped document management, customer-scoped document upload on customer detail page, scope indicator badges, and visibility toggle.
 
-**References**: ARCHITECTURE.md §10.10 Slice D
+**References**: architecture/ARCHITECTURE.md §10.10 Slice D
 
 **Dependencies**: Epic 38 (customer detail page), Epic 41 (scope-aware backend)
 
@@ -432,7 +432,7 @@ Stage 4:  [E43]                       <- after E37 + E41
 
 **Goal**: Implement backend infrastructure for the future customer portal — magic link authentication, portal JWT issuance, `/portal/*` endpoint skeleton with scoped read-only access. Build a minimal portal frontend with login, project list, and document viewer. Per ADR-020.
 
-**References**: [ADR-020](../adr/ADR-020-customer-portal-approach.md), ARCHITECTURE.md §10.8
+**References**: [ADR-020](../adr/ADR-020-customer-portal-approach.md), architecture/ARCHITECTURE.md §10.8
 
 **Dependencies**: Epic 37 (customers exist), Epic 41 (document visibility exists)
 

@@ -16,7 +16,7 @@ You are the **orchestrator**. You stay lean and delegate all heavy work to subag
 
 This prevents the builder from burning 50%+ of its context on research it only needs the conclusions from. The scout's context is discarded after it produces the brief.
 
-**Context budget rule**: The orchestrator NEVER reads ARCHITECTURE.md, full phase task files, or CLAUDE.md subdirectory files. That is exclusively the scout's job.
+**Context budget rule**: The orchestrator NEVER reads architecture/ARCHITECTURE.md, full phase task files, or CLAUDE.md subdirectory files. That is exclusively the scout's job.
 
 ## Arguments
 
@@ -79,7 +79,7 @@ Extract ALL conventions and the COMPLETE anti-patterns section verbatim. These p
 debugging spirals — missing even one can cost hours.
 
 ### 3. Architecture Context
-Search ARCHITECTURE.md for sections relevant to this epic (grep for keywords, don't read
+Search architecture/ARCHITECTURE.md for sections relevant to this epic (grep for keywords, don't read
 the full 2400-line file). Extract relevant ADRs (check `adr/` directory too).
 Include only what directly impacts this epic's implementation decisions.
 
@@ -214,7 +214,7 @@ You are implementing **Epic {SLICE}** in the worktree at:
 ## First Step — Read Your Brief
 Read: /Users/rakheendama/Projects/2026/worktree-epic-{SLICE}/.epic-brief.md
 This file contains EVERYTHING you need: tasks, file plan, code patterns, conventions,
-build commands, and integration points. Do NOT read ARCHITECTURE.md, TASKS.md, or
+build commands, and integration points. Do NOT read architecture/ARCHITECTURE.md, TASKS.md, or
 CLAUDE.md files — the brief already contains the relevant extracts.
 
 ## Workflow
@@ -354,7 +354,7 @@ Then update task status:
 
 ## Guardrails
 
-- **Context hygiene**: Orchestrator NEVER reads ARCHITECTURE.md, full task files, or subdirectory CLAUDE.md files
+- **Context hygiene**: Orchestrator NEVER reads architecture/ARCHITECTURE.md, full task files, or subdirectory CLAUDE.md files
 - **Brief is the contract**: Builder works from the brief only — if the brief is wrong, re-run the scout, don't have the builder explore
 - **Build output stays in files**: All build/test output goes to `/tmp/` log files — only summaries enter agent context
 - **No over-implementation**: Builder implements ONLY the brief's task list

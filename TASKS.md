@@ -60,7 +60,7 @@
 | 48 | My Work — Backend | Backend | 44 | M | 48A | **Done** (PR #93) |
 | 49 | My Work — Frontend | Frontend | 48 | M | 49A, 49B | **Done** (PR #95, #96) |
 | **Phase 6 — Audit & Compliance Foundations** | | | | | | See [tasks/phase6-audit-compliance-foundations.md](tasks/phase6-audit-compliance-foundations.md) |
-| 50 | Audit Infrastructure — Entity, Service & Migration | Backend | — | M | 50A, 50B | |
+| 50 | Audit Infrastructure — Entity, Service & Migration | Backend | — | M | 50A, 50B | **Done** (PR #100, #101) |
 | 51 | Domain Event Integration — Services | Backend | 50 | L | 51A, 51B | |
 | 52 | Security Event Integration | Backend | 50 | S | 52A | |
 | 53 | Audit Query API | Backend | 50 | M | 53A, 53B | |

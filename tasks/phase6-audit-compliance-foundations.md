@@ -141,7 +141,7 @@ Stage 2:  [E51] [E52] [E53]          <- parallel (after E50)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **51A** | 51.1--51.5 | Audit logging in ProjectService, CustomerService, CustomerProjectService, ProjectMemberService + integration tests | |
+| **51A** | 51.1--51.5 | Audit logging in ProjectService, CustomerService, CustomerProjectService, ProjectMemberService + integration tests | **Done** (PR #102) |
 | **51B** | 51.6--51.10 | Audit logging in TaskService, TimeEntryService, DocumentService, MemberSyncService + integration tests | |
 
 ### Tasks

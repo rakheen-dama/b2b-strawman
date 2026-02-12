@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.audit;
 
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -27,4 +28,12 @@ public interface AuditService {
    * @return a page of matching audit events ordered by occurredAt DESC
    */
   Page<AuditEvent> findEvents(AuditEventFilter filter, Pageable pageable);
+
+  /**
+   * Counts audit events grouped by event type for the current tenant. Uses Hibernate
+   * {@code @Filter} for tenant isolation.
+   *
+   * @return list of event type counts ordered by count descending
+   */
+  List<AuditEventRepository.EventTypeCount> countEventsByType();
 }

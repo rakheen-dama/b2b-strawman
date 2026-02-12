@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.time.Instant;
@@ -135,7 +136,7 @@ public class CommentController {
 
   public record CreateCommentRequest(
       @NotBlank(message = "entityType is required") String entityType,
-      UUID entityId,
+      @NotNull(message = "entityId is required") UUID entityId,
       @NotBlank(message = "body is required")
           @Size(max = 10000, message = "body must be at most 10000 characters")
           String body,

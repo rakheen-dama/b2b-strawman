@@ -152,6 +152,12 @@ public class CommentService {
           "Cannot update comment", "You do not have permission to update comment " + commentId);
     }
 
+    // Validate visibility value if provided
+    if (visibility != null && !"INTERNAL".equals(visibility) && !"EXTERNAL".equals(visibility)) {
+      throw new InvalidStateException(
+          "Invalid visibility", "visibility must be INTERNAL or EXTERNAL");
+    }
+
     // Visibility changes require canEdit (lead/admin/owner) for own comments,
     // or admin/owner for others' comments (already checked above)
     String oldVisibility = comment.getVisibility();
@@ -233,6 +239,8 @@ public class CommentService {
 
   @Transactional
   public void deleteComment(UUID projectId, UUID commentId, UUID memberId, String orgRole) {
+    projectAccessService.requireViewAccess(projectId, memberId, orgRole);
+
     var comment =
         commentRepository
             .findOneById(commentId)
@@ -299,7 +307,7 @@ public class CommentService {
       UUID memberId,
       String orgRole) {
     projectAccessService.requireViewAccess(projectId, memberId, orgRole);
-    return commentRepository.findByEntityTypeAndEntityId(entityType, entityId, pageable);
+    return commentRepository.findByTargetAndProject(entityType, entityId, projectId, pageable);
   }
 
   private void validateEntityBelongsToProject(String entityType, UUID entityId, UUID projectId) {
@@ -323,6 +331,6 @@ public class CommentService {
   }
 
   private String resolveActorName(UUID memberId) {
-    return memberRepository.findById(memberId).map(m -> m.getName()).orElse("Unknown");
+    return memberRepository.findOneById(memberId).map(m -> m.getName()).orElse("Unknown");
   }
 }

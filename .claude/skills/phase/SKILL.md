@@ -21,8 +21,8 @@ Phase number (e.g., `/phase 4`). Optionally append a starting slice: `/phase 4 f
 
 ## Step 0 — Build the Execution Plan
 
-1. Read the **TASKS.md overview table** (first ~55 lines only) to find the phase.
-2. If the phase links to an external file (e.g., `tasks/phase4-customers-tasks-portal.md`), read that file's **Epic Overview table and dependency graph** (NOT the full task details — the subagent reads those).
+1. Find the phase in TASKS.md using `Grep(pattern="^\| \*\*Phase {N}", path="TASKS.md", output_mode="content", -A=12)`. This returns ONLY the phase header row and the epic rows beneath it. **NEVER** `Read("TASKS.md")` — it is 2000+ lines / 196KB and will bloat your context and cause freezing.
+2. The phase header row contains a `See [tasks/phase{N}-*.md]` link. Read ONLY that file's **Epic Overview table and dependency graph** — use `Read(file, limit=50)`. The subagent reads the full task details, NOT you.
 3. Build an ordered list of slices, respecting dependencies and skip any marked **Done**.
 4. Present the execution plan to the user and wait for approval.
 
@@ -30,7 +30,17 @@ Phase number (e.g., `/phase 4`). Optionally append a starting slice: `/phase 4 f
 
 For each slice in order:
 
-### 1a. Dispatch Implementation Agent
+### 1a. Clean Up Stale State (if any)
+
+Before dispatching, check for leftover worktrees/branches from a previous failed attempt:
+
+```bash
+# Check if worktree or branch already exists
+git worktree list | grep "worktree-epic-{SLICE}" && git worktree remove ../worktree-epic-{SLICE} --force
+git branch -D epic-{SLICE}/{BRANCH_NAME} 2>/dev/null || true
+```
+
+### 1b. Dispatch Implementation Agent
 
 Launch a `general-purpose` background agent with this prompt template:
 
@@ -66,11 +76,11 @@ gh pr create --title "Epic {SLICE}: {TITLE}" --body "..."
 Do NOT stop to ask questions. Read the task file and codebase patterns to resolve ambiguity.
 ```
 
-### 1b. Wait for Completion
+### 1c. Wait for Completion
 
 Wait for the background agent notification. Check the result summary.
 
-### 1c. Code Review
+### 1d. Code Review
 
 Launch a `general-purpose` agent (NOT `code-reviewer` — it lacks Bash access):
 
@@ -82,11 +92,11 @@ Check for: bugs, security issues, access control bypasses, tenant isolation leak
 convention violations. Report ONLY high-confidence issues.
 ```
 
-### 1d. Fix Review Issues (if any)
+### 1e. Fix Review Issues (if any)
 
 If the review finds issues, dispatch another `general-purpose` agent to fix them in the worktree, re-verify, commit, and push.
 
-### 1e. Merge
+### 1f. Merge
 
 After review passes, merge using this exact sequence:
 
@@ -106,7 +116,7 @@ Then update task status:
 - In `TASKS.md` overview row — update status
 - Commit and push status update from main repo
 
-### 1f. Advance
+### 1g. Advance
 
 Move to the next slice. Repeat from 1a.
 
@@ -130,7 +140,8 @@ Move to the next slice. Repeat from 1a.
 
 ## Anti-Patterns
 
-- **Do NOT** read full task files or diffs in your own context — delegate to agents
+- **Do NOT** call `Read("TASKS.md")` — the file is 2000+ lines (196KB). Use `Grep` to find the phase rows only.
+- **Do NOT** read full phase task files in your own context — use `limit=50` for overview, delegate full reads to subagents
 - **Do NOT** implement multiple slices in parallel — one at a time, verify each
 - **Do NOT** write code yourself — you are the orchestrator
 - **Do NOT** skip code review — every PR gets reviewed before merge

@@ -63,6 +63,12 @@
 | 51 | Domain Event Integration — Services | Backend | 50 | L | 51A, 51B | |
 | 52 | Security Event Integration | Backend | 50 | S | 52A | |
 | 53 | Audit Query API | Backend | 50 | M | 53A, 53B | |
+| **Phase 7 — Customer Portal Backend Prototype** | | | | | | See [tasks/phase7-customer-portal-backend.md](tasks/phase7-customer-portal-backend.md) |
+| 54 | PortalContact & Persistent Magic Links | Backend | -- | M | 54A, 54B | |
+| 55 | Portal Read-Model Schema & DataSource | Backend | 54 | M | 55A, 55B | |
+| 56 | Domain Events & Event Handlers | Backend | 55 | L | 56A, 56B, 56C | |
+| 57 | Portal Comments, Summary & Profile APIs | Backend | 56 | M | 57A, 57B | |
+| 58 | Thymeleaf Dev Harness | Backend | 54, 57 | S | 58A | |
 
 ---
 

@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.timeentry;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
+import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -7,7 +9,10 @@ import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,14 +27,17 @@ public class TimeEntryService {
   private final TimeEntryRepository timeEntryRepository;
   private final TaskRepository taskRepository;
   private final ProjectAccessService projectAccessService;
+  private final AuditService auditService;
 
   public TimeEntryService(
       TimeEntryRepository timeEntryRepository,
       TaskRepository taskRepository,
-      ProjectAccessService projectAccessService) {
+      ProjectAccessService projectAccessService,
+      AuditService auditService) {
     this.timeEntryRepository = timeEntryRepository;
     this.taskRepository = taskRepository;
     this.projectAccessService = projectAccessService;
+    this.auditService = auditService;
   }
 
   @Transactional
@@ -62,6 +70,19 @@ public class TimeEntryService {
         new TimeEntry(taskId, memberId, date, durationMinutes, billable, rateCents, description);
     entry = timeEntryRepository.save(entry);
     log.info("Created time entry {} for task {} by member {}", entry.getId(), taskId, memberId);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("time_entry.created")
+            .entityType("time_entry")
+            .entityId(entry.getId())
+            .details(
+                Map.of(
+                    "task_id", taskId.toString(),
+                    "duration_minutes", durationMinutes,
+                    "billable", billable))
+            .build());
+
     return entry;
   }
 
@@ -103,6 +124,13 @@ public class TimeEntryService {
       throw new InvalidStateException("Invalid rate", "Rate cents must be non-negative");
     }
 
+    // Capture old values before mutation
+    LocalDate oldDate = entry.getDate();
+    int oldDurationMinutes = entry.getDurationMinutes();
+    boolean oldBillable = entry.isBillable();
+    Integer oldRateCents = entry.getRateCents();
+    String oldDescription = entry.getDescription();
+
     if (date != null) {
       entry.setDate(date);
     }
@@ -122,6 +150,37 @@ public class TimeEntryService {
 
     entry = timeEntryRepository.save(entry);
     log.info("Updated time entry {} by member {}", timeEntryId, memberId);
+
+    // Build delta map -- only include fields that were provided AND actually changed
+    var details = new LinkedHashMap<String, Object>();
+    if (date != null && !Objects.equals(oldDate, date)) {
+      details.put(
+          "date", Map.of("from", oldDate != null ? oldDate.toString() : "", "to", date.toString()));
+    }
+    if (durationMinutes != null && oldDurationMinutes != durationMinutes) {
+      details.put("duration_minutes", Map.of("from", oldDurationMinutes, "to", durationMinutes));
+    }
+    if (billable != null && oldBillable != billable) {
+      details.put("billable", Map.of("from", oldBillable, "to", billable));
+    }
+    if (rateCents != null && !Objects.equals(oldRateCents, rateCents)) {
+      details.put(
+          "rate_cents", Map.of("from", oldRateCents != null ? oldRateCents : 0, "to", rateCents));
+    }
+    if (description != null && !Objects.equals(oldDescription, description)) {
+      details.put(
+          "description",
+          Map.of("from", oldDescription != null ? oldDescription : "", "to", description));
+    }
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("time_entry.updated")
+            .entityType("time_entry")
+            .entityId(entry.getId())
+            .details(details.isEmpty() ? null : details)
+            .build());
+
     return entry;
   }
 
@@ -136,6 +195,14 @@ public class TimeEntryService {
 
     timeEntryRepository.delete(entry);
     log.info("Deleted time entry {} by member {}", timeEntryId, memberId);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("time_entry.deleted")
+            .entityType("time_entry")
+            .entityId(entry.getId())
+            .details(Map.of("task_id", entry.getTaskId().toString()))
+            .build());
   }
 
   // --- Project time summary aggregation methods (Epic 46A) ---

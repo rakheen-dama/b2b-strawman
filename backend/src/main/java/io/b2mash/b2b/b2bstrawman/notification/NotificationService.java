@@ -12,7 +12,11 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -101,6 +105,68 @@ public class NotificationService {
             .orElseThrow(() -> new ResourceNotFoundException("Notification", notificationId));
     notificationRepository.delete(notification);
   }
+
+  // --- Notification types ---
+
+  public static final List<String> NOTIFICATION_TYPES =
+      List.of(
+          "TASK_ASSIGNED",
+          "TASK_CLAIMED",
+          "TASK_UPDATED",
+          "COMMENT_ADDED",
+          "DOCUMENT_SHARED",
+          "MEMBER_INVITED");
+
+  // --- Preference methods ---
+
+  /** Returns preferences for all notification types, merging stored rows with defaults. */
+  @Transactional(readOnly = true)
+  public List<PreferenceView> getPreferences(UUID memberId) {
+    Map<String, NotificationPreference> stored =
+        notificationPreferenceRepository.findByMemberId(memberId).stream()
+            .collect(
+                Collectors.toMap(NotificationPreference::getNotificationType, Function.identity()));
+
+    return NOTIFICATION_TYPES.stream()
+        .map(
+            type -> {
+              var pref = stored.get(type);
+              if (pref != null) {
+                return new PreferenceView(type, pref.isInAppEnabled(), pref.isEmailEnabled());
+              }
+              // Default: inAppEnabled=true, emailEnabled=false
+              return new PreferenceView(type, true, false);
+            })
+        .toList();
+  }
+
+  /** Upserts preferences for the given types and returns the full merged preference list. */
+  @Transactional
+  public List<PreferenceView> updatePreferences(UUID memberId, List<PreferenceUpdate> updates) {
+    for (var update : updates) {
+      var existing =
+          notificationPreferenceRepository.findByMemberIdAndNotificationType(
+              memberId, update.notificationType());
+      if (existing.isPresent()) {
+        var pref = existing.get();
+        pref.setInAppEnabled(update.inAppEnabled());
+        pref.setEmailEnabled(update.emailEnabled());
+      } else {
+        notificationPreferenceRepository.save(
+            new NotificationPreference(
+                memberId, update.notificationType(), update.inAppEnabled(), update.emailEnabled()));
+      }
+    }
+    return getPreferences(memberId);
+  }
+
+  /** Read-only view of a notification preference. */
+  public record PreferenceView(
+      String notificationType, boolean inAppEnabled, boolean emailEnabled) {}
+
+  /** Input record for updating a single preference. */
+  public record PreferenceUpdate(
+      String notificationType, boolean inAppEnabled, boolean emailEnabled) {}
 
   // --- Fan-out handler methods (called by NotificationEventHandler) ---
 

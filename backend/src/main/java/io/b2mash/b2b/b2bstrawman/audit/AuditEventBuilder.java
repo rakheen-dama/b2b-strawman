@@ -122,6 +122,13 @@ public final class AuditEventBuilder {
       resolvedSource = RequestContextHolder.getRequestAttributes() != null ? "API" : "INTERNAL";
     }
 
+    if (resolvedActorType == null || resolvedSource == null) {
+      throw new IllegalStateException(
+          "AuditEventBuilder failed to resolve required fields: "
+              + (resolvedActorType == null ? "actorType " : "")
+              + (resolvedSource == null ? "source" : ""));
+    }
+
     String ipAddress = null;
     String userAgent = null;
     if (RequestContextHolder.getRequestAttributes()

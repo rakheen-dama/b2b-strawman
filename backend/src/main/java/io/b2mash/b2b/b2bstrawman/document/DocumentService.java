@@ -241,6 +241,7 @@ public class DocumentService {
       if (document.isProjectScoped() && document.getProjectId() != null) {
         String actorName = resolveActorName(memberId);
         String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+        String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
         eventPublisher.publishEvent(
             new DocumentUploadedEvent(
                 "document.uploaded",
@@ -250,6 +251,7 @@ public class DocumentService {
                 memberId,
                 actorName,
                 tenantId,
+                orgId,
                 Instant.now(),
                 Map.of("file_name", document.getFileName()),
                 document.getFileName()));

@@ -78,6 +78,7 @@ public class ProjectMemberService {
 
     String actorName = resolveActorName(addedBy);
     String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
     String projectName =
         projectRepository.findOneById(projectId).map(p -> p.getName()).orElse("Unknown Project");
     eventPublisher.publishEvent(
@@ -89,6 +90,7 @@ public class ProjectMemberService {
             addedBy,
             actorName,
             tenantId,
+            orgId,
             Instant.now(),
             Map.of("member_id", memberId.toString(), "role", Roles.PROJECT_MEMBER),
             memberId,

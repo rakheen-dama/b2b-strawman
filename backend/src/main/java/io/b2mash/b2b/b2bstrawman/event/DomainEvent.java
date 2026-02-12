@@ -38,6 +38,9 @@ public sealed interface DomainEvent
 
   String tenantId();
 
+  /** Clerk org ID for shared-schema ORG_ID binding. May be null for dedicated tenants. */
+  String orgId();
+
   Instant occurredAt();
 
   Map<String, Object> details();

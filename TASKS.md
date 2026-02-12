@@ -63,7 +63,7 @@
 | 50 | Audit Infrastructure — Entity, Service & Migration | Backend | — | M | 50A, 50B | **Done** (PR #100, #101) |
 | 51 | Domain Event Integration — Services | Backend | 50 | L | 51A, 51B | **Done** (PR #102, #103) |
 | 52 | Security Event Integration | Backend | 50 | S | 52A | **Done** (PR #104) |
-| 53 | Audit Query API | Backend | 50 | M | 53A, 53B | |
+| 53 | Audit Query API | Backend | 50 | M | 53A, 53B | **Done** (PR #105, #106) |
 | **Phase 7 — Customer Portal Backend Prototype** | | | | | | See [tasks/phase7-customer-portal-backend.md](tasks/phase7-customer-portal-backend.md) |
 | 54 | PortalContact & Persistent Magic Links | Backend | -- | M | 54A, 54B | |
 | 55 | Portal Read-Model Schema & DataSource | Backend | 54 | M | 55A, 55B | |

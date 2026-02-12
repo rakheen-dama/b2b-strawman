@@ -224,7 +224,7 @@ Stage 2:  [E51] [E52] [E53]          <- parallel (after E50)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **52A** | 52.1--52.5 | Security audit events in GlobalExceptionHandler (access denied), SecurityConfig (auth failed), DocumentService (sensitive doc access), integration tests | |
+| **52A** | 52.1--52.5 | Security audit events in GlobalExceptionHandler (access denied), SecurityConfig (auth failed), DocumentService (sensitive doc access), integration tests | **Done** (PR #104) |
 
 ### Tasks
 

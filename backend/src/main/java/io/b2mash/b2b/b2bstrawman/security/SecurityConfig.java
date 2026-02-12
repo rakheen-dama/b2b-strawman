@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.security;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditAuthenticationEntryPoint;
 import io.b2mash.b2b.b2bstrawman.member.MemberFilter;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantFilter;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantLoggingFilter;
@@ -26,6 +27,7 @@ public class SecurityConfig {
   private final MemberFilter memberFilter;
   private final TenantLoggingFilter tenantLoggingFilter;
   private final CustomerAuthFilter customerAuthFilter;
+  private final AuditAuthenticationEntryPoint auditAuthEntryPoint;
 
   public SecurityConfig(
       ClerkJwtAuthenticationConverter jwtAuthConverter,
@@ -33,13 +35,15 @@ public class SecurityConfig {
       TenantFilter tenantFilter,
       MemberFilter memberFilter,
       TenantLoggingFilter tenantLoggingFilter,
-      CustomerAuthFilter customerAuthFilter) {
+      CustomerAuthFilter customerAuthFilter,
+      AuditAuthenticationEntryPoint auditAuthEntryPoint) {
     this.jwtAuthConverter = jwtAuthConverter;
     this.apiKeyAuthFilter = apiKeyAuthFilter;
     this.tenantFilter = tenantFilter;
     this.memberFilter = memberFilter;
     this.tenantLoggingFilter = tenantLoggingFilter;
     this.customerAuthFilter = customerAuthFilter;
+    this.auditAuthEntryPoint = auditAuthEntryPoint;
   }
 
   /**
@@ -88,7 +92,10 @@ public class SecurityConfig {
                     .anyRequest()
                     .denyAll())
         .oauth2ResourceServer(
-            oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthConverter)))
+            oauth2 ->
+                oauth2
+                    .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthConverter))
+                    .authenticationEntryPoint(auditAuthEntryPoint))
         .addFilterBefore(apiKeyAuthFilter, BearerTokenAuthenticationFilter.class)
         .addFilterAfter(tenantFilter, BearerTokenAuthenticationFilter.class)
         .addFilterAfter(memberFilter, TenantFilter.class)

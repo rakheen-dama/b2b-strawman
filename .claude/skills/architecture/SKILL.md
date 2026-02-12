@@ -23,28 +23,33 @@ The requirements file should describe what to design — domain model, flows, AP
 
 ## Step 0 — Gather Context
 
-Read the requirements file provided by the user. Then launch an **Explore** agent to gather codebase context:
+Read the requirements file provided by the user. Then launch a **general-purpose** agent to gather codebase context and write it to a file (keeps the orchestrator's context lean):
 
 ```
-Explore the current state of the codebase. I need:
+Explore the current state of the codebase and write a context inventory to:
+  /Users/rakheendama/Projects/2026/b2b-strawman/.arch-context.md
 
-1. ARCHITECTURE.md — Read the section headers and identify:
+I need:
+
+1. ARCHITECTURE.md — Read ONLY the section headers (grep for "^## ") and identify:
    - The last section number (e.g., "## 10. Phase 4 — ...")
    - The next available section number
 2. ADR numbering — List all ADR files in adr/ and find the highest ADR number
-3. Migration numbering — List all Flyway migrations (global and tenant) and find the highest VN number
-4. Entity inventory — List all @Entity classes in the backend with their key fields
+3. Migration numbering — List Flyway migrations (global and tenant) and find the highest VN number
+4. Entity inventory — List all @Entity classes in the backend (class name + file path only)
 5. Backend package structure — List packages under src/main/java/io/b2mash/b2b/b2bstrawman/
 6. Frontend route structure — List pages under frontend/app/(app)/org/[slug]/
-7. Existing ER patterns — Read one recent entity (e.g., Task or Customer) to capture:
-   - FilterDef/Filter annotations
-   - TenantAware implementation
-   - Constructor patterns
-   - Timestamp handling
-8. Recent ADR format — Read the most recent ADR file to match the format
+7. Existing ER patterns — Read one recent entity (e.g., Task or TimeEntry) and include its
+   FULL source as a reference pattern for the architect
+8. Recent ADR format — Read the most recent ADR file and include it as a format template
+
+Write all findings to the context inventory file. Format as structured markdown.
+Do NOT read ARCHITECTURE.md in full (2400+ lines) — only grep section headers.
 
 Working directory: /Users/rakheendama/Projects/2026/b2b-strawman
 ```
+
+After the agent finishes, read only the summary sections of `.arch-context.md` (numbering, entity list) to present to the user. The full file will be read by the writing agent in Step 1.
 
 Present a summary to the user:
 - Next section number, next ADR number, next migration number
@@ -53,7 +58,13 @@ Present a summary to the user:
 
 ## Step 1 — Produce the Architecture Document
 
-Write the main architecture document. The output file goes to the project root: `{kebab-case-title}.md` (e.g., `phase6-notifications.md`).
+Launch a **general-purpose** agent to write the architecture doc. Pass it:
+- The requirements file path
+- The context inventory: `/Users/rakheendama/Projects/2026/b2b-strawman/.arch-context.md`
+
+The writing agent reads these two files and produces the architecture document. This keeps the orchestrator from holding the full architecture + requirements in its own context.
+
+The output file goes to the project root: `{kebab-case-title}.md` (e.g., `phase6-notifications.md`).
 
 ### Required Sections (adapt headings to content)
 

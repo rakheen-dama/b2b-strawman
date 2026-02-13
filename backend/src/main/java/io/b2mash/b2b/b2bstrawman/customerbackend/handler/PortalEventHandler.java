@@ -119,15 +119,14 @@ public class PortalEventHandler {
           try {
             var customerIds =
                 readModelRepo.findCustomerIdsByProjectId(event.getProjectId(), event.getOrgId());
+            var status = event.getStatus() != null ? event.getStatus() : "ACTIVE";
             for (var customerId : customerIds) {
-              readModelRepo.upsertPortalProject(
+              readModelRepo.updatePortalProjectDetails(
                   event.getProjectId(),
                   customerId,
-                  event.getOrgId(),
                   event.getName(),
-                  event.getStatus(),
-                  event.getDescription(),
-                  null);
+                  status,
+                  event.getDescription());
             }
           } catch (Exception e) {
             log.warn(

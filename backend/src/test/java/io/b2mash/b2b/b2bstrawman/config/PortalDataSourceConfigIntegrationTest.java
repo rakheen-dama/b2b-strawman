@@ -44,7 +44,7 @@ class PortalDataSourceConfigIntegrationTest {
             .sql("SELECT count(*) FROM portal.portal_projects")
             .query((rs, rowNum) -> rs.getLong(1))
             .single();
-    assertThat(count).isNotNull().isGreaterThanOrEqualTo(0L);
+    assertThat(count).isGreaterThanOrEqualTo(0L);
   }
 
   @Test

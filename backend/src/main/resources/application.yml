@@ -3,6 +3,16 @@ spring:
     name: backend
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:local}
+  datasource:
+    portal:
+      jdbc-url: jdbc:postgresql://localhost:5432/app
+      username: postgres
+      password: changeme
+      driver-class-name: org.postgresql.Driver
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 10000
+      connection-init-sql: SET search_path TO portal, public
   jpa:
     open-in-view: false
     properties:

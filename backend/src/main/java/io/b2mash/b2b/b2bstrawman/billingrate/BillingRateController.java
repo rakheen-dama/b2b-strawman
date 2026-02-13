@@ -65,6 +65,8 @@ public class BillingRateController {
     return ResponseEntity.ok(new ListResponse<>(content));
   }
 
+  // ORG_MEMBER included: project leads (who are ORG_MEMBERs) need write access for
+  // project-scoped rate overrides. Fine-grained permission is enforced in the service layer.
   @PostMapping
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<BillingRateResponse> createRate(
@@ -89,6 +91,8 @@ public class BillingRateController {
         .body(BillingRateResponse.from(rate, names));
   }
 
+  // ORG_MEMBER included: project leads (who are ORG_MEMBERs) need write access for
+  // project-scoped rate overrides. Fine-grained permission is enforced in the service layer.
   @PutMapping("/{id}")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<BillingRateResponse> updateRate(
@@ -110,6 +114,8 @@ public class BillingRateController {
     return ResponseEntity.ok(BillingRateResponse.from(rate, names));
   }
 
+  // ORG_MEMBER included: project leads (who are ORG_MEMBERs) need write access for
+  // project-scoped rate overrides. Fine-grained permission is enforced in the service layer.
   @DeleteMapping("/{id}")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> deleteRate(@PathVariable UUID id) {

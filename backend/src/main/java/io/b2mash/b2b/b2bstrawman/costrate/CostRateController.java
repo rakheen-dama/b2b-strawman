@@ -45,8 +45,9 @@ public class CostRateController {
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ListResponse<CostRateResponse>> listCostRates(
       @RequestParam(required = false) UUID memberId) {
+    String orgRole = RequestScopes.getOrgRole();
 
-    var rates = costRateService.listCostRates(memberId);
+    var rates = costRateService.listCostRates(memberId, orgRole);
     var memberNames = resolveMemberNames(rates);
     var content = rates.stream().map(r -> CostRateResponse.from(r, memberNames)).toList();
     return ResponseEntity.ok(new ListResponse<>(content));

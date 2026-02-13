@@ -234,6 +234,25 @@ class CostRateControllerTest {
 
   @Test
   @Order(8)
+  void memberCannotUpdateCostRate() throws Exception {
+    mockMvc
+        .perform(
+            put("/api/cost-rates/" + createdCostRateId)
+                .with(memberJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "currency": "CAD",
+                      "hourlyCost": 99.00,
+                      "effectiveFrom": "2025-01-01"
+                    }
+                    """))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  @Order(9)
   void memberCannotDeleteCostRate() throws Exception {
     mockMvc
         .perform(delete("/api/cost-rates/" + createdCostRateId).with(memberJwt()))
@@ -243,7 +262,7 @@ class CostRateControllerTest {
   // --- Overlap Test ---
 
   @Test
-  @Order(9)
+  @Order(10)
   void postOverlappingCostRateReturns409() throws Exception {
     mockMvc
         .perform(
@@ -266,7 +285,7 @@ class CostRateControllerTest {
   // --- Tenant Isolation Tests ---
 
   @Test
-  @Order(10)
+  @Order(11)
   void costRateInTenantAIsInvisibleInTenantB() throws Exception {
     mockMvc
         .perform(get("/api/cost-rates").with(ownerJwtTenantB()))

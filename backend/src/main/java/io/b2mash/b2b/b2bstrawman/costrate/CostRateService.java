@@ -199,11 +199,13 @@ public class CostRateService {
    * Lists cost rates, optionally filtered by member.
    *
    * @param memberId optional member filter; if null, returns all cost rates
+   * @param orgRole the org role of the actor (defense-in-depth check when listing all)
    * @return list of cost rates ordered by effectiveFrom DESC
    */
   @Transactional(readOnly = true)
-  public List<CostRate> listCostRates(UUID memberId) {
+  public List<CostRate> listCostRates(UUID memberId, String orgRole) {
     if (memberId == null) {
+      requireAdminOrOwner(orgRole);
       return costRateRepository.findAllOrderByEffectiveFromDesc();
     }
     return costRateRepository.findByMemberId(memberId);

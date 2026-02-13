@@ -32,8 +32,8 @@ public class OrgSettingsService {
    */
   @Transactional(readOnly = true)
   public OrgSettingsResponse getSettings() {
-    return orgSettingsRepository.findAll().stream()
-        .findFirst()
+    return orgSettingsRepository
+        .findForCurrentTenant()
         .map(s -> new OrgSettingsResponse(s.getDefaultCurrency()))
         .orElse(new OrgSettingsResponse(DEFAULT_CURRENCY));
   }
@@ -50,7 +50,7 @@ public class OrgSettingsService {
   public OrgSettingsResponse updateSettings(String defaultCurrency, UUID memberId, String orgRole) {
     requireAdminOrOwner(orgRole);
 
-    var existing = orgSettingsRepository.findAll().stream().findFirst();
+    var existing = orgSettingsRepository.findForCurrentTenant();
 
     OrgSettings settings;
     String oldCurrency;
@@ -85,8 +85,8 @@ public class OrgSettingsService {
    */
   @Transactional(readOnly = true)
   public String getDefaultCurrency() {
-    return orgSettingsRepository.findAll().stream()
-        .findFirst()
+    return orgSettingsRepository
+        .findForCurrentTenant()
         .map(OrgSettings::getDefaultCurrency)
         .orElse(DEFAULT_CURRENCY);
   }

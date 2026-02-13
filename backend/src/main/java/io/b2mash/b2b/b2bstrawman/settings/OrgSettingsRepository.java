@@ -17,4 +17,11 @@ public interface OrgSettingsRepository extends JpaRepository<OrgSettings, UUID> 
 
   /** Find the org settings row for the current tenant (unique per tenant). */
   Optional<OrgSettings> findByTenantId(String tenantId);
+
+  /**
+   * Find the org settings for the current tenant using only the Hibernate @Filter for isolation.
+   * More efficient than findAll() when we know there's at most one row per tenant.
+   */
+  @Query("SELECT s FROM OrgSettings s")
+  Optional<OrgSettings> findForCurrentTenant();
 }

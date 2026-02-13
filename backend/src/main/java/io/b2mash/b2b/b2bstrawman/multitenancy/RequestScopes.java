@@ -27,6 +27,9 @@ public final class RequestScopes {
   /** Authenticated customer's UUID. Bound by CustomerAuthFilter for portal requests. */
   public static final ScopedValue<UUID> CUSTOMER_ID = ScopedValue.newInstance();
 
+  /** Authenticated portal contact's UUID. Bound by CustomerAuthFilter for portal requests. */
+  public static final ScopedValue<UUID> PORTAL_CONTACT_ID = ScopedValue.newInstance();
+
   public static final String DEFAULT_TENANT = "public";
 
   /** Returns the current member's UUID. Throws if not bound by filter chain. */
@@ -56,6 +59,15 @@ public final class RequestScopes {
       throw new IllegalStateException("Customer context not available — CUSTOMER_ID not bound");
     }
     return CUSTOMER_ID.get();
+  }
+
+  /** Returns the authenticated portal contact's UUID. Throws if not bound by CustomerAuthFilter. */
+  public static UUID requirePortalContactId() {
+    if (!PORTAL_CONTACT_ID.isBound()) {
+      throw new IllegalStateException(
+          "Portal contact context not available — PORTAL_CONTACT_ID not bound");
+    }
+    return PORTAL_CONTACT_ID.get();
   }
 
   private RequestScopes() {}

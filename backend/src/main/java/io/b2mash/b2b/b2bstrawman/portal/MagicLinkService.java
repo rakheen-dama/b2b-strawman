@@ -1,129 +1,120 @@
 package io.b2mash.b2b.b2bstrawman.portal;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.JWSSigner;
-import com.nimbusds.jose.JWSVerifier;
-import com.nimbusds.jose.crypto.MACSigner;
-import com.nimbusds.jose.crypto.MACVerifier;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.SignedJWT;
 import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
-import java.time.Duration;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.time.Instant;
-import java.util.Date;
+import java.time.temporal.ChronoUnit;
+import java.util.Base64;
+import java.util.HexFormat;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Generates and verifies time-limited magic link tokens for customer portal access. Tokens are
- * stateless JWTs signed with HMAC-SHA256, valid for 15 minutes. Single-use enforcement via Caffeine
- * cache of consumed token IDs.
+ * cryptographically random, stored as SHA-256 hashes in the database. Single-use enforcement via
+ * database state (used_at column). Rate limited to 3 tokens per contact per 5 minutes.
  */
 @Service
 public class MagicLinkService {
 
   private static final Logger log = LoggerFactory.getLogger(MagicLinkService.class);
-  private static final Duration TOKEN_TTL = Duration.ofMinutes(15);
+  private static final int TOKEN_BYTES = 32;
+  private static final long TOKEN_TTL_MINUTES = 15;
+  private static final int MAX_TOKENS_PER_5_MINUTES = 3;
 
-  private final byte[] secret;
+  private final MagicLinkTokenRepository tokenRepository;
+  private final SecureRandom secureRandom;
 
-  /** Cache of consumed magic link token JTIs to enforce single-use. */
-  private final Cache<String, Boolean> consumedTokens =
-      Caffeine.newBuilder().maximumSize(100_000).expireAfterWrite(Duration.ofMinutes(30)).build();
-
-  public MagicLinkService(@Value("${portal.magic-link.secret}") String magicLinkSecret) {
-    this.secret = magicLinkSecret.getBytes(StandardCharsets.UTF_8);
-  }
-
-  /** Identity extracted from a verified magic link token. */
-  public record CustomerIdentity(UUID customerId, String clerkOrgId) {}
-
-  /**
-   * Generates a signed magic link token embedding customer ID and org ID.
-   *
-   * @param customerId the customer UUID
-   * @param clerkOrgId the Clerk org ID for tenant resolution
-   * @return signed JWT string (15-minute TTL)
-   */
-  public String generateToken(UUID customerId, String clerkOrgId) {
+  public MagicLinkService(MagicLinkTokenRepository tokenRepository) {
+    this.tokenRepository = tokenRepository;
     try {
-      Instant now = Instant.now();
-      var claims =
-          new JWTClaimsSet.Builder()
-              .jwtID(UUID.randomUUID().toString())
-              .subject(customerId.toString())
-              .claim("org_id", clerkOrgId)
-              .claim("type", "magic_link")
-              .issueTime(Date.from(now))
-              .expirationTime(Date.from(now.plus(TOKEN_TTL)))
-              .build();
-
-      var signedJwt = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claims);
-      JWSSigner signer = new MACSigner(secret);
-      signedJwt.sign(signer);
-
-      log.debug("Generated magic link token for customer {} in org {}", customerId, clerkOrgId);
-      return signedJwt.serialize();
-    } catch (JOSEException e) {
-      throw new IllegalStateException("Failed to sign magic link token", e);
+      this.secureRandom = SecureRandom.getInstanceStrong();
+    } catch (NoSuchAlgorithmException e) {
+      throw new IllegalStateException("No strong SecureRandom available", e);
     }
   }
 
   /**
-   * Verifies a magic link token: validates signature, checks expiry, enforces single-use.
+   * Generates a cryptographically random magic link token for the given portal contact.
    *
-   * @param token the JWT string from the magic link
-   * @return customer identity if valid
+   * @param portalContactId the portal contact UUID
+   * @param createdIp the IP address of the requester (nullable)
+   * @return the raw token string (URL-safe Base64) to embed in the magic link
+   * @throws PortalAuthException if rate limit is exceeded (3 tokens per 5 minutes)
+   */
+  @Transactional
+  public String generateToken(UUID portalContactId, String createdIp) {
+    // Rate-limit check: max 3 tokens per contact per 5 minutes
+    long recentCount =
+        tokenRepository.countByPortalContactIdAndCreatedAtAfter(
+            portalContactId, Instant.now().minus(5, ChronoUnit.MINUTES));
+    if (recentCount >= MAX_TOKENS_PER_5_MINUTES) {
+      throw new PortalAuthException("Too many login attempts");
+    }
+
+    // Generate 32 bytes of cryptographic randomness
+    byte[] tokenBytes = new byte[TOKEN_BYTES];
+    secureRandom.nextBytes(tokenBytes);
+    String rawToken = Base64.getUrlEncoder().withoutPadding().encodeToString(tokenBytes);
+
+    // SHA-256 hash the raw token for storage
+    String tokenHash = hashToken(rawToken);
+
+    // Persist the token hash
+    Instant expiresAt = Instant.now().plus(TOKEN_TTL_MINUTES, ChronoUnit.MINUTES);
+    var magicLinkToken = new MagicLinkToken(portalContactId, tokenHash, expiresAt, createdIp);
+    tokenRepository.save(magicLinkToken);
+
+    log.debug("Generated magic link token for portal contact {}", portalContactId);
+    return rawToken;
+  }
+
+  /**
+   * Verifies and consumes a magic link token. The token is looked up by its SHA-256 hash, validated
+   * for expiry and single-use, then marked as consumed.
+   *
+   * @param rawToken the raw token string from the magic link
+   * @return the portal contact UUID associated with the token
    * @throws PortalAuthException if the token is invalid, expired, or already consumed
    */
-  public CustomerIdentity verifyToken(String token) {
+  @Transactional
+  public UUID verifyAndConsumeToken(String rawToken) {
+    String tokenHash = hashToken(rawToken);
+
+    MagicLinkToken token =
+        tokenRepository
+            .findByTokenHash(tokenHash)
+            .orElseThrow(() -> new PortalAuthException("Invalid magic link token"));
+
+    if (token.isExpired()) {
+      throw new PortalAuthException("Magic link has expired");
+    }
+
+    if (token.isUsed()) {
+      throw new PortalAuthException("Magic link has already been used");
+    }
+
+    token.markUsed();
+    tokenRepository.save(token);
+
+    log.debug(
+        "Verified and consumed magic link token for portal contact {}", token.getPortalContactId());
+    return token.getPortalContactId();
+  }
+
+  /** Hashes a raw token string using SHA-256, returning the hex-encoded hash. */
+  private String hashToken(String rawToken) {
     try {
-      var signedJwt = SignedJWT.parse(token);
-      JWSVerifier verifier = new MACVerifier(secret);
-
-      if (!signedJwt.verify(verifier)) {
-        throw new PortalAuthException("Invalid magic link token signature");
-      }
-
-      var claims = signedJwt.getJWTClaimsSet();
-
-      // Check expiry
-      if (claims.getExpirationTime() == null
-          || claims.getExpirationTime().toInstant().isBefore(Instant.now())) {
-        throw new PortalAuthException("Magic link has expired");
-      }
-
-      // Check type
-      String type = claims.getStringClaim("type");
-      if (!"magic_link".equals(type)) {
-        throw new PortalAuthException("Invalid token type");
-      }
-
-      // Enforce single-use via JTI
-      String jti = claims.getJWTID();
-      if (jti == null) {
-        throw new PortalAuthException("Token missing JTI");
-      }
-      Boolean prev = consumedTokens.asMap().putIfAbsent(jti, Boolean.TRUE);
-      if (prev != null) {
-        throw new PortalAuthException("Magic link has already been used");
-      }
-
-      UUID customerId = UUID.fromString(claims.getSubject());
-      String orgId = claims.getStringClaim("org_id");
-
-      log.debug("Verified magic link token for customer {} in org {}", customerId, orgId);
-      return new CustomerIdentity(customerId, orgId);
-    } catch (ParseException | JOSEException e) {
-      throw new PortalAuthException("Invalid magic link token: " + e.getMessage());
+      MessageDigest digest = MessageDigest.getInstance("SHA-256");
+      byte[] hashBytes = digest.digest(rawToken.getBytes(StandardCharsets.UTF_8));
+      return HexFormat.of().formatHex(hashBytes);
+    } catch (NoSuchAlgorithmException e) {
+      throw new IllegalStateException("SHA-256 not available", e);
     }
   }
 }

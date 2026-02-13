@@ -24,4 +24,8 @@ public interface PortalContactRepository extends JpaRepository<PortalContact, UU
   List<PortalContact> findByCustomerId(@Param("customerId") UUID customerId);
 
   boolean existsByEmailAndCustomerId(String email, UUID customerId);
+
+  @Query("SELECT pc FROM PortalContact pc WHERE pc.customerId = :customerId AND pc.orgId = :orgId")
+  Optional<PortalContact> findByCustomerIdAndOrgId(
+      @Param("customerId") UUID customerId, @Param("orgId") String orgId);
 }

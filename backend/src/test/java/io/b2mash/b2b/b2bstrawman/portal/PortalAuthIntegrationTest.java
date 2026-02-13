@@ -46,9 +46,16 @@ class PortalAuthIntegrationTest {
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
   @Autowired private CustomerService customerService;
+  @Autowired private PortalContactService portalContactService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
 
   private UUID customerId;
+  private String tenantSchema;
+  // Separate contacts per test to avoid rate-limit interference
+  private UUID contactIdGenVerify;
+  private UUID contactIdInvalid;
+  private UUID contactIdReuse;
+  private UUID contactIdTamper;
 
   @BeforeAll
   void setup() throws Exception {
@@ -81,9 +88,9 @@ class PortalAuthIntegrationTest {
     UUID memberId = UUID.fromString(memberIdStr);
 
     // Resolve tenant schema
-    String tenantSchema = orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).get().getSchemaName();
+    tenantSchema = orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).get().getSchemaName();
 
-    // Create a customer in the tenant
+    // Create a customer and portal contacts in the tenant
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
         .run(
@@ -92,6 +99,46 @@ class PortalAuthIntegrationTest {
                   customerService.createCustomer(
                       "Portal Customer", "portal-customer@test.com", null, null, null, memberId);
               customerId = customer.getId();
+
+              contactIdGenVerify =
+                  portalContactService
+                      .createContact(
+                          ORG_ID,
+                          customerId,
+                          "portal-genverify@test.com",
+                          "Gen Verify Contact",
+                          PortalContact.ContactRole.PRIMARY)
+                      .getId();
+
+              contactIdInvalid =
+                  portalContactService
+                      .createContact(
+                          ORG_ID,
+                          customerId,
+                          "portal-invalid@test.com",
+                          "Invalid Contact",
+                          PortalContact.ContactRole.GENERAL)
+                      .getId();
+
+              contactIdReuse =
+                  portalContactService
+                      .createContact(
+                          ORG_ID,
+                          customerId,
+                          "portal-reuse@test.com",
+                          "Reuse Contact",
+                          PortalContact.ContactRole.GENERAL)
+                      .getId();
+
+              contactIdTamper =
+                  portalContactService
+                      .createContact(
+                          ORG_ID,
+                          customerId,
+                          "portal-tamper@test.com",
+                          "Tamper Contact",
+                          PortalContact.ContactRole.GENERAL)
+                      .getId();
             });
   }
 
@@ -100,42 +147,61 @@ class PortalAuthIntegrationTest {
 
     @Test
     void shouldGenerateAndVerifyMagicLinkToken() {
-      String token = magicLinkService.generateToken(customerId, ORG_ID);
-      assertThat(token).isNotBlank();
+      String rawToken =
+          ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+              .call(() -> magicLinkService.generateToken(contactIdGenVerify, "127.0.0.1"));
 
-      var identity = magicLinkService.verifyToken(token);
-      assertThat(identity.customerId()).isEqualTo(customerId);
-      assertThat(identity.clerkOrgId()).isEqualTo(ORG_ID);
+      UUID resultContactId =
+          ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+              .call(() -> magicLinkService.verifyAndConsumeToken(rawToken));
+
+      assertThat(resultContactId).isEqualTo(contactIdGenVerify);
     }
 
     @Test
     void shouldRejectInvalidMagicLinkToken() {
-      assertThatThrownBy(() -> magicLinkService.verifyToken("invalid.token.here"))
-          .isInstanceOf(PortalAuthException.class);
+      ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+          .run(
+              () ->
+                  assertThatThrownBy(() -> magicLinkService.verifyAndConsumeToken("invalid-token"))
+                      .isInstanceOf(PortalAuthException.class));
     }
 
     @Test
     void shouldRejectReusedMagicLinkToken() {
-      String token = magicLinkService.generateToken(customerId, ORG_ID);
+      String rawToken =
+          ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+              .call(() -> magicLinkService.generateToken(contactIdReuse, "127.0.0.1"));
 
       // First use succeeds
-      var identity = magicLinkService.verifyToken(token);
-      assertThat(identity.customerId()).isEqualTo(customerId);
+      UUID resultContactId =
+          ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+              .call(() -> magicLinkService.verifyAndConsumeToken(rawToken));
+      assertThat(resultContactId).isEqualTo(contactIdReuse);
 
       // Second use fails (single-use enforcement)
-      assertThatThrownBy(() -> magicLinkService.verifyToken(token))
-          .isInstanceOf(PortalAuthException.class)
-          .hasMessageContaining("already been used");
+      ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+          .run(
+              () ->
+                  assertThatThrownBy(() -> magicLinkService.verifyAndConsumeToken(rawToken))
+                      .isInstanceOf(PortalAuthException.class)
+                      .hasMessageContaining("already been used"));
     }
 
     @Test
     void shouldRejectTamperedToken() {
-      String token = magicLinkService.generateToken(customerId, ORG_ID);
-      // Tamper with the token by modifying the last few characters
-      String tampered = token.substring(0, token.length() - 5) + "XXXXX";
+      String rawToken =
+          ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+              .call(() -> magicLinkService.generateToken(contactIdTamper, "127.0.0.1"));
 
-      assertThatThrownBy(() -> magicLinkService.verifyToken(tampered))
-          .isInstanceOf(PortalAuthException.class);
+      // Tamper with the token
+      String tampered = rawToken.substring(0, rawToken.length() - 5) + "XXXXX";
+
+      ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+          .run(
+              () ->
+                  assertThatThrownBy(() -> magicLinkService.verifyAndConsumeToken(tampered))
+                      .isInstanceOf(PortalAuthException.class));
     }
   }
 
@@ -157,17 +223,6 @@ class PortalAuthIntegrationTest {
       assertThatThrownBy(() -> portalJwtService.verifyToken("not.a.valid.jwt"))
           .isInstanceOf(PortalAuthException.class);
     }
-
-    @Test
-    void shouldRejectMagicLinkTokenAsPortalJwt() {
-      // Magic link tokens have type=magic_link, not type=customer.
-      // With different secrets, signature check fails first; with same secrets, type check fails.
-      // Either way, the token must be rejected.
-      String magicToken = magicLinkService.generateToken(customerId, ORG_ID);
-
-      assertThatThrownBy(() -> portalJwtService.verifyToken(magicToken))
-          .isInstanceOf(PortalAuthException.class);
-    }
   }
 
   @Nested
@@ -175,9 +230,6 @@ class PortalAuthIntegrationTest {
 
     @Test
     void portalAuthEndpointsAreAccessibleWithoutToken() throws Exception {
-      // /portal/auth/** should be accessible without authentication.
-      // The controller exists (43B), so a valid-shaped request returns a non-401 status.
-      // Unknown org → 401 from PortalAuthException, but NOT from the auth filter.
       var result =
           mockMvc
               .perform(
@@ -190,16 +242,12 @@ class PortalAuthIntegrationTest {
               .andReturn();
 
       int statusCode = result.getResponse().getStatus();
-      // The request reached the controller (not blocked by auth filter).
-      // PortalAuthException for unknown org returns 401 at the application level,
-      // but the key point is the portal auth filter did NOT intercept it.
-      // Any response proves the filter chain permitted the request.
+      // With anti-enumeration, unknown org returns 200 with generic message.
       assertThat(statusCode).isNotEqualTo(403);
     }
 
     @Test
     void authenticatedPortalEndpointsReject401WithoutToken() throws Exception {
-      // /portal/projects should require portal JWT
       mockMvc.perform(get("/portal/projects")).andExpect(status().isUnauthorized());
     }
 
@@ -214,21 +262,18 @@ class PortalAuthIntegrationTest {
     void authenticatedPortalEndpointsAcceptValidPortalJwt() throws Exception {
       String portalToken = portalJwtService.issueToken(customerId, ORG_ID);
 
-      // Should NOT return 401 — may return 404 since controller not yet created (43B)
       var result =
           mockMvc
               .perform(get("/portal/projects").header("Authorization", "Bearer " + portalToken))
               .andReturn();
 
       int statusCode = result.getResponse().getStatus();
-      // Accept 404 (controller not yet created) or 200, but NOT 401/403
       assertThat(statusCode).isNotEqualTo(401);
       assertThat(statusCode).isNotEqualTo(403);
     }
 
     @Test
     void staffJwtCannotAccessPortalEndpoints() throws Exception {
-      // A Clerk JWT (staff) should not work on /portal/** paths
       mockMvc
           .perform(
               get("/portal/projects")
@@ -244,7 +289,6 @@ class PortalAuthIntegrationTest {
 
     @Test
     void existingStaffApiUnaffectedByPortalChain() throws Exception {
-      // Staff API should still work with Clerk JWT
       mockMvc
           .perform(
               get("/api/customers")
@@ -260,10 +304,6 @@ class PortalAuthIntegrationTest {
 
     @Test
     void portalJwtCannotAccessStaffApi() {
-      // Portal JWT should not work on /api/** paths.
-      // The main chain's Clerk JWT decoder rejects the portal-signed token —
-      // either as 401 or by throwing (in test env the JWKS endpoint is unreachable).
-      // Either outcome confirms portal tokens cannot access staff endpoints.
       String portalToken = portalJwtService.issueToken(customerId, ORG_ID);
 
       try {
@@ -271,10 +311,8 @@ class PortalAuthIntegrationTest {
             mockMvc
                 .perform(get("/api/customers").header("Authorization", "Bearer " + portalToken))
                 .andReturn();
-        // If we get here, the response must be 401
         assertThat(result.getResponse().getStatus()).isEqualTo(401);
       } catch (Exception e) {
-        // JwtDecoder initialization failure in test env = token correctly rejected
         assertThat(e).hasStackTraceContaining("JwtDecoder");
       }
     }

@@ -255,14 +255,19 @@ public class PortalEventHandler {
         event.getOrgId(),
         () -> {
           try {
-            // Look up the portal document before deleting to get projectId for count decrement
+            // Look up the portal document before deleting to get projectId for count decrement.
+            // Must decrement for ALL linked customers, not just the one stored in this row,
+            // since onDocumentCreated increments for every customer linked to the project.
             var portalDoc =
                 readModelRepo.findPortalDocumentById(event.getDocumentId(), event.getOrgId());
             if (portalDoc.isPresent()) {
               var projectId = portalDoc.get().portalProjectId();
-              var customerId = portalDoc.get().customerId();
+              var customerIds =
+                  readModelRepo.findCustomerIdsByProjectId(projectId, event.getOrgId());
               readModelRepo.deletePortalDocument(event.getDocumentId(), event.getOrgId());
-              readModelRepo.decrementDocumentCount(projectId, customerId);
+              for (var customerId : customerIds) {
+                readModelRepo.decrementDocumentCount(projectId, customerId);
+              }
             } else {
               // Document was not in portal (e.g., INTERNAL visibility) -- no-op
               readModelRepo.deletePortalDocument(event.getDocumentId(), event.getOrgId());
@@ -320,6 +325,7 @@ public class PortalEventHandler {
       }
       carrier.run(action);
     } else {
+      log.warn("Event received with null tenantId — running without tenant scope binding");
       action.run();
     }
   }

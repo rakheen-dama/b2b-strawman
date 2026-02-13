@@ -258,17 +258,19 @@ class PortalEventHandlerTest {
   // ── 8. DocumentDeleted -> portal_document removed ──────────────────
 
   @Test
-  void onDocumentDeleted_removesPortalDocumentAndDecrementsCount() {
+  void onDocumentDeleted_removesPortalDocumentAndDecrementsCountForAllLinkedCustomers() {
     var documentId = UUID.randomUUID();
     var projectId = UUID.randomUUID();
-    var customerId = UUID.randomUUID();
+    var customer1 = UUID.randomUUID();
+    var customer2 = UUID.randomUUID();
+    var customer3 = UUID.randomUUID();
     var event = new DocumentDeletedEvent(documentId, ORG_ID, TENANT_ID);
 
     var portalDoc =
         new PortalDocumentView(
             documentId,
             ORG_ID,
-            customerId,
+            customer1,
             projectId,
             "file.pdf",
             "application/pdf",
@@ -279,11 +281,15 @@ class PortalEventHandlerTest {
             Instant.now());
     when(readModelRepo.findPortalDocumentById(documentId, ORG_ID))
         .thenReturn(Optional.of(portalDoc));
+    when(readModelRepo.findCustomerIdsByProjectId(projectId, ORG_ID))
+        .thenReturn(List.of(customer1, customer2, customer3));
 
     handler.onDocumentDeleted(event);
 
     verify(readModelRepo).deletePortalDocument(documentId, ORG_ID);
-    verify(readModelRepo).decrementDocumentCount(projectId, customerId);
+    verify(readModelRepo).decrementDocumentCount(projectId, customer1);
+    verify(readModelRepo).decrementDocumentCount(projectId, customer2);
+    verify(readModelRepo).decrementDocumentCount(projectId, customer3);
   }
 
   @Test

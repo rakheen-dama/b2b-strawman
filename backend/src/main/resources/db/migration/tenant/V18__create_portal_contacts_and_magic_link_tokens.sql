@@ -49,8 +49,8 @@ CREATE TABLE IF NOT EXISTS magic_link_tokens (
     id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     portal_contact_id  UUID NOT NULL REFERENCES portal_contacts(id) ON DELETE CASCADE,
     token_hash         VARCHAR(64) NOT NULL,
-    expires_at         TIMESTAMP NOT NULL,
-    used_at            TIMESTAMP,
+    expires_at         TIMESTAMP WITH TIME ZONE NOT NULL,
+    used_at            TIMESTAMP WITH TIME ZONE,
     created_at         TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     created_ip         VARCHAR(45)
 );

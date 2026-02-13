@@ -80,7 +80,7 @@
 | 57 | Portal Comments, Summary & Profile APIs | Backend | 56 | M | 57A, 57B | **Done** (PR #130, #131) |
 | 58 | Thymeleaf Dev Harness | Backend | 54, 57 | S | 58A | **Done** (PR #132) |
 | **Phase 8 — Rate Cards, Budgets & Profitability** | | | | | | See [tasks/phase8-rate-cards-budgets-profitability.md](tasks/phase8-rate-cards-budgets-profitability.md) |
-| 67 | OrgSettings & Rate Entity Foundation | Backend | -- | L | 67A, 67B, 67C, 67D | 67A **Done** (PR #133), 67B **Done** (PR #134), 67C **Done** (PR #135) |
+| 67 | OrgSettings & Rate Entity Foundation | Backend | -- | L | 67A, 67B, 67C, 67D | **Done** (PRs #133–#136) |
 | 68 | Rate Management Frontend — Settings, Project & Customer Rates | Frontend | 67 | M | 68A, 68B | |
 | 69 | TimeEntry Rate Snapshots & Billable Enrichment | Backend | 67 | M | 69A, 69B | |
 | 70 | TimeEntry Frontend — Billable UX & Rate Preview | Frontend | 69 | S | 70A | |

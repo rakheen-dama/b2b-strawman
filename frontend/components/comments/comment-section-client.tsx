@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { fetchComments } from "@/lib/actions/comments";
 import type { Comment } from "@/lib/actions/comments";
 import { AddCommentForm } from "@/components/comments/add-comment-form";
@@ -24,20 +24,30 @@ export function CommentSectionClient({
   canManageVisibility,
 }: CommentSectionClientProps) {
   const [comments, setComments] = useState<Comment[] | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+
+  const refresh = useCallback(() => setRefreshKey((k) => k + 1), []);
 
   useEffect(() => {
     let cancelled = false;
     fetchComments(projectId, entityType, entityId)
       .then((data) => {
-        if (!cancelled) setComments(data);
+        if (!cancelled) {
+          setComments(data);
+          setError(null);
+        }
       })
       .catch(() => {
-        if (!cancelled) setComments([]);
+        if (!cancelled) {
+          setComments([]);
+          setError("Failed to load comments.");
+        }
       });
     return () => {
       cancelled = true;
     };
-  }, [projectId, entityType, entityId]);
+  }, [projectId, entityType, entityId, refreshKey]);
 
   const isLoading = comments === null;
 
@@ -55,7 +65,9 @@ export function CommentSectionClient({
         Comments
       </h4>
 
-      {comments.length === 0 ? (
+      {error && <p className="text-sm text-red-600">{error}</p>}
+
+      {comments.length === 0 && !error ? (
         <p className="text-sm text-olive-500 dark:text-olive-400">
           No comments yet. Be the first to add one.
         </p>
@@ -69,6 +81,7 @@ export function CommentSectionClient({
               canManageVisibility={canManageVisibility}
               orgSlug={orgSlug}
               projectId={projectId}
+              onCommentChange={refresh}
             />
           ))}
         </div>
@@ -80,6 +93,7 @@ export function CommentSectionClient({
         entityId={entityId}
         orgSlug={orgSlug}
         canManageVisibility={canManageVisibility}
+        onCommentChange={refresh}
       />
     </div>
   );

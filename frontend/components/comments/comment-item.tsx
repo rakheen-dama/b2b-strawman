@@ -26,6 +26,7 @@ interface CommentItemProps {
   canManageVisibility: boolean;
   orgSlug: string;
   projectId: string;
+  onCommentChange?: () => void;
 }
 
 export function CommentItem({
@@ -34,6 +35,7 @@ export function CommentItem({
   canManageVisibility,
   orgSlug,
   projectId,
+  onCommentChange,
 }: CommentItemProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -50,6 +52,7 @@ export function CommentItem({
       const result = await deleteComment(orgSlug, projectId, comment.id);
       if (result.success) {
         setDeleteOpen(false);
+        onCommentChange?.();
       } else {
         setDeleteError(result.error ?? "Failed to delete comment.");
       }
@@ -95,6 +98,7 @@ export function CommentItem({
               orgSlug={orgSlug}
               projectId={projectId}
               canManageVisibility={canManageVisibility}
+              onCommentChange={onCommentChange}
             >
               <Button
                 variant="ghost"

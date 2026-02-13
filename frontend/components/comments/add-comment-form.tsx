@@ -12,6 +12,7 @@ interface AddCommentFormProps {
   entityId: string;
   orgSlug: string;
   canManageVisibility: boolean;
+  onCommentChange?: () => void;
 }
 
 export function AddCommentForm({
@@ -20,6 +21,7 @@ export function AddCommentForm({
   entityId,
   orgSlug,
   canManageVisibility,
+  onCommentChange,
 }: AddCommentFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,6 +53,7 @@ export function AddCommentForm({
       );
       if (result.success) {
         formRef.current?.reset();
+        onCommentChange?.();
       } else {
         setError(result.error ?? "Failed to add comment.");
       }

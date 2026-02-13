@@ -3,11 +3,13 @@ package io.b2mash.b2b.b2bstrawman.billingrate;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
+import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -28,16 +30,22 @@ public class BillingRateService {
 
   private final BillingRateRepository billingRateRepository;
   private final CustomerProjectRepository customerProjectRepository;
+  private final CustomerRepository customerRepository;
+  private final ProjectRepository projectRepository;
   private final ProjectAccessService projectAccessService;
   private final AuditService auditService;
 
   public BillingRateService(
       BillingRateRepository billingRateRepository,
       CustomerProjectRepository customerProjectRepository,
+      CustomerRepository customerRepository,
+      ProjectRepository projectRepository,
       ProjectAccessService projectAccessService,
       AuditService auditService) {
     this.billingRateRepository = billingRateRepository;
     this.customerProjectRepository = customerProjectRepository;
+    this.customerRepository = customerRepository;
+    this.projectRepository = projectRepository;
     this.projectAccessService = projectAccessService;
     this.auditService = auditService;
   }
@@ -128,6 +136,8 @@ public class BillingRateService {
       String orgRole) {
 
     validateScope(projectId, customerId);
+    validateProjectExists(projectId);
+    validateCustomerExists(customerId);
     requirePermission(projectId, actorMemberId, orgRole);
 
     LocalDate overlapEnd = effectiveTo != null ? effectiveTo : FAR_FUTURE;
@@ -312,5 +322,25 @@ public class BillingRateService {
     throw new ForbiddenException(
         "Insufficient permissions",
         "Only admins, owners, or project leads can manage billing rates");
+  }
+
+  /**
+   * Validates that the project exists in the current tenant if projectId is provided. Uses
+   * findOneById which respects Hibernate @Filter for tenant isolation.
+   */
+  private void validateProjectExists(UUID projectId) {
+    if (projectId != null && projectRepository.findOneById(projectId).isEmpty()) {
+      throw new ResourceNotFoundException("Project", projectId);
+    }
+  }
+
+  /**
+   * Validates that the customer exists in the current tenant if customerId is provided. Uses
+   * findOneById which respects Hibernate @Filter for tenant isolation.
+   */
+  private void validateCustomerExists(UUID customerId) {
+    if (customerId != null && customerRepository.findOneById(customerId).isEmpty()) {
+      throw new ResourceNotFoundException("Customer", customerId);
+    }
   }
 }

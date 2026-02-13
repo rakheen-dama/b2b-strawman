@@ -5,6 +5,7 @@ import { DesktopSidebar } from "@/components/desktop-sidebar";
 import { MobileSidebar } from "@/components/mobile-sidebar";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { PlanBadge } from "@/components/billing/plan-badge";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 import { PageTransition } from "@/components/page-transition";
 
 export default async function OrgLayout({
@@ -39,6 +40,7 @@ export default async function OrgLayout({
               hidePersonal
             />
             <PlanBadge />
+            <NotificationBell orgSlug={slug} />
             <UserButton />
           </div>
         </header>

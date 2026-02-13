@@ -61,4 +61,12 @@ public interface CostRateRepository extends JpaRepository<CostRate, UUID> {
       ORDER BY cr.effectiveFrom DESC
       """)
   List<CostRate> findByMemberId(@Param("memberId") UUID memberId);
+
+  /** Lists all cost rates, ordered by effectiveFrom DESC. */
+  @Query(
+      """
+      SELECT cr FROM CostRate cr
+      ORDER BY cr.effectiveFrom DESC
+      """)
+  List<CostRate> findAllOrderByEffectiveFromDesc();
 }

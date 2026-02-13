@@ -113,11 +113,9 @@ class PortalEventHandlerTest {
     handler.onProjectUpdated(event);
 
     verify(readModelRepo)
-        .upsertPortalProject(
-            projectId, customer1, ORG_ID, "Updated Name", "ACTIVE", "New desc", null);
+        .updatePortalProjectDetails(projectId, customer1, "Updated Name", "ACTIVE", "New desc");
     verify(readModelRepo)
-        .upsertPortalProject(
-            projectId, customer2, ORG_ID, "Updated Name", "ACTIVE", "New desc", null);
+        .updatePortalProjectDetails(projectId, customer2, "Updated Name", "ACTIVE", "New desc");
   }
 
   // ── 4. DocumentCreated (SHARED) -> portal_document + count ─────────

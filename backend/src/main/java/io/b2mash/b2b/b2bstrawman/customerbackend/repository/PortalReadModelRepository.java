@@ -135,6 +135,23 @@ public class PortalReadModelRepository {
         .update();
   }
 
+  /**
+   * Updates name, status, and description for an existing portal_project row. Unlike {@link
+   * #upsertPortalProject}, this does not attempt an INSERT, avoiding NOT NULL constraint violations
+   * when the caller does not have createdAt available.
+   */
+  public void updatePortalProjectDetails(
+      UUID projectId, UUID customerId, String name, String status, String description) {
+    jdbc.sql(
+            """
+            UPDATE portal.portal_projects
+            SET name = ?, status = ?, description = ?, updated_at = now()
+            WHERE id = ? AND customer_id = ?
+            """)
+        .params(name, status, description, projectId, customerId)
+        .update();
+  }
+
   // ── Delete methods ──────────────────────────────────────────────────
 
   public void deletePortalProject(UUID projectId, UUID customerId) {
@@ -171,6 +188,36 @@ public class PortalReadModelRepository {
     jdbc.sql(
             """
             DELETE FROM portal.portal_projects
+            WHERE org_id = ?
+            """)
+        .params(orgId)
+        .update();
+  }
+
+  public void deletePortalDocumentsByOrg(String orgId) {
+    jdbc.sql(
+            """
+            DELETE FROM portal.portal_documents
+            WHERE org_id = ?
+            """)
+        .params(orgId)
+        .update();
+  }
+
+  public void deletePortalCommentsByOrg(String orgId) {
+    jdbc.sql(
+            """
+            DELETE FROM portal.portal_comments
+            WHERE org_id = ?
+            """)
+        .params(orgId)
+        .update();
+  }
+
+  public void deletePortalProjectSummariesByOrg(String orgId) {
+    jdbc.sql(
+            """
+            DELETE FROM portal.portal_project_summaries
             WHERE org_id = ?
             """)
         .params(orgId)

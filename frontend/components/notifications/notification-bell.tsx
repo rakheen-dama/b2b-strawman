@@ -58,6 +58,7 @@ export function NotificationBell({ orgSlug }: NotificationBellProps) {
         size="icon-sm"
         onClick={() => setIsOpen((prev) => !prev)}
         aria-label="Notifications"
+        aria-expanded={isOpen}
         className="relative"
       >
         <Bell className="size-4" />
@@ -76,7 +77,7 @@ export function NotificationBell({ orgSlug }: NotificationBellProps) {
       </Button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full z-50 mt-1 rounded-md border border-olive-200 bg-white shadow-lg dark:border-olive-800 dark:bg-olive-950">
+        <div role="dialog" aria-label="Notifications" className="absolute right-0 top-full z-50 mt-1 rounded-md border border-olive-200 bg-white shadow-lg dark:border-olive-800 dark:bg-olive-950">
           <NotificationDropdown
             orgSlug={orgSlug}
             onClose={handleClose}

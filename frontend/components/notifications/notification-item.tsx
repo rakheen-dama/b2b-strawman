@@ -57,7 +57,7 @@ export function NotificationItem({
   async function handleClick() {
     if (!notification.isRead) {
       // Fire-and-forget: mark as read
-      markNotificationRead(notification.id).then(() => onRead?.());
+      markNotificationRead(notification.id).then(() => onRead?.()).catch(() => {});
     }
 
     const url = getDeepLinkUrl(orgSlug, notification);

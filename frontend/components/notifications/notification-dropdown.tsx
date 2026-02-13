@@ -122,6 +122,7 @@ export function NotificationDropdown({
 
       {/* Footer */}
       <div className="border-t border-olive-200 px-3 py-2 dark:border-olive-800">
+        {/* Route created in Epic 63B */}
         <Link
           href={`/org/${orgSlug}/notifications`}
           onClick={onClose}

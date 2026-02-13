@@ -26,6 +26,13 @@ public class TestcontainersConfiguration {
       registry.add("spring.datasource.migration.jdbc-url", container::getJdbcUrl);
       registry.add("spring.datasource.migration.username", container::getUsername);
       registry.add("spring.datasource.migration.password", container::getPassword);
+      // Portal DataSource: same database, search_path set via connection-init-sql
+      registry.add("spring.datasource.portal.jdbc-url", container::getJdbcUrl);
+      registry.add("spring.datasource.portal.username", container::getUsername);
+      registry.add("spring.datasource.portal.password", container::getPassword);
+      registry.add(
+          "spring.datasource.portal.connection-init-sql",
+          () -> "SET search_path TO portal, public");
     };
   }
 }

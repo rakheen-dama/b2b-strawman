@@ -20,6 +20,15 @@ spring:
       driver-class-name: org.postgresql.Driver
       maximum-pool-size: 2
       connection-timeout: 30000
+    portal:
+      jdbc-url: jdbc:postgresql://b2mash.local:5432/app
+      username: postgres
+      password: changeme
+      driver-class-name: org.postgresql.Driver
+      maximum-pool-size: 3
+      minimum-idle: 1
+      connection-timeout: 10000
+      connection-init-sql: SET search_path TO portal, public
 
   jpa:
     hibernate:

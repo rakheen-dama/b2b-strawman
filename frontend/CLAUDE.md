@@ -66,7 +66,7 @@ frontend/
 │   └── utils.ts                      # cn() helper from Shadcn
 ├── hooks/                            # Custom React hooks
 ├── __tests__/                        # Test files
-├── middleware.ts                     # Clerk middleware with org sync
+├── proxy.ts                         # Clerk auth proxy with org sync
 ├── components.json                   # Shadcn UI config
 ├── vitest.config.ts                  # Vitest config with @/* alias
 ├── next.config.ts
@@ -225,7 +225,7 @@ import { Slot } from "radix-ui";
 
 ## Authentication (Clerk)
 
-### Middleware (`middleware.ts`)
+### Proxy (`proxy.ts`)
 
 - `clerkMiddleware()` protects `(app)/**` routes
 - `organizationSyncOptions` auto-activates org from URL slug pattern

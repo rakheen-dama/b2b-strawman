@@ -83,7 +83,8 @@ public class TimeEntryController {
     UUID memberId = RequestScopes.requireMemberId();
     String orgRole = RequestScopes.getOrgRole();
 
-    var entry = timeEntryService.toggleBillable(id, request.billable(), memberId, orgRole);
+    var entry =
+        timeEntryService.toggleBillable(projectId, id, request.billable(), memberId, orgRole);
     var names = resolveNames(List.of(entry));
     return ResponseEntity.ok(TimeEntryResponse.from(entry, names));
   }

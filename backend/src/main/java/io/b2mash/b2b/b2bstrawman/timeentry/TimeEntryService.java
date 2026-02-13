@@ -132,11 +132,20 @@ public class TimeEntryService {
 
   @Transactional
   public TimeEntry toggleBillable(
-      UUID timeEntryId, boolean billable, UUID memberId, String orgRole) {
+      UUID projectId, UUID timeEntryId, boolean billable, UUID memberId, String orgRole) {
     var entry =
         timeEntryRepository
             .findOneById(timeEntryId)
             .orElseThrow(() -> new ResourceNotFoundException("TimeEntry", timeEntryId));
+
+    // Verify the time entry belongs to the specified project (defense in depth)
+    var task =
+        taskRepository
+            .findOneById(entry.getTaskId())
+            .orElseThrow(() -> new ResourceNotFoundException("Task", entry.getTaskId()));
+    if (!task.getProjectId().equals(projectId)) {
+      throw new ResourceNotFoundException("TimeEntry", timeEntryId);
+    }
 
     requireEditPermission(entry, memberId, orgRole);
 
@@ -385,6 +394,10 @@ public class TimeEntryService {
       // Look up the task to get projectId for billing rate resolution
       var task = taskRepository.findOneById(entry.getTaskId()).orElse(null);
       if (task == null) {
+        log.warn(
+            "Skipping re-snapshot for time entry {}: task {} not found",
+            entry.getId(),
+            entry.getTaskId());
         skipped++;
         continue;
       }
@@ -419,21 +432,23 @@ public class TimeEntryService {
     log.info(
         "Re-snapshot completed: processed={}, updated={}, skipped={}", processed, updated, skipped);
 
-    auditService.log(
-        AuditEventBuilder.builder()
-            .eventType("time_entry.rate_re_snapshot")
-            .entityType("time_entry")
-            .entityId(UUID.randomUUID())
-            .details(
-                Map.of(
-                    "project_id", projectId != null ? projectId.toString() : "all",
-                    "member_id", memberId != null ? memberId.toString() : "all",
-                    "from_date", fromDate != null ? fromDate.toString() : "all",
-                    "to_date", toDate != null ? toDate.toString() : "all",
-                    "entries_processed", processed,
-                    "entries_updated", updated,
-                    "entries_skipped", skipped))
-            .build());
+    if (!entries.isEmpty()) {
+      auditService.log(
+          AuditEventBuilder.builder()
+              .eventType("time_entry.rate_re_snapshot")
+              .entityType("time_entry")
+              .entityId(entries.getFirst().getId())
+              .details(
+                  Map.of(
+                      "project_id", projectId != null ? projectId.toString() : "all",
+                      "member_id", memberId != null ? memberId.toString() : "all",
+                      "from_date", fromDate != null ? fromDate.toString() : "all",
+                      "to_date", toDate != null ? toDate.toString() : "all",
+                      "entries_processed", processed,
+                      "entries_updated", updated,
+                      "entries_skipped", skipped))
+              .build());
+    }
 
     return new ReSnapshotResult(processed, updated, skipped);
   }

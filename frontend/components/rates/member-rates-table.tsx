@@ -19,17 +19,8 @@ import { AddRateDialog } from "@/components/rates/add-rate-dialog";
 import { EditRateDialog } from "@/components/rates/edit-rate-dialog";
 import { DeleteRateDialog } from "@/components/rates/delete-rate-dialog";
 import { updateDefaultCurrency } from "@/app/(app)/org/[slug]/settings/rates/actions";
-import { formatDate } from "@/lib/format";
+import { formatCurrency, formatDate } from "@/lib/format";
 import type { OrgMember, BillingRate, CostRate } from "@/lib/types";
-
-function formatCurrency(amount: number, currency: string): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount);
-}
 
 function getActiveRate<T extends { effectiveFrom: string; effectiveTo: string | null }>(
   rates: T[],

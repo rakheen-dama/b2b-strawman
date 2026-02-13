@@ -46,6 +46,18 @@ const UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
 
 const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
 
+/**
+ * Formats a number as currency (e.g. "$125.00").
+ */
+export function formatCurrency(amount: number, currency: string): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
 export function formatRelativeDate(date: string | Date): string {
   const seconds = Math.round((new Date(date).getTime() - Date.now()) / 1000);
   for (const [unit, threshold] of UNITS) {

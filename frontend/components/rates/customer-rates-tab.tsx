@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { DollarSign, Pencil, Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, DollarSign, Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -40,18 +40,8 @@ import {
   updateCustomerBillingRate,
   deleteCustomerBillingRate,
 } from "@/app/(app)/org/[slug]/customers/[id]/rate-actions";
-import { formatDate } from "@/lib/format";
-import { AlertTriangle } from "lucide-react";
+import { formatCurrency, formatDate } from "@/lib/format";
 import type { BillingRate, OrgMember } from "@/lib/types";
-
-function formatCurrency(amount: number, currency: string): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount);
-}
 
 interface CustomerRatesTabProps {
   billingRates: BillingRate[];

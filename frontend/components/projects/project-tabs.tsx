@@ -10,6 +10,7 @@ interface ProjectTabsProps {
   membersPanel: ReactNode;
   tasksPanel: ReactNode;
   timePanel: ReactNode;
+  activityPanel: ReactNode;
 }
 
 const tabs = [
@@ -17,11 +18,12 @@ const tabs = [
   { id: "members", label: "Members" },
   { id: "tasks", label: "Tasks" },
   { id: "time", label: "Time" },
+  { id: "activity", label: "Activity" },
 ] as const;
 
 type TabId = (typeof tabs)[number]["id"];
 
-export function ProjectTabs({ documentsPanel, membersPanel, tasksPanel, timePanel }: ProjectTabsProps) {
+export function ProjectTabs({ documentsPanel, membersPanel, tasksPanel, timePanel, activityPanel }: ProjectTabsProps) {
   const [activeTab, setActiveTab] = useState<TabId>("documents");
 
   return (
@@ -64,6 +66,9 @@ export function ProjectTabs({ documentsPanel, membersPanel, tasksPanel, timePane
       </TabsPrimitive.Content>
       <TabsPrimitive.Content value="time" className="pt-6 outline-none">
         {timePanel}
+      </TabsPrimitive.Content>
+      <TabsPrimitive.Content value="activity" className="pt-6 outline-none">
+        {activityPanel}
       </TabsPrimitive.Content>
     </TabsPrimitive.Root>
   );

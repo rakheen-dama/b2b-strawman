@@ -265,7 +265,10 @@ class TimeEntryServiceAuditTest {
 
               assertThat(page.getTotalElements()).isEqualTo(1);
               var event = page.getContent().getFirst();
-              assertThat(event.getDetails()).isNull();
+              // Details now always includes project_id even when no fields changed
+              assertThat(event.getDetails()).isNotNull();
+              assertThat(event.getDetails()).containsKey("project_id");
+              assertThat(event.getDetails()).hasSize(1);
             });
   }
 

@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -96,7 +97,9 @@ public class DocumentService {
             .eventType("document.created")
             .entityType("document")
             .entityId(document.getId())
-            .details(Map.of("scope", "PROJECT", "file_name", fileName))
+            .details(
+                Map.of(
+                    "scope", "PROJECT", "file_name", fileName, "project_id", projectId.toString()))
             .build());
 
     return new UploadInitResult(document.getId(), presigned.url(), presigned.expiresInSeconds());
@@ -230,11 +233,17 @@ public class DocumentService {
       document.confirmUpload();
       document = documentRepository.save(document);
 
+      var uploadDetails = new HashMap<String, Object>();
+      uploadDetails.put("file_name", document.getFileName());
+      if (document.isProjectScoped() && document.getProjectId() != null) {
+        uploadDetails.put("project_id", document.getProjectId().toString());
+      }
       auditService.log(
           AuditEventBuilder.builder()
               .eventType("document.uploaded")
               .entityType("document")
               .entityId(document.getId())
+              .details(uploadDetails)
               .build());
 
       // Only publish event for PROJECT-scoped documents (notifications are project-scoped)
@@ -279,12 +288,17 @@ public class DocumentService {
     }
     documentRepository.delete(document);
 
+    var deleteDetails = new HashMap<String, Object>();
+    deleteDetails.put("file_name", document.getFileName());
+    if (document.isProjectScoped() && document.getProjectId() != null) {
+      deleteDetails.put("project_id", document.getProjectId().toString());
+    }
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("document.deleted")
             .entityType("document")
             .entityId(document.getId())
-            .details(Map.of("file_name", document.getFileName()))
+            .details(deleteDetails)
             .build());
   }
 
@@ -302,12 +316,18 @@ public class DocumentService {
     }
     var presigned = s3Service.generateDownloadUrl(document.getS3Key());
 
+    var accessDetails = new HashMap<String, Object>();
+    accessDetails.put("scope", document.getScope());
+    accessDetails.put("file_name", document.getFileName());
+    if (document.isProjectScoped() && document.getProjectId() != null) {
+      accessDetails.put("project_id", document.getProjectId().toString());
+    }
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("document.accessed")
             .entityType("document")
             .entityId(document.getId())
-            .details(Map.of("scope", document.getScope(), "file_name", document.getFileName()))
+            .details(accessDetails)
             .build());
 
     // Security audit for customer-scoped documents

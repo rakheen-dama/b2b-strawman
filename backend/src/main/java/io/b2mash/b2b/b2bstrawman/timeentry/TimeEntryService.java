@@ -78,9 +78,14 @@ public class TimeEntryService {
             .entityId(entry.getId())
             .details(
                 Map.of(
-                    "task_id", taskId.toString(),
-                    "duration_minutes", durationMinutes,
-                    "billable", billable))
+                    "task_id",
+                    taskId.toString(),
+                    "duration_minutes",
+                    durationMinutes,
+                    "billable",
+                    billable,
+                    "project_id",
+                    task.getProjectId().toString()))
             .build());
 
     return entry;
@@ -114,6 +119,12 @@ public class TimeEntryService {
             .orElseThrow(() -> new ResourceNotFoundException("TimeEntry", timeEntryId));
 
     requireEditPermission(entry, memberId, orgRole);
+
+    UUID entryTaskId = entry.getTaskId();
+    var task =
+        taskRepository
+            .findOneById(entryTaskId)
+            .orElseThrow(() -> new ResourceNotFoundException("Task", entryTaskId));
 
     if (durationMinutes != null && durationMinutes <= 0) {
       throw new InvalidStateException(
@@ -173,12 +184,14 @@ public class TimeEntryService {
           Map.of("from", oldDescription != null ? oldDescription : "", "to", description));
     }
 
+    details.put("project_id", task.getProjectId().toString());
+
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("time_entry.updated")
             .entityType("time_entry")
             .entityId(entry.getId())
-            .details(details.isEmpty() ? null : details)
+            .details(details)
             .build());
 
     return entry;
@@ -193,6 +206,11 @@ public class TimeEntryService {
 
     requireEditPermission(entry, memberId, orgRole);
 
+    var task =
+        taskRepository
+            .findOneById(entry.getTaskId())
+            .orElseThrow(() -> new ResourceNotFoundException("Task", entry.getTaskId()));
+
     timeEntryRepository.delete(entry);
     log.info("Deleted time entry {} by member {}", timeEntryId, memberId);
 
@@ -201,7 +219,10 @@ public class TimeEntryService {
             .eventType("time_entry.deleted")
             .entityType("time_entry")
             .entityId(entry.getId())
-            .details(Map.of("task_id", entry.getTaskId().toString()))
+            .details(
+                Map.of(
+                    "task_id", entry.getTaskId().toString(),
+                    "project_id", task.getProjectId().toString()))
             .build());
   }
 

@@ -52,6 +52,33 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
       Pageable pageable);
 
   /**
+   * Finds audit events for a specific project using the JSONB details->>'project_id' field. Uses
+   * the expression index idx_audit_project for efficient lookups.
+   */
+  @Query(
+      value =
+          """
+          SELECT * FROM audit_events
+          WHERE (details->>'project_id') = CAST(:projectId AS TEXT)
+            AND (:entityType IS NULL OR entity_type = :entityType)
+            AND (CAST(:since AS TIMESTAMPTZ) IS NULL OR occurred_at >= CAST(:since AS TIMESTAMPTZ))
+          ORDER BY occurred_at DESC
+          """,
+      countQuery =
+          """
+          SELECT count(*) FROM audit_events
+          WHERE (details->>'project_id') = CAST(:projectId AS TEXT)
+            AND (:entityType IS NULL OR entity_type = :entityType)
+            AND (CAST(:since AS TIMESTAMPTZ) IS NULL OR occurred_at >= CAST(:since AS TIMESTAMPTZ))
+          """,
+      nativeQuery = true)
+  Page<AuditEvent> findByProjectId(
+      @Param("projectId") String projectId,
+      @Param("entityType") String entityType,
+      @Param("since") Instant since,
+      Pageable pageable);
+
+  /**
    * Counts audit events grouped by event type, ordered by count descending. Uses typed projection
    * instead of Object[] for type safety.
    */

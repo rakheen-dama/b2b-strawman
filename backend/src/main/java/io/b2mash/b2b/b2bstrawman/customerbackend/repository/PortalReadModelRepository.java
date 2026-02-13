@@ -147,23 +147,23 @@ public class PortalReadModelRepository {
         .update();
   }
 
-  public void deletePortalDocument(UUID documentId) {
+  public void deletePortalDocument(UUID documentId, String orgId) {
     jdbc.sql(
             """
             DELETE FROM portal.portal_documents
-            WHERE id = ?
+            WHERE id = ? AND org_id = ?
             """)
-        .params(documentId)
+        .params(documentId, orgId)
         .update();
   }
 
-  public void deletePortalComment(UUID commentId) {
+  public void deletePortalComment(UUID commentId, String orgId) {
     jdbc.sql(
             """
             DELETE FROM portal.portal_comments
-            WHERE id = ?
+            WHERE id = ? AND org_id = ?
             """)
-        .params(commentId)
+        .params(commentId, orgId)
         .update();
   }
 

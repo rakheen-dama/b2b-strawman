@@ -302,4 +302,120 @@ class PortalReadModelRepositoryIntegrationTest {
     var otherDocs = repository.findDocumentsByCustomer(ORG_ID, UUID.randomUUID());
     assertThat(otherDocs).noneMatch(d -> d.id().equals(docId));
   }
+
+  @Test
+  void deletePortalDocumentRemovesSameOrgDocument() {
+    UUID docId = UUID.randomUUID();
+    UUID cid = UUID.randomUUID();
+    Instant uploaded = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+
+    repository.upsertPortalDocument(
+        docId,
+        ORG_ID,
+        cid,
+        projectId,
+        "Doc to Delete",
+        "application/pdf",
+        1024L,
+        "CUSTOMER",
+        "s3://bucket/todelete.pdf",
+        uploaded);
+
+    var beforeDelete = repository.findDocumentsByProject(projectId, ORG_ID);
+    assertThat(beforeDelete).anyMatch(d -> d.id().equals(docId));
+
+    repository.deletePortalDocument(docId, ORG_ID);
+
+    var afterDelete = repository.findDocumentsByProject(projectId, ORG_ID);
+    assertThat(afterDelete).noneMatch(d -> d.id().equals(docId));
+  }
+
+  @Test
+  void deletePortalDocumentDoesNotDeleteCrossOrg() {
+    UUID docId = UUID.randomUUID();
+    UUID cid = UUID.randomUUID();
+    Instant uploaded = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+
+    // Insert document for ORG_ID
+    repository.upsertPortalDocument(
+        docId,
+        ORG_ID,
+        cid,
+        projectId,
+        "Cross-Org Doc",
+        "application/pdf",
+        2048L,
+        "CUSTOMER",
+        "s3://bucket/crossorg.pdf",
+        uploaded);
+
+    var beforeDelete = repository.findDocumentsByProject(projectId, ORG_ID);
+    assertThat(beforeDelete).anyMatch(d -> d.id().equals(docId));
+
+    // Attempt to delete with OTHER_ORG_ID (wrong org)
+    repository.deletePortalDocument(docId, OTHER_ORG_ID);
+
+    // Document should still exist
+    var afterDelete = repository.findDocumentsByProject(projectId, ORG_ID);
+    assertThat(afterDelete).anyMatch(d -> d.id().equals(docId));
+  }
+
+  @Test
+  void deletePortalCommentRemovesSameOrgComment() {
+    UUID commentId = UUID.randomUUID();
+    Instant created = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+
+    repository.upsertPortalComment(
+        commentId, ORG_ID, projectId, "Charlie", "Comment to delete", created);
+
+    var beforeDelete = repository.findCommentsByProject(projectId, ORG_ID);
+    assertThat(beforeDelete).anyMatch(c -> c.id().equals(commentId));
+
+    repository.deletePortalComment(commentId, ORG_ID);
+
+    var afterDelete = repository.findCommentsByProject(projectId, ORG_ID);
+    assertThat(afterDelete).noneMatch(c -> c.id().equals(commentId));
+  }
+
+  @Test
+  void deletePortalCommentDoesNotDeleteCrossOrg() {
+    UUID commentId = UUID.randomUUID();
+    Instant created = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+
+    // Insert comment for ORG_ID
+    repository.upsertPortalComment(
+        commentId, ORG_ID, projectId, "Dave", "Cross-org comment", created);
+
+    var beforeDelete = repository.findCommentsByProject(projectId, ORG_ID);
+    assertThat(beforeDelete).anyMatch(c -> c.id().equals(commentId));
+
+    // Attempt to delete with OTHER_ORG_ID (wrong org)
+    repository.deletePortalComment(commentId, OTHER_ORG_ID);
+
+    // Comment should still exist
+    var afterDelete = repository.findCommentsByProject(projectId, ORG_ID);
+    assertThat(afterDelete).anyMatch(c -> c.id().equals(commentId));
+  }
+
+  @Test
+  void deletePortalProjectDoesNotDeleteCrossCustomer() {
+    UUID pid = UUID.randomUUID();
+    UUID cid1 = UUID.randomUUID();
+    UUID cid2 = UUID.randomUUID();
+    Instant created = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+
+    // Same project projected for two customers
+    repository.upsertPortalProject(pid, cid1, ORG_ID, "Shared Project", "ACTIVE", null, created);
+    repository.upsertPortalProject(pid, cid2, ORG_ID, "Shared Project", "ACTIVE", null, created);
+
+    assertThat(repository.findProjectDetail(pid, cid1, ORG_ID)).isPresent();
+    assertThat(repository.findProjectDetail(pid, cid2, ORG_ID)).isPresent();
+
+    // Delete for cid1 only
+    repository.deletePortalProject(pid, cid1);
+
+    // Should be deleted for cid1, but still exist for cid2
+    assertThat(repository.findProjectDetail(pid, cid1, ORG_ID)).isEmpty();
+    assertThat(repository.findProjectDetail(pid, cid2, ORG_ID)).isPresent();
+  }
 }

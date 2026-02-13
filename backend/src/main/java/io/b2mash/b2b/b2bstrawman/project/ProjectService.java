@@ -2,10 +2,13 @@ package io.b2mash.b2b.b2bstrawman.project;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectCreatedEvent;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectUpdatedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -14,6 +17,7 @@ import java.util.Objects;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,16 +30,19 @@ public class ProjectService {
   private final ProjectMemberRepository projectMemberRepository;
   private final ProjectAccessService projectAccessService;
   private final AuditService auditService;
+  private final ApplicationEventPublisher eventPublisher;
 
   public ProjectService(
       ProjectRepository repository,
       ProjectMemberRepository projectMemberRepository,
       ProjectAccessService projectAccessService,
-      AuditService auditService) {
+      AuditService auditService,
+      ApplicationEventPublisher eventPublisher) {
     this.repository = repository;
     this.projectMemberRepository = projectMemberRepository;
     this.projectAccessService = projectAccessService;
     this.auditService = auditService;
+    this.eventPublisher = eventPublisher;
   }
 
   @Transactional(readOnly = true)
@@ -68,6 +75,12 @@ public class ProjectService {
             .entityId(project.getId())
             .details(Map.of("name", project.getName()))
             .build());
+
+    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    eventPublisher.publishEvent(
+        new ProjectCreatedEvent(
+            project.getId(), project.getName(), project.getDescription(), null, orgId, tenantId));
 
     return project;
   }
@@ -106,6 +119,12 @@ public class ProjectService {
             .entityId(project.getId())
             .details(details.isEmpty() ? null : details)
             .build());
+
+    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    eventPublisher.publishEvent(
+        new ProjectUpdatedEvent(
+            project.getId(), project.getName(), project.getDescription(), null, orgId, tenantId));
 
     return new ProjectWithRole(project, access.projectRole());
   }

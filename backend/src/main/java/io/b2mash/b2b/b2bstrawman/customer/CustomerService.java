@@ -2,8 +2,11 @@ package io.b2mash.b2b.b2bstrawman.customer;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerCreatedEvent;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerUpdatedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +14,7 @@ import java.util.Objects;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,10 +25,15 @@ public class CustomerService {
 
   private final CustomerRepository repository;
   private final AuditService auditService;
+  private final ApplicationEventPublisher eventPublisher;
 
-  public CustomerService(CustomerRepository repository, AuditService auditService) {
+  public CustomerService(
+      CustomerRepository repository,
+      AuditService auditService,
+      ApplicationEventPublisher eventPublisher) {
     this.repository = repository;
     this.auditService = auditService;
+    this.eventPublisher = eventPublisher;
   }
 
   @Transactional(readOnly = true)
@@ -56,6 +65,12 @@ public class CustomerService {
             .entityId(customer.getId())
             .details(Map.of("name", customer.getName(), "email", customer.getEmail()))
             .build());
+
+    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    eventPublisher.publishEvent(
+        new CustomerCreatedEvent(
+            customer.getId(), customer.getName(), customer.getEmail(), orgId, tenantId));
 
     return customer;
   }
@@ -109,6 +124,12 @@ public class CustomerService {
             .details(details.isEmpty() ? null : details)
             .build());
 
+    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    eventPublisher.publishEvent(
+        new CustomerUpdatedEvent(
+            saved.getId(), saved.getName(), saved.getEmail(), saved.getStatus(), orgId, tenantId));
+
     return saved;
   }
 
@@ -125,6 +146,12 @@ public class CustomerService {
             .entityType("customer")
             .entityId(saved.getId())
             .build());
+
+    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    eventPublisher.publishEvent(
+        new CustomerUpdatedEvent(
+            saved.getId(), saved.getName(), saved.getEmail(), saved.getStatus(), orgId, tenantId));
 
     return saved;
   }

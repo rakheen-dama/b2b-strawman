@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.customer;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerProjectLinkedEvent;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerProjectUnlinkedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
@@ -14,6 +16,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,18 +30,21 @@ public class CustomerProjectService {
   private final ProjectRepository projectRepository;
   private final ProjectAccessService projectAccessService;
   private final AuditService auditService;
+  private final ApplicationEventPublisher eventPublisher;
 
   public CustomerProjectService(
       CustomerProjectRepository customerProjectRepository,
       CustomerRepository customerRepository,
       ProjectRepository projectRepository,
       ProjectAccessService projectAccessService,
-      AuditService auditService) {
+      AuditService auditService,
+      ApplicationEventPublisher eventPublisher) {
     this.customerProjectRepository = customerProjectRepository;
     this.customerRepository = customerRepository;
     this.projectRepository = projectRepository;
     this.projectAccessService = projectAccessService;
     this.auditService = auditService;
+    this.eventPublisher = eventPublisher;
   }
 
   @Transactional
@@ -75,6 +81,11 @@ public class CustomerProjectService {
             .details(Map.of("project_id", projectId.toString()))
             .build());
 
+    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    eventPublisher.publishEvent(
+        new CustomerProjectLinkedEvent(customerId, projectId, orgId, tenantId));
+
     return link;
   }
 
@@ -110,6 +121,11 @@ public class CustomerProjectService {
             .entityId(customerId)
             .details(Map.of("project_id", projectId.toString()))
             .build());
+
+    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    eventPublisher.publishEvent(
+        new CustomerProjectUnlinkedEvent(customerId, projectId, orgId, tenantId));
   }
 
   @Transactional(readOnly = true)

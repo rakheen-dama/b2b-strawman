@@ -304,6 +304,93 @@ export interface MagicLinkResponse {
   magicLink?: string;
 }
 
+// ---- OrgSettings (from OrgSettingsController.java) ----
+
+export interface OrgSettings {
+  defaultCurrency: string;
+}
+
+export interface UpdateOrgSettingsRequest {
+  defaultCurrency: string;
+}
+
+// ---- BillingRate (from BillingRateController.java) ----
+
+export type BillingRateScope =
+  | "MEMBER_DEFAULT"
+  | "PROJECT_OVERRIDE"
+  | "CUSTOMER_OVERRIDE";
+
+export interface BillingRate {
+  id: string;
+  memberId: string;
+  memberName: string;
+  projectId: string | null;
+  projectName: string | null;
+  customerId: string | null;
+  customerName: string | null;
+  scope: BillingRateScope;
+  currency: string;
+  hourlyRate: number;
+  effectiveFrom: string;
+  effectiveTo: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateBillingRateRequest {
+  memberId: string;
+  projectId?: string;
+  customerId?: string;
+  currency: string;
+  hourlyRate: number;
+  effectiveFrom: string;
+  effectiveTo?: string;
+}
+
+export interface UpdateBillingRateRequest {
+  currency: string;
+  hourlyRate: number;
+  effectiveFrom: string;
+  effectiveTo?: string;
+}
+
+export interface ResolvedRate {
+  hourlyRate: number;
+  currency: string;
+  source: string;
+  billingRateId: string;
+}
+
+// ---- CostRate (from CostRateController.java) ----
+
+export interface CostRate {
+  id: string;
+  memberId: string;
+  memberName: string;
+  currency: string;
+  hourlyCost: number;
+  effectiveFrom: string;
+  effectiveTo: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCostRateRequest {
+  memberId: string;
+  currency: string;
+  hourlyCost: number;
+  effectiveFrom: string;
+  effectiveTo?: string;
+}
+
+export interface UpdateCostRateRequest {
+  currency: string;
+  hourlyCost: number;
+  effectiveFrom: string;
+  effectiveTo?: string;
+}
+
 // ---- Error (RFC 9457 ProblemDetail) ----
 
 export interface ProblemDetail {

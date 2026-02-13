@@ -9,6 +9,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -42,8 +44,21 @@ public class TimeEntry implements TenantAware {
   @Column(name = "billable", nullable = false)
   private boolean billable;
 
+  @Deprecated
   @Column(name = "rate_cents")
   private Integer rateCents;
+
+  @Column(name = "billing_rate_snapshot", precision = 12, scale = 2)
+  private BigDecimal billingRateSnapshot;
+
+  @Column(name = "billing_rate_currency", length = 3)
+  private String billingRateCurrency;
+
+  @Column(name = "cost_rate_snapshot", precision = 12, scale = 2)
+  private BigDecimal costRateSnapshot;
+
+  @Column(name = "cost_rate_currency", length = 3)
+  private String costRateCurrency;
 
   @Column(name = "description", columnDefinition = "TEXT")
   private String description;
@@ -102,6 +117,7 @@ public class TimeEntry implements TenantAware {
     return billable;
   }
 
+  @Deprecated
   public Integer getRateCents() {
     return rateCents;
   }
@@ -140,8 +156,63 @@ public class TimeEntry implements TenantAware {
     this.billable = billable;
   }
 
+  @Deprecated
   public void setRateCents(Integer rateCents) {
     this.rateCents = rateCents;
+  }
+
+  public BigDecimal getBillingRateSnapshot() {
+    return billingRateSnapshot;
+  }
+
+  public String getBillingRateCurrency() {
+    return billingRateCurrency;
+  }
+
+  public BigDecimal getCostRateSnapshot() {
+    return costRateSnapshot;
+  }
+
+  public String getCostRateCurrency() {
+    return costRateCurrency;
+  }
+
+  public void snapshotBillingRate(BigDecimal rate, String currency) {
+    this.billingRateSnapshot = rate;
+    this.billingRateCurrency = currency;
+  }
+
+  public void snapshotCostRate(BigDecimal rate, String currency) {
+    this.costRateSnapshot = rate;
+    this.costRateCurrency = currency;
+  }
+
+  /**
+   * Computed billable value: (durationMinutes / 60) * billingRateSnapshot. Returns null if not
+   * billable or no billing rate snapshot.
+   */
+  public BigDecimal getBillableValue() {
+    if (!billable || billingRateSnapshot == null) {
+      return null;
+    }
+    return BigDecimal.valueOf(durationMinutes)
+        .divide(BigDecimal.valueOf(60), 4, RoundingMode.HALF_UP)
+        .multiply(billingRateSnapshot)
+        .setScale(2, RoundingMode.HALF_UP);
+  }
+
+  /**
+   * Computed cost value: (durationMinutes / 60) * costRateSnapshot. Returns null if no cost rate
+   * snapshot. Includes both billable and non-billable entries.
+   */
+  public BigDecimal getCostValue() {
+    if (costRateSnapshot == null) {
+      return null;
+    }
+    return BigDecimal.valueOf(durationMinutes)
+        .divide(BigDecimal.valueOf(60), 4, RoundingMode.HALF_UP)
+        .multiply(costRateSnapshot)
+        .setScale(2, RoundingMode.HALF_UP);
   }
 
   public void setDescription(String description) {

@@ -321,6 +321,7 @@ public class TaskService {
             .entityId(task.getId())
             .details(
                 Map.of(
+                    "title", task.getTitle(),
                     "assignee_id", memberId.toString(),
                     "project_id", task.getProjectId().toString()))
             .build());
@@ -380,6 +381,7 @@ public class TaskService {
             .entityId(task.getId())
             .details(
                 Map.of(
+                    "title", task.getTitle(),
                     "previous_assignee_id", previousAssigneeId.toString(),
                     "project_id", task.getProjectId().toString()))
             .build());

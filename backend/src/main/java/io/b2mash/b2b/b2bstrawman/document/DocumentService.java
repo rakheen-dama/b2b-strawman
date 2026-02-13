@@ -3,6 +3,9 @@ package io.b2mash.b2b.b2bstrawman.document;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentCreatedEvent;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentDeletedEvent;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentVisibilityChangedEvent;
 import io.b2mash.b2b.b2bstrawman.event.DocumentUploadedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
@@ -215,6 +218,12 @@ public class DocumentService {
             .details(Map.of("visibility", Map.of("from", oldVisibility, "to", visibility)))
             .build());
 
+    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    eventPublisher.publishEvent(
+        new DocumentVisibilityChangedEvent(
+            document.getId(), document.getVisibility(), oldVisibility, orgId, tenantId));
+
     return document;
   }
 
@@ -246,11 +255,12 @@ public class DocumentService {
               .details(uploadDetails)
               .build());
 
-      // Only publish event for PROJECT-scoped documents (notifications are project-scoped)
+      // Only publish notification event for PROJECT-scoped documents (notifications are
+      // project-scoped)
+      String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+      String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
       if (document.isProjectScoped() && document.getProjectId() != null) {
         String actorName = resolveActorName(memberId);
-        String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-        String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
         eventPublisher.publishEvent(
             new DocumentUploadedEvent(
                 "document.uploaded",
@@ -265,6 +275,21 @@ public class DocumentService {
                 Map.of("file_name", document.getFileName()),
                 document.getFileName()));
       }
+
+      // Publish portal event for ALL document types (portal may display any scope)
+      eventPublisher.publishEvent(
+          new DocumentCreatedEvent(
+              document.getId(),
+              document.getProjectId(),
+              document.getCustomerId(),
+              document.getFileName(),
+              document.getScope(),
+              document.getVisibility(),
+              document.getS3Key(),
+              document.getSize(),
+              document.getContentType(),
+              orgId,
+              tenantId));
 
       return document;
     }
@@ -300,6 +325,10 @@ public class DocumentService {
             .entityId(document.getId())
             .details(deleteDetails)
             .build());
+
+    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    eventPublisher.publishEvent(new DocumentDeletedEvent(document.getId(), orgId, tenantId));
   }
 
   @Transactional

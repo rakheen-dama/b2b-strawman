@@ -238,6 +238,44 @@ Use `RequestScopes.requireMemberId()` and `RequestScopes.getOrgRole()` in contro
 - Spring Boot structured logging format: ECS (Elastic Common Schema)
 - CloudWatch Logs in production via Fargate `awslogs` driver
 
+## Dev Portal Harness (local/dev only)
+
+A Thymeleaf-based test harness for exercising the full customer portal flow. Only available when
+running with `local` or `dev` Spring profile (`@Profile({"local", "dev"})` per ADR-033).
+
+### Starting the Harness
+
+```bash
+./mvnw spring-boot:run  # Uses local profile by default
+```
+
+### URLs
+
+- **Generate Magic Link**: `http://localhost:8080/portal/dev/generate-link`
+- **Dashboard**: `http://localhost:8080/portal/dev/dashboard?token={portalJwt}` (auto-redirected after exchange)
+- **Project Detail**: `http://localhost:8080/portal/dev/project/{id}?token={portalJwt}`
+
+### Flow
+
+1. Navigate to `/portal/dev/generate-link`
+2. Select an organization and enter a customer email address
+3. Click "Generate Magic Link" -- a clickable link appears
+4. Click the magic link -- the token is exchanged for a portal JWT and you're redirected to the dashboard
+5. Browse projects, documents, comments, and summary from the dashboard
+
+### Limitations
+
+- **Dev/local only** -- profile-gated, never exposed in production
+- **Minimal styling** -- inline CSS, not a production UI
+- **Self-service contacts** -- auto-creates PortalContact (GENERAL role) if one doesn't exist for the email
+- **JWT as query param** -- acceptable for dev tooling, not suitable for production
+
+### Source Files
+
+- Controller: `dev/DevPortalController.java`
+- Config: `config/DevPortalConfig.java`
+- Templates: `src/main/resources/templates/portal/` (generate-link, dashboard, project-detail)
+
 ## Environment Variables
 
 | Variable | Description |

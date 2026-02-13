@@ -3,6 +3,9 @@ package io.b2mash.b2b.b2bstrawman.document;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentCreatedEvent;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentDeletedEvent;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentVisibilityChangedEvent;
 import io.b2mash.b2b.b2bstrawman.event.DocumentUploadedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
@@ -218,7 +221,7 @@ public class DocumentService {
     String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
     String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
     eventPublisher.publishEvent(
-        new io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentVisibilityChangedEvent(
+        new DocumentVisibilityChangedEvent(
             document.getId(), document.getVisibility(), oldVisibility, orgId, tenantId));
 
     return document;
@@ -275,7 +278,7 @@ public class DocumentService {
 
       // Publish portal event for ALL document types (portal may display any scope)
       eventPublisher.publishEvent(
-          new io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentCreatedEvent(
+          new DocumentCreatedEvent(
               document.getId(),
               document.getProjectId(),
               document.getCustomerId(),
@@ -325,9 +328,7 @@ public class DocumentService {
 
     String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
     String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
-    eventPublisher.publishEvent(
-        new io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentDeletedEvent(
-            document.getId(), orgId, tenantId));
+    eventPublisher.publishEvent(new DocumentDeletedEvent(document.getId(), orgId, tenantId));
   }
 
   @Transactional

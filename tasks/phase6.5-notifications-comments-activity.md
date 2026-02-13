@@ -13,7 +13,7 @@ Phase 6.5 adds the **communication and awareness layer** to the DocTeams platfor
 | 63 | Notification Frontend — Bell, Page & Preferences UI | Frontend | 62 | M | 63A, 63B | |
 | 64 | Activity Feed Backend — Service, Formatter & API | Backend | 59 (V15 migration) | M | 64A, 64B | **Done** (PR #115, #116) |
 | 65 | Activity Feed Frontend — Activity Tab & Components | Frontend | 64 | S | 65A | |
-| 66 | Email Notification Stubs — Channel Abstraction & Templates | Backend | 61 | S | 66A | |
+| 66 | Email Notification Stubs — Channel Abstraction & Templates | Backend | 61 | S | 66A | **Done** (PR #117) |
 
 ## Dependency Graph
 

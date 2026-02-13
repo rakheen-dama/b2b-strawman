@@ -30,9 +30,19 @@ export interface UnreadCountResponse {
   count: number;
 }
 
-interface ActionResult {
+export interface ActionResult {
   success: boolean;
   error?: string;
+}
+
+export interface NotificationPreference {
+  notificationType: string;
+  inAppEnabled: boolean;
+  emailEnabled: boolean;
+}
+
+export interface PreferencesResponse {
+  preferences: NotificationPreference[];
 }
 
 export async function fetchNotifications(
@@ -88,4 +98,16 @@ export async function dismissNotification(id: string): Promise<ActionResult> {
     return { success: false, error: "An unexpected error occurred." };
   }
   return { success: true };
+}
+
+export async function fetchNotificationPreferences(): Promise<PreferencesResponse> {
+  return api.get<PreferencesResponse>("/api/notifications/preferences");
+}
+
+export async function updateNotificationPreferences(
+  preferences: NotificationPreference[]
+): Promise<PreferencesResponse> {
+  return api.put<PreferencesResponse>("/api/notifications/preferences", {
+    preferences,
+  });
 }

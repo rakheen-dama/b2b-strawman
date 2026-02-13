@@ -229,6 +229,19 @@ public class PortalReadModelRepository {
 
   // ── Lookup methods ──────────────────────────────────────────────────
 
+  public Optional<PortalDocumentView> findPortalDocumentById(UUID documentId, String orgId) {
+    return jdbc.sql(
+            """
+            SELECT id, org_id, customer_id, portal_project_id, title, content_type,
+                   size, scope, s3_key, uploaded_at, synced_at
+            FROM portal.portal_documents
+            WHERE id = ? AND org_id = ?
+            """)
+        .params(documentId, orgId)
+        .query(PortalDocumentView.class)
+        .optional();
+  }
+
   public List<UUID> findCustomerIdsByProjectId(UUID projectId, String orgId) {
     return jdbc.sql(
             """

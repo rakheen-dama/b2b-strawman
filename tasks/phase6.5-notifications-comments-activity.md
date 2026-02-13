@@ -11,7 +11,7 @@ Phase 6.5 adds the **communication and awareness layer** to the DocTeams platfor
 | 61 | Domain Events & Notification Backend — Events, Entity, Migration & Handler | Backend | — | L | 61A, 61B, 61C | **Done** (PR #110, #111, #112) |
 | 62 | Notification API & Preferences Backend | Backend | 61 | M | 62A, 62B | **Done** (PR #113, #114) |
 | 63 | Notification Frontend — Bell, Page & Preferences UI | Frontend | 62 | M | 63A, 63B | |
-| 64 | Activity Feed Backend — Service, Formatter & API | Backend | 59 (V15 migration) | M | 64A, 64B | |
+| 64 | Activity Feed Backend — Service, Formatter & API | Backend | 59 (V15 migration) | M | 64A, 64B | 64A Done (PR #115) |
 | 65 | Activity Feed Frontend — Activity Tab & Components | Frontend | 64 | S | 65A | |
 | 66 | Email Notification Stubs — Channel Abstraction & Templates | Backend | 61 | S | 66A | |
 

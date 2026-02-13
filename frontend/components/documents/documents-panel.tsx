@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   FileText,
@@ -10,7 +10,10 @@ import {
   File,
   Download,
   Loader2,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
+import { CommentSectionClient } from "@/components/comments/comment-section-client";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +39,7 @@ import {
   cancelUpload,
   getDownloadUrl,
 } from "@/app/(app)/org/[slug]/projects/[id]/actions";
+import { cn } from "@/lib/utils";
 import type { Document, DocumentStatus, DocumentScope } from "@/lib/types";
 
 // --- Upload state reducer ---
@@ -123,13 +127,25 @@ interface DocumentsPanelProps {
   slug: string;
   /** Show scope badge column (for mixed-scope views) */
   showScope?: boolean;
+  /** Current user's member ID for comment authorship */
+  currentMemberId?: string | null;
+  /** Whether current user can manage comment visibility (admin/owner/lead) */
+  canManageVisibility?: boolean;
 }
 
-export function DocumentsPanel({ documents, projectId, slug, showScope = false }: DocumentsPanelProps) {
+export function DocumentsPanel({
+  documents,
+  projectId,
+  slug,
+  showScope = false,
+  currentMemberId,
+  canManageVisibility = false,
+}: DocumentsPanelProps) {
   const router = useRouter();
   const [uploads, dispatch] = useReducer(uploadReducer, []);
   const xhrMapRef = useRef<Map<string, XMLHttpRequest>>(new Map());
   const fileMapRef = useRef<Map<string, { file: File; mimeType: string }>>(new Map());
+  const [expandedDocId, setExpandedDocId] = useState<string | null>(null);
 
   // Cleanup: abort all in-flight uploads on unmount
   useEffect(() => {
@@ -359,47 +375,78 @@ export function DocumentsPanel({ documents, projectId, slug, showScope = false }
                 const Icon = getFileIcon(doc.contentType);
                 const statusBadge = STATUS_BADGE[doc.status];
                 const scopeBadge = doc.scope ? SCOPE_BADGE[doc.scope] : null;
+                const isExpanded = expandedDocId === doc.id;
+                const colSpan = showScope ? 6 : 5;
                 return (
-                  <TableRow
-                    key={doc.id}
-                    className="border-olive-100 transition-colors hover:bg-olive-50 dark:border-olive-800/50 dark:hover:bg-olive-900"
-                  >
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Icon className="size-4 shrink-0 text-olive-400 dark:text-olive-500" />
-                        <span className="truncate text-sm font-medium text-olive-950 dark:text-olive-50">
-                          {doc.fileName}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell">
-                      <span className="text-sm text-olive-600 dark:text-olive-400">
-                        {formatFileSize(doc.size)}
-                      </span>
-                    </TableCell>
-                    {showScope && (
+                  <Fragment key={doc.id}>
+                    <TableRow
+                      className={cn(
+                        "border-olive-100 transition-colors hover:bg-olive-50 dark:border-olive-800/50 dark:hover:bg-olive-900",
+                        isExpanded && "bg-olive-50/50 dark:bg-olive-900/50",
+                      )}
+                    >
                       <TableCell>
-                        {scopeBadge ? (
-                          <Badge variant={scopeBadge.variant}>{scopeBadge.label}</Badge>
-                        ) : (
-                          <span className="text-sm text-olive-400">{"\u2014"}</span>
+                        <button
+                          type="button"
+                          className="flex min-w-0 items-center gap-1.5 text-left"
+                          onClick={() => setExpandedDocId(isExpanded ? null : doc.id)}
+                          aria-expanded={isExpanded}
+                          aria-label={`${isExpanded ? "Collapse" : "Expand"} comments for ${doc.fileName}`}
+                        >
+                          {isExpanded ? (
+                            <ChevronDown className="size-3.5 shrink-0 text-olive-400" />
+                          ) : (
+                            <ChevronRight className="size-3.5 shrink-0 text-olive-400" />
+                          )}
+                          <Icon className="size-4 shrink-0 text-olive-400 dark:text-olive-500" />
+                          <span className="truncate text-sm font-medium text-olive-950 dark:text-olive-50">
+                            {doc.fileName}
+                          </span>
+                        </button>
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell">
+                        <span className="text-sm text-olive-600 dark:text-olive-400">
+                          {formatFileSize(doc.size)}
+                        </span>
+                      </TableCell>
+                      {showScope && (
+                        <TableCell>
+                          {scopeBadge ? (
+                            <Badge variant={scopeBadge.variant}>{scopeBadge.label}</Badge>
+                          ) : (
+                            <span className="text-sm text-olive-400">{"\u2014"}</span>
+                          )}
+                        </TableCell>
+                      )}
+                      <TableCell>
+                        <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell">
+                        <span className="text-sm text-olive-600 dark:text-olive-400">
+                          {doc.uploadedAt ? formatDate(doc.uploadedAt) : "\u2014"}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        {doc.status === "UPLOADED" && (
+                          <DownloadButton documentId={doc.id} fileName={doc.fileName} />
                         )}
                       </TableCell>
+                    </TableRow>
+                    {isExpanded && (
+                      <TableRow className="border-olive-100 dark:border-olive-800/50">
+                        <TableCell colSpan={colSpan} className="bg-olive-50/30 px-6 py-4 dark:bg-olive-900/30">
+                          <CommentSectionClient
+                            projectId={projectId}
+                            entityType="DOCUMENT"
+                            entityId={doc.id}
+                            orgSlug={slug}
+                            currentMemberId={currentMemberId ?? ""}
+                            canManageVisibility={canManageVisibility}
+                          />
+                        </TableCell>
+                      </TableRow>
                     )}
-                    <TableCell>
-                      <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell">
-                      <span className="text-sm text-olive-600 dark:text-olive-400">
-                        {doc.uploadedAt ? formatDate(doc.uploadedAt) : "\u2014"}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      {doc.status === "UPLOADED" && (
-                        <DownloadButton documentId={doc.id} fileName={doc.fileName} />
-                      )}
-                    </TableCell>
-                  </TableRow>
+                  </Fragment>
                 );
               })}
             </TableBody>

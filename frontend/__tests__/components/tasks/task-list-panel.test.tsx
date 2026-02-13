@@ -27,6 +27,15 @@ vi.mock("@/app/(app)/org/[slug]/projects/[id]/time-entry-actions", () => ({
   deleteTimeEntry: vi.fn(),
 }));
 
+vi.mock("server-only", () => ({}));
+
+vi.mock("@/lib/actions/comments", () => ({
+  fetchComments: vi.fn().mockResolvedValue([]),
+  createComment: vi.fn().mockResolvedValue({ success: true }),
+  updateComment: vi.fn().mockResolvedValue({ success: true }),
+  deleteComment: vi.fn().mockResolvedValue({ success: true }),
+}));
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: vi.fn(),

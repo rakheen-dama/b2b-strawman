@@ -17,6 +17,7 @@ import {
 import { CreateTaskDialog } from "@/components/tasks/create-task-dialog";
 import { LogTimeDialog } from "@/components/tasks/log-time-dialog";
 import { TimeEntryList } from "@/components/tasks/time-entry-list";
+import { CommentSectionClient } from "@/components/comments/comment-section-client";
 import { formatDate } from "@/lib/format";
 import {
   claimTask,
@@ -500,14 +501,26 @@ export function TaskListPanel({
                             Loading time entries...
                           </p>
                         ) : (
-                          <TimeEntryList
-                            entries={taskEntries ?? []}
-                            slug={slug}
-                            projectId={projectId}
-                            currentMemberId={currentMemberId}
-                            orgRole={orgRole}
-                            canManage={canManage}
-                          />
+                          <>
+                            <TimeEntryList
+                              entries={taskEntries ?? []}
+                              slug={slug}
+                              projectId={projectId}
+                              currentMemberId={currentMemberId}
+                              orgRole={orgRole}
+                              canManage={canManage}
+                            />
+                            <div className="mt-4 border-t border-olive-200 pt-4 dark:border-olive-800">
+                              <CommentSectionClient
+                                projectId={projectId}
+                                entityType="TASK"
+                                entityId={task.id}
+                                orgSlug={slug}
+                                currentMemberId={currentMemberId ?? ""}
+                                canManageVisibility={canManage}
+                              />
+                            </div>
+                          </>
                         )}
                       </TableCell>
                     </TableRow>

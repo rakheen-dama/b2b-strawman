@@ -9,6 +9,7 @@ import { DocumentsPanel } from "@/components/documents/documents-panel";
 import { ProjectMembersPanel } from "@/components/projects/project-members-panel";
 import { TaskListPanel } from "@/components/tasks/task-list-panel";
 import { TimeSummaryPanel } from "@/components/projects/time-summary-panel";
+import { ActivityFeed } from "@/components/activity/activity-feed";
 import { ProjectTabs } from "@/components/projects/project-tabs";
 import { formatDate } from "@/lib/format";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
@@ -203,6 +204,9 @@ export default async function ProjectDetailPage({
             initialByTask={timeSummaryByTask}
             initialByMember={timeSummaryByMember}
           />
+        }
+        activityPanel={
+          <ActivityFeed projectId={id} orgSlug={slug} />
         }
       />
     </div>

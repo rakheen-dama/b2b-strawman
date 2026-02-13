@@ -74,11 +74,20 @@
 | 65 | Activity Feed Frontend — Activity Tab & Components | Frontend | 64 | S | 65A | **Done** (PR #122) |
 | 66 | Email Notification Stubs — Channel Abstraction & Templates | Backend | 61 | S | 66A | **Done** (PR #117) |
 | **Phase 7 — Customer Portal Backend Prototype** | | | | | | See [tasks/phase7-customer-portal-backend.md](tasks/phase7-customer-portal-backend.md) |
-| 54 | PortalContact & Persistent Magic Links | Backend | -- | M | 54A, 54B | 54A **Done** (PR #123) |
+| 54 | PortalContact & Persistent Magic Links | Backend | -- | M | 54A, 54B | **Done** (PR #123, #124) |
 | 55 | Portal Read-Model Schema & DataSource | Backend | 54 | M | 55A, 55B | |
 | 56 | Domain Events & Event Handlers | Backend | 55 | L | 56A, 56B, 56C | |
 | 57 | Portal Comments, Summary & Profile APIs | Backend | 56 | M | 57A, 57B | |
 | 58 | Thymeleaf Dev Harness | Backend | 54, 57 | S | 58A | |
+| **Phase 8 — Rate Cards, Budgets & Profitability** | | | | | | See [tasks/phase8-rate-cards-budgets-profitability.md](tasks/phase8-rate-cards-budgets-profitability.md) |
+| 67 | OrgSettings & Rate Entity Foundation | Backend | -- | L | 67A, 67B, 67C, 67D | |
+| 68 | Rate Management Frontend — Settings, Project & Customer Rates | Frontend | 67 | M | 68A, 68B | |
+| 69 | TimeEntry Rate Snapshots & Billable Enrichment | Backend | 67 | M | 69A, 69B | |
+| 70 | TimeEntry Frontend — Billable UX & Rate Preview | Frontend | 69 | S | 70A | |
+| 71 | Project Budgets — Entity, Status & Alerts | Backend | 69 | M | 71A, 71B | |
+| 72 | Budget Frontend — Configuration & Status Visualization | Frontend | 71 | S | 72A | |
+| 73 | Profitability Backend — Reports & Aggregation Queries | Backend | 69 | M | 73A, 73B | |
+| 74 | Profitability & Financials Frontend — Pages & Tabs | Frontend | 73, 72, 68 | L | 74A, 74B, 74C | |
 
 ---
 

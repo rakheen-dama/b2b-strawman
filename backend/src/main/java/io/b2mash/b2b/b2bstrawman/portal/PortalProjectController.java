@@ -1,11 +1,13 @@
 package io.b2mash.b2b.b2bstrawman.portal;
 
+import io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalReadModelService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,9 +20,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class PortalProjectController {
 
   private final PortalQueryService portalQueryService;
+  private final PortalReadModelService portalReadModelService;
 
-  public PortalProjectController(PortalQueryService portalQueryService) {
+  public PortalProjectController(
+      PortalQueryService portalQueryService, PortalReadModelService portalReadModelService) {
     this.portalQueryService = portalQueryService;
+    this.portalReadModelService = portalReadModelService;
   }
 
   /** Lists projects linked to the authenticated customer. */
@@ -44,6 +49,33 @@ public class PortalProjectController {
     return ResponseEntity.ok(response);
   }
 
+  /** Returns project detail for a specific project linked to the authenticated customer. */
+  @GetMapping("/{id}")
+  public ResponseEntity<PortalProjectDetailResponse> getProjectDetail(@PathVariable UUID id) {
+    UUID customerId = RequestScopes.requireCustomerId();
+    String orgId = RequestScopes.requireOrgId();
+    var project = portalReadModelService.getProjectDetail(id, customerId, orgId);
+
+    return ResponseEntity.ok(
+        new PortalProjectDetailResponse(
+            project.id(),
+            project.name(),
+            project.status(),
+            project.description(),
+            project.documentCount(),
+            project.commentCount(),
+            project.createdAt()));
+  }
+
   public record PortalProjectResponse(
       UUID id, String name, String description, long documentCount, Instant createdAt) {}
+
+  public record PortalProjectDetailResponse(
+      UUID id,
+      String name,
+      String status,
+      String description,
+      int documentCount,
+      int commentCount,
+      Instant createdAt) {}
 }

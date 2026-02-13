@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Portal Dev Harness - Generate Magic Link</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 640px; margin: 40px auto; padding: 0 20px; color: #1a1a1a; }
+        h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .subtitle { color: #666; font-size: 0.875rem; margin-bottom: 2rem; }
+        label { display: block; font-weight: 600; margin-bottom: 4px; font-size: 0.875rem; }
+        input, select { width: 100%; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.875rem; box-sizing: border-box; margin-bottom: 1rem; }
+        button { background: #2563eb; color: white; padding: 8px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.875rem; }
+        button:hover { background: #1d4ed8; }
+        .error { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 12px; border-radius: 4px; margin-bottom: 1rem; font-size: 0.875rem; }
+        .success { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 12px; border-radius: 4px; margin-bottom: 1rem; }
+        .success a { color: #2563eb; word-break: break-all; }
+        .badge { display: inline-block; background: #fbbf24; color: #1a1a1a; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <h1>Portal Dev Harness <span class="badge">DEV ONLY</span></h1>
+    <p class="subtitle">Generate a magic link to test the customer portal flow.</p>
+
+    <div th:if="${error}" class="error" th:text="${error}">Error message</div>
+
+    <div th:if="${magicLink}" class="success">
+        <p><strong>Magic link generated:</strong></p>
+        <p><a th:href="${magicLink}" th:text="${magicLink}">Link URL</a></p>
+        <p style="color: #666; font-size: 0.75rem;">Click the link above to exchange the token and view the dashboard.</p>
+    </div>
+
+    <form th:action="@{/portal/dev/generate-link}" method="post">
+        <label for="orgId">Organization</label>
+        <select id="orgId" name="orgId">
+            <option value="">-- Select an organization --</option>
+            <option th:each="org : ${orgs}" th:value="${org.clerkOrgId}" th:text="${org.clerkOrgId}"
+                    th:selected="${org.clerkOrgId == orgId}">Org</option>
+        </select>
+
+        <label for="email">Customer Email</label>
+        <input id="email" type="email" name="email" placeholder="customer@example.com"
+               th:value="${email}" required="required"/>
+
+        <button type="submit">Generate Magic Link</button>
+    </form>
+</body>
+</html>

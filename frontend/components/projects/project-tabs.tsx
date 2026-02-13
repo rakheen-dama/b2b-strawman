@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Tabs as TabsPrimitive } from "radix-ui";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -12,21 +12,33 @@ interface ProjectTabsProps {
   tasksPanel: ReactNode;
   timePanel: ReactNode;
   activityPanel: ReactNode;
+  ratesPanel?: ReactNode;
 }
 
-const tabs = [
+type TabId = "documents" | "members" | "customers" | "tasks" | "time" | "activity" | "rates";
+
+interface TabDef {
+  id: TabId;
+  label: string;
+}
+
+const baseTabs: TabDef[] = [
   { id: "documents", label: "Documents" },
   { id: "members", label: "Members" },
   { id: "customers", label: "Customers" },
   { id: "tasks", label: "Tasks" },
   { id: "time", label: "Time" },
+  { id: "rates", label: "Rates" },
   { id: "activity", label: "Activity" },
-] as const;
+];
 
-type TabId = (typeof tabs)[number]["id"];
-
-export function ProjectTabs({ documentsPanel, membersPanel, customersPanel, tasksPanel, timePanel, activityPanel }: ProjectTabsProps) {
+export function ProjectTabs({ documentsPanel, membersPanel, customersPanel, tasksPanel, timePanel, activityPanel, ratesPanel }: ProjectTabsProps) {
   const [activeTab, setActiveTab] = useState<TabId>("documents");
+
+  const tabs = useMemo(() => {
+    if (ratesPanel) return baseTabs;
+    return baseTabs.filter((t) => t.id !== "rates");
+  }, [ratesPanel]);
 
   return (
     <TabsPrimitive.Root value={activeTab} onValueChange={(v) => setActiveTab(v as TabId)}>
@@ -72,6 +84,11 @@ export function ProjectTabs({ documentsPanel, membersPanel, customersPanel, task
       <TabsPrimitive.Content value="time" className="pt-6 outline-none">
         {timePanel}
       </TabsPrimitive.Content>
+      {ratesPanel && (
+        <TabsPrimitive.Content value="rates" className="pt-6 outline-none">
+          {ratesPanel}
+        </TabsPrimitive.Content>
+      )}
       <TabsPrimitive.Content value="activity" className="pt-6 outline-none">
         {activityPanel}
       </TabsPrimitive.Content>

@@ -7,7 +7,7 @@ Phase 6.5 adds the **communication and awareness layer** to the DocTeams platfor
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 59 | Comment Backend — Entity, Migration & CRUD API | Backend | — | M | 59A, 59B | **Done** (PR #107, #109) |
-| 60 | Comment Frontend — CommentSection & Integration | Frontend | 59 | M | 60A, 60B | |
+| 60 | Comment Frontend — CommentSection & Integration | Frontend | 59 | M | 60A, 60B | 60A Done (PR #118) |
 | 61 | Domain Events & Notification Backend — Events, Entity, Migration & Handler | Backend | — | L | 61A, 61B, 61C | **Done** (PR #110, #111, #112) |
 | 62 | Notification API & Preferences Backend | Backend | 61 | M | 62A, 62B | **Done** (PR #113, #114) |
 | 63 | Notification Frontend — Bell, Page & Preferences UI | Frontend | 62 | M | 63A, 63B | |

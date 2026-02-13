@@ -53,6 +53,7 @@ class PortalCommentControllerTest {
   private UUID projectWithNoComments;
   private String portalToken;
   private String tenantSchema;
+  private UUID otherCustomerProjectId;
 
   @BeforeAll
   void setup() throws Exception {
@@ -153,6 +154,40 @@ class PortalCommentControllerTest {
         "Charlie",
         "Third comment",
         Instant.parse("2026-02-03T14:00:00Z"));
+
+    // Seed a second customer with its own project (for cross-customer isolation test)
+    UUID[] otherCustomerIdHolder = new UUID[1];
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () -> {
+              var otherCustomer =
+                  customerService.createCustomer(
+                      "Other Customer",
+                      "other-customer@test.com",
+                      null,
+                      null,
+                      null,
+                      UUID.fromString(memberIdStr));
+              otherCustomerIdHolder[0] = otherCustomer.getId();
+
+              portalContactService.createContact(
+                  ORG_ID,
+                  otherCustomer.getId(),
+                  "other-contact@test.com",
+                  "Other Contact",
+                  PortalContact.ContactRole.GENERAL);
+            });
+
+    otherCustomerProjectId = UUID.randomUUID();
+    readModelRepo.upsertPortalProject(
+        otherCustomerProjectId,
+        otherCustomerIdHolder[0],
+        ORG_ID,
+        "Other Customer Project",
+        "ACTIVE",
+        "Belongs to other customer",
+        Instant.now());
   }
 
   @Test
@@ -214,5 +249,15 @@ class PortalCommentControllerTest {
     // Verify DESC order: newest first
     org.assertj.core.api.Assertions.assertThat(Instant.parse(first)).isAfter(Instant.parse(second));
     org.assertj.core.api.Assertions.assertThat(Instant.parse(second)).isAfter(Instant.parse(third));
+  }
+
+  @Test
+  void listCommentsReturns404ForOtherCustomersProject() throws Exception {
+    // Customer A's token should not be able to access Customer B's project
+    mockMvc
+        .perform(
+            get("/portal/projects/{projectId}/comments", otherCustomerProjectId)
+                .header("Authorization", "Bearer " + portalToken))
+        .andExpect(status().isNotFound());
   }
 }

@@ -25,9 +25,8 @@ public class PortalProfileController {
   /** Returns the authenticated contact's profile with customer details. */
   @GetMapping
   public ResponseEntity<PortalProfileResponse> getProfile() {
-    UUID customerId = RequestScopes.requireCustomerId();
-    String orgId = RequestScopes.requireOrgId();
-    var profile = portalReadModelService.getContactProfile(customerId, orgId);
+    UUID portalContactId = RequestScopes.requirePortalContactId();
+    var profile = portalReadModelService.getContactProfile(portalContactId);
 
     return ResponseEntity.ok(
         new PortalProfileResponse(

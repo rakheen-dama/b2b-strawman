@@ -157,4 +157,9 @@ class PortalProjectControllerTest {
         .andExpect(jsonPath("$.documentCount").value(5))
         .andExpect(jsonPath("$.commentCount").value(3));
   }
+
+  @Test
+  void getProjectDetailReturns401WithoutToken() throws Exception {
+    mockMvc.perform(get("/portal/projects/{id}", projectId)).andExpect(status().isUnauthorized());
+  }
 }

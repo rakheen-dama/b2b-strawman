@@ -34,7 +34,6 @@ public class PortalReadModelService {
   }
 
   /** Returns the portal project detail for the given project, customer, and org. */
-  @Transactional(readOnly = true)
   public PortalProjectView getProjectDetail(UUID projectId, UUID customerId, String orgId) {
     return readModelRepository
         .findProjectDetail(projectId, customerId, orgId)
@@ -45,7 +44,6 @@ public class PortalReadModelService {
    * Lists comments for a portal project. Verifies the customer is linked to the project via the
    * portal read-model before returning comments.
    */
-  @Transactional(readOnly = true)
   public List<PortalCommentView> listProjectComments(
       UUID projectId, UUID customerId, String orgId) {
     // Verify customer is linked to the project
@@ -57,7 +55,6 @@ public class PortalReadModelService {
   }
 
   /** Returns the project summary (time/billing rollup) or empty if no summary exists. */
-  @Transactional(readOnly = true)
   public Optional<PortalProjectSummaryView> getProjectSummary(
       UUID projectId, UUID customerId, String orgId) {
     // Verify customer is linked to the project
@@ -70,16 +67,16 @@ public class PortalReadModelService {
 
   /** Returns the contact profile with customer name for the authenticated portal user. */
   @Transactional(readOnly = true)
-  public ContactProfile getContactProfile(UUID customerId, String orgId) {
+  public ContactProfile getContactProfile(UUID portalContactId) {
     var contact =
         portalContactRepository
-            .findByCustomerIdAndOrgId(customerId, orgId)
-            .orElseThrow(() -> new ResourceNotFoundException("PortalContact", customerId));
+            .findOneById(portalContactId)
+            .orElseThrow(() -> new ResourceNotFoundException("PortalContact", portalContactId));
 
     var customer =
         customerRepository
-            .findOneById(customerId)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+            .findOneById(contact.getCustomerId())
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", contact.getCustomerId()));
 
     return new ContactProfile(
         contact.getId(),

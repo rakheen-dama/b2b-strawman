@@ -63,6 +63,8 @@ public class SecurityConfig {
             auth ->
                 auth.requestMatchers("/portal/auth/**")
                     .permitAll()
+                    .requestMatchers("/portal/dev/**")
+                    .permitAll()
                     .requestMatchers("/portal/**")
                     .permitAll())
         // No oauth2ResourceServer — portal uses CustomerAuthFilter with portal JWTs

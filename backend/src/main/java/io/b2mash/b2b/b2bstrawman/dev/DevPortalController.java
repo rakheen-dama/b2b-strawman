@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.portal.MagicLinkService;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactService;
 import io.b2mash.b2b.b2bstrawman.portal.PortalJwtService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,6 +38,7 @@ public class DevPortalController {
 
   private final OrgSchemaMappingRepository orgSchemaMappingRepository;
   private final PortalContactService portalContactService;
+  private final PortalContactRepository portalContactRepository;
   private final CustomerRepository customerRepository;
   private final MagicLinkService magicLinkService;
   private final PortalJwtService portalJwtService;
@@ -46,6 +48,7 @@ public class DevPortalController {
   public DevPortalController(
       OrgSchemaMappingRepository orgSchemaMappingRepository,
       PortalContactService portalContactService,
+      PortalContactRepository portalContactRepository,
       CustomerRepository customerRepository,
       MagicLinkService magicLinkService,
       PortalJwtService portalJwtService,
@@ -53,6 +56,7 @@ public class DevPortalController {
       PortalReadModelRepository portalReadModelRepository) {
     this.orgSchemaMappingRepository = orgSchemaMappingRepository;
     this.portalContactService = portalContactService;
+    this.portalContactRepository = portalContactRepository;
     this.customerRepository = customerRepository;
     this.magicLinkService = magicLinkService;
     this.portalJwtService = portalJwtService;
@@ -150,16 +154,13 @@ public class DevPortalController {
 
     String tenantSchema = mapping.getSchemaName();
     try {
-      // Step 1: Verify and consume the raw magic link token to get the portal contact ID
-      UUID portalContactId =
-          ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-              .call(() -> magicLinkService.verifyAndConsumeToken(token));
-
-      // Step 2: Look up the contact to get customerId, then issue a portal JWT
+      // Verify, consume, and issue JWT in a single scoped block so that if JWT issuance
+      // fails, the entire operation is within the same transactional/scoped context.
       String portalJwt =
           ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
               .call(
                   () -> {
+                    UUID portalContactId = magicLinkService.verifyAndConsumeToken(token);
                     var profile = portalReadModelService.getContactProfile(portalContactId);
                     return portalJwtService.issueToken(profile.customerId(), orgId);
                   });
@@ -196,22 +197,32 @@ public class DevPortalController {
     UUID customerId = claims.customerId();
 
     try {
-      var projects =
+      // Resolve portal contact to bind PORTAL_CONTACT_ID (matches CustomerAuthFilter behavior)
+      var carrier =
           ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
               .where(RequestScopes.CUSTOMER_ID, customerId)
-              .where(RequestScopes.ORG_ID, orgId)
-              .call(() -> portalReadModelRepository.findProjectsByCustomer(orgId, customerId));
-
-      var documents =
+              .where(RequestScopes.ORG_ID, orgId);
+      var contact =
           ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
-              .where(RequestScopes.CUSTOMER_ID, customerId)
-              .where(RequestScopes.ORG_ID, orgId)
-              .call(() -> portalReadModelRepository.findDocumentsByCustomer(orgId, customerId));
+              .call(
+                  () ->
+                      portalContactRepository
+                          .findByCustomerIdAndOrgId(customerId, orgId)
+                          .orElse(null));
+      if (contact != null) {
+        carrier = carrier.where(RequestScopes.PORTAL_CONTACT_ID, contact.getId());
+      }
 
-      model.addAttribute("projects", projects);
-      model.addAttribute("documents", documents);
-      model.addAttribute("orgId", orgId);
-      model.addAttribute("customerId", customerId);
+      var scopedCarrier = carrier;
+      scopedCarrier.run(
+          () -> {
+            var projects = portalReadModelRepository.findProjectsByCustomer(orgId, customerId);
+            var documents = portalReadModelRepository.findDocumentsByCustomer(orgId, customerId);
+            model.addAttribute("projects", projects);
+            model.addAttribute("documents", documents);
+            model.addAttribute("orgId", orgId);
+            model.addAttribute("customerId", customerId);
+          });
     } catch (Exception e) {
       log.warn("Error loading dashboard: {}", e.getMessage());
       model.addAttribute("error", "Error loading dashboard: " + e.getMessage());
@@ -243,29 +254,42 @@ public class DevPortalController {
     UUID customerId = claims.customerId();
 
     try {
-      ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
-          .where(RequestScopes.CUSTOMER_ID, customerId)
-          .where(RequestScopes.ORG_ID, orgId)
-          .run(
-              () -> {
-                var project = portalReadModelService.getProjectDetail(id, customerId, orgId);
-                model.addAttribute("project", project);
+      // Resolve portal contact to bind PORTAL_CONTACT_ID (matches CustomerAuthFilter behavior)
+      var carrier =
+          ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
+              .where(RequestScopes.CUSTOMER_ID, customerId)
+              .where(RequestScopes.ORG_ID, orgId);
+      var contact =
+          ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
+              .call(
+                  () ->
+                      portalContactRepository
+                          .findByCustomerIdAndOrgId(customerId, orgId)
+                          .orElse(null));
+      if (contact != null) {
+        carrier = carrier.where(RequestScopes.PORTAL_CONTACT_ID, contact.getId());
+      }
 
-                var documents = portalReadModelRepository.findDocumentsByProject(id, orgId);
-                model.addAttribute("documents", documents);
+      var scopedCarrier = carrier;
+      scopedCarrier.run(
+          () -> {
+            var project = portalReadModelService.getProjectDetail(id, customerId, orgId);
+            model.addAttribute("project", project);
 
-                var comments = portalReadModelService.listProjectComments(id, customerId, orgId);
-                model.addAttribute("comments", comments);
+            var documents = portalReadModelRepository.findDocumentsByProject(id, orgId);
+            model.addAttribute("documents", documents);
 
-                var summary =
-                    portalReadModelService.getProjectSummary(id, customerId, orgId).orElse(null);
-                model.addAttribute(
-                    "totalHours", summary != null ? summary.totalHours() : BigDecimal.ZERO);
-                model.addAttribute(
-                    "billableHours", summary != null ? summary.billableHours() : BigDecimal.ZERO);
-                model.addAttribute(
-                    "lastActivityAt", summary != null ? summary.lastActivityAt() : null);
-              });
+            var comments = portalReadModelService.listProjectComments(id, customerId, orgId);
+            model.addAttribute("comments", comments);
+
+            var summary =
+                portalReadModelService.getProjectSummary(id, customerId, orgId).orElse(null);
+            model.addAttribute(
+                "totalHours", summary != null ? summary.totalHours() : BigDecimal.ZERO);
+            model.addAttribute(
+                "billableHours", summary != null ? summary.billableHours() : BigDecimal.ZERO);
+            model.addAttribute("lastActivityAt", summary != null ? summary.lastActivityAt() : null);
+          });
     } catch (Exception e) {
       log.warn("Error loading project detail for {}: {}", id, e.getMessage());
       model.addAttribute("error", "Error loading project: " + e.getMessage());

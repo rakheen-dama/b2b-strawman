@@ -6,6 +6,7 @@ import {
   Shield,
   Puzzle,
   ChevronRight,
+  DollarSign,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { LucideIcon } from "lucide-react";
@@ -31,6 +32,13 @@ const settingsCards: SettingsCard[] = [
     title: "Notifications",
     description: "Configure notification preferences",
     href: "notifications",
+    comingSoon: false,
+  },
+  {
+    icon: DollarSign,
+    title: "Rates & Currency",
+    description: "Manage billing rates, cost rates, and default currency",
+    href: "rates",
     comingSoon: false,
   },
   {

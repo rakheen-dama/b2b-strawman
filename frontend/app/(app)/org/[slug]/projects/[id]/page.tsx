@@ -1,6 +1,6 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { api, handleApiError } from "@/lib/api";
-import type { OrgMember, Project, Document, ProjectMember, ProjectRole, Task, ProjectTimeSummary, MemberTimeSummary, TaskTimeSummary } from "@/lib/types";
+import type { OrgMember, Project, Customer, Document, ProjectMember, ProjectRole, Task, ProjectTimeSummary, MemberTimeSummary, TaskTimeSummary } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EditProjectDialog } from "@/components/projects/edit-project-dialog";
@@ -10,6 +10,7 @@ import { ProjectMembersPanel } from "@/components/projects/project-members-panel
 import { TaskListPanel } from "@/components/tasks/task-list-panel";
 import { TimeSummaryPanel } from "@/components/projects/time-summary-panel";
 import { ActivityFeed } from "@/components/activity/activity-feed";
+import { ProjectCustomersPanel } from "@/components/projects/project-customers-panel";
 import { ProjectTabs } from "@/components/projects/project-tabs";
 import { formatDate } from "@/lib/format";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
@@ -61,6 +62,13 @@ export default async function ProjectDetailPage({
     tasks = await api.get<Task[]>(`/api/projects/${id}/tasks`);
   } catch {
     // Non-fatal: show empty tasks list if fetch fails
+  }
+
+  let customers: Customer[] = [];
+  try {
+    customers = await api.get<Customer[]>(`/api/projects/${id}/customers`);
+  } catch {
+    // Non-fatal: show empty customers list if fetch fails
   }
 
   // Time summary data for the "Time" tab
@@ -175,6 +183,14 @@ export default async function ProjectDetailPage({
             slug={slug}
             currentMemberId={currentMemberId}
             canManageVisibility={canManage}
+          />
+        }
+        customersPanel={
+          <ProjectCustomersPanel
+            customers={customers}
+            slug={slug}
+            projectId={id}
+            canManage={canManage}
           />
         }
         membersPanel={

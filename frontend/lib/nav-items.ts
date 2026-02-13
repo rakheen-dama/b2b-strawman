@@ -1,4 +1,4 @@
-import { LayoutDashboard, ClipboardList, FolderOpen, FileText, Users, UserRound, Settings, type LucideIcon } from "lucide-react";
+import { LayoutDashboard, ClipboardList, FolderOpen, FileText, Users, UserRound, Bell, Settings, type LucideIcon } from "lucide-react";
 
 export interface NavItem {
   label: string;
@@ -41,6 +41,12 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Team",
     href: (slug) => `/org/${slug}/team`,
     icon: Users,
+    exact: true,
+  },
+  {
+    label: "Notifications",
+    href: (slug) => `/org/${slug}/notifications`,
+    icon: Bell,
     exact: true,
   },
   {

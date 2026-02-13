@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   CreditCard,
+  Bell,
   Building2,
   Shield,
   Puzzle,
@@ -23,6 +24,13 @@ const settingsCards: SettingsCard[] = [
     title: "Billing",
     description: "Manage your subscription and view usage",
     href: "billing",
+    comingSoon: false,
+  },
+  {
+    icon: Bell,
+    title: "Notifications",
+    description: "Configure notification preferences",
+    href: "notifications",
     comingSoon: false,
   },
   {

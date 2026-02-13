@@ -226,6 +226,18 @@ public class PortalReadModelRepository {
 
   // ── Count update methods ────────────────────────────────────────────
 
+  public void setDocumentCount(UUID projectId, UUID customerId, int count) {
+    jdbc.sql(
+            """
+            UPDATE portal.portal_projects
+            SET document_count = ?,
+                updated_at = now()
+            WHERE id = ? AND customer_id = ?
+            """)
+        .params(count, projectId, customerId)
+        .update();
+  }
+
   public void incrementDocumentCount(UUID projectId, UUID customerId) {
     jdbc.sql(
             """

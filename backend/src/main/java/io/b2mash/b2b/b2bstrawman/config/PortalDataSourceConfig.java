@@ -7,6 +7,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
 public class PortalDataSourceConfig {
@@ -20,5 +22,11 @@ public class PortalDataSourceConfig {
   @Bean(name = "portalJdbcClient")
   public JdbcClient portalJdbcClient(@Qualifier("portalDataSource") DataSource portalDataSource) {
     return JdbcClient.create(portalDataSource);
+  }
+
+  @Bean(name = "portalTransactionManager")
+  public PlatformTransactionManager portalTransactionManager(
+      @Qualifier("portalDataSource") DataSource portalDataSource) {
+    return new DataSourceTransactionManager(portalDataSource);
   }
 }

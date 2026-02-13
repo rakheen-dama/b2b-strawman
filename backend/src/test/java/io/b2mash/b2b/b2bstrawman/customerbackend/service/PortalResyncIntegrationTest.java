@@ -39,6 +39,7 @@ class PortalResyncIntegrationTest {
 
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_resync_test";
+  private static final String EMPTY_ORG_ID = "org_resync_empty";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
@@ -56,6 +57,10 @@ class PortalResyncIntegrationTest {
     provisioningService.provisionTenant(ORG_ID, "Resync Test Org");
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     syncMember(ORG_ID, "user_resync_owner", "resync_owner@test.com", "Resync Owner", "owner");
+
+    // Provision a separate empty org (no projects, customers, or documents)
+    provisioningService.provisionTenant(EMPTY_ORG_ID, "Resync Empty Org");
+    planSyncService.syncPlan(EMPTY_ORG_ID, "pro-plan");
 
     // Create two projects
     projectId = createProject("Resync Project A", "First project for resync");
@@ -82,11 +87,10 @@ class PortalResyncIntegrationTest {
 
   @Test
   void resyncEmptyOrgDoesNotError() {
-    // Use a different org that has no data
-    var result = resyncService.resyncOrg(ORG_ID);
-    // The resync should succeed (it wipes and rebuilds)
-    assertThat(result.projectsProjected()).isGreaterThanOrEqualTo(0);
-    assertThat(result.documentsProjected()).isGreaterThanOrEqualTo(0);
+    // Use a genuinely empty org (provisioned but no projects, customers, or documents)
+    var result = resyncService.resyncOrg(EMPTY_ORG_ID);
+    assertThat(result.projectsProjected()).isEqualTo(0);
+    assertThat(result.documentsProjected()).isEqualTo(0);
   }
 
   @Test
@@ -120,7 +124,7 @@ class PortalResyncIntegrationTest {
   }
 
   @Test
-  void resyncRecreateDatasAfterManualDelete() {
+  void resyncRecreatesDataAfterManualDelete() {
     // First resync to ensure data exists
     resyncService.resyncOrg(ORG_ID);
 

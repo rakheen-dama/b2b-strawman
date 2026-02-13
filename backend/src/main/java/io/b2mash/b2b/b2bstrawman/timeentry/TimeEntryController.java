@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -145,6 +146,12 @@ public class TimeEntryController {
       int durationMinutes,
       boolean billable,
       Integer rateCents,
+      BigDecimal billingRateSnapshot,
+      String billingRateCurrency,
+      BigDecimal costRateSnapshot,
+      String costRateCurrency,
+      BigDecimal billableValue,
+      BigDecimal costValue,
       String description,
       Instant createdAt,
       Instant updatedAt) {
@@ -159,6 +166,12 @@ public class TimeEntryController {
           entry.getDurationMinutes(),
           entry.isBillable(),
           entry.getRateCents(),
+          entry.getBillingRateSnapshot(),
+          entry.getBillingRateCurrency(),
+          entry.getCostRateSnapshot(),
+          entry.getCostRateCurrency(),
+          entry.getBillableValue(),
+          entry.getCostValue(),
           entry.getDescription(),
           entry.getCreatedAt(),
           entry.getUpdatedAt());

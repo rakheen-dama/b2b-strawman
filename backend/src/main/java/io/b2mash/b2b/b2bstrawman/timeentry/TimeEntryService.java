@@ -2,11 +2,14 @@ package io.b2mash.b2b.b2bstrawman.timeentry;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateService;
+import io.b2mash.b2b.b2bstrawman.costrate.CostRateService;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
@@ -28,16 +31,22 @@ public class TimeEntryService {
   private final TaskRepository taskRepository;
   private final ProjectAccessService projectAccessService;
   private final AuditService auditService;
+  private final BillingRateService billingRateService;
+  private final CostRateService costRateService;
 
   public TimeEntryService(
       TimeEntryRepository timeEntryRepository,
       TaskRepository taskRepository,
       ProjectAccessService projectAccessService,
-      AuditService auditService) {
+      AuditService auditService,
+      BillingRateService billingRateService,
+      CostRateService costRateService) {
     this.timeEntryRepository = timeEntryRepository;
     this.taskRepository = taskRepository;
     this.projectAccessService = projectAccessService;
     this.auditService = auditService;
+    this.billingRateService = billingRateService;
+    this.costRateService = costRateService;
   }
 
   @Transactional
@@ -68,27 +77,41 @@ public class TimeEntryService {
 
     var entry =
         new TimeEntry(taskId, memberId, date, durationMinutes, billable, rateCents, description);
-    entry = timeEntryRepository.save(entry);
-    log.info("Created time entry {} for task {} by member {}", entry.getId(), taskId, memberId);
+
+    // Snapshot billing rate (ADR-040)
+    var billingRate = billingRateService.resolveRate(memberId, task.getProjectId(), date);
+    billingRate.ifPresent(r -> entry.snapshotBillingRate(r.hourlyRate(), r.currency()));
+
+    // Snapshot cost rate
+    var costRate = costRateService.resolveCostRate(memberId, date);
+    costRate.ifPresent(r -> entry.snapshotCostRate(r.hourlyCost(), r.currency()));
+
+    var saved = timeEntryRepository.save(entry);
+    log.info("Created time entry {} for task {} by member {}", saved.getId(), taskId, memberId);
+
+    var auditDetails = new LinkedHashMap<String, Object>();
+    auditDetails.put("task_id", taskId.toString());
+    auditDetails.put("duration_minutes", durationMinutes);
+    auditDetails.put("billable", billable);
+    auditDetails.put("project_id", task.getProjectId().toString());
+    if (saved.getBillingRateSnapshot() != null) {
+      auditDetails.put("billing_rate_snapshot", saved.getBillingRateSnapshot().toString());
+      auditDetails.put("billing_rate_currency", saved.getBillingRateCurrency());
+    }
+    if (saved.getCostRateSnapshot() != null) {
+      auditDetails.put("cost_rate_snapshot", saved.getCostRateSnapshot().toString());
+      auditDetails.put("cost_rate_currency", saved.getCostRateCurrency());
+    }
 
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("time_entry.created")
             .entityType("time_entry")
-            .entityId(entry.getId())
-            .details(
-                Map.of(
-                    "task_id",
-                    taskId.toString(),
-                    "duration_minutes",
-                    durationMinutes,
-                    "billable",
-                    billable,
-                    "project_id",
-                    task.getProjectId().toString()))
+            .entityId(saved.getId())
+            .details(auditDetails)
             .build());
 
-    return entry;
+    return saved;
   }
 
   @Transactional(readOnly = true)
@@ -141,6 +164,10 @@ public class TimeEntryService {
     boolean oldBillable = entry.isBillable();
     Integer oldRateCents = entry.getRateCents();
     String oldDescription = entry.getDescription();
+    BigDecimal oldBillingRateSnapshot = entry.getBillingRateSnapshot();
+    String oldBillingRateCurrency = entry.getBillingRateCurrency();
+    BigDecimal oldCostRateSnapshot = entry.getCostRateSnapshot();
+    String oldCostRateCurrency = entry.getCostRateCurrency();
 
     if (date != null) {
       entry.setDate(date);
@@ -157,6 +184,27 @@ public class TimeEntryService {
     if (description != null) {
       entry.setDescription(description);
     }
+
+    // Re-snapshot if date changed (ADR-040: re-resolve on context change)
+    boolean dateChanged = date != null && !Objects.equals(oldDate, date);
+    if (dateChanged) {
+      LocalDate effectiveDate = entry.getDate();
+      var billingRate =
+          billingRateService.resolveRate(entry.getMemberId(), task.getProjectId(), effectiveDate);
+      if (billingRate.isPresent()) {
+        entry.snapshotBillingRate(billingRate.get().hourlyRate(), billingRate.get().currency());
+      } else {
+        entry.snapshotBillingRate(null, null);
+      }
+
+      var costRate = costRateService.resolveCostRate(entry.getMemberId(), effectiveDate);
+      if (costRate.isPresent()) {
+        entry.snapshotCostRate(costRate.get().hourlyCost(), costRate.get().currency());
+      } else {
+        entry.snapshotCostRate(null, null);
+      }
+    }
+
     entry.setUpdatedAt(Instant.now());
 
     entry = timeEntryRepository.save(entry);
@@ -182,6 +230,39 @@ public class TimeEntryService {
       details.put(
           "description",
           Map.of("from", oldDescription != null ? oldDescription : "", "to", description));
+    }
+
+    // Include snapshot deltas if date changed
+    if (dateChanged) {
+      if (!Objects.equals(oldBillingRateSnapshot, entry.getBillingRateSnapshot())) {
+        details.put(
+            "billing_rate_snapshot",
+            Map.of(
+                "from",
+                oldBillingRateSnapshot != null ? oldBillingRateSnapshot.toString() : "",
+                "to",
+                entry.getBillingRateSnapshot() != null
+                    ? entry.getBillingRateSnapshot().toString()
+                    : ""));
+      }
+      if (!Objects.equals(oldBillingRateCurrency, entry.getBillingRateCurrency())) {
+        details.put(
+            "billing_rate_currency",
+            Map.of(
+                "from",
+                oldBillingRateCurrency != null ? oldBillingRateCurrency : "",
+                "to",
+                entry.getBillingRateCurrency() != null ? entry.getBillingRateCurrency() : ""));
+      }
+      if (!Objects.equals(oldCostRateSnapshot, entry.getCostRateSnapshot())) {
+        details.put(
+            "cost_rate_snapshot",
+            Map.of(
+                "from",
+                oldCostRateSnapshot != null ? oldCostRateSnapshot.toString() : "",
+                "to",
+                entry.getCostRateSnapshot() != null ? entry.getCostRateSnapshot().toString() : ""));
+      }
     }
 
     details.put("project_id", task.getProjectId().toString());

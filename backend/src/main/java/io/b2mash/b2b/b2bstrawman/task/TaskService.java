@@ -196,12 +196,14 @@ public class TaskService {
           "type", Map.of("from", oldType != null ? oldType : "", "to", type != null ? type : ""));
     }
 
+    details.put("project_id", task.getProjectId().toString());
+
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("task.updated")
             .entityType("task")
             .entityId(task.getId())
-            .details(details.isEmpty() ? null : details)
+            .details(details)
             .build());
 
     // Event publication for notification fan-out
@@ -317,7 +319,10 @@ public class TaskService {
             .eventType("task.claimed")
             .entityType("task")
             .entityId(task.getId())
-            .details(Map.of("assignee_id", memberId.toString()))
+            .details(
+                Map.of(
+                    "assignee_id", memberId.toString(),
+                    "project_id", task.getProjectId().toString()))
             .build());
 
     String actorName = resolveActorName(memberId);
@@ -373,7 +378,10 @@ public class TaskService {
             .eventType("task.released")
             .entityType("task")
             .entityId(task.getId())
-            .details(Map.of("previous_assignee_id", previousAssigneeId.toString()))
+            .details(
+                Map.of(
+                    "previous_assignee_id", previousAssigneeId.toString(),
+                    "project_id", task.getProjectId().toString()))
             .build());
 
     return task;

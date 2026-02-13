@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 interface ProjectTabsProps {
   documentsPanel: ReactNode;
   membersPanel: ReactNode;
+  customersPanel: ReactNode;
   tasksPanel: ReactNode;
   timePanel: ReactNode;
   activityPanel: ReactNode;
@@ -16,6 +17,7 @@ interface ProjectTabsProps {
 const tabs = [
   { id: "documents", label: "Documents" },
   { id: "members", label: "Members" },
+  { id: "customers", label: "Customers" },
   { id: "tasks", label: "Tasks" },
   { id: "time", label: "Time" },
   { id: "activity", label: "Activity" },
@@ -23,7 +25,7 @@ const tabs = [
 
 type TabId = (typeof tabs)[number]["id"];
 
-export function ProjectTabs({ documentsPanel, membersPanel, tasksPanel, timePanel, activityPanel }: ProjectTabsProps) {
+export function ProjectTabs({ documentsPanel, membersPanel, customersPanel, tasksPanel, timePanel, activityPanel }: ProjectTabsProps) {
   const [activeTab, setActiveTab] = useState<TabId>("documents");
 
   return (
@@ -60,6 +62,9 @@ export function ProjectTabs({ documentsPanel, membersPanel, tasksPanel, timePane
       </TabsPrimitive.Content>
       <TabsPrimitive.Content value="members" className="pt-6 outline-none">
         {membersPanel}
+      </TabsPrimitive.Content>
+      <TabsPrimitive.Content value="customers" className="pt-6 outline-none">
+        {customersPanel}
       </TabsPrimitive.Content>
       <TabsPrimitive.Content value="tasks" className="pt-6 outline-none">
         {tasksPanel}

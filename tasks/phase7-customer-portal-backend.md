@@ -10,7 +10,7 @@ Phase 7 takes the existing customer portal MVP (built in Phase 4, Epic 43) and e
 | 55 | Portal Read-Model Schema & DataSource | Backend | 54 | M | 55A, 55B | **Done** (PR #125, #126) |
 | 56 | Domain Events & Event Handlers | Backend | 55 | L | 56A, 56B, 56C | **Done** (PR #127, #128, #129) |
 | 57 | Portal Comments, Summary & Profile APIs | Backend | 56 | M | 57A, 57B | **Done** (PR #130, #131) |
-| 58 | Thymeleaf Dev Harness | Backend | 54, 57 | S | 58A | |
+| 58 | Thymeleaf Dev Harness | Backend | 54, 57 | S | 58A | **Done** (PR #132) |
 
 ## Dependency Graph
 

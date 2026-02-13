@@ -44,11 +44,11 @@ class PortalIntegrationTest {
   private static final String API_KEY = "test-api-key";
 
   @Autowired private MockMvc mockMvc;
-  @Autowired private MagicLinkService magicLinkService;
   @Autowired private PortalJwtService portalJwtService;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
   @Autowired private CustomerService customerService;
+  @Autowired private PortalContactService portalContactService;
   @Autowired private CustomerProjectService customerProjectService;
   @Autowired private ProjectRepository projectRepository;
   @Autowired private DocumentRepository documentRepository;
@@ -147,6 +147,20 @@ class PortalIntegrationTest {
                   customerService.createCustomer(
                       "Other Customer B", "portal-cust-b@test.com", null, null, null, memberIdA);
               customerIdB = custB.getId();
+
+              // Create portal contacts for both customers
+              portalContactService.createContact(
+                  ORG_ID,
+                  customerIdA,
+                  "portal-cust-a@test.com",
+                  "Portal Customer A",
+                  PortalContact.ContactRole.PRIMARY);
+              portalContactService.createContact(
+                  ORG_ID,
+                  customerIdB,
+                  "portal-cust-b@test.com",
+                  "Other Customer B",
+                  PortalContact.ContactRole.PRIMARY);
 
               // Create projects
               var proj =
@@ -257,7 +271,7 @@ class PortalIntegrationTest {
   class MagicLinkExchange {
 
     @Test
-    void shouldRequestMagicLinkForValidCustomer() throws Exception {
+    void shouldRequestMagicLinkForValidContact() throws Exception {
       mockMvc
           .perform(
               post("/portal/auth/request-link")
@@ -268,11 +282,13 @@ class PortalIntegrationTest {
                       """
                           .formatted(ORG_ID)))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.token").isNotEmpty());
+          .andExpect(jsonPath("$.message").value("If an account exists, a link has been sent."))
+          .andExpect(jsonPath("$.magicLink").isNotEmpty());
     }
 
     @Test
-    void shouldRejectMagicLinkForUnknownEmail() throws Exception {
+    void shouldReturnGenericMessageForUnknownEmail() throws Exception {
+      // Anti-enumeration: same 200 response for unknown emails
       mockMvc
           .perform(
               post("/portal/auth/request-link")
@@ -282,11 +298,14 @@ class PortalIntegrationTest {
                       {"email": "nonexistent@test.com", "orgId": "%s"}
                       """
                           .formatted(ORG_ID)))
-          .andExpect(status().isUnauthorized());
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.message").value("If an account exists, a link has been sent."))
+          .andExpect(jsonPath("$.magicLink").doesNotExist());
     }
 
     @Test
-    void shouldRejectMagicLinkForUnknownOrg() throws Exception {
+    void shouldReturnGenericMessageForUnknownOrg() throws Exception {
+      // Anti-enumeration: same 200 response for unknown orgs
       mockMvc
           .perform(
               post("/portal/auth/request-link")
@@ -295,7 +314,9 @@ class PortalIntegrationTest {
                       """
                       {"email": "portal-cust-a@test.com", "orgId": "org_nonexistent"}
                       """))
-          .andExpect(status().isUnauthorized());
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.message").value("If an account exists, a link has been sent."))
+          .andExpect(jsonPath("$.magicLink").doesNotExist());
     }
 
     @Test
@@ -314,8 +335,16 @@ class PortalIntegrationTest {
               .andExpect(status().isOk())
               .andReturn();
 
-      String magicToken =
-          JsonPath.read(requestResult.getResponse().getContentAsString(), "$.token");
+      String magicLink =
+          JsonPath.read(requestResult.getResponse().getContentAsString(), "$.magicLink");
+      // Extract token from magic link URL: /portal/login?token=...&orgId=...
+      String tokenParam = "token=";
+      int tokenStart = magicLink.indexOf(tokenParam) + tokenParam.length();
+      int tokenEnd = magicLink.indexOf("&", tokenStart);
+      String rawToken =
+          tokenEnd == -1
+              ? magicLink.substring(tokenStart)
+              : magicLink.substring(tokenStart, tokenEnd);
 
       // Exchange for portal JWT
       mockMvc
@@ -324,12 +353,13 @@ class PortalIntegrationTest {
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(
                       """
-                      {"token": "%s"}
+                      {"token": "%s", "orgId": "%s"}
                       """
-                          .formatted(magicToken)))
+                          .formatted(rawToken, ORG_ID)))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.token").isNotEmpty())
-          .andExpect(jsonPath("$.customerId").value(customerIdA.toString()));
+          .andExpect(jsonPath("$.customerId").value(customerIdA.toString()))
+          .andExpect(jsonPath("$.customerName").value("Portal Customer A"));
     }
 
     @Test
@@ -340,8 +370,9 @@ class PortalIntegrationTest {
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(
                       """
-                      {"token": "invalid.token.value"}
-                      """))
+                      {"token": "invalid.token.value", "orgId": "%s"}
+                      """
+                          .formatted(ORG_ID)))
           .andExpect(status().isUnauthorized());
     }
   }

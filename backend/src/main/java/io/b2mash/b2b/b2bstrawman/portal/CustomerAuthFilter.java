@@ -17,7 +17,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 /**
  * Authentication filter for portal requests ({@code /portal/**}). Extracts the Bearer token,
  * verifies it as a portal JWT via {@link PortalJwtService}, and binds {@link
- * RequestScopes#CUSTOMER_ID}, {@link RequestScopes#TENANT_ID}, and {@link RequestScopes#ORG_ID}.
+ * RequestScopes#CUSTOMER_ID}, {@link RequestScopes#TENANT_ID}, {@link RequestScopes#ORG_ID}, and
+ * optionally {@link RequestScopes#PORTAL_CONTACT_ID}.
  *
  * <p>Unauthenticated portal paths (e.g., {@code /portal/auth/**}) are excluded via {@link
  * #shouldNotFilter}.
@@ -30,11 +31,15 @@ public class CustomerAuthFilter extends OncePerRequestFilter {
 
   private final PortalJwtService portalJwtService;
   private final OrgSchemaMappingRepository mappingRepository;
+  private final PortalContactRepository portalContactRepository;
 
   public CustomerAuthFilter(
-      PortalJwtService portalJwtService, OrgSchemaMappingRepository mappingRepository) {
+      PortalJwtService portalJwtService,
+      OrgSchemaMappingRepository mappingRepository,
+      PortalContactRepository portalContactRepository) {
     this.portalJwtService = portalJwtService;
     this.mappingRepository = mappingRepository;
+    this.portalContactRepository = portalContactRepository;
   }
 
   @Override
@@ -71,6 +76,26 @@ public class CustomerAuthFilter extends OncePerRequestFilter {
         ScopedValue.where(RequestScopes.CUSTOMER_ID, claims.customerId())
             .where(RequestScopes.TENANT_ID, tenantInfo.schemaName())
             .where(RequestScopes.ORG_ID, claims.clerkOrgId());
+
+    // Attempt to resolve PortalContact and bind PORTAL_CONTACT_ID (backward compatible)
+    try {
+      var contact =
+          ScopedValue.where(RequestScopes.TENANT_ID, tenantInfo.schemaName())
+              .call(
+                  () ->
+                      portalContactRepository
+                          .findByCustomerIdAndOrgId(claims.customerId(), claims.clerkOrgId())
+                          .orElse(null));
+      if (contact != null) {
+        carrier = carrier.where(RequestScopes.PORTAL_CONTACT_ID, contact.getId());
+      }
+    } catch (Exception e) {
+      log.warn(
+          "Could not resolve portal contact for customer {}: {}",
+          claims.customerId(),
+          e.getMessage());
+      // Continue without PORTAL_CONTACT_ID -- backward compatible
+    }
 
     ScopedFilterChain.runScoped(carrier, filterChain, request, response);
   }

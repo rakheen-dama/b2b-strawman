@@ -19,10 +19,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -61,14 +63,29 @@ public class TimeEntryController {
 
   @GetMapping("/api/tasks/{taskId}/time-entries")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
-  public ResponseEntity<List<TimeEntryResponse>> listTimeEntries(@PathVariable UUID taskId) {
+  public ResponseEntity<List<TimeEntryResponse>> listTimeEntries(
+      @PathVariable UUID taskId, @RequestParam(required = false) Boolean billable) {
     UUID memberId = RequestScopes.requireMemberId();
     String orgRole = RequestScopes.getOrgRole();
 
-    var entries = timeEntryService.listTimeEntriesByTask(taskId, memberId, orgRole);
+    var entries = timeEntryService.listTimeEntriesByTask(taskId, memberId, orgRole, billable);
     var names = resolveNames(entries);
     var response = entries.stream().map(e -> TimeEntryResponse.from(e, names)).toList();
     return ResponseEntity.ok(response);
+  }
+
+  @PatchMapping("/api/projects/{projectId}/time-entries/{id}/billable")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<TimeEntryResponse> toggleBillable(
+      @PathVariable UUID projectId,
+      @PathVariable UUID id,
+      @Valid @RequestBody ToggleBillableRequest request) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+
+    var entry = timeEntryService.toggleBillable(id, request.billable(), memberId, orgRole);
+    var names = resolveNames(List.of(entry));
+    return ResponseEntity.ok(TimeEntryResponse.from(entry, names));
   }
 
   @PutMapping("/api/time-entries/{id}")
@@ -120,6 +137,9 @@ public class TimeEntryController {
   }
 
   // --- DTOs ---
+
+  public record ToggleBillableRequest(
+      @NotNull(message = "billable is required") Boolean billable) {}
 
   public record CreateTimeEntryRequest(
       @NotNull(message = "date is required") LocalDate date,

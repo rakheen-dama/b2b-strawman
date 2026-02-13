@@ -115,7 +115,8 @@ public class TimeEntryService {
   }
 
   @Transactional(readOnly = true)
-  public List<TimeEntry> listTimeEntriesByTask(UUID taskId, UUID memberId, String orgRole) {
+  public List<TimeEntry> listTimeEntriesByTask(
+      UUID taskId, UUID memberId, String orgRole, Boolean billable) {
     var task =
         taskRepository
             .findOneById(taskId)
@@ -123,7 +124,39 @@ public class TimeEntryService {
 
     projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
 
+    if (billable != null) {
+      return timeEntryRepository.findByTaskIdAndBillable(taskId, billable);
+    }
     return timeEntryRepository.findByTaskId(taskId);
+  }
+
+  @Transactional
+  public TimeEntry toggleBillable(
+      UUID timeEntryId, boolean billable, UUID memberId, String orgRole) {
+    var entry =
+        timeEntryRepository
+            .findOneById(timeEntryId)
+            .orElseThrow(() -> new ResourceNotFoundException("TimeEntry", timeEntryId));
+
+    requireEditPermission(entry, memberId, orgRole);
+
+    boolean oldBillable = entry.isBillable();
+    entry.setBillable(billable);
+    entry.setUpdatedAt(Instant.now());
+
+    var saved = timeEntryRepository.save(entry);
+    log.info(
+        "Toggled billable to {} on time entry {} by member {}", billable, timeEntryId, memberId);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("time_entry.updated")
+            .entityType("time_entry")
+            .entityId(saved.getId())
+            .details(Map.of("billable", Map.of("from", oldBillable, "to", billable)))
+            .build());
+
+    return saved;
   }
 
   @Transactional
@@ -336,6 +369,76 @@ public class TimeEntryService {
     projectAccessService.requireViewAccess(projectId, memberId, orgRole);
     return timeEntryRepository.projectTimeSummaryByTask(projectId, from, to);
   }
+
+  @Transactional
+  public ReSnapshotResult reSnapshotRates(
+      UUID projectId, UUID memberId, LocalDate fromDate, LocalDate toDate) {
+    var entries = timeEntryRepository.findByFilters(projectId, memberId, fromDate, toDate);
+
+    int processed = 0;
+    int updated = 0;
+    int skipped = 0;
+
+    for (var entry : entries) {
+      processed++;
+
+      // Look up the task to get projectId for billing rate resolution
+      var task = taskRepository.findOneById(entry.getTaskId()).orElse(null);
+      if (task == null) {
+        skipped++;
+        continue;
+      }
+
+      var billingRate =
+          billingRateService.resolveRate(entry.getMemberId(), task.getProjectId(), entry.getDate());
+      var costRate = costRateService.resolveCostRate(entry.getMemberId(), entry.getDate());
+
+      BigDecimal newBillingRate = billingRate.map(r -> r.hourlyRate()).orElse(null);
+      String newBillingCurrency = billingRate.map(r -> r.currency()).orElse(null);
+      BigDecimal newCostRate = costRate.map(r -> r.hourlyCost()).orElse(null);
+      String newCostCurrency = costRate.map(r -> r.currency()).orElse(null);
+
+      boolean billingChanged =
+          !bigDecimalEquals(entry.getBillingRateSnapshot(), newBillingRate)
+              || !Objects.equals(entry.getBillingRateCurrency(), newBillingCurrency);
+      boolean costChanged =
+          !bigDecimalEquals(entry.getCostRateSnapshot(), newCostRate)
+              || !Objects.equals(entry.getCostRateCurrency(), newCostCurrency);
+
+      if (billingChanged || costChanged) {
+        entry.snapshotBillingRate(newBillingRate, newBillingCurrency);
+        entry.snapshotCostRate(newCostRate, newCostCurrency);
+        entry.setUpdatedAt(Instant.now());
+        timeEntryRepository.save(entry);
+        updated++;
+      } else {
+        skipped++;
+      }
+    }
+
+    log.info(
+        "Re-snapshot completed: processed={}, updated={}, skipped={}", processed, updated, skipped);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("time_entry.rate_re_snapshot")
+            .entityType("time_entry")
+            .entityId(UUID.randomUUID())
+            .details(
+                Map.of(
+                    "project_id", projectId != null ? projectId.toString() : "all",
+                    "member_id", memberId != null ? memberId.toString() : "all",
+                    "from_date", fromDate != null ? fromDate.toString() : "all",
+                    "to_date", toDate != null ? toDate.toString() : "all",
+                    "entries_processed", processed,
+                    "entries_updated", updated,
+                    "entries_skipped", skipped))
+            .build());
+
+    return new ReSnapshotResult(processed, updated, skipped);
+  }
+
+  public record ReSnapshotResult(int entriesProcessed, int entriesUpdated, int entriesSkipped) {}
 
   private static boolean bigDecimalEquals(BigDecimal a, BigDecimal b) {
     if (a == null && b == null) return true;

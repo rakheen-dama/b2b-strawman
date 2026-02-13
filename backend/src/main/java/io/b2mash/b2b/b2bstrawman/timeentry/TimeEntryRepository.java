@@ -25,6 +25,16 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
   @Query(
       """
       SELECT te FROM TimeEntry te
+      WHERE te.taskId = :taskId
+        AND (:billable IS NULL OR te.billable = :billable)
+      ORDER BY te.date DESC, te.createdAt DESC
+      """)
+  List<TimeEntry> findByTaskIdAndBillable(
+      @Param("taskId") UUID taskId, @Param("billable") Boolean billable);
+
+  @Query(
+      """
+      SELECT te FROM TimeEntry te
       WHERE te.memberId = :memberId
         AND te.date >= :from
         AND te.date <= :to
@@ -32,6 +42,21 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
       """)
   List<TimeEntry> findByMemberIdAndDateBetween(
       @Param("memberId") UUID memberId, @Param("from") LocalDate from, @Param("to") LocalDate to);
+
+  @Query(
+      """
+      SELECT te FROM TimeEntry te, Task t
+      WHERE te.taskId = t.id
+        AND (:projectId IS NULL OR t.projectId = :projectId)
+        AND (:memberId IS NULL OR te.memberId = :memberId)
+        AND (CAST(:fromDate AS date) IS NULL OR te.date >= :fromDate)
+        AND (CAST(:toDate AS date) IS NULL OR te.date <= :toDate)
+      """)
+  List<TimeEntry> findByFilters(
+      @Param("projectId") UUID projectId,
+      @Param("memberId") UUID memberId,
+      @Param("fromDate") LocalDate fromDate,
+      @Param("toDate") LocalDate toDate);
 
   // --- Project time summary aggregation queries (Epic 46A) ---
   // Native SQL because JPQL lacks conditional SUM (CASE WHEN) and multi-table GROUP BY.

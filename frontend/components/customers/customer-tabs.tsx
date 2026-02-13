@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Tabs as TabsPrimitive } from "radix-ui";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -8,17 +8,29 @@ import { cn } from "@/lib/utils";
 interface CustomerTabsProps {
   projectsPanel: ReactNode;
   documentsPanel: ReactNode;
+  ratesPanel?: ReactNode;
 }
 
-const tabs = [
+type TabId = "projects" | "documents" | "rates";
+
+interface TabDef {
+  id: TabId;
+  label: string;
+}
+
+const baseTabs: TabDef[] = [
   { id: "projects", label: "Projects" },
   { id: "documents", label: "Documents" },
-] as const;
+  { id: "rates", label: "Rates" },
+];
 
-type TabId = (typeof tabs)[number]["id"];
-
-export function CustomerTabs({ projectsPanel, documentsPanel }: CustomerTabsProps) {
+export function CustomerTabs({ projectsPanel, documentsPanel, ratesPanel }: CustomerTabsProps) {
   const [activeTab, setActiveTab] = useState<TabId>("projects");
+
+  const tabs = useMemo(() => {
+    if (ratesPanel) return baseTabs;
+    return baseTabs.filter((t) => t.id !== "rates");
+  }, [ratesPanel]);
 
   return (
     <TabsPrimitive.Root value={activeTab} onValueChange={(v) => setActiveTab(v as TabId)}>
@@ -53,6 +65,11 @@ export function CustomerTabs({ projectsPanel, documentsPanel }: CustomerTabsProp
       <TabsPrimitive.Content value="documents" className="pt-6 outline-none">
         {documentsPanel}
       </TabsPrimitive.Content>
+      {ratesPanel && (
+        <TabsPrimitive.Content value="rates" className="pt-6 outline-none">
+          {ratesPanel}
+        </TabsPrimitive.Content>
+      )}
     </TabsPrimitive.Root>
   );
 }

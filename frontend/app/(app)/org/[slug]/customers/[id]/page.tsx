@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { api, handleApiError } from "@/lib/api";
-import type { Customer, CustomerStatus, Document, Project } from "@/lib/types";
+import type { Customer, CustomerStatus, Document, Project, BillingRate, OrgMember, OrgSettings } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EditCustomerDialog } from "@/components/customers/edit-customer-dialog";
@@ -8,6 +8,7 @@ import { ArchiveCustomerDialog } from "@/components/customers/archive-customer-d
 import { CustomerProjectsPanel } from "@/components/customers/customer-projects-panel";
 import { CustomerDocumentsPanel } from "@/components/documents/customer-documents-panel";
 import { CustomerTabs } from "@/components/customers/customer-tabs";
+import { CustomerRatesTab } from "@/components/rates/customer-rates-tab";
 import { formatDate } from "@/lib/format";
 import { ArrowLeft, Pencil, Archive } from "lucide-react";
 import Link from "next/link";
@@ -48,6 +49,27 @@ export default async function CustomerDetailPage({
     );
   } catch {
     // Non-fatal: show empty documents list if fetch fails
+  }
+
+  // Billing rates + org members for the "Rates" tab (admin/owner only)
+  let customerBillingRates: BillingRate[] = [];
+  let orgMembers: OrgMember[] = [];
+  let defaultCurrency = "USD";
+  if (isAdmin) {
+    try {
+      const [ratesRes, membersRes, settingsRes] = await Promise.all([
+        api.get<BillingRate[]>(`/api/billing-rates?customerId=${id}`),
+        api.get<OrgMember[]>("/api/members"),
+        api.get<OrgSettings>("/api/settings").catch(() => null),
+      ]);
+      customerBillingRates = ratesRes;
+      orgMembers = membersRes;
+      if (settingsRes?.defaultCurrency) {
+        defaultCurrency = settingsRes.defaultCurrency;
+      }
+    } catch {
+      // Non-fatal: show empty rates tab if fetch fails
+    }
   }
 
   const statusBadge = STATUS_BADGE[customer.status];
@@ -133,6 +155,17 @@ export default async function CustomerDetailPage({
             customerId={id}
             canManage={isAdmin && customer.status === "ACTIVE"}
           />
+        }
+        ratesPanel={
+          isAdmin ? (
+            <CustomerRatesTab
+              billingRates={customerBillingRates}
+              members={orgMembers}
+              customerId={id}
+              slug={slug}
+              defaultCurrency={defaultCurrency}
+            />
+          ) : undefined
         }
       />
     </div>

@@ -1,6 +1,6 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { api, handleApiError } from "@/lib/api";
-import type { OrgMember, Project, Customer, Document, ProjectMember, ProjectRole, Task, ProjectTimeSummary, MemberTimeSummary, TaskTimeSummary } from "@/lib/types";
+import type { OrgMember, Project, Customer, Document, ProjectMember, ProjectRole, Task, ProjectTimeSummary, MemberTimeSummary, TaskTimeSummary, BillingRate, OrgSettings } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EditProjectDialog } from "@/components/projects/edit-project-dialog";
@@ -12,6 +12,7 @@ import { TimeSummaryPanel } from "@/components/projects/time-summary-panel";
 import { ActivityFeed } from "@/components/activity/activity-feed";
 import { ProjectCustomersPanel } from "@/components/projects/project-customers-panel";
 import { ProjectTabs } from "@/components/projects/project-tabs";
+import { ProjectRatesTab } from "@/components/rates/project-rates-tab";
 import { formatDate } from "@/lib/format";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
@@ -94,6 +95,24 @@ export default async function ProjectDetailPage({
     timeSummaryByMember = byMemberRes;
   } catch {
     // Non-fatal: show empty time summary if fetch fails
+  }
+
+  // Billing rates + settings for the "Rates" tab (only fetched for users who can manage)
+  let projectBillingRates: BillingRate[] = [];
+  let defaultCurrency = "USD";
+  if (canManage) {
+    try {
+      const [ratesRes, settingsRes] = await Promise.all([
+        api.get<BillingRate[]>(`/api/billing-rates?projectId=${id}`),
+        api.get<OrgSettings>("/api/settings").catch(() => null),
+      ]);
+      projectBillingRates = ratesRes;
+      if (settingsRes?.defaultCurrency) {
+        defaultCurrency = settingsRes.defaultCurrency;
+      }
+    } catch {
+      // Non-fatal: show empty rates tab if fetch fails
+    }
   }
 
   // Resolve current user's backend member ID for "My Tasks" filter and claim/release actions.
@@ -220,6 +239,17 @@ export default async function ProjectDetailPage({
             initialByTask={timeSummaryByTask}
             initialByMember={timeSummaryByMember}
           />
+        }
+        ratesPanel={
+          canManage ? (
+            <ProjectRatesTab
+              billingRates={projectBillingRates}
+              members={members}
+              projectId={id}
+              slug={slug}
+              defaultCurrency={defaultCurrency}
+            />
+          ) : undefined
         }
         activityPanel={
           <ActivityFeed projectId={id} orgSlug={slug} />

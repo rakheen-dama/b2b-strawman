@@ -14,16 +14,12 @@ export interface Notification {
   createdAt: string;
 }
 
-interface PageInfo {
-  size: number;
-  number: number;
-  totalElements: number;
-  totalPages: number;
-}
-
 export interface NotificationsResponse {
   content: Notification[];
-  page: PageInfo;
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
 }
 
 export interface UnreadCountResponse {

@@ -32,7 +32,7 @@ export async function ActivityFeed({ projectId }: ActivityFeedProps) {
     <ActivityFeedClient
       projectId={projectId}
       initialItems={initialItems.content}
-      initialTotalPages={initialItems.page.totalPages}
+      initialTotalPages={initialItems.totalPages}
     />
   );
 }

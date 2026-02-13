@@ -14,16 +14,12 @@ export interface ActivityItem {
   occurredAt: string;
 }
 
-interface PageInfo {
-  size: number;
-  number: number;
-  totalElements: number;
-  totalPages: number;
-}
-
 export interface ActivityResponse {
   content: ActivityItem[];
-  page: PageInfo;
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
 }
 
 export async function fetchProjectActivity(

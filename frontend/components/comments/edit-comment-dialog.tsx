@@ -21,6 +21,7 @@ interface EditCommentDialogProps {
   orgSlug: string;
   projectId: string;
   canManageVisibility: boolean;
+  onCommentChange?: () => void;
   children: React.ReactNode;
 }
 
@@ -29,6 +30,7 @@ export function EditCommentDialog({
   orgSlug,
   projectId,
   canManageVisibility,
+  onCommentChange,
   children,
 }: EditCommentDialogProps) {
   const [open, setOpen] = useState(false);
@@ -60,6 +62,7 @@ export function EditCommentDialog({
       );
       if (result.success) {
         setOpen(false);
+        onCommentChange?.();
       } else {
         setError(result.error ?? "Failed to update comment.");
       }

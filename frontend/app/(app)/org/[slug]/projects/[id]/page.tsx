@@ -168,7 +168,13 @@ export default async function ProjectDetailPage({
       {/* Tabbed Content (33.7) */}
       <ProjectTabs
         documentsPanel={
-          <DocumentsPanel documents={documents} projectId={id} slug={slug} />
+          <DocumentsPanel
+            documents={documents}
+            projectId={id}
+            slug={slug}
+            currentMemberId={currentMemberId}
+            canManageVisibility={canManage}
+          />
         }
         membersPanel={
           <ProjectMembersPanel

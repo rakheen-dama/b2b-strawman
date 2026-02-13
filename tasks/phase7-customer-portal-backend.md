@@ -8,7 +8,7 @@ Phase 7 takes the existing customer portal MVP (built in Phase 4, Epic 43) and e
 |------|------|-------|------|--------|--------|--------|
 | 54 | PortalContact & Persistent Magic Links | Backend | -- | M | 54A, 54B | **Done** (PR #123, #124) |
 | 55 | Portal Read-Model Schema & DataSource | Backend | 54 | M | 55A, 55B | **Done** (PR #125, #126) |
-| 56 | Domain Events & Event Handlers | Backend | 55 | L | 56A, 56B, 56C | 56A **Done** (PR #127) |
+| 56 | Domain Events & Event Handlers | Backend | 55 | L | 56A, 56B, 56C | 56A **Done** (PR #127), 56B **Done** (PR #128) |
 | 57 | Portal Comments, Summary & Profile APIs | Backend | 56 | M | 57A, 57B | |
 | 58 | Thymeleaf Dev Harness | Backend | 54, 57 | S | 58A | |
 

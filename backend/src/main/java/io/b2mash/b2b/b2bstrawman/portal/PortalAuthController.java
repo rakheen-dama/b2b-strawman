@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.portal;
 
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
-import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import jakarta.servlet.http.HttpServletRequest;
@@ -84,14 +83,14 @@ public class PortalAuthController {
                   return ResponseEntity.ok(new MagicLinkResponse(GENERIC_MESSAGE, null));
                 }
 
-                // Check contact status
-                if (contact.getStatus() == PortalContact.ContactStatus.SUSPENDED) {
-                  throw new ForbiddenException(
-                      "Account suspended", "Your portal access has been suspended");
-                }
-                if (contact.getStatus() == PortalContact.ContactStatus.ARCHIVED) {
-                  throw new ForbiddenException(
-                      "Account archived", "Your portal access has been archived");
+                // Check contact status -- return generic message to prevent enumeration
+                if (contact.getStatus() == PortalContact.ContactStatus.SUSPENDED
+                    || contact.getStatus() == PortalContact.ContactStatus.ARCHIVED) {
+                  log.info(
+                      "Magic link requested for {} contact {}",
+                      contact.getStatus(),
+                      contact.getId());
+                  return ResponseEntity.ok(new MagicLinkResponse(GENERIC_MESSAGE, null));
                 }
 
                 String rawToken =
@@ -110,8 +109,6 @@ public class PortalAuthController {
 
                 return ResponseEntity.ok(new MagicLinkResponse(GENERIC_MESSAGE, magicLink));
               });
-    } catch (ForbiddenException e) {
-      throw e;
     } catch (PortalAuthException e) {
       throw e;
     } catch (Exception e) {

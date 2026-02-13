@@ -88,7 +88,7 @@ public class MagicLinkService {
 
     MagicLinkToken token =
         tokenRepository
-            .findByTokenHash(tokenHash)
+            .findByTokenHashForUpdate(tokenHash)
             .orElseThrow(() -> new PortalAuthException("Invalid magic link token"));
 
     if (token.isExpired()) {

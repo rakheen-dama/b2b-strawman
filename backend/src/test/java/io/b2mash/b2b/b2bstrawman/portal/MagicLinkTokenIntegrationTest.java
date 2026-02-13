@@ -14,6 +14,12 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Base64;
+import java.util.HexFormat;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
@@ -44,6 +50,7 @@ class MagicLinkTokenIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private MagicLinkService magicLinkService;
+  @Autowired private MagicLinkTokenRepository magicLinkTokenRepository;
   @Autowired private PortalJwtService portalJwtService;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
@@ -63,6 +70,7 @@ class MagicLinkTokenIntegrationTest {
   private UUID contactIdEndpoint;
   private UUID contactIdRoundTrip;
   private UUID contactIdCrossTenant;
+  private UUID contactIdExpired;
   private UUID portalContactIdB;
   private UUID suspendedContactIdA;
 
@@ -200,6 +208,16 @@ class MagicLinkTokenIntegrationTest {
                           PortalContact.ContactRole.GENERAL)
                       .getId();
 
+              contactIdExpired =
+                  portalContactService
+                      .createContact(
+                          ORG_ID_A,
+                          customerIdA,
+                          "mlt-expired@test.com",
+                          "Expired Contact",
+                          PortalContact.ContactRole.GENERAL)
+                      .getId();
+
               // Create a suspended contact
               var suspendedContact =
                   portalContactService.createContact(
@@ -300,6 +318,40 @@ class MagicLinkTokenIntegrationTest {
     }
 
     @Test
+    void shouldRejectExpiredToken() throws Exception {
+      // Create a token directly with expiresAt in the past
+      byte[] tokenBytes = new byte[32];
+      new java.security.SecureRandom().nextBytes(tokenBytes);
+      String rawToken = Base64.getUrlEncoder().withoutPadding().encodeToString(tokenBytes);
+      String tokenHash =
+          HexFormat.of()
+              .formatHex(
+                  MessageDigest.getInstance("SHA-256")
+                      .digest(rawToken.getBytes(StandardCharsets.UTF_8)));
+
+      // Save token with expiresAt 1 hour in the past
+      ScopedValue.where(RequestScopes.TENANT_ID, tenantSchemaA)
+          .run(
+              () -> {
+                var expiredToken =
+                    new MagicLinkToken(
+                        contactIdExpired,
+                        tokenHash,
+                        Instant.now().minus(1, ChronoUnit.HOURS),
+                        "127.0.0.1");
+                magicLinkTokenRepository.save(expiredToken);
+              });
+
+      // Attempting to verify the expired token should fail
+      ScopedValue.where(RequestScopes.TENANT_ID, tenantSchemaA)
+          .run(
+              () ->
+                  assertThatThrownBy(() -> magicLinkService.verifyAndConsumeToken(rawToken))
+                      .isInstanceOf(PortalAuthException.class)
+                      .hasMessageContaining("expired"));
+    }
+
+    @Test
     void shouldEnforceRateLimiting() {
       // Generate 3 tokens (max allowed in 5 minutes)
       for (int i = 0; i < 3; i++) {
@@ -354,7 +406,8 @@ class MagicLinkTokenIntegrationTest {
     }
 
     @Test
-    void shouldReturn403ForSuspendedContact() throws Exception {
+    void shouldReturn200WithGenericMessageForSuspendedContact() throws Exception {
+      // Suspended contacts get the same generic 200 as non-existent ones (anti-enumeration)
       mockMvc
           .perform(
               post("/portal/auth/request-link")
@@ -364,7 +417,9 @@ class MagicLinkTokenIntegrationTest {
                       {"email": "mlt-suspended@test.com", "orgId": "%s"}
                       """
                           .formatted(ORG_ID_A)))
-          .andExpect(status().isForbidden());
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.message").value("If an account exists, a link has been sent."))
+          .andExpect(jsonPath("$.magicLink").doesNotExist());
     }
   }
 

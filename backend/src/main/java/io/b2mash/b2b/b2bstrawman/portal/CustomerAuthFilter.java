@@ -90,7 +90,7 @@ public class CustomerAuthFilter extends OncePerRequestFilter {
         carrier = carrier.where(RequestScopes.PORTAL_CONTACT_ID, contact.getId());
       }
     } catch (Exception e) {
-      log.debug(
+      log.warn(
           "Could not resolve portal contact for customer {}: {}",
           claims.customerId(),
           e.getMessage());

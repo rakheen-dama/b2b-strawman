@@ -103,8 +103,12 @@ public class CustomerAuthFilter extends OncePerRequestFilter {
   @Override
   protected boolean shouldNotFilter(HttpServletRequest request) {
     String path = request.getRequestURI();
-    // Only filter authenticated portal paths, not the auth endpoints themselves
+    // Only filter authenticated portal paths, not the auth or dev endpoints
     if (!path.startsWith("/portal/")) {
+      return true;
+    }
+    // Allow unauthenticated access to /portal/dev/** (dev harness)
+    if (path.startsWith("/portal/dev/")) {
       return true;
     }
     // Allow unauthenticated access to /portal/auth/** (magic link request/verify)

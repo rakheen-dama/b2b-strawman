@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -171,7 +172,7 @@ public class NotificationService {
   // --- Fan-out handler methods (called by NotificationEventHandler) ---
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  public void handleCommentCreated(CommentCreatedEvent event) {
+  public List<Notification> handleCommentCreated(CommentCreatedEvent event) {
     var recipients = new HashSet<UUID>();
     String title;
 
@@ -179,7 +180,7 @@ public class NotificationService {
       var taskOpt = taskRepository.findOneById(event.targetEntityId());
       if (taskOpt.isEmpty()) {
         log.warn("Task not found for comment notification: {}", event.targetEntityId());
-        return;
+        return List.of();
       }
       var task = taskOpt.get();
       if (task.getAssigneeId() != null) {
@@ -190,14 +191,14 @@ public class NotificationService {
       var docOpt = documentRepository.findOneById(event.targetEntityId());
       if (docOpt.isEmpty()) {
         log.warn("Document not found for comment notification: {}", event.targetEntityId());
-        return;
+        return List.of();
       }
       var doc = docOpt.get();
       recipients.add(doc.getUploadedBy());
       title = "%s commented on document \"%s\"".formatted(event.actorName(), doc.getFileName());
     } else {
       log.warn("Unknown target entity type for comment: {}", event.targetEntityType());
-      return;
+      return List.of();
     }
 
     // Add prior commenters on this entity
@@ -209,42 +210,50 @@ public class NotificationService {
     // Exclude the comment author
     recipients.remove(event.actorMemberId());
 
+    var created = new ArrayList<Notification>();
     for (var recipientId : recipients) {
-      createIfEnabled(
-          recipientId,
-          "COMMENT_ADDED",
-          title,
-          null,
-          event.targetEntityType(),
-          event.targetEntityId(),
-          event.projectId());
+      var notification =
+          createIfEnabled(
+              recipientId,
+              "COMMENT_ADDED",
+              title,
+              null,
+              event.targetEntityType(),
+              event.targetEntityId(),
+              event.projectId());
+      if (notification != null) {
+        created.add(notification);
+      }
     }
+    return created;
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  public void handleTaskAssigned(TaskAssignedEvent event) {
+  public List<Notification> handleTaskAssigned(TaskAssignedEvent event) {
     if (event.assigneeMemberId() == null) {
-      return;
+      return List.of();
     }
     // Do not notify the actor about their own action
     if (event.assigneeMemberId().equals(event.actorMemberId())) {
-      return;
+      return List.of();
     }
 
     var title = "%s assigned you to task \"%s\"".formatted(event.actorName(), event.taskTitle());
 
-    createIfEnabled(
-        event.assigneeMemberId(),
-        "TASK_ASSIGNED",
-        title,
-        null,
-        "TASK",
-        event.entityId(),
-        event.projectId());
+    var notification =
+        createIfEnabled(
+            event.assigneeMemberId(),
+            "TASK_ASSIGNED",
+            title,
+            null,
+            "TASK",
+            event.entityId(),
+            event.projectId());
+    return notification != null ? List.of(notification) : List.of();
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  public void handleTaskClaimed(TaskClaimedEvent event) {
+  public List<Notification> handleTaskClaimed(TaskClaimedEvent event) {
     var recipients = new HashSet<UUID>();
 
     // Previous assignee (if any)
@@ -263,70 +272,92 @@ public class NotificationService {
 
     var title = "%s claimed task \"%s\"".formatted(event.actorName(), event.taskTitle());
 
+    var created = new ArrayList<Notification>();
     for (var recipientId : recipients) {
-      createIfEnabled(
-          recipientId, "TASK_CLAIMED", title, null, "TASK", event.entityId(), event.projectId());
+      var notification =
+          createIfEnabled(
+              recipientId,
+              "TASK_CLAIMED",
+              title,
+              null,
+              "TASK",
+              event.entityId(),
+              event.projectId());
+      if (notification != null) {
+        created.add(notification);
+      }
     }
+    return created;
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  public void handleTaskStatusChanged(TaskStatusChangedEvent event) {
+  public List<Notification> handleTaskStatusChanged(TaskStatusChangedEvent event) {
     if (event.assigneeMemberId() == null) {
-      return;
+      return List.of();
     }
     // Do not notify the actor about their own action
     if (event.assigneeMemberId().equals(event.actorMemberId())) {
-      return;
+      return List.of();
     }
 
     var title =
         "%s changed task \"%s\" to %s"
             .formatted(event.actorName(), event.taskTitle(), event.newStatus());
 
-    createIfEnabled(
-        event.assigneeMemberId(),
-        "TASK_UPDATED",
-        title,
-        null,
-        "TASK",
-        event.entityId(),
-        event.projectId());
+    var notification =
+        createIfEnabled(
+            event.assigneeMemberId(),
+            "TASK_UPDATED",
+            title,
+            null,
+            "TASK",
+            event.entityId(),
+            event.projectId());
+    return notification != null ? List.of(notification) : List.of();
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  public void handleDocumentUploaded(DocumentUploadedEvent event) {
+  public List<Notification> handleDocumentUploaded(DocumentUploadedEvent event) {
     var members = projectMemberRepository.findByProjectId(event.projectId());
 
     var title = "%s uploaded \"%s\"".formatted(event.actorName(), event.documentName());
 
+    var created = new ArrayList<Notification>();
     for (var member : members) {
       // Exclude uploader
       if (member.getMemberId().equals(event.actorMemberId())) {
         continue;
       }
-      createIfEnabled(
-          member.getMemberId(),
-          "DOCUMENT_SHARED",
-          title,
-          null,
-          "DOCUMENT",
-          event.entityId(),
-          event.projectId());
+      var notification =
+          createIfEnabled(
+              member.getMemberId(),
+              "DOCUMENT_SHARED",
+              title,
+              null,
+              "DOCUMENT",
+              event.entityId(),
+              event.projectId());
+      if (notification != null) {
+        created.add(notification);
+      }
     }
+    return created;
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  public void handleMemberAddedToProject(MemberAddedToProjectEvent event) {
+  public List<Notification> handleMemberAddedToProject(MemberAddedToProjectEvent event) {
     var title = "You were added to project \"%s\"".formatted(event.projectName());
 
-    createIfEnabled(
-        event.addedMemberId(),
-        "MEMBER_INVITED",
-        title,
-        null,
-        "PROJECT",
-        event.projectId(),
-        event.projectId());
+    var notification =
+        createIfEnabled(
+            event.addedMemberId(),
+            "MEMBER_INVITED",
+            title,
+            null,
+            "PROJECT",
+            event.projectId(),
+            event.projectId());
+    return notification != null ? List.of(notification) : List.of();
   }
 
   // --- Private helpers ---
@@ -342,8 +373,12 @@ public class NotificationService {
         .orElse(true);
   }
 
-  /** Creates a notification for the recipient only if their in-app preference is enabled. */
-  private void createIfEnabled(
+  /**
+   * Creates a notification for the recipient only if their in-app preference is enabled.
+   *
+   * @return the saved notification, or {@code null} if the preference was disabled
+   */
+  Notification createIfEnabled(
       UUID recipientMemberId,
       String notificationType,
       String title,
@@ -361,7 +396,8 @@ public class NotificationService {
               refEntityType,
               refEntityId,
               refProjectId);
-      notificationRepository.save(notification);
+      return notificationRepository.save(notification);
     }
+    return null;
   }
 }

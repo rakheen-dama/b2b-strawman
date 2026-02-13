@@ -7,6 +7,8 @@ import io.b2mash.b2b.b2bstrawman.event.TaskAssignedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskClaimedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.notification.channel.NotificationDispatcher;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -31,9 +33,12 @@ public class NotificationEventHandler {
   private static final Logger log = LoggerFactory.getLogger(NotificationEventHandler.class);
 
   private final NotificationService notificationService;
+  private final NotificationDispatcher notificationDispatcher;
 
-  public NotificationEventHandler(NotificationService notificationService) {
+  public NotificationEventHandler(
+      NotificationService notificationService, NotificationDispatcher notificationDispatcher) {
     this.notificationService = notificationService;
+    this.notificationDispatcher = notificationDispatcher;
   }
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -43,7 +48,8 @@ public class NotificationEventHandler {
         event.orgId(),
         () -> {
           try {
-            notificationService.handleCommentCreated(event);
+            var notifications = notificationService.handleCommentCreated(event);
+            dispatchAll(notifications);
           } catch (Exception e) {
             log.warn(
                 "Failed to create notifications for comment.created event={}", event.entityId(), e);
@@ -58,7 +64,8 @@ public class NotificationEventHandler {
         event.orgId(),
         () -> {
           try {
-            notificationService.handleTaskAssigned(event);
+            var notifications = notificationService.handleTaskAssigned(event);
+            dispatchAll(notifications);
           } catch (Exception e) {
             log.warn(
                 "Failed to create notifications for task.assigned event={}", event.entityId(), e);
@@ -73,7 +80,8 @@ public class NotificationEventHandler {
         event.orgId(),
         () -> {
           try {
-            notificationService.handleTaskClaimed(event);
+            var notifications = notificationService.handleTaskClaimed(event);
+            dispatchAll(notifications);
           } catch (Exception e) {
             log.warn(
                 "Failed to create notifications for task.claimed event={}", event.entityId(), e);
@@ -88,7 +96,8 @@ public class NotificationEventHandler {
         event.orgId(),
         () -> {
           try {
-            notificationService.handleTaskStatusChanged(event);
+            var notifications = notificationService.handleTaskStatusChanged(event);
+            dispatchAll(notifications);
           } catch (Exception e) {
             log.warn(
                 "Failed to create notifications for task.status_changed event={}",
@@ -105,7 +114,8 @@ public class NotificationEventHandler {
         event.orgId(),
         () -> {
           try {
-            notificationService.handleDocumentUploaded(event);
+            var notifications = notificationService.handleDocumentUploaded(event);
+            dispatchAll(notifications);
           } catch (Exception e) {
             log.warn(
                 "Failed to create notifications for document.uploaded event={}",
@@ -122,7 +132,8 @@ public class NotificationEventHandler {
         event.orgId(),
         () -> {
           try {
-            notificationService.handleMemberAddedToProject(event);
+            var notifications = notificationService.handleMemberAddedToProject(event);
+            dispatchAll(notifications);
           } catch (Exception e) {
             log.warn(
                 "Failed to create notifications for project_member.added event={}",
@@ -130,6 +141,16 @@ public class NotificationEventHandler {
                 e);
           }
         });
+  }
+
+  /**
+   * Dispatches all created notifications through multi-channel delivery. Email is passed as null
+   * because email resolution is not yet implemented.
+   */
+  private void dispatchAll(List<Notification> notifications) {
+    for (var notification : notifications) {
+      notificationDispatcher.dispatch(notification, null);
+    }
   }
 
   /**

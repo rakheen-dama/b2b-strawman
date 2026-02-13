@@ -2,7 +2,6 @@ package io.b2mash.b2b.b2bstrawman.notification.channel;
 
 import io.b2mash.b2b.b2bstrawman.notification.Notification;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailTemplate;
-import io.b2mash.b2b.b2bstrawman.notification.template.TemplateRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
@@ -22,11 +21,8 @@ public class EmailNotificationChannel implements NotificationChannel {
 
   private static final Logger log = LoggerFactory.getLogger(EmailNotificationChannel.class);
 
-  private final TemplateRenderer templateRenderer;
-
-  public EmailNotificationChannel(TemplateRenderer templateRenderer) {
-    this.templateRenderer = templateRenderer;
-  }
+  // TODO: Inject TemplateRenderer here when Thymeleaf HTML rendering is added (future phase).
+  //       Currently, EmailTemplate enum handles its own rendering.
 
   @Override
   public String channelId() {
@@ -35,6 +31,11 @@ public class EmailNotificationChannel implements NotificationChannel {
 
   @Override
   public void deliver(Notification notification, String recipientEmail) {
+    if (recipientEmail == null || recipientEmail.isBlank()) {
+      log.debug("Skipping email for notification {} — no recipient email", notification.getId());
+      return;
+    }
+
     EmailTemplate template = EmailTemplate.fromNotificationType(notification.getType());
     String subject = template.renderSubject(notification);
     String body = template.renderBody(notification);

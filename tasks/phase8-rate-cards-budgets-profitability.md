@@ -12,7 +12,7 @@ Phase 8 adds the **revenue infrastructure layer** to the DocTeams platform — t
 |------|------|-------|------|--------|--------|--------|
 | 67 | OrgSettings & Rate Entity Foundation | Backend | -- | L | 67A, 67B, 67C, 67D | **Done** (PRs #133–#136) |
 | 68 | Rate Management Frontend — Settings, Project & Customer Rates | Frontend | 67 | M | 68A, 68B | |
-| 69 | TimeEntry Rate Snapshots & Billable Enrichment | Backend | 67 | M | 69A, 69B | |
+| 69 | TimeEntry Rate Snapshots & Billable Enrichment | Backend | 67 | M | 69A, 69B | 69A **Done** (PR #137) |
 | 70 | TimeEntry Frontend — Billable UX & Rate Preview | Frontend | 69 | S | 70A | |
 | 71 | Project Budgets — Entity, Status & Alerts | Backend | 69 | M | 71A, 71B | |
 | 72 | Budget Frontend — Configuration & Status Visualization | Frontend | 71 | S | 72A | |

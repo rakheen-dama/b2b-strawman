@@ -82,12 +82,19 @@
 | **Phase 8 — Rate Cards, Budgets & Profitability** | | | | | | See [tasks/phase8-rate-cards-budgets-profitability.md](tasks/phase8-rate-cards-budgets-profitability.md) |
 | 67 | OrgSettings & Rate Entity Foundation | Backend | -- | L | 67A, 67B, 67C, 67D | **Done** (PRs #133–#136) |
 | 68 | Rate Management Frontend — Settings, Project & Customer Rates | Frontend | 67 | M | 68A, 68B | |
-| 69 | TimeEntry Rate Snapshots & Billable Enrichment | Backend | 67 | M | 69A, 69B | |
+| 69 | TimeEntry Rate Snapshots & Billable Enrichment | Backend | 67 | M | 69A, 69B | 69A **Done** (PR #137) |
 | 70 | TimeEntry Frontend — Billable UX & Rate Preview | Frontend | 69 | S | 70A | |
 | 71 | Project Budgets — Entity, Status & Alerts | Backend | 69 | M | 71A, 71B | |
 | 72 | Budget Frontend — Configuration & Status Visualization | Frontend | 71 | S | 72A | |
 | 73 | Profitability Backend — Reports & Aggregation Queries | Backend | 69 | M | 73A, 73B | |
 | 74 | Profitability & Financials Frontend — Pages & Tabs | Frontend | 73, 72, 68 | L | 74A, 74B, 74C | |
+| **Phase 9 — Operational Dashboards** | | | | | | See [tasks/phase9-operational-dashboards.md](tasks/phase9-operational-dashboards.md) |
+| 75 | Health Scoring & Project Health Endpoints | Backend | -- | M | 75A, 75B | |
+| 76 | Company Dashboard Backend | Backend | 75 | L | 76A, 76B | |
+| 77 | Shared Dashboard Components | Frontend | -- | M | 77A, 77B | |
+| 78 | Company Dashboard Frontend | Frontend | 76, 77 | M | 78A, 78B | |
+| 79 | Project Overview Tab | Both | 75, 77 | M | 79A, 79B | |
+| 80 | Personal Dashboard | Both | 79A, 77 | M | 80A, 80B | |
 
 ---
 

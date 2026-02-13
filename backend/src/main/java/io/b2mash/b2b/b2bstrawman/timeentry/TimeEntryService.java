@@ -185,7 +185,9 @@ public class TimeEntryService {
       entry.setDescription(description);
     }
 
-    // Re-snapshot if date changed (ADR-040: re-resolve on context change)
+    // Re-snapshot rates only when date changes (ADR-040: point-in-time snapshotting).
+    // Billable flag changes do NOT trigger re-snapshot — the rate captured at creation
+    // (or last date change) remains valid regardless of billable status.
     boolean dateChanged = date != null && !Objects.equals(oldDate, date);
     if (dateChanged) {
       LocalDate effectiveDate = entry.getDate();
@@ -234,7 +236,7 @@ public class TimeEntryService {
 
     // Include snapshot deltas if date changed
     if (dateChanged) {
-      if (!Objects.equals(oldBillingRateSnapshot, entry.getBillingRateSnapshot())) {
+      if (!bigDecimalEquals(oldBillingRateSnapshot, entry.getBillingRateSnapshot())) {
         details.put(
             "billing_rate_snapshot",
             Map.of(
@@ -254,7 +256,7 @@ public class TimeEntryService {
                 "to",
                 entry.getBillingRateCurrency() != null ? entry.getBillingRateCurrency() : ""));
       }
-      if (!Objects.equals(oldCostRateSnapshot, entry.getCostRateSnapshot())) {
+      if (!bigDecimalEquals(oldCostRateSnapshot, entry.getCostRateSnapshot())) {
         details.put(
             "cost_rate_snapshot",
             Map.of(
@@ -333,6 +335,12 @@ public class TimeEntryService {
       UUID projectId, UUID memberId, String orgRole, LocalDate from, LocalDate to) {
     projectAccessService.requireViewAccess(projectId, memberId, orgRole);
     return timeEntryRepository.projectTimeSummaryByTask(projectId, from, to);
+  }
+
+  private static boolean bigDecimalEquals(BigDecimal a, BigDecimal b) {
+    if (a == null && b == null) return true;
+    if (a == null || b == null) return false;
+    return a.compareTo(b) == 0;
   }
 
   /**

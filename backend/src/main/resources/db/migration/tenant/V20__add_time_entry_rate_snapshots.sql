@@ -15,6 +15,7 @@ BEGIN
     SELECT 1 FROM information_schema.table_constraints
     WHERE constraint_name = 'chk_billing_snapshot_currency'
     AND table_name = 'time_entries'
+    AND table_schema = current_schema()
   ) THEN
     ALTER TABLE time_entries
       ADD CONSTRAINT chk_billing_snapshot_currency
@@ -29,6 +30,7 @@ BEGIN
     SELECT 1 FROM information_schema.table_constraints
     WHERE constraint_name = 'chk_cost_snapshot_currency'
     AND table_name = 'time_entries'
+    AND table_schema = current_schema()
   ) THEN
     ALTER TABLE time_entries
       ADD CONSTRAINT chk_cost_snapshot_currency

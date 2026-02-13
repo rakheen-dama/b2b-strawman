@@ -197,7 +197,8 @@ public class TimeEntry implements TenantAware {
     }
     return BigDecimal.valueOf(durationMinutes)
         .divide(BigDecimal.valueOf(60), 4, RoundingMode.HALF_UP)
-        .multiply(billingRateSnapshot);
+        .multiply(billingRateSnapshot)
+        .setScale(2, RoundingMode.HALF_UP);
   }
 
   /**
@@ -210,7 +211,8 @@ public class TimeEntry implements TenantAware {
     }
     return BigDecimal.valueOf(durationMinutes)
         .divide(BigDecimal.valueOf(60), 4, RoundingMode.HALF_UP)
-        .multiply(costRateSnapshot);
+        .multiply(costRateSnapshot)
+        .setScale(2, RoundingMode.HALF_UP);
   }
 
   public void setDescription(String description) {

@@ -42,6 +42,8 @@ public class InvoiceService {
   private final ProjectRepository projectRepository;
   private final TaskRepository taskRepository;
   private final MemberRepository memberRepository;
+  private final InvoiceNumberService invoiceNumberService;
+  private final PaymentProvider paymentProvider;
 
   public InvoiceService(
       InvoiceRepository invoiceRepository,
@@ -51,7 +53,9 @@ public class InvoiceService {
       OrganizationRepository organizationRepository,
       ProjectRepository projectRepository,
       TaskRepository taskRepository,
-      MemberRepository memberRepository) {
+      MemberRepository memberRepository,
+      InvoiceNumberService invoiceNumberService,
+      PaymentProvider paymentProvider) {
     this.invoiceRepository = invoiceRepository;
     this.lineRepository = lineRepository;
     this.customerRepository = customerRepository;
@@ -60,6 +64,8 @@ public class InvoiceService {
     this.projectRepository = projectRepository;
     this.taskRepository = taskRepository;
     this.memberRepository = memberRepository;
+    this.invoiceNumberService = invoiceNumberService;
+    this.paymentProvider = paymentProvider;
   }
 
   @Transactional
@@ -360,6 +366,157 @@ public class InvoiceService {
     invoiceRepository.save(invoice);
 
     log.info("Deleted line item {} from invoice {}", lineId, invoiceId);
+  }
+
+  // --- Lifecycle transitions ---
+
+  @Transactional
+  public InvoiceResponse approve(UUID invoiceId, UUID approvedBy) {
+    var invoice =
+        invoiceRepository
+            .findOneById(invoiceId)
+            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+
+    // Validate has at least one line item
+    var lines = lineRepository.findByInvoiceIdOrderBySortOrder(invoiceId);
+    if (lines.isEmpty()) {
+      throw new InvalidStateException(
+          "No line items", "Invoice must have at least one line item before approval");
+    }
+
+    // Re-check all time-entry-based line items: verify each referenced time entry
+    // still has invoice_id IS NULL or equals this invoice (guards against concurrent
+    // draft + approve race condition — ADR-050)
+    for (var line : lines) {
+      if (line.getTimeEntryId() != null) {
+        var timeEntry =
+            timeEntryRepository
+                .findOneById(line.getTimeEntryId())
+                .orElseThrow(
+                    () -> new ResourceNotFoundException("TimeEntry", line.getTimeEntryId()));
+        if (timeEntry.getInvoiceId() != null && !timeEntry.getInvoiceId().equals(invoiceId)) {
+          throw new ResourceConflictException(
+              "Time entry already billed",
+              "Time entry " + line.getTimeEntryId() + " is already linked to another invoice");
+        }
+      }
+    }
+
+    // Assign invoice number
+    String tenantId = RequestScopes.TENANT_ID.get();
+    String invoiceNumber = invoiceNumberService.assignNumber(tenantId);
+
+    try {
+      invoice.approve(invoiceNumber, approvedBy);
+    } catch (IllegalStateException e) {
+      throw new ResourceConflictException("Invalid status transition", e.getMessage());
+    }
+
+    invoice = invoiceRepository.save(invoice);
+
+    // Mark time entries as billed
+    for (var line : lines) {
+      if (line.getTimeEntryId() != null) {
+        timeEntryRepository
+            .findOneById(line.getTimeEntryId())
+            .ifPresent(
+                te -> {
+                  te.setInvoiceId(invoiceId);
+                  timeEntryRepository.save(te);
+                });
+      }
+    }
+
+    log.info("Approved invoice {} with number {}", invoiceId, invoiceNumber);
+    return buildResponse(invoice);
+  }
+
+  @Transactional
+  public InvoiceResponse send(UUID invoiceId) {
+    var invoice =
+        invoiceRepository
+            .findOneById(invoiceId)
+            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+
+    try {
+      invoice.markSent();
+    } catch (IllegalStateException e) {
+      throw new ResourceConflictException("Invalid status transition", e.getMessage());
+    }
+
+    invoice = invoiceRepository.save(invoice);
+    log.info("Marked invoice {} as sent", invoiceId);
+    return buildResponse(invoice);
+  }
+
+  @Transactional
+  public InvoiceResponse recordPayment(UUID invoiceId, String paymentReference) {
+    var invoice =
+        invoiceRepository
+            .findOneById(invoiceId)
+            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+
+    // Validate status BEFORE calling payment provider (irreversible side effect)
+    if (invoice.getStatus() != InvoiceStatus.SENT) {
+      throw new ResourceConflictException(
+          "Invalid status transition", "Only sent invoices can be paid");
+    }
+
+    // Call payment provider
+    var paymentRequest =
+        new PaymentRequest(
+            invoiceId,
+            invoice.getTotal(),
+            invoice.getCurrency(),
+            "Payment for invoice " + invoice.getInvoiceNumber());
+    var paymentResult = paymentProvider.recordPayment(paymentRequest);
+
+    if (!paymentResult.success()) {
+      throw new InvalidStateException("Payment failed", paymentResult.errorMessage());
+    }
+
+    // Use provider reference if no manual reference provided
+    String effectiveReference =
+        paymentReference != null ? paymentReference : paymentResult.paymentReference();
+
+    invoice.recordPayment(effectiveReference);
+
+    invoice = invoiceRepository.save(invoice);
+    log.info("Recorded payment for invoice {} with reference {}", invoiceId, effectiveReference);
+    return buildResponse(invoice);
+  }
+
+  @Transactional
+  public InvoiceResponse voidInvoice(UUID invoiceId) {
+    var invoice =
+        invoiceRepository
+            .findOneById(invoiceId)
+            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+
+    try {
+      invoice.voidInvoice();
+    } catch (IllegalStateException e) {
+      throw new ResourceConflictException("Invalid status transition", e.getMessage());
+    }
+
+    invoice = invoiceRepository.save(invoice);
+
+    // Clear invoice_id on all time entries referenced by this invoice's line items
+    var lines = lineRepository.findByInvoiceIdOrderBySortOrder(invoiceId);
+    for (var line : lines) {
+      if (line.getTimeEntryId() != null) {
+        timeEntryRepository
+            .findOneById(line.getTimeEntryId())
+            .ifPresent(
+                te -> {
+                  te.setInvoiceId(null);
+                  timeEntryRepository.save(te);
+                });
+      }
+    }
+
+    log.info("Voided invoice {}", invoiceId);
+    return buildResponse(invoice);
   }
 
   // --- Private helpers ---

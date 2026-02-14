@@ -16,18 +16,7 @@ You are the **orchestrator**. You stay lean and delegate all heavy work to subag
 
 This prevents the builder from burning 50%+ of its context on research it only needs the conclusions from. The scout's context is discarded after it produces the brief.
 
-**Context budget rule**: The orchestrator NEVER reads architecture/ARCHITECTURE.md, full phase task files, or CLAUDE.md subdirectory files. That is exclusively the scout's job.
-
-### Model Allocation
-
-| Agent | Model | Rationale |
-|-------|-------|-----------|
-| Scout | **sonnet** | Information gathering + brief formatting — constrained by template |
-| Builder | **sonnet** | Pattern-following implementation — constrained by brief |
-| Reviewer | **opus** | Quality gate — catches subtle issues in tenant isolation, security, conventions |
-| Fixer | **opus** | Must evaluate findings critically — skip false positives, not just blindly apply |
-
-Always pass the `model` parameter on each Task call (e.g., `model: "sonnet"` or `model: "opus"`).
+**Context budget rule**: The orchestrator NEVER reads ARCHITECTURE.md, full phase task files, or CLAUDE.md subdirectory files. That is exclusively the scout's job.
 
 ## Arguments
 
@@ -65,7 +54,7 @@ Create this BEFORE dispatching agents so the scout can write the brief into it.
 
 ## Step 2 — Dispatch Scout Agent
 
-Launch a **blocking** `general-purpose` subagent with `model: "sonnet"`. The scout explores the main repo and writes a brief file into the worktree.
+Launch a **blocking** `general-purpose` subagent. The scout explores the main repo and writes a brief file into the worktree.
 
 ### Scout Prompt Template
 
@@ -90,11 +79,8 @@ Extract ALL conventions and the COMPLETE anti-patterns section verbatim. These p
 debugging spirals — missing even one can cost hours.
 
 ### 3. Architecture Context
-First, try: grep -A 10 "BREAKDOWN-CONTRACT" architecture/phase*.md to find the machine-parseable
-contract block. This gives you entity names, migration refs, and ADR refs in ~10 lines.
-Then grep the same architecture doc for sections relevant to this epic's domain keywords.
-Do NOT read the full architecture doc — only the sections matching your keywords.
-Extract relevant ADRs from `adr/` directory.
+Search ARCHITECTURE.md for sections relevant to this epic (grep for keywords, don't read
+the full 2400-line file). Extract relevant ADRs (check `adr/` directory too).
 Include only what directly impacts this epic's implementation decisions.
 
 ### 4. Reference Patterns (CRITICAL)
@@ -217,7 +203,7 @@ When finished, confirm: "Brief written to {path}" and list the section sizes (li
 
 ## Step 3 — Dispatch Builder Agent
 
-Verify the brief file exists, then launch a **blocking** `general-purpose` subagent with `model: "sonnet"`:
+Verify the brief file exists, then launch a **blocking** `general-purpose` subagent:
 
 ### Builder Prompt Template
 
@@ -228,7 +214,7 @@ You are implementing **Epic {SLICE}** in the worktree at:
 ## First Step — Read Your Brief
 Read: /Users/rakheendama/Projects/2026/worktree-epic-{SLICE}/.epic-brief.md
 This file contains EVERYTHING you need: tasks, file plan, code patterns, conventions,
-build commands, and integration points. Do NOT read architecture/ARCHITECTURE.md, TASKS.md, or
+build commands, and integration points. Do NOT read ARCHITECTURE.md, TASKS.md, or
 CLAUDE.md files — the brief already contains the relevant extracts.
 
 ## Workflow
@@ -296,7 +282,7 @@ Extract the PR number from the builder's response. Write the diff to a file, the
 gh pr diff {PR_NUMBER} > /tmp/pr-{PR_NUMBER}.diff
 ```
 
-Launch a **blocking** `general-purpose` subagent with `model: "opus"` (quality gate — do NOT downgrade):
+Launch a **blocking** `general-purpose` subagent:
 
 ```
 You are reviewing PR #{PR_NUMBER} for the DocTeams multi-tenant SaaS platform.
@@ -342,7 +328,7 @@ Return structured findings:
 Only report issues you're >80% confident about. Include file:line for every finding.
 ```
 
-If critical or high issues are found, dispatch another `general-purpose` subagent with `model: "opus"` to fix them in the worktree. The fixer must evaluate each finding critically — skip false positives and explain why, don't blindly apply everything. Pass the review findings AND the brief file path so the fixer has full context.
+If critical or high issues are found, dispatch another `general-purpose` subagent to fix them in the worktree. Pass the review findings AND the brief file path so the fixer has full context.
 
 ## Step 5 — Merge (With Confirmation)
 

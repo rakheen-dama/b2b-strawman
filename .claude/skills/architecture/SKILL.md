@@ -1,123 +1,207 @@
 ---
 name: architecture
-description: Produce a self-contained architecture section and ADRs from a requirements prompt file. Usage: /architecture <requirements-file>. Example: /architecture requirements/claude-code-prompt-phase5.md
+description: Produce a self-contained architecture section and ADRs from a requirements prompt file. Usage: /architecture <requirements-file>. Example: /architecture claude-code-prompt-phase5.md
 ---
 
 # Architecture Document Generation Workflow
 
-Read a requirements/prompt file and produce a comprehensive architecture section (ready to merge into `architecture/ARCHITECTURE.md`) plus standalone ADR files in `adr/`.
+Read a requirements/prompt file and produce a comprehensive architecture section (ready to merge into `ARCHITECTURE.md`) plus standalone ADR files in `adr/`.
 
 ## Arguments
 
 - **Required**: Path to a requirements file (e.g., `/architecture docs/phase6-spec.md`)
 
+The requirements file should describe what to design — domain model, flows, API surface, constraints, and what ADRs to produce.
+
 ## Principles
 
-1. **Existing-architecture-first**: New output must feel like a natural continuation of the existing system.
-2. **Delegate research**: Use subagents for exploration. Keep orchestrator context lean.
-3. **Self-contained output**: Main document mergeable into `architecture/ARCHITECTURE.md` as-is. ADRs as standalone files.
-4. **No code implementation**: Produce only documents and ADRs. Never write Java, TypeScript, or SQL implementation files.
-5. **Engineer-ready**: The `/breakdown` skill should be able to derive epics from the output without re-asking requirements.
+1. **Existing-architecture-first**: Before writing anything, deeply understand the current system — entities, conventions, ADR numbering, section numbering, migration numbering, coding patterns. New output must feel like a natural continuation.
+2. **Delegate research**: Use subagents for codebase exploration. Keep the main context focused on writing.
+3. **Self-contained output**: The main document should be mergeable into `archtecture/ARCHITECTURE.md` as-is. ADRs should be standalone files following the established format.
+4. **No code implementation**: Produce only architecture documents, ADRs, and implementation guidance. Never write Java, TypeScript, or SQL implementation files.
+5. **Engineer-ready**: An engineer (or the `/breakdown` skill) should be able to derive epics, slices, and tasks from the output without re-asking requirements.
 
-## Step 0 — Gather Targeted Context
+## Step 0 — Gather Context
 
-Read the requirements file. Extract 3–5 **domain keywords** from it (e.g., "rate card", "budget", "cost rate" for a billing phase). Then launch a **general-purpose** agent with `model: "sonnet"` (information gathering only):
+Read the requirements file provided by the user. Then launch a **general-purpose** agent to gather codebase context and write it to a file (keeps the orchestrator's context lean):
 
-```text
-Explore the codebase and write a targeted context inventory to:
+```
+Explore the current state of the codebase and write a context inventory to:
   /Users/rakheendama/Projects/2026/b2b-strawman/.arch-context.md
 
-The phase being designed involves these domain concepts: {DOMAIN_KEYWORDS}
+I need:
 
-Collect ONLY:
+1. ARCHITECTURE.md — Read ONLY the section headers (grep for "^## ") and identify:
+   - The last section number (e.g., "## 10. Phase 4 — ...")
+   - The next available section number
+2. ADR numbering — List all ADR files in adr/ and find the highest ADR number
+3. Migration numbering — List Flyway migrations (global and tenant) and find the highest VN number
+4. Entity inventory — List all @Entity classes in the backend (class name + file path only)
+5. Backend package structure — List packages under src/main/java/io/b2mash/b2b/b2bstrawman/
+6. Frontend route structure — List pages under frontend/app/(app)/org/[slug]/
+7. Existing ER patterns — Read one recent entity (e.g., Task or TimeEntry) and include its
+   FULL source as a reference pattern for the architect
+8. Recent ADR format — Read the most recent ADR file and include it as a format template
 
-1. **Numbering** (3 lines total):
-   - Next section number: grep "^## " architecture/ARCHITECTURE.md, find the last numbered section, report next number
-   - Next ADR number: ls adr/ADR-*.md | sort | tail -1, extract number, report next
-   - Next migration number: ls backend/src/main/resources/db/migration/tenant/V*.sql | sort | tail -1, extract number, report next
-
-2. **Relevant entities** (filtered by domain keywords):
-   - grep -rl "@Entity" backend/src/main/java/ to list all entity files
-   - For each, check if the entity name or package relates to: {DOMAIN_KEYWORDS}
-   - Report ONLY matching entities (class name + file path), plus any entities they reference via @ManyToOne/@OneToMany
-   - If no matches, report the 5 most recently modified entities instead
-
-3. **Reference entity pattern** (ONE recent entity, up to 80 lines):
-   - Pick the most recently created entity (check git log --diff-filter=A --name-only -- '*/entity/*.java' | head)
-   - Include its source code as a reference pattern
-   - If the entity exceeds 80 lines, include the class declaration, field block, and constructors — omit getters/boilerplate
-
-4. **Reference ADR template** (most recent ADR, up to 50 lines):
-   - ls adr/ADR-*.md | sort | tail -1
-   - Include its content as a format template
-   - If it exceeds 50 lines, include Status through Decision sections, truncate Consequences to first 3 bullets
-
-Write all findings as structured markdown. Target 150–200 lines (numbering ~5, entities ~15, entity pattern ~80, ADR template ~50).
-Do NOT read architecture/ARCHITECTURE.md in full — only grep section headers.
-Do NOT list all packages or all routes — only what's relevant to {DOMAIN_KEYWORDS}.
+Write all findings to the context inventory file. Format as structured markdown.
+Do NOT read ARCHITECTURE.md in full (2400+ lines) — only grep section headers.
 
 Working directory: /Users/rakheendama/Projects/2026/b2b-strawman
 ```
 
-After the agent finishes, read `.arch-context.md` and present a summary to the user:
+After the agent finishes, read only the summary sections of `.arch-context.md` (numbering, entity list) to present to the user. The full file will be read by the writing agent in Step 1.
+
+Present a summary to the user:
 - Next section number, next ADR number, next migration number
-- Relevant entities found
+- Entities that exist and are relevant to the requirements
 - Ask for confirmation before proceeding
 
 ## Step 1 — Produce the Architecture Document
 
-Launch a **general-purpose** agent with `model: "opus"` (creative architecture — do NOT downgrade) to write the architecture doc and ADRs. Pass it:
+Launch a **general-purpose** agent to write the architecture doc. Pass it:
+- The requirements file path
+- The context inventory: `/Users/rakheendama/Projects/2026/b2b-strawman/.arch-context.md`
 
-```text
-You are writing an architecture document for Phase {N} of the DocTeams multi-tenant SaaS platform.
+The writing agent reads these two files and produces the architecture document. This keeps the orchestrator from holding the full architecture + requirements in its own context.
 
-## Inputs (read these FIRST)
+The output file goes to the architecture directory: `{kebab-case-title}.md` (e.g., `architecture/phase6-notifications.md`).
 
-1. Requirements file: {REQUIREMENTS_PATH}
-2. Context inventory: /Users/rakheendama/Projects/2026/b2b-strawman/.arch-context.md
-3. Writing prompt (sections, style, size budget): /Users/rakheendama/Projects/2026/b2b-strawman/.claude/skills/architecture/WRITING-PROMPT.md
+### Required Sections (adapt headings to content)
 
-## Task
+The document MUST include all of these, adapted to whatever the requirements ask for:
 
-1. Read all three input files above.
-2. Write the architecture document to: architecture/{KEBAB_TITLE}.md
-3. Create ADR files in adr/ following the format from the writing prompt.
-4. Ensure the BREAKDOWN-CONTRACT block is present in the Capability Slices section.
+#### Section N.1 — Overview
+- 2-3 paragraph summary of what this phase adds
+- "What's new" table comparing existing vs new capabilities
 
-Use the context inventory for numbering and entity references.
-Follow the writing prompt for section structure, style, size budgets, and ADR format.
-The requirements file is your primary input — cover everything it asks for.
+#### Section N.2 — Domain Model
+- New entities with full field tables (field, type, constraints, notes)
+- Design decisions for each entity (inline, not separate)
+- Updated Mermaid **ER diagram** showing ALL tenant-schema entities (existing + new)
+- Call out what's unchanged from prior phases
 
-Output file: architecture/{KEBAB_TITLE}.md
+#### Section N.3 — Core Flows and Backend Behaviour
+- One subsection per major flow (as described in requirements)
+- SQL query examples for non-trivial queries
+- Service-layer method signatures (conceptual Java)
+- Tenant boundary explanation (how it works for Starter + Pro)
+- RBAC / permission rules per operation
+- Paging/filtering considerations
+
+#### Section N.4 — API Surface
+- Tables with: Method, Path, Description, Auth, Read/Write
+- Request/response JSON shapes for key endpoints
+- Query parameter documentation
+- Group by capability area (not by HTTP method)
+
+#### Section N.5 — Sequence Diagrams
+- At least 2 Mermaid **sequence diagrams** for key flows
+- Include: Actor → Browser → Next.js → Spring Boot → DB
+- Show error/conflict paths where relevant (e.g., race conditions)
+
+#### Section N.6 — Additional Sections (as needed)
+- Portal seams, security considerations, S3 key structure, etc.
+- Whatever the requirements call for that doesn't fit above
+
+#### Section N.7 — Database Migrations
+- Migration number, description, full SQL
+- Index definitions with rationale
+- RLS policies for shared-schema support
+- Backfill strategy if modifying existing tables
+- Note any prerequisite indexes from prior migrations
+
+#### Section N.8 — Implementation Guidance
+- Backend changes table (file → change)
+- Frontend changes table (file → change)
+- Entity code pattern (annotated Java example)
+- Repository code pattern (JPQL example)
+- Testing strategy table (test name → scope)
+
+#### Section N.9 — Permission Model Summary
+- Access control tables per entity/operation
+- Role hierarchy: Owner > Admin > Project Lead > Contributor
+
+#### Section N.10 — Capability Slices
+- 3-6 independently deployable slices
+- Each with: scope (backend/frontend), key deliverables, dependencies, test expectations
+- Designed for the `/breakdown` skill to turn into full epics
+
+#### Section N.11 — ADR Index
+- Table linking to all ADRs (existing referenced + new)
+
+### Writing Style Rules
+
+- Match the voice and formatting of existing ARCHITECTURE.md sections
+- Use `code blocks` for SQL, Java, JSON, and file paths
+- Use Mermaid for all diagrams (ER, sequence, flowchart)
+- Reference existing ADRs by number and link: `[ADR-019](adr/ADR-019-task-claim-workflow.md)`
+- Include a merge instruction at the top: `> Merge into ARCHITECTURE.md as **Section N**.`
+- Every design decision should state *why*, not just *what*
+- Explicitly call out what's out of scope
+
+## Step 2 — Produce ADR Files
+
+For each ADR required by the requirements:
+
+1. Create `adr/ADR-{NNN}-{kebab-case-title}.md`
+2. Follow the established ADR format exactly:
+
+```markdown
+# ADR-{NNN}: {Title}
+
+**Status**: Accepted
+
+**Context**: {Why this decision is needed — 1-2 paragraphs}
+
+**Options Considered**:
+
+1. **{Option name}** — {Brief description}
+   - Pros: {bulleted}
+   - Cons: {bulleted}
+
+2. ... (at least 3 options per ADR)
+
+**Decision**: {Which option and why — 1 sentence}
+
+**Rationale**: {Detailed reasoning — 1-3 paragraphs}
+
+**Consequences**:
+- {Bulleted list of implications}
 ```
 
-## Step 2 — Quality Review
+### ADR Quality Rules
 
-Launch a **code-reviewer** agent with `model: "sonnet"` to verify:
+- At least 3 options per ADR (never binary — always consider a third path)
+- Pros and cons for every option (not just the chosen one)
+- Rationale must reference the specific constraints of this project (multi-tenant, Starter/Pro tiers, existing patterns)
+- Consequences must include both positive and negative implications
+- Link to other ADRs where relevant
 
-```text
+## Step 3 — Quality Review
+
+Launch a **code-reviewer** agent to verify:
+
+```
 Review the architecture document at {MAIN_DOC_PATH} and ADR files at adr/ADR-{NNN}*.md for:
 
 1. Internal consistency — cross-references, entity names, field names, ADR numbers, section numbers
-2. Completeness — all requirements covered, BREAKDOWN-CONTRACT block present
-3. Compatibility — follows existing entity patterns, correct migration/ADR numbering
-4. Size budget — document is 600-1000 lines, core sections have adequate depth
-5. Implementability — can an engineer derive epics from the Capability Slices section?
+2. Completeness — all sections present, all requirements covered
+3. Compatibility — follows existing entity patterns, correct migration/ADR numbering, permission model alignment
+4. Implementability — can an engineer derive epics from this?
 
 List issues if found. Be concise.
 ```
 
 Fix any issues found by the reviewer.
 
-## Step 3 — Present Summary
+## Step 4 — Present Summary
 
 Show the user:
 - Output file path (main document)
 - ADR files created (with titles)
-- Section number for architecture/ARCHITECTURE.md merge
+- Section number for ARCHITECTURE.md merge
 - Migration number(s)
 - Capability slice count
-- Document line count (verify within 600–1000 budget)
 - Any open questions or assumptions made
 
 ## Error Handling
@@ -127,4 +211,19 @@ Show the user:
 - **ADR numbering conflict**: If an ADR number already exists, increment until free.
 - **Section numbering conflict**: Same approach — find the next free section number.
 - **Review finds critical issues**: Fix and re-review. Do not present output with known issues.
-- **Document exceeds 1000 lines**: Ask the writing agent to compress supporting sections (not core sections).
+
+## Environment Notes (for subagents)
+
+```
+- Backend base package: io.b2mash.b2b.b2bstrawman
+- Entity pattern: @FilterDef + @Filter + TenantAware + TenantAwareEntityListener
+- Repository pattern: JPQL findOneById() (not JPA findById — bypasses @Filter)
+- Migration location: backend/src/main/resources/db/migration/{global,tenant}/
+- ADR location: adr/ADR-{NNN}-{kebab-case}.md
+- Shared schema: tenant_shared with tenant_id column + Hibernate @Filter + RLS
+- Dedicated schema: tenant_<hash> with SET search_path
+- Request context: ScopedValue via RequestScopes (not ThreadLocal)
+- Permission pattern: ProjectAccessService.requireViewAccess() → ProjectAccessResult.canEdit()
+- Exception pattern: Semantic exceptions from exception/ package → ProblemDetail responses
+- Frontend: Next.js App Router, server actions in lib/actions/, Shadcn UI components
+```

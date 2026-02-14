@@ -85,7 +85,7 @@ Extract ALL conventions and the COMPLETE anti-patterns section verbatim. These p
 debugging spirals — missing even one can cost hours.
 
 ### 3. Architecture Context
-Search architecture/ARCHITECTURE.md for sections relevant to this epic (grep for keywords, don't read
+Search ARCHITECTURE.md for sections relevant to this epic (grep for keywords, don't read
 the full 2400-line file). Extract relevant ADRs (check `adr/` directory too).
 Include only what directly impacts this epic's implementation decisions.
 
@@ -217,7 +217,7 @@ You are implementing **Epic {SLICE}** in the worktree at:
 ## First Step — Read Your Brief
 Read: /Users/rakheendama/Projects/2026/worktree-epic-{SLICE}/.epic-brief.md
 This file contains EVERYTHING you need: tasks, file plan, code patterns, conventions,
-build commands, and integration points. Do NOT read architecture/ARCHITECTURE.md, TASKS.md, or
+build commands, and integration points. Do NOT read ARCHITECTURE.md, TASKS.md, or
 CLAUDE.md files — the brief already contains the relevant extracts.
 
 ## Workflow

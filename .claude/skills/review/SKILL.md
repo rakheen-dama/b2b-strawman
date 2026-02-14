@@ -45,7 +45,7 @@ These are small (~250 lines each) and you need them to validate the review agent
 
 ## Step 2 — Dispatch Review Agent
 
-Launch a **blocking** `general-purpose` subagent. Write the diff to a file to keep it out of the orchestrator's context:
+Launch a **blocking** `general-purpose` subagent with `model: "opus"` (quality gate — do NOT downgrade). Write the diff to a file to keep it out of the orchestrator's context:
 
 ```bash
 gh pr diff {PR_NUMBER} > /tmp/pr-{PR_NUMBER}.diff
@@ -147,7 +147,7 @@ gh pr view {PR_NUMBER} --json headRefName -q .headRefName
 git worktree list | grep "{BRANCH_NAME}" || git fetch origin {BRANCH_NAME} && git worktree add ../review-fix-{PR_NUMBER} {BRANCH_NAME}
 ```
 
-3. Dispatch a **blocking** `general-purpose` fix agent:
+3. Dispatch a **blocking** `general-purpose` fix agent with `model: "opus"` (must evaluate findings critically — skip false positives):
 ```
 Fix the following review findings in the worktree at {WORKTREE_PATH}.
 

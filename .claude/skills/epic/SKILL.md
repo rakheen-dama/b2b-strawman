@@ -18,6 +18,17 @@ This prevents the builder from burning 50%+ of its context on research it only n
 
 **Context budget rule**: The orchestrator NEVER reads architecture/ARCHITECTURE.md, full phase task files, or CLAUDE.md subdirectory files. That is exclusively the scout's job.
 
+### Model Allocation
+
+| Agent | Model | Rationale |
+|-------|-------|-----------|
+| Scout | **sonnet** | Information gathering + brief formatting — constrained by template |
+| Builder | **sonnet** | Pattern-following implementation — constrained by brief |
+| Reviewer | **opus** | Quality gate — catches subtle issues in tenant isolation, security, conventions |
+| Fixer | **opus** | Must evaluate findings critically — skip false positives, not just blindly apply |
+
+Always pass the `model` parameter on each Task call (e.g., `model: "sonnet"` or `model: "opus"`).
+
 ## Arguments
 
 Epic number (e.g., `/epic 7` or `/epic 5A` for slices).
@@ -54,7 +65,7 @@ Create this BEFORE dispatching agents so the scout can write the brief into it.
 
 ## Step 2 — Dispatch Scout Agent
 
-Launch a **blocking** `general-purpose` subagent. The scout explores the main repo and writes a brief file into the worktree.
+Launch a **blocking** `general-purpose` subagent with `model: "sonnet"`. The scout explores the main repo and writes a brief file into the worktree.
 
 ### Scout Prompt Template
 
@@ -206,7 +217,7 @@ When finished, confirm: "Brief written to {path}" and list the section sizes (li
 
 ## Step 3 — Dispatch Builder Agent
 
-Verify the brief file exists, then launch a **blocking** `general-purpose` subagent:
+Verify the brief file exists, then launch a **blocking** `general-purpose` subagent with `model: "sonnet"`:
 
 ### Builder Prompt Template
 
@@ -285,7 +296,7 @@ Extract the PR number from the builder's response. Write the diff to a file, the
 gh pr diff {PR_NUMBER} > /tmp/pr-{PR_NUMBER}.diff
 ```
 
-Launch a **blocking** `general-purpose` subagent:
+Launch a **blocking** `general-purpose` subagent with `model: "opus"` (quality gate — do NOT downgrade):
 
 ```
 You are reviewing PR #{PR_NUMBER} for the DocTeams multi-tenant SaaS platform.
@@ -331,7 +342,7 @@ Return structured findings:
 Only report issues you're >80% confident about. Include file:line for every finding.
 ```
 
-If critical or high issues are found, dispatch another `general-purpose` subagent to fix them in the worktree. Pass the review findings AND the brief file path so the fixer has full context.
+If critical or high issues are found, dispatch another `general-purpose` subagent with `model: "opus"` to fix them in the worktree. The fixer must evaluate each finding critically — skip false positives and explain why, don't blindly apply everything. Pass the review findings AND the brief file path so the fixer has full context.
 
 ## Step 5 — Merge (With Confirmation)
 

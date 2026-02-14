@@ -21,7 +21,7 @@ Read a requirements/prompt file and produce a comprehensive architecture section
 
 ## Step 0 — Gather Targeted Context
 
-Read the requirements file. Extract 3–5 **domain keywords** from it (e.g., "rate card", "budget", "cost rate" for a billing phase). Then launch a **general-purpose** agent:
+Read the requirements file. Extract 3–5 **domain keywords** from it (e.g., "rate card", "budget", "cost rate" for a billing phase). Then launch a **general-purpose** agent with `model: "sonnet"` (information gathering only):
 
 ```text
 Explore the codebase and write a targeted context inventory to:
@@ -66,7 +66,7 @@ After the agent finishes, read `.arch-context.md` and present a summary to the u
 
 ## Step 1 — Produce the Architecture Document
 
-Launch a **general-purpose** agent to write the architecture doc and ADRs. Pass it:
+Launch a **general-purpose** agent with `model: "opus"` (creative architecture — do NOT downgrade) to write the architecture doc and ADRs. Pass it:
 
 ```text
 You are writing an architecture document for Phase {N} of the DocTeams multi-tenant SaaS platform.
@@ -93,7 +93,7 @@ Output file: architecture/{KEBAB_TITLE}.md
 
 ## Step 2 — Quality Review
 
-Launch a **code-reviewer** agent to verify:
+Launch a **code-reviewer** agent with `model: "sonnet"` to verify:
 
 ```text
 Review the architecture document at {MAIN_DOC_PATH} and ADR files at adr/ADR-{NNN}*.md for:

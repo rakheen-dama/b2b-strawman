@@ -20,6 +20,17 @@ Phase number (e.g., `/phase 4`). Optionally append a starting slice: `/phase 4 f
 5. **Minimal task tracking**: Create high-level tasks per slice (not per sub-task). Update as slices complete.
 6. **No code writing**: You are the orchestrator. You approve, dispatch, and merge. You do not write code.
 
+### Model Allocation
+
+| Agent | Model | Rationale |
+|-------|-------|-----------|
+| Scout | **sonnet** | Information gathering + brief formatting — constrained by template |
+| Builder | **sonnet** | Pattern-following implementation — constrained by brief |
+| Reviewer | **opus** | Quality gate — catches subtle issues in tenant isolation, security, conventions |
+| Fixer | **opus** | Must evaluate findings critically — skip false positives, not just blindly apply |
+
+Always pass the `model` parameter on each Task call.
+
 ## Step 0 — Build the Execution Plan
 
 1. Read `TASKS.md` to find the phase and its epic rows (overview-only file, safe to read in full).
@@ -51,7 +62,7 @@ Create before dispatching agents so the scout can write the brief into it.
 
 ### 1c. Dispatch Scout Agent
 
-Launch a **blocking** `general-purpose` agent:
+Launch a **blocking** `general-purpose` agent with `model: "sonnet"`:
 
 ```
 You are a **codebase scout** preparing an implementation brief for Epic {SLICE}.
@@ -197,7 +208,7 @@ When finished, confirm: "Brief written to {path}" and list the section sizes (li
 
 ### 1d. Dispatch Builder Agent
 
-Verify the brief file was written (check scout output), then launch a **blocking** `general-purpose` agent:
+Verify the brief file was written (check scout output), then launch a **blocking** `general-purpose` agent with `model: "sonnet"`:
 
 ```
 You are implementing **Epic {SLICE}** in the worktree at:
@@ -272,7 +283,7 @@ Write the diff to a file, then dispatch review:
 gh pr diff {PR_NUMBER} > /tmp/pr-{PR_NUMBER}.diff
 ```
 
-Launch a **blocking** `general-purpose` agent (NOT `code-reviewer` — it lacks Bash access):
+Launch a **blocking** `general-purpose` agent with `model: "opus"` (quality gate — do NOT downgrade):
 
 ```
 You are reviewing PR #{PR_NUMBER} for the DocTeams multi-tenant SaaS platform.
@@ -311,7 +322,7 @@ Only report issues you're >80% confident about.
 
 ### 1g. Fix Review Issues (if any)
 
-If the review finds critical issues, dispatch another `general-purpose` agent to fix them in the worktree. Pass the review findings AND the brief file path (`/Users/rakheendama/Projects/2026/worktree-epic-{SLICE}/.epic-brief.md`) so the fixer has full context for conventions.
+If the review finds critical issues, dispatch another `general-purpose` agent with `model: "opus"` to fix them in the worktree. The fixer must evaluate each finding critically — skip false positives and explain why, don't blindly apply everything. Pass the review findings AND the brief file path (`/Users/rakheendama/Projects/2026/worktree-epic-{SLICE}/.epic-brief.md`) so the fixer has full context for conventions.
 
 ### 1h. Merge
 

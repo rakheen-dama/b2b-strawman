@@ -13,6 +13,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -214,8 +215,11 @@ public class Invoice implements TenantAware {
    */
   public void recalculateTotals(List<InvoiceLine> lines) {
     this.subtotal =
-        lines.stream().map(InvoiceLine::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
-    this.total = this.subtotal.add(this.taxAmount);
+        lines.stream()
+            .map(InvoiceLine::getAmount)
+            .reduce(BigDecimal.ZERO, BigDecimal::add)
+            .setScale(2, RoundingMode.HALF_UP);
+    this.total = this.subtotal.add(this.taxAmount).setScale(2, RoundingMode.HALF_UP);
     this.updatedAt = Instant.now();
   }
 
@@ -281,7 +285,7 @@ public class Invoice implements TenantAware {
 
   public void setTaxAmount(BigDecimal taxAmount) {
     this.taxAmount = taxAmount;
-    this.total = this.subtotal.add(taxAmount);
+    this.total = this.subtotal.add(taxAmount).setScale(2, RoundingMode.HALF_UP);
     this.updatedAt = Instant.now();
   }
 

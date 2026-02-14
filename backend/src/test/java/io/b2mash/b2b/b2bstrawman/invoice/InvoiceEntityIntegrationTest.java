@@ -193,7 +193,7 @@ class InvoiceEntityIntegrationTest {
         runInTenant(
             () -> {
               // Fetch customer to get address
-              Customer customer = customerRepository.findById(customerId).orElseThrow();
+              Customer customer = customerRepository.findOneById(customerId).orElseThrow();
 
               // Create invoice
               var invoice =
@@ -239,7 +239,7 @@ class InvoiceEntityIntegrationTest {
         runInTenant(
             () -> {
               // Create draft invoice
-              Customer customer = customerRepository.findById(customerId).orElseThrow();
+              Customer customer = customerRepository.findOneById(customerId).orElseThrow();
               var invoice =
                   new Invoice(
                       customerId,
@@ -308,7 +308,7 @@ class InvoiceEntityIntegrationTest {
   void testInvoiceStatusTransitions_draftToApprovedValid() {
     runInTenantVoid(
         () -> {
-          Customer customer = customerRepository.findById(customerId).orElseThrow();
+          Customer customer = customerRepository.findOneById(customerId).orElseThrow();
           var invoice =
               new Invoice(
                   customerId,
@@ -339,7 +339,7 @@ class InvoiceEntityIntegrationTest {
   void testInvoiceStatusTransitions_draftToSentInvalid() {
     runInTenantVoid(
         () -> {
-          Customer customer = customerRepository.findById(customerId).orElseThrow();
+          Customer customer = customerRepository.findOneById(customerId).orElseThrow();
           var invoice =
               new Invoice(
                   customerId,
@@ -363,7 +363,7 @@ class InvoiceEntityIntegrationTest {
   void testInvoiceStatusTransitions_paidTerminal() {
     runInTenantVoid(
         () -> {
-          Customer customer = customerRepository.findById(customerId).orElseThrow();
+          Customer customer = customerRepository.findOneById(customerId).orElseThrow();
           var invoice =
               new Invoice(
                   customerId,
@@ -396,7 +396,7 @@ class InvoiceEntityIntegrationTest {
   void testInvoiceStatusTransitions_voidTerminal() {
     runInTenantVoid(
         () -> {
-          Customer customer = customerRepository.findById(customerId).orElseThrow();
+          Customer customer = customerRepository.findOneById(customerId).orElseThrow();
           var invoice =
               new Invoice(
                   customerId,
@@ -426,7 +426,7 @@ class InvoiceEntityIntegrationTest {
   void testInvoiceRecalculateTotals() {
     runInTenantVoid(
         () -> {
-          Customer customer = customerRepository.findById(customerId).orElseThrow();
+          Customer customer = customerRepository.findOneById(customerId).orElseThrow();
           var invoice =
               new Invoice(
                   customerId,
@@ -509,7 +509,7 @@ class InvoiceEntityIntegrationTest {
     runInTenantVoid(
         () -> {
           // Create an invoice to reference
-          Customer customer = customerRepository.findById(customerId).orElseThrow();
+          Customer customer = customerRepository.findOneById(customerId).orElseThrow();
           var invoice =
               new Invoice(
                   customerId,
@@ -528,7 +528,7 @@ class InvoiceEntityIntegrationTest {
                   taskId, LocalDate.now(), 60, true, null, "Billing test", memberIdOwner, "owner");
 
           // Verify initially not billed
-          timeEntry = timeEntryRepository.findById(timeEntry.getId()).orElseThrow();
+          timeEntry = timeEntryRepository.findOneById(timeEntry.getId()).orElseThrow();
           assertThat(timeEntry.isBilled()).isFalse();
           assertThat(timeEntry.isLocked()).isFalse();
 
@@ -536,7 +536,7 @@ class InvoiceEntityIntegrationTest {
           timeEntry.markBilled(testInvoiceId);
           timeEntryRepository.save(timeEntry);
 
-          timeEntry = timeEntryRepository.findById(timeEntry.getId()).orElseThrow();
+          timeEntry = timeEntryRepository.findOneById(timeEntry.getId()).orElseThrow();
           assertThat(timeEntry.isBilled()).isTrue();
           assertThat(timeEntry.isLocked()).isTrue();
           assertThat(timeEntry.getInvoiceId()).isEqualTo(testInvoiceId);
@@ -545,7 +545,7 @@ class InvoiceEntityIntegrationTest {
           timeEntry.markUnbilled();
           timeEntryRepository.save(timeEntry);
 
-          timeEntry = timeEntryRepository.findById(timeEntry.getId()).orElseThrow();
+          timeEntry = timeEntryRepository.findOneById(timeEntry.getId()).orElseThrow();
           assertThat(timeEntry.isBilled()).isFalse();
           assertThat(timeEntry.isLocked()).isFalse();
           assertThat(timeEntry.getInvoiceId()).isNull();
@@ -557,7 +557,7 @@ class InvoiceEntityIntegrationTest {
   void testCustomerAddressFieldPersistence() {
     runInTenantVoid(
         () -> {
-          var customer = customerRepository.findById(customerId).orElseThrow();
+          var customer = customerRepository.findOneById(customerId).orElseThrow();
           assertThat(customer.getAddress()).isNotNull();
           assertThat(customer.getAddress()).contains("123 Test Street");
           assertThat(customer.getAddress()).contains("Test City, TS 12345");

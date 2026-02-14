@@ -26,11 +26,15 @@ public class InvoiceNumberService {
   @PersistenceContext private EntityManager entityManager;
 
   /**
-   * Assigns the next sequential invoice number for the current tenant. Uses pessimistic locking to
-   * serialize concurrent approvals per tenant.
+   * Assigns the next sequential invoice number for the current tenant. Uses an atomic two-step
+   * pattern to guarantee uniqueness without race conditions:
    *
-   * <p>If no sequence row exists for the tenant, creates one with next_value = 1 and returns
-   * "INV-0001". Otherwise, increments the existing sequence and returns the formatted number.
+   * <ol>
+   *   <li>INSERT ON CONFLICT DO NOTHING — ensures the sequence row exists (safe for concurrent
+   *       first-time callers)
+   *   <li>UPDATE ... SET next_value = next_value + 1 RETURNING next_value — atomically increments
+   *       and returns the new value in a single round-trip
+   * </ol>
    *
    * @return the assigned invoice number (e.g., "INV-0001")
    */
@@ -38,46 +42,29 @@ public class InvoiceNumberService {
   public String assignInvoiceNumber() {
     String tenantId = RequestScopes.TENANT_ID.get();
 
-    // Try to lock and fetch the current sequence row
-    var resultList =
-        entityManager
-            .createNativeQuery(
-                "SELECT next_value FROM invoice_number_seq WHERE tenant_id = ?1 FOR UPDATE")
-            .setParameter(1, tenantId)
-            .getResultList();
+    // Step 1: Ensure sequence row exists (idempotent — ON CONFLICT DO NOTHING)
+    entityManager
+        .createNativeQuery(
+            "INSERT INTO invoice_number_seq (id, tenant_id, next_value)"
+                + " VALUES (gen_random_uuid(), ?1, 0)"
+                + " ON CONFLICT (tenant_id) DO NOTHING")
+        .setParameter(1, tenantId)
+        .executeUpdate();
 
-    int nextValue;
-    if (resultList.isEmpty()) {
-      // No row exists for this tenant — insert with next_value = 1
-      entityManager
-          .createNativeQuery(
-              "INSERT INTO invoice_number_seq (id, tenant_id, next_value) VALUES (gen_random_uuid(), ?1, 1)")
-          .setParameter(1, tenantId)
-          .executeUpdate();
-      nextValue = 1;
-      log.info("Initialized invoice number sequence for tenant {}: INV-0001", tenantId);
-    } else {
-      // Row exists — increment and update
-      entityManager
-          .createNativeQuery(
-              "UPDATE invoice_number_seq SET next_value = next_value + 1 WHERE tenant_id = ?1")
-          .setParameter(1, tenantId)
-          .executeUpdate();
+    // Step 2: Atomically increment and return the new value
+    int nextValue =
+        (Integer)
+            entityManager
+                .createNativeQuery(
+                    "UPDATE invoice_number_seq SET next_value = next_value + 1"
+                        + " WHERE tenant_id = ?1 RETURNING next_value")
+                .setParameter(1, tenantId)
+                .getSingleResult();
 
-      // Re-fetch the incremented value (non-locking read is safe — we hold the FOR UPDATE lock)
-      nextValue =
-          (Integer)
-              entityManager
-                  .createNativeQuery(
-                      "SELECT next_value FROM invoice_number_seq WHERE tenant_id = ?1")
-                  .setParameter(1, tenantId)
-                  .getSingleResult();
-
-      log.debug(
-          "Assigned invoice number for tenant {}: INV-{}",
-          tenantId,
-          String.format("%04d", nextValue));
-    }
+    log.debug(
+        "Assigned invoice number for tenant {}: INV-{}",
+        tenantId,
+        String.format("%04d", nextValue));
 
     return String.format("INV-%04d", nextValue);
   }

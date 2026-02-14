@@ -36,7 +36,6 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
         AND (:status IS NULL OR i.status = :status)
         AND (CAST(:from AS DATE) IS NULL OR i.issueDate >= :from)
         AND (CAST(:to AS DATE) IS NULL OR i.issueDate <= :to)
-      ORDER BY i.createdAt DESC
       """)
   Page<Invoice> findByFilters(
       @Param("customerId") UUID customerId,

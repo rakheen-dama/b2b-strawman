@@ -10,7 +10,7 @@ Phase 10 bridges the gap between tracked billable work and revenue collection. I
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 81 | Invoice Entity Foundation & Migration | Backend | -- | M | 81A, 81B | 81A **Done** (PR #164) |
+| 81 | Invoice Entity Foundation & Migration | Backend | -- | M | 81A, 81B | |
 | 82 | Invoice CRUD & Unbilled Time API | Backend | 81 | M | 82A, 82B | |
 | 83 | Invoice Lifecycle Transitions & Notifications | Backend | 82 | M | 83A, 83B | |
 | 84 | PSP Adapter & HTML Invoice Preview | Backend | 83 | S | 84A | |

@@ -259,18 +259,48 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
           """
       SELECT
           TO_CHAR(date_trunc(:granularity, te.date), :format) AS period,
-          COALESCE(SUM(te.duration_minutes), 0) AS totalMinutes
+          COALESCE(SUM(te.duration_minutes), 0) AS totalMinutes,
+          date_trunc(:granularity, te.date) AS periodStart
       FROM time_entries te
       JOIN tasks t ON te.task_id = t.id
       WHERE te.date >= CAST(:fromDate AS DATE) AND te.date <= CAST(:toDate AS DATE)
-      GROUP BY date_trunc(:granularity, te.date)
-      ORDER BY date_trunc(:granularity, te.date)
+      GROUP BY periodStart, period
+      ORDER BY periodStart
       """)
   List<TrendProjection> findHoursTrend(
       @Param("fromDate") LocalDate from,
       @Param("toDate") LocalDate to,
       @Param("granularity") String granularity,
       @Param("format") String format);
+
+  // --- Team workload aggregation query (Epic 76B) ---
+
+  /**
+   * Team workload query: aggregates hours per member per project for a date range. Returns flat
+   * rows to be post-processed (grouped by member, capped at 5 projects). RLS handles tenant
+   * isolation.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+      SELECT
+          m.id AS memberId,
+          m.name AS memberName,
+          t.project_id AS projectId,
+          p.name AS projectName,
+          COALESCE(SUM(te.duration_minutes), 0) AS totalMinutes,
+          COALESCE(SUM(CASE WHEN te.billable THEN te.duration_minutes ELSE 0 END), 0) AS billableMinutes
+      FROM time_entries te
+      JOIN tasks t ON te.task_id = t.id
+      JOIN members m ON te.member_id = m.id
+      JOIN projects p ON t.project_id = p.id
+      WHERE te.date >= CAST(:fromDate AS DATE) AND te.date <= CAST(:toDate AS DATE)
+      GROUP BY m.id, m.name, t.project_id, p.name
+      ORDER BY SUM(te.duration_minutes) DESC
+      """)
+  List<TeamWorkloadProjection> findTeamWorkload(
+      @Param("fromDate") LocalDate from, @Param("toDate") LocalDate to);
 
   /**
    * Total amount consumed for a project: SUM of (billing_rate_snapshot * duration_minutes / 60) for

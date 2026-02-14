@@ -97,4 +97,59 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
           "SELECT MAX(ae.occurred_at) FROM audit_events ae WHERE (ae.details->>'project_id') = CAST(:projectId AS TEXT)",
       nativeQuery = true)
   Optional<Instant> findMostRecentByProject(@Param("projectId") UUID projectId);
+
+  // --- Cross-project activity queries (Epic 76B) ---
+
+  /**
+   * Cross-project activity for admin/owner: returns recent events with actor and project names
+   * joined. Only returns events that have a project_id in their details. RLS handles tenant
+   * isolation.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+      SELECT ae.id AS eventId, ae.event_type AS eventType,
+             ae.entity_type AS entityType,
+             m.name AS actorName,
+             (ae.details->>'project_id')::uuid AS projectId,
+             p.name AS projectName,
+             ae.occurred_at AS occurredAt
+      FROM audit_events ae
+      LEFT JOIN members m ON ae.actor_id = m.id
+      LEFT JOIN projects p ON (ae.details->>'project_id')::uuid = p.id
+      WHERE (ae.details->>'project_id') IS NOT NULL
+        AND (ae.details->>'project_id') ~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+      ORDER BY ae.occurred_at DESC
+      LIMIT :limit
+      """)
+  List<CrossProjectActivityProjection> findCrossProjectActivity(@Param("limit") int limit);
+
+  /**
+   * Cross-project activity for regular members: filtered to projects the member belongs to via
+   * project_members subquery. RLS handles tenant isolation.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+      SELECT ae.id AS eventId, ae.event_type AS eventType,
+             ae.entity_type AS entityType,
+             m.name AS actorName,
+             (ae.details->>'project_id')::uuid AS projectId,
+             p.name AS projectName,
+             ae.occurred_at AS occurredAt
+      FROM audit_events ae
+      LEFT JOIN members m ON ae.actor_id = m.id
+      LEFT JOIN projects p ON (ae.details->>'project_id')::uuid = p.id
+      WHERE (ae.details->>'project_id') IS NOT NULL
+        AND (ae.details->>'project_id') ~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+        AND (ae.details->>'project_id')::uuid IN (
+            SELECT pm.project_id FROM project_members pm WHERE pm.member_id = CAST(:memberId AS UUID)
+        )
+      ORDER BY ae.occurred_at DESC
+      LIMIT :limit
+      """)
+  List<CrossProjectActivityProjection> findCrossProjectActivityForMember(
+      @Param("memberId") UUID memberId, @Param("limit") int limit);
 }

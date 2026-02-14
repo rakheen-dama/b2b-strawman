@@ -60,6 +60,9 @@ public class TimeEntry implements TenantAware {
   @Column(name = "cost_rate_currency", length = 3)
   private String costRateCurrency;
 
+  @Column(name = "invoice_id")
+  private UUID invoiceId;
+
   @Column(name = "description", columnDefinition = "TEXT")
   private String description;
 
@@ -213,6 +216,14 @@ public class TimeEntry implements TenantAware {
         .divide(BigDecimal.valueOf(60), 4, RoundingMode.HALF_UP)
         .multiply(costRateSnapshot)
         .setScale(2, RoundingMode.HALF_UP);
+  }
+
+  public UUID getInvoiceId() {
+    return invoiceId;
+  }
+
+  public void setInvoiceId(UUID invoiceId) {
+    this.invoiceId = invoiceId;
   }
 
   public void setDescription(String description) {

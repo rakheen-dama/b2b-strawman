@@ -130,3 +130,5 @@ node_modules/
 /playwright/.cache/
 /playwright/.auth/
 
+.epic-brief.md
+.epic-brief.md

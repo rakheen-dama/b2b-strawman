@@ -90,7 +90,7 @@
 | 74 | Profitability & Financials Frontend — Pages & Tabs | Frontend | 73, 72, 68 | L | 74A, 74B, 74C | **Done** (PRs #148–#150) |
 | **Phase 9 — Operational Dashboards** | | | | | | See [tasks/phase9-operational-dashboards.md](tasks/phase9-operational-dashboards.md) |
 | 75 | Health Scoring & Project Health Endpoints | Backend | -- | M | 75A, 75B | **Done** |
-| 76 | Company Dashboard Backend | Backend | 75 | L | 76A, 76B | 76A Done |
+| 76 | Company Dashboard Backend | Backend | 75 | L | 76A, 76B | **Done** |
 | 77 | Shared Dashboard Components | Frontend | -- | M | 77A, 77B | **Done** |
 | 78 | Company Dashboard Frontend | Frontend | 76, 77 | M | 78A, 78B | |
 | 79 | Project Overview Tab | Both | 75, 77 | M | 79A, 79B | |

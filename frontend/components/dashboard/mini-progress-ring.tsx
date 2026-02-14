@@ -15,7 +15,7 @@ export function MiniProgressRing({
   size = 32,
   color,
 }: MiniProgressRingProps) {
-  const clampedValue = Math.max(0, Math.min(100, value));
+  const clampedValue = Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 0;
   const resolvedColor = color ?? autoColor(clampedValue);
 
   const strokeWidth = size >= 40 ? 4 : 3;

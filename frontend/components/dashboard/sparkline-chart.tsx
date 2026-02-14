@@ -1,3 +1,6 @@
+"use client";
+
+import { useId } from "react";
 import { cn } from "@/lib/utils";
 
 interface SparklineChartProps {
@@ -13,19 +16,27 @@ export function SparklineChart({
   height = 24,
   color = "currentColor",
 }: SparklineChartProps) {
+  const gradientId = useId();
+
   if (!data || data.length === 0) {
     return <svg width={width} height={height} aria-hidden="true" />;
   }
 
-  const min = Math.min(...data);
-  const max = Math.max(...data);
+  // Filter out non-finite values (NaN, Infinity, -Infinity)
+  const validData = data.filter(Number.isFinite);
+  if (validData.length === 0) {
+    return <svg width={width} height={height} aria-hidden="true" />;
+  }
+
+  const min = Math.min(...validData);
+  const max = Math.max(...validData);
   const range = max - min || 1;
 
   const padding = 1;
   const plotHeight = height - padding * 2;
-  const stepX = (width - 2) / Math.max(data.length - 1, 1);
+  const stepX = (width - 2) / Math.max(validData.length - 1, 1);
 
-  const points = data
+  const points = validData
     .map((value, i) => {
       const x = 1 + i * stepX;
       const y = padding + plotHeight - ((value - min) / range) * plotHeight;
@@ -35,10 +46,8 @@ export function SparklineChart({
 
   // Build the polygon for the gradient fill area (line + bottom edge)
   const firstX = 1;
-  const lastX = 1 + (data.length - 1) * stepX;
+  const lastX = 1 + (validData.length - 1) * stepX;
   const fillPoints = `${firstX},${height} ${points} ${lastX},${height}`;
-
-  const gradientId = `sparkline-gradient-${width}-${height}`;
 
   return (
     <svg

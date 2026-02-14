@@ -1,7 +1,8 @@
 import { auth } from "@clerk/nextjs/server";
 import { api, handleApiError } from "@/lib/api";
-import type { Project, ProjectRole } from "@/lib/types";
+import type { Project, ProjectRole, LightweightBudgetStatus } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
+import { BudgetStatusDot } from "@/components/projects/budget-status-dot";
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
 import { formatDate } from "@/lib/format";
 import { FileText, FolderOpen, Users } from "lucide-react";
@@ -24,6 +25,21 @@ export default async function ProjectsPage({ params }: { params: Promise<{ slug:
     projects = await api.get<Project[]>("/api/projects");
   } catch (error) {
     handleApiError(error);
+  }
+
+  // Fetch budget status for each project (admin-only, non-fatal — 404 means no budget)
+  const budgetStatuses = new Map<string, LightweightBudgetStatus>();
+  if (isAdmin && projects.length > 0) {
+    const results = await Promise.allSettled(
+      projects.map((p) =>
+        api.get<LightweightBudgetStatus>(`/api/projects/${p.id}/budget/status`),
+      ),
+    );
+    results.forEach((result, i) => {
+      if (result.status === "fulfilled" && result.value) {
+        budgetStatuses.set(projects[i].id, result.value);
+      }
+    });
   }
 
   return (
@@ -76,6 +92,7 @@ export default async function ProjectsPage({ params }: { params: Promise<{ slug:
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {projects.map((project) => {
             const roleBadge = project.projectRole ? ROLE_BADGE[project.projectRole] : null;
+            const budgetStatus = budgetStatuses.get(project.id);
             return (
               <Link
                 key={project.id}
@@ -83,7 +100,7 @@ export default async function ProjectsPage({ params }: { params: Promise<{ slug:
                 className="group rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-olive-600"
               >
                 <div className="rounded-lg border border-olive-200 bg-white p-6 transition-all duration-150 hover:border-olive-300 hover:shadow-sm dark:border-olive-800 dark:bg-olive-950 dark:hover:border-olive-700">
-                  {/* Top: name + role badge */}
+                  {/* Top: name + role badge + budget indicator */}
                   <div className="flex items-center gap-2">
                     <h3 className="line-clamp-1 font-semibold text-olive-950 dark:text-olive-50">
                       {project.name}
@@ -92,6 +109,9 @@ export default async function ProjectsPage({ params }: { params: Promise<{ slug:
                       <Badge variant={roleBadge.variant} className="shrink-0">
                         {roleBadge.label}
                       </Badge>
+                    )}
+                    {budgetStatus?.overallStatus && (
+                      <BudgetStatusDot status={budgetStatus.overallStatus} />
                     )}
                   </div>
 

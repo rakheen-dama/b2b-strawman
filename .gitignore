@@ -119,6 +119,9 @@ CLERK_JWKS_URI
 .notes/
 .tmp/
 
+# Workflow Observatory (session logs are ephemeral, stats are committed)
+.claude/logs/
+
 # Playwright
 node_modules/
 /test-results/

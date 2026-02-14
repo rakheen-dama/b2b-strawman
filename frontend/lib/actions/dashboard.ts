@@ -4,6 +4,9 @@ import { api } from "@/lib/api";
 import type {
   KpiResponse,
   ProjectHealth,
+  ProjectHealthDetail,
+  TaskSummaryResponse,
+  MemberHoursEntry,
   TeamWorkloadEntry,
   CrossProjectActivityItem,
   PersonalDashboardResponse,
@@ -62,6 +65,46 @@ export async function fetchPersonalDashboard(
   try {
     return await api.get<PersonalDashboardResponse>(
       `/api/dashboard/personal?from=${from}&to=${to}`
+    );
+  } catch {
+    return null;
+  }
+}
+
+// --- Project-scoped fetchers (for project overview tab) ---
+
+export async function fetchProjectHealthDetail(
+  projectId: string
+): Promise<ProjectHealthDetail | null> {
+  try {
+    return await api.get<ProjectHealthDetail>(
+      `/api/projects/${projectId}/health`
+    );
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchProjectTaskSummary(
+  projectId: string
+): Promise<TaskSummaryResponse | null> {
+  try {
+    return await api.get<TaskSummaryResponse>(
+      `/api/projects/${projectId}/task-summary`
+    );
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchProjectMemberHours(
+  projectId: string,
+  from: string,
+  to: string
+): Promise<MemberHoursEntry[] | null> {
+  try {
+    return await api.get<MemberHoursEntry[]>(
+      `/api/projects/${projectId}/member-hours?from=${from}&to=${to}`
     );
   } catch {
     return null;

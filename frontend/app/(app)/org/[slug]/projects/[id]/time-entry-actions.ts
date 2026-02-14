@@ -2,7 +2,7 @@
 
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
-import type { TimeEntry, CreateTimeEntryRequest, UpdateTimeEntryRequest } from "@/lib/types";
+import type { TimeEntry, CreateTimeEntryRequest, UpdateTimeEntryRequest, ResolvedRate } from "@/lib/types";
 
 interface ActionResult {
   success: boolean;
@@ -108,4 +108,21 @@ export async function deleteTimeEntry(
   revalidatePath(`/org/${slug}/projects/${projectId}`);
 
   return { success: true };
+}
+
+export async function resolveRate(
+  memberId: string,
+  projectId: string,
+  date: string
+): Promise<ResolvedRate | null> {
+  try {
+    return await api.get<ResolvedRate>(
+      `/api/billing-rates/resolve?memberId=${encodeURIComponent(memberId)}&projectId=${encodeURIComponent(projectId)}&date=${encodeURIComponent(date)}`
+    );
+  } catch (error) {
+    if (!(error instanceof ApiError && error.status === 404)) {
+      console.error("Failed to resolve rate:", error);
+    }
+    return null;
+  }
 }

@@ -58,6 +58,17 @@ export function formatCurrency(amount: number, currency: string): string {
   }).format(amount);
 }
 
+/**
+ * Null-safe currency formatter. Returns "N/A" if amount or currency is missing.
+ */
+export function formatCurrencySafe(
+  amount: number | null | undefined,
+  currency: string | null | undefined,
+): string {
+  if (amount == null || !currency) return "N/A";
+  return formatCurrency(amount, currency);
+}
+
 export function formatRelativeDate(date: string | Date): string {
   const seconds = Math.round((new Date(date).getTime() - Date.now()) / 1000);
   for (const [unit, threshold] of UNITS) {

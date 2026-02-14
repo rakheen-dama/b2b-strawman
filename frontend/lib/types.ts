@@ -177,6 +177,12 @@ export interface TimeEntry {
   durationMinutes: number;
   billable: boolean;
   rateCents: number | null;
+  billingRateSnapshot: number | null;
+  billingRateCurrency: string | null;
+  costRateSnapshot: number | null;
+  costRateCurrency: string | null;
+  billableValue: number | null;
+  costValue: number | null;
   description: string | null;
   createdAt: string;
   updatedAt: string;

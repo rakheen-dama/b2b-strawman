@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.member;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,4 +21,7 @@ public interface MemberRepository extends JpaRepository<Member, UUID> {
   void deleteByClerkUserId(String clerkUserId);
 
   boolean existsByClerkUserId(String clerkUserId);
+
+  @Query("SELECT m FROM Member m WHERE m.orgRole IN :roles")
+  List<Member> findByOrgRoleIn(@Param("roles") List<String> roles);
 }

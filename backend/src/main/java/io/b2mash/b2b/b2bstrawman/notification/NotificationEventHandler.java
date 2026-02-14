@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.notification;
 
+import io.b2mash.b2b.b2bstrawman.event.BudgetThresholdEvent;
 import io.b2mash.b2b.b2bstrawman.event.CommentCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.event.DocumentUploadedEvent;
 import io.b2mash.b2b.b2bstrawman.event.MemberAddedToProjectEvent;
@@ -137,6 +138,24 @@ public class NotificationEventHandler {
           } catch (Exception e) {
             log.warn(
                 "Failed to create notifications for project_member.added event={}",
+                event.entityId(),
+                e);
+          }
+        });
+  }
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onBudgetThreshold(BudgetThresholdEvent event) {
+    handleInTenantScope(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            var notifications = notificationService.handleBudgetThreshold(event);
+            dispatchAll(notifications);
+          } catch (Exception e) {
+            log.warn(
+                "Failed to create notifications for budget.threshold_reached event={}",
                 event.entityId(),
                 e);
           }

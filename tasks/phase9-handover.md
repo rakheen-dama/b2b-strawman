@@ -1,6 +1,6 @@
 # Phase 9 Handover — Operational Dashboards
 
-## Status: 10 of 12 slices complete
+## Status: 11 of 12 slices complete
 
 | Slice | Status | PR | Notes |
 |-------|--------|-----|-------|
@@ -14,8 +14,8 @@
 | **78A** | Done | #159 | Dashboard page, KpiCardRow, ProjectHealthWidget, DateRangeSelector, 30 tests |
 | **78B** | Done | #160 | TeamWorkloadWidget, RecentActivityWidget, responsive 5-col grid, 7 tests |
 | **79B** | Done | #161 | OverviewTab (server component), health header, metrics strip, tab integration, 5 tests |
-| **80A** | **Next** | -- | PersonalKpis, TimeBreakdown chart, UpcomingDeadlines |
-| **80B** | Pending | -- | Enhanced My Work page with dashboard header |
+| **80A** | Done | #162 | PersonalKpis (3 KPI cards), TimeBreakdown (bar chart), UpcomingDeadlines (urgency coloring), 9 tests |
+| **80B** | **Next** | -- | Enhanced My Work page with dashboard header |
 
 ## Remaining Execution Order
 

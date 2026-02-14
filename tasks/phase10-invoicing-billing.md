@@ -274,7 +274,7 @@ Stage 5:  [85B] ──► [85C]  //  [86B]                             ← previ
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **83A** | 83.1-83.6 | Unbilled time backend endpoint (GET /api/customers/{id}/unbilled-time), UnbilledTimeResponse DTO with project grouping and currency totals, native SQL query with joins, integration tests (~8 tests) | |
+| **83A** | 83.1-83.6 | Unbilled time backend endpoint (GET /api/customers/{id}/unbilled-time), UnbilledTimeResponse DTO with project grouping and currency totals, native SQL query with joins, integration tests (~8 tests) | **Done** (PR #171) |
 | **83B** | 83.7-83.14 | InvoiceGenerationDialog (3-step: date range → select entries → create draft), CustomerInvoicesTab on customer detail page, API client functions, frontend tests (~8 tests) | |
 
 ### Tasks

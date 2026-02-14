@@ -10,9 +10,10 @@ interface CustomerTabsProps {
   documentsPanel: ReactNode;
   ratesPanel?: ReactNode;
   financialsPanel?: ReactNode;
+  invoicesPanel?: ReactNode;
 }
 
-type TabId = "projects" | "documents" | "rates" | "financials";
+type TabId = "projects" | "documents" | "rates" | "financials" | "invoices";
 
 interface TabDef {
   id: TabId;
@@ -22,6 +23,7 @@ interface TabDef {
 const baseTabs: TabDef[] = [
   { id: "projects", label: "Projects" },
   { id: "documents", label: "Documents" },
+  { id: "invoices", label: "Invoices" },
   { id: "rates", label: "Rates" },
   { id: "financials", label: "Financials" },
 ];
@@ -31,16 +33,18 @@ export function CustomerTabs({
   documentsPanel,
   ratesPanel,
   financialsPanel,
+  invoicesPanel,
 }: CustomerTabsProps) {
   const [activeTab, setActiveTab] = useState<TabId>("projects");
 
   const tabs = useMemo(() => {
     return baseTabs.filter((t) => {
+      if (t.id === "invoices" && !invoicesPanel) return false;
       if (t.id === "rates" && !ratesPanel) return false;
       if (t.id === "financials" && !financialsPanel) return false;
       return true;
     });
-  }, [ratesPanel, financialsPanel]);
+  }, [invoicesPanel, ratesPanel, financialsPanel]);
 
   return (
     <TabsPrimitive.Root value={activeTab} onValueChange={(v) => setActiveTab(v as TabId)}>
@@ -75,6 +79,11 @@ export function CustomerTabs({
       <TabsPrimitive.Content value="documents" className="pt-6 outline-none">
         {documentsPanel}
       </TabsPrimitive.Content>
+      {invoicesPanel && (
+        <TabsPrimitive.Content value="invoices" className="pt-6 outline-none">
+          {invoicesPanel}
+        </TabsPrimitive.Content>
+      )}
       {ratesPanel && (
         <TabsPrimitive.Content value="rates" className="pt-6 outline-none">
           {ratesPanel}

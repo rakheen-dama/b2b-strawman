@@ -498,6 +498,88 @@ export interface CustomerProfitabilityResponse {
   currencies: CurrencyBreakdown[];
 }
 
+// ---- Invoices (from InvoiceController.java) ----
+
+export type InvoiceStatus = "DRAFT" | "APPROVED" | "SENT" | "PAID" | "VOID";
+
+export interface InvoiceLineResponse {
+  id: string;
+  projectId: string | null;
+  projectName: string | null;
+  timeEntryId: string | null;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  amount: number;
+  sortOrder: number;
+}
+
+export interface InvoiceResponse {
+  id: string;
+  customerId: string;
+  invoiceNumber: string | null;
+  status: InvoiceStatus;
+  currency: string;
+  issueDate: string | null;
+  dueDate: string | null;
+  subtotal: number;
+  taxAmount: number;
+  total: number;
+  notes: string | null;
+  paymentTerms: string | null;
+  paymentReference: string | null;
+  paidAt: string | null;
+  customerName: string;
+  customerEmail: string | null;
+  customerAddress: string | null;
+  orgName: string;
+  createdBy: string;
+  approvedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+  lines: InvoiceLineResponse[];
+}
+
+export interface CreateInvoiceDraftRequest {
+  customerId: string;
+  currency: string;
+  timeEntryIds: string[];
+  dueDate?: string;
+  notes?: string;
+  paymentTerms?: string;
+}
+
+export interface CurrencyTotal {
+  hours: number;
+  amount: number;
+}
+
+export interface UnbilledTimeEntry {
+  id: string;
+  taskTitle: string;
+  memberName: string;
+  date: string;
+  durationMinutes: number;
+  billingRateSnapshot: number;
+  billingRateCurrency: string;
+  billableValue: number;
+  description: string | null;
+}
+
+export interface UnbilledProjectGroup {
+  projectId: string;
+  projectName: string;
+  entries: UnbilledTimeEntry[];
+  totals: Record<string, CurrencyTotal>;
+}
+
+export interface UnbilledTimeResponse {
+  customerId: string;
+  customerName: string;
+  projects: UnbilledProjectGroup[];
+  grandTotals: Record<string, CurrencyTotal>;
+}
+
 // ---- Error (RFC 9457 ProblemDetail) ----
 
 export interface ProblemDetail {

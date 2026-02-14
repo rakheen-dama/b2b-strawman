@@ -10,6 +10,7 @@ import type {
   OrgSettings,
   CustomerProfitabilityResponse,
   OrgProfitabilityResponse,
+  InvoiceResponse,
 } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ import { CustomerDocumentsPanel } from "@/components/documents/customer-document
 import { CustomerTabs } from "@/components/customers/customer-tabs";
 import { CustomerRatesTab } from "@/components/rates/customer-rates-tab";
 import { CustomerFinancialsTab } from "@/components/profitability/customer-financials-tab";
+import { CustomerInvoicesTab } from "@/components/customers/customer-invoices-tab";
 import { formatDate } from "@/lib/format";
 import { ArrowLeft, Pencil, Archive } from "lucide-react";
 import Link from "next/link";
@@ -68,9 +70,10 @@ export default async function CustomerDetailPage({
   let defaultCurrency = "USD";
   let customerProfitability: CustomerProfitabilityResponse | null = null;
   let projectBreakdown: OrgProfitabilityResponse | null = null;
+  let customerInvoices: InvoiceResponse[] = [];
   if (isAdmin) {
     try {
-      const [ratesRes, membersRes, settingsRes, profitabilityRes, breakdownRes] =
+      const [ratesRes, membersRes, settingsRes, profitabilityRes, breakdownRes, invoicesRes] =
         await Promise.all([
           api.get<{ content: BillingRate[] }>(`/api/billing-rates?customerId=${id}`),
           api.get<OrgMember[]>("/api/members"),
@@ -85,6 +88,11 @@ export default async function CustomerDetailPage({
               `/api/reports/profitability?customerId=${id}`,
             )
             .catch(() => null),
+          api
+            .get<InvoiceResponse[]>(
+              `/api/invoices?customerId=${id}`,
+            )
+            .catch(() => [] as InvoiceResponse[]),
         ]);
       customerBillingRates = ratesRes?.content ?? [];
       orgMembers = membersRes;
@@ -93,8 +101,9 @@ export default async function CustomerDetailPage({
       }
       customerProfitability = profitabilityRes;
       projectBreakdown = breakdownRes;
+      customerInvoices = invoicesRes ?? [];
     } catch {
-      // Non-fatal: show empty rates/financials tab if fetch fails
+      // Non-fatal: show empty rates/financials/invoices tab if fetch fails
     }
   }
 
@@ -181,6 +190,18 @@ export default async function CustomerDetailPage({
             customerId={id}
             canManage={isAdmin && customer.status === "ACTIVE"}
           />
+        }
+        invoicesPanel={
+          isAdmin ? (
+            <CustomerInvoicesTab
+              invoices={customerInvoices}
+              customerId={id}
+              customerName={customer.name}
+              slug={slug}
+              canManage={isAdmin && customer.status === "ACTIVE"}
+              defaultCurrency={defaultCurrency}
+            />
+          ) : undefined
         }
         ratesPanel={
           isAdmin ? (

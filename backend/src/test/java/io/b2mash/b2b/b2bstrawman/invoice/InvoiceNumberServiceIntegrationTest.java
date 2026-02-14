@@ -32,7 +32,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class InvoiceNumberServiceTest {
+class InvoiceNumberServiceIntegrationTest {
 
   private static final String API_KEY = "test-api-key";
 

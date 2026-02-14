@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.UUID;
 import org.hibernate.annotations.Filter;
@@ -76,7 +77,7 @@ public class InvoiceLine implements TenantAware {
     this.description = description;
     this.quantity = quantity;
     this.unitPrice = unitPrice;
-    this.amount = quantity.multiply(unitPrice);
+    this.amount = quantity.multiply(unitPrice).setScale(2, RoundingMode.HALF_UP);
     this.sortOrder = sortOrder;
     this.createdAt = Instant.now();
     this.updatedAt = Instant.now();
@@ -84,7 +85,7 @@ public class InvoiceLine implements TenantAware {
 
   /** Recalculates amount as quantity * unitPrice and updates the updatedAt timestamp. */
   public void recalculateAmount() {
-    this.amount = this.quantity.multiply(this.unitPrice);
+    this.amount = this.quantity.multiply(this.unitPrice).setScale(2, RoundingMode.HALF_UP);
     this.updatedAt = Instant.now();
   }
 

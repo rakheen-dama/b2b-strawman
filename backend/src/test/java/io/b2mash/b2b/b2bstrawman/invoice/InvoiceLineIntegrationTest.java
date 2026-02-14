@@ -44,6 +44,7 @@ class InvoiceLineIntegrationTest {
 
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_inv_line_test";
+  private static final String ORG_ID_B = "org_inv_line_test_b";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private InvoiceRepository invoiceRepository;
@@ -58,8 +59,11 @@ class InvoiceLineIntegrationTest {
   @Autowired private TransactionTemplate transactionTemplate;
 
   private String tenantSchema;
+  private String tenantSchemaB;
   private UUID memberIdOwner;
+  private UUID memberIdOwnerB;
   private UUID customerId;
+  private UUID customerIdB;
   private UUID projectId;
   private UUID taskId;
 
@@ -113,6 +117,43 @@ class InvoiceLineIntegrationTest {
                       task = taskRepository.save(task);
                       taskId = task.getId();
                     }));
+
+    // --- Tenant B ---
+    provisioningService.provisionTenant(ORG_ID_B, "Invoice Line Test Org B");
+    planSyncService.syncPlan(ORG_ID_B, "pro-plan");
+
+    memberIdOwnerB =
+        UUID.fromString(
+            syncMember(
+                ORG_ID_B,
+                "user_inv_line_owner_b",
+                "inv_line_owner_b@test.com",
+                "Line Owner B",
+                "owner"));
+
+    tenantSchemaB =
+        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID_B).orElseThrow().getSchemaName();
+
+    // Create a customer in tenant B
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchemaB)
+        .where(RequestScopes.ORG_ID, ORG_ID_B)
+        .where(RequestScopes.MEMBER_ID, memberIdOwnerB)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var customer =
+                          new Customer(
+                              "Line Test Corp B",
+                              "linetest_b@test.com",
+                              "+1-555-0301",
+                              "LTC-002",
+                              "Test customer B for line items",
+                              memberIdOwnerB);
+                      customer = customerRepository.save(customer);
+                      customerIdB = customer.getId();
+                    }));
   }
 
   @Test
@@ -142,7 +183,7 @@ class InvoiceLineIntegrationTest {
                   assertThat(found.getDescription()).isEqualTo("Development services");
                   assertThat(found.getQuantity()).isEqualByComparingTo(new BigDecimal("8.0000"));
                   assertThat(found.getUnitPrice()).isEqualByComparingTo(new BigDecimal("150.00"));
-                  assertThat(found.getAmount()).isEqualByComparingTo(new BigDecimal("1200.0000"));
+                  assertThat(found.getAmount()).isEqualByComparingTo(new BigDecimal("1200.00"));
                   assertThat(found.getSortOrder()).isEqualTo(0);
                   assertThat(found.getProjectId()).isNull();
                   assertThat(found.getTimeEntryId()).isNull();
@@ -253,25 +294,71 @@ class InvoiceLineIntegrationTest {
         .isInstanceOf(DataIntegrityViolationException.class);
   }
 
+  @Test
+  void findByInvoiceIdRespectsFilterForCrossTenantIsolation() {
+    // Create an invoice with a line item in tenant A
+    var invoiceIdHolder = new UUID[1];
+    runInTenant(
+        tenantSchema,
+        ORG_ID,
+        memberIdOwner,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var invoice =
+                      createDraftInvoice(
+                          customerId,
+                          "Line Test Corp",
+                          "linetest@test.com",
+                          "Invoice Line Test Org",
+                          memberIdOwner);
+                  invoiceLineRepository.save(
+                      new InvoiceLine(
+                          invoice.getId(),
+                          null,
+                          null,
+                          "Tenant A service",
+                          new BigDecimal("1.0000"),
+                          new BigDecimal("100.00"),
+                          0));
+                  invoiceIdHolder[0] = invoice.getId();
+                }));
+
+    // Query from tenant B — should return empty
+    runInTenant(
+        tenantSchemaB,
+        ORG_ID_B,
+        memberIdOwnerB,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var lines =
+                      invoiceLineRepository.findByInvoiceIdOrderBySortOrder(invoiceIdHolder[0]);
+                  assertThat(lines).isEmpty();
+                }));
+  }
+
   // --- Helpers ---
 
   private Invoice createDraftInvoice() {
-    var invoice =
-        new Invoice(
-            customerId,
-            "USD",
-            "Line Test Corp",
-            "linetest@test.com",
-            null,
-            "Invoice Line Test Org",
-            memberIdOwner);
+    return createDraftInvoice(
+        customerId, "Line Test Corp", "linetest@test.com", "Invoice Line Test Org", memberIdOwner);
+  }
+
+  private Invoice createDraftInvoice(
+      UUID custId, String custName, String custEmail, String orgName, UUID createdBy) {
+    var invoice = new Invoice(custId, "USD", custName, custEmail, null, orgName, createdBy);
     return invoiceRepository.save(invoice);
   }
 
   private void runInTenant(Runnable action) {
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.ORG_ID, ORG_ID)
-        .where(RequestScopes.MEMBER_ID, memberIdOwner)
+    runInTenant(tenantSchema, ORG_ID, memberIdOwner, action);
+  }
+
+  private void runInTenant(String schema, String orgId, UUID memberId, Runnable action) {
+    ScopedValue.where(RequestScopes.TENANT_ID, schema)
+        .where(RequestScopes.ORG_ID, orgId)
+        .where(RequestScopes.MEMBER_ID, memberId)
         .where(RequestScopes.ORG_ROLE, "owner")
         .run(action);
   }

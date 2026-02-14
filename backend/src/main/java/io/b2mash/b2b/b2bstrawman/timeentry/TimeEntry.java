@@ -63,6 +63,9 @@ public class TimeEntry implements TenantAware {
   @Column(name = "description", columnDefinition = "TEXT")
   private String description;
 
+  @Column(name = "invoice_id")
+  private UUID invoiceId;
+
   @Column(name = "tenant_id")
   private String tenantId;
 
@@ -177,6 +180,10 @@ public class TimeEntry implements TenantAware {
     return costRateCurrency;
   }
 
+  public UUID getInvoiceId() {
+    return invoiceId;
+  }
+
   public void snapshotBillingRate(BigDecimal rate, String currency) {
     this.billingRateSnapshot = rate;
     this.billingRateCurrency = currency;
@@ -221,5 +228,45 @@ public class TimeEntry implements TenantAware {
 
   public void setUpdatedAt(Instant updatedAt) {
     this.updatedAt = updatedAt;
+  }
+
+  /**
+   * Marks this time entry as billed on the given invoice. Validates that the entry is billable and
+   * not already billed.
+   *
+   * @param invoiceId the invoice ID
+   * @throws IllegalStateException if entry is not billable or already billed
+   */
+  public void markBilled(UUID invoiceId) {
+    if (!billable) {
+      throw new IllegalStateException("Cannot bill a non-billable time entry");
+    }
+    if (this.invoiceId != null) {
+      throw new IllegalStateException("Time entry is already billed on invoice " + this.invoiceId);
+    }
+    this.invoiceId = invoiceId;
+    this.updatedAt = Instant.now();
+  }
+
+  /**
+   * Marks this time entry as unbilled (clears the invoice reference). Used when an invoice is
+   * voided.
+   */
+  public void markUnbilled() {
+    this.invoiceId = null;
+    this.updatedAt = Instant.now();
+  }
+
+  /** Returns true if this time entry has been billed (appears on an invoice). */
+  public boolean isBilled() {
+    return invoiceId != null;
+  }
+
+  /**
+   * Returns true if this time entry is locked (cannot be edited or deleted). Billed entries are
+   * locked.
+   */
+  public boolean isLocked() {
+    return isBilled();
   }
 }

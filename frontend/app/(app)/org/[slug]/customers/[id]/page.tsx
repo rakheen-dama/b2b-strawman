@@ -72,7 +72,7 @@ export default async function CustomerDetailPage({
     try {
       const [ratesRes, membersRes, settingsRes, profitabilityRes, breakdownRes] =
         await Promise.all([
-          api.get<BillingRate[]>(`/api/billing-rates?customerId=${id}`),
+          api.get<{ content: BillingRate[] }>(`/api/billing-rates?customerId=${id}`),
           api.get<OrgMember[]>("/api/members"),
           api.get<OrgSettings>("/api/settings").catch(() => null),
           api
@@ -86,7 +86,7 @@ export default async function CustomerDetailPage({
             )
             .catch(() => null),
         ]);
-      customerBillingRates = ratesRes;
+      customerBillingRates = ratesRes?.content ?? [];
       orgMembers = membersRes;
       if (settingsRes?.defaultCurrency) {
         defaultCurrency = settingsRes.defaultCurrency;

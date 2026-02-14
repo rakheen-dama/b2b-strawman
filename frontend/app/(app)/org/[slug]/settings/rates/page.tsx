@@ -40,12 +40,17 @@ export default async function RatesSettingsPage({
   let costRates: CostRate[] = [];
 
   try {
-    [settings, members, billingRates, costRates] = await Promise.all([
-      api.get<OrgSettings>("/api/settings"),
-      api.get<OrgMember[]>("/api/members"),
-      api.get<BillingRate[]>("/api/billing-rates"),
-      api.get<CostRate[]>("/api/cost-rates"),
-    ]);
+    const [settingsRes, membersRes, billingRatesRes, costRatesRes] =
+      await Promise.all([
+        api.get<OrgSettings>("/api/settings"),
+        api.get<OrgMember[]>("/api/members"),
+        api.get<{ content: BillingRate[] }>("/api/billing-rates"),
+        api.get<{ content: CostRate[] }>("/api/cost-rates"),
+      ]);
+    settings = settingsRes;
+    members = membersRes;
+    billingRates = billingRatesRes?.content ?? [];
+    costRates = costRatesRes?.content ?? [];
   } catch {
     // Non-fatal: show empty state with defaults
   }

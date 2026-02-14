@@ -106,10 +106,10 @@ export default async function ProjectDetailPage({
   if (canManage) {
     try {
       const [ratesRes, settingsRes] = await Promise.all([
-        api.get<BillingRate[]>(`/api/billing-rates?projectId=${id}`),
+        api.get<{ content: BillingRate[] }>(`/api/billing-rates?projectId=${id}`),
         api.get<OrgSettings>("/api/settings").catch(() => null),
       ]);
-      projectBillingRates = ratesRes;
+      projectBillingRates = ratesRes?.content ?? [];
       if (settingsRes?.defaultCurrency) {
         defaultCurrency = settingsRes.defaultCurrency;
       }

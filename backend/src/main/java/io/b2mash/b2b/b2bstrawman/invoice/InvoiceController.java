@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
@@ -42,6 +43,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/invoices")
 public class InvoiceController {
+
+  private static final Set<String> ALLOWED_SORT_FIELDS =
+      Set.of("createdAt", "updatedAt", "issueDate", "dueDate", "total", "status", "invoiceNumber");
 
   private final InvoiceService invoiceService;
   private final ProjectRepository projectRepository;
@@ -296,7 +300,7 @@ public class InvoiceController {
 
   private Pageable parsePageable(int page, int size, String sort) {
     String[] parts = sort.split(",");
-    String field = parts[0];
+    String field = ALLOWED_SORT_FIELDS.contains(parts[0]) ? parts[0] : "createdAt";
     Sort.Direction direction =
         parts.length > 1 && "asc".equalsIgnoreCase(parts[1])
             ? Sort.Direction.ASC

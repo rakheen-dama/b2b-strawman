@@ -123,15 +123,19 @@ public class InvoiceService {
             .map(cp -> cp.getProjectId())
             .collect(Collectors.toSet());
 
-    // 3. Validate time entries
-    List<TimeEntry> timeEntries =
-        timeEntryIds.stream()
-            .map(
-                id ->
-                    timeEntryRepository
-                        .findOneById(id)
-                        .orElseThrow(() -> new ResourceNotFoundException("TimeEntry", id)))
-            .toList();
+    // 3. Batch-fetch time entries (findAllById uses JPQL IN clause, respects @Filter)
+    List<TimeEntry> timeEntries = timeEntryRepository.findAllById(timeEntryIds);
+    if (timeEntries.size() != timeEntryIds.size()) {
+      // Identify which IDs were not found
+      Set<UUID> foundIds = timeEntries.stream().map(TimeEntry::getId).collect(Collectors.toSet());
+      List<UUID> missing = timeEntryIds.stream().filter(id -> !foundIds.contains(id)).toList();
+      throw new ResourceNotFoundException("TimeEntry", missing.getFirst());
+    }
+
+    // Collect task IDs for batch fetch, then build a lookup map
+    Set<UUID> taskIds = timeEntries.stream().map(TimeEntry::getTaskId).collect(Collectors.toSet());
+    Map<UUID, Task> taskMap =
+        taskRepository.findAllById(taskIds).stream().collect(Collectors.toMap(Task::getId, t -> t));
 
     for (TimeEntry te : timeEntries) {
       if (!te.isBillable()) {
@@ -144,10 +148,10 @@ public class InvoiceService {
       }
 
       // Validate time entry belongs to customer's projects (via task -> project)
-      Task task =
-          taskRepository
-              .findOneById(te.getTaskId())
-              .orElseThrow(() -> new ResourceNotFoundException("Task", te.getTaskId()));
+      Task task = taskMap.get(te.getTaskId());
+      if (task == null) {
+        throw new ResourceNotFoundException("Task", te.getTaskId());
+      }
 
       if (!customerProjectIds.contains(task.getProjectId())) {
         throw new InvalidStateException(
@@ -200,10 +204,7 @@ public class InvoiceService {
             .toList();
 
     for (TimeEntry te : sortedEntries) {
-      Task task =
-          taskRepository
-              .findOneById(te.getTaskId())
-              .orElseThrow(() -> new ResourceNotFoundException("Task", te.getTaskId()));
+      Task task = taskMap.get(te.getTaskId());
 
       var member = memberRepository.findOneById(te.getMemberId()).orElse(null);
       String memberName = member != null ? member.getName() : "Unknown";
@@ -497,8 +498,12 @@ public class InvoiceService {
     BigDecimal amount = quantity.multiply(unitPrice).setScale(2, RoundingMode.HALF_UP);
 
     // InvoiceLine fields are not mutable via setters (immutable design from 81B)
-    // Delete and re-create with updated values
+    // Delete and re-create with updated values.
+    // Flush after delete to ensure the DELETE executes before the INSERT —
+    // Hibernate default flush ordering (INSERT before DELETE) would violate
+    // the unique constraint on idx_invoice_lines_time_entry_unique.
     invoiceLineRepository.delete(line);
+    invoiceLineRepository.flush();
     InvoiceLine updatedLine =
         new InvoiceLine(
             invoiceId,
@@ -611,9 +616,8 @@ public class InvoiceService {
   }
 
   private String resolveOrgName() {
-    // OrgSettings might not have a name field; use a sensible default
-    // The architecture says to snapshot org name, but OrgSettings only has defaultCurrency
-    // Use the org ID from RequestScopes as a fallback
+    // TODO: resolve actual org name from OrgSettings when name field is added.
+    // OrgSettings currently only has defaultCurrency — no name field exists yet.
     return "Organization";
   }
 }

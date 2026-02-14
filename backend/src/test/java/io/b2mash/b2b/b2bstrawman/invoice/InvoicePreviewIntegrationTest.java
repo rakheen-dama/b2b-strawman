@@ -51,6 +51,7 @@ class InvoicePreviewIntegrationTest {
 
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_inv_preview_test";
+  private static final String ORG_ID_B = "org_inv_preview_test_b";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
@@ -79,7 +80,11 @@ class InvoicePreviewIntegrationTest {
     memberIdOwner =
         UUID.fromString(
             syncMember(
-                "user_inv_preview_owner", "inv_preview_owner@test.com", "Preview Owner", "owner"));
+                ORG_ID,
+                "user_inv_preview_owner",
+                "inv_preview_owner@test.com",
+                "Preview Owner",
+                "owner"));
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -187,6 +192,16 @@ class InvoicePreviewIntegrationTest {
                       invoice.recalculateTotals(subtotal);
                       invoiceRepository.save(invoice);
                     }));
+
+    // --- Tenant B (for cross-tenant isolation test) ---
+    provisioningService.provisionTenant(ORG_ID_B, "Preview Test Org B");
+    planSyncService.syncPlan(ORG_ID_B, "pro-plan");
+    syncMember(
+        ORG_ID_B,
+        "user_inv_preview_owner_b",
+        "inv_preview_owner_b@test.com",
+        "Preview Owner B",
+        "owner");
   }
 
   @Test
@@ -245,6 +260,14 @@ class InvoicePreviewIntegrationTest {
         .andExpect(status().isNotFound());
   }
 
+  @Test
+  void shouldReturn404WhenAccessingPreviewFromDifferentTenant() throws Exception {
+    // Invoice was created in tenant A — accessing from tenant B's admin should return 404
+    mockMvc
+        .perform(get("/api/invoices/" + invoiceId + "/preview").with(ownerJwtTenantB()))
+        .andExpect(status().isNotFound());
+  }
+
   // --- JWT Helpers ---
 
   private JwtRequestPostProcessor ownerJwt() {
@@ -265,9 +288,19 @@ class InvoicePreviewIntegrationTest {
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
   }
 
+  private JwtRequestPostProcessor ownerJwtTenantB() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_inv_preview_owner_b")
+                    .claim("o", Map.of("id", ORG_ID_B, "rol", "owner")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
+  }
+
   // --- Helpers ---
 
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
+  private String syncMember(
+      String orgId, String clerkUserId, String email, String name, String orgRole)
       throws Exception {
     var result =
         mockMvc
@@ -286,7 +319,7 @@ class InvoicePreviewIntegrationTest {
                           "orgRole": "%s"
                         }
                         """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
+                            .formatted(orgId, clerkUserId, email, name, orgRole)))
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");

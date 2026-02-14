@@ -3,21 +3,26 @@ package io.b2mash.b2b.b2bstrawman.dashboard;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
+import io.b2mash.b2b.b2bstrawman.audit.CrossProjectActivityProjection;
 import io.b2mash.b2b.b2bstrawman.budget.ProjectBudget;
 import io.b2mash.b2b.b2bstrawman.budget.ProjectBudgetRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.CrossProjectActivityItem;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.KpiResponse;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.KpiValues;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHealth;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHealthDetail;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHealthMetrics;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHoursEntry;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TaskSummary;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.TeamWorkloadEntry;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TrendPoint;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.project.ProjectWithRole;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.timeentry.TeamWorkloadProjection;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -25,8 +30,11 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -179,6 +187,66 @@ public class DashboardService {
 
     List<ProjectHealth> result = computeProjectHealthList(memberId, orgRole);
     orgCache.put(key, result);
+    return result;
+  }
+
+  // --- Org-level endpoints (Epic 76B) ---
+
+  /**
+   * Returns team workload data aggregating hours per member across projects for a date range.
+   * Admin/owner sees all members; regular members see only their own entry. Results are cached in
+   * the org cache.
+   *
+   * @param tenantId the tenant schema for cache key isolation
+   * @param memberId the requesting member's ID for self-filtering
+   * @param orgRole the caller's org role for visibility
+   * @param from start date of the workload period
+   * @param to end date of the workload period
+   * @return list of team workload entries with per-project breakdowns
+   */
+  @SuppressWarnings("unchecked")
+  @Transactional(readOnly = true)
+  public List<TeamWorkloadEntry> getTeamWorkload(
+      String tenantId, UUID memberId, String orgRole, LocalDate from, LocalDate to) {
+    String cacheKey =
+        isAdminOrOwner(orgRole)
+            ? tenantId + ":team-workload:all:" + from + "_" + to
+            : tenantId + ":team-workload:member:" + memberId + ":" + from + "_" + to;
+
+    List<TeamWorkloadEntry> cached = (List<TeamWorkloadEntry>) orgCache.getIfPresent(cacheKey);
+    if (cached != null) {
+      return cached;
+    }
+
+    List<TeamWorkloadEntry> result = computeTeamWorkload(memberId, orgRole, from, to);
+    orgCache.put(cacheKey, result);
+    return result;
+  }
+
+  /**
+   * Returns recent cross-project activity events. Admin/owner sees all events; regular members see
+   * only events from projects they belong to. Results are cached in the org cache.
+   *
+   * @param tenantId the tenant schema for cache key isolation
+   * @param memberId the requesting member's ID for project access filtering
+   * @param orgRole the caller's org role for visibility
+   * @param limit maximum number of events to return
+   * @return list of activity items with actor and project names
+   */
+  @SuppressWarnings("unchecked")
+  @Transactional(readOnly = true)
+  public List<CrossProjectActivityItem> getCrossProjectActivity(
+      String tenantId, UUID memberId, String orgRole, int limit) {
+    String cacheKey = tenantId + ":activity:" + memberId + ":" + orgRole + ":" + limit;
+
+    List<CrossProjectActivityItem> cached =
+        (List<CrossProjectActivityItem>) orgCache.getIfPresent(cacheKey);
+    if (cached != null) {
+      return cached;
+    }
+
+    List<CrossProjectActivityItem> result = computeCrossProjectActivity(memberId, orgRole, limit);
+    orgCache.put(cacheKey, result);
     return result;
   }
 
@@ -407,6 +475,106 @@ public class DashboardService {
                 .reversed()
                 .thenComparingDouble(ProjectHealth::completionPercent))
         .toList();
+  }
+
+  private List<TeamWorkloadEntry> computeTeamWorkload(
+      UUID memberId, String orgRole, LocalDate from, LocalDate to) {
+    List<TeamWorkloadProjection> rows = timeEntryRepository.findTeamWorkload(from, to);
+
+    // Group flat rows by member
+    Map<UUID, List<TeamWorkloadProjection>> byMember = new LinkedHashMap<>();
+    for (var row : rows) {
+      byMember.computeIfAbsent(row.getMemberId(), k -> new ArrayList<>()).add(row);
+    }
+
+    List<TeamWorkloadEntry> entries = new ArrayList<>();
+    for (var entry : byMember.entrySet()) {
+      UUID entryMemberId = entry.getKey();
+      List<TeamWorkloadProjection> memberRows = entry.getValue();
+
+      // For regular members, skip entries that are not their own
+      if (!isAdminOrOwner(orgRole) && !entryMemberId.equals(memberId)) {
+        continue;
+      }
+
+      String memberName = memberRows.getFirst().getMemberName();
+
+      // Sum total and billable minutes across all projects
+      long totalMinutes = 0;
+      long billableMinutes = 0;
+      for (var row : memberRows) {
+        totalMinutes += row.getTotalMinutes();
+        billableMinutes += row.getBillableMinutes();
+      }
+
+      // Sort projects by hours DESC, cap at 5, aggregate rest as "Other"
+      memberRows.sort(Comparator.comparingLong(TeamWorkloadProjection::getTotalMinutes).reversed());
+
+      List<ProjectHoursEntry> projects = new ArrayList<>();
+      long otherMinutes = 0;
+      for (int i = 0; i < memberRows.size(); i++) {
+        var row = memberRows.get(i);
+        if (i < 5) {
+          projects.add(
+              new ProjectHoursEntry(
+                  row.getProjectId(), row.getProjectName(), row.getTotalMinutes() / 60.0));
+        } else {
+          otherMinutes += row.getTotalMinutes();
+        }
+      }
+      if (otherMinutes > 0) {
+        projects.add(new ProjectHoursEntry(null, "Other", otherMinutes / 60.0));
+      }
+
+      entries.add(
+          new TeamWorkloadEntry(
+              entryMemberId, memberName, totalMinutes / 60.0, billableMinutes / 60.0, projects));
+    }
+
+    return entries;
+  }
+
+  private List<CrossProjectActivityItem> computeCrossProjectActivity(
+      UUID memberId, String orgRole, int limit) {
+    List<CrossProjectActivityProjection> rows;
+    if (isAdminOrOwner(orgRole)) {
+      rows = auditEventRepository.findCrossProjectActivity(limit);
+    } else {
+      rows = auditEventRepository.findCrossProjectActivityForMember(memberId, limit);
+    }
+
+    return rows.stream()
+        .map(
+            row ->
+                new CrossProjectActivityItem(
+                    row.getEventId(),
+                    row.getEventType(),
+                    buildActivityDescription(row.getEventType(), row.getActorName()),
+                    row.getActorName(),
+                    row.getProjectId(),
+                    row.getProjectName(),
+                    row.getOccurredAt()))
+        .toList();
+  }
+
+  private String buildActivityDescription(String eventType, String actorName) {
+    String actor = actorName != null ? actorName : "System";
+    if (eventType == null) {
+      return actor + " performed an action";
+    }
+    String[] parts = eventType.split("\\.");
+    if (parts.length < 2) {
+      return actor + " performed " + eventType;
+    }
+    String entity = parts[0];
+    String action = parts[1];
+    return switch (action) {
+      case "created" -> actor + " created a " + entity;
+      case "updated" -> actor + " updated a " + entity;
+      case "deleted" -> actor + " deleted a " + entity;
+      case "uploaded" -> actor + " uploaded a " + entity;
+      default -> actor + " performed " + eventType;
+    };
   }
 
   private String lookupCustomerName(UUID projectId) {

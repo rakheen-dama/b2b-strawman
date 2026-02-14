@@ -89,6 +89,15 @@ public class InvoiceLine implements TenantAware {
     this.updatedAt = Instant.now();
   }
 
+  /** Updates line item fields and recalculates amount. */
+  public void update(String description, BigDecimal quantity, BigDecimal unitPrice, int sortOrder) {
+    this.description = description;
+    this.quantity = quantity;
+    this.unitPrice = unitPrice;
+    this.sortOrder = sortOrder;
+    recalculateAmount();
+  }
+
   // --- Getters ---
 
   public UUID getId() {

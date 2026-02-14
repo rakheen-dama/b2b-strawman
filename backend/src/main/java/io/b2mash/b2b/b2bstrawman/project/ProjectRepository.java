@@ -41,4 +41,12 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
   /** Counts active (non-archived) projects in the current tenant. Hibernate @Filter applies. */
   @Query("SELECT COUNT(p) FROM Project p")
   long countActiveProjects();
+
+  /**
+   * JPQL-based batch find by IDs that respects Hibernate @Filter (unlike JpaRepository.findAllById
+   * which uses EntityManager.find and bypasses @Filter). Required for shared-schema tenant
+   * isolation.
+   */
+  @Query("SELECT p FROM Project p WHERE p.id IN :ids")
+  List<Project> findAllByIds(@Param("ids") List<UUID> ids);
 }

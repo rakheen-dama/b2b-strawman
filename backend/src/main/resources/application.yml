@@ -53,6 +53,9 @@ logging:
     format:
       console: ecs
 
+payment:
+  provider: mock
+
 audit:
   retention:
     domain-events-days: 1095

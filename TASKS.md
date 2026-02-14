@@ -91,7 +91,7 @@
 | **Phase 9 — Operational Dashboards** | | | | | | See [tasks/phase9-operational-dashboards.md](tasks/phase9-operational-dashboards.md) |
 | 75 | Health Scoring & Project Health Endpoints | Backend | -- | M | 75A, 75B | **Done** |
 | 76 | Company Dashboard Backend | Backend | 75 | L | 76A, 76B | |
-| 77 | Shared Dashboard Components | Frontend | -- | M | 77A, 77B | |
+| 77 | Shared Dashboard Components | Frontend | -- | M | 77A, 77B | 77A Done |
 | 78 | Company Dashboard Frontend | Frontend | 76, 77 | M | 78A, 78B | |
 | 79 | Project Overview Tab | Both | 75, 77 | M | 79A, 79B | |
 | 80 | Personal Dashboard | Both | 79A, 77 | M | 80A, 80B | |

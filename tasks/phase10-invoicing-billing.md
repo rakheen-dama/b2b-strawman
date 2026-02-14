@@ -14,7 +14,7 @@ The design introduces two new entities (`Invoice`, `InvoiceLine`), extends `Time
 |------|------|-------|------|--------|--------|--------|
 | 81 | Invoice Entity Foundation & Migration | Backend | -- | M | 81A, 81B | |
 | 82 | Invoice CRUD & Lifecycle Backend | Backend | 81 | L | 82A, 82B | |
-| 83 | Unbilled Time & Invoice Generation | Both | 82 | L | 83A, 83B | |
+| 83 | Unbilled Time & Invoice Generation | Both | 82 | L | 83A, 83B | 83A **Done** (PR #171), 83B **Done** (PR #173) |
 | 84 | Invoice Detail & List Pages | Frontend | 83 | M | 84A | |
 | 85 | Audit, Notification & HTML Preview | Both | 82 | L | 85A, 85B, 85C | |
 | 86 | Time Entry Billing UX | Both | 81A, 82 | M | 86A, 86B | |
@@ -275,7 +275,7 @@ Stage 5:  [85B] ──► [85C]  //  [86B]                             ← previ
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **83A** | 83.1-83.6 | Unbilled time backend endpoint (GET /api/customers/{id}/unbilled-time), UnbilledTimeResponse DTO with project grouping and currency totals, native SQL query with joins, integration tests (~8 tests) | **Done** (PR #171) |
-| **83B** | 83.7-83.14 | InvoiceGenerationDialog (3-step: date range → select entries → create draft), CustomerInvoicesTab on customer detail page, API client functions, frontend tests (~8 tests) | |
+| **83B** | 83.7-83.14 | InvoiceGenerationDialog (3-step: date range → select entries → create draft), CustomerInvoicesTab on customer detail page, API client functions, frontend tests (~8 tests) | **Done** (PR #173) |
 
 ### Tasks
 

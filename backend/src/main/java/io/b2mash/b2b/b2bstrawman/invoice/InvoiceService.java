@@ -155,22 +155,29 @@ public class InvoiceService {
                   + request.currency());
         }
 
+        // Reject time entries without a task — cannot validate customer-project linkage
+        if (timeEntry.getTaskId() == null) {
+          throw new InvalidStateException(
+              "Time entry has no task",
+              "Time entry "
+                  + timeEntryId
+                  + " is not linked to a task and cannot be invoiced for a customer");
+        }
+
         // Look up task to get projectId (used for both validation and line item creation)
         UUID projectId = null;
-        if (timeEntry.getTaskId() != null) {
-          var task = taskRepository.findOneById(timeEntry.getTaskId());
-          if (task.isPresent()) {
-            projectId = task.get().getProjectId();
-            // Validate time entry belongs to customer's projects
-            if (!customerProjectRepository.existsByCustomerIdAndProjectId(
-                request.customerId(), projectId)) {
-              throw new InvalidStateException(
-                  "Time entry not linked to customer",
-                  "Time entry "
-                      + timeEntryId
-                      + " belongs to a project not linked to customer "
-                      + request.customerId());
-            }
+        var task = taskRepository.findOneById(timeEntry.getTaskId());
+        if (task.isPresent()) {
+          projectId = task.get().getProjectId();
+          // Validate time entry belongs to customer's projects
+          if (!customerProjectRepository.existsByCustomerIdAndProjectId(
+              request.customerId(), projectId)) {
+            throw new InvalidStateException(
+                "Time entry not linked to customer",
+                "Time entry "
+                    + timeEntryId
+                    + " belongs to a project not linked to customer "
+                    + request.customerId());
           }
         }
 

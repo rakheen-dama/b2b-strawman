@@ -311,6 +311,19 @@ class UnbilledTimeIntegrationTest {
   }
 
   @Test
+  void shouldFilterByDateRangeUpperBound() throws Exception {
+    // Only entries on or before 2025-01-17 — should only get Project Alpha (Jan 15)
+    mockMvc
+        .perform(
+            get("/api/customers/" + customerId + "/unbilled-time")
+                .param("to", "2025-01-17")
+                .with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.projects.length()").value(1))
+        .andExpect(jsonPath("$.projects[0].projectName").value("Project Alpha"));
+  }
+
+  @Test
   void shouldExcludeEntriesFromUnlinkedProjects() throws Exception {
     var result =
         mockMvc
@@ -333,6 +346,26 @@ class UnbilledTimeIntegrationTest {
     mockMvc
         .perform(get("/api/customers/" + customerId + "/unbilled-time").with(memberJwt()))
         .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void shouldRejectCreateDraftWithUnlinkedProjectEntry() throws Exception {
+    // otherProjectEntryId is in a project NOT linked to the customer — should be rejected
+    mockMvc
+        .perform(
+            post("/api/invoices")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "customerId": "%s",
+                      "currency": "ZAR",
+                      "timeEntryIds": ["%s"]
+                    }
+                    """
+                        .formatted(customerId, otherProjectEntryId)))
+        .andExpect(status().isBadRequest());
   }
 
   @Test

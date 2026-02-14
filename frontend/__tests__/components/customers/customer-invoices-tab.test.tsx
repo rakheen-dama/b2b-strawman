@@ -117,6 +117,23 @@ describe("CustomerInvoicesTab", () => {
     expect(screen.getByText("Generate Invoice")).toBeInTheDocument();
   });
 
+  it("hides New Invoice button when canManage is false", () => {
+    render(
+      <CustomerInvoicesTab
+        invoices={sampleInvoices}
+        customerId="c1"
+        customerName="Acme Corp"
+        slug="acme"
+        canManage={false}
+        defaultCurrency="USD"
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: /new invoice/i })).toBeNull();
+    // Table should still render
+    expect(screen.getByText("INV-2026-001")).toBeInTheDocument();
+  });
+
   it("shows empty state when no invoices", () => {
     render(
       <CustomerInvoicesTab

@@ -9,11 +9,6 @@ import type {
   CreateInvoiceDraftRequest,
 } from "@/lib/types";
 
-interface ActionResult {
-  success: boolean;
-  error?: string;
-}
-
 interface CreateDraftResult {
   success: boolean;
   error?: string;
@@ -74,8 +69,3 @@ export async function createInvoiceDraft(
   }
 }
 
-export async function fetchCustomerInvoices(
-  customerId: string,
-): Promise<InvoiceResponse[]> {
-  return api.get<InvoiceResponse[]>(`/api/invoices?customerId=${customerId}`);
-}

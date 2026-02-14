@@ -25,6 +25,15 @@ import type {
 } from "@/lib/types";
 import { Plus, ArrowLeft } from "lucide-react";
 
+/** Wraps formatCurrency in a try-catch to handle invalid currency codes gracefully. */
+function safeFormatCurrency(amount: number, curr: string): string {
+  try {
+    return formatCurrency(amount, curr);
+  } catch {
+    return `${curr} ${amount.toFixed(2)}`;
+  }
+}
+
 interface InvoiceGenerationDialogProps {
   customerId: string;
   customerName: string;
@@ -287,7 +296,7 @@ export function InvoiceGenerationDialog({
                 Total ({selectedEntryIds.size} entries)
               </span>
               <span className="text-lg font-semibold text-olive-950 dark:text-olive-50">
-                {formatCurrency(runningTotal, currency)}
+                {safeFormatCurrency(runningTotal, currency)}
               </span>
             </div>
 

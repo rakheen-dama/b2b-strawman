@@ -113,7 +113,7 @@ export function CustomerInvoicesTab({
                   <td className="hidden px-4 py-3 text-sm text-olive-600 sm:table-cell dark:text-olive-400">
                     {invoice.issueDate ? formatDate(invoice.issueDate) : "\u2014"}
                   </td>
-                  <td className="hidden px-4 py-3 text-sm text-olive-400 lg:table-cell dark:text-olive-600">
+                  <td className="hidden px-4 py-3 text-sm text-olive-600 lg:table-cell dark:text-olive-400">
                     {invoice.dueDate ? formatDate(invoice.dueDate) : "\u2014"}
                   </td>
                   <td className="px-4 py-3 text-right text-sm font-medium text-olive-900 dark:text-olive-100">

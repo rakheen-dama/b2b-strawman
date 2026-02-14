@@ -211,4 +211,43 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
       GROUP BY te.task_id
       """)
   List<TaskDurationProjection> sumDurationByTaskIds(@Param("taskIds") List<UUID> taskIds);
+
+  // --- Budget consumption aggregation queries (Epic 71A) ---
+
+  /**
+   * Total hours consumed for a project: SUM of all time entries (billable + non-billable) converted
+   * from minutes to hours. RLS handles tenant isolation for native queries.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+      SELECT COALESCE(SUM(te.duration_minutes), 0) / 60.0 AS hoursConsumed
+      FROM time_entries te
+      JOIN tasks t ON te.task_id = t.id
+      WHERE t.project_id = :projectId
+      """)
+  BudgetHoursProjection budgetHoursConsumed(@Param("projectId") UUID projectId);
+
+  /**
+   * Total amount consumed for a project: SUM of (billing_rate_snapshot * duration_minutes / 60) for
+   * billable entries matching the budget currency. RLS handles tenant isolation for native queries.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+      SELECT COALESCE(SUM(
+          CAST(te.billing_rate_snapshot AS DECIMAL(14,2))
+          * te.duration_minutes / 60.0
+      ), 0) AS amountConsumed
+      FROM time_entries te
+      JOIN tasks t ON te.task_id = t.id
+      WHERE t.project_id = :projectId
+        AND te.billable = true
+        AND te.billing_rate_currency = :budgetCurrency
+        AND te.billing_rate_snapshot IS NOT NULL
+      """)
+  BudgetAmountProjection budgetAmountConsumed(
+      @Param("projectId") UUID projectId, @Param("budgetCurrency") String budgetCurrency);
 }

@@ -1,6 +1,6 @@
 # Phase 9 Handover — Operational Dashboards
 
-## Status: 6 of 12 slices complete
+## Status: 7 of 12 slices complete
 
 | Slice | Status | PR | Notes |
 |-------|--------|-----|-------|
@@ -10,8 +10,8 @@
 | **77B** | Done | #155 | HorizontalBarChart (Recharts), DateRangeSelector, 7 tests. `recharts` dep added. |
 | **76A** | Done | #156 | Company KPI endpoint, project health list, org-level cache, financial redaction |
 | **76B** | Done | #157 | Team workload endpoint, cross-project activity endpoint, 12 integration tests, V22 indexes |
-| **79A** | **Next** | -- | Project member-hours endpoint, personal dashboard backend, DTOs |
-| **78A** | Pending | -- | Dashboard page replacement, KpiCardRow, ProjectHealthWidget |
+| **79A** | Done | #158 | Project member-hours, personal dashboard, utilization, upcoming deadlines, 7 integration tests |
+| **78A** | **Next** | -- | Dashboard page replacement, KpiCardRow, ProjectHealthWidget |
 | **78B** | Pending | -- | TeamWorkloadWidget, RecentActivityWidget, responsive layout |
 | **79B** | Pending | -- | OverviewTab, project detail tab integration |
 | **80A** | Pending | -- | PersonalKpis, TimeBreakdown chart, UpcomingDeadlines |

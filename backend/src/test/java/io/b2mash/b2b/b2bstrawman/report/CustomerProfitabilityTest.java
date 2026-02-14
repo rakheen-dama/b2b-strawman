@@ -119,6 +119,7 @@ class CustomerProfitabilityTest {
                       null,
                       null,
                       null,
+                      null,
                       memberIdOwner);
               customerId = customer.getId();
 
@@ -132,6 +133,7 @@ class CustomerProfitabilityTest {
                   customerService.createCustomer(
                       "No Projects Customer",
                       "custprofit_noproj@test.com",
+                      null,
                       null,
                       null,
                       null,

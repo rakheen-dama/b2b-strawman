@@ -85,7 +85,13 @@ class PortalProfileControllerTest {
             () -> {
               var customer =
                   customerService.createCustomer(
-                      "Profile Test Corp", "profile-customer@test.com", null, null, null, memberId);
+                      "Profile Test Corp",
+                      "profile-customer@test.com",
+                      null,
+                      null,
+                      null,
+                      null,
+                      memberId);
               customerId = customer.getId();
 
               portalContactService.createContact(

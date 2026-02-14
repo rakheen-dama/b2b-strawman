@@ -95,7 +95,7 @@ class CrossTenantPortalIsolationTest {
             () -> {
               var customer =
                   customerService.createCustomer(
-                      "Customer A", "customer-a@test.com", null, null, null, memberAId);
+                      "Customer A", "customer-a@test.com", null, null, null, null, memberAId);
               customerAHolder[0] = customer.getId();
 
               portalContactService.createContact(
@@ -163,7 +163,7 @@ class CrossTenantPortalIsolationTest {
             () -> {
               var customer =
                   customerService.createCustomer(
-                      "Customer B", "customer-b@test.com", null, null, null, memberBId);
+                      "Customer B", "customer-b@test.com", null, null, null, null, memberBId);
               customerBHolder[0] = customer.getId();
 
               portalContactService.createContact(

@@ -123,12 +123,12 @@ class PortalContactIntegrationTest {
             () -> {
               var customer =
                   customerService.createCustomer(
-                      "Customer A1", "customer-a1@test.com", null, null, null, memberIdA);
+                      "Customer A1", "customer-a1@test.com", null, null, null, null, memberIdA);
               customerIdA = customer.getId();
 
               var customer2 =
                   customerService.createCustomer(
-                      "Customer A2", "customer-a2@test.com", null, null, null, memberIdA);
+                      "Customer A2", "customer-a2@test.com", null, null, null, null, memberIdA);
               customerIdA2 = customer2.getId();
             });
 
@@ -139,7 +139,7 @@ class PortalContactIntegrationTest {
             () -> {
               var customer =
                   customerService.createCustomer(
-                      "Customer B1", "customer-b1@test.com", null, null, null, memberIdB);
+                      "Customer B1", "customer-b1@test.com", null, null, null, null, memberIdB);
               customerIdB = customer.getId();
             });
   }

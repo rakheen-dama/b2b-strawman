@@ -97,7 +97,13 @@ class PortalAuthIntegrationTest {
             () -> {
               var customer =
                   customerService.createCustomer(
-                      "Portal Customer", "portal-customer@test.com", null, null, null, memberId);
+                      "Portal Customer",
+                      "portal-customer@test.com",
+                      null,
+                      null,
+                      null,
+                      null,
+                      memberId);
               customerId = customer.getId();
 
               contactIdGenVerify =

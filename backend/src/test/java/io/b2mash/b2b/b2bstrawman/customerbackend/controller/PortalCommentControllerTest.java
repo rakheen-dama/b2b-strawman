@@ -97,6 +97,7 @@ class PortalCommentControllerTest {
                       null,
                       null,
                       null,
+                      null,
                       memberId);
               customerId = customer.getId();
 
@@ -165,6 +166,7 @@ class PortalCommentControllerTest {
                   customerService.createCustomer(
                       "Other Customer",
                       "other-customer@test.com",
+                      null,
                       null,
                       null,
                       null,

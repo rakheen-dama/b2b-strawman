@@ -14,9 +14,10 @@ interface ProjectTabsProps {
   activityPanel: ReactNode;
   ratesPanel?: ReactNode;
   budgetPanel?: ReactNode;
+  financialsPanel?: ReactNode;
 }
 
-type TabId = "documents" | "members" | "customers" | "tasks" | "time" | "budget" | "activity" | "rates";
+type TabId = "documents" | "members" | "customers" | "tasks" | "time" | "budget" | "financials" | "activity" | "rates";
 
 interface TabDef {
   id: TabId;
@@ -30,18 +31,20 @@ const baseTabs: TabDef[] = [
   { id: "tasks", label: "Tasks" },
   { id: "time", label: "Time" },
   { id: "budget", label: "Budget" },
+  { id: "financials", label: "Financials" },
   { id: "rates", label: "Rates" },
   { id: "activity", label: "Activity" },
 ];
 
-export function ProjectTabs({ documentsPanel, membersPanel, customersPanel, tasksPanel, timePanel, activityPanel, ratesPanel, budgetPanel }: ProjectTabsProps) {
+export function ProjectTabs({ documentsPanel, membersPanel, customersPanel, tasksPanel, timePanel, activityPanel, ratesPanel, budgetPanel, financialsPanel }: ProjectTabsProps) {
   const [activeTab, setActiveTab] = useState<TabId>("documents");
 
   const tabs = useMemo(() => {
     let filtered = baseTabs;
     if (!ratesPanel) filtered = filtered.filter((t) => t.id !== "rates");
+    if (!financialsPanel) filtered = filtered.filter((t) => t.id !== "financials");
     return filtered;
-  }, [ratesPanel]);
+  }, [ratesPanel, financialsPanel]);
 
   return (
     <TabsPrimitive.Root value={activeTab} onValueChange={(v) => setActiveTab(v as TabId)}>
@@ -90,6 +93,11 @@ export function ProjectTabs({ documentsPanel, membersPanel, customersPanel, task
       <TabsPrimitive.Content value="budget" className="pt-6 outline-none">
         {budgetPanel}
       </TabsPrimitive.Content>
+      {financialsPanel && (
+        <TabsPrimitive.Content value="financials" className="pt-6 outline-none">
+          {financialsPanel}
+        </TabsPrimitive.Content>
+      )}
       {ratesPanel && (
         <TabsPrimitive.Content value="rates" className="pt-6 outline-none">
           {ratesPanel}

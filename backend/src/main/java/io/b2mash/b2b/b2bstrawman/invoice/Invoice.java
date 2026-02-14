@@ -5,6 +5,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.TenantAwareEntityListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -34,8 +36,9 @@ public class Invoice implements TenantAware {
   @Column(name = "invoice_number", length = 20)
   private String invoiceNumber;
 
+  @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false, length = 20)
-  private String status;
+  private InvoiceStatus status;
 
   @Column(name = "currency", nullable = false, length = 3)
   private String currency;
@@ -106,7 +109,7 @@ public class Invoice implements TenantAware {
       UUID createdBy) {
     this.customerId = customerId;
     this.currency = currency;
-    this.status = InvoiceStatus.DRAFT.name();
+    this.status = InvoiceStatus.DRAFT;
     this.subtotal = BigDecimal.ZERO;
     this.taxAmount = BigDecimal.ZERO;
     this.total = BigDecimal.ZERO;
@@ -121,7 +124,7 @@ public class Invoice implements TenantAware {
 
   public void updateDraft(
       LocalDate dueDate, String notes, String paymentTerms, BigDecimal taxAmount) {
-    if (!InvoiceStatus.DRAFT.name().equals(this.status)) {
+    if (this.status != InvoiceStatus.DRAFT) {
       throw new IllegalStateException("Only draft invoices can be edited");
     }
     this.dueDate = dueDate;
@@ -139,10 +142,10 @@ public class Invoice implements TenantAware {
   }
 
   public void approve(String invoiceNumber, UUID approvedBy) {
-    if (!InvoiceStatus.DRAFT.name().equals(this.status)) {
+    if (this.status != InvoiceStatus.DRAFT) {
       throw new IllegalStateException("Only draft invoices can be approved");
     }
-    this.status = InvoiceStatus.APPROVED.name();
+    this.status = InvoiceStatus.APPROVED;
     this.invoiceNumber = invoiceNumber;
     this.approvedBy = approvedBy;
     if (this.issueDate == null) {
@@ -152,29 +155,28 @@ public class Invoice implements TenantAware {
   }
 
   public void markSent() {
-    if (!InvoiceStatus.APPROVED.name().equals(this.status)) {
+    if (this.status != InvoiceStatus.APPROVED) {
       throw new IllegalStateException("Only approved invoices can be sent");
     }
-    this.status = InvoiceStatus.SENT.name();
+    this.status = InvoiceStatus.SENT;
     this.updatedAt = Instant.now();
   }
 
   public void recordPayment(String paymentReference) {
-    if (!InvoiceStatus.SENT.name().equals(this.status)) {
+    if (this.status != InvoiceStatus.SENT) {
       throw new IllegalStateException("Only sent invoices can be paid");
     }
-    this.status = InvoiceStatus.PAID.name();
+    this.status = InvoiceStatus.PAID;
     this.paidAt = Instant.now();
     this.paymentReference = paymentReference;
     this.updatedAt = Instant.now();
   }
 
   public void voidInvoice() {
-    if (!InvoiceStatus.APPROVED.name().equals(this.status)
-        && !InvoiceStatus.SENT.name().equals(this.status)) {
+    if (this.status != InvoiceStatus.APPROVED && this.status != InvoiceStatus.SENT) {
       throw new IllegalStateException("Only approved or sent invoices can be voided");
     }
-    this.status = InvoiceStatus.VOID.name();
+    this.status = InvoiceStatus.VOID;
     this.updatedAt = Instant.now();
   }
 
@@ -192,7 +194,7 @@ public class Invoice implements TenantAware {
     return invoiceNumber;
   }
 
-  public String getStatus() {
+  public InvoiceStatus getStatus() {
     return status;
   }
 

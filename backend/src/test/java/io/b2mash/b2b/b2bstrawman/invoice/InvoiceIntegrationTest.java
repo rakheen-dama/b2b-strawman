@@ -150,7 +150,7 @@ class InvoiceIntegrationTest {
                   var found = invoiceRepository.findOneById(invoice.getId());
                   assertThat(found).isPresent();
                   assertThat(found.get().getCustomerId()).isEqualTo(customerId);
-                  assertThat(found.get().getStatus()).isEqualTo("DRAFT");
+                  assertThat(found.get().getStatus()).isEqualTo(InvoiceStatus.DRAFT);
                   assertThat(found.get().getCurrency()).isEqualTo("USD");
                   assertThat(found.get().getSubtotal()).isEqualByComparingTo(BigDecimal.ZERO);
                   assertThat(found.get().getTaxAmount()).isEqualByComparingTo(BigDecimal.ZERO);
@@ -187,7 +187,7 @@ class InvoiceIntegrationTest {
                   assertThat(byCustomer).isNotEmpty();
                   assertThat(byCustomer).anyMatch(i -> i.getCurrency().equals("EUR"));
 
-                  var byStatus = invoiceRepository.findByStatus("DRAFT");
+                  var byStatus = invoiceRepository.findByStatus(InvoiceStatus.DRAFT);
                   assertThat(byStatus).isNotEmpty();
                 }));
   }
@@ -254,7 +254,7 @@ class InvoiceIntegrationTest {
 
                   var found = invoiceRepository.findOneById(invoice.getId());
                   assertThat(found).isPresent();
-                  assertThat(found.get().getStatus()).isEqualTo("APPROVED");
+                  assertThat(found.get().getStatus()).isEqualTo(InvoiceStatus.APPROVED);
                   assertThat(found.get().getInvoiceNumber()).isEqualTo("INV-0001");
                   assertThat(found.get().getApprovedBy()).isEqualTo(memberIdOwner);
                   assertThat(found.get().getIssueDate()).isEqualTo(LocalDate.now());
@@ -289,7 +289,7 @@ class InvoiceIntegrationTest {
 
                   var found = invoiceRepository.findOneById(invoice.getId());
                   assertThat(found).isPresent();
-                  assertThat(found.get().getStatus()).isEqualTo("VOID");
+                  assertThat(found.get().getStatus()).isEqualTo(InvoiceStatus.VOID);
                 }));
   }
 

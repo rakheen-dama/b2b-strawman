@@ -20,5 +20,5 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
   List<Invoice> findByCustomerId(@Param("customerId") UUID customerId);
 
   @Query("SELECT i FROM Invoice i WHERE i.status = :status ORDER BY i.createdAt DESC")
-  List<Invoice> findByStatus(@Param("status") String status);
+  List<Invoice> findByStatus(@Param("status") InvoiceStatus status);
 }

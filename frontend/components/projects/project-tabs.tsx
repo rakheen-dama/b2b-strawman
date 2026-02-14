@@ -6,6 +6,7 @@ import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 
 interface ProjectTabsProps {
+  overviewPanel: ReactNode;
   documentsPanel: ReactNode;
   membersPanel: ReactNode;
   customersPanel: ReactNode;
@@ -17,7 +18,7 @@ interface ProjectTabsProps {
   financialsPanel?: ReactNode;
 }
 
-type TabId = "documents" | "members" | "customers" | "tasks" | "time" | "budget" | "financials" | "activity" | "rates";
+type TabId = "overview" | "documents" | "members" | "customers" | "tasks" | "time" | "budget" | "financials" | "activity" | "rates";
 
 interface TabDef {
   id: TabId;
@@ -25,6 +26,7 @@ interface TabDef {
 }
 
 const baseTabs: TabDef[] = [
+  { id: "overview", label: "Overview" },
   { id: "documents", label: "Documents" },
   { id: "members", label: "Members" },
   { id: "customers", label: "Customers" },
@@ -36,8 +38,8 @@ const baseTabs: TabDef[] = [
   { id: "activity", label: "Activity" },
 ];
 
-export function ProjectTabs({ documentsPanel, membersPanel, customersPanel, tasksPanel, timePanel, activityPanel, ratesPanel, budgetPanel, financialsPanel }: ProjectTabsProps) {
-  const [activeTab, setActiveTab] = useState<TabId>("documents");
+export function ProjectTabs({ overviewPanel, documentsPanel, membersPanel, customersPanel, tasksPanel, timePanel, activityPanel, ratesPanel, budgetPanel, financialsPanel }: ProjectTabsProps) {
+  const [activeTab, setActiveTab] = useState<TabId>("overview");
 
   const tabs = useMemo(() => {
     let filtered = baseTabs;
@@ -75,6 +77,9 @@ export function ProjectTabs({ documentsPanel, membersPanel, customersPanel, task
       </TabsPrimitive.List>
 
       {/* Radix Content provides role="tabpanel" + aria-labelledby */}
+      <TabsPrimitive.Content value="overview" className="pt-6 outline-none">
+        {overviewPanel}
+      </TabsPrimitive.Content>
       <TabsPrimitive.Content value="documents" className="pt-6 outline-none">
         {documentsPanel}
       </TabsPrimitive.Content>

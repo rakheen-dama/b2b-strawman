@@ -15,6 +15,7 @@ import { ProjectTabs } from "@/components/projects/project-tabs";
 import { ProjectRatesTab } from "@/components/rates/project-rates-tab";
 import { BudgetPanel } from "@/components/budget/budget-panel";
 import { ProjectFinancialsTab } from "@/components/profitability/project-financials-tab";
+import { OverviewTab } from "@/components/projects/overview-tab";
 import { formatDate } from "@/lib/format";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
@@ -219,6 +220,16 @@ export default async function ProjectDetailPage({
 
       {/* Tabbed Content (33.7) */}
       <ProjectTabs
+        overviewPanel={
+          <OverviewTab
+            projectId={id}
+            projectName={project.name}
+            customerName={customers.length > 0 ? customers[0].name : null}
+            canManage={canManage}
+            tasks={tasks}
+            slug={slug}
+          />
+        }
         documentsPanel={
           <DocumentsPanel
             documents={documents}

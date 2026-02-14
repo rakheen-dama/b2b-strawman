@@ -82,3 +82,40 @@ export interface PersonalDashboardResponse {
   upcomingDeadlines: PersonalDeadline[];
   trend: TrendPoint[];
 }
+
+// Project health detail (from GET /api/projects/{id}/health)
+export interface ProjectHealthDetail {
+  healthStatus: "HEALTHY" | "AT_RISK" | "CRITICAL" | "UNKNOWN";
+  healthReasons: string[];
+  metrics: ProjectHealthMetrics;
+}
+
+export interface ProjectHealthMetrics {
+  tasksDone: number;
+  tasksInProgress: number;
+  tasksTodo: number;
+  tasksOverdue: number;
+  totalTasks: number;
+  completionPercent: number;
+  budgetConsumedPercent: number | null;
+  hoursThisPeriod: number;
+  daysSinceLastActivity: number;
+}
+
+// Task summary (from GET /api/projects/{id}/task-summary)
+export interface TaskSummaryResponse {
+  todo: number;
+  inProgress: number;
+  inReview: number;
+  done: number;
+  total: number;
+  overdueCount: number;
+}
+
+// Member hours (from GET /api/projects/{id}/member-hours)
+export interface MemberHoursEntry {
+  memberId: string;
+  memberName: string;
+  totalHours: number;
+  billableHours: number;
+}

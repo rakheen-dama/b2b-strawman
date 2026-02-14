@@ -399,7 +399,7 @@ Stage 5:  [85B] ──► [85C]  //  [86B]                             ← previ
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **85A** | 85.1-85.7 | Invoice domain events (4 records), DomainEvent sealed interface update, NotificationService handlers, NotificationEventHandler registration, AuditService integration, integration tests (~8 tests) | |
+| **85A** | 85.1-85.7 | Invoice domain events (4 records), DomainEvent sealed interface update, NotificationService handlers, NotificationEventHandler registration, AuditService integration, integration tests (~8 tests) | **Done** (PR #172) |
 | **85B** | 85.8-85.12 | Thymeleaf invoice preview template, InvoiceController preview endpoint (GET /api/invoices/{id}/preview), Thymeleaf dependency, print/PDF-ready CSS, integration tests (~5 tests) | |
 | **85C** | 85.13-85.15 | Invoice detail page preview button, preview integration, frontend tests (~3 tests) | |
 

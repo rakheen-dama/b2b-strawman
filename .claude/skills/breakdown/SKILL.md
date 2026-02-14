@@ -42,7 +42,7 @@ If no requirements file is given, the skill looks for the phase section in `arch
 
 ## Step 1 — Dispatch Plan Agent
 
-Launch a **Plan** agent (subagent_type: `Plan`, `model: "sonnet"`) with the following prompt template. Fill in the placeholders from Step 0.
+Launch a **Plan** agent (subagent_type: `Plan`, `model: "opus"`) with the following prompt template. Fill in the placeholders from Step 0.
 
 ```
 You are a senior technical program manager creating an implementation plan for Phase {PHASE_NUMBER} of the DocTeams multi-tenant SaaS platform.

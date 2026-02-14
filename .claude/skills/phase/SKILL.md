@@ -24,8 +24,8 @@ Phase number (e.g., `/phase 4`). Optionally append a starting slice: `/phase 4 f
 
 | Agent | Model | Rationale |
 |-------|-------|-----------|
-| Scout | **sonnet** | Information gathering + brief formatting — constrained by template |
-| Builder | **sonnet** | Pattern-following implementation — constrained by brief |
+| Scout | **opus** | Information gathering + brief formatting — constrained by template |
+| Builder | **opus** | Pattern-following implementation — constrained by brief |
 | Reviewer | **opus** | Quality gate — catches subtle issues in tenant isolation, security, conventions |
 | Fixer | **opus** | Must evaluate findings critically — skip false positives, not just blindly apply |
 

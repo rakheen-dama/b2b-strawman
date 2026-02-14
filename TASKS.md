@@ -92,7 +92,7 @@
 | 75 | Health Scoring & Project Health Endpoints | Backend | -- | M | 75A, 75B | **Done** |
 | 76 | Company Dashboard Backend | Backend | 75 | L | 76A, 76B | **Done** |
 | 77 | Shared Dashboard Components | Frontend | -- | M | 77A, 77B | **Done** |
-| 78 | Company Dashboard Frontend | Frontend | 76, 77 | M | 78A, 78B | |
+| 78 | Company Dashboard Frontend | Frontend | 76, 77 | M | 78A, 78B | **Done** |
 | 79 | Project Overview Tab | Both | 75, 77 | M | 79A, 79B | |
 | 80 | Personal Dashboard | Both | 79A, 77 | M | 80A, 80B | |
 | **Phase 10 — Invoicing & Billing from Time** | | | | | | See [tasks/phase10-invoicing-billing.md](tasks/phase10-invoicing-billing.md) |

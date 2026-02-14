@@ -86,7 +86,7 @@
 | 70 | TimeEntry Frontend — Billable UX & Rate Preview | Frontend | 69 | S | 70A | **Done** (PR #141) |
 | 71 | Project Budgets — Entity, Status & Alerts | Backend | 69 | M | 71A, 71B | 71A **Done** (PR #143) |
 | 72 | Budget Frontend — Configuration & Status Visualization | Frontend | 71 | S | 72A | |
-| 73 | Profitability Backend — Reports & Aggregation Queries | Backend | 69 | M | 73A, 73B | |
+| 73 | Profitability Backend — Reports & Aggregation Queries | Backend | 69 | M | 73A, 73B | 73A **Done** (PR #144) |
 | 74 | Profitability & Financials Frontend — Pages & Tabs | Frontend | 73, 72, 68 | L | 74A, 74B, 74C | |
 | **Phase 9 — Operational Dashboards** | | | | | | See [tasks/phase9-operational-dashboards.md](tasks/phase9-operational-dashboards.md) |
 | 75 | Health Scoring & Project Health Endpoints | Backend | -- | M | 75A, 75B | |

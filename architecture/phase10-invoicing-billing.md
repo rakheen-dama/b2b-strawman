@@ -1,12 +1,10 @@
 # Phase 10 — Invoicing & Billing from Time
 
-> Merge into `ARCHITECTURE.md` as **Section 12**. ADR files go in `adr/`.
-
-> **Section Numbering Note**: Phase 9 was documented externally and used Section 12 numbering as the next available in ARCHITECTURE.md. This document uses Section 12 numbering, to be reconciled when all phases are merged.
+> Merge into `ARCHITECTURE.md` as **Section 11**. ADR files go in `adr/`.
 
 ---
 
-## 12. Phase 10 — Invoicing & Billing from Time
+## 11. Phase 10 — Invoicing & Billing from Time
 
 Phase 10 bridges the gap between tracked billable work and revenue collection. Until now, the platform records what people do, how long they spend, what that time is worth (Phase 8), and whether the organization is profitable. This phase answers the next question: *how do we turn that billable time into invoices and collect payment?*
 
@@ -35,7 +33,7 @@ The phase introduces two new entities (`Invoice`, `InvoiceLine`), extends `TimeE
 
 ---
 
-### 12.1 Overview
+### 11.1 Overview
 
 Phase 10 establishes the invoicing workflow without introducing external payment services, PDF rendering, or tax computation. The design is intentionally generic and industry-agnostic — invoicing from tracked time is universal to all professional services verticals.
 
@@ -44,7 +42,7 @@ The core abstractions:
 1. **Invoice** — A tenant-scoped document linked to a customer, containing line items that span one or more projects. Follows a strict lifecycle: Draft → Approved → Sent → Paid, with Void as a terminal state for cancellation. Customer and org details are snapshotted at creation for immutability.
 2. **InvoiceLine** — An individual billable item on an invoice. Either generated from a `TimeEntry` (time-based) or manually created (fixed fees, adjustments, discounts). Grouped by project for display.
 3. **Invoice Number Sequence** — Sequential per-tenant numbering (`INV-0001`) assigned at approval, not draft creation. Implemented via a counter table to ensure gap-free sequences. See [ADR-048](../adr/ADR-048-invoice-numbering-strategy.md).
-4. **Double-Billing Prevention** — A combination of `invoice_id` FK on `TimeEntry` (set at approval, cleared on void) and a partial unique index on `InvoiceLine.time_entry_id` (excludes voided invoices). See [ADR-050](../adr/ADR-050-double-billing-prevention.md).
+4. **Double-Billing Prevention** — A combination of `invoice_id` FK on `TimeEntry` (set at approval, cleared on void) and a partial unique index on `InvoiceLine.time_entry_id` (`WHERE time_entry_id IS NOT NULL`). When an invoice is voided, `time_entry_id` is cleared on its lines, releasing entries for re-invoicing. See [ADR-050](../adr/ADR-050-double-billing-prevention.md).
 5. **PaymentProvider** — A strategy interface with a `MockPaymentProvider` implementation. Clean adapter seam for future Stripe integration. See [ADR-051](../adr/ADR-051-psp-adapter-design.md).
 6. **HTML Invoice Template** — Server-side rendered self-contained HTML with inline styles. Print-friendly, PDF-convertible in a future phase.
 
@@ -52,11 +50,11 @@ All monetary amounts use `BigDecimal` (Java) / `DECIMAL` (Postgres). Currency is
 
 ---
 
-### 12.2 Domain Model
+### 11.2 Domain Model
 
 Phase 10 introduces two new tenant-scoped entities (`Invoice`, `InvoiceLine`), one new utility table (`invoice_number_seq`), and alters the existing `TimeEntry` entity. All new entities follow the established pattern: `TenantAware` interface, `@FilterDef`/`@Filter` for shared-schema tenants, `@EntityListeners(TenantAwareEntityListener.class)`, UUID-based loose references (no JPA `@ManyToOne`).
 
-#### 12.2.1 Invoice Entity (New)
+#### 11.2.1 Invoice Entity (New)
 
 An invoice represents a billable document sent to a customer. Customer and org details are snapshotted at creation time so the invoice remains accurate even if the source records change later.
 
@@ -104,29 +102,15 @@ An invoice represents a billable document sent to a customer. Customer and org d
 
 **Domain methods**:
 - `approve(UUID approvedBy)` — validates status is DRAFT, transitions to APPROVED, sets `approvedBy` and `issueDate`.
-- `markSent()` — validates status is APPROVED, transitions to SENT.
+- `markSent()` — validates status is APPROVED, transitions to SENT. Sets `issueDate` if not already set (fallback for invoices approved without explicit issue date).
 - `recordPayment(String paymentReference)` — validates status is SENT, transitions to PAID, sets `paidAt` and `paymentReference`.
 - `voidInvoice()` — validates status is APPROVED or SENT, transitions to VOID.
 - `recalculateTotals(List<InvoiceLine> lines)` — recomputes `subtotal` and `total` from line items.
 - `canEdit()` — returns `true` only if status is DRAFT.
 
-**InvoiceStatus enum**:
-```java
-public enum InvoiceStatus {
-    DRAFT, APPROVED, SENT, PAID, VOID;
+**InvoiceStatus enum**: `DRAFT`, `APPROVED`, `SENT`, `PAID`, `VOID`. Includes a `canTransitionTo(InvoiceStatus target)` method using a `switch` expression to enforce the state machine. `PAID` and `VOID` are terminal states.
 
-    public boolean canTransitionTo(InvoiceStatus target) {
-        return switch (this) {
-            case DRAFT -> target == APPROVED;
-            case APPROVED -> target == SENT || target == VOID;
-            case SENT -> target == PAID || target == VOID;
-            case PAID, VOID -> false;
-        };
-    }
-}
-```
-
-#### 12.2.2 InvoiceLine Entity (New)
+#### 11.2.2 InvoiceLine Entity (New)
 
 An individual line item on an invoice. Either generated from a `TimeEntry` or manually created.
 
@@ -146,19 +130,19 @@ An individual line item on an invoice. Either generated from a `TimeEntry` or ma
 | `updatedAt` | `Instant` | `updated_at` | `TIMESTAMPTZ` | NOT NULL | |
 
 **Constraints**:
-- `time_entry_id` partial unique index: unique across all invoice lines where the parent invoice status is not VOID. This prevents the same time entry from appearing on two active invoices. See [ADR-050](../adr/ADR-050-double-billing-prevention.md).
+- `time_entry_id` partial unique index: `WHERE time_entry_id IS NOT NULL`. Prevents the same time entry from appearing on two invoice lines simultaneously. When an invoice is voided, the void flow clears `time_entry_id` on the voided invoice's lines, releasing those entries for re-invoicing. See [ADR-050](../adr/ADR-050-double-billing-prevention.md).
 
 **Indexes**:
 - `(invoice_id, sort_order)` — ordered retrieval of lines for an invoice.
 - `(project_id)` — queries like "all invoice lines for this project."
-- `(time_entry_id)` — partial unique index (WHERE invoice status != VOID).
+- `(time_entry_id)` — partial unique index (`WHERE time_entry_id IS NOT NULL`).
 
 **Design decisions**:
 - **One line per time entry**: Each time entry becomes its own line item for maximum transparency and audit traceability. Project grouping and descriptions keep the invoice readable. See [ADR-049](../adr/ADR-049-line-item-granularity.md).
 - **`amount` is stored, not computed**: While `amount = quantity * unitPrice` for time-based lines, manual line items may have fixed-fee amounts where quantity and unitPrice are informational. Storing the amount directly supports both patterns.
 - **No `ON DELETE CASCADE`**: Deleting an invoice (only allowed for drafts) explicitly deletes its lines in the service layer. This ensures audit events and time entry state cleanup happen correctly.
 
-#### 12.2.3 Invoice Number Sequence Table (New)
+#### 11.2.3 Invoice Number Sequence Table (New)
 
 A counter table for gap-free per-tenant invoice numbering.
 
@@ -170,7 +154,7 @@ A counter table for gap-free per-tenant invoice numbering.
 
 This table is NOT a JPA entity — it is accessed via native SQL with `SELECT ... FOR UPDATE` to ensure atomicity. See [ADR-048](../adr/ADR-048-invoice-numbering-strategy.md).
 
-#### 12.2.4 TimeEntry Alterations
+#### 11.2.4 TimeEntry Alterations
 
 Add `invoice_id` to the existing `TimeEntry` entity:
 
@@ -189,7 +173,7 @@ Add `invoice_id` to the existing `TimeEntry` entity:
 - `isBilled()` — returns `invoiceId != null`.
 - `isLocked()` — alias for `isBilled()`. Billed time entries cannot be edited or deleted.
 
-#### 12.2.5 Customer Alterations
+#### 11.2.5 Customer Alterations
 
 Add `address` field to the existing `Customer` entity:
 
@@ -199,7 +183,7 @@ Add `address` field to the existing `Customer` entity:
 
 This is a non-breaking addition — existing customers will have `address = NULL`.
 
-#### 12.2.6 ER Diagram (New and Changed Entities)
+#### 11.2.6 ER Diagram (New and Changed Entities)
 
 The diagram below shows new entities (Invoice, InvoiceLine, invoice_number_seq), altered entities (Customer — new `address` field; TimeEntry — new `invoice_id` FK), and their relationships to existing entities. Unchanged entities (Project, Member, Task, etc.) are shown with abbreviated schemas — see Phase 8 architecture doc for full field listings.
 
@@ -287,9 +271,9 @@ erDiagram
 
 ---
 
-### 12.3 Core Flows & Permissions
+### 11.3 Core Flows & Permissions
 
-#### 12.3.1 Permission Model
+#### 11.3.1 Permission Model
 
 | Operation | Owner | Admin | Project Lead | Member |
 |-----------|-------|-------|-------------|--------|
@@ -308,7 +292,7 @@ erDiagram
 
 **Member visibility**: Regular members see their own time entries marked as "Billed" with a link to the invoice number, but they cannot view the invoice itself. This is consistent with the time tracking permission model.
 
-#### 12.3.2 Invoice Generation Flow
+#### 11.3.2 Invoice Generation Flow
 
 The primary user flow: select a customer → preview unbilled time → create a draft → edit → approve → send → collect payment.
 
@@ -345,64 +329,19 @@ public List<UnbilledTimeSummary> getUnbilledTime(
     UUID customerId, LocalDate from, LocalDate to) { ... }
 ```
 
-**Step 2 — Create draft**
+**Step 2 — Create draft** (`InvoiceService.createDraft()`):
+1. Validate customer exists and is ACTIVE.
+2. Validate all `timeEntryIds` are unbilled, billable, belong to the customer's projects, and match `request.currency`.
+3. Snapshot customer details (name, email, address) and org name.
+4. Create `Invoice` in DRAFT status.
+5. Generate `InvoiceLine` per time entry: `quantity = durationMinutes / 60.0` (4 dp), `unitPrice = billingRateSnapshot`, `amount = quantity * unitPrice` (2 dp), `description = "{task.title} — {member.name} — {date}"`, `projectId = task.projectId`, `sortOrder = chronological`.
+6. Compute subtotal/total. Publish `invoice.created` audit event.
 
-```java
-public Invoice createDraft(CreateInvoiceRequest request) {
-    // 1. Validate customer exists and is ACTIVE
-    // 2. Validate all timeEntryIds are unbilled and billable
-    // 3. Validate all time entries belong to the customer's projects
-    // 4. Validate all time entries have billingRateCurrency == request.currency
-    // 5. Snapshot customer details (name, email, address)
-    // 6. Snapshot org name from Clerk org (via RequestScopes)
-    // 7. Create Invoice in DRAFT status
-    // 8. Generate InvoiceLines from time entries:
-    //    - quantity = durationMinutes / 60.0 (4 decimal places)
-    //    - unitPrice = billingRateSnapshot
-    //    - amount = quantity * unitPrice (rounded to 2 decimal places)
-    //    - description = "{task.title} — {member.name} — {te.date}"
-    //    - projectId = task.projectId
-    //    - sortOrder = chronological within project group
-    // 9. Compute subtotal, total
-    // 10. Publish audit event: invoice.created
-    return invoice;
-}
-```
+**Step 3 — Approve** (`InvoiceLifecycleService.approve()`): Validate status == DRAFT and at least one line item exists. Assign invoice number (11.3.3). Call `invoice.approve(approvedByMemberId)`. Mark referenced time entries as billed (`UPDATE time_entries SET invoice_id = :invoiceId WHERE id IN (SELECT time_entry_id FROM invoice_lines WHERE invoice_id = :invoiceId AND time_entry_id IS NOT NULL)`). Publish audit + notification events.
 
-**Step 3 — Approve**
+**Step 4 — Void** (`InvoiceLifecycleService.voidInvoice()`): Validate status is APPROVED or SENT. Call `invoice.voidInvoice()`. Revert time entries (`UPDATE time_entries SET invoice_id = NULL WHERE invoice_id = :invoiceId`). Clear `time_entry_id` on voided invoice's lines. Publish audit + notification events.
 
-```java
-public Invoice approve(UUID invoiceId, UUID approvedByMemberId) {
-    // 1. Load invoice, validate status == DRAFT
-    // 2. Validate at least one line item exists
-    // 3. Assign invoice number (see 12.3.3)
-    // 4. invoice.approve(approvedByMemberId)
-    // 5. Mark all referenced time entries as billed:
-    //    UPDATE time_entries SET invoice_id = :invoiceId
-    //    WHERE id IN (SELECT time_entry_id FROM invoice_lines
-    //                 WHERE invoice_id = :invoiceId AND time_entry_id IS NOT NULL)
-    // 6. Publish audit event: invoice.approved
-    // 7. Publish domain event → notification: INVOICE_APPROVED
-    return invoice;
-}
-```
-
-**Step 4 — Void**
-
-```java
-public Invoice voidInvoice(UUID invoiceId) {
-    // 1. Load invoice, validate status == APPROVED or SENT
-    // 2. invoice.voidInvoice()
-    // 3. Revert time entries to unbilled:
-    //    UPDATE time_entries SET invoice_id = NULL
-    //    WHERE invoice_id = :invoiceId
-    // 4. Publish audit event: invoice.voided
-    // 5. Publish domain event → notification: INVOICE_VOIDED
-    return invoice;
-}
-```
-
-#### 12.3.3 Invoice Number Assignment
+#### 11.3.3 Invoice Number Assignment
 
 Sequential per-tenant numbering using a counter table with pessimistic locking:
 
@@ -420,7 +359,7 @@ public String assignInvoiceNumber() {
 
 The `SELECT ... FOR UPDATE` ensures serialized access within a transaction. This is acceptable because invoice approval is a low-frequency operation (not a hot path). See [ADR-048](../adr/ADR-048-invoice-numbering-strategy.md).
 
-#### 12.3.4 Invoice Lifecycle State Machine
+#### 11.3.4 Invoice Lifecycle State Machine
 
 ```
 DRAFT → APPROVED → SENT → PAID
@@ -439,20 +378,15 @@ DRAFT → APPROVED → SENT → PAID
 
 **Invalid transitions** (return 409 Conflict): PAID → anything, VOID → anything, DRAFT → SENT, DRAFT → PAID, APPROVED → DRAFT, etc.
 
-#### 12.3.5 Tenant Boundary
+#### 11.3.5 Tenant Boundary
 
-Invoice operations follow the same tenant isolation model as all other entities:
-
-- **Pro orgs** (dedicated schema): `SET search_path = tenant_<hash>`. All queries naturally scoped.
-- **Starter orgs** (shared schema): Hibernate `@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")` on `Invoice` and `InvoiceLine`. `TenantFilterTransactionManager` enables the filter. RLS policies on `invoices` and `invoice_lines` tables as a defense-in-depth layer.
-
-The unbilled time query (Section 12.3.2) is a native SQL query. For shared-schema tenants, RLS policies handle isolation (the query runs within a transaction where `app.current_tenant` is set via `set_config()`). No manual `WHERE tenant_id = :tenantId` clause is needed in native queries.
+Same model as all other entities: **Pro orgs** use dedicated schema (`SET search_path`); **Starter orgs** use Hibernate `@Filter` + RLS policies on `invoices`, `invoice_lines`, and `invoice_number_seq`. Native SQL queries (unbilled time) rely on RLS via `app.current_tenant` set by `TenantFilterTransactionManager` — no manual `WHERE tenant_id` needed.
 
 ---
 
-### 12.4 API Surface
+### 11.4 API Surface
 
-#### 12.4.1 Invoice CRUD
+#### 11.4.1 Invoice CRUD
 
 | Method | Path | Description | Auth | R/W |
 |--------|------|-------------|------|-----|
@@ -491,7 +425,7 @@ The unbilled time query (Section 12.3.2) is a native SQL query. For shared-schem
 
 **`PUT /api/invoices/{id}` request** (draft only): `{ dueDate, notes, paymentTerms, taxAmount }`.
 
-#### 12.4.2 Invoice Lifecycle Transitions
+#### 11.4.2 Invoice Lifecycle Transitions
 
 | Method | Path | Description | Auth | R/W |
 |--------|------|-------------|------|-----|
@@ -509,7 +443,7 @@ The unbilled time query (Section 12.3.2) is a native SQL query. For shared-schem
 
 All transition endpoints return the updated invoice (same shape as `GET /api/invoices/{id}`). Invalid transitions return `409 Conflict` with a ProblemDetail body.
 
-#### 12.4.3 Invoice Line Items
+#### 11.4.3 Invoice Line Items
 
 | Method | Path | Description | Auth | R/W |
 |--------|------|-------------|------|-----|
@@ -530,7 +464,7 @@ All transition endpoints return the updated invoice (same shape as `GET /api/inv
 
 Line item mutations automatically recompute the invoice's `subtotal` and `total`.
 
-#### 12.4.4 Unbilled Time
+#### 11.4.4 Unbilled Time
 
 | Method | Path | Description | Auth | R/W |
 |--------|------|-------------|------|-----|
@@ -540,7 +474,7 @@ Line item mutations automatically recompute the invoice's `subtotal` and `total`
 
 **Response**: `{ customerId, customerName, projects: [{ projectId, projectName, entries: [{ id, date, durationMinutes, durationHours, billingRateSnapshot, billingRateCurrency, amount, description, taskTitle, memberName }], totalsByCurrency: { "ZAR": 13500.00 } }], grandTotalsByCurrency: { "ZAR": 27000.00 } }`.
 
-#### 12.4.5 Invoice Preview
+#### 11.4.5 Invoice Preview
 
 | Method | Path | Description | Auth | R/W |
 |--------|------|-------------|------|-----|
@@ -548,7 +482,7 @@ Line item mutations automatically recompute the invoice's `subtotal` and `total`
 
 Returns `Content-Type: text/html`. The HTML page is self-contained with inline CSS. No external dependencies. Can be opened in a new browser tab or used in an iframe.
 
-#### 12.4.6 Time Entry Extensions
+#### 11.4.6 Time Entry Extensions
 
 Existing time entry endpoints gain additional capabilities:
 
@@ -572,9 +506,9 @@ Existing time entry endpoints gain additional capabilities:
 
 ---
 
-### 12.5 Sequence Diagrams
+### 11.5 Sequence Diagrams
 
-#### 12.5.1 Invoice Generation and Approval
+#### 11.5.1 Invoice Generation and Approval
 
 ```mermaid
 sequenceDiagram
@@ -613,7 +547,7 @@ sequenceDiagram
     Next-->>Browser: Show approved invoice (read-only)
 ```
 
-#### 12.5.2 Payment Recording
+#### 11.5.2 Payment Recording
 
 ```mermaid
 sequenceDiagram
@@ -638,34 +572,15 @@ sequenceDiagram
     Note over PSP: MockPaymentProvider always returns success.<br/>Future StripePaymentProvider would create<br/>a PaymentIntent and handle webhooks.
 ```
 
-#### 12.5.3 Invoice Voiding (with Time Entry Revert)
+#### 11.5.3 Invoice Voiding Flow
 
-```mermaid
-sequenceDiagram
-    actor User as Admin/Owner
-    participant Browser
-    participant Next as Next.js
-    participant API as Spring Boot
-    participant DB as PostgreSQL
-
-    User->>Browser: Click "Void" on APPROVED/SENT invoice
-    Browser->>Browser: Confirm dialog
-    Browser->>Next: Server action: voidInvoice()
-    Next->>API: POST /api/invoices/{id}/void
-    API->>DB: Load invoice, validate status IN (APPROVED, SENT)
-    API->>DB: UPDATE invoice SET status = 'VOID'
-    API->>DB: UPDATE time_entries SET invoice_id = NULL<br/>WHERE invoice_id = :invoiceId
-    API->>API: Publish InvoiceVoidedEvent
-    Note over API: Notifications sent to:<br/>creator, approver, admins/owners
-    API-->>Next: Invoice (VOID)
-    Next-->>Browser: Show voided invoice (read-only, void indicator)
-```
+User clicks "Void" on an APPROVED/SENT invoice → confirmation dialog → `POST /api/invoices/{id}/void` → API validates status, sets status = VOID, clears `invoice_id` on all associated time entries (`UPDATE time_entries SET invoice_id = NULL WHERE invoice_id = :invoiceId`), clears `time_entry_id` on voided invoice's line items, publishes `InvoiceVoidedEvent` (notifications to creator, approver, admins/owners) → returns voided invoice (read-only with void indicator).
 
 ---
 
-### 12.6 PSP Adapter & HTML Invoice Template
+### 11.6 PSP Adapter & HTML Invoice Template
 
-#### 12.6.1 PaymentProvider Interface
+#### 11.6.1 PaymentProvider Interface
 
 ```java
 package io.b2mash.b2b.b2bstrawman.invoice.payment;
@@ -695,28 +610,11 @@ public record PaymentResult(
 }
 ```
 
-#### 12.6.2 MockPaymentProvider
+#### 11.6.2 MockPaymentProvider
 
-```java
-@Component
-@ConditionalOnProperty(name = "payment.provider", havingValue = "mock", matchIfMissing = true)
-public class MockPaymentProvider implements PaymentProvider {
+`MockPaymentProvider` is annotated with `@Component` and `@ConditionalOnProperty(name = "payment.provider", havingValue = "mock", matchIfMissing = true)`. It always returns `PaymentResult.success("MOCK-PAY-{uuid-short}")` and logs the payment details. Configured via `payment.provider: mock` in `application.yml` (default). See [ADR-051](../adr/ADR-051-psp-adapter-design.md).
 
-    private static final Logger log = LoggerFactory.getLogger(MockPaymentProvider.class);
-
-    @Override
-    public PaymentResult recordPayment(PaymentRequest request) {
-        String reference = "MOCK-PAY-" + UUID.randomUUID().toString().substring(0, 8);
-        log.info("Mock payment recorded: invoice={}, amount={} {}, ref={}",
-            request.invoiceId(), request.amount(), request.currency(), reference);
-        return PaymentResult.success(reference);
-    }
-}
-```
-
-**Configuration**: `payment.provider=mock` in `application.yml` (default). A future Stripe implementation would use `payment.provider=stripe` and implement `PaymentProvider` with Stripe SDK calls. See [ADR-051](../adr/ADR-051-psp-adapter-design.md).
-
-#### 12.6.3 HTML Invoice Template
+#### 11.6.3 HTML Invoice Template
 
 Rendered server-side via Thymeleaf (the Thymeleaf harness from Phase 7 already exists in the backend). The template is a self-contained HTML page with inline CSS, structured for A4/Letter paper printing.
 
@@ -732,9 +630,9 @@ Rendered server-side via Thymeleaf (the Thymeleaf harness from Phase 7 already e
 
 ---
 
-### 12.7 Notification & Audit Integration
+### 11.7 Notification & Audit Integration
 
-#### 12.7.1 Notification Types
+#### 11.7.1 Notification Types
 
 | Type | Recipients | When |
 |------|-----------|------|
@@ -743,26 +641,11 @@ Rendered server-side via Thymeleaf (the Thymeleaf harness from Phase 7 already e
 | `INVOICE_PAID` | Invoice creator + org admins/owners | SENT → PAID |
 | `INVOICE_VOIDED` | Invoice creator + approver + org admins/owners | APPROVED/SENT → VOID |
 
-These use the existing `ApplicationEvent` → `NotificationEventHandler` pipeline from Phase 6.5. New event classes:
+These use the existing `ApplicationEvent` → `NotificationEventHandler` pipeline from Phase 6.5. New event class: `InvoiceEvent` sealed interface (following the `BudgetThresholdEvent` record pattern from Phase 8), with records: `Approved(invoiceId, invoiceNumber, createdBy, approvedBy)`, `Sent(invoiceId, invoiceNumber)`, `Paid(invoiceId, invoiceNumber, createdBy, paymentReference)`, `Voided(invoiceId, invoiceNumber, createdBy, approvedBy)`. Each record is published via `ApplicationEventPublisher.publishEvent()` and consumed by a new `InvoiceNotificationHandler` `@EventListener`.
 
-```java
-public sealed interface InvoiceEvent extends DomainEvent {
-    UUID invoiceId();
-    String invoiceNumber();
+New notification type constants: `INVOICE_APPROVED`, `INVOICE_SENT`, `INVOICE_PAID`, `INVOICE_VOIDED`. Added to the existing notification type string constants in `NotificationService` and registered in `NotificationPreference` defaults.
 
-    record Approved(UUID invoiceId, String invoiceNumber,
-                    UUID createdBy, UUID approvedBy) implements InvoiceEvent {}
-    record Sent(UUID invoiceId, String invoiceNumber) implements InvoiceEvent {}
-    record Paid(UUID invoiceId, String invoiceNumber,
-                UUID createdBy, String paymentReference) implements InvoiceEvent {}
-    record Voided(UUID invoiceId, String invoiceNumber,
-                  UUID createdBy, UUID approvedBy) implements InvoiceEvent {}
-}
-```
-
-New `NotificationType` enum values: `INVOICE_APPROVED`, `INVOICE_SENT`, `INVOICE_PAID`, `INVOICE_VOIDED`. Added to the existing `NotificationType` enum and `NotificationPreference` defaults.
-
-#### 12.7.2 Audit Event Types
+#### 11.7.2 Audit Event Types
 
 | Event Type | Entity Type | When | Details (JSONB) |
 |-----------|------------|------|----------------|
@@ -778,9 +661,9 @@ All events use the existing `AuditService.publish()` and `AuditEventBuilder` fro
 
 ---
 
-### 12.8 Frontend Views
+### 11.8 Frontend Views
 
-#### 12.8.1 New Routes
+#### 11.8.1 New Routes
 
 | Route | Description |
 |-------|-------------|
@@ -789,7 +672,7 @@ All events use the existing `AuditService.publish()` and `AuditEventBuilder` fro
 
 The Customer detail page gains a new "Invoices" tab alongside existing tabs.
 
-#### 12.8.2 Invoice List Page (`/invoices`)
+#### 11.8.2 Invoice List Page (`/invoices`)
 
 **Summary cards** (top of page):
 - **Outstanding**: Total of APPROVED + SENT invoices (not yet paid).
@@ -802,7 +685,7 @@ The Customer detail page gains a new "Invoices" tab alongside existing tabs.
 
 **Components**: Reuses existing `DataTable` patterns with `StatusBadge` for invoice status. Badge variants: `draft` (neutral), `approved` (indigo), `sent` (olive), `paid` (success), `void` (destructive).
 
-#### 12.8.3 Invoice Detail Page (`/invoices/[id]`)
+#### 11.8.3 Invoice Detail Page (`/invoices/[id]`)
 
 **Draft mode** (editable):
 - Header fields: Due Date (date picker), Payment Terms (text input), Notes (textarea), Tax Amount (currency input).
@@ -818,7 +701,7 @@ The Customer detail page gains a new "Invoices" tab alongside existing tabs.
 
 **Void mode**: Read-only with "VOID" watermark/indicator.
 
-#### 12.8.4 Invoice Generation Flow
+#### 11.8.4 Invoice Generation Flow
 
 Triggered from Customer detail → "Invoices" tab → "New Invoice" button. Implemented as a multi-step dialog or a dedicated page:
 
@@ -826,7 +709,7 @@ Triggered from Customer detail → "Invoices" tab → "New Invoice" button. Impl
 2. **Unbilled time review**: Table grouped by project with checkboxes. Entries in a different currency are grayed out. Running total at bottom.
 3. **Create Draft**: Button → `POST /api/invoices` → redirect to invoice detail page.
 
-#### 12.8.5 Time Entry Enhancements
+#### 11.8.5 Time Entry Enhancements
 
 - **Billing status badge**: Small badge on each time entry row — "Billed" (with invoice number as link) or "Unbilled" for billable entries.
 - **Filter dropdown**: Added to existing time entry list filter bar — All / Unbilled / Billed / Non-billable.
@@ -834,7 +717,7 @@ Triggered from Customer detail → "Invoices" tab → "New Invoice" button. Impl
 
 ---
 
-### 12.9 Database Migrations
+### 11.9 Database Migrations
 
 #### V22 — Invoice Tables and TimeEntry/Customer Alterations
 
@@ -913,65 +796,30 @@ CREATE INDEX idx_invoice_lines_invoice_sort ON invoice_lines(invoice_id, sort_or
 CREATE INDEX idx_invoice_lines_project ON invoice_lines(project_id);
 
 -- Partial unique index: prevent double-billing
--- A time_entry_id can appear on at most one non-voided invoice
+-- A time_entry_id can appear on at most one invoice line.
+-- When an invoice is voided, the void flow clears time_entry_id on the
+-- voided invoice's lines, releasing entries for re-invoicing.
 CREATE UNIQUE INDEX idx_invoice_lines_time_entry_unique
     ON invoice_lines(time_entry_id)
-    WHERE time_entry_id IS NOT NULL
-      AND invoice_id NOT IN (
-          SELECT id FROM invoices WHERE status = 'VOID'
-      );
+    WHERE time_entry_id IS NOT NULL;
 
 -- Index on time_entries.invoice_id for unbilled time queries
 CREATE INDEX idx_time_entries_invoice ON time_entries(invoice_id);
 ```
 
-**Note on partial unique index**: The subquery-based partial unique index (`WHERE invoice_id NOT IN (SELECT ...)`) is not supported by PostgreSQL. The actual implementation uses a different approach — see the RLS/shared-schema section below for the corrected constraint. The double-billing prevention is primarily enforced at the application layer (service validates before insert), with the database constraint as defense-in-depth.
-
-**Corrected partial unique index** (PostgreSQL-compatible):
-
-```sql
--- Option: Use a unique index on (time_entry_id) filtered to non-void invoices
--- This requires a status column on invoice_lines OR a trigger-based approach.
--- Simplest approach: unique index excluding NULLs (already handled by PostgreSQL)
--- combined with application-layer validation.
-CREATE UNIQUE INDEX idx_invoice_lines_time_entry_active
-    ON invoice_lines(time_entry_id)
-    WHERE time_entry_id IS NOT NULL;
-```
-
-This simpler index prevents any time entry from appearing on more than one invoice, period. When an invoice is voided, the service must delete the line items (or clear `time_entry_id`) to release the time entries for re-invoicing. The application layer handles the void → revert flow. See [ADR-050](../adr/ADR-050-double-billing-prevention.md) for the full rationale.
+**Note on the unique index**: The index `idx_invoice_lines_time_entry_unique` prevents any time entry from appearing on more than one invoice. When an invoice is voided, the void flow clears `time_entry_id` on the voided invoice's line items to release the time entries for re-invoicing. Application-layer validation is the primary guard; the database index is defense-in-depth. See [ADR-050](../adr/ADR-050-double-billing-prevention.md).
 
 #### V22 — Shared Schema (tenant_shared)
 
 **File**: `backend/src/main/resources/db/migration/global/V22__add_invoices_shared.sql`
 
-The shared-schema migration is identical to the tenant migration above, plus RLS policies:
+Identical to the tenant migration above, plus RLS policies on `invoices`, `invoice_lines`, and `invoice_number_seq` — standard `USING/WITH CHECK (tenant_id = current_setting('app.current_tenant'))` pattern. See existing RLS policies on `project_budgets` for reference.
 
-```sql
--- RLS policies for invoices
-ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
-CREATE POLICY invoices_tenant_isolation ON invoices
-    USING (tenant_id = current_setting('app.current_tenant'))
-    WITH CHECK (tenant_id = current_setting('app.current_tenant'));
-
--- RLS policies for invoice_lines
-ALTER TABLE invoice_lines ENABLE ROW LEVEL SECURITY;
-CREATE POLICY invoice_lines_tenant_isolation ON invoice_lines
-    USING (tenant_id = current_setting('app.current_tenant'))
-    WITH CHECK (tenant_id = current_setting('app.current_tenant'));
-
--- RLS policy for invoice_number_seq
-ALTER TABLE invoice_number_seq ENABLE ROW LEVEL SECURITY;
-CREATE POLICY invoice_number_seq_tenant_isolation ON invoice_number_seq
-    USING (tenant_id = current_setting('app.current_tenant'))
-    WITH CHECK (tenant_id = current_setting('app.current_tenant'));
-```
-
-**Backfill**: No backfill needed. The new `customers.address` column is nullable with no default. The new `time_entries.invoice_id` column is nullable with no default. Existing data is unaffected.
+**Backfill**: None needed. New columns (`customers.address`, `time_entries.invoice_id`) are nullable with no default.
 
 ---
 
-### 12.10 Capability Slices
+### 11.10 Capability Slices
 
 <!-- BREAKDOWN-CONTRACT
 phase: 10
@@ -994,7 +842,7 @@ Phase 10 is decomposed into 6 independently deployable capability slices. Epic n
 - `InvoiceLine` entity, repository, with `TenantAware` pattern.
 - `invoice_number_seq` table (native SQL access, not a JPA entity).
 - V22 migration: `invoices`, `invoice_lines`, `invoice_number_seq` tables. Add `address` to `customers`. Add `invoice_id` to `time_entries`. All indexes and RLS policies.
-- `Customer` entity: add `address` field.
+- `Customer` entity: add `address` field. Update `Customer.update()` domain method signature to accept `address`, update `CustomerService`, and extend `CustomerController` request DTO with `address`.
 - `TimeEntry` entity: add `invoiceId` field, `markBilled()`, `markUnbilled()`, `isBilled()`, `isLocked()` methods.
 - `InvoiceNumberService`: per-tenant sequential numbering with `SELECT ... FOR UPDATE`.
 - Package: `io.b2mash.b2b.b2bstrawman.invoice` (entity, repository, service subpackages).
@@ -1036,7 +884,7 @@ Phase 10 is decomposed into 6 independently deployable capability slices. Epic n
 - Time entry billing status updates (mark billed on approve, revert on void).
 - `InvoiceEvent` sealed interface with `Approved`, `Sent`, `Paid`, `Voided` records.
 - `InvoiceNotificationHandler` (extends existing notification pipeline).
-- New `NotificationType` values: `INVOICE_APPROVED`, `INVOICE_SENT`, `INVOICE_PAID`, `INVOICE_VOIDED`.
+- New notification type constants: `INVOICE_APPROVED`, `INVOICE_SENT`, `INVOICE_PAID`, `INVOICE_VOIDED`.
 - Audit events: `invoice.approved`, `invoice.sent`, `invoice.paid`, `invoice.voided`.
 
 **Dependencies**: Slice 76B (invoice CRUD).
@@ -1119,7 +967,7 @@ Phase 10 is decomposed into 6 independently deployable capability slices. Epic n
 
 ---
 
-### 12.11 ADR Index
+### 11.11 ADR Index
 
 | ADR | Title | Key Decision |
 |-----|-------|-------------|

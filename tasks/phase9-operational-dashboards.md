@@ -15,7 +15,7 @@ Phase 9 adds the **operational dashboards layer** — the connective tissue that
 | 77 | Shared Dashboard Components | Frontend | -- | M | 77A, 77B | **Done** (PRs #154, #155) |
 | 78 | Company Dashboard Frontend | Frontend | 76, 77 | M | 78A, 78B | **Done** (PRs #159, #160) |
 | 79 | Project Overview Tab | Both | 75, 77 | M | 79A, 79B | **Done** (PRs #158, #161) |
-| 80 | Personal Dashboard | Both | 79A, 77 | M | 80A, 80B | 80A **Done** (PR #162) |
+| 80 | Personal Dashboard | Both | 79A, 77 | M | 80A, 80B | **Done** (PRs #162, #163) |
 
 ## Dependency Graph
 

@@ -1,6 +1,6 @@
-# Phase 9 Handover — Operational Dashboards
+# Phase 9 — Operational Dashboards — COMPLETE
 
-## Status: 11 of 12 slices complete
+## Status: 12 of 12 slices complete
 
 | Slice | Status | PR | Notes |
 |-------|--------|-----|-------|
@@ -15,70 +15,64 @@
 | **78B** | Done | #160 | TeamWorkloadWidget, RecentActivityWidget, responsive 5-col grid, 7 tests |
 | **79B** | Done | #161 | OverviewTab (server component), health header, metrics strip, tab integration, 5 tests |
 | **80A** | Done | #162 | PersonalKpis (3 KPI cards), TimeBreakdown (bar chart), UpcomingDeadlines (urgency coloring), 9 tests |
-| **80B** | **Next** | -- | Enhanced My Work page with dashboard header |
+| **80B** | Done | #163 | Enhanced My Work page, MyWorkHeader, UrgencyTaskList (urgency grouping), 7 tests |
 
-## Remaining Execution Order
-
-```
-Stage 2 (remaining): [76B]  //  [79A]     ← can run in parallel, but /phase runs sequentially
-Stage 3:             [78A → 78B]  //  [79B]
-Stage 4:             [80A → 80B]
-```
-
-## What's Built So Far
+## What Was Built
 
 ### Backend (`dashboard/` package)
 - `HealthStatus` enum (HEALTHY, AT_RISK, CRITICAL, UNKNOWN)
 - `ProjectHealthCalculator` — 6 deterministic rules, pure utility class
 - `ProjectHealthInput` / `ProjectHealthResult` records
-- `DashboardService` — project health, task summary, org KPIs, project health list, Caffeine caches (project 1min, org 3min)
-- `DashboardController` — 4 endpoints:
+- `DashboardService` — project health, task summary, org KPIs, project health list, team workload, cross-project activity, project member-hours, personal dashboard. Caffeine caches (project 1min, org 3min)
+- `DashboardController` — 8 endpoints:
   - `GET /api/projects/{id}/health`
   - `GET /api/projects/{id}/task-summary`
+  - `GET /api/projects/{id}/member-hours`
   - `GET /api/dashboard/kpis?from=&to=`
   - `GET /api/dashboard/project-health`
-- DTOs: `ProjectHealthDetail`, `ProjectHealthMetrics`, `TaskSummary`, `KpiResponse`, `KpiValues`, `TrendPoint`, `ProjectHealth`
-- Projections: `OrgHoursSummaryProjection`, `TrendProjection`
-- New queries in `TaskRepository`, `TimeEntryRepository`, `ProjectRepository`, `AuditEventRepository`
+  - `GET /api/dashboard/team-workload?from=&to=`
+  - `GET /api/dashboard/activity?limit=`
+  - `GET /api/dashboard/personal?from=&to=`
+- DTOs: ProjectHealthDetail, ProjectHealthMetrics, TaskSummary, KpiResponse, KpiValues, TrendPoint, ProjectHealth, TeamWorkloadEntry, ProjectHoursEntry, CrossProjectActivityItem, MemberHoursEntry, PersonalDashboard, UtilizationSummary, ProjectBreakdownEntry, UpcomingDeadline
+- Projections: OrgHoursSummaryProjection, TrendProjection, TeamWorkloadProjection, CrossProjectActivityProjection
+- V22 migration: performance indexes on time_entries(date) and tasks(due_date, status)
 
-### Frontend (`components/dashboard/`)
-- `KpiCard` — metric card with label, value, trend, sparkline slot
-- `HealthBadge` — sm/md/lg status badges
-- `MiniProgressRing` — SVG ring chart
-- `SparklineChart` — SVG sparkline (uses `useId()` for gradient uniqueness)
-- `HorizontalBarChart` — Recharts stacked bar chart
-- `DateRangeSelector` — preset date ranges with URL param sync
+### Frontend
+**Shared dashboard components** (`components/dashboard/`):
+- KpiCard, HealthBadge, MiniProgressRing, SparklineChart (SVG)
+- HorizontalBarChart (Recharts), DateRangeSelector, CompletionProgressBar
+
+**Company dashboard** (`app/(app)/org/[slug]/dashboard/`):
+- Dashboard page (server component, parallel data fetching)
+- DashboardHeader, KpiCardRow, ProjectHealthWidget
+- TeamWorkloadWidget, RecentActivityWidget
+- Responsive 5-column grid layout
+
+**Project overview** (`components/projects/`):
+- OverviewTab (server component, Promise.allSettled)
+- OverviewHealthHeader, OverviewMetricsStrip
+- Integrated as first/default tab on project detail
+
+**Personal dashboard** (`components/my-work/`):
+- PersonalKpis, TimeBreakdown, UpcomingDeadlines
+- UrgencyTaskList (Overdue/Due This Week/Upcoming/No Due Date grouping)
+- MyWorkHeader with DateRangeSelector integration
 
 ### Infrastructure
-- `.epic-brief.md` added to `.gitignore` (prevents accidental commits)
+- `.epic-brief.md` added to `.gitignore`
 - `recharts` dependency added to frontend
+- `lib/dashboard-types.ts` — shared TypeScript interfaces
+- `lib/actions/dashboard.ts` — 8 server action fetch functions
+- `lib/date-utils.ts` — date range resolution utility
 
-## Key Patterns Established
+## Test Counts
+- Backend: ~880+ tests (added ~27 in Phase 9)
+- Frontend: ~363 tests (added ~82 in Phase 9)
 
-1. **Scout → Builder pipeline**: Works well. Scout writes `.epic-brief.md` to worktree, builder reads only the brief.
-2. **Builder must NOT stage `.epic-brief.md`**: The `.gitignore` entry now prevents this, but remind builders explicitly.
-3. **Review findings**: Most "critical" findings from reviewers are defensive hardening, not actual vulnerabilities. Triage carefully — fix genuine bugs (gradient ID collision, no-activity sentinel), skip theoretical issues.
-4. **Caffeine cache keys**: Always include `tenantId` + `orgRole`. Never include `memberId` for org-level caches.
-5. **Financial redaction**: Single redaction point after cache lookup, not duplicated in hit/miss paths.
-
-## How to Resume
-
-Run `/phase 9` — the skill reads the status table and skips Done slices. The next slice is **76B**.
-
-Or manually:
-```
-/phase 9 from 76B
-```
-
-## ADRs Referenced
+## ADRs
 - ADR-044: Aggregation caching (Caffeine, short TTLs)
 - ADR-045: Project health scoring (deterministic rule-based)
 - ADR-046: Hybrid SVG + Recharts charting
 - ADR-047: Fixed dashboard layout
 
-## Task File
-`tasks/phase9-operational-dashboards.md` — full epic/task descriptions
-
-## Test Counts (approximate)
-- Backend: ~870+ tests (added ~30 in this session)
-- Frontend: ~303 tests (added ~21 in this session)
+## PRs: #151, #153–#163 (12 PRs total)

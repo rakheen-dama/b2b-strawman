@@ -94,7 +94,7 @@
 | 77 | Shared Dashboard Components | Frontend | -- | M | 77A, 77B | **Done** |
 | 78 | Company Dashboard Frontend | Frontend | 76, 77 | M | 78A, 78B | **Done** |
 | 79 | Project Overview Tab | Both | 75, 77 | M | 79A, 79B | **Done** |
-| 80 | Personal Dashboard | Both | 79A, 77 | M | 80A, 80B | |
+| 80 | Personal Dashboard | Both | 79A, 77 | M | 80A, 80B | **Done** |
 | **Phase 10 — Invoicing & Billing from Time** | | | | | | See [tasks/phase10-invoicing-billing.md](tasks/phase10-invoicing-billing.md) |
 | 81 | Invoice Entity Foundation & Migration | Backend | -- | M | 81A, 81B | |
 | 82 | Invoice CRUD & Unbilled Time API | Backend | 81 | M | 82A, 82B | |

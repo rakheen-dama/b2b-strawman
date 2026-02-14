@@ -427,6 +427,69 @@ export interface UpsertBudgetRequest {
   notes?: string;
 }
 
+// ---- Profitability Reports (from ReportController.java) ----
+
+export interface MemberValueBreakdown {
+  currency: string;
+  billableValue: number;
+  costValue: number;
+}
+
+export interface MemberUtilizationRecord {
+  memberId: string;
+  memberName: string;
+  totalHours: number;
+  billableHours: number;
+  nonBillableHours: number;
+  utilizationPercent: number;
+  currencies: MemberValueBreakdown[];
+}
+
+export interface UtilizationResponse {
+  from: string;
+  to: string;
+  members: MemberUtilizationRecord[];
+}
+
+export interface ProjectProfitabilitySummary {
+  projectId: string;
+  projectName: string;
+  customerName: string | null;
+  currency: string;
+  billableHours: number;
+  billableValue: number;
+  costValue: number | null;
+  margin: number | null;
+  marginPercent: number | null;
+}
+
+export interface OrgProfitabilityResponse {
+  projects: ProjectProfitabilitySummary[];
+}
+
+export interface CurrencyBreakdown {
+  currency: string;
+  totalBillableHours: number;
+  totalNonBillableHours: number;
+  totalHours: number;
+  billableValue: number;
+  costValue: number | null;
+  margin: number | null;
+  marginPercent: number | null;
+}
+
+export interface ProjectProfitabilityResponse {
+  projectId: string;
+  projectName: string;
+  currencies: CurrencyBreakdown[];
+}
+
+export interface CustomerProfitabilityResponse {
+  customerId: string;
+  customerName: string;
+  currencies: CurrencyBreakdown[];
+}
+
 // ---- Error (RFC 9457 ProblemDetail) ----
 
 export interface ProblemDetail {

@@ -1,6 +1,6 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { api, handleApiError } from "@/lib/api";
-import type { OrgMember, Project, Customer, Document, ProjectMember, ProjectRole, Task, ProjectTimeSummary, MemberTimeSummary, TaskTimeSummary, BillingRate, OrgSettings, BudgetStatusResponse } from "@/lib/types";
+import type { OrgMember, Project, Customer, Document, ProjectMember, ProjectRole, Task, ProjectTimeSummary, MemberTimeSummary, TaskTimeSummary, BillingRate, OrgSettings, BudgetStatusResponse, ProjectProfitabilityResponse } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EditProjectDialog } from "@/components/projects/edit-project-dialog";
@@ -14,6 +14,7 @@ import { ProjectCustomersPanel } from "@/components/projects/project-customers-p
 import { ProjectTabs } from "@/components/projects/project-tabs";
 import { ProjectRatesTab } from "@/components/rates/project-rates-tab";
 import { BudgetPanel } from "@/components/budget/budget-panel";
+import { ProjectFinancialsTab } from "@/components/profitability/project-financials-tab";
 import { formatDate } from "@/lib/format";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
@@ -124,6 +125,18 @@ export default async function ProjectDetailPage({
     );
   } catch {
     // Non-fatal: 404 means no budget set, other errors show empty state
+  }
+
+  // Project profitability for the "Financials" tab (lead/admin/owner)
+  let projectProfitability: ProjectProfitabilityResponse | null = null;
+  if (canManage) {
+    try {
+      projectProfitability = await api.get<ProjectProfitabilityResponse>(
+        `/api/projects/${id}/profitability`
+      );
+    } catch {
+      // Non-fatal: show empty state in financials tab
+    }
   }
 
   // Resolve current user's backend member ID for "My Tasks" filter and claim/release actions.
@@ -259,6 +272,13 @@ export default async function ProjectDetailPage({
             canManage={canManage}
             defaultCurrency={defaultCurrency}
           />
+        }
+        financialsPanel={
+          canManage ? (
+            <ProjectFinancialsTab
+              profitability={projectProfitability}
+            />
+          ) : undefined
         }
         ratesPanel={
           canManage ? (

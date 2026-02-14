@@ -134,31 +134,29 @@ public class DashboardService {
   @Transactional(readOnly = true)
   public KpiResponse getCompanyKpis(String tenantId, String orgRole, LocalDate from, LocalDate to) {
     String key = tenantId + ":kpis:" + from + "_" + to;
-    KpiResponse cached = (KpiResponse) orgCache.getIfPresent(key);
-    if (cached != null) {
-      return isAdminOrOwner(orgRole) ? cached : cached.withFinancialsRedacted();
+
+    // Always cache the FULL version
+    KpiResponse full = (KpiResponse) orgCache.getIfPresent(key);
+    if (full == null) {
+      KpiValues currentValues = computeKpiValues(from, to);
+      List<TrendPoint> trend = computeTrend(from, to);
+      KpiValues previousPeriod = computePreviousPeriod(from, to);
+
+      full =
+          new KpiResponse(
+              currentValues.activeProjectCount(),
+              currentValues.totalHoursLogged(),
+              currentValues.billablePercent(),
+              currentValues.overdueTaskCount(),
+              currentValues.averageMarginPercent(),
+              trend,
+              previousPeriod);
+
+      orgCache.put(key, full);
     }
 
-    KpiValues currentValues = computeKpiValues(from, to);
-    List<TrendPoint> trend = computeTrend(from, to);
-    KpiValues previousPeriod = computePreviousPeriod(from, to);
-
-    KpiResponse full =
-        new KpiResponse(
-            currentValues.activeProjectCount(),
-            currentValues.totalHoursLogged(),
-            currentValues.billablePercent(),
-            currentValues.overdueTaskCount(),
-            currentValues.averageMarginPercent(),
-            trend,
-            previousPeriod);
-
-    orgCache.put(key, full);
-
-    if (!isAdminOrOwner(orgRole)) {
-      return full.withFinancialsRedacted();
-    }
-    return full;
+    // Single redaction point
+    return isAdminOrOwner(orgRole) ? full : full.withFinancialsRedacted();
   }
 
   /**
@@ -173,7 +171,7 @@ public class DashboardService {
   @SuppressWarnings("unchecked")
   @Transactional(readOnly = true)
   public List<ProjectHealth> getProjectHealthList(String tenantId, UUID memberId, String orgRole) {
-    String key = tenantId + ":project-health:" + memberId + ":" + orgRole;
+    String key = tenantId + ":project-health:" + orgRole;
     List<ProjectHealth> cached = (List<ProjectHealth>) orgCache.getIfPresent(key);
     if (cached != null) {
       return cached;

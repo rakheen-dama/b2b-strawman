@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.dashboard.dto.KpiResponse;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHealth;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHealthDetail;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TaskSummary;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import java.time.LocalDate;
@@ -76,6 +77,11 @@ public class DashboardController {
   public ResponseEntity<KpiResponse> getCompanyKpis(
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+    if (from.isAfter(to)) {
+      throw new InvalidStateException(
+          "Invalid Date Range", "'from' date must not be after 'to' date");
+    }
+
     String tenantId = RequestScopes.TENANT_ID.get();
     String orgRole = RequestScopes.getOrgRole();
 

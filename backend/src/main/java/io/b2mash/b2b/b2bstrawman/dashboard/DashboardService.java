@@ -157,6 +157,9 @@ public class DashboardService {
 
   private TaskSummary computeTaskSummary(UUID projectId) {
     var rows = taskRepository.getTaskSummaryByProjectId(projectId, LocalDate.now());
+    if (rows.isEmpty()) {
+      return new TaskSummary(0, 0, 0, 0, 0, 0);
+    }
     Object[] row = rows.getFirst();
     return new TaskSummary(
         ((Number) row[0]).intValue(),
@@ -170,7 +173,7 @@ public class DashboardService {
   private int computeDaysSinceLastActivity(UUID projectId) {
     Optional<Instant> lastActivity = auditEventRepository.findMostRecentByProject(projectId);
     if (lastActivity.isEmpty()) {
-      return 0;
+      return Integer.MAX_VALUE;
     }
     return (int) Duration.between(lastActivity.get(), Instant.now()).toDays();
   }

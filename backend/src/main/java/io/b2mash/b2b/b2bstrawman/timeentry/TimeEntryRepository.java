@@ -229,6 +229,49 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
       """)
   BudgetHoursProjection budgetHoursConsumed(@Param("projectId") UUID projectId);
 
+  // --- Org-level aggregation queries (Epic 76A) ---
+
+  /**
+   * Org-level hours summary for a date range. Returns total and billable minutes. RLS handles
+   * tenant isolation for native queries.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+      SELECT
+          COALESCE(SUM(te.duration_minutes), 0) AS totalMinutes,
+          COALESCE(SUM(CASE WHEN te.billable THEN te.duration_minutes ELSE 0 END), 0) AS billableMinutes
+      FROM time_entries te
+      JOIN tasks t ON te.task_id = t.id
+      WHERE te.date >= CAST(:fromDate AS DATE) AND te.date <= CAST(:toDate AS DATE)
+      """)
+  OrgHoursSummaryProjection findOrgHoursSummary(
+      @Param("fromDate") LocalDate from, @Param("toDate") LocalDate to);
+
+  /**
+   * Hours grouped by period for trend computation. Uses date_trunc for grouping. RLS handles tenant
+   * isolation.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+      SELECT
+          TO_CHAR(date_trunc(:granularity, te.date), :format) AS period,
+          COALESCE(SUM(te.duration_minutes), 0) AS totalMinutes
+      FROM time_entries te
+      JOIN tasks t ON te.task_id = t.id
+      WHERE te.date >= CAST(:fromDate AS DATE) AND te.date <= CAST(:toDate AS DATE)
+      GROUP BY date_trunc(:granularity, te.date)
+      ORDER BY date_trunc(:granularity, te.date)
+      """)
+  List<TrendProjection> findHoursTrend(
+      @Param("fromDate") LocalDate from,
+      @Param("toDate") LocalDate to,
+      @Param("granularity") String granularity,
+      @Param("format") String format);
+
   /**
    * Total amount consumed for a project: SUM of (billing_rate_snapshot * duration_minutes / 60) for
    * billable entries matching the budget currency. RLS handles tenant isolation for native queries.

@@ -45,6 +45,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.thymeleaf.ITemplateEngine;
+import org.thymeleaf.context.Context;
 
 @Service
 public class InvoiceService {
@@ -65,6 +67,7 @@ public class InvoiceService {
   private final EntityManager entityManager;
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
+  private final ITemplateEngine templateEngine;
 
   public InvoiceService(
       InvoiceRepository invoiceRepository,
@@ -80,7 +83,8 @@ public class InvoiceService {
       PaymentProvider paymentProvider,
       EntityManager entityManager,
       AuditService auditService,
-      ApplicationEventPublisher eventPublisher) {
+      ApplicationEventPublisher eventPublisher,
+      ITemplateEngine templateEngine) {
     this.invoiceRepository = invoiceRepository;
     this.lineRepository = lineRepository;
     this.customerRepository = customerRepository;
@@ -95,6 +99,7 @@ public class InvoiceService {
     this.entityManager = entityManager;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
+    this.templateEngine = templateEngine;
   }
 
   @Transactional
@@ -949,6 +954,61 @@ public class InvoiceService {
     return buildResponse(invoice);
   }
 
+  // --- Preview ---
+
+  @Transactional(readOnly = true)
+  public String renderPreview(UUID invoiceId) {
+    var invoice =
+        invoiceRepository
+            .findOneById(invoiceId)
+            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+
+    var lines = lineRepository.findByInvoiceIdOrderBySortOrder(invoiceId);
+    var projectNames = resolveProjectNames(lines);
+
+    // Group lines by project name (preserving insertion order)
+    // Lines with null projectId go under "Other Items"
+    var groupedLines = new LinkedHashMap<String, List<InvoiceLine>>();
+    var grouped =
+        lines.stream()
+            .collect(
+                Collectors.groupingBy(
+                    line -> {
+                      if (line.getProjectId() == null) {
+                        return "Other Items";
+                      }
+                      return projectNames.getOrDefault(line.getProjectId(), "Unknown Project");
+                    },
+                    LinkedHashMap::new,
+                    Collectors.toList()));
+
+    // Move "Other Items" to the end if present
+    if (grouped.containsKey("Other Items")) {
+      var otherItems = grouped.remove("Other Items");
+      groupedLines.putAll(grouped);
+      groupedLines.put("Other Items", otherItems);
+    } else {
+      groupedLines.putAll(grouped);
+    }
+
+    // Precompute per-group subtotals
+    var groupSubtotals = new LinkedHashMap<String, BigDecimal>();
+    for (var entry : groupedLines.entrySet()) {
+      BigDecimal subtotal =
+          entry.getValue().stream()
+              .map(InvoiceLine::getAmount)
+              .reduce(BigDecimal.ZERO, BigDecimal::add);
+      groupSubtotals.put(entry.getKey(), subtotal);
+    }
+
+    Context ctx = new Context();
+    ctx.setVariable("invoice", invoice);
+    ctx.setVariable("groupedLines", groupedLines);
+    ctx.setVariable("groupSubtotals", groupSubtotals);
+
+    return templateEngine.process("invoice-preview", ctx);
+  }
+
   // --- Private helpers ---
 
   private String resolveActorName(UUID memberId) {
@@ -963,21 +1023,21 @@ public class InvoiceService {
     invoice.recalculateTotals(subtotal);
   }
 
-  private InvoiceResponse buildResponse(Invoice invoice) {
-    var lines = lineRepository.findByInvoiceIdOrderBySortOrder(invoice.getId());
-
-    // Batch-fetch project names for enrichment (single query instead of N+1)
+  /** Batch-fetch project names for a list of invoice lines (single query instead of N+1). */
+  private Map<UUID, String> resolveProjectNames(List<InvoiceLine> lines) {
     var projectIds =
         lines.stream().map(InvoiceLine::getProjectId).filter(Objects::nonNull).distinct().toList();
 
-    Map<UUID, String> projectNames;
     if (!projectIds.isEmpty()) {
-      projectNames =
-          projectRepository.findAllByIds(projectIds).stream()
-              .collect(Collectors.toMap(p -> p.getId(), p -> p.getName()));
-    } else {
-      projectNames = Map.of();
+      return projectRepository.findAllByIds(projectIds).stream()
+          .collect(Collectors.toMap(p -> p.getId(), p -> p.getName()));
     }
+    return Map.of();
+  }
+
+  private InvoiceResponse buildResponse(Invoice invoice) {
+    var lines = lineRepository.findByInvoiceIdOrderBySortOrder(invoice.getId());
+    var projectNames = resolveProjectNames(lines);
 
     var lineResponses =
         lines.stream()

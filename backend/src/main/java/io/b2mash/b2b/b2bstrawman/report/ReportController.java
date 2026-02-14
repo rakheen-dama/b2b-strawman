@@ -48,6 +48,32 @@ public class ReportController {
     return ResponseEntity.ok(response);
   }
 
+  @GetMapping("/api/reports/utilization")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<UtilizationResponse> getUtilization(
+      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+      @RequestParam(required = false) UUID memberId) {
+    UUID requestingMemberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+
+    var response = reportService.getUtilization(from, to, memberId, requestingMemberId, orgRole);
+    return ResponseEntity.ok(response);
+  }
+
+  @GetMapping("/api/reports/profitability")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<OrgProfitabilityResponse> getOrgProfitability(
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+      @RequestParam(required = false) UUID customerId) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+
+    var response = reportService.getOrgProfitability(from, to, customerId, memberId, orgRole);
+    return ResponseEntity.ok(response);
+  }
+
   // --- DTOs ---
 
   public record CurrencyBreakdown(
@@ -65,4 +91,32 @@ public class ReportController {
 
   public record CustomerProfitabilityResponse(
       UUID customerId, String customerName, List<CurrencyBreakdown> currencies) {}
+
+  public record MemberValueBreakdown(
+      String currency, BigDecimal billableValue, BigDecimal costValue) {}
+
+  public record MemberUtilizationRecord(
+      UUID memberId,
+      String memberName,
+      BigDecimal totalHours,
+      BigDecimal billableHours,
+      BigDecimal nonBillableHours,
+      BigDecimal utilizationPercent,
+      List<MemberValueBreakdown> currencies) {}
+
+  public record UtilizationResponse(
+      LocalDate from, LocalDate to, List<MemberUtilizationRecord> members) {}
+
+  public record ProjectProfitabilitySummary(
+      UUID projectId,
+      String projectName,
+      String customerName,
+      String currency,
+      BigDecimal billableHours,
+      BigDecimal billableValue,
+      BigDecimal costValue,
+      BigDecimal margin,
+      BigDecimal marginPercent) {}
+
+  public record OrgProfitabilityResponse(List<ProjectProfitabilitySummary> projects) {}
 }

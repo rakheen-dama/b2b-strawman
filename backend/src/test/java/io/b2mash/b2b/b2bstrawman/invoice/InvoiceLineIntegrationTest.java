@@ -1,0 +1,391 @@
+package io.b2mash.b2b.b2bstrawman.invoice;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.jayway.jsonpath.JsonPath;
+import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.customer.Customer;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.project.Project;
+import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
+import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.task.Task;
+import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
+import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.support.TransactionTemplate;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+@Import(TestcontainersConfiguration.class)
+@ActiveProfiles("test")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+class InvoiceLineIntegrationTest {
+
+  private static final String API_KEY = "test-api-key";
+  private static final String ORG_ID = "org_inv_line_test";
+  private static final String ORG_ID_B = "org_inv_line_test_b";
+
+  @Autowired private MockMvc mockMvc;
+  @Autowired private InvoiceRepository invoiceRepository;
+  @Autowired private InvoiceLineRepository invoiceLineRepository;
+  @Autowired private CustomerRepository customerRepository;
+  @Autowired private ProjectRepository projectRepository;
+  @Autowired private TaskRepository taskRepository;
+  @Autowired private TimeEntryRepository timeEntryRepository;
+  @Autowired private TenantProvisioningService provisioningService;
+  @Autowired private PlanSyncService planSyncService;
+  @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
+  @Autowired private TransactionTemplate transactionTemplate;
+
+  private String tenantSchema;
+  private String tenantSchemaB;
+  private UUID memberIdOwner;
+  private UUID memberIdOwnerB;
+  private UUID customerId;
+  private UUID customerIdB;
+  private UUID projectId;
+  private UUID taskId;
+
+  @BeforeAll
+  void setup() throws Exception {
+    provisioningService.provisionTenant(ORG_ID, "Invoice Line Test Org");
+    planSyncService.syncPlan(ORG_ID, "pro-plan");
+
+    memberIdOwner =
+        UUID.fromString(
+            syncMember(
+                ORG_ID, "user_inv_line_owner", "inv_line_owner@test.com", "Line Owner", "owner"));
+
+    tenantSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+
+    // Create a customer, project, and task for test data
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberIdOwner)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var customer =
+                          new Customer(
+                              "Line Test Corp",
+                              "linetest@test.com",
+                              "+1-555-0300",
+                              "LTC-001",
+                              "Test customer for line items",
+                              memberIdOwner);
+                      customer = customerRepository.save(customer);
+                      customerId = customer.getId();
+
+                      var project =
+                          new Project("Invoice Line Test Project", "Test project", memberIdOwner);
+                      project = projectRepository.save(project);
+                      projectId = project.getId();
+
+                      var task =
+                          new Task(
+                              projectId,
+                              "Test Task",
+                              "Task for time entries",
+                              "MEDIUM",
+                              "TASK",
+                              null,
+                              memberIdOwner);
+                      task = taskRepository.save(task);
+                      taskId = task.getId();
+                    }));
+
+    // --- Tenant B ---
+    provisioningService.provisionTenant(ORG_ID_B, "Invoice Line Test Org B");
+    planSyncService.syncPlan(ORG_ID_B, "pro-plan");
+
+    memberIdOwnerB =
+        UUID.fromString(
+            syncMember(
+                ORG_ID_B,
+                "user_inv_line_owner_b",
+                "inv_line_owner_b@test.com",
+                "Line Owner B",
+                "owner"));
+
+    tenantSchemaB =
+        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID_B).orElseThrow().getSchemaName();
+
+    // Create a customer in tenant B
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchemaB)
+        .where(RequestScopes.ORG_ID, ORG_ID_B)
+        .where(RequestScopes.MEMBER_ID, memberIdOwnerB)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var customer =
+                          new Customer(
+                              "Line Test Corp B",
+                              "linetest_b@test.com",
+                              "+1-555-0301",
+                              "LTC-002",
+                              "Test customer B for line items",
+                              memberIdOwnerB);
+                      customer = customerRepository.save(customer);
+                      customerIdB = customer.getId();
+                    }));
+  }
+
+  @Test
+  void shouldSaveAndRetrieveLineItemWithInvoiceIdFk() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var invoice = createDraftInvoice();
+
+                  var line =
+                      new InvoiceLine(
+                          invoice.getId(),
+                          null,
+                          null,
+                          "Development services",
+                          new BigDecimal("8.0000"),
+                          new BigDecimal("150.00"),
+                          0);
+                  line = invoiceLineRepository.save(line);
+
+                  var lines =
+                      invoiceLineRepository.findByInvoiceIdOrderBySortOrder(invoice.getId());
+                  assertThat(lines).hasSize(1);
+                  var found = lines.get(0);
+                  assertThat(found.getInvoiceId()).isEqualTo(invoice.getId());
+                  assertThat(found.getDescription()).isEqualTo("Development services");
+                  assertThat(found.getQuantity()).isEqualByComparingTo(new BigDecimal("8.0000"));
+                  assertThat(found.getUnitPrice()).isEqualByComparingTo(new BigDecimal("150.00"));
+                  assertThat(found.getAmount()).isEqualByComparingTo(new BigDecimal("1200.00"));
+                  assertThat(found.getSortOrder()).isEqualTo(0);
+                  assertThat(found.getProjectId()).isNull();
+                  assertThat(found.getTimeEntryId()).isNull();
+                  assertThat(found.getCreatedAt()).isNotNull();
+                  assertThat(found.getUpdatedAt()).isNotNull();
+                }));
+  }
+
+  @Test
+  void findByInvoiceIdOrderBySortOrderReturnsLinesInCorrectOrder() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var invoice = createDraftInvoice();
+
+                  // Insert lines with sortOrder 2, 0, 1 (out of order)
+                  invoiceLineRepository.save(
+                      new InvoiceLine(
+                          invoice.getId(),
+                          null,
+                          null,
+                          "Third item",
+                          new BigDecimal("1.0000"),
+                          new BigDecimal("30.00"),
+                          2));
+                  invoiceLineRepository.save(
+                      new InvoiceLine(
+                          invoice.getId(),
+                          null,
+                          null,
+                          "First item",
+                          new BigDecimal("1.0000"),
+                          new BigDecimal("10.00"),
+                          0));
+                  invoiceLineRepository.save(
+                      new InvoiceLine(
+                          invoice.getId(),
+                          null,
+                          null,
+                          "Second item",
+                          new BigDecimal("1.0000"),
+                          new BigDecimal("20.00"),
+                          1));
+
+                  var lines =
+                      invoiceLineRepository.findByInvoiceIdOrderBySortOrder(invoice.getId());
+                  assertThat(lines).hasSize(3);
+                  assertThat(lines.get(0).getDescription()).isEqualTo("First item");
+                  assertThat(lines.get(0).getSortOrder()).isEqualTo(0);
+                  assertThat(lines.get(1).getDescription()).isEqualTo("Second item");
+                  assertThat(lines.get(1).getSortOrder()).isEqualTo(1);
+                  assertThat(lines.get(2).getDescription()).isEqualTo("Third item");
+                  assertThat(lines.get(2).getSortOrder()).isEqualTo(2);
+                }));
+  }
+
+  @Test
+  void doubleBillingPreventionRejectsDuplicateTimeEntryId() {
+    // Create two time entries for this test
+    var timeEntryIds = new UUID[1];
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var timeEntry =
+                      new TimeEntry(
+                          taskId, memberIdOwner, LocalDate.now(), 120, true, null, "Billable work");
+                  timeEntry = timeEntryRepository.save(timeEntry);
+                  timeEntryIds[0] = timeEntry.getId();
+                }));
+
+    // Save first line referencing the time entry in one transaction
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var invoice = createDraftInvoice();
+                  invoiceLineRepository.save(
+                      new InvoiceLine(
+                          invoice.getId(),
+                          projectId,
+                          timeEntryIds[0],
+                          "Time entry billing",
+                          new BigDecimal("2.0000"),
+                          new BigDecimal("100.00"),
+                          0));
+                }));
+
+    // Attempt to save second line with same timeEntryId in a new transaction
+    assertThatThrownBy(
+            () ->
+                runInTenant(
+                    () ->
+                        transactionTemplate.executeWithoutResult(
+                            tx -> {
+                              var invoice2 = createDraftInvoice();
+                              invoiceLineRepository.save(
+                                  new InvoiceLine(
+                                      invoice2.getId(),
+                                      projectId,
+                                      timeEntryIds[0],
+                                      "Duplicate time entry billing",
+                                      new BigDecimal("3.0000"),
+                                      new BigDecimal("100.00"),
+                                      0));
+                            })))
+        .isInstanceOf(DataIntegrityViolationException.class);
+  }
+
+  @Test
+  void findByInvoiceIdRespectsFilterForCrossTenantIsolation() {
+    // Create an invoice with a line item in tenant A
+    var invoiceIdHolder = new UUID[1];
+    runInTenant(
+        tenantSchema,
+        ORG_ID,
+        memberIdOwner,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var invoice =
+                      createDraftInvoice(
+                          customerId,
+                          "Line Test Corp",
+                          "linetest@test.com",
+                          "Invoice Line Test Org",
+                          memberIdOwner);
+                  invoiceLineRepository.save(
+                      new InvoiceLine(
+                          invoice.getId(),
+                          null,
+                          null,
+                          "Tenant A service",
+                          new BigDecimal("1.0000"),
+                          new BigDecimal("100.00"),
+                          0));
+                  invoiceIdHolder[0] = invoice.getId();
+                }));
+
+    // Query from tenant B — should return empty
+    runInTenant(
+        tenantSchemaB,
+        ORG_ID_B,
+        memberIdOwnerB,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var lines =
+                      invoiceLineRepository.findByInvoiceIdOrderBySortOrder(invoiceIdHolder[0]);
+                  assertThat(lines).isEmpty();
+                }));
+  }
+
+  // --- Helpers ---
+
+  private Invoice createDraftInvoice() {
+    return createDraftInvoice(
+        customerId, "Line Test Corp", "linetest@test.com", "Invoice Line Test Org", memberIdOwner);
+  }
+
+  private Invoice createDraftInvoice(
+      UUID custId, String custName, String custEmail, String orgName, UUID createdBy) {
+    var invoice = new Invoice(custId, "USD", custName, custEmail, null, orgName, createdBy);
+    return invoiceRepository.save(invoice);
+  }
+
+  private void runInTenant(Runnable action) {
+    runInTenant(tenantSchema, ORG_ID, memberIdOwner, action);
+  }
+
+  private void runInTenant(String schema, String orgId, UUID memberId, Runnable action) {
+    ScopedValue.where(RequestScopes.TENANT_ID, schema)
+        .where(RequestScopes.ORG_ID, orgId)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(action);
+  }
+
+  private String syncMember(
+      String orgId, String clerkUserId, String email, String name, String orgRole)
+      throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                post("/internal/members/sync")
+                    .header("X-API-KEY", API_KEY)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "clerkOrgId": "%s",
+                          "clerkUserId": "%s",
+                          "email": "%s",
+                          "name": "%s",
+                          "avatarUrl": null,
+                          "orgRole": "%s"
+                        }
+                        """
+                            .formatted(orgId, clerkUserId, email, name, orgRole)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
+  }
+}

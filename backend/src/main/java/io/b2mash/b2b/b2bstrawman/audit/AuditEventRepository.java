@@ -86,4 +86,15 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
       "SELECT e.eventType AS eventType, COUNT(e) AS count FROM AuditEvent e"
           + " GROUP BY e.eventType ORDER BY COUNT(e) DESC")
   List<EventTypeCount> countByEventType();
+
+  /**
+   * Finds the most recent audit event timestamp for a project. Uses native SQL to query the JSONB
+   * details->>'project_id' field. Compares as text (matching findByProjectId pattern). RLS handles
+   * tenant isolation for native queries.
+   */
+  @Query(
+      value =
+          "SELECT MAX(ae.occurred_at) FROM audit_events ae WHERE (ae.details->>'project_id') = CAST(:projectId AS TEXT)",
+      nativeQuery = true)
+  Optional<Instant> findMostRecentByProject(@Param("projectId") UUID projectId);
 }

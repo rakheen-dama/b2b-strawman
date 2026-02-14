@@ -11,7 +11,7 @@ Phase 9 adds the **operational dashboards layer** — the connective tissue that
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 75 | Health Scoring & Project Health Endpoints | Backend | -- | M | 75A, 75B | **Done** (PRs #151, #153) |
-| 76 | Company Dashboard Backend | Backend | 75 | L | 76A, 76B | |
+| 76 | Company Dashboard Backend | Backend | 75 | L | 76A, 76B | 76A **Done** (PR #156) |
 | 77 | Shared Dashboard Components | Frontend | -- | M | 77A, 77B | **Done** (PRs #154, #155) |
 | 78 | Company Dashboard Frontend | Frontend | 76, 77 | M | 78A, 78B | |
 | 79 | Project Overview Tab | Both | 75, 77 | M | 79A, 79B | |

@@ -194,7 +194,7 @@ Stage 5:  [85B] ──► [85C]  //  [86B]                             ← previ
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **82A** | 82.1-82.10 | InvoiceService core CRUD methods, InvoiceController CRUD endpoints, PaymentProvider interface + MockPaymentProvider, DTO records, basic RBAC (admin/owner/creator), integration tests for CRUD operations and permissions (~8 tests) | |
+| **82A** | 82.1-82.10 | InvoiceService core CRUD methods, InvoiceController CRUD endpoints, PaymentProvider interface + MockPaymentProvider, DTO records, basic RBAC (admin/owner/creator), integration tests for CRUD operations and permissions (~8 tests) | **Done** (PR #169) |
 | **82B** | 82.11-82.19 | InvoiceService lifecycle methods (approve, send, recordPayment, void), state machine validation, time entry edit/delete locking, InvoiceController lifecycle endpoints, double-billing prevention checks, integration tests for transitions and locking (~10 tests) | |
 
 ### Tasks

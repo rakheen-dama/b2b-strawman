@@ -102,6 +102,13 @@
 | 84 | Invoice Detail & List Pages | Frontend | 83 | M | 84A | |
 | 85 | Audit, Notification & HTML Preview | Both | 82 | L | 85A, 85B, 85C | |
 | 86 | Time Entry Billing UX | Both | 81A, 82 | M | 86A, 86B | |
+| **Phase 11 — Tags, Custom Fields & Views** | | | | | | See [tasks/phase11-tags-custom-fields-views.md](tasks/phase11-tags-custom-fields-views.md) |
+| 87 | Field Definition & Custom Field Backend | Backend | -- | L | 87A, 87B, 87C | |
+| 88 | Tags Backend | Backend | -- | M | 88A, 88B | |
+| 89 | Saved Views Backend | Backend | 87C, 88B | M | 89A, 89B | |
+| 90 | Field Pack Seeding | Backend | 87A | S | 90A | |
+| 91 | Custom Fields Frontend | Frontend | 87, 90 | L | 91A, 91B | |
+| 92 | Tags & Saved Views Frontend | Frontend | 88, 89 | L | 92A, 92B | |
 
 ---
 

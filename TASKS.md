@@ -87,7 +87,7 @@
 | 71 | Project Budgets — Entity, Status & Alerts | Backend | 69 | M | 71A, 71B | **Done** (PRs #143, #145) |
 | 72 | Budget Frontend — Configuration & Status Visualization | Frontend | 71 | S | 72A | **Done** (PR #147) |
 | 73 | Profitability Backend — Reports & Aggregation Queries | Backend | 69 | M | 73A, 73B | **Done** (PRs #144, #146) |
-| 74 | Profitability & Financials Frontend — Pages & Tabs | Frontend | 73, 72, 68 | L | 74A, 74B, 74C | 74A,B **Done** (PRs #148, #149) |
+| 74 | Profitability & Financials Frontend — Pages & Tabs | Frontend | 73, 72, 68 | L | 74A, 74B, 74C | **Done** (PRs #148–#150) |
 | **Phase 9 — Operational Dashboards** | | | | | | See [tasks/phase9-operational-dashboards.md](tasks/phase9-operational-dashboards.md) |
 | 75 | Health Scoring & Project Health Endpoints | Backend | -- | M | 75A, 75B | |
 | 76 | Company Dashboard Backend | Backend | 75 | L | 76A, 76B | |

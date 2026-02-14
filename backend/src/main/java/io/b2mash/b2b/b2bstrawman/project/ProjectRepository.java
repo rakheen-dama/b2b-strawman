@@ -37,4 +37,8 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
       ORDER BY p.createdAt DESC
       """)
   List<ProjectWithRole> findAllProjectsWithRole(@Param("memberId") UUID memberId);
+
+  /** Counts active (non-archived) projects in the current tenant. Hibernate @Filter applies. */
+  @Query("SELECT COUNT(p) FROM Project p")
+  long countActiveProjects();
 }

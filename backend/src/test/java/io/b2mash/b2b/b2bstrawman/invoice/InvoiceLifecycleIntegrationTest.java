@@ -10,6 +10,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -55,6 +57,7 @@ class InvoiceLifecycleIntegrationTest {
   @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private CustomerRepository customerRepository;
+  @Autowired private CustomerProjectRepository customerProjectRepository;
   @Autowired private ProjectRepository projectRepository;
   @Autowired private TaskRepository taskRepository;
   @Autowired private TimeEntryRepository timeEntryRepository;
@@ -111,6 +114,10 @@ class InvoiceLifecycleIntegrationTest {
                               memberIdOwner);
                       project = projectRepository.save(project);
                       projectId = project.getId();
+
+                      // Link project to customer
+                      customerProjectRepository.save(
+                          new CustomerProject(customerId, projectId, memberIdOwner));
 
                       // Task
                       var task =

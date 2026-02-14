@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.customer;
 
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceService;
+import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledTimeResponse;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import jakarta.validation.Valid;
@@ -8,8 +10,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,6 +23,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -27,11 +32,15 @@ public class CustomerController {
 
   private final CustomerService customerService;
   private final CustomerProjectService customerProjectService;
+  private final InvoiceService invoiceService;
 
   public CustomerController(
-      CustomerService customerService, CustomerProjectService customerProjectService) {
+      CustomerService customerService,
+      CustomerProjectService customerProjectService,
+      InvoiceService invoiceService) {
     this.customerService = customerService;
     this.customerProjectService = customerProjectService;
+    this.invoiceService = invoiceService;
   }
 
   @GetMapping
@@ -120,6 +129,15 @@ public class CustomerController {
     String orgRole = RequestScopes.getOrgRole();
     var projects = customerProjectService.listProjectsForCustomer(id, memberId, orgRole);
     return ResponseEntity.ok(projects.stream().map(LinkedProjectResponse::from).toList());
+  }
+
+  @GetMapping("/{id}/unbilled-time")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<UnbilledTimeResponse> getUnbilledTime(
+      @PathVariable UUID id,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+    return ResponseEntity.ok(invoiceService.getUnbilledTime(id, from, to));
   }
 
   // --- DTOs ---

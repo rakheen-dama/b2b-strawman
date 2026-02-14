@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.AddLineItemRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.CreateInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.InvoiceResponse;
+import io.b2mash.b2b.b2bstrawman.invoice.dto.RecordPaymentRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UpdateInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UpdateLineItemRequest;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -94,5 +95,34 @@ public class InvoiceController {
   public ResponseEntity<Void> deleteLineItem(@PathVariable UUID id, @PathVariable UUID lineId) {
     invoiceService.deleteLineItem(id, lineId);
     return ResponseEntity.noContent().build();
+  }
+
+  // --- Lifecycle transitions ---
+
+  @PostMapping("/{id}/approve")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<InvoiceResponse> approveInvoice(@PathVariable UUID id) {
+    UUID approvedBy = RequestScopes.requireMemberId();
+    return ResponseEntity.ok(invoiceService.approve(id, approvedBy));
+  }
+
+  @PostMapping("/{id}/send")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<InvoiceResponse> sendInvoice(@PathVariable UUID id) {
+    return ResponseEntity.ok(invoiceService.send(id));
+  }
+
+  @PostMapping("/{id}/payment")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<InvoiceResponse> recordPayment(
+      @PathVariable UUID id, @RequestBody(required = false) RecordPaymentRequest request) {
+    String paymentReference = request != null ? request.paymentReference() : null;
+    return ResponseEntity.ok(invoiceService.recordPayment(id, paymentReference));
+  }
+
+  @PostMapping("/{id}/void")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<InvoiceResponse> voidInvoice(@PathVariable UUID id) {
+    return ResponseEntity.ok(invoiceService.voidInvoice(id));
   }
 }

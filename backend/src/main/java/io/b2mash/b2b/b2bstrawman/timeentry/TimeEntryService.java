@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.budget.BudgetCheckService;
 import io.b2mash.b2b.b2bstrawman.costrate.CostRateService;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
@@ -204,6 +205,12 @@ public class TimeEntryService {
             .findOneById(timeEntryId)
             .orElseThrow(() -> new ResourceNotFoundException("TimeEntry", timeEntryId));
 
+    // Block edit when time entry is part of an invoice (Epic 82B)
+    if (entry.getInvoiceId() != null) {
+      throw new ResourceConflictException(
+          "Time entry is billed", "Time entry is part of an invoice. Void the invoice to unlock.");
+    }
+
     requireEditPermission(entry, memberId, orgRole);
 
     UUID entryTaskId = entry.getTaskId();
@@ -360,6 +367,12 @@ public class TimeEntryService {
         timeEntryRepository
             .findOneById(timeEntryId)
             .orElseThrow(() -> new ResourceNotFoundException("TimeEntry", timeEntryId));
+
+    // Block delete when time entry is part of an invoice (Epic 82B)
+    if (entry.getInvoiceId() != null) {
+      throw new ResourceConflictException(
+          "Time entry is billed", "Time entry is part of an invoice. Void the invoice to unlock.");
+    }
 
     requireEditPermission(entry, memberId, orgRole);
 

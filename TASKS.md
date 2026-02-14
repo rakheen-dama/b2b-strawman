@@ -96,7 +96,7 @@
 | 79 | Project Overview Tab | Both | 75, 77 | M | 79A, 79B | **Done** |
 | 80 | Personal Dashboard | Both | 79A, 77 | M | 80A, 80B | **Done** |
 | **Phase 10 — Invoicing & Billing from Time** | | | | | | See [tasks/phase10-invoicing-billing.md](tasks/phase10-invoicing-billing.md) |
-| 81 | Invoice Entity Foundation & Migration | Backend | -- | M | 81A, 81B | |
+| 81 | Invoice Entity Foundation & Migration | Backend | -- | M | 81A, 81B | 81A **Done** (PR #167) |
 | 82 | Invoice CRUD & Lifecycle Backend | Backend | 81 | L | 82A, 82B | |
 | 83 | Unbilled Time & Invoice Generation | Both | 82 | L | 83A, 83B | |
 | 84 | Invoice Detail & List Pages | Frontend | 83 | M | 84A | |

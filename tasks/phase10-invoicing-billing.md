@@ -118,7 +118,7 @@ Stage 5:  [85B] ──► [85C]  //  [86B]                             ← previ
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **81A** | 81.1-81.7 | V23 migration (invoices, invoice_lines, invoice_counters, time_entries ALTER, RLS, indexes), Invoice entity with InvoiceStatus enum, InvoiceRepository with findOneById, integration tests (~6 tests) | |
+| **81A** | 81.1-81.7 | V23 migration (invoices, invoice_lines, invoice_counters, time_entries ALTER, RLS, indexes), Invoice entity with InvoiceStatus enum, InvoiceRepository with findOneById, integration tests (~6 tests) | **Done** (PR #167) |
 | **81B** | 81.8-81.13 | InvoiceLine entity, InvoiceLineRepository, InvoiceNumberService (SELECT ... FOR UPDATE counter), integration tests for line items and numbering (~6 tests) | |
 
 ### Tasks

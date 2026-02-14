@@ -5,6 +5,10 @@ import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.event.BudgetThresholdEvent;
 import io.b2mash.b2b.b2bstrawman.event.CommentCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.event.DocumentUploadedEvent;
+import io.b2mash.b2b.b2bstrawman.event.InvoiceApprovedEvent;
+import io.b2mash.b2b.b2bstrawman.event.InvoicePaidEvent;
+import io.b2mash.b2b.b2bstrawman.event.InvoiceSentEvent;
+import io.b2mash.b2b.b2bstrawman.event.InvoiceVoidedEvent;
 import io.b2mash.b2b.b2bstrawman.event.MemberAddedToProjectEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskAssignedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskClaimedEvent;
@@ -122,7 +126,11 @@ public class NotificationService {
           "COMMENT_ADDED",
           "DOCUMENT_SHARED",
           "MEMBER_INVITED",
-          "BUDGET_ALERT");
+          "BUDGET_ALERT",
+          "INVOICE_APPROVED",
+          "INVOICE_SENT",
+          "INVOICE_PAID",
+          "INVOICE_VOIDED");
 
   // --- Preference methods ---
 
@@ -411,6 +419,61 @@ public class NotificationService {
     return created;
   }
 
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public List<Notification> handleInvoiceApproved(InvoiceApprovedEvent event) {
+    // Recipients: invoice creator (if different from approver)
+    var recipients = new HashSet<UUID>();
+    if (event.createdByMemberId() != null) recipients.add(event.createdByMemberId());
+    recipients.remove(event.actorMemberId());
+    var title =
+        "Invoice %s for %s has been approved"
+            .formatted(event.invoiceNumber(), event.customerName());
+    return createNotificationsForRecipients(
+        recipients, "INVOICE_APPROVED", title, event.entityId());
+  }
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public List<Notification> handleInvoiceSent(InvoiceSentEvent event) {
+    // Recipients: org admins + owners
+    var recipients = new HashSet<UUID>();
+    for (var m : memberRepository.findByOrgRoleIn(List.of("admin", "owner"))) {
+      recipients.add(m.getId());
+    }
+    recipients.remove(event.actorMemberId());
+    var title =
+        "Invoice %s for %s has been sent".formatted(event.invoiceNumber(), event.customerName());
+    return createNotificationsForRecipients(recipients, "INVOICE_SENT", title, event.entityId());
+  }
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public List<Notification> handleInvoicePaid(InvoicePaidEvent event) {
+    // Recipients: creator + admins/owners
+    var recipients = new HashSet<UUID>();
+    if (event.createdByMemberId() != null) recipients.add(event.createdByMemberId());
+    for (var m : memberRepository.findByOrgRoleIn(List.of("admin", "owner"))) {
+      recipients.add(m.getId());
+    }
+    recipients.remove(event.actorMemberId());
+    var title =
+        "Invoice %s for %s has been paid".formatted(event.invoiceNumber(), event.customerName());
+    return createNotificationsForRecipients(recipients, "INVOICE_PAID", title, event.entityId());
+  }
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public List<Notification> handleInvoiceVoided(InvoiceVoidedEvent event) {
+    // Recipients: creator + approver + admins/owners
+    var recipients = new HashSet<UUID>();
+    if (event.createdByMemberId() != null) recipients.add(event.createdByMemberId());
+    if (event.approvedByMemberId() != null) recipients.add(event.approvedByMemberId());
+    for (var m : memberRepository.findByOrgRoleIn(List.of("admin", "owner"))) {
+      recipients.add(m.getId());
+    }
+    recipients.remove(event.actorMemberId());
+    var title =
+        "Invoice %s for %s has been voided".formatted(event.invoiceNumber(), event.customerName());
+    return createNotificationsForRecipients(recipients, "INVOICE_VOIDED", title, event.entityId());
+  }
+
   // --- Private helpers ---
 
   /**
@@ -429,6 +492,16 @@ public class NotificationService {
    *
    * @return the saved notification, or {@code null} if the preference was disabled
    */
+  private List<Notification> createNotificationsForRecipients(
+      java.util.Set<UUID> recipients, String type, String title, UUID entityId) {
+    var created = new ArrayList<Notification>();
+    for (var recipientId : recipients) {
+      var notification = createIfEnabled(recipientId, type, title, null, "INVOICE", entityId, null);
+      if (notification != null) created.add(notification);
+    }
+    return created;
+  }
+
   Notification createIfEnabled(
       UUID recipientMemberId,
       String notificationType,

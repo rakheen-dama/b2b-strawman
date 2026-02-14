@@ -1,7 +1,13 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
+import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.event.InvoiceApprovedEvent;
+import io.b2mash.b2b.b2bstrawman.event.InvoicePaidEvent;
+import io.b2mash.b2b.b2bstrawman.event.InvoiceSentEvent;
+import io.b2mash.b2b.b2bstrawman.event.InvoiceVoidedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -25,6 +31,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -35,6 +42,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,6 +63,8 @@ public class InvoiceService {
   private final InvoiceNumberService invoiceNumberService;
   private final PaymentProvider paymentProvider;
   private final EntityManager entityManager;
+  private final AuditService auditService;
+  private final ApplicationEventPublisher eventPublisher;
 
   public InvoiceService(
       InvoiceRepository invoiceRepository,
@@ -68,7 +78,9 @@ public class InvoiceService {
       MemberRepository memberRepository,
       InvoiceNumberService invoiceNumberService,
       PaymentProvider paymentProvider,
-      EntityManager entityManager) {
+      EntityManager entityManager,
+      AuditService auditService,
+      ApplicationEventPublisher eventPublisher) {
     this.invoiceRepository = invoiceRepository;
     this.lineRepository = lineRepository;
     this.customerRepository = customerRepository;
@@ -81,6 +93,8 @@ public class InvoiceService {
     this.invoiceNumberService = invoiceNumberService;
     this.paymentProvider = paymentProvider;
     this.entityManager = entityManager;
+    this.auditService = auditService;
+    this.eventPublisher = eventPublisher;
   }
 
   @Transactional
@@ -217,6 +231,26 @@ public class InvoiceService {
     invoice = invoiceRepository.save(invoice);
 
     log.info("Created draft invoice {} for customer {}", invoice.getId(), request.customerId());
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("invoice.created")
+            .entityType("invoice")
+            .entityId(invoice.getId())
+            .details(
+                Map.of(
+                    "customer_id",
+                    request.customerId().toString(),
+                    "customer_name",
+                    customer.getName(),
+                    "currency",
+                    request.currency(),
+                    "line_count",
+                    String.valueOf(timeEntryIds != null ? timeEntryIds.size() : 0),
+                    "subtotal",
+                    invoice.getSubtotal().toString()))
+            .build());
+
     return buildResponse(invoice);
   }
 
@@ -370,6 +404,20 @@ public class InvoiceService {
 
     invoice = invoiceRepository.save(invoice);
     log.info("Updated draft invoice {}", invoiceId);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("invoice.updated")
+            .entityType("invoice")
+            .entityId(invoice.getId())
+            .details(
+                Map.of(
+                    "new_subtotal",
+                    invoice.getSubtotal().toString(),
+                    "new_total",
+                    invoice.getTotal().toString()))
+            .build());
+
     return buildResponse(invoice);
   }
 
@@ -404,6 +452,19 @@ public class InvoiceService {
     lineRepository.deleteAll(lines);
     invoiceRepository.delete(invoice);
     log.info("Deleted draft invoice {}", invoiceId);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("invoice.deleted")
+            .entityType("invoice")
+            .entityId(invoiceId)
+            .details(
+                Map.of(
+                    "customer_name",
+                    invoice.getCustomerName(),
+                    "line_count",
+                    String.valueOf(lines.size())))
+            .build());
   }
 
   @Transactional(readOnly = true)
@@ -459,6 +520,22 @@ public class InvoiceService {
     invoice = invoiceRepository.save(invoice);
 
     log.info("Added line item to invoice {}", invoiceId);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("invoice.updated")
+            .entityType("invoice")
+            .entityId(invoiceId)
+            .details(
+                Map.of(
+                    "action",
+                    "line_item_added",
+                    "new_subtotal",
+                    invoice.getSubtotal().toString(),
+                    "new_total",
+                    invoice.getTotal().toString()))
+            .build());
+
     return buildResponse(invoice);
   }
 
@@ -492,6 +569,22 @@ public class InvoiceService {
     invoice = invoiceRepository.save(invoice);
 
     log.info("Updated line item {} on invoice {}", lineId, invoiceId);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("invoice.updated")
+            .entityType("invoice")
+            .entityId(invoiceId)
+            .details(
+                Map.of(
+                    "action",
+                    "line_item_updated",
+                    "new_subtotal",
+                    invoice.getSubtotal().toString(),
+                    "new_total",
+                    invoice.getTotal().toString()))
+            .build());
+
     return buildResponse(invoice);
   }
 
@@ -532,6 +625,21 @@ public class InvoiceService {
     invoiceRepository.save(invoice);
 
     log.info("Deleted line item {} from invoice {}", lineId, invoiceId);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("invoice.updated")
+            .entityType("invoice")
+            .entityId(invoiceId)
+            .details(
+                Map.of(
+                    "action",
+                    "line_item_removed",
+                    "new_subtotal",
+                    invoice.getSubtotal().toString(),
+                    "new_total",
+                    invoice.getTotal().toString()))
+            .build());
   }
 
   // --- Lifecycle transitions ---
@@ -594,6 +702,43 @@ public class InvoiceService {
     }
 
     log.info("Approved invoice {} with number {}", invoiceId, invoiceNumber);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("invoice.approved")
+            .entityType("invoice")
+            .entityId(invoice.getId())
+            .details(
+                Map.of(
+                    "invoice_number",
+                    invoiceNumber,
+                    "issue_date",
+                    invoice.getIssueDate().toString(),
+                    "total",
+                    invoice.getTotal().toString(),
+                    "time_entry_count",
+                    String.valueOf(lines.stream().filter(l -> l.getTimeEntryId() != null).count())))
+            .build());
+
+    String tenantIdForEvent =
+        RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    String orgIdForEvent = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    eventPublisher.publishEvent(
+        new InvoiceApprovedEvent(
+            "invoice.approved",
+            "invoice",
+            invoice.getId(),
+            null,
+            approvedBy,
+            resolveActorName(approvedBy),
+            tenantIdForEvent,
+            orgIdForEvent,
+            Instant.now(),
+            Map.of("invoice_number", invoiceNumber, "customer_name", invoice.getCustomerName()),
+            invoice.getCreatedBy(),
+            invoiceNumber,
+            invoice.getCustomerName()));
+
     return buildResponse(invoice);
   }
 
@@ -612,6 +757,39 @@ public class InvoiceService {
 
     invoice = invoiceRepository.save(invoice);
     log.info("Marked invoice {} as sent", invoiceId);
+
+    UUID actorId = RequestScopes.MEMBER_ID.isBound() ? RequestScopes.MEMBER_ID.get() : null;
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("invoice.sent")
+            .entityType("invoice")
+            .entityId(invoice.getId())
+            .details(Map.of("invoice_number", invoice.getInvoiceNumber()))
+            .build());
+
+    String tenantIdForEvent =
+        RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    String orgIdForEvent = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    eventPublisher.publishEvent(
+        new InvoiceSentEvent(
+            "invoice.sent",
+            "invoice",
+            invoice.getId(),
+            null,
+            actorId,
+            resolveActorName(actorId),
+            tenantIdForEvent,
+            orgIdForEvent,
+            Instant.now(),
+            Map.of(
+                "invoice_number",
+                invoice.getInvoiceNumber(),
+                "customer_name",
+                invoice.getCustomerName()),
+            invoice.getCreatedBy(),
+            invoice.getInvoiceNumber(),
+            invoice.getCustomerName()));
+
     return buildResponse(invoice);
   }
 
@@ -649,6 +827,51 @@ public class InvoiceService {
 
     invoice = invoiceRepository.save(invoice);
     log.info("Recorded payment for invoice {} with reference {}", invoiceId, effectiveReference);
+
+    UUID actorId = RequestScopes.MEMBER_ID.isBound() ? RequestScopes.MEMBER_ID.get() : null;
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("invoice.paid")
+            .entityType("invoice")
+            .entityId(invoice.getId())
+            .details(
+                Map.of(
+                    "invoice_number",
+                    invoice.getInvoiceNumber(),
+                    "payment_reference",
+                    effectiveReference,
+                    "total",
+                    invoice.getTotal().toString(),
+                    "paid_at",
+                    invoice.getPaidAt().toString()))
+            .build());
+
+    String tenantIdForEvent =
+        RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    String orgIdForEvent = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    eventPublisher.publishEvent(
+        new InvoicePaidEvent(
+            "invoice.paid",
+            "invoice",
+            invoice.getId(),
+            null,
+            actorId,
+            resolveActorName(actorId),
+            tenantIdForEvent,
+            orgIdForEvent,
+            Instant.now(),
+            Map.of(
+                "invoice_number",
+                invoice.getInvoiceNumber(),
+                "customer_name",
+                invoice.getCustomerName(),
+                "payment_reference",
+                effectiveReference),
+            invoice.getCreatedBy(),
+            invoice.getInvoiceNumber(),
+            invoice.getCustomerName(),
+            effectiveReference));
+
     return buildResponse(invoice);
   }
 
@@ -682,10 +905,56 @@ public class InvoiceService {
     }
 
     log.info("Voided invoice {}", invoiceId);
+
+    UUID actorId = RequestScopes.MEMBER_ID.isBound() ? RequestScopes.MEMBER_ID.get() : null;
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("invoice.voided")
+            .entityType("invoice")
+            .entityId(invoice.getId())
+            .details(
+                Map.of(
+                    "invoice_number",
+                    invoice.getInvoiceNumber() != null ? invoice.getInvoiceNumber() : "",
+                    "total",
+                    invoice.getTotal().toString(),
+                    "reverted_time_entry_count",
+                    String.valueOf(lines.stream().filter(l -> l.getTimeEntryId() != null).count())))
+            .build());
+
+    String tenantIdForEvent =
+        RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    String orgIdForEvent = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    eventPublisher.publishEvent(
+        new InvoiceVoidedEvent(
+            "invoice.voided",
+            "invoice",
+            invoice.getId(),
+            null,
+            actorId,
+            resolveActorName(actorId),
+            tenantIdForEvent,
+            orgIdForEvent,
+            Instant.now(),
+            Map.of(
+                "invoice_number",
+                invoice.getInvoiceNumber() != null ? invoice.getInvoiceNumber() : "",
+                "customer_name",
+                invoice.getCustomerName()),
+            invoice.getCreatedBy(),
+            invoice.getInvoiceNumber(),
+            invoice.getCustomerName(),
+            invoice.getApprovedBy()));
+
     return buildResponse(invoice);
   }
 
   // --- Private helpers ---
+
+  private String resolveActorName(UUID memberId) {
+    if (memberId == null) return "System";
+    return memberRepository.findOneById(memberId).map(m -> m.getName()).orElse("Unknown");
+  }
 
   private void recalculateInvoiceTotals(Invoice invoice) {
     var lines = lineRepository.findByInvoiceIdOrderBySortOrder(invoice.getId());

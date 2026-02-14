@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { updateTimeEntry } from "@/app/(app)/org/[slug]/projects/[id]/time-entry-actions";
+import { formatCurrencySafe } from "@/lib/format";
 import type { TimeEntry } from "@/lib/types";
 
 interface EditTimeEntryDialogProps {
@@ -89,6 +90,12 @@ export function EditTimeEntryDialog({
     }
     setOpen(newOpen);
   }
+
+  const hasBillingRate =
+    entry.billingRateSnapshot != null && entry.billingRateCurrency != null;
+  const hasCostRate =
+    entry.costRateSnapshot != null && entry.costRateCurrency != null;
+  const hasRateSnapshot = hasBillingRate || hasCostRate;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -179,6 +186,61 @@ export function EditTimeEntryDialog({
               Billable
             </Label>
           </div>
+
+          {/* Rate snapshot (read-only) */}
+          {hasRateSnapshot && (
+            <div
+              className="rounded-md border border-olive-200 bg-olive-50 px-3 py-2 dark:border-olive-800 dark:bg-olive-900/50"
+              data-testid="rate-snapshot"
+            >
+              {hasBillingRate && (
+                <p className="text-sm text-olive-600 dark:text-olive-400">
+                  Billing rate:{" "}
+                  <span className="font-medium text-olive-700 dark:text-olive-300">
+                    {formatCurrencySafe(
+                      entry.billingRateSnapshot,
+                      entry.billingRateCurrency,
+                    )}
+                    /hr
+                  </span>
+                  {entry.billableValue != null && (
+                    <span className="ml-2">
+                      Value:{" "}
+                      <span className="font-medium">
+                        {formatCurrencySafe(
+                          entry.billableValue,
+                          entry.billingRateCurrency,
+                        )}
+                      </span>
+                    </span>
+                  )}
+                </p>
+              )}
+              {hasCostRate && (
+                <p className="text-sm text-olive-600 dark:text-olive-400">
+                  Cost rate:{" "}
+                  <span className="font-medium text-olive-700 dark:text-olive-300">
+                    {formatCurrencySafe(
+                      entry.costRateSnapshot,
+                      entry.costRateCurrency,
+                    )}
+                    /hr
+                  </span>
+                  {entry.costValue != null && (
+                    <span className="ml-2">
+                      Cost:{" "}
+                      <span className="font-medium">
+                        {formatCurrencySafe(
+                          entry.costValue,
+                          entry.costRateCurrency,
+                        )}
+                      </span>
+                    </span>
+                  )}
+                </p>
+              )}
+            </div>
+          )}
 
           {error && <p className="text-sm text-destructive">{error}</p>}
           <DialogFooter>

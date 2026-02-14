@@ -443,6 +443,7 @@ export function TaskListPanel({
                           slug={slug}
                           projectId={projectId}
                           taskId={task.id}
+                          memberId={currentMemberId}
                         >
                           <Button
                             size="xs"

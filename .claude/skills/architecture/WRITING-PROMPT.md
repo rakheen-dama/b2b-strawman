@@ -140,7 +140,7 @@ For each ADR required by the requirements, create `adr/ADR-{NNN}-{kebab-case-tit
 
 ## Environment Notes
 
-```
+```text
 - Backend base package: io.b2mash.b2b.b2bstrawman
 - Entity pattern: @FilterDef + @Filter + TenantAware + TenantAwareEntityListener
 - Repository pattern: JPQL findOneById() (not JPA findById — bypasses @Filter)

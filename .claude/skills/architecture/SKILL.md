@@ -23,7 +23,7 @@ Read a requirements/prompt file and produce a comprehensive architecture section
 
 Read the requirements file. Extract 3–5 **domain keywords** from it (e.g., "rate card", "budget", "cost rate" for a billing phase). Then launch a **general-purpose** agent:
 
-```
+```text
 Explore the codebase and write a targeted context inventory to:
   /Users/rakheendama/Projects/2026/b2b-strawman/.arch-context.md
 
@@ -42,15 +42,17 @@ Collect ONLY:
    - Report ONLY matching entities (class name + file path), plus any entities they reference via @ManyToOne/@OneToMany
    - If no matches, report the 5 most recently modified entities instead
 
-3. **Reference entity pattern** (FULL source of ONE recent entity):
+3. **Reference entity pattern** (ONE recent entity, up to 80 lines):
    - Pick the most recently created entity (check git log --diff-filter=A --name-only -- '*/entity/*.java' | head)
-   - Include its COMPLETE source code as a reference pattern
+   - Include its source code as a reference pattern
+   - If the entity exceeds 80 lines, include the class declaration, field block, and constructors — omit getters/boilerplate
 
-4. **Reference ADR template** (FULL content of the most recent ADR):
+4. **Reference ADR template** (most recent ADR, up to 50 lines):
    - ls adr/ADR-*.md | sort | tail -1
-   - Include its COMPLETE content as a format template
+   - Include its content as a format template
+   - If it exceeds 50 lines, include Status through Decision sections, truncate Consequences to first 3 bullets
 
-Write all findings as structured markdown. Keep the file under 120 lines.
+Write all findings as structured markdown. Target 150–200 lines (numbering ~5, entities ~15, entity pattern ~80, ADR template ~50).
 Do NOT read architecture/ARCHITECTURE.md in full — only grep section headers.
 Do NOT list all packages or all routes — only what's relevant to {DOMAIN_KEYWORDS}.
 
@@ -66,7 +68,7 @@ After the agent finishes, read `.arch-context.md` and present a summary to the u
 
 Launch a **general-purpose** agent to write the architecture doc and ADRs. Pass it:
 
-```
+```text
 You are writing an architecture document for Phase {N} of the DocTeams multi-tenant SaaS platform.
 
 ## Inputs (read these FIRST)
@@ -93,7 +95,7 @@ Output file: architecture/{KEBAB_TITLE}.md
 
 Launch a **code-reviewer** agent to verify:
 
-```
+```text
 Review the architecture document at {MAIN_DOC_PATH} and ADR files at adr/ADR-{NNN}*.md for:
 
 1. Internal consistency — cross-references, entity names, field names, ADR numbers, section numbers

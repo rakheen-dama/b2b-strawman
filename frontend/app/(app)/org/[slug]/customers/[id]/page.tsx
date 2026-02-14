@@ -1,6 +1,16 @@
 import { auth } from "@clerk/nextjs/server";
 import { api, handleApiError } from "@/lib/api";
-import type { Customer, CustomerStatus, Document, Project, BillingRate, OrgMember, OrgSettings } from "@/lib/types";
+import type {
+  Customer,
+  CustomerStatus,
+  Document,
+  Project,
+  BillingRate,
+  OrgMember,
+  OrgSettings,
+  CustomerProfitabilityResponse,
+  OrgProfitabilityResponse,
+} from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EditCustomerDialog } from "@/components/customers/edit-customer-dialog";
@@ -9,6 +19,7 @@ import { CustomerProjectsPanel } from "@/components/customers/customer-projects-
 import { CustomerDocumentsPanel } from "@/components/documents/customer-documents-panel";
 import { CustomerTabs } from "@/components/customers/customer-tabs";
 import { CustomerRatesTab } from "@/components/rates/customer-rates-tab";
+import { CustomerFinancialsTab } from "@/components/profitability/customer-financials-tab";
 import { formatDate } from "@/lib/format";
 import { ArrowLeft, Pencil, Archive } from "lucide-react";
 import Link from "next/link";
@@ -55,20 +66,35 @@ export default async function CustomerDetailPage({
   let customerBillingRates: BillingRate[] = [];
   let orgMembers: OrgMember[] = [];
   let defaultCurrency = "USD";
+  let customerProfitability: CustomerProfitabilityResponse | null = null;
+  let projectBreakdown: OrgProfitabilityResponse | null = null;
   if (isAdmin) {
     try {
-      const [ratesRes, membersRes, settingsRes] = await Promise.all([
-        api.get<BillingRate[]>(`/api/billing-rates?customerId=${id}`),
-        api.get<OrgMember[]>("/api/members"),
-        api.get<OrgSettings>("/api/settings").catch(() => null),
-      ]);
+      const [ratesRes, membersRes, settingsRes, profitabilityRes, breakdownRes] =
+        await Promise.all([
+          api.get<BillingRate[]>(`/api/billing-rates?customerId=${id}`),
+          api.get<OrgMember[]>("/api/members"),
+          api.get<OrgSettings>("/api/settings").catch(() => null),
+          api
+            .get<CustomerProfitabilityResponse>(
+              `/api/customers/${id}/profitability`,
+            )
+            .catch(() => null),
+          api
+            .get<OrgProfitabilityResponse>(
+              `/api/reports/profitability?customerId=${id}`,
+            )
+            .catch(() => null),
+        ]);
       customerBillingRates = ratesRes;
       orgMembers = membersRes;
       if (settingsRes?.defaultCurrency) {
         defaultCurrency = settingsRes.defaultCurrency;
       }
+      customerProfitability = profitabilityRes;
+      projectBreakdown = breakdownRes;
     } catch {
-      // Non-fatal: show empty rates tab if fetch fails
+      // Non-fatal: show empty rates/financials tab if fetch fails
     }
   }
 
@@ -164,6 +190,14 @@ export default async function CustomerDetailPage({
               customerId={id}
               slug={slug}
               defaultCurrency={defaultCurrency}
+            />
+          ) : undefined
+        }
+        financialsPanel={
+          isAdmin ? (
+            <CustomerFinancialsTab
+              profitability={customerProfitability}
+              projectBreakdown={projectBreakdown}
             />
           ) : undefined
         }

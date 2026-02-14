@@ -419,6 +419,14 @@ export interface BudgetStatusResponse {
   overallStatus: BudgetStatus;
 }
 
+export interface LightweightBudgetStatus {
+  hoursConsumedPct: number;
+  amountConsumedPct: number;
+  hoursStatus: BudgetStatus | null;
+  amountStatus: BudgetStatus | null;
+  overallStatus: BudgetStatus | null;
+}
+
 export interface UpsertBudgetRequest {
   budgetHours?: number;
   budgetAmount?: number;

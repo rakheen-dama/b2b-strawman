@@ -1,10 +1,10 @@
 ---
-name: insights
-description: Analyze a workflow session and produce an insight report. Run after /phase, /epic, or any significant workflow. Usage - /insights [session-id|latest]
+name: observatory
+description: Analyze a workflow session and produce an insight report. Run after /phase, /epic, or any significant workflow. Usage - /observatory [session-id|latest]
 user_invocable: true
 ---
 
-# Workflow Insights Generator
+# Workflow Observatory — Session Analyzer
 
 You are a workflow analyst. Your job is to read raw session stats and event logs, then produce a clear, actionable insight document for the developer.
 

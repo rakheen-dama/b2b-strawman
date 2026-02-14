@@ -50,19 +50,12 @@ public class CustomerService {
 
   @Transactional
   public Customer createCustomer(
-      String name,
-      String email,
-      String phone,
-      String idNumber,
-      String notes,
-      String address,
-      UUID createdBy) {
+      String name, String email, String phone, String idNumber, String notes, UUID createdBy) {
     if (repository.existsByEmail(email)) {
       throw new ResourceConflictException(
           "Customer email conflict", "A customer with email " + email + " already exists");
     }
-    var customer =
-        repository.save(new Customer(name, email, phone, idNumber, notes, address, createdBy));
+    var customer = repository.save(new Customer(name, email, phone, idNumber, notes, createdBy));
     log.info("Created customer {} with email {}", customer.getId(), email);
 
     auditService.log(
@@ -84,13 +77,7 @@ public class CustomerService {
 
   @Transactional
   public Customer updateCustomer(
-      UUID id,
-      String name,
-      String email,
-      String phone,
-      String idNumber,
-      String notes,
-      String address) {
+      UUID id, String name, String email, String phone, String idNumber, String notes) {
     var customer =
         repository.findOneById(id).orElseThrow(() -> new ResourceNotFoundException("Customer", id));
 
@@ -106,9 +93,8 @@ public class CustomerService {
     String oldPhone = customer.getPhone();
     String oldIdNumber = customer.getIdNumber();
     String oldNotes = customer.getNotes();
-    String oldAddress = customer.getAddress();
 
-    customer.update(name, email, phone, idNumber, notes, address);
+    customer.update(name, email, phone, idNumber, notes);
     var saved = repository.save(customer);
 
     // Build delta map -- only include changed fields
@@ -128,10 +114,6 @@ public class CustomerService {
     }
     if (!Objects.equals(oldNotes, notes)) {
       details.put("notes", Map.of("from", String.valueOf(oldNotes), "to", String.valueOf(notes)));
-    }
-    if (!Objects.equals(oldAddress, address)) {
-      details.put(
-          "address", Map.of("from", String.valueOf(oldAddress), "to", String.valueOf(address)));
     }
 
     auditService.log(

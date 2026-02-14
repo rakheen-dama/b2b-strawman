@@ -44,9 +44,6 @@ public class Customer implements TenantAware {
   @Column(name = "notes", columnDefinition = "TEXT")
   private String notes;
 
-  @Column(name = "address", columnDefinition = "TEXT")
-  private String address;
-
   @Column(name = "created_by", nullable = false)
   private UUID createdBy;
 
@@ -62,33 +59,24 @@ public class Customer implements TenantAware {
   protected Customer() {}
 
   public Customer(
-      String name,
-      String email,
-      String phone,
-      String idNumber,
-      String notes,
-      String address,
-      UUID createdBy) {
+      String name, String email, String phone, String idNumber, String notes, UUID createdBy) {
     this.name = name;
     this.email = email;
     this.phone = phone;
     this.idNumber = idNumber;
     this.status = "ACTIVE";
     this.notes = notes;
-    this.address = address;
     this.createdBy = createdBy;
     this.createdAt = Instant.now();
     this.updatedAt = Instant.now();
   }
 
-  public void update(
-      String name, String email, String phone, String idNumber, String notes, String address) {
+  public void update(String name, String email, String phone, String idNumber, String notes) {
     this.name = name;
     this.email = email;
     this.phone = phone;
     this.idNumber = idNumber;
     this.notes = notes;
-    this.address = address;
     this.updatedAt = Instant.now();
   }
 
@@ -123,10 +111,6 @@ public class Customer implements TenantAware {
 
   public String getNotes() {
     return notes;
-  }
-
-  public String getAddress() {
-    return address;
   }
 
   public UUID getCreatedBy() {

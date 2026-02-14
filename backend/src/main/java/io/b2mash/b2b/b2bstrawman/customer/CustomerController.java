@@ -60,7 +60,6 @@ public class CustomerController {
             request.phone(),
             request.idNumber(),
             request.notes(),
-            request.address(),
             createdBy);
     return ResponseEntity.created(URI.create("/api/customers/" + customer.getId()))
         .body(CustomerResponse.from(customer));
@@ -77,8 +76,7 @@ public class CustomerController {
             request.email(),
             request.phone(),
             request.idNumber(),
-            request.notes(),
-            request.address());
+            request.notes());
     return ResponseEntity.ok(CustomerResponse.from(customer));
   }
 
@@ -136,8 +134,7 @@ public class CustomerController {
           String email,
       @Size(max = 50, message = "phone must be at most 50 characters") String phone,
       @Size(max = 100, message = "idNumber must be at most 100 characters") String idNumber,
-      String notes,
-      @Size(max = 500, message = "address must be at most 500 characters") String address) {}
+      String notes) {}
 
   public record UpdateCustomerRequest(
       @NotBlank(message = "name is required")
@@ -149,8 +146,7 @@ public class CustomerController {
           String email,
       @Size(max = 50, message = "phone must be at most 50 characters") String phone,
       @Size(max = 100, message = "idNumber must be at most 100 characters") String idNumber,
-      String notes,
-      @Size(max = 500, message = "address must be at most 500 characters") String address) {}
+      String notes) {}
 
   public record CustomerResponse(
       UUID id,
@@ -160,7 +156,6 @@ public class CustomerController {
       String idNumber,
       String status,
       String notes,
-      String address,
       UUID createdBy,
       Instant createdAt,
       Instant updatedAt) {
@@ -174,7 +169,6 @@ public class CustomerController {
           customer.getIdNumber(),
           customer.getStatus(),
           customer.getNotes(),
-          customer.getAddress(),
           customer.getCreatedBy(),
           customer.getCreatedAt(),
           customer.getUpdatedAt());

@@ -140,24 +140,12 @@ class PortalIntegrationTest {
               // Create two customers
               var custA =
                   customerService.createCustomer(
-                      "Portal Customer A",
-                      "portal-cust-a@test.com",
-                      null,
-                      null,
-                      null,
-                      null,
-                      memberIdA);
+                      "Portal Customer A", "portal-cust-a@test.com", null, null, null, memberIdA);
               customerIdA = custA.getId();
 
               var custB =
                   customerService.createCustomer(
-                      "Other Customer B",
-                      "portal-cust-b@test.com",
-                      null,
-                      null,
-                      null,
-                      null,
-                      memberIdA);
+                      "Other Customer B", "portal-cust-b@test.com", null, null, null, memberIdA);
               customerIdB = custB.getId();
 
               // Create portal contacts for both customers
@@ -263,7 +251,6 @@ class PortalIntegrationTest {
               customerService.createCustomer(
                   "Portal Customer A (Org B)",
                   "portal-cust-orgb@test.com",
-                  null,
                   null,
                   null,
                   null,

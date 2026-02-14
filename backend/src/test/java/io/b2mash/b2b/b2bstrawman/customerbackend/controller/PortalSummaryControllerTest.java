@@ -96,7 +96,6 @@ class PortalSummaryControllerTest {
                       null,
                       null,
                       null,
-                      null,
                       memberId);
               customerId = customer.getId();
 

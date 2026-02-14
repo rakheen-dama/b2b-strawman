@@ -14,7 +14,8 @@ import java.util.UUID;
  * tenantId} field enables tenant-scoped processing in event handlers.
  */
 public sealed interface DomainEvent
-    permits CommentCreatedEvent,
+    permits BudgetThresholdEvent,
+        CommentCreatedEvent,
         CommentUpdatedEvent,
         CommentDeletedEvent,
         CommentVisibilityChangedEvent,

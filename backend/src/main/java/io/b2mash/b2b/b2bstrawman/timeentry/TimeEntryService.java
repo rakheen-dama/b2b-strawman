@@ -3,11 +3,14 @@ package io.b2mash.b2b.b2bstrawman.timeentry;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateService;
+import io.b2mash.b2b.b2bstrawman.budget.BudgetCheckService;
 import io.b2mash.b2b.b2bstrawman.costrate.CostRateService;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -33,6 +36,8 @@ public class TimeEntryService {
   private final AuditService auditService;
   private final BillingRateService billingRateService;
   private final CostRateService costRateService;
+  private final BudgetCheckService budgetCheckService;
+  private final MemberRepository memberRepository;
 
   public TimeEntryService(
       TimeEntryRepository timeEntryRepository,
@@ -40,13 +45,17 @@ public class TimeEntryService {
       ProjectAccessService projectAccessService,
       AuditService auditService,
       BillingRateService billingRateService,
-      CostRateService costRateService) {
+      CostRateService costRateService,
+      BudgetCheckService budgetCheckService,
+      MemberRepository memberRepository) {
     this.timeEntryRepository = timeEntryRepository;
     this.taskRepository = taskRepository;
     this.projectAccessService = projectAccessService;
     this.auditService = auditService;
     this.billingRateService = billingRateService;
     this.costRateService = costRateService;
+    this.budgetCheckService = budgetCheckService;
+    this.memberRepository = memberRepository;
   }
 
   @Transactional
@@ -111,6 +120,12 @@ public class TimeEntryService {
             .details(auditDetails)
             .build());
 
+    // Check budget thresholds after time entry creation
+    var actorName = memberRepository.findOneById(memberId).map(m -> m.getName()).orElse("Unknown");
+    var tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    var orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    budgetCheckService.checkAndAlert(task.getProjectId(), memberId, actorName, tenantId, orgId);
+
     return saved;
   }
 
@@ -164,6 +179,12 @@ public class TimeEntryService {
             .entityId(saved.getId())
             .details(Map.of("billable", Map.of("from", oldBillable, "to", billable)))
             .build());
+
+    // Check budget thresholds after billable toggle (affects budget consumption)
+    var actorName = memberRepository.findOneById(memberId).map(m -> m.getName()).orElse("Unknown");
+    var tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    var orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    budgetCheckService.checkAndAlert(task.getProjectId(), memberId, actorName, tenantId, orgId);
 
     return saved;
   }
@@ -318,6 +339,17 @@ public class TimeEntryService {
             .entityId(entry.getId())
             .details(details)
             .build());
+
+    // Check budget thresholds if duration, date, or billable changed (affects budget consumption)
+    boolean durationChanged = durationMinutes != null && oldDurationMinutes != durationMinutes;
+    boolean billableChanged = billable != null && !billable.equals(oldBillable);
+    if (dateChanged || durationChanged || billableChanged) {
+      var actorName =
+          memberRepository.findOneById(memberId).map(m -> m.getName()).orElse("Unknown");
+      var tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+      var orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+      budgetCheckService.checkAndAlert(task.getProjectId(), memberId, actorName, tenantId, orgId);
+    }
 
     return entry;
   }

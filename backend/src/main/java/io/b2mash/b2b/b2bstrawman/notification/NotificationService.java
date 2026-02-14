@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.notification;
 
 import io.b2mash.b2b.b2bstrawman.comment.CommentRepository;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
+import io.b2mash.b2b.b2bstrawman.event.BudgetThresholdEvent;
 import io.b2mash.b2b.b2bstrawman.event.CommentCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.event.DocumentUploadedEvent;
 import io.b2mash.b2b.b2bstrawman.event.MemberAddedToProjectEvent;
@@ -9,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.event.TaskAssignedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskClaimedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import java.util.ArrayList;
@@ -37,6 +39,7 @@ public class NotificationService {
   private final TaskRepository taskRepository;
   private final DocumentRepository documentRepository;
   private final ProjectMemberRepository projectMemberRepository;
+  private final MemberRepository memberRepository;
 
   public NotificationService(
       NotificationRepository notificationRepository,
@@ -44,13 +47,15 @@ public class NotificationService {
       CommentRepository commentRepository,
       TaskRepository taskRepository,
       DocumentRepository documentRepository,
-      ProjectMemberRepository projectMemberRepository) {
+      ProjectMemberRepository projectMemberRepository,
+      MemberRepository memberRepository) {
     this.notificationRepository = notificationRepository;
     this.notificationPreferenceRepository = notificationPreferenceRepository;
     this.commentRepository = commentRepository;
     this.taskRepository = taskRepository;
     this.documentRepository = documentRepository;
     this.projectMemberRepository = projectMemberRepository;
+    this.memberRepository = memberRepository;
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -116,7 +121,8 @@ public class NotificationService {
           "TASK_UPDATED",
           "COMMENT_ADDED",
           "DOCUMENT_SHARED",
-          "MEMBER_INVITED");
+          "MEMBER_INVITED",
+          "BUDGET_ALERT");
 
   // --- Preference methods ---
 
@@ -358,6 +364,51 @@ public class NotificationService {
             event.projectId(),
             event.projectId());
     return notification != null ? List.of(notification) : List.of();
+  }
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public List<Notification> handleBudgetThreshold(BudgetThresholdEvent event) {
+    var recipients = new HashSet<UUID>();
+
+    // Project leads
+    var leads = projectMemberRepository.findByProjectIdAndProjectRole(event.projectId(), "LEAD");
+    for (var lead : leads) {
+      recipients.add(lead.getMemberId());
+    }
+
+    // Org admins and owners
+    var adminsAndOwners = memberRepository.findByOrgRoleIn(List.of("admin", "owner"));
+    for (var member : adminsAndOwners) {
+      recipients.add(member.getId());
+    }
+
+    // Exclude actor
+    recipients.remove(event.actorMemberId());
+
+    var projectName = (String) event.details().get("project_name");
+    var dimension = (String) event.details().get("dimension");
+    var consumedPct = event.details().get("consumed_pct");
+
+    var title =
+        "Project \"%s\" has reached %s%% of its %s budget"
+            .formatted(projectName, consumedPct, dimension);
+
+    var created = new ArrayList<Notification>();
+    for (var recipientId : recipients) {
+      var notification =
+          createIfEnabled(
+              recipientId,
+              "BUDGET_ALERT",
+              title,
+              null,
+              "PROJECT",
+              event.projectId(),
+              event.projectId());
+      if (notification != null) {
+        created.add(notification);
+      }
+    }
+    return created;
   }
 
   // --- Private helpers ---

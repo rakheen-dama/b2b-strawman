@@ -23,7 +23,11 @@ public sealed interface DomainEvent
         TaskClaimedEvent,
         TaskStatusChangedEvent,
         DocumentUploadedEvent,
-        MemberAddedToProjectEvent {
+        MemberAddedToProjectEvent,
+        InvoiceApprovedEvent,
+        InvoiceSentEvent,
+        InvoicePaidEvent,
+        InvoiceVoidedEvent {
 
   String eventType();
 

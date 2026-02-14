@@ -5,9 +5,13 @@ import { ProvisioningPendingRefresh } from "./provisioning-pending-refresh";
 import { DashboardHeader } from "./dashboard-header";
 import { KpiCardRow } from "@/components/dashboard/kpi-card-row";
 import { ProjectHealthWidget } from "@/components/dashboard/project-health-widget";
+import { TeamWorkloadWidget } from "@/components/dashboard/team-workload-widget";
+import { RecentActivityWidget } from "@/components/dashboard/recent-activity-widget";
 import {
   fetchDashboardKpis,
   fetchProjectHealth,
+  fetchTeamWorkload,
+  fetchDashboardActivity,
 } from "@/lib/actions/dashboard";
 import { resolveDateRange } from "@/lib/date-utils";
 
@@ -26,11 +30,15 @@ export default async function OrgDashboardPage({
 
   let kpis;
   let projectHealth;
+  let teamWorkload;
+  let activity;
 
   try {
-    [kpis, projectHealth] = await Promise.all([
+    [kpis, projectHealth, teamWorkload, activity] = await Promise.all([
       fetchDashboardKpis(from, to),
       fetchProjectHealth(),
+      fetchTeamWorkload(from, to),
+      fetchDashboardActivity(10),
     ]);
   } catch (error) {
     // 403 = tenant not provisioned yet.
@@ -66,10 +74,18 @@ export default async function OrgDashboardPage({
 
       <KpiCardRow kpis={kpis ?? null} isAdmin={isAdmin} orgSlug={slug} />
 
-      <ProjectHealthWidget
-        projects={projectHealth ?? null}
-        orgSlug={slug}
-      />
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+        <div className="lg:col-span-3">
+          <ProjectHealthWidget
+            projects={projectHealth ?? null}
+            orgSlug={slug}
+          />
+        </div>
+        <div className="space-y-6 lg:col-span-2">
+          <TeamWorkloadWidget data={teamWorkload ?? null} isAdmin={isAdmin} />
+          <RecentActivityWidget items={activity ?? null} orgSlug={slug} />
+        </div>
+      </div>
     </div>
   );
 }

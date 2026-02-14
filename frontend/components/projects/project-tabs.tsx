@@ -13,9 +13,10 @@ interface ProjectTabsProps {
   timePanel: ReactNode;
   activityPanel: ReactNode;
   ratesPanel?: ReactNode;
+  budgetPanel?: ReactNode;
 }
 
-type TabId = "documents" | "members" | "customers" | "tasks" | "time" | "activity" | "rates";
+type TabId = "documents" | "members" | "customers" | "tasks" | "time" | "budget" | "activity" | "rates";
 
 interface TabDef {
   id: TabId;
@@ -28,16 +29,18 @@ const baseTabs: TabDef[] = [
   { id: "customers", label: "Customers" },
   { id: "tasks", label: "Tasks" },
   { id: "time", label: "Time" },
+  { id: "budget", label: "Budget" },
   { id: "rates", label: "Rates" },
   { id: "activity", label: "Activity" },
 ];
 
-export function ProjectTabs({ documentsPanel, membersPanel, customersPanel, tasksPanel, timePanel, activityPanel, ratesPanel }: ProjectTabsProps) {
+export function ProjectTabs({ documentsPanel, membersPanel, customersPanel, tasksPanel, timePanel, activityPanel, ratesPanel, budgetPanel }: ProjectTabsProps) {
   const [activeTab, setActiveTab] = useState<TabId>("documents");
 
   const tabs = useMemo(() => {
-    if (ratesPanel) return baseTabs;
-    return baseTabs.filter((t) => t.id !== "rates");
+    let filtered = baseTabs;
+    if (!ratesPanel) filtered = filtered.filter((t) => t.id !== "rates");
+    return filtered;
   }, [ratesPanel]);
 
   return (
@@ -83,6 +86,9 @@ export function ProjectTabs({ documentsPanel, membersPanel, customersPanel, task
       </TabsPrimitive.Content>
       <TabsPrimitive.Content value="time" className="pt-6 outline-none">
         {timePanel}
+      </TabsPrimitive.Content>
+      <TabsPrimitive.Content value="budget" className="pt-6 outline-none">
+        {budgetPanel}
       </TabsPrimitive.Content>
       {ratesPanel && (
         <TabsPrimitive.Content value="rates" className="pt-6 outline-none">

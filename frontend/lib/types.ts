@@ -397,6 +397,36 @@ export interface UpdateCostRateRequest {
   effectiveTo?: string;
 }
 
+// ---- Budget (from ProjectBudgetController.java) ----
+
+export type BudgetStatus = "ON_TRACK" | "AT_RISK" | "OVER_BUDGET";
+
+export interface BudgetStatusResponse {
+  projectId: string;
+  budgetHours: number | null;
+  budgetAmount: number | null;
+  budgetCurrency: string | null;
+  alertThresholdPct: number;
+  notes: string | null;
+  hoursConsumed: number;
+  hoursRemaining: number;
+  hoursConsumedPct: number;
+  amountConsumed: number;
+  amountRemaining: number;
+  amountConsumedPct: number;
+  hoursStatus: BudgetStatus;
+  amountStatus: BudgetStatus;
+  overallStatus: BudgetStatus;
+}
+
+export interface UpsertBudgetRequest {
+  budgetHours?: number;
+  budgetAmount?: number;
+  budgetCurrency?: string;
+  alertThresholdPct?: number;
+  notes?: string;
+}
+
 // ---- Error (RFC 9457 ProblemDetail) ----
 
 export interface ProblemDetail {

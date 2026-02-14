@@ -1,6 +1,6 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { api, handleApiError } from "@/lib/api";
-import type { OrgMember, Project, Customer, Document, ProjectMember, ProjectRole, Task, ProjectTimeSummary, MemberTimeSummary, TaskTimeSummary, BillingRate, OrgSettings } from "@/lib/types";
+import type { OrgMember, Project, Customer, Document, ProjectMember, ProjectRole, Task, ProjectTimeSummary, MemberTimeSummary, TaskTimeSummary, BillingRate, OrgSettings, BudgetStatusResponse } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EditProjectDialog } from "@/components/projects/edit-project-dialog";
@@ -13,6 +13,7 @@ import { ActivityFeed } from "@/components/activity/activity-feed";
 import { ProjectCustomersPanel } from "@/components/projects/project-customers-panel";
 import { ProjectTabs } from "@/components/projects/project-tabs";
 import { ProjectRatesTab } from "@/components/rates/project-rates-tab";
+import { BudgetPanel } from "@/components/budget/budget-panel";
 import { formatDate } from "@/lib/format";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
@@ -113,6 +114,16 @@ export default async function ProjectDetailPage({
     } catch {
       // Non-fatal: show empty rates tab if fetch fails
     }
+  }
+
+  // Budget status for the "Budget" tab
+  let budgetStatus: BudgetStatusResponse | null = null;
+  try {
+    budgetStatus = await api.get<BudgetStatusResponse>(
+      `/api/projects/${id}/budget`
+    );
+  } catch {
+    // Non-fatal: 404 means no budget set, other errors show empty state
   }
 
   // Resolve current user's backend member ID for "My Tasks" filter and claim/release actions.
@@ -238,6 +249,15 @@ export default async function ProjectDetailPage({
             initialSummary={timeSummary}
             initialByTask={timeSummaryByTask}
             initialByMember={timeSummaryByMember}
+          />
+        }
+        budgetPanel={
+          <BudgetPanel
+            slug={slug}
+            projectId={id}
+            budget={budgetStatus}
+            canManage={canManage}
+            defaultCurrency={defaultCurrency}
           />
         }
         ratesPanel={

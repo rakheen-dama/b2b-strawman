@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.task;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -78,4 +79,43 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
       ORDER BY t.createdAt DESC
       """)
   List<Task> findUnassignedInMemberProjects(@Param("memberId") UUID memberId);
+
+  // --- Dashboard aggregation queries (Epic 75B) ---
+
+  /** Counts all tasks in a project. Respects Hibernate @Filter for tenant isolation. */
+  @Query("SELECT COUNT(t) FROM Task t WHERE t.projectId = :projectId")
+  long countByProjectId(@Param("projectId") UUID projectId);
+
+  /** Counts tasks in a project matching a specific status. */
+  @Query("SELECT COUNT(t) FROM Task t WHERE t.projectId = :projectId AND t.status = :status")
+  long countByProjectIdAndStatus(
+      @Param("projectId") UUID projectId, @Param("status") String status);
+
+  /** Counts non-DONE tasks in a project that are past their due date. */
+  @Query(
+      "SELECT COUNT(t) FROM Task t WHERE t.projectId = :projectId AND t.status <> 'DONE' AND t.dueDate < :today")
+  long countOverdueByProjectId(@Param("projectId") UUID projectId, @Param("today") LocalDate today);
+
+  /** Counts all non-DONE tasks across the org that are past their due date. */
+  @Query("SELECT COUNT(t) FROM Task t WHERE t.status <> 'DONE' AND t.dueDate < :today")
+  long countOrgOverdue(@Param("today") LocalDate today);
+
+  /**
+   * Single aggregation query returning all task summary counts for a project. Returns Object[] with
+   * positions: [0]=todo, [1]=inProgress, [2]=inReview, [3]=done, [4]=total, [5]=overdueCount.
+   */
+  @Query(
+      """
+      SELECT
+          COALESCE(SUM(CASE WHEN t.status = 'OPEN' THEN 1 ELSE 0 END), 0),
+          COALESCE(SUM(CASE WHEN t.status = 'IN_PROGRESS' THEN 1 ELSE 0 END), 0),
+          COALESCE(SUM(CASE WHEN t.status = 'IN_REVIEW' THEN 1 ELSE 0 END), 0),
+          COALESCE(SUM(CASE WHEN t.status = 'DONE' THEN 1 ELSE 0 END), 0),
+          COUNT(t),
+          COALESCE(SUM(CASE WHEN t.status <> 'DONE' AND t.dueDate < :today THEN 1 ELSE 0 END), 0)
+      FROM Task t
+      WHERE t.projectId = :projectId
+      """)
+  List<Object[]> getTaskSummaryByProjectId(
+      @Param("projectId") UUID projectId, @Param("today") LocalDate today);
 }

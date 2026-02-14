@@ -11,18 +11,16 @@ Your job is to have a conversation with the founder to decide **what to build ne
 
 ## Mental Model: What This Product Is
 
-DocTeams is a **multi-tenant B2B platform foundation** designed to be forked into vertical-specific products. It already has:
+DocTeams is a **multi-tenant B2B platform foundation** designed to be forked into vertical-specific products. Rather than listing features here (which go stale), read TASKS.md for the current state. The mental model is:
 
-- Organizations (tenants) with tiered plans (Starter/Pro)
-- Projects, tasks, documents with org/project/customer scopes
-- Customers linked to projects
-- Time tracking on tasks with project rollups
-- "My Work" cross-project personal dashboard
-- Audit trail with queryable API
-- Comments on tasks/documents with visibility control (internal/customer-shared)
-- In-app notifications with preferences
-- Activity feeds per project
-- Customer portal groundwork (magic links, read-model schema)
+- **Core platform** (Phases 1-3): Auth, tenancy, projects, documents, team, billing tiers, design system
+- **Domain entities** (Phases 4-5): Customers, tasks, time tracking, "My Work"
+- **Operational infrastructure** (Phases 6-6.5): Audit, comments, notifications, activity feeds
+- **Portal groundwork** (Phase 7): Magic links, read-model, portal contacts
+- **Revenue engine** (Phases 8-10): Rate cards, budgets, profitability, dashboards, invoicing
+- **Extensibility** (Phase 11+): Tags, custom fields, views, document templates
+
+The founder's lighthouse domain is **South African small-to-medium law firms**, but the goal is **foundation code that maximizes reuse across forks** — lean, profitable, sustainable SaaS patterns that any practice-management vertical needs. Check `.claude/ideas/` for prior conversation context on vertical strategy.
 
 The founder's goal: **build base functionality that maximizes reuse across forks** — lean, profitable, sustainable SaaS patterns that any practice-management vertical needs.
 
@@ -51,6 +49,18 @@ Draw from this mental model of what successful client-services SaaS products off
 - **Integrations Platform**: Webhook-out, OAuth app connections (QuickBooks, Xero, Slack, calendars). The extensibility layer that makes the platform sticky.
 
 ## Conversation Flow
+
+### Phase 0 — Load Previous Conversation Context
+
+Before anything else, check for prior ideation notes:
+
+1. Read `.claude/ideas/` directory listing to find previous conversation logs.
+2. Read the most recent ideation file (e.g., `phase11-ideation-2026-02-14.md`) to understand:
+   - The founder's lighthouse domain and vertical preferences
+   - Previously discussed options and why they were chosen/rejected
+   - The emerging phase roadmap and sequencing rationale
+   - Domain-specific notes (e.g., SA legal market insights)
+3. Use this context to avoid re-asking settled questions and to build on prior conversations.
 
 ### Phase 1 — Understand Current State (YOU do this silently)
 
@@ -111,6 +121,18 @@ The requirements file should follow the exact format of existing files in `requi
 - Style and boundaries
 
 4. **Tell the founder the next step**: "Run `/architecture requirements/claude-code-prompt-phase{N}.md` to generate the architecture doc and ADRs."
+
+### Phase 5 — Record Conversation Insights
+
+After the requirements file is written, save a concise ideation log to `.claude/ideas/phase{N}-ideation-{YYYY-MM-DD}.md`. Include:
+
+1. **Lighthouse domain** — the target vertical and market context
+2. **Decision rationale** — what options were considered and why the chosen one won
+3. **Key design preferences** — specific founder preferences that emerged (these inform future phases)
+4. **Phase roadmap** — the emerging sequence of future phases discussed
+5. **Domain notes** — any vertical-specific insights (market gaps, terminology, compliance requirements) useful for future fork planning
+
+Keep it under 50 lines. This is a recall aid, not documentation. If a previous ideation file exists, reference and build on it rather than repeating context.
 
 ## Principles
 

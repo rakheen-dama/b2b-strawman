@@ -21,4 +21,15 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
 
   @Query("SELECT i FROM Invoice i WHERE i.status = :status ORDER BY i.createdAt DESC")
   List<Invoice> findByStatus(@Param("status") InvoiceStatus status);
+
+  @Query("SELECT i FROM Invoice i ORDER BY i.createdAt DESC")
+  List<Invoice> findAllOrdered();
+
+  @Query(
+      """
+      SELECT i FROM Invoice i WHERE i.id IN (
+        SELECT DISTINCT il.invoiceId FROM InvoiceLine il WHERE il.projectId = :projectId
+      ) ORDER BY i.createdAt DESC
+      """)
+  List<Invoice> findByProjectId(@Param("projectId") UUID projectId);
 }

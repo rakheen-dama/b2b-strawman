@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.timeentry;
 
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantAware;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantAwareEntityListener;
 import jakarta.persistence.Column;
@@ -235,14 +236,15 @@ public class TimeEntry implements TenantAware {
    * not already billed.
    *
    * @param invoiceId the invoice ID
-   * @throws IllegalStateException if entry is not billable or already billed
+   * @throws InvalidStateException if entry is not billable or already billed
    */
   public void markBilled(UUID invoiceId) {
     if (!billable) {
-      throw new IllegalStateException("Cannot bill a non-billable time entry");
+      throw new InvalidStateException(
+          "Non-billable time entry", "Cannot bill a non-billable time entry");
     }
     if (this.invoiceId != null) {
-      throw new IllegalStateException("Time entry is already billed on invoice " + this.invoiceId);
+      throw new InvalidStateException("Already billed", "Time entry is already billed");
     }
     this.invoiceId = invoiceId;
     this.updatedAt = Instant.now();

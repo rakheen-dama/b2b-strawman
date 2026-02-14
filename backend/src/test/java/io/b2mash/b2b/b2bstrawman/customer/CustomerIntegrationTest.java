@@ -208,6 +208,77 @@ class CustomerIntegrationTest {
   }
 
   @Test
+  void shouldCreateCustomerWithAddress() throws Exception {
+    var createResult =
+        mockMvc
+            .perform(
+                post("/api/customers")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "name": "Address Corp",
+                          "email": "address@test.com",
+                          "address": "123 Main St, Suite 100\\nNew York, NY 10001"
+                        }
+                        """))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.name").value("Address Corp"))
+            .andExpect(jsonPath("$.address").value("123 Main St, Suite 100\nNew York, NY 10001"))
+            .andReturn();
+
+    var id = extractIdFromLocation(createResult);
+
+    // Verify it persists on GET
+    mockMvc
+        .perform(get("/api/customers/" + id).with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.address").value("123 Main St, Suite 100\nNew York, NY 10001"));
+  }
+
+  @Test
+  void shouldUpdateCustomerWithAddress() throws Exception {
+    var createResult =
+        mockMvc
+            .perform(
+                post("/api/customers")
+                    .with(adminJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"name": "Addr Update", "email": "addrupdate@test.com"}
+                        """))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.address").isEmpty())
+            .andReturn();
+
+    var id = extractIdFromLocation(createResult);
+
+    mockMvc
+        .perform(
+            put("/api/customers/" + id)
+                .with(adminJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "name": "Addr Update",
+                      "email": "addrupdate@test.com",
+                      "address": "456 Oak Ave"
+                    }
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.address").value("456 Oak Ave"));
+
+    // Verify via GET
+    mockMvc
+        .perform(get("/api/customers/" + id).with(adminJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.address").value("456 Oak Ave"));
+  }
+
+  @Test
   void shouldArchiveCustomer() throws Exception {
     var createResult =
         mockMvc

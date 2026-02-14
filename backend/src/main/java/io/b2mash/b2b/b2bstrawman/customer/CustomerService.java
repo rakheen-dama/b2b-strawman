@@ -50,12 +50,19 @@ public class CustomerService {
 
   @Transactional
   public Customer createCustomer(
-      String name, String email, String phone, String idNumber, String notes, UUID createdBy) {
+      String name,
+      String email,
+      String phone,
+      String idNumber,
+      String notes,
+      String address,
+      UUID createdBy) {
     if (repository.existsByEmail(email)) {
       throw new ResourceConflictException(
           "Customer email conflict", "A customer with email " + email + " already exists");
     }
-    var customer = repository.save(new Customer(name, email, phone, idNumber, notes, createdBy));
+    var customer =
+        repository.save(new Customer(name, email, phone, idNumber, notes, address, createdBy));
     log.info("Created customer {} with email {}", customer.getId(), email);
 
     auditService.log(

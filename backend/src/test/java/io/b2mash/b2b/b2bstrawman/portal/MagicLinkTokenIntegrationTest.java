@@ -145,7 +145,13 @@ class MagicLinkTokenIntegrationTest {
             () -> {
               var customerA =
                   customerService.createCustomer(
-                      "MLT Customer A", "mlt-customer-a@test.com", null, null, null, memberIdA);
+                      "MLT Customer A",
+                      "mlt-customer-a@test.com",
+                      null,
+                      null,
+                      null,
+                      null,
+                      memberIdA);
               customerIdA = customerA.getId();
 
               contactIdLifecycle =
@@ -237,7 +243,13 @@ class MagicLinkTokenIntegrationTest {
             () -> {
               var customerB =
                   customerService.createCustomer(
-                      "MLT Customer B", "mlt-customer-b@test.com", null, null, null, memberIdB);
+                      "MLT Customer B",
+                      "mlt-customer-b@test.com",
+                      null,
+                      null,
+                      null,
+                      null,
+                      memberIdB);
               customerIdB = customerB.getId();
 
               contactIdRoundTrip =

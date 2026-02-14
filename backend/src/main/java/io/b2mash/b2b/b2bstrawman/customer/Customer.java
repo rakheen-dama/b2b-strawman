@@ -62,13 +62,20 @@ public class Customer implements TenantAware {
   protected Customer() {}
 
   public Customer(
-      String name, String email, String phone, String idNumber, String notes, UUID createdBy) {
+      String name,
+      String email,
+      String phone,
+      String idNumber,
+      String notes,
+      String address,
+      UUID createdBy) {
     this.name = name;
     this.email = email;
     this.phone = phone;
     this.idNumber = idNumber;
     this.status = "ACTIVE";
     this.notes = notes;
+    this.address = address;
     this.createdBy = createdBy;
     this.createdAt = Instant.now();
     this.updatedAt = Instant.now();

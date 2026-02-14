@@ -60,6 +60,7 @@ public class CustomerController {
             request.phone(),
             request.idNumber(),
             request.notes(),
+            request.address(),
             createdBy);
     return ResponseEntity.created(URI.create("/api/customers/" + customer.getId()))
         .body(CustomerResponse.from(customer));
@@ -136,7 +137,7 @@ public class CustomerController {
       @Size(max = 50, message = "phone must be at most 50 characters") String phone,
       @Size(max = 100, message = "idNumber must be at most 100 characters") String idNumber,
       String notes,
-      String address) {}
+      @Size(max = 500, message = "address must be at most 500 characters") String address) {}
 
   public record UpdateCustomerRequest(
       @NotBlank(message = "name is required")
@@ -149,7 +150,7 @@ public class CustomerController {
       @Size(max = 50, message = "phone must be at most 50 characters") String phone,
       @Size(max = 100, message = "idNumber must be at most 100 characters") String idNumber,
       String notes,
-      String address) {}
+      @Size(max = 500, message = "address must be at most 500 characters") String address) {}
 
   public record CustomerResponse(
       UUID id,

@@ -88,6 +88,7 @@ class BillingRateResolutionTest {
                       null,
                       null,
                       null,
+                      null,
                       memberIdOwner);
               customerId = customer.getId();
 

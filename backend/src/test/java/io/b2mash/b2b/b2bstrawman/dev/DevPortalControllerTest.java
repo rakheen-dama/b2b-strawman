@@ -107,7 +107,7 @@ class DevPortalControllerTest {
             () -> {
               var customer =
                   customerService.createCustomer(
-                      "Dev Harness Customer", CUSTOMER_EMAIL, null, null, null, memberId);
+                      "Dev Harness Customer", CUSTOMER_EMAIL, null, null, null, null, memberId);
               customerId = customer.getId();
             });
   }

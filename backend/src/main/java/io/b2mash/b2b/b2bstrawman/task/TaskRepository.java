@@ -118,4 +118,26 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
       """)
   List<Object[]> getTaskSummaryByProjectId(
       @Param("projectId") UUID projectId, @Param("today") LocalDate today);
+
+  // --- Personal dashboard queries (Epic 79A) ---
+
+  /**
+   * Finds upcoming tasks assigned to a member with a due date on or after today and non-DONE
+   * status. Ordered by due date ascending. Limit is applied in Java via stream().limit().
+   */
+  @Query(
+      """
+      SELECT t FROM Task t
+      WHERE t.assigneeId = :memberId
+        AND t.status <> 'DONE'
+        AND t.dueDate >= :today
+      ORDER BY t.dueDate ASC
+      """)
+  List<Task> findUpcomingByAssignee(
+      @Param("memberId") UUID memberId, @Param("today") LocalDate today);
+
+  /** Counts non-DONE tasks assigned to a specific member that are past their due date. */
+  @Query(
+      "SELECT COUNT(t) FROM Task t WHERE t.assigneeId = :memberId AND t.status <> 'DONE' AND t.dueDate < :today")
+  long countOverdueByAssignee(@Param("memberId") UUID memberId, @Param("today") LocalDate today);
 }

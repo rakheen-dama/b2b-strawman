@@ -302,6 +302,34 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
   List<TeamWorkloadProjection> findTeamWorkload(
       @Param("fromDate") LocalDate from, @Param("toDate") LocalDate to);
 
+  // --- Personal dashboard trend query (Epic 79A) ---
+
+  /**
+   * Member-scoped hours trend for personal dashboard sparkline. Same grouping logic as
+   * findHoursTrend but filtered to a single member. RLS handles tenant isolation.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+      SELECT
+          TO_CHAR(date_trunc(:granularity, te.date), :format) AS period,
+          COALESCE(SUM(te.duration_minutes), 0) AS totalMinutes,
+          date_trunc(:granularity, te.date) AS periodStart
+      FROM time_entries te
+      JOIN tasks t ON te.task_id = t.id
+      WHERE te.member_id = CAST(:memberId AS UUID)
+        AND te.date >= CAST(:fromDate AS DATE) AND te.date <= CAST(:toDate AS DATE)
+      GROUP BY periodStart, period
+      ORDER BY periodStart
+      """)
+  List<TrendProjection> findMemberHoursTrend(
+      @Param("memberId") UUID memberId,
+      @Param("fromDate") LocalDate from,
+      @Param("toDate") LocalDate to,
+      @Param("granularity") String granularity,
+      @Param("format") String format);
+
   /**
    * Total amount consumed for a project: SUM of (billing_rate_snapshot * duration_minutes / 60) for
    * billable entries matching the budget currency. RLS handles tenant isolation for native queries.

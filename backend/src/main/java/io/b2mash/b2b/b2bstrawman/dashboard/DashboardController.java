@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.dashboard;
 
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.CrossProjectActivityItem;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.KpiResponse;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.MemberHoursEntry;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.PersonalDashboard;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHealth;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHealthDetail;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TaskSummary;
@@ -66,6 +68,31 @@ public class DashboardController {
 
     var summary = dashboardService.getTaskSummary(projectId, tenantId);
     return ResponseEntity.ok(summary);
+  }
+
+  /**
+   * Returns per-member hour breakdown for a project within a date range. Requires view access to
+   * the project. Both date parameters are required.
+   */
+  @GetMapping("/api/projects/{projectId}/member-hours")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<List<MemberHoursEntry>> getProjectMemberHours(
+      @PathVariable UUID projectId,
+      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+    if (from.isAfter(to)) {
+      throw new InvalidStateException(
+          "Invalid Date Range", "'from' date must not be after 'to' date");
+    }
+
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+    String tenantId = RequestScopes.TENANT_ID.get();
+
+    projectAccessService.requireViewAccess(projectId, memberId, orgRole);
+
+    var hours = dashboardService.getProjectMemberHours(projectId, tenantId, from, to);
+    return ResponseEntity.ok(hours);
   }
 
   // --- Org-level endpoints ---
@@ -144,5 +171,29 @@ public class DashboardController {
 
     var activity = dashboardService.getCrossProjectActivity(tenantId, memberId, orgRole, limit);
     return ResponseEntity.ok(activity);
+  }
+
+  // --- Personal dashboard endpoint (Epic 79A) ---
+
+  /**
+   * Returns a personal dashboard for the authenticated member with utilization, project breakdown,
+   * overdue tasks, upcoming deadlines, and trend data. Self-scoped: no ProjectAccessService needed
+   * because queries filter by member_id (ADR-023).
+   */
+  @GetMapping("/api/dashboard/personal")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<PersonalDashboard> getPersonalDashboard(
+      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+    if (from.isAfter(to)) {
+      throw new InvalidStateException(
+          "Invalid Date Range", "'from' date must not be after 'to' date");
+    }
+
+    UUID memberId = RequestScopes.requireMemberId();
+    String tenantId = RequestScopes.TENANT_ID.get();
+
+    var dashboard = dashboardService.getPersonalDashboard(memberId, tenantId, from, to);
+    return ResponseEntity.ok(dashboard);
   }
 }

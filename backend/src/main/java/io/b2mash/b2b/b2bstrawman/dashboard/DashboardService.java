@@ -11,6 +11,9 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.CrossProjectActivityItem;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.KpiResponse;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.KpiValues;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.MemberHoursEntry;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.PersonalDashboard;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectBreakdownEntry;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHealth;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHealthDetail;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHealthMetrics;
@@ -18,10 +21,15 @@ import io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHoursEntry;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TaskSummary;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TeamWorkloadEntry;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TrendPoint;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.UpcomingDeadline;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.UtilizationSummary;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.project.ProjectWithRole;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
+import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.timeentry.MemberTimeSummaryProjection;
+import io.b2mash.b2b.b2bstrawman.timeentry.MyWorkProjectTimeSummaryProjection;
 import io.b2mash.b2b.b2bstrawman.timeentry.TeamWorkloadProjection;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.math.BigDecimal;
@@ -32,6 +40,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -250,6 +259,63 @@ public class DashboardService {
     return result;
   }
 
+  // --- Project member-hours endpoint (Epic 79A) ---
+
+  /**
+   * Returns per-member hour breakdown for a project within a date range. Reuses the existing
+   * projectTimeSummaryByMember query and maps results to MemberHoursEntry DTOs. Results are cached
+   * in the project cache with 1-minute TTL.
+   *
+   * @param projectId the project to query
+   * @param tenantId the tenant schema for cache key isolation
+   * @param from start date of the period
+   * @param to end date of the period
+   * @return list of member hours entries sorted by totalHours descending
+   */
+  @SuppressWarnings("unchecked")
+  @Transactional(readOnly = true)
+  public List<MemberHoursEntry> getProjectMemberHours(
+      UUID projectId, String tenantId, LocalDate from, LocalDate to) {
+    String key = tenantId + ":project:" + projectId + ":member-hours:" + from + "_" + to;
+    List<MemberHoursEntry> cached = (List<MemberHoursEntry>) projectCache.getIfPresent(key);
+    if (cached != null) {
+      return cached;
+    }
+
+    List<MemberHoursEntry> result = computeProjectMemberHours(projectId, from, to);
+    projectCache.put(key, result);
+    return result;
+  }
+
+  // --- Personal dashboard endpoint (Epic 79A) ---
+
+  /**
+   * Returns a personal dashboard for the authenticated member with utilization, project breakdown,
+   * overdue task count, upcoming deadlines, and trend data. Self-scoped: the underlying queries
+   * filter by member_id, which serves as its own authorization (ADR-023). Results are cached in the
+   * project cache with 1-minute TTL.
+   *
+   * @param memberId the authenticated member's ID
+   * @param tenantId the tenant schema for cache key isolation
+   * @param from start date of the period
+   * @param to end date of the period
+   * @return personal dashboard data
+   */
+  @SuppressWarnings("unchecked")
+  @Transactional(readOnly = true)
+  public PersonalDashboard getPersonalDashboard(
+      UUID memberId, String tenantId, LocalDate from, LocalDate to) {
+    String key = tenantId + ":personal:" + memberId + ":" + from + "_" + to;
+    PersonalDashboard cached = (PersonalDashboard) projectCache.getIfPresent(key);
+    if (cached != null) {
+      return cached;
+    }
+
+    PersonalDashboard result = computePersonalDashboard(memberId, from, to);
+    projectCache.put(key, result);
+    return result;
+  }
+
   // --- Private: project-scoped computation ---
 
   private ProjectHealthDetail computeProjectHealth(UUID projectId) {
@@ -330,6 +396,117 @@ public class DashboardService {
         ((Number) row[3]).intValue(),
         ((Number) row[4]).intValue(),
         ((Number) row[5]).intValue());
+  }
+
+  // --- Private: Epic 79A computation ---
+
+  private List<MemberHoursEntry> computeProjectMemberHours(
+      UUID projectId, LocalDate from, LocalDate to) {
+    List<MemberTimeSummaryProjection> rows =
+        timeEntryRepository.projectTimeSummaryByMember(projectId, from, to);
+    return rows.stream()
+        .map(
+            r ->
+                new MemberHoursEntry(
+                    r.getMemberId(),
+                    r.getMemberName(),
+                    r.getTotalMinutes() / 60.0,
+                    r.getBillableMinutes() / 60.0))
+        .toList();
+  }
+
+  private PersonalDashboard computePersonalDashboard(UUID memberId, LocalDate from, LocalDate to) {
+    // 1. Utilization
+    var timeSummary = timeEntryRepository.memberTimeSummary(memberId, from, to);
+    double totalHours = timeSummary.getTotalMinutes() / 60.0;
+    double billableHours = timeSummary.getBillableMinutes() / 60.0;
+    Double billablePercent =
+        timeSummary.getTotalMinutes() > 0
+            ? (double) timeSummary.getBillableMinutes() / timeSummary.getTotalMinutes() * 100
+            : null;
+    var utilization = new UtilizationSummary(totalHours, billableHours, billablePercent);
+
+    // 2. Project breakdown (top 5 + "Other")
+    List<MyWorkProjectTimeSummaryProjection> byProject =
+        timeEntryRepository.memberTimeSummaryByProject(memberId, from, to);
+    long totalMinutesAll =
+        byProject.stream().mapToLong(MyWorkProjectTimeSummaryProjection::getTotalMinutes).sum();
+    List<ProjectBreakdownEntry> projectBreakdown = new ArrayList<>();
+    long otherMinutes = 0;
+    for (int i = 0; i < byProject.size(); i++) {
+      var row = byProject.get(i);
+      if (i < 5) {
+        double hours = row.getTotalMinutes() / 60.0;
+        double percent =
+            totalMinutesAll > 0 ? (double) row.getTotalMinutes() / totalMinutesAll * 100 : 0;
+        projectBreakdown.add(
+            new ProjectBreakdownEntry(row.getProjectId(), row.getProjectName(), hours, percent));
+      } else {
+        otherMinutes += row.getTotalMinutes();
+      }
+    }
+    if (otherMinutes > 0) {
+      double otherHours = otherMinutes / 60.0;
+      double otherPercent = totalMinutesAll > 0 ? (double) otherMinutes / totalMinutesAll * 100 : 0;
+      projectBreakdown.add(new ProjectBreakdownEntry(null, "Other", otherHours, otherPercent));
+    }
+
+    // 3. Overdue task count
+    LocalDate today = LocalDate.now();
+    int overdueTaskCount = (int) taskRepository.countOverdueByAssignee(memberId, today);
+
+    // 4. Upcoming deadlines (next 5)
+    List<Task> upcomingTasks =
+        taskRepository.findUpcomingByAssignee(memberId, today).stream().limit(5).toList();
+    // Batch-load project names
+    List<UUID> projectIds = upcomingTasks.stream().map(Task::getProjectId).distinct().toList();
+    Map<UUID, String> projectNameMap = new HashMap<>();
+    if (!projectIds.isEmpty()) {
+      projectRepository
+          .findAllById(projectIds)
+          .forEach(p -> projectNameMap.put(p.getId(), p.getName()));
+    }
+    List<UpcomingDeadline> upcomingDeadlines =
+        upcomingTasks.stream()
+            .map(
+                t ->
+                    new UpcomingDeadline(
+                        t.getId(),
+                        t.getTitle(),
+                        projectNameMap.getOrDefault(t.getProjectId(), "Unknown"),
+                        t.getDueDate()))
+            .toList();
+
+    // 5. Trend (member-scoped)
+    List<TrendPoint> trend = computeMemberTrend(memberId, from, to);
+
+    return new PersonalDashboard(
+        utilization, projectBreakdown, overdueTaskCount, upcomingDeadlines, trend);
+  }
+
+  private List<TrendPoint> computeMemberTrend(UUID memberId, LocalDate from, LocalDate to) {
+    long daysBetween = ChronoUnit.DAYS.between(from, to);
+
+    String granularity;
+    String format;
+    if (daysBetween <= 7) {
+      granularity = "day";
+      format = "YYYY-MM-DD";
+    } else if (daysBetween <= 90) {
+      granularity = "week";
+      format = "IYYY-\"W\"IW";
+    } else {
+      granularity = "month";
+      format = "YYYY-MM";
+    }
+
+    LocalDate trendFrom = computeTrendStart(to, granularity, 6);
+    var results =
+        timeEntryRepository.findMemberHoursTrend(memberId, trendFrom, to, granularity, format);
+
+    return results.stream()
+        .map(r -> new TrendPoint(r.getPeriod(), r.getTotalMinutes() / 60.0))
+        .toList();
   }
 
   // --- Private: org-level computation ---

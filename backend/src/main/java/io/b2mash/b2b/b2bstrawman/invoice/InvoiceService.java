@@ -18,8 +18,10 @@ import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -99,6 +101,7 @@ public class InvoiceService {
 
     // Create line items from time entries
     var timeEntryIds = request.timeEntryIds();
+    var linkedTimeEntries = new ArrayList<io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry>();
     if (timeEntryIds != null && !timeEntryIds.isEmpty()) {
       int sortOrder = 0;
       for (UUID timeEntryId : timeEntryIds) {
@@ -161,7 +164,14 @@ public class InvoiceService {
                 unitPrice,
                 sortOrder++);
         lineRepository.save(line);
+        linkedTimeEntries.add(timeEntry);
       }
+
+      // Link time entries to invoice to prevent double-billing
+      for (var timeEntry : linkedTimeEntries) {
+        timeEntry.setInvoiceId(invoice.getId());
+      }
+      timeEntryRepository.saveAll(linkedTimeEntries);
     }
 
     // Recompute totals
@@ -203,8 +213,22 @@ public class InvoiceService {
           "Invoice not deletable", "Only draft invoices can be deleted");
     }
 
-    // Delete lines explicitly first (then invoice)
+    // Unlink time entries before deleting lines
     var lines = lineRepository.findByInvoiceIdOrderBySortOrder(invoiceId);
+    var timeEntryIdsToUnlink =
+        lines.stream().map(InvoiceLine::getTimeEntryId).filter(Objects::nonNull).toList();
+    if (!timeEntryIdsToUnlink.isEmpty()) {
+      for (UUID teId : timeEntryIdsToUnlink) {
+        timeEntryRepository
+            .findOneById(teId)
+            .ifPresent(
+                te -> {
+                  te.setInvoiceId(null);
+                });
+      }
+    }
+
+    // Delete lines explicitly first (then invoice)
     lineRepository.deleteAll(lines);
     invoiceRepository.delete(invoice);
     log.info("Deleted draft invoice {}", invoiceId);
@@ -320,6 +344,16 @@ public class InvoiceService {
       throw new ResourceNotFoundException("InvoiceLine", lineId);
     }
 
+    // Unlink time entry if this line was generated from one
+    if (line.getTimeEntryId() != null) {
+      timeEntryRepository
+          .findOneById(line.getTimeEntryId())
+          .ifPresent(
+              te -> {
+                te.setInvoiceId(null);
+              });
+    }
+
     lineRepository.delete(line);
 
     recalculateInvoiceTotals(invoice);
@@ -340,22 +374,15 @@ public class InvoiceService {
   private InvoiceResponse buildResponse(Invoice invoice) {
     var lines = lineRepository.findByInvoiceIdOrderBySortOrder(invoice.getId());
 
-    // Batch-fetch project names for enrichment
+    // Batch-fetch project names for enrichment (single query instead of N+1)
     var projectIds =
-        lines.stream().map(InvoiceLine::getProjectId).filter(id -> id != null).distinct().toList();
+        lines.stream().map(InvoiceLine::getProjectId).filter(Objects::nonNull).distinct().toList();
 
     Map<UUID, String> projectNames;
     if (!projectIds.isEmpty()) {
       projectNames =
-          projectIds.stream()
-              .collect(
-                  Collectors.toMap(
-                      id -> id,
-                      id ->
-                          projectRepository
-                              .findOneById(id)
-                              .map(p -> p.getName())
-                              .orElse("Unknown Project")));
+          projectRepository.findAllByIds(projectIds).stream()
+              .collect(Collectors.toMap(p -> p.getId(), p -> p.getName()));
     } else {
       projectNames = Map.of();
     }

@@ -536,12 +536,56 @@ class InvoiceControllerIntegrationTest {
         .andExpect(status().isConflict());
   }
 
+  @Test
+  void shouldDenyMemberAccessToInvoiceEndpoints() throws Exception {
+    // Members should be denied access to all invoice endpoints (admin/owner only)
+    mockMvc.perform(get("/api/invoices").with(memberJwt())).andExpect(status().isForbidden());
+
+    mockMvc
+        .perform(
+            post("/api/invoices")
+                .with(memberJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "customerId": "%s",
+                      "currency": "ZAR"
+                    }
+                    """
+                        .formatted(customerId)))
+        .andExpect(status().isForbidden());
+
+    mockMvc
+        .perform(
+            put("/api/invoices/" + UUID.randomUUID())
+                .with(memberJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"notes": "Should fail"}
+                    """))
+        .andExpect(status().isForbidden());
+
+    mockMvc
+        .perform(delete("/api/invoices/" + UUID.randomUUID()).with(memberJwt()))
+        .andExpect(status().isForbidden());
+  }
+
   // --- JWT Helpers ---
 
   private JwtRequestPostProcessor ownerJwt() {
     return jwt()
         .jwt(j -> j.subject("user_inv_ctrl_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
+  }
+
+  private JwtRequestPostProcessor memberJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_inv_ctrl_member").claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
   }
 
   // --- Helpers ---

@@ -28,14 +28,16 @@ If no requirements file is given, the skill looks for the phase section in `arch
    - The last epic number (so the new phase starts at N+1).
    - The existing phase naming pattern.
    - Which phases/epics are already Done.
-3. If a requirements file was provided, read it. Otherwise:
-   - Search `architecture/ARCHITECTURE.md` for a section matching "Phase {N}" (e.g., `## 10. Phase 5 — ...`).
-   - If found, note the section number and any linked ADRs.
-   - If not found, ask the user where the architecture for this phase lives.
+3. Find the architecture source. Try these in order (fastest first):
+   a. **BREAKDOWN-CONTRACT** (preferred): Search architecture docs for `<!-- BREAKDOWN-CONTRACT` using grep. If found, extract phase title, slice count, new entities, migration names, dependency entities, and ADR refs — all without reading the full doc.
+   b. **Requirements file**: If one was provided as an argument, read it.
+   c. **Architecture doc**: Search `architecture/ARCHITECTURE.md` for a section matching "Phase {N}" (e.g., `## 10. Phase 5 — ...`). If found, note the section number and any linked ADRs.
+   d. **Not found**: Ask the user where the architecture for this phase lives.
 4. Find any ADRs referenced by the architecture section:
    - Glob `adr/ADR-*.md` and identify those linked from the phase section.
 5. Present a summary to the user:
    - Phase number, architecture source, ADR count, starting epic number.
+   - If BREAKDOWN-CONTRACT was found, also show: entity count, slice count, dependencies.
    - Ask for confirmation before dispatching the Plan agent.
 
 ## Step 1 — Dispatch Plan Agent

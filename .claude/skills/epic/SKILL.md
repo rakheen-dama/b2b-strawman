@@ -79,8 +79,11 @@ Extract ALL conventions and the COMPLETE anti-patterns section verbatim. These p
 debugging spirals — missing even one can cost hours.
 
 ### 3. Architecture Context
-Search architecture/ARCHITECTURE.md for sections relevant to this epic (grep for keywords, don't read
-the full 2400-line file). Extract relevant ADRs (check `adr/` directory too).
+First, try: grep -A 10 "BREAKDOWN-CONTRACT" architecture/phase*.md to find the machine-parseable
+contract block. This gives you entity names, migration refs, and ADR refs in ~10 lines.
+Then grep the same architecture doc for sections relevant to this epic's domain keywords.
+Do NOT read the full architecture doc — only the sections matching your keywords.
+Extract relevant ADRs from `adr/` directory.
 Include only what directly impacts this epic's implementation decisions.
 
 ### 4. Reference Patterns (CRITICAL)

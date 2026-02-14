@@ -403,7 +403,7 @@ public class InvoiceService {
     }
 
     // Assign invoice number
-    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    String tenantId = RequestScopes.TENANT_ID.get();
     String invoiceNumber = invoiceNumberService.assignNumber(tenantId);
 
     try {
@@ -456,6 +456,12 @@ public class InvoiceService {
             .findOneById(invoiceId)
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
 
+    // Validate status BEFORE calling payment provider (irreversible side effect)
+    if (invoice.getStatus() != InvoiceStatus.SENT) {
+      throw new ResourceConflictException(
+          "Invalid status transition", "Only sent invoices can be paid");
+    }
+
     // Call payment provider
     var paymentRequest =
         new PaymentRequest(
@@ -473,11 +479,7 @@ public class InvoiceService {
     String effectiveReference =
         paymentReference != null ? paymentReference : paymentResult.paymentReference();
 
-    try {
-      invoice.recordPayment(effectiveReference);
-    } catch (IllegalStateException e) {
-      throw new ResourceConflictException("Invalid status transition", e.getMessage());
-    }
+    invoice.recordPayment(effectiveReference);
 
     invoice = invoiceRepository.save(invoice);
     log.info("Recorded payment for invoice {} with reference {}", invoiceId, effectiveReference);

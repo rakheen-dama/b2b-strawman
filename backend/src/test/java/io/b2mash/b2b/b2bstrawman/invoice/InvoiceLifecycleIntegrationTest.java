@@ -396,8 +396,7 @@ class InvoiceLifecycleIntegrationTest {
                 transactionTemplate.executeWithoutResult(
                     tx -> {
                       var te = timeEntryRepository.findOneById(teId).orElseThrow();
-                      assert te.getInvoiceId() == null
-                          : "Time entry invoice_id should be cleared after void";
+                      org.assertj.core.api.Assertions.assertThat(te.getInvoiceId()).isNull();
                     }));
   }
 
@@ -440,6 +439,37 @@ class InvoiceLifecycleIntegrationTest {
     // Try to void a PAID invoice
     mockMvc
         .perform(post("/api/invoices/" + invoiceId + "/void").with(ownerJwt()))
+        .andExpect(status().isConflict());
+  }
+
+  // --- Test: void from DRAFT returns 409 ---
+  @Test
+  void shouldRejectVoidWhenDraft() throws Exception {
+    String invoiceId = createDraftWithManualLine();
+
+    // Try to void a DRAFT invoice (only APPROVED or SENT can be voided)
+    mockMvc
+        .perform(post("/api/invoices/" + invoiceId + "/void").with(ownerJwt()))
+        .andExpect(status().isConflict());
+  }
+
+  // --- Test: payment from DRAFT returns 409 ---
+  @Test
+  void shouldRejectPaymentWhenDraft() throws Exception {
+    String invoiceId = createDraftWithManualLine();
+
+    // Try to pay a DRAFT invoice (only SENT can be paid)
+    mockMvc
+        .perform(
+            post("/api/invoices/" + invoiceId + "/payment")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "paymentReference": "EFT-SHOULD-FAIL"
+                    }
+                    """))
         .andExpect(status().isConflict());
   }
 

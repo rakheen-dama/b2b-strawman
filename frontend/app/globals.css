@@ -93,10 +93,10 @@
   --teal-500: oklch(72% 0.15 185);
   --teal-600: oklch(62% 0.16 183);
 
-  /* Semantic tokens — light mode */
-  --background: var(--slate-50);
+  /* Semantic tokens — light mode ("Concrete Studio": gray bg, white cards with lift) */
+  --background: oklch(94% 0.008 260);
   --foreground: var(--slate-900);
-  --card: oklch(99.4% 0.002 260);
+  --card: oklch(99.5% 0.002 260);
   --card-foreground: var(--slate-900);
   --popover: oklch(100% 0 0);
   --popover-foreground: var(--slate-900);

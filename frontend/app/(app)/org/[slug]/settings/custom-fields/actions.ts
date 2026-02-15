@@ -189,7 +189,10 @@ export async function updateEntityCustomFieldsAction(
 ): Promise<ActionResult> {
   const prefix = entityType.toLowerCase() + "s";
   try {
-    await api.put(`/api/${prefix}/${entityId}`, { customFields });
+    // Fetch the current entity first so we can send a full PUT body.
+    // The backend PUT endpoints require all required fields (e.g. name).
+    const current = await api.get<Record<string, unknown>>(`/api/${prefix}/${entityId}`);
+    await api.put(`/api/${prefix}/${entityId}`, { ...current, customFields });
   } catch (error) {
     if (error instanceof ApiError) {
       if (error.status === 403) {

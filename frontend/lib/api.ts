@@ -139,6 +139,7 @@ export { apiRequest as apiClient };
 // ---- Field Definitions ----
 
 import type {
+  EntityType,
   FieldDefinitionResponse,
   CreateFieldDefinitionRequest,
   UpdateFieldDefinitionRequest,
@@ -223,7 +224,7 @@ export async function getGroupMembers(
 // ---- Entity Custom Field Groups ----
 
 export async function setEntityFieldGroups(
-  entityType: string,
+  entityType: EntityType,
   entityId: string,
   appliedFieldGroups: string[],
 ): Promise<FieldDefinitionResponse[]> {

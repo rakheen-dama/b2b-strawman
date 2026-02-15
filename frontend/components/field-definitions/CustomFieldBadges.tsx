@@ -53,12 +53,12 @@ export function CustomFieldBadges({
 
   const badges: { name: string; value: string }[] = [];
   for (const [slug, value] of Object.entries(customFields)) {
-    if (badges.length >= maxFields) break;
     const field = fieldMap.get(slug);
     if (!field || !field.active) continue;
     const formatted = formatBadgeValue(field, value);
     if (formatted) {
       badges.push({ name: field.name, value: formatted });
+      if (badges.length >= maxFields) break;
     }
   }
 

@@ -608,6 +608,101 @@ export interface UnbilledTimeResponse {
   grandTotals: Record<string, CurrencyTotal>;
 }
 
+// ---- Custom Fields (from FieldDefinitionController, FieldGroupController) ----
+
+export type EntityType = "PROJECT" | "TASK" | "CUSTOMER";
+export type FieldType =
+  | "TEXT"
+  | "NUMBER"
+  | "DATE"
+  | "DROPDOWN"
+  | "BOOLEAN"
+  | "CURRENCY"
+  | "URL"
+  | "EMAIL"
+  | "PHONE";
+
+export interface FieldDefinitionResponse {
+  id: string;
+  entityType: EntityType;
+  name: string;
+  slug: string;
+  fieldType: FieldType;
+  description: string | null;
+  required: boolean;
+  defaultValue: Record<string, unknown> | null;
+  options: Array<{ value: string; label: string }> | null;
+  validation: Record<string, unknown> | null;
+  sortOrder: number;
+  packId: string | null;
+  packFieldKey: string | null;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateFieldDefinitionRequest {
+  entityType: EntityType;
+  name: string;
+  slug?: string;
+  fieldType: FieldType;
+  description?: string;
+  required: boolean;
+  defaultValue?: Record<string, unknown>;
+  options?: Array<{ value: string; label: string }>;
+  validation?: Record<string, unknown>;
+  sortOrder: number;
+}
+
+export interface UpdateFieldDefinitionRequest {
+  name: string;
+  slug?: string;
+  fieldType: FieldType;
+  description?: string;
+  required: boolean;
+  defaultValue?: Record<string, unknown>;
+  options?: Array<{ value: string; label: string }>;
+  validation?: Record<string, unknown>;
+  sortOrder: number;
+}
+
+export interface FieldGroupResponse {
+  id: string;
+  entityType: EntityType;
+  name: string;
+  slug: string;
+  description: string | null;
+  packId: string | null;
+  sortOrder: number;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateFieldGroupRequest {
+  entityType: EntityType;
+  name: string;
+  slug?: string;
+  description?: string;
+  sortOrder: number;
+  fieldDefinitionIds: string[];
+}
+
+export interface UpdateFieldGroupRequest {
+  name: string;
+  slug?: string;
+  description?: string;
+  sortOrder: number;
+  fieldDefinitionIds: string[];
+}
+
+export interface FieldGroupMemberResponse {
+  id: string;
+  fieldGroupId: string;
+  fieldDefinitionId: string;
+  sortOrder: number;
+}
+
 // ---- Error (RFC 9457 ProblemDetail) ----
 
 export interface ProblemDetail {

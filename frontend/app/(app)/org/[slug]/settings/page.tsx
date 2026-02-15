@@ -8,6 +8,7 @@ import {
   ChevronRight,
   DollarSign,
   ListChecks,
+  Tag,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { LucideIcon } from "lucide-react";
@@ -47,6 +48,13 @@ const settingsCards: SettingsCard[] = [
     title: "Custom Fields",
     description: "Define custom fields and groups for projects, tasks, and customers",
     href: "custom-fields",
+    comingSoon: false,
+  },
+  {
+    icon: Tag,
+    title: "Tags",
+    description: "Manage org-wide tags for projects, tasks, and customers",
+    href: "tags",
     comingSoon: false,
   },
   {

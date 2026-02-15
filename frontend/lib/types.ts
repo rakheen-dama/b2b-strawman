@@ -10,6 +10,7 @@ export interface Project {
   projectRole: ProjectRole | null;
   customFields?: Record<string, unknown>;
   appliedFieldGroups?: string[];
+  tags?: TagResponse[];
 }
 
 export interface CreateProjectRequest {
@@ -103,6 +104,7 @@ export interface Customer {
   updatedAt: string;
   customFields?: Record<string, unknown>;
   appliedFieldGroups?: string[];
+  tags?: TagResponse[];
 }
 
 export interface CreateCustomerRequest {
@@ -705,6 +707,31 @@ export interface FieldGroupMemberResponse {
   fieldGroupId: string;
   fieldDefinitionId: string;
   sortOrder: number;
+}
+
+// ---- Tags (from TagController.java) ----
+
+export interface TagResponse {
+  id: string;
+  name: string;
+  slug: string;
+  color: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateTagRequest {
+  name: string;
+  color?: string | null;
+}
+
+export interface UpdateTagRequest {
+  name: string;
+  color?: string | null;
+}
+
+export interface SetEntityTagsRequest {
+  tagIds: string[];
 }
 
 // ---- Error (RFC 9457 ProblemDetail) ----

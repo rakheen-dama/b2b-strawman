@@ -148,6 +148,31 @@ export default async function ProjectsPage({ params }: { params: Promise<{ slug:
                     <span>{formatDate(project.createdAt)}</span>
                   </div>
 
+                  {/* Tag badges */}
+                  {project.tags && project.tags.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {project.tags.slice(0, 3).map((tag) => (
+                        <Badge
+                          key={tag.id}
+                          variant="outline"
+                          className="text-xs"
+                          style={
+                            tag.color
+                              ? { borderColor: tag.color, color: tag.color }
+                              : undefined
+                          }
+                        >
+                          {tag.name}
+                        </Badge>
+                      ))}
+                      {project.tags.length > 3 && (
+                        <Badge variant="neutral" className="text-xs">
+                          +{project.tags.length - 3}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+
                   {/* Custom field badges */}
                   {project.customFields && Object.keys(project.customFields).length > 0 && (
                     <CustomFieldBadges

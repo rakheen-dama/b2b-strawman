@@ -102,6 +102,29 @@ export default async function CustomersPage({ params }: { params: Promise<{ slug
                       >
                         {customer.name}
                       </Link>
+                      {customer.tags && customer.tags.length > 0 && (
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {customer.tags.slice(0, 3).map((tag) => (
+                            <Badge
+                              key={tag.id}
+                              variant="outline"
+                              className="text-xs"
+                              style={
+                                tag.color
+                                  ? { borderColor: tag.color, color: tag.color }
+                                  : undefined
+                              }
+                            >
+                              {tag.name}
+                            </Badge>
+                          ))}
+                          {customer.tags.length > 3 && (
+                            <Badge variant="neutral" className="text-xs">
+                              +{customer.tags.length - 3}
+                            </Badge>
+                          )}
+                        </div>
+                      )}
                       {customer.customFields && Object.keys(customer.customFields).length > 0 && (
                         <CustomFieldBadges
                           customFields={customer.customFields}

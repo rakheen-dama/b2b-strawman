@@ -53,7 +53,11 @@ export function DormancyCheckButton({ canManage, slug }: DormancyCheckButtonProp
       const result = await transitionCustomer(slug, candidate.id, "DORMANT");
       if (result.success) {
         setCandidates((prev) => prev.filter((c) => c.id !== candidate.id));
+      } else {
+        setError(result.error ?? "Failed to mark customer as dormant.");
       }
+    } catch {
+      setError("An unexpected error occurred.");
     } finally {
       setMarkingIds((prev) => {
         const next = new Set(prev);

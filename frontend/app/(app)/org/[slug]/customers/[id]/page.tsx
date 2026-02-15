@@ -220,7 +220,7 @@ export default async function CustomerDetailPage({
           <div className="flex shrink-0 gap-2">
             <LifecycleTransitionMenu
               customer={customer}
-              canManage={isAdmin && customer.status === "ACTIVE"}
+              canManage={isAdmin}
               slug={slug}
             />
             {customerTemplates.length > 0 && (

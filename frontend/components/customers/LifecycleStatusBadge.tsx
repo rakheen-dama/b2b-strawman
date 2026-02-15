@@ -1,7 +1,8 @@
 import { Badge } from "@/components/ui/badge";
+import type { LifecycleStatus } from "@/lib/types";
 
 const LIFECYCLE_BADGE: Record<
-  string,
+  LifecycleStatus,
   { label: string; variant: "neutral" | "lead" | "success" | "warning" | "destructive" }
 > = {
   PROSPECT: { label: "Prospect", variant: "neutral" },
@@ -12,7 +13,7 @@ const LIFECYCLE_BADGE: Record<
 };
 
 interface LifecycleStatusBadgeProps {
-  lifecycleStatus: string;
+  lifecycleStatus: LifecycleStatus;
 }
 
 export function LifecycleStatusBadge({ lifecycleStatus }: LifecycleStatusBadgeProps) {

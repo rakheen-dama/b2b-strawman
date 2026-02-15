@@ -83,4 +83,64 @@ describe("LifecycleTransitionMenu", () => {
       expect(mockTransitionCustomer).toHaveBeenCalledWith("acme", "cust-1", "DORMANT");
     });
   });
+
+  it("shows only 'Start Onboarding' for PROSPECT status", async () => {
+    const user = userEvent.setup();
+    const customer = makeCustomer({ lifecycleStatus: "PROSPECT" });
+
+    render(
+      <LifecycleTransitionMenu customer={customer} canManage={true} slug="acme" />,
+    );
+
+    await user.click(screen.getByRole("button", { name: /lifecycle transitions/i }));
+
+    expect(screen.getByText("Start Onboarding")).toBeInTheDocument();
+    expect(screen.queryByText("Mark Active")).not.toBeInTheDocument();
+    expect(screen.queryByText("Offboard")).not.toBeInTheDocument();
+  });
+
+  it("shows only 'Mark Active' for ONBOARDING status", async () => {
+    const user = userEvent.setup();
+    const customer = makeCustomer({ lifecycleStatus: "ONBOARDING" });
+
+    render(
+      <LifecycleTransitionMenu customer={customer} canManage={true} slug="acme" />,
+    );
+
+    await user.click(screen.getByRole("button", { name: /lifecycle transitions/i }));
+
+    expect(screen.getByText("Mark Active")).toBeInTheDocument();
+    expect(screen.queryByText("Offboard")).not.toBeInTheDocument();
+    expect(screen.queryByText("Mark Dormant")).not.toBeInTheDocument();
+  });
+
+  it("shows 'Reactivate' and 'Offboard' for DORMANT status", async () => {
+    const user = userEvent.setup();
+    const customer = makeCustomer({ lifecycleStatus: "DORMANT" });
+
+    render(
+      <LifecycleTransitionMenu customer={customer} canManage={true} slug="acme" />,
+    );
+
+    await user.click(screen.getByRole("button", { name: /lifecycle transitions/i }));
+
+    expect(screen.getByText("Reactivate")).toBeInTheDocument();
+    expect(screen.getByText("Offboard")).toBeInTheDocument();
+    expect(screen.queryByText("Mark Dormant")).not.toBeInTheDocument();
+  });
+
+  it("shows only 'Reactivate' for OFFBOARDED status", async () => {
+    const user = userEvent.setup();
+    const customer = makeCustomer({ lifecycleStatus: "OFFBOARDED" });
+
+    render(
+      <LifecycleTransitionMenu customer={customer} canManage={true} slug="acme" />,
+    );
+
+    await user.click(screen.getByRole("button", { name: /lifecycle transitions/i }));
+
+    expect(screen.getByText("Reactivate")).toBeInTheDocument();
+    expect(screen.queryByText("Offboard")).not.toBeInTheDocument();
+    expect(screen.queryByText("Mark Dormant")).not.toBeInTheDocument();
+  });
 });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,17 +11,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { transitionCustomer } from "@/lib/actions/compliance";
-import type { Customer } from "@/lib/types";
+import type { Customer, LifecycleStatus } from "@/lib/types";
 
-const TRANSITIONS: Record<string, { label: string; target: string }[]> = {
-  PROSPECT: [
-    { label: "Start Onboarding", target: "ONBOARDING" },
-    { label: "Mark Active", target: "ACTIVE" },
-  ],
-  ONBOARDING: [
-    { label: "Mark Active", target: "ACTIVE" },
-    { label: "Offboard", target: "OFFBOARDED" },
-  ],
+const TRANSITIONS: Record<LifecycleStatus, { label: string; target: LifecycleStatus }[]> = {
+  PROSPECT: [{ label: "Start Onboarding", target: "ONBOARDING" }],
+  ONBOARDING: [{ label: "Mark Active", target: "ACTIVE" }],
   ACTIVE: [
     { label: "Mark Dormant", target: "DORMANT" },
     { label: "Offboard", target: "OFFBOARDED" },
@@ -30,6 +24,7 @@ const TRANSITIONS: Record<string, { label: string; target: string }[]> = {
     { label: "Reactivate", target: "ACTIVE" },
     { label: "Offboard", target: "OFFBOARDED" },
   ],
+  OFFBOARDED: [{ label: "Reactivate", target: "ACTIVE" }],
 };
 
 interface LifecycleTransitionMenuProps {
@@ -48,6 +43,13 @@ export function LifecycleTransitionMenu({
   const [error, setError] = useState<string | null>(null);
 
   const transitions = TRANSITIONS[customer.lifecycleStatus] ?? [];
+
+  // Auto-clear error after 5 seconds
+  useEffect(() => {
+    if (!error) return;
+    const timer = setTimeout(() => setError(null), 5000);
+    return () => clearTimeout(timer);
+  }, [error]);
 
   if (!canManage || transitions.length === 0) {
     return null;
@@ -72,7 +74,7 @@ export function LifecycleTransitionMenu({
 
   return (
     <div className="flex items-center gap-2">
-      {error && <span className="text-xs text-destructive">{error}</span>}
+      {error && <span className="text-sm font-medium text-destructive">{error}</span>}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button

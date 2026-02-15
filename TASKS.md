@@ -104,11 +104,15 @@
 | 86 | Time Entry Billing UX | Both | 81A, 82 | M | 86A, 86B | **Done** (PRs #175, #178) |
 | **Phase 11 — Tags, Custom Fields & Views** | | | | | | See [tasks/phase11-tags-custom-fields-views.md](tasks/phase11-tags-custom-fields-views.md) |
 | 87 | Field Definition & Custom Field Backend | Backend | -- | L | 87A, 87B, 87C | 87A Done (PR #179) |
-| 88 | Tags Backend | Backend | -- | M | 88A, 88B | |
+| 88 | Tags Backend | Backend | -- | M | 88A, 88B | 88A Done (PR #180) |
 | 89 | Saved Views Backend | Backend | 87C, 88B | M | 89A, 89B | |
 | 90 | Field Pack Seeding | Backend | 87A | S | 90A | |
 | 91 | Custom Fields Frontend | Frontend | 87, 90 | L | 91A, 91B | |
 | 92 | Tags & Saved Views Frontend | Frontend | 88, 89 | L | 92A, 92B | |
+| **Phase 12 — Document Templates & PDF Generation** | | | | | | See [tasks/phase12-document-templates.md](tasks/phase12-document-templates.md) |
+| 93 | DocumentTemplate Entity Foundation | Backend | -- | L | 93A, 93B | |
+| 94 | Rendering Pipeline & Generation | Backend | 93 | L | 94A, 94B | |
+| 95 | Frontend — Template & Generation UI | Frontend | 93, 94 | L | 95A, 95B | |
 
 ---
 

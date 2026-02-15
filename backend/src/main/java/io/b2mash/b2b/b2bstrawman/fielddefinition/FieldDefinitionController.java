@@ -30,7 +30,7 @@ public class FieldDefinitionController {
   }
 
   @GetMapping
-  public ResponseEntity<List<FieldDefinitionResponse>> list(@RequestParam String entityType) {
+  public ResponseEntity<List<FieldDefinitionResponse>> list(@RequestParam EntityType entityType) {
     return ResponseEntity.ok(fieldDefinitionService.listByEntityType(entityType));
   }
 

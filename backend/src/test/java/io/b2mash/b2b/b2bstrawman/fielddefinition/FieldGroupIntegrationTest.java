@@ -40,6 +40,7 @@ class FieldGroupIntegrationTest {
 
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_fg_test";
+  private static final String ORG_ID_B = "org_fg_test_b";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private FieldGroupRepository fieldGroupRepository;
@@ -49,18 +50,33 @@ class FieldGroupIntegrationTest {
   @Autowired private TransactionTemplate transactionTemplate;
 
   private String tenantSchema;
+  private String tenantSchemaB;
   private UUID memberIdOwner;
+  private UUID memberIdOwnerB;
 
   @BeforeAll
   void setup() throws Exception {
+    // --- Tenant A ---
     provisioningService.provisionTenant(ORG_ID, "FG Test Org");
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
-        UUID.fromString(syncMember("user_fg_owner", "fg_owner@test.com", "FG Owner", "owner"));
+        UUID.fromString(
+            syncMember(ORG_ID, "user_fg_owner", "fg_owner@test.com", "FG Owner", "owner"));
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+
+    // --- Tenant B ---
+    provisioningService.provisionTenant(ORG_ID_B, "FG Test Org B");
+    planSyncService.syncPlan(ORG_ID_B, "pro-plan");
+
+    memberIdOwnerB =
+        UUID.fromString(
+            syncMember(ORG_ID_B, "user_fg_owner_b", "fg_owner_b@test.com", "FG Owner B", "owner"));
+
+    tenantSchemaB =
+        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID_B).orElseThrow().getSchemaName();
   }
 
   @Test
@@ -72,7 +88,7 @@ class FieldGroupIntegrationTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  var fg = new FieldGroup("PROJECT", "General Info", "general_info");
+                  var fg = new FieldGroup(EntityType.PROJECT, "General Info", "general_info");
                   fg = fieldGroupRepository.save(fg);
 
                   var found = fieldGroupRepository.findOneById(fg.getId());
@@ -92,7 +108,8 @@ class FieldGroupIntegrationTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  var fg = new FieldGroup("TASK", "Filter Test Group", "filter_test_group");
+                  var fg =
+                      new FieldGroup(EntityType.TASK, "Filter Test Group", "filter_test_group");
                   fg = fieldGroupRepository.save(fg);
                   idHolder[0] = fg.getId();
                 }));
@@ -107,6 +124,36 @@ class FieldGroupIntegrationTest {
                 tx -> {
                   var found = fieldGroupRepository.findOneById(idHolder[0]);
                   assertThat(found).isPresent();
+                }));
+  }
+
+  @Test
+  void findOneByIdRespectsFilterForCrossTenantIsolation() {
+    var idHolder = new UUID[1];
+    // Create in tenant A
+    runInTenant(
+        tenantSchema,
+        ORG_ID,
+        memberIdOwner,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var fg =
+                      new FieldGroup(EntityType.TASK, "Cross Tenant Group", "cross_tenant_group");
+                  fg = fieldGroupRepository.save(fg);
+                  idHolder[0] = fg.getId();
+                }));
+
+    // Try from tenant B — should return empty
+    runInTenant(
+        tenantSchemaB,
+        ORG_ID_B,
+        memberIdOwnerB,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var found = fieldGroupRepository.findOneById(idHolder[0]);
+                  assertThat(found).isEmpty();
                 }));
   }
 
@@ -204,7 +251,8 @@ class FieldGroupIntegrationTest {
         .run(action);
   }
 
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
+  private String syncMember(
+      String orgId, String clerkUserId, String email, String name, String orgRole)
       throws Exception {
     var result =
         mockMvc
@@ -223,7 +271,7 @@ class FieldGroupIntegrationTest {
                           "orgRole": "%s"
                         }
                         """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
+                            .formatted(orgId, clerkUserId, email, name, orgRole)))
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");

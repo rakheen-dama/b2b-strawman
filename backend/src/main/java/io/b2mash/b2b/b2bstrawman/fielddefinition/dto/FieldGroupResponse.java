@@ -1,12 +1,13 @@
 package io.b2mash.b2b.b2bstrawman.fielddefinition.dto;
 
+import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroup;
 import java.time.Instant;
 import java.util.UUID;
 
 public record FieldGroupResponse(
     UUID id,
-    String entityType,
+    EntityType entityType,
     String name,
     String slug,
     String description,

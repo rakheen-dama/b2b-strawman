@@ -20,9 +20,9 @@ public interface FieldGroupRepository extends JpaRepository<FieldGroup, UUID> {
       "SELECT fg FROM FieldGroup fg WHERE fg.entityType = :entityType AND fg.active = true"
           + " ORDER BY fg.sortOrder")
   List<FieldGroup> findByEntityTypeAndActiveTrueOrderBySortOrder(
-      @Param("entityType") String entityType);
+      @Param("entityType") EntityType entityType);
 
   @Query("SELECT fg FROM FieldGroup fg WHERE fg.entityType = :entityType AND fg.slug = :slug")
   Optional<FieldGroup> findByEntityTypeAndSlug(
-      @Param("entityType") String entityType, @Param("slug") String slug);
+      @Param("entityType") EntityType entityType, @Param("slug") String slug);
 }

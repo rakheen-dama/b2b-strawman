@@ -30,7 +30,7 @@ public class FieldGroupController {
   }
 
   @GetMapping
-  public ResponseEntity<List<FieldGroupResponse>> list(@RequestParam String entityType) {
+  public ResponseEntity<List<FieldGroupResponse>> list(@RequestParam EntityType entityType) {
     return ResponseEntity.ok(fieldGroupService.listByEntityType(entityType));
   }
 

@@ -5,6 +5,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.TenantAwareEntityListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -29,8 +31,9 @@ public class FieldGroup implements TenantAware {
   @Column(name = "tenant_id")
   private String tenantId;
 
+  @Enumerated(EnumType.STRING)
   @Column(name = "entity_type", nullable = false, length = 20)
-  private String entityType;
+  private EntityType entityType;
 
   @Column(name = "name", nullable = false, length = 100)
   private String name;
@@ -58,7 +61,7 @@ public class FieldGroup implements TenantAware {
 
   protected FieldGroup() {}
 
-  public FieldGroup(String entityType, String name, String slug) {
+  public FieldGroup(EntityType entityType, String name, String slug) {
     this.entityType = entityType;
     this.name = name;
     this.slug = slug;
@@ -100,7 +103,7 @@ public class FieldGroup implements TenantAware {
     return id;
   }
 
-  public String getEntityType() {
+  public EntityType getEntityType() {
     return entityType;
   }
 

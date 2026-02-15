@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.fielddefinition;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.CreateFieldGroupRequest;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldGroupResponse;
@@ -11,6 +12,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +30,7 @@ public class FieldGroupService {
   }
 
   @Transactional(readOnly = true)
-  public List<FieldGroupResponse> listByEntityType(String entityType) {
+  public List<FieldGroupResponse> listByEntityType(EntityType entityType) {
     return fieldGroupRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(entityType).stream()
         .map(FieldGroupResponse::from)
         .toList();
@@ -55,7 +57,12 @@ public class FieldGroupService {
     fg.setDescription(request.description());
     fg.setSortOrder(request.sortOrder());
 
-    fg = fieldGroupRepository.save(fg);
+    try {
+      fg = fieldGroupRepository.save(fg);
+    } catch (DataIntegrityViolationException ex) {
+      throw new ResourceConflictException(
+          "Duplicate slug", "A field group with slug '" + finalSlug + "' already exists");
+    }
 
     log.info(
         "Created field group: id={}, entityType={}, slug={}",
@@ -70,7 +77,7 @@ public class FieldGroupService {
             .entityId(fg.getId())
             .details(
                 Map.of(
-                    "entity_type", fg.getEntityType(),
+                    "entity_type", fg.getEntityType().name(),
                     "name", fg.getName(),
                     "slug", fg.getSlug()))
             .build());
@@ -123,7 +130,7 @@ public class FieldGroupService {
             .build());
   }
 
-  private String resolveUniqueSlug(String entityType, String baseSlug) {
+  private String resolveUniqueSlug(EntityType entityType, String baseSlug) {
     String finalSlug = baseSlug;
     int suffix = 2;
     while (fieldGroupRepository.findByEntityTypeAndSlug(entityType, finalSlug).isPresent()) {

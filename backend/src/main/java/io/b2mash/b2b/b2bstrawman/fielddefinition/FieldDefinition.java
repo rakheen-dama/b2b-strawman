@@ -6,6 +6,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.TenantAwareEntityListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -34,8 +36,9 @@ public class FieldDefinition implements TenantAware {
   @Column(name = "tenant_id")
   private String tenantId;
 
+  @Enumerated(EnumType.STRING)
   @Column(name = "entity_type", nullable = false, length = 20)
-  private String entityType;
+  private EntityType entityType;
 
   @Column(name = "name", nullable = false, length = 100)
   private String name;
@@ -43,8 +46,9 @@ public class FieldDefinition implements TenantAware {
   @Column(name = "slug", nullable = false, length = 100)
   private String slug;
 
+  @Enumerated(EnumType.STRING)
   @Column(name = "field_type", nullable = false, length = 20)
-  private String fieldType;
+  private FieldType fieldType;
 
   @Column(name = "description")
   private String description;
@@ -84,7 +88,7 @@ public class FieldDefinition implements TenantAware {
 
   protected FieldDefinition() {}
 
-  public FieldDefinition(String entityType, String name, String slug, String fieldType) {
+  public FieldDefinition(EntityType entityType, String name, String slug, FieldType fieldType) {
     this.entityType = entityType;
     this.name = name;
     this.slug = slug;
@@ -153,7 +157,7 @@ public class FieldDefinition implements TenantAware {
     return id;
   }
 
-  public String getEntityType() {
+  public EntityType getEntityType() {
     return entityType;
   }
 
@@ -165,7 +169,7 @@ public class FieldDefinition implements TenantAware {
     return slug;
   }
 
-  public String getFieldType() {
+  public FieldType getFieldType() {
     return fieldType;
   }
 

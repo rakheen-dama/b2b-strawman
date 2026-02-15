@@ -90,13 +90,16 @@ class FieldDefinitionIntegrationTest {
                 tx -> {
                   var fd =
                       new FieldDefinition(
-                          "PROJECT", "Priority Level", "priority_level", "DROPDOWN");
+                          EntityType.PROJECT,
+                          "Priority Level",
+                          "priority_level",
+                          FieldType.DROPDOWN);
                   fd = fieldDefinitionRepository.save(fd);
 
                   var found = fieldDefinitionRepository.findOneById(fd.getId());
                   assertThat(found).isPresent();
                   assertThat(found.get().getSlug()).isEqualTo("priority_level");
-                  assertThat(found.get().getFieldType()).isEqualTo("DROPDOWN");
+                  assertThat(found.get().getFieldType()).isEqualTo(FieldType.DROPDOWN);
                   assertThat(found.get().isActive()).isTrue();
                 }));
   }
@@ -111,7 +114,9 @@ class FieldDefinitionIntegrationTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  var fd = new FieldDefinition("TASK", "Isolation Test", "isolation_test", "TEXT");
+                  var fd =
+                      new FieldDefinition(
+                          EntityType.TASK, "Isolation Test", "isolation_test", FieldType.TEXT);
                   fd = fieldDefinitionRepository.save(fd);
                   idHolder[0] = fd.getId();
                 }));
@@ -244,6 +249,46 @@ class FieldDefinitionIntegrationTest {
     mockMvc
         .perform(get("/api/field-definitions").param("entityType", "CUSTOMER").with(memberJwt()))
         .andExpect(status().isOk());
+  }
+
+  @Test
+  void shouldRejectInvalidEntityType() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/field-definitions")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "entityType": "FOOBAR",
+                      "name": "Bad Type",
+                      "fieldType": "TEXT",
+                      "required": false,
+                      "sortOrder": 0
+                    }
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void shouldRejectInvalidFieldType() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/field-definitions")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "entityType": "PROJECT",
+                      "name": "Bad Field Type",
+                      "fieldType": "INVALID",
+                      "required": false,
+                      "sortOrder": 0
+                    }
+                    """))
+        .andExpect(status().isBadRequest());
   }
 
   // --- JWT Helpers ---

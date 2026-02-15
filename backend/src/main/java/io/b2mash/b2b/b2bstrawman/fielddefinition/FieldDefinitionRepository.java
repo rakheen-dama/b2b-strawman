@@ -20,9 +20,9 @@ public interface FieldDefinitionRepository extends JpaRepository<FieldDefinition
       "SELECT fd FROM FieldDefinition fd WHERE fd.entityType = :entityType AND fd.active = true"
           + " ORDER BY fd.sortOrder")
   List<FieldDefinition> findByEntityTypeAndActiveTrueOrderBySortOrder(
-      @Param("entityType") String entityType);
+      @Param("entityType") EntityType entityType);
 
   @Query("SELECT fd FROM FieldDefinition fd WHERE fd.entityType = :entityType AND fd.slug = :slug")
   Optional<FieldDefinition> findByEntityTypeAndSlug(
-      @Param("entityType") String entityType, @Param("slug") String slug);
+      @Param("entityType") EntityType entityType, @Param("slug") String slug);
 }

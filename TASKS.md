@@ -112,7 +112,7 @@
 | **Phase 12 — Document Templates & PDF Generation** | | | | | | See [tasks/phase12-document-templates.md](tasks/phase12-document-templates.md) |
 | 93 | DocumentTemplate Entity Foundation | Backend | -- | L | 93A, 93B | **Done** (PRs #191, #192) |
 | 94 | Rendering Pipeline & Generation | Backend | 93 | L | 94A, 94B | **Done** (PRs #193, #195) |
-| 95 | Frontend — Template & Generation UI | Frontend | 93, 94 | L | 95A, 95B | 95A **Done** (PR #196) |
+| 95 | Frontend — Template & Generation UI | Frontend | 93, 94 | L | 95A, 95B | **Done** (PRs #196, #197) |
 | **Phase 13 — Customer Compliance & Lifecycle** | | | | | | See [tasks/phase13-customer-compliance-lifecycle.md](tasks/phase13-customer-compliance-lifecycle.md) |
 | 96 | Entity Foundation + Lifecycle Guards | Backend | -- | L | 96A, 96B | |
 | 97 | Lifecycle Transitions + Dormancy Detection | Both | 96 | M | 97A, 97B | |

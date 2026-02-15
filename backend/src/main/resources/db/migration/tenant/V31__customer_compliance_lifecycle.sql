@@ -13,6 +13,11 @@ ALTER TABLE customers
     ADD COLUMN IF NOT EXISTS lifecycle_status_changed_by UUID,
     ADD COLUMN IF NOT EXISTS offboarded_at TIMESTAMP WITH TIME ZONE;
 
+-- Validate lifecycle_status values at the database level
+ALTER TABLE customers
+    ADD CONSTRAINT chk_customer_lifecycle_status
+    CHECK (lifecycle_status IN ('PROSPECT','ONBOARDING','ACTIVE','DORMANT','OFFBOARDED'));
+
 -- Index for filtering customers by lifecycle status (compliance dashboard, saved views)
 CREATE INDEX IF NOT EXISTS idx_customers_lifecycle_status
     ON customers(lifecycle_status);
@@ -121,7 +126,7 @@ END $$;
 
 CREATE TABLE IF NOT EXISTS checklist_instances (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    tenant_id       VARCHAR(255),
+    tenant_id       VARCHAR(255) NOT NULL,
     template_id     UUID          NOT NULL REFERENCES checklist_templates(id),
     customer_id     UUID          NOT NULL REFERENCES customers(id),
     status          VARCHAR(20)   NOT NULL DEFAULT 'IN_PROGRESS',
@@ -147,7 +152,7 @@ DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'checklist_instances_tenant_isolation') THEN
     EXECUTE 'CREATE POLICY checklist_instances_tenant_isolation ON checklist_instances
-      USING (tenant_id = current_setting(''app.current_tenant'', true) OR tenant_id IS NULL)';
+      USING (tenant_id = current_setting(''app.current_tenant'', true))';
   END IF;
 END $$;
 
@@ -157,7 +162,7 @@ END $$;
 
 CREATE TABLE IF NOT EXISTS checklist_instance_items (
     id                     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    tenant_id              VARCHAR(255),
+    tenant_id              VARCHAR(255) NOT NULL,
     instance_id            UUID          NOT NULL REFERENCES checklist_instances(id) ON DELETE CASCADE,
     template_item_id       UUID          NOT NULL REFERENCES checklist_template_items(id),
     name                   VARCHAR(300)  NOT NULL,
@@ -195,7 +200,7 @@ DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'checklist_instance_items_tenant_isolation') THEN
     EXECUTE 'CREATE POLICY checklist_instance_items_tenant_isolation ON checklist_instance_items
-      USING (tenant_id = current_setting(''app.current_tenant'', true) OR tenant_id IS NULL)';
+      USING (tenant_id = current_setting(''app.current_tenant'', true))';
   END IF;
 END $$;
 
@@ -205,7 +210,7 @@ END $$;
 
 CREATE TABLE IF NOT EXISTS data_subject_requests (
     id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    tenant_id         VARCHAR(255),
+    tenant_id         VARCHAR(255) NOT NULL,
     customer_id       UUID          NOT NULL REFERENCES customers(id),
     request_type      VARCHAR(20)   NOT NULL,
     status            VARCHAR(20)   NOT NULL DEFAULT 'RECEIVED',
@@ -245,7 +250,7 @@ DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'data_subject_requests_tenant_isolation') THEN
     EXECUTE 'CREATE POLICY data_subject_requests_tenant_isolation ON data_subject_requests
-      USING (tenant_id = current_setting(''app.current_tenant'', true) OR tenant_id IS NULL)';
+      USING (tenant_id = current_setting(''app.current_tenant'', true))';
   END IF;
 END $$;
 
@@ -255,7 +260,7 @@ END $$;
 
 CREATE TABLE IF NOT EXISTS retention_policies (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    tenant_id       VARCHAR(255),
+    tenant_id       VARCHAR(255) NOT NULL,
     record_type     VARCHAR(30)   NOT NULL,
     retention_days  INTEGER       NOT NULL,
     trigger_event   VARCHAR(30)   NOT NULL,
@@ -282,6 +287,6 @@ DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'retention_policies_tenant_isolation') THEN
     EXECUTE 'CREATE POLICY retention_policies_tenant_isolation ON retention_policies
-      USING (tenant_id = current_setting(''app.current_tenant'', true) OR tenant_id IS NULL)';
+      USING (tenant_id = current_setting(''app.current_tenant'', true))';
   END IF;
 END $$;

@@ -148,19 +148,22 @@ class V31MigrationTest {
             "data_subject_requests_tenant_isolation",
             "retention_policies_tenant_isolation");
 
-    for (String policyName : expectedPolicies) {
-      // RLS policies are stored per-schema in pg_policies
-      // Set search path to the tenant schema to find them
-      jdbc.execute("SET search_path TO " + proTenantSchema + ", public");
-      var count =
-          jdbc.queryForObject(
-              """
-              SELECT COUNT(*) FROM pg_policies WHERE policyname = ?
-              """,
-              Integer.class,
-              policyName);
-      assertThat(count).as("RLS policy %s should exist", policyName).isGreaterThanOrEqualTo(1);
+    // Use parameterized set_config to avoid SQL injection
+    jdbc.queryForObject(
+        "SELECT set_config('search_path', ? || ', public', false)", String.class, proTenantSchema);
+    try {
+      for (String policyName : expectedPolicies) {
+        var count =
+            jdbc.queryForObject(
+                """
+                SELECT COUNT(*) FROM pg_policies WHERE policyname = ?
+                """,
+                Integer.class,
+                policyName);
+        assertThat(count).as("RLS policy %s should exist", policyName).isGreaterThanOrEqualTo(1);
+      }
+    } finally {
+      jdbc.queryForObject("SELECT set_config('search_path', 'public', false)", String.class);
     }
-    jdbc.execute("SET search_path TO public");
   }
 }

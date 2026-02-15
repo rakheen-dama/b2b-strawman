@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.FilterDef;
@@ -26,6 +27,9 @@ import org.hibernate.type.SqlTypes;
 @Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
 @EntityListeners(TenantAwareEntityListener.class)
 public class Customer implements TenantAware {
+
+  public static final Set<String> VALID_LIFECYCLE_STATUSES =
+      Set.of("PROSPECT", "ONBOARDING", "ACTIVE", "DORMANT", "OFFBOARDED");
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
@@ -196,9 +200,18 @@ public class Customer implements TenantAware {
 
   /**
    * Transitions the customer to a new lifecycle status, updating all lifecycle fields atomically.
+   *
+   * @throws IllegalArgumentException if the new status is not a valid lifecycle status
    */
   public void transitionLifecycle(
       String newStatus, UUID changedBy, Instant changedAt, Instant offboardedAt) {
+    if (!VALID_LIFECYCLE_STATUSES.contains(newStatus)) {
+      throw new IllegalArgumentException(
+          "Invalid lifecycle status: "
+              + newStatus
+              + ". Must be one of "
+              + VALID_LIFECYCLE_STATUSES);
+    }
     this.lifecycleStatus = newStatus;
     this.lifecycleStatusChangedAt = changedAt;
     this.lifecycleStatusChangedBy = changedBy;

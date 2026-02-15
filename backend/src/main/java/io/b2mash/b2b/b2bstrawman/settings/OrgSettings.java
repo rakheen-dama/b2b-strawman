@@ -203,6 +203,7 @@ public class OrgSettings implements TenantAware {
 
   public void setCompliancePackStatus(List<Map<String, Object>> compliancePackStatus) {
     this.compliancePackStatus = compliancePackStatus;
+    this.updatedAt = Instant.now();
   }
 
   /** Records a compliance pack application in the status list. */

@@ -13,7 +13,7 @@ Phase 12 adds a **document generation system** to DocTeams — professional, bra
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 93 | DocumentTemplate Entity Foundation | Backend | -- | L | 93A, 93B | **Done** (PRs #191, #192) |
-| 94 | Rendering Pipeline & Generation | Backend | 93 | L | 94A, 94B | |
+| 94 | Rendering Pipeline & Generation | Backend | 93 | L | 94A, 94B | **Done** (PRs #193, #195) |
 | 95 | Frontend — Template & Generation UI | Frontend | 93, 94 | L | 95A, 95B | |
 
 ## Dependency Graph
@@ -187,7 +187,7 @@ Stage 3:  [95A]  //  [95B]                         ← frontend (parallel)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **94A** | 94.1-94.12 | TemplateContextBuilder service with per-entity-type strategy (ProjectContextBuilder, CustomerContextBuilder, InvoiceContextBuilder), logo URL resolution, custom field flattening, default document CSS (classpath), CSS merging, PdfRenderingService (Thymeleaf + OpenHTMLToPDF), preview endpoint, unit tests for context assembly, integration tests for rendering (~15 tests) | **Done** (PR #193) |
-| **94B** | 94.13-94.24 | Extend GeneratedDocumentRepository, GeneratedDocumentService, generation endpoint (download/save-to-documents flows), S3 upload, Document entity creation, generated documents list/download/delete endpoints, filename generation, context snapshot JSONB, audit events (template.created/.updated/.deleted/.cloned, document.generated), notification (DOCUMENT_GENERATED event), integration tests (~12 tests) | |
+| **94B** | 94.13-94.24 | Extend GeneratedDocumentRepository, GeneratedDocumentService, generation endpoint (download/save-to-documents flows), S3 upload, Document entity creation, generated documents list/download/delete endpoints, filename generation, context snapshot JSONB, audit events (template.created/.updated/.deleted/.cloned, document.generated), notification (DOCUMENT_GENERATED event), integration tests (~12 tests) | **Done** (PR #195) |
 
 ### Tasks
 
@@ -205,18 +205,18 @@ Stage 3:  [95A]  //  [95B]                         ← frontend (parallel)
 | 94.10 | Add PdfRenderingService integration tests | 94A | **Done** | `template/PdfRenderingServiceTest.java` (~5 tests): valid PDF bytes, HTML preview content, logo image, CSS merging, filename format. |
 | 94.11 | Add preview endpoint integration test | 94A | **Done** | `template/TemplatePreviewControllerTest.java` (~5 tests): preview returns HTML 200, CSP sandbox header, 403 for member, 401 for unauth. |
 | 94.12 | Verify OpenHTMLToPDF rendering | 94A | **Done** | Smoke test: generate PDF with logo, verify CSS applied. |
-| 94.13 | Extend GeneratedDocumentRepository with full queries | 94B | | Add JPQL: findByTemplateIdOrderByGeneratedAtDesc, findByGeneratedByOrderByGeneratedAtDesc. |
-| 94.14 | Create GeneratedDocumentService | 94B | | `template/GeneratedDocumentService.java`. @Service. CRUD: create(), listByEntity(), getById(), delete() (admin/owner only). |
-| 94.15 | Add generation endpoint to DocumentTemplateController | 94B | | POST /api/templates/{id}/generate ({entityId, saveToDocuments}). Pipeline: render PDF → upload to S3 → build context snapshot → create GeneratedDocument → optionally create Document entity → publish DocumentGeneratedEvent → audit event → return PDF binary or 201 with metadata. |
-| 94.16 | Create GeneratedDocumentController | 94B | | `template/GeneratedDocumentController.java`. @RestController, @RequestMapping("/api/generated-documents"). GET list (?entityType, ?entityId), GET /{id}/download (stream PDF from S3), DELETE /{id} (admin/owner). DTO: GeneratedDocumentListResponse (id, templateName, primaryEntityType, primaryEntityId, fileName, fileSize, generatedByName, generatedAt, documentId). |
-| 94.17 | Add filename generation logic | 94B | | Method in PdfRenderingService: `generateFilename(slug, context)` → {slug}-{entity-name-slugified}-{yyyy-MM-dd}.pdf. |
-| 94.18 | Add DocumentGeneratedEvent domain event | 94B | | `event/DocumentGeneratedEvent.java` record. Implements DomainEvent. Fields: templateName, primaryEntityType, primaryEntityId, fileName, generatedDocumentId + standard DomainEvent fields. Pattern: follow InvoiceStatusChangedEvent. |
-| 94.19 | Add DocumentGeneratedEventHandler for notifications | 94B | | `notification/DocumentGeneratedEventHandler.java`. @Component. Creates notification for project lead (PROJECT-scoped) or admins (CUSTOMER/INVOICE). Type=DOCUMENT_GENERATED. Pattern: follow existing event handlers. |
-| 94.20 | Add audit events for template lifecycle | 94B | | Modify DocumentTemplateService: audit template.created, template.updated, template.deleted, template.cloned. Use AuditService.createAuditEvent(). |
-| 94.21 | Add audit event for document generation | 94B | | In generation endpoint: audit document.generated with details (template_name, entity_type, entity_id, file_name, file_size, save_to_documents). |
-| 94.22 | Add generation flow integration tests | 94B | | `template/DocumentGenerationIntegrationTest.java` (~8 tests): download flow, save-to-documents flow, S3 upload, context snapshot, filename, entity access check, no access 403, missing template 404. |
-| 94.23 | Add audit and notification integration tests | 94B | | `template/DocumentAuditNotificationTest.java` (~4 tests): template.created audit, template.cloned audit, document.generated audit, DOCUMENT_GENERATED notification for project lead. |
-| 94.24 | Add GeneratedDocumentController integration tests | 94B | | `template/GeneratedDocumentControllerTest.java` (~5 tests): GET list, GET download, DELETE (admin), member cannot delete 403, list includes templateName/generatedByName. |
+| 94.13 | Extend GeneratedDocumentRepository with full queries | 94B | **Done** | Add JPQL: findByTemplateIdOrderByGeneratedAtDesc, findByGeneratedByOrderByGeneratedAtDesc. |
+| 94.14 | Create GeneratedDocumentService | 94B | **Done** | `template/GeneratedDocumentService.java`. @Service. CRUD: create(), listByEntity(), getById(), delete() (admin/owner only). |
+| 94.15 | Add generation endpoint to DocumentTemplateController | 94B | **Done** | POST /api/templates/{id}/generate ({entityId, saveToDocuments}). Pipeline: render PDF → upload to S3 → build context snapshot → create GeneratedDocument → optionally create Document entity → publish DocumentGeneratedEvent → audit event → return PDF binary or 201 with metadata. |
+| 94.16 | Create GeneratedDocumentController | 94B | **Done** | `template/GeneratedDocumentController.java`. @RestController, @RequestMapping("/api/generated-documents"). GET list (?entityType, ?entityId), GET /{id}/download (stream PDF from S3), DELETE /{id} (admin/owner). DTO: GeneratedDocumentListResponse (id, templateName, primaryEntityType, primaryEntityId, fileName, fileSize, generatedByName, generatedAt, documentId). |
+| 94.17 | Add filename generation logic | 94B | **Done** | Method in PdfRenderingService: `generateFilename(slug, context)` → {slug}-{entity-name-slugified}-{yyyy-MM-dd}.pdf. |
+| 94.18 | Add DocumentGeneratedEvent domain event | 94B | **Done** | `event/DocumentGeneratedEvent.java` record. Implements DomainEvent. Fields: templateName, primaryEntityType, primaryEntityId, fileName, generatedDocumentId + standard DomainEvent fields. Pattern: follow InvoiceStatusChangedEvent. |
+| 94.19 | Add DocumentGeneratedEventHandler for notifications | 94B | **Done** | `notification/DocumentGeneratedEventHandler.java`. @Component. Creates notification for project lead (PROJECT-scoped) or admins (CUSTOMER/INVOICE). Type=DOCUMENT_GENERATED. Pattern: follow existing event handlers. |
+| 94.20 | Add audit events for template lifecycle | 94B | **Done** | Modify DocumentTemplateService: audit template.created, template.updated, template.deleted, template.cloned. Use AuditService.createAuditEvent(). |
+| 94.21 | Add audit event for document generation | 94B | **Done** | In generation endpoint: audit document.generated with details (template_name, entity_type, entity_id, file_name, file_size, save_to_documents). |
+| 94.22 | Add generation flow integration tests | 94B | **Done** | `template/DocumentGenerationIntegrationTest.java` (~8 tests): download flow, save-to-documents flow, S3 upload, context snapshot, filename, entity access check, no access 403, missing template 404. |
+| 94.23 | Add audit and notification integration tests | 94B | **Done** | `template/DocumentAuditNotificationTest.java` (~4 tests): template.created audit, template.cloned audit, document.generated audit, DOCUMENT_GENERATED notification for project lead. |
+| 94.24 | Add GeneratedDocumentController integration tests | 94B | **Done** | `template/GeneratedDocumentControllerTest.java` (~5 tests): GET list, GET download, DELETE (admin), member cannot delete 403, list includes templateName/generatedByName. |
 
 ### Key Files
 

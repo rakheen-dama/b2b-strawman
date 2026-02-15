@@ -3,6 +3,8 @@ package io.b2mash.b2b.b2bstrawman.project;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -10,6 +12,10 @@ import static org.mockito.Mockito.when;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldValidator;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMemberRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccess;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
@@ -34,6 +40,10 @@ class ProjectServiceTest {
   @Mock private ProjectAccessService projectAccessService;
   @Mock private AuditService auditService;
   @Mock private ApplicationEventPublisher eventPublisher;
+  @Mock private CustomFieldValidator customFieldValidator;
+  @Mock private FieldGroupRepository fieldGroupRepository;
+  @Mock private FieldGroupMemberRepository fieldGroupMemberRepository;
+  @Mock private FieldDefinitionRepository fieldDefinitionRepository;
   @InjectMocks private ProjectService service;
 
   @Test
@@ -104,13 +114,15 @@ class ProjectServiceTest {
     when(repository.save(any(Project.class))).thenReturn(project);
     when(projectMemberRepository.save(any(ProjectMember.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
+    when(customFieldValidator.validate(any(), anyMap(), any()))
+        .thenReturn(java.util.HashMap.newHashMap(0));
 
     var result = service.createProject("New", "Description", MEMBER_ID);
 
     assertThat(result.getName()).isEqualTo("New");
     assertThat(result.getDescription()).isEqualTo("Description");
     assertThat(result.getCreatedBy()).isEqualTo(MEMBER_ID);
-    verify(repository).save(any(Project.class));
+    verify(repository, atLeast(1)).save(any(Project.class));
     verify(projectMemberRepository).save(any(ProjectMember.class));
   }
 

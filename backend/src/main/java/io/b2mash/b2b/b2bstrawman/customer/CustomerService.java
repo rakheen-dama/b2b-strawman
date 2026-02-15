@@ -4,9 +4,18 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerUpdatedEvent;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldValidator;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMemberRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,14 +35,26 @@ public class CustomerService {
   private final CustomerRepository repository;
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
+  private final CustomFieldValidator customFieldValidator;
+  private final FieldGroupRepository fieldGroupRepository;
+  private final FieldGroupMemberRepository fieldGroupMemberRepository;
+  private final FieldDefinitionRepository fieldDefinitionRepository;
 
   public CustomerService(
       CustomerRepository repository,
       AuditService auditService,
-      ApplicationEventPublisher eventPublisher) {
+      ApplicationEventPublisher eventPublisher,
+      CustomFieldValidator customFieldValidator,
+      FieldGroupRepository fieldGroupRepository,
+      FieldGroupMemberRepository fieldGroupMemberRepository,
+      FieldDefinitionRepository fieldDefinitionRepository) {
     this.repository = repository;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
+    this.customFieldValidator = customFieldValidator;
+    this.fieldGroupRepository = fieldGroupRepository;
+    this.fieldGroupMemberRepository = fieldGroupMemberRepository;
+    this.fieldDefinitionRepository = fieldDefinitionRepository;
   }
 
   @Transactional(readOnly = true)
@@ -51,11 +72,37 @@ public class CustomerService {
   @Transactional
   public Customer createCustomer(
       String name, String email, String phone, String idNumber, String notes, UUID createdBy) {
+    return createCustomer(name, email, phone, idNumber, notes, createdBy, null, null);
+  }
+
+  @Transactional
+  public Customer createCustomer(
+      String name,
+      String email,
+      String phone,
+      String idNumber,
+      String notes,
+      UUID createdBy,
+      Map<String, Object> customFields,
+      List<UUID> appliedFieldGroups) {
     if (repository.existsByEmail(email)) {
       throw new ResourceConflictException(
           "Customer email conflict", "A customer with email " + email + " already exists");
     }
-    var customer = repository.save(new Customer(name, email, phone, idNumber, notes, createdBy));
+
+    // Validate custom fields
+    Map<String, Object> validatedFields =
+        customFieldValidator.validate(
+            EntityType.CUSTOMER,
+            customFields != null ? customFields : new HashMap<>(),
+            appliedFieldGroups);
+
+    var customer = new Customer(name, email, phone, idNumber, notes, createdBy);
+    customer.setCustomFields(validatedFields);
+    if (appliedFieldGroups != null) {
+      customer.setAppliedFieldGroups(appliedFieldGroups);
+    }
+    customer = repository.save(customer);
     log.info("Created customer {} with email {}", customer.getId(), email);
 
     auditService.log(
@@ -78,6 +125,19 @@ public class CustomerService {
   @Transactional
   public Customer updateCustomer(
       UUID id, String name, String email, String phone, String idNumber, String notes) {
+    return updateCustomer(id, name, email, phone, idNumber, notes, null, null);
+  }
+
+  @Transactional
+  public Customer updateCustomer(
+      UUID id,
+      String name,
+      String email,
+      String phone,
+      String idNumber,
+      String notes,
+      Map<String, Object> customFields,
+      List<UUID> appliedFieldGroups) {
     var customer =
         repository.findOneById(id).orElseThrow(() -> new ResourceNotFoundException("Customer", id));
 
@@ -85,6 +145,19 @@ public class CustomerService {
     if (!customer.getEmail().equals(email) && repository.existsByEmail(email)) {
       throw new ResourceConflictException(
           "Customer email conflict", "A customer with email " + email + " already exists");
+    }
+
+    // Validate and set custom fields
+    if (customFields != null) {
+      Map<String, Object> validatedFields =
+          customFieldValidator.validate(
+              EntityType.CUSTOMER,
+              customFields,
+              appliedFieldGroups != null ? appliedFieldGroups : customer.getAppliedFieldGroups());
+      customer.setCustomFields(validatedFields);
+    }
+    if (appliedFieldGroups != null) {
+      customer.setAppliedFieldGroups(appliedFieldGroups);
     }
 
     // Capture old values before mutation
@@ -131,6 +204,44 @@ public class CustomerService {
             saved.getId(), saved.getName(), saved.getEmail(), saved.getStatus(), orgId, tenantId));
 
     return saved;
+  }
+
+  @Transactional
+  public List<FieldDefinitionResponse> setFieldGroups(UUID id, List<UUID> appliedFieldGroups) {
+    var customer =
+        repository.findOneById(id).orElseThrow(() -> new ResourceNotFoundException("Customer", id));
+
+    // Validate all field groups exist and match entity type
+    for (UUID groupId : appliedFieldGroups) {
+      var group =
+          fieldGroupRepository
+              .findOneById(groupId)
+              .orElseThrow(() -> new ResourceNotFoundException("FieldGroup", groupId));
+      if (group.getEntityType() != EntityType.CUSTOMER) {
+        throw new InvalidStateException(
+            "Invalid field group", "Field group " + groupId + " is not for entity type CUSTOMER");
+      }
+    }
+
+    customer.setAppliedFieldGroups(appliedFieldGroups);
+    repository.save(customer);
+
+    // Collect field definition IDs from applied groups
+    var fieldDefIds = new ArrayList<UUID>();
+    for (UUID groupId : appliedFieldGroups) {
+      var members = fieldGroupMemberRepository.findByFieldGroupIdOrderBySortOrder(groupId);
+      for (var member : members) {
+        fieldDefIds.add(member.getFieldDefinitionId());
+      }
+    }
+
+    return fieldDefIds.stream()
+        .distinct()
+        .map(fdId -> fieldDefinitionRepository.findOneById(fdId))
+        .filter(java.util.Optional::isPresent)
+        .map(java.util.Optional::get)
+        .map(FieldDefinitionResponse::from)
+        .toList();
   }
 
   @Transactional

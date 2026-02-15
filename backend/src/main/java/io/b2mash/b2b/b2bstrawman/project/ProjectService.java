@@ -5,11 +5,19 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectUpdatedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldValidator;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMemberRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,18 +39,30 @@ public class ProjectService {
   private final ProjectAccessService projectAccessService;
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
+  private final CustomFieldValidator customFieldValidator;
+  private final FieldGroupRepository fieldGroupRepository;
+  private final FieldGroupMemberRepository fieldGroupMemberRepository;
+  private final FieldDefinitionRepository fieldDefinitionRepository;
 
   public ProjectService(
       ProjectRepository repository,
       ProjectMemberRepository projectMemberRepository,
       ProjectAccessService projectAccessService,
       AuditService auditService,
-      ApplicationEventPublisher eventPublisher) {
+      ApplicationEventPublisher eventPublisher,
+      CustomFieldValidator customFieldValidator,
+      FieldGroupRepository fieldGroupRepository,
+      FieldGroupMemberRepository fieldGroupMemberRepository,
+      FieldDefinitionRepository fieldDefinitionRepository) {
     this.repository = repository;
     this.projectMemberRepository = projectMemberRepository;
     this.projectAccessService = projectAccessService;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
+    this.customFieldValidator = customFieldValidator;
+    this.fieldGroupRepository = fieldGroupRepository;
+    this.fieldGroupMemberRepository = fieldGroupMemberRepository;
+    this.fieldDefinitionRepository = fieldDefinitionRepository;
   }
 
   @Transactional(readOnly = true)
@@ -63,7 +83,30 @@ public class ProjectService {
 
   @Transactional
   public Project createProject(String name, String description, UUID createdBy) {
+    return createProject(name, description, createdBy, null, null);
+  }
+
+  @Transactional
+  public Project createProject(
+      String name,
+      String description,
+      UUID createdBy,
+      Map<String, Object> customFields,
+      List<UUID> appliedFieldGroups) {
+    // Validate custom fields
+    Map<String, Object> validatedFields =
+        customFieldValidator.validate(
+            EntityType.PROJECT,
+            customFields != null ? customFields : new HashMap<>(),
+            appliedFieldGroups);
+
     var project = repository.save(new Project(name, description, createdBy));
+    project.setCustomFields(validatedFields);
+    if (appliedFieldGroups != null) {
+      project.setAppliedFieldGroups(appliedFieldGroups);
+    }
+    project = repository.save(project);
+
     var lead = new ProjectMember(project.getId(), createdBy, Roles.PROJECT_LEAD, null);
     projectMemberRepository.save(lead);
     log.info("Created project {} with lead member {}", project.getId(), createdBy);
@@ -88,6 +131,18 @@ public class ProjectService {
   @Transactional
   public ProjectWithRole updateProject(
       UUID id, String name, String description, UUID memberId, String orgRole) {
+    return updateProject(id, name, description, memberId, orgRole, null, null);
+  }
+
+  @Transactional
+  public ProjectWithRole updateProject(
+      UUID id,
+      String name,
+      String description,
+      UUID memberId,
+      String orgRole,
+      Map<String, Object> customFields,
+      List<UUID> appliedFieldGroups) {
     var project =
         repository.findOneById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
     var access = projectAccessService.requireEditAccess(id, memberId, orgRole);
@@ -95,6 +150,19 @@ public class ProjectService {
     // Capture old values before mutation
     String oldName = project.getName();
     String oldDescription = project.getDescription();
+
+    // Validate and set custom fields
+    if (customFields != null) {
+      Map<String, Object> validatedFields =
+          customFieldValidator.validate(
+              EntityType.PROJECT,
+              customFields,
+              appliedFieldGroups != null ? appliedFieldGroups : project.getAppliedFieldGroups());
+      project.setCustomFields(validatedFields);
+    }
+    if (appliedFieldGroups != null) {
+      project.setAppliedFieldGroups(appliedFieldGroups);
+    }
 
     project.update(name, description);
     project = repository.save(project);
@@ -127,6 +195,47 @@ public class ProjectService {
             project.getId(), project.getName(), project.getDescription(), null, orgId, tenantId));
 
     return new ProjectWithRole(project, access.projectRole());
+  }
+
+  @Transactional
+  public List<FieldDefinitionResponse> setFieldGroups(
+      UUID id, List<UUID> appliedFieldGroups, UUID memberId, String orgRole) {
+    var project =
+        repository.findOneById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
+    projectAccessService.requireEditAccess(id, memberId, orgRole);
+
+    // Validate all field groups exist and match entity type
+    for (UUID groupId : appliedFieldGroups) {
+      var group =
+          fieldGroupRepository
+              .findOneById(groupId)
+              .orElseThrow(() -> new ResourceNotFoundException("FieldGroup", groupId));
+      if (group.getEntityType() != EntityType.PROJECT) {
+        throw new io.b2mash.b2b.b2bstrawman.exception.InvalidStateException(
+            "Invalid field group", "Field group " + groupId + " is not for entity type PROJECT");
+      }
+    }
+
+    project.setAppliedFieldGroups(appliedFieldGroups);
+    repository.save(project);
+
+    // Collect field definition IDs from applied groups
+    var fieldDefIds = new ArrayList<UUID>();
+    for (UUID groupId : appliedFieldGroups) {
+      var members = fieldGroupMemberRepository.findByFieldGroupIdOrderBySortOrder(groupId);
+      for (var member : members) {
+        fieldDefIds.add(member.getFieldDefinitionId());
+      }
+    }
+
+    // Load and return field definitions
+    return fieldDefIds.stream()
+        .distinct()
+        .map(fdId -> fieldDefinitionRepository.findOneById(fdId))
+        .filter(java.util.Optional::isPresent)
+        .map(java.util.Optional::get)
+        .map(FieldDefinitionResponse::from)
+        .toList();
   }
 
   @Transactional

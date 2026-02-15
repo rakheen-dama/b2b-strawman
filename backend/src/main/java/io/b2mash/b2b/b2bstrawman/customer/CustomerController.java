@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.customer;
 
+import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceService;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledTimeResponse;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -11,7 +13,9 @@ import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -45,8 +49,19 @@ public class CustomerController {
 
   @GetMapping
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
-  public ResponseEntity<List<CustomerResponse>> listCustomers() {
+  public ResponseEntity<List<CustomerResponse>> listCustomers(
+      @RequestParam(required = false) Map<String, String> allParams) {
     var customers = customerService.listCustomers().stream().map(CustomerResponse::from).toList();
+
+    // Apply custom field filtering if present
+    Map<String, String> customFieldFilters = extractCustomFieldFilters(allParams);
+    if (!customFieldFilters.isEmpty()) {
+      customers =
+          customers.stream()
+              .filter(c -> matchesCustomFieldFilters(c.customFields(), customFieldFilters))
+              .toList();
+    }
+
     return ResponseEntity.ok(customers);
   }
 
@@ -69,7 +84,9 @@ public class CustomerController {
             request.phone(),
             request.idNumber(),
             request.notes(),
-            createdBy);
+            createdBy,
+            request.customFields(),
+            request.appliedFieldGroups());
     return ResponseEntity.created(URI.create("/api/customers/" + customer.getId()))
         .body(CustomerResponse.from(customer));
   }
@@ -85,7 +102,9 @@ public class CustomerController {
             request.email(),
             request.phone(),
             request.idNumber(),
-            request.notes());
+            request.notes(),
+            request.customFields(),
+            request.appliedFieldGroups());
     return ResponseEntity.ok(CustomerResponse.from(customer));
   }
 
@@ -140,6 +159,42 @@ public class CustomerController {
     return ResponseEntity.ok(invoiceService.getUnbilledTime(id, from, to));
   }
 
+  @PutMapping("/{id}/field-groups")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<List<FieldDefinitionResponse>> setFieldGroups(
+      @PathVariable UUID id, @Valid @RequestBody SetFieldGroupsRequest request) {
+    var fieldDefs = customerService.setFieldGroups(id, request.appliedFieldGroups());
+    return ResponseEntity.ok(fieldDefs);
+  }
+
+  private Map<String, String> extractCustomFieldFilters(Map<String, String> allParams) {
+    var filters = new HashMap<String, String>();
+    if (allParams != null) {
+      allParams.forEach(
+          (key, value) -> {
+            if (key.startsWith("customField[") && key.endsWith("]")) {
+              String slug = key.substring("customField[".length(), key.length() - 1);
+              filters.put(slug, value);
+            }
+          });
+    }
+    return filters;
+  }
+
+  private boolean matchesCustomFieldFilters(
+      Map<String, Object> customFields, Map<String, String> filters) {
+    if (customFields == null) {
+      return filters.isEmpty();
+    }
+    for (var entry : filters.entrySet()) {
+      Object fieldValue = customFields.get(entry.getKey());
+      if (fieldValue == null || !fieldValue.toString().equals(entry.getValue())) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   // --- DTOs ---
 
   public record CreateCustomerRequest(
@@ -152,7 +207,9 @@ public class CustomerController {
           String email,
       @Size(max = 50, message = "phone must be at most 50 characters") String phone,
       @Size(max = 100, message = "idNumber must be at most 100 characters") String idNumber,
-      String notes) {}
+      String notes,
+      Map<String, Object> customFields,
+      List<UUID> appliedFieldGroups) {}
 
   public record UpdateCustomerRequest(
       @NotBlank(message = "name is required")
@@ -164,7 +221,9 @@ public class CustomerController {
           String email,
       @Size(max = 50, message = "phone must be at most 50 characters") String phone,
       @Size(max = 100, message = "idNumber must be at most 100 characters") String idNumber,
-      String notes) {}
+      String notes,
+      Map<String, Object> customFields,
+      List<UUID> appliedFieldGroups) {}
 
   public record CustomerResponse(
       UUID id,
@@ -176,7 +235,9 @@ public class CustomerController {
       String notes,
       UUID createdBy,
       Instant createdAt,
-      Instant updatedAt) {
+      Instant updatedAt,
+      Map<String, Object> customFields,
+      List<UUID> appliedFieldGroups) {
 
     public static CustomerResponse from(Customer customer) {
       return new CustomerResponse(
@@ -189,7 +250,9 @@ public class CustomerController {
           customer.getNotes(),
           customer.getCreatedBy(),
           customer.getCreatedAt(),
-          customer.getUpdatedAt());
+          customer.getUpdatedAt(),
+          customer.getCustomFields(),
+          customer.getAppliedFieldGroups());
     }
   }
 

@@ -8,12 +8,20 @@ import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldValidator;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMemberRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +44,10 @@ public class TaskService {
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
   private final MemberRepository memberRepository;
+  private final CustomFieldValidator customFieldValidator;
+  private final FieldGroupRepository fieldGroupRepository;
+  private final FieldGroupMemberRepository fieldGroupMemberRepository;
+  private final FieldDefinitionRepository fieldDefinitionRepository;
 
   public TaskService(
       TaskRepository taskRepository,
@@ -43,13 +55,21 @@ public class TaskService {
       ProjectMemberRepository projectMemberRepository,
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
-      MemberRepository memberRepository) {
+      MemberRepository memberRepository,
+      CustomFieldValidator customFieldValidator,
+      FieldGroupRepository fieldGroupRepository,
+      FieldGroupMemberRepository fieldGroupMemberRepository,
+      FieldDefinitionRepository fieldDefinitionRepository) {
     this.taskRepository = taskRepository;
     this.projectAccessService = projectAccessService;
     this.projectMemberRepository = projectMemberRepository;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
     this.memberRepository = memberRepository;
+    this.customFieldValidator = customFieldValidator;
+    this.fieldGroupRepository = fieldGroupRepository;
+    this.fieldGroupMemberRepository = fieldGroupMemberRepository;
+    this.fieldDefinitionRepository = fieldDefinitionRepository;
   }
 
   @Transactional(readOnly = true)
@@ -91,10 +111,37 @@ public class TaskService {
       LocalDate dueDate,
       UUID createdBy,
       String orgRole) {
+    return createTask(
+        projectId, title, description, priority, type, dueDate, createdBy, orgRole, null, null);
+  }
+
+  @Transactional
+  public Task createTask(
+      UUID projectId,
+      String title,
+      String description,
+      String priority,
+      String type,
+      LocalDate dueDate,
+      UUID createdBy,
+      String orgRole,
+      Map<String, Object> customFields,
+      List<UUID> appliedFieldGroups) {
     // Any project member can create tasks; view access is sufficient
     projectAccessService.requireViewAccess(projectId, createdBy, orgRole);
 
+    // Validate custom fields
+    Map<String, Object> validatedFields =
+        customFieldValidator.validate(
+            EntityType.TASK,
+            customFields != null ? customFields : new HashMap<>(),
+            appliedFieldGroups);
+
     var task = new Task(projectId, title, description, priority, type, dueDate, createdBy);
+    task.setCustomFields(validatedFields);
+    if (appliedFieldGroups != null) {
+      task.setAppliedFieldGroups(appliedFieldGroups);
+    }
     task = taskRepository.save(task);
     log.info("Created task {} in project {}", task.getId(), projectId);
 
@@ -121,6 +168,35 @@ public class TaskService {
       UUID assigneeId,
       UUID memberId,
       String orgRole) {
+    return updateTask(
+        taskId,
+        title,
+        description,
+        priority,
+        status,
+        type,
+        dueDate,
+        assigneeId,
+        memberId,
+        orgRole,
+        null,
+        null);
+  }
+
+  @Transactional
+  public Task updateTask(
+      UUID taskId,
+      String title,
+      String description,
+      String priority,
+      String status,
+      String type,
+      LocalDate dueDate,
+      UUID assigneeId,
+      UUID memberId,
+      String orgRole,
+      Map<String, Object> customFields,
+      List<UUID> appliedFieldGroups) {
     var task =
         taskRepository
             .findOneById(taskId)
@@ -137,6 +213,19 @@ public class TaskService {
     if (assigneeId != null
         && !projectMemberRepository.existsByProjectIdAndMemberId(task.getProjectId(), assigneeId)) {
       throw new ResourceNotFoundException("ProjectMember", assigneeId);
+    }
+
+    // Validate and set custom fields
+    if (customFields != null) {
+      Map<String, Object> validatedFields =
+          customFieldValidator.validate(
+              EntityType.TASK,
+              customFields,
+              appliedFieldGroups != null ? appliedFieldGroups : task.getAppliedFieldGroups());
+      task.setCustomFields(validatedFields);
+    }
+    if (appliedFieldGroups != null) {
+      task.setAppliedFieldGroups(appliedFieldGroups);
     }
 
     // Capture old values before mutation
@@ -256,6 +345,53 @@ public class TaskService {
     }
 
     return task;
+  }
+
+  @Transactional
+  public List<FieldDefinitionResponse> setFieldGroups(
+      UUID taskId, List<UUID> appliedFieldGroups, UUID memberId, String orgRole) {
+    var task =
+        taskRepository
+            .findOneById(taskId)
+            .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
+    var access = projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
+
+    if (!access.canEdit() && !memberId.equals(task.getAssigneeId())) {
+      throw new ForbiddenException(
+          "Cannot update task", "You do not have permission to update task " + taskId);
+    }
+
+    // Validate all field groups exist and match entity type
+    for (UUID groupId : appliedFieldGroups) {
+      var group =
+          fieldGroupRepository
+              .findOneById(groupId)
+              .orElseThrow(() -> new ResourceNotFoundException("FieldGroup", groupId));
+      if (group.getEntityType() != EntityType.TASK) {
+        throw new InvalidStateException(
+            "Invalid field group", "Field group " + groupId + " is not for entity type TASK");
+      }
+    }
+
+    task.setAppliedFieldGroups(appliedFieldGroups);
+    taskRepository.save(task);
+
+    // Collect field definition IDs from applied groups
+    var fieldDefIds = new ArrayList<UUID>();
+    for (UUID groupId : appliedFieldGroups) {
+      var members = fieldGroupMemberRepository.findByFieldGroupIdOrderBySortOrder(groupId);
+      for (var member : members) {
+        fieldDefIds.add(member.getFieldDefinitionId());
+      }
+    }
+
+    return fieldDefIds.stream()
+        .distinct()
+        .map(fdId -> fieldDefinitionRepository.findOneById(fdId))
+        .filter(java.util.Optional::isPresent)
+        .map(java.util.Optional::get)
+        .map(FieldDefinitionResponse::from)
+        .toList();
   }
 
   @Transactional

@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.task;
 
+import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -9,6 +11,7 @@ import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -53,7 +56,9 @@ public class TaskController {
             request.type(),
             request.dueDate(),
             createdBy,
-            orgRole);
+            orgRole,
+            request.customFields(),
+            request.appliedFieldGroups());
 
     var names = resolveNames(List.of(task));
     return ResponseEntity.created(URI.create("/api/tasks/" + task.getId()))
@@ -67,7 +72,8 @@ public class TaskController {
       @RequestParam(required = false) String status,
       @RequestParam(required = false) UUID assigneeId,
       @RequestParam(required = false) String priority,
-      @RequestParam(required = false) String assigneeFilter) {
+      @RequestParam(required = false) String assigneeFilter,
+      @RequestParam(required = false) Map<String, String> allParams) {
     UUID memberId = RequestScopes.requireMemberId();
     String orgRole = RequestScopes.getOrgRole();
 
@@ -76,6 +82,15 @@ public class TaskController {
             projectId, memberId, orgRole, status, assigneeId, priority, assigneeFilter);
     var names = resolveNames(taskEntities);
     var tasks = taskEntities.stream().map(t -> TaskResponse.from(t, names)).toList();
+
+    // Apply custom field filtering if present
+    Map<String, String> customFieldFilters = extractCustomFieldFilters(allParams);
+    if (!customFieldFilters.isEmpty()) {
+      tasks =
+          tasks.stream()
+              .filter(t -> matchesCustomFieldFilters(t.customFields(), customFieldFilters))
+              .toList();
+    }
 
     return ResponseEntity.ok(tasks);
   }
@@ -109,7 +124,9 @@ public class TaskController {
             request.dueDate(),
             request.assigneeId(),
             memberId,
-            orgRole);
+            orgRole,
+            request.customFields(),
+            request.appliedFieldGroups());
 
     var names = resolveNames(List.of(task));
     return ResponseEntity.ok(TaskResponse.from(task, names));
@@ -147,6 +164,16 @@ public class TaskController {
     return ResponseEntity.ok(TaskResponse.from(task, names));
   }
 
+  @PutMapping("/api/tasks/{id}/field-groups")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<List<FieldDefinitionResponse>> setFieldGroups(
+      @PathVariable UUID id, @Valid @RequestBody SetFieldGroupsRequest request) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+    var fieldDefs = taskService.setFieldGroups(id, request.appliedFieldGroups(), memberId, orgRole);
+    return ResponseEntity.ok(fieldDefs);
+  }
+
   /**
    * Batch-loads member names for all assignee and createdBy IDs referenced by the given tasks.
    * Returns a map of member UUID to display name.
@@ -167,6 +194,34 @@ public class TaskController {
         .collect(Collectors.toMap(Member::getId, Member::getName, (a, b) -> a));
   }
 
+  private Map<String, String> extractCustomFieldFilters(Map<String, String> allParams) {
+    var filters = new HashMap<String, String>();
+    if (allParams != null) {
+      allParams.forEach(
+          (key, value) -> {
+            if (key.startsWith("customField[") && key.endsWith("]")) {
+              String slug = key.substring("customField[".length(), key.length() - 1);
+              filters.put(slug, value);
+            }
+          });
+    }
+    return filters;
+  }
+
+  private boolean matchesCustomFieldFilters(
+      Map<String, Object> customFields, Map<String, String> filters) {
+    if (customFields == null) {
+      return filters.isEmpty();
+    }
+    for (var entry : filters.entrySet()) {
+      Object fieldValue = customFields.get(entry.getKey());
+      if (fieldValue == null || !fieldValue.toString().equals(entry.getValue())) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   // --- DTOs ---
 
   public record CreateTaskRequest(
@@ -176,7 +231,9 @@ public class TaskController {
       String description,
       @Size(max = 20, message = "priority must be at most 20 characters") String priority,
       @Size(max = 100, message = "type must be at most 100 characters") String type,
-      LocalDate dueDate) {}
+      LocalDate dueDate,
+      Map<String, Object> customFields,
+      List<UUID> appliedFieldGroups) {}
 
   public record UpdateTaskRequest(
       @NotBlank(message = "title is required")
@@ -191,7 +248,9 @@ public class TaskController {
           String status,
       @Size(max = 100, message = "type must be at most 100 characters") String type,
       LocalDate dueDate,
-      UUID assigneeId) {}
+      UUID assigneeId,
+      Map<String, Object> customFields,
+      List<UUID> appliedFieldGroups) {}
 
   public record TaskResponse(
       UUID id,
@@ -208,7 +267,9 @@ public class TaskController {
       LocalDate dueDate,
       int version,
       Instant createdAt,
-      Instant updatedAt) {
+      Instant updatedAt,
+      Map<String, Object> customFields,
+      List<UUID> appliedFieldGroups) {
 
     public static TaskResponse from(Task task, Map<UUID, String> memberNames) {
       return new TaskResponse(
@@ -226,7 +287,9 @@ public class TaskController {
           task.getDueDate(),
           task.getVersion(),
           task.getCreatedAt(),
-          task.getUpdatedAt());
+          task.getUpdatedAt(),
+          task.getCustomFields(),
+          task.getAppliedFieldGroups());
     }
   }
 }

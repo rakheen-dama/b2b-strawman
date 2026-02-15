@@ -12,10 +12,15 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.ParamDef;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "tasks")
@@ -67,6 +72,14 @@ public class Task implements TenantAware {
 
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
+
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "custom_fields", columnDefinition = "jsonb")
+  private Map<String, Object> customFields = new HashMap<>();
+
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "applied_field_groups", columnDefinition = "jsonb")
+  private List<UUID> appliedFieldGroups;
 
   protected Task() {}
 
@@ -182,5 +195,23 @@ public class Task implements TenantAware {
 
   public Instant getUpdatedAt() {
     return updatedAt;
+  }
+
+  public Map<String, Object> getCustomFields() {
+    return customFields;
+  }
+
+  public void setCustomFields(Map<String, Object> customFields) {
+    this.customFields = customFields;
+    this.updatedAt = Instant.now();
+  }
+
+  public List<UUID> getAppliedFieldGroups() {
+    return appliedFieldGroups;
+  }
+
+  public void setAppliedFieldGroups(List<UUID> appliedFieldGroups) {
+    this.appliedFieldGroups = appliedFieldGroups;
+    this.updatedAt = Instant.now();
   }
 }

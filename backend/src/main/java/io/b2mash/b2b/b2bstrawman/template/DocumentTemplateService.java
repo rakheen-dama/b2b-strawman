@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.template;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.CreateTemplateRequest;
@@ -158,6 +159,109 @@ public class DocumentTemplateService {
             .entityType("document_template")
             .entityId(dt.getId())
             .details(Map.of("slug", dt.getSlug()))
+            .build());
+  }
+
+  /**
+   * Clones a PLATFORM template as an ORG_CUSTOM copy. The clone shares the same packId and
+   * packTemplateKey but has source=ORG_CUSTOM and sourceTemplateId pointing to the original.
+   *
+   * @throws ResourceNotFoundException if the template does not exist
+   * @throws InvalidStateException if the template is not a PLATFORM template
+   * @throws ResourceConflictException if an ORG_CUSTOM clone already exists for the same
+   *     pack_template_key
+   */
+  @Transactional
+  public TemplateDetailResponse cloneTemplate(UUID templateId) {
+    var original =
+        documentTemplateRepository
+            .findOneById(templateId)
+            .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", templateId));
+
+    if (original.getSource() != TemplateSource.PLATFORM) {
+      throw new InvalidStateException(
+          "Invalid clone source", "Only PLATFORM templates can be cloned");
+    }
+
+    // Check for existing clone with same pack_template_key
+    if (original.getPackTemplateKey() != null) {
+      var existing =
+          documentTemplateRepository.findByPackTemplateKey(original.getPackTemplateKey()).stream()
+              .filter(t -> t.getSource() == TemplateSource.ORG_CUSTOM)
+              .findFirst();
+      if (existing.isPresent()) {
+        throw new ResourceConflictException(
+            "Clone exists", "An ORG_CUSTOM clone of this template already exists");
+      }
+    }
+
+    // Create clone
+    String cloneSlug = resolveUniqueSlug(original.getSlug() + "-custom");
+    var clone =
+        new DocumentTemplate(
+            original.getPrimaryEntityType(),
+            original.getName() + " (Custom)",
+            cloneSlug,
+            original.getCategory(),
+            original.getContent());
+    clone.setDescription(original.getDescription());
+    clone.setCss(original.getCss());
+    clone.setSourceTemplateId(original.getId());
+    clone.setPackId(original.getPackId());
+    clone.setPackTemplateKey(original.getPackTemplateKey());
+    clone.setSortOrder(original.getSortOrder());
+    // source defaults to ORG_CUSTOM from constructor
+
+    clone = documentTemplateRepository.save(clone);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("template.cloned")
+            .entityType("document_template")
+            .entityId(clone.getId())
+            .details(
+                Map.of(
+                    "original_id", original.getId().toString(),
+                    "original_name", original.getName()))
+            .build());
+
+    log.info("Cloned template: original={}, clone={}", original.getId(), clone.getId());
+    return TemplateDetailResponse.from(clone);
+  }
+
+  /**
+   * Resets an ORG_CUSTOM clone by hard-deleting it, leaving only the original PLATFORM template.
+   *
+   * @throws ResourceNotFoundException if the template does not exist
+   * @throws InvalidStateException if the template is not ORG_CUSTOM or has no sourceTemplateId
+   */
+  @Transactional
+  public void resetToDefault(UUID cloneId) {
+    var clone =
+        documentTemplateRepository
+            .findOneById(cloneId)
+            .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", cloneId));
+
+    if (clone.getSource() != TemplateSource.ORG_CUSTOM) {
+      throw new InvalidStateException(
+          "Invalid reset target", "Only ORG_CUSTOM templates can be reset");
+    }
+
+    if (clone.getSourceTemplateId() == null) {
+      throw new InvalidStateException(
+          "Not a clone", "This template was not cloned from a PLATFORM template");
+    }
+
+    documentTemplateRepository.delete(clone);
+
+    log.info("Reset template: deleted clone {}", cloneId);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("template.reset")
+            .entityType("document_template")
+            .entityId(cloneId)
+            .details(Map.of("source_template_id", clone.getSourceTemplateId().toString()))
             .build());
   }
 

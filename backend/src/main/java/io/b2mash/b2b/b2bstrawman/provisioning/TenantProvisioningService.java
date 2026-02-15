@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.billing.SubscriptionService;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldPackSeeder;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.template.TemplatePackSeeder;
 import java.sql.SQLException;
 import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
@@ -25,18 +26,21 @@ public class TenantProvisioningService {
   private final DataSource migrationDataSource;
   private final SubscriptionService subscriptionService;
   private final FieldPackSeeder fieldPackSeeder;
+  private final TemplatePackSeeder templatePackSeeder;
 
   public TenantProvisioningService(
       OrganizationRepository organizationRepository,
       OrgSchemaMappingRepository mappingRepository,
       @Qualifier("migrationDataSource") DataSource migrationDataSource,
       SubscriptionService subscriptionService,
-      FieldPackSeeder fieldPackSeeder) {
+      FieldPackSeeder fieldPackSeeder,
+      TemplatePackSeeder templatePackSeeder) {
     this.organizationRepository = organizationRepository;
     this.mappingRepository = mappingRepository;
     this.migrationDataSource = migrationDataSource;
     this.subscriptionService = subscriptionService;
     this.fieldPackSeeder = fieldPackSeeder;
+    this.templatePackSeeder = templatePackSeeder;
   }
 
   @Retryable(
@@ -85,6 +89,7 @@ public class TenantProvisioningService {
 
     createMapping(clerkOrgId, SHARED_SCHEMA);
     fieldPackSeeder.seedPacksForTenant(SHARED_SCHEMA, clerkOrgId);
+    templatePackSeeder.seedPacksForTenant(SHARED_SCHEMA, clerkOrgId);
     subscriptionService.createSubscription(org.getId(), "starter");
 
     org.markCompleted();
@@ -105,6 +110,7 @@ public class TenantProvisioningService {
     createSchema(schemaName);
     runTenantMigrations(schemaName);
     fieldPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+    templatePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
     createMapping(clerkOrgId, schemaName);
     String planSlug = org.getPlanSlug() != null ? org.getPlanSlug() : "starter";
     subscriptionService.createSubscription(org.getId(), planSlug);

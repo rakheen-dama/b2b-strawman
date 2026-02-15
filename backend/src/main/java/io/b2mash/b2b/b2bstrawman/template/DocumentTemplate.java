@@ -251,4 +251,8 @@ public class DocumentTemplate implements TenantAware {
   public void setSourceTemplateId(UUID sourceTemplateId) {
     this.sourceTemplateId = sourceTemplateId;
   }
+
+  public void setSource(TemplateSource source) {
+    this.source = source;
+  }
 }

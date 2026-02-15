@@ -73,6 +73,20 @@ public class DocumentTemplateController {
     return ResponseEntity.noContent().build();
   }
 
+  @PostMapping("/{id}/clone")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<TemplateDetailResponse> cloneTemplate(@PathVariable UUID id) {
+    var response = documentTemplateService.cloneTemplate(id);
+    return ResponseEntity.created(URI.create("/api/templates/" + response.id())).body(response);
+  }
+
+  @PostMapping("/{id}/reset")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<Void> resetTemplate(@PathVariable UUID id) {
+    documentTemplateService.resetToDefault(id);
+    return ResponseEntity.ok().build();
+  }
+
   // --- DTOs ---
 
   public record CreateTemplateRequest(

@@ -33,4 +33,7 @@ public interface DocumentTemplateRepository extends JpaRepository<DocumentTempla
 
   @Query("SELECT dt FROM DocumentTemplate dt WHERE dt.slug = :slug")
   Optional<DocumentTemplate> findBySlug(@Param("slug") String slug);
+
+  @Query("SELECT dt FROM DocumentTemplate dt WHERE dt.packTemplateKey = :packTemplateKey")
+  List<DocumentTemplate> findByPackTemplateKey(@Param("packTemplateKey") String packTemplateKey);
 }

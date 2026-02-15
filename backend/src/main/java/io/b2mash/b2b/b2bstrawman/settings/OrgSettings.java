@@ -48,6 +48,19 @@ public class OrgSettings implements TenantAware {
   @Column(name = "field_pack_status", columnDefinition = "jsonb")
   private List<Map<String, Object>> fieldPackStatus;
 
+  @Column(name = "logo_s3_key", length = 500)
+  private String logoS3Key;
+
+  @Column(name = "brand_color", length = 7)
+  private String brandColor;
+
+  @Column(name = "document_footer_text", columnDefinition = "TEXT")
+  private String documentFooterText;
+
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "template_pack_status", columnDefinition = "jsonb")
+  private List<Map<String, Object>> templatePackStatus;
+
   protected OrgSettings() {}
 
   public OrgSettings(String defaultCurrency) {
@@ -105,6 +118,54 @@ public class OrgSettings implements TenantAware {
     entry.put("version", version);
     entry.put("appliedAt", Instant.now().toString());
     this.fieldPackStatus.add(entry);
+    this.updatedAt = Instant.now();
+  }
+
+  public String getLogoS3Key() {
+    return logoS3Key;
+  }
+
+  public void setLogoS3Key(String logoS3Key) {
+    this.logoS3Key = logoS3Key;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getBrandColor() {
+    return brandColor;
+  }
+
+  public void setBrandColor(String brandColor) {
+    this.brandColor = brandColor;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getDocumentFooterText() {
+    return documentFooterText;
+  }
+
+  public void setDocumentFooterText(String text) {
+    this.documentFooterText = text;
+    this.updatedAt = Instant.now();
+  }
+
+  public List<Map<String, Object>> getTemplatePackStatus() {
+    return templatePackStatus;
+  }
+
+  public void setTemplatePackStatus(List<Map<String, Object>> status) {
+    this.templatePackStatus = status;
+  }
+
+  /** Records a template pack application in the status list. */
+  public void recordTemplatePackApplication(String packId, int version) {
+    if (this.templatePackStatus == null) {
+      this.templatePackStatus = new ArrayList<>();
+    }
+    var entry = new HashMap<String, Object>();
+    entry.put("packId", packId);
+    entry.put("version", version);
+    entry.put("appliedAt", Instant.now().toString());
+    this.templatePackStatus.add(entry);
     this.updatedAt = Instant.now();
   }
 }

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Engagement Letter</title>
+</head>
+<body>
+  <div class="header">
+    <img th:if="${org.logoUrl}" th:src="${org.logoUrl}" alt="Logo" style="max-height: 60px;"/>
+    <h1 th:text="${org.name}">Organization Name</h1>
+  </div>
+  <div class="content">
+    <h2>Engagement Letter</h2>
+    <p>Dear <span th:text="${customer.name}">Customer Name</span>,</p>
+    <p>We are pleased to confirm the following engagement for
+      <span th:text="${project.name}">Project Name</span>.</p>
+    <p><strong>Project:</strong> <span th:text="${project.name}">Project Name</span></p>
+    <p><strong>Status:</strong> <span th:text="${project.status}">Active</span></p>
+    <p th:if="${project.description}">
+      <strong>Description:</strong> <span th:text="${project.description}">Description</span>
+    </p>
+  </div>
+  <div class="footer" th:if="${org.documentFooterText}">
+    <p th:text="${org.documentFooterText}">Footer text</p>
+  </div>
+</body>
+</html>

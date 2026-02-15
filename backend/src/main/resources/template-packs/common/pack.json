@@ -1,0 +1,38 @@
+{
+  "packId": "common",
+  "version": 1,
+  "name": "Common Templates",
+  "description": "Standard document templates for all organizations",
+  "templates": [
+    {
+      "templateKey": "engagement-letter",
+      "name": "Standard Engagement Letter",
+      "category": "ENGAGEMENT_LETTER",
+      "primaryEntityType": "PROJECT",
+      "contentFile": "engagement-letter.html",
+      "cssFile": null,
+      "description": "Client engagement letter template",
+      "sortOrder": 1
+    },
+    {
+      "templateKey": "project-summary",
+      "name": "Project Summary Report",
+      "category": "PROJECT_SUMMARY",
+      "primaryEntityType": "PROJECT",
+      "contentFile": "project-summary.html",
+      "cssFile": null,
+      "description": "Project summary report template",
+      "sortOrder": 2
+    },
+    {
+      "templateKey": "invoice-cover-letter",
+      "name": "Invoice Cover Letter",
+      "category": "COVER_LETTER",
+      "primaryEntityType": "INVOICE",
+      "contentFile": "invoice-cover-letter.html",
+      "cssFile": null,
+      "description": "Cover letter for invoices",
+      "sortOrder": 3
+    }
+  ]
+}

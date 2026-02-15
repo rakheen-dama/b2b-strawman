@@ -6,11 +6,9 @@ import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -30,22 +28,12 @@ public class SavedViewService {
   }
 
   /**
-   * Lists all views visible to the given member: shared views + member's personal views.
-   * Deduplicated by id, sorted by sortOrder.
+   * Lists all views visible to the given member: shared views + member's personal views. Uses a
+   * single query with OR condition — no deduplication needed.
    */
   @Transactional(readOnly = true)
   public List<SavedViewResponse> listViews(String entityType, UUID memberId) {
-    var shared = savedViewRepository.findByEntityTypeAndSharedTrueOrderBySortOrder(entityType);
-    var personal =
-        savedViewRepository.findByEntityTypeAndCreatedByOrderBySortOrder(entityType, memberId);
-
-    // Deduplicate by id (shared views created by this member appear in both queries)
-    var deduped = new LinkedHashMap<UUID, SavedView>();
-    Stream.concat(shared.stream(), personal.stream())
-        .forEach(v -> deduped.putIfAbsent(v.getId(), v));
-
-    return deduped.values().stream()
-        .sorted((a, b) -> Integer.compare(a.getSortOrder(), b.getSortOrder()))
+    return savedViewRepository.findVisibleViews(entityType, memberId).stream()
         .map(SavedViewResponse::from)
         .toList();
   }
@@ -76,8 +64,7 @@ public class SavedViewService {
       var personal =
           savedViewRepository.findByEntityTypeAndCreatedByOrderBySortOrder(
               req.entityType(), memberId);
-      boolean duplicate =
-          personal.stream().anyMatch(v -> v.getName().equals(req.name()) && !v.isShared());
+      boolean duplicate = personal.stream().anyMatch(v -> v.getName().equals(req.name()));
       if (duplicate) {
         throw new ResourceConflictException(
             "Duplicate name",

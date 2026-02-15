@@ -23,11 +23,24 @@ public interface SavedViewRepository extends JpaRepository<SavedView, UUID> {
   List<SavedView> findByEntityTypeAndSharedTrueOrderBySortOrder(
       @Param("entityType") String entityType);
 
-  /** Returns all personal views for a specific member and entity type, ordered by sort_order. */
+  /**
+   * Returns all personal (non-shared) views for a specific member and entity type, ordered by
+   * sort_order.
+   */
   @Query(
       "SELECT v FROM SavedView v WHERE v.entityType = :entityType AND v.createdBy = :createdBy"
-          + " ORDER BY v.sortOrder")
+          + " AND v.shared = false ORDER BY v.sortOrder")
   List<SavedView> findByEntityTypeAndCreatedByOrderBySortOrder(
+      @Param("entityType") String entityType, @Param("createdBy") UUID createdBy);
+
+  /**
+   * Returns all views visible to the given member: shared views + member's personal views. Single
+   * query replaces the two-query + deduplication approach.
+   */
+  @Query(
+      "SELECT v FROM SavedView v WHERE v.entityType = :entityType AND (v.shared = true OR"
+          + " v.createdBy = :createdBy) ORDER BY v.sortOrder")
+  List<SavedView> findVisibleViews(
       @Param("entityType") String entityType, @Param("createdBy") UUID createdBy);
 
   /** Checks for an existing shared view with the same entity type and name (duplicate check). */

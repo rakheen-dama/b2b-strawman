@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.view;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -360,6 +361,78 @@ class SavedViewIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Admin Updated View"))
         .andExpect(jsonPath("$.sortOrder").value(5));
+  }
+
+  @Test
+  void creatorCanDeleteOwnView() throws Exception {
+    // Create personal view as member
+    var result =
+        mockMvc
+            .perform(
+                post("/api/views")
+                    .with(memberJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "entityType": "TASK",
+                          "name": "Delete Me",
+                          "filters": {"status": "DONE"},
+                          "shared": false,
+                          "sortOrder": 0
+                        }
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    String id = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
+
+    // Creator deletes own view — expect 204
+    mockMvc.perform(delete("/api/views/" + id).with(memberJwt())).andExpect(status().isNoContent());
+
+    // Verify it's gone — expect 404 on update attempt
+    mockMvc
+        .perform(
+            put("/api/views/" + id)
+                .with(memberJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "name": "Should Not Exist",
+                      "filters": {},
+                      "sortOrder": 0
+                    }
+                    """))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void nonCreatorNonAdminCannotDeleteOthersView() throws Exception {
+    // Create personal view as owner
+    var result =
+        mockMvc
+            .perform(
+                post("/api/views")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "entityType": "TASK",
+                          "name": "Owner Only Delete Test",
+                          "filters": {},
+                          "shared": false,
+                          "sortOrder": 0
+                        }
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    String id = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
+
+    // Member (non-creator, non-admin) tries to delete — expect 403
+    mockMvc.perform(delete("/api/views/" + id).with(memberJwt())).andExpect(status().isForbidden());
   }
 
   // --- JWT Helpers ---

@@ -28,6 +28,7 @@ public class SavedViewController {
   }
 
   @GetMapping
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<SavedViewResponse>> list(@RequestParam String entityType) {
     UUID memberId = RequestScopes.requireMemberId();
     return ResponseEntity.ok(savedViewService.listViews(entityType, memberId));
@@ -42,12 +43,14 @@ public class SavedViewController {
   }
 
   @PutMapping("/{id}")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<SavedViewResponse> update(
       @PathVariable UUID id, @Valid @RequestBody UpdateSavedViewRequest request) {
     return ResponseEntity.ok(savedViewService.update(id, request));
   }
 
   @DeleteMapping("/{id}")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> delete(@PathVariable UUID id) {
     savedViewService.delete(id);
     return ResponseEntity.noContent().build();

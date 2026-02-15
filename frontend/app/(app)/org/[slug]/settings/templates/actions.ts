@@ -1,6 +1,14 @@
 "use server";
 
-import { api, ApiError } from "@/lib/api";
+import {
+  api,
+  ApiError,
+  previewTemplate,
+  uploadOrgLogo,
+  deleteOrgLogo,
+  getOrgSettings,
+  updateOrgSettings,
+} from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import type {
   CreateTemplateRequest,
@@ -132,20 +140,9 @@ export async function resetTemplateAction(
 export async function deactivateTemplateAction(
   slug: string,
   id: string,
-  active: boolean,
 ): Promise<ActionResult> {
   try {
-    // We need to get the current template first to preserve name/content
-    const current = await api.get<TemplateDetailResponse>(
-      `/api/templates/${id}`,
-    );
-    await api.put<TemplateDetailResponse>(`/api/templates/${id}`, {
-      name: current.name,
-      description: current.description,
-      content: current.content,
-      css: current.css,
-      active,
-    });
+    await api.delete(`/api/templates/${id}`);
     revalidatePath(`/org/${slug}/settings/templates`);
     return { success: true };
   } catch (error) {
@@ -167,7 +164,6 @@ export async function previewTemplateAction(
   entityId: string,
 ): Promise<{ success: boolean; html?: string; error?: string }> {
   try {
-    const { previewTemplate } = await import("@/lib/api");
     const html = await previewTemplate(id, entityId);
     return { success: true, html };
   } catch (error) {
@@ -185,7 +181,6 @@ export async function uploadLogoAction(
   formData: FormData,
 ): Promise<ActionResult> {
   try {
-    const { uploadOrgLogo } = await import("@/lib/api");
     const file = formData.get("file") as File;
     if (!file) {
       return { success: false, error: "No file provided." };
@@ -205,7 +200,6 @@ export async function deleteLogoAction(
   slug: string,
 ): Promise<ActionResult> {
   try {
-    const { deleteOrgLogo } = await import("@/lib/api");
     await deleteOrgLogo();
     revalidatePath(`/org/${slug}/settings/templates`);
     return { success: true };
@@ -224,7 +218,6 @@ export async function saveBrandingAction(
 ): Promise<ActionResult> {
   try {
     // Get current settings to preserve defaultCurrency
-    const { getOrgSettings, updateOrgSettings } = await import("@/lib/api");
     const current = await getOrgSettings();
     await updateOrgSettings({
       defaultCurrency: current.defaultCurrency,

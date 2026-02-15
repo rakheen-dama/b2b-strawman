@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
+import { auth } from "@clerk/nextjs/server";
 import { getTemplateDetail } from "@/lib/api";
 import { TemplateEditorForm } from "@/components/templates/TemplateEditorForm";
 import type { TemplateDetailResponse } from "@/lib/types";
@@ -10,6 +12,12 @@ export default async function TemplateEditorPage({
   params: Promise<{ slug: string; id: string }>;
 }) {
   const { slug, id } = await params;
+  const { orgRole } = await auth();
+  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+
+  if (!isAdmin) {
+    redirect(`/org/${slug}/settings/templates`);
+  }
 
   let template: TemplateDetailResponse;
   try {

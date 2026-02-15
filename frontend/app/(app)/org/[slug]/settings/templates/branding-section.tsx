@@ -9,7 +9,6 @@ import { Textarea } from "@/components/ui/textarea";
 import type { OrgSettings } from "@/lib/types";
 
 interface BrandingSectionProps {
-  slug: string;
   settings: OrgSettings;
   onUploadLogo: (file: File) => Promise<{ success: boolean; error?: string }>;
   onDeleteLogo: () => Promise<{ success: boolean; error?: string }>;

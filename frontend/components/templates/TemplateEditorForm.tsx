@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +16,6 @@ interface TemplateEditorFormProps {
 }
 
 export function TemplateEditorForm({ slug, template }: TemplateEditorFormProps) {
-  const router = useRouter();
   const [name, setName] = useState(template.name);
   const [description, setDescription] = useState(template.description ?? "");
   const [content, setContent] = useState(template.content);

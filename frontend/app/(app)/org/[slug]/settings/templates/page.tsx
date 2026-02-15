@@ -15,18 +15,14 @@ export default async function TemplatesSettingsPage({
 
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
 
-  let templates: TemplateListResponse[] = [];
-  let settings: OrgSettings | null = null;
-  try {
-    templates = await getTemplates();
-  } catch {
-    // Non-fatal: show empty state on API failure
-  }
-  try {
-    settings = await getOrgSettings();
-  } catch {
-    // Non-fatal: branding section will be hidden
-  }
+  const [templatesResult, settingsResult] = await Promise.allSettled([
+    getTemplates(),
+    getOrgSettings(),
+  ]);
+  const templates: TemplateListResponse[] =
+    templatesResult.status === "fulfilled" ? templatesResult.value : [];
+  const settings: OrgSettings | null =
+    settingsResult.status === "fulfilled" ? settingsResult.value : null;
 
   return (
     <div className="space-y-8">

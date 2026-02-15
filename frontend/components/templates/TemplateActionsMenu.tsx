@@ -28,23 +28,35 @@ export function TemplateActionsMenu({
 }: TemplateActionsMenuProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleClone() {
     setIsLoading(true);
+    setError(null);
     try {
       const result = await cloneTemplateAction(slug, template.id);
       if (result.success && result.data) {
         router.push(`/org/${slug}/settings/templates/${result.data.id}/edit`);
+      } else if (!result.success) {
+        setError(result.error ?? "Failed to clone template.");
       }
+    } catch {
+      setError("An unexpected error occurred.");
     } finally {
       setIsLoading(false);
     }
   }
 
-  async function handleToggleActive() {
+  async function handleDeactivate() {
     setIsLoading(true);
+    setError(null);
     try {
-      await deactivateTemplateAction(slug, template.id, !template.active);
+      const result = await deactivateTemplateAction(slug, template.id);
+      if (!result.success) {
+        setError(result.error ?? "Failed to deactivate template.");
+      }
+    } catch {
+      setError("An unexpected error occurred.");
     } finally {
       setIsLoading(false);
     }
@@ -55,6 +67,10 @@ export function TemplateActionsMenu({
   const hasSource = !!template.sourceTemplateId;
 
   return (
+    <div className="flex items-center gap-2">
+      {error && (
+        <span className="text-xs text-destructive">{error}</span>
+      )}
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
@@ -98,11 +114,14 @@ export function TemplateActionsMenu({
           </ResetTemplateDialog>
         )}
 
-        <DropdownMenuItem onClick={handleToggleActive} disabled={isLoading}>
-          <Power className="mr-2 size-4" />
-          {template.active ? "Deactivate" : "Activate"}
-        </DropdownMenuItem>
+        {template.active && (
+          <DropdownMenuItem onClick={handleDeactivate} disabled={isLoading}>
+            <Power className="mr-2 size-4" />
+            Deactivate
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
+    </div>
   );
 }

@@ -142,7 +142,6 @@ export function TemplatesContent({
 
       {canManage && settings && (
         <BrandingSection
-          slug={slug}
           settings={settings}
           onUploadLogo={async (file: File) => {
             const formData = new FormData();

@@ -21,10 +21,12 @@ import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledTimeEntry;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledTimeResponse;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UpdateInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UpdateLineItemRequest;
+import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
+import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import jakarta.persistence.EntityManager;
@@ -38,6 +40,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -143,12 +146,37 @@ public class InvoiceService {
     var timeEntryIds = request.timeEntryIds();
     var linkedTimeEntries = new ArrayList<io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry>();
     if (timeEntryIds != null && !timeEntryIds.isEmpty()) {
+      // Batch-load all time entries, tasks, and members upfront (3 queries total, not 3N)
+      var allTimeEntries = timeEntryRepository.findAllById(timeEntryIds);
+      var timeEntryMap =
+          allTimeEntries.stream().collect(Collectors.toMap(te -> te.getId(), te -> te));
+
+      var taskIds =
+          allTimeEntries.stream()
+              .map(te -> te.getTaskId())
+              .filter(Objects::nonNull)
+              .distinct()
+              .toList();
+      var taskMap =
+          taskRepository.findAllById(taskIds).stream()
+              .collect(Collectors.toMap(Task::getId, t -> t));
+
+      var memberIds =
+          allTimeEntries.stream()
+              .map(te -> te.getMemberId())
+              .filter(Objects::nonNull)
+              .distinct()
+              .toList();
+      var memberMap =
+          memberRepository.findAllById(memberIds).stream()
+              .collect(Collectors.toMap(Member::getId, m -> m));
+
       int sortOrder = 0;
       for (UUID timeEntryId : timeEntryIds) {
-        var timeEntry =
-            timeEntryRepository
-                .findOneById(timeEntryId)
-                .orElseThrow(() -> new ResourceNotFoundException("TimeEntry", timeEntryId));
+        var timeEntry = timeEntryMap.get(timeEntryId);
+        if (timeEntry == null) {
+          throw new ResourceNotFoundException("TimeEntry", timeEntryId);
+        }
 
         if (!timeEntry.isBillable()) {
           throw new InvalidStateException(
@@ -185,9 +213,9 @@ public class InvoiceService {
 
         // Look up task to get projectId (used for both validation and line item creation)
         UUID projectId = null;
-        var task = taskRepository.findOneById(timeEntry.getTaskId());
-        if (task.isPresent()) {
-          projectId = task.get().getProjectId();
+        var task = taskMap.get(timeEntry.getTaskId());
+        if (task != null) {
+          projectId = task.getProjectId();
           // Validate time entry belongs to customer's projects
           if (!customerProjectRepository.existsByCustomerIdAndProjectId(
               request.customerId(), projectId)) {
@@ -201,7 +229,7 @@ public class InvoiceService {
         }
 
         // Build description: "{task title} -- {date} -- {member name}"
-        String description = buildTimeEntryDescription(timeEntry);
+        String description = buildTimeEntryDescription(timeEntry, taskMap, memberMap);
 
         BigDecimal quantity =
             BigDecimal.valueOf(timeEntry.getDurationMinutes())
@@ -438,18 +466,14 @@ public class InvoiceService {
           "Invoice not deletable", "Only draft invoices can be deleted");
     }
 
-    // Unlink time entries before deleting lines
+    // Unlink time entries before deleting lines (batch load, not N+1)
     var lines = lineRepository.findByInvoiceIdOrderBySortOrder(invoiceId);
     var timeEntryIdsToUnlink =
         lines.stream().map(InvoiceLine::getTimeEntryId).filter(Objects::nonNull).toList();
     if (!timeEntryIdsToUnlink.isEmpty()) {
-      for (UUID teId : timeEntryIdsToUnlink) {
-        timeEntryRepository
-            .findOneById(teId)
-            .ifPresent(
-                te -> {
-                  te.setInvoiceId(null);
-                });
+      var timeEntries = timeEntryRepository.findAllById(timeEntryIdsToUnlink);
+      for (var te : timeEntries) {
+        te.setInvoiceId(null);
       }
     }
 
@@ -663,16 +687,24 @@ public class InvoiceService {
           "No line items", "Invoice must have at least one line item before approval");
     }
 
+    // Batch-load all referenced time entries (single query instead of 2N)
+    var timeEntryIdsFromLines =
+        lines.stream().map(InvoiceLine::getTimeEntryId).filter(Objects::nonNull).toList();
+    var timeEntryMap =
+        timeEntryIdsFromLines.isEmpty()
+            ? Map.<UUID, io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry>of()
+            : timeEntryRepository.findAllById(timeEntryIdsFromLines).stream()
+                .collect(Collectors.toMap(te -> te.getId(), te -> te));
+
     // Re-check all time-entry-based line items: verify each referenced time entry
     // still has invoice_id IS NULL or equals this invoice (guards against concurrent
     // draft + approve race condition — ADR-050)
     for (var line : lines) {
       if (line.getTimeEntryId() != null) {
-        var timeEntry =
-            timeEntryRepository
-                .findOneById(line.getTimeEntryId())
-                .orElseThrow(
-                    () -> new ResourceNotFoundException("TimeEntry", line.getTimeEntryId()));
+        var timeEntry = timeEntryMap.get(line.getTimeEntryId());
+        if (timeEntry == null) {
+          throw new ResourceNotFoundException("TimeEntry", line.getTimeEntryId());
+        }
         if (timeEntry.getInvoiceId() != null && !timeEntry.getInvoiceId().equals(invoiceId)) {
           throw new ResourceConflictException(
               "Time entry already billed",
@@ -693,17 +725,9 @@ public class InvoiceService {
 
     invoice = invoiceRepository.save(invoice);
 
-    // Mark time entries as billed
-    for (var line : lines) {
-      if (line.getTimeEntryId() != null) {
-        timeEntryRepository
-            .findOneById(line.getTimeEntryId())
-            .ifPresent(
-                te -> {
-                  te.setInvoiceId(invoiceId);
-                  timeEntryRepository.save(te);
-                });
-      }
+    // Mark time entries as billed (entities already loaded above)
+    for (var te : timeEntryMap.values()) {
+      te.setInvoiceId(invoiceId);
     }
 
     log.info("Approved invoice {} with number {}", invoiceId, invoiceNumber);
@@ -895,17 +919,14 @@ public class InvoiceService {
 
     invoice = invoiceRepository.save(invoice);
 
-    // Clear invoice_id on all time entries referenced by this invoice's line items
+    // Clear invoice_id on all time entries referenced by this invoice's line items (batch load)
     var lines = lineRepository.findByInvoiceIdOrderBySortOrder(invoiceId);
-    for (var line : lines) {
-      if (line.getTimeEntryId() != null) {
-        timeEntryRepository
-            .findOneById(line.getTimeEntryId())
-            .ifPresent(
-                te -> {
-                  te.setInvoiceId(null);
-                  timeEntryRepository.save(te);
-                });
+    var timeEntryIdsToUnlink =
+        lines.stream().map(InvoiceLine::getTimeEntryId).filter(Objects::nonNull).toList();
+    if (!timeEntryIdsToUnlink.isEmpty()) {
+      var timeEntries = timeEntryRepository.findAllById(timeEntryIdsToUnlink);
+      for (var te : timeEntries) {
+        te.setInvoiceId(null);
       }
     }
 
@@ -1052,26 +1073,19 @@ public class InvoiceService {
   }
 
   private String buildTimeEntryDescription(
-      io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry timeEntry) {
-    String taskTitle = "Untitled";
-    String memberName = "Unknown";
-
-    if (timeEntry.getTaskId() != null) {
-      taskTitle =
-          taskRepository
-              .findOneById(timeEntry.getTaskId())
-              .map(t -> t.getTitle())
-              .orElse("Untitled");
-    }
-
-    if (timeEntry.getMemberId() != null) {
-      memberName =
-          memberRepository
-              .findOneById(timeEntry.getMemberId())
-              .map(m -> m.getName())
-              .orElse("Unknown");
-    }
-
+      io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry timeEntry,
+      Map<UUID, Task> taskMap,
+      Map<UUID, Member> memberMap) {
+    String taskTitle =
+        Optional.ofNullable(timeEntry.getTaskId())
+            .map(taskMap::get)
+            .map(Task::getTitle)
+            .orElse("Untitled");
+    String memberName =
+        Optional.ofNullable(timeEntry.getMemberId())
+            .map(memberMap::get)
+            .map(Member::getName)
+            .orElse("Unknown");
     return taskTitle + " -- " + timeEntry.getDate() + " -- " + memberName;
   }
 }

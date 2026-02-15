@@ -22,7 +22,7 @@ Jurisdiction-agnostic compliance layer with customer lifecycle state machine (PR
 
 ```
 [E96A Entity Foundation]──►[E96B Entities + Guards]
-    (Backend V29)               (Backend)
+    (Backend V30)               (Backend)
          │
          ├──────────────────────────────────────────┐
          │                                          │
@@ -73,7 +73,7 @@ Jurisdiction-agnostic compliance layer with customer lifecycle state machine (PR
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 1a | Epic 96 | 96A | V29 migration (6 tables, Customer/OrgSettings columns, RLS, indexes, backfill). Customer/OrgSettings entity modifications. Integration tests for migration + entity persistence (~10 tests). Foundation for all compliance work. |
+| 1a | Epic 96 | 96A | V30 migration (6 tables, Customer/OrgSettings columns, RLS, indexes, backfill). Customer/OrgSettings entity modifications. Integration tests for migration + entity persistence (~10 tests). Foundation for all compliance work. |
 | 1b | Epic 96 | 96B | 6 new entities (ChecklistTemplate, ChecklistTemplateItem, ChecklistInstance, ChecklistInstanceItem, DataSubjectRequest, RetentionPolicy). 6 repositories with JPQL findOneById. CustomerLifecycleGuard service. Guard unit tests + shared-schema isolation tests (~20 tests). |
 
 ### Stage 2: Three Independent Tracks (Parallel)
@@ -126,7 +126,7 @@ Stage 6:  [102A]                                                 ← dashboard (
 
 ## Epic 96: Entity Foundation + Lifecycle Guards
 
-**Goal**: Create V29 migration adding 6 new tables (checklist_templates, checklist_template_items, checklist_instances, checklist_instance_items, data_subject_requests, retention_policies) and extending Customer/OrgSettings with compliance columns. Create all 6 entities with tenant isolation, repositories, and `CustomerLifecycleGuard` service for action gating. Fully tested (entities, repositories, guards, tenant isolation).
+**Goal**: Create V30 migration adding 6 new tables (checklist_templates, checklist_template_items, checklist_instances, checklist_instance_items, data_subject_requests, retention_policies) and extending Customer/OrgSettings with compliance columns. Create all 6 entities with tenant isolation, repositories, and `CustomerLifecycleGuard` service for action gating. Fully tested (entities, repositories, guards, tenant isolation).
 
 **References**: Architecture doc Sections 13.2 (domain model), 13.3.4 (lifecycle guard), 13.10 (migrations). [ADR-060](../adr/ADR-060-lifecycle-status-core-field.md), [ADR-061](../adr/ADR-061-checklist-first-class-entities.md), [ADR-062](../adr/ADR-062-anonymization-over-hard-deletion.md), [ADR-063](../adr/ADR-063-compliance-packs-bundled-seed-data.md).
 
@@ -140,20 +140,20 @@ Stage 6:  [102A]                                                 ← dashboard (
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **96A** | 96.1-96.7 | V29 migration (6 tables, Customer/OrgSettings columns, RLS, indexes, backfill), Customer/OrgSettings entity modifications, integration tests for migration + entity persistence (~10 tests) | |
+| **96A** | 96.1-96.7 | V30 migration (6 tables, Customer/OrgSettings columns, RLS, indexes, backfill), Customer/OrgSettings entity modifications, integration tests for migration + entity persistence (~10 tests) | |
 | **96B** | 96.8-96.18 | 6 new entities (ChecklistTemplate, ChecklistTemplateItem, ChecklistInstance, ChecklistInstanceItem, DataSubjectRequest, RetentionPolicy), 6 repositories with JPQL findOneById, CustomerLifecycleGuard service, guard unit tests + shared-schema isolation tests (~20 tests) | |
 
 ### Tasks
 
 | ID | Task | Slice | Status | Notes |
 |----|------|-------|--------|-------|
-| 96.1 | Create V29 migration file | 96A | | `db/migration/tenant/V29__customer_compliance_lifecycle.sql`. Full SQL per Section 13.10: (1) ALTER TABLE customers ADD lifecycle_status, lifecycle_status_changed_at, lifecycle_status_changed_by, offboarded_at. (2) ALTER TABLE org_settings ADD dormancy_threshold_days, data_request_deadline_days, compliance_pack_status. (3) CREATE TABLE checklist_templates (12 fields). (4) CREATE TABLE checklist_template_items (12 fields). (5) CREATE TABLE checklist_instances (11 fields). (6) CREATE TABLE checklist_instance_items (17 fields). (7) CREATE TABLE data_subject_requests (15 fields). (8) CREATE TABLE retention_policies (9 fields). All indexes per Section 13.10 (17 indexes total). All RLS policies per Section 13.10 (6 RLS policies). Backfill: UPDATE customers SET lifecycle_status = 'ACTIVE' WHERE lifecycle_status IS NULL. Pattern: follow V28 for large multi-table migration. |
+| 96.1 | Create V30 migration file | 96A | | `db/migration/tenant/V30__customer_compliance_lifecycle.sql`. Full SQL per Section 13.10: (1) ALTER TABLE customers ADD lifecycle_status, lifecycle_status_changed_at, lifecycle_status_changed_by, offboarded_at. (2) ALTER TABLE org_settings ADD dormancy_threshold_days, data_request_deadline_days, compliance_pack_status. (3) CREATE TABLE checklist_templates (12 fields). (4) CREATE TABLE checklist_template_items (12 fields). (5) CREATE TABLE checklist_instances (11 fields). (6) CREATE TABLE checklist_instance_items (17 fields). (7) CREATE TABLE data_subject_requests (15 fields). (8) CREATE TABLE retention_policies (9 fields). All indexes per Section 13.10 (17 indexes total). All RLS policies per Section 13.10 (6 RLS policies). Backfill: UPDATE customers SET lifecycle_status = 'ACTIVE' WHERE lifecycle_status IS NULL. Pattern: follow V28 for large multi-table migration. |
 | 96.2 | Add lifecycle columns to Customer entity | 96A | | Modify `customer/Customer.java`. Add fields: `@Column(name = "lifecycle_status", nullable = false, length = 20) private String lifecycleStatus = "PROSPECT"`, `@Column(name = "lifecycle_status_changed_at") private Instant lifecycleStatusChangedAt`, `@Column(name = "lifecycle_status_changed_by") private UUID lifecycleStatusChangedBy`, `@Column(name = "offboarded_at") private Instant offboardedAt`. Add getters/setters. Add domain method: `transitionLifecycle(String newStatus, UUID changedBy, Instant changedAt, Instant offboardedAt)`. Pattern: follow existing Customer entity pattern. |
 | 96.3 | Add compliance columns to OrgSettings entity | 96A | | Modify `settings/OrgSettings.java`. Add fields: `@Column(name = "dormancy_threshold_days") private Integer dormancyThresholdDays = 90`, `@Column(name = "data_request_deadline_days") private Integer dataRequestDeadlineDays = 30`, `@JdbcTypeCode(SqlTypes.JSON) @Column(name = "compliance_pack_status", columnDefinition = "jsonb") private List<Map<String, Object>> compliancePackStatus`. Add method: `recordCompliancePackApplication(String packId, int version)`. Pattern: follow field_pack_status JSONB pattern from Phase 11. |
 | 96.4 | Add Customer lifecycle tests | 96A | | Add tests to `customer/CustomerIntegrationTest.java` (~3 tests): (1) new customer defaults to lifecycle_status='PROSPECT', (2) transitionLifecycle updates all 4 fields, (3) findOneById respects @Filter with lifecycle columns. Pattern: extend existing test file. |
 | 96.5 | Add OrgSettings compliance tests | 96A | | Add tests to `settings/OrgSettingsIntegrationTest.java` (~2 tests): (1) compliance columns have defaults (90, 30, null), (2) recordCompliancePackApplication appends to JSONB array. Pattern: extend existing test file. |
-| 96.6 | Test V29 migration execution | 96A | | `compliance/V29MigrationTest.java` (~3 tests): (1) migration creates 6 tables in dedicated schema, (2) migration creates 6 tables in tenant_shared, (3) backfill sets existing customers to ACTIVE. Use FlywayMigrationRunner pattern. |
-| 96.7 | Verify V29 migration runs cleanly | 96A | | Run `./mvnw clean test` and verify no migration errors. Check that all 6 tables exist in both dedicated schemas and tenant_shared. Verify RLS policies applied. Verify Customer/OrgSettings columns exist. Check backfill results. |
+| 96.6 | Test V30 migration execution | 96A | | `compliance/V30MigrationTest.java` (~3 tests): (1) migration creates 6 tables in dedicated schema, (2) migration creates 6 tables in tenant_shared, (3) backfill sets existing customers to ACTIVE. Use FlywayMigrationRunner pattern. |
+| 96.7 | Verify V30 migration runs cleanly | 96A | | Run `./mvnw clean test` and verify no migration errors. Check that all 6 tables exist in both dedicated schemas and tenant_shared. Verify RLS policies applied. Verify Customer/OrgSettings columns exist. Check backfill results. |
 | 96.8 | Create ChecklistTemplate entity | 96B | | `checklist/ChecklistTemplate.java`. @Entity, @Table(name = "checklist_templates"), TenantAware, @FilterDef/@Filter, @EntityListeners(TenantAwareEntityListener.class). 12 fields per Section 13.2.3. Protected no-arg constructor. Public constructor taking (name, slug, description, customerType, source). Domain methods: activate(), deactivate(). Pattern: follow FieldDefinition entity from Phase 11. |
 | 96.9 | Create ChecklistTemplateItem entity | 96B | | `checklist/ChecklistTemplateItem.java`. @Entity, @Table(name = "checklist_template_items"), TenantAware, @FilterDef/@Filter, @EntityListeners(TenantAwareEntityListener.class). 12 fields per Section 13.2.4. Protected no-arg constructor. Public constructor taking (templateId, name, description, sortOrder, required, requiresDocument). Pattern: follow ChecklistTemplate entity. |
 | 96.10 | Create ChecklistInstance entity | 96B | | `checklist/ChecklistInstance.java`. @Entity, @Table(name = "checklist_instances"), TenantAware, @FilterDef/@Filter, @EntityListeners(TenantAwareEntityListener.class). 11 fields per Section 13.2.5. Protected no-arg constructor. Public constructor taking (templateId, customerId, status). Domain method: complete(UUID completedBy, Instant completedAt). Pattern: follow ChecklistTemplate entity. |
@@ -169,8 +169,8 @@ Stage 6:  [102A]                                                 ← dashboard (
 ### Key Files
 
 **Slice 96A — Create:**
-- `backend/src/main/resources/db/migration/tenant/V29__customer_compliance_lifecycle.sql`
-- `backend/src/test/java/io/b2mash/b2b/b2bstrawman/compliance/V29MigrationTest.java`
+- `backend/src/main/resources/db/migration/tenant/V30__customer_compliance_lifecycle.sql`
+- `backend/src/test/java/io/b2mash/b2b/b2bstrawman/compliance/V30MigrationTest.java`
 
 **Slice 96A — Modify:**
 - `backend/src/main/java/io/b2mash/b2b/b2bstrawman/customer/Customer.java` — Add 4 lifecycle columns
@@ -215,7 +215,7 @@ Stage 6:  [102A]                                                 ← dashboard (
 - **Lifecycle status as core column**: Per ADR-060, `lifecycle_status` is a VARCHAR column on Customer (not a custom field). Drives platform behavior, queryable, type-safe.
 - **4-table checklist model**: Per ADR-061, dedicate tables to ChecklistTemplate, ChecklistTemplateItem, ChecklistInstance, ChecklistInstanceItem. Queryable per-item, FK integrity, audit trail.
 - **Anonymization over hard deletion**: Per ADR-062, DELETION requests anonymize PII (name → "Anonymized Customer a1b2c3", email → null) but retain financial records.
-- **V29 backfill**: Existing customers set to lifecycle_status='ACTIVE' (already in use, past onboarding). New customers after migration default to 'PROSPECT'.
+- **V30 backfill**: Existing customers set to lifecycle_status='ACTIVE' (already in use, past onboarding). New customers after migration default to 'PROSPECT'.
 - **RLS policies**: All 6 new tables get RLS policies for shared-schema isolation. Pattern: `tenant_id = current_setting('app.current_tenant', true)`.
 - **JPQL findOneById**: Required for all repositories to respect Hibernate @Filter in shared-schema mode.
 

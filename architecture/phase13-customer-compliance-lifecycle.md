@@ -1700,12 +1700,12 @@ sequenceDiagram
 
 ## 13.10 Database Migrations
 
-### V29 Tenant Migration
+### V30 Tenant Migration
 
 One new tenant migration. No global migration needed — all new entities are tenant-scoped.
 
 ```sql
--- V29__customer_compliance_lifecycle.sql
+-- V30__customer_compliance_lifecycle.sql
 -- Phase 13: Customer Compliance & Lifecycle
 -- Adds: lifecycle status on customers, checklist engine tables,
 --        data subject requests, retention policies
@@ -2323,7 +2323,7 @@ public class ChecklistTemplate implements TenantAware {
 
 **Scope**: Backend only
 **Key deliverables**:
-- V29 migration (all 6 new tables + Customer/OrgSettings alterations)
+- V30 migration (all 6 new tables + Customer/OrgSettings alterations)
 - All 6 new entity classes with `@FilterDef`/`@Filter`/`TenantAware`
 - All 6 repository interfaces with `findOneById` JPQL queries
 - `CustomerLifecycleGuard` service (transition validation + action gating)

@@ -1,6 +1,6 @@
 # Frontend CLAUDE.md
 
-Next.js 16 (App Router) / React 19 / TypeScript 5 frontend for a multi-tenant B2B SaaS platform. Auth via Clerk, UI via Shadcn (new-york style) + Tailwind CSS v4. Custom design system blending Oatmeal (editorial marketing) and Catalyst (data-focused app shell) aesthetics — see `DESIGN.md` for the full specification.
+Next.js 16 (App Router) / React 19 / TypeScript 5 frontend for a multi-tenant B2B SaaS platform. Auth via Clerk, UI via Shadcn (new-york style) + Tailwind CSS v4. Custom "Signal Deck" design system — precise, high-contrast, information-forward aesthetic with cool slate palette and teal accents.
 
 ## Build & Run
 
@@ -47,7 +47,7 @@ frontend/
 │   ├── api/
 │   │   └── webhooks/
 │   │       └── clerk/route.ts        # Clerk webhook handler
-│   ├── globals.css                   # Tailwind v4 + olive color tokens
+│   ├── globals.css                   # Tailwind v4 + slate color tokens
 │   └── layout.tsx                    # Root layout with ClerkProvider
 ├── components/
 │   ├── ui/                           # Shadcn UI components (customized — see below)
@@ -56,7 +56,7 @@ frontend/
 │   ├── team/                         # Team management components
 │   ├── billing/                      # Plan badge, upgrade prompt/dialog
 │   ├── marketing/                    # Landing page section components
-│   ├── desktop-sidebar.tsx           # Dark olive-950 sidebar with Motion indicator
+│   ├── desktop-sidebar.tsx           # Dark slate-950 sidebar with Motion indicator
 │   ├── mobile-sidebar.tsx            # Sheet-based mobile sidebar
 │   └── breadcrumbs.tsx               # Pathname-based breadcrumb nav
 ├── lib/
@@ -77,34 +77,35 @@ frontend/
 
 ## Design System
 
-The frontend uses a custom design language defined in `DESIGN.md`. Key properties:
+The frontend uses a "Signal Deck" design language — precise, information-forward, inspired by Linear/Vercel.
 
 ### Fonts
 
 | Role | Font | CSS Variable | Usage |
 |------|------|-------------|-------|
-| Display | **Instrument Serif** | `--font-display` | h1, hero text, stats, prices — use `font-display` class |
-| Body / UI | **Inter** | `--font-sans` | Paragraphs, buttons, labels, table text |
-| Code | **Geist Mono** | `--font-mono` | Code blocks, monospace |
+| Display | **Sora** | `--font-display` | h1, hero text, headings — geometric, sharp, tight tracking. Use `font-display` class |
+| Body / UI | **IBM Plex Sans** | `--font-sans` | Paragraphs, buttons, labels, table text — engineered precision |
+| Code / Stats | **JetBrains Mono** | `--font-mono` | Code blocks, KPI numbers, inline stats. Use `font-mono tabular-nums` for data |
 
 All loaded via `next/font/google` in `app/layout.tsx`.
 
 ### Color System
 
-Custom **olive** OKLCH scale replacing neutral grays. Defined as CSS custom properties in `globals.css`:
+Custom **slate** OKLCH scale (cool blue-gray, hue ~260). Defined as CSS custom properties in `globals.css`:
 
 ```
-olive-50  → olive-950    (warm gray-green tint, hue ~107)
-indigo-500, indigo-600   (accent for interactive elements)
+slate-50  → slate-950    (cool blue-gray tint, hue ~260)
+teal-500, teal-600       (accent for interactive elements)
 ```
+
+"Concrete Studio" palette (light mode): gray background (`oklch(94%)`) with lifted white cards (`shadow-sm`).
 
 Semantic token mappings (light mode):
-- `--background` → olive-50, `--foreground` → olive-900
-- `--primary` → olive-950, `--muted` → olive-100, `--border` → olive-200
-- `--accent` → indigo-600 (CTAs, active states)
-- `--sidebar` → olive-950 (dark sidebar, both modes)
-
-See DESIGN.md §1 for the complete scale and dark mode mappings.
+- `--background` → `oklch(94% 0.008 260)` (concrete gray), `--foreground` → slate-900
+- `--card` → `oklch(99.5% 0.002 260)` (near-white, lifted)
+- `--primary` → slate-950, `--muted` → slate-100, `--border` → slate-200
+- `--accent` → teal-600 (CTAs, active states)
+- `--sidebar` → slate-950 (dark sidebar, both modes)
 
 ### Animation
 
@@ -136,15 +137,15 @@ All authenticated routes are org-scoped under `(app)/org/[slug]/`.
 
 ### Shadcn UI — Customized Components
 
-The `components/ui/` directory started from Shadcn scaffolding but **base components have been customized** with project-specific variants and olive styling. Key customizations:
+The `components/ui/` directory started from Shadcn scaffolding but **base components have been customized** with project-specific variants and slate styling. Key customizations:
 
-- **Button** — Pill-shaped (`rounded-full`) primary/accent/soft/destructive variants. `soft` and `plain` variants added. See DESIGN.md §12.1.
-- **Badge** — Semantic variants: `lead`, `member`, `owner`, `admin`, `starter`, `pro`, `success`, `warning`, `destructive`, `neutral`. See DESIGN.md §12.2.
-- **Card** — Olive borders, no default shadow, hover elevation on interactive cards.
-- **Input / Textarea** — Olive border, `focus-visible:ring-olive-500` focus ring.
-- **Dialog / AlertDialog** — Warm `bg-olive-950/25` backdrop, `rounded-xl`, Motion enter/exit animations.
+- **Button** — Pill-shaped (`rounded-full`) primary/accent/soft/destructive variants. `soft` and `plain` variants added. Accent uses `bg-teal-600`.
+- **Badge** — Semantic variants: `lead`, `member`, `owner`, `admin`, `starter`, `pro`, `success`, `warning`, `destructive`, `neutral`.
+- **Card** — Slate borders, `shadow-sm` lift, `rounded-lg` (sharp, structured). Hover elevation on interactive cards.
+- **Input / Textarea** — Slate border, `focus-visible:ring-slate-500` focus ring.
+- **Dialog / AlertDialog** — `bg-slate-950/25` backdrop, `rounded-xl`, Motion enter/exit animations.
 
-**When adding new Shadcn components** via `npx shadcn@latest add <component>`, review the generated output and adjust to match the olive color scheme (replace any neutral/zinc/slate references with olive equivalents).
+**When adding new Shadcn components** via `npx shadcn@latest add <component>`, review the generated output and adjust to match the slate color scheme (replace any neutral/zinc/gray references with slate equivalents, any indigo with teal).
 
 ### Shadcn Config
 
@@ -160,8 +161,8 @@ The `components/ui/` directory started from Shadcn scaffolding but **base compon
 - PostCSS via `@tailwindcss/postcss` plugin
 - CSS variables for theming in `app/globals.css`
 - Use `cn()` from `@/lib/utils` to merge Tailwind classes (clsx + tailwind-merge)
-- Olive color classes available: `bg-olive-50` through `bg-olive-950`, `text-olive-*`, `border-olive-*`
-- Indigo accent classes: `bg-indigo-500`, `bg-indigo-600`, `text-indigo-*`
+- Slate color classes: `bg-slate-50` through `bg-slate-950`, `text-slate-*`, `border-slate-*`
+- Teal accent classes: `bg-teal-500`, `bg-teal-600`, `text-teal-*`
 
 ### TypeScript
 
@@ -192,7 +193,8 @@ The `components/ui/` directory started from Shadcn scaffolding but **base compon
 - Never access `params` without `await` — Next.js 16 params are Promises
 - Never skip `cssLayerName: "clerk"` on ClerkProvider — breaks Tailwind v4
 - Never use `npm` — this project uses `pnpm`
-- Never use neutral/zinc/slate/gray color classes — use the olive scale instead
+- Never use olive/neutral/zinc/gray color classes — use the **slate** scale instead
+- Never use indigo for accents — use **teal** instead
 - Never import `motion` in server components — it's client-only. Only import in `"use client"` files.
 
 ## Next.js 16 Patterns

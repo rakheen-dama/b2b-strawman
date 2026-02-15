@@ -108,7 +108,7 @@
 | 89 | Saved Views Backend | Backend | 87C, 88B | M | 89A, 89B | 89A Done (PR #187) |
 | 90 | Field Pack Seeding | Backend | 87A | S | 90A | **Done** (PR #182) |
 | 91 | Custom Fields Frontend | Frontend | 87, 90 | L | 91A, 91B | **Done** (PRs #184, #186) |
-| 92 | Tags & Saved Views Frontend | Frontend | 88, 89 | L | 92A, 92B | |
+| 92 | Tags & Saved Views Frontend | Frontend | 88, 89 | L | 92A, 92B | 92A Done (PR #188) |
 | **Phase 12 — Document Templates & PDF Generation** | | | | | | See [tasks/phase12-document-templates.md](tasks/phase12-document-templates.md) |
 | 93 | DocumentTemplate Entity Foundation | Backend | -- | L | 93A, 93B | |
 | 94 | Rendering Pipeline & Generation | Backend | 93 | L | 94A, 94B | |

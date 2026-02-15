@@ -446,3 +446,70 @@ export async function uploadOrgLogo(file: File): Promise<OrgSettings> {
 export async function deleteOrgLogo(): Promise<OrgSettings> {
   return api.delete<OrgSettings>("/api/settings/logo");
 }
+
+// ---- Generated Documents ----
+
+import type {
+  GenerateDocumentResponse,
+  GeneratedDocumentListResponse,
+  TemplateEntityType,
+} from "@/lib/types";
+
+export async function generateDocument(
+  templateId: string,
+  entityId: string,
+  saveToDocuments: boolean,
+): Promise<GenerateDocumentResponse | Blob> {
+  const { getToken } = await auth();
+  const token = await getToken();
+
+  if (!token) {
+    redirect("/sign-in");
+  }
+
+  const response = await fetch(
+    `${BACKEND_URL}/api/templates/${templateId}/generate`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ entityId, saveToDocuments }),
+    },
+  );
+
+  if (!response.ok) {
+    let message = response.statusText;
+    try {
+      const detail = await response.json();
+      message = detail?.detail || detail?.title || message;
+    } catch {
+      // ignore
+    }
+    throw new ApiError(response.status, message);
+  }
+
+  if (saveToDocuments) {
+    return response.json() as Promise<GenerateDocumentResponse>;
+  }
+
+  return response.blob();
+}
+
+export async function fetchGeneratedDocuments(
+  entityType: TemplateEntityType,
+  entityId: string,
+): Promise<GeneratedDocumentListResponse[]> {
+  return api.get<GeneratedDocumentListResponse[]>(
+    `/api/generated-documents?entityType=${entityType}&entityId=${entityId}`,
+  );
+}
+
+export async function deleteGeneratedDocument(id: string): Promise<void> {
+  return api.delete<void>(`/api/generated-documents/${id}`);
+}
+
+export function getGeneratedDocumentDownloadUrl(id: string): string {
+  return `${BACKEND_URL}/api/generated-documents/${id}/download`;
+}

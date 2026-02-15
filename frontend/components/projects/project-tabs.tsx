@@ -16,9 +16,10 @@ interface ProjectTabsProps {
   ratesPanel?: ReactNode;
   budgetPanel?: ReactNode;
   financialsPanel?: ReactNode;
+  generatedPanel?: ReactNode;
 }
 
-type TabId = "overview" | "documents" | "members" | "customers" | "tasks" | "time" | "budget" | "financials" | "activity" | "rates";
+type TabId = "overview" | "documents" | "members" | "customers" | "tasks" | "time" | "budget" | "financials" | "activity" | "rates" | "generated";
 
 interface TabDef {
   id: TabId;
@@ -35,18 +36,20 @@ const baseTabs: TabDef[] = [
   { id: "budget", label: "Budget" },
   { id: "financials", label: "Financials" },
   { id: "rates", label: "Rates" },
+  { id: "generated", label: "Generated" },
   { id: "activity", label: "Activity" },
 ];
 
-export function ProjectTabs({ overviewPanel, documentsPanel, membersPanel, customersPanel, tasksPanel, timePanel, activityPanel, ratesPanel, budgetPanel, financialsPanel }: ProjectTabsProps) {
+export function ProjectTabs({ overviewPanel, documentsPanel, membersPanel, customersPanel, tasksPanel, timePanel, activityPanel, ratesPanel, budgetPanel, financialsPanel, generatedPanel }: ProjectTabsProps) {
   const [activeTab, setActiveTab] = useState<TabId>("overview");
 
   const tabs = useMemo(() => {
     let filtered = baseTabs;
     if (!ratesPanel) filtered = filtered.filter((t) => t.id !== "rates");
     if (!financialsPanel) filtered = filtered.filter((t) => t.id !== "financials");
+    if (!generatedPanel) filtered = filtered.filter((t) => t.id !== "generated");
     return filtered;
-  }, [ratesPanel, financialsPanel]);
+  }, [ratesPanel, financialsPanel, generatedPanel]);
 
   return (
     <TabsPrimitive.Root value={activeTab} onValueChange={(v) => setActiveTab(v as TabId)}>
@@ -106,6 +109,11 @@ export function ProjectTabs({ overviewPanel, documentsPanel, membersPanel, custo
       {ratesPanel && (
         <TabsPrimitive.Content value="rates" className="pt-6 outline-none">
           {ratesPanel}
+        </TabsPrimitive.Content>
+      )}
+      {generatedPanel && (
+        <TabsPrimitive.Content value="generated" className="pt-6 outline-none">
+          {generatedPanel}
         </TabsPrimitive.Content>
       )}
       <TabsPrimitive.Content value="activity" className="pt-6 outline-none">

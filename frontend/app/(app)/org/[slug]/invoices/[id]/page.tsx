@@ -1,7 +1,9 @@
 import { auth } from "@clerk/nextjs/server";
-import { api, handleApiError } from "@/lib/api";
-import type { InvoiceResponse } from "@/lib/types";
+import { api, handleApiError, getTemplates } from "@/lib/api";
+import type { InvoiceResponse, TemplateListResponse } from "@/lib/types";
 import { InvoiceDetailClient } from "@/components/invoices/invoice-detail-client";
+import { GenerateDocumentDropdown } from "@/components/templates/GenerateDocumentDropdown";
+import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocumentsList";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
@@ -36,10 +38,18 @@ export default async function InvoiceDetailPage({
     handleApiError(error);
   }
 
+  // Document templates for the "Generate Document" dropdown
+  let invoiceTemplates: TemplateListResponse[] = [];
+  try {
+    invoiceTemplates = await getTemplates(undefined, "INVOICE");
+  } catch {
+    // Non-fatal: hide generate button if template fetch fails
+  }
+
   return (
     <div className="space-y-8">
       {/* Back link */}
-      <div>
+      <div className="flex items-center justify-between">
         <Link
           href={`/org/${slug}/invoices`}
           className="inline-flex items-center text-sm text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
@@ -47,6 +57,13 @@ export default async function InvoiceDetailPage({
           <ArrowLeft className="mr-1.5 size-4" />
           Back to Invoices
         </Link>
+        {invoiceTemplates.length > 0 && (
+          <GenerateDocumentDropdown
+            templates={invoiceTemplates}
+            entityId={id}
+            entityType="INVOICE"
+          />
+        )}
       </div>
 
       <InvoiceDetailClient
@@ -54,6 +71,19 @@ export default async function InvoiceDetailPage({
         slug={slug}
         isAdmin={isAdmin}
       />
+
+      {/* Generated Documents section */}
+      <div className="space-y-4">
+        <h2 className="font-display text-lg text-slate-950 dark:text-slate-50">
+          Generated Documents
+        </h2>
+        <GeneratedDocumentsList
+          entityType="INVOICE"
+          entityId={id}
+          slug={slug}
+          isAdmin={isAdmin}
+        />
+      </div>
     </div>
   );
 }

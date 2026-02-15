@@ -36,6 +36,8 @@ function makeTimeEntry(overrides: Partial<TimeEntry> = {}): TimeEntry {
     billableValue: 400,
     costValue: 200,
     description: "Worked on feature",
+    invoiceId: null,
+    invoiceNumber: null,
     createdAt: "2025-06-15T10:00:00Z",
     updatedAt: "2025-06-15T10:00:00Z",
     ...overrides,
@@ -194,21 +196,21 @@ describe("Time Entry Billable UI", () => {
     });
   });
 
-  it("billable indicator renders in TimeEntryList with badges", () => {
+  it("billing status badges render in TimeEntryList", () => {
     const entries = makeEntries();
 
     render(<TimeEntryList entries={entries} />);
 
     // Scope to the table body to avoid matching header/filter text
     const tbody = screen.getByRole("table").querySelector("tbody")!;
-    const billableBadges = within(tbody).getAllByText("Billable");
-    const nonBillableBadges = within(tbody).getAllByText("Non-billable");
-
-    expect(billableBadges).toHaveLength(2); // te1 and te3
-    expect(nonBillableBadges).toHaveLength(1); // te2
+    // te1 and te3 are billable with no invoiceId → "Unbilled" badges
+    const unbilledBadges = within(tbody).getAllByText("Unbilled");
+    expect(unbilledBadges).toHaveLength(2);
+    // te2 is non-billable → no badge rendered
+    expect(within(tbody).queryByText("Non-billable")).not.toBeInTheDocument();
   });
 
-  it("filter toggle filters entries by billable status", async () => {
+  it("filter toggle filters entries by billing status", async () => {
     const entries = makeEntries();
     const user = userEvent.setup();
 
@@ -219,16 +221,16 @@ describe("Time Entry Billable UI", () => {
     // 1 header + 3 data rows
     expect(allRows).toHaveLength(4);
 
-    // Click "Billable" filter
+    // Click "Unbilled" filter (billable entries without invoiceId)
     const filterGroup = screen.getByRole("group", {
-      name: "Billable filter",
+      name: "Billing status filter",
     });
-    const billableBtn = within(filterGroup).getByText("Billable");
-    await user.click(billableBtn);
+    const unbilledBtn = within(filterGroup).getByText("Unbilled");
+    await user.click(unbilledBtn);
 
-    // Only billable entries (te1 and te3) should show
-    const billableRows = screen.getAllByRole("row");
-    expect(billableRows).toHaveLength(3); // 1 header + 2 data rows
+    // Only unbilled entries (te1 and te3: billable, no invoiceId) should show
+    const unbilledRows = screen.getAllByRole("row");
+    expect(unbilledRows).toHaveLength(3); // 1 header + 2 data rows
 
     // Click "Non-billable" filter
     const nonBillableBtn = within(filterGroup).getByText("Non-billable");

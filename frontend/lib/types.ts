@@ -184,6 +184,8 @@ export interface TimeEntry {
   billableValue: number | null;
   costValue: number | null;
   description: string | null;
+  invoiceId: string | null;
+  invoiceNumber: string | null;
   createdAt: string;
   updatedAt: string;
 }

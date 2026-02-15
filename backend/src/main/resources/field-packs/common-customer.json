@@ -1,0 +1,87 @@
+{
+  "packId": "common-customer",
+  "version": 1,
+  "entityType": "CUSTOMER",
+  "group": {
+    "slug": "contact_address",
+    "name": "Contact & Address",
+    "description": "Standard contact and address fields for customers"
+  },
+  "fields": [
+    {
+      "slug": "address_line1",
+      "name": "Address Line 1",
+      "fieldType": "TEXT",
+      "description": "Street address",
+      "required": false,
+      "sortOrder": 1
+    },
+    {
+      "slug": "address_line2",
+      "name": "Address Line 2",
+      "fieldType": "TEXT",
+      "description": "Suite, unit, building, floor, etc.",
+      "required": false,
+      "sortOrder": 2
+    },
+    {
+      "slug": "city",
+      "name": "City",
+      "fieldType": "TEXT",
+      "description": "City or locality",
+      "required": false,
+      "sortOrder": 3
+    },
+    {
+      "slug": "state_province",
+      "name": "State / Province",
+      "fieldType": "TEXT",
+      "description": "State, province, or region",
+      "required": false,
+      "sortOrder": 4
+    },
+    {
+      "slug": "postal_code",
+      "name": "Postal Code",
+      "fieldType": "TEXT",
+      "description": "ZIP or postal code",
+      "required": false,
+      "sortOrder": 5
+    },
+    {
+      "slug": "country",
+      "name": "Country",
+      "fieldType": "DROPDOWN",
+      "description": "Country",
+      "required": false,
+      "options": [
+        { "value": "US", "label": "United States" },
+        { "value": "CA", "label": "Canada" },
+        { "value": "GB", "label": "United Kingdom" },
+        { "value": "AU", "label": "Australia" },
+        { "value": "ZA", "label": "South Africa" },
+        { "value": "DE", "label": "Germany" },
+        { "value": "FR", "label": "France" },
+        { "value": "NL", "label": "Netherlands" },
+        { "value": "NZ", "label": "New Zealand" }
+      ],
+      "sortOrder": 6
+    },
+    {
+      "slug": "tax_number",
+      "name": "Tax Number",
+      "fieldType": "TEXT",
+      "description": "Tax identification number (VAT, EIN, GST, etc.)",
+      "required": false,
+      "sortOrder": 7
+    },
+    {
+      "slug": "phone",
+      "name": "Phone",
+      "fieldType": "PHONE",
+      "description": "Primary phone number",
+      "required": false,
+      "sortOrder": 8
+    }
+  ]
+}

@@ -148,4 +148,8 @@ public class FieldGroup implements TenantAware {
   public void setSortOrder(int sortOrder) {
     this.sortOrder = sortOrder;
   }
+
+  public void setPackId(String packId) {
+    this.packId = packId;
+  }
 }

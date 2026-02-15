@@ -10,10 +10,16 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.ParamDef;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "org_settings")
@@ -37,6 +43,10 @@ public class OrgSettings implements TenantAware {
 
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
+
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "field_pack_status", columnDefinition = "jsonb")
+  private List<Map<String, Object>> fieldPackStatus;
 
   protected OrgSettings() {}
 
@@ -75,5 +85,26 @@ public class OrgSettings implements TenantAware {
   @Override
   public void setTenantId(String tenantId) {
     this.tenantId = tenantId;
+  }
+
+  public List<Map<String, Object>> getFieldPackStatus() {
+    return fieldPackStatus;
+  }
+
+  public void setFieldPackStatus(List<Map<String, Object>> fieldPackStatus) {
+    this.fieldPackStatus = fieldPackStatus;
+  }
+
+  /** Records a field pack application in the status list. */
+  public void recordPackApplication(String packId, int version) {
+    if (this.fieldPackStatus == null) {
+      this.fieldPackStatus = new ArrayList<>();
+    }
+    var entry = new HashMap<String, Object>();
+    entry.put("packId", packId);
+    entry.put("version", version);
+    entry.put("appliedAt", Instant.now().toString());
+    this.fieldPackStatus.add(entry);
+    this.updatedAt = Instant.now();
   }
 }

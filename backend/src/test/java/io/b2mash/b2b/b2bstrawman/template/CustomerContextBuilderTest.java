@@ -9,18 +9,8 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
-import io.b2mash.b2b.b2bstrawman.member.Member;
-import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
-import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
-import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService.PresignedDownloadResult;
-import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
-import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
-import io.b2mash.b2b.b2bstrawman.tag.EntityTag;
-import io.b2mash.b2b.b2bstrawman.tag.EntityTagRepository;
-import io.b2mash.b2b.b2bstrawman.tag.Tag;
-import io.b2mash.b2b.b2bstrawman.tag.TagRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,11 +27,7 @@ class CustomerContextBuilderTest {
   @Mock private CustomerRepository customerRepository;
   @Mock private CustomerProjectRepository customerProjectRepository;
   @Mock private ProjectRepository projectRepository;
-  @Mock private EntityTagRepository entityTagRepository;
-  @Mock private TagRepository tagRepository;
-  @Mock private OrgSettingsRepository orgSettingsRepository;
-  @Mock private MemberRepository memberRepository;
-  @Mock private S3PresignedUrlService s3PresignedUrlService;
+  @Mock private TemplateContextHelper contextHelper;
 
   @InjectMocks private CustomerContextBuilder builder;
 
@@ -65,11 +51,10 @@ class CustomerContextBuilderTest {
     var project = new Project("Project Alpha", "desc", memberId);
     when(projectRepository.findAllByIds(List.of(projectId))).thenReturn(List.of(project));
 
-    when(entityTagRepository.findByEntityTypeAndEntityId("CUSTOMER", customerId))
-        .thenReturn(List.of());
-    when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.empty());
-    when(memberRepository.findOneById(memberId))
-        .thenReturn(Optional.of(new Member("clerk", "user@test.com", "User", null, "admin")));
+    when(contextHelper.buildTagsList("CUSTOMER", customerId)).thenReturn(List.of());
+    when(contextHelper.buildOrgContext()).thenReturn(Map.of());
+    when(contextHelper.buildGeneratedByMap(memberId))
+        .thenReturn(Map.of("name", "User", "email", "user@test.com"));
 
     var context = builder.buildContext(customerId, memberId);
 
@@ -92,10 +77,9 @@ class CustomerContextBuilderTest {
     var customer = new Customer("Solo Customer", "solo@example.com", null, null, null, memberId);
     when(customerRepository.findOneById(customerId)).thenReturn(Optional.of(customer));
     when(customerProjectRepository.findByCustomerId(customerId)).thenReturn(List.of());
-    when(entityTagRepository.findByEntityTypeAndEntityId("CUSTOMER", customerId))
-        .thenReturn(List.of());
-    when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.empty());
-    when(memberRepository.findOneById(memberId)).thenReturn(Optional.empty());
+    when(contextHelper.buildTagsList("CUSTOMER", customerId)).thenReturn(List.of());
+    when(contextHelper.buildOrgContext()).thenReturn(Map.of());
+    when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
 
     var context = builder.buildContext(customerId, memberId);
 
@@ -111,10 +95,9 @@ class CustomerContextBuilderTest {
     customer.setCustomFields(Map.of("industry", "Tech", "tier", "Gold"));
     when(customerRepository.findOneById(customerId)).thenReturn(Optional.of(customer));
     when(customerProjectRepository.findByCustomerId(customerId)).thenReturn(List.of());
-    when(entityTagRepository.findByEntityTypeAndEntityId("CUSTOMER", customerId))
-        .thenReturn(List.of());
-    when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.empty());
-    when(memberRepository.findOneById(memberId)).thenReturn(Optional.empty());
+    when(contextHelper.buildTagsList("CUSTOMER", customerId)).thenReturn(List.of());
+    when(contextHelper.buildOrgContext()).thenReturn(Map.of());
+    when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
 
     var context = builder.buildContext(customerId, memberId);
 
@@ -132,12 +115,10 @@ class CustomerContextBuilderTest {
     when(customerRepository.findOneById(customerId)).thenReturn(Optional.of(customer));
     when(customerProjectRepository.findByCustomerId(customerId)).thenReturn(List.of());
 
-    var tagId = UUID.randomUUID();
-    when(entityTagRepository.findByEntityTypeAndEntityId("CUSTOMER", customerId))
-        .thenReturn(List.of(new EntityTag(tagId, "CUSTOMER", customerId)));
-    when(tagRepository.findAllByIds(List.of(tagId))).thenReturn(List.of(new Tag("VIP", "#gold")));
-    when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.empty());
-    when(memberRepository.findOneById(memberId)).thenReturn(Optional.empty());
+    when(contextHelper.buildTagsList("CUSTOMER", customerId))
+        .thenReturn(List.of(Map.of("name", "VIP", "color", "#gold")));
+    when(contextHelper.buildOrgContext()).thenReturn(Map.of());
+    when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
 
     var context = builder.buildContext(customerId, memberId);
 
@@ -152,15 +133,11 @@ class CustomerContextBuilderTest {
     var customer = new Customer("Logo Customer", "logo@example.com", null, null, null, memberId);
     when(customerRepository.findOneById(customerId)).thenReturn(Optional.of(customer));
     when(customerProjectRepository.findByCustomerId(customerId)).thenReturn(List.of());
-    when(entityTagRepository.findByEntityTypeAndEntityId("CUSTOMER", customerId))
-        .thenReturn(List.of());
+    when(contextHelper.buildTagsList("CUSTOMER", customerId)).thenReturn(List.of());
 
-    var settings = new OrgSettings("ZAR");
-    settings.setLogoS3Key("org/o1/branding/logo.png");
-    when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.of(settings));
-    when(s3PresignedUrlService.generateDownloadUrl("org/o1/branding/logo.png"))
-        .thenReturn(new PresignedDownloadResult("https://s3.example.com/logo.png", 300));
-    when(memberRepository.findOneById(memberId)).thenReturn(Optional.empty());
+    when(contextHelper.buildOrgContext())
+        .thenReturn(Map.of("logoUrl", "https://s3.example.com/logo.png"));
+    when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
 
     var context = builder.buildContext(customerId, memberId);
 

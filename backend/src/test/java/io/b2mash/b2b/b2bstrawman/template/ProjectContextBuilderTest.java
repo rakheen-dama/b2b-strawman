@@ -11,20 +11,10 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
-import io.b2mash.b2b.b2bstrawman.member.Member;
-import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberInfo;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
-import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
-import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService.PresignedDownloadResult;
-import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
-import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
-import io.b2mash.b2b.b2bstrawman.tag.EntityTag;
-import io.b2mash.b2b.b2bstrawman.tag.EntityTagRepository;
-import io.b2mash.b2b.b2bstrawman.tag.Tag;
-import io.b2mash.b2b.b2bstrawman.tag.TagRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -44,12 +34,8 @@ class ProjectContextBuilderTest {
   @Mock private CustomerRepository customerRepository;
   @Mock private CustomerProjectRepository customerProjectRepository;
   @Mock private ProjectMemberRepository projectMemberRepository;
-  @Mock private MemberRepository memberRepository;
   @Mock private ProjectBudgetRepository projectBudgetRepository;
-  @Mock private EntityTagRepository entityTagRepository;
-  @Mock private TagRepository tagRepository;
-  @Mock private OrgSettingsRepository orgSettingsRepository;
-  @Mock private S3PresignedUrlService s3PresignedUrlService;
+  @Mock private TemplateContextHelper contextHelper;
 
   @InjectMocks private ProjectContextBuilder builder;
 
@@ -80,12 +66,10 @@ class ProjectContextBuilderTest {
             projectId, BigDecimal.valueOf(100), BigDecimal.valueOf(5000), "USD", 80, null);
     when(projectBudgetRepository.findByProjectId(projectId)).thenReturn(Optional.of(budget));
 
-    when(entityTagRepository.findByEntityTypeAndEntityId("PROJECT", projectId))
-        .thenReturn(List.of());
-    when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.empty());
-
-    var member = new Member("clerk_user", "user@test.com", "Test User", null, "admin");
-    when(memberRepository.findOneById(memberId)).thenReturn(Optional.of(member));
+    when(contextHelper.buildTagsList("PROJECT", projectId)).thenReturn(List.of());
+    when(contextHelper.buildOrgContext()).thenReturn(Map.of());
+    when(contextHelper.buildGeneratedByMap(memberId))
+        .thenReturn(Map.of("name", "Test User", "email", "user@test.com"));
 
     var context = builder.buildContext(projectId, memberId);
 
@@ -117,10 +101,9 @@ class ProjectContextBuilderTest {
     when(customerProjectRepository.findByProjectId(projectId)).thenReturn(List.of());
     when(projectMemberRepository.findProjectMembersWithDetails(projectId)).thenReturn(List.of());
     when(projectBudgetRepository.findByProjectId(projectId)).thenReturn(Optional.empty());
-    when(entityTagRepository.findByEntityTypeAndEntityId("PROJECT", projectId))
-        .thenReturn(List.of());
-    when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.empty());
-    when(memberRepository.findOneById(memberId)).thenReturn(Optional.empty());
+    when(contextHelper.buildTagsList("PROJECT", projectId)).thenReturn(List.of());
+    when(contextHelper.buildOrgContext()).thenReturn(Map.of());
+    when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
 
     var context = builder.buildContext(projectId, memberId);
 
@@ -136,10 +119,9 @@ class ProjectContextBuilderTest {
     when(customerProjectRepository.findByProjectId(projectId)).thenReturn(List.of());
     when(projectMemberRepository.findProjectMembersWithDetails(projectId)).thenReturn(List.of());
     when(projectBudgetRepository.findByProjectId(projectId)).thenReturn(Optional.empty());
-    when(entityTagRepository.findByEntityTypeAndEntityId("PROJECT", projectId))
-        .thenReturn(List.of());
-    when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.empty());
-    when(memberRepository.findOneById(memberId)).thenReturn(Optional.empty());
+    when(contextHelper.buildTagsList("PROJECT", projectId)).thenReturn(List.of());
+    when(contextHelper.buildOrgContext()).thenReturn(Map.of());
+    when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
 
     var context = builder.buildContext(projectId, memberId);
 
@@ -158,16 +140,15 @@ class ProjectContextBuilderTest {
     when(customerProjectRepository.findByProjectId(projectId)).thenReturn(List.of());
     when(projectMemberRepository.findProjectMembersWithDetails(projectId)).thenReturn(List.of());
     when(projectBudgetRepository.findByProjectId(projectId)).thenReturn(Optional.empty());
-    when(entityTagRepository.findByEntityTypeAndEntityId("PROJECT", projectId))
-        .thenReturn(List.of());
+    when(contextHelper.buildTagsList("PROJECT", projectId)).thenReturn(List.of());
 
-    var settings = new OrgSettings("USD");
-    settings.setLogoS3Key("org/test-org/branding/logo.png");
-    settings.setBrandColor("#ff0000");
-    when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.of(settings));
-    when(s3PresignedUrlService.generateDownloadUrl("org/test-org/branding/logo.png"))
-        .thenReturn(new PresignedDownloadResult("https://s3.example.com/logo.png", 300));
-    when(memberRepository.findOneById(memberId)).thenReturn(Optional.empty());
+    when(contextHelper.buildOrgContext())
+        .thenReturn(
+            Map.of(
+                "logoUrl", "https://s3.example.com/logo.png",
+                "brandColor", "#ff0000",
+                "defaultCurrency", "USD"));
+    when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
 
     var context = builder.buildContext(projectId, memberId);
 
@@ -185,15 +166,10 @@ class ProjectContextBuilderTest {
     when(projectMemberRepository.findProjectMembersWithDetails(projectId)).thenReturn(List.of());
     when(projectBudgetRepository.findByProjectId(projectId)).thenReturn(Optional.empty());
 
-    var tagId = UUID.randomUUID();
-    var entityTag = new EntityTag(tagId, "PROJECT", projectId);
-    when(entityTagRepository.findByEntityTypeAndEntityId("PROJECT", projectId))
-        .thenReturn(List.of(entityTag));
-
-    var tag = new Tag("Urgent", "#ff0000");
-    when(tagRepository.findAllByIds(List.of(tagId))).thenReturn(List.of(tag));
-    when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.empty());
-    when(memberRepository.findOneById(memberId)).thenReturn(Optional.empty());
+    when(contextHelper.buildTagsList("PROJECT", projectId))
+        .thenReturn(List.of(Map.of("name", "Urgent", "color", "#ff0000")));
+    when(contextHelper.buildOrgContext()).thenReturn(Map.of());
+    when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
 
     var context = builder.buildContext(projectId, memberId);
 
@@ -222,10 +198,9 @@ class ProjectContextBuilderTest {
         .thenReturn(List.of(leadInfo, devInfo));
 
     when(projectBudgetRepository.findByProjectId(projectId)).thenReturn(Optional.empty());
-    when(entityTagRepository.findByEntityTypeAndEntityId("PROJECT", projectId))
-        .thenReturn(List.of());
-    when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.empty());
-    when(memberRepository.findOneById(memberId)).thenReturn(Optional.empty());
+    when(contextHelper.buildTagsList("PROJECT", projectId)).thenReturn(List.of());
+    when(contextHelper.buildOrgContext()).thenReturn(Map.of());
+    when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
 
     var context = builder.buildContext(projectId, memberId);
 

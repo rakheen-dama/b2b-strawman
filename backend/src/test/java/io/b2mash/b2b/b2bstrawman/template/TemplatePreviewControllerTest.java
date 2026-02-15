@@ -133,12 +133,67 @@ class TemplatePreviewControllerTest {
         .andExpect(status().isNotFound());
   }
 
+  @Test
+  void previewReturnsCSPSandboxHeader() throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                post("/api/templates/" + testTemplateId + "/preview")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"entityId": "%s"}
+                        """
+                            .formatted(testProjectId)))
+            .andExpect(status().isOk())
+            .andReturn();
+
+    assertThat(result.getResponse().getHeader("Content-Security-Policy")).isEqualTo("sandbox");
+  }
+
+  @Test
+  void previewReturns403ForMemberRole() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/templates/" + testTemplateId + "/preview")
+                .with(memberJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"entityId": "%s"}
+                    """
+                        .formatted(testProjectId)))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void previewReturns401WithoutAuth() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/templates/" + testTemplateId + "/preview")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"entityId": "%s"}
+                    """
+                        .formatted(testProjectId)))
+        .andExpect(status().isUnauthorized());
+  }
+
   // --- JWT Helpers ---
 
   private JwtRequestPostProcessor ownerJwt() {
     return jwt()
         .jwt(j -> j.subject("user_preview_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
+  }
+
+  private JwtRequestPostProcessor memberJwt() {
+    return jwt()
+        .jwt(
+            j -> j.subject("user_preview_member").claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
   }
 
   // --- Helpers ---

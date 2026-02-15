@@ -104,6 +104,7 @@ public class PdfRenderingService {
   }
 
   String renderThymeleaf(String templateContent, Map<String, Object> contextMap) {
+    TemplateSecurityValidator.validate(templateContent);
     var ctx = new Context();
     contextMap.forEach(ctx::setVariable);
     return stringTemplateEngine.process(templateContent, ctx);
@@ -125,7 +126,7 @@ public class PdfRenderingService {
       builder.run();
       return outputStream.toByteArray();
     } catch (IOException e) {
-      throw new RuntimeException("Failed to generate PDF", e);
+      throw new PdfGenerationException("Failed to generate PDF from rendered HTML", e);
     }
   }
 
@@ -170,7 +171,7 @@ public class PdfRenderingService {
 
   private static SpringTemplateEngine createStringTemplateEngine() {
     var engine = new SpringTemplateEngine();
-    engine.setEnableSpringELCompiler(true);
+    engine.setEnableSpringELCompiler(false);
     var resolver = new StringTemplateResolver();
     resolver.setTemplateMode(TemplateMode.HTML);
     engine.setTemplateResolver(resolver);

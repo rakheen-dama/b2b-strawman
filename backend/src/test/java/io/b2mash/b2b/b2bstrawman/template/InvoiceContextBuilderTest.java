@@ -11,11 +11,8 @@ import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
-import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
-import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
-import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -34,9 +31,7 @@ class InvoiceContextBuilderTest {
   @Mock private InvoiceLineRepository invoiceLineRepository;
   @Mock private CustomerRepository customerRepository;
   @Mock private ProjectRepository projectRepository;
-  @Mock private OrgSettingsRepository orgSettingsRepository;
-  @Mock private MemberRepository memberRepository;
-  @Mock private S3PresignedUrlService s3PresignedUrlService;
+  @Mock private TemplateContextHelper contextHelper;
 
   @InjectMocks private InvoiceContextBuilder builder;
 
@@ -74,8 +69,8 @@ class InvoiceContextBuilderTest {
     var project = new Project("Project X", "desc", memberId);
     when(projectRepository.findOneById(projectId)).thenReturn(Optional.of(project));
 
-    when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.empty());
-    when(memberRepository.findOneById(memberId)).thenReturn(Optional.empty());
+    when(contextHelper.buildOrgContext()).thenReturn(Map.of());
+    when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
 
     var context = builder.buildContext(invoiceId, memberId);
 
@@ -116,8 +111,8 @@ class InvoiceContextBuilderTest {
     var customer = new Customer("Solo Corp", "solo@test.com", null, null, null, memberId);
     when(customerRepository.findOneById(customerId)).thenReturn(Optional.of(customer));
 
-    when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.empty());
-    when(memberRepository.findOneById(memberId)).thenReturn(Optional.empty());
+    when(contextHelper.buildOrgContext()).thenReturn(Map.of());
+    when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
 
     var context = builder.buildContext(invoiceId, memberId);
 
@@ -135,8 +130,8 @@ class InvoiceContextBuilderTest {
     customer.setCustomFields(Map.of("vat_number", "VAT123"));
     when(customerRepository.findOneById(customerId)).thenReturn(Optional.of(customer));
 
-    when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.empty());
-    when(memberRepository.findOneById(memberId)).thenReturn(Optional.empty());
+    when(contextHelper.buildOrgContext()).thenReturn(Map.of());
+    when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
 
     var context = builder.buildContext(invoiceId, memberId);
 

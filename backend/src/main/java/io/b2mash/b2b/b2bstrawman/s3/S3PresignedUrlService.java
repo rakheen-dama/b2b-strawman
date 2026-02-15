@@ -15,7 +15,7 @@ public class S3PresignedUrlService {
 
   private static final Duration URL_EXPIRY = Duration.ofHours(1);
   private static final Pattern S3_KEY_PATTERN =
-      Pattern.compile("^org/[^/]+/(project/[^/]+|org-docs|customer/[^/]+)/[^/]+$");
+      Pattern.compile("^org/[^/]+/(project/[^/]+|org-docs|customer/[^/]+|branding)/[^/]+$");
 
   private final S3Presigner presigner;
   private final String bucketName;

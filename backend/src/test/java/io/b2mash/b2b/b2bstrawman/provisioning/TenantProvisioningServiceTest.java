@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.billing.SubscriptionService;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldPackSeeder;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.template.TemplatePackSeeder;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -34,6 +35,7 @@ class TenantProvisioningServiceTest {
   @Mock private DataSource migrationDataSource;
   @Mock private SubscriptionService subscriptionService;
   @Mock private FieldPackSeeder fieldPackSeeder;
+  @Mock private TemplatePackSeeder templatePackSeeder;
 
   private TenantProvisioningService service;
 
@@ -47,7 +49,8 @@ class TenantProvisioningServiceTest {
                 mappingRepository,
                 migrationDataSource,
                 subscriptionService,
-                fieldPackSeeder));
+                fieldPackSeeder,
+                templatePackSeeder));
   }
 
   @Test

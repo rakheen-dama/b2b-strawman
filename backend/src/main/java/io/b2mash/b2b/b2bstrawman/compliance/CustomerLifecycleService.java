@@ -82,8 +82,8 @@ public class CustomerLifecycleService {
             .build());
 
     // Emit domain event for notifications
-    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    String tenantId = RequestScopes.TENANT_ID.get();
+    String orgId = RequestScopes.requireOrgId();
     String actorName = resolveActorName(changedBy);
 
     eventPublisher.publishEvent(
@@ -111,18 +111,17 @@ public class CustomerLifecycleService {
 
   @Transactional(readOnly = true)
   public List<Customer> checkDormancy() {
-    int thresholdDays =
-        orgSettingsRepository
-            .findForCurrentTenant()
-            .map(s -> s.getDormancyThresholdDays() != null ? s.getDormancyThresholdDays() : 90)
-            .orElse(90);
-
+    int thresholdDays = getDormancyThresholdDays();
     Instant threshold = Instant.now().minus(thresholdDays, ChronoUnit.DAYS);
     return customerRepository.findActiveCustomersWithoutActivitySince(threshold);
   }
 
   @Transactional(readOnly = true)
   public int getDormancyThresholdDays() {
+    return resolveThresholdDays();
+  }
+
+  private int resolveThresholdDays() {
     return orgSettingsRepository
         .findForCurrentTenant()
         .map(s -> s.getDormancyThresholdDays() != null ? s.getDormancyThresholdDays() : 90)

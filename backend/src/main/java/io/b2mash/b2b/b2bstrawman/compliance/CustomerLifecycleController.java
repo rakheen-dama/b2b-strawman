@@ -1,12 +1,16 @@
 package io.b2mash.b2b.b2bstrawman.compliance;
 
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,13 +30,13 @@ public class CustomerLifecycleController {
   @PostMapping("/{id}/transition")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<CustomerLifecycleResponse> transitionCustomer(
-      @PathVariable UUID id, @RequestBody TransitionRequest request) {
+      @PathVariable UUID id, @Valid @RequestBody TransitionRequest request) {
     var customer =
         customerLifecycleService.transitionCustomer(id, request.targetStatus(), request.notes());
     return ResponseEntity.ok(CustomerLifecycleResponse.from(customer));
   }
 
-  @PostMapping("/dormancy-check")
+  @GetMapping("/dormancy-check")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<DormancyCheckResponse> checkDormancy() {
     int thresholdDays = customerLifecycleService.getDormancyThresholdDays();
@@ -52,7 +56,7 @@ public class CustomerLifecycleController {
     return ResponseEntity.ok(new DormancyCheckResponse(thresholdDays, candidateResponses));
   }
 
-  public record TransitionRequest(String targetStatus, String notes) {}
+  public record TransitionRequest(@NotBlank String targetStatus, @Size(max = 1000) String notes) {}
 
   public record CustomerLifecycleResponse(
       UUID id,

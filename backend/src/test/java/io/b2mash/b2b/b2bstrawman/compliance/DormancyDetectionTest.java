@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.compliance;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -105,6 +106,7 @@ class DormancyDetectionTest {
                               java.sql.Timestamp.from(Instant.now().minus(120, ChronoUnit.DAYS)))
                           .setParameter("id", dormantCandidateId)
                           .executeUpdate();
+                      entityManager.clear();
 
                       // Customer with recent updatedAt (should NOT be flagged)
                       var recentCustomer =
@@ -128,7 +130,7 @@ class DormancyDetectionTest {
   @Test
   void dormancyCheckReturnsCandidatesWithOldActivity() throws Exception {
     mockMvc
-        .perform(post("/api/customers/dormancy-check").with(ownerJwt()))
+        .perform(get("/api/customers/dormancy-check").with(ownerJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.thresholdDays").value(90))
         .andExpect(jsonPath("$.candidates").isArray())
@@ -139,7 +141,7 @@ class DormancyDetectionTest {
   void dormancyCheckExcludesRecentlyActiveCustomers() throws Exception {
     var result =
         mockMvc
-            .perform(post("/api/customers/dormancy-check").with(ownerJwt()))
+            .perform(get("/api/customers/dormancy-check").with(ownerJwt()))
             .andExpect(status().isOk())
             .andReturn();
 
@@ -153,7 +155,7 @@ class DormancyDetectionTest {
   @Test
   void dormancyCheckEndpointReturnsCorrectStructure() throws Exception {
     mockMvc
-        .perform(post("/api/customers/dormancy-check").with(ownerJwt()))
+        .perform(get("/api/customers/dormancy-check").with(ownerJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.thresholdDays").isNumber())
         .andExpect(jsonPath("$.candidates").isArray())

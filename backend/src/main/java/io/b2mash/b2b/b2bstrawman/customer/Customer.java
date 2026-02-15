@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.FilterDef;
@@ -26,6 +27,9 @@ import org.hibernate.type.SqlTypes;
 @Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
 @EntityListeners(TenantAwareEntityListener.class)
 public class Customer implements TenantAware {
+
+  public static final Set<String> VALID_LIFECYCLE_STATUSES =
+      Set.of("PROSPECT", "ONBOARDING", "ACTIVE", "DORMANT", "OFFBOARDED");
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
@@ -68,6 +72,18 @@ public class Customer implements TenantAware {
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "applied_field_groups", columnDefinition = "jsonb")
   private List<UUID> appliedFieldGroups;
+
+  @Column(name = "lifecycle_status", nullable = false, length = 20)
+  private String lifecycleStatus = "PROSPECT";
+
+  @Column(name = "lifecycle_status_changed_at")
+  private Instant lifecycleStatusChangedAt;
+
+  @Column(name = "lifecycle_status_changed_by")
+  private UUID lifecycleStatusChangedBy;
+
+  @Column(name = "offboarded_at")
+  private Instant offboardedAt;
 
   protected Customer() {}
 
@@ -163,6 +179,43 @@ public class Customer implements TenantAware {
 
   public void setAppliedFieldGroups(List<UUID> appliedFieldGroups) {
     this.appliedFieldGroups = appliedFieldGroups;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getLifecycleStatus() {
+    return lifecycleStatus;
+  }
+
+  public Instant getLifecycleStatusChangedAt() {
+    return lifecycleStatusChangedAt;
+  }
+
+  public UUID getLifecycleStatusChangedBy() {
+    return lifecycleStatusChangedBy;
+  }
+
+  public Instant getOffboardedAt() {
+    return offboardedAt;
+  }
+
+  /**
+   * Transitions the customer to a new lifecycle status, updating all lifecycle fields atomically.
+   *
+   * @throws IllegalArgumentException if the new status is not a valid lifecycle status
+   */
+  public void transitionLifecycle(
+      String newStatus, UUID changedBy, Instant changedAt, Instant offboardedAt) {
+    if (!VALID_LIFECYCLE_STATUSES.contains(newStatus)) {
+      throw new IllegalArgumentException(
+          "Invalid lifecycle status: "
+              + newStatus
+              + ". Must be one of "
+              + VALID_LIFECYCLE_STATUSES);
+    }
+    this.lifecycleStatus = newStatus;
+    this.lifecycleStatusChangedAt = changedAt;
+    this.lifecycleStatusChangedBy = changedBy;
+    this.offboardedAt = offboardedAt;
     this.updatedAt = Instant.now();
   }
 }

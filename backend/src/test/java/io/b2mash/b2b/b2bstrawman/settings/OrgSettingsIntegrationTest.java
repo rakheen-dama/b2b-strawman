@@ -1,5 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.settings;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -8,10 +11,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -27,6 +33,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -42,7 +49,11 @@ class OrgSettingsIntegrationTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
+  @Autowired private OrgSettingsRepository orgSettingsRepository;
+  @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
+  @Autowired private TransactionTemplate transactionTemplate;
 
+  private String tenantSchema;
   private String memberIdOwner;
   private String memberIdAdmin;
   private String memberIdMember;
@@ -58,6 +69,9 @@ class OrgSettingsIntegrationTest {
         syncMember(ORG_ID, "user_settings_admin", "settings_admin@test.com", "Admin", "admin");
     memberIdMember =
         syncMember(ORG_ID, "user_settings_member", "settings_member@test.com", "Member", "member");
+
+    tenantSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
   }
 
   @Test
@@ -195,6 +209,66 @@ class OrgSettingsIntegrationTest {
                     {"defaultCurrency": ""}
                     """))
         .andExpect(status().isBadRequest());
+  }
+
+  // --- Compliance column tests ---
+
+  @Test
+  @Order(10)
+  void complianceColumnsHaveDefaults() throws Exception {
+    // Ensure settings exist by calling GET (creates default if absent)
+    mockMvc.perform(get("/api/settings").with(ownerJwt())).andExpect(status().isOk());
+
+    var settingsRef = new AtomicReference<OrgSettings>();
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
+                      settingsRef.set(settings);
+                    }));
+
+    var settings = settingsRef.get();
+    assertEquals(90, settings.getDormancyThresholdDays());
+    assertEquals(30, settings.getDataRequestDeadlineDays());
+    assertNull(settings.getCompliancePackStatus());
+  }
+
+  @Test
+  @Order(11)
+  void recordCompliancePackApplicationAppendsToJsonbArray() throws Exception {
+    // Ensure settings exist
+    mockMvc.perform(get("/api/settings").with(ownerJwt())).andExpect(status().isOk());
+
+    // Apply two compliance packs
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
+                      settings.recordCompliancePackApplication("generic-onboarding", 1);
+                      settings.recordCompliancePackApplication("sa-fica-individual", 1);
+                      orgSettingsRepository.save(settings);
+                    }));
+
+    // Verify JSONB array has 2 entries
+    var settingsRef = new AtomicReference<OrgSettings>();
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
+                      settingsRef.set(settings);
+                    }));
+
+    var settings = settingsRef.get();
+    assertNotNull(settings.getCompliancePackStatus());
+    assertEquals(2, settings.getCompliancePackStatus().size());
+    assertEquals("generic-onboarding", settings.getCompliancePackStatus().get(0).get("packId"));
+    assertEquals("sa-fica-individual", settings.getCompliancePackStatus().get(1).get("packId"));
   }
 
   // --- Helpers ---

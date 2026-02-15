@@ -30,15 +30,15 @@ public class DocumentTemplateController {
   }
 
   @GetMapping
+  @PreAuthorize("isAuthenticated()")
   public ResponseEntity<List<TemplateListResponse>> listTemplates(
-      @RequestParam(required = false) String category,
-      @RequestParam(required = false) String primaryEntityType) {
+      @RequestParam(required = false) TemplateCategory category,
+      @RequestParam(required = false) TemplateEntityType primaryEntityType) {
     List<TemplateListResponse> templates;
-    if (category != null && !category.isBlank()) {
-      templates = documentTemplateService.listByCategory(TemplateCategory.valueOf(category));
-    } else if (primaryEntityType != null && !primaryEntityType.isBlank()) {
-      templates =
-          documentTemplateService.listByEntityType(TemplateEntityType.valueOf(primaryEntityType));
+    if (category != null) {
+      templates = documentTemplateService.listByCategory(category);
+    } else if (primaryEntityType != null) {
+      templates = documentTemplateService.listByEntityType(primaryEntityType);
     } else {
       templates = documentTemplateService.listAll();
     }
@@ -46,6 +46,7 @@ public class DocumentTemplateController {
   }
 
   @GetMapping("/{id}")
+  @PreAuthorize("isAuthenticated()")
   public ResponseEntity<TemplateDetailResponse> getTemplate(@PathVariable UUID id) {
     return ResponseEntity.ok(documentTemplateService.getById(id));
   }
@@ -77,14 +78,18 @@ public class DocumentTemplateController {
   public record CreateTemplateRequest(
       @NotBlank String name,
       String description,
-      @NotNull String category,
-      @NotNull String primaryEntityType,
+      @NotNull TemplateCategory category,
+      @NotNull TemplateEntityType primaryEntityType,
       @NotBlank String content,
       String css,
       String slug) {}
 
   public record UpdateTemplateRequest(
-      String name, String description, String content, String css, Integer sortOrder) {}
+      @NotBlank String name,
+      String description,
+      @NotBlank String content,
+      String css,
+      Integer sortOrder) {}
 
   public record TemplateListResponse(
       UUID id,

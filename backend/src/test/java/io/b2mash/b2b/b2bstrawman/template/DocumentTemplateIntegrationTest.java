@@ -153,8 +153,8 @@ class DocumentTemplateIntegrationTest {
               new DocumentTemplateController.CreateTemplateRequest(
                   "Slug Unique Test",
                   null,
-                  "PROPOSAL",
-                  "PROJECT",
+                  TemplateCategory.PROPOSAL,
+                  TemplateEntityType.PROJECT,
                   "<p>First</p>",
                   null,
                   "slug-unique-test");
@@ -165,8 +165,8 @@ class DocumentTemplateIntegrationTest {
               new DocumentTemplateController.CreateTemplateRequest(
                   "Slug Unique Test 2",
                   null,
-                  "PROPOSAL",
-                  "PROJECT",
+                  TemplateCategory.PROPOSAL,
+                  TemplateEntityType.PROJECT,
                   "<p>Second</p>",
                   null,
                   "slug-unique-test");
@@ -187,8 +187,8 @@ class DocumentTemplateIntegrationTest {
               new DocumentTemplateController.CreateTemplateRequest(
                   "Deactivate Test",
                   null,
-                  "REPORT",
-                  "PROJECT",
+                  TemplateCategory.REPORT,
+                  TemplateEntityType.PROJECT,
                   "<p>Report</p>",
                   null,
                   "deactivate-test");
@@ -202,7 +202,7 @@ class DocumentTemplateIntegrationTest {
   }
 
   @Test
-  void adminCanCreateTemplate() {
+  void shouldCreateTemplateWithAdminRole() {
     syncMemberSafe(ORG_ID_A, "user_dt_admin_a", "dt_admin_a@test.com", "DT Admin A", "admin");
 
     // Use owner member but with admin role — RBAC is checked by @PreAuthorize on controller
@@ -216,8 +216,8 @@ class DocumentTemplateIntegrationTest {
               new DocumentTemplateController.CreateTemplateRequest(
                   "Admin Created",
                   null,
-                  "OTHER",
-                  "CUSTOMER",
+                  TemplateCategory.OTHER,
+                  TemplateEntityType.CUSTOMER,
                   "<p>Admin template</p>",
                   null,
                   "admin-created");
@@ -236,13 +236,19 @@ class DocumentTemplateIntegrationTest {
         () -> {
           documentTemplateService.create(
               new DocumentTemplateController.CreateTemplateRequest(
-                  "Cat Test 1", null, "COVER_LETTER", "PROJECT", "<p>CL1</p>", null, "cat-test-1"));
+                  "Cat Test 1",
+                  null,
+                  TemplateCategory.COVER_LETTER,
+                  TemplateEntityType.PROJECT,
+                  "<p>CL1</p>",
+                  null,
+                  "cat-test-1"));
           documentTemplateService.create(
               new DocumentTemplateController.CreateTemplateRequest(
                   "Cat Test 2",
                   null,
-                  "STATEMENT_OF_WORK",
-                  "PROJECT",
+                  TemplateCategory.STATEMENT_OF_WORK,
+                  TemplateEntityType.PROJECT,
                   "<p>SOW1</p>",
                   null,
                   "cat-test-2"));
@@ -265,8 +271,8 @@ class DocumentTemplateIntegrationTest {
               new DocumentTemplateController.CreateTemplateRequest(
                   "Entity Test 1",
                   null,
-                  "PROPOSAL",
-                  "INVOICE",
+                  TemplateCategory.PROPOSAL,
+                  TemplateEntityType.INVOICE,
                   "<p>Inv1</p>",
                   null,
                   "entity-test-1"));

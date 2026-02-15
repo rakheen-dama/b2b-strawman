@@ -71,8 +71,8 @@ public class DocumentTemplateService {
             : DocumentTemplate.generateSlug(request.name());
     String finalSlug = resolveUniqueSlug(baseSlug);
 
-    TemplateCategory category = TemplateCategory.valueOf(request.category());
-    TemplateEntityType entityType = TemplateEntityType.valueOf(request.primaryEntityType());
+    TemplateCategory category = request.category();
+    TemplateEntityType entityType = request.primaryEntityType();
 
     var dt =
         new DocumentTemplate(entityType, request.name(), finalSlug, category, request.content());
@@ -161,6 +161,13 @@ public class DocumentTemplateService {
             .build());
   }
 
+  /**
+   * Best-effort slug uniqueness resolution. There is an inherent TOCTOU race between the
+   * findBySlug() check and the subsequent INSERT — concurrent requests creating templates with the
+   * same name may both pass this check. The DB unique constraint on slug is the authoritative
+   * guard; a DataIntegrityViolationException from save() is caught in create() and surfaced as a
+   * 409 Conflict, which is acceptable behavior for concurrent same-name creation.
+   */
   private String resolveUniqueSlug(String baseSlug) {
     String finalSlug = baseSlug;
     int suffix = 2;

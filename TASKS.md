@@ -105,9 +105,9 @@
 | **Phase 11 — Tags, Custom Fields & Views** | | | | | | See [tasks/phase11-tags-custom-fields-views.md](tasks/phase11-tags-custom-fields-views.md) |
 | 87 | Field Definition & Custom Field Backend | Backend | -- | L | 87A, 87B, 87C | **Done** (PRs #179, #181, #183) |
 | 88 | Tags Backend | Backend | -- | M | 88A, 88B | **Done** (PRs #180, #185) |
-| 89 | Saved Views Backend | Backend | 87C, 88B | M | 89A, 89B | |
+| 89 | Saved Views Backend | Backend | 87C, 88B | M | 89A, 89B | 89A Done (PR #187) |
 | 90 | Field Pack Seeding | Backend | 87A | S | 90A | **Done** (PR #182) |
-| 91 | Custom Fields Frontend | Frontend | 87, 90 | L | 91A, 91B | 91A Done (PR #184) |
+| 91 | Custom Fields Frontend | Frontend | 87, 90 | L | 91A, 91B | **Done** (PRs #184, #186) |
 | 92 | Tags & Saved Views Frontend | Frontend | 88, 89 | L | 92A, 92B | |
 | **Phase 12 — Document Templates & PDF Generation** | | | | | | See [tasks/phase12-document-templates.md](tasks/phase12-document-templates.md) |
 | 93 | DocumentTemplate Entity Foundation | Backend | -- | L | 93A, 93B | |

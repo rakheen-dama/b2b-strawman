@@ -5,7 +5,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.tag.EntityTagService;
-import io.b2mash.b2b.b2bstrawman.tag.TagRepository;
+import io.b2mash.b2b.b2bstrawman.tag.TagFilterUtil;
 import io.b2mash.b2b.b2bstrawman.tag.dto.SetEntityTagsRequest;
 import io.b2mash.b2b.b2bstrawman.tag.dto.TagResponse;
 import jakarta.validation.Valid;
@@ -13,13 +13,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -38,15 +35,10 @@ public class ProjectController {
 
   private final ProjectService projectService;
   private final EntityTagService entityTagService;
-  private final TagRepository tagRepository;
 
-  public ProjectController(
-      ProjectService projectService,
-      EntityTagService entityTagService,
-      TagRepository tagRepository) {
+  public ProjectController(ProjectService projectService, EntityTagService entityTagService) {
     this.projectService = projectService;
     this.entityTagService = entityTagService;
-    this.tagRepository = tagRepository;
   }
 
   @GetMapping
@@ -55,14 +47,20 @@ public class ProjectController {
       @RequestParam(required = false) Map<String, String> allParams) {
     UUID memberId = RequestScopes.requireMemberId();
     String orgRole = RequestScopes.getOrgRole();
+    var projectsWithRoles = projectService.listProjects(memberId, orgRole);
+
+    // Batch-load tags for all projects (2 queries instead of 2N)
+    var projectIds = projectsWithRoles.stream().map(pwr -> pwr.project().getId()).toList();
+    var tagsByEntityId = entityTagService.getEntityTagsBatch("PROJECT", projectIds);
+
     var projects =
-        projectService.listProjects(memberId, orgRole).stream()
+        projectsWithRoles.stream()
             .map(
                 pwr ->
                     ProjectResponse.from(
                         pwr.project(),
                         pwr.projectRole(),
-                        entityTagService.getEntityTags("PROJECT", pwr.project().getId())))
+                        tagsByEntityId.getOrDefault(pwr.project().getId(), List.of())))
             .toList();
 
     // Apply custom field filtering if present
@@ -75,9 +73,12 @@ public class ProjectController {
     }
 
     // Apply tag filtering if present
-    List<String> tagSlugs = extractTagSlugs(allParams);
+    List<String> tagSlugs = TagFilterUtil.extractTagSlugs(allParams);
     if (!tagSlugs.isEmpty()) {
-      projects = projects.stream().filter(p -> matchesTagFilter(p.tags(), tagSlugs)).toList();
+      projects =
+          projects.stream()
+              .filter(p -> TagFilterUtil.matchesTagFilter(p.tags(), tagSlugs))
+              .toList();
     }
 
     return ResponseEntity.ok(projects);
@@ -149,7 +150,7 @@ public class ProjectController {
   @PostMapping("/{id}/tags")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<TagResponse>> setProjectTags(
-      @PathVariable UUID id, @RequestBody SetEntityTagsRequest request) {
+      @PathVariable UUID id, @Valid @RequestBody SetEntityTagsRequest request) {
     UUID memberId = RequestScopes.requireMemberId();
     String orgRole = RequestScopes.getOrgRole();
     // Verify project access
@@ -195,25 +196,6 @@ public class ProjectController {
       }
     }
     return true;
-  }
-
-  private List<String> extractTagSlugs(Map<String, String> allParams) {
-    if (allParams == null || !allParams.containsKey("tags")) {
-      return List.of();
-    }
-    String tagsParam = allParams.get("tags");
-    if (tagsParam == null || tagsParam.isBlank()) {
-      return List.of();
-    }
-    return Arrays.stream(tagsParam.split(",")).map(String::trim).filter(s -> !s.isEmpty()).toList();
-  }
-
-  private boolean matchesTagFilter(List<TagResponse> entityTags, List<String> requiredSlugs) {
-    if (entityTags == null) {
-      return false;
-    }
-    Set<String> tagSlugs = entityTags.stream().map(TagResponse::slug).collect(Collectors.toSet());
-    return tagSlugs.containsAll(requiredSlugs);
   }
 
   public record CreateProjectRequest(

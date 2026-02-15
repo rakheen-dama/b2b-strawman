@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.tag.EntityTagService;
+import io.b2mash.b2b.b2bstrawman.tag.TagFilterUtil;
 import io.b2mash.b2b.b2bstrawman.tag.dto.SetEntityTagsRequest;
 import io.b2mash.b2b.b2bstrawman.tag.dto.TagResponse;
 import jakarta.validation.Valid;
@@ -14,12 +15,10 @@ import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -91,10 +90,15 @@ public class TaskController {
         taskService.listTasks(
             projectId, memberId, orgRole, status, assigneeId, priority, assigneeFilter);
     var names = resolveNames(taskEntities);
+
+    // Batch-load tags for all tasks (2 queries instead of 2N)
+    var taskIds = taskEntities.stream().map(Task::getId).toList();
+    var tagsByEntityId = entityTagService.getEntityTagsBatch("TASK", taskIds);
+
     var tasks =
         taskEntities.stream()
             .map(
-                t -> TaskResponse.from(t, names, entityTagService.getEntityTags("TASK", t.getId())))
+                t -> TaskResponse.from(t, names, tagsByEntityId.getOrDefault(t.getId(), List.of())))
             .toList();
 
     // Apply custom field filtering if present
@@ -107,9 +111,10 @@ public class TaskController {
     }
 
     // Apply tag filtering if present
-    List<String> tagSlugs = extractTagSlugs(allParams);
+    List<String> tagSlugs = TagFilterUtil.extractTagSlugs(allParams);
     if (!tagSlugs.isEmpty()) {
-      tasks = tasks.stream().filter(t -> matchesTagFilter(t.tags(), tagSlugs)).toList();
+      tasks =
+          tasks.stream().filter(t -> TagFilterUtil.matchesTagFilter(t.tags(), tagSlugs)).toList();
     }
 
     return ResponseEntity.ok(tasks);
@@ -201,7 +206,7 @@ public class TaskController {
   @PostMapping("/api/tasks/{id}/tags")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<TagResponse>> setTaskTags(
-      @PathVariable UUID id, @RequestBody SetEntityTagsRequest request) {
+      @PathVariable UUID id, @Valid @RequestBody SetEntityTagsRequest request) {
     UUID memberId = RequestScopes.requireMemberId();
     String orgRole = RequestScopes.getOrgRole();
     // Verify task access
@@ -267,25 +272,6 @@ public class TaskController {
       }
     }
     return true;
-  }
-
-  private List<String> extractTagSlugs(Map<String, String> allParams) {
-    if (allParams == null || !allParams.containsKey("tags")) {
-      return List.of();
-    }
-    String tagsParam = allParams.get("tags");
-    if (tagsParam == null || tagsParam.isBlank()) {
-      return List.of();
-    }
-    return Arrays.stream(tagsParam.split(",")).map(String::trim).filter(s -> !s.isEmpty()).toList();
-  }
-
-  private boolean matchesTagFilter(List<TagResponse> entityTags, List<String> requiredSlugs) {
-    if (entityTags == null) {
-      return false;
-    }
-    Set<String> tagSlugs = entityTags.stream().map(TagResponse::slug).collect(Collectors.toSet());
-    return tagSlugs.containsAll(requiredSlugs);
   }
 
   // --- DTOs ---

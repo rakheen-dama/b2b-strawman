@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledTimeResponse;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.tag.EntityTagService;
+import io.b2mash.b2b.b2bstrawman.tag.TagFilterUtil;
 import io.b2mash.b2b.b2bstrawman.tag.dto.SetEntityTagsRequest;
 import io.b2mash.b2b.b2bstrawman.tag.dto.TagResponse;
 import jakarta.validation.Valid;
@@ -16,13 +17,10 @@ import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -60,11 +58,15 @@ public class CustomerController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<CustomerResponse>> listCustomers(
       @RequestParam(required = false) Map<String, String> allParams) {
+    var customerEntities = customerService.listCustomers();
+
+    // Batch-load tags for all customers (2 queries instead of 2N)
+    var customerIds = customerEntities.stream().map(Customer::getId).toList();
+    var tagsByEntityId = entityTagService.getEntityTagsBatch("CUSTOMER", customerIds);
+
     var customers =
-        customerService.listCustomers().stream()
-            .map(
-                c ->
-                    CustomerResponse.from(c, entityTagService.getEntityTags("CUSTOMER", c.getId())))
+        customerEntities.stream()
+            .map(c -> CustomerResponse.from(c, tagsByEntityId.getOrDefault(c.getId(), List.of())))
             .toList();
 
     // Apply custom field filtering if present
@@ -77,9 +79,12 @@ public class CustomerController {
     }
 
     // Apply tag filtering if present
-    List<String> tagSlugs = extractTagSlugs(allParams);
+    List<String> tagSlugs = TagFilterUtil.extractTagSlugs(allParams);
     if (!tagSlugs.isEmpty()) {
-      customers = customers.stream().filter(c -> matchesTagFilter(c.tags(), tagSlugs)).toList();
+      customers =
+          customers.stream()
+              .filter(c -> TagFilterUtil.matchesTagFilter(c.tags(), tagSlugs))
+              .toList();
     }
 
     return ResponseEntity.ok(customers);
@@ -193,7 +198,7 @@ public class CustomerController {
   @PostMapping("/{id}/tags")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<TagResponse>> setCustomerTags(
-      @PathVariable UUID id, @RequestBody SetEntityTagsRequest request) {
+      @PathVariable UUID id, @Valid @RequestBody SetEntityTagsRequest request) {
     // Verify customer exists
     customerService.getCustomer(id);
     var tags = entityTagService.setEntityTags("CUSTOMER", id, request.tagIds());
@@ -235,25 +240,6 @@ public class CustomerController {
       }
     }
     return true;
-  }
-
-  private List<String> extractTagSlugs(Map<String, String> allParams) {
-    if (allParams == null || !allParams.containsKey("tags")) {
-      return List.of();
-    }
-    String tagsParam = allParams.get("tags");
-    if (tagsParam == null || tagsParam.isBlank()) {
-      return List.of();
-    }
-    return Arrays.stream(tagsParam.split(",")).map(String::trim).filter(s -> !s.isEmpty()).toList();
-  }
-
-  private boolean matchesTagFilter(List<TagResponse> entityTags, List<String> requiredSlugs) {
-    if (entityTags == null) {
-      return false;
-    }
-    Set<String> tagSlugs = entityTags.stream().map(TagResponse::slug).collect(Collectors.toSet());
-    return tagSlugs.containsAll(requiredSlugs);
   }
 
   // --- DTOs ---

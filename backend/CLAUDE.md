@@ -51,6 +51,45 @@ Organize by **feature**, not by layer. Each feature package contains its entity,
 - Use Spring's `ProblemDetail` (RFC 9457) for error responses
 - No Lombok — Java 25 records and pattern matching cover most use cases
 
+## Query Performance Conventions
+
+### Entity Design
+- Entities use **UUID foreign key columns** (not `@ManyToOne`/`@OneToMany` JPA relationships) — this is deliberate to avoid hidden N+1 queries
+- Never add JPA relationship annotations (`@ManyToOne`, `@OneToMany`, `@ManyToMany`) — use plain `UUID` fields and load associations manually
+
+### Batch Loading Pattern (Mandatory)
+When a service method needs to resolve related entities for a collection, **always batch-load upfront** — never query inside a loop:
+
+```java
+// CORRECT — batch load, then iterate with maps
+var taskIds = entries.stream().map(Entry::getTaskId).distinct().toList();
+var taskMap = taskRepository.findAllById(taskIds).stream()
+    .collect(Collectors.toMap(Task::getId, t -> t));
+entries.forEach(e -> { var task = taskMap.get(e.getTaskId()); ... });
+
+// WRONG — N+1 queries
+entries.forEach(e -> {
+  var task = taskRepository.findOneById(e.getTaskId()); // query per iteration
+});
+```
+
+Reference implementations: `MyWorkService.getMyTimeEntries()`, `ActivityService.getProjectActivity()`, `DashboardService.computePersonalDashboard()`.
+
+### Hibernate Configuration
+- `default_batch_fetch_size: 16` — configured in `application.yml` for `findAllById()` batching
+- `jdbc.batch_size: 25` — batches INSERT/UPDATE statements
+- `open-in-view: false` — OSIV disabled globally (required for schema multitenancy)
+- SQL logging is **off by default** in local profile; enable temporarily via `show-sql: true` or `org.hibernate.SQL: DEBUG` when debugging
+
+### SQL Logging (Local Dev)
+To temporarily enable SQL logging for debugging, update `application-local.yml`:
+```yaml
+spring.jpa.show-sql: true                    # Print SQL to stdout
+logging.level.org.hibernate.SQL: DEBUG        # SQL via SLF4J (pick one, not both)
+logging.level.org.hibernate.orm.jdbc.bind: TRACE  # Show parameter values
+```
+**Always turn these off when done** — they produce 2-3x log volume per query.
+
 ## Anti-Patterns — Never Do This
 
 - Never use `@Autowired` on fields — use constructor injection

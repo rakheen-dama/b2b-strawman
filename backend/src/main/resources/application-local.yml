@@ -33,7 +33,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -76,6 +76,6 @@ portal:
 
 logging:
   level:
-    org.hibernate.SQL: INFO
-    org.hibernate.orm.jdbc.bind: INFO
+    org.hibernate.SQL: WARN
+    org.hibernate.orm.jdbc.bind: WARN
     org.flywaydb: INFO

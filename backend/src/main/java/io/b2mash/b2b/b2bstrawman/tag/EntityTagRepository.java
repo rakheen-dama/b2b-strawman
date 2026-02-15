@@ -21,4 +21,9 @@ public interface EntityTagRepository extends JpaRepository<EntityTag, UUID> {
 
   @Query("SELECT COUNT(et) FROM EntityTag et WHERE et.tagId = :tagId")
   long countByTagId(@Param("tagId") UUID tagId);
+
+  @Query(
+      "SELECT et FROM EntityTag et WHERE et.entityType = :entityType AND et.entityId IN :entityIds")
+  List<EntityTag> findByEntityTypeAndEntityIdIn(
+      @Param("entityType") String entityType, @Param("entityIds") List<UUID> entityIds);
 }

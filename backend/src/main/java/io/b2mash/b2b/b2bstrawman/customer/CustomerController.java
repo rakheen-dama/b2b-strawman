@@ -6,6 +6,10 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceService;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledTimeResponse;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
+import io.b2mash.b2b.b2bstrawman.tag.EntityTagService;
+import io.b2mash.b2b.b2bstrawman.tag.TagFilterUtil;
+import io.b2mash.b2b.b2bstrawman.tag.dto.SetEntityTagsRequest;
+import io.b2mash.b2b.b2bstrawman.tag.dto.TagResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -37,21 +41,33 @@ public class CustomerController {
   private final CustomerService customerService;
   private final CustomerProjectService customerProjectService;
   private final InvoiceService invoiceService;
+  private final EntityTagService entityTagService;
 
   public CustomerController(
       CustomerService customerService,
       CustomerProjectService customerProjectService,
-      InvoiceService invoiceService) {
+      InvoiceService invoiceService,
+      EntityTagService entityTagService) {
     this.customerService = customerService;
     this.customerProjectService = customerProjectService;
     this.invoiceService = invoiceService;
+    this.entityTagService = entityTagService;
   }
 
   @GetMapping
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<CustomerResponse>> listCustomers(
       @RequestParam(required = false) Map<String, String> allParams) {
-    var customers = customerService.listCustomers().stream().map(CustomerResponse::from).toList();
+    var customerEntities = customerService.listCustomers();
+
+    // Batch-load tags for all customers (2 queries instead of 2N)
+    var customerIds = customerEntities.stream().map(Customer::getId).toList();
+    var tagsByEntityId = entityTagService.getEntityTagsBatch("CUSTOMER", customerIds);
+
+    var customers =
+        customerEntities.stream()
+            .map(c -> CustomerResponse.from(c, tagsByEntityId.getOrDefault(c.getId(), List.of())))
+            .toList();
 
     // Apply custom field filtering if present
     Map<String, String> customFieldFilters = extractCustomFieldFilters(allParams);
@@ -62,6 +78,15 @@ public class CustomerController {
               .toList();
     }
 
+    // Apply tag filtering if present
+    List<String> tagSlugs = TagFilterUtil.extractTagSlugs(allParams);
+    if (!tagSlugs.isEmpty()) {
+      customers =
+          customers.stream()
+              .filter(c -> TagFilterUtil.matchesTagFilter(c.tags(), tagSlugs))
+              .toList();
+    }
+
     return ResponseEntity.ok(customers);
   }
 
@@ -69,7 +94,8 @@ public class CustomerController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<CustomerResponse> getCustomer(@PathVariable UUID id) {
     var customer = customerService.getCustomer(id);
-    return ResponseEntity.ok(CustomerResponse.from(customer));
+    var tags = entityTagService.getEntityTags("CUSTOMER", id);
+    return ResponseEntity.ok(CustomerResponse.from(customer, tags));
   }
 
   @PostMapping
@@ -88,7 +114,7 @@ public class CustomerController {
             request.customFields(),
             request.appliedFieldGroups());
     return ResponseEntity.created(URI.create("/api/customers/" + customer.getId()))
-        .body(CustomerResponse.from(customer));
+        .body(CustomerResponse.from(customer, List.of()));
   }
 
   @PutMapping("/{id}")
@@ -105,14 +131,16 @@ public class CustomerController {
             request.notes(),
             request.customFields(),
             request.appliedFieldGroups());
-    return ResponseEntity.ok(CustomerResponse.from(customer));
+    var tags = entityTagService.getEntityTags("CUSTOMER", id);
+    return ResponseEntity.ok(CustomerResponse.from(customer, tags));
   }
 
   @DeleteMapping("/{id}")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<CustomerResponse> archiveCustomer(@PathVariable UUID id) {
     var customer = customerService.archiveCustomer(id);
-    return ResponseEntity.ok(CustomerResponse.from(customer));
+    var tags = entityTagService.getEntityTags("CUSTOMER", id);
+    return ResponseEntity.ok(CustomerResponse.from(customer, tags));
   }
 
   // --- Customer-Project linking endpoints ---
@@ -165,6 +193,25 @@ public class CustomerController {
       @PathVariable UUID id, @Valid @RequestBody SetFieldGroupsRequest request) {
     var fieldDefs = customerService.setFieldGroups(id, request.appliedFieldGroups());
     return ResponseEntity.ok(fieldDefs);
+  }
+
+  @PostMapping("/{id}/tags")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<List<TagResponse>> setCustomerTags(
+      @PathVariable UUID id, @Valid @RequestBody SetEntityTagsRequest request) {
+    // Verify customer exists
+    customerService.getCustomer(id);
+    var tags = entityTagService.setEntityTags("CUSTOMER", id, request.tagIds());
+    return ResponseEntity.ok(tags);
+  }
+
+  @GetMapping("/{id}/tags")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<List<TagResponse>> getCustomerTags(@PathVariable UUID id) {
+    // Verify customer exists
+    customerService.getCustomer(id);
+    var tags = entityTagService.getEntityTags("CUSTOMER", id);
+    return ResponseEntity.ok(tags);
   }
 
   private Map<String, String> extractCustomFieldFilters(Map<String, String> allParams) {
@@ -237,7 +284,8 @@ public class CustomerController {
       Instant createdAt,
       Instant updatedAt,
       Map<String, Object> customFields,
-      List<UUID> appliedFieldGroups) {
+      List<UUID> appliedFieldGroups,
+      List<TagResponse> tags) {
 
     public static CustomerResponse from(Customer customer) {
       return new CustomerResponse(
@@ -252,7 +300,25 @@ public class CustomerController {
           customer.getCreatedAt(),
           customer.getUpdatedAt(),
           customer.getCustomFields(),
-          customer.getAppliedFieldGroups());
+          customer.getAppliedFieldGroups(),
+          List.of());
+    }
+
+    public static CustomerResponse from(Customer customer, List<TagResponse> tags) {
+      return new CustomerResponse(
+          customer.getId(),
+          customer.getName(),
+          customer.getEmail(),
+          customer.getPhone(),
+          customer.getIdNumber(),
+          customer.getStatus(),
+          customer.getNotes(),
+          customer.getCreatedBy(),
+          customer.getCreatedAt(),
+          customer.getUpdatedAt(),
+          customer.getCustomFields(),
+          customer.getAppliedFieldGroups(),
+          tags);
     }
   }
 

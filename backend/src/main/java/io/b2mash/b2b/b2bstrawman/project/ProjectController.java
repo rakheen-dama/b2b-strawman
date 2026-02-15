@@ -4,6 +4,10 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
+import io.b2mash.b2b.b2bstrawman.tag.EntityTagService;
+import io.b2mash.b2b.b2bstrawman.tag.TagFilterUtil;
+import io.b2mash.b2b.b2bstrawman.tag.dto.SetEntityTagsRequest;
+import io.b2mash.b2b.b2bstrawman.tag.dto.TagResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -30,9 +34,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProjectController {
 
   private final ProjectService projectService;
+  private final EntityTagService entityTagService;
 
-  public ProjectController(ProjectService projectService) {
+  public ProjectController(ProjectService projectService, EntityTagService entityTagService) {
     this.projectService = projectService;
+    this.entityTagService = entityTagService;
   }
 
   @GetMapping
@@ -41,9 +47,20 @@ public class ProjectController {
       @RequestParam(required = false) Map<String, String> allParams) {
     UUID memberId = RequestScopes.requireMemberId();
     String orgRole = RequestScopes.getOrgRole();
+    var projectsWithRoles = projectService.listProjects(memberId, orgRole);
+
+    // Batch-load tags for all projects (2 queries instead of 2N)
+    var projectIds = projectsWithRoles.stream().map(pwr -> pwr.project().getId()).toList();
+    var tagsByEntityId = entityTagService.getEntityTagsBatch("PROJECT", projectIds);
+
     var projects =
-        projectService.listProjects(memberId, orgRole).stream()
-            .map(pwr -> ProjectResponse.from(pwr.project(), pwr.projectRole()))
+        projectsWithRoles.stream()
+            .map(
+                pwr ->
+                    ProjectResponse.from(
+                        pwr.project(),
+                        pwr.projectRole(),
+                        tagsByEntityId.getOrDefault(pwr.project().getId(), List.of())))
             .toList();
 
     // Apply custom field filtering if present
@@ -52,6 +69,15 @@ public class ProjectController {
       projects =
           projects.stream()
               .filter(p -> matchesCustomFieldFilters(p.customFields(), customFieldFilters))
+              .toList();
+    }
+
+    // Apply tag filtering if present
+    List<String> tagSlugs = TagFilterUtil.extractTagSlugs(allParams);
+    if (!tagSlugs.isEmpty()) {
+      projects =
+          projects.stream()
+              .filter(p -> TagFilterUtil.matchesTagFilter(p.tags(), tagSlugs))
               .toList();
     }
 
@@ -64,7 +90,8 @@ public class ProjectController {
     UUID memberId = RequestScopes.requireMemberId();
     String orgRole = RequestScopes.getOrgRole();
     var pwr = projectService.getProject(id, memberId, orgRole);
-    return ResponseEntity.ok(ProjectResponse.from(pwr.project(), pwr.projectRole()));
+    var tags = entityTagService.getEntityTags("PROJECT", id);
+    return ResponseEntity.ok(ProjectResponse.from(pwr.project(), pwr.projectRole(), tags));
   }
 
   @PostMapping
@@ -80,7 +107,7 @@ public class ProjectController {
             request.customFields(),
             request.appliedFieldGroups());
     return ResponseEntity.created(URI.create("/api/projects/" + project.getId()))
-        .body(ProjectResponse.from(project, Roles.PROJECT_LEAD));
+        .body(ProjectResponse.from(project, Roles.PROJECT_LEAD, List.of()));
   }
 
   @PutMapping("/{id}")
@@ -98,7 +125,8 @@ public class ProjectController {
             orgRole,
             request.customFields(),
             request.appliedFieldGroups());
-    return ResponseEntity.ok(ProjectResponse.from(pwr.project(), pwr.projectRole()));
+    var tags = entityTagService.getEntityTags("PROJECT", id);
+    return ResponseEntity.ok(ProjectResponse.from(pwr.project(), pwr.projectRole(), tags));
   }
 
   @DeleteMapping("/{id}")
@@ -117,6 +145,29 @@ public class ProjectController {
     var fieldDefs =
         projectService.setFieldGroups(id, request.appliedFieldGroups(), memberId, orgRole);
     return ResponseEntity.ok(fieldDefs);
+  }
+
+  @PostMapping("/{id}/tags")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<List<TagResponse>> setProjectTags(
+      @PathVariable UUID id, @Valid @RequestBody SetEntityTagsRequest request) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+    // Verify project access
+    projectService.getProject(id, memberId, orgRole);
+    var tags = entityTagService.setEntityTags("PROJECT", id, request.tagIds());
+    return ResponseEntity.ok(tags);
+  }
+
+  @GetMapping("/{id}/tags")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<List<TagResponse>> getProjectTags(@PathVariable UUID id) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+    // Verify project access
+    projectService.getProject(id, memberId, orgRole);
+    var tags = entityTagService.getEntityTags("PROJECT", id);
+    return ResponseEntity.ok(tags);
   }
 
   private Map<String, String> extractCustomFieldFilters(Map<String, String> allParams) {
@@ -172,7 +223,8 @@ public class ProjectController {
       Instant updatedAt,
       String projectRole,
       Map<String, Object> customFields,
-      List<UUID> appliedFieldGroups) {
+      List<UUID> appliedFieldGroups,
+      List<TagResponse> tags) {
 
     public static ProjectResponse from(Project project) {
       return new ProjectResponse(
@@ -184,7 +236,8 @@ public class ProjectController {
           project.getUpdatedAt(),
           null,
           project.getCustomFields(),
-          project.getAppliedFieldGroups());
+          project.getAppliedFieldGroups(),
+          List.of());
     }
 
     public static ProjectResponse from(Project project, String projectRole) {
@@ -197,7 +250,23 @@ public class ProjectController {
           project.getUpdatedAt(),
           projectRole,
           project.getCustomFields(),
-          project.getAppliedFieldGroups());
+          project.getAppliedFieldGroups(),
+          List.of());
+    }
+
+    public static ProjectResponse from(
+        Project project, String projectRole, List<TagResponse> tags) {
+      return new ProjectResponse(
+          project.getId(),
+          project.getName(),
+          project.getDescription(),
+          project.getCreatedBy(),
+          project.getCreatedAt(),
+          project.getUpdatedAt(),
+          projectRole,
+          project.getCustomFields(),
+          project.getAppliedFieldGroups(),
+          tags);
     }
   }
 }

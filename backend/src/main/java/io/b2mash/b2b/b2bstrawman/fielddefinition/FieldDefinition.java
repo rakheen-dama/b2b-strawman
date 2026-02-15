@@ -238,4 +238,12 @@ public class FieldDefinition implements TenantAware {
   public void setSortOrder(int sortOrder) {
     this.sortOrder = sortOrder;
   }
+
+  public void setPackId(String packId) {
+    this.packId = packId;
+  }
+
+  public void setPackFieldKey(String packFieldKey) {
+    this.packFieldKey = packFieldKey;
+  }
 }

@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.billing.SubscriptionService;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldPackSeeder;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import java.sql.Connection;
@@ -32,6 +33,7 @@ class TenantProvisioningServiceTest {
   @Mock private OrgSchemaMappingRepository mappingRepository;
   @Mock private DataSource migrationDataSource;
   @Mock private SubscriptionService subscriptionService;
+  @Mock private FieldPackSeeder fieldPackSeeder;
 
   private TenantProvisioningService service;
 
@@ -44,7 +46,8 @@ class TenantProvisioningServiceTest {
                 organizationRepository,
                 mappingRepository,
                 migrationDataSource,
-                subscriptionService));
+                subscriptionService,
+                fieldPackSeeder));
   }
 
   @Test

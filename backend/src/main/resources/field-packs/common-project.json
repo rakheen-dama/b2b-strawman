@@ -1,0 +1,41 @@
+{
+  "packId": "common-project",
+  "version": 1,
+  "entityType": "PROJECT",
+  "group": {
+    "slug": "project_info",
+    "name": "Project Info",
+    "description": "Common project metadata fields"
+  },
+  "fields": [
+    {
+      "slug": "reference_number",
+      "name": "Reference Number",
+      "fieldType": "TEXT",
+      "description": "External reference or tracking number",
+      "required": false,
+      "sortOrder": 1
+    },
+    {
+      "slug": "priority",
+      "name": "Priority",
+      "fieldType": "DROPDOWN",
+      "description": "Project priority level",
+      "required": false,
+      "options": [
+        { "value": "low", "label": "Low" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "high", "label": "High" }
+      ],
+      "sortOrder": 2
+    },
+    {
+      "slug": "category",
+      "name": "Category",
+      "fieldType": "TEXT",
+      "description": "Project category or type",
+      "required": false,
+      "sortOrder": 3
+    }
+  ]
+}

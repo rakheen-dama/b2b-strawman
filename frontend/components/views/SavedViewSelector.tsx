@@ -26,7 +26,7 @@ export function SavedViewSelector({
       className="flex items-center gap-3"
       data-testid="saved-view-selector"
     >
-      <Eye className="size-4 text-olive-400" />
+      <Eye className="size-4 text-slate-400" />
       <Tabs
         value={currentViewId ?? "all"}
         onValueChange={(val) => onViewChange(val === "all" ? null : val)}
@@ -37,7 +37,7 @@ export function SavedViewSelector({
             <TabsTrigger key={view.id} value={view.id}>
               {view.name}
               {view.shared && (
-                <span className="ml-1 text-xs text-olive-400" title="Shared view">
+                <span className="ml-1 text-xs text-slate-400" title="Shared view">
                   (shared)
                 </span>
               )}

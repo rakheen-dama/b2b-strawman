@@ -43,7 +43,7 @@ export function TagFilter({ value, onChange, allTags }: TagFilterProps) {
 
   return (
     <div className="space-y-2">
-      <Label className="text-sm font-medium text-olive-700 dark:text-olive-300">
+      <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
         Tags
       </Label>
       <div className="flex flex-wrap items-center gap-1.5">
@@ -62,7 +62,7 @@ export function TagFilter({ value, onChange, allTags }: TagFilterProps) {
             <button
               type="button"
               onClick={() => handleRemove(tag.slug)}
-              className="ml-0.5 rounded-full p-0.5 hover:bg-olive-200 dark:hover:bg-olive-700"
+              className="ml-0.5 rounded-full p-0.5 hover:bg-slate-200 dark:hover:bg-slate-700"
               aria-label={`Remove ${tag.name}`}
             >
               <X className="size-3" />

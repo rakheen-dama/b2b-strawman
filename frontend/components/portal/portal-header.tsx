@@ -23,13 +23,13 @@ export function PortalHeader() {
   };
 
   return (
-    <header className="border-b border-olive-200 bg-white dark:border-olive-800 dark:bg-olive-950">
+    <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4 sm:px-6">
         {/* Left: Logo + nav */}
         <div className="flex items-center gap-6">
           <Link
             href="/portal/projects"
-            className="font-display text-lg text-olive-950 dark:text-olive-50"
+            className="font-display text-lg text-slate-950 dark:text-slate-50"
           >
             DocTeams Portal
           </Link>
@@ -45,8 +45,8 @@ export function PortalHeader() {
                   className={cn(
                     "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
                     isActive
-                      ? "bg-olive-100 text-olive-900 dark:bg-olive-800 dark:text-olive-100"
-                      : "text-olive-600 hover:bg-olive-50 hover:text-olive-900 dark:text-olive-400 dark:hover:bg-olive-900 dark:hover:text-olive-100",
+                      ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100"
+                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-slate-100",
                   )}
                 >
                   <item.icon className="size-4" />
@@ -60,7 +60,7 @@ export function PortalHeader() {
         {/* Right: Customer name + logout */}
         <div className="flex items-center gap-3">
           {customerName && (
-            <span className="hidden text-sm text-olive-600 sm:block dark:text-olive-400">
+            <span className="hidden text-sm text-slate-600 sm:block dark:text-slate-400">
               {customerName}
             </span>
           )}

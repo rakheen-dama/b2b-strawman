@@ -59,16 +59,16 @@ export function NotificationPreferencesForm({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-lg border border-olive-200 bg-white dark:border-olive-800 dark:bg-olive-950">
+      <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
         {/* Table header */}
-        <div className="grid grid-cols-[1fr_80px_80px] items-center gap-4 border-b border-olive-200 px-4 py-3 dark:border-olive-800">
-          <p className="text-sm font-semibold text-olive-900 dark:text-olive-100">
+        <div className="grid grid-cols-[1fr_80px_80px] items-center gap-4 border-b border-slate-200 px-4 py-3 dark:border-slate-800">
+          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             Notification Type
           </p>
-          <p className="text-center text-sm font-semibold text-olive-900 dark:text-olive-100">
+          <p className="text-center text-sm font-semibold text-slate-900 dark:text-slate-100">
             In-App
           </p>
-          <p className="text-center text-sm font-semibold text-olive-900 dark:text-olive-100">
+          <p className="text-center text-sm font-semibold text-slate-900 dark:text-slate-100">
             Email
           </p>
         </div>
@@ -84,11 +84,11 @@ export function NotificationPreferencesForm({
           return (
             <div
               key={pref.notificationType}
-              className="grid grid-cols-[1fr_80px_80px] items-center gap-4 border-b border-olive-100 px-4 py-3 last:border-b-0 dark:border-olive-800"
+              className="grid grid-cols-[1fr_80px_80px] items-center gap-4 border-b border-slate-100 px-4 py-3 last:border-b-0 dark:border-slate-800"
             >
               <Label
                 htmlFor={inAppId}
-                className="text-sm font-medium text-olive-800 dark:text-olive-200"
+                className="text-sm font-medium text-slate-800 dark:text-slate-200"
               >
                 {label}
               </Label>
@@ -107,7 +107,7 @@ export function NotificationPreferencesForm({
                   checked={pref.emailEnabled}
                   disabled
                 />
-                <span className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-olive-900 px-2 py-1 text-xs text-white opacity-0 shadow-sm transition-opacity group-hover:opacity-100 dark:bg-olive-100 dark:text-olive-900">
+                <span className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-slate-900 px-2 py-1 text-xs text-white opacity-0 shadow-sm transition-opacity group-hover:opacity-100 dark:bg-slate-100 dark:text-slate-900">
                   Coming soon
                 </span>
               </div>

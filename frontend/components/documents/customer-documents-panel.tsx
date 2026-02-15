@@ -71,8 +71,8 @@ export function CustomerDocumentsPanel({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h2 className="font-semibold text-olive-900 dark:text-olive-100">Documents</h2>
-          <span className="rounded-full bg-olive-200 px-2 py-0.5 text-xs text-olive-700 dark:bg-olive-800 dark:text-olive-300">
+          <h2 className="font-semibold text-slate-900 dark:text-slate-100">Documents</h2>
+          <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-300">
             {documents.length}
           </span>
         </div>
@@ -95,23 +95,23 @@ export function CustomerDocumentsPanel({
           }
         />
       ) : (
-        <div className="rounded-lg border border-olive-200 dark:border-olive-800">
+        <div className="rounded-lg border border-slate-200 dark:border-slate-800">
           <Table>
             <TableHeader>
-              <TableRow className="border-olive-200 hover:bg-transparent dark:border-olive-800">
-                <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+              <TableRow className="border-slate-200 hover:bg-transparent dark:border-slate-800">
+                <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   File
                 </TableHead>
-                <TableHead className="hidden text-xs uppercase tracking-wide text-olive-600 sm:table-cell dark:text-olive-400">
+                <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
                   Size
                 </TableHead>
-                <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   Status
                 </TableHead>
-                <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   Visibility
                 </TableHead>
-                <TableHead className="hidden text-xs uppercase tracking-wide text-olive-600 sm:table-cell dark:text-olive-400">
+                <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
                   Uploaded
                 </TableHead>
                 <TableHead className="w-[60px]" />
@@ -124,18 +124,18 @@ export function CustomerDocumentsPanel({
                 return (
                   <TableRow
                     key={doc.id}
-                    className="border-olive-100 transition-colors hover:bg-olive-50 dark:border-olive-800/50 dark:hover:bg-olive-900"
+                    className="border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900"
                   >
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Icon className="size-4 shrink-0 text-olive-400 dark:text-olive-500" />
-                        <span className="truncate text-sm font-medium text-olive-950 dark:text-olive-50">
+                        <Icon className="size-4 shrink-0 text-slate-400 dark:text-slate-500" />
+                        <span className="truncate text-sm font-medium text-slate-950 dark:text-slate-50">
                           {doc.fileName}
                         </span>
                       </div>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
-                      <span className="text-sm text-olive-600 dark:text-olive-400">
+                      <span className="text-sm text-slate-600 dark:text-slate-400">
                         {formatFileSize(doc.size)}
                       </span>
                     </TableCell>
@@ -152,13 +152,13 @@ export function CustomerDocumentsPanel({
                           disabled={doc.status !== "UPLOADED"}
                         />
                       ) : (
-                        <span className="text-sm text-olive-600 dark:text-olive-400">
+                        <span className="text-sm text-slate-600 dark:text-slate-400">
                           {doc.visibility === "SHARED" ? "Shared" : "Internal"}
                         </span>
                       )}
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
-                      <span className="text-sm text-olive-600 dark:text-olive-400">
+                      <span className="text-sm text-slate-600 dark:text-slate-400">
                         {doc.uploadedAt ? formatDate(doc.uploadedAt) : "\u2014"}
                       </span>
                     </TableCell>

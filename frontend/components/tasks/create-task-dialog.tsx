@@ -93,7 +93,7 @@ export function CreateTaskDialog({ slug, projectId, children }: CreateTaskDialog
                 id="task-priority"
                 name="priority"
                 defaultValue="MEDIUM"
-                className="flex h-9 w-full rounded-md border border-olive-200 bg-transparent px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-olive-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-olive-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-olive-800"
+                className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800"
               >
                 <option value="LOW">Low</option>
                 <option value="MEDIUM">Medium</option>

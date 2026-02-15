@@ -30,7 +30,7 @@ export default async function OrgLayout({
     <div className="flex min-h-screen">
       <DesktopSidebar slug={slug} />
       <div className="flex flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-olive-200/60 bg-white/80 px-4 backdrop-blur-md md:px-6 dark:border-olive-800/60 dark:bg-olive-950/80">
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-slate-200/60 bg-slate-100/80 px-4 backdrop-blur-md md:px-6 dark:border-slate-800/60 dark:bg-slate-950/90">
           <MobileSidebar slug={slug} />
           <Breadcrumbs slug={slug} />
           <div className="ml-auto flex items-center gap-3">
@@ -44,7 +44,7 @@ export default async function OrgLayout({
             <UserButton />
           </div>
         </header>
-        <main className="flex-1 bg-olive-50 dark:bg-olive-950">
+        <main className="flex-1 bg-background dark:bg-slate-950">
           <div className="mx-auto max-w-7xl px-6 py-6 lg:px-10">
             <PageTransition>{children}</PageTransition>
           </div>

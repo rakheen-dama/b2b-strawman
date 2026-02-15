@@ -74,7 +74,7 @@ export function CustomFieldsContent({
           {/* Field Definitions Section */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-olive-950 dark:text-olive-50">
+              <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
                 Field Definitions
               </h2>
               {canManage && (
@@ -88,7 +88,7 @@ export function CustomFieldsContent({
             </div>
 
             {fieldsByType[tab.value].length === 0 ? (
-              <p className="py-8 text-center text-sm text-olive-500 dark:text-olive-400">
+              <p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
                 No field definitions for {tab.label.toLowerCase()} yet.
               </p>
             ) : (
@@ -111,7 +111,7 @@ export function CustomFieldsContent({
                       <TableCell className="font-medium">
                         {field.name}
                         {field.description && (
-                          <p className="text-xs text-olive-500 dark:text-olive-400">
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
                             {field.description}
                           </p>
                         )}
@@ -123,7 +123,7 @@ export function CustomFieldsContent({
                         {field.required ? (
                           <Badge variant="warning">Required</Badge>
                         ) : (
-                          <span className="text-sm text-olive-400">
+                          <span className="text-sm text-slate-400">
                             Optional
                           </span>
                         )}
@@ -132,7 +132,7 @@ export function CustomFieldsContent({
                         {field.packId ? (
                           <Badge variant="pro">Pack</Badge>
                         ) : (
-                          <span className="text-sm text-olive-400">
+                          <span className="text-sm text-slate-400">
                             Custom
                           </span>
                         )}
@@ -194,7 +194,7 @@ export function CustomFieldsContent({
           {/* Field Groups Section */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-olive-950 dark:text-olive-50">
+              <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
                 Field Groups
               </h2>
               {canManage && (
@@ -212,7 +212,7 @@ export function CustomFieldsContent({
             </div>
 
             {groupsByType[tab.value].length === 0 ? (
-              <p className="py-8 text-center text-sm text-olive-500 dark:text-olive-400">
+              <p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
                 No field groups for {tab.label.toLowerCase()} yet.
               </p>
             ) : (
@@ -220,19 +220,19 @@ export function CustomFieldsContent({
                 {groupsByType[tab.value].map((group) => (
                   <div
                     key={group.id}
-                    className="rounded-lg border border-olive-200 bg-white p-4 dark:border-olive-800 dark:bg-olive-950"
+                    className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3">
-                        <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md bg-olive-100 dark:bg-olive-800">
-                          <Layers className="size-4 text-olive-600 dark:text-olive-400" />
+                        <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md bg-slate-100 dark:bg-slate-800">
+                          <Layers className="size-4 text-slate-600 dark:text-slate-400" />
                         </div>
                         <div>
-                          <p className="font-medium text-olive-950 dark:text-olive-50">
+                          <p className="font-medium text-slate-950 dark:text-slate-50">
                             {group.name}
                           </p>
                           {group.description && (
-                            <p className="mt-0.5 text-sm text-olive-500 dark:text-olive-400">
+                            <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
                               {group.description}
                             </p>
                           )}

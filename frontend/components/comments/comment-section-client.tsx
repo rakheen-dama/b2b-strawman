@@ -53,7 +53,7 @@ export function CommentSectionClient({
 
   if (isLoading) {
     return (
-      <p className="text-sm text-olive-500 dark:text-olive-400">
+      <p className="text-sm text-slate-500 dark:text-slate-400">
         Loading comments...
       </p>
     );
@@ -61,14 +61,14 @@ export function CommentSectionClient({
 
   return (
     <div className="space-y-4">
-      <h4 className="text-sm font-medium text-olive-900 dark:text-olive-100">
+      <h4 className="text-sm font-medium text-slate-900 dark:text-slate-100">
         Comments
       </h4>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       {comments.length === 0 && !error ? (
-        <p className="text-sm text-olive-500 dark:text-olive-400">
+        <p className="text-sm text-slate-500 dark:text-slate-400">
           No comments yet. Be the first to add one.
         </p>
       ) : (

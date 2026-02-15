@@ -22,13 +22,13 @@ export default function ProjectDetailLoading() {
       </div>
 
       {/* Tab Bar */}
-      <div className="flex gap-6 border-b border-olive-200 dark:border-olive-800">
+      <div className="flex gap-6 border-b border-slate-200 dark:border-slate-800">
         <Skeleton className="h-9 w-24" />
         <Skeleton className="h-9 w-24" />
       </div>
 
       {/* Table Skeleton */}
-      <div className="rounded-lg border border-olive-200 bg-white dark:border-olive-800 dark:bg-olive-950">
+      <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
         <div className="px-6 pt-6 pb-4">
           <Skeleton className="h-5 w-28" />
         </div>

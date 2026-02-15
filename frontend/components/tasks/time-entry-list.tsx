@@ -110,7 +110,7 @@ export function TimeEntryList({
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-semibold text-olive-900 dark:text-olive-100">
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             Time Entries
           </h3>
           <Badge variant="neutral">{formatDuration(totalMinutes)}</Badge>
@@ -131,8 +131,8 @@ export function TimeEntryList({
             className={cn(
               "rounded-full px-3 py-1 text-sm font-medium transition-colors",
               billingFilter === option.key
-                ? "bg-olive-900 text-olive-50 dark:bg-olive-100 dark:text-olive-900"
-                : "bg-olive-100 text-olive-600 hover:bg-olive-200 dark:bg-olive-800 dark:text-olive-400 dark:hover:bg-olive-700",
+                ? "bg-slate-900 text-slate-50 dark:bg-slate-100 dark:text-slate-900"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700",
             )}
           >
             {option.label}
@@ -141,7 +141,7 @@ export function TimeEntryList({
       </div>
 
       {filteredEntries.length === 0 ? (
-        <p className="py-4 text-center text-sm text-olive-500 dark:text-olive-400">
+        <p className="py-4 text-center text-sm text-slate-500 dark:text-slate-400">
           No{" "}
           {billingFilter === "all"
             ? ""
@@ -153,30 +153,30 @@ export function TimeEntryList({
           time entries.
         </p>
       ) : (
-        <div className="rounded-lg border border-olive-200 dark:border-olive-800">
+        <div className="rounded-lg border border-slate-200 dark:border-slate-800">
           <Table>
             <TableHeader>
-              <TableRow className="border-olive-200 hover:bg-transparent dark:border-olive-800">
-                <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+              <TableRow className="border-slate-200 hover:bg-transparent dark:border-slate-800">
+                <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   Date
                 </TableHead>
-                <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   Duration
                 </TableHead>
-                <TableHead className="hidden text-xs uppercase tracking-wide text-olive-600 sm:table-cell dark:text-olive-400">
+                <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
                   Member
                 </TableHead>
-                <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   Billing
                 </TableHead>
-                <TableHead className="hidden text-xs uppercase tracking-wide text-olive-600 sm:table-cell dark:text-olive-400">
+                <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
                   Value
                 </TableHead>
-                <TableHead className="hidden text-xs uppercase tracking-wide text-olive-600 sm:table-cell dark:text-olive-400">
+                <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
                   Description
                 </TableHead>
                 {showActionsColumn && (
-                  <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                  <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
                     Actions
                   </TableHead>
                 )}
@@ -190,15 +190,15 @@ export function TimeEntryList({
                 return (
                   <TableRow
                     key={entry.id}
-                    className="border-olive-100 transition-colors hover:bg-olive-50 dark:border-olive-800/50 dark:hover:bg-olive-900"
+                    className="border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900"
                   >
-                    <TableCell className="text-sm text-olive-600 dark:text-olive-400">
+                    <TableCell className="text-sm text-slate-600 dark:text-slate-400">
                       {formatDate(entry.date)}
                     </TableCell>
-                    <TableCell className="text-sm font-medium text-olive-950 dark:text-olive-50">
+                    <TableCell className="text-sm font-medium text-slate-950 dark:text-slate-50">
                       {formatDuration(entry.durationMinutes)}
                     </TableCell>
-                    <TableCell className="hidden text-sm text-olive-600 sm:table-cell dark:text-olive-400">
+                    <TableCell className="hidden text-sm text-slate-600 sm:table-cell dark:text-slate-400">
                       {entry.memberName}
                     </TableCell>
                     <TableCell>
@@ -209,10 +209,10 @@ export function TimeEntryList({
                         slug={slug}
                       />
                     </TableCell>
-                    <TableCell className="hidden text-sm text-olive-600 sm:table-cell dark:text-olive-400">
+                    <TableCell className="hidden text-sm text-slate-600 sm:table-cell dark:text-slate-400">
                       {entry.billableValue != null &&
                       entry.billingRateCurrency ? (
-                        <span className="font-medium text-olive-700 dark:text-olive-300">
+                        <span className="font-medium text-slate-700 dark:text-slate-300">
                           {formatCurrencySafe(
                             entry.billableValue,
                             entry.billingRateCurrency,
@@ -222,7 +222,7 @@ export function TimeEntryList({
                         "\u2014"
                       )}
                     </TableCell>
-                    <TableCell className="hidden max-w-[200px] truncate text-sm text-olive-500 sm:table-cell dark:text-olive-500">
+                    <TableCell className="hidden max-w-[200px] truncate text-sm text-slate-500 sm:table-cell dark:text-slate-500">
                       {entry.description ?? "\u2014"}
                     </TableCell>
                     {showActionsColumn && (

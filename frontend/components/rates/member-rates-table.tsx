@@ -106,13 +106,13 @@ export function MemberRatesTable({
   return (
     <div className="space-y-8">
       {/* Currency selector */}
-      <div className="rounded-lg border border-olive-200 bg-white p-6 dark:border-olive-800 dark:bg-olive-950">
+      <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-olive-950 dark:text-olive-50">
+            <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
               Default Currency
             </h2>
-            <p className="mt-1 text-sm text-olive-600 dark:text-olive-400">
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
               This currency will be pre-selected when creating new rates.
             </p>
           </div>
@@ -143,7 +143,7 @@ export function MemberRatesTable({
         </TabsList>
 
         <TabsContent value="billing" className="mt-4">
-          <div className="rounded-lg border border-olive-200 bg-white dark:border-olive-800 dark:bg-olive-950">
+          <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -166,10 +166,10 @@ export function MemberRatesTable({
                         <div className="flex items-center gap-3">
                           <AvatarCircle name={member.name} size={32} />
                           <div className="min-w-0">
-                            <p className="truncate font-medium text-olive-900 dark:text-olive-100">
+                            <p className="truncate font-medium text-slate-900 dark:text-slate-100">
                               {member.name}
                             </p>
-                            <p className="truncate text-xs text-olive-500 dark:text-olive-400">
+                            <p className="truncate text-xs text-slate-500 dark:text-slate-400">
                               {member.email}
                             </p>
                           </div>
@@ -184,7 +184,7 @@ export function MemberRatesTable({
                             )}
                           </span>
                         ) : (
-                          <span className="text-olive-400 dark:text-olive-600">
+                          <span className="text-slate-400 dark:text-slate-600">
                             Not set
                           </span>
                         )}
@@ -193,7 +193,7 @@ export function MemberRatesTable({
                         {activeRate ? (
                           activeRate.currency
                         ) : (
-                          <span className="text-olive-400 dark:text-olive-600">
+                          <span className="text-slate-400 dark:text-slate-600">
                             —
                           </span>
                         )}
@@ -202,7 +202,7 @@ export function MemberRatesTable({
                         {activeRate ? (
                           formatDate(activeRate.effectiveFrom)
                         ) : (
-                          <span className="text-olive-400 dark:text-olive-600">
+                          <span className="text-slate-400 dark:text-slate-600">
                             —
                           </span>
                         )}
@@ -211,11 +211,11 @@ export function MemberRatesTable({
                         {activeRate?.effectiveTo ? (
                           formatDate(activeRate.effectiveTo)
                         ) : activeRate ? (
-                          <span className="text-olive-400 dark:text-olive-600">
+                          <span className="text-slate-400 dark:text-slate-600">
                             Ongoing
                           </span>
                         ) : (
-                          <span className="text-olive-400 dark:text-olive-600">
+                          <span className="text-slate-400 dark:text-slate-600">
                             —
                           </span>
                         )}
@@ -279,7 +279,7 @@ export function MemberRatesTable({
         </TabsContent>
 
         <TabsContent value="cost" className="mt-4">
-          <div className="rounded-lg border border-olive-200 bg-white dark:border-olive-800 dark:bg-olive-950">
+          <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -302,10 +302,10 @@ export function MemberRatesTable({
                         <div className="flex items-center gap-3">
                           <AvatarCircle name={member.name} size={32} />
                           <div className="min-w-0">
-                            <p className="truncate font-medium text-olive-900 dark:text-olive-100">
+                            <p className="truncate font-medium text-slate-900 dark:text-slate-100">
                               {member.name}
                             </p>
-                            <p className="truncate text-xs text-olive-500 dark:text-olive-400">
+                            <p className="truncate text-xs text-slate-500 dark:text-slate-400">
                               {member.email}
                             </p>
                           </div>
@@ -320,7 +320,7 @@ export function MemberRatesTable({
                             )}
                           </span>
                         ) : (
-                          <span className="text-olive-400 dark:text-olive-600">
+                          <span className="text-slate-400 dark:text-slate-600">
                             Not set
                           </span>
                         )}
@@ -329,7 +329,7 @@ export function MemberRatesTable({
                         {activeRate ? (
                           activeRate.currency
                         ) : (
-                          <span className="text-olive-400 dark:text-olive-600">
+                          <span className="text-slate-400 dark:text-slate-600">
                             —
                           </span>
                         )}
@@ -338,7 +338,7 @@ export function MemberRatesTable({
                         {activeRate ? (
                           formatDate(activeRate.effectiveFrom)
                         ) : (
-                          <span className="text-olive-400 dark:text-olive-600">
+                          <span className="text-slate-400 dark:text-slate-600">
                             —
                           </span>
                         )}
@@ -347,11 +347,11 @@ export function MemberRatesTable({
                         {activeRate?.effectiveTo ? (
                           formatDate(activeRate.effectiveTo)
                         ) : activeRate ? (
-                          <span className="text-olive-400 dark:text-olive-600">
+                          <span className="text-slate-400 dark:text-slate-600">
                             Ongoing
                           </span>
                         ) : (
-                          <span className="text-olive-400 dark:text-olive-600">
+                          <span className="text-slate-400 dark:text-slate-600">
                             —
                           </span>
                         )}

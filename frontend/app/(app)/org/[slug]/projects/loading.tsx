@@ -17,7 +17,7 @@ export default function ProjectsLoading() {
         {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="rounded-lg border border-olive-200 bg-white p-6 dark:border-olive-800 dark:bg-olive-950"
+            className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950"
           >
             {/* Name + badge */}
             <div className="flex items-center gap-2">

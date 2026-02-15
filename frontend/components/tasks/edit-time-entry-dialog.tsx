@@ -121,7 +121,7 @@ export function EditTimeEntryDialog({
                   className="w-20"
                   placeholder="0"
                 />
-                <span className="text-sm text-olive-600 dark:text-olive-400">
+                <span className="text-sm text-slate-600 dark:text-slate-400">
                   h
                 </span>
               </div>
@@ -136,7 +136,7 @@ export function EditTimeEntryDialog({
                   className="w-20"
                   placeholder="0"
                 />
-                <span className="text-sm text-olive-600 dark:text-olive-400">
+                <span className="text-sm text-slate-600 dark:text-slate-400">
                   m
                 </span>
               </div>
@@ -180,7 +180,7 @@ export function EditTimeEntryDialog({
               name="billable"
               type="checkbox"
               defaultChecked={entry.billable}
-              className="size-4 rounded border-olive-300 text-indigo-600 focus:ring-indigo-500 dark:border-olive-700"
+              className="size-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500 dark:border-slate-700"
             />
             <Label htmlFor="edit-time-billable" className="font-normal">
               Billable
@@ -190,13 +190,13 @@ export function EditTimeEntryDialog({
           {/* Rate snapshot (read-only) */}
           {hasRateSnapshot && (
             <div
-              className="rounded-md border border-olive-200 bg-olive-50 px-3 py-2 dark:border-olive-800 dark:bg-olive-900/50"
+              className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-800 dark:bg-slate-900/50"
               data-testid="rate-snapshot"
             >
               {hasBillingRate && (
-                <p className="text-sm text-olive-600 dark:text-olive-400">
+                <p className="text-sm text-slate-600 dark:text-slate-400">
                   Billing rate:{" "}
-                  <span className="font-medium text-olive-700 dark:text-olive-300">
+                  <span className="font-medium text-slate-700 dark:text-slate-300">
                     {formatCurrencySafe(
                       entry.billingRateSnapshot,
                       entry.billingRateCurrency,
@@ -217,9 +217,9 @@ export function EditTimeEntryDialog({
                 </p>
               )}
               {hasCostRate && (
-                <p className="text-sm text-olive-600 dark:text-olive-400">
+                <p className="text-sm text-slate-600 dark:text-slate-400">
                   Cost rate:{" "}
-                  <span className="font-medium text-olive-700 dark:text-olive-300">
+                  <span className="font-medium text-slate-700 dark:text-slate-300">
                     {formatCurrencySafe(
                       entry.costRateSnapshot,
                       entry.costRateCurrency,

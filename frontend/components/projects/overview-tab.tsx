@@ -178,7 +178,7 @@ export async function OverviewTab({
                     className="flex items-center gap-2 rounded-md border-l-2 border-red-500 py-1.5 pl-3 pr-2"
                   >
                     <AlertTriangle className="size-3.5 shrink-0 text-red-500" />
-                    <span className="min-w-0 flex-1 truncate text-sm text-olive-700 dark:text-olive-300">
+                    <span className="min-w-0 flex-1 truncate text-sm text-slate-700 dark:text-slate-300">
                       {task.title}
                     </span>
                     <span className="shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900 dark:text-red-300">
@@ -191,7 +191,7 @@ export async function OverviewTab({
 
             {upcomingTasks.length > 0 && (
               <div className="space-y-1.5">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-olive-500 dark:text-olive-400">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   Upcoming
                 </h4>
                 {upcomingTasks.map((task) => (
@@ -199,8 +199,8 @@ export async function OverviewTab({
                     key={task.id}
                     className="flex items-center gap-2 py-1.5 pl-3 pr-2"
                   >
-                    <CheckSquare className="size-3.5 shrink-0 text-olive-400 dark:text-olive-500" />
-                    <span className="min-w-0 flex-1 truncate text-sm text-olive-700 dark:text-olive-300">
+                    <CheckSquare className="size-3.5 shrink-0 text-slate-400 dark:text-slate-500" />
+                    <span className="min-w-0 flex-1 truncate text-sm text-slate-700 dark:text-slate-300">
                       {task.title}
                     </span>
                     <span className="shrink-0 text-xs text-muted-foreground">
@@ -218,7 +218,7 @@ export async function OverviewTab({
           <CardFooter>
             <Link
               href={`/org/${slug}/projects/${projectId}?tab=tasks`}
-              className="text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+              className="text-sm text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
               onClick={undefined}
             >
               View all tasks &rarr;
@@ -243,17 +243,17 @@ export async function OverviewTab({
                   {memberHours.map((member) => (
                     <div key={member.memberId} className="space-y-1">
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-olive-700 dark:text-olive-300">
+                        <span className="text-slate-700 dark:text-slate-300">
                           {member.memberName}
                         </span>
                         <span className="font-medium tabular-nums">
                           {member.totalHours.toFixed(1)}h
                         </span>
                       </div>
-                      <div className="h-2 overflow-hidden rounded-full bg-olive-200 dark:bg-olive-700">
+                      <div className="h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
                         <div
                           className={cn(
-                            "h-full rounded-full bg-indigo-500"
+                            "h-full rounded-full bg-teal-500"
                           )}
                           style={{
                             width: `${Math.min(100, (member.totalHours / maxHours) * 100)}%`,
@@ -268,7 +268,7 @@ export async function OverviewTab({
             <CardFooter>
               <Link
                 href={`/org/${slug}/projects/${projectId}?tab=time`}
-                className="text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                className="text-sm text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
               >
                 View all time &rarr;
               </Link>
@@ -294,17 +294,17 @@ export async function OverviewTab({
                         key={item.id}
                         className="flex items-start gap-3 rounded-md px-2 py-2"
                       >
-                        <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-olive-200 text-xs font-medium text-olive-700 dark:bg-olive-700 dark:text-olive-200">
+                        <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-200">
                           {getInitials(item.actorName)}
                         </span>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5">
-                            <Icon className="size-3.5 shrink-0 text-olive-400 dark:text-olive-500" />
-                            <p className="truncate text-sm text-olive-700 dark:text-olive-300">
+                            <Icon className="size-3.5 shrink-0 text-slate-400 dark:text-slate-500" />
+                            <p className="truncate text-sm text-slate-700 dark:text-slate-300">
                               {item.message}
                             </p>
                           </div>
-                          <span className="text-xs text-olive-500 dark:text-olive-400">
+                          <span className="text-xs text-slate-500 dark:text-slate-400">
                             {formatRelativeDate(item.occurredAt)}
                           </span>
                         </div>
@@ -317,7 +317,7 @@ export async function OverviewTab({
             <CardFooter>
               <Link
                 href={`/org/${slug}/projects/${projectId}?tab=activity`}
-                className="text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                className="text-sm text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
               >
                 View all activity &rarr;
               </Link>

@@ -71,8 +71,8 @@ export function NotificationDropdown({
   return (
     <div className="w-80">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-olive-200 px-3 py-2 dark:border-olive-800">
-        <h3 className="text-sm font-semibold text-olive-900 dark:text-olive-100">
+      <div className="flex items-center justify-between border-b border-slate-200 px-3 py-2 dark:border-slate-800">
+        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
           Notifications
         </h3>
         {hasUnread && (
@@ -103,7 +103,7 @@ export function NotificationDropdown({
         )}
 
         {!isLoading && !error && notifications.length === 0 && (
-          <p className="px-3 py-8 text-center text-sm text-olive-500 dark:text-olive-400">
+          <p className="px-3 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
             No notifications
           </p>
         )}
@@ -121,12 +121,12 @@ export function NotificationDropdown({
       </div>
 
       {/* Footer */}
-      <div className="border-t border-olive-200 px-3 py-2 dark:border-olive-800">
+      <div className="border-t border-slate-200 px-3 py-2 dark:border-slate-800">
         {/* Route created in Epic 63B */}
         <Link
           href={`/org/${orgSlug}/notifications`}
           onClick={onClose}
-          className="block text-center text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+          className="block text-center text-sm font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
         >
           View all notifications
         </Link>

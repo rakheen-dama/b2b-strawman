@@ -117,7 +117,7 @@ export function UtilizationTable({
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle>Team Utilization</CardTitle>
           <div className="flex items-center gap-2">
-            <label htmlFor="util-from" className="text-sm text-olive-600 dark:text-olive-400">
+            <label htmlFor="util-from" className="text-sm text-slate-600 dark:text-slate-400">
               From
             </label>
             <input
@@ -125,9 +125,9 @@ export function UtilizationTable({
               type="date"
               value={from}
               onChange={(e) => handleDateChange(e.target.value, to)}
-              className="rounded-md border border-olive-300 bg-white px-2 py-1 text-sm text-olive-900 dark:border-olive-700 dark:bg-olive-950 dark:text-olive-100"
+              className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
             />
-            <label htmlFor="util-to" className="text-sm text-olive-600 dark:text-olive-400">
+            <label htmlFor="util-to" className="text-sm text-slate-600 dark:text-slate-400">
               To
             </label>
             <input
@@ -135,14 +135,14 @@ export function UtilizationTable({
               type="date"
               value={to}
               onChange={(e) => handleDateChange(from, e.target.value)}
-              className="rounded-md border border-olive-300 bg-white px-2 py-1 text-sm text-olive-900 dark:border-olive-700 dark:bg-olive-950 dark:text-olive-100"
+              className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
             />
           </div>
         </div>
       </CardHeader>
       <CardContent>
         {isPending && (
-          <div className="mb-4 text-sm text-olive-500">Loading...</div>
+          <div className="mb-4 text-sm text-slate-500">Loading...</div>
         )}
         {error && (
           <div className="mb-4 text-sm text-red-600 dark:text-red-400">
@@ -150,7 +150,7 @@ export function UtilizationTable({
           </div>
         )}
         {sorted.length === 0 ? (
-          <p className="py-8 text-center text-sm text-olive-500">
+          <p className="py-8 text-center text-sm text-slate-500">
             No utilization data for this period
           </p>
         ) : (
@@ -161,7 +161,7 @@ export function UtilizationTable({
                 <TableHead>
                   <button
                     onClick={() => toggleSort("name")}
-                    className="inline-flex items-center gap-1 hover:text-olive-900 dark:hover:text-olive-100"
+                    className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
                   >
                     Name
                     <ArrowUpDown className="size-3" />
@@ -170,7 +170,7 @@ export function UtilizationTable({
                 <TableHead className="text-right">
                   <button
                     onClick={() => toggleSort("totalHours")}
-                    className="inline-flex items-center gap-1 hover:text-olive-900 dark:hover:text-olive-100"
+                    className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
                   >
                     Total Hours
                     <ArrowUpDown className="size-3" />
@@ -179,7 +179,7 @@ export function UtilizationTable({
                 <TableHead className="text-right">
                   <button
                     onClick={() => toggleSort("billableHours")}
-                    className="inline-flex items-center gap-1 hover:text-olive-900 dark:hover:text-olive-100"
+                    className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
                   >
                     Billable
                     <ArrowUpDown className="size-3" />
@@ -188,7 +188,7 @@ export function UtilizationTable({
                 <TableHead className="text-right">
                   <button
                     onClick={() => toggleSort("nonBillableHours")}
-                    className="inline-flex items-center gap-1 hover:text-olive-900 dark:hover:text-olive-100"
+                    className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
                   >
                     Non-Billable
                     <ArrowUpDown className="size-3" />
@@ -197,7 +197,7 @@ export function UtilizationTable({
                 <TableHead className="w-[200px]">
                   <button
                     onClick={() => toggleSort("utilization")}
-                    className="inline-flex items-center gap-1 hover:text-olive-900 dark:hover:text-olive-100"
+                    className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
                   >
                     Utilization %
                     <ArrowUpDown className="size-3" />
@@ -219,7 +219,7 @@ export function UtilizationTable({
                         {hasBreakdown && (
                           <button
                             onClick={() => toggleExpand(member.memberId)}
-                            className="text-olive-500 hover:text-olive-700 dark:hover:text-olive-300"
+                            className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                             aria-label={
                               isExpanded
                                 ? "Collapse currency breakdown"
@@ -248,7 +248,7 @@ export function UtilizationTable({
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <div className="relative h-2 w-full overflow-hidden rounded-full bg-olive-100 dark:bg-olive-800">
+                          <div className="relative h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                             <div
                               className={cn(
                                 "h-full rounded-full transition-all",
@@ -256,14 +256,14 @@ export function UtilizationTable({
                                   ? "bg-green-500"
                                   : percent >= 40
                                     ? "bg-amber-500"
-                                    : "bg-olive-400",
+                                    : "bg-slate-400",
                               )}
                               style={{
                                 width: `${Math.min(percent, 100)}%`,
                               }}
                             />
                           </div>
-                          <span className="w-12 text-right text-sm text-olive-600 dark:text-olive-400">
+                          <span className="w-12 text-right text-sm text-slate-600 dark:text-slate-400">
                             {percent.toFixed(1)}%
                           </span>
                         </div>
@@ -272,7 +272,7 @@ export function UtilizationTable({
                     {hasBreakdown && isExpanded && (
                       <TableRow
                         key={`${member.memberId}-breakdown`}
-                        className="bg-olive-50 dark:bg-olive-900/50"
+                        className="bg-slate-50 dark:bg-slate-900/50"
                       >
                         <TableCell />
                         <TableCell colSpan={5}>
@@ -282,18 +282,18 @@ export function UtilizationTable({
                                 key={c.currency}
                                 className="flex items-center gap-2"
                               >
-                                <span className="font-medium text-olive-700 dark:text-olive-300">
+                                <span className="font-medium text-slate-700 dark:text-slate-300">
                                   {c.currency}:
                                 </span>
-                                <span className="text-olive-600 dark:text-olive-400">
+                                <span className="text-slate-600 dark:text-slate-400">
                                   Billable{" "}
                                   {formatCurrencySafe(
                                     c.billableValue,
                                     c.currency,
                                   )}
                                 </span>
-                                <span className="text-olive-500">|</span>
-                                <span className="text-olive-600 dark:text-olive-400">
+                                <span className="text-slate-500">|</span>
+                                <span className="text-slate-600 dark:text-slate-400">
                                   Cost{" "}
                                   {formatCurrencySafe(c.costValue, c.currency)}
                                 </span>

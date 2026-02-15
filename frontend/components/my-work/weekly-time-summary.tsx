@@ -77,10 +77,10 @@ export function WeeklyTimeSummary({
   const isEmpty = !summary || summary.totalMinutes === 0;
 
   return (
-    <div className="rounded-lg border border-olive-200 bg-white p-6 dark:border-olive-800 dark:bg-olive-950">
+    <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
       {/* Week Navigation Header */}
       <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-olive-900 dark:text-olive-100">
+        <h2 className="font-semibold text-slate-900 dark:text-slate-100">
           This Week
         </h2>
         <div className="flex items-center gap-1">
@@ -94,7 +94,7 @@ export function WeeklyTimeSummary({
           >
             <ChevronLeft className="size-4" />
           </Button>
-          <span className="min-w-[140px] text-center text-xs text-olive-600 dark:text-olive-400">
+          <span className="min-w-[140px] text-center text-xs text-slate-600 dark:text-slate-400">
             {isPending ? "Loading..." : weekLabel}
           </span>
           <Button
@@ -111,36 +111,36 @@ export function WeeklyTimeSummary({
       </div>
 
       {isEmpty ? (
-        <p className="mt-4 text-sm text-olive-500 dark:text-olive-400">
+        <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
           No time tracked this week
         </p>
       ) : (
         <div className="mt-4 space-y-4">
           {/* Stat Cards: Total, Billable, Non-billable */}
           <div className="space-y-3">
-            <div className="rounded-md bg-olive-50 px-4 py-3 dark:bg-olive-900">
-              <p className="text-xs font-medium uppercase tracking-wide text-olive-600 dark:text-olive-400">
+            <div className="rounded-md bg-slate-50 px-4 py-3 dark:bg-slate-900">
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
                 Total
               </p>
-              <p className="font-display text-2xl text-olive-900 dark:text-olive-100">
+              <p className="font-display text-2xl text-slate-900 dark:text-slate-100">
                 {formatDuration(summary!.totalMinutes)}
               </p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-md bg-olive-50 px-4 py-3 dark:bg-olive-900">
-                <p className="text-xs font-medium uppercase tracking-wide text-olive-600 dark:text-olive-400">
+              <div className="rounded-md bg-slate-50 px-4 py-3 dark:bg-slate-900">
+                <p className="text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   Billable
                 </p>
                 <p className="font-display text-xl text-green-600 dark:text-green-400">
                   {formatDuration(summary!.billableMinutes)}
                 </p>
               </div>
-              <div className="rounded-md bg-olive-50 px-4 py-3 dark:bg-olive-900">
-                <p className="text-xs font-medium uppercase tracking-wide text-olive-600 dark:text-olive-400">
+              <div className="rounded-md bg-slate-50 px-4 py-3 dark:bg-slate-900">
+                <p className="text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   Non-billable
                 </p>
-                <p className="font-display text-xl text-olive-600 dark:text-olive-400">
+                <p className="font-display text-xl text-slate-600 dark:text-slate-400">
                   {formatDuration(summary!.nonBillableMinutes)}
                 </p>
               </div>
@@ -149,8 +149,8 @@ export function WeeklyTimeSummary({
 
           {/* By Project Breakdown */}
           {summary!.byProject.length > 0 && (
-            <div className="border-t border-olive-200 pt-4 dark:border-olive-800">
-              <h3 className="mb-3 text-sm font-medium text-olive-700 dark:text-olive-300">
+            <div className="border-t border-slate-200 pt-4 dark:border-slate-800">
+              <h3 className="mb-3 text-sm font-medium text-slate-700 dark:text-slate-300">
                 By Project
               </h3>
               <div className="space-y-2">
@@ -159,14 +159,14 @@ export function WeeklyTimeSummary({
                     key={project.projectId}
                     className="flex items-center justify-between text-sm"
                   >
-                    <span className="truncate text-olive-700 dark:text-olive-300">
+                    <span className="truncate text-slate-700 dark:text-slate-300">
                       {project.projectName}
                     </span>
                     <div className="flex shrink-0 items-center gap-3">
                       <span className="text-xs text-green-600 dark:text-green-400">
                         {formatDuration(project.billableMinutes)}
                       </span>
-                      <span className="font-medium text-olive-900 dark:text-olive-100">
+                      <span className="font-medium text-slate-900 dark:text-slate-100">
                         {formatDuration(project.totalMinutes)}
                       </span>
                     </div>

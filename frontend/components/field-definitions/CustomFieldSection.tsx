@@ -268,7 +268,7 @@ function FieldInput({
             onChange={(e) => onChange(e.target.value)}
             disabled={disabled}
             aria-invalid={!!error}
-            className="flex h-9 w-full rounded-md border border-olive-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-olive-400 disabled:cursor-not-allowed disabled:opacity-50 dark:border-olive-700"
+            className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700"
           >
             <option value="">Select...</option>
             {field.options?.map((opt) => (
@@ -291,7 +291,7 @@ function FieldInput({
               checked={(value as boolean) ?? false}
               onChange={(e) => onChange(e.target.checked)}
               disabled={disabled}
-              className="size-4 rounded border-olive-300 text-olive-600 focus:ring-olive-500"
+              className="size-4 rounded border-slate-300 text-slate-600 focus:ring-slate-500"
             />
             <Label htmlFor={id} className="text-sm font-normal">
               {field.description ?? "Enabled"}
@@ -323,7 +323,7 @@ function FieldInput({
               value={currencyObj.currency ?? ""}
               onChange={(e) => onChange({ ...currencyObj, currency: e.target.value })}
               disabled={disabled}
-              className="flex h-9 w-28 rounded-md border border-olive-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-olive-400 disabled:cursor-not-allowed disabled:opacity-50 dark:border-olive-700"
+              className="flex h-9 w-28 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700"
               aria-label="Currency"
             >
               <option value="">Currency</option>
@@ -489,7 +489,7 @@ export function CustomFieldSection({
         return (
           <Card key={groupId} className="py-4">
             <CardHeader className="pb-0">
-              <CardTitle className="text-sm font-medium text-olive-700 dark:text-olive-300">
+              <CardTitle className="text-sm font-medium text-slate-700 dark:text-slate-300">
                 {group.name}
               </CardTitle>
             </CardHeader>
@@ -514,7 +514,7 @@ export function CustomFieldSection({
                         disabled={isSubmitting}
                       />
                     ) : (
-                      <p className="text-sm text-olive-700 dark:text-olive-300">
+                      <p className="text-sm text-slate-700 dark:text-slate-300">
                         {formatDisplayValue(definition, values[definition.slug])}
                       </p>
                     )}

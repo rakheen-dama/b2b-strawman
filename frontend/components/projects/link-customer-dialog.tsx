@@ -122,12 +122,12 @@ export function LinkCustomerDialog({
                     value={`${customer.name} ${customer.email}`}
                     onSelect={() => handleLinkCustomer(customer.id)}
                     disabled={isLinking}
-                    className="gap-3 py-3 data-[selected=true]:bg-olive-100 dark:data-[selected=true]:bg-olive-800"
+                    className="gap-3 py-3 data-[selected=true]:bg-slate-100 dark:data-[selected=true]:bg-slate-800"
                   >
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold">{customer.name}</p>
                       {customer.email && (
-                        <p className="truncate text-xs text-olive-600 dark:text-olive-400">
+                        <p className="truncate text-xs text-slate-600 dark:text-slate-400">
                           {customer.email}
                         </p>
                       )}

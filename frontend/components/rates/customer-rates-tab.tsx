@@ -91,10 +91,10 @@ export function CustomerRatesTab({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-medium text-olive-900 dark:text-olive-100">
+          <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100">
             Customer Rate Overrides
           </h3>
-          <p className="mt-1 text-xs text-olive-500 dark:text-olive-400">
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             These rates override member defaults when working for this customer.
           </p>
         </div>
@@ -111,7 +111,7 @@ export function CustomerRatesTab({
         </AddCustomerRateDialog>
       </div>
 
-      <div className="rounded-lg border border-olive-200 bg-white dark:border-olive-800 dark:bg-olive-950">
+      <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
         <Table>
           <TableHeader>
             <TableRow>
@@ -129,7 +129,7 @@ export function CustomerRatesTab({
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <AvatarCircle name={rate.memberName} size={32} />
-                    <span className="font-medium text-olive-900 dark:text-olive-100">
+                    <span className="font-medium text-slate-900 dark:text-slate-100">
                       {rate.memberName}
                     </span>
                   </div>
@@ -145,7 +145,7 @@ export function CustomerRatesTab({
                   {rate.effectiveTo ? (
                     formatDate(rate.effectiveTo)
                   ) : (
-                    <span className="text-olive-400 dark:text-olive-600">
+                    <span className="text-slate-400 dark:text-slate-600">
                       Ongoing
                     </span>
                   )}
@@ -298,7 +298,7 @@ function AddCustomerRateDialog({
               id="customer-rate-member"
               value={memberId}
               onChange={(e) => setMemberId(e.target.value)}
-              className="flex h-9 w-full rounded-md border border-olive-200 bg-white px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-olive-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-olive-800 dark:bg-olive-950 dark:placeholder:text-olive-400"
+              className="flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-teal-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:placeholder:text-slate-400"
               required
             >
               <option value="">Select a member...</option>
@@ -347,7 +347,7 @@ function AddCustomerRateDialog({
           <div className="space-y-2">
             <Label htmlFor="customer-rate-to">
               Effective To{" "}
-              <span className="font-normal text-olive-500">(optional)</span>
+              <span className="font-normal text-slate-500">(optional)</span>
             </Label>
             <Input
               id="customer-rate-to"
@@ -505,7 +505,7 @@ function EditCustomerRateDialog({
           <div className="space-y-2">
             <Label htmlFor="edit-customer-rate-to">
               Effective To{" "}
-              <span className="font-normal text-olive-500">(optional)</span>
+              <span className="font-normal text-slate-500">(optional)</span>
             </Label>
             <Input
               id="edit-customer-rate-to"

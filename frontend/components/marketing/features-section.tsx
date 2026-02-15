@@ -34,18 +34,18 @@ export function FeaturesSection() {
           >
             {/* Text */}
             <div className="flex-1">
-              <feature.icon className="size-6 text-olive-600 dark:text-olive-400" />
-              <h3 className="mt-4 font-display text-2xl text-olive-950 dark:text-olive-50">
+              <feature.icon className="size-6 text-slate-600 dark:text-slate-400" />
+              <h3 className="mt-4 font-display text-2xl text-slate-950 dark:text-slate-50">
                 {feature.heading}
               </h3>
-              <p className="mt-3 text-base leading-7 text-olive-700 dark:text-olive-300">
+              <p className="mt-3 text-base leading-7 text-slate-700 dark:text-slate-300">
                 {feature.description}
               </p>
             </div>
 
             {/* Screenshot placeholder */}
             <div className="flex-1">
-              <div className="aspect-video rounded-lg bg-olive-100 dark:bg-olive-800" />
+              <div className="aspect-video rounded-lg bg-slate-100 dark:bg-slate-800" />
             </div>
           </div>
         ))}

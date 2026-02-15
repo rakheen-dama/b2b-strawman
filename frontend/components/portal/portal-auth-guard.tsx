@@ -34,7 +34,7 @@ export function PortalAuthGuard({ children }: { children: React.ReactNode }) {
   if (!isAuthenticated) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-olive-400" />
+        <Loader2 className="size-8 animate-spin text-slate-400" />
       </div>
     );
   }

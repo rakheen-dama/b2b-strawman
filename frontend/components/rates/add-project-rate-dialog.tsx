@@ -123,7 +123,7 @@ export function AddProjectRateDialog({
               id="project-rate-member"
               value={memberId}
               onChange={(e) => setMemberId(e.target.value)}
-              className="flex h-9 w-full rounded-md border border-olive-200 bg-white px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-olive-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-olive-800 dark:bg-olive-950 dark:placeholder:text-olive-400"
+              className="flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-teal-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:placeholder:text-slate-400"
               required
             >
               <option value="">Select a member...</option>
@@ -172,7 +172,7 @@ export function AddProjectRateDialog({
           <div className="space-y-2">
             <Label htmlFor="project-rate-to">
               Effective To{" "}
-              <span className="font-normal text-olive-500">(optional)</span>
+              <span className="font-normal text-slate-500">(optional)</span>
             </Label>
             <Input
               id="project-rate-to"

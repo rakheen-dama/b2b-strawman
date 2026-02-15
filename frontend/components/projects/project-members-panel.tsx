@@ -31,8 +31,8 @@ const ROLE_BADGE: Record<ProjectRole, { label: string; variant: "lead" | "member
 };
 
 const AVATAR_COLORS = [
-  "bg-olive-200 text-olive-700",
-  "bg-indigo-100 text-indigo-700",
+  "bg-slate-200 text-slate-700",
+  "bg-teal-100 text-teal-700",
   "bg-amber-100 text-amber-700",
   "bg-green-100 text-green-700",
   "bg-rose-100 text-rose-700",
@@ -99,7 +99,7 @@ export function ProjectMembersPanel({
   const header = (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
-        <h2 className="font-semibold text-olive-900 dark:text-olive-100">Members</h2>
+        <h2 className="font-semibold text-slate-900 dark:text-slate-100">Members</h2>
         {members.length > 0 && (
           <Badge variant="neutral">{members.length}</Badge>
         )}
@@ -132,20 +132,20 @@ export function ProjectMembersPanel({
     <div className="space-y-4">
       {header}
       {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
-      <div className="rounded-lg border border-olive-200 dark:border-olive-800">
+      <div className="rounded-lg border border-slate-200 dark:border-slate-800">
         <Table>
           <TableHeader>
-            <TableRow className="border-olive-200 hover:bg-transparent dark:border-olive-800">
-              <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+            <TableRow className="border-slate-200 hover:bg-transparent dark:border-slate-800">
+              <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
                 Member
               </TableHead>
-              <TableHead className="hidden text-xs uppercase tracking-wide text-olive-600 sm:table-cell dark:text-olive-400">
+              <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
                 Email
               </TableHead>
-              <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+              <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
                 Role
               </TableHead>
-              <TableHead className="hidden text-xs uppercase tracking-wide text-olive-600 sm:table-cell dark:text-olive-400">
+              <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
                 Added
               </TableHead>
               {canManage && <TableHead className="w-[60px]" />}
@@ -160,23 +160,23 @@ export function ProjectMembersPanel({
               return (
                 <TableRow
                   key={member.id}
-                  className="border-olive-100 transition-colors hover:bg-olive-50 dark:border-olive-800/50 dark:hover:bg-olive-900"
+                  className="border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900"
                 >
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <MemberAvatar name={member.name} />
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-medium text-olive-950 dark:text-olive-50">
+                        <p className="truncate text-sm font-medium text-slate-950 dark:text-slate-50">
                           {member.name}
                         </p>
-                        <p className="truncate text-xs text-olive-600 sm:hidden dark:text-olive-400">
+                        <p className="truncate text-xs text-slate-600 sm:hidden dark:text-slate-400">
                           {member.email}
                         </p>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">
-                    <span className="text-sm text-olive-600 dark:text-olive-400">
+                    <span className="text-sm text-slate-600 dark:text-slate-400">
                       {member.email}
                     </span>
                   </TableCell>
@@ -184,7 +184,7 @@ export function ProjectMembersPanel({
                     <Badge variant={badge.variant}>{badge.label}</Badge>
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">
-                    <span className="text-sm text-olive-600 dark:text-olive-400">
+                    <span className="text-sm text-slate-600 dark:text-slate-400">
                       {formatDate(member.createdAt)}
                     </span>
                   </TableCell>

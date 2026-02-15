@@ -91,14 +91,14 @@ export function NotificationsPageClient({
       {/* Controls */}
       <div className="flex items-center justify-between">
         {/* Filter toggle */}
-        <div className="flex gap-1 rounded-lg border border-olive-200 p-0.5 dark:border-olive-800">
+        <div className="flex gap-1 rounded-lg border border-slate-200 p-0.5 dark:border-slate-800">
           <button
             type="button"
             onClick={() => handleFilterChange("all")}
             className={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${
               filter === "all"
-                ? "bg-olive-100 text-olive-900 dark:bg-olive-800 dark:text-olive-100"
-                : "text-olive-600 hover:text-olive-900 dark:text-olive-400 dark:hover:text-olive-100"
+                ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100"
+                : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
             }`}
           >
             All
@@ -108,8 +108,8 @@ export function NotificationsPageClient({
             onClick={() => handleFilterChange("unread")}
             className={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${
               filter === "unread"
-                ? "bg-olive-100 text-olive-900 dark:bg-olive-800 dark:text-olive-100"
-                : "text-olive-600 hover:text-olive-900 dark:text-olive-400 dark:hover:text-olive-100"
+                ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100"
+                : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
             }`}
           >
             Unread
@@ -131,9 +131,9 @@ export function NotificationsPageClient({
       </div>
 
       {/* Notification list */}
-      <div className="divide-y divide-olive-100 rounded-lg border border-olive-200 bg-white dark:divide-olive-800 dark:border-olive-800 dark:bg-olive-950">
+      <div className="divide-y divide-slate-100 rounded-lg border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-950">
         {notifications.length === 0 && (
-          <p className="px-4 py-12 text-center text-sm text-olive-500 dark:text-olive-400">
+          <p className="px-4 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
             No notifications
           </p>
         )}

@@ -274,12 +274,12 @@ export function InvoiceDetailClient({
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-3">
-            <h1 className="font-display text-2xl text-olive-950 dark:text-olive-50">
+            <h1 className="font-display text-2xl text-slate-950 dark:text-slate-50">
               {invoice.invoiceNumber ?? "Draft Invoice"}
             </h1>
             <StatusBadge status={invoice.status} />
           </div>
-          <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm text-olive-600 dark:text-olive-400">
+          <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-600 dark:text-slate-400">
             <span>Customer: {invoice.customerName}</span>
             {invoice.issueDate && (
               <span>Issued: {formatDate(invoice.issueDate)}</span>
@@ -366,13 +366,13 @@ export function InvoiceDetailClient({
 
       {/* Payment Form (inline for SENT status) */}
       {showPaymentForm && isSent && (
-        <div className="rounded-lg border border-olive-200 bg-olive-50 p-4 dark:border-olive-800 dark:bg-olive-900/50">
-          <h3 className="mb-3 font-medium text-olive-900 dark:text-olive-100">
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+          <h3 className="mb-3 font-medium text-slate-900 dark:text-slate-100">
             Record Payment
           </h3>
           <div className="flex items-end gap-3">
             <div className="flex-1">
-              <label className="mb-1 block text-sm text-olive-600 dark:text-olive-400">
+              <label className="mb-1 block text-sm text-slate-600 dark:text-slate-400">
                 Payment Reference (optional)
               </label>
               <input
@@ -380,7 +380,7 @@ export function InvoiceDetailClient({
                 value={paymentRef}
                 onChange={(e) => setPaymentRef(e.target.value)}
                 placeholder="e.g. CHK-12345, Wire transfer"
-                className="w-full rounded-md border border-olive-300 bg-white px-3 py-2 text-sm text-olive-900 placeholder:text-olive-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-olive-700 dark:bg-olive-950 dark:text-olive-100 dark:placeholder:text-olive-600"
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-600"
               />
             </div>
             <Button
@@ -429,13 +429,13 @@ export function InvoiceDetailClient({
 
       {/* Draft Edit Form */}
       {isDraft && isAdmin && (
-        <div className="rounded-lg border border-olive-200 p-4 dark:border-olive-800">
-          <h2 className="mb-4 font-semibold text-olive-900 dark:text-olive-100">
+        <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-800">
+          <h2 className="mb-4 font-semibold text-slate-900 dark:text-slate-100">
             Invoice Details
           </h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="invoice-due-date" className="mb-1 block text-sm font-medium text-olive-700 dark:text-olive-300">
+              <label htmlFor="invoice-due-date" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
                 Due Date
               </label>
               <input
@@ -443,11 +443,11 @@ export function InvoiceDetailClient({
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="w-full rounded-md border border-olive-300 bg-white px-3 py-2 text-sm text-olive-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-olive-700 dark:bg-olive-950 dark:text-olive-100"
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
               />
             </div>
             <div>
-              <label htmlFor="invoice-tax-amount" className="mb-1 block text-sm font-medium text-olive-700 dark:text-olive-300">
+              <label htmlFor="invoice-tax-amount" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
                 Tax Amount
               </label>
               <input
@@ -457,11 +457,11 @@ export function InvoiceDetailClient({
                 onChange={(e) => setTaxAmount(e.target.value)}
                 min="0"
                 step="0.01"
-                className="w-full rounded-md border border-olive-300 bg-white px-3 py-2 text-sm text-olive-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-olive-700 dark:bg-olive-950 dark:text-olive-100"
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
               />
             </div>
             <div>
-              <label htmlFor="invoice-payment-terms" className="mb-1 block text-sm font-medium text-olive-700 dark:text-olive-300">
+              <label htmlFor="invoice-payment-terms" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
                 Payment Terms
               </label>
               <input
@@ -471,11 +471,11 @@ export function InvoiceDetailClient({
                 onChange={(e) => setPaymentTerms(e.target.value)}
                 placeholder="e.g. Net 30"
                 maxLength={100}
-                className="w-full rounded-md border border-olive-300 bg-white px-3 py-2 text-sm text-olive-900 placeholder:text-olive-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-olive-700 dark:bg-olive-950 dark:text-olive-100 dark:placeholder:text-olive-600"
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-600"
               />
             </div>
             <div className="sm:col-span-2">
-              <label htmlFor="invoice-notes" className="mb-1 block text-sm font-medium text-olive-700 dark:text-olive-300">
+              <label htmlFor="invoice-notes" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
                 Notes
               </label>
               <textarea
@@ -484,7 +484,7 @@ export function InvoiceDetailClient({
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
                 placeholder="Additional notes..."
-                className="w-full rounded-md border border-olive-300 bg-white px-3 py-2 text-sm text-olive-900 placeholder:text-olive-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-olive-700 dark:bg-olive-950 dark:text-olive-100 dark:placeholder:text-olive-600"
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-600"
               />
             </div>
           </div>
@@ -503,37 +503,37 @@ export function InvoiceDetailClient({
 
       {/* Read-only details for non-draft */}
       {!isDraft && (
-        <div className="rounded-lg border border-olive-200 p-4 dark:border-olive-800">
-          <h2 className="mb-4 font-semibold text-olive-900 dark:text-olive-100">
+        <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-800">
+          <h2 className="mb-4 font-semibold text-slate-900 dark:text-slate-100">
             Invoice Details
           </h2>
           <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
             {invoice.dueDate && (
               <div>
-                <dt className="text-sm font-medium text-olive-600 dark:text-olive-400">
+                <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">
                   Due Date
                 </dt>
-                <dd className="text-sm text-olive-900 dark:text-olive-100">
+                <dd className="text-sm text-slate-900 dark:text-slate-100">
                   {formatDate(invoice.dueDate)}
                 </dd>
               </div>
             )}
             {invoice.paymentTerms && (
               <div>
-                <dt className="text-sm font-medium text-olive-600 dark:text-olive-400">
+                <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">
                   Payment Terms
                 </dt>
-                <dd className="text-sm text-olive-900 dark:text-olive-100">
+                <dd className="text-sm text-slate-900 dark:text-slate-100">
                   {invoice.paymentTerms}
                 </dd>
               </div>
             )}
             {invoice.notes && (
               <div className="sm:col-span-2">
-                <dt className="text-sm font-medium text-olive-600 dark:text-olive-400">
+                <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">
                   Notes
                 </dt>
-                <dd className="text-sm text-olive-900 dark:text-olive-100">
+                <dd className="text-sm text-slate-900 dark:text-slate-100">
                   {invoice.notes}
                 </dd>
               </div>
@@ -554,13 +554,13 @@ export function InvoiceDetailClient({
 
       {/* Add Line Form */}
       {showAddLine && (
-        <div className="rounded-lg border border-olive-200 bg-olive-50 p-4 dark:border-olive-800 dark:bg-olive-900/50">
-          <h3 className="mb-3 font-medium text-olive-900 dark:text-olive-100">
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+          <h3 className="mb-3 font-medium text-slate-900 dark:text-slate-100">
             Add Line Item
           </h3>
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="sm:col-span-3">
-              <label className="mb-1 block text-sm text-olive-600 dark:text-olive-400">
+              <label className="mb-1 block text-sm text-slate-600 dark:text-slate-400">
                 Description
               </label>
               <input
@@ -568,11 +568,11 @@ export function InvoiceDetailClient({
                 value={newLineDesc}
                 onChange={(e) => setNewLineDesc(e.target.value)}
                 placeholder="Line item description"
-                className="w-full rounded-md border border-olive-300 bg-white px-3 py-2 text-sm text-olive-900 placeholder:text-olive-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-olive-700 dark:bg-olive-950 dark:text-olive-100 dark:placeholder:text-olive-600"
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-600"
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm text-olive-600 dark:text-olive-400">
+              <label className="mb-1 block text-sm text-slate-600 dark:text-slate-400">
                 Quantity
               </label>
               <input
@@ -581,11 +581,11 @@ export function InvoiceDetailClient({
                 onChange={(e) => setNewLineQty(e.target.value)}
                 min="0.01"
                 step="0.01"
-                className="w-full rounded-md border border-olive-300 bg-white px-3 py-2 text-sm text-olive-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-olive-700 dark:bg-olive-950 dark:text-olive-100"
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm text-olive-600 dark:text-olive-400">
+              <label className="mb-1 block text-sm text-slate-600 dark:text-slate-400">
                 Unit Price
               </label>
               <input
@@ -594,7 +594,7 @@ export function InvoiceDetailClient({
                 onChange={(e) => setNewLineRate(e.target.value)}
                 min="0"
                 step="0.01"
-                className="w-full rounded-md border border-olive-300 bg-white px-3 py-2 text-sm text-olive-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-olive-700 dark:bg-olive-950 dark:text-olive-100"
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
               />
             </div>
             <div className="flex items-end gap-2">
@@ -621,24 +621,24 @@ export function InvoiceDetailClient({
 
       {/* Edit Line Form */}
       {editingLine && (
-        <div className="rounded-lg border border-olive-200 bg-olive-50 p-4 dark:border-olive-800 dark:bg-olive-900/50">
-          <h3 className="mb-3 font-medium text-olive-900 dark:text-olive-100">
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+          <h3 className="mb-3 font-medium text-slate-900 dark:text-slate-100">
             Edit Line Item
           </h3>
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="sm:col-span-3">
-              <label className="mb-1 block text-sm text-olive-600 dark:text-olive-400">
+              <label className="mb-1 block text-sm text-slate-600 dark:text-slate-400">
                 Description
               </label>
               <input
                 type="text"
                 value={editLineDesc}
                 onChange={(e) => setEditLineDesc(e.target.value)}
-                className="w-full rounded-md border border-olive-300 bg-white px-3 py-2 text-sm text-olive-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-olive-700 dark:bg-olive-950 dark:text-olive-100"
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm text-olive-600 dark:text-olive-400">
+              <label className="mb-1 block text-sm text-slate-600 dark:text-slate-400">
                 Quantity
               </label>
               <input
@@ -647,11 +647,11 @@ export function InvoiceDetailClient({
                 onChange={(e) => setEditLineQty(e.target.value)}
                 min="0.01"
                 step="0.01"
-                className="w-full rounded-md border border-olive-300 bg-white px-3 py-2 text-sm text-olive-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-olive-700 dark:bg-olive-950 dark:text-olive-100"
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm text-olive-600 dark:text-olive-400">
+              <label className="mb-1 block text-sm text-slate-600 dark:text-slate-400">
                 Unit Price
               </label>
               <input
@@ -660,7 +660,7 @@ export function InvoiceDetailClient({
                 onChange={(e) => setEditLineRate(e.target.value)}
                 min="0"
                 step="0.01"
-                className="w-full rounded-md border border-olive-300 bg-white px-3 py-2 text-sm text-olive-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-olive-700 dark:bg-olive-950 dark:text-olive-100"
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
               />
             </div>
             <div className="flex items-end gap-2">
@@ -688,15 +688,15 @@ export function InvoiceDetailClient({
       {/* Totals */}
       <div className="flex justify-end">
         <div className="w-full max-w-xs space-y-2">
-          <div className="flex justify-between text-sm text-olive-600 dark:text-olive-400">
+          <div className="flex justify-between text-sm text-slate-600 dark:text-slate-400">
             <span>Subtotal</span>
             <span>{formatCurrency(invoice.subtotal, invoice.currency)}</span>
           </div>
-          <div className="flex justify-between text-sm text-olive-600 dark:text-olive-400">
+          <div className="flex justify-between text-sm text-slate-600 dark:text-slate-400">
             <span>Tax</span>
             <span>{formatCurrency(invoice.taxAmount, invoice.currency)}</span>
           </div>
-          <div className="flex justify-between border-t border-olive-200 pt-2 font-semibold text-olive-900 dark:border-olive-800 dark:text-olive-100">
+          <div className="flex justify-between border-t border-slate-200 pt-2 font-semibold text-slate-900 dark:border-slate-800 dark:text-slate-100">
             <span>Total</span>
             <span>{formatCurrency(invoice.total, invoice.currency)}</span>
           </div>

@@ -76,10 +76,10 @@ export function CommentItem({
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-olive-900 dark:text-olive-100">
+          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
             {authorName}
           </span>
-          <span className="text-xs text-olive-500 dark:text-olive-400">
+          <span className="text-xs text-slate-500 dark:text-slate-400">
             {formatRelativeDate(comment.createdAt)}
           </span>
           {comment.visibility === "SHARED" && (
@@ -87,7 +87,7 @@ export function CommentItem({
           )}
         </div>
 
-        <p className="mt-1 whitespace-pre-wrap text-sm text-olive-700 dark:text-olive-300">
+        <p className="mt-1 whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300">
           {comment.body}
         </p>
 

@@ -177,7 +177,7 @@ export function CustomerProfitabilitySection({
           <div className="flex items-center gap-2">
             <label
               htmlFor="cust-prof-from"
-              className="text-sm text-olive-600 dark:text-olive-400"
+              className="text-sm text-slate-600 dark:text-slate-400"
             >
               From
             </label>
@@ -186,11 +186,11 @@ export function CustomerProfitabilitySection({
               type="date"
               value={from}
               onChange={(e) => handleDateChange(e.target.value, to)}
-              className="rounded-md border border-olive-300 bg-white px-2 py-1 text-sm text-olive-900 dark:border-olive-700 dark:bg-olive-950 dark:text-olive-100"
+              className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
             />
             <label
               htmlFor="cust-prof-to"
-              className="text-sm text-olive-600 dark:text-olive-400"
+              className="text-sm text-slate-600 dark:text-slate-400"
             >
               To
             </label>
@@ -199,14 +199,14 @@ export function CustomerProfitabilitySection({
               type="date"
               value={to}
               onChange={(e) => handleDateChange(from, e.target.value)}
-              className="rounded-md border border-olive-300 bg-white px-2 py-1 text-sm text-olive-900 dark:border-olive-700 dark:bg-olive-950 dark:text-olive-100"
+              className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
             />
           </div>
         </div>
       </CardHeader>
       <CardContent>
         {isPending && (
-          <div className="mb-4 text-sm text-olive-500">Loading...</div>
+          <div className="mb-4 text-sm text-slate-500">Loading...</div>
         )}
         {error && (
           <div className="mb-4 text-sm text-red-600 dark:text-red-400">
@@ -214,7 +214,7 @@ export function CustomerProfitabilitySection({
           </div>
         )}
         {sorted.length === 0 ? (
-          <p className="py-8 text-center text-sm text-olive-500">
+          <p className="py-8 text-center text-sm text-slate-500">
             No customer profitability data for this period
           </p>
         ) : (
@@ -225,7 +225,7 @@ export function CustomerProfitabilitySection({
                 <TableHead>
                   <button
                     onClick={() => toggleSort("customerName")}
-                    className="inline-flex items-center gap-1 hover:text-olive-900 dark:hover:text-olive-100"
+                    className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
                   >
                     Customer
                     <ArrowUpDown className="size-3" />
@@ -235,7 +235,7 @@ export function CustomerProfitabilitySection({
                 <TableHead className="text-right">
                   <button
                     onClick={() => toggleSort("billableValue")}
-                    className="inline-flex items-center gap-1 hover:text-olive-900 dark:hover:text-olive-100"
+                    className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
                   >
                     Revenue
                     <ArrowUpDown className="size-3" />
@@ -244,7 +244,7 @@ export function CustomerProfitabilitySection({
                 <TableHead className="text-right">
                   <button
                     onClick={() => toggleSort("costValue")}
-                    className="inline-flex items-center gap-1 hover:text-olive-900 dark:hover:text-olive-100"
+                    className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
                   >
                     Cost
                     <ArrowUpDown className="size-3" />
@@ -253,7 +253,7 @@ export function CustomerProfitabilitySection({
                 <TableHead className="text-right">
                   <button
                     onClick={() => toggleSort("margin")}
-                    className="inline-flex items-center gap-1 hover:text-olive-900 dark:hover:text-olive-100"
+                    className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
                   >
                     Margin
                     <ArrowUpDown className="size-3" />
@@ -262,7 +262,7 @@ export function CustomerProfitabilitySection({
                 <TableHead className="text-right">
                   <button
                     onClick={() => toggleSort("marginPercent")}
-                    className="inline-flex items-center gap-1 hover:text-olive-900 dark:hover:text-olive-100"
+                    className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
                   >
                     Margin %
                     <ArrowUpDown className="size-3" />
@@ -282,9 +282,9 @@ export function CustomerProfitabilitySection({
                     >
                       <TableCell className="w-8 px-2">
                         {isExpanded ? (
-                          <ChevronDown className="size-4 text-olive-500" />
+                          <ChevronDown className="size-4 text-slate-500" />
                         ) : (
-                          <ChevronRight className="size-4 text-olive-500" />
+                          <ChevronRight className="size-4 text-slate-500" />
                         )}
                       </TableCell>
                       <TableCell className="font-medium">
@@ -318,7 +318,7 @@ export function CustomerProfitabilitySection({
                             )}
                           </span>
                         ) : (
-                          <span className="text-olive-400">&mdash;</span>
+                          <span className="text-slate-400">&mdash;</span>
                         )}
                       </TableCell>
                       <TableCell className="text-right">
@@ -333,7 +333,7 @@ export function CustomerProfitabilitySection({
                             {customer.marginPercent.toFixed(1)}%
                           </span>
                         ) : (
-                          <span className="text-olive-400">&mdash;</span>
+                          <span className="text-slate-400">&mdash;</span>
                         )}
                       </TableCell>
                     </TableRow>
@@ -341,13 +341,13 @@ export function CustomerProfitabilitySection({
                       customer.projects.map((project) => (
                         <TableRow
                           key={`${key}::${project.projectId}`}
-                          className="bg-olive-50 dark:bg-olive-900/30"
+                          className="bg-slate-50 dark:bg-slate-900/30"
                         >
                           <TableCell />
-                          <TableCell className="pl-8 text-sm text-olive-600 dark:text-olive-400">
+                          <TableCell className="pl-8 text-sm text-slate-600 dark:text-slate-400">
                             {project.projectName}
                           </TableCell>
-                          <TableCell className="text-sm text-olive-500">
+                          <TableCell className="text-sm text-slate-500">
                             {project.currency}
                           </TableCell>
                           <TableCell className="text-right text-sm">
@@ -377,7 +377,7 @@ export function CustomerProfitabilitySection({
                                 )}
                               </span>
                             ) : (
-                              <span className="text-olive-400">&mdash;</span>
+                              <span className="text-slate-400">&mdash;</span>
                             )}
                           </TableCell>
                           <TableCell className="text-right text-sm">
@@ -392,7 +392,7 @@ export function CustomerProfitabilitySection({
                                 {project.marginPercent.toFixed(1)}%
                               </span>
                             ) : (
-                              <span className="text-olive-400">&mdash;</span>
+                              <span className="text-slate-400">&mdash;</span>
                             )}
                           </TableCell>
                         </TableRow>

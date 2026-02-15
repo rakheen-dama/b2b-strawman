@@ -77,9 +77,9 @@ export function ActivityFeedClient({
       />
 
       {/* Activity list */}
-      <div className="divide-y divide-olive-100 rounded-lg border border-olive-200 bg-white dark:divide-olive-800 dark:border-olive-800 dark:bg-olive-950">
+      <div className="divide-y divide-slate-100 rounded-lg border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-950">
         {items.length === 0 && (
-          <p className="px-4 py-12 text-center text-sm text-olive-500 dark:text-olive-400">
+          <p className="px-4 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
             No activity yet
           </p>
         )}

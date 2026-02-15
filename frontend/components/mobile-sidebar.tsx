@@ -42,7 +42,7 @@ export function MobileSidebar({ slug }: MobileSidebarProps) {
       </SheetTrigger>
       <SheetContent
         side="left"
-        className="w-60 gap-0 border-r-0 bg-olive-950 p-0 [&>button]:text-white/60 [&>button]:hover:text-white"
+        className="w-60 gap-0 border-r-0 bg-slate-950 p-0 [&>button]:text-white/60 [&>button]:hover:text-white"
       >
         {/* Header */}
         <div className="flex h-14 items-center px-4">
@@ -76,14 +76,14 @@ export function MobileSidebar({ slug }: MobileSidebarProps) {
                   "relative flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
                   isActive
                     ? "bg-white/5 text-white"
-                    : "text-white/60 hover:bg-olive-800 hover:text-white"
+                    : "text-white/60 hover:bg-slate-800 hover:text-white"
                 )}
               >
                 {isActive && (
                   <motion.div
                     layoutId="mobile-sidebar-indicator"
                     aria-hidden="true"
-                    className="absolute left-0 top-1 bottom-1 w-0.5 rounded-full bg-indigo-500"
+                    className="absolute left-0 top-1 bottom-1 w-0.5 rounded-full bg-teal-500"
                     transition={{
                       type: "spring",
                       stiffness: 350,
@@ -101,7 +101,7 @@ export function MobileSidebar({ slug }: MobileSidebarProps) {
         {/* Footer */}
         <div className="mx-4 border-t border-white/10" />
         <div className="flex items-center gap-3 px-4 py-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-olive-800 text-xs font-medium text-white">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-800 text-xs font-medium text-white">
             {initials}
           </div>
           <div className="min-w-0">

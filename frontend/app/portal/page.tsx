@@ -81,26 +81,26 @@ export default function PortalLoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-olive-50 dark:bg-olive-950">
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950">
       <div className="w-full max-w-md space-y-8 px-6">
         {/* Header */}
         <div className="text-center">
-          <h1 className="font-display text-3xl text-olive-950 dark:text-olive-50">
+          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
             DocTeams Portal
           </h1>
-          <p className="mt-2 text-olive-600 dark:text-olive-400">
+          <p className="mt-2 text-slate-600 dark:text-slate-400">
             Access your shared documents and projects
           </p>
         </div>
 
         {/* Login Card */}
-        <div className="rounded-xl border border-olive-200 bg-white p-8 dark:border-olive-800 dark:bg-olive-900">
+        <div className="rounded-xl border border-slate-200 bg-white p-8 dark:border-slate-800 dark:bg-slate-900">
           {step === "email" && (
             <form onSubmit={handleRequestLink} className="space-y-4">
               <div className="space-y-2">
                 <label
                   htmlFor="email"
-                  className="text-sm font-medium text-olive-700 dark:text-olive-300"
+                  className="text-sm font-medium text-slate-700 dark:text-slate-300"
                 >
                   Email address
                 </label>
@@ -117,7 +117,7 @@ export default function PortalLoginPage() {
               <div className="space-y-2">
                 <label
                   htmlFor="orgSlug"
-                  className="text-sm font-medium text-olive-700 dark:text-olive-300"
+                  className="text-sm font-medium text-slate-700 dark:text-slate-300"
                 >
                   Organization
                 </label>
@@ -149,7 +149,7 @@ export default function PortalLoginPage() {
 
               <button
                 type="button"
-                className="w-full text-center text-sm text-olive-500 hover:text-olive-700 dark:text-olive-400 dark:hover:text-olive-200"
+                className="w-full text-center text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
                 onClick={() => {
                   setStep("token");
                   setError(null);
@@ -164,20 +164,20 @@ export default function PortalLoginPage() {
             <form onSubmit={handleExchangeToken} className="space-y-4">
               <div className="flex flex-col items-center gap-3 text-center">
                 <CheckCircle2 className="size-12 text-green-600 dark:text-green-400" />
-                <h2 className="text-lg font-semibold text-olive-900 dark:text-olive-100">
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                   Magic link generated
                 </h2>
-                <p className="text-sm text-olive-600 dark:text-olive-400">
+                <p className="text-sm text-slate-600 dark:text-slate-400">
                   For the MVP, the magic link is shown below. In production, this would be sent to your email.
                 </p>
               </div>
 
               {magicLink && (
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-olive-700 dark:text-olive-300">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     Your magic link
                   </label>
-                  <div className="break-all rounded-lg bg-olive-50 p-3 font-mono text-xs text-olive-700 dark:bg-olive-800 dark:text-olive-300">
+                  <div className="break-all rounded-lg bg-slate-50 p-3 font-mono text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                     {magicLink}
                   </div>
                 </div>
@@ -186,7 +186,7 @@ export default function PortalLoginPage() {
               <div className="space-y-2">
                 <label
                   htmlFor="token-exchange"
-                  className="text-sm font-medium text-olive-700 dark:text-olive-300"
+                  className="text-sm font-medium text-slate-700 dark:text-slate-300"
                 >
                   Paste the link or token to sign in
                 </label>
@@ -219,7 +219,7 @@ export default function PortalLoginPage() {
 
               <button
                 type="button"
-                className="w-full text-center text-sm text-olive-500 hover:text-olive-700 dark:text-olive-400 dark:hover:text-olive-200"
+                className="w-full text-center text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
                 onClick={() => {
                   setStep("email");
                   setError(null);
@@ -236,7 +236,7 @@ export default function PortalLoginPage() {
               <div className="space-y-2">
                 <label
                   htmlFor="token-direct"
-                  className="text-sm font-medium text-olive-700 dark:text-olive-300"
+                  className="text-sm font-medium text-slate-700 dark:text-slate-300"
                 >
                   Magic link or token
                 </label>
@@ -266,7 +266,7 @@ export default function PortalLoginPage() {
 
               <button
                 type="button"
-                className="w-full text-center text-sm text-olive-500 hover:text-olive-700 dark:text-olive-400 dark:hover:text-olive-200"
+                className="w-full text-center text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
                 onClick={() => {
                   setStep("email");
                   setError(null);

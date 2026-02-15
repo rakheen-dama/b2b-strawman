@@ -11,7 +11,7 @@ interface OverviewHealthHeaderProps {
 const REASON_BADGE_COLORS: Record<string, string> = {
   budget: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200",
   overdue: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-  default: "bg-olive-100 text-olive-700 dark:bg-olive-800 dark:text-olive-300",
+  default: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
 };
 
 function getReasonBadgeColor(reason: string): string {
@@ -33,11 +33,11 @@ export function OverviewHealthHeader({
     <div className="flex items-start gap-4">
       <HealthBadge status={status} size="lg" />
       <div className="min-w-0 flex-1">
-        <h2 className="font-display text-lg text-olive-950 dark:text-olive-50">
+        <h2 className="font-display text-lg text-slate-950 dark:text-slate-50">
           {projectName}
         </h2>
         {customerName && (
-          <p className="text-sm text-olive-500 dark:text-olive-400">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             Customer: {customerName}
           </p>
         )}

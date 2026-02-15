@@ -22,7 +22,7 @@ export function MemberList() {
   });
 
   if (!isLoaded) {
-    return <div className="py-8 text-center text-sm text-olive-600 dark:text-olive-400">Loading members...</div>;
+    return <div className="py-8 text-center text-sm text-slate-600 dark:text-slate-400">Loading members...</div>;
   }
 
   if (!memberships?.data?.length) {
@@ -41,17 +41,17 @@ export function MemberList() {
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-olive-200 dark:border-olive-800">
-              <th className="pb-3 pr-4 text-left text-xs font-medium tracking-wide text-olive-600 uppercase dark:text-olive-400">
+            <tr className="border-b border-slate-200 dark:border-slate-800">
+              <th className="pb-3 pr-4 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Member
               </th>
-              <th className="w-[200px] pb-3 pr-4 text-left text-xs font-medium tracking-wide text-olive-600 uppercase dark:text-olive-400">
+              <th className="w-[200px] pb-3 pr-4 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Email
               </th>
-              <th className="w-[100px] pb-3 pr-4 text-left text-xs font-medium tracking-wide text-olive-600 uppercase dark:text-olive-400">
+              <th className="w-[100px] pb-3 pr-4 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Role
               </th>
-              <th className="w-[140px] pb-3 text-left text-xs font-medium tracking-wide text-olive-600 uppercase dark:text-olive-400">
+              <th className="w-[140px] pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Joined
               </th>
             </tr>
@@ -68,23 +68,23 @@ export function MemberList() {
               return (
                 <tr
                   key={member.id}
-                  className="border-b border-olive-100 transition-colors hover:bg-olive-50 dark:border-olive-800/50 dark:hover:bg-olive-900/30"
+                  className="border-b border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/30"
                 >
                   <td className="py-3 pr-4">
                     <div className="flex items-center gap-3">
                       <AvatarCircle name={fullName} size={32} />
-                      <span className="font-medium text-olive-900 dark:text-olive-100">
+                      <span className="font-medium text-slate-900 dark:text-slate-100">
                         {fullName}
                       </span>
                     </div>
                   </td>
-                  <td className="py-3 pr-4 text-olive-600 dark:text-olive-400">
+                  <td className="py-3 pr-4 text-slate-600 dark:text-slate-400">
                     {member.publicUserData?.identifier ?? "—"}
                   </td>
                   <td className="py-3 pr-4">
                     <Badge variant={roleInfo.variant}>{roleInfo.label}</Badge>
                   </td>
-                  <td className="py-3 text-olive-600 dark:text-olive-400">
+                  <td className="py-3 text-slate-600 dark:text-slate-400">
                     {member.createdAt ? formatDate(member.createdAt) : "—"}
                   </td>
                 </tr>
@@ -99,7 +99,7 @@ export function MemberList() {
           <button
             onClick={() => memberships.fetchNext?.()}
             disabled={memberships.isFetching}
-            className="text-sm font-medium text-olive-600 hover:text-olive-900 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-olive-600 dark:text-olive-400 dark:hover:text-olive-200"
+            className="text-sm font-medium text-slate-600 hover:text-slate-900 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600 dark:text-slate-400 dark:hover:text-slate-200"
           >
             {memberships.isFetching ? "Loading..." : "Load more"}
           </button>

@@ -22,14 +22,14 @@ export function DesktopSidebar({ slug }: DesktopSidebarProps) {
     : "?";
 
   return (
-    <aside className="hidden w-60 flex-col bg-olive-950 md:flex">
+    <aside className="hidden w-60 flex-col bg-slate-950 md:flex">
       {/* Header */}
       <div className="flex h-14 items-center px-4">
-        <span className="text-base font-semibold text-white">DocTeams</span>
+        <span className="text-base font-bold tracking-tight text-white">DocTeams</span>
       </div>
       <div className="mx-4 border-t border-white/10" />
       <div className="flex items-center gap-2 px-4 py-3">
-        <span className="truncate text-sm text-white/60">{slug}</span>
+        <span className="truncate text-teal-500/80 font-mono text-xs tracking-wider uppercase">{slug}</span>
       </div>
       <div className="mx-4 border-t border-white/10" />
 
@@ -49,14 +49,14 @@ export function DesktopSidebar({ slug }: DesktopSidebarProps) {
                 "relative flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
                 isActive
                   ? "bg-white/5 text-white"
-                  : "text-white/60 hover:bg-olive-800 hover:text-white"
+                  : "text-white/60 hover:bg-slate-800 hover:text-white"
               )}
             >
               {isActive && (
                 <motion.div
                   layoutId="sidebar-indicator"
                   aria-hidden="true"
-                  className="absolute left-0 top-1 bottom-1 w-0.5 rounded-full bg-indigo-500"
+                  className="absolute left-0 top-1 bottom-1 w-0.5 rounded-full bg-teal-500"
                   transition={{ type: "spring", stiffness: 350, damping: 30 }}
                 />
               )}
@@ -70,7 +70,7 @@ export function DesktopSidebar({ slug }: DesktopSidebarProps) {
       {/* Footer */}
       <div className="mx-4 border-t border-white/10" />
       <div className="flex items-center gap-3 px-4 py-3">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-olive-800 text-xs font-medium text-white">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-800 text-xs font-medium text-white">
           {initials}
         </div>
         <div className="min-w-0">

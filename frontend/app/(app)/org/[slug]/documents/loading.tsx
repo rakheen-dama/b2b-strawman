@@ -16,7 +16,7 @@ export default function DocumentsLoading() {
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-olive-200 dark:border-olive-800">
+            <tr className="border-b border-slate-200 dark:border-slate-800">
               <th className="px-4 py-3 text-left">
                 <Skeleton className="h-3 w-10" />
               </th>
@@ -38,7 +38,7 @@ export default function DocumentsLoading() {
             {Array.from({ length: 5 }).map((_, i) => (
               <tr
                 key={i}
-                className="border-b border-olive-100 last:border-0 dark:border-olive-800/50"
+                className="border-b border-slate-100 last:border-0 dark:border-slate-800/50"
               >
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">

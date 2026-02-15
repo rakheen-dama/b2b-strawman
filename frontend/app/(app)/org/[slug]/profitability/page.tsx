@@ -29,10 +29,10 @@ export default async function ProfitabilityPage({
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return (
       <div className="space-y-8">
-        <h1 className="font-display text-3xl text-olive-950 dark:text-olive-50">
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
           Profitability
         </h1>
-        <p className="text-olive-600 dark:text-olive-400">
+        <p className="text-slate-600 dark:text-slate-400">
           You do not have permission to view profitability reports. Only admins
           and owners can access this page.
         </p>
@@ -61,10 +61,10 @@ export default async function ProfitabilityPage({
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-display text-3xl text-olive-950 dark:text-olive-50">
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
           Profitability
         </h1>
-        <p className="mt-1 text-sm text-olive-600 dark:text-olive-400">
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Team utilization, project profitability, and customer profitability
           across your organization
         </p>

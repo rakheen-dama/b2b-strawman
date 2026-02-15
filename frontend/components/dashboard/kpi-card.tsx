@@ -63,7 +63,7 @@ function KpiCardContent({
 
   return (
     <div className="flex flex-col gap-1 px-4 py-3">
-      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="text-xs uppercase tracking-wider text-muted-foreground">{label}</span>
       <div className="flex items-end justify-between gap-2">
         <div className="flex flex-col gap-1">
           {isEmpty ? (
@@ -71,7 +71,7 @@ function KpiCardContent({
               {emptyState}
             </span>
           ) : (
-            <span className="text-2xl font-bold">{value}</span>
+            <span className="text-2xl font-bold font-mono tabular-nums tracking-tight">{value}</span>
           )}
           {changePercent != null && changeDirection && !isEmpty && (
             <ChangeIndicator

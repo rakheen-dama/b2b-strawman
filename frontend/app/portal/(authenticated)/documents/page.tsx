@@ -36,7 +36,7 @@ export default function PortalDocumentsPage() {
   if (isLoading) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-olive-400" />
+        <Loader2 className="size-8 animate-spin text-slate-400" />
       </div>
     );
   }
@@ -54,7 +54,7 @@ export default function PortalDocumentsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <h1 className="font-display text-2xl text-olive-950 dark:text-olive-50">
+        <h1 className="font-display text-2xl text-slate-950 dark:text-slate-50">
           Documents
         </h1>
         <Badge variant="neutral">{documents.length}</Badge>

@@ -44,7 +44,7 @@ function BudgetProgressBar({
 
   return (
     <div
-      className="relative h-2.5 w-full overflow-hidden rounded-full bg-olive-200 dark:bg-olive-800"
+      className="relative h-2.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800"
       role="progressbar"
       aria-valuenow={Math.round(value)}
       aria-valuemin={0}
@@ -68,11 +68,11 @@ function StatCard({
   valueClassName?: string;
 }) {
   return (
-    <div className="rounded-lg border border-olive-200 bg-white p-4 dark:border-olive-800 dark:bg-olive-950">
-      <p className="text-xs font-medium uppercase tracking-wide text-olive-600 dark:text-olive-400">
+    <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
+      <p className="text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
         {label}
       </p>
-      <p className={valueClassName ?? "text-olive-950 dark:text-olive-50"}>
+      <p className={valueClassName ?? "text-slate-950 dark:text-slate-50"}>
         <span className="font-display text-2xl">{value}</span>
       </p>
     </div>
@@ -117,7 +117,7 @@ export function BudgetPanel({
       {/* Header with status and actions */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h3 className="font-display text-lg text-olive-950 dark:text-olive-50">
+          <h3 className="font-display text-lg text-slate-950 dark:text-slate-50">
             Budget Status
           </h3>
           <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
@@ -153,7 +153,7 @@ export function BudgetPanel({
       {hasHours && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h4 className="text-sm font-medium text-olive-700 dark:text-olive-300">
+            <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300">
               Hours
             </h4>
             <Badge variant={STATUS_BADGE[budget.hoursStatus].variant} className="text-xs">
@@ -191,7 +191,7 @@ export function BudgetPanel({
       {hasAmount && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h4 className="text-sm font-medium text-olive-700 dark:text-olive-300">
+            <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300">
               Amount
             </h4>
             <Badge variant={STATUS_BADGE[budget.amountStatus].variant} className="text-xs">
@@ -233,13 +233,13 @@ export function BudgetPanel({
       )}
 
       {/* Alert threshold and notes */}
-      <div className="rounded-lg border border-olive-200 bg-olive-50 p-4 dark:border-olive-800 dark:bg-olive-900/50">
-        <p className="text-sm text-olive-600 dark:text-olive-400">
+      <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+        <p className="text-sm text-slate-600 dark:text-slate-400">
           <span className="font-medium">Alert threshold:</span>{" "}
           {budget.alertThresholdPct}%
         </p>
         {budget.notes && (
-          <p className="mt-1 text-sm text-olive-600 dark:text-olive-400">
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
             <span className="font-medium">Notes:</span> {budget.notes}
           </p>
         )}

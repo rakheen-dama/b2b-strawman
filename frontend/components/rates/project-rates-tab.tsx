@@ -91,10 +91,10 @@ export function ProjectRatesTab({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-medium text-olive-900 dark:text-olive-100">
+          <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100">
             Project Rate Overrides
           </h3>
-          <p className="mt-1 text-xs text-olive-500 dark:text-olive-400">
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             These rates override member defaults for this project.
           </p>
         </div>
@@ -111,7 +111,7 @@ export function ProjectRatesTab({
         </AddProjectRateDialog>
       </div>
 
-      <div className="rounded-lg border border-olive-200 bg-white dark:border-olive-800 dark:bg-olive-950">
+      <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
         <Table>
           <TableHeader>
             <TableRow>
@@ -129,7 +129,7 @@ export function ProjectRatesTab({
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <AvatarCircle name={rate.memberName} size={32} />
-                    <span className="font-medium text-olive-900 dark:text-olive-100">
+                    <span className="font-medium text-slate-900 dark:text-slate-100">
                       {rate.memberName}
                     </span>
                   </div>
@@ -145,7 +145,7 @@ export function ProjectRatesTab({
                   {rate.effectiveTo ? (
                     formatDate(rate.effectiveTo)
                   ) : (
-                    <span className="text-olive-400 dark:text-olive-600">
+                    <span className="text-slate-400 dark:text-slate-600">
                       Ongoing
                     </span>
                   )}
@@ -312,7 +312,7 @@ function EditProjectRateDialog({
           <div className="space-y-2">
             <Label htmlFor="edit-project-rate-to">
               Effective To{" "}
-              <span className="font-normal text-olive-500">(optional)</span>
+              <span className="font-normal text-slate-500">(optional)</span>
             </Label>
             <Input
               id="edit-project-rate-to"

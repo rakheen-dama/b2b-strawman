@@ -138,7 +138,7 @@ export function TagInput({
     if (localTags.length === 0) {
       return (
         <div data-testid="tag-input">
-          <span className="text-sm text-olive-400 dark:text-olive-600">
+          <span className="text-sm text-slate-400 dark:text-slate-600">
             No tags
           </span>
         </div>
@@ -198,7 +198,7 @@ export function TagInput({
               type="button"
               onClick={() => handleRemoveTag(tag.id)}
               disabled={isUpdating}
-              className="ml-0.5 rounded-full p-0.5 hover:bg-olive-200 dark:hover:bg-olive-700"
+              className="ml-0.5 rounded-full p-0.5 hover:bg-slate-200 dark:hover:bg-slate-700"
               aria-label={`Remove ${tag.name}`}
             >
               <X className="size-3" />

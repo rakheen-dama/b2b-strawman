@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
 
 const PALETTES = [
-  "bg-olive-200 text-olive-700 dark:bg-olive-700 dark:text-olive-200",
-  "bg-indigo-100 text-indigo-700 dark:bg-indigo-800 dark:text-indigo-200",
+  "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200",
+  "bg-teal-100 text-teal-700 dark:bg-teal-800 dark:text-teal-200",
   "bg-amber-100 text-amber-700 dark:bg-amber-800 dark:text-amber-200",
 ] as const;
 

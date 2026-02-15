@@ -18,13 +18,13 @@ export function TodayTimeEntries({ entries }: TodayTimeEntriesProps) {
   );
 
   return (
-    <div className="rounded-lg border border-olive-200 bg-white p-6 dark:border-olive-800 dark:bg-olive-950">
+    <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
       <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-olive-900 dark:text-olive-100">
+        <h2 className="font-semibold text-slate-900 dark:text-slate-100">
           Today
         </h2>
         {totalMinutes > 0 && (
-          <span className="text-sm font-medium text-olive-700 dark:text-olive-300">
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
             {formatDuration(totalMinutes)}
           </span>
         )}
@@ -32,8 +32,8 @@ export function TodayTimeEntries({ entries }: TodayTimeEntriesProps) {
 
       {entries.length === 0 ? (
         <div className="mt-4 flex flex-col items-center gap-2 py-8 text-center">
-          <Clock className="size-8 text-olive-300 dark:text-olive-700" />
-          <p className="text-sm text-olive-500 dark:text-olive-400">
+          <Clock className="size-8 text-slate-300 dark:text-slate-700" />
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             No time logged today
           </p>
         </div>
@@ -42,13 +42,13 @@ export function TodayTimeEntries({ entries }: TodayTimeEntriesProps) {
           {entries.map((entry) => (
             <div
               key={entry.id}
-              className="flex items-start justify-between gap-3 rounded-md border border-olive-100 p-3 dark:border-olive-800"
+              className="flex items-start justify-between gap-3 rounded-md border border-slate-100 p-3 dark:border-slate-800"
             >
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-olive-950 dark:text-olive-50">
+                <p className="truncate text-sm font-medium text-slate-950 dark:text-slate-50">
                   {entry.taskTitle}
                 </p>
-                <p className="mt-0.5 truncate text-xs text-olive-500 dark:text-olive-400">
+                <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
                   {entry.projectName}
                   {entry.description && ` \u2014 ${entry.description}`}
                 </p>
@@ -57,7 +57,7 @@ export function TodayTimeEntries({ entries }: TodayTimeEntriesProps) {
                 <Badge variant={entry.billable ? "success" : "neutral"}>
                   {entry.billable ? "Billable" : "Non-billable"}
                 </Badge>
-                <span className="text-sm font-medium text-olive-900 dark:text-olive-100">
+                <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
                   {formatDuration(entry.durationMinutes)}
                 </span>
               </div>

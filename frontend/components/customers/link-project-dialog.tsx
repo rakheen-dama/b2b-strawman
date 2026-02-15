@@ -122,12 +122,12 @@ export function LinkProjectDialog({
                     value={`${project.name} ${project.description ?? ""}`}
                     onSelect={() => handleLinkProject(project.id)}
                     disabled={isLinking}
-                    className="gap-3 py-3 data-[selected=true]:bg-olive-100 dark:data-[selected=true]:bg-olive-800"
+                    className="gap-3 py-3 data-[selected=true]:bg-slate-100 dark:data-[selected=true]:bg-slate-800"
                   >
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold">{project.name}</p>
                       {project.description && (
-                        <p className="truncate text-xs text-olive-600 dark:text-olive-400">
+                        <p className="truncate text-xs text-slate-600 dark:text-slate-400">
                           {project.description}
                         </p>
                       )}

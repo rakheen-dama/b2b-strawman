@@ -57,11 +57,11 @@ export function AvailableTaskList({ tasks, slug }: AvailableTaskListProps) {
         className="flex items-center gap-2"
       >
         {isOpen ? (
-          <ChevronDown className="size-4 text-olive-500" />
+          <ChevronDown className="size-4 text-slate-500" />
         ) : (
-          <ChevronRight className="size-4 text-olive-500" />
+          <ChevronRight className="size-4 text-slate-500" />
         )}
-        <h2 className="font-semibold text-olive-900 dark:text-olive-100">
+        <h2 className="font-semibold text-slate-900 dark:text-slate-100">
           Available Tasks
         </h2>
         <Badge variant="neutral">{tasks.length}</Badge>
@@ -76,20 +76,20 @@ export function AvailableTaskList({ tasks, slug }: AvailableTaskListProps) {
               description="Unassigned tasks in your projects will appear here"
             />
           ) : (
-            <div className="rounded-lg border border-olive-200 dark:border-olive-800">
+            <div className="rounded-lg border border-slate-200 dark:border-slate-800">
               <Table>
                 <TableHeader>
-                  <TableRow className="border-olive-200 hover:bg-transparent dark:border-olive-800">
-                    <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                  <TableRow className="border-slate-200 hover:bg-transparent dark:border-slate-800">
+                    <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
                       Project
                     </TableHead>
-                    <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                    <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
                       Title
                     </TableHead>
-                    <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                    <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
                       Priority
                     </TableHead>
-                    <TableHead className="hidden text-xs uppercase tracking-wide text-olive-600 sm:table-cell dark:text-olive-400">
+                    <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
                       Due Date
                     </TableHead>
                   </TableRow>
@@ -104,7 +104,7 @@ export function AvailableTaskList({ tasks, slug }: AvailableTaskListProps) {
                     return (
                       <TableRow
                         key={task.id}
-                        className="cursor-pointer border-olive-100 transition-colors hover:bg-olive-50 dark:border-olive-800/50 dark:hover:bg-olive-900"
+                        className="cursor-pointer border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900"
                         onClick={() =>
                           router.push(`/org/${slug}/projects/${task.projectId}`)
                         }
@@ -113,7 +113,7 @@ export function AvailableTaskList({ tasks, slug }: AvailableTaskListProps) {
                           <Badge variant="member">{task.projectName}</Badge>
                         </TableCell>
                         <TableCell>
-                          <p className="truncate text-sm font-medium text-olive-950 dark:text-olive-50">
+                          <p className="truncate text-sm font-medium text-slate-950 dark:text-slate-50">
                             {task.title}
                           </p>
                         </TableCell>
@@ -128,7 +128,7 @@ export function AvailableTaskList({ tasks, slug }: AvailableTaskListProps) {
                               "inline-flex items-center gap-1 text-sm",
                               overdue
                                 ? "font-medium text-red-600 dark:text-red-400"
-                                : "text-olive-600 dark:text-olive-400"
+                                : "text-slate-600 dark:text-slate-400"
                             )}
                           >
                             {overdue && (

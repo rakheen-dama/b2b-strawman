@@ -22,10 +22,10 @@ export function DashboardHeader({ from, to }: DashboardHeaderProps) {
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 className="font-display text-3xl text-olive-950 dark:text-olive-50">
+        <h1 className="font-display text-3xl tracking-tight text-slate-950 dark:text-slate-50">
           Dashboard
         </h1>
-        <p className="mt-1 text-sm text-olive-600 dark:text-olive-400">
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Company overview and project health
         </p>
       </div>

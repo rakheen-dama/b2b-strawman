@@ -26,17 +26,17 @@ export default async function TagsSettingsPage({
     <div className="space-y-8">
       <Link
         href={`/org/${slug}/settings`}
-        className="inline-flex items-center gap-1 text-sm text-olive-600 hover:text-olive-900 dark:text-olive-400 dark:hover:text-olive-100"
+        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
       >
         <ChevronLeft className="size-4" />
         Settings
       </Link>
 
       <div>
-        <h1 className="font-display text-3xl text-olive-950 dark:text-olive-50">
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
           Tags
         </h1>
-        <p className="mt-1 text-sm text-olive-600 dark:text-olive-400">
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Manage tags for projects, tasks, and customers.
         </p>
       </div>

@@ -51,26 +51,26 @@ export default async function BillingPage({
       {/* Back link */}
       <Link
         href={`/org/${slug}/settings`}
-        className="inline-flex items-center gap-1 text-sm text-olive-600 hover:text-olive-900 dark:text-olive-400 dark:hover:text-olive-100"
+        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
       >
         <ChevronLeft className="size-4" />
         Settings
       </Link>
 
       {/* Page header */}
-      <h1 className="font-display text-3xl text-olive-950 dark:text-olive-50">Billing</h1>
+      <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Billing</h1>
 
       {/* Current Plan card */}
-      <div className="rounded-lg border border-olive-200 bg-white p-6 dark:border-olive-800 dark:bg-olive-950">
+      <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
         <div className="flex items-center gap-3">
-          <h2 className="font-display text-xl text-olive-950 dark:text-olive-50">
+          <h2 className="font-display text-xl text-slate-950 dark:text-slate-50">
             {isPro ? "Pro" : "Starter"} Plan
           </h2>
           <Badge variant={isPro ? "pro" : "starter"}>
             {isPro ? "Pro" : "Starter"}
           </Badge>
         </div>
-        <p className="mt-1 text-sm text-olive-600 dark:text-olive-400">
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           {isPro
             ? "You\u2019re on the Pro plan with dedicated infrastructure and higher limits."
             : "You\u2019re on the Starter plan with shared infrastructure."}
@@ -78,19 +78,19 @@ export default async function BillingPage({
 
         <div className="mt-6 space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="flex items-center gap-1.5 text-olive-700 dark:text-olive-300">
-              <Users className="size-4 text-olive-500" />
+            <span className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
+              <Users className="size-4 text-slate-500" />
               Members
             </span>
-            <span className="text-olive-600 dark:text-olive-400">
+            <span className="text-slate-600 dark:text-slate-400">
               {currentMembers} of {maxMembers}
             </span>
           </div>
           <div
             className={
               isPro
-                ? "[&_[data-slot=progress-indicator]]:bg-indigo-500"
-                : "[&_[data-slot=progress-indicator]]:bg-olive-500"
+                ? "[&_[data-slot=progress-indicator]]:bg-teal-500"
+                : "[&_[data-slot=progress-indicator]]:bg-slate-500"
             }
           >
             <Progress value={usagePercent} />
@@ -103,28 +103,28 @@ export default async function BillingPage({
         <>
           {/* Pricing cards */}
           <div>
-            <h2 className="font-display text-xl text-olive-950 dark:text-olive-50">
+            <h2 className="font-display text-xl text-slate-950 dark:text-slate-50">
               Compare Plans
             </h2>
             <div className="mt-6 grid grid-cols-1 gap-8 md:grid-cols-2">
               {PLANS.map((plan) => (
                 <div
                   key={plan.name}
-                  className={`relative rounded-lg bg-olive-950/[0.025] p-8 dark:bg-olive-50/[0.05] ${
-                    plan.highlighted ? "border-2 border-indigo-200" : ""
+                  className={`relative rounded-lg bg-slate-950/[0.025] p-8 dark:bg-slate-50/[0.05] ${
+                    plan.highlighted ? "border-2 border-teal-200" : ""
                   }`}
                 >
                   {plan.highlighted && (
-                    <span className="absolute -top-3 right-6 rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
+                    <span className="absolute -top-3 right-6 rounded-full bg-teal-100 px-3 py-1 text-xs font-semibold text-teal-700">
                       Most popular
                     </span>
                   )}
 
-                  <p className="font-semibold text-olive-950 dark:text-olive-50">{plan.name}</p>
-                  <p className="mt-2 font-display text-3xl text-olive-950 dark:text-olive-50">
+                  <p className="font-semibold text-slate-950 dark:text-slate-50">{plan.name}</p>
+                  <p className="mt-2 font-display text-3xl text-slate-950 dark:text-slate-50">
                     {plan.price}
                   </p>
-                  <p className="mt-1 text-sm text-olive-600 dark:text-olive-400">
+                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
                     {plan.subtitle}
                   </p>
 
@@ -134,11 +134,11 @@ export default async function BillingPage({
                         <Check
                           className={`mt-0.5 size-4 shrink-0 ${
                             plan.highlighted
-                              ? "text-indigo-500"
-                              : "text-olive-500"
+                              ? "text-teal-500"
+                              : "text-slate-500"
                           }`}
                         />
-                        <span className="text-sm text-olive-700 dark:text-olive-300">
+                        <span className="text-sm text-slate-700 dark:text-slate-300">
                           {feature}
                         </span>
                       </li>
@@ -158,12 +158,12 @@ export default async function BillingPage({
           </div>
 
           {/* Upgrade CTA section */}
-          <div className="rounded-lg bg-olive-100 p-8 text-center dark:bg-olive-900">
-            <Sparkles className="mx-auto size-8 text-indigo-500" />
-            <h2 className="mt-4 font-display text-xl text-olive-950 dark:text-olive-50">
+          <div className="rounded-lg bg-slate-100 p-8 text-center dark:bg-slate-900">
+            <Sparkles className="mx-auto size-8 text-teal-500" />
+            <h2 className="mt-4 font-display text-xl text-slate-950 dark:text-slate-50">
               Ready for dedicated infrastructure?
             </h2>
-            <p className="mx-auto mt-2 max-w-md text-sm text-olive-600 dark:text-olive-400">
+            <p className="mx-auto mt-2 max-w-md text-sm text-slate-600 dark:text-slate-400">
               Upgrade to Pro for schema isolation, more members, and priority
               support.
             </p>

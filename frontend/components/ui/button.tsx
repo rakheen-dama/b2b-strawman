@@ -11,19 +11,19 @@ const buttonVariants = cva(
       variant: {
         default:
           "bg-primary text-primary-foreground hover:bg-primary/90 rounded-full",
-        soft: "bg-olive-950/10 text-olive-950 hover:bg-olive-950/15 rounded-full dark:bg-white/10 dark:text-white dark:hover:bg-white/15",
+        soft: "bg-slate-950/10 text-slate-950 hover:bg-slate-950/15 rounded-full dark:bg-white/8 dark:text-white dark:hover:bg-white/12",
         accent:
-          "bg-indigo-600 text-white hover:bg-indigo-700 rounded-full",
+          "bg-teal-600 text-white hover:bg-teal-600/90 rounded-full",
         destructive:
           "bg-red-600 text-white hover:bg-red-600/90 rounded-full focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40",
         outline:
-          "border border-olive-200 bg-background rounded-md hover:bg-olive-100 hover:text-foreground dark:border-olive-800 dark:hover:bg-olive-800",
+          "border border-slate-200 bg-background rounded-md hover:bg-slate-100 hover:text-foreground dark:border-slate-800 dark:hover:bg-slate-800",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-md",
         ghost:
-          "text-olive-700 hover:bg-olive-100 hover:text-olive-950 rounded-md dark:text-olive-400 dark:hover:bg-olive-800 dark:hover:text-olive-100",
+          "text-slate-700 hover:bg-slate-100 hover:text-slate-950 rounded-md dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100",
         plain:
-          "text-olive-700 hover:text-olive-950 p-0 h-auto dark:text-olive-400 dark:hover:text-olive-100",
+          "text-slate-700 hover:text-slate-950 p-0 h-auto dark:text-slate-400 dark:hover:text-slate-100",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

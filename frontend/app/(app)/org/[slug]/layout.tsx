@@ -30,7 +30,7 @@ export default async function OrgLayout({
     <div className="flex min-h-screen">
       <DesktopSidebar slug={slug} />
       <div className="flex flex-1 flex-col">
-        <header className="flex h-14 items-center gap-4 border-b border-olive-200 bg-white px-4 md:px-6 dark:border-olive-800 dark:bg-olive-950">
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-olive-200/60 bg-white/80 px-4 backdrop-blur-md md:px-6 dark:border-olive-800/60 dark:bg-olive-950/80">
           <MobileSidebar slug={slug} />
           <Breadcrumbs slug={slug} />
           <div className="ml-auto flex items-center gap-3">

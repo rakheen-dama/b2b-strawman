@@ -96,7 +96,7 @@
   /* Semantic tokens — light mode */
   --background: var(--olive-50);
   --foreground: var(--olive-900);
-  --card: oklch(100% 0 0);
+  --card: oklch(99.4% 0.002 106.5);
   --card-foreground: var(--olive-900);
   --popover: oklch(100% 0 0);
   --popover-foreground: var(--olive-900);
@@ -173,7 +173,27 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    scroll-behavior: smooth;
+  }
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Tabular nums for aligned number columns */
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Scroll shadow for scrollable containers */
+@utility scroll-shadow {
+  background:
+    linear-gradient(var(--background) 30%, transparent) center top,
+    linear-gradient(transparent, var(--background) 70%) center bottom,
+    radial-gradient(farthest-side at 50% 0, oklch(0% 0 0 / 8%), transparent) center top,
+    radial-gradient(farthest-side at 50% 100%, oklch(0% 0 0 / 8%), transparent) center bottom;
+  background-repeat: no-repeat;
+  background-size: 100% 40px, 100% 40px, 100% 14px, 100% 14px;
+  background-attachment: local, local, scroll, scroll;
 }

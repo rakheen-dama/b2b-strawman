@@ -1,7 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.fielddefinition;
 
+import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.AddFieldToGroupRequest;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.CreateFieldGroupRequest;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldGroupResponse;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.ReorderFieldsRequest;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.UpdateFieldGroupRequest;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -59,5 +61,52 @@ public class FieldGroupController {
   public ResponseEntity<Void> delete(@PathVariable UUID id) {
     fieldGroupService.deactivate(id);
     return ResponseEntity.noContent().build();
+  }
+
+  // --- Membership endpoints ---
+
+  @PostMapping("/{id}/fields")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<Void> addField(
+      @PathVariable UUID id, @Valid @RequestBody AddFieldToGroupRequest request) {
+    fieldGroupService.addFieldToGroup(id, request.fieldDefinitionId(), request.sortOrder());
+    return ResponseEntity.created(
+            URI.create("/api/field-groups/" + id + "/fields/" + request.fieldDefinitionId()))
+        .build();
+  }
+
+  @DeleteMapping("/{id}/fields/{fieldId}")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<Void> removeField(@PathVariable UUID id, @PathVariable UUID fieldId) {
+    fieldGroupService.removeFieldFromGroup(id, fieldId);
+    return ResponseEntity.noContent().build();
+  }
+
+  @PutMapping("/{id}/fields/reorder")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<Void> reorderFields(
+      @PathVariable UUID id, @Valid @RequestBody ReorderFieldsRequest request) {
+    fieldGroupService.reorderFields(id, request.fieldIds());
+    return ResponseEntity.noContent().build();
+  }
+
+  @GetMapping("/{id}/fields")
+  public ResponseEntity<List<FieldGroupMemberResponse>> getFields(@PathVariable UUID id) {
+    var members = fieldGroupService.getGroupMembers(id);
+    var response = members.stream().map(FieldGroupMemberResponse::from).toList();
+    return ResponseEntity.ok(response);
+  }
+
+  /** Response record for field group membership. */
+  public record FieldGroupMemberResponse(
+      UUID id, UUID fieldGroupId, UUID fieldDefinitionId, int sortOrder) {
+
+    public static FieldGroupMemberResponse from(FieldGroupMember member) {
+      return new FieldGroupMemberResponse(
+          member.getId(),
+          member.getFieldGroupId(),
+          member.getFieldDefinitionId(),
+          member.getSortOrder());
+    }
   }
 }

@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.fielddefinition;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.CreateFieldGroupRequest;
@@ -22,10 +23,18 @@ public class FieldGroupService {
   private static final Logger log = LoggerFactory.getLogger(FieldGroupService.class);
 
   private final FieldGroupRepository fieldGroupRepository;
+  private final FieldDefinitionRepository fieldDefinitionRepository;
+  private final FieldGroupMemberRepository fieldGroupMemberRepository;
   private final AuditService auditService;
 
-  public FieldGroupService(FieldGroupRepository fieldGroupRepository, AuditService auditService) {
+  public FieldGroupService(
+      FieldGroupRepository fieldGroupRepository,
+      FieldDefinitionRepository fieldDefinitionRepository,
+      FieldGroupMemberRepository fieldGroupMemberRepository,
+      AuditService auditService) {
     this.fieldGroupRepository = fieldGroupRepository;
+    this.fieldDefinitionRepository = fieldDefinitionRepository;
+    this.fieldGroupMemberRepository = fieldGroupMemberRepository;
     this.auditService = auditService;
   }
 
@@ -128,6 +137,108 @@ public class FieldGroupService {
             .entityId(fg.getId())
             .details(Map.of("slug", fg.getSlug()))
             .build());
+  }
+
+  // --- Membership methods ---
+
+  /**
+   * Adds a field definition to a field group. Validates that the field's entityType matches the
+   * group's entityType.
+   */
+  @Transactional
+  public void addFieldToGroup(UUID groupId, UUID fieldId, int sortOrder) {
+    var group =
+        fieldGroupRepository
+            .findOneById(groupId)
+            .orElseThrow(() -> new ResourceNotFoundException("FieldGroup", groupId));
+    var field =
+        fieldDefinitionRepository
+            .findOneById(fieldId)
+            .orElseThrow(() -> new ResourceNotFoundException("FieldDefinition", fieldId));
+
+    if (field.getEntityType() != group.getEntityType()) {
+      throw new InvalidStateException(
+          "Entity type mismatch",
+          "Field definition entity type '"
+              + field.getEntityType()
+              + "' does not match group entity type '"
+              + group.getEntityType()
+              + "'");
+    }
+
+    var member = new FieldGroupMember(groupId, fieldId, sortOrder);
+    try {
+      fieldGroupMemberRepository.saveAndFlush(member);
+    } catch (DataIntegrityViolationException ex) {
+      throw new ResourceConflictException(
+          "Duplicate membership",
+          "Field definition " + fieldId + " is already a member of group " + groupId);
+    }
+
+    log.info("Added field {} to group {} at sortOrder {}", fieldId, groupId, sortOrder);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("field_group_member.added")
+            .entityType("field_group")
+            .entityId(groupId)
+            .details(
+                Map.of("field_definition_id", fieldId.toString(), "sort_order", sortOrder + ""))
+            .build());
+  }
+
+  /** Removes a field definition from a field group. */
+  @Transactional
+  public void removeFieldFromGroup(UUID groupId, UUID fieldId) {
+    fieldGroupRepository
+        .findOneById(groupId)
+        .orElseThrow(() -> new ResourceNotFoundException("FieldGroup", groupId));
+
+    fieldGroupMemberRepository.deleteByFieldGroupIdAndFieldDefinitionId(groupId, fieldId);
+
+    log.info("Removed field {} from group {}", fieldId, groupId);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("field_group_member.removed")
+            .entityType("field_group")
+            .entityId(groupId)
+            .details(Map.of("field_definition_id", fieldId.toString()))
+            .build());
+  }
+
+  /** Reorders fields within a group based on position in the provided list. */
+  @Transactional
+  public void reorderFields(UUID groupId, List<UUID> fieldIds) {
+    fieldGroupRepository
+        .findOneById(groupId)
+        .orElseThrow(() -> new ResourceNotFoundException("FieldGroup", groupId));
+
+    var members = fieldGroupMemberRepository.findByFieldGroupIdOrderBySortOrder(groupId);
+    var memberByFieldId = new java.util.HashMap<UUID, FieldGroupMember>();
+    for (var member : members) {
+      memberByFieldId.put(member.getFieldDefinitionId(), member);
+    }
+
+    for (int i = 0; i < fieldIds.size(); i++) {
+      var member = memberByFieldId.get(fieldIds.get(i));
+      if (member != null) {
+        member.setSortOrder(i);
+        fieldGroupMemberRepository.save(member);
+      }
+    }
+
+    log.info("Reordered {} fields in group {}", fieldIds.size(), groupId);
+  }
+
+  /** Returns all members of a group, ordered by sortOrder. */
+  @Transactional(readOnly = true)
+  public List<FieldGroupMember> getGroupMembers(UUID groupId) {
+    fieldGroupRepository
+        .findOneById(groupId)
+        .orElseThrow(() -> new ResourceNotFoundException("FieldGroup", groupId));
+
+    return fieldGroupMemberRepository.findByFieldGroupIdOrderBySortOrder(groupId);
   }
 
   private String resolveUniqueSlug(EntityType entityType, String baseSlug) {

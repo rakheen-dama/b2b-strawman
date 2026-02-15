@@ -6,6 +6,9 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceService;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledTimeResponse;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
+import io.b2mash.b2b.b2bstrawman.tag.EntityTagService;
+import io.b2mash.b2b.b2bstrawman.tag.dto.SetEntityTagsRequest;
+import io.b2mash.b2b.b2bstrawman.tag.dto.TagResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -13,10 +16,13 @@ import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -37,21 +43,29 @@ public class CustomerController {
   private final CustomerService customerService;
   private final CustomerProjectService customerProjectService;
   private final InvoiceService invoiceService;
+  private final EntityTagService entityTagService;
 
   public CustomerController(
       CustomerService customerService,
       CustomerProjectService customerProjectService,
-      InvoiceService invoiceService) {
+      InvoiceService invoiceService,
+      EntityTagService entityTagService) {
     this.customerService = customerService;
     this.customerProjectService = customerProjectService;
     this.invoiceService = invoiceService;
+    this.entityTagService = entityTagService;
   }
 
   @GetMapping
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<CustomerResponse>> listCustomers(
       @RequestParam(required = false) Map<String, String> allParams) {
-    var customers = customerService.listCustomers().stream().map(CustomerResponse::from).toList();
+    var customers =
+        customerService.listCustomers().stream()
+            .map(
+                c ->
+                    CustomerResponse.from(c, entityTagService.getEntityTags("CUSTOMER", c.getId())))
+            .toList();
 
     // Apply custom field filtering if present
     Map<String, String> customFieldFilters = extractCustomFieldFilters(allParams);
@@ -62,6 +76,12 @@ public class CustomerController {
               .toList();
     }
 
+    // Apply tag filtering if present
+    List<String> tagSlugs = extractTagSlugs(allParams);
+    if (!tagSlugs.isEmpty()) {
+      customers = customers.stream().filter(c -> matchesTagFilter(c.tags(), tagSlugs)).toList();
+    }
+
     return ResponseEntity.ok(customers);
   }
 
@@ -69,7 +89,8 @@ public class CustomerController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<CustomerResponse> getCustomer(@PathVariable UUID id) {
     var customer = customerService.getCustomer(id);
-    return ResponseEntity.ok(CustomerResponse.from(customer));
+    var tags = entityTagService.getEntityTags("CUSTOMER", id);
+    return ResponseEntity.ok(CustomerResponse.from(customer, tags));
   }
 
   @PostMapping
@@ -88,7 +109,7 @@ public class CustomerController {
             request.customFields(),
             request.appliedFieldGroups());
     return ResponseEntity.created(URI.create("/api/customers/" + customer.getId()))
-        .body(CustomerResponse.from(customer));
+        .body(CustomerResponse.from(customer, List.of()));
   }
 
   @PutMapping("/{id}")
@@ -105,14 +126,16 @@ public class CustomerController {
             request.notes(),
             request.customFields(),
             request.appliedFieldGroups());
-    return ResponseEntity.ok(CustomerResponse.from(customer));
+    var tags = entityTagService.getEntityTags("CUSTOMER", id);
+    return ResponseEntity.ok(CustomerResponse.from(customer, tags));
   }
 
   @DeleteMapping("/{id}")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<CustomerResponse> archiveCustomer(@PathVariable UUID id) {
     var customer = customerService.archiveCustomer(id);
-    return ResponseEntity.ok(CustomerResponse.from(customer));
+    var tags = entityTagService.getEntityTags("CUSTOMER", id);
+    return ResponseEntity.ok(CustomerResponse.from(customer, tags));
   }
 
   // --- Customer-Project linking endpoints ---
@@ -167,6 +190,25 @@ public class CustomerController {
     return ResponseEntity.ok(fieldDefs);
   }
 
+  @PostMapping("/{id}/tags")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<List<TagResponse>> setCustomerTags(
+      @PathVariable UUID id, @RequestBody SetEntityTagsRequest request) {
+    // Verify customer exists
+    customerService.getCustomer(id);
+    var tags = entityTagService.setEntityTags("CUSTOMER", id, request.tagIds());
+    return ResponseEntity.ok(tags);
+  }
+
+  @GetMapping("/{id}/tags")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<List<TagResponse>> getCustomerTags(@PathVariable UUID id) {
+    // Verify customer exists
+    customerService.getCustomer(id);
+    var tags = entityTagService.getEntityTags("CUSTOMER", id);
+    return ResponseEntity.ok(tags);
+  }
+
   private Map<String, String> extractCustomFieldFilters(Map<String, String> allParams) {
     var filters = new HashMap<String, String>();
     if (allParams != null) {
@@ -193,6 +235,25 @@ public class CustomerController {
       }
     }
     return true;
+  }
+
+  private List<String> extractTagSlugs(Map<String, String> allParams) {
+    if (allParams == null || !allParams.containsKey("tags")) {
+      return List.of();
+    }
+    String tagsParam = allParams.get("tags");
+    if (tagsParam == null || tagsParam.isBlank()) {
+      return List.of();
+    }
+    return Arrays.stream(tagsParam.split(",")).map(String::trim).filter(s -> !s.isEmpty()).toList();
+  }
+
+  private boolean matchesTagFilter(List<TagResponse> entityTags, List<String> requiredSlugs) {
+    if (entityTags == null) {
+      return false;
+    }
+    Set<String> tagSlugs = entityTags.stream().map(TagResponse::slug).collect(Collectors.toSet());
+    return tagSlugs.containsAll(requiredSlugs);
   }
 
   // --- DTOs ---
@@ -237,7 +298,8 @@ public class CustomerController {
       Instant createdAt,
       Instant updatedAt,
       Map<String, Object> customFields,
-      List<UUID> appliedFieldGroups) {
+      List<UUID> appliedFieldGroups,
+      List<TagResponse> tags) {
 
     public static CustomerResponse from(Customer customer) {
       return new CustomerResponse(
@@ -252,7 +314,25 @@ public class CustomerController {
           customer.getCreatedAt(),
           customer.getUpdatedAt(),
           customer.getCustomFields(),
-          customer.getAppliedFieldGroups());
+          customer.getAppliedFieldGroups(),
+          List.of());
+    }
+
+    public static CustomerResponse from(Customer customer, List<TagResponse> tags) {
+      return new CustomerResponse(
+          customer.getId(),
+          customer.getName(),
+          customer.getEmail(),
+          customer.getPhone(),
+          customer.getIdNumber(),
+          customer.getStatus(),
+          customer.getNotes(),
+          customer.getCreatedBy(),
+          customer.getCreatedAt(),
+          customer.getUpdatedAt(),
+          customer.getCustomFields(),
+          customer.getAppliedFieldGroups(),
+          tags);
     }
   }
 

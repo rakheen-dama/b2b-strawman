@@ -5,16 +5,21 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.tag.EntityTagService;
+import io.b2mash.b2b.b2bstrawman.tag.dto.SetEntityTagsRequest;
+import io.b2mash.b2b.b2bstrawman.tag.dto.TagResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -34,10 +39,15 @@ public class TaskController {
 
   private final TaskService taskService;
   private final MemberRepository memberRepository;
+  private final EntityTagService entityTagService;
 
-  public TaskController(TaskService taskService, MemberRepository memberRepository) {
+  public TaskController(
+      TaskService taskService,
+      MemberRepository memberRepository,
+      EntityTagService entityTagService) {
     this.taskService = taskService;
     this.memberRepository = memberRepository;
+    this.entityTagService = entityTagService;
   }
 
   @PostMapping("/api/projects/{projectId}/tasks")
@@ -62,7 +72,7 @@ public class TaskController {
 
     var names = resolveNames(List.of(task));
     return ResponseEntity.created(URI.create("/api/tasks/" + task.getId()))
-        .body(TaskResponse.from(task, names));
+        .body(TaskResponse.from(task, names, List.of()));
   }
 
   @GetMapping("/api/projects/{projectId}/tasks")
@@ -81,7 +91,11 @@ public class TaskController {
         taskService.listTasks(
             projectId, memberId, orgRole, status, assigneeId, priority, assigneeFilter);
     var names = resolveNames(taskEntities);
-    var tasks = taskEntities.stream().map(t -> TaskResponse.from(t, names)).toList();
+    var tasks =
+        taskEntities.stream()
+            .map(
+                t -> TaskResponse.from(t, names, entityTagService.getEntityTags("TASK", t.getId())))
+            .toList();
 
     // Apply custom field filtering if present
     Map<String, String> customFieldFilters = extractCustomFieldFilters(allParams);
@@ -90,6 +104,12 @@ public class TaskController {
           tasks.stream()
               .filter(t -> matchesCustomFieldFilters(t.customFields(), customFieldFilters))
               .toList();
+    }
+
+    // Apply tag filtering if present
+    List<String> tagSlugs = extractTagSlugs(allParams);
+    if (!tagSlugs.isEmpty()) {
+      tasks = tasks.stream().filter(t -> matchesTagFilter(t.tags(), tagSlugs)).toList();
     }
 
     return ResponseEntity.ok(tasks);
@@ -103,7 +123,8 @@ public class TaskController {
 
     var task = taskService.getTask(id, memberId, orgRole);
     var names = resolveNames(List.of(task));
-    return ResponseEntity.ok(TaskResponse.from(task, names));
+    var tags = entityTagService.getEntityTags("TASK", id);
+    return ResponseEntity.ok(TaskResponse.from(task, names, tags));
   }
 
   @PutMapping("/api/tasks/{id}")
@@ -129,7 +150,8 @@ public class TaskController {
             request.appliedFieldGroups());
 
     var names = resolveNames(List.of(task));
-    return ResponseEntity.ok(TaskResponse.from(task, names));
+    var tags = entityTagService.getEntityTags("TASK", id);
+    return ResponseEntity.ok(TaskResponse.from(task, names, tags));
   }
 
   @DeleteMapping("/api/tasks/{id}")
@@ -150,7 +172,8 @@ public class TaskController {
 
     var task = taskService.claimTask(id, memberId, orgRole);
     var names = resolveNames(List.of(task));
-    return ResponseEntity.ok(TaskResponse.from(task, names));
+    var tags = entityTagService.getEntityTags("TASK", id);
+    return ResponseEntity.ok(TaskResponse.from(task, names, tags));
   }
 
   @PostMapping("/api/tasks/{id}/release")
@@ -161,7 +184,8 @@ public class TaskController {
 
     var task = taskService.releaseTask(id, memberId, orgRole);
     var names = resolveNames(List.of(task));
-    return ResponseEntity.ok(TaskResponse.from(task, names));
+    var tags = entityTagService.getEntityTags("TASK", id);
+    return ResponseEntity.ok(TaskResponse.from(task, names, tags));
   }
 
   @PutMapping("/api/tasks/{id}/field-groups")
@@ -172,6 +196,29 @@ public class TaskController {
     String orgRole = RequestScopes.getOrgRole();
     var fieldDefs = taskService.setFieldGroups(id, request.appliedFieldGroups(), memberId, orgRole);
     return ResponseEntity.ok(fieldDefs);
+  }
+
+  @PostMapping("/api/tasks/{id}/tags")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<List<TagResponse>> setTaskTags(
+      @PathVariable UUID id, @RequestBody SetEntityTagsRequest request) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+    // Verify task access
+    taskService.getTask(id, memberId, orgRole);
+    var tags = entityTagService.setEntityTags("TASK", id, request.tagIds());
+    return ResponseEntity.ok(tags);
+  }
+
+  @GetMapping("/api/tasks/{id}/tags")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<List<TagResponse>> getTaskTags(@PathVariable UUID id) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+    // Verify task access
+    taskService.getTask(id, memberId, orgRole);
+    var tags = entityTagService.getEntityTags("TASK", id);
+    return ResponseEntity.ok(tags);
   }
 
   /**
@@ -222,6 +269,25 @@ public class TaskController {
     return true;
   }
 
+  private List<String> extractTagSlugs(Map<String, String> allParams) {
+    if (allParams == null || !allParams.containsKey("tags")) {
+      return List.of();
+    }
+    String tagsParam = allParams.get("tags");
+    if (tagsParam == null || tagsParam.isBlank()) {
+      return List.of();
+    }
+    return Arrays.stream(tagsParam.split(",")).map(String::trim).filter(s -> !s.isEmpty()).toList();
+  }
+
+  private boolean matchesTagFilter(List<TagResponse> entityTags, List<String> requiredSlugs) {
+    if (entityTags == null) {
+      return false;
+    }
+    Set<String> tagSlugs = entityTags.stream().map(TagResponse::slug).collect(Collectors.toSet());
+    return tagSlugs.containsAll(requiredSlugs);
+  }
+
   // --- DTOs ---
 
   public record CreateTaskRequest(
@@ -269,9 +335,11 @@ public class TaskController {
       Instant createdAt,
       Instant updatedAt,
       Map<String, Object> customFields,
-      List<UUID> appliedFieldGroups) {
+      List<UUID> appliedFieldGroups,
+      List<TagResponse> tags) {
 
-    public static TaskResponse from(Task task, Map<UUID, String> memberNames) {
+    public static TaskResponse from(
+        Task task, Map<UUID, String> memberNames, List<TagResponse> tags) {
       return new TaskResponse(
           task.getId(),
           task.getProjectId(),
@@ -289,7 +357,8 @@ public class TaskController {
           task.getCreatedAt(),
           task.getUpdatedAt(),
           task.getCustomFields(),
-          task.getAppliedFieldGroups());
+          task.getAppliedFieldGroups(),
+          tags);
     }
   }
 }

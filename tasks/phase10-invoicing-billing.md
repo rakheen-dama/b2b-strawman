@@ -17,7 +17,7 @@ The design introduces two new entities (`Invoice`, `InvoiceLine`), extends `Time
 | 83 | Unbilled Time & Invoice Generation | Both | 82 | L | 83A, 83B | 83A **Done** (PR #171), 83B **Done** (PR #173) |
 | 84 | Invoice Detail & List Pages | Frontend | 83 | M | 84A | |
 | 85 | Audit, Notification & HTML Preview | Both | 82 | L | 85A, 85B, 85C | 85A **Done** (PR #172), 85B **Done** (PR #174) |
-| 86 | Time Entry Billing UX | Both | 81A, 82 | M | 86A, 86B | |
+| 86 | Time Entry Billing UX | Both | 81A, 82 | M | 86A, 86B | 86A **Done** (PR #175) |
 
 ## Dependency Graph
 
@@ -477,7 +477,7 @@ Stage 5:  [85B] ──► [85C]  //  [86B]                             ← previ
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **86A** | 86.1-86.4 | TimeEntryService billing status filter, TimeEntryController query enhancement, TimeEntryResponse enrichment (invoiceId, invoiceNumber), integration tests (~6 tests) | |
+| **86A** | 86.1-86.4 | TimeEntryService billing status filter, TimeEntryController query enhancement, TimeEntryResponse enrichment (invoiceId, invoiceNumber), integration tests (~6 tests) | **Done** (PR #175) |
 | **86B** | 86.5-86.10 | BillingStatusBadge, BillingStatusFilter dropdown, edit/delete disabled state for billed entries, frontend tests (~6 tests) | |
 
 ### Tasks

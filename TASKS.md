@@ -101,7 +101,7 @@
 | 83 | Unbilled Time & Invoice Generation | Both | 82 | L | 83A, 83B | **Done** (PRs #171, #173) |
 | 84 | Invoice Detail & List Pages | Frontend | 83 | M | 84A | |
 | 85 | Audit, Notification & HTML Preview | Both | 82 | L | 85A, 85B, 85C | 85A **Done** (PR #172), 85B **Done** (PR #174) |
-| 86 | Time Entry Billing UX | Both | 81A, 82 | M | 86A, 86B | |
+| 86 | Time Entry Billing UX | Both | 81A, 82 | M | 86A, 86B | 86A **Done** (PR #175) |
 | **Phase 11 — Tags, Custom Fields & Views** | | | | | | See [tasks/phase11-tags-custom-fields-views.md](tasks/phase11-tags-custom-fields-views.md) |
 | 87 | Field Definition & Custom Field Backend | Backend | -- | L | 87A, 87B, 87C | |
 | 88 | Tags Backend | Backend | -- | M | 88A, 88B | |

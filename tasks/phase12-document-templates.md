@@ -281,23 +281,23 @@ Stage 3:  [95A]  //  [95B]                         ← frontend (parallel)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **95A** | 95.1-95.10 | Template management page, template editor, template creation, clone/reset actions, deactivate toggle, preview in editor, branding settings section (logo upload, brand color, footer text), nav item, API client functions, frontend tests (~10 tests) | |
+| **95A** | 95.1-95.10 | Template management page, template editor, template creation, clone/reset actions, deactivate toggle, preview in editor, branding settings section (logo upload, brand color, footer text), nav item, API client functions, frontend tests (~10 tests) | **Done** (PR #196) |
 | **95B** | 95.11-95.20 | "Generate Document" dropdown on project/customer/invoice detail pages, generation dialog (preview iframe, download/save buttons), generated documents list, download/delete actions, API client functions, frontend tests (~10 tests) | |
 
 ### Tasks
 
 | ID | Task | Slice | Status | Notes |
 |----|------|-------|--------|-------|
-| 95.1 | Create template management page | 95A | | `app/(app)/org/[slug]/settings/templates/page.tsx`. Server component. Fetch templates, group by category. Table: Name, Category, Entity Type, Source badge, Active status, Actions (Edit/Clone/Reset/Deactivate). Pattern: follow settings page pattern. |
-| 95.2 | Create template editor page | 95A | | `app/(app)/org/[slug]/settings/templates/[id]/edit/page.tsx`. Server component fetches template detail. Renders TemplateEditorForm client component. |
-| 95.3 | Create TemplateEditorForm component | 95A | | `components/templates/TemplateEditorForm.tsx`. Client component: name, description, content (monospace textarea), css (monospace textarea), variable reference panel (collapsible, per primaryEntityType), preview button, save button. Pattern: Shadcn Form + react-hook-form. |
-| 95.4 | Create template creation page | 95A | | `app/(app)/org/[slug]/settings/templates/new/page.tsx`. Form: name, description, category dropdown, primaryEntityType dropdown, content, css. POST /api/templates → redirect to editor. |
-| 95.5 | Add clone/reset/deactivate actions | 95A | | Clone (PLATFORM only → POST clone → toast → refetch), Reset (ORG_CUSTOM clones → confirmation dialog → POST reset), Deactivate toggle (PUT with active=false). |
-| 95.6 | Add preview within editor | 95A | | Preview button in TemplateEditorForm. Entity picker → POST preview → display HTML in dialog iframe. |
-| 95.7 | Create branding settings section | 95A | | Extend settings page: logo upload (file input, 2MB, PNG/JPG/SVG, POST /api/settings/logo, display + delete), brand color (color picker/hex input), document footer text (textarea). Save via PUT /api/settings. |
-| 95.8 | Add nav item in settings sidebar | 95A | | Add "Templates" link to settings nav (admin/owner only). |
-| 95.9 | Add template API client functions | 95A | | Extend `lib/api.ts`: fetchTemplates, fetchTemplateDetail, createTemplate, updateTemplate, deleteTemplate, cloneTemplate, resetTemplate, previewTemplate, uploadLogo, deleteLogo. |
-| 95.10 | Add template management frontend tests | 95A | | ~10 tests: template list rendering, PLATFORM Clone action, ORG_CUSTOM Edit/Reset actions, clone API call, reset confirmation, editor form rendering, monospace textareas, variable reference panel, preview API call, save API call. Pattern: vitest + @testing-library/react. |
+| 95.1 | Create template management page | 95A | **Done** | `app/(app)/org/[slug]/settings/templates/page.tsx`. Server component. Fetch templates, group by category. Table: Name, Category, Entity Type, Source badge, Active status, Actions (Edit/Clone/Reset/Deactivate). Pattern: follow settings page pattern. |
+| 95.2 | Create template editor page | 95A | **Done** | `app/(app)/org/[slug]/settings/templates/[id]/edit/page.tsx`. Server component fetches template detail. Renders TemplateEditorForm client component. |
+| 95.3 | Create TemplateEditorForm component | 95A | **Done** | `components/templates/TemplateEditorForm.tsx`. Client component: name, description, content (monospace textarea), css (monospace textarea), variable reference panel (collapsible, per primaryEntityType), preview button, save button. Pattern: Shadcn Form + react-hook-form. |
+| 95.4 | Create template creation page | 95A | **Done** | `app/(app)/org/[slug]/settings/templates/new/page.tsx`. Form: name, description, category dropdown, primaryEntityType dropdown, content, css. POST /api/templates → redirect to editor. |
+| 95.5 | Add clone/reset/deactivate actions | 95A | **Done** | Clone (PLATFORM only → POST clone → toast → refetch), Reset (ORG_CUSTOM clones → confirmation dialog → POST reset), Deactivate toggle (PUT with active=false). |
+| 95.6 | Add preview within editor | 95A | **Done** | Preview button in TemplateEditorForm. Entity picker → POST preview → display HTML in dialog iframe. |
+| 95.7 | Create branding settings section | 95A | **Done** | Extend settings page: logo upload (file input, 2MB, PNG/JPG/SVG, POST /api/settings/logo, display + delete), brand color (color picker/hex input), document footer text (textarea). Save via PUT /api/settings. |
+| 95.8 | Add nav item in settings sidebar | 95A | **Done** | Add "Templates" link to settings nav (admin/owner only). |
+| 95.9 | Add template API client functions | 95A | **Done** | Extend `lib/api.ts`: fetchTemplates, fetchTemplateDetail, createTemplate, updateTemplate, deleteTemplate, cloneTemplate, resetTemplate, previewTemplate, uploadLogo, deleteLogo. |
+| 95.10 | Add template management frontend tests | 95A | **Done** | ~10 tests: template list rendering, PLATFORM Clone action, ORG_CUSTOM Edit/Reset actions, clone API call, reset confirmation, editor form rendering, monospace textareas, variable reference panel, preview API call, save API call. Pattern: vitest + @testing-library/react. |
 | 95.11 | Add "Generate Document" dropdown to project detail page | 95B | | Modify project detail page. Fetch PROJECT-scoped templates. Dropdown button (Shadcn DropdownMenu) → clicking template opens GenerateDocumentDialog. |
 | 95.12 | Add "Generate Document" dropdown to customer detail page | 95B | | Modify customer detail page. Fetch CUSTOMER-scoped templates. Same dropdown pattern. |
 | 95.13 | Add "Generate Document" dropdown to invoice detail page | 95B | | Modify invoice detail page. Fetch INVOICE-scoped templates. Same dropdown pattern. |

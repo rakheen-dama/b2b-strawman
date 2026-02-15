@@ -198,7 +198,31 @@ class ProjectCustomerControllerIntegrationTest {
                             .formatted(name, email)))
             .andExpect(status().isCreated())
             .andReturn();
-    return extractIdFromLocation(result);
+    var customerId = extractIdFromLocation(result);
+
+    // Transition customer to ACTIVE for lifecycle guard compliance
+    mockMvc
+        .perform(
+            post("/api/customers/" + customerId + "/transition")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"targetStatus": "ONBOARDING", "notes": "test setup"}
+                    """))
+        .andExpect(status().isOk());
+    mockMvc
+        .perform(
+            post("/api/customers/" + customerId + "/transition")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"targetStatus": "ACTIVE", "notes": "test setup"}
+                    """))
+        .andExpect(status().isOk());
+
+    return customerId;
   }
 
   private String extractIdFromLocation(MvcResult result) {

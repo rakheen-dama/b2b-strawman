@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.notification;
 
 import io.b2mash.b2b.b2bstrawman.event.BudgetThresholdEvent;
 import io.b2mash.b2b.b2bstrawman.event.CommentCreatedEvent;
+import io.b2mash.b2b.b2bstrawman.event.CustomerStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.event.DocumentGeneratedEvent;
 import io.b2mash.b2b.b2bstrawman.event.DocumentUploadedEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoiceApprovedEvent;
@@ -247,6 +248,24 @@ public class NotificationEventHandler {
           } catch (Exception e) {
             log.warn(
                 "Failed to create notifications for invoice.voided event={}", event.entityId(), e);
+          }
+        });
+  }
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onCustomerStatusChanged(CustomerStatusChangedEvent event) {
+    handleInTenantScope(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            var notifications = notificationService.handleCustomerStatusChanged(event);
+            dispatchAll(notifications);
+          } catch (Exception e) {
+            log.warn(
+                "Failed to create notifications for customer.status_changed event={}",
+                event.entityId(),
+                e);
           }
         });
   }

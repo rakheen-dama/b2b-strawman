@@ -104,6 +104,10 @@ class InvoiceLifecycleIntegrationTest {
                               "Test customer",
                               memberIdOwner);
                       customer = customerRepository.save(customer);
+                      // Transition to ACTIVE for invoice creation (lifecycle guard)
+                      customer.transitionLifecycle(
+                          "ACTIVE", memberIdOwner, java.time.Instant.now(), null);
+                      customer = customerRepository.save(customer);
                       customerId = customer.getId();
 
                       // Project

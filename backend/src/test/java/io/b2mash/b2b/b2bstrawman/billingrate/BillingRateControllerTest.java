@@ -103,6 +103,28 @@ class BillingRateControllerTest {
     customerId =
         JsonPath.read(customerResult.getResponse().getContentAsString(), "$.id").toString();
 
+    // Transition customer to ACTIVE for lifecycle guard compliance
+    mockMvc
+        .perform(
+            post("/api/customers/" + customerId + "/transition")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"targetStatus": "ONBOARDING", "notes": "test setup"}
+                    """))
+        .andExpect(status().isOk());
+    mockMvc
+        .perform(
+            post("/api/customers/" + customerId + "/transition")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"targetStatus": "ACTIVE", "notes": "test setup"}
+                    """))
+        .andExpect(status().isOk());
+
     // Link customer to project (for resolve cascade testing)
     mockMvc
         .perform(post("/api/projects/" + projectId + "/customers/" + customerId).with(ownerJwt()))

@@ -1,5 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
+import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleGuard;
+import io.b2mash.b2b.b2bstrawman.compliance.LifecycleAction;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.AddLineItemRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.CreateInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.InvoiceResponse;
@@ -29,9 +33,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class InvoiceController {
 
   private final InvoiceService invoiceService;
+  private final CustomerRepository customerRepository;
+  private final CustomerLifecycleGuard customerLifecycleGuard;
 
-  public InvoiceController(InvoiceService invoiceService) {
+  public InvoiceController(
+      InvoiceService invoiceService,
+      CustomerRepository customerRepository,
+      CustomerLifecycleGuard customerLifecycleGuard) {
     this.invoiceService = invoiceService;
+    this.customerRepository = customerRepository;
+    this.customerLifecycleGuard = customerLifecycleGuard;
   }
 
   @PostMapping
@@ -39,6 +50,14 @@ public class InvoiceController {
   public ResponseEntity<InvoiceResponse> createDraft(
       @Valid @RequestBody CreateInvoiceRequest request) {
     UUID createdBy = RequestScopes.requireMemberId();
+
+    // Lifecycle guard: block invoice creation for restricted statuses
+    var customer =
+        customerRepository
+            .findOneById(request.customerId())
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.customerId()));
+    customerLifecycleGuard.requireActionPermitted(customer, LifecycleAction.CREATE_INVOICE);
+
     var response = invoiceService.createDraft(request, createdBy);
     return ResponseEntity.created(URI.create("/api/invoices/" + response.id())).body(response);
   }

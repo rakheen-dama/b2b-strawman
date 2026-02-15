@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
+import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentService.GeneratedDocumentListResponse;
@@ -21,18 +22,26 @@ public class GeneratedDocumentController {
 
   private final GeneratedDocumentService generatedDocumentService;
   private final S3PresignedUrlService s3PresignedUrlService;
+  private final ProjectAccessService projectAccessService;
 
   public GeneratedDocumentController(
       GeneratedDocumentService generatedDocumentService,
-      S3PresignedUrlService s3PresignedUrlService) {
+      S3PresignedUrlService s3PresignedUrlService,
+      ProjectAccessService projectAccessService) {
     this.generatedDocumentService = generatedDocumentService;
     this.s3PresignedUrlService = s3PresignedUrlService;
+    this.projectAccessService = projectAccessService;
   }
 
   @GetMapping
   @PreAuthorize("isAuthenticated()")
   public ResponseEntity<List<GeneratedDocumentListResponse>> listGeneratedDocuments(
       @RequestParam TemplateEntityType entityType, @RequestParam UUID entityId) {
+    if (entityType == TemplateEntityType.PROJECT) {
+      UUID memberId = RequestScopes.MEMBER_ID.get();
+      String orgRole = RequestScopes.getOrgRole();
+      projectAccessService.requireViewAccess(entityId, memberId, orgRole);
+    }
     var documents = generatedDocumentService.listByEntity(entityType, entityId);
     return ResponseEntity.ok(documents);
   }
@@ -41,6 +50,11 @@ public class GeneratedDocumentController {
   @PreAuthorize("isAuthenticated()")
   public ResponseEntity<Void> downloadGeneratedDocument(@PathVariable UUID id) {
     var generatedDoc = generatedDocumentService.getById(id);
+    if (generatedDoc.getPrimaryEntityType() == TemplateEntityType.PROJECT) {
+      UUID memberId = RequestScopes.MEMBER_ID.get();
+      String orgRole = RequestScopes.getOrgRole();
+      projectAccessService.requireViewAccess(generatedDoc.getPrimaryEntityId(), memberId, orgRole);
+    }
     var presigned = s3PresignedUrlService.generateDownloadUrl(generatedDoc.getS3Key());
     return ResponseEntity.status(302).header(HttpHeaders.LOCATION, presigned.url()).build();
   }
@@ -48,8 +62,7 @@ public class GeneratedDocumentController {
   @DeleteMapping("/{id}")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> deleteGeneratedDocument(@PathVariable UUID id) {
-    String orgRole = RequestScopes.getOrgRole();
-    generatedDocumentService.delete(id, orgRole);
+    generatedDocumentService.delete(id);
     return ResponseEntity.noContent().build();
   }
 }

@@ -132,7 +132,8 @@ public class DocumentTemplateService {
     if (request.css() != null && !java.util.Objects.equals(request.css(), dt.getCss())) {
       changedFields.add("css");
     }
-    if (request.sortOrder() != null && request.sortOrder() != dt.getSortOrder()) {
+    if (request.sortOrder() != null
+        && !java.util.Objects.equals(request.sortOrder(), dt.getSortOrder())) {
       changedFields.add("sortOrder");
     }
 

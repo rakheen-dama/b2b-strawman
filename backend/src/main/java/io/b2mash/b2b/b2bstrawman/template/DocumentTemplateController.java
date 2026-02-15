@@ -1,23 +1,13 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
-import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
-import io.b2mash.b2b.b2bstrawman.audit.AuditService;
-import io.b2mash.b2b.b2bstrawman.config.S3Config.S3Properties;
-import io.b2mash.b2b.b2bstrawman.document.Document;
-import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
-import io.b2mash.b2b.b2bstrawman.event.DocumentGeneratedEvent;
-import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -31,8 +21,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 @RestController
 @RequestMapping("/api/templates")
@@ -41,32 +29,14 @@ public class DocumentTemplateController {
   private final DocumentTemplateService documentTemplateService;
   private final PdfRenderingService pdfRenderingService;
   private final GeneratedDocumentService generatedDocumentService;
-  private final S3Client s3Client;
-  private final S3Properties s3Properties;
-  private final DocumentRepository documentRepository;
-  private final AuditService auditService;
-  private final ApplicationEventPublisher eventPublisher;
-  private final MemberRepository memberRepository;
 
   public DocumentTemplateController(
       DocumentTemplateService documentTemplateService,
       PdfRenderingService pdfRenderingService,
-      GeneratedDocumentService generatedDocumentService,
-      S3Client s3Client,
-      S3Properties s3Properties,
-      DocumentRepository documentRepository,
-      AuditService auditService,
-      ApplicationEventPublisher eventPublisher,
-      MemberRepository memberRepository) {
+      GeneratedDocumentService generatedDocumentService) {
     this.documentTemplateService = documentTemplateService;
     this.pdfRenderingService = pdfRenderingService;
     this.generatedDocumentService = generatedDocumentService;
-    this.s3Client = s3Client;
-    this.s3Properties = s3Properties;
-    this.documentRepository = documentRepository;
-    this.auditService = auditService;
-    this.eventPublisher = eventPublisher;
-    this.memberRepository = memberRepository;
   }
 
   @GetMapping
@@ -144,91 +114,14 @@ public class DocumentTemplateController {
   public ResponseEntity<?> generateDocument(
       @PathVariable UUID id, @Valid @RequestBody GenerateDocumentRequest request) {
     UUID memberId = RequestScopes.MEMBER_ID.get();
-    String orgRole = RequestScopes.getOrgRole();
 
-    // 1. Generate PDF
-    var pdfResult = pdfRenderingService.generatePdf(id, request.entityId(), memberId);
+    var result =
+        generatedDocumentService.generateDocument(
+            id, request.entityId(), request.saveToDocuments(), memberId);
 
-    // 2. Load template for metadata
-    var templateDetail = documentTemplateService.getById(id);
+    var generatedDoc = result.generatedDocument();
+    var pdfResult = result.pdfResult();
 
-    // 3. Upload to S3
-    String tenantId = RequestScopes.TENANT_ID.get();
-    String s3Key = "org/" + tenantId + "/generated/" + pdfResult.fileName();
-
-    try {
-      var putRequest =
-          PutObjectRequest.builder()
-              .bucket(s3Properties.bucketName())
-              .key(s3Key)
-              .contentType("application/pdf")
-              .build();
-      s3Client.putObject(
-          putRequest, software.amazon.awssdk.core.sync.RequestBody.fromBytes(pdfResult.pdfBytes()));
-    } catch (Exception e) {
-      throw new IllegalStateException("Failed to upload generated PDF to S3", e);
-    }
-
-    // 4. Build context snapshot
-    var contextSnapshot = buildContextSnapshot(templateDetail, request.entityId());
-
-    // 5. Create GeneratedDocument record
-    var generatedDoc =
-        generatedDocumentService.create(
-            id,
-            TemplateEntityType.valueOf(templateDetail.primaryEntityType()),
-            request.entityId(),
-            pdfResult.fileName(),
-            s3Key,
-            pdfResult.pdfBytes().length,
-            memberId,
-            contextSnapshot);
-
-    // 6. Optionally save to Documents
-    if (request.saveToDocuments()) {
-      var document =
-          createLinkedDocument(templateDetail, request.entityId(), pdfResult, s3Key, memberId);
-      generatedDoc.linkToDocument(document.getId());
-    }
-
-    // 7. Publish domain event
-    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
-    String actorName = resolveActorName(memberId);
-    eventPublisher.publishEvent(
-        new DocumentGeneratedEvent(
-            "document.generated",
-            "generated_document",
-            generatedDoc.getId(),
-            resolveProjectId(templateDetail, request.entityId()),
-            memberId,
-            actorName,
-            tenantId,
-            orgId,
-            Instant.now(),
-            Map.of("file_name", pdfResult.fileName(), "template_name", templateDetail.name()),
-            templateDetail.name(),
-            TemplateEntityType.valueOf(templateDetail.primaryEntityType()),
-            request.entityId(),
-            pdfResult.fileName(),
-            generatedDoc.getId()));
-
-    // 8. Audit event
-    var auditDetails = new HashMap<String, Object>();
-    auditDetails.put("template_name", templateDetail.name());
-    auditDetails.put("primary_entity_type", templateDetail.primaryEntityType());
-    auditDetails.put("primary_entity_id", request.entityId().toString());
-    auditDetails.put("file_name", pdfResult.fileName());
-    auditDetails.put("file_size", pdfResult.pdfBytes().length);
-    auditDetails.put("save_to_documents", request.saveToDocuments());
-    auditService.log(
-        AuditEventBuilder.builder()
-            .eventType("document.generated")
-            .entityType("generated_document")
-            .entityId(generatedDoc.getId())
-            .details(auditDetails)
-            .build());
-
-    // 9. Return response
     if (!request.saveToDocuments()) {
       return ResponseEntity.ok()
           .contentType(MediaType.APPLICATION_PDF)
@@ -246,68 +139,6 @@ public class DocumentTemplateController {
                   generatedDoc.getDocumentId(),
                   generatedDoc.getGeneratedAt()));
     }
-  }
-
-  private Map<String, Object> buildContextSnapshot(TemplateDetailResponse template, UUID entityId) {
-    var snapshot = new HashMap<String, Object>();
-    snapshot.put("template_name", template.name());
-    snapshot.put("entity_type", template.primaryEntityType());
-    snapshot.put("entity_id", entityId.toString());
-    return snapshot;
-  }
-
-  private Document createLinkedDocument(
-      TemplateDetailResponse template,
-      UUID entityId,
-      PdfResult pdfResult,
-      String s3Key,
-      UUID memberId) {
-    var entityType = TemplateEntityType.valueOf(template.primaryEntityType());
-    var document =
-        switch (entityType) {
-          case PROJECT ->
-              new Document(
-                  entityId,
-                  pdfResult.fileName(),
-                  "application/pdf",
-                  pdfResult.pdfBytes().length,
-                  memberId);
-          case CUSTOMER ->
-              new Document(
-                  Document.Scope.CUSTOMER,
-                  null,
-                  entityId,
-                  pdfResult.fileName(),
-                  "application/pdf",
-                  pdfResult.pdfBytes().length,
-                  memberId,
-                  Document.Visibility.INTERNAL);
-          case INVOICE ->
-              new Document(
-                  Document.Scope.ORG,
-                  null,
-                  null,
-                  pdfResult.fileName(),
-                  "application/pdf",
-                  pdfResult.pdfBytes().length,
-                  memberId,
-                  Document.Visibility.INTERNAL);
-        };
-    document.assignS3Key(s3Key);
-    document.confirmUpload();
-    return documentRepository.save(document);
-  }
-
-  private UUID resolveProjectId(TemplateDetailResponse template, UUID entityId) {
-    var entityType = TemplateEntityType.valueOf(template.primaryEntityType());
-    return switch (entityType) {
-      case PROJECT -> entityId;
-      case CUSTOMER, INVOICE -> null;
-    };
-  }
-
-  private String resolveActorName(UUID memberId) {
-    return memberRepository.findOneById(memberId).map(m -> m.getName()).orElse("Unknown");
   }
 
   // --- DTOs ---

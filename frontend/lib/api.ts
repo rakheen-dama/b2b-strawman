@@ -139,6 +139,7 @@ export { apiRequest as apiClient };
 // ---- Field Definitions ----
 
 import type {
+  EntityType,
   FieldDefinitionResponse,
   CreateFieldDefinitionRequest,
   UpdateFieldDefinitionRequest,
@@ -217,5 +218,19 @@ export async function getGroupMembers(
 ): Promise<FieldGroupMemberResponse[]> {
   return api.get<FieldGroupMemberResponse[]>(
     `/api/field-groups/${groupId}/fields`,
+  );
+}
+
+// ---- Entity Custom Field Groups ----
+
+export async function setEntityFieldGroups(
+  entityType: EntityType,
+  entityId: string,
+  appliedFieldGroups: string[],
+): Promise<FieldDefinitionResponse[]> {
+  const prefix = entityType.toLowerCase() + "s";
+  return api.put<FieldDefinitionResponse[]>(
+    `/api/${prefix}/${entityId}/field-groups`,
+    { appliedFieldGroups },
   );
 }

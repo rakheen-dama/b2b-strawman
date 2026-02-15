@@ -1,5 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
-import { api, handleApiError } from "@/lib/api";
+import { api, handleApiError, getFieldDefinitions, getFieldGroups, getGroupMembers } from "@/lib/api";
 import type {
   Customer,
   CustomerStatus,
@@ -11,6 +11,9 @@ import type {
   CustomerProfitabilityResponse,
   OrgProfitabilityResponse,
   InvoiceResponse,
+  FieldDefinitionResponse,
+  FieldGroupResponse,
+  FieldGroupMemberResponse,
 } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,6 +25,8 @@ import { CustomerTabs } from "@/components/customers/customer-tabs";
 import { CustomerRatesTab } from "@/components/rates/customer-rates-tab";
 import { CustomerFinancialsTab } from "@/components/profitability/customer-financials-tab";
 import { CustomerInvoicesTab } from "@/components/customers/customer-invoices-tab";
+import { CustomFieldSection } from "@/components/field-definitions/CustomFieldSection";
+import { FieldGroupSelector } from "@/components/field-definitions/FieldGroupSelector";
 import { formatDate } from "@/lib/format";
 import { ArrowLeft, Pencil, Archive } from "lucide-react";
 import Link from "next/link";
@@ -107,6 +112,34 @@ export default async function CustomerDetailPage({
     }
   }
 
+  // Custom field definitions and groups for the Custom Fields section
+  let customerFieldDefs: FieldDefinitionResponse[] = [];
+  let customerFieldGroups: FieldGroupResponse[] = [];
+  const customerGroupMembers: Record<string, FieldGroupMemberResponse[]> = {};
+  try {
+    const [defs, groups] = await Promise.all([
+      getFieldDefinitions("CUSTOMER"),
+      getFieldGroups("CUSTOMER"),
+    ]);
+    customerFieldDefs = defs;
+    customerFieldGroups = groups;
+
+    // Fetch members for each applied group
+    const appliedGroups = customer.appliedFieldGroups ?? [];
+    if (appliedGroups.length > 0) {
+      const memberResults = await Promise.allSettled(
+        appliedGroups.map((gId) => getGroupMembers(gId)),
+      );
+      memberResults.forEach((result, i) => {
+        if (result.status === "fulfilled") {
+          customerGroupMembers[appliedGroups[i]] = result.value;
+        }
+      });
+    }
+  } catch {
+    // Non-fatal: custom fields section won't render
+  }
+
   const statusBadge = STATUS_BADGE[customer.status];
 
   return (
@@ -172,6 +205,27 @@ export default async function CustomerDetailPage({
           </div>
         )}
       </div>
+
+      {/* Custom Fields */}
+      <FieldGroupSelector
+        entityType="CUSTOMER"
+        entityId={id}
+        appliedFieldGroups={customer.appliedFieldGroups ?? []}
+        slug={slug}
+        canManage={isAdmin}
+        allGroups={customerFieldGroups}
+      />
+      <CustomFieldSection
+        entityType="CUSTOMER"
+        entityId={id}
+        customFields={customer.customFields ?? {}}
+        appliedFieldGroups={customer.appliedFieldGroups ?? []}
+        editable={isAdmin}
+        slug={slug}
+        fieldDefinitions={customerFieldDefs}
+        fieldGroups={customerFieldGroups}
+        groupMembers={customerGroupMembers}
+      />
 
       {/* Tabbed Content */}
       <CustomerTabs

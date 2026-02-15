@@ -549,6 +549,32 @@ export interface CreateInvoiceDraftRequest {
   paymentTerms?: string;
 }
 
+export interface UpdateInvoiceRequest {
+  dueDate?: string;
+  notes?: string;
+  paymentTerms?: string;
+  taxAmount?: number;
+}
+
+export interface AddLineItemRequest {
+  projectId?: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  sortOrder?: number;
+}
+
+export interface UpdateLineItemRequest {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  sortOrder?: number;
+}
+
+export interface RecordPaymentRequest {
+  paymentReference?: string;
+}
+
 export interface CurrencyTotal {
   hours: number;
   amount: number;

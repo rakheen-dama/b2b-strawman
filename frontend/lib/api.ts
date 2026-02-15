@@ -154,6 +154,12 @@ import type {
   SavedViewResponse,
   CreateSavedViewRequest,
   UpdateSavedViewRequest,
+  TemplateListResponse,
+  TemplateDetailResponse,
+  CreateTemplateRequest,
+  UpdateTemplateRequest,
+  OrgSettings,
+  UpdateOrgSettingsRequest,
 } from "@/lib/types";
 
 export async function getFieldDefinitions(
@@ -317,4 +323,126 @@ export async function updateSavedView(
 
 export async function deleteSavedView(id: string): Promise<void> {
   return api.delete<void>(`/api/views/${id}`);
+}
+
+// ---- Document Templates ----
+
+export async function getTemplates(
+  category?: string,
+  primaryEntityType?: string,
+): Promise<TemplateListResponse[]> {
+  const params = new URLSearchParams();
+  if (category) params.set("category", category);
+  if (primaryEntityType) params.set("primaryEntityType", primaryEntityType);
+  const qs = params.toString();
+  return api.get<TemplateListResponse[]>(`/api/templates${qs ? `?${qs}` : ""}`);
+}
+
+export async function getTemplateDetail(
+  id: string,
+): Promise<TemplateDetailResponse> {
+  return api.get<TemplateDetailResponse>(`/api/templates/${id}`);
+}
+
+export async function createTemplate(
+  req: CreateTemplateRequest,
+): Promise<TemplateDetailResponse> {
+  return api.post<TemplateDetailResponse>("/api/templates", req);
+}
+
+export async function updateTemplate(
+  id: string,
+  req: UpdateTemplateRequest,
+): Promise<TemplateDetailResponse> {
+  return api.put<TemplateDetailResponse>(`/api/templates/${id}`, req);
+}
+
+export async function deleteTemplate(id: string): Promise<void> {
+  return api.delete<void>(`/api/templates/${id}`);
+}
+
+export async function cloneTemplate(
+  id: string,
+): Promise<TemplateDetailResponse> {
+  return api.post<TemplateDetailResponse>(`/api/templates/${id}/clone`);
+}
+
+export async function resetTemplate(id: string): Promise<void> {
+  return api.post<void>(`/api/templates/${id}/reset`);
+}
+
+export async function previewTemplate(
+  id: string,
+  entityId: string,
+): Promise<string> {
+  const { getToken } = await auth();
+  const token = await getToken();
+
+  if (!token) {
+    redirect("/sign-in");
+  }
+
+  const response = await fetch(`${BACKEND_URL}/api/templates/${id}/preview`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ entityId }),
+  });
+
+  if (!response.ok) {
+    throw new ApiError(response.status, response.statusText);
+  }
+
+  return response.text();
+}
+
+// ---- Org Settings (Branding) ----
+
+export async function getOrgSettings(): Promise<OrgSettings> {
+  return api.get<OrgSettings>("/api/settings");
+}
+
+export async function updateOrgSettings(
+  req: UpdateOrgSettingsRequest,
+): Promise<OrgSettings> {
+  return api.put<OrgSettings>("/api/settings", req);
+}
+
+export async function uploadOrgLogo(file: File): Promise<OrgSettings> {
+  const { getToken } = await auth();
+  const token = await getToken();
+
+  if (!token) {
+    redirect("/sign-in");
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(`${BACKEND_URL}/api/settings/logo`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    let message = response.statusText;
+    try {
+      const detail = await response.json();
+      message = detail?.detail || detail?.title || message;
+    } catch {
+      // ignore
+    }
+    throw new ApiError(response.status, message);
+  }
+
+  return response.json() as Promise<OrgSettings>;
+}
+
+export async function deleteOrgLogo(): Promise<OrgSettings> {
+  return api.delete<OrgSettings>("/api/settings/logo");
 }

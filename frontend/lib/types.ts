@@ -322,10 +322,80 @@ export interface MagicLinkResponse {
 
 export interface OrgSettings {
   defaultCurrency: string;
+  logoUrl?: string;
+  brandColor?: string;
+  documentFooterText?: string;
 }
 
 export interface UpdateOrgSettingsRequest {
   defaultCurrency: string;
+  brandColor?: string;
+  documentFooterText?: string;
+}
+
+// ---- Document Templates (from DocumentTemplateController.java) ----
+
+export type TemplateCategory =
+  | "ENGAGEMENT_LETTER"
+  | "STATEMENT_OF_WORK"
+  | "COVER_LETTER"
+  | "PROJECT_SUMMARY"
+  | "NDA";
+
+export type TemplateEntityType = "PROJECT" | "CUSTOMER" | "INVOICE";
+
+export type TemplateSource = "PLATFORM" | "ORG_CUSTOM";
+
+export interface TemplateListResponse {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  category: TemplateCategory;
+  primaryEntityType: TemplateEntityType;
+  source: TemplateSource;
+  sourceTemplateId: string | null;
+  active: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TemplateDetailResponse {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  category: TemplateCategory;
+  primaryEntityType: TemplateEntityType;
+  content: string;
+  css: string | null;
+  source: TemplateSource;
+  sourceTemplateId: string | null;
+  packId: string | null;
+  packTemplateKey: string | null;
+  active: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateTemplateRequest {
+  name: string;
+  description?: string;
+  category: TemplateCategory;
+  primaryEntityType: TemplateEntityType;
+  content: string;
+  css?: string;
+  slug?: string;
+}
+
+export interface UpdateTemplateRequest {
+  name: string;
+  description?: string;
+  content: string;
+  css?: string;
+  sortOrder?: number;
 }
 
 // ---- BillingRate (from BillingRateController.java) ----

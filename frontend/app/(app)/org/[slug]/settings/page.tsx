@@ -9,6 +9,7 @@ import {
   DollarSign,
   ListChecks,
   Tag,
+  FileText,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { LucideIcon } from "lucide-react";
@@ -55,6 +56,13 @@ const settingsCards: SettingsCard[] = [
     title: "Tags",
     description: "Manage org-wide tags for projects, tasks, and customers",
     href: "tags",
+    comingSoon: false,
+  },
+  {
+    icon: FileText,
+    title: "Templates",
+    description: "Manage document templates and branding",
+    href: "templates",
     comingSoon: false,
   },
   {

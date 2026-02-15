@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { auth } from "@clerk/nextjs/server";
-import { api, handleApiError, getFieldDefinitions, getViews, getSavedView, getTags } from "@/lib/api";
+import { api, handleApiError, getFieldDefinitions, getViews, getTags } from "@/lib/api";
 import type { Project, ProjectRole, LightweightBudgetStatus, FieldDefinitionResponse, SavedViewResponse, TagResponse } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { BudgetStatusDot } from "@/components/projects/budget-status-dot";
@@ -41,19 +41,9 @@ export default async function ProjectsPage({
     // Non-fatal: view selector won't show saved views
   }
 
-  // If a view is selected, fetch its filter config and apply to projects query
-  let activeView: SavedViewResponse | null = null;
-  if (currentViewId) {
-    try {
-      activeView = await getSavedView(currentViewId);
-    } catch {
-      // Non-fatal: fall back to unfiltered
-    }
-  }
-
   // Build query string with view filters
   let projectsEndpoint = "/api/projects";
-  if (activeView && currentViewId) {
+  if (currentViewId) {
     projectsEndpoint = `/api/projects?view=${currentViewId}`;
   }
 
@@ -131,19 +121,18 @@ export default async function ProjectsPage({
       )}
 
       {/* Saved View Selector */}
-      {views.length > 0 || isAdmin ? (
-        <Suspense fallback={null}>
-          <ViewSelectorClient
-            entityType="PROJECT"
-            views={views}
-            canCreate={isAdmin}
-            slug={slug}
-            allTags={allTags}
-            fieldDefinitions={projectFieldDefs}
-            onSave={handleCreateView}
-          />
-        </Suspense>
-      ) : null}
+      <Suspense fallback={null}>
+        <ViewSelectorClient
+          entityType="PROJECT"
+          views={views}
+          canCreate={true}
+          canCreateShared={isAdmin}
+          slug={slug}
+          allTags={allTags}
+          fieldDefinitions={projectFieldDefs}
+          onSave={handleCreateView}
+        />
+      </Suspense>
 
       {/* Projects Grid or Empty State */}
       {projects.length === 0 ? (

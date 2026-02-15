@@ -17,6 +17,7 @@ import { TagFilter } from "./TagFilter";
 import { CustomFieldFilter } from "./CustomFieldFilter";
 import { DateRangeFilter, type DateRangeValue } from "./DateRangeFilter";
 import { SearchInput } from "./SearchInput";
+import { STANDARD_COLUMNS } from "./constants";
 import type {
   EntityType,
   TagResponse,
@@ -37,30 +38,6 @@ interface EditViewDialogProps {
   ) => Promise<{ success: boolean; error?: string }>;
   children: React.ReactNode;
 }
-
-const STANDARD_COLUMNS: Record<EntityType, { value: string; label: string }[]> = {
-  PROJECT: [
-    { value: "name", label: "Name" },
-    { value: "description", label: "Description" },
-    { value: "createdAt", label: "Created At" },
-    { value: "updatedAt", label: "Updated At" },
-  ],
-  CUSTOMER: [
-    { value: "name", label: "Name" },
-    { value: "email", label: "Email" },
-    { value: "phone", label: "Phone" },
-    { value: "status", label: "Status" },
-    { value: "createdAt", label: "Created At" },
-  ],
-  TASK: [
-    { value: "title", label: "Title" },
-    { value: "status", label: "Status" },
-    { value: "priority", label: "Priority" },
-    { value: "assigneeName", label: "Assignee" },
-    { value: "dueDate", label: "Due Date" },
-    { value: "createdAt", label: "Created At" },
-  ],
-};
 
 export function EditViewDialog({
   view,

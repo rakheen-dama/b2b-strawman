@@ -18,6 +18,7 @@ interface ViewSelectorClientProps {
   entityType: EntityType;
   views: SavedViewResponse[];
   canCreate: boolean;
+  canCreateShared: boolean;
   slug: string;
   allTags: TagResponse[];
   fieldDefinitions: FieldDefinitionResponse[];
@@ -28,6 +29,7 @@ export function ViewSelectorClient({
   entityType,
   views,
   canCreate,
+  canCreateShared,
   slug,
   allTags,
   fieldDefinitions,
@@ -39,14 +41,16 @@ export function ViewSelectorClient({
 
   const handleViewChange = useCallback(
     (viewId: string | null) => {
-      const params = new URLSearchParams();
+      const params = new URLSearchParams(searchParams.toString());
       if (viewId) {
         params.set("view", viewId);
+      } else {
+        params.delete("view");
       }
       const qs = params.toString();
       router.push(qs ? `?${qs}` : "?");
     },
-    [router],
+    [router, searchParams],
   );
 
   return (
@@ -64,7 +68,7 @@ export function ViewSelectorClient({
           entityType={entityType}
           allTags={allTags}
           fieldDefinitions={fieldDefinitions}
-          canCreateShared={canCreate}
+          canCreateShared={canCreateShared}
           onSave={onSave}
         >
           <Button variant="outline" size="sm" className="h-7 gap-1 text-xs">

@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { auth } from "@clerk/nextjs/server";
-import { api, handleApiError, getFieldDefinitions, getViews, getSavedView, getTags } from "@/lib/api";
+import { api, handleApiError, getFieldDefinitions, getViews, getTags } from "@/lib/api";
 import type { Customer, CustomerStatus, FieldDefinitionResponse, SavedViewResponse, TagResponse } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { CreateCustomerDialog } from "@/components/customers/create-customer-dialog";
@@ -39,19 +39,9 @@ export default async function CustomersPage({
     // Non-fatal: view selector won't show saved views
   }
 
-  // If a view is selected, apply its filters to customers query
-  let activeView: SavedViewResponse | null = null;
-  if (currentViewId) {
-    try {
-      activeView = await getSavedView(currentViewId);
-    } catch {
-      // Non-fatal: fall back to unfiltered
-    }
-  }
-
   // Build query string with view filters
   let customersEndpoint = "/api/customers";
-  if (activeView && currentViewId) {
+  if (currentViewId) {
     customersEndpoint = `/api/customers?view=${currentViewId}`;
   }
 
@@ -97,19 +87,18 @@ export default async function CustomersPage({
       </div>
 
       {/* Saved View Selector */}
-      {views.length > 0 || isAdmin ? (
-        <Suspense fallback={null}>
-          <ViewSelectorClient
-            entityType="CUSTOMER"
-            views={views}
-            canCreate={isAdmin}
-            slug={slug}
-            allTags={allTags}
-            fieldDefinitions={customerFieldDefs}
-            onSave={handleCreateView}
-          />
-        </Suspense>
-      ) : null}
+      <Suspense fallback={null}>
+        <ViewSelectorClient
+          entityType="CUSTOMER"
+          views={views}
+          canCreate={true}
+          canCreateShared={isAdmin}
+          slug={slug}
+          allTags={allTags}
+          fieldDefinitions={customerFieldDefs}
+          onSave={handleCreateView}
+        />
+      </Suspense>
 
       {/* Customer Table or Empty State */}
       {customers.length === 0 ? (

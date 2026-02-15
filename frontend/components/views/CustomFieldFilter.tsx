@@ -4,12 +4,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { FieldDefinitionResponse } from "@/lib/types";
 
-interface CustomFieldFilterValue {
+export interface CustomFieldFilterValue {
   [slug: string]: {
     op: string;
     value: unknown;
   };
 }
+
+/** Field types that use range (min/max) inputs with gte/lte operators. */
+const RANGE_FIELD_TYPES = new Set(["NUMBER", "CURRENCY", "DATE"]);
 
 interface CustomFieldFilterProps {
   value: CustomFieldFilterValue;
@@ -24,18 +27,46 @@ export function CustomFieldFilter({
 }: CustomFieldFilterProps) {
   if (fieldDefinitions.length === 0) return null;
 
-  function updateField(slug: string, op: string, fieldValue: unknown) {
-    if (
-      fieldValue === "" ||
-      fieldValue === null ||
-      fieldValue === undefined
-    ) {
-      // Remove field filter when value is cleared
-      const next = { ...value };
-      delete next[slug];
-      onChange(next);
+  function updateField(
+    slug: string,
+    op: string,
+    fieldValue: unknown,
+    fieldType: string,
+  ) {
+    const isRange = RANGE_FIELD_TYPES.has(fieldType);
+    const isEmpty =
+      fieldValue === "" || fieldValue === null || fieldValue === undefined;
+
+    if (isRange) {
+      // For range types, merge both bounds into { op: "range", value: { gte?: X, lte?: Y } }
+      const existing = value[slug];
+      const rangeValue: Record<string, unknown> =
+        existing?.op === "range" && typeof existing.value === "object" && existing.value !== null
+          ? { ...(existing.value as Record<string, unknown>) }
+          : {};
+
+      if (isEmpty) {
+        delete rangeValue[op];
+      } else {
+        rangeValue[op] = fieldValue;
+      }
+
+      if (Object.keys(rangeValue).length === 0) {
+        const next = { ...value };
+        delete next[slug];
+        onChange(next);
+      } else {
+        onChange({ ...value, [slug]: { op: "range", value: rangeValue } });
+      }
     } else {
-      onChange({ ...value, [slug]: { op, value: fieldValue } });
+      // Non-range types: single op/value pair
+      if (isEmpty) {
+        const next = { ...value };
+        delete next[slug];
+        onChange(next);
+      } else {
+        onChange({ ...value, [slug]: { op, value: fieldValue } });
+      }
     }
   }
 
@@ -51,13 +82,28 @@ export function CustomFieldFilter({
               {fd.name}
             </label>
             {renderFieldInput(fd, value[fd.slug], (op, val) =>
-              updateField(fd.slug, op, val),
+              updateField(fd.slug, op, val, fd.fieldType),
             )}
           </div>
         ))}
       </div>
     </div>
   );
+}
+
+/** Extract a bound (gte/lte) from a range entry or a legacy single-op entry. */
+function getRangeBound(
+  current: { op: string; value: unknown } | undefined,
+  bound: "gte" | "lte",
+): string {
+  if (!current) return "";
+  if (current.op === "range" && typeof current.value === "object" && current.value !== null) {
+    const v = (current.value as Record<string, unknown>)[bound];
+    return v != null ? String(v) : "";
+  }
+  // Legacy single-op format fallback
+  if (current.op === bound) return String(current.value ?? "");
+  return "";
 }
 
 function renderFieldInput(
@@ -86,11 +132,7 @@ function renderFieldInput(
         <div className="flex gap-2">
           <Input
             type="number"
-            value={
-              current?.op === "gte" || current?.op === "gt"
-                ? String(current.value ?? "")
-                : ""
-            }
+            value={getRangeBound(current, "gte")}
             onChange={(e) =>
               update("gte", e.target.value ? Number(e.target.value) : "")
             }
@@ -99,11 +141,7 @@ function renderFieldInput(
           />
           <Input
             type="number"
-            value={
-              current?.op === "lte" || current?.op === "lt"
-                ? String(current.value ?? "")
-                : ""
-            }
+            value={getRangeBound(current, "lte")}
             onChange={(e) =>
               update("lte", e.target.value ? Number(e.target.value) : "")
             }
@@ -118,21 +156,13 @@ function renderFieldInput(
         <div className="flex gap-2">
           <Input
             type="date"
-            value={
-              current?.op === "gte"
-                ? String(current.value ?? "")
-                : ""
-            }
+            value={getRangeBound(current, "gte")}
             onChange={(e) => update("gte", e.target.value || "")}
             className="h-8 text-sm"
           />
           <Input
             type="date"
-            value={
-              current?.op === "lte"
-                ? String(current.value ?? "")
-                : ""
-            }
+            value={getRangeBound(current, "lte")}
             onChange={(e) => update("lte", e.target.value || "")}
             className="h-8 text-sm"
           />

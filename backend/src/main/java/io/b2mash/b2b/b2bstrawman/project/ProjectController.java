@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.project;
 
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -8,6 +10,8 @@ import io.b2mash.b2b.b2bstrawman.tag.EntityTagService;
 import io.b2mash.b2b.b2bstrawman.tag.TagFilterUtil;
 import io.b2mash.b2b.b2bstrawman.tag.dto.SetEntityTagsRequest;
 import io.b2mash.b2b.b2bstrawman.tag.dto.TagResponse;
+import io.b2mash.b2b.b2bstrawman.view.SavedViewRepository;
+import io.b2mash.b2b.b2bstrawman.view.ViewFilterService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -16,7 +20,9 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -35,18 +41,72 @@ public class ProjectController {
 
   private final ProjectService projectService;
   private final EntityTagService entityTagService;
+  private final SavedViewRepository savedViewRepository;
+  private final ViewFilterService viewFilterService;
 
-  public ProjectController(ProjectService projectService, EntityTagService entityTagService) {
+  public ProjectController(
+      ProjectService projectService,
+      EntityTagService entityTagService,
+      SavedViewRepository savedViewRepository,
+      ViewFilterService viewFilterService) {
     this.projectService = projectService;
     this.entityTagService = entityTagService;
+    this.savedViewRepository = savedViewRepository;
+    this.viewFilterService = viewFilterService;
   }
 
   @GetMapping
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<ProjectResponse>> listProjects(
+      @RequestParam(required = false) UUID view,
       @RequestParam(required = false) Map<String, String> allParams) {
+
     UUID memberId = RequestScopes.requireMemberId();
     String orgRole = RequestScopes.getOrgRole();
+
+    // --- View-based filtering (server-side SQL) ---
+    if (view != null) {
+      var savedView =
+          savedViewRepository
+              .findOneById(view)
+              .orElseThrow(() -> new ResourceNotFoundException("SavedView", view));
+
+      if (!"PROJECT".equals(savedView.getEntityType())) {
+        throw new InvalidStateException(
+            "View type mismatch", "Expected PROJECT view but got " + savedView.getEntityType());
+      }
+
+      List<Project> filtered =
+          viewFilterService.executeFilterQuery(
+              "projects", Project.class, savedView.getFilters(), "PROJECT");
+
+      if (filtered != null) {
+        // Apply project access control: regular members only see projects they have access to.
+        // Admin/owner see all projects; members must be in project_members.
+        boolean isAdminOrOwner = "admin".equals(orgRole) || "owner".equals(orgRole);
+        if (!isAdminOrOwner) {
+          Set<UUID> accessibleIds =
+              projectService.listProjects(memberId, orgRole).stream()
+                  .map(pwr -> pwr.project().getId())
+                  .collect(Collectors.toSet());
+          filtered = filtered.stream().filter(p -> accessibleIds.contains(p.getId())).toList();
+        }
+
+        var projectIds = filtered.stream().map(Project::getId).toList();
+        var tagsByEntityId = entityTagService.getEntityTagsBatch("PROJECT", projectIds);
+
+        var responses =
+            filtered.stream()
+                .map(
+                    p ->
+                        ProjectResponse.from(
+                            p, null, tagsByEntityId.getOrDefault(p.getId(), List.of())))
+                .toList();
+        return ResponseEntity.ok(responses);
+      }
+    }
+
+    // --- Fallback: existing in-memory filtering ---
     var projectsWithRoles = projectService.listProjects(memberId, orgRole);
 
     // Batch-load tags for all projects (2 queries instead of 2N)

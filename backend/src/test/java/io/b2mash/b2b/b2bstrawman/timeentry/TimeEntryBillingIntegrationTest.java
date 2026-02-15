@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.timeentry;
 
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -192,7 +193,7 @@ class TimeEntryBillingIntegrationTest {
         .andExpect(jsonPath("$.length()").value(1))
         .andExpect(jsonPath("$[0].id").value(billableUnbilledEntryId.toString()))
         .andExpect(jsonPath("$[0].billable").value(true))
-        .andExpect(jsonPath("$[0].invoiceId").doesNotExist());
+        .andExpect(jsonPath("$[0].invoiceId").value(nullValue()));
   }
 
   @Test
@@ -242,8 +243,8 @@ class TimeEntryBillingIntegrationTest {
                 .param("billingStatus", "UNBILLED")
                 .with(ownerJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$[0].invoiceId").doesNotExist())
-        .andExpect(jsonPath("$[0].invoiceNumber").doesNotExist());
+        .andExpect(jsonPath("$[0].invoiceId").value(nullValue()))
+        .andExpect(jsonPath("$[0].invoiceNumber").value(nullValue()));
   }
 
   @Test

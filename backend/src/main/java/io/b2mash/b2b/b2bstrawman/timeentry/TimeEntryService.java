@@ -166,6 +166,12 @@ public class TimeEntryService {
       throw new ResourceNotFoundException("TimeEntry", timeEntryId);
     }
 
+    // Block toggle when time entry is part of an invoice (Epic 86A review)
+    if (entry.getInvoiceId() != null) {
+      throw new ResourceConflictException(
+          "Time entry is billed", "Time entry is part of an invoice. Void the invoice to unlock.");
+    }
+
     requireEditPermission(entry, memberId, orgRole);
 
     boolean oldBillable = entry.isBillable();

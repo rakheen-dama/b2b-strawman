@@ -32,4 +32,11 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
       ) ORDER BY i.createdAt DESC
       """)
   List<Invoice> findByProjectId(@Param("projectId") UUID projectId);
+
+  /**
+   * JPQL-based batch lookup that respects Hibernate @Filter (unlike JpaRepository.findAllById which
+   * uses EntityManager.find and bypasses @Filter). Required for shared-schema tenant isolation.
+   */
+  @Query("SELECT i FROM Invoice i WHERE i.id IN :ids")
+  List<Invoice> findAllByIds(@Param("ids") List<UUID> ids);
 }

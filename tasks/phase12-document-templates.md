@@ -12,7 +12,7 @@ Phase 12 adds a **document generation system** to DocTeams — professional, bra
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 93 | DocumentTemplate Entity Foundation | Backend | -- | L | 93A, 93B | |
+| 93 | DocumentTemplate Entity Foundation | Backend | -- | L | 93A, 93B | **Done** (PRs #191, #192) |
 | 94 | Rendering Pipeline & Generation | Backend | 93 | L | 94A, 94B | |
 | 95 | Frontend — Template & Generation UI | Frontend | 93, 94 | L | 95A, 95B | |
 
@@ -94,7 +94,7 @@ Stage 3:  [95A]  //  [95B]                         ← frontend (parallel)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **93A** | 93.1-93.11 | V25 migration (document_templates, generated_documents tables, RLS, indexes), DocumentTemplate entity with slug auto-gen, GeneratedDocument entity (stub), repositories with JPQL findOneById, DocumentTemplateService CRUD, DocumentTemplateController with RBAC, integration tests (~10 tests) | **Done** (PR #191) |
-| **93B** | 93.12-93.22 | TemplatePackSeeder service, TemplatePackDefinition DTO, common template pack (3 templates), clone/reset endpoints, OrgSettings extension (logo_s3_key, brand_color, document_footer_text, template_pack_status), logo upload/delete endpoints, extend settings API, integration tests for packs, cloning, branding (~12 tests) | |
+| **93B** | 93.12-93.22 | TemplatePackSeeder service, TemplatePackDefinition DTO, common template pack (3 templates), clone/reset endpoints, OrgSettings extension (logo_s3_key, brand_color, document_footer_text, template_pack_status), logo upload/delete endpoints, extend settings API, integration tests for packs, cloning, branding (~12 tests) | **Done** (PR #192) |
 
 ### Tasks
 
@@ -111,17 +111,17 @@ Stage 3:  [95A]  //  [95B]                         ← frontend (parallel)
 | 93.9 | Add DocumentTemplate CRUD integration tests | 93A | **Done** | `template/DocumentTemplateIntegrationTest.java` (~8 tests): save/retrieve in dedicated and shared schema, findOneById respects @Filter, slug auto-gen, slug uniqueness, deactivate, admin CRUD, member 403. Pattern: follow FieldDefinitionIntegrationTest. |
 | 93.10 | Add DocumentTemplateController integration tests | 93A | **Done** | `template/DocumentTemplateControllerTest.java` (~7 tests): GET list returns active, filter by category, filter by entity type, POST creates with slug, PUT updates, DELETE soft-deletes, list excludes content/css. Pattern: MockMvc. |
 | 93.11 | Verify V25 migration runs cleanly | 93A | **Done** | Run `./mvnw clean test -q` and verify no migration errors. Check tables created in both dedicated and shared schemas. |
-| 93.12 | Create TemplatePackSeeder service | 93B | | `template/TemplatePackSeeder.java`. @Service. Method: `seedPacksForTenant(String tenantId)` — scan classpath:template-packs/*/ for pack.json, parse TemplatePackDefinition, check OrgSettings.templatePackStatus for idempotency, create PLATFORM template records, update templatePackStatus. Pattern: follow FieldPackSeeder (Phase 11) exactly. |
-| 93.13 | Create TemplatePackDefinition DTO | 93B | | `template/TemplatePackDefinition.java` record. Fields: packId, version, name, description, templates (List<TemplatePackTemplate>). TemplatePackTemplate: templateKey, name, category, primaryEntityType, contentFile, cssFile (nullable), description, sortOrder. Pattern: match FieldPackDefinition. |
-| 93.14 | Create common template pack files | 93B | | `src/main/resources/template-packs/common/pack.json` + 3 HTML files: engagement-letter.html, project-summary.html, invoice-cover-letter.html. Stub templates with Thymeleaf placeholders (${project.name}, ${customer.name}, ${org.name}, ${org.logoUrl}). |
-| 93.15 | Add template pack seeding integration tests | 93B | | `template/TemplatePackSeederTest.java` (~5 tests): seed creates 3 templates, idempotency, multi-pack, version tracking, source=PLATFORM set. |
-| 93.16 | Add clone endpoint to DocumentTemplateService | 93B | | `cloneTemplate(UUID templateId)`: load template, verify source=PLATFORM, check no existing ORG_CUSTOM clone for same pack_template_key, create new ORG_CUSTOM with sourceTemplateId=original.id, slug="{original-slug}-custom". |
-| 93.17 | Add reset endpoint to DocumentTemplateService | 93B | | `resetToDefault(UUID cloneId)`: load template, verify source=ORG_CUSTOM, verify sourceTemplateId not null, hard-delete clone. |
-| 93.18 | Add clone/reset endpoints to DocumentTemplateController | 93B | | POST /api/templates/{id}/clone, POST /api/templates/{id}/reset. @PreAuthorize admin/owner. 409 Conflict if clone exists, 400 for invalid operations. |
-| 93.19 | Extend OrgSettings entity with branding fields | 93B | | Modify `orgsettings/OrgSettings.java`. Add: logoS3Key, brandColor, documentFooterText, templatePackStatus (JSONB). Pattern: follow Phase 11 field_pack_status. |
-| 93.20 | Add logo upload/delete endpoints to SettingsController | 93B | | POST /api/settings/logo (multipart, max 2MB, PNG/JPG/SVG, S3 upload to org/{tenantId}/branding/logo.{ext}). DELETE /api/settings/logo. Extend PUT/GET /api/settings with brandColor, documentFooterText, logoUrl (pre-signed). @PreAuthorize admin/owner. Pattern: follow document upload pattern (Phase 4). |
-| 93.21 | Integrate TemplatePackSeeder into TenantProvisioningService | 93B | | Modify TenantProvisioningService to call `templatePackSeeder.seedPacksForTenant(tenantId)` after Flyway migrations. |
-| 93.22 | Add branding and clone integration tests | 93B | | `orgsettings/BrandingIntegrationTest.java` (~7 tests): logo upload/delete, brandColor/footerText update, GET includes branding, invalid hex 400, file too large 400, member 403. `template/TemplateCloneResetTest.java` (~5 tests): clone PLATFORM, clone conflict 409, reset ORG_CUSTOM, reset non-clone 400. |
+| 93.12 | Create TemplatePackSeeder service | 93B | **Done** | `template/TemplatePackSeeder.java`. @Service. Method: `seedPacksForTenant(String tenantId)` — scan classpath:template-packs/*/ for pack.json, parse TemplatePackDefinition, check OrgSettings.templatePackStatus for idempotency, create PLATFORM template records, update templatePackStatus. Pattern: follow FieldPackSeeder (Phase 11) exactly. |
+| 93.13 | Create TemplatePackDefinition DTO | 93B | **Done** | `template/TemplatePackDefinition.java` record. Fields: packId, version, name, description, templates (List<TemplatePackTemplate>). TemplatePackTemplate: templateKey, name, category, primaryEntityType, contentFile, cssFile (nullable), description, sortOrder. Pattern: match FieldPackDefinition. |
+| 93.14 | Create common template pack files | 93B | **Done** | `src/main/resources/template-packs/common/pack.json` + 3 HTML files: engagement-letter.html, project-summary.html, invoice-cover-letter.html. Stub templates with Thymeleaf placeholders (${project.name}, ${customer.name}, ${org.name}, ${org.logoUrl}). |
+| 93.15 | Add template pack seeding integration tests | 93B | **Done** | `template/TemplatePackSeederTest.java` (~5 tests): seed creates 3 templates, idempotency, multi-pack, version tracking, source=PLATFORM set. |
+| 93.16 | Add clone endpoint to DocumentTemplateService | 93B | **Done** | `cloneTemplate(UUID templateId)`: load template, verify source=PLATFORM, check no existing ORG_CUSTOM clone for same pack_template_key, create new ORG_CUSTOM with sourceTemplateId=original.id, slug="{original-slug}-custom". |
+| 93.17 | Add reset endpoint to DocumentTemplateService | 93B | **Done** | `resetToDefault(UUID cloneId)`: load template, verify source=ORG_CUSTOM, verify sourceTemplateId not null, hard-delete clone. |
+| 93.18 | Add clone/reset endpoints to DocumentTemplateController | 93B | **Done** | POST /api/templates/{id}/clone, POST /api/templates/{id}/reset. @PreAuthorize admin/owner. 409 Conflict if clone exists, 400 for invalid operations. |
+| 93.19 | Extend OrgSettings entity with branding fields | 93B | **Done** | Modify `orgsettings/OrgSettings.java`. Add: logoS3Key, brandColor, documentFooterText, templatePackStatus (JSONB). Pattern: follow Phase 11 field_pack_status. |
+| 93.20 | Add logo upload/delete endpoints to SettingsController | 93B | **Done** | POST /api/settings/logo (multipart, max 2MB, PNG/JPG/SVG, S3 upload to org/{tenantId}/branding/logo.{ext}). DELETE /api/settings/logo. Extend PUT/GET /api/settings with brandColor, documentFooterText, logoUrl (pre-signed). @PreAuthorize admin/owner. Pattern: follow document upload pattern (Phase 4). |
+| 93.21 | Integrate TemplatePackSeeder into TenantProvisioningService | 93B | **Done** | Modify TenantProvisioningService to call `templatePackSeeder.seedPacksForTenant(tenantId)` after Flyway migrations. |
+| 93.22 | Add branding and clone integration tests | 93B | **Done** | `orgsettings/BrandingIntegrationTest.java` (~7 tests): logo upload/delete, brandColor/footerText update, GET includes branding, invalid hex 400, file too large 400, member 403. `template/TemplateCloneResetTest.java` (~5 tests): clone PLATFORM, clone conflict 409, reset ORG_CUSTOM, reset non-clone 400. |
 
 ### Key Files
 

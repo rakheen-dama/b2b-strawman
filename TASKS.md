@@ -110,7 +110,7 @@
 | 91 | Custom Fields Frontend | Frontend | 87, 90 | L | 91A, 91B | **Done** (PRs #184, #186) |
 | 92 | Tags & Saved Views Frontend | Frontend | 88, 89 | L | 92A, 92B | **Done** (PRs #188, #190) |
 | **Phase 12 — Document Templates & PDF Generation** | | | | | | See [tasks/phase12-document-templates.md](tasks/phase12-document-templates.md) |
-| 93 | DocumentTemplate Entity Foundation | Backend | -- | L | 93A, 93B | 93A **Done** (PR #191) |
+| 93 | DocumentTemplate Entity Foundation | Backend | -- | L | 93A, 93B | **Done** (PRs #191, #192) |
 | 94 | Rendering Pipeline & Generation | Backend | 93 | L | 94A, 94B | |
 | 95 | Frontend — Template & Generation UI | Frontend | 93, 94 | L | 95A, 95B | |
 | **Phase 13 — Customer Compliance & Lifecycle** | | | | | | See [tasks/phase13-customer-compliance-lifecycle.md](tasks/phase13-customer-compliance-lifecycle.md) |

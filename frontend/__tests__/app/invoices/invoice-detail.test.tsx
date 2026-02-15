@@ -173,6 +173,62 @@ describe("InvoiceDetailClient", () => {
     expect(screen.queryByLabelText("Due Date")).not.toBeInTheDocument();
   });
 
+  it("renders SENT invoice with Record Payment and Void buttons", () => {
+    const invoice = makeDraftInvoice({
+      status: "SENT",
+      invoiceNumber: "INV-2026-003",
+      issueDate: "2026-01-15",
+      dueDate: "2026-02-15",
+    });
+    render(
+      <InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />,
+    );
+
+    expect(screen.getByText("Sent")).toBeInTheDocument(); // StatusBadge
+    expect(
+      screen.getByRole("button", { name: /record payment/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /void/i }),
+    ).toBeInTheDocument();
+
+    // No Approve button for SENT
+    expect(
+      screen.queryByRole("button", { name: /approve/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("renders VOID invoice with no action buttons", () => {
+    const invoice = makeDraftInvoice({
+      status: "VOID",
+      invoiceNumber: "INV-2026-004",
+      issueDate: "2026-01-15",
+      dueDate: "2026-02-15",
+    });
+    render(
+      <InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />,
+    );
+
+    expect(screen.getByText("Void")).toBeInTheDocument(); // StatusBadge
+    expect(
+      screen.getByText("This invoice has been voided."),
+    ).toBeInTheDocument();
+
+    // No action buttons for VOID
+    expect(
+      screen.queryByRole("button", { name: /approve/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /mark as sent/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /record payment/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /delete draft/i }),
+    ).not.toBeInTheDocument();
+  });
+
   it("calls deleteInvoice on delete confirmation", async () => {
     const user = userEvent.setup();
     const invoice = makeDraftInvoice();

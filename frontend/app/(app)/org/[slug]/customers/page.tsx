@@ -1,9 +1,12 @@
+import { Suspense } from "react";
 import { auth } from "@clerk/nextjs/server";
-import { api, handleApiError, getFieldDefinitions } from "@/lib/api";
-import type { Customer, CustomerStatus, FieldDefinitionResponse } from "@/lib/types";
+import { api, handleApiError, getFieldDefinitions, getViews, getSavedView, getTags } from "@/lib/api";
+import type { Customer, CustomerStatus, FieldDefinitionResponse, SavedViewResponse, TagResponse } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { CreateCustomerDialog } from "@/components/customers/create-customer-dialog";
 import { CustomFieldBadges } from "@/components/field-definitions/CustomFieldBadges";
+import { ViewSelectorClient } from "@/components/views/ViewSelectorClient";
+import { createSavedViewAction } from "./view-actions";
 import { formatDate } from "@/lib/format";
 import { UserRound } from "lucide-react";
 import Link from "next/link";
@@ -13,15 +16,48 @@ const STATUS_BADGE: Record<CustomerStatus, { label: string; variant: "success" |
   ARCHIVED: { label: "Archived", variant: "neutral" },
 };
 
-export default async function CustomersPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function CustomersPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { slug } = await params;
+  const resolvedSearchParams = await searchParams;
   const { orgRole } = await auth();
 
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
 
+  const currentViewId = typeof resolvedSearchParams.view === "string" ? resolvedSearchParams.view : null;
+
+  // Fetch saved views for customer entity type
+  let views: SavedViewResponse[] = [];
+  try {
+    views = await getViews("CUSTOMER");
+  } catch {
+    // Non-fatal: view selector won't show saved views
+  }
+
+  // If a view is selected, apply its filters to customers query
+  let activeView: SavedViewResponse | null = null;
+  if (currentViewId) {
+    try {
+      activeView = await getSavedView(currentViewId);
+    } catch {
+      // Non-fatal: fall back to unfiltered
+    }
+  }
+
+  // Build query string with view filters
+  let customersEndpoint = "/api/customers";
+  if (activeView && currentViewId) {
+    customersEndpoint = `/api/customers?view=${currentViewId}`;
+  }
+
   let customers: Customer[] = [];
   try {
-    customers = await api.get<Customer[]>("/api/customers");
+    customers = await api.get<Customer[]>(customersEndpoint);
   } catch (error) {
     handleApiError(error);
   }
@@ -32,6 +68,19 @@ export default async function CustomersPage({ params }: { params: Promise<{ slug
     customerFieldDefs = await getFieldDefinitions("CUSTOMER");
   } catch {
     // Non-fatal: custom field badges won't render
+  }
+
+  // Fetch tags for filter UI
+  let allTags: TagResponse[] = [];
+  try {
+    allTags = await getTags();
+  } catch {
+    // Non-fatal
+  }
+
+  async function handleCreateView(req: import("@/lib/types").CreateSavedViewRequest) {
+    "use server";
+    return createSavedViewAction(slug, req);
   }
 
   return (
@@ -46,6 +95,21 @@ export default async function CustomersPage({ params }: { params: Promise<{ slug
         </div>
         {isAdmin && <CreateCustomerDialog slug={slug} />}
       </div>
+
+      {/* Saved View Selector */}
+      {views.length > 0 || isAdmin ? (
+        <Suspense fallback={null}>
+          <ViewSelectorClient
+            entityType="CUSTOMER"
+            views={views}
+            canCreate={isAdmin}
+            slug={slug}
+            allTags={allTags}
+            fieldDefinitions={customerFieldDefs}
+            onSave={handleCreateView}
+          />
+        </Suspense>
+      ) : null}
 
       {/* Customer Table or Empty State */}
       {customers.length === 0 ? (

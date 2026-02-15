@@ -15,6 +15,20 @@ const mockApiGet = vi.fn();
 vi.mock("@/lib/api", () => ({
   api: { get: (...args: unknown[]) => mockApiGet(...args) },
   handleApiError: vi.fn(),
+  getFieldDefinitions: vi.fn().mockResolvedValue([]),
+  getViews: vi.fn().mockResolvedValue([]),
+  getSavedView: vi.fn().mockResolvedValue(null),
+  getTags: vi.fn().mockResolvedValue([]),
+}));
+
+// Mock ViewSelectorClient (client component with hooks)
+vi.mock("@/components/views/ViewSelectorClient", () => ({
+  ViewSelectorClient: () => <div data-testid="view-selector-client" />,
+}));
+
+// Mock view-actions
+vi.mock("./view-actions", () => ({
+  createSavedViewAction: vi.fn(),
 }));
 
 // Mock CreateProjectDialog (client component with dialog portal)
@@ -57,6 +71,7 @@ const makeProject = (overrides: Partial<Project> = {}): Project => ({
 });
 
 const params = Promise.resolve({ slug: "acme" });
+const searchParams = Promise.resolve({} as Record<string, string | string[] | undefined>);
 
 afterEach(() => cleanup());
 
@@ -70,7 +85,7 @@ describe("ProjectsPage", () => {
       mockAuth.mockResolvedValue({ orgRole: "org:member", has: () => false });
       mockApiGet.mockResolvedValue([makeProject()]);
 
-      const jsx = await ProjectsPage({ params });
+      const jsx = await ProjectsPage({ params, searchParams });
       render(jsx);
 
       expect(screen.getAllByTestId("create-project-dialog")).toHaveLength(1);
@@ -80,7 +95,7 @@ describe("ProjectsPage", () => {
       mockAuth.mockResolvedValue({ orgRole: "org:admin", has: () => false });
       mockApiGet.mockResolvedValue([makeProject()]);
 
-      const jsx = await ProjectsPage({ params });
+      const jsx = await ProjectsPage({ params, searchParams });
       render(jsx);
 
       expect(screen.getAllByTestId("create-project-dialog")).toHaveLength(1);
@@ -90,7 +105,7 @@ describe("ProjectsPage", () => {
       mockAuth.mockResolvedValue({ orgRole: "org:owner", has: () => false });
       mockApiGet.mockResolvedValue([makeProject()]);
 
-      const jsx = await ProjectsPage({ params });
+      const jsx = await ProjectsPage({ params, searchParams });
       render(jsx);
 
       expect(screen.getAllByTestId("create-project-dialog")).toHaveLength(1);
@@ -102,7 +117,7 @@ describe("ProjectsPage", () => {
       mockAuth.mockResolvedValue({ orgRole: "org:member", has: () => false });
       mockApiGet.mockResolvedValue([makeProject({ projectRole: "lead" })]);
 
-      const jsx = await ProjectsPage({ params });
+      const jsx = await ProjectsPage({ params, searchParams });
       render(jsx);
 
       expect(screen.getByText("Lead")).toBeInTheDocument();
@@ -112,7 +127,7 @@ describe("ProjectsPage", () => {
       mockAuth.mockResolvedValue({ orgRole: "org:member", has: () => false });
       mockApiGet.mockResolvedValue([makeProject({ projectRole: "member" })]);
 
-      const jsx = await ProjectsPage({ params });
+      const jsx = await ProjectsPage({ params, searchParams });
       render(jsx);
 
       expect(screen.getByText("Member")).toBeInTheDocument();
@@ -122,7 +137,7 @@ describe("ProjectsPage", () => {
       mockAuth.mockResolvedValue({ orgRole: "org:admin", has: () => false });
       mockApiGet.mockResolvedValue([makeProject({ projectRole: null })]);
 
-      const jsx = await ProjectsPage({ params });
+      const jsx = await ProjectsPage({ params, searchParams });
       render(jsx);
 
       expect(screen.queryByText("Lead")).not.toBeInTheDocument();
@@ -135,7 +150,7 @@ describe("ProjectsPage", () => {
       mockAuth.mockResolvedValue({ orgRole: "org:member", has: () => false });
       mockApiGet.mockResolvedValue([]);
 
-      const jsx = await ProjectsPage({ params });
+      const jsx = await ProjectsPage({ params, searchParams });
       render(jsx);
 
       expect(screen.getByText(/not on any projects yet/)).toBeInTheDocument();
@@ -145,7 +160,7 @@ describe("ProjectsPage", () => {
       mockAuth.mockResolvedValue({ orgRole: "org:admin", has: () => false });
       mockApiGet.mockResolvedValue([]);
 
-      const jsx = await ProjectsPage({ params });
+      const jsx = await ProjectsPage({ params, searchParams });
       render(jsx);
 
       expect(screen.getByText("Create your first project to get started.")).toBeInTheDocument();
@@ -155,7 +170,7 @@ describe("ProjectsPage", () => {
       mockAuth.mockResolvedValue({ orgRole: "org:member", has: () => false });
       mockApiGet.mockResolvedValue([]);
 
-      const jsx = await ProjectsPage({ params });
+      const jsx = await ProjectsPage({ params, searchParams });
       render(jsx);
 
       // Header button + empty state button = 2
@@ -168,7 +183,7 @@ describe("ProjectsPage", () => {
       mockAuth.mockResolvedValue({ orgRole: "org:member", has: () => false });
       mockApiGet.mockResolvedValue([makeProject()]);
 
-      const jsx = await ProjectsPage({ params });
+      const jsx = await ProjectsPage({ params, searchParams });
       render(jsx);
 
       expect(screen.getByTestId("upgrade-prompt")).toBeInTheDocument();
@@ -178,7 +193,7 @@ describe("ProjectsPage", () => {
       mockAuth.mockResolvedValue({ orgRole: "org:member", has: () => true });
       mockApiGet.mockResolvedValue([makeProject()]);
 
-      const jsx = await ProjectsPage({ params });
+      const jsx = await ProjectsPage({ params, searchParams });
       render(jsx);
 
       expect(screen.queryByTestId("upgrade-prompt")).not.toBeInTheDocument();

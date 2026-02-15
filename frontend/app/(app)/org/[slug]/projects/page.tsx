@@ -1,10 +1,13 @@
+import { Suspense } from "react";
 import { auth } from "@clerk/nextjs/server";
-import { api, handleApiError, getFieldDefinitions } from "@/lib/api";
-import type { Project, ProjectRole, LightweightBudgetStatus, FieldDefinitionResponse } from "@/lib/types";
+import { api, handleApiError, getFieldDefinitions, getViews, getSavedView, getTags } from "@/lib/api";
+import type { Project, ProjectRole, LightweightBudgetStatus, FieldDefinitionResponse, SavedViewResponse, TagResponse } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { BudgetStatusDot } from "@/components/projects/budget-status-dot";
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
 import { CustomFieldBadges } from "@/components/field-definitions/CustomFieldBadges";
+import { ViewSelectorClient } from "@/components/views/ViewSelectorClient";
+import { createSavedViewAction } from "./view-actions";
 import { formatDate } from "@/lib/format";
 import { FileText, FolderOpen, Users } from "lucide-react";
 import Link from "next/link";
@@ -14,16 +17,49 @@ const ROLE_BADGE: Record<ProjectRole, { label: string; variant: "lead" | "member
   member: { label: "Member", variant: "member" },
 };
 
-export default async function ProjectsPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function ProjectsPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { slug } = await params;
+  const resolvedSearchParams = await searchParams;
   const { orgRole, has } = await auth();
 
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
   const isPro = has?.({ plan: "pro" }) ?? false;
 
+  const currentViewId = typeof resolvedSearchParams.view === "string" ? resolvedSearchParams.view : null;
+
+  // Fetch saved views for project entity type
+  let views: SavedViewResponse[] = [];
+  try {
+    views = await getViews("PROJECT");
+  } catch {
+    // Non-fatal: view selector won't show saved views
+  }
+
+  // If a view is selected, fetch its filter config and apply to projects query
+  let activeView: SavedViewResponse | null = null;
+  if (currentViewId) {
+    try {
+      activeView = await getSavedView(currentViewId);
+    } catch {
+      // Non-fatal: fall back to unfiltered
+    }
+  }
+
+  // Build query string with view filters
+  let projectsEndpoint = "/api/projects";
+  if (activeView && currentViewId) {
+    projectsEndpoint = `/api/projects?view=${currentViewId}`;
+  }
+
   let projects: Project[] = [];
   try {
-    projects = await api.get<Project[]>("/api/projects");
+    projects = await api.get<Project[]>(projectsEndpoint);
   } catch (error) {
     handleApiError(error);
   }
@@ -34,6 +70,14 @@ export default async function ProjectsPage({ params }: { params: Promise<{ slug:
     projectFieldDefs = await getFieldDefinitions("PROJECT");
   } catch {
     // Non-fatal: custom field badges won't render
+  }
+
+  // Fetch tags for filter UI
+  let allTags: TagResponse[] = [];
+  try {
+    allTags = await getTags();
+  } catch {
+    // Non-fatal
   }
 
   // Fetch budget status for each project (admin-only, non-fatal — 404 means no budget)
@@ -49,6 +93,11 @@ export default async function ProjectsPage({ params }: { params: Promise<{ slug:
         budgetStatuses.set(projects[i].id, result.value);
       }
     });
+  }
+
+  async function handleCreateView(req: import("@/lib/types").CreateSavedViewRequest) {
+    "use server";
+    return createSavedViewAction(slug, req);
   }
 
   return (
@@ -80,6 +129,21 @@ export default async function ProjectsPage({ params }: { params: Promise<{ slug:
           </div>
         </div>
       )}
+
+      {/* Saved View Selector */}
+      {views.length > 0 || isAdmin ? (
+        <Suspense fallback={null}>
+          <ViewSelectorClient
+            entityType="PROJECT"
+            views={views}
+            canCreate={isAdmin}
+            slug={slug}
+            allTags={allTags}
+            fieldDefinitions={projectFieldDefs}
+            onSave={handleCreateView}
+          />
+        </Suspense>
+      ) : null}
 
       {/* Projects Grid or Empty State */}
       {projects.length === 0 ? (

@@ -734,6 +734,37 @@ export interface SetEntityTagsRequest {
   tagIds: string[];
 }
 
+// ---- Saved Views (from SavedViewController) ----
+
+export interface SavedViewResponse {
+  id: string;
+  entityType: EntityType;
+  name: string;
+  filters: Record<string, unknown>;
+  columns: string[] | null;
+  shared: boolean;
+  createdBy: string;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateSavedViewRequest {
+  entityType: EntityType;
+  name: string;
+  filters: Record<string, unknown>;
+  columns?: string[];
+  shared: boolean;
+  sortOrder: number;
+}
+
+export interface UpdateSavedViewRequest {
+  name: string;
+  filters: Record<string, unknown>;
+  columns?: string[];
+  sortOrder: number;
+}
+
 // ---- Error (RFC 9457 ProblemDetail) ----
 
 export interface ProblemDetail {

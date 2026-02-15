@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.customer;
 
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceService;
@@ -10,6 +11,8 @@ import io.b2mash.b2b.b2bstrawman.tag.EntityTagService;
 import io.b2mash.b2b.b2bstrawman.tag.TagFilterUtil;
 import io.b2mash.b2b.b2bstrawman.tag.dto.SetEntityTagsRequest;
 import io.b2mash.b2b.b2bstrawman.tag.dto.TagResponse;
+import io.b2mash.b2b.b2bstrawman.view.SavedViewRepository;
+import io.b2mash.b2b.b2bstrawman.view.ViewFilterService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -42,22 +45,56 @@ public class CustomerController {
   private final CustomerProjectService customerProjectService;
   private final InvoiceService invoiceService;
   private final EntityTagService entityTagService;
+  private final SavedViewRepository savedViewRepository;
+  private final ViewFilterService viewFilterService;
 
   public CustomerController(
       CustomerService customerService,
       CustomerProjectService customerProjectService,
       InvoiceService invoiceService,
-      EntityTagService entityTagService) {
+      EntityTagService entityTagService,
+      SavedViewRepository savedViewRepository,
+      ViewFilterService viewFilterService) {
     this.customerService = customerService;
     this.customerProjectService = customerProjectService;
     this.invoiceService = invoiceService;
     this.entityTagService = entityTagService;
+    this.savedViewRepository = savedViewRepository;
+    this.viewFilterService = viewFilterService;
   }
 
   @GetMapping
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<CustomerResponse>> listCustomers(
+      @RequestParam(required = false) UUID view,
       @RequestParam(required = false) Map<String, String> allParams) {
+
+    // --- View-based filtering (server-side SQL) ---
+    if (view != null) {
+      var savedView =
+          savedViewRepository
+              .findOneById(view)
+              .orElseThrow(() -> new ResourceNotFoundException("SavedView", view));
+
+      List<Customer> filtered =
+          viewFilterService.executeFilterQuery(
+              "customers", Customer.class, savedView.getFilters(), "CUSTOMER");
+
+      if (filtered != null) {
+        var customerIds = filtered.stream().map(Customer::getId).toList();
+        var tagsByEntityId = entityTagService.getEntityTagsBatch("CUSTOMER", customerIds);
+
+        var responses =
+            filtered.stream()
+                .map(
+                    c ->
+                        CustomerResponse.from(c, tagsByEntityId.getOrDefault(c.getId(), List.of())))
+                .toList();
+        return ResponseEntity.ok(responses);
+      }
+    }
+
+    // --- Fallback: existing in-memory filtering ---
     var customerEntities = customerService.listCustomers();
 
     // Batch-load tags for all customers (2 queries instead of 2N)

@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.task;
 
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
 import io.b2mash.b2b.b2bstrawman.member.Member;
@@ -9,6 +10,8 @@ import io.b2mash.b2b.b2bstrawman.tag.EntityTagService;
 import io.b2mash.b2b.b2bstrawman.tag.TagFilterUtil;
 import io.b2mash.b2b.b2bstrawman.tag.dto.SetEntityTagsRequest;
 import io.b2mash.b2b.b2bstrawman.tag.dto.TagResponse;
+import io.b2mash.b2b.b2bstrawman.view.SavedViewRepository;
+import io.b2mash.b2b.b2bstrawman.view.ViewFilterService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -39,14 +42,20 @@ public class TaskController {
   private final TaskService taskService;
   private final MemberRepository memberRepository;
   private final EntityTagService entityTagService;
+  private final SavedViewRepository savedViewRepository;
+  private final ViewFilterService viewFilterService;
 
   public TaskController(
       TaskService taskService,
       MemberRepository memberRepository,
-      EntityTagService entityTagService) {
+      EntityTagService entityTagService,
+      SavedViewRepository savedViewRepository,
+      ViewFilterService viewFilterService) {
     this.taskService = taskService;
     this.memberRepository = memberRepository;
     this.entityTagService = entityTagService;
+    this.savedViewRepository = savedViewRepository;
+    this.viewFilterService = viewFilterService;
   }
 
   @PostMapping("/api/projects/{projectId}/tasks")
@@ -78,6 +87,7 @@ public class TaskController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<TaskResponse>> listTasks(
       @PathVariable UUID projectId,
+      @RequestParam(required = false) UUID view,
       @RequestParam(required = false) String status,
       @RequestParam(required = false) UUID assigneeId,
       @RequestParam(required = false) String priority,
@@ -86,6 +96,34 @@ public class TaskController {
     UUID memberId = RequestScopes.requireMemberId();
     String orgRole = RequestScopes.getOrgRole();
 
+    // --- View-based filtering (server-side SQL) ---
+    if (view != null) {
+      var savedView =
+          savedViewRepository
+              .findOneById(view)
+              .orElseThrow(() -> new ResourceNotFoundException("SavedView", view));
+
+      List<Task> filtered =
+          viewFilterService.executeFilterQueryForProject(
+              "tasks", Task.class, savedView.getFilters(), "TASK", projectId);
+
+      if (filtered != null) {
+        var names = resolveNames(filtered);
+        var taskIds = filtered.stream().map(Task::getId).toList();
+        var tagsByEntityId = entityTagService.getEntityTagsBatch("TASK", taskIds);
+
+        var responses =
+            filtered.stream()
+                .map(
+                    t ->
+                        TaskResponse.from(
+                            t, names, tagsByEntityId.getOrDefault(t.getId(), List.of())))
+                .toList();
+        return ResponseEntity.ok(responses);
+      }
+    }
+
+    // --- Fallback: existing in-memory filtering ---
     var taskEntities =
         taskService.listTasks(
             projectId, memberId, orgRole, status, assigneeId, priority, assigneeFilter);

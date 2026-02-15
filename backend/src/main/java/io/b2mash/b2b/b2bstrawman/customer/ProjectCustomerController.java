@@ -1,5 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.customer;
 
+import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleGuard;
+import io.b2mash.b2b.b2bstrawman.compliance.LifecycleAction;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import java.net.URI;
 import java.time.Instant;
@@ -19,9 +22,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProjectCustomerController {
 
   private final CustomerProjectService customerProjectService;
+  private final CustomerRepository customerRepository;
+  private final CustomerLifecycleGuard customerLifecycleGuard;
 
-  public ProjectCustomerController(CustomerProjectService customerProjectService) {
+  public ProjectCustomerController(
+      CustomerProjectService customerProjectService,
+      CustomerRepository customerRepository,
+      CustomerLifecycleGuard customerLifecycleGuard) {
     this.customerProjectService = customerProjectService;
+    this.customerRepository = customerRepository;
+    this.customerLifecycleGuard = customerLifecycleGuard;
   }
 
   @GetMapping
@@ -41,6 +51,13 @@ public class ProjectCustomerController {
       @PathVariable UUID projectId, @PathVariable UUID customerId) {
     UUID memberId = RequestScopes.requireMemberId();
     String orgRole = RequestScopes.getOrgRole();
+
+    // Lifecycle guard: block linking project to customer in restricted statuses
+    var customer =
+        customerRepository
+            .findOneById(customerId)
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+    customerLifecycleGuard.requireActionPermitted(customer, LifecycleAction.CREATE_PROJECT);
 
     var link =
         customerProjectService.linkCustomerToProject(

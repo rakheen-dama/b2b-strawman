@@ -524,6 +524,35 @@ public class NotificationService {
     return created;
   }
 
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public List<Notification> handleCustomerStatusChanged(
+      io.b2mash.b2b.b2bstrawman.event.CustomerStatusChangedEvent event) {
+    var recipients = new HashSet<UUID>();
+    for (var m : memberRepository.findByOrgRoleIn(List.of("admin", "owner"))) {
+      recipients.add(m.getId());
+    }
+    recipients.remove(event.actorMemberId());
+
+    var title =
+        "%s transitioned from %s to %s"
+            .formatted(event.customerName(), event.oldStatus(), event.newStatus());
+
+    var created = new ArrayList<Notification>();
+    for (var recipientId : recipients) {
+      var notification =
+          createIfEnabled(
+              recipientId,
+              "CUSTOMER_STATUS_CHANGED",
+              title,
+              null,
+              "CUSTOMER",
+              event.customerId(),
+              null);
+      if (notification != null) created.add(notification);
+    }
+    return created;
+  }
+
   // --- Private helpers ---
 
   /**

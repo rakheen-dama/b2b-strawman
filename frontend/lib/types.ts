@@ -100,6 +100,7 @@ export interface Customer {
   status: CustomerStatus;
   notes: string | null;
   createdBy: string;
+  lifecycleStatus: string;
   createdAt: string;
   updatedAt: string;
   customFields?: Record<string, unknown>;

@@ -33,6 +33,8 @@ import { TagInput } from "@/components/tags/TagInput";
 import { GenerateDocumentDropdown } from "@/components/templates/GenerateDocumentDropdown";
 import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocumentsList";
 import { formatDate } from "@/lib/format";
+import { LifecycleStatusBadge } from "@/components/customers/LifecycleStatusBadge";
+import { LifecycleTransitionMenu } from "@/components/customers/LifecycleTransitionMenu";
 import { ArrowLeft, Pencil, Archive } from "lucide-react";
 import Link from "next/link";
 
@@ -192,6 +194,7 @@ export default async function CustomerDetailPage({
               {customer.name}
             </h1>
             <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
+            <LifecycleStatusBadge lifecycleStatus={customer.lifecycleStatus} />
           </div>
           <p className="mt-1 text-slate-600 dark:text-slate-400">{customer.email}</p>
           <p className="mt-3 text-sm text-slate-400 dark:text-slate-600">
@@ -215,6 +218,11 @@ export default async function CustomerDetailPage({
 
         {isAdmin && (
           <div className="flex shrink-0 gap-2">
+            <LifecycleTransitionMenu
+              customer={customer}
+              canManage={isAdmin && customer.status === "ACTIVE"}
+              slug={slug}
+            />
             {customerTemplates.length > 0 && (
               <GenerateDocumentDropdown
                 templates={customerTemplates}

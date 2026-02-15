@@ -10,24 +10,24 @@ const badgeVariants = cva(
     variants: {
       variant: {
         // Semantic role variants
-        lead: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300",
-        member: "bg-olive-100 text-olive-700 dark:bg-olive-800 dark:text-olive-300",
+        lead: "bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300",
+        member: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
         owner: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
         admin: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
         // Plan variants
-        starter: "bg-olive-100 text-olive-700 dark:bg-olive-800 dark:text-olive-300",
-        pro: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300",
+        starter: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+        pro: "bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300",
         // Status variants
         success: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
         warning: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
         destructive: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
         // Generic
-        neutral: "bg-olive-100 text-olive-600 dark:bg-olive-800 dark:text-olive-400",
+        neutral: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
         outline:
-          "border-olive-200 text-olive-700 bg-transparent dark:border-olive-700 dark:text-olive-300",
+          "border-slate-200 text-slate-700 bg-transparent dark:border-slate-700 dark:text-slate-300",
         // Backward-compatible aliases
-        default: "bg-olive-200 text-olive-800 dark:bg-olive-800 dark:text-olive-200",
-        secondary: "bg-olive-100 text-olive-600 dark:bg-olive-800 dark:text-olive-400",
+        default: "bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200",
+        secondary: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
       },
     },
     defaultVariants: {

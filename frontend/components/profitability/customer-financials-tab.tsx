@@ -31,11 +31,11 @@ function StatCard({
   valueClassName?: string;
 }) {
   return (
-    <div className="rounded-lg border border-olive-200 bg-white p-4 dark:border-olive-800 dark:bg-olive-950">
-      <p className="text-xs font-medium uppercase tracking-wide text-olive-600 dark:text-olive-400">
+    <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
+      <p className="text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
         {label}
       </p>
-      <p className={valueClassName ?? "text-olive-950 dark:text-olive-50"}>
+      <p className={valueClassName ?? "text-slate-950 dark:text-slate-50"}>
         <span className="font-display text-2xl">{value}</span>
       </p>
     </div>
@@ -60,7 +60,7 @@ function ProjectBreakdownTable({
 
   return (
     <div className="space-y-3">
-      <h4 className="text-sm font-medium text-olive-700 dark:text-olive-300">
+      <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300">
         Per-Project Breakdown
       </h4>
       <Table>
@@ -78,26 +78,26 @@ function ProjectBreakdownTable({
         <TableBody>
           {projects.map((p) => (
             <TableRow key={`${p.projectId}-${p.currency}`}>
-              <TableCell className="font-medium text-olive-950 dark:text-olive-50">
+              <TableCell className="font-medium text-slate-950 dark:text-slate-50">
                 {p.projectName}
               </TableCell>
-              <TableCell className="text-olive-600 dark:text-olive-400">
+              <TableCell className="text-slate-600 dark:text-slate-400">
                 {p.currency}
               </TableCell>
-              <TableCell className="text-right text-olive-600 dark:text-olive-400">
+              <TableCell className="text-right text-slate-600 dark:text-slate-400">
                 {p.billableHours.toFixed(1)}h
               </TableCell>
-              <TableCell className="text-right text-olive-950 dark:text-olive-50">
+              <TableCell className="text-right text-slate-950 dark:text-slate-50">
                 {formatCurrency(p.billableValue, p.currency)}
               </TableCell>
-              <TableCell className="text-right text-olive-600 dark:text-olive-400">
+              <TableCell className="text-right text-slate-600 dark:text-slate-400">
                 {formatCurrencySafe(p.costValue, p.currency)}
               </TableCell>
               <TableCell
                 className={cn(
                   "text-right",
                   marginClassName(p.margin) ??
-                    "text-olive-600 dark:text-olive-400",
+                    "text-slate-600 dark:text-slate-400",
                 )}
               >
                 {p.margin != null
@@ -108,7 +108,7 @@ function ProjectBreakdownTable({
                 className={cn(
                   "text-right",
                   marginClassName(p.marginPercent) ??
-                    "text-olive-600 dark:text-olive-400",
+                    "text-slate-600 dark:text-slate-400",
                 )}
               >
                 {p.marginPercent != null
@@ -142,13 +142,13 @@ export function CustomerFinancialsTab({
 
   return (
     <div className="space-y-6">
-      <h3 className="font-display text-lg text-olive-950 dark:text-olive-50">
+      <h3 className="font-display text-lg text-slate-950 dark:text-slate-50">
         Customer Profitability
       </h3>
       {profitability.currencies.map((curr) => (
         <div key={curr.currency} className="space-y-3">
           {profitability.currencies.length > 1 && (
-            <h4 className="text-sm font-medium text-olive-700 dark:text-olive-300">
+            <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300">
               {curr.currency}
             </h4>
           )}

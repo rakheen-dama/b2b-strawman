@@ -115,7 +115,7 @@ export function ProjectProfitabilityTable({
           <div className="flex items-center gap-2">
             <label
               htmlFor="prof-from"
-              className="text-sm text-olive-600 dark:text-olive-400"
+              className="text-sm text-slate-600 dark:text-slate-400"
             >
               From
             </label>
@@ -124,11 +124,11 @@ export function ProjectProfitabilityTable({
               type="date"
               value={from}
               onChange={(e) => handleDateChange(e.target.value, to)}
-              className="rounded-md border border-olive-300 bg-white px-2 py-1 text-sm text-olive-900 dark:border-olive-700 dark:bg-olive-950 dark:text-olive-100"
+              className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
             />
             <label
               htmlFor="prof-to"
-              className="text-sm text-olive-600 dark:text-olive-400"
+              className="text-sm text-slate-600 dark:text-slate-400"
             >
               To
             </label>
@@ -137,14 +137,14 @@ export function ProjectProfitabilityTable({
               type="date"
               value={to}
               onChange={(e) => handleDateChange(from, e.target.value)}
-              className="rounded-md border border-olive-300 bg-white px-2 py-1 text-sm text-olive-900 dark:border-olive-700 dark:bg-olive-950 dark:text-olive-100"
+              className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
             />
           </div>
         </div>
       </CardHeader>
       <CardContent>
         {isPending && (
-          <div className="mb-4 text-sm text-olive-500">Loading...</div>
+          <div className="mb-4 text-sm text-slate-500">Loading...</div>
         )}
         {error && (
           <div className="mb-4 text-sm text-red-600 dark:text-red-400">
@@ -152,7 +152,7 @@ export function ProjectProfitabilityTable({
           </div>
         )}
         {sorted.length === 0 ? (
-          <p className="py-8 text-center text-sm text-olive-500">
+          <p className="py-8 text-center text-sm text-slate-500">
             No project profitability data for this period
           </p>
         ) : (
@@ -162,7 +162,7 @@ export function ProjectProfitabilityTable({
                 <TableHead>
                   <button
                     onClick={() => toggleSort("projectName")}
-                    className="inline-flex items-center gap-1 hover:text-olive-900 dark:hover:text-olive-100"
+                    className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
                   >
                     Project
                     <ArrowUpDown className="size-3" />
@@ -171,7 +171,7 @@ export function ProjectProfitabilityTable({
                 <TableHead>
                   <button
                     onClick={() => toggleSort("customerName")}
-                    className="inline-flex items-center gap-1 hover:text-olive-900 dark:hover:text-olive-100"
+                    className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
                   >
                     Customer
                     <ArrowUpDown className="size-3" />
@@ -181,7 +181,7 @@ export function ProjectProfitabilityTable({
                 <TableHead className="text-right">
                   <button
                     onClick={() => toggleSort("billableHours")}
-                    className="inline-flex items-center gap-1 hover:text-olive-900 dark:hover:text-olive-100"
+                    className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
                   >
                     Billable Hours
                     <ArrowUpDown className="size-3" />
@@ -190,7 +190,7 @@ export function ProjectProfitabilityTable({
                 <TableHead className="text-right">
                   <button
                     onClick={() => toggleSort("billableValue")}
-                    className="inline-flex items-center gap-1 hover:text-olive-900 dark:hover:text-olive-100"
+                    className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
                   >
                     Revenue
                     <ArrowUpDown className="size-3" />
@@ -199,7 +199,7 @@ export function ProjectProfitabilityTable({
                 <TableHead className="text-right">
                   <button
                     onClick={() => toggleSort("costValue")}
-                    className="inline-flex items-center gap-1 hover:text-olive-900 dark:hover:text-olive-100"
+                    className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
                   >
                     Cost
                     <ArrowUpDown className="size-3" />
@@ -208,7 +208,7 @@ export function ProjectProfitabilityTable({
                 <TableHead className="text-right">
                   <button
                     onClick={() => toggleSort("margin")}
-                    className="inline-flex items-center gap-1 hover:text-olive-900 dark:hover:text-olive-100"
+                    className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
                   >
                     Margin
                     <ArrowUpDown className="size-3" />
@@ -217,7 +217,7 @@ export function ProjectProfitabilityTable({
                 <TableHead className="text-right">
                   <button
                     onClick={() => toggleSort("marginPercent")}
-                    className="inline-flex items-center gap-1 hover:text-olive-900 dark:hover:text-olive-100"
+                    className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
                   >
                     Margin %
                     <ArrowUpDown className="size-3" />
@@ -235,7 +235,7 @@ export function ProjectProfitabilityTable({
                     {project.customerName ? (
                       project.customerName
                     ) : (
-                      <span className="text-olive-400">&mdash;</span>
+                      <span className="text-slate-400">&mdash;</span>
                     )}
                   </TableCell>
                   <TableCell>{project.currency}</TableCell>

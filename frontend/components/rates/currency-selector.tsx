@@ -81,7 +81,7 @@ export function CurrencySelector({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "w-[240px] justify-between border border-olive-200 bg-white px-3 font-normal dark:border-olive-800 dark:bg-olive-950",
+            "w-[240px] justify-between border border-slate-200 bg-white px-3 font-normal dark:border-slate-800 dark:bg-slate-950",
             className,
           )}
         >

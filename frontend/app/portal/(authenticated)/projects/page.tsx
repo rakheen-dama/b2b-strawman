@@ -37,7 +37,7 @@ export default function PortalProjectListPage() {
   if (isLoading) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-olive-400" />
+        <Loader2 className="size-8 animate-spin text-slate-400" />
       </div>
     );
   }
@@ -56,7 +56,7 @@ export default function PortalProjectListPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="font-display text-2xl text-olive-950 dark:text-olive-50">
+          <h1 className="font-display text-2xl text-slate-950 dark:text-slate-50">
             Projects
           </h1>
           <Badge variant="neutral">{projects.length}</Badge>
@@ -76,24 +76,24 @@ export default function PortalProjectListPage() {
             <Link
               key={project.id}
               href={`/portal/projects/${project.id}`}
-              className="group rounded-lg border border-olive-200 bg-white p-5 transition-all hover:border-olive-300 hover:shadow-sm dark:border-olive-800 dark:bg-olive-900 dark:hover:border-olive-700"
+              className="group rounded-lg border border-slate-200 bg-white p-5 transition-all hover:border-slate-300 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
             >
               <div className="flex items-start gap-3">
-                <FolderOpen className="mt-0.5 size-5 text-olive-400 dark:text-olive-500" />
+                <FolderOpen className="mt-0.5 size-5 text-slate-400 dark:text-slate-500" />
                 <div className="min-w-0 flex-1">
-                  <h3 className="font-semibold text-olive-900 group-hover:text-olive-950 dark:text-olive-100 dark:group-hover:text-olive-50">
+                  <h3 className="font-semibold text-slate-900 group-hover:text-slate-950 dark:text-slate-100 dark:group-hover:text-slate-50">
                     {project.name}
                   </h3>
                   {project.description ? (
-                    <p className="mt-1 line-clamp-2 text-sm text-olive-600 dark:text-olive-400">
+                    <p className="mt-1 line-clamp-2 text-sm text-slate-600 dark:text-slate-400">
                       {project.description}
                     </p>
                   ) : (
-                    <p className="mt-1 text-sm italic text-olive-400 dark:text-olive-600">
+                    <p className="mt-1 text-sm italic text-slate-400 dark:text-slate-600">
                       No description
                     </p>
                   )}
-                  <div className="mt-3 flex items-center gap-1.5 text-xs text-olive-500 dark:text-olive-500">
+                  <div className="mt-3 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-500">
                     <FileText className="size-3.5" />
                     <span>
                       {project.documentCount}{" "}

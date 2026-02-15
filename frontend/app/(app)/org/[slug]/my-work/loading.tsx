@@ -19,7 +19,7 @@ export default function MyWorkLoading() {
               <Skeleton className="h-5 w-24" />
               <Skeleton className="h-5 w-8 rounded-full" />
             </div>
-            <div className="rounded-lg border border-olive-200 bg-white p-1 dark:border-olive-800 dark:bg-olive-950">
+            <div className="rounded-lg border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-950">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-4 px-3 py-3">
                   <Skeleton className="h-5 w-20 rounded-full" />
@@ -45,7 +45,7 @@ export default function MyWorkLoading() {
         {/* Time Summary Column */}
         <div className="space-y-6">
           {/* Weekly summary skeleton */}
-          <div className="rounded-lg border border-olive-200 bg-white p-6 dark:border-olive-800 dark:bg-olive-950">
+          <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
             <div className="flex items-center justify-between">
               <Skeleton className="h-5 w-24" />
               <Skeleton className="h-6 w-36" />
@@ -60,7 +60,7 @@ export default function MyWorkLoading() {
           </div>
 
           {/* Today entries skeleton */}
-          <div className="rounded-lg border border-olive-200 bg-white p-6 dark:border-olive-800 dark:bg-olive-950">
+          <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
             <div className="flex items-center justify-between">
               <Skeleton className="h-5 w-16" />
               <Skeleton className="h-4 w-12" />
@@ -69,7 +69,7 @@ export default function MyWorkLoading() {
               {Array.from({ length: 2 }).map((_, i) => (
                 <div
                   key={i}
-                  className="flex items-start justify-between gap-3 rounded-md border border-olive-100 p-3 dark:border-olive-800"
+                  className="flex items-start justify-between gap-3 rounded-md border border-slate-100 p-3 dark:border-slate-800"
                 >
                   <div className="flex-1 space-y-2">
                     <Skeleton className="h-4 w-40" />

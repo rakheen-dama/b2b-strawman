@@ -49,7 +49,7 @@ export default function PortalProjectDetailPage() {
   if (isLoading) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-olive-400" />
+        <Loader2 className="size-8 animate-spin text-slate-400" />
       </div>
     );
   }
@@ -59,7 +59,7 @@ export default function PortalProjectDetailPage() {
       <div className="space-y-4">
         <Link
           href="/portal/projects"
-          className="inline-flex items-center text-sm text-olive-600 transition-colors hover:text-olive-900 dark:text-olive-400 dark:hover:text-olive-100"
+          className="inline-flex items-center text-sm text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
         >
           <ArrowLeft className="mr-1.5 size-4" />
           Back to Projects
@@ -78,7 +78,7 @@ export default function PortalProjectDetailPage() {
       <div>
         <Link
           href="/portal/projects"
-          className="inline-flex items-center text-sm text-olive-600 transition-colors hover:text-olive-900 dark:text-olive-400 dark:hover:text-olive-100"
+          className="inline-flex items-center text-sm text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
         >
           <ArrowLeft className="mr-1.5 size-4" />
           Back to Projects
@@ -87,15 +87,15 @@ export default function PortalProjectDetailPage() {
 
       {/* Project header */}
       <div>
-        <h1 className="font-display text-2xl text-olive-950 dark:text-olive-50">
+        <h1 className="font-display text-2xl text-slate-950 dark:text-slate-50">
           {project?.name}
         </h1>
         {project?.description ? (
-          <p className="mt-2 text-olive-600 dark:text-olive-400">
+          <p className="mt-2 text-slate-600 dark:text-slate-400">
             {project.description}
           </p>
         ) : (
-          <p className="mt-2 text-sm italic text-olive-400 dark:text-olive-600">
+          <p className="mt-2 text-sm italic text-slate-400 dark:text-slate-600">
             No description
           </p>
         )}

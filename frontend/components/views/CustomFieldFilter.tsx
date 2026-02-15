@@ -72,13 +72,13 @@ export function CustomFieldFilter({
 
   return (
     <div className="space-y-3">
-      <Label className="text-sm font-medium text-olive-700 dark:text-olive-300">
+      <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
         Custom Fields
       </Label>
       <div className="space-y-3">
         {fieldDefinitions.map((fd) => (
           <div key={fd.id} className="space-y-1">
-            <label className="text-xs text-olive-600 dark:text-olive-400">
+            <label className="text-xs text-slate-600 dark:text-slate-400">
               {fd.name}
             </label>
             {renderFieldInput(fd, value[fd.slug], (op, val) =>
@@ -176,9 +176,9 @@ function renderFieldInput(
             type="checkbox"
             checked={(current?.value as boolean) ?? false}
             onChange={(e) => update("eq", e.target.checked)}
-            className="rounded border-olive-300"
+            className="rounded border-slate-300"
           />
-          <span className="text-sm text-olive-600 dark:text-olive-400">
+          <span className="text-sm text-slate-600 dark:text-slate-400">
             Yes
           </span>
         </label>
@@ -201,7 +201,7 @@ function renderFieldInput(
             );
             update("in", selected.length > 0 ? selected : "");
           }}
-          className="h-auto w-full rounded-md border border-olive-200 bg-transparent px-2 py-1 text-sm dark:border-olive-700"
+          className="h-auto w-full rounded-md border border-slate-200 bg-transparent px-2 py-1 text-sm dark:border-slate-700"
         >
           {fd.options.map((opt) => (
             <option key={opt.value} value={opt.value}>

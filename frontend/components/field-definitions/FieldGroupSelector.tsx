@@ -104,7 +104,7 @@ export function FieldGroupSelector({
 
   return (
     <div className="space-y-2" data-testid="field-group-selector">
-      <p className="text-xs font-medium uppercase tracking-wide text-olive-500 dark:text-olive-400">
+      <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
         Field Groups
       </p>
       <div className="flex flex-wrap items-center gap-2">
@@ -116,7 +116,7 @@ export function FieldGroupSelector({
                 type="button"
                 onClick={() => handleRemoveGroup(group.id)}
                 disabled={isUpdating}
-                className="ml-0.5 rounded-full p-0.5 hover:bg-olive-200 dark:hover:bg-olive-700"
+                className="ml-0.5 rounded-full p-0.5 hover:bg-slate-200 dark:hover:bg-slate-700"
                 aria-label={`Remove ${group.name}`}
               >
                 <X className="size-3" />
@@ -126,7 +126,7 @@ export function FieldGroupSelector({
         ))}
 
         {appliedGroupObjects.length === 0 && !canManage && (
-          <span className="text-sm text-olive-400 dark:text-olive-600">
+          <span className="text-sm text-slate-400 dark:text-slate-600">
             No field groups applied
           </span>
         )}
@@ -161,7 +161,7 @@ export function FieldGroupSelector({
                     >
                       {group.name}
                       {group.description && (
-                        <span className="ml-1 text-xs text-olive-400 dark:text-olive-600">
+                        <span className="ml-1 text-xs text-slate-400 dark:text-slate-600">
                           {group.description}
                         </span>
                       )}

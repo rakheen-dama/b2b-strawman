@@ -50,8 +50,8 @@ export function VisibilityToggle({
       title={tooltipText}
       className={
         isShared
-          ? "text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 dark:text-indigo-400 dark:hover:bg-indigo-950 dark:hover:text-indigo-300"
-          : "text-olive-500 hover:bg-olive-100 hover:text-olive-700 dark:text-olive-400 dark:hover:bg-olive-800 dark:hover:text-olive-300"
+          ? "text-teal-600 hover:bg-teal-50 hover:text-teal-700 dark:text-teal-400 dark:hover:bg-teal-950 dark:hover:text-teal-300"
+          : "text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-300"
       }
     >
       {isPending ? (

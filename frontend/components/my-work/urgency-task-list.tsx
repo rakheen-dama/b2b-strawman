@@ -115,26 +115,26 @@ function TaskGroupTable({ tasks, slug, isOverdue }: TaskGroupTableProps) {
   const router = useRouter();
 
   return (
-    <div className="rounded-lg border border-olive-200 dark:border-olive-800">
+    <div className="rounded-lg border border-slate-200 dark:border-slate-800">
       <Table>
         <TableHeader>
-          <TableRow className="border-olive-200 hover:bg-transparent dark:border-olive-800">
-            <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+          <TableRow className="border-slate-200 hover:bg-transparent dark:border-slate-800">
+            <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
               Project
             </TableHead>
-            <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+            <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
               Title
             </TableHead>
-            <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+            <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
               Priority
             </TableHead>
-            <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+            <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
               Status
             </TableHead>
-            <TableHead className="hidden text-xs uppercase tracking-wide text-olive-600 sm:table-cell dark:text-olive-400">
+            <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
               Due Date
             </TableHead>
-            <TableHead className="hidden text-xs uppercase tracking-wide text-olive-600 sm:table-cell dark:text-olive-400">
+            <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
               Logged
             </TableHead>
           </TableRow>
@@ -151,7 +151,7 @@ function TaskGroupTable({ tasks, slug, isOverdue }: TaskGroupTableProps) {
               <TableRow
                 key={task.id}
                 className={cn(
-                  "cursor-pointer border-olive-100 transition-colors hover:bg-olive-50 dark:border-olive-800/50 dark:hover:bg-olive-900",
+                  "cursor-pointer border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900",
                   isOverdue && "bg-red-50/30 dark:bg-red-950/10"
                 )}
                 onClick={() =>
@@ -163,7 +163,7 @@ function TaskGroupTable({ tasks, slug, isOverdue }: TaskGroupTableProps) {
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <p className="truncate text-sm font-medium text-olive-950 dark:text-olive-50">
+                    <p className="truncate text-sm font-medium text-slate-950 dark:text-slate-50">
                       {task.title}
                     </p>
                     {isOverdue && task.dueDate && (
@@ -189,7 +189,7 @@ function TaskGroupTable({ tasks, slug, isOverdue }: TaskGroupTableProps) {
                       "inline-flex items-center gap-1 text-sm",
                       isOverdue
                         ? "font-medium text-red-600 dark:text-red-400"
-                        : "text-olive-600 dark:text-olive-400"
+                        : "text-slate-600 dark:text-slate-400"
                     )}
                   >
                     {isOverdue && (
@@ -199,7 +199,7 @@ function TaskGroupTable({ tasks, slug, isOverdue }: TaskGroupTableProps) {
                   </span>
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
-                  <span className="text-sm text-olive-600 dark:text-olive-400">
+                  <span className="text-sm text-slate-600 dark:text-slate-400">
                     {task.totalTimeMinutes > 0
                       ? formatDuration(task.totalTimeMinutes)
                       : "\u2014"}
@@ -227,7 +227,7 @@ function GroupHeader({ icon, label, count, variant }: GroupHeaderProps) {
   const colorClasses = {
     destructive: "text-red-700 dark:text-red-400",
     warning: "text-amber-700 dark:text-amber-400",
-    neutral: "text-olive-700 dark:text-olive-300",
+    neutral: "text-slate-700 dark:text-slate-300",
   };
 
   return (
@@ -258,7 +258,7 @@ export function UrgencyTaskList({ tasks, slug }: UrgencyTaskListProps) {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <h2 className="font-semibold text-olive-900 dark:text-olive-100">
+          <h2 className="font-semibold text-slate-900 dark:text-slate-100">
             My Tasks
           </h2>
         </div>
@@ -280,7 +280,7 @@ export function UrgencyTaskList({ tasks, slug }: UrgencyTaskListProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <h2 className="font-semibold text-olive-900 dark:text-olive-100">
+        <h2 className="font-semibold text-slate-900 dark:text-slate-100">
           My Tasks
         </h2>
         <Badge variant="neutral">{tasks.length}</Badge>

@@ -46,7 +46,7 @@ function DaysRemainingLabel({ daysRemaining }: { daysRemaining: number }) {
   }
 
   return (
-    <span className="text-xs text-olive-600 dark:text-olive-400">
+    <span className="text-xs text-slate-600 dark:text-slate-400">
       {daysRemaining} days
     </span>
   );
@@ -57,7 +57,7 @@ export function UpcomingDeadlines({ deadlines }: UpcomingDeadlinesProps) {
     return (
       <Card>
         <div className="px-4 py-3">
-          <h3 className="font-semibold text-olive-900 dark:text-olive-100">
+          <h3 className="font-semibold text-slate-900 dark:text-slate-100">
             Upcoming Deadlines
           </h3>
           <p className="mt-4 text-center text-sm text-muted-foreground">
@@ -72,11 +72,11 @@ export function UpcomingDeadlines({ deadlines }: UpcomingDeadlinesProps) {
     return (
       <Card>
         <div className="px-4 py-3">
-          <h3 className="font-semibold text-olive-900 dark:text-olive-100">
+          <h3 className="font-semibold text-slate-900 dark:text-slate-100">
             Upcoming Deadlines
           </h3>
           <div className="mt-4 flex flex-col items-center gap-2 py-4">
-            <Clock className="size-8 text-olive-300 dark:text-olive-600" />
+            <Clock className="size-8 text-slate-300 dark:text-slate-600" />
             <p className="text-sm text-muted-foreground">
               No upcoming deadlines
             </p>
@@ -92,10 +92,10 @@ export function UpcomingDeadlines({ deadlines }: UpcomingDeadlinesProps) {
   return (
     <Card>
       <div className="px-4 py-3">
-        <h3 className="font-semibold text-olive-900 dark:text-olive-100">
+        <h3 className="font-semibold text-slate-900 dark:text-slate-100">
           Upcoming Deadlines
         </h3>
-        <ul className="mt-3 divide-y divide-olive-100 dark:divide-olive-800">
+        <ul className="mt-3 divide-y divide-slate-100 dark:divide-slate-800">
           {visible.map((deadline) => {
             const daysRemaining = getDaysRemaining(deadline.dueDate);
 
@@ -109,12 +109,12 @@ export function UpcomingDeadlines({ deadlines }: UpcomingDeadlinesProps) {
                 )}
               >
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-olive-900 dark:text-olive-100">
+                  <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
                     {deadline.taskName}
                   </p>
                   <div className="mt-0.5 flex items-center gap-2">
                     <Badge variant="member">{deadline.projectName}</Badge>
-                    <span className="text-xs text-olive-500 dark:text-olive-400">
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
                       {formatDate(deadline.dueDate)}
                     </span>
                   </div>

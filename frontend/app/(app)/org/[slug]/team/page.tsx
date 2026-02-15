@@ -16,14 +16,14 @@ export default async function TeamPage() {
       {/* Page header */}
       <div className="flex items-center gap-3">
         <h1 className="font-display text-3xl">Team</h1>
-        <span className="rounded-full bg-olive-200 px-2.5 py-0.5 text-sm text-olive-700 dark:bg-olive-800 dark:text-olive-300">
+        <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-300">
           {billing.limits.currentMembers} member{billing.limits.currentMembers !== 1 ? "s" : ""}
         </span>
       </div>
 
       {/* Invite section (admin only) */}
       {isAdmin && (
-        <div className="rounded-lg border border-olive-200 bg-olive-50 p-6 dark:border-olive-800 dark:bg-olive-900/50">
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-900/50">
           <h2 className="mb-4 font-semibold">Invite a team member</h2>
           <InviteMemberForm
             maxMembers={billing.limits.maxMembers}

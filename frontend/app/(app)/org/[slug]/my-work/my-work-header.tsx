@@ -22,10 +22,10 @@ export function MyWorkHeader({ from, to }: MyWorkHeaderProps) {
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 className="font-display text-3xl text-olive-950 dark:text-olive-50">
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
           My Work
         </h1>
-        <p className="mt-1 text-sm text-olive-600 dark:text-olive-400">
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Your tasks and time tracking across all projects
         </p>
       </div>

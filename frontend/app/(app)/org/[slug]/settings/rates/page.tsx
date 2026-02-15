@@ -18,15 +18,15 @@ export default async function RatesSettingsPage({
       <div className="space-y-8">
         <Link
           href={`/org/${slug}/settings`}
-          className="inline-flex items-center gap-1 text-sm text-olive-600 hover:text-olive-900 dark:text-olive-400 dark:hover:text-olive-100"
+          className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
         >
           <ChevronLeft className="size-4" />
           Settings
         </Link>
-        <h1 className="font-display text-3xl text-olive-950 dark:text-olive-50">
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
           Rates & Currency
         </h1>
-        <p className="text-olive-600 dark:text-olive-400">
+        <p className="text-slate-600 dark:text-slate-400">
           You do not have permission to manage rates. Only admins and owners can
           access this page.
         </p>
@@ -59,17 +59,17 @@ export default async function RatesSettingsPage({
     <div className="space-y-8">
       <Link
         href={`/org/${slug}/settings`}
-        className="inline-flex items-center gap-1 text-sm text-olive-600 hover:text-olive-900 dark:text-olive-400 dark:hover:text-olive-100"
+        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
       >
         <ChevronLeft className="size-4" />
         Settings
       </Link>
 
       <div>
-        <h1 className="font-display text-3xl text-olive-950 dark:text-olive-50">
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
           Rates & Currency
         </h1>
-        <p className="mt-1 text-sm text-olive-600 dark:text-olive-400">
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Manage billing rates, cost rates, and the default currency for your
           organization.
         </p>

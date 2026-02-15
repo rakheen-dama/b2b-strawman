@@ -65,7 +65,7 @@ export function NotificationBell({ orgSlug }: NotificationBellProps) {
         {unreadCount > 0 && (
           <span
             className={cn(
-              "absolute -top-0.5 -right-0.5 flex items-center justify-center rounded-full bg-indigo-600 text-[10px] font-medium text-white",
+              "absolute -top-0.5 -right-0.5 flex items-center justify-center rounded-full bg-teal-600 text-[10px] font-medium text-white",
               unreadCount > 99
                 ? "h-4 min-w-5 px-1"
                 : "size-4"
@@ -77,7 +77,7 @@ export function NotificationBell({ orgSlug }: NotificationBellProps) {
       </Button>
 
       {isOpen && (
-        <div role="dialog" aria-label="Notifications" className="absolute right-0 top-full z-50 mt-1 rounded-md border border-olive-200 bg-white shadow-lg dark:border-olive-800 dark:bg-olive-950">
+        <div role="dialog" aria-label="Notifications" className="absolute right-0 top-full z-50 mt-1 rounded-md border border-slate-200 bg-white shadow-lg dark:border-slate-800 dark:bg-slate-950">
           <NotificationDropdown
             orgSlug={orgSlug}
             onClose={handleClose}

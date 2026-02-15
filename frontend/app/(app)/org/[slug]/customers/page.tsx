@@ -78,8 +78,8 @@ export default async function CustomersPage({
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="font-display text-3xl text-olive-950 dark:text-olive-50">Customers</h1>
-          <span className="rounded-full bg-olive-200 px-2.5 py-0.5 text-sm text-olive-700 dark:bg-olive-800 dark:text-olive-300">
+          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Customers</h1>
+          <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-300">
             {customers.length}
           </span>
         </div>
@@ -103,11 +103,11 @@ export default async function CustomersPage({
       {/* Customer Table or Empty State */}
       {customers.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <UserRound className="size-16 text-olive-300 dark:text-olive-700" />
-          <h2 className="mt-6 font-display text-xl text-olive-900 dark:text-olive-100">
+          <UserRound className="size-16 text-slate-300 dark:text-slate-700" />
+          <h2 className="mt-6 font-display text-xl text-slate-900 dark:text-slate-100">
             No customers yet
           </h2>
-          <p className="mt-2 text-sm text-olive-600 dark:text-olive-400">
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
             {isAdmin
               ? "Add your first customer to get started."
               : "No customers have been added yet."}
@@ -122,20 +122,20 @@ export default async function CustomersPage({
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-olive-200 dark:border-olive-800">
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-olive-600 dark:text-olive-400">
+              <tr className="border-b border-slate-200 dark:border-slate-800">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   Name
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   Email
                 </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-olive-600 dark:text-olive-400 sm:table-cell">
+                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400 sm:table-cell">
                   Phone
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   Status
                 </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-olive-600 dark:text-olive-400 lg:table-cell">
+                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400 lg:table-cell">
                   Created
                 </th>
               </tr>
@@ -146,12 +146,12 @@ export default async function CustomersPage({
                 return (
                   <tr
                     key={customer.id}
-                    className="group border-b border-olive-100 transition-colors last:border-0 hover:bg-olive-50 dark:border-olive-800/50 dark:hover:bg-olive-900/50"
+                    className="group border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/50"
                   >
                     <td className="px-4 py-3">
                       <Link
                         href={`/org/${slug}/customers/${customer.id}`}
-                        className="font-medium text-olive-950 hover:underline dark:text-olive-50"
+                        className="font-medium text-slate-950 hover:underline dark:text-slate-50"
                       >
                         {customer.name}
                       </Link>
@@ -186,16 +186,16 @@ export default async function CustomersPage({
                         />
                       )}
                     </td>
-                    <td className="px-4 py-3 text-sm text-olive-600 dark:text-olive-400">
+                    <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
                       {customer.email}
                     </td>
-                    <td className="hidden px-4 py-3 text-sm text-olive-600 dark:text-olive-400 sm:table-cell">
+                    <td className="hidden px-4 py-3 text-sm text-slate-600 dark:text-slate-400 sm:table-cell">
                       {customer.phone || "\u2014"}
                     </td>
                     <td className="px-4 py-3">
                       <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
                     </td>
-                    <td className="hidden px-4 py-3 text-sm text-olive-400 dark:text-olive-600 lg:table-cell">
+                    <td className="hidden px-4 py-3 text-sm text-slate-400 dark:text-slate-600 lg:table-cell">
                       {formatDate(customer.createdAt)}
                     </td>
                   </tr>

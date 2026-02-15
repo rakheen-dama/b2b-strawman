@@ -169,7 +169,7 @@ export function BudgetConfigDialog({
               max={100}
               defaultValue={existing?.alertThresholdPct ?? 80}
             />
-            <p className="text-xs text-olive-500 dark:text-olive-400">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               You will be alerted when consumption reaches this percentage
               (50-100%).
             </p>

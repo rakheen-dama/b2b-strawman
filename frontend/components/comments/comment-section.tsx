@@ -25,7 +25,7 @@ export async function CommentSection({
 
   return (
     <div className="space-y-4">
-      <h3 className="font-display text-sm font-medium text-olive-900 dark:text-olive-100">
+      <h3 className="font-display text-sm font-medium text-slate-900 dark:text-slate-100">
         Comments
       </h3>
 

@@ -25,7 +25,7 @@ export function InvoiceLineTable({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-olive-900 dark:text-olive-100">
+        <h2 className="font-semibold text-slate-900 dark:text-slate-100">
           Line Items
         </h2>
         {editable && onAddLine && (
@@ -37,31 +37,31 @@ export function InvoiceLineTable({
       </div>
 
       {lines.length === 0 ? (
-        <p className="py-8 text-center text-sm text-olive-500 dark:text-olive-400">
+        <p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
           No line items yet. Add a line item to get started.
         </p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-olive-200 dark:border-olive-800">
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-olive-600 dark:text-olive-400">
+              <tr className="border-b border-slate-200 dark:border-slate-800">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   Description
                 </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-olive-600 sm:table-cell dark:text-olive-400">
+                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
                   Project
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   Qty
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   Rate
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   Amount
                 </th>
                 {editable && (
-                  <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                  <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
                     Actions
                   </th>
                 )}
@@ -71,21 +71,21 @@ export function InvoiceLineTable({
               {lines.map((line) => (
                 <tr
                   key={line.id}
-                  className="border-b border-olive-100 last:border-0 dark:border-olive-800/50"
+                  className="border-b border-slate-100 last:border-0 dark:border-slate-800/50"
                 >
-                  <td className="px-4 py-3 text-sm text-olive-900 dark:text-olive-100">
+                  <td className="px-4 py-3 text-sm text-slate-900 dark:text-slate-100">
                     {line.description}
                   </td>
-                  <td className="hidden px-4 py-3 text-sm text-olive-600 sm:table-cell dark:text-olive-400">
+                  <td className="hidden px-4 py-3 text-sm text-slate-600 sm:table-cell dark:text-slate-400">
                     {line.projectName || "\u2014"}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-olive-900 dark:text-olive-100">
+                  <td className="px-4 py-3 text-right text-sm text-slate-900 dark:text-slate-100">
                     {line.quantity}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-olive-900 dark:text-olive-100">
+                  <td className="px-4 py-3 text-right text-sm text-slate-900 dark:text-slate-100">
                     {formatCurrency(line.unitPrice, currency)}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm font-medium text-olive-900 dark:text-olive-100">
+                  <td className="px-4 py-3 text-right text-sm font-medium text-slate-900 dark:text-slate-100">
                     {formatCurrency(line.amount, currency)}
                   </td>
                   {editable && (
@@ -95,7 +95,7 @@ export function InvoiceLineTable({
                           <button
                             type="button"
                             onClick={() => onEditLine(line)}
-                            className="rounded p-1 text-olive-500 transition-colors hover:bg-olive-100 hover:text-olive-700 dark:hover:bg-olive-800 dark:hover:text-olive-300"
+                            className="rounded p-1 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-300"
                             aria-label={`Edit ${line.description}`}
                           >
                             <Pencil className="size-4" />
@@ -105,7 +105,7 @@ export function InvoiceLineTable({
                           <button
                             type="button"
                             onClick={() => onDeleteLine(line.id)}
-                            className="rounded p-1 text-olive-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950 dark:hover:text-red-400"
+                            className="rounded p-1 text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950 dark:hover:text-red-400"
                             aria-label={`Delete ${line.description}`}
                           >
                             <Trash2 className="size-4" />

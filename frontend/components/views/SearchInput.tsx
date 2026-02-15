@@ -16,7 +16,7 @@ export function SearchInput({
 }: SearchInputProps) {
   return (
     <div className="relative">
-      <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-olive-400" />
+      <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
       <Input
         type="text"
         value={value}

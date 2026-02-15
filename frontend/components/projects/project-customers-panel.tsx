@@ -49,7 +49,7 @@ export function ProjectCustomersPanel({
   const header = (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
-        <h2 className="font-semibold text-olive-900 dark:text-olive-100">Customers</h2>
+        <h2 className="font-semibold text-slate-900 dark:text-slate-100">Customers</h2>
         {customers.length > 0 && <Badge variant="neutral">{customers.length}</Badge>}
       </div>
       {canManage && (
@@ -87,14 +87,14 @@ export function ProjectCustomersPanel({
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-olive-200 dark:border-olive-800">
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-olive-600 dark:text-olive-400">
+            <tr className="border-b border-slate-200 dark:border-slate-800">
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
                 Name
               </th>
-              <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-olive-600 sm:table-cell dark:text-olive-400">
+              <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
                 Email
               </th>
-              <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-olive-600 lg:table-cell dark:text-olive-400">
+              <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 lg:table-cell dark:text-slate-400">
                 Status
               </th>
               {canManage && (
@@ -109,17 +109,17 @@ export function ProjectCustomersPanel({
               return (
                 <tr
                   key={customer.id}
-                  className="group border-b border-olive-100 transition-colors last:border-0 hover:bg-olive-50 dark:border-olive-800/50 dark:hover:bg-olive-900/50"
+                  className="group border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/50"
                 >
                   <td className="px-4 py-3">
                     <Link
                       href={`/org/${slug}/customers/${customer.id}`}
-                      className="font-medium text-olive-950 hover:underline dark:text-olive-50"
+                      className="font-medium text-slate-950 hover:underline dark:text-slate-50"
                     >
                       {customer.name}
                     </Link>
                   </td>
-                  <td className="hidden px-4 py-3 text-sm text-olive-600 sm:table-cell dark:text-olive-400">
+                  <td className="hidden px-4 py-3 text-sm text-slate-600 sm:table-cell dark:text-slate-400">
                     {customer.email || "\u2014"}
                   </td>
                   <td className="hidden px-4 py-3 text-sm lg:table-cell">
@@ -132,7 +132,7 @@ export function ProjectCustomersPanel({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="size-8 p-0 text-olive-400 hover:text-red-600 dark:text-olive-600 dark:hover:text-red-400"
+                        className="size-8 p-0 text-slate-400 hover:text-red-600 dark:text-slate-600 dark:hover:text-red-400"
                         onClick={() => handleUnlink(customer.id)}
                         disabled={isUnlinking || isPending}
                         title="Unlink customer"

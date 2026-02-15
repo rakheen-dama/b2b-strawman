@@ -137,7 +137,7 @@ export function DateRangeSelector({
             variant={isActive ? "outline" : "ghost"}
             size="sm"
             onClick={() => handlePresetClick(range)}
-            className={cn(isActive && "border-olive-400 dark:border-olive-600")}
+            className={cn(isActive && "border-slate-400 dark:border-slate-600")}
           >
             {preset.label}
           </Button>

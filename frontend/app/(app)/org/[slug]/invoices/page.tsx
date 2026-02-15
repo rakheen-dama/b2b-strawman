@@ -63,10 +63,10 @@ export default async function InvoicesPage({
   if (!isAdmin) {
     return (
       <div className="space-y-8">
-        <h1 className="font-display text-3xl text-olive-950 dark:text-olive-50">
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
           Invoices
         </h1>
-        <p className="text-olive-600 dark:text-olive-400">
+        <p className="text-slate-600 dark:text-slate-400">
           You do not have permission to view invoices. Only admins and owners can
           access this page.
         </p>
@@ -103,11 +103,11 @@ export default async function InvoicesPage({
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="font-display text-3xl text-olive-950 dark:text-olive-50">
+          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
             Invoices
           </h1>
           {invoices.length > 0 && (
-            <span className="rounded-full bg-olive-200 px-2.5 py-0.5 text-sm text-olive-700 dark:bg-olive-800 dark:text-olive-300">
+            <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-300">
               {invoices.length}
             </span>
           )}
@@ -116,24 +116,24 @@ export default async function InvoicesPage({
 
       {/* Summary Cards */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-lg border border-olive-200 bg-white p-4 dark:border-olive-800 dark:bg-olive-950">
-          <p className="text-sm font-medium text-olive-600 dark:text-olive-400">
+        <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
+          <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
             Total Outstanding
           </p>
-          <p className="mt-1 text-2xl font-semibold text-olive-900 dark:text-olive-100">
+          <p className="mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-100">
             {formatCurrency(summary.outstanding, summary.outstandingCurrency)}
           </p>
         </div>
-        <div className="rounded-lg border border-olive-200 bg-white p-4 dark:border-olive-800 dark:bg-olive-950">
-          <p className="text-sm font-medium text-olive-600 dark:text-olive-400">
+        <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
+          <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
             Total Overdue
           </p>
           <p className="mt-1 text-2xl font-semibold text-red-600 dark:text-red-400">
             {formatCurrency(summary.overdue, summary.overdueCurrency)}
           </p>
         </div>
-        <div className="rounded-lg border border-olive-200 bg-white p-4 dark:border-olive-800 dark:bg-olive-950">
-          <p className="text-sm font-medium text-olive-600 dark:text-olive-400">
+        <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
+          <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
             Paid This Month
           </p>
           <p className="mt-1 text-2xl font-semibold text-green-600 dark:text-green-400">
@@ -144,15 +144,15 @@ export default async function InvoicesPage({
 
       {/* Filter Bar */}
       <div className="flex flex-wrap items-center gap-3">
-        <span className="text-sm font-medium text-olive-600 dark:text-olive-400">
+        <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
           Filter:
         </span>
         <Link
           href={`/org/${slug}/invoices`}
           className={`rounded-full px-3 py-1 text-sm transition-colors ${
             !search.status
-              ? "bg-olive-900 text-white dark:bg-olive-100 dark:text-olive-900"
-              : "bg-olive-100 text-olive-700 hover:bg-olive-200 dark:bg-olive-800 dark:text-olive-300 dark:hover:bg-olive-700"
+              ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
+              : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
           }`}
         >
           All
@@ -163,8 +163,8 @@ export default async function InvoicesPage({
             href={`/org/${slug}/invoices?status=${status}`}
             className={`rounded-full px-3 py-1 text-sm transition-colors ${
               search.status === status
-                ? "bg-olive-900 text-white dark:bg-olive-100 dark:text-olive-900"
-                : "bg-olive-100 text-olive-700 hover:bg-olive-200 dark:bg-olive-800 dark:text-olive-300 dark:hover:bg-olive-700"
+                ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
+                : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
             }`}
           >
             {status.charAt(0) + status.slice(1).toLowerCase()}
@@ -187,26 +187,26 @@ export default async function InvoicesPage({
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-olive-200 dark:border-olive-800">
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-olive-600 dark:text-olive-400">
+              <tr className="border-b border-slate-200 dark:border-slate-800">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   Invoice
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   Customer
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   Status
                 </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-olive-600 sm:table-cell dark:text-olive-400">
+                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
                   Issue Date
                 </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-olive-600 lg:table-cell dark:text-olive-400">
+                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 lg:table-cell dark:text-slate-400">
                   Due Date
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   Total
                 </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-olive-600 xl:table-cell dark:text-olive-400">
+                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 xl:table-cell dark:text-slate-400">
                   Currency
                 </th>
               </tr>
@@ -215,34 +215,34 @@ export default async function InvoicesPage({
               {invoices.map((invoice) => (
                 <tr
                   key={invoice.id}
-                  className="group border-b border-olive-100 transition-colors last:border-0 hover:bg-olive-50 dark:border-olive-800/50 dark:hover:bg-olive-900/50"
+                  className="group border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/50"
                 >
                   <td className="px-4 py-3">
                     <Link
                       href={`/org/${slug}/invoices/${invoice.id}`}
-                      className="font-medium text-olive-950 hover:underline dark:text-olive-50"
+                      className="font-medium text-slate-950 hover:underline dark:text-slate-50"
                     >
                       {invoice.invoiceNumber ?? "Draft"}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 text-sm text-olive-600 dark:text-olive-400">
+                  <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
                     {invoice.customerName}
                   </td>
                   <td className="px-4 py-3">
                     <StatusBadge status={invoice.status} />
                   </td>
-                  <td className="hidden px-4 py-3 text-sm text-olive-600 sm:table-cell dark:text-olive-400">
+                  <td className="hidden px-4 py-3 text-sm text-slate-600 sm:table-cell dark:text-slate-400">
                     {invoice.issueDate
                       ? formatDate(invoice.issueDate)
                       : "\u2014"}
                   </td>
-                  <td className="hidden px-4 py-3 text-sm text-olive-600 lg:table-cell dark:text-olive-400">
+                  <td className="hidden px-4 py-3 text-sm text-slate-600 lg:table-cell dark:text-slate-400">
                     {invoice.dueDate ? formatDate(invoice.dueDate) : "\u2014"}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm font-medium text-olive-900 dark:text-olive-100">
+                  <td className="px-4 py-3 text-right text-sm font-medium text-slate-900 dark:text-slate-100">
                     {formatCurrency(invoice.total, invoice.currency)}
                   </td>
-                  <td className="hidden px-4 py-3 text-sm text-olive-600 xl:table-cell dark:text-olive-400">
+                  <td className="hidden px-4 py-3 text-sm text-slate-600 xl:table-cell dark:text-slate-400">
                     {invoice.currency}
                   </td>
                 </tr>

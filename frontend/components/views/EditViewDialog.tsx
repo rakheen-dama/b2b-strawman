@@ -196,7 +196,7 @@ export function EditViewDialog({
                 onChange={setFilterDateRange}
               />
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-olive-700 dark:text-olive-300">
+                <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
                   Search
                 </Label>
                 <SearchInput
@@ -211,26 +211,26 @@ export function EditViewDialog({
           {/* Step 2: Columns */}
           {step === 2 && (
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-olive-700 dark:text-olive-300">
+              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
                 Visible Columns
               </Label>
               <div className="max-h-64 space-y-1.5 overflow-y-auto">
                 {allColumns.map((col) => (
                   <label
                     key={col.value}
-                    className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-olive-50 dark:hover:bg-olive-900/50"
+                    className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-900/50"
                   >
                     <input
                       type="checkbox"
                       checked={selectedColumns.includes(col.value)}
                       onChange={() => toggleColumn(col.value)}
-                      className="rounded border-olive-300"
+                      className="rounded border-slate-300"
                     />
-                    <span className="text-sm text-olive-700 dark:text-olive-300">
+                    <span className="text-sm text-slate-700 dark:text-slate-300">
                       {col.label}
                     </span>
                     {col.value.startsWith("cf:") && (
-                      <span className="text-xs text-olive-400">(custom)</span>
+                      <span className="text-xs text-slate-400">(custom)</span>
                     )}
                   </label>
                 ))}

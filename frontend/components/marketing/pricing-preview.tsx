@@ -33,7 +33,7 @@ export function PricingPreview() {
   return (
     <section className="px-6 py-24">
       <div className="mx-auto max-w-4xl">
-        <h2 className="text-center font-display text-3xl text-olive-950 dark:text-olive-50">
+        <h2 className="text-center font-display text-3xl text-slate-950 dark:text-slate-50">
           Simple, transparent pricing
         </h2>
 
@@ -41,18 +41,18 @@ export function PricingPreview() {
           {plans.map((plan) => (
             <div
               key={plan.name}
-              className={`relative rounded-lg bg-olive-950/[0.025] p-8 dark:bg-olive-50/[0.05] ${
-                plan.highlighted ? "border-2 border-indigo-200" : ""
+              className={`relative rounded-lg bg-slate-950/[0.025] p-8 dark:bg-slate-50/[0.05] ${
+                plan.highlighted ? "border-2 border-teal-200" : ""
               }`}
             >
               {plan.highlighted && (
-                <span className="absolute -top-3 right-6 rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
+                <span className="absolute -top-3 right-6 rounded-full bg-teal-100 px-3 py-1 text-xs font-semibold text-teal-700">
                   Most popular
                 </span>
               )}
 
-              <p className="font-semibold text-olive-950 dark:text-olive-50">{plan.name}</p>
-              <p className="mt-2 font-display text-3xl text-olive-950 dark:text-olive-50">
+              <p className="font-semibold text-slate-950 dark:text-slate-50">{plan.name}</p>
+              <p className="mt-2 font-display text-3xl text-slate-950 dark:text-slate-50">
                 {plan.price}
               </p>
 
@@ -62,11 +62,11 @@ export function PricingPreview() {
                     <Check
                       className={`mt-0.5 size-4 shrink-0 ${
                         plan.highlighted
-                          ? "text-indigo-500"
-                          : "text-olive-500"
+                          ? "text-teal-500"
+                          : "text-slate-500"
                       }`}
                     />
-                    <span className="text-sm text-olive-700 dark:text-olive-300">{feature}</span>
+                    <span className="text-sm text-slate-700 dark:text-slate-300">{feature}</span>
                   </li>
                 ))}
               </ul>

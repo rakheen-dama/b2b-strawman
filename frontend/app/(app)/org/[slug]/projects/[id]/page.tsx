@@ -210,7 +210,7 @@ export default async function ProjectDetailPage({
       <div>
         <Link
           href={`/org/${slug}/projects`}
-          className="inline-flex items-center text-sm text-olive-600 transition-colors hover:text-olive-900 dark:text-olive-400 dark:hover:text-olive-100"
+          className="inline-flex items-center text-sm text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
         >
           <ArrowLeft className="mr-1.5 size-4" />
           Back to Projects
@@ -221,19 +221,19 @@ export default async function ProjectDetailPage({
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-3">
-            <h1 className="font-display text-2xl text-olive-950 dark:text-olive-50">
+            <h1 className="font-display text-2xl text-slate-950 dark:text-slate-50">
               {project.name}
             </h1>
             {roleBadge && <Badge variant={roleBadge.variant}>{roleBadge.label}</Badge>}
           </div>
           {project.description ? (
-            <p className="mt-2 text-olive-600 dark:text-olive-400">{project.description}</p>
+            <p className="mt-2 text-slate-600 dark:text-slate-400">{project.description}</p>
           ) : (
-            <p className="mt-2 text-sm italic text-olive-400 dark:text-olive-600">
+            <p className="mt-2 text-sm italic text-slate-400 dark:text-slate-600">
               No description
             </p>
           )}
-          <p className="mt-3 text-sm text-olive-400 dark:text-olive-600">
+          <p className="mt-3 text-sm text-slate-400 dark:text-slate-600">
             Created {formatDate(project.createdAt)} &middot; {documents.length}{" "}
             {documents.length === 1 ? "document" : "documents"} &middot; {members.length}{" "}
             {members.length === 1 ? "member" : "members"} &middot; {tasks.length}{" "}
@@ -286,7 +286,7 @@ export default async function ProjectDetailPage({
 
       {/* Tags */}
       <div className="space-y-2">
-        <p className="text-xs font-medium uppercase tracking-wide text-olive-500 dark:text-olive-400">
+        <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
           Tags
         </p>
         <TagInput

@@ -71,31 +71,31 @@ export function NotificationItem({
       type="button"
       onClick={handleClick}
       className={cn(
-        "flex w-full items-start gap-3 rounded-md px-3 py-2.5 text-left transition-colors hover:bg-olive-100 dark:hover:bg-olive-800",
-        !notification.isRead && "bg-indigo-50/50 dark:bg-indigo-950/20"
+        "flex w-full items-start gap-3 rounded-md px-3 py-2.5 text-left transition-colors hover:bg-slate-100 dark:hover:bg-slate-800",
+        !notification.isRead && "bg-teal-50/50 dark:bg-teal-950/20"
       )}
     >
-      <Icon className="mt-0.5 size-4 shrink-0 text-olive-500 dark:text-olive-400" />
+      <Icon className="mt-0.5 size-4 shrink-0 text-slate-500 dark:text-slate-400" />
 
       <div className="min-w-0 flex-1">
         <p
           className={cn(
             "text-sm",
             notification.isRead
-              ? "text-olive-700 dark:text-olive-300"
-              : "font-medium text-olive-900 dark:text-olive-100"
+              ? "text-slate-700 dark:text-slate-300"
+              : "font-medium text-slate-900 dark:text-slate-100"
           )}
         >
           {notification.title}
         </p>
-        <p className="mt-0.5 text-xs text-olive-500 dark:text-olive-400">
+        <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
           {formatRelativeDate(notification.createdAt)}
         </p>
       </div>
 
       {!notification.isRead && (
         <span
-          className="mt-2 size-2 shrink-0 rounded-full bg-indigo-500"
+          className="mt-2 size-2 shrink-0 rounded-full bg-teal-500"
           aria-label="Unread"
         />
       )}

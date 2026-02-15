@@ -164,7 +164,7 @@ export default async function CustomerDetailPage({
       <div>
         <Link
           href={`/org/${slug}/customers`}
-          className="inline-flex items-center text-sm text-olive-600 transition-colors hover:text-olive-900 dark:text-olive-400 dark:hover:text-olive-100"
+          className="inline-flex items-center text-sm text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
         >
           <ArrowLeft className="mr-1.5 size-4" />
           Back to Customers
@@ -175,13 +175,13 @@ export default async function CustomerDetailPage({
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-3">
-            <h1 className="font-display text-2xl text-olive-950 dark:text-olive-50">
+            <h1 className="font-display text-2xl text-slate-950 dark:text-slate-50">
               {customer.name}
             </h1>
             <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
           </div>
-          <p className="mt-1 text-olive-600 dark:text-olive-400">{customer.email}</p>
-          <p className="mt-3 text-sm text-olive-400 dark:text-olive-600">
+          <p className="mt-1 text-slate-600 dark:text-slate-400">{customer.email}</p>
+          <p className="mt-3 text-sm text-slate-400 dark:text-slate-600">
             {customer.phone && (
               <>
                 {customer.phone} &middot;{" "}
@@ -196,7 +196,7 @@ export default async function CustomerDetailPage({
             {linkedProjects.length === 1 ? "project" : "projects"}
           </p>
           {customer.notes && (
-            <p className="mt-3 text-sm text-olive-600 dark:text-olive-400">{customer.notes}</p>
+            <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">{customer.notes}</p>
           )}
         </div>
 
@@ -245,7 +245,7 @@ export default async function CustomerDetailPage({
 
       {/* Tags */}
       <div className="space-y-2">
-        <p className="text-xs font-medium uppercase tracking-wide text-olive-500 dark:text-olive-400">
+        <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
           Tags
         </p>
         <TagInput

@@ -45,7 +45,7 @@ export function ActivityItem({ item }: ActivityItemProps) {
           className="mt-0.5 size-7 shrink-0 rounded-full"
         />
       ) : (
-        <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-olive-200 text-xs font-medium text-olive-700 dark:bg-olive-700 dark:text-olive-200">
+        <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-200">
           {getInitials(item.actorName)}
         </span>
       )}
@@ -53,12 +53,12 @@ export function ActivityItem({ item }: ActivityItemProps) {
       {/* Content */}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
-          <Icon className="size-3.5 shrink-0 text-olive-400 dark:text-olive-500" />
-          <p className="text-sm text-olive-700 dark:text-olive-300">
+          <Icon className="size-3.5 shrink-0 text-slate-400 dark:text-slate-500" />
+          <p className="text-sm text-slate-700 dark:text-slate-300">
             {item.message}
           </p>
         </div>
-        <p className="mt-0.5 text-xs text-olive-500 dark:text-olive-400">
+        <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
           {formatRelativeDate(item.occurredAt)}
         </p>
       </div>

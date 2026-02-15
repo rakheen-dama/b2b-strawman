@@ -185,7 +185,7 @@ export function AddRateDialog({
           <div className="space-y-2">
             <Label htmlFor="add-effective-to">
               Effective To{" "}
-              <span className="font-normal text-olive-500">(optional)</span>
+              <span className="font-normal text-slate-500">(optional)</span>
             </Label>
             <Input
               id="add-effective-to"

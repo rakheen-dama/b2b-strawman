@@ -24,7 +24,7 @@ export default async function NotificationsPage({
 
   return (
     <div className="space-y-8">
-      <h1 className="font-display text-3xl text-olive-950 dark:text-olive-50">
+      <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
         Notifications
       </h1>
 

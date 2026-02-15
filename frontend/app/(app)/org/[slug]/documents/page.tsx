@@ -60,10 +60,10 @@ export default async function OrgDocumentsPage({
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="font-display text-3xl text-olive-950 dark:text-olive-50">
+          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
             Organization Documents
           </h1>
-          <span className="rounded-full bg-olive-200 px-2.5 py-0.5 text-sm text-olive-700 dark:bg-olive-800 dark:text-olive-300">
+          <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-300">
             {documents.length}
           </span>
         </div>
@@ -73,11 +73,11 @@ export default async function OrgDocumentsPage({
       {/* Document Table or Empty State */}
       {documents.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <FileText className="size-16 text-olive-300 dark:text-olive-700" />
-          <h2 className="mt-6 font-display text-xl text-olive-900 dark:text-olive-100">
+          <FileText className="size-16 text-slate-300 dark:text-slate-700" />
+          <h2 className="mt-6 font-display text-xl text-slate-900 dark:text-slate-100">
             No organization documents yet
           </h2>
-          <p className="mt-2 text-sm text-olive-600 dark:text-olive-400">
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
             {isAdmin
               ? "Upload your first organization-level document to get started."
               : "No organization documents have been uploaded yet."}
@@ -92,20 +92,20 @@ export default async function OrgDocumentsPage({
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-olive-200 dark:border-olive-800">
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-olive-600 dark:text-olive-400">
+              <tr className="border-b border-slate-200 dark:border-slate-800">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   File
                 </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-olive-600 dark:text-olive-400 sm:table-cell">
+                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400 sm:table-cell">
                   Size
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   Scope
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   Status
                 </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-olive-600 dark:text-olive-400 lg:table-cell">
+                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400 lg:table-cell">
                   Uploaded
                 </th>
               </tr>
@@ -118,17 +118,17 @@ export default async function OrgDocumentsPage({
                 return (
                   <tr
                     key={doc.id}
-                    className="group border-b border-olive-100 transition-colors last:border-0 hover:bg-olive-50 dark:border-olive-800/50 dark:hover:bg-olive-900/50"
+                    className="group border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/50"
                   >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <Icon className="size-4 shrink-0 text-olive-400 dark:text-olive-500" />
-                        <span className="truncate text-sm font-medium text-olive-950 dark:text-olive-50">
+                        <Icon className="size-4 shrink-0 text-slate-400 dark:text-slate-500" />
+                        <span className="truncate text-sm font-medium text-slate-950 dark:text-slate-50">
                           {doc.fileName}
                         </span>
                       </div>
                     </td>
-                    <td className="hidden px-4 py-3 text-sm text-olive-600 dark:text-olive-400 sm:table-cell">
+                    <td className="hidden px-4 py-3 text-sm text-slate-600 dark:text-slate-400 sm:table-cell">
                       {formatFileSize(doc.size)}
                     </td>
                     <td className="px-4 py-3">
@@ -137,7 +137,7 @@ export default async function OrgDocumentsPage({
                     <td className="px-4 py-3">
                       <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
                     </td>
-                    <td className="hidden px-4 py-3 text-sm text-olive-400 dark:text-olive-600 lg:table-cell">
+                    <td className="hidden px-4 py-3 text-sm text-slate-400 dark:text-slate-600 lg:table-cell">
                       {doc.uploadedAt ? formatDate(doc.uploadedAt) : "\u2014"}
                     </td>
                   </tr>

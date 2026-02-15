@@ -42,7 +42,7 @@ export function Breadcrumbs({ slug }: BreadcrumbsProps) {
       {/* Org slug as root link */}
       <Link
         href={`/org/${slug}/dashboard`}
-        className="text-olive-600 hover:text-olive-900 dark:text-olive-400 dark:hover:text-white transition-colors"
+        className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
       >
         {slug}
       </Link>
@@ -61,15 +61,15 @@ export function Breadcrumbs({ slug }: BreadcrumbsProps) {
 
         return (
           <span key={href} className="flex items-center gap-1">
-            <ChevronRight className="h-3.5 w-3.5 text-olive-400" />
+            <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
             {isLast ? (
-              <span className="font-medium text-olive-900 dark:text-white">
+              <span className="font-medium text-slate-900 dark:text-white">
                 {label}
               </span>
             ) : (
               <Link
                 href={href}
-                className="text-olive-600 hover:text-olive-900 dark:text-olive-400 dark:hover:text-white transition-colors"
+                className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
               >
                 {label}
               </Link>

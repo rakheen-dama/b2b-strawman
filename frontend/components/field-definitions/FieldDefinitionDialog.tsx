@@ -290,14 +290,14 @@ export function FieldDefinitionDialog({
                   entityType
                 }
                 readOnly
-                className="bg-olive-50 dark:bg-olive-900"
+                className="bg-slate-50 dark:bg-slate-900"
               />
             ) : (
               <select
                 id="fd-entity-type"
                 value={entityType}
                 onChange={(e) => setEntityType(e.target.value as EntityType)}
-                className="flex h-9 w-full rounded-md border border-olive-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-olive-400 dark:border-olive-700"
+                className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 dark:border-slate-700"
               >
                 {ENTITY_TYPES.map((t) => (
                   <option key={t.value} value={t.value}>
@@ -331,7 +331,7 @@ export function FieldDefinitionDialog({
               placeholder="Auto-generated from name if left blank"
               pattern="^[a-z][a-z0-9_]*$"
             />
-            <p className="text-xs text-olive-500 dark:text-olive-400">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Auto-generated from name if left blank. Must match: a-z, 0-9,
               underscores.
             </p>
@@ -344,7 +344,7 @@ export function FieldDefinitionDialog({
               id="fd-field-type"
               value={fieldType}
               onChange={(e) => setFieldType(e.target.value as FieldType)}
-              className="flex h-9 w-full rounded-md border border-olive-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-olive-400 dark:border-olive-700"
+              className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 dark:border-slate-700"
             >
               {FIELD_TYPES.map((t) => (
                 <option key={t.value} value={t.value}>
@@ -373,7 +373,7 @@ export function FieldDefinitionDialog({
               type="checkbox"
               checked={required}
               onChange={(e) => setRequired(e.target.checked)}
-              className="size-4 rounded border-olive-300 text-olive-600 focus:ring-olive-500"
+              className="size-4 rounded border-slate-300 text-slate-600 focus:ring-slate-500"
             />
             <Label htmlFor="fd-required" className="text-sm font-normal">
               Required field
@@ -435,8 +435,8 @@ export function FieldDefinitionDialog({
 
           {/* Conditional: TEXT validation */}
           {fieldType === "TEXT" && (
-            <div className="space-y-3 rounded-md border border-olive-200 p-3 dark:border-olive-700">
-              <p className="text-sm font-medium text-olive-700 dark:text-olive-300">
+            <div className="space-y-3 rounded-md border border-slate-200 p-3 dark:border-slate-700">
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
                 Text Validation
               </p>
               <div className="grid grid-cols-2 gap-3">
@@ -475,8 +475,8 @@ export function FieldDefinitionDialog({
 
           {/* Conditional: NUMBER validation */}
           {fieldType === "NUMBER" && (
-            <div className="space-y-3 rounded-md border border-olive-200 p-3 dark:border-olive-700">
-              <p className="text-sm font-medium text-olive-700 dark:text-olive-300">
+            <div className="space-y-3 rounded-md border border-slate-200 p-3 dark:border-slate-700">
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
                 Number Validation
               </p>
               <div className="grid grid-cols-2 gap-3">
@@ -504,8 +504,8 @@ export function FieldDefinitionDialog({
 
           {/* Conditional: DATE validation */}
           {fieldType === "DATE" && (
-            <div className="space-y-3 rounded-md border border-olive-200 p-3 dark:border-olive-700">
-              <p className="text-sm font-medium text-olive-700 dark:text-olive-300">
+            <div className="space-y-3 rounded-md border border-slate-200 p-3 dark:border-slate-700">
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
                 Date Validation
               </p>
               <div className="grid grid-cols-2 gap-3">

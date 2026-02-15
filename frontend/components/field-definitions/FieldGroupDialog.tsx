@@ -209,14 +209,14 @@ export function FieldGroupDialog({
                   entityType
                 }
                 readOnly
-                className="bg-olive-50 dark:bg-olive-900"
+                className="bg-slate-50 dark:bg-slate-900"
               />
             ) : (
               <select
                 id="fg-entity-type"
                 value={entityType}
                 onChange={(e) => setEntityType(e.target.value as EntityType)}
-                className="flex h-9 w-full rounded-md border border-olive-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-olive-400 dark:border-olive-700"
+                className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 dark:border-slate-700"
               >
                 {ENTITY_TYPES.map((t) => (
                   <option key={t.value} value={t.value}>
@@ -250,7 +250,7 @@ export function FieldGroupDialog({
               placeholder="Auto-generated from name if left blank"
               pattern="^[a-z][a-z0-9_-]*$"
             />
-            <p className="text-xs text-olive-500 dark:text-olive-400">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Auto-generated from name if left blank.
             </p>
           </div>
@@ -347,7 +347,7 @@ export function FieldGroupDialog({
                       <button
                         type="button"
                         onClick={() => removeField(fieldId)}
-                        className="ml-0.5 rounded-full hover:bg-olive-300 dark:hover:bg-olive-600"
+                        className="ml-0.5 rounded-full hover:bg-slate-300 dark:hover:bg-slate-600"
                       >
                         <X className="size-3" />
                       </button>

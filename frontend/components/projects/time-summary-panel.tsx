@@ -79,26 +79,26 @@ export function TimeSummaryPanel({
     <div className="space-y-6">
       {/* Date Range Picker (47.4) */}
       <div className="flex flex-wrap items-center gap-3">
-        <label className="text-sm font-medium text-olive-700 dark:text-olive-300">
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
           From
         </label>
         <input
           type="date"
           value={fromDate}
           onChange={(e) => handleFromChange(e.target.value)}
-          className="rounded-md border border-olive-200 bg-white px-3 py-1.5 text-sm text-olive-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-olive-500 dark:border-olive-700 dark:bg-olive-900 dark:text-olive-100"
+          className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
         />
-        <label className="text-sm font-medium text-olive-700 dark:text-olive-300">
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
           To
         </label>
         <input
           type="date"
           value={toDate}
           onChange={(e) => handleToChange(e.target.value)}
-          className="rounded-md border border-olive-200 bg-white px-3 py-1.5 text-sm text-olive-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-olive-500 dark:border-olive-700 dark:bg-olive-900 dark:text-olive-100"
+          className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
         />
         {isPending && (
-          <span className="text-xs text-olive-500">Loading...</span>
+          <span className="text-xs text-slate-500">Loading...</span>
         )}
       </div>
 
@@ -122,7 +122,7 @@ export function TimeSummaryPanel({
             <StatCard
               label="Non-billable"
               value={formatDuration(summary.nonBillableMinutes)}
-              valueClassName="text-olive-600 dark:text-olive-400"
+              valueClassName="text-slate-600 dark:text-slate-400"
             />
             <StatCard label="Contributors" value={String(summary.contributorCount)} />
             <StatCard label="Entries" value={String(summary.entryCount)} />
@@ -131,23 +131,23 @@ export function TimeSummaryPanel({
           {/* By Task Breakdown */}
           {byTask.length > 0 && (
             <div className="space-y-3">
-              <h3 className="font-semibold text-olive-900 dark:text-olive-100">
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100">
                 By Task
               </h3>
-              <div className="rounded-lg border border-olive-200 dark:border-olive-800">
+              <div className="rounded-lg border border-slate-200 dark:border-slate-800">
                 <Table>
                   <TableHeader>
-                    <TableRow className="border-olive-200 hover:bg-transparent dark:border-olive-800">
-                      <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                    <TableRow className="border-slate-200 hover:bg-transparent dark:border-slate-800">
+                      <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
                         Task
                       </TableHead>
-                      <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                      <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
                         Billable
                       </TableHead>
-                      <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                      <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
                         Total
                       </TableHead>
-                      <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                      <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
                         Entries
                       </TableHead>
                     </TableRow>
@@ -159,10 +159,10 @@ export function TimeSummaryPanel({
                       .map((task) => (
                         <TableRow
                           key={task.taskId}
-                          className="border-olive-100 transition-colors hover:bg-olive-50 dark:border-olive-800/50 dark:hover:bg-olive-900"
+                          className="border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900"
                         >
                           <TableCell>
-                            <span className="text-sm font-medium text-olive-950 dark:text-olive-50">
+                            <span className="text-sm font-medium text-slate-950 dark:text-slate-50">
                               {task.taskTitle}
                             </span>
                           </TableCell>
@@ -172,12 +172,12 @@ export function TimeSummaryPanel({
                             </span>
                           </TableCell>
                           <TableCell>
-                            <span className="text-sm text-olive-900 dark:text-olive-100">
+                            <span className="text-sm text-slate-900 dark:text-slate-100">
                               {formatDuration(task.totalMinutes)}
                             </span>
                           </TableCell>
                           <TableCell>
-                            <span className="text-sm text-olive-600 dark:text-olive-400">
+                            <span className="text-sm text-slate-600 dark:text-slate-400">
                               {task.entryCount}
                             </span>
                           </TableCell>
@@ -192,23 +192,23 @@ export function TimeSummaryPanel({
           {/* By Member Breakdown (lead+ only) */}
           {byMember !== null && byMember.length > 0 && (
             <div className="space-y-3">
-              <h3 className="font-semibold text-olive-900 dark:text-olive-100">
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100">
                 By Member
               </h3>
-              <div className="rounded-lg border border-olive-200 dark:border-olive-800">
+              <div className="rounded-lg border border-slate-200 dark:border-slate-800">
                 <Table>
                   <TableHeader>
-                    <TableRow className="border-olive-200 hover:bg-transparent dark:border-olive-800">
-                      <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                    <TableRow className="border-slate-200 hover:bg-transparent dark:border-slate-800">
+                      <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
                         Member
                       </TableHead>
-                      <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                      <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
                         Billable
                       </TableHead>
-                      <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                      <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
                         Non-billable
                       </TableHead>
-                      <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                      <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
                         Total
                       </TableHead>
                     </TableRow>
@@ -217,10 +217,10 @@ export function TimeSummaryPanel({
                     {byMember.map((member) => (
                       <TableRow
                         key={member.memberId}
-                        className="border-olive-100 transition-colors hover:bg-olive-50 dark:border-olive-800/50 dark:hover:bg-olive-900"
+                        className="border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900"
                       >
                         <TableCell>
-                          <span className="text-sm font-medium text-olive-950 dark:text-olive-50">
+                          <span className="text-sm font-medium text-slate-950 dark:text-slate-50">
                             {member.memberName}
                           </span>
                         </TableCell>
@@ -230,12 +230,12 @@ export function TimeSummaryPanel({
                           </span>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm text-olive-600 dark:text-olive-400">
+                          <span className="text-sm text-slate-600 dark:text-slate-400">
                             {formatDuration(member.nonBillableMinutes)}
                           </span>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm text-olive-900 dark:text-olive-100">
+                          <span className="text-sm text-slate-900 dark:text-slate-100">
                             {formatDuration(member.totalMinutes)}
                           </span>
                         </TableCell>
@@ -262,14 +262,14 @@ function StatCard({
   valueClassName?: string;
 }) {
   return (
-    <div className="rounded-lg border border-olive-200 bg-white p-4 dark:border-olive-800 dark:bg-olive-950">
-      <p className="text-xs font-medium uppercase tracking-wide text-olive-600 dark:text-olive-400">
+    <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
+      <p className="text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
         {label}
       </p>
       <p
         className={
           valueClassName ??
-          "text-olive-950 dark:text-olive-50"
+          "text-slate-950 dark:text-slate-50"
         }
       >
         <span className="font-display text-2xl">{value}</span>

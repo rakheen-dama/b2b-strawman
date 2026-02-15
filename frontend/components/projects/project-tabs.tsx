@@ -51,22 +51,22 @@ export function ProjectTabs({ overviewPanel, documentsPanel, membersPanel, custo
   return (
     <TabsPrimitive.Root value={activeTab} onValueChange={(v) => setActiveTab(v as TabId)}>
       {/* Radix List provides role="tablist" + arrow-key navigation + roving focus */}
-      <TabsPrimitive.List className="relative flex gap-6 border-b border-olive-200 dark:border-olive-800">
+      <TabsPrimitive.List className="relative flex gap-6 border-b border-slate-200 dark:border-slate-800">
         {tabs.map((tab) => (
           <TabsPrimitive.Trigger
             key={tab.id}
             value={tab.id}
             className={cn(
               "relative pb-3 text-sm font-medium transition-colors outline-none",
-              "text-olive-600 hover:text-olive-900 dark:text-olive-400 dark:hover:text-olive-200",
-              "data-[state=active]:text-olive-950 dark:data-[state=active]:text-olive-50",
-              "focus-visible:outline-2 focus-visible:outline-indigo-500 focus-visible:outline-offset-2"
+              "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200",
+              "data-[state=active]:text-slate-950 dark:data-[state=active]:text-slate-50",
+              "focus-visible:outline-2 focus-visible:outline-teal-500 focus-visible:outline-offset-2"
             )}
           >
             {tab.label}
             {activeTab === tab.id && (
               <motion.span
-                className="absolute inset-x-0 bottom-0 h-0.5 bg-indigo-500"
+                className="absolute inset-x-0 bottom-0 h-0.5 bg-teal-500"
                 layoutId="project-tab-indicator"
                 transition={{ type: "spring", stiffness: 300, damping: 25 }}
                 aria-hidden="true"

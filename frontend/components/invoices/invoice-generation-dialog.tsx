@@ -231,7 +231,7 @@ export function InvoiceGenerationDialog({
                 maxLength={3}
                 className="w-24"
               />
-              <p className="text-xs text-olive-500">
+              <p className="text-xs text-slate-500">
                 3-letter ISO currency code (e.g. USD, EUR, ZAR)
               </p>
             </div>
@@ -264,7 +264,7 @@ export function InvoiceGenerationDialog({
               type="button"
               variant="ghost"
               size="sm"
-              className="text-olive-600 dark:text-olive-400"
+              className="text-slate-600 dark:text-slate-400"
               onClick={() => setStep(1)}
             >
               <ArrowLeft className="mr-1 size-3.5" />
@@ -272,7 +272,7 @@ export function InvoiceGenerationDialog({
             </Button>
 
             {unbilledData.projects.length === 0 ? (
-              <p className="py-8 text-center text-sm text-olive-500">
+              <p className="py-8 text-center text-sm text-slate-500">
                 No unbilled time entries found for this period.
               </p>
             ) : (
@@ -291,11 +291,11 @@ export function InvoiceGenerationDialog({
             )}
 
             {/* Running total */}
-            <div className="flex items-center justify-between border-t border-olive-200 pt-3 dark:border-olive-800">
-              <span className="text-sm font-medium text-olive-700 dark:text-olive-300">
+            <div className="flex items-center justify-between border-t border-slate-200 pt-3 dark:border-slate-800">
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                 Total ({selectedEntryIds.size} entries)
               </span>
-              <span className="text-lg font-semibold text-olive-950 dark:text-olive-50">
+              <span className="text-lg font-semibold text-slate-950 dark:text-slate-50">
                 {safeFormatCurrency(runningTotal, currency)}
               </span>
             </div>
@@ -348,24 +348,24 @@ function ProjectEntryGroup({
     selectableEntries.every((e) => selectedEntryIds.has(e.id));
 
   return (
-    <div className="rounded-lg border border-olive-200 dark:border-olive-800">
-      <div className="flex items-center gap-3 border-b border-olive-200 px-4 py-2.5 dark:border-olive-800">
+    <div className="rounded-lg border border-slate-200 dark:border-slate-800">
+      <div className="flex items-center gap-3 border-b border-slate-200 px-4 py-2.5 dark:border-slate-800">
         <input
           type="checkbox"
           checked={allSelected}
           onChange={() => onToggleProject(project)}
           disabled={selectableEntries.length === 0}
-          className="size-4 rounded accent-indigo-600"
+          className="size-4 rounded accent-teal-600"
           aria-label={`Select all entries for ${project.projectName}`}
         />
-        <span className="text-sm font-medium text-olive-900 dark:text-olive-100">
+        <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
           {project.projectName}
         </span>
-        <span className="text-xs text-olive-500">
+        <span className="text-xs text-slate-500">
           {selectableEntries.length} of {project.entries.length} selectable
         </span>
       </div>
-      <div className="divide-y divide-olive-100 dark:divide-olive-800/50">
+      <div className="divide-y divide-slate-100 dark:divide-slate-800/50">
         {project.entries.map((entry) => (
           <EntryRow
             key={entry.id}
@@ -398,7 +398,7 @@ function EntryRow({
       className={`flex items-center gap-3 px-4 py-2 text-sm ${
         currencyMismatch
           ? "cursor-not-allowed opacity-50"
-          : "cursor-pointer hover:bg-olive-50 dark:hover:bg-olive-900/50"
+          : "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/50"
       }`}
     >
       <input
@@ -406,25 +406,25 @@ function EntryRow({
         checked={isSelected}
         onChange={() => onToggle(entry.id)}
         disabled={currencyMismatch}
-        className="size-4 rounded accent-indigo-600"
+        className="size-4 rounded accent-teal-600"
       />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className="font-medium text-olive-900 dark:text-olive-100">
+          <span className="font-medium text-slate-900 dark:text-slate-100">
             {entry.taskTitle}
           </span>
           {currencyMismatch && (
-            <span className="text-xs text-olive-400">
+            <span className="text-xs text-slate-400">
               ({entry.billingRateCurrency})
             </span>
           )}
         </div>
-        <div className="text-xs text-olive-500">
+        <div className="text-xs text-slate-500">
           {entry.memberName} &middot; {formatDate(entry.date)} &middot;{" "}
           {formatDuration(entry.durationMinutes)}
         </div>
       </div>
-      <span className="shrink-0 text-right font-medium text-olive-700 dark:text-olive-300">
+      <span className="shrink-0 text-right font-medium text-slate-700 dark:text-slate-300">
         {formatCurrency(entry.billableValue, entry.billingRateCurrency)}
       </span>
     </label>

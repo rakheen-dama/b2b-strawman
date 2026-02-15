@@ -261,7 +261,7 @@ export function TaskListPanel({
   const header = (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
-        <h2 className="font-semibold text-olive-900 dark:text-olive-100">Tasks</h2>
+        <h2 className="font-semibold text-slate-900 dark:text-slate-100">Tasks</h2>
         {tasks.length > 0 && <Badge variant="neutral">{tasks.length}</Badge>}
       </div>
       {canManage && (
@@ -287,8 +287,8 @@ export function TaskListPanel({
           className={cn(
             "rounded-full px-3 py-1 text-sm font-medium transition-colors",
             activeFilter === option.key
-              ? "bg-olive-900 text-olive-50 dark:bg-olive-100 dark:text-olive-900"
-              : "bg-olive-100 text-olive-600 hover:bg-olive-200 dark:bg-olive-800 dark:text-olive-400 dark:hover:bg-olive-700",
+              ? "bg-slate-900 text-slate-50 dark:bg-slate-100 dark:text-slate-900"
+              : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700",
             isPending && "opacity-50",
           )}
         >
@@ -321,30 +321,30 @@ export function TaskListPanel({
         </p>
       )}
       {tasks.length === 0 ? (
-        <p className="py-8 text-center text-sm text-olive-500 dark:text-olive-400">
+        <p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
           No tasks match the current filter.
         </p>
       ) : (
-        <div className="rounded-lg border border-olive-200 dark:border-olive-800">
+        <div className="rounded-lg border border-slate-200 dark:border-slate-800">
           <Table>
             <TableHeader>
-              <TableRow className="border-olive-200 hover:bg-transparent dark:border-olive-800">
-                <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+              <TableRow className="border-slate-200 hover:bg-transparent dark:border-slate-800">
+                <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   Priority
                 </TableHead>
-                <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   Title
                 </TableHead>
-                <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   Status
                 </TableHead>
-                <TableHead className="hidden text-xs uppercase tracking-wide text-olive-600 sm:table-cell dark:text-olive-400">
+                <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
                   Assignee
                 </TableHead>
-                <TableHead className="hidden text-xs uppercase tracking-wide text-olive-600 sm:table-cell dark:text-olive-400">
+                <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
                   Due Date
                 </TableHead>
-                <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   Actions
                 </TableHead>
               </TableRow>
@@ -375,8 +375,8 @@ export function TaskListPanel({
                   <Fragment key={task.id}>
                   <TableRow
                     className={cn(
-                      "border-olive-100 transition-colors hover:bg-olive-50 dark:border-olive-800/50 dark:hover:bg-olive-900",
-                      isExpanded && "bg-olive-50/50 dark:bg-olive-900/50",
+                      "border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900",
+                      isExpanded && "bg-slate-50/50 dark:bg-slate-900/50",
                     )}
                   >
                     {/* 40.8: Priority badge */}
@@ -394,16 +394,16 @@ export function TaskListPanel({
                         aria-label={`${isExpanded ? "Collapse" : "Expand"} time entries for ${task.title}`}
                       >
                         {isExpanded ? (
-                          <ChevronDown className="size-3.5 shrink-0 text-olive-400" />
+                          <ChevronDown className="size-3.5 shrink-0 text-slate-400" />
                         ) : (
-                          <ChevronRight className="size-3.5 shrink-0 text-olive-400" />
+                          <ChevronRight className="size-3.5 shrink-0 text-slate-400" />
                         )}
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-medium text-olive-950 dark:text-olive-50">
+                          <p className="truncate text-sm font-medium text-slate-950 dark:text-slate-50">
                             {task.title}
                           </p>
                           {task.type && (
-                            <p className="truncate text-xs text-olive-500 dark:text-olive-500">
+                            <p className="truncate text-xs text-slate-500 dark:text-slate-500">
                               {task.type}
                             </p>
                           )}
@@ -416,7 +416,7 @@ export function TaskListPanel({
                       </Badge>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
-                      <span className="text-sm text-olive-600 dark:text-olive-400">
+                      <span className="text-sm text-slate-600 dark:text-slate-400">
                         {task.assigneeName ?? "Unassigned"}
                       </span>
                     </TableCell>
@@ -427,7 +427,7 @@ export function TaskListPanel({
                           "inline-flex items-center gap-1 text-sm",
                           overdue
                             ? "font-medium text-red-600 dark:text-red-400"
-                            : "text-olive-600 dark:text-olive-400",
+                            : "text-slate-600 dark:text-slate-400",
                         )}
                       >
                         {overdue && (
@@ -495,10 +495,10 @@ export function TaskListPanel({
                   </TableRow>
                   {/* 45.5: Expanded time entries row */}
                   {isExpanded && (
-                    <TableRow className="border-olive-100 dark:border-olive-800/50">
-                      <TableCell colSpan={colSpan} className="bg-olive-50/30 px-6 py-4 dark:bg-olive-900/30">
+                    <TableRow className="border-slate-100 dark:border-slate-800/50">
+                      <TableCell colSpan={colSpan} className="bg-slate-50/30 px-6 py-4 dark:bg-slate-900/30">
                         {isLoadingEntries ? (
-                          <p className="text-sm text-olive-500 dark:text-olive-400">
+                          <p className="text-sm text-slate-500 dark:text-slate-400">
                             Loading time entries...
                           </p>
                         ) : (
@@ -511,7 +511,7 @@ export function TaskListPanel({
                               orgRole={orgRole}
                               canManage={canManage}
                             />
-                            <div className="mt-4 border-t border-olive-200 pt-4 dark:border-olive-800">
+                            <div className="mt-4 border-t border-slate-200 pt-4 dark:border-slate-800">
                               <CommentSectionClient
                                 projectId={projectId}
                                 entityType="TASK"

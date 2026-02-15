@@ -95,8 +95,8 @@ export default async function ProjectsPage({
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-3xl text-olive-950 dark:text-olive-50">Projects</h1>
-          <p className="mt-1 text-sm text-olive-600 dark:text-olive-400">
+          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Projects</h1>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
             {projects.length} {projects.length === 1 ? "project" : "projects"}
           </p>
         </div>
@@ -105,14 +105,14 @@ export default async function ProjectsPage({
 
       {/* Upgrade Prompt (Starter only) */}
       {!isPro && (
-        <div data-testid="upgrade-prompt" className="flex items-start gap-4 rounded-lg border-l-4 border-indigo-500 bg-olive-100 p-4 dark:bg-olive-900">
+        <div data-testid="upgrade-prompt" className="flex items-start gap-4 rounded-lg border-l-4 border-teal-500 bg-slate-100 p-4 dark:bg-slate-900">
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-olive-900 dark:text-olive-100">
+            <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
               Upgrade to Pro for dedicated infrastructure and schema isolation
             </p>
             <Link
               href={`/org/${slug}/settings/billing`}
-              className="mt-1 inline-block text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+              className="mt-1 inline-block text-sm text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
             >
               Learn more
             </Link>
@@ -137,11 +137,11 @@ export default async function ProjectsPage({
       {/* Projects Grid or Empty State */}
       {projects.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <FolderOpen className="size-16 text-olive-300 dark:text-olive-700" />
-          <h2 className="font-display mt-6 text-xl text-olive-900 dark:text-olive-100">
+          <FolderOpen className="size-16 text-slate-300 dark:text-slate-700" />
+          <h2 className="font-display mt-6 text-xl text-slate-900 dark:text-slate-100">
             No projects yet
           </h2>
-          <p className="mt-2 text-sm text-olive-600 dark:text-olive-400">
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
             {isAdmin
               ? "Create your first project to get started."
               : "You\u2019re not on any projects yet."}
@@ -159,12 +159,12 @@ export default async function ProjectsPage({
               <Link
                 key={project.id}
                 href={`/org/${slug}/projects/${project.id}`}
-                className="group rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-olive-600"
+                className="group rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600"
               >
-                <div className="rounded-lg border border-olive-200 bg-white p-6 transition-all duration-150 hover:border-olive-300 hover:shadow-sm dark:border-olive-800 dark:bg-olive-950 dark:hover:border-olive-700">
+                <div className="rounded-lg border border-slate-200 bg-white p-6 transition-all duration-150 hover:border-slate-300 hover:shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:hover:border-slate-700">
                   {/* Top: name + role badge + budget indicator */}
                   <div className="flex items-center gap-2">
-                    <h3 className="line-clamp-1 font-semibold text-olive-950 dark:text-olive-50">
+                    <h3 className="line-clamp-1 font-semibold text-slate-950 dark:text-slate-50">
                       {project.name}
                     </h3>
                     {roleBadge && (
@@ -179,17 +179,17 @@ export default async function ProjectsPage({
 
                   {/* Middle: description */}
                   {project.description ? (
-                    <p className="mt-2 line-clamp-2 text-sm text-olive-600 dark:text-olive-400">
+                    <p className="mt-2 line-clamp-2 text-sm text-slate-600 dark:text-slate-400">
                       {project.description}
                     </p>
                   ) : (
-                    <p className="mt-2 text-sm italic text-olive-400 dark:text-olive-600">
+                    <p className="mt-2 text-sm italic text-slate-400 dark:text-slate-600">
                       No description
                     </p>
                   )}
 
                   {/* Bottom: meta icons */}
-                  <div className="mt-4 flex items-center gap-4 text-sm text-olive-400 dark:text-olive-600">
+                  <div className="mt-4 flex items-center gap-4 text-sm text-slate-400 dark:text-slate-600">
                     <span className="inline-flex items-center gap-1">
                       <FileText className="size-3.5" />
                       &mdash;

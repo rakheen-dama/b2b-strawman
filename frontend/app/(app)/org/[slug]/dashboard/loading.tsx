@@ -14,7 +14,7 @@ export default function DashboardLoading() {
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
-            className="rounded-lg border border-olive-200 bg-white p-6 dark:border-olive-800 dark:bg-olive-950"
+            className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950"
           >
             <div className="flex items-center justify-between">
               <Skeleton className="h-4 w-20" />
@@ -35,7 +35,7 @@ export default function DashboardLoading() {
       {/* Content Grid */}
       <div className="grid grid-cols-1 gap-8 xl:grid-cols-[1fr_320px]">
         {/* Table Skeleton */}
-        <div className="rounded-lg border border-olive-200 bg-white dark:border-olive-800 dark:bg-olive-950">
+        <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
           <div className="px-6 pt-6 pb-4">
             <Skeleton className="h-5 w-36" />
           </div>
@@ -47,9 +47,9 @@ export default function DashboardLoading() {
         </div>
 
         {/* Activity Feed Skeleton */}
-        <div className="rounded-lg border border-olive-200 bg-white p-6 dark:border-olive-800 dark:bg-olive-950">
+        <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
           <Skeleton className="h-5 w-32" />
-          <div className="mt-4 space-y-4 border-l-2 border-olive-200 pl-4 dark:border-olive-700">
+          <div className="mt-4 space-y-4 border-l-2 border-slate-200 pl-4 dark:border-slate-700">
             {Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="space-y-1">
                 <Skeleton className="h-3 w-16" />

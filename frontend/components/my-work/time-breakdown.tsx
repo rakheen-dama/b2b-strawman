@@ -22,7 +22,7 @@ export function TimeBreakdown({ data }: TimeBreakdownProps) {
     return (
       <Card>
         <div className="px-4 py-3">
-          <h3 className="font-semibold text-olive-900 dark:text-olive-100">
+          <h3 className="font-semibold text-slate-900 dark:text-slate-100">
             Time Breakdown
           </h3>
           <p className="mt-4 text-center text-sm text-muted-foreground">
@@ -37,7 +37,7 @@ export function TimeBreakdown({ data }: TimeBreakdownProps) {
     return (
       <Card>
         <div className="px-4 py-3">
-          <h3 className="font-semibold text-olive-900 dark:text-olive-100">
+          <h3 className="font-semibold text-slate-900 dark:text-slate-100">
             Time Breakdown
           </h3>
           <p className="mt-4 text-center text-sm text-muted-foreground">
@@ -81,7 +81,7 @@ export function TimeBreakdown({ data }: TimeBreakdownProps) {
   return (
     <Card>
       <div className="px-4 py-3">
-        <h3 className="font-semibold text-olive-900 dark:text-olive-100">
+        <h3 className="font-semibold text-slate-900 dark:text-slate-100">
           Time Breakdown
         </h3>
         <div className="mt-2">
@@ -101,11 +101,11 @@ export function TimeBreakdown({ data }: TimeBreakdownProps) {
                       PROJECT_COLORS[idx % PROJECT_COLORS.length],
                   }}
                 />
-                <span className="text-olive-700 dark:text-olive-300">
+                <span className="text-slate-700 dark:text-slate-300">
                   {item.projectName}
                 </span>
               </div>
-              <span className="text-olive-600 dark:text-olive-400">
+              <span className="text-slate-600 dark:text-slate-400">
                 {item.hours.toFixed(1)}h ({Math.round(item.percent)}%)
               </span>
             </div>

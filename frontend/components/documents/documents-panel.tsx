@@ -337,7 +337,7 @@ export function DocumentsPanel({
 
   return (
     <div className="space-y-4">
-      <h2 className="font-semibold text-olive-900 dark:text-olive-100">Documents</h2>
+      <h2 className="font-semibold text-slate-900 dark:text-slate-100">Documents</h2>
 
       {documents.length === 0 && uploads.length === 0 ? (
         <EmptyState
@@ -346,25 +346,25 @@ export function DocumentsPanel({
           description="Upload your first file above"
         />
       ) : (
-        <div className="rounded-lg border border-olive-200 dark:border-olive-800">
+        <div className="rounded-lg border border-slate-200 dark:border-slate-800">
           <Table>
             <TableHeader>
-              <TableRow className="border-olive-200 hover:bg-transparent dark:border-olive-800">
-                <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+              <TableRow className="border-slate-200 hover:bg-transparent dark:border-slate-800">
+                <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   File
                 </TableHead>
-                <TableHead className="hidden text-xs uppercase tracking-wide text-olive-600 sm:table-cell dark:text-olive-400">
+                <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
                   Size
                 </TableHead>
                 {showScope && (
-                  <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                  <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
                     Scope
                   </TableHead>
                 )}
-                <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
+                <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   Status
                 </TableHead>
-                <TableHead className="hidden text-xs uppercase tracking-wide text-olive-600 sm:table-cell dark:text-olive-400">
+                <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
                   Uploaded
                 </TableHead>
                 <TableHead className="w-[60px]" />
@@ -381,8 +381,8 @@ export function DocumentsPanel({
                   <Fragment key={doc.id}>
                     <TableRow
                       className={cn(
-                        "border-olive-100 transition-colors hover:bg-olive-50 dark:border-olive-800/50 dark:hover:bg-olive-900",
-                        isExpanded && "bg-olive-50/50 dark:bg-olive-900/50",
+                        "border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900",
+                        isExpanded && "bg-slate-50/50 dark:bg-slate-900/50",
                       )}
                     >
                       <TableCell>
@@ -394,18 +394,18 @@ export function DocumentsPanel({
                           aria-label={`${isExpanded ? "Collapse" : "Expand"} comments for ${doc.fileName}`}
                         >
                           {isExpanded ? (
-                            <ChevronDown className="size-3.5 shrink-0 text-olive-400" />
+                            <ChevronDown className="size-3.5 shrink-0 text-slate-400" />
                           ) : (
-                            <ChevronRight className="size-3.5 shrink-0 text-olive-400" />
+                            <ChevronRight className="size-3.5 shrink-0 text-slate-400" />
                           )}
-                          <Icon className="size-4 shrink-0 text-olive-400 dark:text-olive-500" />
-                          <span className="truncate text-sm font-medium text-olive-950 dark:text-olive-50">
+                          <Icon className="size-4 shrink-0 text-slate-400 dark:text-slate-500" />
+                          <span className="truncate text-sm font-medium text-slate-950 dark:text-slate-50">
                             {doc.fileName}
                           </span>
                         </button>
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">
-                        <span className="text-sm text-olive-600 dark:text-olive-400">
+                        <span className="text-sm text-slate-600 dark:text-slate-400">
                           {formatFileSize(doc.size)}
                         </span>
                       </TableCell>
@@ -414,7 +414,7 @@ export function DocumentsPanel({
                           {scopeBadge ? (
                             <Badge variant={scopeBadge.variant}>{scopeBadge.label}</Badge>
                           ) : (
-                            <span className="text-sm text-olive-400">{"\u2014"}</span>
+                            <span className="text-sm text-slate-400">{"\u2014"}</span>
                           )}
                         </TableCell>
                       )}
@@ -422,7 +422,7 @@ export function DocumentsPanel({
                         <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">
-                        <span className="text-sm text-olive-600 dark:text-olive-400">
+                        <span className="text-sm text-slate-600 dark:text-slate-400">
                           {doc.uploadedAt ? formatDate(doc.uploadedAt) : "\u2014"}
                         </span>
                       </TableCell>
@@ -433,8 +433,8 @@ export function DocumentsPanel({
                       </TableCell>
                     </TableRow>
                     {isExpanded && (
-                      <TableRow className="border-olive-100 dark:border-olive-800/50">
-                        <TableCell colSpan={colSpan} className="bg-olive-50/30 px-6 py-4 dark:bg-olive-900/30">
+                      <TableRow className="border-slate-100 dark:border-slate-800/50">
+                        <TableCell colSpan={colSpan} className="bg-slate-50/30 px-6 py-4 dark:bg-slate-900/30">
                           <CommentSectionClient
                             projectId={projectId}
                             entityType="DOCUMENT"

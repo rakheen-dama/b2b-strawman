@@ -131,12 +131,12 @@ export function TagDialog({ slug, tag, children }: TagDialogProps) {
                 />
                 {color && /^#[0-9A-Fa-f]{6}$/.test(color.trim()) && (
                   <div
-                    className="size-8 shrink-0 rounded border border-olive-200 dark:border-olive-700"
+                    className="size-8 shrink-0 rounded border border-slate-200 dark:border-slate-700"
                     style={{ backgroundColor: color.trim() }}
                   />
                 )}
               </div>
-              <p className="text-xs text-olive-500 dark:text-olive-400">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Hex format, e.g. #FF5733
               </p>
             </div>

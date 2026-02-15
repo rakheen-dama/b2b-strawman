@@ -22,14 +22,14 @@ const DATE_FIELDS = [
 export function DateRangeFilter({ value, onChange }: DateRangeFilterProps) {
   return (
     <div className="space-y-3">
-      <Label className="text-sm font-medium text-olive-700 dark:text-olive-300">
+      <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
         Date Range
       </Label>
       <div className="space-y-2">
         <select
           value={value.field}
           onChange={(e) => onChange({ ...value, field: e.target.value })}
-          className="h-9 w-full rounded-md border border-olive-200 bg-transparent px-3 text-sm dark:border-olive-700"
+          className="h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 text-sm dark:border-slate-700"
         >
           {DATE_FIELDS.map((f) => (
             <option key={f.value} value={f.value}>
@@ -48,7 +48,7 @@ export function DateRangeFilter({ value, onChange }: DateRangeFilterProps) {
               placeholder="From"
             />
           </div>
-          <span className="text-sm text-olive-400">to</span>
+          <span className="text-sm text-slate-400">to</span>
           <div className="flex-1">
             <Input
               type="date"

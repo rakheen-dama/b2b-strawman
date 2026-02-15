@@ -89,34 +89,34 @@ export default async function SettingsPage({
 
   return (
     <div className="space-y-8">
-      <h1 className="font-display text-3xl text-olive-950 dark:text-olive-50">Settings</h1>
+      <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Settings</h1>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {settingsCards.map((card) => {
           const Icon = card.icon;
           const content = (
             <div
-              className={`flex items-center gap-4 rounded-lg border border-olive-200 bg-white p-6 transition-all dark:border-olive-800 dark:bg-olive-950 ${
+              className={`flex items-center gap-4 rounded-lg border border-slate-200 bg-white p-6 transition-all dark:border-slate-800 dark:bg-slate-950 ${
                 card.comingSoon
                   ? "cursor-not-allowed opacity-50"
-                  : "hover:border-olive-300 hover:shadow-sm dark:hover:border-olive-700"
+                  : "hover:border-slate-300 hover:shadow-sm dark:hover:border-slate-700"
               }`}
             >
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-olive-100 dark:bg-olive-800">
-                <Icon className="size-6 text-olive-600 dark:text-olive-400" />
+              <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                <Icon className="size-6 text-slate-600 dark:text-slate-400" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <p className="font-semibold text-olive-950 dark:text-olive-50">{card.title}</p>
+                  <p className="font-semibold text-slate-950 dark:text-slate-50">{card.title}</p>
                   {card.comingSoon && (
                     <Badge variant="neutral">Coming soon</Badge>
                   )}
                 </div>
-                <p className="mt-0.5 text-sm text-olive-600 dark:text-olive-400">
+                <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-400">
                   {card.description}
                 </p>
               </div>
-              <ChevronRight className="size-5 shrink-0 text-olive-400 dark:text-olive-500" />
+              <ChevronRight className="size-5 shrink-0 text-slate-400 dark:text-slate-500" />
             </div>
           );
 

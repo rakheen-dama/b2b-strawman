@@ -29,7 +29,7 @@ const linkGroups = [
 
 export function Footer() {
   return (
-    <footer className="bg-olive-950">
+    <footer className="bg-slate-950">
       <div className="mx-auto max-w-7xl px-6 py-12">
         {/* Top row */}
         <div className="flex flex-col gap-10 lg:flex-row lg:justify-between">

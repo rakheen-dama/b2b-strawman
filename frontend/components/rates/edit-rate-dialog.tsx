@@ -172,7 +172,7 @@ export function EditRateDialog(props: EditRateDialogProps) {
           <div className="space-y-2">
             <Label htmlFor="edit-effective-to">
               Effective To{" "}
-              <span className="font-normal text-olive-500">(optional)</span>
+              <span className="font-normal text-slate-500">(optional)</span>
             </Label>
             <Input
               id="edit-effective-to"

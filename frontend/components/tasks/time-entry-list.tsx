@@ -101,10 +101,10 @@ export function TimeEntryList({
     );
   }
 
-  // Check if we need an actions column: show if any entry is editable OR billed (disabled buttons)
+  // Check if we need an actions column: show if any entry is editable by the current user
   const showActionsColumn =
     actionsEnabled &&
-    filteredEntries.some((e) => canEditEntry(e) || !!e.invoiceId);
+    filteredEntries.some((e) => canEditEntry(e));
 
   return (
     <div className="space-y-3">
@@ -228,86 +228,85 @@ export function TimeEntryList({
                     {showActionsColumn && (
                       <TableCell>
                         {editable && slug && projectId && (
-                          <div className="flex items-center gap-1">
-                            {isBilled ? (
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <span>
-                                      <Button
-                                        size="xs"
-                                        variant="ghost"
-                                        disabled
-                                        aria-label={`Edit time entry by ${entry.memberName}`}
-                                      >
-                                        <Pencil className="size-3" />
-                                      </Button>
-                                    </span>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>
-                                      Time entry is part of invoice{" "}
-                                      {entry.invoiceNumber}. Void the invoice to
-                                      unlock.
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            ) : (
-                              <EditTimeEntryDialog
-                                entry={entry}
-                                slug={slug}
-                                projectId={projectId}
-                              >
-                                <Button
-                                  size="xs"
-                                  variant="ghost"
-                                  aria-label={`Edit time entry by ${entry.memberName}`}
-                                >
-                                  <Pencil className="size-3" />
-                                </Button>
-                              </EditTimeEntryDialog>
-                            )}
-                            {isBilled ? (
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <span>
-                                      <Button
-                                        size="xs"
-                                        variant="ghost"
-                                        disabled
-                                        aria-label={`Delete time entry by ${entry.memberName}`}
-                                      >
-                                        <Trash2 className="size-3 text-red-500" />
-                                      </Button>
-                                    </span>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>
-                                      Time entry is part of invoice{" "}
-                                      {entry.invoiceNumber}. Void the invoice to
-                                      unlock.
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            ) : (
-                              <DeleteTimeEntryDialog
-                                slug={slug}
-                                projectId={projectId}
-                                timeEntryId={entry.id}
-                              >
-                                <Button
-                                  size="xs"
-                                  variant="ghost"
-                                  aria-label={`Delete time entry by ${entry.memberName}`}
-                                >
-                                  <Trash2 className="size-3 text-red-500" />
-                                </Button>
-                              </DeleteTimeEntryDialog>
-                            )}
-                          </div>
+                          <TooltipProvider>
+                            <div className="flex items-center gap-1">
+                              {isBilled ? (
+                                <>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <span>
+                                        <Button
+                                          size="xs"
+                                          variant="ghost"
+                                          disabled
+                                          aria-label={`Edit time entry by ${entry.memberName}`}
+                                        >
+                                          <Pencil className="size-3" />
+                                        </Button>
+                                      </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>
+                                        Time entry is part of invoice{" "}
+                                        {entry.invoiceNumber}. Void the invoice
+                                        to unlock.
+                                      </p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <span>
+                                        <Button
+                                          size="xs"
+                                          variant="ghost"
+                                          disabled
+                                          aria-label={`Delete time entry by ${entry.memberName}`}
+                                        >
+                                          <Trash2 className="size-3 text-red-500" />
+                                        </Button>
+                                      </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>
+                                        Time entry is part of invoice{" "}
+                                        {entry.invoiceNumber}. Void the invoice
+                                        to unlock.
+                                      </p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </>
+                              ) : (
+                                <>
+                                  <EditTimeEntryDialog
+                                    entry={entry}
+                                    slug={slug}
+                                    projectId={projectId}
+                                  >
+                                    <Button
+                                      size="xs"
+                                      variant="ghost"
+                                      aria-label={`Edit time entry by ${entry.memberName}`}
+                                    >
+                                      <Pencil className="size-3" />
+                                    </Button>
+                                  </EditTimeEntryDialog>
+                                  <DeleteTimeEntryDialog
+                                    slug={slug}
+                                    projectId={projectId}
+                                    timeEntryId={entry.id}
+                                  >
+                                    <Button
+                                      size="xs"
+                                      variant="ghost"
+                                      aria-label={`Delete time entry by ${entry.memberName}`}
+                                    >
+                                      <Trash2 className="size-3 text-red-500" />
+                                    </Button>
+                                  </DeleteTimeEntryDialog>
+                                </>
+                              )}
+                            </div>
+                          </TooltipProvider>
                         )}
                       </TableCell>
                     )}

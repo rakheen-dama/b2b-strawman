@@ -11,7 +11,7 @@ Jurisdiction-agnostic compliance layer with customer lifecycle state machine (PR
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 96 | Entity Foundation + Lifecycle Guards | Backend | -- | L | 96A, 96B | **Done** (PRs #198, #199) |
-| 97 | Lifecycle Transitions + Dormancy Detection | Both | 96 | M | 97A, 97B | |
+| 97 | Lifecycle Transitions + Dormancy Detection | Both | 96 | M | 97A, 97B | **Done** (PRs #200, #201) |
 | 98 | Checklist Engine | Both | 96, 97 | L | 98A, 98B, 98C | |
 | 99 | Compliance Packs + Seeder | Backend | 98 | M | 99A | |
 | 100 | Data Subject Requests | Both | 96 | L | 100A, 100B | |
@@ -238,7 +238,7 @@ Stage 6:  [102A]                                                 ← dashboard (
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **97A** | 97.1-97.8 | CustomerLifecycleService (transition execution, validation, audit/notification), CustomerLifecycleController (/transition, /dormancy-check), guard enforcement on existing controllers, integration tests (~12 backend tests) | **Done** (PR #200) |
-| **97B** | 97.9-97.16 | Frontend: LifecycleStatusBadge component, LifecycleTransitionMenu, customer detail page integration, customer list column + filter, DormancyCheckButton, server actions, frontend tests (~8 tests) | |
+| **97B** | 97.9-97.16 | Frontend: LifecycleStatusBadge component, LifecycleTransitionMenu, customer detail page integration, customer list column + filter, DormancyCheckButton, server actions, frontend tests (~8 tests) | **Done** (PR #201) |
 
 ### Tasks
 
@@ -252,14 +252,14 @@ Stage 6:  [102A]                                                 ← dashboard (
 | 97.6 | Add guard enforcement on existing controllers | 97A | **Done** | Modify `project/ProjectController.java`, `invoice/InvoiceController.java`. Inject CustomerLifecycleGuard. When creating project/invoice linked to a customer, call `customerLifecycleGuard.requireActionPermitted(customer, LifecycleAction.CREATE_PROJECT or CREATE_INVOICE)` before proceeding. Return 409 if blocked. Pattern: pre-check before mutation. |
 | 97.7 | Add guard enforcement integration tests | 97A | **Done** | `compliance/LifecycleGuardEnforcementTest.java` (~2 tests): (1) creating invoice for ONBOARDING customer returns 409, (2) creating project for PROSPECT customer returns 409. Pattern: integration test with provisioning. |
 | 97.8 | Verify lifecycle backend complete | 97A | **Done** | Run `./mvnw clean test` and verify all lifecycle tests pass. |
-| 97.9 | Create LifecycleStatusBadge component | 97B | | `components/customers/LifecycleStatusBadge.tsx`. Props: `lifecycleStatus: string`. Render color-coded badge per status: PROSPECT (gray), ONBOARDING (blue), ACTIVE (green), DORMANT (yellow), OFFBOARDED (red). Pattern: follow existing badge components. Use Shadcn Badge. |
-| 97.10 | Create LifecycleTransitionMenu component | 97B | | `components/customers/LifecycleTransitionMenu.tsx`. Props: `customer: Customer, canManage: boolean`. Render DropdownMenu with available transitions based on current status. Each action calls transitionCustomer server action. Pattern: follow existing action menus. |
-| 97.11 | Create transitionCustomer server action | 97B | | `lib/actions/compliance.ts`. Function: `transitionCustomer(customerId, targetStatus, notes?)`. Call POST /api/customers/{id}/transition. Revalidate customer detail page. Return success/error. Pattern: follow existing server actions from Phase 10. |
-| 97.12 | Integrate lifecycle UI on customer detail page | 97B | | Modify `app/(app)/org/[slug]/customers/[id]/page.tsx`. Display LifecycleStatusBadge next to customer name. Display LifecycleTransitionMenu in page header. Pass `canManage` prop (admin/owner only). Pattern: follow existing page layout. |
-| 97.13 | Add lifecycle column to customer list page | 97B | | Modify `app/(app)/org/[slug]/customers/page.tsx`. Add "Lifecycle" column to customer table. Render LifecycleStatusBadge for each customer. Add filter dropdown for lifecycle status. Pattern: follow existing table columns + filters from Phase 11. |
-| 97.14 | Create DormancyCheckButton component | 97B | | `components/compliance/DormancyCheckButton.tsx`. Button: "Check for Dormant Customers". On click, call checkDormancy server action, display results dialog. Admin/owner only. Pattern: follow existing action buttons. |
-| 97.15 | Create checkDormancy server action | 97B | | `lib/actions/compliance.ts`. Function: `checkDormancy()`. Call POST /api/customers/dormancy-check. Return candidates list. Pattern: follow existing server actions. |
-| 97.16 | Add lifecycle frontend tests | 97B | | `components/customers/LifecycleStatusBadge.test.tsx` (~5 tests): one per status. `components/customers/LifecycleTransitionMenu.test.tsx` (~3 tests): admin sees actions, member hidden, click calls action. Pattern: follow existing component tests from Phase 11. |
+| 97.9 | Create LifecycleStatusBadge component | 97B | **Done** | `components/customers/LifecycleStatusBadge.tsx`. Props: `lifecycleStatus: string`. Render color-coded badge per status: PROSPECT (gray), ONBOARDING (blue), ACTIVE (green), DORMANT (yellow), OFFBOARDED (red). Pattern: follow existing badge components. Use Shadcn Badge. |
+| 97.10 | Create LifecycleTransitionMenu component | 97B | **Done** | `components/customers/LifecycleTransitionMenu.tsx`. Props: `customer: Customer, canManage: boolean`. Render DropdownMenu with available transitions based on current status. Each action calls transitionCustomer server action. Pattern: follow existing action menus. |
+| 97.11 | Create transitionCustomer server action | 97B | **Done** | `lib/actions/compliance.ts`. Function: `transitionCustomer(customerId, targetStatus, notes?)`. Call POST /api/customers/{id}/transition. Revalidate customer detail page. Return success/error. Pattern: follow existing server actions from Phase 10. |
+| 97.12 | Integrate lifecycle UI on customer detail page | 97B | **Done** | Modify `app/(app)/org/[slug]/customers/[id]/page.tsx`. Display LifecycleStatusBadge next to customer name. Display LifecycleTransitionMenu in page header. Pass `canManage` prop (admin/owner only). Pattern: follow existing page layout. |
+| 97.13 | Add lifecycle column to customer list page | 97B | **Done** | Modify `app/(app)/org/[slug]/customers/page.tsx`. Add "Lifecycle" column to customer table. Render LifecycleStatusBadge for each customer. Add filter dropdown for lifecycle status. Pattern: follow existing table columns + filters from Phase 11. |
+| 97.14 | Create DormancyCheckButton component | 97B | **Done** | `components/compliance/DormancyCheckButton.tsx`. Button: "Check for Dormant Customers". On click, call checkDormancy server action, display results dialog. Admin/owner only. Pattern: follow existing action buttons. |
+| 97.15 | Create checkDormancy server action | 97B | **Done** | `lib/actions/compliance.ts`. Function: `checkDormancy()`. Call POST /api/customers/dormancy-check. Return candidates list. Pattern: follow existing server actions. |
+| 97.16 | Add lifecycle frontend tests | 97B | **Done** | `components/customers/LifecycleStatusBadge.test.tsx` (~5 tests): one per status. `components/customers/LifecycleTransitionMenu.test.tsx` (~3 tests): admin sees actions, member hidden, click calls action. Pattern: follow existing component tests from Phase 11. |
 
 ### Key Files
 

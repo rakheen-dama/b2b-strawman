@@ -1,6 +1,6 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
-import { api, handleApiError, getFieldDefinitions, getFieldGroups, getGroupMembers, getTags } from "@/lib/api";
-import type { OrgMember, Project, Customer, Document, ProjectMember, ProjectRole, Task, ProjectTimeSummary, MemberTimeSummary, TaskTimeSummary, BillingRate, OrgSettings, BudgetStatusResponse, ProjectProfitabilityResponse, FieldDefinitionResponse, FieldGroupResponse, FieldGroupMemberResponse, TagResponse } from "@/lib/types";
+import { api, handleApiError, getFieldDefinitions, getFieldGroups, getGroupMembers, getTags, getTemplates } from "@/lib/api";
+import type { OrgMember, Project, Customer, Document, ProjectMember, ProjectRole, Task, ProjectTimeSummary, MemberTimeSummary, TaskTimeSummary, BillingRate, OrgSettings, BudgetStatusResponse, ProjectProfitabilityResponse, FieldDefinitionResponse, FieldGroupResponse, FieldGroupMemberResponse, TagResponse, TemplateListResponse } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EditProjectDialog } from "@/components/projects/edit-project-dialog";
@@ -19,6 +19,8 @@ import { OverviewTab } from "@/components/projects/overview-tab";
 import { CustomFieldSection } from "@/components/field-definitions/CustomFieldSection";
 import { FieldGroupSelector } from "@/components/field-definitions/FieldGroupSelector";
 import { TagInput } from "@/components/tags/TagInput";
+import { GenerateDocumentDropdown } from "@/components/templates/GenerateDocumentDropdown";
+import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocumentsList";
 import { formatDate } from "@/lib/format";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
@@ -202,6 +204,16 @@ export default async function ProjectDetailPage({
     // Non-fatal: tags section will show empty state
   }
 
+  // Document templates for the "Generate Document" dropdown (only for users who can manage)
+  let projectTemplates: TemplateListResponse[] = [];
+  if (canManage) {
+    try {
+      projectTemplates = await getTemplates(undefined, "PROJECT");
+    } catch {
+      // Non-fatal: hide generate button if template fetch fails
+    }
+  }
+
   const roleBadge = project.projectRole ? ROLE_BADGE[project.projectRole] : null;
 
   return (
@@ -241,8 +253,15 @@ export default async function ProjectDetailPage({
           </p>
         </div>
 
-        {(canEdit || isOwner) && (
+        {(canEdit || isOwner || (canManage && projectTemplates.length > 0)) && (
           <div className="flex shrink-0 gap-2">
+            {canManage && projectTemplates.length > 0 && (
+              <GenerateDocumentDropdown
+                templates={projectTemplates}
+                entityId={id}
+                entityType="PROJECT"
+              />
+            )}
             {canEdit && (
               <EditProjectDialog project={project} slug={slug}>
                 <Button variant="outline" size="sm">
@@ -383,6 +402,14 @@ export default async function ProjectDetailPage({
               defaultCurrency={defaultCurrency}
             />
           ) : undefined
+        }
+        generatedPanel={
+          <GeneratedDocumentsList
+            entityType="PROJECT"
+            entityId={id}
+            slug={slug}
+            isAdmin={isAdmin}
+          />
         }
         activityPanel={
           <ActivityFeed projectId={id} orgSlug={slug} />

@@ -11,9 +11,10 @@ interface CustomerTabsProps {
   ratesPanel?: ReactNode;
   financialsPanel?: ReactNode;
   invoicesPanel?: ReactNode;
+  generatedPanel?: ReactNode;
 }
 
-type TabId = "projects" | "documents" | "rates" | "financials" | "invoices";
+type TabId = "projects" | "documents" | "rates" | "financials" | "invoices" | "generated";
 
 interface TabDef {
   id: TabId;
@@ -25,6 +26,7 @@ const baseTabs: TabDef[] = [
   { id: "documents", label: "Documents" },
   { id: "invoices", label: "Invoices" },
   { id: "rates", label: "Rates" },
+  { id: "generated", label: "Generated Docs" },
   { id: "financials", label: "Financials" },
 ];
 
@@ -34,6 +36,7 @@ export function CustomerTabs({
   ratesPanel,
   financialsPanel,
   invoicesPanel,
+  generatedPanel,
 }: CustomerTabsProps) {
   const [activeTab, setActiveTab] = useState<TabId>("projects");
 
@@ -41,10 +44,11 @@ export function CustomerTabs({
     return baseTabs.filter((t) => {
       if (t.id === "invoices" && !invoicesPanel) return false;
       if (t.id === "rates" && !ratesPanel) return false;
+      if (t.id === "generated" && !generatedPanel) return false;
       if (t.id === "financials" && !financialsPanel) return false;
       return true;
     });
-  }, [invoicesPanel, ratesPanel, financialsPanel]);
+  }, [invoicesPanel, ratesPanel, financialsPanel, generatedPanel]);
 
   return (
     <TabsPrimitive.Root value={activeTab} onValueChange={(v) => setActiveTab(v as TabId)}>
@@ -87,6 +91,11 @@ export function CustomerTabs({
       {ratesPanel && (
         <TabsPrimitive.Content value="rates" className="pt-6 outline-none">
           {ratesPanel}
+        </TabsPrimitive.Content>
+      )}
+      {generatedPanel && (
+        <TabsPrimitive.Content value="generated" className="pt-6 outline-none">
+          {generatedPanel}
         </TabsPrimitive.Content>
       )}
       {financialsPanel && (

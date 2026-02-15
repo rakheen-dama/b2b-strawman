@@ -835,6 +835,25 @@ export interface UpdateSavedViewRequest {
   sortOrder: number;
 }
 
+// ---- Generated Documents (from GeneratedDocumentController.java) ----
+
+export interface GenerateDocumentResponse {
+  id: string;
+  fileName: string;
+  fileSize: number;
+  documentId: string;
+  generatedAt: string;
+}
+
+export interface GeneratedDocumentListResponse {
+  id: string;
+  templateName: string;
+  fileName: string;
+  fileSize: number;
+  generatedBy: string;
+  generatedAt: string;
+}
+
 // ---- Error (RFC 9457 ProblemDetail) ----
 
 export interface ProblemDetail {

@@ -1,5 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
-import { api, handleApiError, getFieldDefinitions, getFieldGroups, getGroupMembers, getTags } from "@/lib/api";
+import { api, handleApiError, getFieldDefinitions, getFieldGroups, getGroupMembers, getTags, getTemplates } from "@/lib/api";
 import type {
   Customer,
   CustomerStatus,
@@ -15,6 +15,7 @@ import type {
   FieldGroupResponse,
   FieldGroupMemberResponse,
   TagResponse,
+  TemplateListResponse,
 } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,8 @@ import { CustomerInvoicesTab } from "@/components/customers/customer-invoices-ta
 import { CustomFieldSection } from "@/components/field-definitions/CustomFieldSection";
 import { FieldGroupSelector } from "@/components/field-definitions/FieldGroupSelector";
 import { TagInput } from "@/components/tags/TagInput";
+import { GenerateDocumentDropdown } from "@/components/templates/GenerateDocumentDropdown";
+import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocumentsList";
 import { formatDate } from "@/lib/format";
 import { ArrowLeft, Pencil, Archive } from "lucide-react";
 import Link from "next/link";
@@ -156,6 +159,16 @@ export default async function CustomerDetailPage({
     // Non-fatal: tags section will show empty state
   }
 
+  // Document templates for the "Generate Document" dropdown (admin only)
+  let customerTemplates: TemplateListResponse[] = [];
+  if (isAdmin) {
+    try {
+      customerTemplates = await getTemplates(undefined, "CUSTOMER");
+    } catch {
+      // Non-fatal: hide generate button if template fetch fails
+    }
+  }
+
   const statusBadge = STATUS_BADGE[customer.status];
 
   return (
@@ -200,24 +213,35 @@ export default async function CustomerDetailPage({
           )}
         </div>
 
-        {isAdmin && customer.status === "ACTIVE" && (
+        {isAdmin && (
           <div className="flex shrink-0 gap-2">
-            <EditCustomerDialog customer={customer} slug={slug}>
-              <Button variant="outline" size="sm">
-                <Pencil className="mr-1.5 size-4" />
-                Edit
-              </Button>
-            </EditCustomerDialog>
-            <ArchiveCustomerDialog slug={slug} customerId={customer.id} customerName={customer.name}>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300"
-              >
-                <Archive className="mr-1.5 size-4" />
-                Archive
-              </Button>
-            </ArchiveCustomerDialog>
+            {customerTemplates.length > 0 && (
+              <GenerateDocumentDropdown
+                templates={customerTemplates}
+                entityId={id}
+                entityType="CUSTOMER"
+              />
+            )}
+            {customer.status === "ACTIVE" && (
+              <>
+                <EditCustomerDialog customer={customer} slug={slug}>
+                  <Button variant="outline" size="sm">
+                    <Pencil className="mr-1.5 size-4" />
+                    Edit
+                  </Button>
+                </EditCustomerDialog>
+                <ArchiveCustomerDialog slug={slug} customerId={customer.id} customerName={customer.name}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300"
+                  >
+                    <Archive className="mr-1.5 size-4" />
+                    Archive
+                  </Button>
+                </ArchiveCustomerDialog>
+              </>
+            )}
           </div>
         )}
       </div>
@@ -299,6 +323,14 @@ export default async function CustomerDetailPage({
               defaultCurrency={defaultCurrency}
             />
           ) : undefined
+        }
+        generatedPanel={
+          <GeneratedDocumentsList
+            entityType="CUSTOMER"
+            entityId={id}
+            slug={slug}
+            isAdmin={isAdmin}
+          />
         }
         financialsPanel={
           isAdmin ? (

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/invoices/status-badge";
 import { InvoiceLineTable } from "@/components/invoices/invoice-line-table";
+import { Eye } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/format";
 import type {
   InvoiceResponse,
@@ -167,6 +168,10 @@ export function InvoiceDetailClient({
     });
   }
 
+  function handlePreview() {
+    window.open(`/api/invoices/${invoice.id}/preview`, "_blank");
+  }
+
   function handleAddLine() {
     setShowAddLine(true);
     setNewLineDesc("");
@@ -287,70 +292,76 @@ export function InvoiceDetailClient({
         </div>
 
         {/* Action Buttons */}
-        {isAdmin && (
-          <div className="flex shrink-0 flex-wrap gap-2">
-            {isDraft && (
-              <>
-                <Button
-                  variant="accent"
-                  size="sm"
-                  onClick={handleApprove}
-                  disabled={isPending}
-                >
-                  Approve
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleDelete}
-                  disabled={isPending}
-                >
-                  Delete Draft
-                </Button>
-              </>
-            )}
-            {isApproved && (
-              <>
-                <Button
-                  variant="accent"
-                  size="sm"
-                  onClick={handleSend}
-                  disabled={isPending}
-                >
-                  Mark as Sent
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleVoid}
-                  disabled={isPending}
-                >
-                  Void
-                </Button>
-              </>
-            )}
-            {isSent && (
-              <>
-                <Button
-                  variant="accent"
-                  size="sm"
-                  onClick={() => setShowPaymentForm(true)}
-                  disabled={isPending}
-                >
-                  Record Payment
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleVoid}
-                  disabled={isPending}
-                >
-                  Void
-                </Button>
-              </>
-            )}
-          </div>
-        )}
+        <div className="flex shrink-0 flex-wrap gap-2">
+          <Button variant="soft" size="sm" onClick={handlePreview}>
+            <Eye className="mr-1.5 size-4" />
+            Preview
+          </Button>
+          {isAdmin && (
+            <>
+              {isDraft && (
+                <>
+                  <Button
+                    variant="accent"
+                    size="sm"
+                    onClick={handleApprove}
+                    disabled={isPending}
+                  >
+                    Approve
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleDelete}
+                    disabled={isPending}
+                  >
+                    Delete Draft
+                  </Button>
+                </>
+              )}
+              {isApproved && (
+                <>
+                  <Button
+                    variant="accent"
+                    size="sm"
+                    onClick={handleSend}
+                    disabled={isPending}
+                  >
+                    Mark as Sent
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleVoid}
+                    disabled={isPending}
+                  >
+                    Void
+                  </Button>
+                </>
+              )}
+              {isSent && (
+                <>
+                  <Button
+                    variant="accent"
+                    size="sm"
+                    onClick={() => setShowPaymentForm(true)}
+                    disabled={isPending}
+                  >
+                    Record Payment
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleVoid}
+                    disabled={isPending}
+                  >
+                    Void
+                  </Button>
+                </>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
       {/* Payment Form (inline for SENT status) */}

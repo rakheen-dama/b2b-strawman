@@ -245,4 +245,51 @@ describe("InvoiceDetailClient", () => {
 
     expect(mockDeleteInvoice).toHaveBeenCalledWith("acme", "inv-1", "c1");
   });
+
+  it("renders preview button for DRAFT invoice", () => {
+    const invoice = makeDraftInvoice();
+    render(
+      <InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />,
+    );
+
+    expect(
+      screen.getByRole("button", { name: /preview/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("renders preview button for APPROVED invoice", () => {
+    const invoice = makeDraftInvoice({
+      status: "APPROVED",
+      invoiceNumber: "INV-2026-010",
+      issueDate: "2026-01-15",
+      dueDate: "2026-02-15",
+    });
+    render(
+      <InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />,
+    );
+
+    expect(
+      screen.getByRole("button", { name: /preview/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("opens preview in new tab on click", async () => {
+    const user = userEvent.setup();
+    const invoice = makeDraftInvoice();
+
+    const mockOpen = vi.fn();
+    window.open = mockOpen;
+
+    render(
+      <InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />,
+    );
+
+    const previewBtn = screen.getByRole("button", { name: /preview/i });
+    await user.click(previewBtn);
+
+    expect(mockOpen).toHaveBeenCalledWith(
+      "/api/invoices/inv-1/preview",
+      "_blank",
+    );
+  });
 });

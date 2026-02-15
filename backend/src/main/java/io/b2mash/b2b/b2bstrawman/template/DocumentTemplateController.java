@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -7,6 +8,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,9 +26,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class DocumentTemplateController {
 
   private final DocumentTemplateService documentTemplateService;
+  private final PdfRenderingService pdfRenderingService;
 
-  public DocumentTemplateController(DocumentTemplateService documentTemplateService) {
+  public DocumentTemplateController(
+      DocumentTemplateService documentTemplateService, PdfRenderingService pdfRenderingService) {
     this.documentTemplateService = documentTemplateService;
+    this.pdfRenderingService = pdfRenderingService;
   }
 
   @GetMapping
@@ -87,7 +92,18 @@ public class DocumentTemplateController {
     return ResponseEntity.noContent().build();
   }
 
+  @PostMapping("/{id}/preview")
+  @PreAuthorize("isAuthenticated()")
+  public ResponseEntity<String> previewTemplate(
+      @PathVariable UUID id, @Valid @RequestBody PreviewRequest request) {
+    UUID memberId = RequestScopes.MEMBER_ID.get();
+    var result = pdfRenderingService.generatePdf(id, request.entityId(), memberId);
+    return ResponseEntity.ok().contentType(MediaType.TEXT_HTML).body(result.htmlPreview());
+  }
+
   // --- DTOs ---
+
+  public record PreviewRequest(@NotNull UUID entityId) {}
 
   public record CreateTemplateRequest(
       @NotBlank String name,

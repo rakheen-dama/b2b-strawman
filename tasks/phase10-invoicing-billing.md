@@ -15,7 +15,7 @@ The design introduces two new entities (`Invoice`, `InvoiceLine`), extends `Time
 | 81 | Invoice Entity Foundation & Migration | Backend | -- | M | 81A, 81B | |
 | 82 | Invoice CRUD & Lifecycle Backend | Backend | 81 | L | 82A, 82B | |
 | 83 | Unbilled Time & Invoice Generation | Both | 82 | L | 83A, 83B | 83A **Done** (PR #171), 83B **Done** (PR #173) |
-| 84 | Invoice Detail & List Pages | Frontend | 83 | M | 84A | |
+| 84 | Invoice Detail & List Pages | Frontend | 83 | M | 84A | **Done** (PR #176) |
 | 85 | Audit, Notification & HTML Preview | Both | 82 | L | 85A, 85B, 85C | 85A **Done** (PR #172), 85B **Done** (PR #174) |
 | 86 | Time Entry Billing UX | Both | 81A, 82 | M | 86A, 86B | 86A **Done** (PR #175) |
 
@@ -344,7 +344,7 @@ Stage 5:  [85B] ──► [85C]  //  [86B]                             ← previ
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **84A** | 84.1-84.10 | Invoice detail page (draft edit + read-only modes), invoice list page with summary cards and filters, InvoiceLineTable, StatusBadge, sidebar nav item, API client enhancements, frontend tests (~10 tests) | |
+| **84A** | 84.1-84.10 | Invoice detail page (draft edit + read-only modes), invoice list page with summary cards and filters, InvoiceLineTable, StatusBadge, sidebar nav item, API client enhancements, frontend tests (~10 tests) | **Done** (PR #176) |
 
 ### Tasks
 

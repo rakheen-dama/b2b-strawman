@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.task;
 
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
@@ -102,6 +103,11 @@ public class TaskController {
           savedViewRepository
               .findOneById(view)
               .orElseThrow(() -> new ResourceNotFoundException("SavedView", view));
+
+      if (!"TASK".equals(savedView.getEntityType())) {
+        throw new InvalidStateException(
+            "View type mismatch", "Expected TASK view but got " + savedView.getEntityType());
+      }
 
       List<Task> filtered =
           viewFilterService.executeFilterQueryForProject(

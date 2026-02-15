@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 import org.springframework.stereotype.Component;
 
 /**
@@ -12,6 +13,9 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class CustomFieldFilterHandler {
+
+  /** Only alphanumeric, underscore, and hyphen are allowed in custom field slugs. */
+  private static final Pattern SAFE_SLUG = Pattern.compile("^[a-zA-Z0-9_-]+$");
 
   private static final Set<String> NUMERIC_OPS = Set.of("gt", "gte", "lt", "lte");
 
@@ -67,6 +71,14 @@ public class CustomFieldFilterHandler {
 
   private String buildFieldClause(
       String slug, String op, Object value, String paramName, Map<String, Object> params) {
+    // Validate slug to prevent SQL injection — slug is concatenated into JSONB access expressions
+    if (!SAFE_SLUG.matcher(slug).matches()) {
+      return "";
+    }
+    // Sanitize paramName (derived from slug) for use as a named parameter.
+    // Hyphens are replaced with underscores to ensure valid parameter names.
+    paramName = "cf_" + slug.replace('-', '_');
+
     if ("contains".equals(op)) {
       params.put(paramName, String.valueOf(value));
       return "custom_fields ->> '" + slug + "' ILIKE '%' || :" + paramName + " || '%'";

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class ViewFilterService {
+
+  /** Allowlisted table names to prevent SQL injection via the tableName parameter. */
+  private static final Set<String> ALLOWED_TABLES = Set.of("projects", "tasks", "customers");
 
   private final StatusFilterHandler statusFilterHandler;
   private final TagFilterHandler tagFilterHandler;
@@ -121,6 +125,10 @@ public class ViewFilterService {
       String extraWhere,
       Map<String, Object> extraParams) {
 
+    if (!ALLOWED_TABLES.contains(tableName)) {
+      throw new IllegalArgumentException("Invalid table name: " + tableName);
+    }
+
     Map<String, Object> params = new HashMap<>();
     if (extraParams != null) {
       params.putAll(extraParams);
@@ -137,11 +145,12 @@ public class ViewFilterService {
     // Always add tenant_id filter for multi-tenant isolation. Native queries bypass
     // Hibernate @Filter, so this explicit filter provides tenant isolation in shared schemas
     // and defense-in-depth for dedicated schemas.
-    var conditions = new ArrayList<String>();
-    if (RequestScopes.ORG_ID.isBound()) {
-      conditions.add("e.tenant_id = :tenantOrgId");
-      params.put("tenantOrgId", RequestScopes.ORG_ID.get());
+    if (!RequestScopes.ORG_ID.isBound()) {
+      throw new IllegalStateException("ORG_ID must be bound for view filter execution");
     }
+    var conditions = new ArrayList<String>();
+    conditions.add("e.tenant_id = :tenantOrgId");
+    params.put("tenantOrgId", RequestScopes.ORG_ID.get());
     if (extraWhere != null && !extraWhere.isEmpty()) {
       conditions.add(extraWhere);
     }

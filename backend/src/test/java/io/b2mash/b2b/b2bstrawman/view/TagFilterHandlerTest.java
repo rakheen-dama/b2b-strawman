@@ -33,7 +33,8 @@ class TagFilterHandlerTest {
     assertThat(result)
         .isEqualTo(
             "EXISTS (SELECT 1 FROM entity_tags et JOIN tags t ON et.tag_id = t.id"
-                + " WHERE et.entity_type = :entityType AND et.entity_id = e.id AND t.slug ="
+                + " WHERE et.tenant_id = e.tenant_id"
+                + " AND et.entity_type = :entityType AND et.entity_id = e.id AND t.slug ="
                 + " :tag0)");
     assertThat(params).containsEntry("tag0", "urgent");
     assertThat(params).containsEntry("entityType", "TASK");

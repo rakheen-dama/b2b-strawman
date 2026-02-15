@@ -104,4 +104,26 @@ class CustomFieldFilterHandlerTest {
     assertThat(result).isEmpty();
     assertThat(params).isEmpty();
   }
+
+  @Test
+  void rejectsSlugWithSqlInjectionCharacters() {
+    Map<String, Object> params = new HashMap<>();
+    var fields = Map.of("foo' OR 1=1 --", (Object) Map.of("op", "eq", "value", "injected"));
+
+    String result = handler.buildPredicate(fields, params, "PROJECT");
+
+    assertThat(result).isEmpty();
+    assertThat(params).isEmpty();
+  }
+
+  @Test
+  void acceptsSlugWithHyphensAndUnderscores() {
+    Map<String, Object> params = new HashMap<>();
+    var fields = Map.of("filing-date_v2", (Object) Map.of("op", "eq", "value", "2025-01-01"));
+
+    String result = handler.buildPredicate(fields, params, "PROJECT");
+
+    assertThat(result).isEqualTo("custom_fields ->> 'filing-date_v2' = :cf_filing_date_v2");
+    assertThat(params).containsEntry("cf_filing_date_v2", "2025-01-01");
+  }
 }

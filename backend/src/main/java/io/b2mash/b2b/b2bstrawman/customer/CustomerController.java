@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.customer;
 
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
@@ -75,6 +76,11 @@ public class CustomerController {
           savedViewRepository
               .findOneById(view)
               .orElseThrow(() -> new ResourceNotFoundException("SavedView", view));
+
+      if (!"CUSTOMER".equals(savedView.getEntityType())) {
+        throw new InvalidStateException(
+            "View type mismatch", "Expected CUSTOMER view but got " + savedView.getEntityType());
+      }
 
       List<Customer> filtered =
           viewFilterService.executeFilterQuery(

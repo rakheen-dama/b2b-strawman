@@ -168,6 +168,7 @@ describe("InvoiceDetailClient", () => {
     // No action buttons
     expect(screen.queryByRole("button", { name: /approve/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /delete draft/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /preview/i })).not.toBeInTheDocument();
 
     // No editable form
     expect(screen.queryByLabelText("Due Date")).not.toBeInTheDocument();
@@ -277,8 +278,7 @@ describe("InvoiceDetailClient", () => {
     const user = userEvent.setup();
     const invoice = makeDraftInvoice();
 
-    const mockOpen = vi.fn();
-    window.open = mockOpen;
+    const mockOpen = vi.spyOn(window, "open").mockImplementation(() => null);
 
     render(
       <InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />,

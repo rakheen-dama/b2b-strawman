@@ -293,12 +293,12 @@ export function InvoiceDetailClient({
 
         {/* Action Buttons */}
         <div className="flex shrink-0 flex-wrap gap-2">
-          <Button variant="soft" size="sm" onClick={handlePreview}>
-            <Eye className="mr-1.5 size-4" />
-            Preview
-          </Button>
           {isAdmin && (
             <>
+              <Button variant="soft" size="sm" onClick={handlePreview}>
+                <Eye className="mr-1.5 size-4" />
+                Preview
+              </Button>
               {isDraft && (
                 <>
                   <Button

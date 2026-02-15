@@ -10,7 +10,7 @@ Phase 11 adds a **generic extensibility layer** to DocTeams — org-scoped custo
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 87 | Field Definition & Custom Field Backend | Backend | -- | L | 87A, 87B, 87C | |
+| 87 | Field Definition & Custom Field Backend | Backend | -- | L | 87A, 87B, 87C | 87A Done (PR #179) |
 | 88 | Tags Backend | Backend | -- | M | 88A, 88B | |
 | 89 | Saved Views Backend | Backend | 87C, 88B | M | 89A, 89B | |
 | 90 | Field Pack Seeding | Backend | 87A | S | 90A | |

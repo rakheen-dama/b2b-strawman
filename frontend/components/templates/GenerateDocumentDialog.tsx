@@ -19,7 +19,7 @@ interface GenerateDocumentDialogProps {
   templateId: string;
   templateName: string;
   entityId: string;
-  entityType: string;
+  entityType?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSaved?: () => void;
@@ -114,6 +114,8 @@ export function GenerateDocumentDialog({
       if (result.success) {
         setSuccessMessage("Document saved successfully");
         onSaved?.();
+        // Notify any GeneratedDocumentsList instances to refresh
+        window.dispatchEvent(new Event("generated-documents-refresh"));
         // Close after a brief moment so the user sees the success message
         setTimeout(() => {
           onOpenChange(false);

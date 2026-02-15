@@ -5,15 +5,15 @@ import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocument
 
 const mockFetchGeneratedDocuments = vi.fn();
 const mockDeleteGeneratedDocument = vi.fn();
-const mockGetDownloadUrl = vi.fn();
+const mockDownloadGeneratedDocument = vi.fn();
 
 vi.mock("@/app/(app)/org/[slug]/settings/templates/actions", () => ({
   fetchGeneratedDocumentsAction: (...args: unknown[]) =>
     mockFetchGeneratedDocuments(...args),
   deleteGeneratedDocumentAction: (...args: unknown[]) =>
     mockDeleteGeneratedDocument(...args),
-  getDownloadUrlAction: (...args: unknown[]) =>
-    mockGetDownloadUrl(...args),
+  downloadGeneratedDocumentAction: (...args: unknown[]) =>
+    mockDownloadGeneratedDocument(...args),
 }));
 
 vi.mock("@/lib/format", () => ({
@@ -96,18 +96,24 @@ describe("GeneratedDocumentsList", () => {
     });
   });
 
-  it("download button calls getDownloadUrl and opens window", async () => {
+  it("download button calls authenticated download and triggers file save", async () => {
     mockFetchGeneratedDocuments.mockResolvedValue({
       success: true,
       data: [SAMPLE_DOCS[0]],
     });
 
-    mockGetDownloadUrl.mockResolvedValue({
+    mockDownloadGeneratedDocument.mockResolvedValue({
       success: true,
-      url: "https://s3.example.com/presigned-url",
+      pdfBase64: btoa("fake-pdf-content"),
     });
 
-    const openSpy = vi.spyOn(window, "open").mockImplementation(() => null);
+    // Mock URL.createObjectURL and URL.revokeObjectURL
+    const createObjectURLSpy = vi
+      .spyOn(URL, "createObjectURL")
+      .mockReturnValue("blob:http://localhost/fake-blob");
+    const revokeObjectURLSpy = vi
+      .spyOn(URL, "revokeObjectURL")
+      .mockImplementation(() => {});
 
     render(
       <GeneratedDocumentsList
@@ -126,17 +132,47 @@ describe("GeneratedDocumentsList", () => {
     await user.click(screen.getByTitle("Download"));
 
     await waitFor(() => {
-      expect(mockGetDownloadUrl).toHaveBeenCalledWith("gen-1");
+      expect(mockDownloadGeneratedDocument).toHaveBeenCalledWith("gen-1");
     });
 
     await waitFor(() => {
-      expect(openSpy).toHaveBeenCalledWith(
-        "https://s3.example.com/presigned-url",
-        "_blank",
-      );
+      expect(createObjectURLSpy).toHaveBeenCalled();
     });
 
-    openSpy.mockRestore();
+    createObjectURLSpy.mockRestore();
+    revokeObjectURLSpy.mockRestore();
+  });
+
+  it("shows error message when download fails", async () => {
+    mockFetchGeneratedDocuments.mockResolvedValue({
+      success: true,
+      data: [SAMPLE_DOCS[0]],
+    });
+
+    mockDownloadGeneratedDocument.mockResolvedValue({
+      success: false,
+      error: "Access denied",
+    });
+
+    render(
+      <GeneratedDocumentsList
+        entityType="PROJECT"
+        entityId="proj-1"
+        slug="acme"
+        isAdmin={false}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Engagement Letter")).toBeInTheDocument();
+    });
+
+    const user = userEvent.setup();
+    await user.click(screen.getByTitle("Download"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Access denied")).toBeInTheDocument();
+    });
   });
 
   it("delete button only visible to admin users", async () => {
@@ -231,5 +267,40 @@ describe("GeneratedDocumentsList", () => {
 
     // Other row should still be there
     expect(screen.getByText("Invoice Template")).toBeInTheDocument();
+  });
+
+  it("refetches documents when refreshKey changes", async () => {
+    mockFetchGeneratedDocuments.mockResolvedValue({
+      success: true,
+      data: SAMPLE_DOCS,
+    });
+
+    const { rerender } = render(
+      <GeneratedDocumentsList
+        entityType="PROJECT"
+        entityId="proj-1"
+        slug="acme"
+        refreshKey={0}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Engagement Letter")).toBeInTheDocument();
+    });
+
+    expect(mockFetchGeneratedDocuments).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <GeneratedDocumentsList
+        entityType="PROJECT"
+        entityId="proj-1"
+        slug="acme"
+        refreshKey={1}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(mockFetchGeneratedDocuments).toHaveBeenCalledTimes(2);
+    });
   });
 });

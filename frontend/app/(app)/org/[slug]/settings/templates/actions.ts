@@ -236,18 +236,20 @@ export async function deleteGeneratedDocumentAction(
   }
 }
 
-export async function getDownloadUrlAction(
+export async function downloadGeneratedDocumentAction(
   id: string,
-): Promise<{ success: boolean; url?: string; error?: string }> {
+): Promise<{ success: boolean; pdfBase64?: string; fileName?: string; error?: string }> {
   try {
-    const { getGeneratedDocumentDownloadUrl } = await import("@/lib/api");
-    const url = getGeneratedDocumentDownloadUrl(id);
-    return { success: true, url };
+    const { downloadGeneratedDocument } = await import("@/lib/api");
+    const blob = await downloadGeneratedDocument(id);
+    const arrayBuffer = await blob.arrayBuffer();
+    const base64 = Buffer.from(arrayBuffer).toString("base64");
+    return { success: true, pdfBase64: base64 };
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
     }
-    return { success: false, error: "Failed to get download URL." };
+    return { success: false, error: "Failed to download document." };
   }
 }
 

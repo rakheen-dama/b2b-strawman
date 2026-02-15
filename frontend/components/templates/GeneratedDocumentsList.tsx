@@ -24,7 +24,7 @@ import {
 import {
   fetchGeneratedDocumentsAction,
   deleteGeneratedDocumentAction,
-  getDownloadUrlAction,
+  downloadGeneratedDocumentAction,
 } from "@/app/(app)/org/[slug]/settings/templates/actions";
 import { formatDate } from "@/lib/format";
 import type { TemplateEntityType, GeneratedDocumentListResponse } from "@/lib/types";
@@ -40,12 +40,14 @@ interface GeneratedDocumentsListProps {
   entityId: string;
   slug: string;
   isAdmin?: boolean;
+  refreshKey?: number;
 }
 
 export function GeneratedDocumentsList({
   entityType,
   entityId,
   isAdmin = false,
+  refreshKey = 0,
 }: GeneratedDocumentsListProps) {
   const [documents, setDocuments] = useState<GeneratedDocumentListResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -73,21 +75,44 @@ export function GeneratedDocumentsList({
 
   useEffect(() => {
     fetchDocuments();
+  }, [fetchDocuments, refreshKey]);
+
+  // Listen for custom event dispatched after "Save to Documents"
+  useEffect(() => {
+    function handleRefresh() {
+      fetchDocuments();
+    }
+    window.addEventListener("generated-documents-refresh", handleRefresh);
+    return () => {
+      window.removeEventListener("generated-documents-refresh", handleRefresh);
+    };
   }, [fetchDocuments]);
 
-  // Expose refetch for parent components
-  useEffect(() => {
-    // Re-fetch when entityId changes (e.g., after saving a new document)
-  }, [entityId]);
-
-  async function handleDownload(docId: string) {
+  async function handleDownload(doc: GeneratedDocumentListResponse) {
+    setError(null);
     try {
-      const result = await getDownloadUrlAction(docId);
-      if (result.success && result.url) {
-        window.open(result.url, "_blank");
+      const result = await downloadGeneratedDocumentAction(doc.id);
+      if (result.success && result.pdfBase64) {
+        const byteCharacters = atob(result.pdfBase64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: "application/pdf" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = doc.fileName || `${doc.templateName}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } else {
+        setError(result.error ?? "Failed to download document.");
       }
     } catch {
-      // Silent fail — download will just not work
+      setError("Failed to download document.");
     }
   }
 
@@ -109,10 +134,6 @@ export function GeneratedDocumentsList({
       setDeleteTargetId(null);
     }
   }
-
-  // Expose refetch for parent to call after "Save to Documents"
-  // Using a global callback pattern since we can't use ref with function components easily
-  (GeneratedDocumentsList as unknown as { refetch?: () => void }).refetch = fetchDocuments;
 
   if (isLoading) {
     return (
@@ -157,7 +178,7 @@ export function GeneratedDocumentsList({
                     variant="ghost"
                     size="icon"
                     className="size-8"
-                    onClick={() => handleDownload(doc.id)}
+                    onClick={() => handleDownload(doc)}
                     title="Download"
                   >
                     <Download className="size-4" />

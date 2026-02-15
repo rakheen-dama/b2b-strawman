@@ -4,6 +4,32 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { notFound } from "next/navigation";
 import type { ProblemDetail } from "@/lib/types";
+import type {
+  EntityType,
+  FieldDefinitionResponse,
+  CreateFieldDefinitionRequest,
+  UpdateFieldDefinitionRequest,
+  FieldGroupResponse,
+  CreateFieldGroupRequest,
+  UpdateFieldGroupRequest,
+  FieldGroupMemberResponse,
+  TagResponse,
+  CreateTagRequest,
+  UpdateTagRequest,
+  SetEntityTagsRequest,
+  SavedViewResponse,
+  CreateSavedViewRequest,
+  UpdateSavedViewRequest,
+  TemplateListResponse,
+  TemplateDetailResponse,
+  CreateTemplateRequest,
+  UpdateTemplateRequest,
+  OrgSettings,
+  UpdateOrgSettingsRequest,
+  GenerateDocumentResponse,
+  GeneratedDocumentListResponse,
+  TemplateEntityType,
+} from "@/lib/types";
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
 
@@ -137,30 +163,6 @@ export const api = {
 export { apiRequest as apiClient };
 
 // ---- Field Definitions ----
-
-import type {
-  EntityType,
-  FieldDefinitionResponse,
-  CreateFieldDefinitionRequest,
-  UpdateFieldDefinitionRequest,
-  FieldGroupResponse,
-  CreateFieldGroupRequest,
-  UpdateFieldGroupRequest,
-  FieldGroupMemberResponse,
-  TagResponse,
-  CreateTagRequest,
-  UpdateTagRequest,
-  SetEntityTagsRequest,
-  SavedViewResponse,
-  CreateSavedViewRequest,
-  UpdateSavedViewRequest,
-  TemplateListResponse,
-  TemplateDetailResponse,
-  CreateTemplateRequest,
-  UpdateTemplateRequest,
-  OrgSettings,
-  UpdateOrgSettingsRequest,
-} from "@/lib/types";
 
 export async function getFieldDefinitions(
   entityType: string,
@@ -449,12 +451,6 @@ export async function deleteOrgLogo(): Promise<OrgSettings> {
 
 // ---- Generated Documents ----
 
-import type {
-  GenerateDocumentResponse,
-  GeneratedDocumentListResponse,
-  TemplateEntityType,
-} from "@/lib/types";
-
 export async function generateDocument(
   templateId: string,
   entityId: string,
@@ -510,6 +506,35 @@ export async function deleteGeneratedDocument(id: string): Promise<void> {
   return api.delete<void>(`/api/generated-documents/${id}`);
 }
 
-export function getGeneratedDocumentDownloadUrl(id: string): string {
-  return `${BACKEND_URL}/api/generated-documents/${id}/download`;
+export async function downloadGeneratedDocument(id: string): Promise<Blob> {
+  const { getToken } = await auth();
+  const token = await getToken();
+
+  if (!token) {
+    redirect("/sign-in");
+  }
+
+  const response = await fetch(
+    `${BACKEND_URL}/api/generated-documents/${id}/download`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      redirect: "follow",
+    },
+  );
+
+  if (!response.ok) {
+    let message = response.statusText;
+    try {
+      const detail = await response.json();
+      message = detail?.detail || detail?.title || message;
+    } catch {
+      // ignore
+    }
+    throw new ApiError(response.status, message);
+  }
+
+  return response.blob();
 }

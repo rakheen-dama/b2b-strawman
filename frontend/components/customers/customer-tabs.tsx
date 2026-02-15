@@ -26,7 +26,7 @@ const baseTabs: TabDef[] = [
   { id: "documents", label: "Documents" },
   { id: "invoices", label: "Invoices" },
   { id: "rates", label: "Rates" },
-  { id: "generated", label: "Generated" },
+  { id: "generated", label: "Generated Docs" },
   { id: "financials", label: "Financials" },
 ];
 

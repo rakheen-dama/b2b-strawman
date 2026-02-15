@@ -77,7 +77,7 @@ export function ProjectHealthWidget({
               onClick={() => setActiveFilter(tab.value)}
               className={cn(
                 activeFilter === tab.value &&
-                  "border-olive-400 dark:border-olive-600"
+                  "border-slate-400 dark:border-slate-600"
               )}
             >
               {tab.label}
@@ -101,7 +101,7 @@ export function ProjectHealthWidget({
                     `/org/${orgSlug}/projects/${project.projectId}`
                   )
                 }
-                className="flex w-full items-start gap-3 rounded-md px-3 py-2.5 text-left transition-colors hover:bg-olive-50 dark:hover:bg-olive-900"
+                className="flex w-full items-start gap-3 rounded-md px-3 py-2.5 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-900"
               >
                 <div className="mt-1.5 shrink-0">
                   <HealthBadge status={project.healthStatus} size="sm" />

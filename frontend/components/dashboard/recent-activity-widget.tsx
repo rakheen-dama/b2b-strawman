@@ -96,22 +96,22 @@ export function RecentActivityWidget({
               key={item.eventId}
               className="flex items-start gap-3 rounded-md px-3 py-2.5"
             >
-              <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-olive-200 text-xs font-medium text-olive-700 dark:bg-olive-700 dark:text-olive-200">
+              <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-200">
                 {getInitials(item.actorName)}
               </span>
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
-                  <Icon className="size-3.5 shrink-0 text-olive-400 dark:text-olive-500" />
-                  <p className="truncate text-sm text-olive-700 dark:text-olive-300">
+                  <Icon className="size-3.5 shrink-0 text-slate-400 dark:text-slate-500" />
+                  <p className="truncate text-sm text-slate-700 dark:text-slate-300">
                     {item.description}
                   </p>
                 </div>
                 <div className="mt-0.5 flex items-center gap-2">
-                  <span className="inline-flex items-center rounded-full bg-olive-100 px-2 py-0.5 text-xs font-medium text-olive-600 dark:bg-olive-800 dark:text-olive-300">
+                  <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                     {item.projectName}
                   </span>
-                  <span className="text-xs text-olive-500 dark:text-olive-400">
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
                     {formatRelativeDate(item.occurredAt)}
                   </span>
                 </div>

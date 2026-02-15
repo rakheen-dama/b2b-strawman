@@ -15,7 +15,7 @@ export function CompletionProgressBar({ percent }: CompletionProgressBarProps) {
 
   return (
     <div className="flex items-center gap-2">
-      <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-olive-200 dark:bg-olive-700">
+      <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
         <div
           className={cn("h-full rounded-full transition-all", getBarColor(clampedPercent))}
           style={{ width: `${clampedPercent}%` }}

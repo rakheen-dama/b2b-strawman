@@ -1,22 +1,21 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
-import { Instrument_Serif, Inter, Geist_Mono } from "next/font/google";
+import { Sora, IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const instrumentSerif = Instrument_Serif({
-  weight: "400",
-  style: ["normal", "italic"],
-  variable: "--font-instrument-serif",
+const sora = Sora({
+  variable: "--font-sora",
   subsets: ["latin"],
 });
 
-const inter = Inter({
-  variable: "--font-inter",
+const plexSans = IBM_Plex_Sans({
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-plex",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains",
   subsets: ["latin"],
 });
 
@@ -36,7 +35,7 @@ export default function RootLayout({
   return (
     <ClerkProvider appearance={{ cssLayerName: "clerk" }}>
       <html lang="en">
-        <body className={`${instrumentSerif.variable} ${inter.variable} ${geistMono.variable} antialiased`}>
+        <body className={`${sora.variable} ${plexSans.variable} ${jetbrainsMono.variable} antialiased`}>
           {children}
         </body>
       </html>

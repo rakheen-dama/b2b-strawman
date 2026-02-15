@@ -168,6 +168,7 @@ describe("InvoiceDetailClient", () => {
     // No action buttons
     expect(screen.queryByRole("button", { name: /approve/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /delete draft/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /preview/i })).not.toBeInTheDocument();
 
     // No editable form
     expect(screen.queryByLabelText("Due Date")).not.toBeInTheDocument();
@@ -244,5 +245,51 @@ describe("InvoiceDetailClient", () => {
     await user.click(deleteBtn);
 
     expect(mockDeleteInvoice).toHaveBeenCalledWith("acme", "inv-1", "c1");
+  });
+
+  it("renders preview button for DRAFT invoice", () => {
+    const invoice = makeDraftInvoice();
+    render(
+      <InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />,
+    );
+
+    expect(
+      screen.getByRole("button", { name: /preview/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("renders preview button for APPROVED invoice", () => {
+    const invoice = makeDraftInvoice({
+      status: "APPROVED",
+      invoiceNumber: "INV-2026-010",
+      issueDate: "2026-01-15",
+      dueDate: "2026-02-15",
+    });
+    render(
+      <InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />,
+    );
+
+    expect(
+      screen.getByRole("button", { name: /preview/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("opens preview in new tab on click", async () => {
+    const user = userEvent.setup();
+    const invoice = makeDraftInvoice();
+
+    const mockOpen = vi.spyOn(window, "open").mockImplementation(() => null);
+
+    render(
+      <InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />,
+    );
+
+    const previewBtn = screen.getByRole("button", { name: /preview/i });
+    await user.click(previewBtn);
+
+    expect(mockOpen).toHaveBeenCalledWith(
+      "/api/invoices/inv-1/preview",
+      "_blank",
+    );
   });
 });

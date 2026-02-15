@@ -84,7 +84,7 @@ public class DocumentTemplateController {
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> resetTemplate(@PathVariable UUID id) {
     documentTemplateService.resetToDefault(id);
-    return ResponseEntity.ok().build();
+    return ResponseEntity.noContent().build();
   }
 
   // --- DTOs ---

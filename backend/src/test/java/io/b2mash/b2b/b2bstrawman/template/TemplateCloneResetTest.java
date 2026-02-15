@@ -15,8 +15,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -33,6 +36,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class TemplateCloneResetTest {
 
   private static final String API_KEY = "test-api-key";
@@ -76,6 +80,7 @@ class TemplateCloneResetTest {
   }
 
   @Test
+  @Order(1)
   void clonePlatformTemplate() throws Exception {
     mockMvc
         .perform(post("/api/templates/" + platformTemplateId + "/clone").with(ownerJwt()))
@@ -86,6 +91,7 @@ class TemplateCloneResetTest {
   }
 
   @Test
+  @Order(2)
   void cloneConflict() throws Exception {
     // The first test already cloned it — clone again should 409
     mockMvc
@@ -94,6 +100,7 @@ class TemplateCloneResetTest {
   }
 
   @Test
+  @Order(3)
   void resetOrgCustom() throws Exception {
     // Find an ORG_CUSTOM clone to reset
     var cloneIdHolder = new String[1];
@@ -133,10 +140,11 @@ class TemplateCloneResetTest {
 
     mockMvc
         .perform(post("/api/templates/" + cloneIdHolder[0] + "/reset").with(ownerJwt()))
-        .andExpect(status().isOk());
+        .andExpect(status().isNoContent());
   }
 
   @Test
+  @Order(4)
   void resetNonClone() throws Exception {
     // Create an ORG_CUSTOM template without sourceTemplateId
     var customIdHolder = new String[1];
@@ -164,6 +172,7 @@ class TemplateCloneResetTest {
   }
 
   @Test
+  @Order(5)
   void resetPlatformTemplate() throws Exception {
     mockMvc
         .perform(post("/api/templates/" + platformTemplateId + "/reset").with(ownerJwt()))

@@ -72,47 +72,6 @@ public class OrgSettingsService {
         .orElse(new SettingsResponse(DEFAULT_CURRENCY, null, null, null));
   }
 
-  /**
-   * Creates or updates the org settings for the current tenant. Only admin/owner can invoke.
-   *
-   * @param defaultCurrency the new default currency code (3-char ISO 4217)
-   * @param memberId the requesting member's UUID
-   * @param orgRole the requesting member's org role
-   * @return the updated settings response
-   */
-  @Transactional
-  public OrgSettingsResponse updateSettings(String defaultCurrency, UUID memberId, String orgRole) {
-    requireAdminOrOwner(orgRole);
-
-    var existing = orgSettingsRepository.findForCurrentTenant();
-
-    OrgSettings settings;
-    String oldCurrency;
-
-    if (existing.isPresent()) {
-      settings = existing.get();
-      oldCurrency = settings.getDefaultCurrency();
-      settings.updateCurrency(defaultCurrency);
-      settings = orgSettingsRepository.save(settings);
-      log.info("Updated org settings: currency {} -> {}", oldCurrency, defaultCurrency);
-    } else {
-      oldCurrency = DEFAULT_CURRENCY;
-      settings = new OrgSettings(defaultCurrency);
-      settings = orgSettingsRepository.save(settings);
-      log.info("Created org settings with currency {}", defaultCurrency);
-    }
-
-    auditService.log(
-        AuditEventBuilder.builder()
-            .eventType("org_settings.updated")
-            .entityType("org_settings")
-            .entityId(settings.getId())
-            .details(Map.of("default_currency", Map.of("from", oldCurrency, "to", defaultCurrency)))
-            .build());
-
-    return new OrgSettingsResponse(settings.getDefaultCurrency());
-  }
-
   /** Updates settings including branding fields. */
   @Transactional
   public SettingsResponse updateSettingsWithBranding(
@@ -170,7 +129,7 @@ public class OrgSettingsService {
     requireAdminOrOwner(orgRole);
 
     String tenantId = RequestScopes.TENANT_ID.get();
-    String ext = extractExtension(file.getOriginalFilename());
+    String ext = extensionFromContentType(file.getContentType());
     String s3Key = "org/" + tenantId + "/branding/logo." + ext;
 
     try {
@@ -187,17 +146,29 @@ public class OrgSettingsService {
       throw new IllegalStateException("Failed to upload logo to S3", e);
     }
 
-    var settings =
-        orgSettingsRepository
-            .findForCurrentTenant()
-            .orElseGet(
-                () -> {
-                  var newSettings = new OrgSettings(DEFAULT_CURRENCY);
-                  return orgSettingsRepository.save(newSettings);
-                });
+    OrgSettings settings;
+    try {
+      settings =
+          orgSettingsRepository
+              .findForCurrentTenant()
+              .orElseGet(
+                  () -> {
+                    var newSettings = new OrgSettings(DEFAULT_CURRENCY);
+                    return orgSettingsRepository.save(newSettings);
+                  });
 
-    settings.setLogoS3Key(s3Key);
-    settings = orgSettingsRepository.save(settings);
+      settings.setLogoS3Key(s3Key);
+      settings = orgSettingsRepository.save(settings);
+    } catch (RuntimeException e) {
+      // DB save failed — clean up the orphaned S3 object
+      log.warn("DB save failed after S3 upload, deleting orphaned object: {}", s3Key);
+      try {
+        s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucketName).key(s3Key).build());
+      } catch (RuntimeException s3ex) {
+        log.error("Failed to clean up orphaned S3 object: {}", s3Key, s3ex);
+      }
+      throw e;
+    }
 
     log.info("Uploaded logo for tenant {}: {}", tenantId, s3Key);
 
@@ -289,11 +260,14 @@ public class OrgSettingsService {
     }
   }
 
-  private String extractExtension(String filename) {
-    if (filename == null || !filename.contains(".")) {
+  private static final Map<String, String> CONTENT_TYPE_TO_EXT =
+      Map.of("image/png", "png", "image/jpeg", "jpg", "image/svg+xml", "svg");
+
+  private String extensionFromContentType(String contentType) {
+    if (contentType == null) {
       return "png"; // default
     }
-    return filename.substring(filename.lastIndexOf('.') + 1).toLowerCase();
+    return CONTENT_TYPE_TO_EXT.getOrDefault(contentType, "png");
   }
 
   /** Response DTO for org settings. */

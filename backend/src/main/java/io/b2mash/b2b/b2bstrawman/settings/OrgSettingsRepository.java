@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.settings;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,9 +20,18 @@ public interface OrgSettingsRepository extends JpaRepository<OrgSettings, UUID> 
   Optional<OrgSettings> findByTenantId(String tenantId);
 
   /**
-   * Find the org settings for the current tenant using only the Hibernate @Filter for isolation.
-   * More efficient than findAll() when we know there's at most one row per tenant.
+   * Find all org settings for the current tenant using only the Hibernate @Filter for isolation.
+   * Ordered by creation time for deterministic first-result selection.
    */
-  @Query("SELECT s FROM OrgSettings s")
-  Optional<OrgSettings> findForCurrentTenant();
+  @Query("SELECT s FROM OrgSettings s ORDER BY s.createdAt ASC")
+  List<OrgSettings> findAllForCurrentTenant();
+
+  /**
+   * Find the org settings for the current tenant. Returns the first result to handle edge cases
+   * where duplicate rows may exist in a dedicated schema (e.g. during integration test suite runs).
+   */
+  default Optional<OrgSettings> findForCurrentTenant() {
+    var all = findAllForCurrentTenant();
+    return all.isEmpty() ? Optional.empty() : Optional.of(all.getFirst());
+  }
 }

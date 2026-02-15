@@ -38,6 +38,11 @@ pnpm install && pnpm dev      # Port 3000
 ./mvnw spring-boot:test-run   # Alternative: uses Testcontainers, no Docker Compose needed
 ```
 
+## Git Worktrees 
+When working in a git worktree, ALWAYS verify the correct working directory before writing any files. 
+The worktree path is NOT inside the main repo directory. Before writing the first file, run `pwd` and confirm you 
+are in the worktree directory, not the main repo. Never write files to the main repo when a worktree is active.
+
 ## Reference Docs
 
 - `architecture/ARCHITECTURE.md` — Technical architecture, ADRs, sequence diagrams

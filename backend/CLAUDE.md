@@ -1,4 +1,4 @@
-# Backend CLAUDE.md
+    # Backend CLAUDE.md
 
 Spring Boot 4.0.2 / Java 25 / Maven backend for a multi-tenant B2B SaaS platform with schema-per-tenant isolation.
 
@@ -91,6 +91,11 @@ Organize by **feature**, not by layer. Each feature package contains its entity,
 - `local` — Docker Compose Postgres, LocalStack S3
 - `dev` — Neon dev branch, AWS S3
 - `prod` — Neon main, AWS S3, full observability
+
+### Architecture Conventions
+- Never put business logic in controllers. Controllers delegate to services only.
+- Avoid premature abstractions — do not create provider/adapter patterns until there are two concrete implementations (YAGNI).
+- When implementing new features, read existing controller and service patterns in the codebase FIRST before writing code.
 
 ## Multitenancy
 

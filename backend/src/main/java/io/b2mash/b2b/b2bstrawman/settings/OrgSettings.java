@@ -61,6 +61,16 @@ public class OrgSettings implements TenantAware {
   @Column(name = "template_pack_status", columnDefinition = "jsonb")
   private List<Map<String, Object>> templatePackStatus;
 
+  @Column(name = "dormancy_threshold_days")
+  private Integer dormancyThresholdDays = 90;
+
+  @Column(name = "data_request_deadline_days")
+  private Integer dataRequestDeadlineDays = 30;
+
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "compliance_pack_status", columnDefinition = "jsonb")
+  private List<Map<String, Object>> compliancePackStatus;
+
   protected OrgSettings() {}
 
   public OrgSettings(String defaultCurrency) {
@@ -166,6 +176,45 @@ public class OrgSettings implements TenantAware {
     entry.put("version", version);
     entry.put("appliedAt", Instant.now().toString());
     this.templatePackStatus.add(entry);
+    this.updatedAt = Instant.now();
+  }
+
+  public Integer getDormancyThresholdDays() {
+    return dormancyThresholdDays;
+  }
+
+  public void setDormancyThresholdDays(Integer dormancyThresholdDays) {
+    this.dormancyThresholdDays = dormancyThresholdDays;
+    this.updatedAt = Instant.now();
+  }
+
+  public Integer getDataRequestDeadlineDays() {
+    return dataRequestDeadlineDays;
+  }
+
+  public void setDataRequestDeadlineDays(Integer dataRequestDeadlineDays) {
+    this.dataRequestDeadlineDays = dataRequestDeadlineDays;
+    this.updatedAt = Instant.now();
+  }
+
+  public List<Map<String, Object>> getCompliancePackStatus() {
+    return compliancePackStatus;
+  }
+
+  public void setCompliancePackStatus(List<Map<String, Object>> compliancePackStatus) {
+    this.compliancePackStatus = compliancePackStatus;
+  }
+
+  /** Records a compliance pack application in the status list. */
+  public void recordCompliancePackApplication(String packId, int version) {
+    if (this.compliancePackStatus == null) {
+      this.compliancePackStatus = new ArrayList<>();
+    }
+    var entry = new HashMap<String, Object>();
+    entry.put("packId", packId);
+    entry.put("version", version);
+    entry.put("appliedAt", Instant.now().toString());
+    this.compliancePackStatus.add(entry);
     this.updatedAt = Instant.now();
   }
 }

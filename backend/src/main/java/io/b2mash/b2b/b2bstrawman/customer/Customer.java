@@ -69,6 +69,18 @@ public class Customer implements TenantAware {
   @Column(name = "applied_field_groups", columnDefinition = "jsonb")
   private List<UUID> appliedFieldGroups;
 
+  @Column(name = "lifecycle_status", nullable = false, length = 20)
+  private String lifecycleStatus = "PROSPECT";
+
+  @Column(name = "lifecycle_status_changed_at")
+  private Instant lifecycleStatusChangedAt;
+
+  @Column(name = "lifecycle_status_changed_by")
+  private UUID lifecycleStatusChangedBy;
+
+  @Column(name = "offboarded_at")
+  private Instant offboardedAt;
+
   protected Customer() {}
 
   public Customer(
@@ -163,6 +175,34 @@ public class Customer implements TenantAware {
 
   public void setAppliedFieldGroups(List<UUID> appliedFieldGroups) {
     this.appliedFieldGroups = appliedFieldGroups;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getLifecycleStatus() {
+    return lifecycleStatus;
+  }
+
+  public Instant getLifecycleStatusChangedAt() {
+    return lifecycleStatusChangedAt;
+  }
+
+  public UUID getLifecycleStatusChangedBy() {
+    return lifecycleStatusChangedBy;
+  }
+
+  public Instant getOffboardedAt() {
+    return offboardedAt;
+  }
+
+  /**
+   * Transitions the customer to a new lifecycle status, updating all lifecycle fields atomically.
+   */
+  public void transitionLifecycle(
+      String newStatus, UUID changedBy, Instant changedAt, Instant offboardedAt) {
+    this.lifecycleStatus = newStatus;
+    this.lifecycleStatusChangedAt = changedAt;
+    this.lifecycleStatusChangedBy = changedBy;
+    this.offboardedAt = offboardedAt;
     this.updatedAt = Instant.now();
   }
 }

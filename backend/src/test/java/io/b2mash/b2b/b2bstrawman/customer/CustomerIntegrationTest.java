@@ -4,6 +4,10 @@ import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -14,10 +18,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -31,6 +40,7 @@ import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequ
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -48,6 +58,11 @@ class CustomerIntegrationTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
+  @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
+  @Autowired private CustomerRepository customerRepository;
+  @Autowired private TransactionTemplate transactionTemplate;
+
+  private String tenantSchema;
 
   @BeforeAll
   void provisionTenants() throws Exception {
@@ -60,6 +75,9 @@ class CustomerIntegrationTest {
     syncMember(ORG_ID, "user_cust_admin", "cust_admin@test.com", "Admin", "admin");
     syncMember(ORG_ID, "user_cust_member", "cust_member@test.com", "Member", "member");
     syncMember(ORG_B_ID, "user_cust_tenant_b", "cust_tenantb@test.com", "Tenant B User", "owner");
+
+    tenantSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
   }
 
   // --- CRUD happy path ---
@@ -346,6 +364,132 @@ class CustomerIntegrationTest {
         .perform(get("/api/customers").with(tenantBOwnerJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[*].name", everyItem(not("Tenant A Customer"))));
+  }
+
+  // --- Lifecycle tests ---
+
+  @Test
+  void newCustomerDefaultsToProspectLifecycleStatus() throws Exception {
+    var createResult =
+        mockMvc
+            .perform(
+                post("/api/customers")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"name": "Lifecycle Prospect", "email": "lifecycle_prospect@test.com"}
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    var id = UUID.fromString(extractIdFromLocation(createResult));
+
+    // Verify lifecycle_status defaults to PROSPECT via repository
+    var customerRef = new AtomicReference<Customer>();
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var customer = customerRepository.findOneById(id).orElseThrow();
+                      customerRef.set(customer);
+                    }));
+
+    var customer = customerRef.get();
+    // New customers created after migration default to PROSPECT
+    // (the backfill in V31 sets pre-existing customers to ACTIVE,
+    // but new ones get the column default of PROSPECT)
+    assertEquals("PROSPECT", customer.getLifecycleStatus());
+    assertNull(customer.getLifecycleStatusChangedAt());
+    assertNull(customer.getLifecycleStatusChangedBy());
+    assertNull(customer.getOffboardedAt());
+  }
+
+  @Test
+  void transitionLifecycleUpdatesAllFields() throws Exception {
+    var createResult =
+        mockMvc
+            .perform(
+                post("/api/customers")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"name": "Lifecycle Transition", "email": "lifecycle_transition@test.com"}
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    var id = UUID.fromString(extractIdFromLocation(createResult));
+    var changedBy = UUID.randomUUID();
+    var changedAt = Instant.now();
+    var offboardedAt = Instant.now();
+
+    // Transition to OFFBOARDED
+    var customerRef = new AtomicReference<Customer>();
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var customer = customerRepository.findOneById(id).orElseThrow();
+                      customer.transitionLifecycle(
+                          "OFFBOARDED", changedBy, changedAt, offboardedAt);
+                      customerRepository.save(customer);
+                    }));
+
+    // Verify all fields updated after flush
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var customer = customerRepository.findOneById(id).orElseThrow();
+                      customerRef.set(customer);
+                    }));
+
+    var customer = customerRef.get();
+    assertEquals("OFFBOARDED", customer.getLifecycleStatus());
+    assertEquals(changedBy, customer.getLifecycleStatusChangedBy());
+    assertNotNull(customer.getLifecycleStatusChangedAt());
+    assertNotNull(customer.getOffboardedAt());
+  }
+
+  @Test
+  void findOneByIdReturnsLifecycleColumnsCorrectly() throws Exception {
+    // Create customer via API
+    var createResult =
+        mockMvc
+            .perform(
+                post("/api/customers")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"name": "Filter Lifecycle", "email": "filter_lifecycle@test.com"}
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    var id = UUID.fromString(extractIdFromLocation(createResult));
+
+    // Verify findOneById returns the customer with lifecycle columns intact
+    var customerRef = new AtomicReference<Customer>();
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var customer = customerRepository.findOneById(id);
+                      assertTrue(customer.isPresent(), "Customer should be found via findOneById");
+                      customerRef.set(customer.get());
+                    }));
+
+    var customer = customerRef.get();
+    assertNotNull(customer.getLifecycleStatus(), "lifecycleStatus should not be null");
+    assertEquals("PROSPECT", customer.getLifecycleStatus());
+    // Tenant isolation via MockMvc is already verified by customersAreIsolatedBetweenTenants test
   }
 
   // --- Helpers ---

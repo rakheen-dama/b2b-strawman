@@ -7,6 +7,7 @@ import {
   Puzzle,
   ChevronRight,
   DollarSign,
+  ListChecks,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { LucideIcon } from "lucide-react";
@@ -39,6 +40,13 @@ const settingsCards: SettingsCard[] = [
     title: "Rates & Currency",
     description: "Manage billing rates, cost rates, and default currency",
     href: "rates",
+    comingSoon: false,
+  },
+  {
+    icon: ListChecks,
+    title: "Custom Fields",
+    description: "Define custom fields and groups for projects, tasks, and customers",
+    href: "custom-fields",
     comingSoon: false,
   },
   {

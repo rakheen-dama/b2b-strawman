@@ -132,7 +132,7 @@ public class TimeEntryService {
 
   @Transactional(readOnly = true)
   public List<TimeEntry> listTimeEntriesByTask(
-      UUID taskId, UUID memberId, String orgRole, Boolean billable) {
+      UUID taskId, UUID memberId, String orgRole, Boolean billable, BillingStatus billingStatus) {
     var task =
         taskRepository
             .findOneById(taskId)
@@ -140,6 +140,9 @@ public class TimeEntryService {
 
     projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
 
+    if (billingStatus != null) {
+      return timeEntryRepository.findByTaskIdAndBillingStatus(taskId, billingStatus.name());
+    }
     if (billable != null) {
       return timeEntryRepository.findByTaskIdAndBillable(taskId, billable);
     }

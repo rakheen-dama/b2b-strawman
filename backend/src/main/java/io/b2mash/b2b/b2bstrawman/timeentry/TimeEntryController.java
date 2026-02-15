@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.timeentry;
 
+import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -32,10 +34,15 @@ public class TimeEntryController {
 
   private final TimeEntryService timeEntryService;
   private final MemberRepository memberRepository;
+  private final InvoiceRepository invoiceRepository;
 
-  public TimeEntryController(TimeEntryService timeEntryService, MemberRepository memberRepository) {
+  public TimeEntryController(
+      TimeEntryService timeEntryService,
+      MemberRepository memberRepository,
+      InvoiceRepository invoiceRepository) {
     this.timeEntryService = timeEntryService;
     this.memberRepository = memberRepository;
+    this.invoiceRepository = invoiceRepository;
   }
 
   @PostMapping("/api/tasks/{taskId}/time-entries")
@@ -57,20 +64,26 @@ public class TimeEntryController {
             orgRole);
 
     var names = resolveNames(List.of(entry));
+    var invoiceNumbers = resolveInvoiceNumbers(List.of(entry));
     return ResponseEntity.created(URI.create("/api/time-entries/" + entry.getId()))
-        .body(TimeEntryResponse.from(entry, names));
+        .body(TimeEntryResponse.from(entry, names, invoiceNumbers));
   }
 
   @GetMapping("/api/tasks/{taskId}/time-entries")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<TimeEntryResponse>> listTimeEntries(
-      @PathVariable UUID taskId, @RequestParam(required = false) Boolean billable) {
+      @PathVariable UUID taskId,
+      @RequestParam(required = false) Boolean billable,
+      @RequestParam(required = false) BillingStatus billingStatus) {
     UUID memberId = RequestScopes.requireMemberId();
     String orgRole = RequestScopes.getOrgRole();
 
-    var entries = timeEntryService.listTimeEntriesByTask(taskId, memberId, orgRole, billable);
+    var entries =
+        timeEntryService.listTimeEntriesByTask(taskId, memberId, orgRole, billable, billingStatus);
     var names = resolveNames(entries);
-    var response = entries.stream().map(e -> TimeEntryResponse.from(e, names)).toList();
+    var invoiceNumbers = resolveInvoiceNumbers(entries);
+    var response =
+        entries.stream().map(e -> TimeEntryResponse.from(e, names, invoiceNumbers)).toList();
     return ResponseEntity.ok(response);
   }
 
@@ -86,7 +99,8 @@ public class TimeEntryController {
     var entry =
         timeEntryService.toggleBillable(projectId, id, request.billable(), memberId, orgRole);
     var names = resolveNames(List.of(entry));
-    return ResponseEntity.ok(TimeEntryResponse.from(entry, names));
+    var invoiceNumbers = resolveInvoiceNumbers(List.of(entry));
+    return ResponseEntity.ok(TimeEntryResponse.from(entry, names, invoiceNumbers));
   }
 
   @PutMapping("/api/time-entries/{id}")
@@ -108,7 +122,8 @@ public class TimeEntryController {
             orgRole);
 
     var names = resolveNames(List.of(entry));
-    return ResponseEntity.ok(TimeEntryResponse.from(entry, names));
+    var invoiceNumbers = resolveInvoiceNumbers(List.of(entry));
+    return ResponseEntity.ok(TimeEntryResponse.from(entry, names, invoiceNumbers));
   }
 
   @DeleteMapping("/api/time-entries/{id}")
@@ -135,6 +150,27 @@ public class TimeEntryController {
 
     return memberRepository.findAllById(ids).stream()
         .collect(Collectors.toMap(Member::getId, Member::getName, (a, b) -> a));
+  }
+
+  /**
+   * Batch-loads invoice numbers for all invoice IDs referenced by the given time entries. Returns a
+   * map of invoice UUID to human-readable invoice number (e.g., "INV-0001"). Drafts without an
+   * assigned number are represented as "Draft".
+   */
+  private Map<UUID, String> resolveInvoiceNumbers(List<TimeEntry> entries) {
+    var invoiceIds =
+        entries.stream().map(TimeEntry::getInvoiceId).filter(Objects::nonNull).distinct().toList();
+
+    if (invoiceIds.isEmpty()) {
+      return Map.of();
+    }
+
+    return invoiceRepository.findAllById(invoiceIds).stream()
+        .collect(
+            Collectors.toMap(
+                Invoice::getId,
+                inv -> inv.getInvoiceNumber() != null ? inv.getInvoiceNumber() : "Draft",
+                (a, b) -> a));
   }
 
   // --- DTOs ---
@@ -174,10 +210,13 @@ public class TimeEntryController {
       BigDecimal billableValue,
       BigDecimal costValue,
       String description,
+      UUID invoiceId,
+      String invoiceNumber,
       Instant createdAt,
       Instant updatedAt) {
 
-    public static TimeEntryResponse from(TimeEntry entry, Map<UUID, String> memberNames) {
+    public static TimeEntryResponse from(
+        TimeEntry entry, Map<UUID, String> memberNames, Map<UUID, String> invoiceNumbers) {
       return new TimeEntryResponse(
           entry.getId(),
           entry.getTaskId(),
@@ -194,6 +233,8 @@ public class TimeEntryController {
           entry.getBillableValue(),
           entry.getCostValue(),
           entry.getDescription(),
+          entry.getInvoiceId(),
+          entry.getInvoiceId() != null ? invoiceNumbers.get(entry.getInvoiceId()) : null,
           entry.getCreatedAt(),
           entry.getUpdatedAt());
     }

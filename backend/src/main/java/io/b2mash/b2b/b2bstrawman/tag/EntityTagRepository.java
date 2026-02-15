@@ -14,7 +14,7 @@ public interface EntityTagRepository extends JpaRepository<EntityTag, UUID> {
   List<EntityTag> findByEntityTypeAndEntityId(
       @Param("entityType") String entityType, @Param("entityId") UUID entityId);
 
-  @Modifying
+  @Modifying(clearAutomatically = true)
   @Query("DELETE FROM EntityTag et WHERE et.entityType = :entityType AND et.entityId = :entityId")
   void deleteByEntityTypeAndEntityId(
       @Param("entityType") String entityType, @Param("entityId") UUID entityId);

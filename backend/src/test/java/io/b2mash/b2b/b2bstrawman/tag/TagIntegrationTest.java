@@ -298,6 +298,35 @@ class TagIntegrationTest {
     mockMvc.perform(get("/api/tags").with(memberJwt())).andExpect(status().isOk());
   }
 
+  @Test
+  void shouldResolveDuplicateSlugWithSuffix() throws Exception {
+    // Create first tag with name "Duplicate"
+    mockMvc
+        .perform(
+            post("/api/tags")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"name": "Duplicate", "color": "#EF4444"}
+                    """))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.slug").value("duplicate"));
+
+    // Create second tag with same name — should get a suffixed slug
+    mockMvc
+        .perform(
+            post("/api/tags")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"name": "Duplicate", "color": "#3B82F6"}
+                    """))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.slug").value("duplicate_2"));
+  }
+
   // --- JWT Helpers ---
 
   private JwtRequestPostProcessor ownerJwt() {

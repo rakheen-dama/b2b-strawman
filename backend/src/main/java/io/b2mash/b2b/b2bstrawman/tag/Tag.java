@@ -78,7 +78,10 @@ public class Tag implements TenantAware {
     return slug;
   }
 
-  /** Updates mutable metadata fields. */
+  /**
+   * Updates mutable metadata. The slug is intentionally immutable after creation — external
+   * references (URLs, API calls, saved views) may depend on it.
+   */
   public void updateMetadata(String name, String color) {
     this.name = name;
     this.color = color;

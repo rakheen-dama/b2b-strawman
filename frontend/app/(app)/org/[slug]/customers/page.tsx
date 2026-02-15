@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { api, handleApiError, getFieldDefinitions, getViews, getTags } from "@/lib/api";
 import type { Customer, CustomerStatus, FieldDefinitionResponse, SavedViewResponse, TagResponse } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
+import { LifecycleStatusBadge } from "@/components/customers/LifecycleStatusBadge";
 import { CreateCustomerDialog } from "@/components/customers/create-customer-dialog";
 import { CustomFieldBadges } from "@/components/field-definitions/CustomFieldBadges";
 import { ViewSelectorClient } from "@/components/views/ViewSelectorClient";
@@ -135,6 +136,9 @@ export default async function CustomersPage({
                 <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   Status
                 </th>
+                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400 md:table-cell">
+                  Lifecycle
+                </th>
                 <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400 lg:table-cell">
                   Created
                 </th>
@@ -194,6 +198,9 @@ export default async function CustomersPage({
                     </td>
                     <td className="px-4 py-3">
                       <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
+                    </td>
+                    <td className="hidden px-4 py-3 md:table-cell">
+                      <LifecycleStatusBadge lifecycleStatus={customer.lifecycleStatus} />
                     </td>
                     <td className="hidden px-4 py-3 text-sm text-slate-400 dark:text-slate-600 lg:table-cell">
                       {formatDate(customer.createdAt)}

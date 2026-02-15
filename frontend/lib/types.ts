@@ -91,6 +91,8 @@ export interface ProjectMember {
 
 export type CustomerStatus = "ACTIVE" | "ARCHIVED";
 
+export type LifecycleStatus = "PROSPECT" | "ONBOARDING" | "ACTIVE" | "DORMANT" | "OFFBOARDED";
+
 export interface Customer {
   id: string;
   name: string;
@@ -100,6 +102,7 @@ export interface Customer {
   status: CustomerStatus;
   notes: string | null;
   createdBy: string;
+  lifecycleStatus: LifecycleStatus;
   createdAt: string;
   updatedAt: string;
   customFields?: Record<string, unknown>;

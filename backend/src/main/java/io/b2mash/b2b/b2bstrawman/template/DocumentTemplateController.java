@@ -8,6 +8,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,11 +28,15 @@ public class DocumentTemplateController {
 
   private final DocumentTemplateService documentTemplateService;
   private final PdfRenderingService pdfRenderingService;
+  private final GeneratedDocumentService generatedDocumentService;
 
   public DocumentTemplateController(
-      DocumentTemplateService documentTemplateService, PdfRenderingService pdfRenderingService) {
+      DocumentTemplateService documentTemplateService,
+      PdfRenderingService pdfRenderingService,
+      GeneratedDocumentService generatedDocumentService) {
     this.documentTemplateService = documentTemplateService;
     this.pdfRenderingService = pdfRenderingService;
+    this.generatedDocumentService = generatedDocumentService;
   }
 
   @GetMapping
@@ -104,9 +109,46 @@ public class DocumentTemplateController {
         .body(result.htmlPreview());
   }
 
+  @PostMapping("/{id}/generate")
+  @PreAuthorize("isAuthenticated()")
+  public ResponseEntity<?> generateDocument(
+      @PathVariable UUID id, @Valid @RequestBody GenerateDocumentRequest request) {
+    UUID memberId = RequestScopes.MEMBER_ID.get();
+
+    var result =
+        generatedDocumentService.generateDocument(
+            id, request.entityId(), request.saveToDocuments(), memberId);
+
+    var generatedDoc = result.generatedDocument();
+    var pdfResult = result.pdfResult();
+
+    if (!request.saveToDocuments()) {
+      return ResponseEntity.ok()
+          .contentType(MediaType.APPLICATION_PDF)
+          .header(
+              HttpHeaders.CONTENT_DISPOSITION,
+              "attachment; filename=\"" + pdfResult.fileName() + "\"")
+          .body(pdfResult.pdfBytes());
+    } else {
+      return ResponseEntity.created(URI.create("/api/generated-documents/" + generatedDoc.getId()))
+          .body(
+              new GenerateDocumentResponse(
+                  generatedDoc.getId(),
+                  generatedDoc.getFileName(),
+                  generatedDoc.getFileSize(),
+                  generatedDoc.getDocumentId(),
+                  generatedDoc.getGeneratedAt()));
+    }
+  }
+
   // --- DTOs ---
 
   public record PreviewRequest(@NotNull UUID entityId) {}
+
+  public record GenerateDocumentRequest(@NotNull UUID entityId, boolean saveToDocuments) {}
+
+  public record GenerateDocumentResponse(
+      UUID id, String fileName, long fileSize, UUID documentId, Instant generatedAt) {}
 
   public record CreateTemplateRequest(
       @NotBlank String name,

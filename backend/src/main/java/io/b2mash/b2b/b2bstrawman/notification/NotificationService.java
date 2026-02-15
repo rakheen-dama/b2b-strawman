@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.comment.CommentRepository;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.event.BudgetThresholdEvent;
 import io.b2mash.b2b.b2bstrawman.event.CommentCreatedEvent;
+import io.b2mash.b2b.b2bstrawman.event.DocumentGeneratedEvent;
 import io.b2mash.b2b.b2bstrawman.event.DocumentUploadedEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoiceApprovedEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoicePaidEvent;
@@ -17,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -130,7 +132,8 @@ public class NotificationService {
           "INVOICE_APPROVED",
           "INVOICE_SENT",
           "INVOICE_PAID",
-          "INVOICE_VOIDED");
+          "INVOICE_VOIDED",
+          "DOCUMENT_GENERATED");
 
   // --- Preference methods ---
 
@@ -472,6 +475,53 @@ public class NotificationService {
     var title =
         "Invoice %s for %s has been voided".formatted(event.invoiceNumber(), event.customerName());
     return createNotificationsForRecipients(recipients, "INVOICE_VOIDED", title, event.entityId());
+  }
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public List<Notification> handleDocumentGenerated(DocumentGeneratedEvent event) {
+    var recipients = new HashSet<UUID>();
+
+    if (event.primaryEntityType() == TemplateEntityType.PROJECT && event.projectId() != null) {
+      // Notify project leads
+      var leads = projectMemberRepository.findByProjectIdAndProjectRole(event.projectId(), "LEAD");
+      for (var lead : leads) {
+        recipients.add(lead.getMemberId());
+      }
+    } else {
+      // CUSTOMER or INVOICE-scoped: notify org admins/owners
+      var adminsAndOwners = memberRepository.findByOrgRoleIn(List.of("admin", "owner"));
+      for (var member : adminsAndOwners) {
+        recipients.add(member.getId());
+      }
+    }
+
+    // Exclude the actor
+    recipients.remove(event.actorMemberId());
+
+    if (recipients.isEmpty()) {
+      log.warn(
+          "No recipients found for DOCUMENT_GENERATED notification: entity={}", event.entityId());
+      return List.of();
+    }
+
+    var title = "%s generated document \"%s\"".formatted(event.actorName(), event.fileName());
+
+    var created = new ArrayList<Notification>();
+    for (var recipientId : recipients) {
+      var notification =
+          createIfEnabled(
+              recipientId,
+              "DOCUMENT_GENERATED",
+              title,
+              null,
+              "GENERATED_DOCUMENT",
+              event.entityId(),
+              event.projectId());
+      if (notification != null) {
+        created.add(notification);
+      }
+    }
+    return created;
   }
 
   // --- Private helpers ---

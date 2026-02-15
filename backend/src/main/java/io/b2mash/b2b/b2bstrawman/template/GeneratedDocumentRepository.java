@@ -21,4 +21,14 @@ public interface GeneratedDocumentRepository extends JpaRepository<GeneratedDocu
           + " AND gd.primaryEntityId = :entityId ORDER BY gd.generatedAt DESC")
   List<GeneratedDocument> findByPrimaryEntityTypeAndPrimaryEntityIdOrderByGeneratedAtDesc(
       @Param("entityType") TemplateEntityType entityType, @Param("entityId") UUID entityId);
+
+  @Query(
+      "SELECT gd FROM GeneratedDocument gd WHERE gd.templateId = :templateId ORDER BY gd.generatedAt DESC")
+  List<GeneratedDocument> findByTemplateIdOrderByGeneratedAtDesc(
+      @Param("templateId") UUID templateId);
+
+  @Query(
+      "SELECT gd FROM GeneratedDocument gd WHERE gd.generatedBy = :generatedBy ORDER BY gd.generatedAt DESC")
+  List<GeneratedDocument> findByGeneratedByOrderByGeneratedAtDesc(
+      @Param("generatedBy") UUID generatedBy);
 }

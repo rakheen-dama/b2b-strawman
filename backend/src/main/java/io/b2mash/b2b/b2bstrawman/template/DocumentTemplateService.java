@@ -9,6 +9,8 @@ import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.CreateTempl
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.TemplateDetailResponse;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.TemplateListResponse;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.UpdateTemplateRequest;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -116,6 +118,25 @@ public class DocumentTemplateService {
             .findOneById(id)
             .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", id));
 
+    // Track changed fields for audit
+    var changedFields = new ArrayList<String>();
+    if (request.name() != null && !request.name().equals(dt.getName())) {
+      changedFields.add("name");
+    }
+    if (request.description() != null && !request.description().equals(dt.getDescription())) {
+      changedFields.add("description");
+    }
+    if (request.content() != null && !request.content().equals(dt.getContent())) {
+      changedFields.add("content");
+    }
+    if (request.css() != null && !java.util.Objects.equals(request.css(), dt.getCss())) {
+      changedFields.add("css");
+    }
+    if (request.sortOrder() != null
+        && !java.util.Objects.equals(request.sortOrder(), dt.getSortOrder())) {
+      changedFields.add("sortOrder");
+    }
+
     dt.updateContent(
         request.name() != null ? request.name() : dt.getName(),
         request.description() != null ? request.description() : dt.getDescription(),
@@ -130,12 +151,15 @@ public class DocumentTemplateService {
 
     log.info("Updated document template: id={}, name={}", dt.getId(), dt.getName());
 
+    var auditDetails = new HashMap<String, Object>();
+    auditDetails.put("name", dt.getName());
+    auditDetails.put("changed_fields", changedFields);
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("template.updated")
             .entityType("document_template")
             .entityId(dt.getId())
-            .details(Map.of("name", dt.getName()))
+            .details(auditDetails)
             .build());
 
     return TemplateDetailResponse.from(dt);
@@ -158,7 +182,11 @@ public class DocumentTemplateService {
             .eventType("template.deleted")
             .entityType("document_template")
             .entityId(dt.getId())
-            .details(Map.of("slug", dt.getSlug()))
+            .details(
+                Map.of(
+                    "name", dt.getName(),
+                    "category", dt.getCategory().name(),
+                    "slug", dt.getSlug()))
             .build());
   }
 
@@ -214,15 +242,19 @@ public class DocumentTemplateService {
 
     clone = documentTemplateRepository.save(clone);
 
+    var cloneDetails = new HashMap<String, Object>();
+    cloneDetails.put("original_id", original.getId().toString());
+    cloneDetails.put("original_name", original.getName());
+    cloneDetails.put("clone_name", clone.getName());
+    if (original.getPackId() != null) {
+      cloneDetails.put("pack_id", original.getPackId());
+    }
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("template.cloned")
             .entityType("document_template")
             .entityId(clone.getId())
-            .details(
-                Map.of(
-                    "original_id", original.getId().toString(),
-                    "original_name", original.getName()))
+            .details(cloneDetails)
             .build());
 
     log.info("Cloned template: original={}, clone={}", original.getId(), clone.getId());

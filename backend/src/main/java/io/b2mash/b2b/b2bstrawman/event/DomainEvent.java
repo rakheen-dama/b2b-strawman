@@ -27,7 +27,8 @@ public sealed interface DomainEvent
         InvoiceApprovedEvent,
         InvoiceSentEvent,
         InvoicePaidEvent,
-        InvoiceVoidedEvent {
+        InvoiceVoidedEvent,
+        DocumentGeneratedEvent {
 
   String eventType();
 

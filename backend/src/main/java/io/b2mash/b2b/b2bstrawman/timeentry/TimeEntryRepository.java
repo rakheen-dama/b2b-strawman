@@ -35,6 +35,20 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
   @Query(
       """
       SELECT te FROM TimeEntry te
+      WHERE te.taskId = :taskId
+        AND (
+          (:billingStatus = 'UNBILLED' AND te.billable = true AND te.invoiceId IS NULL)
+          OR (:billingStatus = 'BILLED' AND te.invoiceId IS NOT NULL)
+          OR (:billingStatus = 'NON_BILLABLE' AND te.billable = false)
+        )
+      ORDER BY te.date DESC, te.createdAt DESC
+      """)
+  List<TimeEntry> findByTaskIdAndBillingStatus(
+      @Param("taskId") UUID taskId, @Param("billingStatus") String billingStatus);
+
+  @Query(
+      """
+      SELECT te FROM TimeEntry te
       WHERE te.memberId = :memberId
         AND te.date >= :from
         AND te.date <= :to

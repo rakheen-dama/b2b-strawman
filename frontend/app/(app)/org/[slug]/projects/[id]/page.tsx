@@ -1,6 +1,6 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
-import { api, handleApiError, getFieldDefinitions, getFieldGroups, getGroupMembers } from "@/lib/api";
-import type { OrgMember, Project, Customer, Document, ProjectMember, ProjectRole, Task, ProjectTimeSummary, MemberTimeSummary, TaskTimeSummary, BillingRate, OrgSettings, BudgetStatusResponse, ProjectProfitabilityResponse, FieldDefinitionResponse, FieldGroupResponse, FieldGroupMemberResponse } from "@/lib/types";
+import { api, handleApiError, getFieldDefinitions, getFieldGroups, getGroupMembers, getTags } from "@/lib/api";
+import type { OrgMember, Project, Customer, Document, ProjectMember, ProjectRole, Task, ProjectTimeSummary, MemberTimeSummary, TaskTimeSummary, BillingRate, OrgSettings, BudgetStatusResponse, ProjectProfitabilityResponse, FieldDefinitionResponse, FieldGroupResponse, FieldGroupMemberResponse, TagResponse } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EditProjectDialog } from "@/components/projects/edit-project-dialog";
@@ -18,6 +18,7 @@ import { ProjectFinancialsTab } from "@/components/profitability/project-financi
 import { OverviewTab } from "@/components/projects/overview-tab";
 import { CustomFieldSection } from "@/components/field-definitions/CustomFieldSection";
 import { FieldGroupSelector } from "@/components/field-definitions/FieldGroupSelector";
+import { TagInput } from "@/components/tags/TagInput";
 import { formatDate } from "@/lib/format";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
@@ -187,6 +188,20 @@ export default async function ProjectDetailPage({
     // Non-fatal: custom fields section won't render
   }
 
+  // Tags for the Tags section
+  let projectTags: TagResponse[] = [];
+  let allTags: TagResponse[] = [];
+  try {
+    const [entityTags, orgTags] = await Promise.all([
+      api.get<TagResponse[]>(`/api/projects/${id}/tags`),
+      getTags(),
+    ]);
+    projectTags = entityTags;
+    allTags = orgTags;
+  } catch {
+    // Non-fatal: tags section will show empty state
+  }
+
   const roleBadge = project.projectRole ? ROLE_BADGE[project.projectRole] : null;
 
   return (
@@ -268,6 +283,22 @@ export default async function ProjectDetailPage({
         fieldGroups={projectFieldGroups}
         groupMembers={projectGroupMembers}
       />
+
+      {/* Tags */}
+      <div className="space-y-2">
+        <p className="text-xs font-medium uppercase tracking-wide text-olive-500 dark:text-olive-400">
+          Tags
+        </p>
+        <TagInput
+          entityType="PROJECT"
+          entityId={id}
+          tags={projectTags}
+          allTags={allTags}
+          editable={canEdit}
+          canInlineCreate={isAdmin}
+          slug={slug}
+        />
+      </div>
 
       {/* Tabbed Content (33.7) */}
       <ProjectTabs

@@ -1,5 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
-import { api, handleApiError, getFieldDefinitions, getFieldGroups, getGroupMembers } from "@/lib/api";
+import { api, handleApiError, getFieldDefinitions, getFieldGroups, getGroupMembers, getTags } from "@/lib/api";
 import type {
   Customer,
   CustomerStatus,
@@ -14,6 +14,7 @@ import type {
   FieldDefinitionResponse,
   FieldGroupResponse,
   FieldGroupMemberResponse,
+  TagResponse,
 } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,7 @@ import { CustomerFinancialsTab } from "@/components/profitability/customer-finan
 import { CustomerInvoicesTab } from "@/components/customers/customer-invoices-tab";
 import { CustomFieldSection } from "@/components/field-definitions/CustomFieldSection";
 import { FieldGroupSelector } from "@/components/field-definitions/FieldGroupSelector";
+import { TagInput } from "@/components/tags/TagInput";
 import { formatDate } from "@/lib/format";
 import { ArrowLeft, Pencil, Archive } from "lucide-react";
 import Link from "next/link";
@@ -140,6 +142,20 @@ export default async function CustomerDetailPage({
     // Non-fatal: custom fields section won't render
   }
 
+  // Tags for the Tags section
+  let customerTags: TagResponse[] = [];
+  let allTags: TagResponse[] = [];
+  try {
+    const [entityTags, orgTags] = await Promise.all([
+      api.get<TagResponse[]>(`/api/customers/${id}/tags`),
+      getTags(),
+    ]);
+    customerTags = entityTags;
+    allTags = orgTags;
+  } catch {
+    // Non-fatal: tags section will show empty state
+  }
+
   const statusBadge = STATUS_BADGE[customer.status];
 
   return (
@@ -226,6 +242,22 @@ export default async function CustomerDetailPage({
         fieldGroups={customerFieldGroups}
         groupMembers={customerGroupMembers}
       />
+
+      {/* Tags */}
+      <div className="space-y-2">
+        <p className="text-xs font-medium uppercase tracking-wide text-olive-500 dark:text-olive-400">
+          Tags
+        </p>
+        <TagInput
+          entityType="CUSTOMER"
+          entityId={id}
+          tags={customerTags}
+          allTags={allTags}
+          editable={isAdmin}
+          canInlineCreate={isAdmin}
+          slug={slug}
+        />
+      </div>
 
       {/* Tabbed Content */}
       <CustomerTabs

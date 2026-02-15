@@ -112,7 +112,7 @@ export function TimeSummaryPanel({
       ) : (
         <>
           {/* Total Summary Stat Cards (47.3) */}
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="grid auto-rows-fr grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             <StatCard label="Total Time" value={formatDuration(summary.totalMinutes)} />
             <StatCard
               label="Billable"

@@ -151,7 +151,7 @@ export default async function ProjectsPage({
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid auto-rows-fr grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {projects.map((project) => {
             const roleBadge = project.projectRole ? ROLE_BADGE[project.projectRole] : null;
             const budgetStatus = budgetStatuses.get(project.id);

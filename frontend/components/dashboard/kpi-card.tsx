@@ -93,8 +93,8 @@ export function KpiCard(props: KpiCardProps) {
 
   if (href) {
     return (
-      <Link href={href} className="block">
-        <Card className="transition-shadow hover:shadow-md">
+      <Link href={href} className="block h-full">
+        <Card className="h-full transition-shadow hover:shadow-md">
           <KpiCardContent {...rest} />
         </Card>
       </Link>
@@ -102,7 +102,7 @@ export function KpiCard(props: KpiCardProps) {
   }
 
   return (
-    <Card>
+    <Card className="h-full">
       <KpiCardContent {...rest} />
     </Card>
   );

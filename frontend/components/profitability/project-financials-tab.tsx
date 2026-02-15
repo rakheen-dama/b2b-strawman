@@ -57,7 +57,7 @@ export function ProjectFinancialsTab({
               {curr.currency}
             </h4>
           )}
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="grid auto-rows-fr grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             <StatCard
               label="Billable Hours"
               value={`${curr.totalBillableHours.toFixed(1)}h`}

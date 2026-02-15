@@ -33,7 +33,7 @@ function changeDirection(
 export function KpiCardRow({ kpis, isAdmin, orgSlug }: KpiCardRowProps) {
   if (!kpis) {
     return (
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+      <div className="grid auto-rows-fr grid-cols-2 gap-4 lg:grid-cols-3">
         <KpiCard
           label="Active Projects"
           value={0}
@@ -153,7 +153,7 @@ export function KpiCardRow({ kpis, isAdmin, orgSlug }: KpiCardRowProps) {
       : "grid-cols-1 sm:grid-cols-3";
 
   return (
-    <div className={`grid gap-4 ${gridCols}`}>
+    <div className={`grid auto-rows-fr gap-4 ${gridCols}`}>
       {visibleCards.map((card) => (
         <KpiCard
           key={card.label}

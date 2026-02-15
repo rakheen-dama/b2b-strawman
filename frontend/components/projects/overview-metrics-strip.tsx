@@ -30,7 +30,7 @@ export function OverviewMetricsStrip({
   const budgetPercent = budgetStatus?.hoursConsumedPct ?? null;
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+    <div className="grid auto-rows-fr grid-cols-2 gap-3 sm:grid-cols-4">
       {/* Tasks */}
       <Card className="px-4 py-3">
         <span className="text-sm text-muted-foreground">Tasks</span>

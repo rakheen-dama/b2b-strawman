@@ -1,12 +1,13 @@
 "use server";
 
-import { api, ApiError } from "@/lib/api";
+import { api, ApiError, setEntityFieldGroups } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import type {
   CreateFieldDefinitionRequest,
   UpdateFieldDefinitionRequest,
   CreateFieldGroupRequest,
   UpdateFieldGroupRequest,
+  EntityType,
 } from "@/lib/types";
 
 interface ActionResult {
@@ -175,5 +176,55 @@ export async function deleteFieldGroupAction(
   }
 
   revalidatePath(`/org/${slug}/settings/custom-fields`);
+  return { success: true };
+}
+
+// ---- Entity Custom Field Value Actions ----
+
+export async function updateEntityCustomFieldsAction(
+  slug: string,
+  entityType: EntityType,
+  entityId: string,
+  customFields: Record<string, unknown>,
+): Promise<ActionResult> {
+  const prefix = entityType.toLowerCase() + "s";
+  try {
+    await api.put(`/api/${prefix}/${entityId}`, { customFields });
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 403) {
+        return { success: false, error: "You do not have permission to update custom fields." };
+      }
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${slug}/${prefix}/${entityId}`);
+  revalidatePath(`/org/${slug}/${prefix}`);
+  return { success: true };
+}
+
+export async function setEntityFieldGroupsAction(
+  slug: string,
+  entityType: EntityType,
+  entityId: string,
+  appliedFieldGroups: string[],
+): Promise<ActionResult> {
+  const prefix = entityType.toLowerCase() + "s";
+  try {
+    await setEntityFieldGroups(entityType, entityId, appliedFieldGroups);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 403) {
+        return { success: false, error: "You do not have permission to manage field groups." };
+      }
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${slug}/${prefix}/${entityId}`);
+  revalidatePath(`/org/${slug}/${prefix}`);
   return { success: true };
 }

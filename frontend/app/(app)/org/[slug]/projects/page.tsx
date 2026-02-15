@@ -1,9 +1,10 @@
 import { auth } from "@clerk/nextjs/server";
-import { api, handleApiError } from "@/lib/api";
-import type { Project, ProjectRole, LightweightBudgetStatus } from "@/lib/types";
+import { api, handleApiError, getFieldDefinitions } from "@/lib/api";
+import type { Project, ProjectRole, LightweightBudgetStatus, FieldDefinitionResponse } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { BudgetStatusDot } from "@/components/projects/budget-status-dot";
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
+import { CustomFieldBadges } from "@/components/field-definitions/CustomFieldBadges";
 import { formatDate } from "@/lib/format";
 import { FileText, FolderOpen, Users } from "lucide-react";
 import Link from "next/link";
@@ -25,6 +26,14 @@ export default async function ProjectsPage({ params }: { params: Promise<{ slug:
     projects = await api.get<Project[]>("/api/projects");
   } catch (error) {
     handleApiError(error);
+  }
+
+  // Fetch field definitions for custom field badges on project cards
+  let projectFieldDefs: FieldDefinitionResponse[] = [];
+  try {
+    projectFieldDefs = await getFieldDefinitions("PROJECT");
+  } catch {
+    // Non-fatal: custom field badges won't render
   }
 
   // Fetch budget status for each project (admin-only, non-fatal — 404 means no budget)
@@ -138,6 +147,15 @@ export default async function ProjectsPage({ params }: { params: Promise<{ slug:
                     </span>
                     <span>{formatDate(project.createdAt)}</span>
                   </div>
+
+                  {/* Custom field badges */}
+                  {project.customFields && Object.keys(project.customFields).length > 0 && (
+                    <CustomFieldBadges
+                      customFields={project.customFields}
+                      fieldDefinitions={projectFieldDefs}
+                      maxFields={3}
+                    />
+                  )}
                 </div>
               </Link>
             );

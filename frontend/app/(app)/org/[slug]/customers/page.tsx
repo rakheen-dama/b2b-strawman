@@ -1,8 +1,9 @@
 import { auth } from "@clerk/nextjs/server";
-import { api, handleApiError } from "@/lib/api";
-import type { Customer, CustomerStatus } from "@/lib/types";
+import { api, handleApiError, getFieldDefinitions } from "@/lib/api";
+import type { Customer, CustomerStatus, FieldDefinitionResponse } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { CreateCustomerDialog } from "@/components/customers/create-customer-dialog";
+import { CustomFieldBadges } from "@/components/field-definitions/CustomFieldBadges";
 import { formatDate } from "@/lib/format";
 import { UserRound } from "lucide-react";
 import Link from "next/link";
@@ -23,6 +24,14 @@ export default async function CustomersPage({ params }: { params: Promise<{ slug
     customers = await api.get<Customer[]>("/api/customers");
   } catch (error) {
     handleApiError(error);
+  }
+
+  // Fetch field definitions for custom field badges on customer rows
+  let customerFieldDefs: FieldDefinitionResponse[] = [];
+  try {
+    customerFieldDefs = await getFieldDefinitions("CUSTOMER");
+  } catch {
+    // Non-fatal: custom field badges won't render
   }
 
   return (
@@ -93,6 +102,13 @@ export default async function CustomersPage({ params }: { params: Promise<{ slug
                       >
                         {customer.name}
                       </Link>
+                      {customer.customFields && Object.keys(customer.customFields).length > 0 && (
+                        <CustomFieldBadges
+                          customFields={customer.customFields}
+                          fieldDefinitions={customerFieldDefs}
+                          maxFields={2}
+                        />
+                      )}
                     </td>
                     <td className="px-4 py-3 text-sm text-olive-600 dark:text-olive-400">
                       {customer.email}

@@ -1,6 +1,6 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
-import { api, handleApiError } from "@/lib/api";
-import type { OrgMember, Project, Customer, Document, ProjectMember, ProjectRole, Task, ProjectTimeSummary, MemberTimeSummary, TaskTimeSummary, BillingRate, OrgSettings, BudgetStatusResponse, ProjectProfitabilityResponse } from "@/lib/types";
+import { api, handleApiError, getFieldDefinitions, getFieldGroups, getGroupMembers } from "@/lib/api";
+import type { OrgMember, Project, Customer, Document, ProjectMember, ProjectRole, Task, ProjectTimeSummary, MemberTimeSummary, TaskTimeSummary, BillingRate, OrgSettings, BudgetStatusResponse, ProjectProfitabilityResponse, FieldDefinitionResponse, FieldGroupResponse, FieldGroupMemberResponse } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EditProjectDialog } from "@/components/projects/edit-project-dialog";
@@ -16,6 +16,8 @@ import { ProjectRatesTab } from "@/components/rates/project-rates-tab";
 import { BudgetPanel } from "@/components/budget/budget-panel";
 import { ProjectFinancialsTab } from "@/components/profitability/project-financials-tab";
 import { OverviewTab } from "@/components/projects/overview-tab";
+import { CustomFieldSection } from "@/components/field-definitions/CustomFieldSection";
+import { FieldGroupSelector } from "@/components/field-definitions/FieldGroupSelector";
 import { formatDate } from "@/lib/format";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
@@ -157,6 +159,34 @@ export default async function ProjectDetailPage({
     // Non-fatal: "My Tasks" filter won't work without member ID
   }
 
+  // Custom field definitions and groups for the Custom Fields section
+  let projectFieldDefs: FieldDefinitionResponse[] = [];
+  let projectFieldGroups: FieldGroupResponse[] = [];
+  const projectGroupMembers: Record<string, FieldGroupMemberResponse[]> = {};
+  try {
+    const [defs, groups] = await Promise.all([
+      getFieldDefinitions("PROJECT"),
+      getFieldGroups("PROJECT"),
+    ]);
+    projectFieldDefs = defs;
+    projectFieldGroups = groups;
+
+    // Fetch members for each applied group
+    const appliedGroups = project.appliedFieldGroups ?? [];
+    if (appliedGroups.length > 0) {
+      const memberResults = await Promise.allSettled(
+        appliedGroups.map((gId) => getGroupMembers(gId)),
+      );
+      memberResults.forEach((result, i) => {
+        if (result.status === "fulfilled") {
+          projectGroupMembers[appliedGroups[i]] = result.value;
+        }
+      });
+    }
+  } catch {
+    // Non-fatal: custom fields section won't render
+  }
+
   const roleBadge = project.projectRole ? ROLE_BADGE[project.projectRole] : null;
 
   return (
@@ -217,6 +247,27 @@ export default async function ProjectDetailPage({
           </div>
         )}
       </div>
+
+      {/* Custom Fields */}
+      <FieldGroupSelector
+        entityType="PROJECT"
+        entityId={id}
+        appliedFieldGroups={project.appliedFieldGroups ?? []}
+        slug={slug}
+        canManage={canManage}
+        allGroups={projectFieldGroups}
+      />
+      <CustomFieldSection
+        entityType="PROJECT"
+        entityId={id}
+        customFields={project.customFields ?? {}}
+        appliedFieldGroups={project.appliedFieldGroups ?? []}
+        editable={canEdit}
+        slug={slug}
+        fieldDefinitions={projectFieldDefs}
+        fieldGroups={projectFieldGroups}
+        groupMembers={projectGroupMembers}
+      />
 
       {/* Tabbed Content (33.7) */}
       <ProjectTabs

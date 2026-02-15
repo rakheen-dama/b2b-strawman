@@ -8,6 +8,8 @@ export interface Project {
   createdAt: string;
   updatedAt: string;
   projectRole: ProjectRole | null;
+  customFields?: Record<string, unknown>;
+  appliedFieldGroups?: string[];
 }
 
 export interface CreateProjectRequest {
@@ -99,6 +101,8 @@ export interface Customer {
   createdBy: string;
   createdAt: string;
   updatedAt: string;
+  customFields?: Record<string, unknown>;
+  appliedFieldGroups?: string[];
 }
 
 export interface CreateCustomerRequest {

@@ -219,3 +219,17 @@ export async function getGroupMembers(
     `/api/field-groups/${groupId}/fields`,
   );
 }
+
+// ---- Entity Custom Field Groups ----
+
+export async function setEntityFieldGroups(
+  entityType: string,
+  entityId: string,
+  appliedFieldGroups: string[],
+): Promise<FieldDefinitionResponse[]> {
+  const prefix = entityType.toLowerCase() + "s";
+  return api.put<FieldDefinitionResponse[]>(
+    `/api/${prefix}/${entityId}/field-groups`,
+    { appliedFieldGroups },
+  );
+}

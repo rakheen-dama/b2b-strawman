@@ -21,7 +21,15 @@ function makeTimeEntry(overrides: Partial<TimeEntry> = {}): TimeEntry {
     durationMinutes: 90,
     billable: true,
     rateCents: null,
+    billingRateSnapshot: null,
+    billingRateCurrency: null,
+    costRateSnapshot: null,
+    costRateCurrency: null,
+    billableValue: null,
+    costValue: null,
     description: "Worked on feature",
+    invoiceId: null,
+    invoiceNumber: null,
     createdAt: "2026-02-10T10:00:00Z",
     updatedAt: "2026-02-10T10:00:00Z",
     ...overrides,
@@ -74,15 +82,12 @@ describe("TimeEntryList", () => {
     expect(screen.getByText("Me")).toBeInTheDocument();
     expect(screen.getByText("Bob")).toBeInTheDocument();
 
-    // Check billable badge variants via data-variant attribute
-    const billableBadge = screen.getAllByText(/^Billable$/).find(
-      (el) => el.getAttribute("data-variant") === "success",
-    );
-    expect(billableBadge).toBeDefined();
-    const nonBillableBadge = screen.getAllByText(/^Non-billable$/).find(
-      (el) => el.getAttribute("data-variant") === "neutral",
-    );
-    expect(nonBillableBadge).toBeDefined();
+    // Check billing status badges via data-variant attribute (scope to table body)
+    const tbody = screen.getByRole("table").querySelector("tbody")!;
+    // ownEntry is billable with no invoiceId → "Unbilled" (neutral)
+    const unbilledBadge = within(tbody).getByText("Unbilled");
+    expect(unbilledBadge.getAttribute("data-variant")).toBe("neutral");
+    // otherEntry is non-billable → no badge rendered
   });
 
   it("shows empty state when no entries exist", () => {
@@ -218,5 +223,64 @@ describe("TimeEntryList", () => {
     expect(
       screen.queryByRole("button", { name: /delete time entry/i }),
     ).not.toBeInTheDocument();
+  });
+
+  it("disables edit/delete buttons for billed entries with tooltip", () => {
+    const billedEntry = makeTimeEntry({
+      id: "te-billed",
+      memberId: "current-member",
+      memberName: "Me",
+      billable: true,
+      invoiceId: "inv-123",
+      invoiceNumber: "INV-0001",
+    });
+
+    render(
+      <TimeEntryList
+        entries={[billedEntry]}
+        slug="acme"
+        projectId="p1"
+        currentMemberId="current-member"
+        orgRole="org:admin"
+      />,
+    );
+
+    // Edit and delete buttons should be disabled
+    const editBtn = screen.getByRole("button", {
+      name: /edit time entry by me/i,
+    });
+    expect(editBtn).toBeDisabled();
+    const deleteBtn = screen.getByRole("button", {
+      name: /delete time entry by me/i,
+    });
+    expect(deleteBtn).toBeDisabled();
+  });
+
+  it("renders Billed badge with link for billed entries", () => {
+    const billedEntry = makeTimeEntry({
+      id: "te-billed-link",
+      memberId: "current-member",
+      memberName: "Me",
+      billable: true,
+      invoiceId: "inv-456",
+      invoiceNumber: "INV-0002",
+    });
+
+    render(
+      <TimeEntryList
+        entries={[billedEntry]}
+        slug="acme"
+        projectId="p1"
+        currentMemberId="current-member"
+        orgRole="org:member"
+      />,
+    );
+
+    // Scope to table body to avoid matching the filter button "Billed"
+    const tbody = screen.getByRole("table").querySelector("tbody")!;
+    const billedBadge = within(tbody).getByText("Billed");
+    expect(billedBadge.getAttribute("data-variant")).toBe("success");
+    const link = billedBadge.closest("a");
+    expect(link).toHaveAttribute("href", "/org/acme/invoices/inv-456");
   });
 });

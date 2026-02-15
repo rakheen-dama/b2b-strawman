@@ -13,8 +13,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { EditTimeEntryDialog } from "@/components/tasks/edit-time-entry-dialog";
 import { DeleteTimeEntryDialog } from "@/components/tasks/delete-time-entry-dialog";
+import { BillingStatusBadge } from "@/components/time-entries/billing-status-badge";
 import { formatCurrencySafe, formatDate, formatDuration } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { TimeEntry } from "@/lib/types";
@@ -22,11 +29,15 @@ import type { TimeEntry } from "@/lib/types";
 /** Org roles that can edit/delete any time entry in the project */
 const ELEVATED_ROLES = new Set(["org:admin", "org:owner"]);
 
-type BillableFilter = "all" | "billable" | "non-billable";
+type BillingStatusFilter = "all" | "unbilled" | "billed" | "non-billable";
 
-const BILLABLE_FILTER_OPTIONS: { key: BillableFilter; label: string }[] = [
+const BILLING_STATUS_FILTER_OPTIONS: {
+  key: BillingStatusFilter;
+  label: string;
+}[] = [
   { key: "all", label: "All" },
-  { key: "billable", label: "Billable" },
+  { key: "unbilled", label: "Unbilled" },
+  { key: "billed", label: "Billed" },
   { key: "non-billable", label: "Non-billable" },
 ];
 
@@ -48,15 +59,18 @@ export function TimeEntryList({
   orgRole,
   canManage = false,
 }: TimeEntryListProps) {
-  const [billableFilter, setBillableFilter] = useState<BillableFilter>("all");
+  const [billingFilter, setBillingFilter] =
+    useState<BillingStatusFilter>("all");
 
-  // Apply client-side billable filter
+  // Apply client-side billing status filter
   const filteredEntries =
-    billableFilter === "all"
+    billingFilter === "all"
       ? entries
-      : billableFilter === "billable"
-        ? entries.filter((e) => e.billable)
-        : entries.filter((e) => !e.billable);
+      : billingFilter === "unbilled"
+        ? entries.filter((e) => e.billable && !e.invoiceId)
+        : billingFilter === "billed"
+          ? entries.filter((e) => !!e.invoiceId)
+          : entries.filter((e) => !e.billable);
 
   const totalMinutes = filteredEntries.reduce(
     (sum, e) => sum + e.durationMinutes,
@@ -87,9 +101,10 @@ export function TimeEntryList({
     );
   }
 
-  // Check if we need an actions column at all
+  // Check if we need an actions column: show if any entry is editable OR billed (disabled buttons)
   const showActionsColumn =
-    actionsEnabled && filteredEntries.some((e) => canEditEntry(e));
+    actionsEnabled &&
+    filteredEntries.some((e) => canEditEntry(e) || !!e.invoiceId);
 
   return (
     <div className="space-y-3">
@@ -102,20 +117,20 @@ export function TimeEntryList({
         </div>
       </div>
 
-      {/* Billable filter toggle */}
+      {/* Billing status filter toggle */}
       <div
         className="flex flex-wrap gap-2"
         role="group"
-        aria-label="Billable filter"
+        aria-label="Billing status filter"
       >
-        {BILLABLE_FILTER_OPTIONS.map((option) => (
+        {BILLING_STATUS_FILTER_OPTIONS.map((option) => (
           <button
             key={option.key}
             type="button"
-            onClick={() => setBillableFilter(option.key)}
+            onClick={() => setBillingFilter(option.key)}
             className={cn(
               "rounded-full px-3 py-1 text-sm font-medium transition-colors",
-              billableFilter === option.key
+              billingFilter === option.key
                 ? "bg-olive-900 text-olive-50 dark:bg-olive-100 dark:text-olive-900"
                 : "bg-olive-100 text-olive-600 hover:bg-olive-200 dark:bg-olive-800 dark:text-olive-400 dark:hover:bg-olive-700",
             )}
@@ -127,7 +142,15 @@ export function TimeEntryList({
 
       {filteredEntries.length === 0 ? (
         <p className="py-4 text-center text-sm text-olive-500 dark:text-olive-400">
-          No {billableFilter === "all" ? "" : billableFilter === "billable" ? "billable " : "non-billable "}time entries.
+          No{" "}
+          {billingFilter === "all"
+            ? ""
+            : billingFilter === "unbilled"
+              ? "unbilled "
+              : billingFilter === "billed"
+                ? "billed "
+                : "non-billable "}
+          time entries.
         </p>
       ) : (
         <div className="rounded-lg border border-olive-200 dark:border-olive-800">
@@ -144,7 +167,7 @@ export function TimeEntryList({
                   Member
                 </TableHead>
                 <TableHead className="text-xs uppercase tracking-wide text-olive-600 dark:text-olive-400">
-                  Billable
+                  Billing
                 </TableHead>
                 <TableHead className="hidden text-xs uppercase tracking-wide text-olive-600 sm:table-cell dark:text-olive-400">
                   Value
@@ -162,6 +185,7 @@ export function TimeEntryList({
             <TableBody>
               {filteredEntries.map((entry) => {
                 const editable = canEditEntry(entry);
+                const isBilled = !!entry.invoiceId;
 
                 return (
                   <TableRow
@@ -178,11 +202,12 @@ export function TimeEntryList({
                       {entry.memberName}
                     </TableCell>
                     <TableCell>
-                      {entry.billable ? (
-                        <Badge variant="success">Billable</Badge>
-                      ) : (
-                        <Badge variant="neutral">Non-billable</Badge>
-                      )}
+                      <BillingStatusBadge
+                        billable={entry.billable}
+                        invoiceId={entry.invoiceId}
+                        invoiceNumber={entry.invoiceNumber}
+                        slug={slug}
+                      />
                     </TableCell>
                     <TableCell className="hidden text-sm text-olive-600 sm:table-cell dark:text-olive-400">
                       {entry.billableValue != null &&
@@ -204,32 +229,84 @@ export function TimeEntryList({
                       <TableCell>
                         {editable && slug && projectId && (
                           <div className="flex items-center gap-1">
-                            <EditTimeEntryDialog
-                              entry={entry}
-                              slug={slug}
-                              projectId={projectId}
-                            >
-                              <Button
-                                size="xs"
-                                variant="ghost"
-                                aria-label={`Edit time entry by ${entry.memberName}`}
+                            {isBilled ? (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span>
+                                      <Button
+                                        size="xs"
+                                        variant="ghost"
+                                        disabled
+                                        aria-label={`Edit time entry by ${entry.memberName}`}
+                                      >
+                                        <Pencil className="size-3" />
+                                      </Button>
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>
+                                      Time entry is part of invoice{" "}
+                                      {entry.invoiceNumber}. Void the invoice to
+                                      unlock.
+                                    </p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            ) : (
+                              <EditTimeEntryDialog
+                                entry={entry}
+                                slug={slug}
+                                projectId={projectId}
                               >
-                                <Pencil className="size-3" />
-                              </Button>
-                            </EditTimeEntryDialog>
-                            <DeleteTimeEntryDialog
-                              slug={slug}
-                              projectId={projectId}
-                              timeEntryId={entry.id}
-                            >
-                              <Button
-                                size="xs"
-                                variant="ghost"
-                                aria-label={`Delete time entry by ${entry.memberName}`}
+                                <Button
+                                  size="xs"
+                                  variant="ghost"
+                                  aria-label={`Edit time entry by ${entry.memberName}`}
+                                >
+                                  <Pencil className="size-3" />
+                                </Button>
+                              </EditTimeEntryDialog>
+                            )}
+                            {isBilled ? (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span>
+                                      <Button
+                                        size="xs"
+                                        variant="ghost"
+                                        disabled
+                                        aria-label={`Delete time entry by ${entry.memberName}`}
+                                      >
+                                        <Trash2 className="size-3 text-red-500" />
+                                      </Button>
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>
+                                      Time entry is part of invoice{" "}
+                                      {entry.invoiceNumber}. Void the invoice to
+                                      unlock.
+                                    </p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            ) : (
+                              <DeleteTimeEntryDialog
+                                slug={slug}
+                                projectId={projectId}
+                                timeEntryId={entry.id}
                               >
-                                <Trash2 className="size-3 text-red-500" />
-                              </Button>
-                            </DeleteTimeEntryDialog>
+                                <Button
+                                  size="xs"
+                                  variant="ghost"
+                                  aria-label={`Delete time entry by ${entry.memberName}`}
+                                >
+                                  <Trash2 className="size-3 text-red-500" />
+                                </Button>
+                              </DeleteTimeEntryDialog>
+                            )}
                           </div>
                         )}
                       </TableCell>

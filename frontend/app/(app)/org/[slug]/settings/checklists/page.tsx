@@ -3,7 +3,19 @@ import { ChevronLeft } from "lucide-react";
 import { auth } from "@clerk/nextjs/server";
 import { api } from "@/lib/api";
 import { ChecklistTemplateEditor } from "@/components/settings/ChecklistTemplateEditor";
+import { CompliancePacks } from "@/components/settings/CompliancePacks";
 import type { ChecklistTemplateResponse } from "@/lib/types";
+
+interface PackStatusDto {
+  packId: string;
+  version: number;
+  appliedAt: string;
+  active: boolean;
+}
+
+interface CompliancePacksResponse {
+  packs: PackStatusDto[];
+}
 
 export default async function ChecklistsSettingsPage({
   params,
@@ -43,6 +55,16 @@ export default async function ChecklistsSettingsPage({
     // Non-fatal: show empty state
   }
 
+  let compliancePacks: PackStatusDto[] = [];
+  try {
+    const response = await api.get<CompliancePacksResponse>(
+      "/api/settings/compliance-packs"
+    );
+    compliancePacks = response.packs;
+  } catch {
+    // Non-fatal: show empty state
+  }
+
   return (
     <div className="space-y-8">
       <Link
@@ -61,6 +83,10 @@ export default async function ChecklistsSettingsPage({
           Manage onboarding and compliance checklist templates
         </p>
       </div>
+
+      {compliancePacks.length > 0 && (
+        <CompliancePacks packs={compliancePacks} />
+      )}
 
       <ChecklistTemplateEditor
         slug={slug}

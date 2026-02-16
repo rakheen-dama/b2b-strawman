@@ -223,7 +223,7 @@ class ComplianceSharedSchemaTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  var policy = new RetentionPolicy("CUSTOMER", 1825, "CUSTOMER_OFFBOARDED", "FLAG");
+                  var policy = new RetentionPolicy("DOCUMENT", 365, "DOCUMENT_ARCHIVED", "FLAG");
                   policy = retentionPolicyRepository.save(policy);
                   policyIdHolder[0] = policy.getId();
 

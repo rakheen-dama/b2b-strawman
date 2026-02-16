@@ -228,6 +228,17 @@ public class OrgSettingsService {
   }
 
   /**
+   * Returns the OrgSettings for the current tenant, creating a default if none exists. Used by
+   * endpoints that need the raw entity (e.g., compliance pack status).
+   */
+  @Transactional(readOnly = true)
+  public OrgSettings getOrCreateSettings() {
+    return orgSettingsRepository
+        .findForCurrentTenant()
+        .orElseGet(() -> new OrgSettings(DEFAULT_CURRENCY));
+  }
+
+  /**
    * Returns the stored default currency for the current tenant, or "USD" if no settings row exists.
    * Useful for other services that need the org default currency.
    */

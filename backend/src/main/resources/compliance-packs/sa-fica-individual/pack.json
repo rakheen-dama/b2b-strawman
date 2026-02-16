@@ -1,0 +1,95 @@
+{
+  "packId": "sa-fica-individual",
+  "version": 1,
+  "name": "SA FICA - Individual Client",
+  "description": "FICA-compliant onboarding for individual clients in South Africa",
+  "jurisdiction": "ZA",
+  "customerType": "INDIVIDUAL",
+  "checklistTemplate": {
+    "key": "sa-fica-individual",
+    "name": "SA FICA - Individual Client Onboarding",
+    "description": "FICA Schedule 3 compliance checklist for individual clients",
+    "autoInstantiate": false,
+    "items": [
+      {
+        "key": "verify-identity",
+        "name": "Verify identity document",
+        "description": "Obtain and verify a certified copy of the client's South African ID or passport",
+        "sortOrder": 1,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Certified copy of SA ID or passport",
+        "dependsOnKey": null
+      },
+      {
+        "key": "verify-address",
+        "name": "Verify residential address",
+        "description": "Obtain proof of residential address (utility bill, bank statement, or municipal account, not older than 3 months)",
+        "sortOrder": 2,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Proof of address (not older than 3 months)",
+        "dependsOnKey": null
+      },
+      {
+        "key": "risk-assessment",
+        "name": "Complete risk assessment",
+        "description": "Assess the client's ML/TF risk rating based on FICA Schedule 3",
+        "sortOrder": 3,
+        "required": true,
+        "requiresDocument": false,
+        "requiredDocumentLabel": null,
+        "dependsOnKey": "verify-identity"
+      },
+      {
+        "key": "verify-source-of-funds",
+        "name": "Verify source of funds",
+        "description": "For high-risk clients or transactions above the prescribed threshold, obtain source of funds documentation",
+        "sortOrder": 4,
+        "required": false,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Source of funds documentation",
+        "dependsOnKey": "risk-assessment"
+      },
+      {
+        "key": "sanctions-pep-screening",
+        "name": "Sanctions and PEP screening",
+        "description": "Screen the client against sanctions lists and determine PIP status",
+        "sortOrder": 5,
+        "required": true,
+        "requiresDocument": false,
+        "requiredDocumentLabel": null,
+        "dependsOnKey": "verify-identity"
+      }
+    ]
+  },
+  "fieldDefinitions": [
+    {
+      "slug": "sa_id_number",
+      "name": "SA ID Number",
+      "fieldType": "TEXT",
+      "entityType": "CUSTOMER",
+      "groupSlug": "identity",
+      "validation": null,
+      "options": null
+    },
+    {
+      "slug": "passport_number",
+      "name": "Passport Number",
+      "fieldType": "TEXT",
+      "entityType": "CUSTOMER",
+      "groupSlug": "identity",
+      "validation": null,
+      "options": null
+    },
+    {
+      "slug": "risk_rating",
+      "name": "Risk Rating",
+      "fieldType": "DROPDOWN",
+      "entityType": "CUSTOMER",
+      "groupSlug": "compliance",
+      "validation": null,
+      "options": [{"label": "Low", "value": "Low"}, {"label": "Medium", "value": "Medium"}, {"label": "High", "value": "High"}]
+    }
+  ]
+}

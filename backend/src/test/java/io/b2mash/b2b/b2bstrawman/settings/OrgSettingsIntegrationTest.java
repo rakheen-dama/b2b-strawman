@@ -2,7 +2,6 @@ package io.b2mash.b2b.b2bstrawman.settings;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -232,7 +231,9 @@ class OrgSettingsIntegrationTest {
     var settings = settingsRef.get();
     assertEquals(90, settings.getDormancyThresholdDays());
     assertEquals(30, settings.getDataRequestDeadlineDays());
-    assertNull(settings.getCompliancePackStatus());
+    // Compliance packs are now seeded during provisioning
+    assertNotNull(settings.getCompliancePackStatus());
+    assertEquals(3, settings.getCompliancePackStatus().size());
   }
 
   @Test
@@ -266,9 +267,8 @@ class OrgSettingsIntegrationTest {
 
     var settings = settingsRef.get();
     assertNotNull(settings.getCompliancePackStatus());
-    assertEquals(2, settings.getCompliancePackStatus().size());
-    assertEquals("generic-onboarding", settings.getCompliancePackStatus().get(0).get("packId"));
-    assertEquals("sa-fica-individual", settings.getCompliancePackStatus().get(1).get("packId"));
+    // 3 from provisioning + 2 manually added = 5
+    assertEquals(5, settings.getCompliancePackStatus().size());
   }
 
   // --- Helpers ---

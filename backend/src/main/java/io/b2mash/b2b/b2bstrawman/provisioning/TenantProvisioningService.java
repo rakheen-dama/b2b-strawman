@@ -1,9 +1,13 @@
 package io.b2mash.b2b.b2bstrawman.provisioning;
 
 import io.b2mash.b2b.b2bstrawman.billing.SubscriptionService;
+import io.b2mash.b2b.b2bstrawman.checklist.CompliancePackSeeder;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldPackSeeder;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.retention.RetentionPolicy;
+import io.b2mash.b2b.b2bstrawman.retention.RetentionPolicyRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplatePackSeeder;
 import java.sql.SQLException;
 import javax.sql.DataSource;
@@ -14,6 +18,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Service
 public class TenantProvisioningService {
@@ -27,6 +32,9 @@ public class TenantProvisioningService {
   private final SubscriptionService subscriptionService;
   private final FieldPackSeeder fieldPackSeeder;
   private final TemplatePackSeeder templatePackSeeder;
+  private final CompliancePackSeeder compliancePackSeeder;
+  private final RetentionPolicyRepository retentionPolicyRepository;
+  private final TransactionTemplate transactionTemplate;
 
   public TenantProvisioningService(
       OrganizationRepository organizationRepository,
@@ -34,13 +42,19 @@ public class TenantProvisioningService {
       @Qualifier("migrationDataSource") DataSource migrationDataSource,
       SubscriptionService subscriptionService,
       FieldPackSeeder fieldPackSeeder,
-      TemplatePackSeeder templatePackSeeder) {
+      TemplatePackSeeder templatePackSeeder,
+      CompliancePackSeeder compliancePackSeeder,
+      RetentionPolicyRepository retentionPolicyRepository,
+      TransactionTemplate transactionTemplate) {
     this.organizationRepository = organizationRepository;
     this.mappingRepository = mappingRepository;
     this.migrationDataSource = migrationDataSource;
     this.subscriptionService = subscriptionService;
     this.fieldPackSeeder = fieldPackSeeder;
     this.templatePackSeeder = templatePackSeeder;
+    this.compliancePackSeeder = compliancePackSeeder;
+    this.retentionPolicyRepository = retentionPolicyRepository;
+    this.transactionTemplate = transactionTemplate;
   }
 
   @Retryable(
@@ -90,6 +104,8 @@ public class TenantProvisioningService {
     createMapping(clerkOrgId, SHARED_SCHEMA);
     fieldPackSeeder.seedPacksForTenant(SHARED_SCHEMA, clerkOrgId);
     templatePackSeeder.seedPacksForTenant(SHARED_SCHEMA, clerkOrgId);
+    compliancePackSeeder.seedPacksForTenant(SHARED_SCHEMA, clerkOrgId);
+    seedDefaultRetentionPolicies(SHARED_SCHEMA, clerkOrgId);
     subscriptionService.createSubscription(org.getId(), "starter");
 
     org.markCompleted();
@@ -111,6 +127,8 @@ public class TenantProvisioningService {
     runTenantMigrations(schemaName);
     fieldPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
     templatePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+    compliancePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+    seedDefaultRetentionPolicies(schemaName, clerkOrgId);
     createMapping(clerkOrgId, schemaName);
     String planSlug = org.getPlanSlug() != null ? org.getPlanSlug() : "starter";
     subscriptionService.createSubscription(org.getId(), planSlug);
@@ -148,6 +166,31 @@ public class TenantProvisioningService {
       mappingRepository.save(new OrgSchemaMapping(clerkOrgId, schemaName));
       log.info("Created mapping {} -> {}", clerkOrgId, schemaName);
     }
+  }
+
+  private void seedDefaultRetentionPolicies(String tenantId, String orgId) {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantId)
+        .where(RequestScopes.ORG_ID, orgId)
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      if (!retentionPolicyRepository.existsByRecordTypeAndTriggerEvent(
+                          "CUSTOMER", "CUSTOMER_OFFBOARDED")) {
+                        var customerPolicy =
+                            new RetentionPolicy("CUSTOMER", 1825, "CUSTOMER_OFFBOARDED", "FLAG");
+                        customerPolicy.setTenantId(orgId);
+                        retentionPolicyRepository.save(customerPolicy);
+                      }
+                      if (!retentionPolicyRepository.existsByRecordTypeAndTriggerEvent(
+                          "AUDIT_EVENT", "RECORD_CREATED")) {
+                        var auditPolicy =
+                            new RetentionPolicy("AUDIT_EVENT", 2555, "RECORD_CREATED", "FLAG");
+                        auditPolicy.setTenantId(orgId);
+                        retentionPolicyRepository.save(auditPolicy);
+                      }
+                      log.info("Seeded default retention policies for tenant {}", tenantId);
+                    }));
   }
 
   private void validateSchemaName(String schemaName) {

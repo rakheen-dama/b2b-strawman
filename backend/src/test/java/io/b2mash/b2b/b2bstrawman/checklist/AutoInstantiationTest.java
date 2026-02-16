@@ -46,26 +46,8 @@ class AutoInstantiationTest {
 
     syncMember(ORG_ID, "user_auto_owner", "auto_owner@test.com", "Auto Owner", "owner");
 
-    // Create an auto-instantiate template
-    mockMvc
-        .perform(
-            post("/api/checklist-templates")
-                .with(ownerJwt())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "name": "Auto Onboarding Template",
-                      "customerType": "ANY",
-                      "autoInstantiate": true,
-                      "sortOrder": 0,
-                      "items": [
-                        {"name": "Auto Step 1", "sortOrder": 1, "required": true, "requiresDocument": false},
-                        {"name": "Auto Step 2", "sortOrder": 2, "required": false, "requiresDocument": false}
-                      ]
-                    }
-                    """))
-        .andExpect(status().isCreated());
+    // The generic-onboarding compliance pack (seeded during provisioning) provides
+    // an auto-instantiate template with customerType=ANY, so no need to create one here.
   }
 
   @Test

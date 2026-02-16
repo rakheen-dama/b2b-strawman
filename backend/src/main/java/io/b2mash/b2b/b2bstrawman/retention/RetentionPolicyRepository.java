@@ -14,4 +14,11 @@ public interface RetentionPolicyRepository extends JpaRepository<RetentionPolicy
    */
   @Query("SELECT rp FROM RetentionPolicy rp WHERE rp.id = :id")
   Optional<RetentionPolicy> findOneById(@Param("id") UUID id);
+
+  /** Checks if a retention policy exists for the given record type and trigger event. */
+  @Query(
+      "SELECT COUNT(rp) > 0 FROM RetentionPolicy rp"
+          + " WHERE rp.recordType = :recordType AND rp.triggerEvent = :triggerEvent")
+  boolean existsByRecordTypeAndTriggerEvent(
+      @Param("recordType") String recordType, @Param("triggerEvent") String triggerEvent);
 }

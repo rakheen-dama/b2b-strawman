@@ -121,6 +121,15 @@ public class FieldPackSeeder {
         .anyMatch(entry -> packId.equals(entry.get("packId")));
   }
 
+  /**
+   * Applies a field pack definition, creating field groups and definitions. Public to allow
+   * delegation from other seeders (e.g., CompliancePackSeeder). Must be called within an active
+   * transaction and tenant context.
+   */
+  public void applyFieldPack(FieldPackDefinition pack) {
+    applyPack(pack);
+  }
+
   private void applyPack(FieldPackDefinition pack) {
     EntityType entityType = EntityType.valueOf(pack.entityType());
 

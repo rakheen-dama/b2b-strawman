@@ -1,0 +1,56 @@
+{
+  "packId": "generic-onboarding",
+  "version": 1,
+  "name": "Generic Client Onboarding",
+  "description": "Basic client onboarding checklist suitable for all jurisdictions",
+  "jurisdiction": "GENERIC",
+  "customerType": "ANY",
+  "checklistTemplate": {
+    "key": "generic-onboarding",
+    "name": "Generic Client Onboarding",
+    "description": "Standard onboarding checklist for all clients",
+    "autoInstantiate": true,
+    "items": [
+      {
+        "key": "verify-contact-details",
+        "name": "Verify contact details",
+        "description": "Confirm the customer's name, email, phone number, and address are correct",
+        "sortOrder": 1,
+        "required": true,
+        "requiresDocument": false,
+        "requiredDocumentLabel": null,
+        "dependsOnKey": null
+      },
+      {
+        "key": "upload-engagement-letter",
+        "name": "Upload engagement letter",
+        "description": "Upload a signed engagement letter or service agreement",
+        "sortOrder": 2,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Signed engagement letter",
+        "dependsOnKey": null
+      },
+      {
+        "key": "confirm-terms-of-service",
+        "name": "Confirm terms of service",
+        "description": "Confirm the customer has read and agreed to the terms of service",
+        "sortOrder": 3,
+        "required": true,
+        "requiresDocument": false,
+        "requiredDocumentLabel": null,
+        "dependsOnKey": null
+      },
+      {
+        "key": "set-up-billing-preferences",
+        "name": "Set up billing preferences",
+        "description": "Configure invoice delivery method, payment terms, and billing contact",
+        "sortOrder": 4,
+        "required": false,
+        "requiresDocument": false,
+        "requiredDocumentLabel": null,
+        "dependsOnKey": null
+      }
+    ]
+  }
+}

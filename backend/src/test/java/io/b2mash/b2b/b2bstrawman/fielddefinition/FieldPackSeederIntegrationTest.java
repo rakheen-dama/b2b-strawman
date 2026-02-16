@@ -58,7 +58,10 @@ class FieldPackSeederIntegrationTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  // common-customer has 8 fields, common-project has 3 fields = 11 total
+                  // common-customer has 8 fields + compliance packs add 5 more (3
+                  // sa-fica-individual
+                  // + 2 sa-fica-company) = 13 total customer fields
+                  // common-project has 3 fields
                   var customerFields =
                       fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
                           EntityType.CUSTOMER);
@@ -66,7 +69,7 @@ class FieldPackSeederIntegrationTest {
                       fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
                           EntityType.PROJECT);
 
-                  assertThat(customerFields).hasSize(8);
+                  assertThat(customerFields).hasSize(13);
                   assertThat(projectFields).hasSize(3);
                 }));
   }
@@ -81,13 +84,20 @@ class FieldPackSeederIntegrationTest {
                   var customerGroups =
                       fieldGroupRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
                           EntityType.CUSTOMER);
-                  assertThat(customerGroups).hasSize(1);
-                  assertThat(customerGroups.getFirst().getSlug()).isEqualTo("contact_address");
-                  assertThat(customerGroups.getFirst().getName()).isEqualTo("Contact & Address");
+                  // 1 from field packs (contact_address) + 3 from compliance packs (identity,
+                  // compliance, registration)
+                  assertThat(customerGroups).hasSizeGreaterThanOrEqualTo(1);
+
+                  var contactAddressGroup =
+                      customerGroups.stream()
+                          .filter(g -> "contact_address".equals(g.getSlug()))
+                          .findFirst()
+                          .orElseThrow();
+                  assertThat(contactAddressGroup.getName()).isEqualTo("Contact & Address");
 
                   var members =
                       fieldGroupMemberRepository.findByFieldGroupIdOrderBySortOrder(
-                          customerGroups.getFirst().getId());
+                          contactAddressGroup.getId());
                   assertThat(members).hasSize(8);
 
                   var projectGroups =
@@ -139,7 +149,7 @@ class FieldPackSeederIntegrationTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  // Counts should remain the same as initial seeding
+                  // Counts should remain the same as initial seeding (field packs only)
                   var customerFields =
                       fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
                           EntityType.CUSTOMER);
@@ -147,17 +157,14 @@ class FieldPackSeederIntegrationTest {
                       fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
                           EntityType.PROJECT);
 
-                  assertThat(customerFields).hasSize(8);
+                  // 8 from field packs + 5 from compliance packs = 13
+                  assertThat(customerFields).hasSize(13);
                   assertThat(projectFields).hasSize(3);
 
-                  var customerGroups =
-                      fieldGroupRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
-                          EntityType.CUSTOMER);
                   var projectGroups =
                       fieldGroupRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
                           EntityType.PROJECT);
 
-                  assertThat(customerGroups).hasSize(1);
                   assertThat(projectGroups).hasSize(1);
                 }));
   }
@@ -208,7 +215,14 @@ class FieldPackSeederIntegrationTest {
                       fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
                           EntityType.CUSTOMER);
 
-                  for (FieldDefinition fd : customerFields) {
+                  // Filter to only field pack fields (not compliance pack fields)
+                  var fieldPackCustomerFields =
+                      customerFields.stream()
+                          .filter(fd -> "common-customer".equals(fd.getPackId()))
+                          .toList();
+                  assertThat(fieldPackCustomerFields).hasSize(8);
+
+                  for (FieldDefinition fd : fieldPackCustomerFields) {
                     assertThat(fd.getPackId())
                         .as("packId for " + fd.getSlug())
                         .isEqualTo("common-customer");

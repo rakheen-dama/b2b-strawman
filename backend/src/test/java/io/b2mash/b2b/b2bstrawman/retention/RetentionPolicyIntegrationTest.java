@@ -64,14 +64,14 @@ class RetentionPolicyIntegrationTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var policy =
-                      new RetentionPolicy("CUSTOMER", 2555, "CUSTOMER_OFFBOARDED", "ANONYMIZE");
+                      new RetentionPolicy("INVOICE", 3650, "INVOICE_FINALIZED", "ANONYMIZE");
                   policy = retentionPolicyRepository.save(policy);
 
                   var found = retentionPolicyRepository.findOneById(policy.getId());
                   assertThat(found).isPresent();
-                  assertThat(found.get().getRecordType()).isEqualTo("CUSTOMER");
-                  assertThat(found.get().getRetentionDays()).isEqualTo(2555);
-                  assertThat(found.get().getTriggerEvent()).isEqualTo("CUSTOMER_OFFBOARDED");
+                  assertThat(found.get().getRecordType()).isEqualTo("INVOICE");
+                  assertThat(found.get().getRetentionDays()).isEqualTo(3650);
+                  assertThat(found.get().getTriggerEvent()).isEqualTo("INVOICE_FINALIZED");
                   assertThat(found.get().getAction()).isEqualTo("ANONYMIZE");
                   assertThat(found.get().isActive()).isTrue();
                 }));

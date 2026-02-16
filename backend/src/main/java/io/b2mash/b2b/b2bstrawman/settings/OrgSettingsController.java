@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -85,6 +86,25 @@ public class OrgSettingsController {
     return ResponseEntity.ok(orgSettingsService.deleteLogo(memberId, orgRole));
   }
 
+  @GetMapping("/compliance-packs")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<CompliancePacksResponse> getCompliancePacks() {
+    var settings = orgSettingsService.getOrCreateSettings();
+    var packs =
+        settings.getCompliancePackStatus() == null
+            ? List.<PackStatusDto>of()
+            : settings.getCompliancePackStatus().stream()
+                .map(
+                    entry ->
+                        new PackStatusDto(
+                            (String) entry.get("packId"),
+                            entry.get("version") instanceof Number n ? n.intValue() : 0,
+                            (String) entry.get("appliedAt"),
+                            true))
+                .toList();
+    return ResponseEntity.ok(new CompliancePacksResponse(packs));
+  }
+
   // --- DTOs ---
 
   public record SettingsResponse(
@@ -97,4 +117,8 @@ public class OrgSettingsController {
       @Pattern(regexp = "^#[0-9a-fA-F]{6}$", message = "brandColor must be a valid hex color")
           String brandColor,
       String documentFooterText) {}
+
+  public record CompliancePacksResponse(List<PackStatusDto> packs) {}
+
+  public record PackStatusDto(String packId, int version, String appliedAt, boolean active) {}
 }

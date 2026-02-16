@@ -1,0 +1,96 @@
+{
+  "packId": "sa-fica-company",
+  "version": 1,
+  "name": "SA FICA - Company Client",
+  "description": "FICA-compliant onboarding for company, trust, and partnership clients in South Africa",
+  "jurisdiction": "ZA",
+  "customerType": "COMPANY",
+  "checklistTemplate": {
+    "key": "sa-fica-company",
+    "name": "SA FICA - Company Client Onboarding",
+    "description": "FICA Schedule 3 compliance checklist for company, trust, and partnership clients",
+    "autoInstantiate": false,
+    "items": [
+      {
+        "key": "verify-cipc",
+        "name": "Verify CIPC registration",
+        "description": "Obtain the company's CIPC registration certificate or equivalent",
+        "sortOrder": 1,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "CIPC registration certificate",
+        "dependsOnKey": null
+      },
+      {
+        "key": "verify-registered-address",
+        "name": "Verify registered address",
+        "description": "Obtain proof of the company's registered address",
+        "sortOrder": 2,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Proof of registered address",
+        "dependsOnKey": null
+      },
+      {
+        "key": "identify-directors",
+        "name": "Identify directors/trustees",
+        "description": "Identify all directors, trustees, or partners",
+        "sortOrder": 3,
+        "required": true,
+        "requiresDocument": false,
+        "requiredDocumentLabel": null,
+        "dependsOnKey": "verify-cipc"
+      },
+      {
+        "key": "verify-beneficial-ownership",
+        "name": "Verify beneficial ownership",
+        "description": "Identify and verify all individuals with >= 25% ownership or control",
+        "sortOrder": 4,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Beneficial ownership declaration",
+        "dependsOnKey": "identify-directors"
+      },
+      {
+        "key": "risk-assessment",
+        "name": "Complete risk assessment",
+        "description": "Assess the entity's ML/TF risk rating based on FICA Schedule 3",
+        "sortOrder": 5,
+        "required": true,
+        "requiresDocument": false,
+        "requiredDocumentLabel": null,
+        "dependsOnKey": "verify-cipc"
+      },
+      {
+        "key": "verify-source-of-funds",
+        "name": "Verify source of funds",
+        "description": "For high-risk entities or transactions above the prescribed threshold, obtain source of funds documentation",
+        "sortOrder": 6,
+        "required": false,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Source of funds documentation",
+        "dependsOnKey": "risk-assessment"
+      }
+    ]
+  },
+  "fieldDefinitions": [
+    {
+      "slug": "company_registration_number",
+      "name": "Company Registration Number",
+      "fieldType": "TEXT",
+      "entityType": "CUSTOMER",
+      "groupSlug": "registration",
+      "validation": null,
+      "options": null
+    },
+    {
+      "slug": "entity_type",
+      "name": "Entity Type",
+      "fieldType": "DROPDOWN",
+      "entityType": "CUSTOMER",
+      "groupSlug": "registration",
+      "validation": null,
+      "options": [{"label": "Company", "value": "Company"}, {"label": "Trust", "value": "Trust"}, {"label": "Partnership", "value": "Partnership"}, {"label": "CC", "value": "CC"}]
+    }
+  ]
+}

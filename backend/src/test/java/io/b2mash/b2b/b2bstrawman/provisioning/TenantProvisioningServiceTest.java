@@ -12,9 +12,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.billing.SubscriptionService;
+import io.b2mash.b2b.b2bstrawman.checklist.CompliancePackSeeder;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldPackSeeder;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.retention.RetentionPolicyRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplatePackSeeder;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -26,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @ExtendWith(MockitoExtension.class)
 class TenantProvisioningServiceTest {
@@ -36,6 +39,9 @@ class TenantProvisioningServiceTest {
   @Mock private SubscriptionService subscriptionService;
   @Mock private FieldPackSeeder fieldPackSeeder;
   @Mock private TemplatePackSeeder templatePackSeeder;
+  @Mock private CompliancePackSeeder compliancePackSeeder;
+  @Mock private RetentionPolicyRepository retentionPolicyRepository;
+  @Mock private TransactionTemplate transactionTemplate;
 
   private TenantProvisioningService service;
 
@@ -50,7 +56,10 @@ class TenantProvisioningServiceTest {
                 migrationDataSource,
                 subscriptionService,
                 fieldPackSeeder,
-                templatePackSeeder));
+                templatePackSeeder,
+                compliancePackSeeder,
+                retentionPolicyRepository,
+                transactionTemplate));
   }
 
   @Test

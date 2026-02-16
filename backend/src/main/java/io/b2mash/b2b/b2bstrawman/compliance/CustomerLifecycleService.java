@@ -74,7 +74,9 @@ public class CustomerLifecycleService {
 
     // Auto-instantiate checklists on PROSPECT -> ONBOARDING
     if ("PROSPECT".equals(oldStatus) && "ONBOARDING".equals(targetStatus)) {
-      checklistInstanceService.autoInstantiate(customerId);
+      // Customer type defaults to ANY; templates with customerType=ANY or matching type are
+      // selected
+      checklistInstanceService.autoInstantiate(customerId, "ANY");
     }
 
     // Emit audit event

@@ -55,6 +55,13 @@ public class ChecklistInstanceService {
         .findOneById(customerId)
         .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
 
+    // Check for duplicate instance
+    if (instanceRepository.existsByCustomerIdAndTemplateId(customerId, templateId)) {
+      throw new ResourceConflictException(
+          "Duplicate checklist instance",
+          "A checklist instance already exists for this customer and template");
+    }
+
     // Load template
     var template =
         templateRepository
@@ -98,7 +105,7 @@ public class ChecklistInstanceService {
         if (instanceDepId != null) {
           var item = items.get(i);
           item.setDependsOnItemId(instanceDepId);
-          item.setStatus("BLOCKED");
+          item.block();
           itemRepository.save(item);
         }
       }
@@ -124,7 +131,7 @@ public class ChecklistInstanceService {
             .build());
 
     var itemResponses = items.stream().map(ItemResponse::from).toList();
-    var progress = calculateProgress(instance.getId());
+    var progress = calculateProgress(items);
     return new InstanceWithItemsResponse(
         InstanceResponse.from(instance, template.getName(), progress), itemResponses);
   }
@@ -172,7 +179,7 @@ public class ChecklistInstanceService {
     var dependents = itemRepository.findByDependsOnItemId(itemId);
     for (var dependent : dependents) {
       if ("BLOCKED".equals(dependent.getStatus())) {
-        dependent.setStatus("PENDING");
+        dependent.unblock();
         itemRepository.save(dependent);
       }
     }
@@ -221,7 +228,7 @@ public class ChecklistInstanceService {
     var dependents = itemRepository.findByDependsOnItemId(itemId);
     for (var dependent : dependents) {
       if (!"BLOCKED".equals(dependent.getStatus())) {
-        dependent.setStatus("BLOCKED");
+        dependent.block();
         itemRepository.save(dependent);
       }
     }
@@ -243,17 +250,27 @@ public class ChecklistInstanceService {
   public List<InstanceResponse> findByCustomerId(UUID customerId) {
     var instances = instanceRepository.findByCustomerIdOrderByStartedAtDesc(customerId);
 
-    // Batch-load template names
+    // Batch-load template names in a single query
     var templateIds = instances.stream().map(ChecklistInstance::getTemplateId).distinct().toList();
-    var templateMap = new HashMap<UUID, String>();
-    for (var tid : templateIds) {
-      templateRepository.findOneById(tid).ifPresent(t -> templateMap.put(tid, t.getName()));
+    Map<UUID, String> templateMap = new HashMap<>();
+    if (!templateIds.isEmpty()) {
+      templateRepository
+          .findByIdIn(templateIds)
+          .forEach(t -> templateMap.put(t.getId(), t.getName()));
+    }
+
+    // Batch-load all items for all instances to avoid N+1 in calculateProgress
+    var instanceIds = instances.stream().map(ChecklistInstance::getId).toList();
+    Map<UUID, List<ChecklistInstanceItem>> itemsByInstance = new HashMap<>();
+    for (var iid : instanceIds) {
+      itemsByInstance.put(iid, itemRepository.findByInstanceIdOrderBySortOrder(iid));
     }
 
     return instances.stream()
         .map(
             ci -> {
-              var progress = calculateProgress(ci.getId());
+              var items = itemsByInstance.getOrDefault(ci.getId(), List.of());
+              var progress = calculateProgress(items);
               String templateName = templateMap.getOrDefault(ci.getTemplateId(), "Unknown");
               return InstanceResponse.from(ci, templateName, progress);
             })
@@ -276,14 +293,14 @@ public class ChecklistInstanceService {
             .map(ChecklistTemplate::getName)
             .orElse("Unknown");
 
-    var progress = calculateProgress(instanceId);
+    var progress = calculateProgress(items);
     return new InstanceWithItemsResponse(
         InstanceResponse.from(instance, templateName, progress), itemResponses);
   }
 
   @Transactional
-  public void autoInstantiate(UUID customerId) {
-    var templates = templateRepository.findByActiveTrueAndAutoInstantiateTrue();
+  public void autoInstantiate(UUID customerId, String customerType) {
+    var templates = templateRepository.findAutoInstantiateTemplatesForCustomerType(customerType);
     for (var template : templates) {
       // Check if instance already exists (idempotency)
       if (!instanceRepository.existsByCustomerIdAndTemplateId(customerId, template.getId())) {
@@ -368,8 +385,7 @@ public class ChecklistInstanceService {
     }
   }
 
-  private InstanceProgress calculateProgress(UUID instanceId) {
-    var items = itemRepository.findByInstanceIdOrderBySortOrder(instanceId);
+  private InstanceProgress calculateProgress(List<ChecklistInstanceItem> items) {
     int total = items.size();
     int completed = (int) items.stream().filter(i -> "COMPLETED".equals(i.getStatus())).count();
     int required = (int) items.stream().filter(ChecklistInstanceItem::isRequired).count();

@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.checklist;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,6 +16,13 @@ public interface ChecklistTemplateRepository extends JpaRepository<ChecklistTemp
    */
   @Query("SELECT ct FROM ChecklistTemplate ct WHERE ct.id = :id")
   Optional<ChecklistTemplate> findOneById(@Param("id") UUID id);
+
+  /**
+   * Batch-loads templates by IDs using JPQL (respects Hibernate @Filter). Use instead of
+   * findAllById which bypasses @Filter.
+   */
+  @Query("SELECT ct FROM ChecklistTemplate ct WHERE ct.id IN :ids")
+  List<ChecklistTemplate> findByIdIn(@Param("ids") Collection<UUID> ids);
 
   @Query("SELECT ct FROM ChecklistTemplate ct WHERE ct.slug = :slug")
   Optional<ChecklistTemplate> findBySlug(@Param("slug") String slug);
@@ -33,6 +41,18 @@ public interface ChecklistTemplateRepository extends JpaRepository<ChecklistTemp
       "SELECT ct FROM ChecklistTemplate ct WHERE ct.active = true"
           + " AND ct.autoInstantiate = true AND ct.customerType = :customerType")
   Optional<ChecklistTemplate> findByActiveTrueAndAutoInstantiateTrueAndCustomerType(
+      @Param("customerType") String customerType);
+
+  /**
+   * Finds active auto-instantiate templates matching the given customerType or 'ANY'. Used by
+   * autoInstantiate to filter templates by the customer's type.
+   */
+  @Query(
+      "SELECT ct FROM ChecklistTemplate ct WHERE ct.active = true"
+          + " AND ct.autoInstantiate = true"
+          + " AND (ct.customerType = :customerType OR ct.customerType = 'ANY')"
+          + " ORDER BY ct.sortOrder")
+  List<ChecklistTemplate> findAutoInstantiateTemplatesForCustomerType(
       @Param("customerType") String customerType);
 
   @Query(

@@ -31,7 +31,8 @@ public interface ChecklistInstanceRepository extends JpaRepository<ChecklistInst
 
   @Query(
       "SELECT CASE WHEN COUNT(ci) > 0 THEN true ELSE false END FROM ChecklistInstance ci"
-          + " WHERE ci.customerId = :customerId AND ci.templateId = :templateId")
+          + " WHERE ci.customerId = :customerId AND ci.templateId = :templateId"
+          + " AND ci.status <> 'CANCELLED'")
   boolean existsByCustomerIdAndTemplateId(
       @Param("customerId") UUID customerId, @Param("templateId") UUID templateId);
 }

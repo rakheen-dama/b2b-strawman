@@ -218,6 +218,10 @@ public class ChecklistInstanceItem implements TenantAware {
   /** Blocks this item (e.g., because a dependency is not yet completed). */
   public void block() {
     this.status = "BLOCKED";
+    this.completedBy = null;
+    this.completedAt = null;
+    this.notes = null;
+    this.documentId = null;
     this.updatedAt = Instant.now();
   }
 

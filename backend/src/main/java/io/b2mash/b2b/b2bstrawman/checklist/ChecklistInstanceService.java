@@ -261,9 +261,15 @@ public class ChecklistInstanceService {
 
     // Batch-load all items for all instances to avoid N+1 in calculateProgress
     var instanceIds = instances.stream().map(ChecklistInstance::getId).toList();
-    Map<UUID, List<ChecklistInstanceItem>> itemsByInstance = new HashMap<>();
-    for (var iid : instanceIds) {
-      itemsByInstance.put(iid, itemRepository.findByInstanceIdOrderBySortOrder(iid));
+    final Map<UUID, List<ChecklistInstanceItem>> itemsByInstance;
+    if (!instanceIds.isEmpty()) {
+      var allItems = itemRepository.findByInstanceIdInOrderBySortOrder(instanceIds);
+      itemsByInstance =
+          allItems.stream()
+              .collect(
+                  java.util.stream.Collectors.groupingBy(ChecklistInstanceItem::getInstanceId));
+    } else {
+      itemsByInstance = new HashMap<>();
     }
 
     return instances.stream()

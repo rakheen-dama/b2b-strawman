@@ -40,4 +40,10 @@ public interface ChecklistInstanceItemRepository
 
   @Query("SELECT cii FROM ChecklistInstanceItem cii WHERE cii.dependsOnItemId = :itemId")
   List<ChecklistInstanceItem> findByDependsOnItemId(@Param("itemId") UUID itemId);
+
+  @Query(
+      "SELECT cii FROM ChecklistInstanceItem cii WHERE cii.instanceId IN :instanceIds"
+          + " ORDER BY cii.instanceId, cii.sortOrder")
+  List<ChecklistInstanceItem> findByInstanceIdInOrderBySortOrder(
+      @Param("instanceIds") java.util.Collection<UUID> instanceIds);
 }

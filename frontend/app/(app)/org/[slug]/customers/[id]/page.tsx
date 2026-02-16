@@ -184,7 +184,8 @@ export default async function CustomerDetailPage({
       const instances = await api.get<ChecklistInstanceResponse[]>(
         `/api/customers/${id}/checklists`,
       );
-      // Fetch items for each instance in parallel
+      // TODO: This parallel N+1 fetch is acceptable for now (1-5 checklists per customer).
+      // Could be optimized with a backend endpoint that returns instances with items expanded.
       const instancesWithItems = await Promise.allSettled(
         instances.map((inst) =>
           api.get<ChecklistInstanceWithItemsResponse>(

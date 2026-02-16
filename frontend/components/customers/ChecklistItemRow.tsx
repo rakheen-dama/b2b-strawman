@@ -26,24 +26,49 @@ interface ChecklistItemRowProps {
 
 export function ChecklistItemRow({ item, canManage, slug, customerId }: ChecklistItemRowProps) {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const badge = STATUS_BADGE[item.status];
 
   async function handleComplete() {
     setLoading(true);
-    await completeChecklistItem(slug, customerId, item.id);
-    setLoading(false);
+    setError(null);
+    try {
+      const result = await completeChecklistItem(slug, customerId, item.id);
+      if (!result.success) {
+        setError(result.error ?? "Failed to complete item.");
+      }
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleSkip() {
+    const reason = window.prompt("Reason for skipping this item:");
+    if (reason === null) return; // User cancelled
+    if (!reason.trim()) return; // Empty reason
     setLoading(true);
-    await skipChecklistItem(slug, customerId, item.id, "Skipped by admin");
-    setLoading(false);
+    setError(null);
+    try {
+      const result = await skipChecklistItem(slug, customerId, item.id, reason.trim());
+      if (!result.success) {
+        setError(result.error ?? "Failed to skip item.");
+      }
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleReopen() {
     setLoading(true);
-    await reopenChecklistItem(slug, customerId, item.id);
-    setLoading(false);
+    setError(null);
+    try {
+      const result = await reopenChecklistItem(slug, customerId, item.id);
+      if (!result.success) {
+        setError(result.error ?? "Failed to reopen item.");
+      }
+    } finally {
+      setLoading(false);
+    }
   }
 
   const showComplete = canManage && item.status === "PENDING";
@@ -82,6 +107,11 @@ export function ChecklistItemRow({ item, canManage, slug, customerId }: Checklis
         {item.notes && (
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             Note: {item.notes}
+          </p>
+        )}
+        {error && (
+          <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+            {error}
           </p>
         )}
       </div>

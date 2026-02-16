@@ -74,7 +74,14 @@ export function ChecklistProgress({
 
         {/* Progress bar */}
         <div className="flex w-32 shrink-0 items-center gap-2">
-          <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+          <div
+            role="progressbar"
+            aria-valuenow={progressPct}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`${instance.requiredCompletedCount} of ${instance.requiredCount} required items completed`}
+            className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800"
+          >
             <div
               className="h-full rounded-full bg-teal-500 transition-all"
               style={{ width: `${progressPct}%` }}

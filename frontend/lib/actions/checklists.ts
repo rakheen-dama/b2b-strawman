@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import type {
   CreateChecklistTemplateRequest,
   UpdateChecklistTemplateRequest,
+  ChecklistTemplateWithItemsResponse,
 } from "@/lib/types";
 
 interface ActionResult {
@@ -143,27 +144,35 @@ export async function cloneChecklistTemplate(
   return { success: true };
 }
 
-export async function toggleChecklistTemplateActive(
+export async function deactivateChecklistTemplate(
   slug: string,
   templateId: string,
-  active: boolean,
-  template: UpdateChecklistTemplateRequest,
 ): Promise<ActionResult> {
-  // We update the template with the same data but toggle active via the full update
-  // Since the API doesn't have a dedicated activate/deactivate endpoint,
-  // we use the update endpoint. But the UpdateTemplateRequest doesn't include active.
-  // The brief shows DELETE for deactivation. Let's use delete for deactivate.
-  if (!active) {
-    try {
-      await api.delete(`/api/checklist-templates/${templateId}`);
-    } catch (error) {
-      if (error instanceof ApiError) {
-        return { success: false, error: error.message };
-      }
-      return { success: false, error: "An unexpected error occurred." };
+  try {
+    await api.delete(`/api/checklist-templates/${templateId}`);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
     }
+    return { success: false, error: "An unexpected error occurred." };
   }
 
   revalidatePath(`/org/${slug}/settings/checklists`);
   return { success: true };
+}
+
+export async function getChecklistTemplateWithItems(
+  templateId: string,
+): Promise<{ success: boolean; data?: ChecklistTemplateWithItemsResponse; error?: string }> {
+  try {
+    const data = await api.get<ChecklistTemplateWithItemsResponse>(
+      `/api/checklist-templates/${templateId}`,
+    );
+    return { success: true, data };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
 }

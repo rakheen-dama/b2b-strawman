@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -19,7 +20,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
@@ -33,12 +33,11 @@ import {
   createChecklistTemplate,
   updateChecklistTemplate,
   cloneChecklistTemplate,
-  toggleChecklistTemplateActive,
+  deactivateChecklistTemplate,
+  getChecklistTemplateWithItems,
 } from "@/lib/actions/checklists";
 import type {
   ChecklistTemplateResponse,
-  ChecklistTemplateItemResponse,
-  ChecklistTemplateWithItemsResponse,
   CreateChecklistItemRequest,
   UpdateChecklistItemRequest,
 } from "@/lib/types";
@@ -50,6 +49,7 @@ interface ChecklistTemplateEditorProps {
 }
 
 interface EditableItem {
+  clientId: string;
   id?: string;
   name: string;
   description: string;
@@ -62,6 +62,7 @@ interface EditableItem {
 
 function emptyItem(sortOrder: number): EditableItem {
   return {
+    clientId: crypto.randomUUID(),
     name: "",
     description: "",
     sortOrder,
@@ -82,6 +83,7 @@ export function ChecklistTemplateEditor({
   const [cloneTargetId, setCloneTargetId] = useState<string | null>(null);
   const [cloneName, setCloneName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Edit form state
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -91,6 +93,8 @@ export function ChecklistTemplateEditor({
   const [formAutoInstantiate, setFormAutoInstantiate] = useState(false);
   const [formSortOrder, setFormSortOrder] = useState(0);
   const [formItems, setFormItems] = useState<EditableItem[]>([emptyItem(0)]);
+  const [itemValidationErrors, setItemValidationErrors] = useState<Record<string, string>>({});
+  const [loadingItems, setLoadingItems] = useState(false);
 
   function openCreateDialog() {
     setEditingId(null);
@@ -100,38 +104,86 @@ export function ChecklistTemplateEditor({
     setFormAutoInstantiate(false);
     setFormSortOrder(0);
     setFormItems([emptyItem(0)]);
+    setItemValidationErrors({});
+    setError(null);
     setEditDialogOpen(true);
   }
 
-  function openEditDialog(template: ChecklistTemplateResponse) {
+  async function openEditDialog(template: ChecklistTemplateResponse) {
     setEditingId(template.id);
     setFormName(template.name);
     setFormDescription(template.description ?? "");
     setFormCustomerType(template.customerType);
     setFormAutoInstantiate(template.autoInstantiate);
     setFormSortOrder(template.sortOrder);
-    // Items will be populated on the dialog - for now set empty since we need to fetch
-    // The brief's API returns TemplateWithItemsResponse from GET /api/checklist-templates/{id}
-    // but we only have TemplateResponse in the list. We'll work with what we have.
-    setFormItems([emptyItem(0)]);
+    setItemValidationErrors({});
+    setError(null);
     setEditDialogOpen(true);
+
+    // Fetch existing items for this template
+    setLoadingItems(true);
+    const result = await getChecklistTemplateWithItems(template.id);
+    if (result.success && result.data) {
+      const existingItems = result.data.items
+        .sort((a, b) => a.sortOrder - b.sortOrder)
+        .map((item) => ({
+          clientId: crypto.randomUUID(),
+          id: item.id,
+          name: item.name,
+          description: item.description ?? "",
+          sortOrder: item.sortOrder,
+          required: item.required,
+          requiresDocument: item.requiresDocument,
+          requiredDocumentLabel: item.requiredDocumentLabel ?? "",
+          dependsOnItemId: item.dependsOnItemId ?? "",
+        }));
+      setFormItems(existingItems.length > 0 ? existingItems : [emptyItem(0)]);
+    } else {
+      setFormItems([emptyItem(0)]);
+      if (result.error) {
+        setError(`Failed to load template items: ${result.error}`);
+      }
+    }
+    setLoadingItems(false);
   }
 
   function addItem() {
     setFormItems([...formItems, emptyItem(formItems.length)]);
   }
 
-  function removeItem(index: number) {
-    setFormItems(formItems.filter((_, i) => i !== index));
+  function removeItem(clientId: string) {
+    setFormItems(formItems.filter((item) => item.clientId !== clientId));
   }
 
-  function updateItem(index: number, updates: Partial<EditableItem>) {
-    setFormItems(formItems.map((item, i) => (i === index ? { ...item, ...updates } : item)));
+  function updateItem(clientId: string, updates: Partial<EditableItem>) {
+    setFormItems(formItems.map((item) => (item.clientId === clientId ? { ...item, ...updates } : item)));
+    // Clear validation error for this item when user types
+    if (updates.name !== undefined) {
+      setItemValidationErrors((prev) => {
+        const next = { ...prev };
+        delete next[clientId];
+        return next;
+      });
+    }
   }
 
   async function handleSave() {
     if (!formName.trim()) return;
+
+    // Validate item names: all items must have a name or be empty (removed)
+    const validationErrors: Record<string, string> = {};
+    formItems.forEach((item) => {
+      if (!item.name.trim() && (item.description.trim() || item.requiresDocument || item.dependsOnItemId)) {
+        validationErrors[item.clientId] = "Item name is required.";
+      }
+    });
+    if (Object.keys(validationErrors).length > 0) {
+      setItemValidationErrors(validationErrors);
+      return;
+    }
+
     setLoading(true);
+    setError(null);
 
     const items = formItems
       .filter((item) => item.name.trim())
@@ -146,8 +198,9 @@ export function ChecklistTemplateEditor({
         dependsOnItemId: item.dependsOnItemId || undefined,
       }));
 
+    let result;
     if (editingId) {
-      await updateChecklistTemplate(slug, editingId, {
+      result = await updateChecklistTemplate(slug, editingId, {
         name: formName,
         description: formDescription || undefined,
         autoInstantiate: formAutoInstantiate,
@@ -155,7 +208,7 @@ export function ChecklistTemplateEditor({
         items: items as UpdateChecklistItemRequest[],
       });
     } else {
-      await createChecklistTemplate(slug, {
+      result = await createChecklistTemplate(slug, {
         name: formName,
         description: formDescription || undefined,
         customerType: formCustomerType,
@@ -166,28 +219,36 @@ export function ChecklistTemplateEditor({
     }
 
     setLoading(false);
-    setEditDialogOpen(false);
+    if (result.success) {
+      setEditDialogOpen(false);
+    } else {
+      setError(result.error ?? "Failed to save template.");
+    }
   }
 
   async function handleClone() {
     if (!cloneTargetId || !cloneName.trim()) return;
     setLoading(true);
-    await cloneChecklistTemplate(slug, cloneTargetId, cloneName);
+    setError(null);
+    const result = await cloneChecklistTemplate(slug, cloneTargetId, cloneName);
     setLoading(false);
-    setCloneDialogOpen(false);
-    setCloneName("");
-    setCloneTargetId(null);
+    if (result.success) {
+      setCloneDialogOpen(false);
+      setCloneName("");
+      setCloneTargetId(null);
+    } else {
+      setError(result.error ?? "Failed to clone template.");
+    }
   }
 
   async function handleDeactivate(templateId: string) {
     setLoading(true);
-    await toggleChecklistTemplateActive(slug, templateId, false, {
-      name: "",
-      autoInstantiate: false,
-      sortOrder: 0,
-      items: [],
-    });
+    setError(null);
+    const result = await deactivateChecklistTemplate(slug, templateId);
     setLoading(false);
+    if (!result.success) {
+      setError(result.error ?? "Failed to deactivate template.");
+    }
   }
 
   return (
@@ -203,6 +264,10 @@ export function ChecklistTemplateEditor({
           </Button>
         )}
       </div>
+
+      {error && (
+        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+      )}
 
       {templates.length === 0 ? (
         <p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
@@ -343,13 +408,11 @@ export function ChecklistTemplateEditor({
               </div>
             )}
 
-            <div className="flex items-center gap-2">
-              <input
+            <div className="flex items-center gap-3">
+              <Switch
                 id="template-auto"
-                type="checkbox"
                 checked={formAutoInstantiate}
-                onChange={(e) => setFormAutoInstantiate(e.target.checked)}
-                className="size-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500 dark:border-slate-700"
+                onCheckedChange={setFormAutoInstantiate}
               />
               <Label htmlFor="template-auto">Auto-instantiate for matching customers</Label>
             </div>
@@ -364,21 +427,31 @@ export function ChecklistTemplateEditor({
                 </Button>
               </div>
 
-              {formItems.map((item, index) => (
+              {loadingItems && (
+                <p className="text-sm text-slate-500 dark:text-slate-400">Loading items...</p>
+              )}
+
+              {formItems.map((item) => (
                 <div
-                  key={index}
+                  key={item.clientId}
                   className="space-y-2 rounded-lg border border-slate-200 p-3 dark:border-slate-800"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 space-y-2">
                       <Input
                         value={item.name}
-                        onChange={(e) => updateItem(index, { name: e.target.value })}
+                        onChange={(e) => updateItem(item.clientId, { name: e.target.value })}
                         placeholder="Item name"
+                        aria-invalid={!!itemValidationErrors[item.clientId]}
                       />
+                      {itemValidationErrors[item.clientId] && (
+                        <p className="text-xs text-red-600 dark:text-red-400">
+                          {itemValidationErrors[item.clientId]}
+                        </p>
+                      )}
                       <Input
                         value={item.description}
-                        onChange={(e) => updateItem(index, { description: e.target.value })}
+                        onChange={(e) => updateItem(item.clientId, { description: e.target.value })}
                         placeholder="Description (optional)"
                       />
                     </div>
@@ -388,37 +461,41 @@ export function ChecklistTemplateEditor({
                         variant="ghost"
                         size="icon"
                         className="size-8 shrink-0 text-red-500"
-                        onClick={() => removeItem(index)}
+                        onClick={() => removeItem(item.clientId)}
                       >
                         <Trash2 className="size-4" />
                       </Button>
                     )}
                   </div>
                   <div className="flex flex-wrap gap-4">
-                    <label className="flex items-center gap-1.5 text-sm">
-                      <input
-                        type="checkbox"
+                    <div className="flex items-center gap-1.5">
+                      <Switch
+                        id={`item-required-${item.clientId}`}
+                        size="sm"
                         checked={item.required}
-                        onChange={(e) => updateItem(index, { required: e.target.checked })}
-                        className="size-3.5 rounded border-slate-300 text-teal-600 focus:ring-teal-500 dark:border-slate-700"
+                        onCheckedChange={(checked) => updateItem(item.clientId, { required: checked })}
                       />
-                      Required
-                    </label>
-                    <label className="flex items-center gap-1.5 text-sm">
-                      <input
-                        type="checkbox"
+                      <Label htmlFor={`item-required-${item.clientId}`} className="text-sm font-normal">
+                        Required
+                      </Label>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Switch
+                        id={`item-doc-${item.clientId}`}
+                        size="sm"
                         checked={item.requiresDocument}
-                        onChange={(e) => updateItem(index, { requiresDocument: e.target.checked })}
-                        className="size-3.5 rounded border-slate-300 text-teal-600 focus:ring-teal-500 dark:border-slate-700"
+                        onCheckedChange={(checked) => updateItem(item.clientId, { requiresDocument: checked })}
                       />
-                      Requires Document
-                    </label>
+                      <Label htmlFor={`item-doc-${item.clientId}`} className="text-sm font-normal">
+                        Requires Document
+                      </Label>
+                    </div>
                   </div>
                   {item.requiresDocument && (
                     <Input
                       value={item.requiredDocumentLabel}
                       onChange={(e) =>
-                        updateItem(index, { requiredDocumentLabel: e.target.value })
+                        updateItem(item.clientId, { requiredDocumentLabel: e.target.value })
                       }
                       placeholder="Document label (e.g., ID Copy)"
                     />
@@ -428,11 +505,15 @@ export function ChecklistTemplateEditor({
             </div>
           </div>
 
+          {error && (
+            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          )}
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={loading || !formName.trim()}>
+            <Button onClick={handleSave} disabled={loading || loadingItems || !formName.trim()}>
               {loading ? "Saving..." : editingId ? "Update" : "Create"}
             </Button>
           </DialogFooter>

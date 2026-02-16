@@ -43,12 +43,17 @@ export function OnboardingTab({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const [error, setError] = useState<string | null>(null);
+
   async function handleInstantiate(templateId: string) {
     setLoading(true);
+    setError(null);
     const result = await instantiateChecklist(slug, customerId, templateId);
     setLoading(false);
     if (result.success) {
       setDialogOpen(false);
+    } else {
+      setError(result.error ?? "Failed to add checklist.");
     }
   }
 
@@ -74,6 +79,9 @@ export function OnboardingTab({
               <p className="text-sm text-slate-600 dark:text-slate-400">
                 Select a template to create a new checklist instance for this customer.
               </p>
+              {error && (
+                <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+              )}
               <div className="space-y-2">
                 {templates.map((template) => (
                   <button

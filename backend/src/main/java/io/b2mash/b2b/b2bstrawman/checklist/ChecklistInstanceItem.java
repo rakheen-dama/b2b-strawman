@@ -208,4 +208,36 @@ public class ChecklistInstanceItem implements TenantAware {
   public void setDependsOnItemId(UUID dependsOnItemId) {
     this.dependsOnItemId = dependsOnItemId;
   }
+
+  /** Package-private: prefer domain methods block(), unblock(), complete(), skip(), reopen(). */
+  void setStatus(String status) {
+    this.status = status;
+    this.updatedAt = Instant.now();
+  }
+
+  /** Blocks this item (e.g., because a dependency is not yet completed). */
+  public void block() {
+    this.status = "BLOCKED";
+    this.completedBy = null;
+    this.completedAt = null;
+    this.notes = null;
+    this.documentId = null;
+    this.updatedAt = Instant.now();
+  }
+
+  /** Unblocks this item, setting it back to PENDING. */
+  public void unblock() {
+    this.status = "PENDING";
+    this.updatedAt = Instant.now();
+  }
+
+  /** Reopens a completed or skipped item, clearing completion fields. */
+  public void reopen() {
+    this.status = "PENDING";
+    this.completedBy = null;
+    this.completedAt = null;
+    this.notes = null;
+    this.documentId = null;
+    this.updatedAt = Instant.now();
+  }
 }

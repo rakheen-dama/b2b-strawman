@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.compliance;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceService;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.event.CustomerStatusChangedEvent;
@@ -27,6 +28,7 @@ public class CustomerLifecycleService {
   private final ApplicationEventPublisher eventPublisher;
   private final MemberRepository memberRepository;
   private final OrgSettingsRepository orgSettingsRepository;
+  private final ChecklistInstanceService checklistInstanceService;
 
   public CustomerLifecycleService(
       CustomerRepository customerRepository,
@@ -34,13 +36,15 @@ public class CustomerLifecycleService {
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
       MemberRepository memberRepository,
-      OrgSettingsRepository orgSettingsRepository) {
+      OrgSettingsRepository orgSettingsRepository,
+      ChecklistInstanceService checklistInstanceService) {
     this.customerRepository = customerRepository;
     this.customerLifecycleGuard = customerLifecycleGuard;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
     this.memberRepository = memberRepository;
     this.orgSettingsRepository = orgSettingsRepository;
+    this.checklistInstanceService = checklistInstanceService;
   }
 
   @Transactional
@@ -67,6 +71,13 @@ public class CustomerLifecycleService {
 
     customer.transitionLifecycle(targetStatus, changedBy, now, offboardedAt);
     customer = customerRepository.save(customer);
+
+    // Auto-instantiate checklists on PROSPECT -> ONBOARDING
+    if ("PROSPECT".equals(oldStatus) && "ONBOARDING".equals(targetStatus)) {
+      // Customer type defaults to ANY; templates with customerType=ANY or matching type are
+      // selected
+      checklistInstanceService.autoInstantiate(customerId, "ANY");
+    }
 
     // Emit audit event
     auditService.log(

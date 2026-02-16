@@ -109,6 +109,16 @@ public class ChecklistInstanceItem implements TenantAware {
     this.updatedAt = Instant.now();
   }
 
+  /** Reopens this item by resetting it to PENDING. */
+  public void reopen() {
+    this.status = "PENDING";
+    this.completedAt = null;
+    this.completedBy = null;
+    this.notes = null;
+    this.documentId = null;
+    this.updatedAt = Instant.now();
+  }
+
   // --- TenantAware ---
 
   @Override

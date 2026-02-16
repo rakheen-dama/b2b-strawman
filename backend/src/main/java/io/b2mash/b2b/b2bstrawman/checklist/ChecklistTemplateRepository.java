@@ -34,4 +34,12 @@ public interface ChecklistTemplateRepository extends JpaRepository<ChecklistTemp
           + " AND ct.autoInstantiate = true AND ct.customerType = :customerType")
   Optional<ChecklistTemplate> findByActiveTrueAndAutoInstantiateTrueAndCustomerType(
       @Param("customerType") String customerType);
+
+  @Query(
+      "SELECT ct FROM ChecklistTemplate ct WHERE ct.active = true"
+          + " AND ct.autoInstantiate = true"
+          + " AND (ct.customerType = 'ANY' OR ct.customerType = :customerType)"
+          + " ORDER BY ct.sortOrder, ct.name")
+  List<ChecklistTemplate> findAutoInstantiateTemplatesForCustomerType(
+      @Param("customerType") String customerType);
 }

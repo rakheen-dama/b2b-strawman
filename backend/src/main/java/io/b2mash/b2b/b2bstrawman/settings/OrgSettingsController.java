@@ -89,19 +89,7 @@ public class OrgSettingsController {
   @GetMapping("/compliance-packs")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<CompliancePacksResponse> getCompliancePacks() {
-    var settings = orgSettingsService.getOrCreateSettings();
-    var packs =
-        settings.getCompliancePackStatus() == null
-            ? List.<PackStatusDto>of()
-            : settings.getCompliancePackStatus().stream()
-                .map(
-                    entry ->
-                        new PackStatusDto(
-                            (String) entry.get("packId"),
-                            entry.get("version") instanceof Number n ? n.intValue() : 0,
-                            (String) entry.get("appliedAt"),
-                            true))
-                .toList();
+    var packs = orgSettingsService.getCompliancePackStatuses();
     return ResponseEntity.ok(new CompliancePacksResponse(packs));
   }
 

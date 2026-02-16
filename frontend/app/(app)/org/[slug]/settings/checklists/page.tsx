@@ -4,18 +4,11 @@ import { auth } from "@clerk/nextjs/server";
 import { api } from "@/lib/api";
 import { ChecklistTemplateEditor } from "@/components/settings/ChecklistTemplateEditor";
 import { CompliancePacks } from "@/components/settings/CompliancePacks";
-import type { ChecklistTemplateResponse } from "@/lib/types";
-
-interface PackStatusDto {
-  packId: string;
-  version: number;
-  appliedAt: string;
-  active: boolean;
-}
-
-interface CompliancePacksResponse {
-  packs: PackStatusDto[];
-}
+import type {
+  ChecklistTemplateResponse,
+  PackStatusDto,
+  CompliancePacksResponse,
+} from "@/lib/types";
 
 export default async function ChecklistsSettingsPage({
   params,

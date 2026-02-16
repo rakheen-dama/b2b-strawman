@@ -978,6 +978,19 @@ export interface ChecklistInstanceWithItemsResponse {
   items: ChecklistInstanceItemResponse[];
 }
 
+// ---- Compliance Packs (from OrgSettingsController.java) ----
+
+export interface PackStatusDto {
+  packId: string;
+  version: number;
+  appliedAt: string;
+  active: boolean;
+}
+
+export interface CompliancePacksResponse {
+  packs: PackStatusDto[];
+}
+
 // ---- Error (RFC 9457 ProblemDetail) ----
 
 export interface ProblemDetail {

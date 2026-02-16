@@ -175,6 +175,9 @@ public class TenantProvisioningService {
             () ->
                 transactionTemplate.executeWithoutResult(
                     tx -> {
+                      // Manual setTenantId is required: TenantAwareEntityListener only
+                      // populates tenant_id for shared-schema tenants, but dedicated schemas
+                      // also have a NOT NULL tenant_id column.
                       if (!retentionPolicyRepository.existsByRecordTypeAndTriggerEvent(
                           "CUSTOMER", "CUSTOMER_OFFBOARDED")) {
                         var customerPolicy =

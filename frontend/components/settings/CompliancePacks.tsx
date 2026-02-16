@@ -4,15 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/format";
+import type { PackStatusDto } from "@/lib/types";
 
-interface PackStatusDto {
-  packId: string;
-  version: number;
-  appliedAt: string;
-  active: boolean;
-}
-
-function formatPackName(packId: string): string {
+export function formatPackName(packId: string): string {
   return packId
     .split("-")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))

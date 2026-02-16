@@ -7,8 +7,10 @@ import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsController.PackStatusDto;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsController.SettingsResponse;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -232,10 +234,31 @@ public class OrgSettingsService {
    * endpoints that need the raw entity (e.g., compliance pack status).
    */
   @Transactional(readOnly = true)
-  public OrgSettings getOrCreateSettings() {
+  public OrgSettings getOrDefaultSettings() {
     return orgSettingsRepository
         .findForCurrentTenant()
         .orElseGet(() -> new OrgSettings(DEFAULT_CURRENCY));
+  }
+
+  /**
+   * Returns the compliance pack statuses for the current tenant. Maps the raw JSONB entries from
+   * OrgSettings into PackStatusDto records.
+   */
+  @Transactional(readOnly = true)
+  public List<PackStatusDto> getCompliancePackStatuses() {
+    var settings = getOrDefaultSettings();
+    if (settings.getCompliancePackStatus() == null) {
+      return List.of();
+    }
+    return settings.getCompliancePackStatus().stream()
+        .map(
+            entry ->
+                new PackStatusDto(
+                    (String) entry.get("packId"),
+                    entry.get("version") instanceof Number n ? n.intValue() : 0,
+                    (String) entry.get("appliedAt"),
+                    true))
+        .toList();
   }
 
   /**

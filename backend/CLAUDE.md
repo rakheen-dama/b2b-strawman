@@ -106,6 +106,9 @@ logging.level.org.hibernate.orm.jdbc.bind: TRACE  # Show parameter values
 - Never build `ProblemDetail` directly in controllers or services — throw semantic exceptions from `exception/` package instead
 - Never return `Optional` from services for "not found" or "access denied" — throw `ResourceNotFoundException`
 - Never duplicate error helper methods in controllers — use `RequestScopes.requireMemberId()` and the shared exception classes
+- Never call repository methods outside a `@Transactional` boundary — OSIV is disabled, so connections acquired without a transaction may leak
+- Never add a new seeder to `TenantProvisioningService` without using the `TransactionTemplate` + `ScopedValue.where()` pattern (see `FieldPackSeeder.seedPacksForTenant()`)
+- Never run `./mvnw clean verify` without killing stale Surefire processes first — zombie JVMs accumulate and exhaust connection pools
 
 ## Spring Boot 4 / Hibernate 7 Gotchas
 

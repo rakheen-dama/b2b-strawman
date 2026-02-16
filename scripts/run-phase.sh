@@ -177,6 +177,11 @@ for i in "${!SLICES_TO_RUN[@]}"; do
   log "Starting slice ${slice} (${step})"
   log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
+  # Kill any zombie Surefire/Maven processes from previous runs
+  pgrep -f 'surefire.*worktree-epic' | xargs kill 2>/dev/null || true
+  pgrep -f 'mvnw.*worktree-epic' | xargs kill 2>/dev/null || true
+  sleep 2
+
   # Run claude with fresh context
   SLICE_START=$(date +%s)
 

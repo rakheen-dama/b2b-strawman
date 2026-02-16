@@ -177,6 +177,9 @@ using this exact structure:
 
 All commands run from: cd /Users/rakheendama/Projects/2026/worktree-epic-{SLICE}/backend
 
+**Step 0: Kill zombie processes (prevents connection pool exhaustion)**
+  pgrep -f 'surefire.*worktree-epic' | xargs kill 2>/dev/null || true; sleep 2
+
 **Step 1: Format**
   ./mvnw spotless:apply 2>&1 | tail -3
 
@@ -241,10 +244,11 @@ CLAUDE.md files — the brief already contains the relevant extracts.
 Run the exact build commands from the brief's "Build & Verify" section.
 Build output is redirected to log files — only summaries enter your context.
 If the build fails:
-  1. Read the relevant log file to understand the error
-  2. Fix the root cause (not symptoms)
-  3. Re-run. Max 3 fix cycles.
-  4. If still failing after 3 cycles, stop and report what's failing and your hypotheses.
+  1. Kill zombie surefire processes first: pgrep -f 'surefire.*worktree-epic' | xargs kill 2>/dev/null || true; sleep 2
+  2. Read the relevant log file to understand the error
+  3. Fix the root cause (not symptoms)
+  4. Re-run. Max 3 fix cycles.
+  5. If still failing after 3 cycles, stop and report what's failing and your hypotheses. Do NOT keep retrying — zombie processes accumulate and cause connection pool exhaustion.
 
 When reading log files for errors, use targeted reads:
   grep -n "ERROR\|FAILURE\|Caused by" /tmp/mvn-epic-{SLICE}.log | tail -20

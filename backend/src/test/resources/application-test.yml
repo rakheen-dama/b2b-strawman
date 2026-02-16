@@ -1,4 +1,20 @@
 spring:
+  datasource:
+    app:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 10000
+      leak-detection-threshold: 10000
+    migration:
+      maximum-pool-size: 2
+      connection-timeout: 30000
+      leak-detection-threshold: 15000
+    portal:
+      maximum-pool-size: 3
+      minimum-idle: 1
+      connection-timeout: 10000
+      leak-detection-threshold: 10000
+
   security:
     oauth2:
       resourceserver:

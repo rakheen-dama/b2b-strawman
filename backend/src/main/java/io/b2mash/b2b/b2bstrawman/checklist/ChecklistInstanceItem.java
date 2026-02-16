@@ -208,4 +208,19 @@ public class ChecklistInstanceItem implements TenantAware {
   public void setDependsOnItemId(UUID dependsOnItemId) {
     this.dependsOnItemId = dependsOnItemId;
   }
+
+  public void setStatus(String status) {
+    this.status = status;
+    this.updatedAt = Instant.now();
+  }
+
+  /** Reopens a completed or skipped item, clearing completion fields. */
+  public void reopen() {
+    this.status = "PENDING";
+    this.completedBy = null;
+    this.completedAt = null;
+    this.notes = null;
+    this.documentId = null;
+    this.updatedAt = Instant.now();
+  }
 }

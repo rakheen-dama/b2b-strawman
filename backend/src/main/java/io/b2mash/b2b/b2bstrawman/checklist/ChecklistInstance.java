@@ -78,6 +78,14 @@ public class ChecklistInstance implements TenantAware {
     this.updatedAt = Instant.now();
   }
 
+  /** Reopens a completed instance, resetting it to IN_PROGRESS. */
+  public void reopen() {
+    this.status = "IN_PROGRESS";
+    this.completedBy = null;
+    this.completedAt = null;
+    this.updatedAt = Instant.now();
+  }
+
   // --- TenantAware ---
 
   @Override

@@ -116,7 +116,7 @@
 | **Phase 13 — Customer Compliance & Lifecycle** | | | | | | See [tasks/phase13-customer-compliance-lifecycle.md](tasks/phase13-customer-compliance-lifecycle.md) |
 | 96 | Entity Foundation + Lifecycle Guards | Backend | -- | L | 96A, 96B | **Done** (PRs #198, #199) |
 | 97 | Lifecycle Transitions + Dormancy Detection | Both | 96 | M | 97A, 97B | **Done** (PRs #200, #201) |
-| 98 | Checklist Engine | Both | 96, 97 | L | 98A, 98B, 98C | |
+| 98 | Checklist Engine | Both | 96, 97 | L | 98A, 98B, 98C | **Done** (PRs #202, #204, #205) |
 | 99 | Compliance Packs + Seeder | Backend | 98 | M | 99A | |
 | 100 | Data Subject Requests | Both | 96 | L | 100A, 100B | |
 | 101 | Retention Policies | Both | 96 | M | 101A | |

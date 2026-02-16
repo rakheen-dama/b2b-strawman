@@ -12,7 +12,7 @@ Jurisdiction-agnostic compliance layer with customer lifecycle state machine (PR
 |------|------|-------|------|--------|--------|--------|
 | 96 | Entity Foundation + Lifecycle Guards | Backend | -- | L | 96A, 96B | **Done** (PRs #198, #199) |
 | 97 | Lifecycle Transitions + Dormancy Detection | Both | 96 | M | 97A, 97B | **Done** (PRs #200, #201) |
-| 98 | Checklist Engine | Both | 96, 97 | L | 98A, 98B, 98C | 98A **Done** (PR #202), 98B **Done** (PR #204) |
+| 98 | Checklist Engine | Both | 96, 97 | L | 98A, 98B, 98C | **Done** (PRs #202, #204, #205) |
 | 99 | Compliance Packs + Seeder | Backend | 98 | M | 99A | |
 | 100 | Data Subject Requests | Both | 96 | L | 100A, 100B | |
 | 101 | Retention Policies | Both | 96 | M | 101A | |
@@ -315,7 +315,7 @@ Stage 6:  [102A]                                                 ← dashboard (
 |-------|-------|---------|--------|
 | **98A** | 98.1-98.10 | ChecklistTemplateService CRUD + clone + validation (circular deps, auto-instantiate uniqueness), ChecklistTemplateController, integration tests (~15 backend tests) | **Done** (PR #202) |
 | **98B** | 98.11-98.20 | ChecklistInstanceService (instantiation, item completion, skip, reopen, dependency enforcement, completion detection, lifecycle auto-transition), ChecklistInstanceController, integration tests (~15 backend tests) | **Done** (PR #204) |
-| **98C** | 98.21-98.30 | Frontend: OnboardingTab component, ChecklistProgress, ChecklistItemRow, ChecklistTemplateEditor (settings), server actions, frontend tests (~10 tests) | |
+| **98C** | 98.21-98.30 | Frontend: OnboardingTab component, ChecklistProgress, ChecklistItemRow, ChecklistTemplateEditor (settings), server actions, frontend tests (~10 tests) | **Done** (PR #205) |
 
 ### Tasks
 

@@ -857,6 +857,127 @@ export interface GeneratedDocumentListResponse {
   generatedAt: string;
 }
 
+// ---- Checklist Templates (from ChecklistTemplateController.java) ----
+
+export type ChecklistSource = "USER" | "PACK";
+
+export interface ChecklistTemplateResponse {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  customerType: string;
+  source: ChecklistSource;
+  packId: string | null;
+  packTemplateKey: string | null;
+  active: boolean;
+  autoInstantiate: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ChecklistTemplateItemResponse {
+  id: string;
+  templateId: string;
+  name: string;
+  description: string | null;
+  sortOrder: number;
+  required: boolean;
+  requiresDocument: boolean;
+  requiredDocumentLabel: string | null;
+  dependsOnItemId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ChecklistTemplateWithItemsResponse {
+  template: ChecklistTemplateResponse;
+  items: ChecklistTemplateItemResponse[];
+}
+
+export interface CreateChecklistTemplateRequest {
+  name: string;
+  slug?: string;
+  description?: string;
+  customerType: string;
+  autoInstantiate: boolean;
+  sortOrder: number;
+  items: CreateChecklistItemRequest[];
+}
+
+export interface CreateChecklistItemRequest {
+  name: string;
+  description?: string;
+  sortOrder: number;
+  required: boolean;
+  requiresDocument: boolean;
+  requiredDocumentLabel?: string;
+  dependsOnItemId?: string;
+}
+
+export interface UpdateChecklistTemplateRequest {
+  name: string;
+  description?: string;
+  autoInstantiate: boolean;
+  sortOrder: number;
+  items: UpdateChecklistItemRequest[];
+}
+
+export interface UpdateChecklistItemRequest {
+  id?: string;
+  name: string;
+  description?: string;
+  sortOrder: number;
+  required: boolean;
+  requiresDocument: boolean;
+  requiredDocumentLabel?: string;
+  dependsOnItemId?: string;
+}
+
+// ---- Checklist Instances (from ChecklistInstanceController.java) ----
+
+export type ChecklistInstanceStatus = "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
+export type ChecklistItemStatus = "PENDING" | "BLOCKED" | "COMPLETED" | "SKIPPED";
+
+export interface ChecklistInstanceResponse {
+  id: string;
+  templateId: string;
+  templateName: string;
+  customerId: string;
+  status: ChecklistInstanceStatus;
+  startedAt: string;
+  completedAt: string | null;
+  completedBy: string | null;
+  itemCount: number;
+  completedCount: number;
+  requiredCount: number;
+  requiredCompletedCount: number;
+}
+
+export interface ChecklistInstanceItemResponse {
+  id: string;
+  instanceId: string;
+  templateItemId: string;
+  name: string;
+  description: string | null;
+  sortOrder: number;
+  required: boolean;
+  requiresDocument: boolean;
+  requiredDocumentLabel: string | null;
+  status: ChecklistItemStatus;
+  completedAt: string | null;
+  completedBy: string | null;
+  notes: string | null;
+  documentId: string | null;
+  dependsOnItemId: string | null;
+}
+
+export interface ChecklistInstanceWithItemsResponse {
+  instance: ChecklistInstanceResponse;
+  items: ChecklistInstanceItemResponse[];
+}
+
 // ---- Error (RFC 9457 ProblemDetail) ----
 
 export interface ProblemDetail {

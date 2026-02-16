@@ -10,6 +10,7 @@ import {
   ListChecks,
   Tag,
   FileText,
+  ClipboardCheck,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { LucideIcon } from "lucide-react";
@@ -49,6 +50,13 @@ const settingsCards: SettingsCard[] = [
     title: "Custom Fields",
     description: "Define custom fields and groups for projects, tasks, and customers",
     href: "custom-fields",
+    comingSoon: false,
+  },
+  {
+    icon: ClipboardCheck,
+    title: "Checklists",
+    description: "Manage onboarding and compliance checklist templates",
+    href: "checklists",
     comingSoon: false,
   },
   {

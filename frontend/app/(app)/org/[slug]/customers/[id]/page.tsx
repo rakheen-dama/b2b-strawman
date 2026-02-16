@@ -16,6 +16,9 @@ import type {
   FieldGroupMemberResponse,
   TagResponse,
   TemplateListResponse,
+  ChecklistInstanceResponse,
+  ChecklistInstanceWithItemsResponse,
+  ChecklistTemplateResponse,
 } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,6 +35,7 @@ import { FieldGroupSelector } from "@/components/field-definitions/FieldGroupSel
 import { TagInput } from "@/components/tags/TagInput";
 import { GenerateDocumentDropdown } from "@/components/templates/GenerateDocumentDropdown";
 import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocumentsList";
+import { OnboardingTab } from "@/components/customers/OnboardingTab";
 import { formatDate } from "@/lib/format";
 import { LifecycleStatusBadge } from "@/components/customers/LifecycleStatusBadge";
 import { LifecycleTransitionMenu } from "@/components/customers/LifecycleTransitionMenu";
@@ -168,6 +172,45 @@ export default async function CustomerDetailPage({
       customerTemplates = await getTemplates(undefined, "CUSTOMER");
     } catch {
       // Non-fatal: hide generate button if template fetch fails
+    }
+  }
+
+  // Checklist instances and templates for the "Onboarding" tab
+  const showOnboarding = ["PROSPECT", "ONBOARDING", "ACTIVE"].includes(customer.lifecycleStatus);
+  let checklistInstances: { instance: ChecklistInstanceResponse; items: ChecklistInstanceWithItemsResponse["items"] }[] = [];
+  let checklistTemplates: ChecklistTemplateResponse[] = [];
+  if (showOnboarding) {
+    try {
+      const instances = await api.get<ChecklistInstanceResponse[]>(
+        `/api/customers/${id}/checklists`,
+      );
+      // Fetch items for each instance in parallel
+      const instancesWithItems = await Promise.allSettled(
+        instances.map((inst) =>
+          api.get<ChecklistInstanceWithItemsResponse>(
+            `/api/checklist-instances/${inst.id}`,
+          ),
+        ),
+      );
+      checklistInstances = instances.map((inst, i) => {
+        const result = instancesWithItems[i];
+        return {
+          instance: inst,
+          items: result.status === "fulfilled" ? result.value.items : [],
+        };
+      });
+    } catch {
+      // Non-fatal: show empty onboarding tab
+    }
+
+    try {
+      checklistTemplates = await api.get<ChecklistTemplateResponse[]>(
+        "/api/checklist-templates",
+      );
+      // Filter to only active templates
+      checklistTemplates = checklistTemplates.filter((t) => t.active);
+    } catch {
+      // Non-fatal: hide "Add Checklist" button
     }
   }
 
@@ -329,6 +372,17 @@ export default async function CustomerDetailPage({
               customerId={id}
               slug={slug}
               defaultCurrency={defaultCurrency}
+            />
+          ) : undefined
+        }
+        onboardingPanel={
+          showOnboarding ? (
+            <OnboardingTab
+              instances={checklistInstances}
+              templates={checklistTemplates}
+              customerId={id}
+              slug={slug}
+              canManage={isAdmin}
             />
           ) : undefined
         }

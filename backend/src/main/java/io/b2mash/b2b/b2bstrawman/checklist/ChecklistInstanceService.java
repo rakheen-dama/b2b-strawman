@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.checklist;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -13,6 +14,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +29,7 @@ public class ChecklistInstanceService {
   private final ChecklistTemplateItemRepository templateItemRepository;
   private final CustomerRepository customerRepository;
   private final AuditService auditService;
+  private final CustomerLifecycleService customerLifecycleService;
 
   public ChecklistInstanceService(
       ChecklistInstanceRepository instanceRepository,
@@ -34,13 +37,15 @@ public class ChecklistInstanceService {
       ChecklistTemplateRepository templateRepository,
       ChecklistTemplateItemRepository templateItemRepository,
       CustomerRepository customerRepository,
-      AuditService auditService) {
+      AuditService auditService,
+      @Lazy CustomerLifecycleService customerLifecycleService) {
     this.instanceRepository = instanceRepository;
     this.instanceItemRepository = instanceItemRepository;
     this.templateRepository = templateRepository;
     this.templateItemRepository = templateItemRepository;
     this.customerRepository = customerRepository;
     this.auditService = auditService;
+    this.customerLifecycleService = customerLifecycleService;
   }
 
   @Transactional(readOnly = true)
@@ -259,11 +264,9 @@ public class ChecklistInstanceService {
     if (wasCompleted) {
       var instance = instanceRepository.findOneById(item.getInstanceId()).orElse(null);
       if (instance != null && "COMPLETED".equals(instance.getStatus())) {
-        // Revert instance to IN_PROGRESS since a required item was reopened
-        instance =
-            new ChecklistInstance(
-                instance.getTemplateId(), instance.getCustomerId(), "IN_PROGRESS");
-        // We can't just set status — use the existing instance instead
+        instance.reopen();
+        instanceRepository.save(instance);
+        log.info("Reopened checklist instance: instanceId={}", instance.getId());
       }
     }
 
@@ -286,8 +289,9 @@ public class ChecklistInstanceService {
    */
   @Transactional
   public void autoInstantiateForCustomer(UUID customerId) {
-    // Since Customer entity doesn't have a customerType field, we use "ANY" to find templates
-    // that match all customer types
+    // TODO: Customer entity does not yet have a customerType field. Once added, pass
+    //  the actual customer type here so that type-specific templates are also matched.
+    //  Currently only templates with customerType='ANY' will be auto-instantiated.
     var templates = templateRepository.findAutoInstantiateTemplatesForCustomerType("ANY");
 
     for (var template : templates) {
@@ -335,14 +339,7 @@ public class ChecklistInstanceService {
   }
 
   private void checkAndTransitionCustomerLifecycle(UUID customerId) {
-    // Count non-completed, non-cancelled instances
-    long activeInstances =
-        instanceRepository.countByCustomerIdAndStatusNot(customerId, "COMPLETED");
-    // Subtract cancelled instances (they shouldn't block)
-    long cancelledInstances =
-        instanceRepository.countByCustomerIdAndStatusNot(customerId, "CANCELLED");
-    // Actually, we need instances that are neither COMPLETED nor CANCELLED
-    // Let's just check: count instances where status is IN_PROGRESS
+    // Check if any instances are still in progress (neither COMPLETED nor CANCELLED)
     var allInstances = instanceRepository.findByCustomerIdOrderByCreatedAtDesc(customerId);
     long incompleteCount =
         allInstances.stream()
@@ -352,26 +349,13 @@ public class ChecklistInstanceService {
     if (incompleteCount == 0 && !allInstances.isEmpty()) {
       var customer = customerRepository.findOneById(customerId).orElse(null);
       if (customer != null && "ONBOARDING".equals(customer.getLifecycleStatus())) {
-        UUID memberId = RequestScopes.requireMemberId();
-        Instant now = Instant.now();
-        customer.transitionLifecycle("ACTIVE", memberId, now, null);
-        customerRepository.save(customer);
+        // Delegate to CustomerLifecycleService so guards, events, and notifications fire
+        customerLifecycleService.transitionCustomer(
+            customerId, "ACTIVE", "Auto-transitioned: all checklists completed");
 
         log.info(
             "Customer auto-transitioned to ACTIVE after all checklists completed: customerId={}",
             customerId);
-
-        auditService.log(
-            AuditEventBuilder.builder()
-                .eventType("customer.status_changed")
-                .entityType("customer")
-                .entityId(customerId)
-                .details(
-                    Map.of(
-                        "old_status", "ONBOARDING",
-                        "new_status", "ACTIVE",
-                        "trigger", "checklist_completion"))
-                .build());
       }
     }
   }

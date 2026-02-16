@@ -8,6 +8,7 @@ import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
@@ -81,16 +82,19 @@ public class ChecklistTemplate implements TenantAware {
     this.updatedAt = Instant.now();
   }
 
+  @PreUpdate
+  void onPreUpdate() {
+    this.updatedAt = Instant.now();
+  }
+
   /** Activates this checklist template, making it available for instantiation. */
   public void activate() {
     this.active = true;
-    this.updatedAt = Instant.now();
   }
 
   /** Deactivates this checklist template, preventing new instantiations. */
   public void deactivate() {
     this.active = false;
-    this.updatedAt = Instant.now();
   }
 
   // --- TenantAware ---
@@ -163,7 +167,6 @@ public class ChecklistTemplate implements TenantAware {
 
   public void setName(String name) {
     this.name = name;
-    this.updatedAt = Instant.now();
   }
 
   public void setDescription(String description) {

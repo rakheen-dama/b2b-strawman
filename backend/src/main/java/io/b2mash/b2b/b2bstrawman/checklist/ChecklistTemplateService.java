@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateController.UpdateIte
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateController.UpdateTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -205,7 +206,7 @@ public class ChecklistTemplateService {
     // Clone items and build ID mapping for dependency references
     var originalItems = itemRepository.findByTemplateIdOrderBySortOrder(original.getId());
     Map<UUID, UUID> idMapping = new HashMap<>();
-    List<ChecklistTemplateItem> clonedItems = new java.util.ArrayList<>();
+    List<ChecklistTemplateItem> clonedItems = new ArrayList<>();
 
     for (var item : originalItems) {
       var clonedItem =
@@ -260,7 +261,14 @@ public class ChecklistTemplateService {
   // --- Private helpers ---
 
   private String generateSlug(String name) {
-    return name.toLowerCase().replaceAll("[\\s-]+", "_").replaceAll("[^a-z0-9_]", "");
+    String slug = name.toLowerCase().replaceAll("[\\s-]+", "_").replaceAll("[^a-z0-9_]", "");
+    if (slug.isEmpty()) {
+      throw new IllegalArgumentException(
+          "Cannot generate a valid slug from name '"
+              + name
+              + "' — name must contain at least one alphanumeric character");
+    }
+    return slug;
   }
 
   private List<ChecklistTemplateItem> createItems(

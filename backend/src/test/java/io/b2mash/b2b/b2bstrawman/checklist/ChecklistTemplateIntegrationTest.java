@@ -453,6 +453,63 @@ class ChecklistTemplateIntegrationTest {
     mockMvc.perform(get("/api/checklist-templates").with(memberJwt())).andExpect(status().isOk());
   }
 
+  @Test
+  void shouldIsolateTemplatesBetweenTenants() throws Exception {
+    // Create a template in org1
+    var createResult =
+        mockMvc
+            .perform(
+                post("/api/checklist-templates")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "name": "Tenant Isolation Test",
+                          "customerType": "ANY",
+                          "autoInstantiate": false,
+                          "sortOrder": 0,
+                          "items": []
+                        }
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    String templateId =
+        JsonPath.read(createResult.getResponse().getContentAsString(), "$.template.id");
+
+    // Provision a second org
+    String org2Id = "org_cl_isolation_test";
+    provisioningService.provisionTenant(org2Id, "CL Isolation Org");
+    planSyncService.syncPlan(org2Id, "pro-plan");
+    syncMember(org2Id, "user_iso_owner", "iso_owner@test.com", "Isolation Owner", "owner");
+
+    JwtRequestPostProcessor org2OwnerJwt =
+        jwt()
+            .jwt(j -> j.subject("user_iso_owner").claim("o", Map.of("id", org2Id, "rol", "owner")))
+            .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
+
+    // List templates from org2 — should NOT contain the template created in org1
+    var listResult =
+        mockMvc
+            .perform(get("/api/checklist-templates").with(org2OwnerJwt))
+            .andExpect(status().isOk())
+            .andReturn();
+
+    String listJson = listResult.getResponse().getContentAsString();
+    List<Map<String, Object>> templates = JsonPath.read(listJson, "$");
+    List<String> ids =
+        templates.stream()
+            .map(t -> (String) t.get("id"))
+            .collect(java.util.stream.Collectors.toList());
+    assertThat(ids).doesNotContain(templateId);
+
+    // GET by ID from org2 — should return 404
+    mockMvc
+        .perform(get("/api/checklist-templates/" + templateId).with(org2OwnerJwt))
+        .andExpect(status().isNotFound());
+  }
+
   // --- JWT Helpers ---
 
   private JwtRequestPostProcessor ownerJwt() {

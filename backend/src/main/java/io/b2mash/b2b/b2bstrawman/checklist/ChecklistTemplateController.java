@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.checklist;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.time.Instant;
@@ -80,13 +81,13 @@ public class ChecklistTemplateController {
       String description,
       @NotBlank @Size(max = 20) String customerType,
       boolean autoInstantiate,
-      int sortOrder,
+      @PositiveOrZero int sortOrder,
       List<CreateItemRequest> items) {}
 
   public record CreateItemRequest(
       @NotBlank @Size(max = 300) String name,
       String description,
-      int sortOrder,
+      @PositiveOrZero int sortOrder,
       boolean required,
       boolean requiresDocument,
       @Size(max = 200) String requiredDocumentLabel,
@@ -96,14 +97,14 @@ public class ChecklistTemplateController {
       @NotBlank @Size(max = 200) String name,
       String description,
       boolean autoInstantiate,
-      int sortOrder,
+      @PositiveOrZero int sortOrder,
       List<UpdateItemRequest> items) {}
 
   public record UpdateItemRequest(
       UUID id,
       @NotBlank @Size(max = 300) String name,
       String description,
-      int sortOrder,
+      @PositiveOrZero int sortOrder,
       boolean required,
       boolean requiresDocument,
       @Size(max = 200) String requiredDocumentLabel,

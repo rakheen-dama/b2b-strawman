@@ -1,0 +1,1 @@
+{"session_id":"16fd2486-d3c1-4fed-958b-b302ca1f1fe4","started_at":"2026-02-17T22:09:22.000Z","ended_at":"2026-02-17T22:09:32.000Z","total_tool_calls":5,"error_count":0,"error_rate_pct":0,"tool_counts":[{"tool":"Read","count":4},{"tool":"Glob","count":1}],"error_details":[],"bash_failures":[],"agent_spawns":[],"files_modified":[],"agent_token_usage":[],"build_stats":{}}

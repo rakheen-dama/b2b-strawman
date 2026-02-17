@@ -1,7 +1,7 @@
 spring:
   datasource:
     app:
-      jdbc-url: jdbc:postgresql://b2mash.local:5432/app
+      jdbc-url: jdbc:postgresql://b2mash.local:5432/docteams
       username: postgres
       password: changeme
       driver-class-name: org.postgresql.Driver
@@ -14,14 +14,14 @@ spring:
       leak-detection-threshold: 30000
       connection-init-sql: SET search_path TO public
     migration:
-      jdbc-url: jdbc:postgresql://b2mash.local:5432/app
+      jdbc-url: jdbc:postgresql://b2mash.local:5432/docteams
       username: postgres
       password: changeme
       driver-class-name: org.postgresql.Driver
       maximum-pool-size: 2
       connection-timeout: 30000
     portal:
-      jdbc-url: jdbc:postgresql://b2mash.local:5432/app
+      jdbc-url: jdbc:postgresql://b2mash.local:5432/docteams
       username: postgres
       password: changeme
       driver-class-name: org.postgresql.Driver

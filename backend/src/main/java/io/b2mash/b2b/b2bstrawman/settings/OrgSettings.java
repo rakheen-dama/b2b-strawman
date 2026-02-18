@@ -165,6 +165,11 @@ public class OrgSettings {
     return dataRequestDeadlineDays;
   }
 
+  public void setDataRequestDeadlineDays(Integer dataRequestDeadlineDays) {
+    this.dataRequestDeadlineDays = dataRequestDeadlineDays;
+    this.updatedAt = Instant.now();
+  }
+
   public List<Map<String, Object>> getCompliancePackStatus() {
     return compliancePackStatus;
   }

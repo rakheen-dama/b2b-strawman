@@ -35,4 +35,15 @@ public interface CommentRepository extends JpaRepository<Comment, UUID> {
       """)
   List<UUID> findDistinctAuthorsByEntity(
       @Param("entityType") String entityType, @Param("entityId") UUID entityId);
+
+  /** Find portal-visible (SHARED) comments for a customer via their documents. */
+  @Query(
+      """
+      SELECT c FROM Comment c
+      JOIN Document d ON c.entityId = d.id AND c.entityType = 'DOCUMENT'
+      WHERE d.customerId = :customerId
+        AND c.visibility = 'SHARED'
+      ORDER BY c.createdAt ASC
+      """)
+  List<Comment> findPortalVisibleByCustomerId(@Param("customerId") UUID customerId);
 }

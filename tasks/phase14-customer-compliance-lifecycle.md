@@ -12,7 +12,7 @@ Phase 14 adds a **jurisdiction-agnostic compliance system** managing the full cu
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 100 | Customer Lifecycle Foundation | Backend | -- | M | 100A, 100B | 100A **Done** (PR #208) |
+| 100 | Customer Lifecycle Foundation | Backend | -- | M | 100A, 100B | **Done** (PRs #208, #209) |
 | 101 | Checklist Template Engine | Backend | 100 | M | 101A, 101B | |
 | 102 | Checklist Instance Engine | Backend | 101 | M | 102A, 102B | |
 | 103 | Compliance Pack Seeding & Instantiation | Backend | 101 | M | 103A, 103B | |
@@ -85,7 +85,7 @@ Phase 14 adds a **jurisdiction-agnostic compliance system** managing the full cu
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 1a | Epic 100 | 100A | **V29 migration** (Customer ALTERs, OrgSettings ALTERs, 6 new tables). Customer entity extension with lifecycle_status, customerType, offboardedAt. LifecycleStatus validation. ~5 entity/validation tests. Foundation for everything. | **Done** (PR #208) |
-| 1b | Epic 100 | 100B | CustomerLifecycleService (state machine), CustomerLifecycleGuard (action gating), lifecycle controller endpoints, dormancy detection query, guard integration in existing services. ~20 tests. |
+| 1b | Epic 100 | 100B | CustomerLifecycleService (state machine), CustomerLifecycleGuard (action gating), lifecycle controller endpoints, dormancy detection query, guard integration in existing services. ~20 tests. | **Done** (PR #209) |
 
 ### Stage 2: Checklist Engine (Sequential)
 

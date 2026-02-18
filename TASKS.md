@@ -119,7 +119,7 @@
 | 98 | Migration Rewrite & Renumber | Backend | -- | M | 98A | **Done** |
 | 99 | Test Cleanup, Verification & Documentation | Backend | 96, 97, 98 | M | 99A, 99B | **Done** |
 | **Phase 14 — Customer Compliance & Lifecycle** | | | | | | See [tasks/phase14-customer-compliance-lifecycle.md](tasks/phase14-customer-compliance-lifecycle.md) |
-| 100 | Customer Lifecycle Foundation | Backend | -- | M | 100A, 100B | 100A **Done** (PR #208) |
+| 100 | Customer Lifecycle Foundation | Backend | -- | M | 100A, 100B | **Done** (PRs #208, #209) |
 | 101 | Checklist Template Engine | Backend | 100 | M | 101A, 101B | |
 | 102 | Checklist Instance Engine | Backend | 101 | M | 102A, 102B | |
 | 103 | Compliance Pack Seeding & Instantiation | Backend | 101 | M | 103A, 103B | |

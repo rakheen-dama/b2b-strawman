@@ -171,8 +171,8 @@ Stage 8:  [108A]                                                      ← dashbo
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **100A** | 100.1–100.7 | V29 migration (Customer ALTERs, OrgSettings ALTERs, 6 new tables with constraints and indexes). Customer entity extension with lifecycle_status, customerType, offboardedAt fields. Domain methods: transitionLifecycleStatus(), anonymize(). OrgSettings extension with dormancyThresholdDays, dataRequestDeadlineDays, compliancePackStatus. Entity validation tests (~5 tests). | |
-| **100B** | 100.8–100.16 | CustomerLifecycleService (state machine validation, transitions, side effect orchestration). CustomerLifecycleGuard (action gating per lifecycle status). LifecycleAction enum. CustomerStatusChangedEvent. CustomerController lifecycle endpoints. Dormancy detection query. Guard integration in ProjectService, InvoiceService, TimeEntryService, DocumentService. Integration tests (~20 tests). | |
+| **100A** | 100.1–100.7 | V29 migration (Customer ALTERs, OrgSettings ALTERs, 6 new tables with constraints and indexes). Customer entity extension with lifecycle_status, customerType, offboardedAt fields. Domain methods: transitionLifecycleStatus(), anonymize(). OrgSettings extension with dormancyThresholdDays, dataRequestDeadlineDays, compliancePackStatus. Entity validation tests (~5 tests). | **Done** (PR #208) |
+| **100B** | 100.8–100.16 | CustomerLifecycleService (state machine validation, transitions, side effect orchestration). CustomerLifecycleGuard (action gating per lifecycle status). LifecycleAction enum. CustomerStatusChangedEvent. CustomerController lifecycle endpoints. Dormancy detection query. Guard integration in ProjectService, InvoiceService, TimeEntryService, DocumentService. Integration tests (~20 tests). | **Done** (PR #209) |
 
 ### Tasks
 

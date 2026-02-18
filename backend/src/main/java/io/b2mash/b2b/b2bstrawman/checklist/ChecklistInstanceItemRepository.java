@@ -9,6 +9,9 @@ public interface ChecklistInstanceItemRepository
 
   List<ChecklistInstanceItem> findByInstanceIdOrderBySortOrder(UUID instanceId);
 
+  List<ChecklistInstanceItem> findByInstanceIdInOrderByInstanceIdAscSortOrderAsc(
+      List<UUID> instanceIds);
+
   List<ChecklistInstanceItem> findByDependsOnItemIdAndStatus(UUID dependsOnItemId, String status);
 
   boolean existsByInstanceIdAndRequiredAndStatusNot(

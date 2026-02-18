@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceDtos.CompleteItemReq
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceDtos.InstantiateChecklistRequest;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceDtos.SkipItemRequest;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
@@ -22,54 +23,40 @@ import org.springframework.web.bind.annotation.RestController;
 public class ChecklistInstanceController {
 
   private final ChecklistInstanceService checklistInstanceService;
-  private final ChecklistInstanceItemRepository instanceItemRepository;
 
-  public ChecklistInstanceController(
-      ChecklistInstanceService checklistInstanceService,
-      ChecklistInstanceItemRepository instanceItemRepository) {
+  public ChecklistInstanceController(ChecklistInstanceService checklistInstanceService) {
     this.checklistInstanceService = checklistInstanceService;
-    this.instanceItemRepository = instanceItemRepository;
   }
 
   @GetMapping("/api/customers/{customerId}/checklists")
   @PreAuthorize("isAuthenticated()")
   public ResponseEntity<List<ChecklistInstanceResponse>> listForCustomer(
       @PathVariable UUID customerId) {
-    var instances = checklistInstanceService.getInstancesForCustomer(customerId);
-    var responses =
-        instances.stream()
-            .map(
-                instance -> {
-                  var items =
-                      instanceItemRepository.findByInstanceIdOrderBySortOrder(instance.getId());
-                  return ChecklistInstanceResponse.from(instance, items);
-                })
-            .toList();
+    var responses = checklistInstanceService.getInstancesWithItemsForCustomer(customerId);
     return ResponseEntity.ok(responses);
   }
 
   @GetMapping("/api/checklist-instances/{id}")
   @PreAuthorize("isAuthenticated()")
   public ResponseEntity<ChecklistInstanceResponse> getInstance(@PathVariable UUID id) {
-    var instance = checklistInstanceService.getInstance(id);
-    var items = instanceItemRepository.findByInstanceIdOrderBySortOrder(instance.getId());
-    return ResponseEntity.ok(ChecklistInstanceResponse.from(instance, items));
+    var response = checklistInstanceService.getInstanceWithItems(id);
+    return ResponseEntity.ok(response);
   }
 
   @PostMapping("/api/customers/{customerId}/checklists")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ChecklistInstanceResponse> instantiateChecklist(
-      @PathVariable UUID customerId, @RequestBody InstantiateChecklistRequest request) {
-    var instance = checklistInstanceService.createFromTemplate(request.templateId(), customerId);
-    var items = instanceItemRepository.findByInstanceIdOrderBySortOrder(instance.getId());
-    return ResponseEntity.created(URI.create("/api/checklist-instances/" + instance.getId()))
-        .body(ChecklistInstanceResponse.from(instance, items));
+      @PathVariable UUID customerId, @Valid @RequestBody InstantiateChecklistRequest request) {
+    var response =
+        checklistInstanceService.createFromTemplateWithItems(request.templateId(), customerId);
+    return ResponseEntity.created(URI.create("/api/checklist-instances/" + response.id()))
+        .body(response);
   }
 
   @PutMapping("/api/checklist-items/{id}/complete")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ChecklistInstanceItemResponse> completeItem(
-      @PathVariable UUID id, @RequestBody CompleteItemRequest request) {
+      @PathVariable UUID id, @Valid @RequestBody CompleteItemRequest request) {
     UUID actorId = RequestScopes.requireMemberId();
     var item =
         checklistInstanceService.completeItem(id, request.notes(), request.documentId(), actorId);
@@ -79,7 +66,7 @@ public class ChecklistInstanceController {
   @PutMapping("/api/checklist-items/{id}/skip")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ChecklistInstanceItemResponse> skipItem(
-      @PathVariable UUID id, @RequestBody SkipItemRequest request) {
+      @PathVariable UUID id, @Valid @RequestBody SkipItemRequest request) {
     UUID actorId = RequestScopes.requireMemberId();
     var item = checklistInstanceService.skipItem(id, request.reason(), actorId);
     return ResponseEntity.ok(ChecklistInstanceItemResponse.from(item));

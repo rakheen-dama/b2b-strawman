@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.checklist;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceDtos.ChecklistInstanceResponse;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceDtos.ChecklistProgressDto;
 import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
@@ -10,7 +11,9 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -90,7 +93,11 @@ public class ChecklistInstanceService {
         UUID instanceItemId = templateItemIdToInstanceItemId.get(templateItem.getId());
         UUID dependsOnInstanceItemId =
             templateItemIdToInstanceItemId.get(templateItem.getDependsOnItemId());
-        var item = instanceItemRepository.findById(instanceItemId).orElseThrow();
+        var item =
+            instanceItemRepository
+                .findById(instanceItemId)
+                .orElseThrow(
+                    () -> new ResourceNotFoundException("ChecklistInstanceItem", instanceItemId));
         item.setDependsOnItemId(dependsOnInstanceItemId);
         item.block();
         instanceItemRepository.save(item);
@@ -99,15 +106,14 @@ public class ChecklistInstanceService {
 
     auditService.log(
         AuditEventBuilder.builder()
-            .eventType("checklist.instantiated")
+            .eventType("checklist.instance.created")
             .entityType("checklist_instance")
             .entityId(instance.getId())
             .details(
                 Map.of(
                     "templateId", templateId.toString(),
                     "customerId", customerId.toString(),
-                    "templateName", template.getName(),
-                    "instanceId", instance.getId().toString()))
+                    "templateName", template.getName()))
             .build());
 
     log.info(
@@ -115,6 +121,13 @@ public class ChecklistInstanceService {
         template.getName(),
         customerId);
     return instance;
+  }
+
+  @Transactional
+  public ChecklistInstanceResponse createFromTemplateWithItems(UUID templateId, UUID customerId) {
+    var instance = createFromTemplate(templateId, customerId);
+    var items = instanceItemRepository.findByInstanceIdOrderBySortOrder(instance.getId());
+    return ChecklistInstanceResponse.from(instance, items);
   }
 
   @Transactional
@@ -156,18 +169,24 @@ public class ChecklistInstanceService {
     unblockDependentItems(item.getId());
 
     // 102.13: Audit with full details
+    var completeDetails = new LinkedHashMap<String, Object>();
+    completeDetails.put("itemName", item.getName());
+    completeDetails.put("instanceId", item.getInstanceId().toString());
+    if (actorId != null) {
+      completeDetails.put("completedBy", actorId.toString());
+    }
+    if (notes != null) {
+      completeDetails.put("notes", notes);
+    }
+    if (documentId != null) {
+      completeDetails.put("documentId", documentId.toString());
+    }
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("checklist.item.completed")
             .entityType("checklist_instance_item")
             .entityId(item.getId())
-            .details(
-                Map.of(
-                    "itemName", item.getName(),
-                    "instanceId", item.getInstanceId().toString(),
-                    "completedBy", actorId != null ? actorId.toString() : "",
-                    "notes", notes != null ? notes : "",
-                    "documentId", documentId != null ? documentId.toString() : ""))
+            .details(completeDetails)
             .build());
 
     log.info("Completed checklist item '{}' ({})", item.getName(), item.getId());
@@ -190,16 +209,18 @@ public class ChecklistInstanceService {
 
     unblockDependentItems(item.getId());
 
+    var skipDetails = new LinkedHashMap<String, Object>();
+    skipDetails.put("itemName", item.getName());
+    skipDetails.put("instanceId", item.getInstanceId().toString());
+    if (reason != null) {
+      skipDetails.put("reason", reason);
+    }
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("checklist.item.skipped")
             .entityType("checklist_instance_item")
             .entityId(item.getId())
-            .details(
-                Map.of(
-                    "itemName", item.getName(),
-                    "instanceId", item.getInstanceId().toString(),
-                    "reason", reason != null ? reason : ""))
+            .details(skipDetails)
             .build());
 
     log.info("Skipped checklist item '{}' ({})", item.getName(), item.getId());
@@ -234,16 +255,18 @@ public class ChecklistInstanceService {
           item.getName());
     }
 
+    var reopenDetails = new LinkedHashMap<String, Object>();
+    reopenDetails.put("itemName", item.getName());
+    reopenDetails.put("instanceId", item.getInstanceId().toString());
+    if (actorId != null) {
+      reopenDetails.put("reopenedBy", actorId.toString());
+    }
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("checklist.item.reopened")
             .entityType("checklist_instance_item")
             .entityId(item.getId())
-            .details(
-                Map.of(
-                    "itemName", item.getName(),
-                    "instanceId", item.getInstanceId().toString(),
-                    "reopenedBy", actorId != null ? actorId.toString() : ""))
+            .details(reopenDetails)
             .build());
 
     log.info("Reopened checklist item '{}' ({})", item.getName(), item.getId());
@@ -282,6 +305,42 @@ public class ChecklistInstanceService {
   }
 
   @Transactional(readOnly = true)
+  public ChecklistInstanceResponse getInstanceWithItems(UUID instanceId) {
+    var instance = getInstance(instanceId);
+    var items = instanceItemRepository.findByInstanceIdOrderBySortOrder(instance.getId());
+    return ChecklistInstanceResponse.from(instance, items);
+  }
+
+  @Transactional(readOnly = true)
+  public List<ChecklistInstanceResponse> getInstancesWithItemsForCustomer(UUID customerId) {
+    customerRepository
+        .findById(customerId)
+        .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+
+    var instances = instanceRepository.findByCustomerId(customerId);
+    if (instances.isEmpty()) {
+      return List.of();
+    }
+
+    var instanceIds = instances.stream().map(ChecklistInstance::getId).toList();
+    var allItems =
+        instanceItemRepository.findByInstanceIdInOrderByInstanceIdAscSortOrderAsc(instanceIds);
+
+    // Group items by instance ID
+    var itemsByInstanceId = new HashMap<UUID, List<ChecklistInstanceItem>>();
+    for (var item : allItems) {
+      itemsByInstanceId.computeIfAbsent(item.getInstanceId(), k -> new ArrayList<>()).add(item);
+    }
+
+    return instances.stream()
+        .map(
+            instance ->
+                ChecklistInstanceResponse.from(
+                    instance, itemsByInstanceId.getOrDefault(instance.getId(), List.of())))
+        .toList();
+  }
+
+  @Transactional(readOnly = true)
   public List<ChecklistInstance> getInstancesForCustomer(UUID customerId) {
     return instanceRepository.findByCustomerId(customerId);
   }
@@ -305,7 +364,10 @@ public class ChecklistInstanceService {
       return;
     }
 
-    var instance = instanceRepository.findById(instanceId).orElseThrow();
+    var instance =
+        instanceRepository
+            .findById(instanceId)
+            .orElseThrow(() -> new ResourceNotFoundException("ChecklistInstance", instanceId));
     if ("COMPLETED".equals(instance.getStatus())) {
       return;
     }
@@ -318,10 +380,7 @@ public class ChecklistInstanceService {
             .eventType("checklist.instance.completed")
             .entityType("checklist_instance")
             .entityId(instanceId)
-            .details(
-                Map.of(
-                    "instanceId", instanceId.toString(),
-                    "customerId", instance.getCustomerId().toString()))
+            .details(Map.of("customerId", instance.getCustomerId().toString()))
             .build());
 
     log.info("Checklist instance {} auto-completed", instanceId);

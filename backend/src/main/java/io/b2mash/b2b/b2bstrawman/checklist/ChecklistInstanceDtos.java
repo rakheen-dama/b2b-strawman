@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.checklist;
 
+import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -56,7 +57,7 @@ public final class ChecklistInstanceDtos {
 
   public record SkipItemRequest(String reason) {}
 
-  public record InstantiateChecklistRequest(UUID templateId) {}
+  public record InstantiateChecklistRequest(@NotNull UUID templateId) {}
 
   public record ChecklistInstanceResponse(
       UUID id,

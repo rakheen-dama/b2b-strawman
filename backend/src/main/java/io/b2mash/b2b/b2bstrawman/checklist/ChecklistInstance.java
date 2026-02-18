@@ -65,6 +65,9 @@ public class ChecklistInstance {
   }
 
   public void revertToInProgress() {
+    if (!"COMPLETED".equals(this.status)) {
+      throw new IllegalStateException("Cannot revert to IN_PROGRESS from " + status);
+    }
     this.status = "IN_PROGRESS";
     this.completedAt = null;
     this.completedBy = null;

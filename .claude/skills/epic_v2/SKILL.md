@@ -395,9 +395,10 @@ git pull origin main
 git fetch --prune
 ```
 
-Then update task status:
-- Mark the slice/epic **Done** in the phase task file
-- Update the status column in `TASKS.md`
+Then update task status — **ALL THREE locations must be updated**:
+1. Mark the slice **Done** in the **Implementation Order table** row (the row starting with `| **{SLICE}** |` — add `**Done** (PR #{PR_NUMBER})` in the last column). **THIS IS CRITICAL** — the phase script checks this specific table to determine completion.
+2. Mark the epic **Done** in the **Epic Overview table** at the top of the task file (if all slices in the epic are done).
+3. Update the status column in `TASKS.md` overview.
 - Commit and push from main repo
 
 ## Guardrails

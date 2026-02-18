@@ -14,7 +14,7 @@ Phase 14 adds a **jurisdiction-agnostic compliance system** managing the full cu
 |------|------|-------|------|--------|--------|--------|
 | 100 | Customer Lifecycle Foundation | Backend | -- | M | 100A, 100B | **Done** (PRs #208, #209) |
 | 101 | Checklist Template Engine | Backend | 100 | M | 101A, 101B | **Done** (PRs #210, #211) |
-| 102 | Checklist Instance Engine | Backend | 101 | M | 102A, 102B | 102A **Done** (PR #212) |
+| 102 | Checklist Instance Engine | Backend | 101 | M | 102A, 102B | **Done** (PRs #212, #213) |
 | 103 | Compliance Pack Seeding & Instantiation | Backend | 101 | M | 103A, 103B | |
 | 104 | Data Subject Requests | Backend | 100 | M | 104A, 104B | |
 | 105 | Retention & Dormancy | Backend | 100 | M | 105A, 105B | |
@@ -319,7 +319,7 @@ Stage 8:  [108A]                                                      ← dashbo
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **102A** | 102.1–102.7 | ChecklistInstance + ChecklistInstanceItem entities, repos, ChecklistInstanceService (create from template with snapshot, complete item, skip item, progress calculation). Unit + integration tests (~15 tests). | **Done** (PR #212) |
-| **102B** | 102.8–102.14 | Dependency chain enforcement (blocked items, auto-unblock), document requirement validation, auto-cascade (all required complete → instance complete → lifecycle advance), reopen item, controller endpoints, audit events. Integration tests (~15 tests). | |
+| **102B** | 102.8–102.14 | Dependency chain enforcement (blocked items, auto-unblock), document requirement validation, auto-cascade (all required complete → instance complete → lifecycle advance), reopen item, controller endpoints, audit events. Integration tests (~15 tests). | **Done** (PR #213) |
 
 ### Tasks
 

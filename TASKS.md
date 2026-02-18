@@ -114,10 +114,10 @@
 | 94 | Rendering Pipeline & Generation | Backend | 93 | L | 94A, 94B | **Done** (PRs #193, #195) |
 | 95 | Frontend — Template & Generation UI | Frontend | 93, 94 | L | 95A, 95B | **Done** (PRs #196, #197) |
 | **Phase 13 — Dedicated Schema for All Tenants** | | | | | | See [tasks/phase13-dedicated-schema-only.md](tasks/phase13-dedicated-schema-only.md) |
-| 96 | Infrastructure Removal & Provisioning Simplification | Backend | -- | M | 96A | |
-| 97 | Entity, Repository & Call-Site Cleanup | Backend | 96 | L | 97A, 97B, 97C | |
-| 98 | Migration Rewrite & Renumber | Backend | -- | M | 98A | |
-| 99 | Test Cleanup, Verification & Documentation | Backend | 96, 97, 98 | M | 99A, 99B | |
+| 96 | Infrastructure Removal & Provisioning Simplification | Backend | -- | M | 96A | **Done** |
+| 97 | Entity, Repository & Call-Site Cleanup | Backend | 96 | L | 97A, 97B, 97C | **Done** |
+| 98 | Migration Rewrite & Renumber | Backend | -- | M | 98A | **Done** |
+| 99 | Test Cleanup, Verification & Documentation | Backend | 96, 97, 98 | M | 99A, 99B | **Done** |
 
 ---
 

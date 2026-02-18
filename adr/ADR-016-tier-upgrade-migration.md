@@ -2,6 +2,8 @@
 
 **Status**: Accepted
 
+**Note**: Fully superseded by [ADR-064](ADR-064-dedicated-schema-only.md) — no upgrade migration needed.
+
 **Context**: When a Starter organization upgrades to the Pro plan, its data must be migrated from the shared `tenant_shared` schema to a new dedicated `tenant_<hash>` schema. This migration must be reliable, minimize downtime for the upgrading org, and not affect other organizations in the shared schema.
 
 **Options Considered**:

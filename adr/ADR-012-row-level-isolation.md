@@ -2,6 +2,8 @@
 
 **Status**: Accepted
 
+**Note**: Fully superseded by [ADR-064](ADR-064-dedicated-schema-only.md) — all tenants use dedicated schemas, no RLS needed.
+
 **Context**: Starter-tier organizations share the `tenant_shared` schema. Data isolation between orgs within this schema must be enforced reliably. A failure in isolation would expose one organization's data to another — a critical security breach in a multi-tenant system. The isolation mechanism must work with the existing Hibernate/JPA data access layer (Spring Data repositories, JPQL, Criteria API) without requiring every query to be manually rewritten.
 
 **Options Considered**:

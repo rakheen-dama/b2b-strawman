@@ -2,7 +2,7 @@
 
 **Status**: Accepted
 
-**Context**: Phase 13 introduces an onboarding checklist system. Checklists have templates (the recipe: "what verification steps are required for individual customers?"), instances (instantiated for a specific customer when they start onboarding), and items (individual steps: "Verify identity document", "Upload proof of address"). The question is how to model this data: as first-class relational entities (4 tables), as a JSONB blob on the Customer entity, as an extension of the existing Task entity, or as a hybrid two-table approach (templates and instances as tables, items as JSONB arrays).
+**Context**: Phase 14 introduces an onboarding checklist system. Checklists have templates (the recipe: "what verification steps are required for individual customers?"), instances (instantiated for a specific customer when they start onboarding), and items (individual steps: "Verify identity document", "Upload proof of address"). The question is how to model this data: as first-class relational entities (4 tables), as a JSONB blob on the Customer entity, as an extension of the existing Task entity, or as a hybrid two-table approach (templates and instances as tables, items as JSONB arrays).
 
 The answer affects queryability (can we query for all checklists with incomplete identity verification steps?), audit trail (who verified identity? when?), referential integrity (can we link a checklist item to a specific Document upload?), and the separation of templates (reusable recipes) from instances (per-customer execution state).
 
@@ -61,7 +61,7 @@ The answer affects queryability (can we query for all checklists with incomplete
 
 **Decision**: First-class entities (ChecklistTemplate, ChecklistTemplateItem, ChecklistInstance, ChecklistInstanceItem) — 4 tables (Option 1).
 
-**Rationale**: The checklist is the core value proposition of Phase 13. It is not a side feature — it is the mechanism by which orgs ensure compliance before activating customers. Each item must have an individual audit trail (who verified identity? when? what notes did they add?), document linking (FK to the uploaded ID document), and completion tracking. These requirements demand relational integrity and queryability.
+**Rationale**: The checklist is the core value proposition of Phase 14. It is not a side feature — it is the mechanism by which orgs ensure compliance before activating customers. Each item must have an individual audit trail (who verified identity? when? what notes did they add?), document linking (FK to the uploaded ID document), and completion tracking. These requirements demand relational integrity and queryability.
 
 JSONB (Options 2 and 4) sacrifices queryability, referential integrity, and audit trail for the sake of schema simplicity. The cost is too high. Compliance auditing requires per-item queries ("show me all identity verifications completed by Alice in February") and FK guarantees (the linked document must exist and be tenant-scoped). JSONB cannot provide this without expensive unnesting and manual integrity checks.
 

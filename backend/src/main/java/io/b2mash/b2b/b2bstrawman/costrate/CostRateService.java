@@ -134,7 +134,7 @@ public class CostRateService {
 
     var rate =
         costRateRepository
-            .findOneById(id)
+            .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("CostRate", id));
 
     LocalDate overlapEnd = effectiveTo != null ? effectiveTo : FAR_FUTURE;
@@ -179,7 +179,7 @@ public class CostRateService {
 
     var rate =
         costRateRepository
-            .findOneById(id)
+            .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("CostRate", id));
 
     costRateRepository.delete(rate);

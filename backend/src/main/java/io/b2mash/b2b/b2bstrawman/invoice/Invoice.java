@@ -1,10 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
-import io.b2mash.b2b.b2bstrawman.multitenancy.TenantAware;
-import io.b2mash.b2b.b2bstrawman.multitenancy.TenantAwareEntityListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
@@ -15,16 +12,10 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
-import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
 
 @Entity
 @Table(name = "invoices")
-@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "tenantId", type = String.class))
-@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
-@EntityListeners(TenantAwareEntityListener.class)
-public class Invoice implements TenantAware {
+public class Invoice {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
@@ -87,9 +78,6 @@ public class Invoice implements TenantAware {
 
   @Column(name = "approved_by")
   private UUID approvedBy;
-
-  @Column(name = "tenant_id")
-  private String tenantId;
 
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
@@ -260,16 +248,6 @@ public class Invoice implements TenantAware {
 
   public UUID getApprovedBy() {
     return approvedBy;
-  }
-
-  @Override
-  public String getTenantId() {
-    return tenantId;
-  }
-
-  @Override
-  public void setTenantId(String tenantId) {
-    this.tenantId = tenantId;
   }
 
   public Instant getCreatedAt() {

@@ -46,7 +46,7 @@ class CustomerProjectIntegrationTest {
   private static final String ORG_ID = "org_custproj_test";
   private static final String ORG_B_ID = "org_custproj_test_b";
 
-  // Starter orgs for shared-schema isolation tests (37.12)
+  // Additional orgs for cross-tenant isolation tests (37.12)
   private static final String STARTER_A_ID = "org_custproj_starter_a";
   private static final String STARTER_B_ID = "org_custproj_starter_b";
 
@@ -105,7 +105,7 @@ class CustomerProjectIntegrationTest {
                 .content("{\"role\": \"lead\"}"))
         .andExpect(status().isNoContent());
 
-    // Starter-tier orgs for shared-schema isolation tests (37.12)
+    // Additional orgs for cross-tenant isolation tests (37.12)
     provisioningService.provisionTenant(STARTER_A_ID, "Starter A CustProj");
     provisioningService.provisionTenant(STARTER_B_ID, "Starter B CustProj");
 

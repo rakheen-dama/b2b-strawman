@@ -52,12 +52,12 @@ public class CustomerProjectService {
       UUID customerId, UUID projectId, UUID linkedBy, UUID memberId, String orgRole) {
     // Validate customer exists in tenant (uses filter-aware JPQL query)
     customerRepository
-        .findOneById(customerId)
+        .findById(customerId)
         .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
 
     // Validate project exists in tenant (uses filter-aware JPQL query)
     projectRepository
-        .findOneById(projectId)
+        .findById(projectId)
         .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
 
     // Check permission: Owner/Admin or Project Lead
@@ -94,12 +94,12 @@ public class CustomerProjectService {
       UUID customerId, UUID projectId, UUID memberId, String orgRole) {
     // Validate customer exists in tenant
     customerRepository
-        .findOneById(customerId)
+        .findById(customerId)
         .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
 
     // Validate project exists in tenant
     projectRepository
-        .findOneById(projectId)
+        .findById(projectId)
         .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
 
     // Check permission: Owner/Admin or Project Lead
@@ -110,8 +110,7 @@ public class CustomerProjectService {
       throw new ResourceNotFoundException("CustomerProject link", customerId);
     }
 
-    customerProjectRepository.deleteByCustomerIdAndProjectId(
-        customerId, projectId, RequestScopes.TENANT_ID.get());
+    customerProjectRepository.deleteByCustomerIdAndProjectId(customerId, projectId);
     log.info("Unlinked customer {} from project {} by member {}", customerId, projectId, memberId);
 
     auditService.log(
@@ -132,13 +131,13 @@ public class CustomerProjectService {
   public List<Project> listProjectsForCustomer(UUID customerId, UUID memberId, String orgRole) {
     // Validate customer exists in tenant
     customerRepository
-        .findOneById(customerId)
+        .findById(customerId)
         .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
 
     var links = customerProjectRepository.findByCustomerId(customerId);
     var projects =
         links.stream()
-            .map(link -> projectRepository.findOneById(link.getProjectId()))
+            .map(link -> projectRepository.findById(link.getProjectId()))
             .flatMap(java.util.Optional::stream);
 
     // Owner/Admin can see all linked projects; regular members only see projects they have access
@@ -160,7 +159,7 @@ public class CustomerProjectService {
 
     var links = customerProjectRepository.findByProjectId(projectId);
     return links.stream()
-        .map(link -> customerRepository.findOneById(link.getCustomerId()))
+        .map(link -> customerRepository.findById(link.getCustomerId()))
         .flatMap(java.util.Optional::stream)
         .toList();
   }

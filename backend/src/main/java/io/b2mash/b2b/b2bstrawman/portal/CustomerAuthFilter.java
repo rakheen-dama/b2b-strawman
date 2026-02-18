@@ -1,9 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.portal;
 
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ScopedFilterChain;
-import io.b2mash.b2b.b2bstrawman.multitenancy.TenantInfo;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -64,9 +64,12 @@ public class CustomerAuthFilter extends OncePerRequestFilter {
     }
 
     // Resolve tenant from org ID
-    TenantInfo tenantInfo =
-        mappingRepository.findTenantInfoByClerkOrgId(claims.clerkOrgId()).orElse(null);
-    if (tenantInfo == null) {
+    String schema =
+        mappingRepository
+            .findByClerkOrgId(claims.clerkOrgId())
+            .map(OrgSchemaMapping::getSchemaName)
+            .orElse(null);
+    if (schema == null) {
       response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Organization not provisioned");
       return;
     }
@@ -74,13 +77,13 @@ public class CustomerAuthFilter extends OncePerRequestFilter {
     // Bind scoped values: CUSTOMER_ID, TENANT_ID, ORG_ID
     var carrier =
         ScopedValue.where(RequestScopes.CUSTOMER_ID, claims.customerId())
-            .where(RequestScopes.TENANT_ID, tenantInfo.schemaName())
+            .where(RequestScopes.TENANT_ID, schema)
             .where(RequestScopes.ORG_ID, claims.clerkOrgId());
 
     // Attempt to resolve PortalContact and bind PORTAL_CONTACT_ID (backward compatible)
     try {
       var contact =
-          ScopedValue.where(RequestScopes.TENANT_ID, tenantInfo.schemaName())
+          ScopedValue.where(RequestScopes.TENANT_ID, schema)
               .call(
                   () ->
                       portalContactRepository

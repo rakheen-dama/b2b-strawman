@@ -2,21 +2,12 @@ package io.b2mash.b2b.b2bstrawman.task;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface TaskRepository extends JpaRepository<Task, UUID> {
-
-  /**
-   * JPQL-based findById that respects Hibernate @Filter (unlike JpaRepository.findById which uses
-   * EntityManager.find and bypasses @Filter). Required for shared-schema tenant isolation.
-   */
-  @Query("SELECT t FROM Task t WHERE t.id = :id")
-  Optional<Task> findOneById(@Param("id") UUID id);
-
   @Query("SELECT t FROM Task t WHERE t.projectId = :projectId ORDER BY t.createdAt DESC")
   List<Task> findByProjectId(@Param("projectId") UUID projectId);
 
@@ -51,8 +42,8 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
 
   /**
    * Finds tasks assigned to a specific member with active statuses (OPEN, IN_PROGRESS). Ordered by
-   * due date ascending (nulls last) then created date descending. Naturally respects @Filter for
-   * tenant isolation.
+   * due date ascending (nulls last) then created date descending. Scoped to the current tenant
+   * schema via search_path.
    */
   @Query(
       """
@@ -65,8 +56,8 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
 
   /**
    * Finds unassigned OPEN tasks in projects where the member is a ProjectMember. Ordered by
-   * priority descending then created date descending. Naturally respects @Filter for tenant
-   * isolation.
+   * priority descending then created date descending. Scoped to the current tenant schema via
+   * search_path.
    */
   @Query(
       """
@@ -82,7 +73,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
 
   // --- Dashboard aggregation queries (Epic 75B) ---
 
-  /** Counts all tasks in a project. Respects Hibernate @Filter for tenant isolation. */
+  /** Counts all tasks in a project within the current tenant schema. */
   @Query("SELECT COUNT(t) FROM Task t WHERE t.projectId = :projectId")
   long countByProjectId(@Param("projectId") UUID projectId);
 

@@ -757,7 +757,7 @@ public class DashboardService {
   private String lookupCustomerName(UUID projectId) {
     return customerProjectRepository
         .findFirstCustomerByProjectId(projectId)
-        .flatMap(customerRepository::findOneById)
+        .flatMap(customerRepository::findById)
         .map(c -> c.getName())
         .orElse(null);
   }

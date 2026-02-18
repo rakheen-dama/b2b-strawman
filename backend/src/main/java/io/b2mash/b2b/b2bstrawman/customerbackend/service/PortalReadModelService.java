@@ -70,12 +70,12 @@ public class PortalReadModelService {
   public ContactProfile getContactProfile(UUID portalContactId) {
     var contact =
         portalContactRepository
-            .findOneById(portalContactId)
+            .findById(portalContactId)
             .orElseThrow(() -> new ResourceNotFoundException("PortalContact", portalContactId));
 
     var customer =
         customerRepository
-            .findOneById(contact.getCustomerId())
+            .findById(contact.getCustomerId())
             .orElseThrow(() -> new ResourceNotFoundException("Customer", contact.getCustomerId()));
 
     return new ContactProfile(

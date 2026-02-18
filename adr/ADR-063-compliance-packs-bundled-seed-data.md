@@ -2,7 +2,7 @@
 
 **Status**: Accepted
 
-**Context**: Phase 13 introduces jurisdiction-specific compliance content: onboarding checklists that guide staff through customer verification (e.g., FICA identity checks in South Africa), custom field definitions for compliance data (e.g., SA ID number, risk rating), and retention policy defaults. This content varies by jurisdiction — a South African law firm needs FICA-compliant checklists, a UK accounting firm needs Companies House verification steps, a US practice needs SSN/EIN fields. The question is how to package and deliver this content to tenants.
+**Context**: Phase 14 introduces jurisdiction-specific compliance content: onboarding checklists that guide staff through customer verification (e.g., FICA identity checks in South Africa), custom field definitions for compliance data (e.g., SA ID number, risk rating), and retention policy defaults. This content varies by jurisdiction — a South African law firm needs FICA-compliant checklists, a UK accounting firm needs Companies House verification steps, a US practice needs SSN/EIN fields. The question is how to package and deliver this content to tenants.
 
 The delivery mechanism affects: (1) when content becomes available (at deploy time or runtime installation), (2) who controls content updates (platform developer or tenant admin), (3) versioning and compatibility (can old tenants receive new pack versions?), and (4) the user experience of adopting jurisdiction-specific compliance requirements.
 
@@ -68,7 +68,7 @@ The platform has two established patterns for delivering bundled content: **fiel
 
 **Decision**: Classpath resource packs seeded during provisioning (Option 1).
 
-**Rationale**: Compliance packs follow the exact pattern established by field packs (Phase 11, ADR-055) and document template packs (Phase 12, ADR-059). The platform ships packs as classpath resources (`src/main/resources/compliance-packs/*/pack.json`), the `CompliancePackSeeder` reads them during tenant provisioning, and `OrgSettings.compliance_pack_status` tracks which packs have been applied. This pattern is simple, testable, offline-compatible, and proven.
+**Rationale**: Compliance packs follow the exact pattern established by field packs (Phase 11, ADR-053) and document template packs (Phase 12, ADR-059). The platform ships packs as classpath resources (`src/main/resources/compliance-packs/*/pack.json`), the `CompliancePackSeeder` reads them during tenant provisioning, and `OrgSettings.compliance_pack_status` tracks which packs have been applied. This pattern is simple, testable, offline-compatible, and proven.
 
 At this stage of the product, there are 3 compliance packs (`generic-onboarding`, `sa-fica-individual`, `sa-fica-company`) with 5-10 more expected over the next year. A runtime marketplace (Option 2) is over-engineered for a dozen packs — the engineering cost (3-5 weeks) far exceeds the benefit. When the pack count reaches 30-50 and third-party pack contributions become a strategic goal, the marketplace can be built. The `pack.json` schema is designed to be forward-compatible — the same file format can be used for runtime installation in the future.
 
@@ -78,7 +78,7 @@ The external configuration service approach (Option 4) was rejected because it a
 
 **Consequences**:
 - Compliance packs are stored in `src/main/resources/compliance-packs/{pack-id}/pack.json` (e.g., `generic-onboarding/pack.json`, `sa-fica-individual/pack.json`).
-- The `pack.json` schema matches the structure documented in 13.5.2 of the architecture doc: `{ packId, version, name, description, jurisdiction, customerType, checklistTemplate, fieldDefinitions, retentionOverrides }`.
+- The `pack.json` schema matches the structure documented in 14.3.4 of the architecture doc: `{ packId, version, name, description, jurisdiction, customerType, checklistTemplate, fieldDefinitions, retentionOverrides }`.
 - During tenant provisioning (after the tenant schema is created and RLS policies are applied), the `CompliancePackSeeder.seedPacksForTenant(tenantId, orgId)` method is called. It binds `RequestScopes.TENANT_ID` via `ScopedValue.where()`, loads all packs from the classpath, checks `OrgSettings.compliance_pack_status` for already-applied packs (idempotent), and seeds each pack's content:
   - `ChecklistTemplate` record created with `source = PLATFORM`, `pack_id = {packId}`, `pack_template_key = {checklistTemplate.key}`.
   - `ChecklistTemplateItem` records created for each item in `checklistTemplate.items`, with `depends_on_item_id` resolved via key lookup within the pack.

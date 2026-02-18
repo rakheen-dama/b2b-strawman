@@ -37,7 +37,7 @@ class InvoiceNumberServiceIntegrationTest {
   private static final String API_KEY = "test-api-key";
 
   // Each test gets its own org to avoid counter interference.
-  // All tenants in the shared schema use ORG_ID as the counter discriminator.
+  // Each tenant has its own dedicated schema, so counters are independent per schema.
   private static final String ORG_ID_FIRST = "org_inv_num_first";
   private static final String ORG_ID_SEQ = "org_inv_num_seq";
   private static final String ORG_ID_CONC = "org_inv_num_conc";
@@ -71,10 +71,7 @@ class InvoiceNumberServiceIntegrationTest {
     // In shared schema, the counter discriminator is the orgId (not the schema name)
     var result =
         ScopedValue.where(RequestScopes.TENANT_ID, schemaFirst)
-            .call(
-                () ->
-                    transactionTemplate.execute(
-                        tx -> invoiceNumberService.assignNumber(ORG_ID_FIRST)));
+            .call(() -> transactionTemplate.execute(tx -> invoiceNumberService.assignNumber()));
     assertThat(result).isEqualTo("INV-0001");
   }
 
@@ -82,16 +79,10 @@ class InvoiceNumberServiceIntegrationTest {
   void secondCallReturnsInv0002() {
     var result1 =
         ScopedValue.where(RequestScopes.TENANT_ID, schemaSeq)
-            .call(
-                () ->
-                    transactionTemplate.execute(
-                        tx -> invoiceNumberService.assignNumber(ORG_ID_SEQ)));
+            .call(() -> transactionTemplate.execute(tx -> invoiceNumberService.assignNumber()));
     var result2 =
         ScopedValue.where(RequestScopes.TENANT_ID, schemaSeq)
-            .call(
-                () ->
-                    transactionTemplate.execute(
-                        tx -> invoiceNumberService.assignNumber(ORG_ID_SEQ)));
+            .call(() -> transactionTemplate.execute(tx -> invoiceNumberService.assignNumber()));
     assertThat(result1).isEqualTo("INV-0001");
     assertThat(result2).isEqualTo("INV-0002");
   }
@@ -108,12 +99,12 @@ class InvoiceNumberServiceIntegrationTest {
           () -> {
             try {
               latch.await();
-              var number =
+              String number =
                   ScopedValue.where(RequestScopes.TENANT_ID, schemaConc)
                       .call(
                           () ->
                               transactionTemplate.execute(
-                                  tx -> invoiceNumberService.assignNumber(ORG_ID_CONC)));
+                                  tx -> invoiceNumberService.assignNumber()));
               results.add(number);
             } catch (Exception e) {
               errors.add(e);
@@ -135,16 +126,10 @@ class InvoiceNumberServiceIntegrationTest {
   void differentTenantsHaveIndependentSequences() {
     var resultX =
         ScopedValue.where(RequestScopes.TENANT_ID, schemaIndepX)
-            .call(
-                () ->
-                    transactionTemplate.execute(
-                        tx -> invoiceNumberService.assignNumber(ORG_ID_INDEP_X)));
+            .call(() -> transactionTemplate.execute(tx -> invoiceNumberService.assignNumber()));
     var resultY =
         ScopedValue.where(RequestScopes.TENANT_ID, schemaIndepY)
-            .call(
-                () ->
-                    transactionTemplate.execute(
-                        tx -> invoiceNumberService.assignNumber(ORG_ID_INDEP_Y)));
+            .call(() -> transactionTemplate.execute(tx -> invoiceNumberService.assignNumber()));
 
     assertThat(resultX).isEqualTo("INV-0001");
     assertThat(resultY).isEqualTo("INV-0001");

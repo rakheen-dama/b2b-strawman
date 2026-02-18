@@ -9,8 +9,8 @@ import jakarta.persistence.Table;
 import java.util.UUID;
 
 /**
- * Minimal counter entity for generating sequential invoice numbers. RLS handles tenant isolation —
- * no TenantAware interface needed. Used only by InvoiceNumberService (Slice 81B).
+ * Singleton counter entity for generating sequential invoice numbers. Each dedicated tenant schema
+ * has exactly one row. Used only by InvoiceNumberService (Slice 81B).
  */
 @Entity
 @Table(name = "invoice_counters")
@@ -20,25 +20,20 @@ public class InvoiceCounter {
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
-  @Column(name = "tenant_id")
-  private String tenantId;
-
   @Column(name = "next_number", nullable = false)
   private int nextNumber = 1;
 
+  @Column(name = "singleton", nullable = false)
+  private boolean singleton = true;
+
   protected InvoiceCounter() {}
 
-  public InvoiceCounter(String tenantId) {
-    this.tenantId = tenantId;
-    this.nextNumber = 1;
+  public InvoiceCounter(int nextNumber) {
+    this.nextNumber = nextNumber;
   }
 
   public UUID getId() {
     return id;
-  }
-
-  public String getTenantId() {
-    return tenantId;
   }
 
   public int getNextNumber() {

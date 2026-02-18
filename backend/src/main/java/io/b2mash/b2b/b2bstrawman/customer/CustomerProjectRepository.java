@@ -18,11 +18,9 @@ public interface CustomerProjectRepository extends JpaRepository<CustomerProject
 
   @Modifying
   @Query(
-      "DELETE FROM CustomerProject cp WHERE cp.customerId = :customerId AND cp.projectId = :projectId AND cp.tenantId = :tenantId")
+      "DELETE FROM CustomerProject cp WHERE cp.customerId = :customerId AND cp.projectId = :projectId")
   void deleteByCustomerIdAndProjectId(
-      @Param("customerId") UUID customerId,
-      @Param("projectId") UUID projectId,
-      @Param("tenantId") String tenantId);
+      @Param("customerId") UUID customerId, @Param("projectId") UUID projectId);
 
   /**
    * Returns the first customer linked to the project, ordered by creation date (ASC). Used by

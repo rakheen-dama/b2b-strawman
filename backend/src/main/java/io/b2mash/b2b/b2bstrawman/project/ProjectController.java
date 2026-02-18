@@ -68,7 +68,7 @@ public class ProjectController {
     if (view != null) {
       var savedView =
           savedViewRepository
-              .findOneById(view)
+              .findById(view)
               .orElseThrow(() -> new ResourceNotFoundException("SavedView", view));
 
       if (!"PROJECT".equals(savedView.getEntityType())) {

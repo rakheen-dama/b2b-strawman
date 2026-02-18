@@ -30,8 +30,8 @@ import org.springframework.transaction.event.TransactionalEventListener;
  *   <li>Notification failures do not affect the domain transaction.
  * </ol>
  *
- * <p>Each handler binds the tenant ScopedValue from the event's tenantId, enabling Hibernate
- * {@code @Filter} and RLS to work correctly in the new transaction.
+ * <p>Each handler binds the tenant ScopedValue from the event's tenantId so that the dedicated
+ * schema is selected correctly via {@code search_path} in the new transaction.
  */
 @Component
 public class NotificationEventHandler {
@@ -262,11 +262,8 @@ public class NotificationEventHandler {
   }
 
   /**
-   * Binds tenant and org ScopedValues so that Hibernate {@code @Filter}, RLS, and {@code
-   * TenantAwareEntityListener} work correctly in the handler's new transaction. ORG_ID is required
-   * for shared-schema (Starter tier) tenants where {@code TenantFilterTransactionManager} enables
-   * the Hibernate filter and {@code TenantAwareEntityListener} sets {@code tenant_id} on new
-   * entities.
+   * Binds tenant and org ScopedValues so that the correct dedicated schema is selected via {@code
+   * search_path} in the handler's new transaction.
    */
   private void handleInTenantScope(String tenantId, String orgId, Runnable action) {
     if (tenantId != null) {

@@ -7,12 +7,10 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.Organization;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.provisioning.Tier;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeAll;
@@ -44,12 +42,13 @@ class AuditTenantIsolationTest {
   @Autowired private AuditService auditService;
   @Autowired private AuditEventRepository auditEventRepository;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrganizationRepository organizationRepository;
   @Autowired private JdbcTemplate jdbcTemplate;
 
   private String proSchemaA;
   private String proSchemaB;
+  private String starterSchemaA;
+  private String starterSchemaB;
 
   @BeforeAll
   void provisionTenants() {
@@ -67,9 +66,11 @@ class AuditTenantIsolationTest {
     var resultB = provisioningService.provisionTenant(PRO_ORG_B_ID, "Pro Audit Iso B");
     proSchemaB = resultB.schemaName();
 
-    // Starter orgs — shared schema
-    provisioningService.provisionTenant(STARTER_ORG_A_ID, "Starter Audit Iso A");
-    provisioningService.provisionTenant(STARTER_ORG_B_ID, "Starter Audit Iso B");
+    // Starter orgs — each gets its own dedicated schema
+    starterSchemaA =
+        provisioningService.provisionTenant(STARTER_ORG_A_ID, "Starter Audit Iso A").schemaName();
+    starterSchemaB =
+        provisioningService.provisionTenant(STARTER_ORG_B_ID, "Starter Audit Iso B").schemaName();
   }
 
   @Test
@@ -141,9 +142,8 @@ class AuditTenantIsolationTest {
     var entityIdA = UUID.randomUUID();
     var entityIdB = UUID.randomUUID();
 
-    // Log event in Starter org A context (shared schema with ORG_ID for tenant_id tagging)
-    ScopedValue.where(RequestScopes.TENANT_ID, "tenant_shared")
-        .where(RequestScopes.ORG_ID, STARTER_ORG_A_ID)
+    // Log event in Starter org A's dedicated schema
+    ScopedValue.where(RequestScopes.TENANT_ID, starterSchemaA)
         .run(
             () ->
                 auditService.log(
@@ -158,9 +158,8 @@ class AuditTenantIsolationTest {
                         null,
                         null)));
 
-    // Log event in Starter org B context
-    ScopedValue.where(RequestScopes.TENANT_ID, "tenant_shared")
-        .where(RequestScopes.ORG_ID, STARTER_ORG_B_ID)
+    // Log event in Starter org B's dedicated schema
+    ScopedValue.where(RequestScopes.TENANT_ID, starterSchemaB)
         .run(
             () ->
                 auditService.log(
@@ -175,9 +174,8 @@ class AuditTenantIsolationTest {
                         null,
                         null)));
 
-    // Query from Starter org A — Hibernate @Filter ensures isolation
-    ScopedValue.where(RequestScopes.TENANT_ID, "tenant_shared")
-        .where(RequestScopes.ORG_ID, STARTER_ORG_A_ID)
+    // Query from Starter org A's schema — should only see org A's event
+    ScopedValue.where(RequestScopes.TENANT_ID, starterSchemaA)
         .run(
             () -> {
               var page =
@@ -189,9 +187,8 @@ class AuditTenantIsolationTest {
               assertThat(page.getContent()).noneMatch(e -> e.getEntityId().equals(entityIdB));
             });
 
-    // Query from Starter org B
-    ScopedValue.where(RequestScopes.TENANT_ID, "tenant_shared")
-        .where(RequestScopes.ORG_ID, STARTER_ORG_B_ID)
+    // Query from Starter org B's schema — should only see org B's event
+    ScopedValue.where(RequestScopes.TENANT_ID, starterSchemaB)
         .run(
             () -> {
               var page =
@@ -205,11 +202,10 @@ class AuditTenantIsolationTest {
   }
 
   @Test
-  void tenantIdAutoPopulatedForStarterOrg() {
+  void eventPersistedInStarterOrgDedicatedSchema() {
     var entityId = UUID.randomUUID();
 
-    ScopedValue.where(RequestScopes.TENANT_ID, "tenant_shared")
-        .where(RequestScopes.ORG_ID, STARTER_ORG_A_ID)
+    ScopedValue.where(RequestScopes.TENANT_ID, starterSchemaA)
         .run(
             () -> {
               auditService.log(
@@ -224,7 +220,7 @@ class AuditTenantIsolationTest {
                       null,
                       null));
 
-              // Use findOneById (JPQL-based, respects @Filter) to verify tenant_id
+              // Use findEvents to verify the event was persisted in the current tenant schema
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(null, entityId, null, null, null, null),
@@ -232,7 +228,7 @@ class AuditTenantIsolationTest {
 
               assertThat(page.getTotalElements()).isEqualTo(1);
               var event = page.getContent().getFirst();
-              assertThat(event.getTenantId()).isEqualTo(STARTER_ORG_A_ID);
+              assertThat(event.getEventType()).isEqualTo("task.auto_pop_test");
             });
   }
 
@@ -241,12 +237,8 @@ class AuditTenantIsolationTest {
     var entityId = UUID.randomUUID();
     var eventIdRef = new AtomicReference<UUID>();
 
-    // Use tenant_shared (Starter) where the trigger is guaranteed to exist.
-    // The V14 migration creates the trigger with IF NOT EXISTS on pg_trigger.tgname,
-    // which is global — so only the first schema to run the migration gets the trigger.
-    // tenant_shared is always provisioned first.
-    ScopedValue.where(RequestScopes.TENANT_ID, "tenant_shared")
-        .where(RequestScopes.ORG_ID, STARTER_ORG_A_ID)
+    // Use Starter org A's dedicated schema for the immutability test.
+    ScopedValue.where(RequestScopes.TENANT_ID, starterSchemaA)
         .run(
             () -> {
               auditService.log(
@@ -274,7 +266,9 @@ class AuditTenantIsolationTest {
     assertThatThrownBy(
             () ->
                 jdbcTemplate.update(
-                    "UPDATE \"tenant_shared\".audit_events SET event_type = 'tampered' WHERE id = ?::uuid",
+                    "UPDATE \""
+                        + starterSchemaA
+                        + "\".audit_events SET event_type = 'tampered' WHERE id = ?::uuid",
                     eventIdRef.get().toString()))
         .isInstanceOf(DataAccessException.class)
         .hasMessageContaining("audit_events rows cannot be updated");
@@ -283,19 +277,16 @@ class AuditTenantIsolationTest {
   @Test
   void auditEventHasNoMutableSetters() {
     // Verify that AuditEvent has no setter methods for mutable fields
-    // Only setTenantId (from TenantAware interface) should exist
-    Set<String> allowedSetters = Set.of("setTenantId");
-
+    // No setter methods should exist on AuditEvent (immutable entity)
     Method[] methods = AuditEvent.class.getDeclaredMethods();
     var unexpectedSetters =
         Arrays.stream(methods)
             .filter(m -> m.getName().startsWith("set"))
-            .filter(m -> !allowedSetters.contains(m.getName()))
             .map(Method::getName)
             .toList();
 
     assertThat(unexpectedSetters)
-        .as("AuditEvent should have no setters except setTenantId (TenantAware)")
+        .as("AuditEvent should have no setter methods — it is fully immutable")
         .isEmpty();
   }
 }

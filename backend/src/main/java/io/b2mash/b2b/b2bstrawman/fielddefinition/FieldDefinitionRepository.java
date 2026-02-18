@@ -8,14 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface FieldDefinitionRepository extends JpaRepository<FieldDefinition, UUID> {
-
-  /**
-   * JPQL-based findById that respects Hibernate @Filter (unlike JpaRepository.findById which uses
-   * EntityManager.find and bypasses @Filter). Required for shared-schema tenant isolation.
-   */
-  @Query("SELECT fd FROM FieldDefinition fd WHERE fd.id = :id")
-  Optional<FieldDefinition> findOneById(@Param("id") UUID id);
-
   @Query(
       "SELECT fd FROM FieldDefinition fd WHERE fd.entityType = :entityType AND fd.active = true"
           + " ORDER BY fd.sortOrder")

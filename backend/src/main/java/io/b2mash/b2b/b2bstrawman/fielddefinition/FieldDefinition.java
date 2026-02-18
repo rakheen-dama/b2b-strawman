@@ -1,11 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.fielddefinition;
 
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
-import io.b2mash.b2b.b2bstrawman.multitenancy.TenantAware;
-import io.b2mash.b2b.b2bstrawman.multitenancy.TenantAwareEntityListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
@@ -16,25 +13,16 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.ParamDef;
 import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "field_definitions")
-@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "tenantId", type = String.class))
-@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
-@EntityListeners(TenantAwareEntityListener.class)
-public class FieldDefinition implements TenantAware {
+public class FieldDefinition {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
-
-  @Column(name = "tenant_id")
-  private String tenantId;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "entity_type", nullable = false, length = 20)
@@ -137,18 +125,6 @@ public class FieldDefinition implements TenantAware {
   public void deactivate() {
     this.active = false;
     this.updatedAt = Instant.now();
-  }
-
-  // --- TenantAware ---
-
-  @Override
-  public String getTenantId() {
-    return tenantId;
-  }
-
-  @Override
-  public void setTenantId(String tenantId) {
-    this.tenantId = tenantId;
   }
 
   // --- Getters ---

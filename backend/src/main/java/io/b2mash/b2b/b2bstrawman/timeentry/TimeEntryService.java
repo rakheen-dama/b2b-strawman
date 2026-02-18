@@ -71,7 +71,7 @@ public class TimeEntryService {
       String orgRole) {
     var task =
         taskRepository
-            .findOneById(taskId)
+            .findById(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
 
     projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
@@ -122,7 +122,7 @@ public class TimeEntryService {
             .build());
 
     // Check budget thresholds after time entry creation
-    var actorName = memberRepository.findOneById(memberId).map(m -> m.getName()).orElse("Unknown");
+    var actorName = memberRepository.findById(memberId).map(m -> m.getName()).orElse("Unknown");
     var tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
     var orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
     budgetCheckService.checkAndAlert(task.getProjectId(), memberId, actorName, tenantId, orgId);
@@ -135,7 +135,7 @@ public class TimeEntryService {
       UUID taskId, UUID memberId, String orgRole, Boolean billable, BillingStatus billingStatus) {
     var task =
         taskRepository
-            .findOneById(taskId)
+            .findById(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
 
     projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
@@ -154,13 +154,13 @@ public class TimeEntryService {
       UUID projectId, UUID timeEntryId, boolean billable, UUID memberId, String orgRole) {
     var entry =
         timeEntryRepository
-            .findOneById(timeEntryId)
+            .findById(timeEntryId)
             .orElseThrow(() -> new ResourceNotFoundException("TimeEntry", timeEntryId));
 
     // Verify the time entry belongs to the specified project (defense in depth)
     var task =
         taskRepository
-            .findOneById(entry.getTaskId())
+            .findById(entry.getTaskId())
             .orElseThrow(() -> new ResourceNotFoundException("Task", entry.getTaskId()));
     if (!task.getProjectId().equals(projectId)) {
       throw new ResourceNotFoundException("TimeEntry", timeEntryId);
@@ -191,7 +191,7 @@ public class TimeEntryService {
             .build());
 
     // Check budget thresholds after billable toggle (affects budget consumption)
-    var actorName = memberRepository.findOneById(memberId).map(m -> m.getName()).orElse("Unknown");
+    var actorName = memberRepository.findById(memberId).map(m -> m.getName()).orElse("Unknown");
     var tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
     var orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
     budgetCheckService.checkAndAlert(task.getProjectId(), memberId, actorName, tenantId, orgId);
@@ -211,7 +211,7 @@ public class TimeEntryService {
       String orgRole) {
     var entry =
         timeEntryRepository
-            .findOneById(timeEntryId)
+            .findById(timeEntryId)
             .orElseThrow(() -> new ResourceNotFoundException("TimeEntry", timeEntryId));
 
     // Block edit when time entry is part of an invoice (Epic 82B)
@@ -225,7 +225,7 @@ public class TimeEntryService {
     UUID entryTaskId = entry.getTaskId();
     var task =
         taskRepository
-            .findOneById(entryTaskId)
+            .findById(entryTaskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", entryTaskId));
 
     if (durationMinutes != null && durationMinutes <= 0) {
@@ -360,8 +360,7 @@ public class TimeEntryService {
     boolean durationChanged = durationMinutes != null && oldDurationMinutes != durationMinutes;
     boolean billableChanged = billable != null && !billable.equals(oldBillable);
     if (dateChanged || durationChanged || billableChanged) {
-      var actorName =
-          memberRepository.findOneById(memberId).map(m -> m.getName()).orElse("Unknown");
+      var actorName = memberRepository.findById(memberId).map(m -> m.getName()).orElse("Unknown");
       var tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
       var orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
       budgetCheckService.checkAndAlert(task.getProjectId(), memberId, actorName, tenantId, orgId);
@@ -374,7 +373,7 @@ public class TimeEntryService {
   public void deleteTimeEntry(UUID timeEntryId, UUID memberId, String orgRole) {
     var entry =
         timeEntryRepository
-            .findOneById(timeEntryId)
+            .findById(timeEntryId)
             .orElseThrow(() -> new ResourceNotFoundException("TimeEntry", timeEntryId));
 
     // Block delete when time entry is part of an invoice (Epic 82B)
@@ -387,7 +386,7 @@ public class TimeEntryService {
 
     var task =
         taskRepository
-            .findOneById(entry.getTaskId())
+            .findById(entry.getTaskId())
             .orElseThrow(() -> new ResourceNotFoundException("Task", entry.getTaskId()));
 
     timeEntryRepository.delete(entry);
@@ -446,7 +445,7 @@ public class TimeEntryService {
       processed++;
 
       // Look up the task to get projectId for billing rate resolution
-      var task = taskRepository.findOneById(entry.getTaskId()).orElse(null);
+      var task = taskRepository.findById(entry.getTaskId()).orElse(null);
       if (task == null) {
         log.warn(
             "Skipping re-snapshot for time entry {}: task {} not found",
@@ -527,7 +526,7 @@ public class TimeEntryService {
 
     var task =
         taskRepository
-            .findOneById(entry.getTaskId())
+            .findById(entry.getTaskId())
             .orElseThrow(() -> new ResourceNotFoundException("Task", entry.getTaskId()));
 
     var access = projectAccessService.checkAccess(task.getProjectId(), memberId, orgRole);

@@ -15,9 +15,7 @@ public class SchemaMultiTenantConnectionProvider implements MultiTenantConnectio
   private static final Logger log =
       LoggerFactory.getLogger(SchemaMultiTenantConnectionProvider.class);
 
-  private static final String SHARED_SCHEMA = "tenant_shared";
   private static final Pattern SCHEMA_PATTERN = Pattern.compile("^tenant_[0-9a-f]{12}$");
-  private static final Pattern ORG_ID_PATTERN = Pattern.compile("^org_[a-zA-Z0-9_]+$");
 
   private final DataSource dataSource;
 
@@ -40,7 +38,6 @@ public class SchemaMultiTenantConnectionProvider implements MultiTenantConnectio
     Connection connection = getAnyConnection();
     try {
       setSearchPath(connection, tenantIdentifier);
-      setCurrentTenant(connection, tenantIdentifier);
     } catch (SQLException e) {
       // Release connection on setup failure to prevent pool leak
       releaseAnyConnection(connection);
@@ -52,7 +49,6 @@ public class SchemaMultiTenantConnectionProvider implements MultiTenantConnectio
   @Override
   public void releaseConnection(String tenantIdentifier, Connection connection)
       throws SQLException {
-    resetCurrentTenant(connection, tenantIdentifier);
     resetSearchPath(connection);
     releaseAnyConnection(connection);
   }
@@ -102,44 +98,10 @@ public class SchemaMultiTenantConnectionProvider implements MultiTenantConnectio
     }
   }
 
-  /**
-   * For shared schema, sets the Postgres session variable used by RLS policies. This is
-   * defense-in-depth alongside the Hibernate @Filter — catches native SQL and direct DB access.
-   */
-  private void setCurrentTenant(Connection connection, String schema) throws SQLException {
-    if (SHARED_SCHEMA.equals(schema) && RequestScopes.ORG_ID.isBound()) {
-      String orgId = RequestScopes.ORG_ID.get();
-      validateOrgId(orgId);
-      // Use set_config() with parameterized query to prevent SQL injection.
-      // SET does not support placeholders, but set_config() does.
-      try (var stmt =
-          connection.prepareStatement("SELECT set_config('app.current_tenant', ?, false)")) {
-        stmt.setString(1, orgId);
-        stmt.execute();
-      }
-    }
-  }
-
-  private void resetCurrentTenant(Connection connection, String schema) throws SQLException {
-    if (SHARED_SCHEMA.equals(schema)) {
-      try (var stmt = connection.createStatement()) {
-        stmt.execute("RESET app.current_tenant");
-      }
-    }
-  }
-
   private String sanitizeSchema(String schema) {
-    if ("public".equals(schema)
-        || SHARED_SCHEMA.equals(schema)
-        || SCHEMA_PATTERN.matcher(schema).matches()) {
+    if ("public".equals(schema) || SCHEMA_PATTERN.matcher(schema).matches()) {
       return schema;
     }
     throw new IllegalArgumentException("Invalid schema name: " + schema);
-  }
-
-  private void validateOrgId(String orgId) {
-    if (!ORG_ID_PATTERN.matcher(orgId).matches()) {
-      throw new IllegalArgumentException("Invalid org ID: " + orgId);
-    }
   }
 }

@@ -80,7 +80,7 @@ public class ProjectMemberService {
     String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
     String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
     String projectName =
-        projectRepository.findOneById(projectId).map(p -> p.getName()).orElse("Unknown Project");
+        projectRepository.findById(projectId).map(p -> p.getName()).orElse("Unknown Project");
     eventPublisher.publishEvent(
         new MemberAddedToProjectEvent(
             "project_member.added",
@@ -196,6 +196,6 @@ public class ProjectMemberService {
   }
 
   private String resolveActorName(UUID memberId) {
-    return memberRepository.findOneById(memberId).map(m -> m.getName()).orElse("Unknown");
+    return memberRepository.findById(memberId).map(m -> m.getName()).orElse("Unknown");
   }
 }

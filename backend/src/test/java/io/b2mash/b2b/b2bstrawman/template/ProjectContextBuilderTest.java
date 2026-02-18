@@ -51,13 +51,13 @@ class ProjectContextBuilderTest {
   @Test
   void buildContextWithCustomerAndBudget() {
     var project = new Project("Test Project", "A test project", memberId);
-    when(projectRepository.findOneById(projectId)).thenReturn(Optional.of(project));
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
 
     var cp = new CustomerProject(customerId, projectId, memberId);
     when(customerProjectRepository.findByProjectId(projectId)).thenReturn(List.of(cp));
 
     var customer = new Customer("Test Customer", "test@example.com", "123", null, null, memberId);
-    when(customerRepository.findOneById(customerId)).thenReturn(Optional.of(customer));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
 
     when(projectMemberRepository.findProjectMembersWithDetails(projectId)).thenReturn(List.of());
 
@@ -97,7 +97,7 @@ class ProjectContextBuilderTest {
   @Test
   void buildContextWithoutCustomer() {
     var project = new Project("Solo Project", "No customer", memberId);
-    when(projectRepository.findOneById(projectId)).thenReturn(Optional.of(project));
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
     when(customerProjectRepository.findByProjectId(projectId)).thenReturn(List.of());
     when(projectMemberRepository.findProjectMembersWithDetails(projectId)).thenReturn(List.of());
     when(projectBudgetRepository.findByProjectId(projectId)).thenReturn(Optional.empty());
@@ -115,7 +115,7 @@ class ProjectContextBuilderTest {
   void buildContextWithCustomFields() {
     var project = new Project("Custom Fields Project", "desc", memberId);
     project.setCustomFields(Map.of("case_number", "CN-001", "priority", "high"));
-    when(projectRepository.findOneById(projectId)).thenReturn(Optional.of(project));
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
     when(customerProjectRepository.findByProjectId(projectId)).thenReturn(List.of());
     when(projectMemberRepository.findProjectMembersWithDetails(projectId)).thenReturn(List.of());
     when(projectBudgetRepository.findByProjectId(projectId)).thenReturn(Optional.empty());
@@ -136,7 +136,7 @@ class ProjectContextBuilderTest {
   @Test
   void buildContextWithLogoUrl() {
     var project = new Project("Logo Project", "desc", memberId);
-    when(projectRepository.findOneById(projectId)).thenReturn(Optional.of(project));
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
     when(customerProjectRepository.findByProjectId(projectId)).thenReturn(List.of());
     when(projectMemberRepository.findProjectMembersWithDetails(projectId)).thenReturn(List.of());
     when(projectBudgetRepository.findByProjectId(projectId)).thenReturn(Optional.empty());
@@ -161,7 +161,7 @@ class ProjectContextBuilderTest {
   @Test
   void buildContextWithTags() {
     var project = new Project("Tagged Project", "desc", memberId);
-    when(projectRepository.findOneById(projectId)).thenReturn(Optional.of(project));
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
     when(customerProjectRepository.findByProjectId(projectId)).thenReturn(List.of());
     when(projectMemberRepository.findProjectMembersWithDetails(projectId)).thenReturn(List.of());
     when(projectBudgetRepository.findByProjectId(projectId)).thenReturn(Optional.empty());
@@ -183,7 +183,7 @@ class ProjectContextBuilderTest {
   @Test
   void buildContextWithMembersAndLead() {
     var project = new Project("Team Project", "desc", memberId);
-    when(projectRepository.findOneById(projectId)).thenReturn(Optional.of(project));
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
     when(customerProjectRepository.findByProjectId(projectId)).thenReturn(List.of());
 
     var leadId = UUID.randomUUID();
@@ -217,7 +217,7 @@ class ProjectContextBuilderTest {
 
   @Test
   void throwsWhenProjectNotFound() {
-    when(projectRepository.findOneById(projectId)).thenReturn(Optional.empty());
+    when(projectRepository.findById(projectId)).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> builder.buildContext(projectId, memberId))
         .isInstanceOf(ResourceNotFoundException.class);

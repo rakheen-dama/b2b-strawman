@@ -2,6 +2,8 @@
 
 **Status**: Accepted
 
+**Note**: Partially superseded by [ADR-064](ADR-064-dedicated-schema-only.md) — tier no longer determines schema topology.
+
 **Context**: Phase 2 introduces two subscription tiers with different isolation requirements. The Starter (free) tier must be cost-effective for small organizations (1-2 members, minimal data), while the Pro tier must provide the same strong schema-level isolation already implemented in Phase 1. The challenge is supporting both models within the same application without duplicating the data access layer.
 
 **Options Considered**:

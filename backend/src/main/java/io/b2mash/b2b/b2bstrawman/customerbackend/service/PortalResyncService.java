@@ -73,7 +73,7 @@ public class PortalResyncService {
             var projectId = link.getProjectId();
             var customerId = link.getCustomerId();
 
-            var projectOpt = projectRepository.findOneById(projectId);
+            var projectOpt = projectRepository.findById(projectId);
             if (projectOpt.isEmpty()) {
               log.warn("Project not found during resync: projectId={}", projectId);
               continue;

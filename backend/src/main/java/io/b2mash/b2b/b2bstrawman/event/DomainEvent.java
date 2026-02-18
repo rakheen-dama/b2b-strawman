@@ -44,7 +44,7 @@ public sealed interface DomainEvent
 
   String tenantId();
 
-  /** Clerk org ID for shared-schema ORG_ID binding. May be null for dedicated tenants. */
+  /** Clerk org ID for ORG_ID ScopedValue binding. */
   String orgId();
 
   Instant occurredAt();

@@ -110,7 +110,7 @@ public class SavedViewService {
   public SavedViewResponse update(UUID id, UpdateSavedViewRequest req) {
     var view =
         savedViewRepository
-            .findOneById(id)
+            .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("SavedView", id));
 
     UUID memberId = RequestScopes.requireMemberId();
@@ -144,7 +144,7 @@ public class SavedViewService {
   public void delete(UUID id) {
     var view =
         savedViewRepository
-            .findOneById(id)
+            .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("SavedView", id));
 
     UUID memberId = RequestScopes.requireMemberId();

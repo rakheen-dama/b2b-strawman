@@ -1,10 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.costrate;
 
-import io.b2mash.b2b.b2bstrawman.multitenancy.TenantAware;
-import io.b2mash.b2b.b2bstrawman.multitenancy.TenantAwareEntityListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -13,16 +10,10 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
-import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
 
 @Entity
 @Table(name = "cost_rates")
-@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "tenantId", type = String.class))
-@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
-@EntityListeners(TenantAwareEntityListener.class)
-public class CostRate implements TenantAware {
+public class CostRate {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
@@ -42,9 +33,6 @@ public class CostRate implements TenantAware {
 
   @Column(name = "effective_to")
   private LocalDate effectiveTo;
-
-  @Column(name = "tenant_id")
-  private String tenantId;
 
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
@@ -108,15 +96,5 @@ public class CostRate implements TenantAware {
 
   public Instant getUpdatedAt() {
     return updatedAt;
-  }
-
-  @Override
-  public String getTenantId() {
-    return tenantId;
-  }
-
-  @Override
-  public void setTenantId(String tenantId) {
-    this.tenantId = tenantId;
   }
 }

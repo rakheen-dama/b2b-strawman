@@ -2,21 +2,12 @@ package io.b2mash.b2b.b2bstrawman.timeentry;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
-
-  /**
-   * JPQL-based findById that respects Hibernate @Filter (unlike JpaRepository.findById which uses
-   * EntityManager.find and bypasses @Filter). Required for shared-schema tenant isolation.
-   */
-  @Query("SELECT te FROM TimeEntry te WHERE te.id = :id")
-  Optional<TimeEntry> findOneById(@Param("id") UUID id);
-
   @Query(
       "SELECT te FROM TimeEntry te WHERE te.taskId = :taskId ORDER BY te.date DESC, te.createdAt"
           + " DESC")
@@ -74,7 +65,7 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
 
   // --- Project time summary aggregation queries (Epic 46A) ---
   // Native SQL because JPQL lacks conditional SUM (CASE WHEN) and multi-table GROUP BY.
-  // RLS policy handles tenant isolation for native queries via set_config('app.current_tenant').
+  // Tenant isolation is provided by the dedicated schema (search_path set on connection checkout).
 
   /**
    * Aggregates total billable/non-billable minutes, contributor count, and entry count for a
@@ -160,7 +151,8 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
 
   /**
    * Aggregates total billable/non-billable minutes for a member across all projects. Date range
-   * parameters are optional — when null, all-time data is returned. RLS handles tenant isolation.
+   * parameters are optional — when null, all-time data is returned. Tenant isolation is provided by
+   * the dedicated schema (search_path).
    */
   @Query(
       nativeQuery = true,
@@ -182,8 +174,8 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
 
   /**
    * Aggregates billable/non-billable minutes per project for a member. Joins through tasks to get
-   * project_id and projects to get project name. Date range parameters are optional. RLS handles
-   * tenant isolation.
+   * project_id and projects to get project name. Date range parameters are optional. Tenant
+   * isolation is provided by the dedicated schema (search_path).
    */
   @Query(
       nativeQuery = true,
@@ -211,7 +203,8 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
 
   /**
    * Sums total duration per task for a batch of task IDs. Used to enrich My Work task items with
-   * total logged time without N+1 queries. RLS handles tenant isolation.
+   * total logged time without N+1 queries. Tenant isolation is provided by the dedicated schema
+   * (search_path).
    */
   @Query(
       nativeQuery = true,
@@ -230,7 +223,7 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
 
   /**
    * Total hours consumed for a project: SUM of all time entries (billable + non-billable) converted
-   * from minutes to hours. RLS handles tenant isolation for native queries.
+   * from minutes to hours. Tenant isolation is provided by the dedicated schema (search_path).
    */
   @Query(
       nativeQuery = true,
@@ -246,8 +239,8 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
   // --- Org-level aggregation queries (Epic 76A) ---
 
   /**
-   * Org-level hours summary for a date range. Returns total and billable minutes. RLS handles
-   * tenant isolation for native queries.
+   * Org-level hours summary for a date range. Returns total and billable minutes. Tenant isolation
+   * is provided by the dedicated schema (search_path).
    */
   @Query(
       nativeQuery = true,
@@ -264,8 +257,8 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
       @Param("fromDate") LocalDate from, @Param("toDate") LocalDate to);
 
   /**
-   * Hours grouped by period for trend computation. Uses date_trunc for grouping. RLS handles tenant
-   * isolation.
+   * Hours grouped by period for trend computation. Uses date_trunc for grouping. Tenant isolation
+   * is provided by the dedicated schema (search_path).
    */
   @Query(
       nativeQuery = true,
@@ -291,8 +284,8 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
 
   /**
    * Team workload query: aggregates hours per member per project for a date range. Returns flat
-   * rows to be post-processed (grouped by member, capped at 5 projects). RLS handles tenant
-   * isolation.
+   * rows to be post-processed (grouped by member, capped at 5 projects). Tenant isolation is
+   * provided by the dedicated schema (search_path).
    */
   @Query(
       nativeQuery = true,
@@ -320,7 +313,8 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
 
   /**
    * Member-scoped hours trend for personal dashboard sparkline. Same grouping logic as
-   * findHoursTrend but filtered to a single member. RLS handles tenant isolation.
+   * findHoursTrend but filtered to a single member. Tenant isolation is provided by the dedicated
+   * schema (search_path).
    */
   @Query(
       nativeQuery = true,
@@ -346,7 +340,8 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
 
   /**
    * Total amount consumed for a project: SUM of (billing_rate_snapshot * duration_minutes / 60) for
-   * billable entries matching the budget currency. RLS handles tenant isolation for native queries.
+   * billable entries matching the budget currency. Tenant isolation is provided by the dedicated
+   * schema (search_path).
    */
   @Query(
       nativeQuery = true,

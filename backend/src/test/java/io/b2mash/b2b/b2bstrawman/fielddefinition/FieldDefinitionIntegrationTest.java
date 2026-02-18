@@ -96,7 +96,7 @@ class FieldDefinitionIntegrationTest {
                           FieldType.DROPDOWN);
                   fd = fieldDefinitionRepository.save(fd);
 
-                  var found = fieldDefinitionRepository.findOneById(fd.getId());
+                  var found = fieldDefinitionRepository.findById(fd.getId());
                   assertThat(found).isPresent();
                   assertThat(found.get().getSlug()).isEqualTo("priority_level");
                   assertThat(found.get().getFieldType()).isEqualTo(FieldType.DROPDOWN);
@@ -105,7 +105,7 @@ class FieldDefinitionIntegrationTest {
   }
 
   @Test
-  void findOneByIdRespectsFilterForCrossTenantIsolation() {
+  void findByIdRespectsFilterForCrossTenantIsolation() {
     var idHolder = new UUID[1];
     runInTenant(
         tenantSchema,
@@ -128,7 +128,7 @@ class FieldDefinitionIntegrationTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  var found = fieldDefinitionRepository.findOneById(idHolder[0]);
+                  var found = fieldDefinitionRepository.findById(idHolder[0]);
                   assertThat(found).isEmpty();
                 }));
   }

@@ -8,14 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface SavedViewRepository extends JpaRepository<SavedView, UUID> {
-
-  /**
-   * JPQL-based findById that respects Hibernate @Filter (unlike JpaRepository.findById which uses
-   * EntityManager.find and bypasses @Filter). Required for shared-schema tenant isolation.
-   */
-  @Query("SELECT v FROM SavedView v WHERE v.id = :id")
-  Optional<SavedView> findOneById(@Param("id") UUID id);
-
   /** Returns all shared views for an entity type, ordered by sort_order. */
   @Query(
       "SELECT v FROM SavedView v WHERE v.entityType = :entityType AND v.shared = true ORDER BY"

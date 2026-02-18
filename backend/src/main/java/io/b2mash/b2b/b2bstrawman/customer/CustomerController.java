@@ -74,7 +74,7 @@ public class CustomerController {
     if (view != null) {
       var savedView =
           savedViewRepository
-              .findOneById(view)
+              .findById(view)
               .orElseThrow(() -> new ResourceNotFoundException("SavedView", view));
 
       if (!"CUSTOMER".equals(savedView.getEntityType())) {

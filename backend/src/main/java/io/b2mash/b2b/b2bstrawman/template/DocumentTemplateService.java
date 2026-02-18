@@ -61,7 +61,7 @@ public class DocumentTemplateService {
   public TemplateDetailResponse getById(UUID id) {
     var dt =
         documentTemplateRepository
-            .findOneById(id)
+            .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", id));
     return TemplateDetailResponse.from(dt);
   }
@@ -115,7 +115,7 @@ public class DocumentTemplateService {
   public TemplateDetailResponse update(UUID id, UpdateTemplateRequest request) {
     var dt =
         documentTemplateRepository
-            .findOneById(id)
+            .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", id));
 
     // Track changed fields for audit
@@ -169,7 +169,7 @@ public class DocumentTemplateService {
   public void deactivate(UUID id) {
     var dt =
         documentTemplateRepository
-            .findOneById(id)
+            .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", id));
 
     dt.deactivate();
@@ -203,7 +203,7 @@ public class DocumentTemplateService {
   public TemplateDetailResponse cloneTemplate(UUID templateId) {
     var original =
         documentTemplateRepository
-            .findOneById(templateId)
+            .findById(templateId)
             .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", templateId));
 
     if (original.getSource() != TemplateSource.PLATFORM) {
@@ -271,7 +271,7 @@ public class DocumentTemplateService {
   public void resetToDefault(UUID cloneId) {
     var clone =
         documentTemplateRepository
-            .findOneById(cloneId)
+            .findById(cloneId)
             .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", cloneId));
 
     if (clone.getSource() != TemplateSource.ORG_CUSTOM) {

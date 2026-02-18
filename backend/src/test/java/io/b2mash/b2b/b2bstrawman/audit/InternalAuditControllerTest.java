@@ -55,7 +55,7 @@ class InternalAuditControllerTest {
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     // Provision empty org -- no members/projects synced, so no audit events for this org.
-    // Both orgs are on tenant_shared; ORG_ID binding enables Hibernate @Filter for isolation.
+    // Each org gets its own dedicated schema; tenant isolation is via search_path.
     provisioningService.provisionTenant(EMPTY_ORG_ID, "Empty Audit Org");
 
     // Sync members into main org

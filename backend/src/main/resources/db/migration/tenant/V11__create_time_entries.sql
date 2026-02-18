@@ -10,7 +10,6 @@ CREATE TABLE IF NOT EXISTS time_entries (
     billable          BOOLEAN NOT NULL DEFAULT true,
     rate_cents        INTEGER,
     description       TEXT,
-    tenant_id         VARCHAR(255),
     created_at        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
 
@@ -30,17 +29,3 @@ CREATE INDEX IF NOT EXISTS idx_time_entries_task_id_date
 
 CREATE INDEX IF NOT EXISTS idx_time_entries_task_id_billable
     ON time_entries (task_id, billable);
-
-CREATE INDEX IF NOT EXISTS idx_time_entries_tenant_id
-    ON time_entries (tenant_id);
-
--- Row-Level Security
-ALTER TABLE time_entries ENABLE ROW LEVEL SECURITY;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'tenant_isolation_time_entries') THEN
-    EXECUTE 'CREATE POLICY tenant_isolation_time_entries ON time_entries
-      USING (tenant_id = current_setting(''app.current_tenant'', true) OR tenant_id IS NULL)';
-  END IF;
-END $$;

@@ -22,8 +22,8 @@ public class PlanSyncService {
 
   /**
    * Updates the organization's tier and plan slug. Returns the result indicating whether a tier
-   * upgrade is needed (STARTER → PRO transition). The caller is responsible for triggering the
-   * actual schema migration via TenantUpgradeService after this transaction commits.
+   * change occurred (STARTER → PRO transition). All tenants use dedicated schemas, so no schema
+   * migration is required on tier change.
    */
   @Transactional
   public PlanSyncResult syncPlan(String clerkOrgId, String planSlug) {

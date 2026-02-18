@@ -198,7 +198,7 @@ public class BillingRateService {
 
     var rate =
         billingRateRepository
-            .findOneById(id)
+            .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("BillingRate", id));
 
     requirePermission(rate.getProjectId(), actorMemberId, orgRole);
@@ -250,7 +250,7 @@ public class BillingRateService {
   public void deleteRate(UUID id, UUID actorMemberId, String orgRole) {
     var rate =
         billingRateRepository
-            .findOneById(id)
+            .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("BillingRate", id));
 
     requirePermission(rate.getProjectId(), actorMemberId, orgRole);
@@ -325,21 +325,21 @@ public class BillingRateService {
   }
 
   /**
-   * Validates that the project exists in the current tenant if projectId is provided. Uses
-   * findOneById which respects Hibernate @Filter for tenant isolation.
+   * Validates that the project exists in the current tenant if projectId is provided. Uses findById
+   * for validation.
    */
   private void validateProjectExists(UUID projectId) {
-    if (projectId != null && projectRepository.findOneById(projectId).isEmpty()) {
+    if (projectId != null && projectRepository.findById(projectId).isEmpty()) {
       throw new ResourceNotFoundException("Project", projectId);
     }
   }
 
   /**
    * Validates that the customer exists in the current tenant if customerId is provided. Uses
-   * findOneById which respects Hibernate @Filter for tenant isolation.
+   * findById for validation.
    */
   private void validateCustomerExists(UUID customerId) {
-    if (customerId != null && customerRepository.findOneById(customerId).isEmpty()) {
+    if (customerId != null && customerRepository.findById(customerId).isEmpty()) {
       throw new ResourceNotFoundException("Customer", customerId);
     }
   }

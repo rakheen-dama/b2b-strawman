@@ -11,7 +11,6 @@ CREATE TABLE IF NOT EXISTS notifications (
     reference_entity_id     UUID,
     reference_project_id    UUID,
     is_read                 BOOLEAN      NOT NULL DEFAULT false,
-    tenant_id               VARCHAR(255),
     created_at              TIMESTAMPTZ  NOT NULL DEFAULT now()
 );
 
@@ -21,17 +20,3 @@ CREATE INDEX IF NOT EXISTS idx_notifications_unread
 
 CREATE INDEX IF NOT EXISTS idx_notifications_list
     ON notifications (recipient_member_id, created_at DESC);
-
-CREATE INDEX IF NOT EXISTS idx_notifications_tenant
-    ON notifications (tenant_id) WHERE tenant_id IS NOT NULL;
-
--- Row-Level Security for shared schema (tenant_shared)
-ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'notifications_tenant_isolation') THEN
-    EXECUTE 'CREATE POLICY notifications_tenant_isolation ON notifications
-      USING (tenant_id = current_setting(''app.current_tenant'', true) OR tenant_id IS NULL)';
-  END IF;
-END $$;

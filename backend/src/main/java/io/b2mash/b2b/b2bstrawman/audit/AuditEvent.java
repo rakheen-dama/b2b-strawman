@@ -1,10 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.audit;
 
-import io.b2mash.b2b.b2bstrawman.multitenancy.TenantAware;
-import io.b2mash.b2b.b2bstrawman.multitenancy.TenantAwareEntityListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -13,25 +10,18 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
-import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.ParamDef;
 import org.hibernate.type.SqlTypes;
 
 /**
  * Audit event entity representing a single auditable action on a tenant-scoped entity. Events are
  * append-only -- once written, rows are never updated (enforced by DB trigger).
  *
- * <p>Key differences from standard entities: no {@code updatedAt}, no {@code @Version}, no setters
- * (except {@code setTenantId} for {@link TenantAware}).
+ * <p>Key differences from standard entities: no {@code updatedAt}, no {@code @Version}, no setters.
  */
 @Entity
 @Table(name = "audit_events")
-@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "tenantId", type = String.class))
-@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
-@EntityListeners(TenantAwareEntityListener.class)
-public class AuditEvent implements TenantAware {
+public class AuditEvent {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
@@ -64,9 +54,6 @@ public class AuditEvent implements TenantAware {
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "details", columnDefinition = "jsonb")
   private Map<String, Object> details;
-
-  @Column(name = "tenant_id")
-  private String tenantId;
 
   @Column(name = "occurred_at", nullable = false, updatable = false)
   private Instant occurredAt;
@@ -124,16 +111,6 @@ public class AuditEvent implements TenantAware {
 
   public Map<String, Object> getDetails() {
     return details == null ? null : Collections.unmodifiableMap(details);
-  }
-
-  @Override
-  public String getTenantId() {
-    return tenantId;
-  }
-
-  @Override
-  public void setTenantId(String tenantId) {
-    this.tenantId = tenantId;
   }
 
   public Instant getOccurredAt() {

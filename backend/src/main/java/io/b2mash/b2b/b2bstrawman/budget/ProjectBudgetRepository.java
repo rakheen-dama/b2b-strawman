@@ -7,15 +7,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface ProjectBudgetRepository extends JpaRepository<ProjectBudget, UUID> {
-
   /**
-   * JPQL-based findById that respects Hibernate @Filter (unlike JpaRepository.findById which uses
-   * EntityManager.find and bypasses @Filter). Required for shared-schema tenant isolation.
+   * Finds the budget for a project. JPQL query scoped to the current tenant schema via search_path.
    */
-  @Query("SELECT pb FROM ProjectBudget pb WHERE pb.id = :id")
-  Optional<ProjectBudget> findOneById(@Param("id") UUID id);
-
-  /** Finds the budget for a project. JPQL query respects Hibernate @Filter for tenant isolation. */
   @Query("SELECT pb FROM ProjectBudget pb WHERE pb.projectId = :projectId")
   Optional<ProjectBudget> findByProjectId(@Param("projectId") UUID projectId);
 }

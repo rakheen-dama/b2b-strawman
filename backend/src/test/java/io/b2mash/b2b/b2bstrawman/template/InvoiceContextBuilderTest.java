@@ -48,7 +48,7 @@ class InvoiceContextBuilderTest {
   void buildContextWithProjectAndLines() {
     var invoice =
         new Invoice(customerId, "USD", "Acme Corp", "acme@test.com", null, "Test Org", memberId);
-    when(invoiceRepository.findOneById(invoiceId)).thenReturn(Optional.of(invoice));
+    when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.of(invoice));
 
     var projectId = UUID.randomUUID();
     var line =
@@ -64,10 +64,10 @@ class InvoiceContextBuilderTest {
         .thenReturn(List.of(line));
 
     var customer = new Customer("Acme Corp", "acme@test.com", null, null, null, memberId);
-    when(customerRepository.findOneById(customerId)).thenReturn(Optional.of(customer));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
 
     var project = new Project("Project X", "desc", memberId);
-    when(projectRepository.findOneById(projectId)).thenReturn(Optional.of(project));
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
 
     when(contextHelper.buildOrgContext()).thenReturn(Map.of());
     when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
@@ -99,7 +99,7 @@ class InvoiceContextBuilderTest {
   void buildContextWithoutProject() {
     var invoice =
         new Invoice(customerId, "ZAR", "Solo Corp", "solo@test.com", null, "Org", memberId);
-    when(invoiceRepository.findOneById(invoiceId)).thenReturn(Optional.of(invoice));
+    when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.of(invoice));
 
     // Line with no projectId
     var line =
@@ -109,7 +109,7 @@ class InvoiceContextBuilderTest {
         .thenReturn(List.of(line));
 
     var customer = new Customer("Solo Corp", "solo@test.com", null, null, null, memberId);
-    when(customerRepository.findOneById(customerId)).thenReturn(Optional.of(customer));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
 
     when(contextHelper.buildOrgContext()).thenReturn(Map.of());
     when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
@@ -123,12 +123,12 @@ class InvoiceContextBuilderTest {
   void buildContextWithCustomerCustomFields() {
     var invoice =
         new Invoice(customerId, "EUR", "Fields Corp", "f@test.com", null, "Org", memberId);
-    when(invoiceRepository.findOneById(invoiceId)).thenReturn(Optional.of(invoice));
+    when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.of(invoice));
     when(invoiceLineRepository.findByInvoiceIdOrderBySortOrder(invoiceId)).thenReturn(List.of());
 
     var customer = new Customer("Fields Corp", "f@test.com", null, null, null, memberId);
     customer.setCustomFields(Map.of("vat_number", "VAT123"));
-    when(customerRepository.findOneById(customerId)).thenReturn(Optional.of(customer));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
 
     when(contextHelper.buildOrgContext()).thenReturn(Map.of());
     when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
@@ -144,7 +144,7 @@ class InvoiceContextBuilderTest {
 
   @Test
   void throwsWhenInvoiceNotFound() {
-    when(invoiceRepository.findOneById(invoiceId)).thenReturn(Optional.empty());
+    when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> builder.buildContext(invoiceId, memberId))
         .isInstanceOf(ResourceNotFoundException.class);

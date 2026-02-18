@@ -158,7 +158,7 @@ public class GeneratedDocumentService {
   @Transactional(readOnly = true)
   public GeneratedDocument getById(UUID id) {
     return generatedDocumentRepository
-        .findOneById(id)
+        .findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("GeneratedDocument", id));
   }
 
@@ -166,7 +166,7 @@ public class GeneratedDocumentService {
   public void delete(UUID id) {
     var doc =
         generatedDocumentRepository
-            .findOneById(id)
+            .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("GeneratedDocument", id));
     generatedDocumentRepository.delete(doc);
     log.info("Deleted generated document: id={}", id);
@@ -270,7 +270,7 @@ public class GeneratedDocumentService {
   }
 
   private String resolveActorName(UUID memberId) {
-    return memberRepository.findOneById(memberId).map(m -> m.getName()).orElse("Unknown");
+    return memberRepository.findById(memberId).map(m -> m.getName()).orElse("Unknown");
   }
 
   private GeneratedDocumentListResponse toListResponse(GeneratedDocument gd) {
@@ -290,13 +290,13 @@ public class GeneratedDocumentService {
 
   private String resolveTemplateName(UUID templateId) {
     return documentTemplateRepository
-        .findOneById(templateId)
+        .findById(templateId)
         .map(DocumentTemplate::getName)
         .orElse("Deleted Template");
   }
 
   private String resolveGeneratedByName(UUID memberId) {
-    return memberRepository.findOneById(memberId).map(m -> m.getName()).orElse("Unknown");
+    return memberRepository.findById(memberId).map(m -> m.getName()).orElse("Unknown");
   }
 
   /**

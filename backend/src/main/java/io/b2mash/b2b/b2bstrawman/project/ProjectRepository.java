@@ -1,21 +1,12 @@
 package io.b2mash.b2b.b2bstrawman.project;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface ProjectRepository extends JpaRepository<Project, UUID> {
-
-  /**
-   * JPQL-based findById that respects Hibernate @Filter (unlike JpaRepository.findById which uses
-   * EntityManager.find and bypasses @Filter). Required for shared-schema tenant isolation.
-   */
-  @Query("SELECT p FROM Project p WHERE p.id = :id")
-  Optional<Project> findOneById(@Param("id") UUID id);
-
   @Query(
       """
       SELECT new io.b2mash.b2b.b2bstrawman.project.ProjectWithRole(
@@ -38,15 +29,12 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
       """)
   List<ProjectWithRole> findAllProjectsWithRole(@Param("memberId") UUID memberId);
 
-  /** Counts active (non-archived) projects in the current tenant. Hibernate @Filter applies. */
+  /** Counts active (non-archived) projects in the current tenant schema. */
   @Query("SELECT COUNT(p) FROM Project p")
   long countActiveProjects();
 
   /**
-   * JPQL-based batch find by IDs that respects Hibernate @Filter (unlike JpaRepository.findAllById
-   * which uses EntityManager.find and bypasses @Filter). Required for shared-schema tenant
-   * isolation.
+   * JPQL-based batch find by IDs. JPQL queries run against the current tenant schema (search_path
+   * isolation), unlike JpaRepository.findAllById which uses EntityManager.find directly.
    */
-  @Query("SELECT p FROM Project p WHERE p.id IN :ids")
-  List<Project> findAllByIds(@Param("ids") List<UUID> ids);
 }

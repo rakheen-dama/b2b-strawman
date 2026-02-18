@@ -10,7 +10,6 @@ CREATE TABLE IF NOT EXISTS comments (
     body                TEXT         NOT NULL,
     visibility          VARCHAR(20)  NOT NULL DEFAULT 'INTERNAL',
     parent_id           UUID         REFERENCES comments(id) ON DELETE CASCADE,
-    tenant_id           VARCHAR(255),
     created_at          TIMESTAMPTZ  NOT NULL DEFAULT now(),
     updated_at          TIMESTAMPTZ  NOT NULL DEFAULT now(),
     CONSTRAINT chk_comment_entity_type CHECK (entity_type IN ('TASK', 'DOCUMENT')),
@@ -23,20 +22,6 @@ CREATE INDEX IF NOT EXISTS idx_comments_entity
 
 CREATE INDEX IF NOT EXISTS idx_comments_project
     ON comments (project_id, created_at);
-
-CREATE INDEX IF NOT EXISTS idx_comments_tenant
-    ON comments (tenant_id) WHERE tenant_id IS NOT NULL;
-
--- Row-Level Security for shared schema (tenant_shared)
-ALTER TABLE comments ENABLE ROW LEVEL SECURITY;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'comments_tenant_isolation') THEN
-    EXECUTE 'CREATE POLICY comments_tenant_isolation ON comments
-      USING (tenant_id = current_setting(''app.current_tenant'', true) OR tenant_id IS NULL)';
-  END IF;
-END $$;
 
 -- Expression index on audit_events for activity feed project filtering
 CREATE INDEX IF NOT EXISTS idx_audit_project

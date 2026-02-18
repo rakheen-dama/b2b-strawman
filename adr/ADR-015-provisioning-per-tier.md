@@ -2,6 +2,8 @@
 
 **Status**: Accepted
 
+**Note**: Partially superseded by [ADR-064](ADR-064-dedicated-schema-only.md) — single provisioning path for all tiers.
+
 **Context**: The existing provisioning flow (ADR-007) creates a dedicated schema for every new organization. With tiered tenancy (ADR-011), provisioning must branch: Starter orgs are mapped to the pre-existing `tenant_shared` schema (no schema creation), while Pro orgs follow the existing full provisioning path. All new organizations start on the Starter tier by default; Pro provisioning occurs when an organization upgrades (see ADR-016).
 
 **Options Considered**:

@@ -283,8 +283,7 @@ class FieldGroupMemberIntegrationTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  var group =
-                      fieldGroupRepository.findOneById(UUID.fromString(groupId)).orElseThrow();
+                  var group = fieldGroupRepository.findById(UUID.fromString(groupId)).orElseThrow();
                   fieldGroupRepository.delete(group);
                 }));
 

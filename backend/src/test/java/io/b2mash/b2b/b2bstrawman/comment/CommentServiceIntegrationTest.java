@@ -470,7 +470,7 @@ class CommentServiceIntegrationTest {
             .andReturn();
 
     // Verify the comment is retrievable in the same tenant context
-    // (proves tenant_id was populated correctly by TenantAwareEntityListener)
+    // (proves tenant schema isolation is working correctly)
     mockMvc
         .perform(
             get("/api/projects/" + projectId + "/comments")

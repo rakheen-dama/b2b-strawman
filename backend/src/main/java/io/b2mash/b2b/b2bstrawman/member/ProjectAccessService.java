@@ -77,11 +77,11 @@ public class ProjectAccessService {
   }
 
   /**
-   * Verifies the project exists in the current tenant using a filter-aware JPQL query. Required for
-   * shared-schema isolation where admin/owner roles would otherwise bypass row-level filtering.
+   * Verifies the project exists in the current tenant schema using a JPQL query scoped via
+   * search_path.
    */
   private boolean projectExistsInTenant(UUID projectId) {
-    return projectRepository.findOneById(projectId).isPresent();
+    return projectRepository.findById(projectId).isPresent();
   }
 
   private String lookupProjectRole(UUID projectId, UUID memberId) {

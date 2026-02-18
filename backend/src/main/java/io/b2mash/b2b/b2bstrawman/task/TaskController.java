@@ -101,7 +101,7 @@ public class TaskController {
     if (view != null) {
       var savedView =
           savedViewRepository
-              .findOneById(view)
+              .findById(view)
               .orElseThrow(() -> new ResourceNotFoundException("SavedView", view));
 
       if (!"TASK".equals(savedView.getEntityType())) {

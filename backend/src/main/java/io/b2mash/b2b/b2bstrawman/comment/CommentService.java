@@ -138,7 +138,7 @@ public class CommentService {
       String orgRole) {
     var comment =
         commentRepository
-            .findOneById(commentId)
+            .findById(commentId)
             .orElseThrow(() -> new ResourceNotFoundException("Comment", commentId));
 
     if (!comment.getProjectId().equals(projectId)) {
@@ -250,7 +250,7 @@ public class CommentService {
 
     var comment =
         commentRepository
-            .findOneById(commentId)
+            .findById(commentId)
             .orElseThrow(() -> new ResourceNotFoundException("Comment", commentId));
 
     if (!comment.getProjectId().equals(projectId)) {
@@ -324,7 +324,7 @@ public class CommentService {
     if ("TASK".equals(entityType)) {
       var task =
           taskRepository
-              .findOneById(entityId)
+              .findById(entityId)
               .orElseThrow(() -> new ResourceNotFoundException("Task", entityId));
       if (!task.getProjectId().equals(projectId)) {
         throw new ResourceNotFoundException("Task", entityId);
@@ -332,7 +332,7 @@ public class CommentService {
     } else if ("DOCUMENT".equals(entityType)) {
       var document =
           documentRepository
-              .findOneById(entityId)
+              .findById(entityId)
               .orElseThrow(() -> new ResourceNotFoundException("Document", entityId));
       if (!document.getProjectId().equals(projectId)) {
         throw new ResourceNotFoundException("Document", entityId);
@@ -341,6 +341,6 @@ public class CommentService {
   }
 
   private String resolveActorName(UUID memberId) {
-    return memberRepository.findOneById(memberId).map(m -> m.getName()).orElse("Unknown");
+    return memberRepository.findById(memberId).map(m -> m.getName()).orElse("Unknown");
   }
 }

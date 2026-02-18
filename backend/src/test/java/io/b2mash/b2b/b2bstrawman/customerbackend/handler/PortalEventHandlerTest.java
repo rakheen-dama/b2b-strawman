@@ -55,7 +55,7 @@ class PortalEventHandlerTest {
     var event = new CustomerProjectLinkedEvent(customerId, projectId, ORG_ID, TENANT_ID);
 
     var project = createProject(projectId, "Test Project", "A description");
-    when(projectRepository.findOneById(projectId)).thenReturn(Optional.of(project));
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
 
     handler.onCustomerProjectLinked(event);
 
@@ -76,7 +76,7 @@ class PortalEventHandlerTest {
     var projectId = UUID.randomUUID();
     var event = new CustomerProjectLinkedEvent(customerId, projectId, ORG_ID, TENANT_ID);
 
-    when(projectRepository.findOneById(projectId)).thenReturn(Optional.empty());
+    when(projectRepository.findById(projectId)).thenReturn(Optional.empty());
 
     handler.onCustomerProjectLinked(event);
 
@@ -198,7 +198,7 @@ class PortalEventHandlerTest {
     var doc =
         createDocument(
             documentId, projectId, "report.pdf", "application/pdf", 2048L, "s3://key", "PROJECT");
-    when(documentRepository.findOneById(documentId)).thenReturn(Optional.of(doc));
+    when(documentRepository.findById(documentId)).thenReturn(Optional.of(doc));
     when(readModelRepo.findCustomerIdsByProjectId(projectId, ORG_ID))
         .thenReturn(List.of(linkedCustomer));
 
@@ -311,7 +311,7 @@ class PortalEventHandlerTest {
     var projectId = UUID.randomUUID();
     var event = new CustomerProjectLinkedEvent(customerId, projectId, ORG_ID, TENANT_ID);
 
-    when(projectRepository.findOneById(projectId))
+    when(projectRepository.findById(projectId))
         .thenThrow(new RuntimeException("Simulated DB failure"));
 
     // Should not throw -- exception is caught and logged

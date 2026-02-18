@@ -97,7 +97,7 @@ public class NotificationService {
   public void markAsRead(UUID notificationId, UUID memberId) {
     var notification =
         notificationRepository
-            .findOneById(notificationId)
+            .findById(notificationId)
             .filter(n -> n.getRecipientMemberId().equals(memberId))
             .orElseThrow(() -> new ResourceNotFoundException("Notification", notificationId));
     notification.markAsRead();
@@ -112,7 +112,7 @@ public class NotificationService {
   public void dismissNotification(UUID notificationId, UUID memberId) {
     var notification =
         notificationRepository
-            .findOneById(notificationId)
+            .findById(notificationId)
             .filter(n -> n.getRecipientMemberId().equals(memberId))
             .orElseThrow(() -> new ResourceNotFoundException("Notification", notificationId));
     notificationRepository.delete(notification);
@@ -194,7 +194,7 @@ public class NotificationService {
     String title;
 
     if ("TASK".equals(event.targetEntityType())) {
-      var taskOpt = taskRepository.findOneById(event.targetEntityId());
+      var taskOpt = taskRepository.findById(event.targetEntityId());
       if (taskOpt.isEmpty()) {
         log.warn("Task not found for comment notification: {}", event.targetEntityId());
         return List.of();
@@ -205,7 +205,7 @@ public class NotificationService {
       }
       title = "%s commented on task \"%s\"".formatted(event.actorName(), task.getTitle());
     } else if ("DOCUMENT".equals(event.targetEntityType())) {
-      var docOpt = documentRepository.findOneById(event.targetEntityId());
+      var docOpt = documentRepository.findById(event.targetEntityId());
       if (docOpt.isEmpty()) {
         log.warn("Document not found for comment notification: {}", event.targetEntityId());
         return List.of();

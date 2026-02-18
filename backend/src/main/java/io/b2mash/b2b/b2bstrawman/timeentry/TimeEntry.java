@@ -1,10 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.timeentry;
 
-import io.b2mash.b2b.b2bstrawman.multitenancy.TenantAware;
-import io.b2mash.b2b.b2bstrawman.multitenancy.TenantAwareEntityListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -14,16 +11,10 @@ import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
-import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
 
 @Entity
 @Table(name = "time_entries")
-@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "tenantId", type = String.class))
-@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
-@EntityListeners(TenantAwareEntityListener.class)
-public class TimeEntry implements TenantAware {
+public class TimeEntry {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
@@ -65,9 +56,6 @@ public class TimeEntry implements TenantAware {
 
   @Column(name = "description", columnDefinition = "TEXT")
   private String description;
-
-  @Column(name = "tenant_id")
-  private String tenantId;
 
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
@@ -127,16 +115,6 @@ public class TimeEntry implements TenantAware {
 
   public String getDescription() {
     return description;
-  }
-
-  @Override
-  public String getTenantId() {
-    return tenantId;
-  }
-
-  @Override
-  public void setTenantId(String tenantId) {
-    this.tenantId = tenantId;
   }
 
   public Instant getCreatedAt() {

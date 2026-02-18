@@ -113,14 +113,21 @@
 | 93 | DocumentTemplate Entity Foundation | Backend | -- | L | 93A, 93B | **Done** (PRs #191, #192) |
 | 94 | Rendering Pipeline & Generation | Backend | 93 | L | 94A, 94B | **Done** (PRs #193, #195) |
 | 95 | Frontend — Template & Generation UI | Frontend | 93, 94 | L | 95A, 95B | **Done** (PRs #196, #197) |
-| **Phase 13 — Customer Compliance & Lifecycle** | | | | | | See [tasks/phase13-customer-compliance-lifecycle.md](tasks/phase13-customer-compliance-lifecycle.md) |
-| 96 | Entity Foundation + Lifecycle Guards | Backend | -- | L | 96A, 96B | |
-| 97 | Lifecycle Transitions + Dormancy Detection | Both | 96 | M | 97A, 97B | |
-| 98 | Checklist Engine | Both | 96, 97 | L | 98A, 98B, 98C | |
-| 99 | Compliance Packs + Seeder | Backend | 98 | M | 99A | |
-| 100 | Data Subject Requests | Both | 96 | L | 100A, 100B | |
-| 101 | Retention Policies | Both | 96 | M | 101A | |
-| 102 | Compliance Dashboard | Frontend | 97, 98, 100, 101 | S | 102A | |
+| **Phase 13 — Dedicated Schema for All Tenants** | | | | | | See [tasks/phase13-dedicated-schema-only.md](tasks/phase13-dedicated-schema-only.md) |
+| 96 | Infrastructure Removal & Provisioning Simplification | Backend | -- | M | 96A | **Done** |
+| 97 | Entity, Repository & Call-Site Cleanup | Backend | 96 | L | 97A, 97B, 97C | **Done** |
+| 98 | Migration Rewrite & Renumber | Backend | -- | M | 98A | **Done** |
+| 99 | Test Cleanup, Verification & Documentation | Backend | 96, 97, 98 | M | 99A, 99B | **Done** |
+| **Phase 14 — Customer Compliance & Lifecycle** | | | | | | See [tasks/phase14-customer-compliance-lifecycle.md](tasks/phase14-customer-compliance-lifecycle.md) |
+| 100 | Customer Lifecycle Foundation | Backend | -- | M | 100A, 100B | |
+| 101 | Checklist Template Engine | Backend | 100 | M | 101A, 101B | |
+| 102 | Checklist Instance Engine | Backend | 101 | M | 102A, 102B | |
+| 103 | Compliance Pack Seeding & Instantiation | Backend | 101 | M | 103A, 103B | |
+| 104 | Data Subject Requests | Backend | 100 | M | 104A, 104B | |
+| 105 | Retention & Dormancy | Backend | 100 | M | 105A, 105B | |
+| 106 | Lifecycle & Checklist Frontend | Frontend | 102, 103 | M | 106A, 106B | |
+| 107 | Data Requests & Settings Frontend | Frontend | 104, 105 | M | 107A, 107B | |
+| 108 | Compliance Dashboard | Frontend | 106, 107 | S | 108A | |
 
 ---
 

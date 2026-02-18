@@ -2,7 +2,7 @@
 
 **Status**: Accepted
 
-**Context**: Phase 13 introduces a compliance lifecycle for customers (`PROSPECT` → `ONBOARDING` → `ACTIVE` → `DORMANT` → `OFFBOARDED`). This lifecycle status gates platform actions (e.g., blocking invoice creation during onboarding, making offboarded customers read-only) and drives dashboard queries (e.g., filtering by onboarding status). The question is how to model this lifecycle status on the Customer entity: as a core entity column, as a custom field (Phase 11's FieldDefinition/JSONB system), or as a separate lifecycle tracking table.
+**Context**: Phase 14 introduces a compliance lifecycle for customers (`PROSPECT` → `ONBOARDING` → `ACTIVE` → `DORMANT` → `OFFBOARDED`). This lifecycle status gates platform actions (e.g., blocking invoice creation during onboarding, making offboarded customers read-only) and drives dashboard queries (e.g., filtering by onboarding status). The question is how to model this lifecycle status on the Customer entity: as a core entity column, as a custom field (Phase 11's FieldDefinition/JSONB system), or as a separate lifecycle tracking table.
 
 The answer affects query performance (WHERE clauses on indexed columns vs. JSONB path queries), code semantics (is lifecycle status structural or metadata?), guard implementation (type-safe enums vs. string value extraction from JSONB), and the relationship to the existing `status` column (ACTIVE/ARCHIVED for soft-delete).
 
@@ -35,7 +35,7 @@ The answer affects query performance (WHERE clauses on indexed columns vs. JSONB
 
 3. **Separate lifecycle tracking table (one-to-one with Customer)** — Create a `customer_lifecycle` table with `customer_id FK`, `status`, `changed_at`, `changed_by`. Join to Customer for queries.
    - Pros:
-     - Lifecycle concerns are isolated in a separate table. If Phase 13 is later removed or replaced, the lifecycle table can be dropped without touching the Customer table.
+     - Lifecycle concerns are isolated in a separate table. If Phase 14 is later removed or replaced, the lifecycle table can be dropped without touching the Customer table.
      - Historical tracking is easier: the lifecycle table could store all past statuses (one-to-many), not just the current one. This provides a built-in audit log of lifecycle transitions.
    - Cons:
      - Adds a join to every query that filters by lifecycle status (`JOIN customer_lifecycle ON c.id = cl.customer_id WHERE cl.status = 'ONBOARDING'`). This is slower and more complex than a direct column.
@@ -60,6 +60,6 @@ The separate table (Option 3) was rejected because lifecycle status is part of t
 - Three additional columns: `lifecycle_status_changed_at TIMESTAMPTZ`, `lifecycle_status_changed_by UUID`, `offboarded_at TIMESTAMPTZ` (used as the retention period trigger date).
 - Migration V29 adds these columns. Existing customers are backfilled to `lifecycle_status = 'ACTIVE'` (they are already in use, presumably past onboarding). New customers created after the migration default to `PROSPECT`.
 - `CustomerLifecycleGuard` service provides `requireActionPermitted(Customer, LifecycleAction)` and `requireTransitionValid(Customer, targetStatus, notes)` methods. Guards are enforced at the service layer before mutations.
-- Dashboard queries filter by lifecycle status using `WHERE lifecycle_status = ?` with a B-tree index (`idx_customers_lifecycle_status`). Shared-schema queries use a composite index (`idx_customers_tenant_lifecycle` on `tenant_id, lifecycle_status`).
-- The state machine (valid transitions, guard rules) is documented in section 13.3 of the Phase 13 architecture doc. It is code logic, not database constraints — the database allows any string value in the column, but the service layer enforces enum values and valid transitions.
+- Dashboard queries filter by lifecycle status using `WHERE lifecycle_status = ?` with a B-tree index (`idx_customers_lifecycle_status`).
+- The state machine (valid transitions, guard rules) is documented in section 14.2 of the Phase 14 architecture doc. It is code logic, not database constraints — the database allows any string value in the column, but the service layer enforces enum values and valid transitions.
 - Lifecycle status is NOT a custom field. It does not appear in the custom fields UI. It is a core platform field with its own dedicated UI for lifecycle transitions (lifecycle status dropdown, transition reason modal).

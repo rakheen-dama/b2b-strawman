@@ -1237,7 +1237,7 @@ flowchart LR
 
 ### 8.1 Schema Design
 
-The database uses a **schema-per-tenant** strategy within a single Neon Postgres database.
+The database uses a **dedicated-schema-per-tenant** strategy within a single Neon Postgres database. Every tenant — regardless of billing tier — receives its own `tenant_<hash>` schema. The `Tier` enum is retained for billing and feature gating only; it has no effect on schema topology (see ADR-064).
 
 **Global Schema (`public`)**:
 
@@ -1269,7 +1269,7 @@ erDiagram
     organizations ||--|| org_schema_mapping : "maps to"
 ```
 
-**Tenant Schema (`tenant_<hash>`)** — replicated per tenant:
+**Tenant Schema (`tenant_<hash>`)** — one per tenant, isolated at the PostgreSQL schema level:
 
 ```mermaid
 erDiagram

@@ -49,7 +49,7 @@ public class FieldGroupService {
   public FieldGroupResponse findById(UUID id) {
     var fg =
         fieldGroupRepository
-            .findOneById(id)
+            .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("FieldGroup", id));
     return FieldGroupResponse.from(fg);
   }
@@ -98,7 +98,7 @@ public class FieldGroupService {
   public FieldGroupResponse update(UUID id, UpdateFieldGroupRequest request) {
     var fg =
         fieldGroupRepository
-            .findOneById(id)
+            .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("FieldGroup", id));
 
     fg.updateMetadata(request.name(), request.description(), request.sortOrder());
@@ -122,7 +122,7 @@ public class FieldGroupService {
   public void deactivate(UUID id) {
     var fg =
         fieldGroupRepository
-            .findOneById(id)
+            .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("FieldGroup", id));
 
     fg.deactivate();
@@ -149,11 +149,11 @@ public class FieldGroupService {
   public void addFieldToGroup(UUID groupId, UUID fieldId, int sortOrder) {
     var group =
         fieldGroupRepository
-            .findOneById(groupId)
+            .findById(groupId)
             .orElseThrow(() -> new ResourceNotFoundException("FieldGroup", groupId));
     var field =
         fieldDefinitionRepository
-            .findOneById(fieldId)
+            .findById(fieldId)
             .orElseThrow(() -> new ResourceNotFoundException("FieldDefinition", fieldId));
 
     if (field.getEntityType() != group.getEntityType()) {
@@ -191,7 +191,7 @@ public class FieldGroupService {
   @Transactional
   public void removeFieldFromGroup(UUID groupId, UUID fieldId) {
     fieldGroupRepository
-        .findOneById(groupId)
+        .findById(groupId)
         .orElseThrow(() -> new ResourceNotFoundException("FieldGroup", groupId));
 
     fieldGroupMemberRepository.deleteByFieldGroupIdAndFieldDefinitionId(groupId, fieldId);
@@ -211,7 +211,7 @@ public class FieldGroupService {
   @Transactional
   public void reorderFields(UUID groupId, List<UUID> fieldIds) {
     fieldGroupRepository
-        .findOneById(groupId)
+        .findById(groupId)
         .orElseThrow(() -> new ResourceNotFoundException("FieldGroup", groupId));
 
     var members = fieldGroupMemberRepository.findByFieldGroupIdOrderBySortOrder(groupId);
@@ -235,7 +235,7 @@ public class FieldGroupService {
   @Transactional(readOnly = true)
   public List<FieldGroupMember> getGroupMembers(UUID groupId) {
     fieldGroupRepository
-        .findOneById(groupId)
+        .findById(groupId)
         .orElseThrow(() -> new ResourceNotFoundException("FieldGroup", groupId));
 
     return fieldGroupMemberRepository.findByFieldGroupIdOrderBySortOrder(groupId);

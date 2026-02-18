@@ -2,21 +2,12 @@ package io.b2mash.b2b.b2bstrawman.costrate;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface CostRateRepository extends JpaRepository<CostRate, UUID> {
-
-  /**
-   * JPQL-based findById that respects Hibernate @Filter (unlike JpaRepository.findById which uses
-   * EntityManager.find and bypasses @Filter). Required for shared-schema tenant isolation.
-   */
-  @Query("SELECT cr FROM CostRate cr WHERE cr.id = :id")
-  Optional<CostRate> findOneById(@Param("id") UUID id);
-
   /**
    * Finds cost rates for a member effective on the given date. Returns results ordered by
    * effectiveFrom DESC so the most recent applicable rate is first.

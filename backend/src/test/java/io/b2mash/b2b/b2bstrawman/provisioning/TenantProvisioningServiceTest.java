@@ -67,22 +67,29 @@ class TenantProvisioningServiceTest {
   }
 
   @Test
-  void provisionTenant_starterMapsToSharedSchema() {
+  void provisionTenant_starterGetsDedicatedSchema() throws SQLException {
     when(mappingRepository.findByClerkOrgId("org_new")).thenReturn(Optional.empty());
     when(organizationRepository.findByClerkOrgId("org_new")).thenReturn(Optional.empty());
 
     var org = new Organization("org_new", "New Org");
-    // Default tier is STARTER
+    // Default tier is STARTER — now always gets a dedicated schema
     when(organizationRepository.save(any(Organization.class))).thenReturn(org);
+
+    var mockConn = mock(Connection.class);
+    var mockStmt = mock(Statement.class);
+    when(migrationDataSource.getConnection()).thenReturn(mockConn);
+    when(mockConn.createStatement()).thenReturn(mockStmt);
 
     when(mappingRepository.save(any(OrgSchemaMapping.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
+
+    doNothing().when(service).runTenantMigrations(anyString());
 
     var result = service.provisionTenant("org_new", "New Org");
 
     assertThat(result.success()).isTrue();
     assertThat(result.alreadyProvisioned()).isFalse();
-    assertThat(result.schemaName()).isEqualTo("tenant_shared");
+    assertThat(result.schemaName()).matches("tenant_[0-9a-f]{12}");
     assertThat(org.getProvisioningStatus()).isEqualTo(Organization.ProvisioningStatus.COMPLETED);
   }
 
@@ -133,15 +140,23 @@ class TenantProvisioningServiceTest {
   }
 
   @Test
-  void provisionTenant_idempotentMappingCheckInCreateMapping() {
+  void provisionTenant_idempotentMappingCheckInCreateMapping() throws SQLException {
+    String expectedSchema = SchemaNameGenerator.generateSchemaName("org_idem");
     when(mappingRepository.findByClerkOrgId("org_idem"))
         .thenReturn(Optional.empty()) // first call in main method
         .thenReturn(
-            Optional.of(new OrgSchemaMapping("org_idem", "tenant_shared"))); // in createMapping
+            Optional.of(new OrgSchemaMapping("org_idem", expectedSchema))); // in createMapping
 
     var org = new Organization("org_idem", "Idem Org");
     when(organizationRepository.findByClerkOrgId("org_idem")).thenReturn(Optional.empty());
     when(organizationRepository.save(any(Organization.class))).thenReturn(org);
+
+    var mockConn = mock(Connection.class);
+    var mockStmt = mock(Statement.class);
+    when(migrationDataSource.getConnection()).thenReturn(mockConn);
+    when(mockConn.createStatement()).thenReturn(mockStmt);
+
+    doNothing().when(service).runTenantMigrations(anyString());
 
     var result = service.provisionTenant("org_idem", "Idem Org");
 

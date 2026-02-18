@@ -91,7 +91,7 @@ public class Customer {
     this.createdAt = Instant.now();
     this.updatedAt = Instant.now();
     this.customerType = CustomerType.INDIVIDUAL;
-    this.lifecycleStatus = LifecycleStatus.PROSPECT;
+    this.lifecycleStatus = LifecycleStatus.ACTIVE;
   }
 
   public Customer(
@@ -104,6 +104,19 @@ public class Customer {
       CustomerType customerType) {
     this(name, email, phone, idNumber, notes, createdBy);
     this.customerType = customerType != null ? customerType : CustomerType.INDIVIDUAL;
+  }
+
+  public Customer(
+      String name,
+      String email,
+      String phone,
+      String idNumber,
+      String notes,
+      UUID createdBy,
+      CustomerType customerType,
+      LifecycleStatus lifecycleStatus) {
+    this(name, email, phone, idNumber, notes, createdBy, customerType);
+    this.lifecycleStatus = lifecycleStatus != null ? lifecycleStatus : LifecycleStatus.ACTIVE;
   }
 
   public void update(String name, String email, String phone, String idNumber, String notes) {
@@ -225,5 +238,10 @@ public class Customer {
 
   public Instant getOffboardedAt() {
     return offboardedAt;
+  }
+
+  public void setOffboardedAt(Instant offboardedAt) {
+    this.offboardedAt = offboardedAt;
+    this.updatedAt = Instant.now();
   }
 }

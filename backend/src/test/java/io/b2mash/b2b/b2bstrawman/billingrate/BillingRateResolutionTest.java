@@ -53,6 +53,9 @@ class BillingRateResolutionTest {
   @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
 
+  @Autowired
+  private io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleService customerLifecycleService;
+
   private String tenantSchema;
   private UUID memberIdOwner;
   private UUID memberIdMember;
@@ -95,6 +98,8 @@ class BillingRateResolutionTest {
                   projectService.createProject(
                       "Rate Resolution Test Project", "Test", memberIdOwner);
               projectId = project.getId();
+
+              // Customer defaults to ACTIVE — no transition needed
 
               customerProjectService.linkCustomerToProject(
                   customerId, projectId, memberIdOwner, memberIdOwner, "owner");

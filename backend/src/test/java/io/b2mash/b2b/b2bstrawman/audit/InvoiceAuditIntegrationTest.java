@@ -67,6 +67,9 @@ class InvoiceAuditIntegrationTest {
   @Autowired private TimeEntryRepository timeEntryRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
+  @Autowired
+  private io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleService customerLifecycleService;
+
   private String tenantSchema;
   private UUID memberIdOwner;
   private UUID customerId;
@@ -103,6 +106,8 @@ class InvoiceAuditIntegrationTest {
                               memberIdOwner);
                       customer = customerRepository.save(customer);
                       customerId = customer.getId();
+
+                      // Customer defaults to ACTIVE — no transition needed
 
                       var project =
                           new Project(

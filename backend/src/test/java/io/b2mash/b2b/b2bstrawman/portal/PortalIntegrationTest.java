@@ -55,6 +55,9 @@ class PortalIntegrationTest {
   @Autowired private CustomerProjectRepository customerProjectRepository;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
 
+  @Autowired
+  private io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleService customerLifecycleService;
+
   private UUID customerIdA;
   private UUID customerIdB;
   private UUID projectId;
@@ -172,6 +175,8 @@ class PortalIntegrationTest {
                   projectRepository.save(
                       new Project("Unlinked Project", "Not linked to customer", memberIdA));
               unlinkedProjectId = unlinkedProj.getId();
+
+              // Customer defaults to ACTIVE — no transition needed
 
               // Link customer A to projectId
               customerProjectService.linkCustomerToProject(

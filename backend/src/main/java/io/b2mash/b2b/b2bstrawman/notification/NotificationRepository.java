@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.notification;
 
-import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,9 +9,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface NotificationRepository extends JpaRepository<Notification, UUID> {
-
-  @Query("SELECT n FROM Notification n WHERE n.id = :id")
-  Optional<Notification> findOneById(@Param("id") UUID id);
 
   @Query(
       """

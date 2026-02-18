@@ -8,15 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface InvoiceLineRepository extends JpaRepository<InvoiceLine, UUID> {
-
-  /**
-   * JPQL-based findById that respects Hibernate @Filter (unlike JpaRepository.findById which uses
-   * EntityManager.find and bypasses @Filter). Required for shared-schema tenant isolation.
-   */
-  @Query("SELECT il FROM InvoiceLine il WHERE il.id = :id")
-  Optional<InvoiceLine> findOneById(@Param("id") UUID id);
-
-  /** JPQL-based query that respects Hibernate @Filter for tenant isolation. */
+  /** JPQL-based query scoped to the current tenant schema via search_path. */
   @Query("SELECT il FROM InvoiceLine il WHERE il.invoiceId = :invoiceId ORDER BY il.sortOrder")
   List<InvoiceLine> findByInvoiceIdOrderBySortOrder(@Param("invoiceId") UUID invoiceId);
 

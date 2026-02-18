@@ -95,7 +95,7 @@ public class TaskService {
   public Task getTask(UUID taskId, UUID memberId, String orgRole) {
     var task =
         taskRepository
-            .findOneById(taskId)
+            .findById(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
     projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
     return task;
@@ -199,7 +199,7 @@ public class TaskService {
       List<UUID> appliedFieldGroups) {
     var task =
         taskRepository
-            .findOneById(taskId)
+            .findById(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
 
     var access = projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
@@ -352,7 +352,7 @@ public class TaskService {
       UUID taskId, List<UUID> appliedFieldGroups, UUID memberId, String orgRole) {
     var task =
         taskRepository
-            .findOneById(taskId)
+            .findById(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
     var access = projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
 
@@ -365,7 +365,7 @@ public class TaskService {
     for (UUID groupId : appliedFieldGroups) {
       var group =
           fieldGroupRepository
-              .findOneById(groupId)
+              .findById(groupId)
               .orElseThrow(() -> new ResourceNotFoundException("FieldGroup", groupId));
       if (group.getEntityType() != EntityType.TASK) {
         throw new InvalidStateException(
@@ -387,7 +387,7 @@ public class TaskService {
 
     return fieldDefIds.stream()
         .distinct()
-        .map(fdId -> fieldDefinitionRepository.findOneById(fdId))
+        .map(fdId -> fieldDefinitionRepository.findById(fdId))
         .filter(java.util.Optional::isPresent)
         .map(java.util.Optional::get)
         .map(FieldDefinitionResponse::from)
@@ -398,7 +398,7 @@ public class TaskService {
   public void deleteTask(UUID taskId, UUID memberId, String orgRole) {
     var task =
         taskRepository
-            .findOneById(taskId)
+            .findById(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
 
     var access = projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
@@ -425,7 +425,7 @@ public class TaskService {
   public Task claimTask(UUID taskId, UUID memberId, String orgRole) {
     var task =
         taskRepository
-            .findOneById(taskId)
+            .findById(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
 
     projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
@@ -487,7 +487,7 @@ public class TaskService {
   public Task releaseTask(UUID taskId, UUID memberId, String orgRole) {
     var task =
         taskRepository
-            .findOneById(taskId)
+            .findById(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
 
     if (task.getAssigneeId() == null) {
@@ -526,6 +526,6 @@ public class TaskService {
   }
 
   private String resolveActorName(UUID memberId) {
-    return memberRepository.findOneById(memberId).map(m -> m.getName()).orElse("Unknown");
+    return memberRepository.findById(memberId).map(m -> m.getName()).orElse("Unknown");
   }
 }

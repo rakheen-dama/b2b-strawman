@@ -207,8 +207,8 @@ class ViewFilterIntegrationTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  vipSlug[0] = tagRepository.findOneById(tagVipId).orElseThrow().getSlug();
-                  urgentSlug[0] = tagRepository.findOneById(tagUrgentId).orElseThrow().getSlug();
+                  vipSlug[0] = tagRepository.findById(tagVipId).orElseThrow().getSlug();
+                  urgentSlug[0] = tagRepository.findById(tagUrgentId).orElseThrow().getSlug();
                 }));
 
     // Both tags — only project 1 has both

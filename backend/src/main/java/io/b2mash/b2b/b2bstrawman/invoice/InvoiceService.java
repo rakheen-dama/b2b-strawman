@@ -106,7 +106,7 @@ public class InvoiceService {
   public InvoiceResponse createDraft(CreateInvoiceRequest request, UUID createdBy) {
     var customer =
         customerRepository
-            .findOneById(request.customerId())
+            .findById(request.customerId())
             .orElseThrow(() -> new ResourceNotFoundException("Customer", request.customerId()));
 
     if (!"ACTIVE".equals(customer.getStatus())) {
@@ -147,7 +147,7 @@ public class InvoiceService {
       for (UUID timeEntryId : timeEntryIds) {
         var timeEntry =
             timeEntryRepository
-                .findOneById(timeEntryId)
+                .findById(timeEntryId)
                 .orElseThrow(() -> new ResourceNotFoundException("TimeEntry", timeEntryId));
 
         if (!timeEntry.isBillable()) {
@@ -185,7 +185,7 @@ public class InvoiceService {
 
         // Look up task to get projectId (used for both validation and line item creation)
         UUID projectId = null;
-        var task = taskRepository.findOneById(timeEntry.getTaskId());
+        var task = taskRepository.findById(timeEntry.getTaskId());
         if (task.isPresent()) {
           projectId = task.get().getProjectId();
           // Validate time entry belongs to customer's projects
@@ -263,11 +263,11 @@ public class InvoiceService {
   public UnbilledTimeResponse getUnbilledTime(UUID customerId, LocalDate from, LocalDate to) {
     var customer =
         customerRepository
-            .findOneById(customerId)
+            .findById(customerId)
             .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
 
     // Native SQL query: joins time_entries -> tasks -> projects -> customer_projects -> members
-    // RLS handles tenant isolation for native queries
+    // Tenant isolation is provided by the dedicated schema (search_path set on connection checkout)
     String sql =
         """
         SELECT te.id AS te_id, te.date AS te_date, te.duration_minutes AS te_duration,
@@ -397,7 +397,7 @@ public class InvoiceService {
   public InvoiceResponse updateDraft(UUID invoiceId, UpdateInvoiceRequest request) {
     var invoice =
         invoiceRepository
-            .findOneById(invoiceId)
+            .findById(invoiceId)
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
 
     try {
@@ -430,7 +430,7 @@ public class InvoiceService {
   public void deleteDraft(UUID invoiceId) {
     var invoice =
         invoiceRepository
-            .findOneById(invoiceId)
+            .findById(invoiceId)
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
 
     if (invoice.getStatus() != InvoiceStatus.DRAFT) {
@@ -445,7 +445,7 @@ public class InvoiceService {
     if (!timeEntryIdsToUnlink.isEmpty()) {
       for (UUID teId : timeEntryIdsToUnlink) {
         timeEntryRepository
-            .findOneById(teId)
+            .findById(teId)
             .ifPresent(
                 te -> {
                   te.setInvoiceId(null);
@@ -476,7 +476,7 @@ public class InvoiceService {
   public InvoiceResponse findById(UUID invoiceId) {
     var invoice =
         invoiceRepository
-            .findOneById(invoiceId)
+            .findById(invoiceId)
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
     return buildResponse(invoice);
   }
@@ -502,7 +502,7 @@ public class InvoiceService {
   public InvoiceResponse addLineItem(UUID invoiceId, AddLineItemRequest request) {
     var invoice =
         invoiceRepository
-            .findOneById(invoiceId)
+            .findById(invoiceId)
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
 
     if (invoice.getStatus() != InvoiceStatus.DRAFT) {
@@ -549,7 +549,7 @@ public class InvoiceService {
       UUID invoiceId, UUID lineId, UpdateLineItemRequest request) {
     var invoice =
         invoiceRepository
-            .findOneById(invoiceId)
+            .findById(invoiceId)
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
 
     if (invoice.getStatus() != InvoiceStatus.DRAFT) {
@@ -559,7 +559,7 @@ public class InvoiceService {
 
     var line =
         lineRepository
-            .findOneById(lineId)
+            .findById(lineId)
             .orElseThrow(() -> new ResourceNotFoundException("InvoiceLine", lineId));
 
     if (!line.getInvoiceId().equals(invoiceId)) {
@@ -597,7 +597,7 @@ public class InvoiceService {
   public void deleteLineItem(UUID invoiceId, UUID lineId) {
     var invoice =
         invoiceRepository
-            .findOneById(invoiceId)
+            .findById(invoiceId)
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
 
     if (invoice.getStatus() != InvoiceStatus.DRAFT) {
@@ -607,7 +607,7 @@ public class InvoiceService {
 
     var line =
         lineRepository
-            .findOneById(lineId)
+            .findById(lineId)
             .orElseThrow(() -> new ResourceNotFoundException("InvoiceLine", lineId));
 
     if (!line.getInvoiceId().equals(invoiceId)) {
@@ -617,7 +617,7 @@ public class InvoiceService {
     // Unlink time entry if this line was generated from one
     if (line.getTimeEntryId() != null) {
       timeEntryRepository
-          .findOneById(line.getTimeEntryId())
+          .findById(line.getTimeEntryId())
           .ifPresent(
               te -> {
                 te.setInvoiceId(null);
@@ -653,7 +653,7 @@ public class InvoiceService {
   public InvoiceResponse approve(UUID invoiceId, UUID approvedBy) {
     var invoice =
         invoiceRepository
-            .findOneById(invoiceId)
+            .findById(invoiceId)
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
 
     // Validate has at least one line item
@@ -670,7 +670,7 @@ public class InvoiceService {
       if (line.getTimeEntryId() != null) {
         var timeEntry =
             timeEntryRepository
-                .findOneById(line.getTimeEntryId())
+                .findById(line.getTimeEntryId())
                 .orElseThrow(
                     () -> new ResourceNotFoundException("TimeEntry", line.getTimeEntryId()));
         if (timeEntry.getInvoiceId() != null && !timeEntry.getInvoiceId().equals(invoiceId)) {
@@ -682,8 +682,7 @@ public class InvoiceService {
     }
 
     // Assign invoice number
-    String tenantId = RequestScopes.TENANT_ID.get();
-    String invoiceNumber = invoiceNumberService.assignNumber(tenantId);
+    String invoiceNumber = invoiceNumberService.assignNumber();
 
     try {
       invoice.approve(invoiceNumber, approvedBy);
@@ -697,7 +696,7 @@ public class InvoiceService {
     for (var line : lines) {
       if (line.getTimeEntryId() != null) {
         timeEntryRepository
-            .findOneById(line.getTimeEntryId())
+            .findById(line.getTimeEntryId())
             .ifPresent(
                 te -> {
                   te.setInvoiceId(invoiceId);
@@ -751,7 +750,7 @@ public class InvoiceService {
   public InvoiceResponse send(UUID invoiceId) {
     var invoice =
         invoiceRepository
-            .findOneById(invoiceId)
+            .findById(invoiceId)
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
 
     try {
@@ -802,7 +801,7 @@ public class InvoiceService {
   public InvoiceResponse recordPayment(UUID invoiceId, String paymentReference) {
     var invoice =
         invoiceRepository
-            .findOneById(invoiceId)
+            .findById(invoiceId)
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
 
     // Validate status BEFORE calling payment provider (irreversible side effect)
@@ -884,7 +883,7 @@ public class InvoiceService {
   public InvoiceResponse voidInvoice(UUID invoiceId) {
     var invoice =
         invoiceRepository
-            .findOneById(invoiceId)
+            .findById(invoiceId)
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
 
     try {
@@ -900,7 +899,7 @@ public class InvoiceService {
     for (var line : lines) {
       if (line.getTimeEntryId() != null) {
         timeEntryRepository
-            .findOneById(line.getTimeEntryId())
+            .findById(line.getTimeEntryId())
             .ifPresent(
                 te -> {
                   te.setInvoiceId(null);
@@ -960,7 +959,7 @@ public class InvoiceService {
   public String renderPreview(UUID invoiceId) {
     var invoice =
         invoiceRepository
-            .findOneById(invoiceId)
+            .findById(invoiceId)
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
 
     var lines = lineRepository.findByInvoiceIdOrderBySortOrder(invoiceId);
@@ -1013,7 +1012,7 @@ public class InvoiceService {
 
   private String resolveActorName(UUID memberId) {
     if (memberId == null) return "System";
-    return memberRepository.findOneById(memberId).map(m -> m.getName()).orElse("Unknown");
+    return memberRepository.findById(memberId).map(m -> m.getName()).orElse("Unknown");
   }
 
   private void recalculateInvoiceTotals(Invoice invoice) {
@@ -1029,7 +1028,7 @@ public class InvoiceService {
         lines.stream().map(InvoiceLine::getProjectId).filter(Objects::nonNull).distinct().toList();
 
     if (!projectIds.isEmpty()) {
-      return projectRepository.findAllByIds(projectIds).stream()
+      return projectRepository.findAllById(projectIds).stream()
           .collect(Collectors.toMap(p -> p.getId(), p -> p.getName()));
     }
     return Map.of();
@@ -1058,16 +1057,13 @@ public class InvoiceService {
 
     if (timeEntry.getTaskId() != null) {
       taskTitle =
-          taskRepository
-              .findOneById(timeEntry.getTaskId())
-              .map(t -> t.getTitle())
-              .orElse("Untitled");
+          taskRepository.findById(timeEntry.getTaskId()).map(t -> t.getTitle()).orElse("Untitled");
     }
 
     if (timeEntry.getMemberId() != null) {
       memberName =
           memberRepository
-              .findOneById(timeEntry.getMemberId())
+              .findById(timeEntry.getMemberId())
               .map(m -> m.getName())
               .orElse("Unknown");
     }

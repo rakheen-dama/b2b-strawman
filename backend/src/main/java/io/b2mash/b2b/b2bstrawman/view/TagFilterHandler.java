@@ -39,8 +39,7 @@ public class TagFilterHandler {
       params.put(paramName, tagSlugs.get(i));
       existsClauses.add(
           "EXISTS (SELECT 1 FROM entity_tags et JOIN tags t ON et.tag_id = t.id"
-              + " WHERE et.tenant_id = e.tenant_id"
-              + " AND et.entity_type = :entityType AND et.entity_id = e.id AND t.slug = :"
+              + " WHERE et.entity_type = :entityType AND et.entity_id = e.id AND t.slug = :"
               + paramName
               + ")");
     }

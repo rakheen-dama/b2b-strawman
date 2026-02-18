@@ -62,7 +62,7 @@ public class PdfRenderingService {
     // 1. Load template
     var template =
         documentTemplateRepository
-            .findOneById(templateId)
+            .findById(templateId)
             .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", templateId));
 
     // 2. Build context using the appropriate builder

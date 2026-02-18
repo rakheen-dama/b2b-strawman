@@ -9,13 +9,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface TagRepository extends JpaRepository<Tag, UUID> {
 
-  /**
-   * JPQL-based findById that respects Hibernate @Filter (unlike JpaRepository.findById which uses
-   * EntityManager.find and bypasses @Filter). Required for shared-schema tenant isolation.
-   */
-  @Query("SELECT t FROM Tag t WHERE t.id = :id")
-  Optional<Tag> findOneById(@Param("id") UUID id);
-
   @Query("SELECT t FROM Tag t ORDER BY t.name ASC")
   List<Tag> findByOrderByNameAsc();
 
@@ -24,11 +17,4 @@ public interface TagRepository extends JpaRepository<Tag, UUID> {
 
   @Query("SELECT t FROM Tag t WHERE t.slug = :slug")
   Optional<Tag> findBySlug(@Param("slug") String slug);
-
-  /**
-   * JPQL-based findAllByIds that respects Hibernate @Filter (unlike JpaRepository.findAllById which
-   * uses EntityManager.find and bypasses @Filter). Required for shared-schema tenant isolation.
-   */
-  @Query("SELECT t FROM Tag t WHERE t.id IN :ids")
-  List<Tag> findAllByIds(@Param("ids") List<UUID> ids);
 }

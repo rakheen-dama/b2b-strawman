@@ -147,7 +147,7 @@ class InvoiceIntegrationTest {
                           memberIdOwner);
                   invoice = invoiceRepository.save(invoice);
 
-                  var found = invoiceRepository.findOneById(invoice.getId());
+                  var found = invoiceRepository.findById(invoice.getId());
                   assertThat(found).isPresent();
                   assertThat(found.get().getCustomerId()).isEqualTo(customerId);
                   assertThat(found.get().getStatus()).isEqualTo(InvoiceStatus.DRAFT);
@@ -193,7 +193,7 @@ class InvoiceIntegrationTest {
   }
 
   @Test
-  void findOneByIdRespectsFilterForCrossTenantIsolation() {
+  void findByIdRespectsFilterForCrossTenantIsolation() {
     // Create an invoice in tenant A
     var invoiceIdHolder = new UUID[1];
     runInTenant(
@@ -224,7 +224,7 @@ class InvoiceIntegrationTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  var found = invoiceRepository.findOneById(invoiceIdHolder[0]);
+                  var found = invoiceRepository.findById(invoiceIdHolder[0]);
                   assertThat(found).isEmpty();
                 }));
   }
@@ -252,7 +252,7 @@ class InvoiceIntegrationTest {
                   invoice.approve("INV-0001", memberIdOwner);
                   invoice = invoiceRepository.save(invoice);
 
-                  var found = invoiceRepository.findOneById(invoice.getId());
+                  var found = invoiceRepository.findById(invoice.getId());
                   assertThat(found).isPresent();
                   assertThat(found.get().getStatus()).isEqualTo(InvoiceStatus.APPROVED);
                   assertThat(found.get().getInvoiceNumber()).isEqualTo("INV-0001");
@@ -287,7 +287,7 @@ class InvoiceIntegrationTest {
                   invoice.voidInvoice();
                   invoice = invoiceRepository.save(invoice);
 
-                  var found = invoiceRepository.findOneById(invoice.getId());
+                  var found = invoiceRepository.findById(invoice.getId());
                   assertThat(found).isPresent();
                   assertThat(found.get().getStatus()).isEqualTo(InvoiceStatus.VOID);
                 }));

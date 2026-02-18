@@ -76,7 +76,7 @@ public class ProjectService {
   @Transactional(readOnly = true)
   public ProjectWithRole getProject(UUID id, UUID memberId, String orgRole) {
     var project =
-        repository.findOneById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
+        repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
     var access = projectAccessService.requireViewAccess(id, memberId, orgRole);
     return new ProjectWithRole(project, access.projectRole());
   }
@@ -144,7 +144,7 @@ public class ProjectService {
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups) {
     var project =
-        repository.findOneById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
+        repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
     var access = projectAccessService.requireEditAccess(id, memberId, orgRole);
 
     // Capture old values before mutation
@@ -201,14 +201,14 @@ public class ProjectService {
   public List<FieldDefinitionResponse> setFieldGroups(
       UUID id, List<UUID> appliedFieldGroups, UUID memberId, String orgRole) {
     var project =
-        repository.findOneById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
+        repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
     projectAccessService.requireEditAccess(id, memberId, orgRole);
 
     // Validate all field groups exist and match entity type
     for (UUID groupId : appliedFieldGroups) {
       var group =
           fieldGroupRepository
-              .findOneById(groupId)
+              .findById(groupId)
               .orElseThrow(() -> new ResourceNotFoundException("FieldGroup", groupId));
       if (group.getEntityType() != EntityType.PROJECT) {
         throw new io.b2mash.b2b.b2bstrawman.exception.InvalidStateException(
@@ -231,7 +231,7 @@ public class ProjectService {
     // Load and return field definitions
     return fieldDefIds.stream()
         .distinct()
-        .map(fdId -> fieldDefinitionRepository.findOneById(fdId))
+        .map(fdId -> fieldDefinitionRepository.findById(fdId))
         .filter(java.util.Optional::isPresent)
         .map(java.util.Optional::get)
         .map(FieldDefinitionResponse::from)
@@ -241,7 +241,7 @@ public class ProjectService {
   @Transactional
   public void deleteProject(UUID id) {
     var project =
-        repository.findOneById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
+        repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
     repository.delete(project);
 
     auditService.log(

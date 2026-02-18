@@ -43,7 +43,7 @@ public class InvoiceContextBuilder implements TemplateContextBuilder {
   public Map<String, Object> buildContext(UUID entityId, UUID memberId) {
     var invoice =
         invoiceRepository
-            .findOneById(entityId)
+            .findById(entityId)
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", entityId));
 
     var context = new HashMap<String, Object>();
@@ -82,7 +82,7 @@ public class InvoiceContextBuilder implements TemplateContextBuilder {
 
     // customer.* (from invoice's customerId)
     customerRepository
-        .findOneById(invoice.getCustomerId())
+        .findById(invoice.getCustomerId())
         .ifPresentOrElse(
             customer -> {
               var customerMap = new LinkedHashMap<String, Object>();
@@ -103,7 +103,7 @@ public class InvoiceContextBuilder implements TemplateContextBuilder {
         .ifPresentOrElse(
             line ->
                 projectRepository
-                    .findOneById(line.getProjectId())
+                    .findById(line.getProjectId())
                     .ifPresentOrElse(
                         project -> {
                           var projectMap = new LinkedHashMap<String, Object>();

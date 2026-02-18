@@ -113,14 +113,11 @@
 | 93 | DocumentTemplate Entity Foundation | Backend | -- | L | 93A, 93B | **Done** (PRs #191, #192) |
 | 94 | Rendering Pipeline & Generation | Backend | 93 | L | 94A, 94B | **Done** (PRs #193, #195) |
 | 95 | Frontend — Template & Generation UI | Frontend | 93, 94 | L | 95A, 95B | **Done** (PRs #196, #197) |
-| **Phase 13 — Customer Compliance & Lifecycle** | | | | | | See [tasks/phase13-customer-compliance-lifecycle.md](tasks/phase13-customer-compliance-lifecycle.md) |
-| 96 | Entity Foundation + Lifecycle Guards | Backend | -- | L | 96A, 96B | |
-| 97 | Lifecycle Transitions + Dormancy Detection | Both | 96 | M | 97A, 97B | |
-| 98 | Checklist Engine | Both | 96, 97 | L | 98A, 98B, 98C | |
-| 99 | Compliance Packs + Seeder | Backend | 98 | M | 99A | |
-| 100 | Data Subject Requests | Both | 96 | L | 100A, 100B | |
-| 101 | Retention Policies | Both | 96 | M | 101A | |
-| 102 | Compliance Dashboard | Frontend | 97, 98, 100, 101 | S | 102A | |
+| **Phase 13 — Dedicated Schema for All Tenants** | | | | | | See [tasks/phase13-dedicated-schema-only.md](tasks/phase13-dedicated-schema-only.md) |
+| 96 | Infrastructure Removal & Provisioning Simplification | Backend | -- | M | 96A | |
+| 97 | Entity, Repository & Call-Site Cleanup | Backend | 96 | L | 97A, 97B, 97C | |
+| 98 | Migration Rewrite & Renumber | Backend | -- | M | 98A | |
+| 99 | Test Cleanup, Verification & Documentation | Backend | 96, 97, 98 | M | 99A, 99B | |
 
 ---
 

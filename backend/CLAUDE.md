@@ -99,13 +99,14 @@ Organize by **feature**, not by layer. Each feature package contains its entity,
 
 ## Multitenancy
 
-Schema-per-tenant isolation within a single Postgres database.
+Schema-per-tenant isolation within a single Postgres database. Every tenant — regardless of billing tier — gets a dedicated `tenant_<hash>` schema. There is no shared schema.
 
 - **Schema naming**: `tenant_<12-hex-chars>` — deterministic hash of Clerk org ID
 - **Global tables** (`public` schema): `organizations`, `org_schema_mapping`, `processed_webhooks`
-- **Tenant tables** (per `tenant_*` schema): `projects`, `documents`
+- **Tenant tables** (per `tenant_*` schema): `projects`, `documents`, and all other domain entities
 - **Tenant resolution**: JWT `o.id` claim → `org_schema_mapping` lookup → `RequestScopes.TENANT_ID` ScopedValue → Hibernate `search_path`
 - **Connection provider** sets `search_path` on checkout, resets to `public` on release
+- **Isolation model**: Pure schema boundary — no `@Filter`, no RLS policies, no `tenant_id` columns. Standard `JpaRepository.findById()` works correctly.
 - Never trust client-supplied headers for tenant resolution — always derive from validated JWT
 
 ## Database & Migrations

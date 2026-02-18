@@ -7,6 +7,7 @@ import org.springframework.boot.hibernate.autoconfigure.HibernatePropertiesCusto
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
@@ -27,6 +28,6 @@ public class HibernateMultiTenancyConfig {
   @Bean
   @Primary
   PlatformTransactionManager transactionManager(EntityManagerFactory emf) {
-    return new TenantFilterTransactionManager(emf);
+    return new JpaTransactionManager(emf);
   }
 }

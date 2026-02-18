@@ -29,7 +29,7 @@ class ProvisioningIntegrationTest {
   private DataSource migrationDataSource;
 
   @Test
-  void shouldProvisionStarterTenantToSharedSchema() {
+  void shouldProvisionStarterTenantWithDedicatedSchema() {
     String clerkOrgId = "org_provision_test";
     String orgName = "Provision Test Org";
 
@@ -37,7 +37,7 @@ class ProvisioningIntegrationTest {
 
     assertThat(result.success()).isTrue();
     assertThat(result.alreadyProvisioned()).isFalse();
-    assertThat(result.schemaName()).isEqualTo("tenant_shared");
+    assertThat(result.schemaName()).matches("tenant_[0-9a-f]{12}");
 
     var org = organizationRepository.findByClerkOrgId(clerkOrgId);
     assertThat(org).isPresent();
@@ -47,7 +47,7 @@ class ProvisioningIntegrationTest {
 
     var mapping = mappingRepository.findByClerkOrgId(clerkOrgId);
     assertThat(mapping).isPresent();
-    assertThat(mapping.get().getSchemaName()).isEqualTo("tenant_shared");
+    assertThat(mapping.get().getSchemaName()).matches("tenant_[0-9a-f]{12}");
   }
 
   @Test
@@ -83,12 +83,13 @@ class ProvisioningIntegrationTest {
   }
 
   @Test
-  void starterOrgsShouldShareSchema() {
+  void starterOrgsGetSeparateDedicatedSchemas() {
     var result1 = provisioningService.provisionTenant("org_diff_a", "Org A");
     var result2 = provisioningService.provisionTenant("org_diff_b", "Org B");
 
-    assertThat(result1.schemaName()).isEqualTo("tenant_shared");
-    assertThat(result2.schemaName()).isEqualTo("tenant_shared");
+    assertThat(result1.schemaName()).matches("tenant_[0-9a-f]{12}");
+    assertThat(result2.schemaName()).matches("tenant_[0-9a-f]{12}");
+    assertThat(result1.schemaName()).isNotEqualTo(result2.schemaName());
   }
 
   private boolean schemaExists(String schemaName) throws SQLException {

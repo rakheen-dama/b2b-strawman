@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.view;
 
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.ArrayList;
@@ -105,8 +104,8 @@ public class ViewFilterService {
 
   /**
    * Executes a filtered query against the given table using native SQL. Runs inside a read-only
-   * transaction and adds tenant_id filtering for multi-tenant isolation (since native queries
-   * bypass Hibernate @Filter).
+   * transaction. Tenant isolation is provided by the dedicated schema (search_path set on
+   * connection checkout) — no additional tenant_id filtering is needed in native queries.
    *
    * @param tableName the SQL table name (projects, tasks, customers)
    * @param entityClass the JPA entity class for result mapping
@@ -142,15 +141,9 @@ public class ViewFilterService {
 
     var sqlBuilder = new StringBuilder("SELECT e.* FROM ").append(tableName).append(" e WHERE ");
 
-    // Always add tenant_id filter for multi-tenant isolation. Native queries bypass
-    // Hibernate @Filter, so this explicit filter provides tenant isolation in shared schemas
-    // and defense-in-depth for dedicated schemas.
-    if (!RequestScopes.ORG_ID.isBound()) {
-      throw new IllegalStateException("ORG_ID must be bound for view filter execution");
-    }
+    // Dedicated schema isolation is handled by Hibernate's search_path —
+    // no tenant_id filter needed in native queries.
     var conditions = new ArrayList<String>();
-    conditions.add("e.tenant_id = :tenantOrgId");
-    params.put("tenantOrgId", RequestScopes.ORG_ID.get());
     if (extraWhere != null && !extraWhere.isEmpty()) {
       conditions.add(extraWhere);
     }

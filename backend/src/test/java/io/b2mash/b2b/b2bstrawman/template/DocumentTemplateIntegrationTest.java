@@ -91,7 +91,7 @@ class DocumentTemplateIntegrationTest {
                           "<h1>Hello</h1>");
                   dt = documentTemplateRepository.save(dt);
 
-                  var found = documentTemplateRepository.findOneById(dt.getId());
+                  var found = documentTemplateRepository.findById(dt.getId());
                   assertThat(found).isPresent();
                   assertThat(found.get().getSlug()).isEqualTo("test-template");
                   assertThat(found.get().getCategory())
@@ -101,7 +101,7 @@ class DocumentTemplateIntegrationTest {
   }
 
   @Test
-  void findOneByIdRespectsFilterForCrossTenantIsolation() {
+  void findByIdRespectsFilterForCrossTenantIsolation() {
     var idHolder = new UUID[1];
     runInTenant(
         tenantSchemaA,
@@ -130,7 +130,7 @@ class DocumentTemplateIntegrationTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  var found = documentTemplateRepository.findOneById(idHolder[0]);
+                  var found = documentTemplateRepository.findById(idHolder[0]);
                   assertThat(found).isEmpty();
                 }));
   }

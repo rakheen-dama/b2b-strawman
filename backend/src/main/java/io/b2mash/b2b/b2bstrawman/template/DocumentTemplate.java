@@ -1,11 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
-import io.b2mash.b2b.b2bstrawman.multitenancy.TenantAware;
-import io.b2mash.b2b.b2bstrawman.multitenancy.TenantAwareEntityListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
@@ -15,16 +12,10 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.regex.Pattern;
-import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
 
 @Entity
 @Table(name = "document_templates")
-@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "tenantId", type = String.class))
-@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
-@EntityListeners(TenantAwareEntityListener.class)
-public class DocumentTemplate implements TenantAware {
+public class DocumentTemplate {
 
   private static final Pattern SLUG_PATTERN = Pattern.compile("^[a-z][a-z0-9-]*$");
 
@@ -73,9 +64,6 @@ public class DocumentTemplate implements TenantAware {
 
   @Column(name = "sort_order", nullable = false)
   private int sortOrder;
-
-  @Column(name = "tenant_id")
-  private String tenantId;
 
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
@@ -206,16 +194,6 @@ public class DocumentTemplate implements TenantAware {
 
   public int getSortOrder() {
     return sortOrder;
-  }
-
-  @Override
-  public String getTenantId() {
-    return tenantId;
-  }
-
-  @Override
-  public void setTenantId(String tenantId) {
-    this.tenantId = tenantId;
   }
 
   public Instant getCreatedAt() {

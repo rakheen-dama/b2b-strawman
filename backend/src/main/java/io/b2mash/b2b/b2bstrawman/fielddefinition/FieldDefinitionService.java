@@ -43,7 +43,7 @@ public class FieldDefinitionService {
   public FieldDefinitionResponse findById(UUID id) {
     var fd =
         fieldDefinitionRepository
-            .findOneById(id)
+            .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("FieldDefinition", id));
     return FieldDefinitionResponse.from(fd);
   }
@@ -97,7 +97,7 @@ public class FieldDefinitionService {
   public FieldDefinitionResponse update(UUID id, UpdateFieldDefinitionRequest request) {
     var fd =
         fieldDefinitionRepository
-            .findOneById(id)
+            .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("FieldDefinition", id));
 
     fd.updateMetadata(
@@ -125,7 +125,7 @@ public class FieldDefinitionService {
   public void deactivate(UUID id) {
     var fd =
         fieldDefinitionRepository
-            .findOneById(id)
+            .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("FieldDefinition", id));
 
     fd.deactivate();

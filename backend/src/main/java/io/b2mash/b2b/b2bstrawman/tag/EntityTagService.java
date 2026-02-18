@@ -27,7 +27,7 @@ public class EntityTagService {
       return List.of();
     }
     var tagIds = entityTags.stream().map(EntityTag::getTagId).toList();
-    return tagRepository.findAllByIds(tagIds).stream()
+    return tagRepository.findAllById(tagIds).stream()
         .sorted((a, b) -> a.getName().compareToIgnoreCase(b.getName()))
         .map(TagResponse::from)
         .toList();
@@ -39,7 +39,7 @@ public class EntityTagService {
 
     if (tagIds != null && !tagIds.isEmpty()) {
       // Validate that all tag IDs exist in the current tenant (filter-safe query)
-      var validTags = tagRepository.findAllByIds(tagIds);
+      var validTags = tagRepository.findAllById(tagIds);
       var validTagIds = validTags.stream().map(Tag::getId).collect(Collectors.toSet());
 
       for (UUID tagId : tagIds) {
@@ -74,7 +74,7 @@ public class EntityTagService {
 
     // Single query: all tags by IDs (filter-safe)
     var tagsById =
-        tagRepository.findAllByIds(allTagIds).stream()
+        tagRepository.findAllById(allTagIds).stream()
             .collect(Collectors.toMap(Tag::getId, tag -> tag));
 
     // Group by entity ID

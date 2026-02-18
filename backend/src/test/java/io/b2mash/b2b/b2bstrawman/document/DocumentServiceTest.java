@@ -165,7 +165,7 @@ class DocumentServiceTest {
     setDocumentId(doc, docId);
     assertThat(doc.getStatus()).isEqualTo(Document.Status.PENDING);
 
-    when(documentRepository.findOneById(docId)).thenReturn(Optional.of(doc));
+    when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
     when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
         .thenReturn(GRANTED);
     when(documentRepository.save(doc)).thenReturn(doc);
@@ -182,7 +182,7 @@ class DocumentServiceTest {
     var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, MEMBER_ID);
     doc.confirmUpload(); // already UPLOADED
 
-    when(documentRepository.findOneById(docId)).thenReturn(Optional.of(doc));
+    when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
     when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
         .thenReturn(GRANTED);
 
@@ -195,7 +195,7 @@ class DocumentServiceTest {
   @Test
   void confirmUpload_throwsForUnknownDocument() {
     var docId = UUID.randomUUID();
-    when(documentRepository.findOneById(docId)).thenReturn(Optional.empty());
+    when(documentRepository.findById(docId)).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> service.confirmUpload(docId, MEMBER_ID, ORG_ROLE))
         .isInstanceOf(ResourceNotFoundException.class);
@@ -206,7 +206,7 @@ class DocumentServiceTest {
     var docId = UUID.randomUUID();
     var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, MEMBER_ID);
 
-    when(documentRepository.findOneById(docId)).thenReturn(Optional.of(doc));
+    when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
     when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
         .thenThrow(new ResourceNotFoundException("Project", PROJECT_ID));
 
@@ -221,7 +221,7 @@ class DocumentServiceTest {
     var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, MEMBER_ID);
     setDocumentId(doc, docId);
 
-    when(documentRepository.findOneById(docId)).thenReturn(Optional.of(doc));
+    when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
     when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
         .thenReturn(GRANTED);
 
@@ -236,7 +236,7 @@ class DocumentServiceTest {
     var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, MEMBER_ID);
     doc.confirmUpload(); // status is UPLOADED
 
-    when(documentRepository.findOneById(docId)).thenReturn(Optional.of(doc));
+    when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
     when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
         .thenReturn(GRANTED);
 
@@ -250,7 +250,7 @@ class DocumentServiceTest {
     var docId = UUID.randomUUID();
     var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, MEMBER_ID);
 
-    when(documentRepository.findOneById(docId)).thenReturn(Optional.of(doc));
+    when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
     when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
         .thenThrow(new ResourceNotFoundException("Project", PROJECT_ID));
 
@@ -262,7 +262,7 @@ class DocumentServiceTest {
   @Test
   void cancelUpload_throwsForUnknownDocument() {
     var docId = UUID.randomUUID();
-    when(documentRepository.findOneById(docId)).thenReturn(Optional.empty());
+    when(documentRepository.findById(docId)).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> service.cancelUpload(docId, MEMBER_ID, ORG_ROLE))
         .isInstanceOf(ResourceNotFoundException.class);
@@ -276,7 +276,7 @@ class DocumentServiceTest {
     doc.assignS3Key("org/test/project/123/abc");
     doc.confirmUpload();
 
-    when(documentRepository.findOneById(docId)).thenReturn(Optional.of(doc));
+    when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
     when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
         .thenReturn(GRANTED);
     when(s3Service.generateDownloadUrl("org/test/project/123/abc"))
@@ -293,7 +293,7 @@ class DocumentServiceTest {
     var doc = new Document(PROJECT_ID, "file.pdf", "application/pdf", 1024, MEMBER_ID);
     // status is PENDING
 
-    when(documentRepository.findOneById(docId)).thenReturn(Optional.of(doc));
+    when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
     when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
         .thenReturn(GRANTED);
 
@@ -305,7 +305,7 @@ class DocumentServiceTest {
   @Test
   void getPresignedDownloadUrl_throwsForUnknownDocument() {
     var docId = UUID.randomUUID();
-    when(documentRepository.findOneById(docId)).thenReturn(Optional.empty());
+    when(documentRepository.findById(docId)).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> service.getPresignedDownloadUrl(docId, MEMBER_ID, ORG_ROLE))
         .isInstanceOf(ResourceNotFoundException.class);
@@ -318,7 +318,7 @@ class DocumentServiceTest {
     doc.assignS3Key("org/test/project/123/abc");
     doc.confirmUpload();
 
-    when(documentRepository.findOneById(docId)).thenReturn(Optional.of(doc));
+    when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
     when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
         .thenThrow(new ResourceNotFoundException("Project", PROJECT_ID));
 
@@ -344,7 +344,7 @@ class DocumentServiceTest {
             Document.Visibility.INTERNAL);
     doc.confirmUpload(); // already UPLOADED — idempotent path
 
-    when(documentRepository.findOneById(docId)).thenReturn(Optional.of(doc));
+    when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
 
     var result = service.confirmUpload(docId, MEMBER_ID, ORG_ROLE);
 
@@ -368,7 +368,7 @@ class DocumentServiceTest {
             Document.Visibility.INTERNAL);
     doc.confirmUpload(); // already UPLOADED — idempotent path
 
-    when(documentRepository.findOneById(docId)).thenReturn(Optional.of(doc));
+    when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
 
     var result = service.confirmUpload(docId, MEMBER_ID, ORG_ROLE);
 
@@ -393,7 +393,7 @@ class DocumentServiceTest {
     doc.assignS3Key("org/test/org-level/abc");
     doc.confirmUpload();
 
-    when(documentRepository.findOneById(docId)).thenReturn(Optional.of(doc));
+    when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
     when(s3Service.generateDownloadUrl("org/test/org-level/abc"))
         .thenReturn(
             new S3PresignedUrlService.PresignedDownloadResult(
@@ -423,7 +423,7 @@ class DocumentServiceTest {
     doc.assignS3Key("org/test/customer/abc");
     doc.confirmUpload();
 
-    when(documentRepository.findOneById(docId)).thenReturn(Optional.of(doc));
+    when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
     when(s3Service.generateDownloadUrl("org/test/customer/abc"))
         .thenReturn(
             new S3PresignedUrlService.PresignedDownloadResult(

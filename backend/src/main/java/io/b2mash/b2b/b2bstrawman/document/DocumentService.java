@@ -153,7 +153,7 @@ public class DocumentService {
       String orgId,
       UUID memberId) {
     customerRepository
-        .findOneById(customerId)
+        .findById(customerId)
         .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
 
     var document =
@@ -201,7 +201,7 @@ public class DocumentService {
     }
     var document =
         documentRepository
-            .findOneById(documentId)
+            .findById(documentId)
             .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
 
     // Capture old visibility before mutation
@@ -229,13 +229,13 @@ public class DocumentService {
 
   /**
    * Confirm upload — scope-aware. For PROJECT-scoped documents, checks project access. For ORG and
-   * CUSTOMER scoped documents, the document is already tenant-isolated via Hibernate @Filter.
+   * CUSTOMER scoped documents, tenant isolation is provided by the dedicated schema (search_path).
    */
   @Transactional
   public Document confirmUpload(UUID documentId, UUID memberId, String orgRole) {
     var document =
         documentRepository
-            .findOneById(documentId)
+            .findById(documentId)
             .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
     requireDocumentAccess(document, memberId, orgRole);
     if (document.getStatus() != Document.Status.UPLOADED) {
@@ -298,13 +298,13 @@ public class DocumentService {
 
   /**
    * Cancel upload — scope-aware. For PROJECT-scoped documents, checks project access. For ORG and
-   * CUSTOMER scoped documents, the document is already tenant-isolated via Hibernate @Filter.
+   * CUSTOMER scoped documents, tenant isolation is provided by the dedicated schema (search_path).
    */
   @Transactional
   public void cancelUpload(UUID documentId, UUID memberId, String orgRole) {
     var document =
         documentRepository
-            .findOneById(documentId)
+            .findById(documentId)
             .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
     requireDocumentAccess(document, memberId, orgRole);
     if (document.getStatus() != Document.Status.PENDING) {
@@ -336,7 +336,7 @@ public class DocumentService {
       UUID documentId, UUID memberId, String orgRole) {
     var document =
         documentRepository
-            .findOneById(documentId)
+            .findById(documentId)
             .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
     requireDocumentAccess(document, memberId, orgRole);
     if (document.getStatus() != Document.Status.UPLOADED) {
@@ -380,8 +380,7 @@ public class DocumentService {
 
   /**
    * Scope-aware access check. PROJECT-scoped documents check project membership. ORG and CUSTOMER
-   * scoped documents rely on tenant isolation (Hibernate @Filter already restricts to current
-   * tenant).
+   * scoped documents rely on dedicated schema isolation (search_path restricts to current tenant).
    */
   private void requireDocumentAccess(Document document, UUID memberId, String orgRole) {
     if (document.isProjectScoped()) {
@@ -392,7 +391,7 @@ public class DocumentService {
   }
 
   private String resolveActorName(UUID memberId) {
-    return memberRepository.findOneById(memberId).map(m -> m.getName()).orElse("Unknown");
+    return memberRepository.findById(memberId).map(m -> m.getName()).orElse("Unknown");
   }
 
   public record UploadInitResult(UUID documentId, String presignedUrl, long expiresInSeconds) {}

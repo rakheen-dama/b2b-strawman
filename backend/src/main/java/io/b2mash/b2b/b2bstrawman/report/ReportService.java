@@ -65,7 +65,7 @@ public class ReportService {
 
     var project =
         projectRepository
-            .findOneById(projectId)
+            .findById(projectId)
             .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
 
     var revenueList = reportRepository.getProjectRevenue(projectId, from, to);
@@ -89,7 +89,7 @@ public class ReportService {
 
     var customer =
         customerRepository
-            .findOneById(customerId)
+            .findById(customerId)
             .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
 
     var revenueList = reportRepository.getCustomerRevenue(customerId, from, to);
@@ -212,7 +212,7 @@ public class ReportService {
     for (var projectId : allProjectIds) {
       var links = customerProjectRepository.findByProjectId(projectId);
       if (!links.isEmpty()) {
-        var customer = customerRepository.findOneById(links.getFirst().getCustomerId());
+        var customer = customerRepository.findById(links.getFirst().getCustomerId());
         customer.ifPresent(c -> customerNameByProject.put(projectId, c.getName()));
       }
     }

@@ -6,8 +6,6 @@ import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanLimits;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService.PlanSyncResult;
-import io.b2mash.b2b.b2bstrawman.provisioning.TenantUpgradeService;
 import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -25,19 +23,16 @@ public class SubscriptionService {
   private final OrganizationRepository organizationRepository;
   private final PlanSyncService planSyncService;
   private final MemberRepository memberRepository;
-  private final TenantUpgradeService tenantUpgradeService;
 
   public SubscriptionService(
       SubscriptionRepository subscriptionRepository,
       OrganizationRepository organizationRepository,
       PlanSyncService planSyncService,
-      MemberRepository memberRepository,
-      TenantUpgradeService tenantUpgradeService) {
+      MemberRepository memberRepository) {
     this.subscriptionRepository = subscriptionRepository;
     this.organizationRepository = organizationRepository;
     this.planSyncService = planSyncService;
     this.memberRepository = memberRepository;
-    this.tenantUpgradeService = tenantUpgradeService;
   }
 
   /** Creates an ACTIVE subscription for a newly provisioned org. Idempotent. */
@@ -53,10 +48,10 @@ public class SubscriptionService {
 
   /**
    * Updates the subscription plan and delegates to PlanSyncService for tier resolution + org
-   * update. Returns PlanSyncResult so the caller can trigger upgrade if needed.
+   * update.
    */
   @Transactional
-  public PlanSyncResult changePlan(String clerkOrgId, String planSlug) {
+  public void changePlan(String clerkOrgId, String planSlug) {
     var org =
         organizationRepository
             .findByClerkOrgId(clerkOrgId)
@@ -71,13 +66,12 @@ public class SubscriptionService {
     subscriptionRepository.save(subscription);
 
     log.info("Updated subscription plan to {} for org {}", planSlug, clerkOrgId);
-    return planSyncService.syncPlan(clerkOrgId, planSlug);
+    planSyncService.syncPlan(clerkOrgId, planSlug);
   }
 
   /**
-   * Upgrades the org to the given plan. Handles plan change, schema migration if needed, and
-   * returns the updated billing state. Idempotent — if already on the requested plan, returns
-   * current state without error.
+   * Upgrades the org to the given plan. All tenants already have dedicated schemas, so no schema
+   * migration is needed — just a plan change.
    */
   public BillingResponse upgradePlan(String clerkOrgId, String planSlug) {
     if (!UPGRADEABLE_PLANS.contains(planSlug.toLowerCase())) {
@@ -85,12 +79,7 @@ public class SubscriptionService {
           "Invalid plan", "Plan '%s' is not a valid upgrade target".formatted(planSlug));
     }
 
-    var result = changePlan(clerkOrgId, planSlug);
-
-    if (result.upgradeNeeded()) {
-      log.info("Tier upgrade needed for org {}, starting migration", clerkOrgId);
-      tenantUpgradeService.upgrade(clerkOrgId);
-    }
+    changePlan(clerkOrgId, planSlug);
 
     return getSubscription(clerkOrgId);
   }

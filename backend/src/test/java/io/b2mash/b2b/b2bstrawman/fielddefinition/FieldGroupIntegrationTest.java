@@ -91,7 +91,7 @@ class FieldGroupIntegrationTest {
                   var fg = new FieldGroup(EntityType.PROJECT, "General Info", "general_info");
                   fg = fieldGroupRepository.save(fg);
 
-                  var found = fieldGroupRepository.findOneById(fg.getId());
+                  var found = fieldGroupRepository.findById(fg.getId());
                   assertThat(found).isPresent();
                   assertThat(found.get().getSlug()).isEqualTo("general_info");
                   assertThat(found.get().isActive()).isTrue();
@@ -99,7 +99,7 @@ class FieldGroupIntegrationTest {
   }
 
   @Test
-  void findOneByIdRespectsFilter() {
+  void findByIdRespectsFilter() {
     var idHolder = new UUID[1];
     runInTenant(
         tenantSchema,
@@ -122,13 +122,13 @@ class FieldGroupIntegrationTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  var found = fieldGroupRepository.findOneById(idHolder[0]);
+                  var found = fieldGroupRepository.findById(idHolder[0]);
                   assertThat(found).isPresent();
                 }));
   }
 
   @Test
-  void findOneByIdRespectsFilterForCrossTenantIsolation() {
+  void findByIdRespectsFilterForCrossTenantIsolation() {
     var idHolder = new UUID[1];
     // Create in tenant A
     runInTenant(
@@ -152,7 +152,7 @@ class FieldGroupIntegrationTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  var found = fieldGroupRepository.findOneById(idHolder[0]);
+                  var found = fieldGroupRepository.findById(idHolder[0]);
                   assertThat(found).isEmpty();
                 }));
   }

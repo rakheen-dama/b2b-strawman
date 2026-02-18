@@ -94,7 +94,7 @@ class TagIntegrationTest {
                   var tag = new Tag("Urgent", "#EF4444");
                   tag = tagRepository.save(tag);
 
-                  var found = tagRepository.findOneById(tag.getId());
+                  var found = tagRepository.findById(tag.getId());
                   assertThat(found).isPresent();
                   assertThat(found.get().getName()).isEqualTo("Urgent");
                   assertThat(found.get().getSlug()).isEqualTo("urgent");
@@ -103,25 +103,7 @@ class TagIntegrationTest {
   }
 
   @Test
-  void shouldSaveAndRetrieveInTenantSharedWithFilter() {
-    runInTenant(
-        "tenant_shared",
-        ORG_ID,
-        memberIdOwner,
-        () ->
-            transactionTemplate.executeWithoutResult(
-                tx -> {
-                  var tag = new Tag("Shared Tag", "#3B82F6");
-                  tag = tagRepository.save(tag);
-
-                  var found = tagRepository.findOneById(tag.getId());
-                  assertThat(found).isPresent();
-                  assertThat(found.get().getName()).isEqualTo("Shared Tag");
-                }));
-  }
-
-  @Test
-  void findOneByIdRespectsFilterForCrossTenantIsolation() {
+  void findByIdRespectsFilterForCrossTenantIsolation() {
     var idHolder = new UUID[1];
     runInTenant(
         tenantSchema,
@@ -142,7 +124,7 @@ class TagIntegrationTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  var found = tagRepository.findOneById(idHolder[0]);
+                  var found = tagRepository.findById(idHolder[0]);
                   assertThat(found).isEmpty();
                 }));
   }

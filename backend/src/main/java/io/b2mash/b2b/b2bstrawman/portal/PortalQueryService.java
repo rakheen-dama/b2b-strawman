@@ -50,7 +50,7 @@ public class PortalQueryService {
   @Transactional(readOnly = true)
   public void requireCustomerExists(UUID customerId) {
     customerRepository
-        .findOneById(customerId)
+        .findById(customerId)
         .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
   }
 
@@ -60,7 +60,7 @@ public class PortalQueryService {
     requireCustomerExists(customerId);
     var links = customerProjectRepository.findByCustomerId(customerId);
     return links.stream()
-        .map(link -> projectRepository.findOneById(link.getProjectId()))
+        .map(link -> projectRepository.findById(link.getProjectId()))
         .flatMap(java.util.Optional::stream)
         .toList();
   }
@@ -118,7 +118,7 @@ public class PortalQueryService {
     requireCustomerExists(customerId);
     var document =
         documentRepository
-            .findOneById(documentId)
+            .findById(documentId)
             .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
 
     // Must be SHARED visibility

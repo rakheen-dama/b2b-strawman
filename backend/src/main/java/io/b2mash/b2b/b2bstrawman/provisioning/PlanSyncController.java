@@ -17,12 +17,9 @@ public class PlanSyncController {
   private static final Logger log = LoggerFactory.getLogger(PlanSyncController.class);
 
   private final PlanSyncService planSyncService;
-  private final TenantUpgradeService tenantUpgradeService;
 
-  public PlanSyncController(
-      PlanSyncService planSyncService, TenantUpgradeService tenantUpgradeService) {
+  public PlanSyncController(PlanSyncService planSyncService) {
     this.planSyncService = planSyncService;
-    this.tenantUpgradeService = tenantUpgradeService;
   }
 
   @PostMapping("/plan-sync")
@@ -30,13 +27,7 @@ public class PlanSyncController {
     log.info(
         "Received plan sync: clerkOrgId={}, planSlug={}", request.clerkOrgId(), request.planSlug());
 
-    var result = planSyncService.syncPlan(request.clerkOrgId(), request.planSlug());
-
-    // Trigger schema migration after the tier update transaction commits
-    if (result.upgradeNeeded()) {
-      log.info("Tier upgrade detected for org {}, starting migration", request.clerkOrgId());
-      tenantUpgradeService.upgrade(request.clerkOrgId());
-    }
+    planSyncService.syncPlan(request.clerkOrgId(), request.planSlug());
 
     return ResponseEntity.ok().build();
   }

@@ -10,7 +10,6 @@ CREATE TABLE IF NOT EXISTS portal_contacts (
     display_name   VARCHAR(255),
     role           VARCHAR(20) NOT NULL DEFAULT 'GENERAL',
     status         VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
-    tenant_id      VARCHAR(255),
     created_at     TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at     TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
@@ -30,21 +29,7 @@ CREATE INDEX IF NOT EXISTS idx_portal_contacts_email_org
 CREATE INDEX IF NOT EXISTS idx_portal_contacts_customer
     ON portal_contacts (customer_id);
 
-CREATE INDEX IF NOT EXISTS idx_portal_contacts_tenant
-    ON portal_contacts (tenant_id);
-
--- Row-Level Security
-ALTER TABLE portal_contacts ENABLE ROW LEVEL SECURITY;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'tenant_isolation_portal_contacts') THEN
-    EXECUTE 'CREATE POLICY tenant_isolation_portal_contacts ON portal_contacts
-      USING (tenant_id = current_setting(''app.current_tenant'', true) OR tenant_id IS NULL)';
-  END IF;
-END $$;
-
--- 2. magic_link_tokens table (no tenant_id -- cross-tenant lookup by hash)
+-- 2. magic_link_tokens table (cross-schema lookup by hash)
 CREATE TABLE IF NOT EXISTS magic_link_tokens (
     id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     portal_contact_id  UUID NOT NULL REFERENCES portal_contacts(id) ON DELETE CASCADE,

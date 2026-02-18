@@ -31,8 +31,8 @@ import org.springframework.transaction.event.TransactionalEventListener;
  *
  * <p><b>Cross-schema query pattern:</b> Each handler that queries tenant-schema data (e.g., loading
  * a Project or Document entity) wraps those queries in {@code
- * ScopedValue.where(RequestScopes.TENANT_ID, event.getTenantId())} so that Hibernate
- * {@code @Filter} and RLS work correctly. Portal read-model writes use {@link
+ * ScopedValue.where(RequestScopes.TENANT_ID, event.getTenantId())} so that the correct dedicated
+ * schema is selected via {@code search_path}. Portal read-model writes use {@link
  * PortalReadModelRepository} which operates on a separate DataSource and does not require tenant
  * scope binding.
  */
@@ -66,7 +66,7 @@ public class PortalEventHandler {
         event.getOrgId(),
         () -> {
           try {
-            var projectOpt = projectRepository.findOneById(event.getProjectId());
+            var projectOpt = projectRepository.findById(event.getProjectId());
             if (projectOpt.isEmpty()) {
               log.warn(
                   "Project not found for CustomerProjectLinkedEvent: projectId={}",
@@ -200,7 +200,7 @@ public class PortalEventHandler {
           try {
             if ("SHARED".equals(event.getVisibility())) {
               // Changed TO SHARED -- project the document
-              var docOpt = documentRepository.findOneById(event.getDocumentId());
+              var docOpt = documentRepository.findById(event.getDocumentId());
               if (docOpt.isEmpty()) {
                 log.warn(
                     "Document not found for visibility change to SHARED: documentId={}",
@@ -310,11 +310,8 @@ public class PortalEventHandler {
   // ── Private helpers ────────────────────────────────────────────────
 
   /**
-   * Binds tenant and org ScopedValues so that Hibernate {@code @Filter}, RLS, and {@code
-   * TenantAwareEntityListener} work correctly in the handler's new transaction. ORG_ID is required
-   * for shared-schema (Starter tier) tenants where {@code TenantFilterTransactionManager} enables
-   * the Hibernate filter and {@code TenantAwareEntityListener} sets {@code tenant_id} on new
-   * entities.
+   * Binds tenant and org ScopedValues so that the correct dedicated schema is selected via {@code
+   * search_path} in the handler's new transaction.
    */
   private void handleInTenantScope(String tenantId, String orgId, Runnable action) {
     if (tenantId != null) {

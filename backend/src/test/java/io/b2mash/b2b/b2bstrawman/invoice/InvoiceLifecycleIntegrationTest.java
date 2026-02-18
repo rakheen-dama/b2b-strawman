@@ -402,7 +402,7 @@ class InvoiceLifecycleIntegrationTest {
             () ->
                 transactionTemplate.executeWithoutResult(
                     tx -> {
-                      var te = timeEntryRepository.findOneById(teId).orElseThrow();
+                      var te = timeEntryRepository.findById(teId).orElseThrow();
                       org.assertj.core.api.Assertions.assertThat(te.getInvoiceId()).isNull();
                     }));
   }

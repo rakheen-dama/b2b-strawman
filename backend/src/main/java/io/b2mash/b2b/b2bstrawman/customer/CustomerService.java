@@ -64,9 +64,7 @@ public class CustomerService {
 
   @Transactional(readOnly = true)
   public Customer getCustomer(UUID id) {
-    return repository
-        .findOneById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("Customer", id));
+    return repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Customer", id));
   }
 
   @Transactional
@@ -139,7 +137,7 @@ public class CustomerService {
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups) {
     var customer =
-        repository.findOneById(id).orElseThrow(() -> new ResourceNotFoundException("Customer", id));
+        repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Customer", id));
 
     // Check email uniqueness if changed
     if (!customer.getEmail().equals(email) && repository.existsByEmail(email)) {
@@ -209,13 +207,13 @@ public class CustomerService {
   @Transactional
   public List<FieldDefinitionResponse> setFieldGroups(UUID id, List<UUID> appliedFieldGroups) {
     var customer =
-        repository.findOneById(id).orElseThrow(() -> new ResourceNotFoundException("Customer", id));
+        repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Customer", id));
 
     // Validate all field groups exist and match entity type
     for (UUID groupId : appliedFieldGroups) {
       var group =
           fieldGroupRepository
-              .findOneById(groupId)
+              .findById(groupId)
               .orElseThrow(() -> new ResourceNotFoundException("FieldGroup", groupId));
       if (group.getEntityType() != EntityType.CUSTOMER) {
         throw new InvalidStateException(
@@ -237,7 +235,7 @@ public class CustomerService {
 
     return fieldDefIds.stream()
         .distinct()
-        .map(fdId -> fieldDefinitionRepository.findOneById(fdId))
+        .map(fdId -> fieldDefinitionRepository.findById(fdId))
         .filter(java.util.Optional::isPresent)
         .map(java.util.Optional::get)
         .map(FieldDefinitionResponse::from)
@@ -247,7 +245,7 @@ public class CustomerService {
   @Transactional
   public Customer archiveCustomer(UUID id) {
     var customer =
-        repository.findOneById(id).orElseThrow(() -> new ResourceNotFoundException("Customer", id));
+        repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Customer", id));
     customer.archive();
     var saved = repository.save(customer);
 

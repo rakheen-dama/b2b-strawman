@@ -8,14 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface DocumentTemplateRepository extends JpaRepository<DocumentTemplate, UUID> {
-
-  /**
-   * JPQL-based findById that respects Hibernate @Filter (unlike JpaRepository.findById which uses
-   * EntityManager.find and bypasses @Filter). Required for shared-schema tenant isolation.
-   */
-  @Query("SELECT dt FROM DocumentTemplate dt WHERE dt.id = :id")
-  Optional<DocumentTemplate> findOneById(@Param("id") UUID id);
-
   @Query("SELECT dt FROM DocumentTemplate dt WHERE dt.active = true ORDER BY dt.sortOrder, dt.name")
   List<DocumentTemplate> findByActiveTrueOrderBySortOrder();
 

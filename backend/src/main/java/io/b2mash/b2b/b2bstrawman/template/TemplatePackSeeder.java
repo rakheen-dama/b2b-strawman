@@ -49,8 +49,8 @@ public class TemplatePackSeeder {
    * Seeds all available template packs for the given tenant. Must be called during or after tenant
    * provisioning when the schema and tables already exist.
    *
-   * @param tenantId schema name (e.g., "tenant_abc123" or "tenant_shared")
-   * @param orgId Clerk organization ID — used as tenant_id discriminator in shared schema
+   * @param tenantId schema name (e.g., "tenant_abc123")
+   * @param orgId Clerk organization ID
    */
   public void seedPacksForTenant(String tenantId, String orgId) {
     ScopedValue.where(RequestScopes.TENANT_ID, tenantId)

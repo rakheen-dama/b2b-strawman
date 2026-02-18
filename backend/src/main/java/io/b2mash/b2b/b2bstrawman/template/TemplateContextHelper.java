@@ -77,7 +77,7 @@ public class TemplateContextHelper {
   public Map<String, Object> buildGeneratedByMap(UUID memberId) {
     var generatedBy = new LinkedHashMap<String, Object>();
     memberRepository
-        .findOneById(memberId)
+        .findById(memberId)
         .ifPresentOrElse(
             member -> {
               generatedBy.put("name", member.getName());
@@ -97,7 +97,7 @@ public class TemplateContextHelper {
       return List.of();
     }
     var tagIds = entityTags.stream().map(et -> et.getTagId()).toList();
-    var tags = tagRepository.findAllByIds(tagIds);
+    var tags = tagRepository.findAllById(tagIds);
     return tags.stream()
         .map(
             tag -> {

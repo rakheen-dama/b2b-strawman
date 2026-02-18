@@ -11,8 +11,8 @@ import org.springframework.stereotype.Repository;
 /**
  * Custom repository for profitability aggregation queries. Uses EntityManager directly because
  * these queries are not bound to a single JPA entity. Native SQL is required for conditional
- * aggregation (CASE WHEN) and multi-table GROUP BY. RLS via set_config('app.current_tenant')
- * handles tenant isolation for all native queries.
+ * aggregation (CASE WHEN) and multi-table GROUP BY. Tenant isolation is provided by the dedicated
+ * schema (search_path set on connection checkout).
  */
 @Repository
 public class ReportRepository {
@@ -187,7 +187,6 @@ public class ReportRepository {
             JOIN members m ON te.member_id = m.id
             WHERE te.date >= :fromDate
               AND te.date <= :toDate
-              AND te.tenant_id = current_setting('app.current_tenant', true)
             GROUP BY te.member_id, m.name
             ORDER BY billableHours DESC
             """,
@@ -223,7 +222,6 @@ public class ReportRepository {
             WHERE te.member_id = :memberId
               AND te.date >= :fromDate
               AND te.date <= :toDate
-              AND te.tenant_id = current_setting('app.current_tenant', true)
             GROUP BY te.member_id, m.name
             ORDER BY billableHours DESC
             """,
@@ -263,7 +261,6 @@ public class ReportRepository {
               AND te.billing_rate_currency IS NOT NULL
               AND te.date >= :fromDate
               AND te.date <= :toDate
-              AND te.tenant_id = current_setting('app.current_tenant', true)
             GROUP BY te.member_id, te.billing_rate_currency
             """,
             Tuple.class);
@@ -300,7 +297,6 @@ public class ReportRepository {
             WHERE te.billing_rate_currency IS NOT NULL
               AND te.date >= :fromDate
               AND te.date <= :toDate
-              AND te.tenant_id = current_setting('app.current_tenant', true)
             GROUP BY te.member_id, te.billing_rate_currency
             """,
             Tuple.class);
@@ -345,7 +341,6 @@ public class ReportRepository {
             WHERE te.billing_rate_currency IS NOT NULL
               AND (CAST(:fromDate AS DATE) IS NULL OR te.date >= CAST(:fromDate AS DATE))
               AND (CAST(:toDate AS DATE) IS NULL OR te.date <= CAST(:toDate AS DATE))
-              AND te.tenant_id = current_setting('app.current_tenant', true)
               %s
             GROUP BY t.project_id, p.name, te.billing_rate_currency
             ORDER BY billableValue DESC
@@ -388,7 +383,6 @@ public class ReportRepository {
             WHERE te.cost_rate_snapshot IS NOT NULL
               AND (CAST(:fromDate AS DATE) IS NULL OR te.date >= CAST(:fromDate AS DATE))
               AND (CAST(:toDate AS DATE) IS NULL OR te.date <= CAST(:toDate AS DATE))
-              AND te.tenant_id = current_setting('app.current_tenant', true)
               %s
             GROUP BY t.project_id, p.name, te.cost_rate_currency
             """

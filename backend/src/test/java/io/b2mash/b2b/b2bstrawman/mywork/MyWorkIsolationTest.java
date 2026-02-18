@@ -30,9 +30,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 /**
- * Cross-tenant and shared-schema isolation tests for My Work endpoints. Verifies that My Work
- * queries respect tenant boundaries for both Pro (dedicated schema) and Starter (shared schema +
- * RLS) tiers.
+ * Cross-tenant isolation tests for My Work endpoints. Verifies that My Work queries respect tenant
+ * boundaries across dedicated schemas.
  */
 @SpringBootTest
 @AutoConfigureMockMvc

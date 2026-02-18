@@ -40,7 +40,7 @@ public class CustomerContextBuilder implements TemplateContextBuilder {
   public Map<String, Object> buildContext(UUID entityId, UUID memberId) {
     var customer =
         customerRepository
-            .findOneById(entityId)
+            .findById(entityId)
             .orElseThrow(() -> new ResourceNotFoundException("Customer", entityId));
 
     var context = new HashMap<String, Object>();
@@ -60,7 +60,7 @@ public class CustomerContextBuilder implements TemplateContextBuilder {
     var customerProjects = customerProjectRepository.findByCustomerId(entityId);
     if (!customerProjects.isEmpty()) {
       var projectIds = customerProjects.stream().map(cp -> cp.getProjectId()).toList();
-      var projects = projectRepository.findAllByIds(projectIds);
+      var projects = projectRepository.findAllById(projectIds);
       var projectsList =
           projects.stream()
               .map(

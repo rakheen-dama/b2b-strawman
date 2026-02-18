@@ -42,14 +42,14 @@ class CustomerContextBuilderTest {
   @Test
   void buildContextWithProjects() {
     var customer = new Customer("Acme Corp", "acme@example.com", "555-0100", null, null, memberId);
-    when(customerRepository.findOneById(customerId)).thenReturn(Optional.of(customer));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
 
     var projectId = UUID.randomUUID();
     var cp = new CustomerProject(customerId, projectId, memberId);
     when(customerProjectRepository.findByCustomerId(customerId)).thenReturn(List.of(cp));
 
     var project = new Project("Project Alpha", "desc", memberId);
-    when(projectRepository.findAllByIds(List.of(projectId))).thenReturn(List.of(project));
+    when(projectRepository.findAllById(List.of(projectId))).thenReturn(List.of(project));
 
     when(contextHelper.buildTagsList("CUSTOMER", customerId)).thenReturn(List.of());
     when(contextHelper.buildOrgContext()).thenReturn(Map.of());
@@ -75,7 +75,7 @@ class CustomerContextBuilderTest {
   @Test
   void buildContextWithoutProjects() {
     var customer = new Customer("Solo Customer", "solo@example.com", null, null, null, memberId);
-    when(customerRepository.findOneById(customerId)).thenReturn(Optional.of(customer));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
     when(customerProjectRepository.findByCustomerId(customerId)).thenReturn(List.of());
     when(contextHelper.buildTagsList("CUSTOMER", customerId)).thenReturn(List.of());
     when(contextHelper.buildOrgContext()).thenReturn(Map.of());
@@ -93,7 +93,7 @@ class CustomerContextBuilderTest {
     var customer =
         new Customer("Fields Customer", "fields@example.com", null, null, null, memberId);
     customer.setCustomFields(Map.of("industry", "Tech", "tier", "Gold"));
-    when(customerRepository.findOneById(customerId)).thenReturn(Optional.of(customer));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
     when(customerProjectRepository.findByCustomerId(customerId)).thenReturn(List.of());
     when(contextHelper.buildTagsList("CUSTOMER", customerId)).thenReturn(List.of());
     when(contextHelper.buildOrgContext()).thenReturn(Map.of());
@@ -112,7 +112,7 @@ class CustomerContextBuilderTest {
   @Test
   void buildContextWithTags() {
     var customer = new Customer("Tagged Customer", "tag@example.com", null, null, null, memberId);
-    when(customerRepository.findOneById(customerId)).thenReturn(Optional.of(customer));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
     when(customerProjectRepository.findByCustomerId(customerId)).thenReturn(List.of());
 
     when(contextHelper.buildTagsList("CUSTOMER", customerId))
@@ -131,7 +131,7 @@ class CustomerContextBuilderTest {
   @Test
   void buildContextWithLogoUrl() {
     var customer = new Customer("Logo Customer", "logo@example.com", null, null, null, memberId);
-    when(customerRepository.findOneById(customerId)).thenReturn(Optional.of(customer));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
     when(customerProjectRepository.findByCustomerId(customerId)).thenReturn(List.of());
     when(contextHelper.buildTagsList("CUSTOMER", customerId)).thenReturn(List.of());
 
@@ -148,7 +148,7 @@ class CustomerContextBuilderTest {
 
   @Test
   void throwsWhenCustomerNotFound() {
-    when(customerRepository.findOneById(customerId)).thenReturn(Optional.empty());
+    when(customerRepository.findById(customerId)).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> builder.buildContext(customerId, memberId))
         .isInstanceOf(ResourceNotFoundException.class);

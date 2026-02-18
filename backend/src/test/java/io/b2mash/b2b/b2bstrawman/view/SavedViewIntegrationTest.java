@@ -107,7 +107,7 @@ class SavedViewIntegrationTest {
                           0);
                   view = savedViewRepository.save(view);
 
-                  var found = savedViewRepository.findOneById(view.getId());
+                  var found = savedViewRepository.findById(view.getId());
                   assertThat(found).isPresent();
                   assertThat(found.get().getName()).isEqualTo("Active Projects");
                   assertThat(found.get().getEntityType()).isEqualTo("PROJECT");
@@ -117,9 +117,9 @@ class SavedViewIntegrationTest {
   }
 
   @Test
-  void shouldSaveAndRetrieveInTenantSharedWithFilter() {
+  void shouldSaveAndRetrieveInDedicatedTenantSchema() {
     runInTenant(
-        "tenant_shared",
+        tenantSchema,
         ORG_ID,
         memberIdOwner,
         "owner",
@@ -129,7 +129,7 @@ class SavedViewIntegrationTest {
                   var view =
                       new SavedView(
                           "TASK",
-                          "Shared Filter Test",
+                          "Dedicated Schema Filter Test",
                           Map.of("priority", "HIGH"),
                           null,
                           false,
@@ -137,14 +137,14 @@ class SavedViewIntegrationTest {
                           0);
                   view = savedViewRepository.save(view);
 
-                  var found = savedViewRepository.findOneById(view.getId());
+                  var found = savedViewRepository.findById(view.getId());
                   assertThat(found).isPresent();
-                  assertThat(found.get().getName()).isEqualTo("Shared Filter Test");
+                  assertThat(found.get().getName()).isEqualTo("Dedicated Schema Filter Test");
                 }));
   }
 
   @Test
-  void findOneByIdRespectsCrossTenantIsolation() {
+  void findByIdRespectsCrossTenantIsolation() {
     var idHolder = new UUID[1];
     runInTenant(
         tenantSchema,
@@ -175,7 +175,7 @@ class SavedViewIntegrationTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  var found = savedViewRepository.findOneById(idHolder[0]);
+                  var found = savedViewRepository.findById(idHolder[0]);
                   assertThat(found).isEmpty();
                 }));
   }

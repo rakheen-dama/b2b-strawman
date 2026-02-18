@@ -8,14 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface FieldGroupRepository extends JpaRepository<FieldGroup, UUID> {
-
-  /**
-   * JPQL-based findById that respects Hibernate @Filter (unlike JpaRepository.findById which uses
-   * EntityManager.find and bypasses @Filter). Required for shared-schema tenant isolation.
-   */
-  @Query("SELECT fg FROM FieldGroup fg WHERE fg.id = :id")
-  Optional<FieldGroup> findOneById(@Param("id") UUID id);
-
   @Query(
       "SELECT fg FROM FieldGroup fg WHERE fg.entityType = :entityType AND fg.active = true"
           + " ORDER BY fg.sortOrder")

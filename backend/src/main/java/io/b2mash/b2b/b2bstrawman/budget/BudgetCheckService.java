@@ -126,7 +126,7 @@ public class BudgetCheckService {
 
     // Look up project name
     var projectName =
-        projectRepository.findOneById(projectId).map(p -> p.getName()).orElse("Unknown Project");
+        projectRepository.findById(projectId).map(p -> p.getName()).orElse("Unknown Project");
 
     var details = new LinkedHashMap<String, Object>();
     details.put("project_name", projectName);

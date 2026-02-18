@@ -151,7 +151,7 @@ public class PortalAuthController {
               () -> {
                 PortalContact contact =
                     portalContactRepository
-                        .findOneById(portalContactId)
+                        .findById(portalContactId)
                         .orElseThrow(
                             () -> new PortalAuthException("Portal contact no longer exists"));
 
@@ -163,7 +163,7 @@ public class PortalAuthController {
                 // Verify customer still active
                 var customer =
                     customerRepository
-                        .findOneById(contact.getCustomerId())
+                        .findById(contact.getCustomerId())
                         .orElseThrow(
                             () -> new PortalAuthException("Customer account no longer exists"));
 

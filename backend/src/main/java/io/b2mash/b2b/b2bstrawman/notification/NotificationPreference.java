@@ -1,25 +1,16 @@
 package io.b2mash.b2b.b2bstrawman.notification;
 
-import io.b2mash.b2b.b2bstrawman.multitenancy.TenantAware;
-import io.b2mash.b2b.b2bstrawman.multitenancy.TenantAwareEntityListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.util.UUID;
-import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
 
 @Entity
 @Table(name = "notification_preferences")
-@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "tenantId", type = String.class))
-@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
-@EntityListeners(TenantAwareEntityListener.class)
-public class NotificationPreference implements TenantAware {
+public class NotificationPreference {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
@@ -36,9 +27,6 @@ public class NotificationPreference implements TenantAware {
 
   @Column(name = "email_enabled", nullable = false)
   private boolean emailEnabled;
-
-  @Column(name = "tenant_id")
-  private String tenantId;
 
   protected NotificationPreference() {}
 
@@ -76,15 +64,5 @@ public class NotificationPreference implements TenantAware {
 
   public void setEmailEnabled(boolean emailEnabled) {
     this.emailEnabled = emailEnabled;
-  }
-
-  @Override
-  public String getTenantId() {
-    return tenantId;
-  }
-
-  @Override
-  public void setTenantId(String tenantId) {
-    this.tenantId = tenantId;
   }
 }

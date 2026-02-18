@@ -26,7 +26,6 @@ CREATE TABLE IF NOT EXISTS invoices (
     org_name            VARCHAR(255) NOT NULL,
     created_by          UUID NOT NULL REFERENCES members(id),
     approved_by         UUID REFERENCES members(id),
-    tenant_id           VARCHAR(255),
     created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
 
@@ -34,12 +33,9 @@ CREATE TABLE IF NOT EXISTS invoices (
     CONSTRAINT chk_invoice_status CHECK (status IN ('DRAFT', 'APPROVED', 'SENT', 'PAID', 'VOID'))
 );
 
--- Invoice number uniqueness (per-schema for Pro; includes tenant_id for Starter)
+-- Invoice number uniqueness (per-schema)
 CREATE UNIQUE INDEX IF NOT EXISTS idx_invoices_number_unique
-    ON invoices (invoice_number) WHERE invoice_number IS NOT NULL AND tenant_id IS NULL;
-
-CREATE UNIQUE INDEX IF NOT EXISTS idx_invoices_tenant_number_unique
-    ON invoices (tenant_id, invoice_number) WHERE invoice_number IS NOT NULL AND tenant_id IS NOT NULL;
+    ON invoices (invoice_number) WHERE invoice_number IS NOT NULL;
 
 CREATE INDEX IF NOT EXISTS idx_invoices_customer_status
     ON invoices (customer_id, status);
@@ -49,20 +45,6 @@ CREATE INDEX IF NOT EXISTS idx_invoices_status
 
 CREATE INDEX IF NOT EXISTS idx_invoices_created_at
     ON invoices (created_at);
-
-CREATE INDEX IF NOT EXISTS idx_invoices_tenant
-    ON invoices (tenant_id) WHERE tenant_id IS NOT NULL;
-
--- Row-Level Security
-ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'tenant_isolation_invoices') THEN
-    EXECUTE 'CREATE POLICY tenant_isolation_invoices ON invoices
-      USING (tenant_id = current_setting(''app.current_tenant'', true) OR tenant_id IS NULL)';
-  END IF;
-END $$;
 
 -- =============================================================================
 -- invoice_lines
@@ -78,7 +60,6 @@ CREATE TABLE IF NOT EXISTS invoice_lines (
     unit_price      DECIMAL(12,2) NOT NULL,
     amount          DECIMAL(14,2) NOT NULL,
     sort_order      INTEGER NOT NULL DEFAULT 0,
-    tenant_id       VARCHAR(255),
     created_at      TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at      TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
 
@@ -96,44 +77,19 @@ CREATE INDEX IF NOT EXISTS idx_invoice_lines_invoice_sort
 CREATE INDEX IF NOT EXISTS idx_invoice_lines_project
     ON invoice_lines (project_id) WHERE project_id IS NOT NULL;
 
-CREATE INDEX IF NOT EXISTS idx_invoice_lines_tenant
-    ON invoice_lines (tenant_id) WHERE tenant_id IS NOT NULL;
-
--- Row-Level Security
-ALTER TABLE invoice_lines ENABLE ROW LEVEL SECURITY;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'tenant_isolation_invoice_lines') THEN
-    EXECUTE 'CREATE POLICY tenant_isolation_invoice_lines ON invoice_lines
-      USING (tenant_id = current_setting(''app.current_tenant'', true) OR tenant_id IS NULL)';
-  END IF;
-END $$;
-
 -- =============================================================================
 -- invoice_counters
 -- =============================================================================
 
 CREATE TABLE IF NOT EXISTS invoice_counters (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    tenant_id   VARCHAR(255),
     next_number INTEGER NOT NULL DEFAULT 1,
+    singleton   BOOLEAN NOT NULL DEFAULT TRUE,
 
-    CONSTRAINT chk_counter_positive CHECK (next_number > 0)
+    CONSTRAINT chk_counter_positive CHECK (next_number > 0),
+    CONSTRAINT invoice_counters_singleton UNIQUE (singleton),
+    CONSTRAINT chk_singleton CHECK (singleton = TRUE)
 );
-
-CREATE UNIQUE INDEX IF NOT EXISTS idx_invoice_counters_tenant
-    ON invoice_counters (tenant_id);
-
-ALTER TABLE invoice_counters ENABLE ROW LEVEL SECURITY;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'tenant_isolation_invoice_counters') THEN
-    EXECUTE 'CREATE POLICY tenant_isolation_invoice_counters ON invoice_counters
-      USING (tenant_id = current_setting(''app.current_tenant'', true) OR tenant_id IS NULL)';
-  END IF;
-END $$;
 
 -- =============================================================================
 -- TimeEntry: add invoice_id column

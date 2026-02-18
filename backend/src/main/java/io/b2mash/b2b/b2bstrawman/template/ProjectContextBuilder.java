@@ -48,7 +48,7 @@ public class ProjectContextBuilder implements TemplateContextBuilder {
   public Map<String, Object> buildContext(UUID entityId, UUID memberId) {
     var project =
         projectRepository
-            .findOneById(entityId)
+            .findById(entityId)
             .orElseThrow(() -> new ResourceNotFoundException("Project", entityId));
 
     var context = new HashMap<String, Object>();
@@ -69,7 +69,7 @@ public class ProjectContextBuilder implements TemplateContextBuilder {
     if (!customerProjects.isEmpty()) {
       var firstLink = customerProjects.getFirst();
       customerRepository
-          .findOneById(firstLink.getCustomerId())
+          .findById(firstLink.getCustomerId())
           .ifPresentOrElse(
               customer -> {
                 var customerMap = new LinkedHashMap<String, Object>();

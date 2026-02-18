@@ -72,7 +72,7 @@ public class TagService {
   @Transactional
   public TagResponse update(UUID id, UpdateTagRequest request) {
     var tag =
-        tagRepository.findOneById(id).orElseThrow(() -> new ResourceNotFoundException("Tag", id));
+        tagRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Tag", id));
 
     tag.updateMetadata(request.name(), request.color());
     tag = tagRepository.save(tag);
@@ -93,7 +93,7 @@ public class TagService {
   @Transactional
   public void delete(UUID id) {
     var tag =
-        tagRepository.findOneById(id).orElseThrow(() -> new ResourceNotFoundException("Tag", id));
+        tagRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Tag", id));
 
     tagRepository.delete(tag);
 

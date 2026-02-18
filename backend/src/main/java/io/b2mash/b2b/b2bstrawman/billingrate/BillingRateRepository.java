@@ -2,21 +2,12 @@ package io.b2mash.b2b.b2bstrawman.billingrate;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface BillingRateRepository extends JpaRepository<BillingRate, UUID> {
-
-  /**
-   * JPQL-based findById that respects Hibernate @Filter (unlike JpaRepository.findById which uses
-   * EntityManager.find and bypasses @Filter). Required for shared-schema tenant isolation.
-   */
-  @Query("SELECT br FROM BillingRate br WHERE br.id = :id")
-  Optional<BillingRate> findOneById(@Param("id") UUID id);
-
   /**
    * Finds project-level override rates for a member on a specific project, effective on the given
    * date. Returns results ordered by effectiveFrom DESC so the most recent applicable rate is

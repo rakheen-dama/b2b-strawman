@@ -32,9 +32,9 @@ public class PortalContactService {
       String email,
       String displayName,
       PortalContact.ContactRole role) {
-    // Validate customer exists (uses JPQL-based query that respects @Filter)
+    // Validate customer exists (JPQL query scoped to current tenant schema via search_path)
     customerRepository
-        .findOneById(customerId)
+        .findById(customerId)
         .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
 
     // Check email uniqueness per customer
@@ -65,7 +65,7 @@ public class PortalContactService {
   public PortalContact suspendContact(UUID contactId) {
     var contact =
         portalContactRepository
-            .findOneById(contactId)
+            .findById(contactId)
             .orElseThrow(() -> new ResourceNotFoundException("PortalContact", contactId));
     contact.suspend();
     var saved = portalContactRepository.save(contact);
@@ -77,7 +77,7 @@ public class PortalContactService {
   public PortalContact archiveContact(UUID contactId) {
     var contact =
         portalContactRepository
-            .findOneById(contactId)
+            .findById(contactId)
             .orElseThrow(() -> new ResourceNotFoundException("PortalContact", contactId));
     contact.archive();
     var saved = portalContactRepository.save(contact);

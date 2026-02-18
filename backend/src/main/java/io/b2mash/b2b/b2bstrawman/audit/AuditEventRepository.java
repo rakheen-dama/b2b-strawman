@@ -20,13 +20,6 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
   }
 
   /**
-   * JPQL-based findById that respects Hibernate @Filter (unlike JpaRepository.findById which uses
-   * EntityManager.find and bypasses @Filter). Required for shared-schema tenant isolation.
-   */
-  @Query("SELECT e FROM AuditEvent e WHERE e.id = :id")
-  Optional<AuditEvent> findOneById(@Param("id") UUID id);
-
-  /**
    * Multi-parameter JPQL query with nullable filters. Each parameter uses the nullable pattern:
    * {@code (:param IS NULL OR e.field = :param)}. For eventTypePrefix, uses LIKE prefix match.
    * Results ordered by occurredAt DESC.
@@ -89,8 +82,8 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
 
   /**
    * Finds the most recent audit event timestamp for a project. Uses native SQL to query the JSONB
-   * details->>'project_id' field. Compares as text (matching findByProjectId pattern). RLS handles
-   * tenant isolation for native queries.
+   * details->>'project_id' field. Compares as text (matching findByProjectId pattern). Tenant
+   * isolation is provided by the dedicated schema (search_path).
    */
   @Query(
       value =
@@ -102,8 +95,8 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
 
   /**
    * Cross-project activity for admin/owner: returns recent events with actor and project names
-   * joined. Only returns events that have a project_id in their details. RLS handles tenant
-   * isolation.
+   * joined. Only returns events that have a project_id in their details. Tenant isolation is
+   * provided by the dedicated schema (search_path).
    */
   @Query(
       nativeQuery = true,
@@ -127,7 +120,7 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
 
   /**
    * Cross-project activity for regular members: filtered to projects the member belongs to via
-   * project_members subquery. RLS handles tenant isolation.
+   * project_members subquery. Tenant isolation is provided by the dedicated schema (search_path).
    */
   @Query(
       nativeQuery = true,

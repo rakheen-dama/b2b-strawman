@@ -165,7 +165,7 @@ public class TimeEntryController {
       return Map.of();
     }
 
-    return invoiceRepository.findAllByIds(invoiceIds).stream()
+    return invoiceRepository.findAllById(invoiceIds).stream()
         .collect(
             Collectors.toMap(
                 Invoice::getId,

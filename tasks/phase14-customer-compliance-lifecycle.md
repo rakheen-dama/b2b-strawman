@@ -107,7 +107,7 @@ Phase 14 adds a **jurisdiction-agnostic compliance system** managing the full cu
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 4a | Epic 104 | 104A | DataSubjectRequest entity + repo, DataSubjectRequestService, DataExportService (ZIP generation), DataRequestController, deadline tracking. ~15 tests. |
+| 4a | Epic 104 | 104A | DataSubjectRequest entity + repo, DataSubjectRequestService, DataExportService (ZIP generation), DataRequestController, deadline tracking. ~15 tests. | **Done** (PR #216) |
 | 4b | Epic 104 | 104B | DataAnonymizationService, anonymization of customer PII + documents + comments + portal contacts, controller extension, deadline notification. ~12 tests. |
 
 ### Stage 5: Retention & Dormancy (Parallel with Stage 2+3+4)
@@ -449,7 +449,7 @@ Stage 8:  [108A]                                                      ← dashbo
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **104A** | 104.1–104.8 | DataSubjectRequest entity + repo, DataSubjectRequestService (create, status transitions, deadline calculation), DataExportService (ZIP generation with customer data, S3 upload), DataRequestController CRUD + export endpoints. Integration tests (~15 tests). | |
+| **104A** | 104.1–104.8 | DataSubjectRequest entity + repo, DataSubjectRequestService (create, status transitions, deadline calculation), DataExportService (ZIP generation with customer data, S3 upload), DataRequestController CRUD + export endpoints. Integration tests (~15 tests). | **Done** (PR #216) |
 | **104B** | 104.9–104.14 | DataAnonymizationService (PII clearing, S3 document deletion, comment redaction, portal contact anonymization, financial records preserved), execute-deletion endpoint, deadline notification events, Comment.redact() and PortalContact.anonymize() domain methods. Integration tests (~12 tests). | |
 
 ### Tasks

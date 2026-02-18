@@ -1,0 +1,88 @@
+{
+  "packId": "sa-fica-company",
+  "name": "SA FICA — Company Client",
+  "description": "South African FICA compliance checklist for company and entity clients. Covers company registration, director verification, address, source of funds, and risk assessment.",
+  "version": "1.0.0",
+  "jurisdiction": "ZA",
+  "customerType": "COMPANY",
+  "checklistTemplate": {
+    "name": "Company Client Onboarding (FICA)",
+    "slug": "sa-fica-company-onboarding",
+    "autoInstantiate": false,
+    "items": [
+      {
+        "name": "Verify company registration",
+        "description": "Verify the company's registration with CIPC. Obtain the company registration certificate.",
+        "sortOrder": 1,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Company registration certificate (CIPC)",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Verify directors/members",
+        "description": "Verify the identity of all directors, members, or beneficial owners with at least 25% ownership.",
+        "sortOrder": 2,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "List of directors and ID documents",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Verify registered address",
+        "description": "Verify the company's registered business address.",
+        "sortOrder": 3,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Proof of registered business address",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Confirm source of funds",
+        "description": "Obtain documentation confirming the company's source of business funds.",
+        "sortOrder": 4,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Source of funds documentation",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Perform risk assessment",
+        "description": "Classify the entity's risk rating based on FICA risk matrix. Depends on registration verification.",
+        "sortOrder": 5,
+        "required": true,
+        "requiresDocument": false,
+        "requiredDocumentLabel": null,
+        "dependsOnItemKey": "verify-company-registration"
+      },
+      {
+        "name": "FICA compliance sign-off",
+        "description": "Senior compliance officer signs off on FICA compliance for this entity.",
+        "sortOrder": 6,
+        "required": true,
+        "requiresDocument": false,
+        "requiredDocumentLabel": null,
+        "dependsOnItemKey": "perform-risk-assessment"
+      }
+    ]
+  },
+  "fieldDefinitions": [
+    {
+      "fieldKey": "company_registration_number",
+      "label": "Company Registration Number",
+      "fieldType": "TEXT",
+      "required": false,
+      "options": null,
+      "groupName": "Company FICA Details"
+    },
+    {
+      "fieldKey": "entity_type",
+      "label": "Entity Type",
+      "fieldType": "SELECT",
+      "required": false,
+      "options": ["PTY_LTD", "CC", "TRUST", "SOC"],
+      "groupName": "Company FICA Details"
+    }
+  ],
+  "retentionOverrides": null
+}

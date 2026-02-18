@@ -72,6 +72,7 @@ class ChecklistTemplateServiceTest {
                         "INDIVIDUAL",
                         true,
                         null,
+                        null,
                         List.of(
                             new ChecklistTemplateItemRequest(
                                 "Collect ID",
@@ -107,13 +108,13 @@ class ChecklistTemplateServiceTest {
             () ->
                 checklistTemplateService.create(
                     new CreateChecklistTemplateRequest(
-                        "Active Template", null, "ANY", true, null, List.of())));
+                        "Active Template", null, "ANY", true, null, null, List.of())));
     var template2 =
         runInTenant(
             () ->
                 checklistTemplateService.create(
                     new CreateChecklistTemplateRequest(
-                        "Deactivated Template", null, "ANY", true, null, List.of())));
+                        "Deactivated Template", null, "ANY", true, null, null, List.of())));
 
     runInTenant(() -> checklistTemplateService.deactivate(template2.id()));
 
@@ -134,6 +135,7 @@ class ChecklistTemplateServiceTest {
                         null,
                         "COMPANY",
                         true,
+                        null,
                         null,
                         List.of(
                             new ChecklistTemplateItemRequest(
@@ -163,6 +165,7 @@ class ChecklistTemplateServiceTest {
                         "ANY",
                         true,
                         null,
+                        null,
                         List.of(
                             new ChecklistTemplateItemRequest(
                                 "Old Item 1", null, 1, true, false, null, null),
@@ -178,6 +181,7 @@ class ChecklistTemplateServiceTest {
                         "Replace Test Updated",
                         "Now with description",
                         false,
+                        null,
                         List.of(
                             new ChecklistTemplateItemRequest(
                                 "New Item A", null, 1, true, false, null, null),
@@ -201,7 +205,7 @@ class ChecklistTemplateServiceTest {
             () ->
                 checklistTemplateService.create(
                     new CreateChecklistTemplateRequest(
-                        "To Deactivate", null, "ANY", true, null, List.of())));
+                        "To Deactivate", null, "ANY", true, null, null, List.of())));
 
     runInTenant(() -> checklistTemplateService.deactivate(created.id()));
 
@@ -219,14 +223,14 @@ class ChecklistTemplateServiceTest {
             () ->
                 checklistTemplateService.create(
                     new CreateChecklistTemplateRequest(
-                        "Duplicate Name", null, "ANY", true, null, List.of())));
+                        "Duplicate Name", null, "ANY", true, null, null, List.of())));
 
     var second =
         runInTenant(
             () ->
                 checklistTemplateService.create(
                     new CreateChecklistTemplateRequest(
-                        "Duplicate Name", null, "ANY", true, null, List.of())));
+                        "Duplicate Name", null, "ANY", true, null, null, List.of())));
 
     assertThat(first.slug()).isEqualTo("duplicate-name");
     assertThat(second.slug()).isEqualTo("duplicate-name-2");
@@ -238,17 +242,17 @@ class ChecklistTemplateServiceTest {
         () ->
             checklistTemplateService.create(
                 new CreateChecklistTemplateRequest(
-                    "Individual Only", null, "INDIVIDUAL", true, null, List.of())));
+                    "Individual Only", null, "INDIVIDUAL", true, null, null, List.of())));
     runInTenant(
         () ->
             checklistTemplateService.create(
                 new CreateChecklistTemplateRequest(
-                    "Company Only", null, "COMPANY", true, null, List.of())));
+                    "Company Only", null, "COMPANY", true, null, null, List.of())));
     runInTenant(
         () ->
             checklistTemplateService.create(
                 new CreateChecklistTemplateRequest(
-                    "Any Type", null, "ANY", true, null, List.of())));
+                    "Any Type", null, "ANY", true, null, null, List.of())));
 
     var filtered =
         runInTenant(
@@ -271,7 +275,7 @@ class ChecklistTemplateServiceTest {
             () ->
                 checklistTemplateService.create(
                     new CreateChecklistTemplateRequest(
-                        "Business Logic Test", null, "ANY", false, null, List.of())));
+                        "Business Logic Test", null, "ANY", false, null, null, List.of())));
 
     assertThat(result.autoInstantiate()).isFalse();
     assertThat(result.active()).isTrue();

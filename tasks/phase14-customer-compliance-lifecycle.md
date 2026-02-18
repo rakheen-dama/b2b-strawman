@@ -14,7 +14,7 @@ Phase 14 adds a **jurisdiction-agnostic compliance system** managing the full cu
 |------|------|-------|------|--------|--------|--------|
 | 100 | Customer Lifecycle Foundation | Backend | -- | M | 100A, 100B | **Done** (PRs #208, #209) |
 | 101 | Checklist Template Engine | Backend | 100 | M | 101A, 101B | **Done** (PRs #210, #211) |
-| 102 | Checklist Instance Engine | Backend | 101 | M | 102A, 102B | |
+| 102 | Checklist Instance Engine | Backend | 101 | M | 102A, 102B | 102A **Done** (PR #212) |
 | 103 | Compliance Pack Seeding & Instantiation | Backend | 101 | M | 103A, 103B | |
 | 104 | Data Subject Requests | Backend | 100 | M | 104A, 104B | |
 | 105 | Retention & Dormancy | Backend | 100 | M | 105A, 105B | |
@@ -92,8 +92,8 @@ Phase 14 adds a **jurisdiction-agnostic compliance system** managing the full cu
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 2a | Epic 101 | 101A | ChecklistTemplate + ChecklistTemplateItem entities, repos, ChecklistTemplateService CRUD, ChecklistTemplateController. ~15 tests. | **Done** (PR #210) |
-| 2b | Epic 101 | 101B | Template slug generation, dependency validation (cycle detection), clone/reset, ordering. ~12 tests. |
-| 2c | Epic 102 | 102A | ChecklistInstance + ChecklistInstanceItem entities, repos, ChecklistInstanceService (create from template, complete item, skip item, progress calculation). ~15 tests. |
+| 2b | Epic 101 | 101B | Template slug generation, dependency validation (cycle detection), clone/reset, ordering. ~12 tests. | **Done** (PR #211) |
+| 2c | Epic 102 | 102A | ChecklistInstance + ChecklistInstanceItem entities, repos, ChecklistInstanceService (create from template, complete item, skip item, progress calculation). ~15 tests. | **Done** (PR #212) |
 | 2d | Epic 102 | 102B | Item dependency chain enforcement, document linking, auto-cascade (instance complete → lifecycle advance), controller endpoints, audit events. ~15 tests. |
 
 ### Stage 3: Pack Seeding & Instantiation (Sequential, parallel with Stage 4+5)

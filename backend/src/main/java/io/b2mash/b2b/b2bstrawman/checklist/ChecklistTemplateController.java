@@ -65,4 +65,12 @@ public class ChecklistTemplateController {
     checklistTemplateService.deactivate(id);
     return ResponseEntity.noContent().build();
   }
+
+  @PostMapping("/{id}/clone")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<ChecklistTemplateResponse> cloneTemplate(@PathVariable UUID id) {
+    var response = checklistTemplateService.cloneTemplate(id);
+    return ResponseEntity.created(URI.create("/api/checklist-templates/" + response.id()))
+        .body(response);
+  }
 }

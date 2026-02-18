@@ -24,12 +24,14 @@ public final class ChecklistTemplateDtos {
       @NotBlank String customerType,
       boolean autoInstantiate,
       String slug,
+      Integer sortOrder,
       List<ChecklistTemplateItemRequest> items) {}
 
   public record UpdateChecklistTemplateRequest(
       @NotBlank String name,
       String description,
       boolean autoInstantiate,
+      Integer sortOrder,
       List<ChecklistTemplateItemRequest> items) {}
 
   public record ChecklistTemplateItemResponse(

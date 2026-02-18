@@ -382,7 +382,7 @@ Stage 8:  [108A]                                                      ← dashbo
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **103A** | 103.1–103.6 | CompliancePackSeeder service, CompliancePackDefinition records, 3 shipped packs (generic-onboarding, sa-fica-individual, sa-fica-company), OrgSettings compliancePackStatus tracking. Integration tests (~10 tests). | **Done** (PR #214) |
-| **103B** | 103.7–103.12 | ChecklistInstantiationService (auto-create instances on ONBOARDING transition), integration with CustomerLifecycleService side effects, cancel instances on ONBOARDING→PROSPECT, provisioning integration. Integration tests (~12 tests). | |
+| **103B** | 103.7–103.12 | ChecklistInstantiationService (auto-create instances on ONBOARDING transition), integration with CustomerLifecycleService side effects, cancel instances on ONBOARDING→PROSPECT, provisioning integration. Integration tests (~12 tests). | **Done** (PR #215) |
 
 ### Tasks
 

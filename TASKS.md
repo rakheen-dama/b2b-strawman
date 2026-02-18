@@ -122,7 +122,7 @@
 | 100 | Customer Lifecycle Foundation | Backend | -- | M | 100A, 100B | **Done** (PRs #208, #209) |
 | 101 | Checklist Template Engine | Backend | 100 | M | 101A, 101B | |
 | 102 | Checklist Instance Engine | Backend | 101 | M | 102A, 102B | |
-| 103 | Compliance Pack Seeding & Instantiation | Backend | 101 | M | 103A, 103B | |
+| 103 | Compliance Pack Seeding & Instantiation | Backend | 101 | M | 103A, 103B | **Done** (PRs #214, #215) |
 | 104 | Data Subject Requests | Backend | 100 | M | 104A, 104B | |
 | 105 | Retention & Dormancy | Backend | 100 | M | 105A, 105B | |
 | 106 | Lifecycle & Checklist Frontend | Frontend | 102, 103 | M | 106A, 106B | |

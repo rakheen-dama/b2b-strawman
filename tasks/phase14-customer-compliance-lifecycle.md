@@ -15,7 +15,7 @@ Phase 14 adds a **jurisdiction-agnostic compliance system** managing the full cu
 | 100 | Customer Lifecycle Foundation | Backend | -- | M | 100A, 100B | **Done** (PRs #208, #209) |
 | 101 | Checklist Template Engine | Backend | 100 | M | 101A, 101B | **Done** (PRs #210, #211) |
 | 102 | Checklist Instance Engine | Backend | 101 | M | 102A, 102B | **Done** (PRs #212, #213) |
-| 103 | Compliance Pack Seeding & Instantiation | Backend | 101 | M | 103A, 103B | |
+| 103 | Compliance Pack Seeding & Instantiation | Backend | 101 | M | 103A, 103B | **Done** (PRs #214, #215) |
 | 104 | Data Subject Requests | Backend | 100 | M | 104A, 104B | |
 | 105 | Retention & Dormancy | Backend | 100 | M | 105A, 105B | |
 | 106 | Lifecycle & Checklist Frontend | Frontend | 102, 103 | M | 106A, 106B | |
@@ -101,7 +101,7 @@ Phase 14 adds a **jurisdiction-agnostic compliance system** managing the full cu
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 3a | Epic 103 | 103A | CompliancePackSeeder, pack.json schema, 3 shipped packs, OrgSettings compliancePackStatus tracking. ~10 tests. | **Done** (PR #214) |
-| 3b | Epic 103 | 103B | ChecklistInstantiationService (auto-create on ONBOARDING transition), lifecycle service integration, tenant provisioning integration. ~12 tests. |
+| 3b | Epic 103 | 103B | ChecklistInstantiationService (auto-create on ONBOARDING transition), lifecycle service integration, tenant provisioning integration. ~12 tests. | **Done** (PR #215) |
 
 ### Stage 4: Data Subject Requests (Parallel with Stage 2+3)
 

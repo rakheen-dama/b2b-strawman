@@ -11,6 +11,16 @@ Run all remaining epic slices in a development phase, one at a time, using a **S
 
 Phase number (e.g., `/phase 4`). Optionally append a starting slice: `/phase 4 from 39A`.
 
+## IMPORTANT: Prefer /phase_v2
+
+If `scripts/run-phase.sh` exists, use `/phase_v2` instead. Run it in a **terminal tab** (not inside a Claude session):
+
+```bash
+./scripts/run-phase.sh <phase-number> [starting-slice]
+```
+
+The v2 approach gives each slice a fresh context window and sends macOS notifications on completion/failure. This v1 skill is retained for cases where v2 isn't set up or you need interactive merge approval.
+
 ## Principles
 
 1. **Context hygiene**: Your main context is precious. NEVER read large files, diffs, or codebases yourself. Delegate ALL research and implementation to subagents.
@@ -19,6 +29,7 @@ Phase number (e.g., `/phase 4`). Optionally append a starting slice: `/phase 4 f
 4. **Blocking agents**: Run ALL subagents as **blocking** Task calls (do NOT use `run_in_background`). Background agents cause the orchestrator to freeze — no reliable resume mechanism.
 5. **Minimal task tracking**: Create high-level tasks per slice (not per sub-task). Update as slices complete.
 6. **No code writing**: You are the orchestrator. You approve, dispatch, and merge. You do not write code.
+7. **Never launch `run-phase.sh` in the background** — if you do, you'll end up polling it with `sleep`+`ps` loops, wasting your entire context window on monitoring. Either use blocking Task calls (this skill) or run the script in a terminal (v2).
 
 ### Model Allocation
 

@@ -18,7 +18,7 @@ set -euo pipefail
 
 # ─── Arguments ────────────────────────────────────────────────────────────────
 
-PHASE="${1:?Usage: ./scripts/run-phase.sh <phase-number> [starting-slice] [--dry-run]}"
+PHASE="${1:?Usage: ./scripts/run-phase.sh <phase-number> [starting-slice] d]}"
 START_SLICE=""
 DRY_RUN=false
 
@@ -211,6 +211,9 @@ for i in "${!SLICES_TO_RUN[@]}"; do
     log ""
     log "To resume after fixing:"
     log "  ./scripts/run-phase.sh ${PHASE} ${slice}"
+    if command -v osascript &>/dev/null; then
+      osascript -e 'display notification "Slice '"$slice"' failed after '"$SLICE_MINUTES"'m" with title "Phase '"$PHASE"' FAILED" sound name "Basso"'
+    fi
     exit 1
   fi
 
@@ -222,3 +225,6 @@ done
 log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 log "Phase ${PHASE} COMPLETE — all ${#SLICES_TO_RUN[@]} slices done!"
 log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+if command -v osascript &>/dev/null; then
+  osascript -e 'display notification "All '"${#SLICES_TO_RUN[@]}"' slices done" with title "Phase '"$PHASE"' Complete" sound name "Glass"'
+fi

@@ -37,7 +37,13 @@ $$ LANGUAGE plpgsql;
 
 DO $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'audit_events_no_update') THEN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_trigger t
+    JOIN pg_class c ON t.tgrelid = c.oid
+    JOIN pg_namespace n ON c.relnamespace = n.oid
+    WHERE t.tgname = 'audit_events_no_update'
+      AND n.nspname = current_schema()
+  ) THEN
     EXECUTE 'CREATE TRIGGER audit_events_no_update
         BEFORE UPDATE ON audit_events
         FOR EACH ROW EXECUTE FUNCTION prevent_audit_update()';

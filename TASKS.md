@@ -118,6 +118,16 @@
 | 97 | Entity, Repository & Call-Site Cleanup | Backend | 96 | L | 97A, 97B, 97C | **Done** |
 | 98 | Migration Rewrite & Renumber | Backend | -- | M | 98A | **Done** |
 | 99 | Test Cleanup, Verification & Documentation | Backend | 96, 97, 98 | M | 99A, 99B | **Done** |
+| **Phase 14 — Customer Compliance & Lifecycle** | | | | | | See [tasks/phase14-customer-compliance-lifecycle.md](tasks/phase14-customer-compliance-lifecycle.md) |
+| 100 | Customer Lifecycle Foundation | Backend | -- | M | 100A, 100B | |
+| 101 | Checklist Template Engine | Backend | 100 | M | 101A, 101B | |
+| 102 | Checklist Instance Engine | Backend | 101 | M | 102A, 102B | |
+| 103 | Compliance Pack Seeding & Instantiation | Backend | 101 | M | 103A, 103B | |
+| 104 | Data Subject Requests | Backend | 100 | M | 104A, 104B | |
+| 105 | Retention & Dormancy | Backend | 100 | M | 105A, 105B | |
+| 106 | Lifecycle & Checklist Frontend | Frontend | 102, 103 | M | 106A, 106B | |
+| 107 | Data Requests & Settings Frontend | Frontend | 104, 105 | M | 107A, 107B | |
+| 108 | Compliance Dashboard | Frontend | 106, 107 | S | 108A | |
 
 ---
 

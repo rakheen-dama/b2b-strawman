@@ -52,6 +52,12 @@ public final class ChecklistInstanceDtos {
     }
   }
 
+  public record CompleteItemRequest(String notes, UUID documentId) {}
+
+  public record SkipItemRequest(String reason) {}
+
+  public record InstantiateChecklistRequest(UUID templateId) {}
+
   public record ChecklistInstanceResponse(
       UUID id,
       UUID templateId,

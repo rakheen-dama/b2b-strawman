@@ -64,6 +64,13 @@ public class ChecklistInstance {
     this.updatedAt = Instant.now();
   }
 
+  public void revertToInProgress() {
+    this.status = "IN_PROGRESS";
+    this.completedAt = null;
+    this.completedBy = null;
+    this.updatedAt = Instant.now();
+  }
+
   // Getters
   public UUID getId() {
     return id;

@@ -483,7 +483,7 @@ class ChecklistInstanceServiceTest {
                     () ->
                         checklistInstanceService.completeItem(
                             blockedItemId, null, null, UUID.randomUUID())))
-        .isInstanceOf(InvalidStateException.class);
+        .isInstanceOf(ResourceConflictException.class);
 
     // Complete the prerequisite — should unblock the dependent
     runInTenant(

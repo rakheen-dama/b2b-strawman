@@ -3,11 +3,15 @@ package io.b2mash.b2b.b2bstrawman.checklist;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceDtos.ChecklistProgressDto;
+import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleService;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -25,18 +29,24 @@ public class ChecklistInstanceService {
   private final ChecklistTemplateRepository templateRepository;
   private final ChecklistTemplateItemRepository templateItemRepository;
   private final AuditService auditService;
+  private final CustomerRepository customerRepository;
+  private final CustomerLifecycleService customerLifecycleService;
 
   public ChecklistInstanceService(
       ChecklistInstanceRepository instanceRepository,
       ChecklistInstanceItemRepository instanceItemRepository,
       ChecklistTemplateRepository templateRepository,
       ChecklistTemplateItemRepository templateItemRepository,
-      AuditService auditService) {
+      AuditService auditService,
+      CustomerRepository customerRepository,
+      CustomerLifecycleService customerLifecycleService) {
     this.instanceRepository = instanceRepository;
     this.instanceItemRepository = instanceItemRepository;
     this.templateRepository = templateRepository;
     this.templateItemRepository = templateItemRepository;
     this.auditService = auditService;
+    this.customerRepository = customerRepository;
+    this.customerLifecycleService = customerLifecycleService;
   }
 
   @Transactional
@@ -89,14 +99,15 @@ public class ChecklistInstanceService {
 
     auditService.log(
         AuditEventBuilder.builder()
-            .eventType("checklist.instance.created")
+            .eventType("checklist.instantiated")
             .entityType("checklist_instance")
             .entityId(instance.getId())
             .details(
                 Map.of(
                     "templateId", templateId.toString(),
                     "customerId", customerId.toString(),
-                    "templateName", template.getName()))
+                    "templateName", template.getName(),
+                    "instanceId", instance.getId().toString()))
             .build());
 
     log.info(
@@ -114,8 +125,29 @@ public class ChecklistInstanceService {
             .findById(itemId)
             .orElseThrow(() -> new ResourceNotFoundException("ChecklistInstanceItem", itemId));
 
+    // 102.8: Dependency chain enforcement
+    if (item.getDependsOnItemId() != null) {
+      UUID dependsOnItemId = item.getDependsOnItemId();
+      var dependency =
+          instanceItemRepository
+              .findById(dependsOnItemId)
+              .orElseThrow(
+                  () -> new ResourceNotFoundException("ChecklistInstanceItem", dependsOnItemId));
+      if (!"COMPLETED".equals(dependency.getStatus())) {
+        throw new ResourceConflictException(
+            "Checklist item blocked",
+            "Cannot complete item — depends on '"
+                + dependency.getName()
+                + "' which is not yet completed");
+      }
+    }
+
+    // 102.9: Document requirement validation with label
     if (item.isRequiresDocument() && documentId == null) {
-      throw new InvalidStateException("Document required", "Item requires a document to complete");
+      throw new InvalidStateException(
+          "Document required",
+          "This item requires a document upload. Please upload: "
+              + item.getRequiredDocumentLabel());
     }
 
     item.complete(actorId, notes, documentId);
@@ -123,16 +155,26 @@ public class ChecklistInstanceService {
 
     unblockDependentItems(item.getId());
 
+    // 102.13: Audit with full details
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("checklist.item.completed")
             .entityType("checklist_instance_item")
             .entityId(item.getId())
             .details(
-                Map.of("itemName", item.getName(), "instanceId", item.getInstanceId().toString()))
+                Map.of(
+                    "itemName", item.getName(),
+                    "instanceId", item.getInstanceId().toString(),
+                    "completedBy", actorId != null ? actorId.toString() : "",
+                    "notes", notes != null ? notes : "",
+                    "documentId", documentId != null ? documentId.toString() : ""))
             .build());
 
     log.info("Completed checklist item '{}' ({})", item.getName(), item.getId());
+
+    // 102.10: Auto-cascade
+    checkInstanceCompletion(item.getInstanceId(), actorId);
+
     return item;
   }
 
@@ -154,10 +196,57 @@ public class ChecklistInstanceService {
             .entityType("checklist_instance_item")
             .entityId(item.getId())
             .details(
-                Map.of("itemName", item.getName(), "instanceId", item.getInstanceId().toString()))
+                Map.of(
+                    "itemName", item.getName(),
+                    "instanceId", item.getInstanceId().toString(),
+                    "reason", reason != null ? reason : ""))
             .build());
 
     log.info("Skipped checklist item '{}' ({})", item.getName(), item.getId());
+    return item;
+  }
+
+  // 102.11: Reopen item
+  @Transactional
+  public ChecklistInstanceItem reopenItem(UUID itemId, UUID actorId) {
+    var item =
+        instanceItemRepository
+            .findById(itemId)
+            .orElseThrow(() -> new ResourceNotFoundException("ChecklistInstanceItem", itemId));
+
+    UUID instanceId = item.getInstanceId();
+    var instance =
+        instanceRepository
+            .findById(instanceId)
+            .orElseThrow(() -> new ResourceNotFoundException("ChecklistInstance", instanceId));
+
+    boolean instanceWasCompleted = "COMPLETED".equals(instance.getStatus());
+
+    item.reopen();
+    item = instanceItemRepository.save(item);
+
+    if (instanceWasCompleted) {
+      instance.revertToInProgress();
+      instanceRepository.save(instance);
+      log.info(
+          "Reverted checklist instance {} to IN_PROGRESS due to reopen of item '{}'",
+          instance.getId(),
+          item.getName());
+    }
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("checklist.item.reopened")
+            .entityType("checklist_instance_item")
+            .entityId(item.getId())
+            .details(
+                Map.of(
+                    "itemName", item.getName(),
+                    "instanceId", item.getInstanceId().toString(),
+                    "reopenedBy", actorId != null ? actorId.toString() : ""))
+            .build());
+
+    log.info("Reopened checklist item '{}' ({})", item.getName(), item.getId());
     return item;
   }
 
@@ -185,6 +274,18 @@ public class ChecklistInstanceService {
     return new ChecklistProgressDto(completed, total, requiredCompleted, requiredTotal);
   }
 
+  @Transactional(readOnly = true)
+  public ChecklistInstance getInstance(UUID instanceId) {
+    return instanceRepository
+        .findById(instanceId)
+        .orElseThrow(() -> new ResourceNotFoundException("ChecklistInstance", instanceId));
+  }
+
+  @Transactional(readOnly = true)
+  public List<ChecklistInstance> getInstancesForCustomer(UUID customerId) {
+    return instanceRepository.findByCustomerId(customerId);
+  }
+
   private void unblockDependentItems(UUID completedItemId) {
     var blockedDependents =
         instanceItemRepository.findByDependsOnItemIdAndStatus(completedItemId, "BLOCKED");
@@ -192,6 +293,59 @@ public class ChecklistInstanceService {
       dependent.unblock();
       instanceItemRepository.save(dependent);
       log.info("Unblocked checklist item '{}' ({})", dependent.getName(), dependent.getId());
+    }
+  }
+
+  private void checkInstanceCompletion(UUID instanceId, UUID actorId) {
+    boolean anyRequiredNotComplete =
+        instanceItemRepository.existsByInstanceIdAndRequiredAndStatusNot(
+            instanceId, true, "COMPLETED");
+
+    if (anyRequiredNotComplete) {
+      return;
+    }
+
+    var instance = instanceRepository.findById(instanceId).orElseThrow();
+    if ("COMPLETED".equals(instance.getStatus())) {
+      return;
+    }
+
+    instance.complete(actorId);
+    instanceRepository.save(instance);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("checklist.instance.completed")
+            .entityType("checklist_instance")
+            .entityId(instanceId)
+            .details(
+                Map.of(
+                    "instanceId", instanceId.toString(),
+                    "customerId", instance.getCustomerId().toString()))
+            .build());
+
+    log.info("Checklist instance {} auto-completed", instanceId);
+
+    checkLifecycleAdvance(instance.getCustomerId(), actorId);
+  }
+
+  private void checkLifecycleAdvance(UUID customerId, UUID actorId) {
+    var customer =
+        customerRepository
+            .findById(customerId)
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+
+    if (customer.getLifecycleStatus() != LifecycleStatus.ONBOARDING) {
+      return;
+    }
+
+    boolean anyInstanceNotComplete =
+        instanceRepository.existsByCustomerIdAndStatusNot(customerId, "COMPLETED");
+
+    if (!anyInstanceNotComplete) {
+      customerLifecycleService.transition(
+          customerId, "ACTIVE", "All onboarding checklists completed", actorId);
+      log.info("Customer {} auto-transitioned to ACTIVE — all checklists completed", customerId);
     }
   }
 }

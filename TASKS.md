@@ -128,6 +128,13 @@
 | 106 | Lifecycle & Checklist Frontend | Frontend | 102, 103 | M | 106A, 106B | |
 | 107 | Data Requests & Settings Frontend | Frontend | 104, 105 | M | 107A, 107B | |
 | 108 | Compliance Dashboard | Frontend | 106, 107 | S | 108A | |
+| **Phase 15 — Contextual Actions & Setup Guidance** | | | | | | See [tasks/phase15-contextual-actions-setup-guidance.md](tasks/phase15-contextual-actions-setup-guidance.md) |
+| 109 | Project Setup Status & Unbilled Time — Backend | Backend | -- | M | 109A, 109B | |
+| 110 | Customer Readiness & Document Generation Readiness — Backend | Backend | -- | M | 110A, 110B | |
+| 111 | Reusable Frontend Components & API Client | Frontend | 109, 110 | M | 111A | |
+| 112 | Project Detail Page Integration | Frontend | 111 | S | 112A | |
+| 113 | Customer Detail Page Integration | Frontend | 111 | S | 113A | |
+| 114 | Empty State Rollout | Frontend | 111 | S | 114A | |
 
 ---
 

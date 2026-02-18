@@ -318,7 +318,7 @@ Stage 8:  [108A]                                                      ← dashbo
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **102A** | 102.1–102.7 | ChecklistInstance + ChecklistInstanceItem entities, repos, ChecklistInstanceService (create from template with snapshot, complete item, skip item, progress calculation). Unit + integration tests (~15 tests). | |
+| **102A** | 102.1–102.7 | ChecklistInstance + ChecklistInstanceItem entities, repos, ChecklistInstanceService (create from template with snapshot, complete item, skip item, progress calculation). Unit + integration tests (~15 tests). | **Done** (PR #212) |
 | **102B** | 102.8–102.14 | Dependency chain enforcement (blocked items, auto-unblock), document requirement validation, auto-cascade (all required complete → instance complete → lifecycle advance), reopen item, controller endpoints, audit events. Integration tests (~15 tests). | |
 
 ### Tasks

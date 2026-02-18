@@ -1,0 +1,53 @@
+{
+  "packId": "generic-onboarding",
+  "name": "Generic Client Onboarding",
+  "description": "Standard onboarding checklist for all new clients. Covers engagement confirmation, contact verification, billing arrangements, and engagement letter.",
+  "version": "1.0.0",
+  "jurisdiction": null,
+  "customerType": "ANY",
+  "checklistTemplate": {
+    "name": "Generic Client Onboarding",
+    "slug": "generic-client-onboarding",
+    "autoInstantiate": true,
+    "items": [
+      {
+        "name": "Confirm client engagement",
+        "description": "Confirm that the client has formally agreed to engage the firm's services.",
+        "sortOrder": 1,
+        "required": true,
+        "requiresDocument": false,
+        "requiredDocumentLabel": null,
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Verify contact details",
+        "description": "Verify the client's contact information including email, phone, and address.",
+        "sortOrder": 2,
+        "required": true,
+        "requiresDocument": false,
+        "requiredDocumentLabel": null,
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Confirm billing arrangements",
+        "description": "Confirm the agreed billing rate, payment terms, and invoicing details.",
+        "sortOrder": 3,
+        "required": true,
+        "requiresDocument": false,
+        "requiredDocumentLabel": null,
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Upload signed engagement letter",
+        "description": "Obtain and upload the signed engagement letter from the client.",
+        "sortOrder": 4,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Signed engagement letter",
+        "dependsOnItemKey": null
+      }
+    ]
+  },
+  "fieldDefinitions": null,
+  "retentionOverrides": null
+}

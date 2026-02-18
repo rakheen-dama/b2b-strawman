@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.provisioning;
 
 import io.b2mash.b2b.b2bstrawman.billing.SubscriptionService;
+import io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldPackSeeder;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
@@ -26,6 +27,7 @@ public class TenantProvisioningService {
   private final SubscriptionService subscriptionService;
   private final FieldPackSeeder fieldPackSeeder;
   private final TemplatePackSeeder templatePackSeeder;
+  private final CompliancePackSeeder compliancePackSeeder;
 
   public TenantProvisioningService(
       OrganizationRepository organizationRepository,
@@ -33,13 +35,15 @@ public class TenantProvisioningService {
       @Qualifier("migrationDataSource") DataSource migrationDataSource,
       SubscriptionService subscriptionService,
       FieldPackSeeder fieldPackSeeder,
-      TemplatePackSeeder templatePackSeeder) {
+      TemplatePackSeeder templatePackSeeder,
+      CompliancePackSeeder compliancePackSeeder) {
     this.organizationRepository = organizationRepository;
     this.mappingRepository = mappingRepository;
     this.migrationDataSource = migrationDataSource;
     this.subscriptionService = subscriptionService;
     this.fieldPackSeeder = fieldPackSeeder;
     this.templatePackSeeder = templatePackSeeder;
+    this.compliancePackSeeder = compliancePackSeeder;
   }
 
   @Retryable(
@@ -76,6 +80,7 @@ public class TenantProvisioningService {
       runTenantMigrations(schemaName);
       fieldPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
       templatePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+      compliancePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
       createMapping(clerkOrgId, schemaName);
       String planSlug = org.getPlanSlug() != null ? org.getPlanSlug() : "starter";
       subscriptionService.createSubscription(org.getId(), planSlug);

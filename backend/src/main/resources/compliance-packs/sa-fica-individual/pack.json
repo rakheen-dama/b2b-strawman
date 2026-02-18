@@ -1,0 +1,94 @@
+{
+  "packId": "sa-fica-individual",
+  "name": "SA FICA — Individual Client",
+  "description": "South African FICA compliance checklist for individual clients. Covers identity verification, proof of address, source of funds, and risk assessment.",
+  "version": "1.0.0",
+  "jurisdiction": "ZA",
+  "customerType": "INDIVIDUAL",
+  "checklistTemplate": {
+    "name": "Individual Client Onboarding (FICA)",
+    "slug": "sa-fica-individual-onboarding",
+    "autoInstantiate": false,
+    "items": [
+      {
+        "name": "Verify identity document",
+        "description": "Verify the client's identity using a certified copy of their SA ID or passport.",
+        "sortOrder": 1,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Certified copy of SA ID or passport",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Verify proof of address",
+        "description": "Obtain a utility bill, bank statement, or municipal account not older than 3 months.",
+        "sortOrder": 2,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Proof of residential address (not older than 3 months)",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Confirm source of funds",
+        "description": "Obtain documentation confirming the client's source of income or funds.",
+        "sortOrder": 3,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Source of funds documentation",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Perform risk assessment",
+        "description": "Classify the client's risk rating based on FICA risk matrix. Depends on identity verification.",
+        "sortOrder": 4,
+        "required": true,
+        "requiresDocument": false,
+        "requiredDocumentLabel": null,
+        "dependsOnItemKey": "verify-identity-document"
+      },
+      {
+        "name": "Confirm FICA compliance sign-off",
+        "description": "Senior compliance officer signs off on FICA compliance for this client.",
+        "sortOrder": 5,
+        "required": true,
+        "requiresDocument": false,
+        "requiredDocumentLabel": null,
+        "dependsOnItemKey": "perform-risk-assessment"
+      }
+    ]
+  },
+  "fieldDefinitions": [
+    {
+      "fieldKey": "sa_id_number",
+      "label": "SA ID Number",
+      "fieldType": "TEXT",
+      "required": false,
+      "options": null,
+      "groupName": "FICA Compliance"
+    },
+    {
+      "fieldKey": "passport_number",
+      "label": "Passport Number",
+      "fieldType": "TEXT",
+      "required": false,
+      "options": null,
+      "groupName": "FICA Compliance"
+    },
+    {
+      "fieldKey": "risk_rating",
+      "label": "Risk Rating",
+      "fieldType": "SELECT",
+      "required": false,
+      "options": ["LOW", "MEDIUM", "HIGH"],
+      "groupName": "FICA Compliance"
+    }
+  ],
+  "retentionOverrides": [
+    {
+      "recordType": "CUSTOMER",
+      "triggerEvent": "CUSTOMER_OFFBOARDED",
+      "retentionDays": 1825,
+      "action": "FLAG"
+    }
+  ]
+}

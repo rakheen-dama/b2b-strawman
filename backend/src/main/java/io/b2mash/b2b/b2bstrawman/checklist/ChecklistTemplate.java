@@ -181,4 +181,9 @@ public class ChecklistTemplate {
   public void setSource(String source) {
     this.source = source;
   }
+
+  public void setActive(boolean active) {
+    this.active = active;
+    this.updatedAt = Instant.now();
+  }
 }

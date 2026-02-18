@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.checklist;
 
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -90,6 +91,7 @@ public class ChecklistInstanceItem {
   }
 
   public void complete(UUID actorId, String notes, UUID documentId) {
+    requireStatus("PENDING", "complete");
     this.status = "COMPLETED";
     this.completedAt = Instant.now();
     this.completedBy = actorId;
@@ -99,12 +101,18 @@ public class ChecklistInstanceItem {
   }
 
   public void skip(String reason) {
+    requireStatus("PENDING", "skip");
     this.status = "SKIPPED";
     this.notes = reason;
     this.updatedAt = Instant.now();
   }
 
   public void reopen() {
+    if (!"COMPLETED".equals(this.status) && !"SKIPPED".equals(this.status)) {
+      throw new InvalidStateException(
+          "Invalid state transition",
+          "Cannot reopen item in status '" + this.status + "'; must be COMPLETED or SKIPPED");
+    }
     this.status = "PENDING";
     this.completedAt = null;
     this.completedBy = null;
@@ -114,11 +122,13 @@ public class ChecklistInstanceItem {
   }
 
   public void block() {
+    requireStatus("PENDING", "block");
     this.status = "BLOCKED";
     this.updatedAt = Instant.now();
   }
 
   public void unblock() {
+    requireStatus("BLOCKED", "unblock");
     this.status = "PENDING";
     this.updatedAt = Instant.now();
   }
@@ -127,9 +137,12 @@ public class ChecklistInstanceItem {
     this.dependsOnItemId = dependsOnItemId;
   }
 
-  public void setStatus(String status) {
-    this.status = status;
-    this.updatedAt = Instant.now();
+  private void requireStatus(String expected, String action) {
+    if (!expected.equals(this.status)) {
+      throw new InvalidStateException(
+          "Invalid state transition",
+          "Cannot " + action + " item in status '" + this.status + "'; must be " + expected);
+    }
   }
 
   // Getters

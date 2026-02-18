@@ -6,6 +6,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.MemberSyncService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
@@ -437,6 +439,108 @@ class ChecklistInstanceServiceTest {
           assertThat(instanceItemA.getDependsOnItemId()).isNull();
           return null;
         });
+  }
+
+  @Test
+  void createFromTemplateThrowsWhenDuplicateInstanceExists() {
+    // First call succeeds
+    var ids =
+        runInTenant(
+            () -> {
+              var templateId = createTemplateWithItems(1, false);
+              var customerId = createCustomer();
+              checklistInstanceService.createFromTemplate(templateId, customerId);
+              return new UUID[] {templateId, customerId};
+            });
+
+    // Second call with same template+customer should throw 409
+    assertThatThrownBy(
+            () -> runInTenant(() -> checklistInstanceService.createFromTemplate(ids[0], ids[1])))
+        .isInstanceOf(ResourceConflictException.class);
+  }
+
+  @Test
+  void completeBlockedItemThrowsInvalidState() {
+    // Setup: create instance with dependencies
+    var ids =
+        runInTenant(
+            () -> {
+              var templateId = createTemplateWithItems(2, true);
+              var customerId = createCustomer();
+              var instance = checklistInstanceService.createFromTemplate(templateId, customerId);
+              var items = instanceItemRepository.findByInstanceIdOrderBySortOrder(instance.getId());
+              assertThat(items.get(1).getStatus()).isEqualTo("BLOCKED");
+              return new UUID[] {items.get(0).getId(), items.get(1).getId()};
+            });
+
+    var prerequisiteItemId = ids[0];
+    var blockedItemId = ids[1];
+
+    // Attempting to complete a BLOCKED item should fail
+    assertThatThrownBy(
+            () ->
+                runInTenant(
+                    () ->
+                        checklistInstanceService.completeItem(
+                            blockedItemId, null, null, UUID.randomUUID())))
+        .isInstanceOf(InvalidStateException.class);
+
+    // Complete the prerequisite — should unblock the dependent
+    runInTenant(
+        () -> {
+          checklistInstanceService.completeItem(prerequisiteItemId, null, null, UUID.randomUUID());
+          return null;
+        });
+
+    // Verify dependent is now PENDING and can be completed
+    runInTenant(
+        () -> {
+          var refreshed = instanceItemRepository.findById(blockedItemId).orElseThrow();
+          assertThat(refreshed.getStatus()).isEqualTo("PENDING");
+
+          var completed =
+              checklistInstanceService.completeItem(blockedItemId, "Done", null, UUID.randomUUID());
+          assertThat(completed.getStatus()).isEqualTo("COMPLETED");
+          return null;
+        });
+  }
+
+  @Test
+  void completeItemRequiringDocumentWithoutDocumentThrows() {
+    // Setup: create instance with a requiresDocument item
+    var itemId =
+        runInTenant(
+            () -> {
+              var template =
+                  new ChecklistTemplate(
+                      "Doc Required Test",
+                      "desc",
+                      "doc-required-test-" + UUID.randomUUID().toString().substring(0, 8),
+                      "INDIVIDUAL",
+                      "ORG_CUSTOM",
+                      false);
+              template = templateRepository.save(template);
+
+              var templateItem = new ChecklistTemplateItem(template.getId(), "Upload ID", 1, true);
+              templateItem.setRequiresDocument(true);
+              templateItem.setRequiredDocumentLabel("ID Document");
+              templateItemRepository.save(templateItem);
+
+              var customerId = createCustomer();
+              var instance =
+                  checklistInstanceService.createFromTemplate(template.getId(), customerId);
+              var items = instanceItemRepository.findByInstanceIdOrderBySortOrder(instance.getId());
+              return items.getFirst().getId();
+            });
+
+    // Completing without a document should throw
+    assertThatThrownBy(
+            () ->
+                runInTenant(
+                    () ->
+                        checklistInstanceService.completeItem(
+                            itemId, "notes", null, UUID.randomUUID())))
+        .isInstanceOf(InvalidStateException.class);
   }
 
   // ---- Helpers ----

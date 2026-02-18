@@ -3,6 +3,8 @@ package io.b2mash.b2b.b2bstrawman.checklist;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceDtos.ChecklistProgressDto;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import java.time.Instant;
 import java.util.HashMap;
@@ -44,6 +46,12 @@ public class ChecklistInstanceService {
             .findById(templateId)
             .orElseThrow(() -> new ResourceNotFoundException("ChecklistTemplate", templateId));
 
+    if (instanceRepository.existsByCustomerIdAndTemplateId(customerId, templateId)) {
+      throw new ResourceConflictException(
+          "Duplicate checklist instance",
+          "A checklist instance already exists for this customer and template");
+    }
+
     var templateItems = templateItemRepository.findByTemplateIdOrderBySortOrder(templateId);
 
     var instance = new ChecklistInstance(templateId, customerId, Instant.now());
@@ -74,7 +82,7 @@ public class ChecklistInstanceService {
             templateItemIdToInstanceItemId.get(templateItem.getDependsOnItemId());
         var item = instanceItemRepository.findById(instanceItemId).orElseThrow();
         item.setDependsOnItemId(dependsOnInstanceItemId);
-        item.setStatus("BLOCKED");
+        item.block();
         instanceItemRepository.save(item);
       }
     }
@@ -106,8 +114,14 @@ public class ChecklistInstanceService {
             .findById(itemId)
             .orElseThrow(() -> new ResourceNotFoundException("ChecklistInstanceItem", itemId));
 
+    if (item.isRequiresDocument() && documentId == null) {
+      throw new InvalidStateException("Document required", "Item requires a document to complete");
+    }
+
     item.complete(actorId, notes, documentId);
     item = instanceItemRepository.save(item);
+
+    unblockDependentItems(item.getId());
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -131,6 +145,8 @@ public class ChecklistInstanceService {
 
     item.skip(reason);
     item = instanceItemRepository.save(item);
+
+    unblockDependentItems(item.getId());
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -167,5 +183,15 @@ public class ChecklistInstanceService {
     }
 
     return new ChecklistProgressDto(completed, total, requiredCompleted, requiredTotal);
+  }
+
+  private void unblockDependentItems(UUID completedItemId) {
+    var blockedDependents =
+        instanceItemRepository.findByDependsOnItemIdAndStatus(completedItemId, "BLOCKED");
+    for (ChecklistInstanceItem dependent : blockedDependents) {
+      dependent.unblock();
+      instanceItemRepository.save(dependent);
+      log.info("Unblocked checklist item '{}' ({})", dependent.getName(), dependent.getId());
+    }
   }
 }

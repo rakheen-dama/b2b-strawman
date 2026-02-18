@@ -72,8 +72,9 @@ class CustomerLifecycleServiceTest {
 
   @Test
   void onboardingToActiveSucceeds() {
-    UUID customerId = createCustomer();
-    runInTenant(() -> lifecycleService.transition(customerId, "ONBOARDING", null, memberId));
+    // Create customer directly in ONBOARDING status (bypasses PROSPECT->ONBOARDING
+    // auto-instantiation, so no checklist instances block the ONBOARDING->ACTIVE guard)
+    UUID customerId = createCustomerWithStatus(LifecycleStatus.ONBOARDING);
     var customer =
         runInTenant(() -> lifecycleService.transition(customerId, "ACTIVE", "activated", memberId));
     assertThat(customer.getLifecycleStatus()).isEqualTo(LifecycleStatus.ACTIVE);

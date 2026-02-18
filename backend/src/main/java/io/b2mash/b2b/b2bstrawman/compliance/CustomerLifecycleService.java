@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventFilter;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceRepository;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerController.DormancyCandidate;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerController.DormancyCheckResult;
@@ -68,18 +69,24 @@ public class CustomerLifecycleService {
   private final ApplicationEventPublisher eventPublisher;
   private final OrgSettingsRepository orgSettingsRepository;
   private final EntityManager entityManager;
+  private final ChecklistInstantiationService checklistInstantiationService;
+  private final ChecklistInstanceRepository instanceRepository;
 
   public CustomerLifecycleService(
       CustomerRepository customerRepository,
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
       OrgSettingsRepository orgSettingsRepository,
-      EntityManager entityManager) {
+      EntityManager entityManager,
+      ChecklistInstantiationService checklistInstantiationService,
+      ChecklistInstanceRepository instanceRepository) {
     this.customerRepository = customerRepository;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
     this.orgSettingsRepository = orgSettingsRepository;
     this.entityManager = entityManager;
+    this.checklistInstantiationService = checklistInstantiationService;
+    this.instanceRepository = instanceRepository;
   }
 
   @Transactional
@@ -98,7 +105,7 @@ public class CustomerLifecycleService {
 
     var oldStatus = customer.getLifecycleStatus();
 
-    // Stub: check onboarding guard when transitioning ONBOARDING -> ACTIVE
+    // Check onboarding guard when transitioning ONBOARDING -> ACTIVE
     if (oldStatus == LifecycleStatus.ONBOARDING && target == LifecycleStatus.ACTIVE) {
       checkOnboardingGuard(customer);
     }
@@ -113,6 +120,13 @@ public class CustomerLifecycleService {
 
     customer = customerRepository.save(customer);
 
+    // Epic 103B: Auto-instantiate checklists on PROSPECT -> ONBOARDING
+    int checklistsInstantiated = 0;
+    if (oldStatus == LifecycleStatus.PROSPECT && target == LifecycleStatus.ONBOARDING) {
+      var created = checklistInstantiationService.instantiateForCustomer(customer);
+      checklistsInstantiated = created.size();
+    }
+
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("customer.lifecycle.transitioned")
@@ -125,18 +139,21 @@ public class CustomerLifecycleService {
                     "newStatus",
                     target.name(),
                     "notes",
-                    notes != null ? notes : ""))
+                    notes != null ? notes : "",
+                    "checklistsInstantiated",
+                    checklistsInstantiated))
             .build());
 
     eventPublisher.publishEvent(
         new CustomerStatusChangedEvent(this, customerId, oldStatus.name(), target.name()));
 
     log.info(
-        "Customer {} lifecycle transitioned from {} to {} by actor {}",
+        "Customer {} lifecycle transitioned from {} to {} by actor {} (checklistsInstantiated={})",
         customerId,
         oldStatus,
         target,
-        actorId);
+        actorId,
+        checklistsInstantiated);
 
     return customer;
   }
@@ -194,10 +211,16 @@ public class CustomerLifecycleService {
   }
 
   /**
-   * Stub: checks that all onboarding checklist instances for this customer are completed. TODO Epic
-   * 103B: check instanceRepository.existsByCustomerIdAndStatusNot(customerId, 'COMPLETED')
+   * Checks that all onboarding checklist instances for this customer are completed. Throws
+   * InvalidStateException if any instance is not in COMPLETED status.
    */
   void checkOnboardingGuard(Customer customer) {
-    // No-op stub — checklist infrastructure does not exist yet
+    boolean anyNotComplete =
+        instanceRepository.existsByCustomerIdAndStatusNot(customer.getId(), "COMPLETED");
+    if (anyNotComplete) {
+      throw new InvalidStateException(
+          "Onboarding incomplete",
+          "Cannot activate customer — one or more onboarding checklists are not yet completed");
+    }
   }
 }

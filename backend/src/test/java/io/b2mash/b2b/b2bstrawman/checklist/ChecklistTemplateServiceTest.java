@@ -3,9 +3,9 @@ package io.b2mash.b2b.b2bstrawman.checklist;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateController.ChecklistTemplateItemRequest;
-import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateController.CreateChecklistTemplateRequest;
-import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateController.UpdateChecklistTemplateRequest;
+import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateDtos.ChecklistTemplateItemRequest;
+import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateDtos.CreateChecklistTemplateRequest;
+import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateDtos.UpdateChecklistTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.member.MemberSyncService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -117,7 +117,7 @@ class ChecklistTemplateServiceTest {
 
     runInTenant(() -> checklistTemplateService.deactivate(template2.id()));
 
-    var activeList = runInTenant(() -> checklistTemplateService.listActive());
+    var activeList = runInTenant(() -> checklistTemplateService.listActive(null));
 
     assertThat(activeList).noneMatch(t -> t.id().equals(template2.id()));
     assertThat(activeList).anyMatch(t -> t.id().equals(template1.id()));
@@ -205,7 +205,7 @@ class ChecklistTemplateServiceTest {
 
     runInTenant(() -> checklistTemplateService.deactivate(created.id()));
 
-    var activeList = runInTenant(() -> checklistTemplateService.listActive());
+    var activeList = runInTenant(() -> checklistTemplateService.listActive(null));
     assertThat(activeList).noneMatch(t -> t.id().equals(created.id()));
 
     var fetched = runInTenant(() -> checklistTemplateService.getById(created.id()));

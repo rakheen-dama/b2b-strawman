@@ -2,10 +2,10 @@ package io.b2mash.b2b.b2bstrawman.checklist;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
-import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateController.ChecklistTemplateItemRequest;
-import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateController.ChecklistTemplateResponse;
-import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateController.CreateChecklistTemplateRequest;
-import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateController.UpdateChecklistTemplateRequest;
+import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateDtos.ChecklistTemplateItemRequest;
+import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateDtos.ChecklistTemplateResponse;
+import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateDtos.CreateChecklistTemplateRequest;
+import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateDtos.UpdateChecklistTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import java.util.List;
@@ -14,7 +14,6 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,8 +36,16 @@ public class ChecklistTemplateService {
   }
 
   @Transactional(readOnly = true)
-  public List<ChecklistTemplateResponse> listActive() {
-    return templateRepository.findByActiveOrderBySortOrder(true).stream()
+  public List<ChecklistTemplateResponse> listActive(String customerType) {
+    List<ChecklistTemplate> templates;
+    if (customerType != null && !customerType.isBlank()) {
+      templates =
+          templateRepository.findByActiveAndCustomerTypeInOrderBySortOrder(
+              true, List.of(customerType, "ANY"));
+    } else {
+      templates = templateRepository.findByActiveOrderBySortOrder(true);
+    }
+    return templates.stream()
         .map(
             t -> {
               var items = templateItemRepository.findByTemplateIdOrderBySortOrder(t.getId());
@@ -58,7 +65,6 @@ public class ChecklistTemplateService {
   }
 
   @Transactional
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ChecklistTemplateResponse create(CreateChecklistTemplateRequest request) {
     String baseSlug =
         request.slug() != null && !request.slug().isBlank()
@@ -69,13 +75,11 @@ public class ChecklistTemplateService {
     var template =
         new ChecklistTemplate(
             request.name(),
+            request.description(),
             finalSlug,
             request.customerType(),
             "ORG_CUSTOM",
             request.autoInstantiate());
-    if (request.description() != null) {
-      template.update(request.name(), request.description(), request.autoInstantiate());
-    }
 
     try {
       template = templateRepository.save(template);
@@ -100,7 +104,6 @@ public class ChecklistTemplateService {
   }
 
   @Transactional
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ChecklistTemplateResponse update(UUID id, UpdateChecklistTemplateRequest request) {
     var template =
         templateRepository
@@ -126,7 +129,6 @@ public class ChecklistTemplateService {
   }
 
   @Transactional
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public void deactivate(UUID id) {
     var template =
         templateRepository

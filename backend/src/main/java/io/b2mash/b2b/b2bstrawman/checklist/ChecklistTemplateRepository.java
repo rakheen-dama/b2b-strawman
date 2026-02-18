@@ -9,6 +9,9 @@ public interface ChecklistTemplateRepository extends JpaRepository<ChecklistTemp
 
   List<ChecklistTemplate> findByActiveOrderBySortOrder(boolean active);
 
+  List<ChecklistTemplate> findByActiveAndCustomerTypeInOrderBySortOrder(
+      boolean active, List<String> types);
+
   List<ChecklistTemplate> findByActiveAndAutoInstantiateAndCustomerTypeIn(
       boolean active, boolean autoInstantiate, List<String> customerTypes);
 

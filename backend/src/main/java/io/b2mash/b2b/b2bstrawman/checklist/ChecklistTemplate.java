@@ -60,8 +60,14 @@ public class ChecklistTemplate {
   protected ChecklistTemplate() {}
 
   public ChecklistTemplate(
-      String name, String slug, String customerType, String source, boolean autoInstantiate) {
+      String name,
+      String description,
+      String slug,
+      String customerType,
+      String source,
+      boolean autoInstantiate) {
     this.name = name;
+    this.description = description;
     this.slug = slug;
     this.customerType = customerType;
     this.source = source;

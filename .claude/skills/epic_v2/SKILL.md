@@ -173,9 +173,14 @@ using this exact structure:
 
 ## Build Commands (include these exactly in the brief)
 
-### Backend — Two-Pass Strategy (minimizes context usage)
+### Backend — Tiered Build Strategy (minimizes build time AND context usage)
 
 All commands run from: cd /Users/rakheendama/Projects/2026/worktree-epic-{SLICE}/backend
+
+The strategy has 3 tiers. Use the CHEAPEST tier that answers your current question:
+- **Tier 1 (Compile)**: ~30s — "Does it compile?" Use while iterating on code.
+- **Tier 2 (Targeted Tests)**: ~2-3min — "Do MY new/changed tests pass?" Use after code is written.
+- **Tier 3 (Full Verify)**: ~10-15min — "Does everything pass?" Use ONCE before commit/PR.
 
 **Step 0: Kill zombie processes (prevents connection pool exhaustion)**
   pgrep -f 'surefire.*worktree-epic' | xargs kill 2>/dev/null || true; sleep 2
@@ -183,22 +188,37 @@ All commands run from: cd /Users/rakheendama/Projects/2026/worktree-epic-{SLICE}
 **Step 1: Format**
   ./mvnw spotless:apply 2>&1 | tail -3
 
-**Step 2: Silent full build (Pass 1)**
-  ./mvnw clean verify -q > /tmp/mvn-epic-{SLICE}.log 2>&1; MVN_EXIT=$?; if [ $MVN_EXIT -eq 0 ]; then echo "BUILD SUCCESS"; grep 'Tests run:' /tmp/mvn-epic-{SLICE}.log | tail -1; else echo "BUILD FAILED (exit $MVN_EXIT)"; FAILED=$(grep -rl 'failures="[1-9]\|errors="[1-9]' target/surefire-reports/TEST-*.xml target/failsafe-reports/TEST-*.xml 2>/dev/null | sed 's|.*/TEST-||;s|\.xml||' | paste -sd,); if [ -n "$FAILED" ]; then echo "FAILED TESTS: $FAILED"; else grep -E '\[ERROR\]' /tmp/mvn-epic-{SLICE}.log | head -20; fi; fi
+**Step 2: Tier 1 — Compile check (run after writing code, before tests)**
+  ./mvnw compile test-compile -q > /tmp/mvn-epic-{SLICE}.log 2>&1; if [ $? -eq 0 ]; then echo "COMPILE OK"; else echo "COMPILE FAILED"; grep -E '\[ERROR\]' /tmp/mvn-epic-{SLICE}.log | head -20; fi
 
-**Step 3: Re-run ONLY failed tests with full output (only if Pass 1 failed with test failures)**
-  ./mvnw verify -Dit.test="{FAILED_CLASSES}" -Dtest="{FAILED_CLASSES}" 2>&1 | tail -80
+  Fix any compilation errors. Repeat Tier 1 until clean. This is fast — use it freely.
 
-  (Replace {FAILED_CLASSES} with the comma-separated list from Step 2's FAILED TESTS output)
-  This gives the agent full stack traces for ONLY the failing tests — typically 50-80 lines
-  instead of 500-1100 for the full suite.
+**Step 3: Tier 2 — Targeted tests (run only YOUR new/modified test classes)**
+  ./mvnw test -Dtest="{NEW_TEST_CLASSES}" -q > /tmp/mvn-epic-{SLICE}.log 2>&1; MVN_EXIT=$?; if [ $MVN_EXIT -eq 0 ]; then echo "TARGETED TESTS PASSED"; grep 'Tests run:' /tmp/mvn-epic-{SLICE}.log | tail -1; else echo "TARGETED TESTS FAILED"; FAILED=$(grep -rl 'failures="[1-9]\|errors="[1-9]' target/surefire-reports/TEST-*.xml 2>/dev/null | sed 's|.*/TEST-||;s|\.xml||' | paste -sd,); echo "FAILED: $FAILED"; fi
 
-**Step 4: Silent re-verify after fixing (Pass 2)**
-  ./mvnw clean verify -q > /tmp/mvn-epic-{SLICE}.log 2>&1; MVN_EXIT=$?; if [ $MVN_EXIT -eq 0 ]; then echo "BUILD SUCCESS"; grep 'Tests run:' /tmp/mvn-epic-{SLICE}.log | tail -1; else echo "STILL FAILING"; FAILED=$(grep -rl 'failures="[1-9]\|errors="[1-9]' target/surefire-reports/TEST-*.xml target/failsafe-reports/TEST-*.xml 2>/dev/null | sed 's|.*/TEST-||;s|\.xml||' | paste -sd,); echo "FAILED: $FAILED"; fi
+  Replace {NEW_TEST_CLASSES} with the comma-separated test class names from this epic
+  (e.g., "ChecklistTemplateServiceTest,ChecklistTemplateControllerTest").
+  If tests also need integration test runner: add -Dit.test="{NEW_TEST_CLASSES}" and use verify instead of test.
+
+  If targeted tests fail, get full stack traces (with full logging to see what went wrong):
+    ./mvnw test -Dtest="{FAILED_CLASSES}" 2>&1 | tail -80
+
+  Fix and repeat Tier 2 until your tests pass. Do NOT jump to Tier 3 with failing targeted tests.
+
+**Step 4: Tier 3 — Full verify (run ONCE before commit, confirms no regressions)**
+  ./mvnw clean verify -q > /tmp/mvn-epic-{SLICE}.log 2>&1; MVN_EXIT=$?; if [ $MVN_EXIT -eq 0 ]; then echo "FULL BUILD SUCCESS"; grep 'Tests run:' /tmp/mvn-epic-{SLICE}.log | tail -1; else echo "FULL BUILD FAILED (exit $MVN_EXIT)"; FAILED=$(grep -rl 'failures="[1-9]\|errors="[1-9]' target/surefire-reports/TEST-*.xml target/failsafe-reports/TEST-*.xml 2>/dev/null | sed 's|.*/TEST-||;s|\.xml||' | paste -sd,); if [ -n "$FAILED" ]; then echo "FAILED TESTS: $FAILED"; else grep -E '\[ERROR\]' /tmp/mvn-epic-{SLICE}.log | head -20; fi; fi
+
+  If Tier 3 fails on tests that are NOT yours: fix the regression (you likely broke an import or
+  changed a shared method signature). Re-run ONLY the failed tests with full logging:
+    ./mvnw verify -Dit.test="{FAILED_CLASSES}" -Dtest="{FAILED_CLASSES}" 2>&1 | tail -80
+  Then re-run Tier 3 to confirm green.
 
 IMPORTANT: NEVER run ./mvnw clean verify without -q — full output burns 30-60KB of context per run.
 If you need to debug a compilation error, read the log file with grep:
   grep -n 'ERROR\|cannot find symbol\|Caused by' /tmp/mvn-epic-{SLICE}.log | head -30
+
+IMPORTANT: Do NOT skip tiers. Always go 1→2→3. Do NOT run Tier 3 repeatedly to iterate on
+failures — drop back to Tier 1 or 2, fix, then re-run Tier 3 once.
 
 ### Frontend
 
@@ -240,15 +260,20 @@ CLAUDE.md files — the brief already contains the relevant extracts.
 - Implement ONLY the tasks in the brief — nothing more
 - If the brief mentions files to modify, read those specific files before editing
 
-### 2. Build & Verify
-Run the exact build commands from the brief's "Build & Verify" section.
+### 2. Build & Verify (Tiered — read the brief carefully)
+Follow the **tiered build strategy** from the brief's "Build & Verify" section:
+  - **Tier 1 (compile)**: Run after writing code. Fast (~30s). Iterate here for compile errors.
+  - **Tier 2 (targeted tests)**: Run only YOUR new test classes. (~2-3min). Iterate here for test failures.
+  - **Tier 3 (full verify)**: Run ONCE before commit. (~10-15min). Confirms no regressions.
+
+Always go 1→2→3. Never jump straight to Tier 3. Never run Tier 3 repeatedly to iterate.
 Build output is redirected to log files — only summaries enter your context.
 If the build fails:
   1. Kill zombie surefire processes first: pgrep -f 'surefire.*worktree-epic' | xargs kill 2>/dev/null || true; sleep 2
   2. Read the relevant log file to understand the error
   3. Fix the root cause (not symptoms)
-  4. Re-run. Max 3 fix cycles.
-  5. If still failing after 3 cycles, stop and report what's failing and your hypotheses. Do NOT keep retrying — zombie processes accumulate and cause connection pool exhaustion.
+  4. Drop back to Tier 1 or 2, fix, then re-attempt Tier 3. Max 3 Tier-3 attempts.
+  5. If still failing after 3 Tier-3 attempts, stop and report what's failing and your hypotheses. Do NOT keep retrying — zombie processes accumulate and cause connection pool exhaustion.
 
 When reading log files for errors, use targeted reads:
   grep -n "ERROR\|FAILURE\|Caused by" /tmp/mvn-epic-{SLICE}.log | tail -20

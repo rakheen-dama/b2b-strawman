@@ -1,3 +1,7 @@
+logging:
+  level:
+    root: ERROR
+
 spring:
   security:
     oauth2:

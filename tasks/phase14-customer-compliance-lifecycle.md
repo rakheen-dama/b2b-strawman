@@ -13,7 +13,7 @@ Phase 14 adds a **jurisdiction-agnostic compliance system** managing the full cu
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 100 | Customer Lifecycle Foundation | Backend | -- | M | 100A, 100B | **Done** (PRs #208, #209) |
-| 101 | Checklist Template Engine | Backend | 100 | M | 101A, 101B | |
+| 101 | Checklist Template Engine | Backend | 100 | M | 101A, 101B | **Done** (PRs #210, #211) |
 | 102 | Checklist Instance Engine | Backend | 101 | M | 102A, 102B | |
 | 103 | Compliance Pack Seeding & Instantiation | Backend | 101 | M | 103A, 103B | |
 | 104 | Data Subject Requests | Backend | 100 | M | 104A, 104B | |
@@ -255,7 +255,7 @@ Stage 8:  [108A]                                                      ← dashbo
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **101A** | 101.1–101.8 | ChecklistTemplate + ChecklistTemplateItem entities, repositories, ChecklistTemplateService CRUD (create with items, update, deactivate, list), ChecklistTemplateController with RBAC, DTOs. Integration tests (~15 tests). | **Done** (PR #210) |
-| **101B** | 101.9–101.14 | Slug generation from template name, dependency validation (cycle detection), clone platform template, ordering support, advanced query methods. Integration tests (~12 tests). | |
+| **101B** | 101.9–101.14 | Slug generation from template name, dependency validation (cycle detection), clone platform template, ordering support, advanced query methods. Integration tests (~12 tests). | **Done** (PR #211) |
 
 ### Tasks
 

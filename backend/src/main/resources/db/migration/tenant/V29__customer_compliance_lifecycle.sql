@@ -12,6 +12,21 @@ ALTER TABLE customers
     ADD COLUMN IF NOT EXISTS lifecycle_status_changed_by UUID,
     ADD COLUMN IF NOT EXISTS offboarded_at TIMESTAMP WITH TIME ZONE;
 
+-- CHECK constraints for enum values
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_customers_customer_type') THEN
+        ALTER TABLE customers ADD CONSTRAINT chk_customers_customer_type
+            CHECK (customer_type IN ('INDIVIDUAL', 'COMPANY', 'TRUST'));
+    END IF;
+END $$;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_customers_lifecycle_status') THEN
+        ALTER TABLE customers ADD CONSTRAINT chk_customers_lifecycle_status
+            CHECK (lifecycle_status IN ('PROSPECT', 'ONBOARDING', 'ACTIVE', 'DORMANT', 'OFFBOARDING', 'OFFBOARDED'));
+    END IF;
+END $$;
+
 -- Backfill: all existing active customers to ACTIVE lifecycle status
 UPDATE customers SET lifecycle_status = 'ACTIVE'
 WHERE lifecycle_status = 'PROSPECT' AND status = 'ACTIVE';
@@ -76,7 +91,7 @@ CREATE TABLE IF NOT EXISTS checklist_template_items (
     required                BOOLEAN NOT NULL DEFAULT true,
     requires_document       BOOLEAN NOT NULL DEFAULT false,
     required_document_label VARCHAR(200),
-    depends_on_item_id      UUID REFERENCES checklist_template_items(id),
+    depends_on_item_id      UUID REFERENCES checklist_template_items(id) ON DELETE SET NULL,
     created_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
@@ -100,6 +115,9 @@ CREATE TABLE IF NOT EXISTS checklist_instances (
     created_at      TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at      TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
 
+    -- Design decision: one active instance per template per customer. To re-run a checklist,
+    -- the existing instance must be completed or deleted first. This prevents duplicate
+    -- in-progress checklists and simplifies compliance reporting.
     CONSTRAINT uq_checklist_instances_customer_template UNIQUE (customer_id, template_id)
 );
 

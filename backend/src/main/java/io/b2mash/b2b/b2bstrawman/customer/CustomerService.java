@@ -63,7 +63,7 @@ public class CustomerService {
   }
 
   @Transactional(readOnly = true)
-  public List<Customer> listCustomersByLifecycleStatus(String lifecycleStatus) {
+  public List<Customer> listCustomersByLifecycleStatus(LifecycleStatus lifecycleStatus) {
     return repository.findByLifecycleStatus(lifecycleStatus);
   }
 
@@ -102,7 +102,7 @@ public class CustomerService {
       UUID createdBy,
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups,
-      String customerType) {
+      CustomerType customerType) {
     if (repository.existsByEmail(email)) {
       throw new ResourceConflictException(
           "Customer email conflict", "A customer with email " + email + " already exists");

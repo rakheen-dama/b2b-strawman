@@ -10,5 +10,5 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID> {
 
   boolean existsByEmail(String email);
 
-  List<Customer> findByLifecycleStatus(String lifecycleStatus);
+  List<Customer> findByLifecycleStatus(LifecycleStatus lifecycleStatus);
 }

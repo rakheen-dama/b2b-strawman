@@ -1,7 +1,10 @@
 package io.b2mash.b2b.b2bstrawman.customer;
 
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -57,11 +60,13 @@ public class Customer {
   @Column(name = "applied_field_groups", columnDefinition = "jsonb")
   private List<UUID> appliedFieldGroups;
 
+  @Enumerated(EnumType.STRING)
   @Column(name = "customer_type", nullable = false, length = 20)
-  private String customerType;
+  private CustomerType customerType;
 
+  @Enumerated(EnumType.STRING)
   @Column(name = "lifecycle_status", nullable = false, length = 20)
-  private String lifecycleStatus;
+  private LifecycleStatus lifecycleStatus;
 
   @Column(name = "lifecycle_status_changed_at")
   private Instant lifecycleStatusChangedAt;
@@ -85,8 +90,8 @@ public class Customer {
     this.createdBy = createdBy;
     this.createdAt = Instant.now();
     this.updatedAt = Instant.now();
-    this.customerType = "INDIVIDUAL";
-    this.lifecycleStatus = "PROSPECT";
+    this.customerType = CustomerType.INDIVIDUAL;
+    this.lifecycleStatus = LifecycleStatus.PROSPECT;
   }
 
   public Customer(
@@ -96,9 +101,9 @@ public class Customer {
       String idNumber,
       String notes,
       UUID createdBy,
-      String customerType) {
+      CustomerType customerType) {
     this(name, email, phone, idNumber, notes, createdBy);
-    this.customerType = customerType != null ? customerType : "INDIVIDUAL";
+    this.customerType = customerType != null ? customerType : CustomerType.INDIVIDUAL;
   }
 
   public void update(String name, String email, String phone, String idNumber, String notes) {
@@ -115,19 +120,32 @@ public class Customer {
     this.updatedAt = Instant.now();
   }
 
-  /** Transitions the lifecycle status, recording the actor and timestamp. */
-  public void transitionLifecycleStatus(String targetStatus, UUID actorId) {
+  /**
+   * Transitions the lifecycle status, recording the actor and timestamp.
+   *
+   * @throws InvalidStateException if the transition is not allowed
+   */
+  public void transitionLifecycleStatus(LifecycleStatus targetStatus, UUID actorId) {
+    if (!this.lifecycleStatus.canTransitionTo(targetStatus)) {
+      throw new InvalidStateException(
+          "Invalid lifecycle transition",
+          "Cannot transition from " + this.lifecycleStatus + " to " + targetStatus);
+    }
     this.lifecycleStatus = targetStatus;
     this.lifecycleStatusChangedAt = Instant.now();
     this.lifecycleStatusChangedBy = actorId;
+    if (targetStatus == LifecycleStatus.OFFBOARDED) {
+      this.offboardedAt = Instant.now();
+    }
     this.updatedAt = Instant.now();
   }
 
   /** Replaces PII fields with anonymized values. */
   public void anonymize(String replacementName) {
     this.name = replacementName;
-    this.email = replacementName.toLowerCase().replaceAll("\\s+", ".") + "@anonymized.invalid";
+    this.email = "anon-" + this.id + "@anonymized.invalid";
     this.phone = null;
+    this.idNumber = null;
     this.updatedAt = Instant.now();
   }
 
@@ -189,11 +207,11 @@ public class Customer {
     this.updatedAt = Instant.now();
   }
 
-  public String getCustomerType() {
+  public CustomerType getCustomerType() {
     return customerType;
   }
 
-  public String getLifecycleStatus() {
+  public LifecycleStatus getLifecycleStatus() {
     return lifecycleStatus;
   }
 

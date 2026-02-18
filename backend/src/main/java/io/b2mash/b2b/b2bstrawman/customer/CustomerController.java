@@ -68,7 +68,7 @@ public class CustomerController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<CustomerResponse>> listCustomers(
       @RequestParam(required = false) UUID view,
-      @RequestParam(required = false) String lifecycleStatus,
+      @RequestParam(required = false) LifecycleStatus lifecycleStatus,
       @RequestParam(required = false) Map<String, String> allParams) {
 
     // --- View-based filtering (server-side SQL) ---
@@ -305,8 +305,7 @@ public class CustomerController {
       String notes,
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups,
-      @Size(max = 20, message = "customerType must be at most 20 characters")
-          String customerType) {}
+      CustomerType customerType) {}
 
   public record UpdateCustomerRequest(
       @NotBlank(message = "name is required")
@@ -336,8 +335,8 @@ public class CustomerController {
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups,
       List<TagResponse> tags,
-      String lifecycleStatus,
-      String customerType,
+      LifecycleStatus lifecycleStatus,
+      CustomerType customerType,
       Instant lifecycleStatusChangedAt) {
 
     public static CustomerResponse from(Customer customer) {

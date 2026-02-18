@@ -169,7 +169,11 @@ public class OrgSettings {
     return compliancePackStatus;
   }
 
-  /** Records a compliance pack application in the status list. */
+  /**
+   * Records a compliance pack application in the status list. Uses String version (not int) because
+   * compliance packs use semantic versioning (e.g. "1.0.0"), unlike field/template packs which use
+   * sequential integers.
+   */
   public void recordCompliancePackApplication(String packId, String version) {
     if (this.compliancePackStatus == null) {
       this.compliancePackStatus = new ArrayList<>();

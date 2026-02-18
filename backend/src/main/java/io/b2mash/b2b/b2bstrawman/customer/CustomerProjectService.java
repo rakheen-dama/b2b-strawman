@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.customer;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleGuard;
+import io.b2mash.b2b.b2bstrawman.compliance.LifecycleAction;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerProjectLinkedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerProjectUnlinkedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
@@ -31,6 +33,7 @@ public class CustomerProjectService {
   private final ProjectAccessService projectAccessService;
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
+  private final CustomerLifecycleGuard customerLifecycleGuard;
 
   public CustomerProjectService(
       CustomerProjectRepository customerProjectRepository,
@@ -38,22 +41,28 @@ public class CustomerProjectService {
       ProjectRepository projectRepository,
       ProjectAccessService projectAccessService,
       AuditService auditService,
-      ApplicationEventPublisher eventPublisher) {
+      ApplicationEventPublisher eventPublisher,
+      CustomerLifecycleGuard customerLifecycleGuard) {
     this.customerProjectRepository = customerProjectRepository;
     this.customerRepository = customerRepository;
     this.projectRepository = projectRepository;
     this.projectAccessService = projectAccessService;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
+    this.customerLifecycleGuard = customerLifecycleGuard;
   }
 
   @Transactional
   public CustomerProject linkCustomerToProject(
       UUID customerId, UUID projectId, UUID linkedBy, UUID memberId, String orgRole) {
     // Validate customer exists in tenant (uses filter-aware JPQL query)
-    customerRepository
-        .findById(customerId)
-        .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+    var customer =
+        customerRepository
+            .findById(customerId)
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+
+    // Check lifecycle guard before linking
+    customerLifecycleGuard.requireActionPermitted(customer, LifecycleAction.CREATE_PROJECT);
 
     // Validate project exists in tenant (uses filter-aware JPQL query)
     projectRepository

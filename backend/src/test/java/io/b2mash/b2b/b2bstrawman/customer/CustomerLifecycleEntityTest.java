@@ -11,7 +11,17 @@ class CustomerLifecycleEntityTest {
 
   @Test
   void transitionLifecycleStatus_setsAllFields() {
-    var customer = new Customer("Test Co", "test@test.com", null, null, null, UUID.randomUUID());
+    // Start as PROSPECT to test transition to ONBOARDING
+    var customer =
+        new Customer(
+            "Test Co",
+            "test@test.com",
+            null,
+            null,
+            null,
+            UUID.randomUUID(),
+            null,
+            LifecycleStatus.PROSPECT);
     UUID actorId = UUID.randomUUID();
 
     customer.transitionLifecycleStatus(LifecycleStatus.ONBOARDING, actorId);
@@ -23,20 +33,20 @@ class CustomerLifecycleEntityTest {
 
   @Test
   void transitionLifecycleStatus_rejectsInvalidTransition() {
+    // ACTIVE cannot go directly to ONBOARDING
     var customer = new Customer("Test Co", "test@test.com", null, null, null, UUID.randomUUID());
-    // PROSPECT cannot go to DORMANT
     UUID actorId = UUID.randomUUID();
 
-    assertThatThrownBy(() -> customer.transitionLifecycleStatus(LifecycleStatus.DORMANT, actorId))
+    assertThatThrownBy(
+            () -> customer.transitionLifecycleStatus(LifecycleStatus.ONBOARDING, actorId))
         .isInstanceOf(InvalidStateException.class)
-        .hasMessageContaining("Cannot transition from PROSPECT to DORMANT");
+        .hasMessageContaining("Cannot transition from ACTIVE to ONBOARDING");
   }
 
   @Test
   void transitionLifecycleStatus_offboardedCannotGoBack() {
     var customer = new Customer("Test Co", "test@test.com", null, null, null, UUID.randomUUID());
     UUID actorId = UUID.randomUUID();
-    customer.transitionLifecycleStatus(LifecycleStatus.ACTIVE, actorId);
     customer.transitionLifecycleStatus(LifecycleStatus.OFFBOARDING, actorId);
     customer.transitionLifecycleStatus(LifecycleStatus.OFFBOARDED, actorId);
 
@@ -48,7 +58,6 @@ class CustomerLifecycleEntityTest {
   void transitionLifecycleStatus_setsOffboardedAtWhenOffboarded() {
     var customer = new Customer("Test Co", "test@test.com", null, null, null, UUID.randomUUID());
     UUID actorId = UUID.randomUUID();
-    customer.transitionLifecycleStatus(LifecycleStatus.ACTIVE, actorId);
     customer.transitionLifecycleStatus(LifecycleStatus.OFFBOARDING, actorId);
 
     assertThat(customer.getOffboardedAt()).isNull();
@@ -73,9 +82,9 @@ class CustomerLifecycleEntityTest {
   }
 
   @Test
-  void defaultLifecycleIsProspect() {
+  void defaultLifecycleIsActive() {
     var customer = new Customer("New Co", "new@co.com", null, null, null, UUID.randomUUID());
-    assertThat(customer.getLifecycleStatus()).isEqualTo(LifecycleStatus.PROSPECT);
+    assertThat(customer.getLifecycleStatus()).isEqualTo(LifecycleStatus.ACTIVE);
   }
 
   @Test
@@ -96,5 +105,20 @@ class CustomerLifecycleEntityTest {
   void offboardedAtIsNullByDefault() {
     var customer = new Customer("New Co", "new@co.com", null, null, null, UUID.randomUUID());
     assertThat(customer.getOffboardedAt()).isNull();
+  }
+
+  @Test
+  void lifecycleStatusConstructorSetsExplicitStatus() {
+    var customer =
+        new Customer(
+            "Prospect Co",
+            "prospect@co.com",
+            null,
+            null,
+            null,
+            UUID.randomUUID(),
+            null,
+            LifecycleStatus.PROSPECT);
+    assertThat(customer.getLifecycleStatus()).isEqualTo(LifecycleStatus.PROSPECT);
   }
 }

@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.document;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleGuard;
+import io.b2mash.b2b.b2bstrawman.compliance.LifecycleAction;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentDeletedEvent;
@@ -34,6 +36,7 @@ public class DocumentService {
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
   private final MemberRepository memberRepository;
+  private final CustomerLifecycleGuard customerLifecycleGuard;
 
   public DocumentService(
       DocumentRepository documentRepository,
@@ -42,7 +45,8 @@ public class DocumentService {
       S3PresignedUrlService s3Service,
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
-      MemberRepository memberRepository) {
+      MemberRepository memberRepository,
+      CustomerLifecycleGuard customerLifecycleGuard) {
     this.documentRepository = documentRepository;
     this.projectAccessService = projectAccessService;
     this.customerRepository = customerRepository;
@@ -50,6 +54,7 @@ public class DocumentService {
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
     this.memberRepository = memberRepository;
+    this.customerLifecycleGuard = customerLifecycleGuard;
   }
 
   /**
@@ -152,9 +157,13 @@ public class DocumentService {
       long size,
       String orgId,
       UUID memberId) {
-    customerRepository
-        .findById(customerId)
-        .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+    var customer =
+        customerRepository
+            .findById(customerId)
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+
+    // Check lifecycle guard before creating customer document
+    customerLifecycleGuard.requireActionPermitted(customer, LifecycleAction.CREATE_DOCUMENT);
 
     var document =
         new Document(

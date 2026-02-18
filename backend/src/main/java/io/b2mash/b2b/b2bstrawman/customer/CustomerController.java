@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.customer;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
+import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleService;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
@@ -48,6 +50,7 @@ public class CustomerController {
   private final EntityTagService entityTagService;
   private final SavedViewRepository savedViewRepository;
   private final ViewFilterService viewFilterService;
+  private final CustomerLifecycleService customerLifecycleService;
 
   public CustomerController(
       CustomerService customerService,
@@ -55,13 +58,15 @@ public class CustomerController {
       InvoiceService invoiceService,
       EntityTagService entityTagService,
       SavedViewRepository savedViewRepository,
-      ViewFilterService viewFilterService) {
+      ViewFilterService viewFilterService,
+      CustomerLifecycleService customerLifecycleService) {
     this.customerService = customerService;
     this.customerProjectService = customerProjectService;
     this.invoiceService = invoiceService;
     this.entityTagService = entityTagService;
     this.savedViewRepository = savedViewRepository;
     this.viewFilterService = viewFilterService;
+    this.customerLifecycleService = customerLifecycleService;
   }
 
   @GetMapping
@@ -262,6 +267,32 @@ public class CustomerController {
     return ResponseEntity.ok(tags);
   }
 
+  // --- Lifecycle endpoints ---
+
+  @PostMapping("/{id}/transition")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<TransitionResponse> transitionLifecycle(
+      @PathVariable UUID id, @Valid @RequestBody TransitionRequest request) {
+    UUID actorId = RequestScopes.requireMemberId();
+    var customer =
+        customerLifecycleService.transition(id, request.targetStatus(), request.notes(), actorId);
+    return ResponseEntity.ok(TransitionResponse.from(customer));
+  }
+
+  @GetMapping("/{id}/lifecycle")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<List<AuditEvent>> getLifecycleHistory(@PathVariable UUID id) {
+    customerService.getCustomer(id);
+    var history = customerLifecycleService.getLifecycleHistory(id);
+    return ResponseEntity.ok(history);
+  }
+
+  @PostMapping("/dormancy-check")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<DormancyCheckResult> runDormancyCheck() {
+    return ResponseEntity.ok(customerLifecycleService.runDormancyCheck());
+  }
+
   private Map<String, String> extractCustomFieldFilters(Map<String, String> allParams) {
     var filters = new HashMap<String, String>();
     if (allParams != null) {
@@ -396,4 +427,30 @@ public class CustomerController {
           project.getId(), project.getName(), project.getDescription(), project.getCreatedAt());
     }
   }
+
+  // --- Lifecycle DTOs ---
+
+  public record TransitionRequest(@NotBlank String targetStatus, String notes) {}
+
+  public record TransitionResponse(
+      UUID id,
+      String name,
+      String lifecycleStatus,
+      Instant lifecycleStatusChangedAt,
+      UUID lifecycleStatusChangedBy) {
+
+    public static TransitionResponse from(Customer customer) {
+      return new TransitionResponse(
+          customer.getId(),
+          customer.getName(),
+          customer.getLifecycleStatus().name(),
+          customer.getLifecycleStatusChangedAt(),
+          customer.getLifecycleStatusChangedBy());
+    }
+  }
+
+  public record DormancyCheckResult(int thresholdDays, List<DormancyCandidate> candidates) {}
+
+  public record DormancyCandidate(
+      UUID customerId, String customerName, Instant lastActivityDate, long daysSinceActivity) {}
 }

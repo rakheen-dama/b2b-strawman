@@ -103,6 +103,9 @@ class BillingRateControllerTest {
     customerId =
         JsonPath.read(customerResult.getResponse().getContentAsString(), "$.id").toString();
 
+    // Transition customer to ACTIVE (lifecycle guard blocks PROSPECT from linking)
+    transitionCustomerToActive(customerId);
+
     // Link customer to project (for resolve cascade testing)
     mockMvc
         .perform(post("/api/projects/" + projectId + "/customers/" + customerId).with(ownerJwt()))
@@ -487,5 +490,10 @@ class BillingRateControllerTest {
     return jwt()
         .jwt(j -> j.subject("user_brc_owner_b").claim("o", Map.of("id", ORG_ID_B, "rol", "owner")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
+  }
+
+  /** No-op: customers now default to ACTIVE lifecycle status. */
+  private void transitionCustomerToActive(String customerId) throws Exception {
+    // Customers default to ACTIVE — no transition needed
   }
 }

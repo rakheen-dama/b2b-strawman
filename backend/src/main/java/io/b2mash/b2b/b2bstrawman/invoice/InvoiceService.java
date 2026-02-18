@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.invoice;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleGuard;
+import io.b2mash.b2b.b2bstrawman.compliance.LifecycleAction;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.event.InvoiceApprovedEvent;
@@ -68,6 +70,7 @@ public class InvoiceService {
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
   private final ITemplateEngine templateEngine;
+  private final CustomerLifecycleGuard customerLifecycleGuard;
 
   public InvoiceService(
       InvoiceRepository invoiceRepository,
@@ -84,7 +87,8 @@ public class InvoiceService {
       EntityManager entityManager,
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
-      ITemplateEngine templateEngine) {
+      ITemplateEngine templateEngine,
+      CustomerLifecycleGuard customerLifecycleGuard) {
     this.invoiceRepository = invoiceRepository;
     this.lineRepository = lineRepository;
     this.customerRepository = customerRepository;
@@ -100,6 +104,7 @@ public class InvoiceService {
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
     this.templateEngine = templateEngine;
+    this.customerLifecycleGuard = customerLifecycleGuard;
   }
 
   @Transactional
@@ -113,6 +118,9 @@ public class InvoiceService {
       throw new InvalidStateException(
           "Customer not active", "Customer must be in ACTIVE status to create an invoice");
     }
+
+    // Check lifecycle guard (complementary to soft-delete status check above)
+    customerLifecycleGuard.requireActionPermitted(customer, LifecycleAction.CREATE_INVOICE);
 
     // Look up organization for orgName snapshot
     String orgId = RequestScopes.requireOrgId();

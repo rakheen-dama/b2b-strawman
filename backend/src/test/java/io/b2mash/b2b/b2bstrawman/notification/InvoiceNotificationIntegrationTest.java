@@ -75,6 +75,9 @@ class InvoiceNotificationIntegrationTest {
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private ApplicationEvents events;
 
+  @Autowired
+  private io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleService customerLifecycleService;
+
   private String tenantSchema;
   private UUID memberIdOwner;
   private UUID memberIdAdmin;
@@ -116,6 +119,8 @@ class InvoiceNotificationIntegrationTest {
                               memberIdOwner);
                       customer = customerRepository.save(customer);
                       customerId = customer.getId();
+
+                      // Customer defaults to ACTIVE — no transition needed
 
                       var project =
                           new Project(

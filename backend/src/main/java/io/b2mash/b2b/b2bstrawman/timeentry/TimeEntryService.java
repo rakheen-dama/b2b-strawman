@@ -4,7 +4,11 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateService;
 import io.b2mash.b2b.b2bstrawman.budget.BudgetCheckService;
+import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleGuard;
+import io.b2mash.b2b.b2bstrawman.compliance.LifecycleAction;
 import io.b2mash.b2b.b2bstrawman.costrate.CostRateService;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
@@ -39,6 +43,9 @@ public class TimeEntryService {
   private final CostRateService costRateService;
   private final BudgetCheckService budgetCheckService;
   private final MemberRepository memberRepository;
+  private final CustomerLifecycleGuard customerLifecycleGuard;
+  private final CustomerProjectRepository customerProjectRepository;
+  private final CustomerRepository customerRepository;
 
   public TimeEntryService(
       TimeEntryRepository timeEntryRepository,
@@ -48,7 +55,10 @@ public class TimeEntryService {
       BillingRateService billingRateService,
       CostRateService costRateService,
       BudgetCheckService budgetCheckService,
-      MemberRepository memberRepository) {
+      MemberRepository memberRepository,
+      CustomerLifecycleGuard customerLifecycleGuard,
+      CustomerProjectRepository customerProjectRepository,
+      CustomerRepository customerRepository) {
     this.timeEntryRepository = timeEntryRepository;
     this.taskRepository = taskRepository;
     this.projectAccessService = projectAccessService;
@@ -57,6 +67,9 @@ public class TimeEntryService {
     this.costRateService = costRateService;
     this.budgetCheckService = budgetCheckService;
     this.memberRepository = memberRepository;
+    this.customerLifecycleGuard = customerLifecycleGuard;
+    this.customerProjectRepository = customerProjectRepository;
+    this.customerRepository = customerRepository;
   }
 
   @Transactional
@@ -75,6 +88,18 @@ public class TimeEntryService {
             .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
 
     projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
+
+    // Check lifecycle guard if project is linked to a customer
+    customerProjectRepository
+        .findFirstCustomerByProjectId(task.getProjectId())
+        .ifPresent(
+            custId ->
+                customerRepository
+                    .findById(custId)
+                    .ifPresent(
+                        customer ->
+                            customerLifecycleGuard.requireActionPermitted(
+                                customer, LifecycleAction.CREATE_TIME_ENTRY)));
 
     if (durationMinutes <= 0) {
       throw new InvalidStateException(

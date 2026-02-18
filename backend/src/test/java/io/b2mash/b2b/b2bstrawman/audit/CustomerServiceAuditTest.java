@@ -227,6 +227,9 @@ class CustomerServiceAuditTest {
 
     var customerId = UUID.fromString(extractIdFromLocation(customerResult));
 
+    // Transition customer to ACTIVE so linking is permitted by lifecycle guard
+    transitionToActive(customerId);
+
     // Link customer to project
     mockMvc
         .perform(post("/api/customers/" + customerId + "/projects/" + projectId).with(ownerJwt()))
@@ -288,6 +291,9 @@ class CustomerServiceAuditTest {
 
     var customerId = UUID.fromString(extractIdFromLocation(customerResult));
 
+    // Transition customer to ACTIVE so linking is permitted by lifecycle guard
+    transitionToActive(customerId);
+
     // Link then unlink
     mockMvc
         .perform(post("/api/customers/" + customerId + "/projects/" + projectId).with(ownerJwt()))
@@ -346,6 +352,11 @@ class CustomerServiceAuditTest {
             .andReturn();
 
     return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
+  }
+
+  /** No-op: customers now default to ACTIVE lifecycle status. */
+  private void transitionToActive(UUID customerId) throws Exception {
+    // Customers default to ACTIVE — no transition needed
   }
 
   private JwtRequestPostProcessor ownerJwt() {

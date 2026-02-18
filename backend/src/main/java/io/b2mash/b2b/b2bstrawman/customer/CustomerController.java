@@ -68,6 +68,7 @@ public class CustomerController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<CustomerResponse>> listCustomers(
       @RequestParam(required = false) UUID view,
+      @RequestParam(required = false) String lifecycleStatus,
       @RequestParam(required = false) Map<String, String> allParams) {
 
     // --- View-based filtering (server-side SQL) ---
@@ -101,7 +102,10 @@ public class CustomerController {
     }
 
     // --- Fallback: existing in-memory filtering ---
-    var customerEntities = customerService.listCustomers();
+    var customerEntities =
+        lifecycleStatus != null
+            ? customerService.listCustomersByLifecycleStatus(lifecycleStatus)
+            : customerService.listCustomers();
 
     // Batch-load tags for all customers (2 queries instead of 2N)
     var customerIds = customerEntities.stream().map(Customer::getId).toList();
@@ -155,7 +159,8 @@ public class CustomerController {
             request.notes(),
             createdBy,
             request.customFields(),
-            request.appliedFieldGroups());
+            request.appliedFieldGroups(),
+            request.customerType());
     return ResponseEntity.created(URI.create("/api/customers/" + customer.getId()))
         .body(CustomerResponse.from(customer, List.of()));
   }
@@ -299,7 +304,9 @@ public class CustomerController {
       @Size(max = 100, message = "idNumber must be at most 100 characters") String idNumber,
       String notes,
       Map<String, Object> customFields,
-      List<UUID> appliedFieldGroups) {}
+      List<UUID> appliedFieldGroups,
+      @Size(max = 20, message = "customerType must be at most 20 characters")
+          String customerType) {}
 
   public record UpdateCustomerRequest(
       @NotBlank(message = "name is required")
@@ -328,7 +335,10 @@ public class CustomerController {
       Instant updatedAt,
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups,
-      List<TagResponse> tags) {
+      List<TagResponse> tags,
+      String lifecycleStatus,
+      String customerType,
+      Instant lifecycleStatusChangedAt) {
 
     public static CustomerResponse from(Customer customer) {
       return new CustomerResponse(
@@ -344,7 +354,10 @@ public class CustomerController {
           customer.getUpdatedAt(),
           customer.getCustomFields(),
           customer.getAppliedFieldGroups(),
-          List.of());
+          List.of(),
+          customer.getLifecycleStatus(),
+          customer.getCustomerType(),
+          customer.getLifecycleStatusChangedAt());
     }
 
     public static CustomerResponse from(Customer customer, List<TagResponse> tags) {
@@ -361,7 +374,10 @@ public class CustomerController {
           customer.getUpdatedAt(),
           customer.getCustomFields(),
           customer.getAppliedFieldGroups(),
-          tags);
+          tags,
+          customer.getLifecycleStatus(),
+          customer.getCustomerType(),
+          customer.getLifecycleStatusChangedAt());
     }
   }
 

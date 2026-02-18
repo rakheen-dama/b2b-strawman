@@ -57,6 +57,21 @@ public class Customer {
   @Column(name = "applied_field_groups", columnDefinition = "jsonb")
   private List<UUID> appliedFieldGroups;
 
+  @Column(name = "customer_type", nullable = false, length = 20)
+  private String customerType;
+
+  @Column(name = "lifecycle_status", nullable = false, length = 20)
+  private String lifecycleStatus;
+
+  @Column(name = "lifecycle_status_changed_at")
+  private Instant lifecycleStatusChangedAt;
+
+  @Column(name = "lifecycle_status_changed_by")
+  private UUID lifecycleStatusChangedBy;
+
+  @Column(name = "offboarded_at")
+  private Instant offboardedAt;
+
   protected Customer() {}
 
   public Customer(
@@ -70,6 +85,20 @@ public class Customer {
     this.createdBy = createdBy;
     this.createdAt = Instant.now();
     this.updatedAt = Instant.now();
+    this.customerType = "INDIVIDUAL";
+    this.lifecycleStatus = "PROSPECT";
+  }
+
+  public Customer(
+      String name,
+      String email,
+      String phone,
+      String idNumber,
+      String notes,
+      UUID createdBy,
+      String customerType) {
+    this(name, email, phone, idNumber, notes, createdBy);
+    this.customerType = customerType != null ? customerType : "INDIVIDUAL";
   }
 
   public void update(String name, String email, String phone, String idNumber, String notes) {
@@ -83,6 +112,22 @@ public class Customer {
 
   public void archive() {
     this.status = "ARCHIVED";
+    this.updatedAt = Instant.now();
+  }
+
+  /** Transitions the lifecycle status, recording the actor and timestamp. */
+  public void transitionLifecycleStatus(String targetStatus, UUID actorId) {
+    this.lifecycleStatus = targetStatus;
+    this.lifecycleStatusChangedAt = Instant.now();
+    this.lifecycleStatusChangedBy = actorId;
+    this.updatedAt = Instant.now();
+  }
+
+  /** Replaces PII fields with anonymized values. */
+  public void anonymize(String replacementName) {
+    this.name = replacementName;
+    this.email = replacementName.toLowerCase().replaceAll("\\s+", ".") + "@anonymized.invalid";
+    this.phone = null;
     this.updatedAt = Instant.now();
   }
 
@@ -142,5 +187,25 @@ public class Customer {
   public void setAppliedFieldGroups(List<UUID> appliedFieldGroups) {
     this.appliedFieldGroups = appliedFieldGroups;
     this.updatedAt = Instant.now();
+  }
+
+  public String getCustomerType() {
+    return customerType;
+  }
+
+  public String getLifecycleStatus() {
+    return lifecycleStatus;
+  }
+
+  public Instant getLifecycleStatusChangedAt() {
+    return lifecycleStatusChangedAt;
+  }
+
+  public UUID getLifecycleStatusChangedBy() {
+    return lifecycleStatusChangedBy;
+  }
+
+  public Instant getOffboardedAt() {
+    return offboardedAt;
   }
 }

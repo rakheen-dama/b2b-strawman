@@ -63,6 +63,11 @@ public class CustomerService {
   }
 
   @Transactional(readOnly = true)
+  public List<Customer> listCustomersByLifecycleStatus(String lifecycleStatus) {
+    return repository.findByLifecycleStatus(lifecycleStatus);
+  }
+
+  @Transactional(readOnly = true)
   public Customer getCustomer(UUID id) {
     return repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Customer", id));
   }
@@ -83,6 +88,21 @@ public class CustomerService {
       UUID createdBy,
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups) {
+    return createCustomer(
+        name, email, phone, idNumber, notes, createdBy, customFields, appliedFieldGroups, null);
+  }
+
+  @Transactional
+  public Customer createCustomer(
+      String name,
+      String email,
+      String phone,
+      String idNumber,
+      String notes,
+      UUID createdBy,
+      Map<String, Object> customFields,
+      List<UUID> appliedFieldGroups,
+      String customerType) {
     if (repository.existsByEmail(email)) {
       throw new ResourceConflictException(
           "Customer email conflict", "A customer with email " + email + " already exists");
@@ -95,7 +115,7 @@ public class CustomerService {
             customFields != null ? customFields : new HashMap<>(),
             appliedFieldGroups);
 
-    var customer = new Customer(name, email, phone, idNumber, notes, createdBy);
+    var customer = new Customer(name, email, phone, idNumber, notes, createdBy, customerType);
     customer.setCustomFields(validatedFields);
     if (appliedFieldGroups != null) {
       customer.setAppliedFieldGroups(appliedFieldGroups);

@@ -358,6 +358,10 @@ export interface OrgSettings {
   logoUrl?: string;
   brandColor?: string;
   documentFooterText?: string;
+  // compliance fields (may be absent from API response until backend adds them)
+  dormancyThresholdDays?: number;
+  dataRequestDeadlineDays?: number;
+  compliancePackStatus?: CompliancePackEntry[];
 }
 
 export interface UpdateOrgSettingsRequest {
@@ -989,6 +993,63 @@ export interface AnonymizationResult {
     portalContactsAnonymized: number;
     invoicesPreserved: number;
   };
+}
+
+// ---- Retention Policies (from RetentionController.java) ----
+
+export interface RetentionPolicy {
+  id: string;
+  recordType: string; // "CUSTOMER" | "AUDIT_EVENT" | "DOCUMENT" | "COMMENT"
+  retentionDays: number;
+  triggerEvent: string; // "CUSTOMER_OFFBOARDED" | "RECORD_CREATED"
+  action: string; // "FLAG" | "ANONYMIZE"
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateRetentionPolicyRequest {
+  recordType: string;
+  retentionDays: number;
+  triggerEvent: string;
+  action: string;
+}
+
+export interface UpdateRetentionPolicyRequest {
+  retentionDays: number;
+  action: string;
+  active: boolean;
+}
+
+export interface FlaggedRecords {
+  count: number;
+  recordType: string;
+  triggerEvent: string;
+  action: string;
+  recordIds: string[];
+}
+
+export interface RetentionCheckResult {
+  checkedAt: string;
+  flagged: Record<string, FlaggedRecords>;
+  totalFlagged: number;
+}
+
+export interface PurgeResult {
+  recordType: string;
+  purged: number;
+  failed: number;
+}
+
+export interface CompliancePackEntry {
+  packId: string;
+  version: string;
+  appliedAt: string;
+}
+
+export interface UpdateComplianceSettingsRequest {
+  dormancyThresholdDays?: number;
+  dataRequestDeadlineDays?: number;
 }
 
 // ---- Error (RFC 9457 ProblemDetail) ----

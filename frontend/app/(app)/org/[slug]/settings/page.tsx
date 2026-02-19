@@ -10,6 +10,8 @@ import {
   ListChecks,
   Tag,
   FileText,
+  ClipboardCheck,
+  ShieldAlert,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { LucideIcon } from "lucide-react";
@@ -63,6 +65,20 @@ const settingsCards: SettingsCard[] = [
     title: "Templates",
     description: "Manage document templates and branding",
     href: "templates",
+    comingSoon: false,
+  },
+  {
+    icon: ClipboardCheck,
+    title: "Checklists",
+    description: "Manage checklist templates for customer onboarding",
+    href: "checklists",
+    comingSoon: false,
+  },
+  {
+    icon: ShieldAlert,
+    title: "Compliance",
+    description: "Configure retention policies, dormancy thresholds, and data requests",
+    href: "compliance",
     comingSoon: false,
   },
   {

@@ -45,14 +45,13 @@ describe("ChecklistInstanceItemRow", () => {
         onSkip={mockOnSkip}
         onReopen={mockOnReopen}
         isAdmin={false}
-        slug="acme"
       />,
     );
     expect(screen.getByText("Verify identity document")).toBeInTheDocument();
     expect(screen.getByText("Pending")).toBeInTheDocument();
   });
 
-  it("shows 'Mark Complete' button for PENDING items", () => {
+  it("shows 'Mark Complete' button for PENDING items when isAdmin", () => {
     render(
       <ChecklistInstanceItemRow
         item={baseItem}
@@ -60,29 +59,13 @@ describe("ChecklistInstanceItemRow", () => {
         onComplete={mockOnComplete}
         onSkip={mockOnSkip}
         onReopen={mockOnReopen}
-        isAdmin={false}
-        slug="acme"
+        isAdmin={true}
       />,
     );
     expect(screen.getByText("Mark Complete")).toBeInTheDocument();
   });
 
-  it("does NOT show 'Skip' button for required items", () => {
-    render(
-      <ChecklistInstanceItemRow
-        item={{ ...baseItem, required: true }}
-        instanceItems={[baseItem]}
-        onComplete={mockOnComplete}
-        onSkip={mockOnSkip}
-        onReopen={mockOnReopen}
-        isAdmin={false}
-        slug="acme"
-      />,
-    );
-    expect(screen.queryByText("Skip")).not.toBeInTheDocument();
-  });
-
-  it("shows 'Skip' button for optional (non-required) PENDING items", () => {
+  it("hides 'Mark Complete' and 'Skip' buttons for non-admin users", () => {
     render(
       <ChecklistInstanceItemRow
         item={{ ...baseItem, required: false }}
@@ -91,7 +74,35 @@ describe("ChecklistInstanceItemRow", () => {
         onSkip={mockOnSkip}
         onReopen={mockOnReopen}
         isAdmin={false}
-        slug="acme"
+      />,
+    );
+    expect(screen.queryByText("Mark Complete")).not.toBeInTheDocument();
+    expect(screen.queryByText("Skip")).not.toBeInTheDocument();
+  });
+
+  it("does NOT show 'Skip' button for required items even when isAdmin", () => {
+    render(
+      <ChecklistInstanceItemRow
+        item={{ ...baseItem, required: true }}
+        instanceItems={[baseItem]}
+        onComplete={mockOnComplete}
+        onSkip={mockOnSkip}
+        onReopen={mockOnReopen}
+        isAdmin={true}
+      />,
+    );
+    expect(screen.queryByText("Skip")).not.toBeInTheDocument();
+  });
+
+  it("shows 'Skip' button for optional (non-required) PENDING items when isAdmin", () => {
+    render(
+      <ChecklistInstanceItemRow
+        item={{ ...baseItem, required: false }}
+        instanceItems={[baseItem]}
+        onComplete={mockOnComplete}
+        onSkip={mockOnSkip}
+        onReopen={mockOnReopen}
+        isAdmin={true}
       />,
     );
     expect(screen.getByText("Skip")).toBeInTheDocument();
@@ -115,7 +126,6 @@ describe("ChecklistInstanceItemRow", () => {
         onSkip={mockOnSkip}
         onReopen={mockOnReopen}
         isAdmin={true}
-        slug="acme"
       />,
     );
     expect(screen.getByText("Reopen")).toBeInTheDocument();
@@ -130,7 +140,6 @@ describe("ChecklistInstanceItemRow", () => {
         onSkip={mockOnSkip}
         onReopen={mockOnReopen}
         isAdmin={false}
-        slug="acme"
       />,
     );
     expect(screen.queryByText("Reopen")).not.toBeInTheDocument();

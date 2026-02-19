@@ -20,6 +20,11 @@ interface ActionResult {
 export async function fetchCustomerChecklists(
   customerId: string,
 ): Promise<ChecklistInstanceResponse[]> {
+  const { orgRole } = await auth();
+  if (!orgRole) {
+    return [];
+  }
+
   try {
     return await getCustomerChecklists(customerId);
   } catch {

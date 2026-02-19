@@ -14,7 +14,7 @@ export function ChecklistProgressBar({
   requiredTotal,
 }: ChecklistProgressBarProps) {
   const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
-  const allRequiredDone = requiredTotal > 0 && requiredCompleted >= requiredTotal;
+  const allRequiredDone = requiredTotal === 0 || requiredCompleted >= requiredTotal;
 
   return (
     <div className="space-y-1">

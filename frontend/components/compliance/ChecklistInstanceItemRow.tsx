@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -35,7 +35,6 @@ interface ChecklistInstanceItemRowProps {
   onSkip: (itemId: string, reason: string) => Promise<void>;
   onReopen: (itemId: string) => Promise<void>;
   isAdmin: boolean;
-  slug: string;
 }
 
 export function ChecklistInstanceItemRow({
@@ -52,6 +51,15 @@ export function ChecklistInstanceItemRow({
   const [notes, setNotes] = useState("");
   const [documentId, setDocumentId] = useState("");
   const [skipReason, setSkipReason] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  const clearError = useCallback(() => setError(null), []);
+
+  useEffect(() => {
+    if (!error) return;
+    const timer = setTimeout(clearError, 3000);
+    return () => clearTimeout(timer);
+  }, [error, clearError]);
 
   const config = STATUS_CONFIG[item.status] ?? { label: item.status, variant: "neutral" as const };
   const icon = STATUS_ICON[item.status] ?? <Circle className="size-4 text-slate-400" />;
@@ -68,11 +76,14 @@ export function ChecklistInstanceItemRow({
 
   async function handleComplete() {
     setIsPending(true);
+    setError(null);
     try {
       await onComplete(item.id, notes.trim(), documentId.trim() || undefined);
       setShowCompleteForm(false);
       setNotes("");
       setDocumentId("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to complete item");
     } finally {
       setIsPending(false);
     }
@@ -80,10 +91,13 @@ export function ChecklistInstanceItemRow({
 
   async function handleSkip() {
     setIsPending(true);
+    setError(null);
     try {
       await onSkip(item.id, skipReason.trim());
       setShowSkipForm(false);
       setSkipReason("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to skip item");
     } finally {
       setIsPending(false);
     }
@@ -91,8 +105,11 @@ export function ChecklistInstanceItemRow({
 
   async function handleReopen() {
     setIsPending(true);
+    setError(null);
     try {
       await onReopen(item.id);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to reopen item");
     } finally {
       setIsPending(false);
     }
@@ -144,6 +161,11 @@ export function ChecklistInstanceItemRow({
               {item.completedAt && <span>{formatDate(item.completedAt)}</span>}
               {item.notes && <span className="ml-2">&mdash; {item.notes}</span>}
             </div>
+          )}
+
+          {/* Error message */}
+          {error && (
+            <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>
           )}
 
           {/* Complete form */}
@@ -220,7 +242,7 @@ export function ChecklistInstanceItemRow({
         {/* Actions */}
         {!isCancelled && !isBlocked && (
           <div className="flex shrink-0 gap-1">
-            {isPendingStatus && !showCompleteForm && !showSkipForm && (
+            {isPendingStatus && isAdmin && !showCompleteForm && !showSkipForm && (
               <>
                 <Button
                   size="sm"

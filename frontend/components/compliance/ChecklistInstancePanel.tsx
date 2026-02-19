@@ -272,7 +272,6 @@ export function ChecklistInstancePanel({
                       onSkip={handleSkip}
                       onReopen={handleReopen}
                       isAdmin={isAdmin}
-                      slug={slug}
                     />
                   ))}
               </div>

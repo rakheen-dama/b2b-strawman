@@ -47,6 +47,6 @@ export async function instantiateChecklist(
 export async function getChecklistTemplates(
   customerType?: string,
 ): Promise<ChecklistTemplateResponse[]> {
-  const params = customerType ? `?customerType=${customerType}` : "";
+  const params = customerType ? `?customerType=${encodeURIComponent(customerType)}` : "";
   return api.get<ChecklistTemplateResponse[]>(`/api/checklist-templates${params}`);
 }

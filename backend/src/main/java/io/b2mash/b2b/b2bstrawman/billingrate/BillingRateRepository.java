@@ -106,4 +106,11 @@ public interface BillingRateRepository extends JpaRepository<BillingRate, UUID> 
       @Param("memberId") UUID memberId,
       @Param("projectId") UUID projectId,
       @Param("customerId") UUID customerId);
+
+  /**
+   * Checks whether any org-level default billing rates exist (projectId IS NULL AND customerId IS
+   * NULL). Used by ProjectSetupStatusService to determine if any member assigned to a project will
+   * inherit a billing rate. Spring Data JPA derives this from the method name.
+   */
+  boolean existsByProjectIdIsNullAndCustomerIdIsNull();
 }

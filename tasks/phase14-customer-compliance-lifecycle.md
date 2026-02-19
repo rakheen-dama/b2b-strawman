@@ -19,7 +19,7 @@ Phase 14 adds a **jurisdiction-agnostic compliance system** managing the full cu
 | 104 | Data Subject Requests | Backend | 100 | M | 104A, 104B | |
 | 105 | Retention & Dormancy | Backend | 100 | M | 105A, 105B | |
 | 106 | Lifecycle & Checklist Frontend | Frontend | 102, 103 | M | 106A, 106B | **Done** (PRs #220, #221) |
-| 107 | Data Requests & Settings Frontend | Frontend | 104, 105 | M | 107A, 107B | |
+| 107 | Data Requests & Settings Frontend | Frontend | 104, 105 | M | 107A, 107B | **Done** (PRs #222, #223) |
 | 108 | Compliance Dashboard | Frontend | 106, 107 | S | 108A | |
 
 ## Dependency Graph
@@ -128,8 +128,8 @@ Phase 14 adds a **jurisdiction-agnostic compliance system** managing the full cu
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 7a | Epic 107 | 107A | Data request list page, CreateDataRequestDialog, request detail with timeline, export download, DeletionConfirmDialog. ~8 tests. |
-| 7b | Epic 107 | 107B | Compliance settings page, retention policy table, "Run Retention Check" with results, dormancy threshold config. ~7 tests. |
+| 7a | Epic 107 | 107A | Data request list page, CreateDataRequestDialog, request detail with timeline, export download, DeletionConfirmDialog. ~8 tests. | **Done** (PR #222) |
+| 7b | Epic 107 | 107B | Compliance settings page, retention policy table, "Run Retention Check" with results, dormancy threshold config. ~7 tests. | **Done** (PR #223) |
 
 ### Stage 8: Dashboard
 

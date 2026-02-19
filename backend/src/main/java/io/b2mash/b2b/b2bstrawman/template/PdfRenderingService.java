@@ -16,8 +16,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
-import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.StringTemplateResolver;
 
@@ -37,7 +37,7 @@ public class PdfRenderingService {
 
   private final DocumentTemplateRepository documentTemplateRepository;
   private final List<TemplateContextBuilder> contextBuilders;
-  private final SpringTemplateEngine stringTemplateEngine;
+  private final TemplateEngine stringTemplateEngine;
   private final String defaultCss;
 
   public PdfRenderingService(
@@ -131,11 +131,20 @@ public class PdfRenderingService {
     return stringTemplateEngine.process(templateContent, ctx);
   }
 
-  String wrapHtml(String bodyHtml, String css) {
-    return "<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\"UTF-8\"/>\n<style>\n"
-        + css
-        + "\n</style>\n</head>\n<body>\n"
-        + bodyHtml
+  String wrapHtml(String renderedHtml, String css) {
+    String styleBlock = "<style>\n" + css + "\n</style>\n";
+
+    // If the rendered output is already a full HTML document, inject CSS into the existing <head>
+    int headClose = renderedHtml.indexOf("</head>");
+    if (headClose >= 0) {
+      return renderedHtml.substring(0, headClose) + styleBlock + renderedHtml.substring(headClose);
+    }
+
+    // Otherwise, wrap the fragment in a full HTML document
+    return "<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\"UTF-8\"/>\n"
+        + styleBlock
+        + "</head>\n<body>\n"
+        + renderedHtml
         + "\n</body>\n</html>";
   }
 
@@ -190,10 +199,9 @@ public class PdfRenderingService {
         .replaceAll("^-|-$", "");
   }
 
-  private static SpringTemplateEngine createStringTemplateEngine() {
-    var engine = new SpringTemplateEngine();
-    engine.setDialect(new LenientSpringDialect());
-    engine.setEnableSpringELCompiler(false);
+  private static TemplateEngine createStringTemplateEngine() {
+    var engine = new TemplateEngine();
+    engine.setDialect(new LenientStandardDialect());
     var resolver = new StringTemplateResolver();
     resolver.setTemplateMode(TemplateMode.HTML);
     engine.setTemplateResolver(resolver);

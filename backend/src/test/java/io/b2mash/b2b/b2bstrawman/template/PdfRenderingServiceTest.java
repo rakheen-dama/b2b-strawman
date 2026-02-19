@@ -161,6 +161,63 @@ class PdfRenderingServiceTest {
     assertThat(result).doesNotContain("placeholder");
   }
 
+  @Test
+  void generatesPdfFromFullHtmlTemplate() {
+    // Simulate a real seeded template (full HTML document with map-based context)
+    String fullTemplate =
+        """
+        <!DOCTYPE html>
+        <html xmlns:th="http://www.thymeleaf.org">
+        <head><title>Test</title></head>
+        <body>
+          <div class="header">
+            <img th:if="${org.logoUrl}" th:src="${org.logoUrl}" alt="Logo" style="max-height: 60px;"/>
+            <h1 th:text="${org.name}">Org Name</h1>
+          </div>
+          <div class="content">
+            <h2>Engagement Letter</h2>
+            <p>Dear <span th:text="${customer.name}">Customer</span>,</p>
+            <p>Project: <span th:text="${project.name}">Project</span></p>
+          </div>
+        </body>
+        </html>
+        """;
+
+    // Build context with LinkedHashMaps (same as real context builders)
+    var org = new java.util.LinkedHashMap<String, Object>();
+    org.put("name", "Test Org");
+    org.put("logoUrl", null);
+    org.put("documentFooterText", null);
+
+    var project = new java.util.LinkedHashMap<String, Object>();
+    project.put("name", "Test Project");
+
+    var customer = new java.util.LinkedHashMap<String, Object>();
+    customer.put("name", "Test Customer");
+
+    var context = new java.util.HashMap<String, Object>();
+    context.put("org", org);
+    context.put("project", project);
+    context.put("customer", customer);
+    context.put("generatedAt", java.time.Instant.now().toString());
+
+    String rendered = pdfRenderingService.renderThymeleaf(fullTemplate, context);
+    String fullHtml = pdfRenderingService.wrapHtml(rendered, "h1 { color: blue; }");
+
+    // Verify no double-wrapping
+    assertThat(fullHtml.indexOf("<!DOCTYPE")).isEqualTo(fullHtml.lastIndexOf("<!DOCTYPE"));
+    assertThat(fullHtml).contains("Test Org");
+    assertThat(fullHtml).contains("Test Customer");
+    assertThat(fullHtml).contains("Test Project");
+    assertThat(fullHtml).doesNotContain("________");
+
+    // Verify PDF generation succeeds
+    byte[] pdf = pdfRenderingService.htmlToPdf(fullHtml);
+    assertThat(pdf).isNotEmpty();
+    assertThat(pdf[0]).isEqualTo((byte) '%');
+    assertThat(pdf[1]).isEqualTo((byte) 'P');
+  }
+
   // --- Helpers ---
 
   private void runInTenant(Runnable action) {

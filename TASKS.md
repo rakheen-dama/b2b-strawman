@@ -132,7 +132,7 @@
 | 109 | Project Setup Status & Unbilled Time — Backend | Backend | -- | M | 109A, 109B | **Done** (PRs #225, #226) |
 | 110 | Customer Readiness & Document Generation Readiness — Backend | Backend | -- | M | 110A, 110B | **Done** (PRs #227, #228) |
 | 111 | Reusable Frontend Components & API Client | Frontend | 109, 110 | M | 111A | **Done** (PR #229) |
-| 112 | Project Detail Page Integration | Frontend | 111 | S | 112A | |
+| 112 | Project Detail Page Integration | Frontend | 111 | S | 112A | **Done** (PR #230) |
 | 113 | Customer Detail Page Integration | Frontend | 111 | S | 113A | |
 | 114 | Empty State Rollout | Frontend | 111 | S | 114A | |
 

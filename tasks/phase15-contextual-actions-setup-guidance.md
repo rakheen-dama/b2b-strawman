@@ -24,7 +24,7 @@ This is a **pure read/aggregation layer** over existing data. No new database ta
 | 109 | Project Setup Status & Unbilled Time — Backend | Backend | -- | M | 109A, 109B | **Done** |
 | 110 | Customer Readiness & Document Generation Readiness — Backend | Backend | -- | M | 110A, 110B | **Done** |
 | 111 | Reusable Frontend Components & API Client | Frontend | 109, 110 | M | 111A | **Done** (PR #229) |
-| 112 | Project Detail Page Integration | Frontend | 111 | S | 112A | |
+| 112 | Project Detail Page Integration | Frontend | 111 | S | 112A | **Done** (PR #230) |
 | 113 | Customer Detail Page Integration | Frontend | 111 | S | 113A | |
 | 114 | Empty State Rollout | Frontend | 111 | S | 114A | |
 
@@ -83,7 +83,7 @@ This is a **pure read/aggregation layer** over existing data. No new database ta
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 3a | Epic 112 | 112A | Wire `SetupProgressCard`, `ActionCard`, `TemplateReadinessCard`, `FieldValueGrid` into project detail page. Parallel `Promise.all()` fetches. ~5 tests. |
+| 3a | Epic 112 | 112A | Wire `SetupProgressCard`, `ActionCard`, `TemplateReadinessCard`, `FieldValueGrid` into project detail page. Parallel `Promise.all()` fetches. ~5 tests. | **Done** (PR #230) |
 | 3b | Epic 113 | 113A | Wire customer readiness, unbilled summary, template readiness into customer detail page. Lifecycle action prompt. ~5 tests. |
 | 3c | Epic 114 | 114A | Upgrade existing `components/empty-state.tsx` with `actionHref`/`onAction` support and card-based styling. Replace 8 "No items" placeholders across the app. ~8 tests. |
 
@@ -359,7 +359,7 @@ Stage 3:   [112A]  //  [113A]  //  [114A]   (page integrations — all parallel 
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **112A** | 112.1–112.9 | Modify `projects/[id]/page.tsx` to fetch 3 new endpoints in parallel. Modify `components/projects/overview-tab.tsx` to render 4 setup guidance cards. Map `ProjectSetupStatus` to `SetupStep[]` array with action hrefs. Permission-aware rendering using `canManage`. ~5 frontend tests. | |
+| **112A** | 112.1–112.9 | Modify `projects/[id]/page.tsx` to fetch 3 new endpoints in parallel. Modify `components/projects/overview-tab.tsx` to render 4 setup guidance cards. Map `ProjectSetupStatus` to `SetupStep[]` array with action hrefs. Permission-aware rendering using `canManage`. ~5 frontend tests. | **Done** (PR #230) |
 
 ### Tasks
 

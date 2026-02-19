@@ -1,4 +1,10 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  SetupProgressCard,
+  ActionCard,
+  TemplateReadinessCard,
+} from "@/components/setup";
+import type { SetupStep } from "@/components/setup/types";
 import { OverviewHealthHeader } from "@/components/projects/overview-health-header";
 import { OverviewMetricsStrip } from "@/components/projects/overview-metrics-strip";
 import {
@@ -9,7 +15,7 @@ import {
 import { fetchProjectActivity } from "@/lib/actions/activity";
 import { api } from "@/lib/api";
 import { resolveDateRange } from "@/lib/date-utils";
-import { formatRelativeDate } from "@/lib/format";
+import { formatCurrency, formatRelativeDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import {
   CheckSquare,
@@ -23,7 +29,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import type { ProjectHealthDetail, MemberHoursEntry } from "@/lib/dashboard-types";
-import type { Task, BudgetStatusResponse, ProjectProfitabilityResponse } from "@/lib/types";
+import type { Task, BudgetStatusResponse, ProjectProfitabilityResponse, ProjectSetupStatus, UnbilledTimeSummary, TemplateReadiness } from "@/lib/types";
 import type { ActivityItem } from "@/lib/actions/activity";
 
 interface OverviewTabProps {
@@ -31,8 +37,13 @@ interface OverviewTabProps {
   projectName: string;
   customerName: string | null;
   canManage: boolean;
+  isAdmin: boolean;
   tasks: Task[];
   slug: string;
+  setupStatus: ProjectSetupStatus | null;
+  setupSteps: SetupStep[];
+  unbilledSummary: UnbilledTimeSummary | null;
+  templateReadiness: TemplateReadiness[];
 }
 
 function settled<T>(result: PromiseSettledResult<T>): T | null {
@@ -76,8 +87,13 @@ export async function OverviewTab({
   projectName,
   customerName,
   canManage,
+  isAdmin,
   tasks,
   slug,
+  setupStatus,
+  setupSteps,
+  unbilledSummary,
+  templateReadiness,
 }: OverviewTabProps) {
   const { from, to } = resolveDateRange({});
 
@@ -137,6 +153,47 @@ export async function OverviewTab({
 
   return (
     <div className="space-y-6">
+      {/* Setup guidance cards — Epic 112A */}
+      {setupStatus && (
+        <SetupProgressCard
+          title="Project Setup"
+          completionPercentage={setupStatus.completionPercentage}
+          overallComplete={setupStatus.overallComplete}
+          steps={setupSteps}
+          canManage={canManage}
+        />
+      )}
+
+      {unbilledSummary && unbilledSummary.entryCount > 0 && (
+        <ActionCard
+          icon={Clock}
+          title="Unbilled Time"
+          description={`${formatCurrency(unbilledSummary.totalAmount, unbilledSummary.currency)} across ${unbilledSummary.totalHours.toFixed(1)} hours`}
+          primaryAction={
+            isAdmin
+              ? {
+                  label: "Create Invoice",
+                  href: `/org/${slug}/invoices/new?projectId=${projectId}`,
+                }
+              : undefined
+          }
+          secondaryAction={{
+            label: "View Entries",
+            href: `?tab=time`,
+          }}
+          variant="accent"
+        />
+      )}
+
+      {templateReadiness.length > 0 && (
+        <TemplateReadinessCard
+          templates={templateReadiness}
+          generateHref={(templateId) =>
+            `/org/${slug}/projects/${projectId}?generateTemplate=${templateId}`
+          }
+        />
+      )}
+
       {/* Health Header */}
       <OverviewHealthHeader
         health={health}

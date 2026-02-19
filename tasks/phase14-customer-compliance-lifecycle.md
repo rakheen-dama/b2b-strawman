@@ -658,7 +658,7 @@ Stage 8:  [108A]                                                      ← dashbo
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **107A** | 107.1–107.7 | Data request list page (/compliance/requests), CreateDataRequestDialog, request detail with status timeline, export download, DeletionConfirmDialog (type customer name). Frontend tests (~8 tests). | |
+| **107A** | 107.1–107.7 | Data request list page (/compliance/requests), CreateDataRequestDialog, request detail with status timeline, export download, DeletionConfirmDialog (type customer name). Frontend tests (~8 tests). | **Done** (PR #222) |
 | **107B** | 107.8–107.14 | Compliance settings page (/settings/compliance), retention policy table (CRUD), "Run Retention Check" with results display, dormancy threshold + deadline days config, checklist template list in settings. Frontend tests (~7 tests). | |
 
 ### Tasks

@@ -24,6 +24,18 @@ public class RetentionPolicyService {
   @Transactional
   public RetentionPolicy create(
       String recordType, int retentionDays, String triggerEvent, String action) {
+    if (recordType == null || recordType.isBlank()) {
+      throw new IllegalArgumentException("recordType must not be blank");
+    }
+    if (triggerEvent == null || triggerEvent.isBlank()) {
+      throw new IllegalArgumentException("triggerEvent must not be blank");
+    }
+    if (action == null || action.isBlank()) {
+      throw new IllegalArgumentException("action must not be blank");
+    }
+    if (retentionDays < 0) {
+      throw new IllegalArgumentException("retentionDays must not be negative");
+    }
     if (policyRepository.existsByRecordTypeAndTriggerEvent(recordType, triggerEvent)) {
       throw new ResourceConflictException(
           "Policy already exists",
@@ -39,6 +51,12 @@ public class RetentionPolicyService {
 
   @Transactional
   public RetentionPolicy update(UUID id, int retentionDays, String action) {
+    if (action == null || action.isBlank()) {
+      throw new IllegalArgumentException("action must not be blank");
+    }
+    if (retentionDays < 0) {
+      throw new IllegalArgumentException("retentionDays must not be negative");
+    }
     var policy =
         policyRepository
             .findById(id)

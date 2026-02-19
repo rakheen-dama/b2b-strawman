@@ -17,8 +17,17 @@ public class RetentionCheckResult {
     this.flagged = new LinkedHashMap<>();
   }
 
-  public void addFlagged(String recordType, String action, List<UUID> ids) {
-    flagged.put(recordType, new FlaggedRecords(ids.size(), action, List.copyOf(ids)));
+  public void addFlagged(String recordType, String triggerEvent, String action, List<UUID> ids) {
+    String key = recordType + ":" + triggerEvent;
+    flagged.merge(
+        key,
+        new FlaggedRecords(ids.size(), recordType, triggerEvent, action, List.copyOf(ids)),
+        (existing, incoming) -> {
+          var merged = new java.util.ArrayList<>(existing.recordIds());
+          merged.addAll(incoming.recordIds());
+          return new FlaggedRecords(
+              merged.size(), recordType, triggerEvent, action, List.copyOf(merged));
+        });
   }
 
   public Instant getCheckedAt() {
@@ -33,5 +42,6 @@ public class RetentionCheckResult {
     return flagged.values().stream().mapToInt(FlaggedRecords::count).sum();
   }
 
-  public record FlaggedRecords(int count, String action, List<UUID> recordIds) {}
+  public record FlaggedRecords(
+      int count, String recordType, String triggerEvent, String action, List<UUID> recordIds) {}
 }

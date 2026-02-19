@@ -119,9 +119,10 @@ class RetentionServiceTest {
     RetentionCheckResult result = runInTenant(() -> retentionService.runCheck());
 
     assertThat(result.getTotalFlagged()).isGreaterThanOrEqualTo(1);
-    assertThat(result.getFlagged()).containsKey("CUSTOMER");
-    assertThat(result.getFlagged().get("CUSTOMER").action()).isEqualTo("FLAG");
-    assertThat(result.getFlagged().get("CUSTOMER").recordIds()).contains(customerId);
+    assertThat(result.getFlagged()).containsKey("CUSTOMER:CUSTOMER_OFFBOARDED");
+    assertThat(result.getFlagged().get("CUSTOMER:CUSTOMER_OFFBOARDED").action()).isEqualTo("FLAG");
+    assertThat(result.getFlagged().get("CUSTOMER:CUSTOMER_OFFBOARDED").recordIds())
+        .contains(customerId);
   }
 
   @Test
@@ -149,7 +150,7 @@ class RetentionServiceTest {
     RetentionCheckResult result = runInTenant(() -> retentionService.runCheck());
 
     // Active customers should not appear since they are not OFFBOARDED
-    assertThat(result.getFlagged()).doesNotContainKey("CUSTOMER");
+    assertThat(result.getFlagged()).doesNotContainKey("CUSTOMER:CUSTOMER_OFFBOARDED");
   }
 
   @Test
@@ -174,9 +175,11 @@ class RetentionServiceTest {
     RetentionCheckResult result = runInTenant(() -> retentionService.runCheck());
 
     // There should be at least one audit event from the earlier runCheck
-    assertThat(result.getFlagged().containsKey("AUDIT_EVENT")).isTrue();
-    assertThat(result.getFlagged().get("AUDIT_EVENT").action()).isEqualTo("ANONYMIZE");
-    assertThat(result.getFlagged().get("AUDIT_EVENT").count()).isGreaterThanOrEqualTo(1);
+    assertThat(result.getFlagged().containsKey("AUDIT_EVENT:RECORD_CREATED")).isTrue();
+    assertThat(result.getFlagged().get("AUDIT_EVENT:RECORD_CREATED").action())
+        .isEqualTo("ANONYMIZE");
+    assertThat(result.getFlagged().get("AUDIT_EVENT:RECORD_CREATED").count())
+        .isGreaterThanOrEqualTo(1);
   }
 
   @Test
@@ -235,7 +238,7 @@ class RetentionServiceTest {
 
     // With only a 10-day-old offboarded customer and 30-day retention, no customer should be
     // flagged
-    assertThat(result.getFlagged()).doesNotContainKey("CUSTOMER");
+    assertThat(result.getFlagged()).doesNotContainKey("CUSTOMER:CUSTOMER_OFFBOARDED");
   }
 
   @Test
@@ -300,6 +303,49 @@ class RetentionServiceTest {
     assertThat(updated.getRetentionDays()).isEqualTo(120);
     assertThat(updated.getAction()).isEqualTo("ANONYMIZE");
     assertThat(updated.getUpdatedAt()).isAfter(created.getUpdatedAt());
+  }
+
+  @Test
+  void crudDelete_removesPolicy() {
+    // Clean up
+    runInTenant(() -> policyRepository.deleteAll());
+
+    RetentionPolicy created =
+        runInTenant(
+            () ->
+                retentionPolicyService.create("NOTIFICATION", 180, "RECORD_CREATED", "ANONYMIZE"));
+    UUID policyId = created.getId();
+
+    runInTenant(() -> retentionPolicyService.delete(policyId));
+
+    boolean stillExists = runInTenant(() -> policyRepository.existsById(policyId));
+    assertThat(stillExists).isFalse();
+  }
+
+  @Test
+  void crudDelete_notFound_throwsException() {
+    assertThatThrownBy(() -> runInTenant(() -> retentionPolicyService.delete(UUID.randomUUID())))
+        .isInstanceOf(io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException.class);
+  }
+
+  @Test
+  void crudCreate_negativeRetentionDays_throwsIllegalArgument() {
+    assertThatThrownBy(
+            () ->
+                runInTenant(
+                    () -> retentionPolicyService.create("TASK", -1, "RECORD_CREATED", "FLAG")))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("retentionDays");
+  }
+
+  @Test
+  void crudCreate_blankRecordType_throwsIllegalArgument() {
+    assertThatThrownBy(
+            () ->
+                runInTenant(
+                    () -> retentionPolicyService.create("  ", 30, "RECORD_CREATED", "FLAG")))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("recordType");
   }
 
   private <T> T runInTenant(Callable<T> callable) {

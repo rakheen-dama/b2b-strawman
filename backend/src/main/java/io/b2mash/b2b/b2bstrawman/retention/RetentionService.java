@@ -44,9 +44,10 @@ public class RetentionService {
   public RetentionCheckResult runCheck() {
     List<RetentionPolicy> policies = policyRepository.findByActive(true);
     RetentionCheckResult result = new RetentionCheckResult();
+    Instant now = Instant.now();
 
     for (RetentionPolicy policy : policies) {
-      Instant cutoff = Instant.now().minus(policy.getRetentionDays(), ChronoUnit.DAYS);
+      Instant cutoff = now.minus(policy.getRetentionDays(), ChronoUnit.DAYS);
       List<UUID> flaggedIds =
           switch (policy.getRecordType()) {
             case "CUSTOMER" -> findExpiredCustomers(policy.getTriggerEvent(), cutoff);
@@ -55,7 +56,8 @@ public class RetentionService {
             default -> List.of();
           };
       if (!flaggedIds.isEmpty()) {
-        result.addFlagged(policy.getRecordType(), policy.getAction(), flaggedIds);
+        result.addFlagged(
+            policy.getRecordType(), policy.getTriggerEvent(), policy.getAction(), flaggedIds);
       }
     }
 
@@ -91,7 +93,7 @@ public class RetentionService {
     if ("CUSTOMER_OFFBOARDED".equals(triggerEvent)) {
       List<UUID> offboardedCustomerIds =
           customerRepository.findIdsByLifecycleStatusAndOffboardedAtBefore(
-              LifecycleStatus.OFFBOARDED, Instant.now());
+              LifecycleStatus.OFFBOARDED, cutoff);
       if (offboardedCustomerIds.isEmpty()) {
         return List.of();
       }

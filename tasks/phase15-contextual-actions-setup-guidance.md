@@ -23,7 +23,7 @@ This is a **pure read/aggregation layer** over existing data. No new database ta
 |------|------|-------|------|--------|--------|--------|
 | 109 | Project Setup Status & Unbilled Time — Backend | Backend | -- | M | 109A, 109B | **Done** |
 | 110 | Customer Readiness & Document Generation Readiness — Backend | Backend | -- | M | 110A, 110B | **Done** |
-| 111 | Reusable Frontend Components & API Client | Frontend | 109, 110 | M | 111A | |
+| 111 | Reusable Frontend Components & API Client | Frontend | 109, 110 | M | 111A | **Done** (PR #229) |
 | 112 | Project Detail Page Integration | Frontend | 111 | S | 112A | |
 | 113 | Customer Detail Page Integration | Frontend | 111 | S | 113A | |
 | 114 | Empty State Rollout | Frontend | 111 | S | 114A | |
@@ -77,7 +77,7 @@ This is a **pure read/aggregation layer** over existing data. No new database ta
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 2a | Epic 111 | 111A | `components/setup/` directory with all 5 reusable components, `lib/api/setup-status.ts` API client, and component tests. All components are self-contained and testable with mocked data. ~19 component tests. |
+| 2a | Epic 111 | 111A | `components/setup/` directory with all 5 reusable components, `lib/api/setup-status.ts` API client, and component tests. All components are self-contained and testable with mocked data. ~19 component tests. | **Done** (PR #229) |
 
 ### Stage 3: Page Integration + Empty States (Parallel after Stage 2)
 
@@ -287,7 +287,7 @@ Stage 3:   [112A]  //  [113A]  //  [114A]   (page integrations — all parallel 
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **111A** | 111.1–111.15 | Create `components/setup/` directory with 5 components. Upgrade existing `components/empty-state.tsx` with `actionHref`/`onAction` props and card-based styling. Create `lib/api/setup-status.ts`. Write component tests for all 5 new components. ~19 component tests. | |
+| **111A** | 111.1–111.15 | Create `components/setup/` directory with 5 components. Upgrade existing `components/empty-state.tsx` with `actionHref`/`onAction` props and card-based styling. Create `lib/api/setup-status.ts`. Write component tests for all 5 new components. ~19 component tests. | **Done** (PR #229) |
 
 ### Tasks
 

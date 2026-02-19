@@ -114,7 +114,7 @@ Phase 14 adds a **jurisdiction-agnostic compliance system** managing the full cu
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 5a | Epic 105 | 105A | RetentionPolicy entity + repo, RetentionService (evaluate policies, flag records), retention check query. ~10 tests. |
+| 5a | Epic 105 | 105A | RetentionPolicy entity + repo, RetentionService (evaluate policies, flag records), retention check query. ~10 tests. | **Done** (PR #218) |
 | 5b | Epic 105 | 105B | Purge execution, RetentionController, default retention policy seeding via compliance packs, provisioning integration. ~10 tests. |
 
 ### Stage 6: Frontend — Lifecycle & Checklists
@@ -450,7 +450,7 @@ Stage 8:  [108A]                                                      ← dashbo
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **104A** | 104.1–104.8 | DataSubjectRequest entity + repo, DataSubjectRequestService (create, status transitions, deadline calculation), DataExportService (ZIP generation with customer data, S3 upload), DataRequestController CRUD + export endpoints. Integration tests (~15 tests). | **Done** (PR #216) |
-| **104B** | 104.9–104.14 | DataAnonymizationService (PII clearing, S3 document deletion, comment redaction, portal contact anonymization, financial records preserved), execute-deletion endpoint, deadline notification events, Comment.redact() and PortalContact.anonymize() domain methods. Integration tests (~12 tests). | |
+| **104B** | 104.9–104.14 | DataAnonymizationService (PII clearing, S3 document deletion, comment redaction, portal contact anonymization, financial records preserved), execute-deletion endpoint, deadline notification events, Comment.redact() and PortalContact.anonymize() domain methods. Integration tests (~12 tests). | **Done** (PR #217) |
 
 ### Tasks
 
@@ -520,7 +520,7 @@ Stage 8:  [108A]                                                      ← dashbo
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **105A** | 105.1–105.6 | RetentionPolicy entity + repo, RetentionService (evaluate policies, flag records), RetentionCheckResult, dormancy threshold from OrgSettings. Integration tests (~10 tests). | |
+| **105A** | 105.1–105.6 | RetentionPolicy entity + repo, RetentionService (evaluate policies, flag records), RetentionCheckResult, dormancy threshold from OrgSettings. Integration tests (~10 tests). | **Done** (PR #218) |
 | **105B** | 105.7–105.11 | RetentionController (CRUD, check, purge endpoints), purge execution, default retention policy seeding, provisioning integration. Integration tests (~10 tests). | |
 
 ### Tasks

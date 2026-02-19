@@ -3,15 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { markCustomerDormant } from "@/app/(app)/org/[slug]/compliance/actions";
+import { markCustomerDormant, type DormancyCandidate } from "@/app/(app)/org/[slug]/compliance/actions";
 import { cn } from "@/lib/utils";
-
-interface DormancyCandidate {
-  customerId: string;
-  customerName: string;
-  lastActivityDate: string | null;
-  daysSinceActivity: number;
-}
 
 interface DormancyCandidateListProps {
   candidates: DormancyCandidate[];
@@ -62,9 +55,7 @@ export function DormancyCandidateList({ candidates, orgSlug }: DormancyCandidate
 
   async function handleBulkMark() {
     const ids = Array.from(selected);
-    for (const id of ids) {
-      await handleMarkDormant(id);
-    }
+    await Promise.allSettled(ids.map((id) => handleMarkDormant(id)));
     setSelected(new Set());
   }
 

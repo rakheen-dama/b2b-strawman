@@ -20,9 +20,19 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID> {
   List<UUID> findIdsByLifecycleStatusAndOffboardedAtBefore(
       @Param("status") LifecycleStatus status, @Param("before") Instant before);
 
+  /**
+   * Counts customers grouped by lifecycle status. Only ACTIVE customers are included (archived are
+   * excluded).
+   */
   @Query(
-      value =
-          "SELECT lifecycle_status, COUNT(*) AS cnt FROM customers WHERE status = 'ACTIVE' GROUP BY lifecycle_status",
-      nativeQuery = true)
-  List<Object[]> countByLifecycleStatus();
+      "SELECT c.lifecycleStatus AS lifecycleStatus, COUNT(c) AS cnt FROM Customer c"
+          + " WHERE c.status = 'ACTIVE'"
+          + " GROUP BY c.lifecycleStatus")
+  List<LifecycleStatusCount> countByLifecycleStatus();
+
+  interface LifecycleStatusCount {
+    LifecycleStatus getLifecycleStatus();
+
+    long getCnt();
+  }
 }

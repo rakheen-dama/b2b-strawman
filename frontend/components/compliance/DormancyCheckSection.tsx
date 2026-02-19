@@ -1,15 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { runDormancyCheck } from "@/app/(app)/org/[slug]/compliance/actions";
+import { runDormancyCheck, type DormancyCandidate } from "@/app/(app)/org/[slug]/compliance/actions";
 import { DormancyCandidateList } from "./DormancyCandidateList";
-
-interface DormancyCandidate {
-  customerId: string;
-  customerName: string;
-  lastActivityDate: string | null;
-  daysSinceActivity: number;
-}
 
 interface DormancyCheckSectionProps {
   orgSlug: string;

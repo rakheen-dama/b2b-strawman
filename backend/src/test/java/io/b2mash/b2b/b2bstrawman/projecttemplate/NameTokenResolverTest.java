@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.projecttemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import java.time.LocalDate;
@@ -80,5 +81,20 @@ class NameTokenResolverTest {
     String pattern = "{period_start} to {period_end}";
     String result = resolver.resolveNameTokens(pattern, null, null, null, null);
     assertThat(result).isEqualTo("{period_start} to {period_end}");
+  }
+
+  @Test
+  void bothMonthAndMonthShort_resolvedCorrectly() {
+    String pattern = "{month_short} ({month}) {year}";
+    LocalDate refDate = LocalDate.of(2026, 3, 15);
+    String result = resolver.resolveNameTokens(pattern, null, refDate, null, null);
+    assertThat(result).isEqualTo("Mar (March) 2026");
+  }
+
+  @Test
+  void nullPattern_throwsNullPointerException() {
+    assertThatThrownBy(() -> resolver.resolveNameTokens(null, null, null, null, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("pattern must not be null");
   }
 }

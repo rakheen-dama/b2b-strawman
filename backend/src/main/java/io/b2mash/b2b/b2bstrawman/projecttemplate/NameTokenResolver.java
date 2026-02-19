@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.Locale;
+import java.util.Objects;
 import org.springframework.stereotype.Component;
 
 /**
@@ -35,13 +36,13 @@ public class NameTokenResolver {
       LocalDate referenceDate,
       LocalDate periodStart,
       LocalDate periodEnd) {
+    Objects.requireNonNull(pattern, "pattern must not be null");
     String result = pattern;
     if (customer != null) {
       result = result.replace("{customer}", customer.getName());
     }
     if (referenceDate != null) {
-      // Replace {month_short} BEFORE {month} to avoid partial replacement
-      // ("{month}" is a prefix of "{month_short}")
+      // Replace {month_short} before {month} for defensive ordering
       result =
           result.replace(
               "{month_short}",

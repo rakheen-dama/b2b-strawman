@@ -95,6 +95,7 @@ class PeriodCalculatorTest {
     LocalDate anchor = LocalDate.of(2026, 1, 31);
     var period = calculator.calculateNextPeriod(anchor, "MONTHLY", 1);
     assertThat(period.start()).isEqualTo(LocalDate.of(2026, 2, 28));
+    assertThat(period.end()).isEqualTo(LocalDate.of(2026, 3, 27));
   }
 
   @Test
@@ -103,6 +104,7 @@ class PeriodCalculatorTest {
     LocalDate anchor = LocalDate.of(2024, 1, 31);
     var period = calculator.calculateNextPeriod(anchor, "MONTHLY", 1);
     assertThat(period.start()).isEqualTo(LocalDate.of(2024, 2, 29));
+    assertThat(period.end()).isEqualTo(LocalDate.of(2024, 3, 28));
   }
 
   @Test
@@ -160,32 +162,39 @@ class PeriodCalculatorTest {
 
   @Test
   void resumeWithNoMissedPeriods_setsFutureDate() {
-    // Start date far in the future — no periods missed
-    LocalDate futureStart = LocalDate.now().plusMonths(2);
+    LocalDate today = LocalDate.of(2026, 3, 1);
+    LocalDate futureStart = today.plusMonths(2);
     var schedule = makeSchedule(futureStart, "MONTHLY", 0, 0);
-    calculator.recalculateNextExecutionOnResume(schedule);
-    // First period starts at futureStart, lead = 0, so execution date = futureStart
+    calculator.recalculateNextExecutionOnResume(schedule, today);
     assertThat(schedule.getNextExecutionDate()).isEqualTo(futureStart);
   }
 
   @Test
   void resumeWithMissedPeriods_skipsForward() {
-    // Start date 6 months in the past, monthly, 0 executions
-    // Should skip past periods to the next future period
-    LocalDate pastStart = LocalDate.now().minusMonths(6);
+    LocalDate today = LocalDate.of(2026, 3, 1);
+    LocalDate pastStart = today.minusMonths(6);
     var schedule = makeSchedule(pastStart, "MONTHLY", 0, 0);
-    calculator.recalculateNextExecutionOnResume(schedule);
-    // Next execution date should be in the future (or today)
-    assertThat(schedule.getNextExecutionDate()).isAfterOrEqualTo(LocalDate.now());
+    calculator.recalculateNextExecutionOnResume(schedule, today);
+    assertThat(schedule.getNextExecutionDate()).isAfterOrEqualTo(today);
   }
 
   @Test
   void resumeWithLeadTime_appliesLeadTime() {
-    // Start date far in the future with 5-day lead
-    LocalDate futureStart = LocalDate.now().plusMonths(2);
+    LocalDate today = LocalDate.of(2026, 3, 1);
+    LocalDate futureStart = today.plusMonths(2);
     var schedule = makeSchedule(futureStart, "MONTHLY", 0, 5);
-    calculator.recalculateNextExecutionOnResume(schedule);
-    // Execution date = futureStart - 5 days
+    calculator.recalculateNextExecutionOnResume(schedule, today);
     assertThat(schedule.getNextExecutionDate()).isEqualTo(futureStart.minusDays(5));
+  }
+
+  @Test
+  void resumeSafetyValve_throwsAfter1000Iterations() {
+    // Start date so far in the past that 1000 weekly iterations still won't reach today
+    LocalDate today = LocalDate.of(2026, 3, 1);
+    LocalDate distantPast = today.minusYears(100);
+    var schedule = makeSchedule(distantPast, "WEEKLY", 0, 0);
+    assertThatThrownBy(() -> calculator.recalculateNextExecutionOnResume(schedule, today))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("1000 iterations");
   }
 }

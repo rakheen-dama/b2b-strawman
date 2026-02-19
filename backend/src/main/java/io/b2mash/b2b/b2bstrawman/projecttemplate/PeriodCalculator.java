@@ -45,7 +45,10 @@ public class PeriodCalculator {
    * loops on misconfigured schedules.
    */
   public void recalculateNextExecutionOnResume(RecurringSchedule schedule) {
-    LocalDate today = LocalDate.now();
+    recalculateNextExecutionOnResume(schedule, LocalDate.now());
+  }
+
+  public void recalculateNextExecutionOnResume(RecurringSchedule schedule, LocalDate today) {
     int count = schedule.getExecutionCount();
     while (true) {
       Period period = calculateNextPeriod(schedule.getStartDate(), schedule.getFrequency(), count);
@@ -56,7 +59,11 @@ public class PeriodCalculator {
       }
       count++;
       // Safety valve
-      if (count > schedule.getExecutionCount() + 1000) break;
+      if (count > schedule.getExecutionCount() + 1000) {
+        throw new IllegalStateException(
+            "Could not find future execution date for schedule after 1000 iterations: "
+                + schedule.getId());
+      }
     }
   }
 }

@@ -136,7 +136,7 @@
 | 113 | Customer Detail Page Integration | Frontend | 111 | S | 113A | **Done** (PR #231) |
 | 114 | Empty State Rollout | Frontend | 111 | S | 114A | **Done** (PR #232) |
 | **Phase 16 — Project Templates & Recurring Schedules** | | | | | | See [tasks/phase16-project-templates-recurring-schedules.md](tasks/phase16-project-templates-recurring-schedules.md) |
-| 115 | Entity Foundation & Utilities | Backend | -- | M | 115A, 115B | |
+| 115 | Entity Foundation & Utilities | Backend | -- | M | 115A, 115B | 115A **Done** (PR #235) |
 | 116 | Template CRUD & Save from Project | Backend | 115 | M | 116A, 116B | |
 | 117 | Template Instantiation | Backend | 116 | S | 117A | |
 | 118 | Schedule CRUD & Lifecycle | Backend | 115 | M | 118A, 118B | |

@@ -3,6 +3,9 @@ import { api, handleApiError, getFieldDefinitions, getFieldGroups, getGroupMembe
 import type {
   Customer,
   CustomerStatus,
+  CustomerReadiness,
+  UnbilledTimeSummary,
+  TemplateReadiness,
   Document,
   Project,
   BillingRate,
@@ -19,6 +22,7 @@ import type {
   ChecklistInstanceResponse,
   ChecklistTemplateResponse,
 } from "@/lib/types";
+import type { SetupStep } from "@/components/setup/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EditCustomerDialog } from "@/components/customers/edit-customer-dialog";
@@ -37,9 +41,19 @@ import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocument
 import { LifecycleStatusBadge } from "@/components/compliance/LifecycleStatusBadge";
 import { LifecycleTransitionDropdown } from "@/components/compliance/LifecycleTransitionDropdown";
 import { ChecklistInstancePanel } from "@/components/compliance/ChecklistInstancePanel";
+import {
+  SetupProgressCard,
+  ActionCard,
+  TemplateReadinessCard,
+} from "@/components/setup";
+import {
+  fetchCustomerReadiness,
+  fetchCustomerUnbilledSummary,
+  fetchTemplateReadiness,
+} from "@/lib/api/setup-status";
 import { getCustomerChecklists, getChecklistTemplates } from "@/lib/checklist-api";
-import { formatDate } from "@/lib/format";
-import { ArrowLeft, Pencil, Archive } from "lucide-react";
+import { formatDate, formatCurrency } from "@/lib/format";
+import { ArrowLeft, Pencil, Archive, Clock, UserCheck, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 const STATUS_BADGE: Record<CustomerStatus, { label: string; variant: "success" | "neutral" }> = {
@@ -202,6 +216,99 @@ export default async function CustomerDetailPage({
   const showOnboardingTab =
     customer.lifecycleStatus === "ONBOARDING" || checklistInstances.length > 0;
 
+  // Setup guidance data (Epic 113A)
+  let customerReadiness: CustomerReadiness | null = null;
+  let customerUnbilledSummary: UnbilledTimeSummary | null = null;
+  let customerTemplateReadiness: TemplateReadiness[] = [];
+  try {
+    const [readinessRes, unbilledRes, templateReadinessRes] = await Promise.all([
+      fetchCustomerReadiness(id),
+      fetchCustomerUnbilledSummary(id),
+      fetchTemplateReadiness("CUSTOMER", id),
+    ]);
+    customerReadiness = readinessRes;
+    customerUnbilledSummary = unbilledRes;
+    customerTemplateReadiness = templateReadinessRes;
+  } catch {
+    // Non-fatal: setup guidance cards will not render if fetch fails
+  }
+
+  // Map customer readiness to setup steps
+  const customerSetupSteps: SetupStep[] = customerReadiness
+    ? [
+        {
+          label: "Projects linked",
+          complete: customerReadiness.hasLinkedProjects,
+          actionHref: `?tab=projects`,
+        },
+        {
+          label:
+            customerReadiness.checklistProgress === null
+              ? "No onboarding checklist"
+              : `Onboarding checklist (${customerReadiness.checklistProgress.completed}/${customerReadiness.checklistProgress.total})`,
+          complete:
+            customerReadiness.checklistProgress === null ||
+            customerReadiness.checklistProgress.completed ===
+              customerReadiness.checklistProgress.total,
+          actionHref: showOnboardingTab ? `?tab=onboarding` : undefined,
+        },
+        {
+          label:
+            customerReadiness.requiredFields.total === 0
+              ? "No required fields defined"
+              : `Required fields filled (${customerReadiness.requiredFields.filled}/${customerReadiness.requiredFields.total})`,
+          complete:
+            customerReadiness.requiredFields.total === 0 ||
+            customerReadiness.requiredFields.filled ===
+              customerReadiness.requiredFields.total,
+          actionHref: "#custom-fields",
+        },
+      ]
+    : [];
+
+  // Compute readiness percentage from steps
+  const completedStepCount = customerSetupSteps.filter((s) => s.complete).length;
+  const customerReadinessPercentage =
+    customerSetupSteps.length === 0
+      ? 100
+      : Math.round((completedStepCount / customerSetupSteps.length) * 100);
+  const customerReadinessComplete =
+    customerSetupSteps.length === 0 || customerSetupSteps.every((s) => s.complete);
+
+  // Lifecycle action prompt (Epic 113A)
+  const lifecycleActionPrompt: {
+    icon: typeof ArrowRight;
+    title: string;
+    description: string;
+    actionLabel: string;
+    targetStatus: "ONBOARDING" | "ACTIVE";
+  } | null =
+    isAdmin && customer.lifecycleStatus && customer.status === "ACTIVE"
+      ? customer.lifecycleStatus === "PROSPECT"
+        ? {
+            icon: ArrowRight,
+            title: "Ready to start onboarding?",
+            description:
+              "Move this customer to Onboarding to begin compliance checklists.",
+            actionLabel: "Start Onboarding",
+            targetStatus: "ONBOARDING",
+          }
+        : customer.lifecycleStatus === "ONBOARDING" &&
+            customerReadiness?.checklistProgress !== null &&
+            customerReadiness?.checklistProgress?.completed ===
+              customerReadiness?.checklistProgress?.total &&
+            (customerReadiness?.checklistProgress?.total ?? 0) > 0
+          ? {
+              icon: UserCheck,
+              title: "All items verified — Activate Customer",
+              description:
+                "Onboarding checklist is complete. This customer is ready to be activated.",
+              actionLabel: "Activate Customer",
+              targetStatus: "ACTIVE",
+            }
+          : null
+      : null;
+
   const statusBadge = STATUS_BADGE[customer.status];
 
   return (
@@ -255,7 +362,7 @@ export default async function CustomerDetailPage({
         </div>
 
         {isAdmin && (
-          <div className="flex shrink-0 gap-2">
+          <div id="lifecycle-transition" className="flex shrink-0 gap-2">
             {customer.status === "ACTIVE" && customer.lifecycleStatus && (
               <LifecycleTransitionDropdown
                 currentStatus={customer.lifecycleStatus}
@@ -330,6 +437,60 @@ export default async function CustomerDetailPage({
           slug={slug}
         />
       </div>
+
+      {/* Setup Guidance Cards — Epic 113A */}
+      {customerReadiness && (
+        <SetupProgressCard
+          title="Customer Readiness"
+          completionPercentage={customerReadinessPercentage}
+          overallComplete={customerReadinessComplete}
+          steps={customerSetupSteps}
+          canManage={isAdmin}
+        />
+      )}
+
+      {customerUnbilledSummary && customerUnbilledSummary.entryCount > 0 && (
+        <ActionCard
+          icon={Clock}
+          title="Unbilled Time"
+          description={`${formatCurrency(customerUnbilledSummary.totalAmount, customerUnbilledSummary.currency)} across ${customerUnbilledSummary.totalHours.toFixed(1)} hours`}
+          primaryAction={
+            isAdmin
+              ? {
+                  label: "Create Invoice",
+                  href: `/org/${slug}/invoices/new?customerId=${id}`,
+                }
+              : undefined
+          }
+          secondaryAction={{
+            label: "View Time",
+            href: `?tab=invoices`,
+          }}
+          variant="accent"
+        />
+      )}
+
+      {customerTemplateReadiness.length > 0 && (
+        <TemplateReadinessCard
+          templates={customerTemplateReadiness}
+          generateHref={(templateId) =>
+            `/org/${slug}/customers/${id}?generateTemplate=${templateId}`
+          }
+        />
+      )}
+
+      {lifecycleActionPrompt && (
+        <ActionCard
+          icon={lifecycleActionPrompt.icon}
+          title={lifecycleActionPrompt.title}
+          description={lifecycleActionPrompt.description}
+          primaryAction={{
+            label: lifecycleActionPrompt.actionLabel,
+            href: `#lifecycle-transition`,
+          }}
+          variant="default"
+        />
+      )}
 
       {/* Tabbed Content */}
       <CustomerTabs

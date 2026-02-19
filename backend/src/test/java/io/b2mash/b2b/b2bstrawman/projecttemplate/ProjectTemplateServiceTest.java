@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
@@ -503,6 +504,56 @@ class ProjectTemplateServiceTest {
                   assertThat(response.name()).isEqualTo("Lead Template");
                   assertThat(response.tasks()).hasSize(1);
                 }));
+  }
+
+  @Test
+  void saveFromProject_byNonLeadMember_throwsForbidden() {
+    runInTenantAs(
+        secondMemberId,
+        "member",
+        () -> {
+          // Setup: create project, task, and add secondMember as regular member (not lead)
+          record SetupResult(UUID projectId, UUID taskId) {}
+          var setup =
+              transactionTemplate.execute(
+                  tx -> {
+                    var project =
+                        projectRepository.saveAndFlush(
+                            new Project("Non-Lead Test Project", null, memberId));
+
+                    var task1 =
+                        taskRepository.saveAndFlush(
+                            new Task(
+                                project.getId(),
+                                "Non-Lead Task",
+                                null,
+                                "MEDIUM",
+                                null,
+                                null,
+                                memberId));
+
+                    projectMemberRepository.saveAndFlush(
+                        new ProjectMember(project.getId(), secondMemberId, "member", memberId));
+
+                    return new SetupResult(project.getId(), task1.getId());
+                  });
+
+          var request =
+              new SaveFromProjectRequest(
+                  "Forbidden Template",
+                  "{customer}",
+                  null,
+                  List.of(setup.taskId()),
+                  List.of(),
+                  null);
+
+          // Assert: non-lead member should be denied
+          assertThatThrownBy(
+                  () ->
+                      templateService.saveFromProject(
+                          setup.projectId(), request, secondMemberId, "member"))
+              .isInstanceOf(ForbiddenException.class);
+        });
   }
 
   private void runInTenant(Runnable action) {

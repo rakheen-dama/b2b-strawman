@@ -183,7 +183,7 @@ public class ProjectTemplateService {
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("ProjectTemplate", id));
 
-    if (scheduleRepository.existsByTemplateId(id)) {
+    if (scheduleRepository.existsByTemplateIdAndStatus(id, "ACTIVE")) {
       throw new ResourceConflictException(
           "Template in use",
           "Template has active recurring schedules. Deactivate or delete them first.");

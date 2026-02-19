@@ -14,4 +14,6 @@ public interface RecurringScheduleRepository extends JpaRepository<RecurringSche
   List<RecurringSchedule> findByCustomerId(UUID customerId);
 
   boolean existsByTemplateId(UUID templateId);
+
+  boolean existsByTemplateIdAndStatus(UUID templateId, String status);
 }

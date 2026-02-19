@@ -145,4 +145,7 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
       """)
   List<CrossProjectActivityProjection> findCrossProjectActivityForMember(
       @Param("memberId") UUID memberId, @Param("limit") int limit);
+
+  @Query("SELECT e.id FROM AuditEvent e WHERE e.occurredAt < :before")
+  List<UUID> findIdsByOccurredAtBefore(@Param("before") Instant before);
 }

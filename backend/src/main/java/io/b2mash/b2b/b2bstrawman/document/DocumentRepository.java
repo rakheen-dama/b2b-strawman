@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.document;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -26,4 +27,11 @@ public interface DocumentRepository extends JpaRepository<Document, UUID> {
   @Query("SELECT d FROM Document d WHERE d.scope = :scope AND d.customerId = :customerId")
   List<Document> findByScopeAndCustomerId(
       @Param("scope") String scope, @Param("customerId") UUID customerId);
+
+  @Query("SELECT d.id FROM Document d WHERE d.customerId IN :customerIds AND d.createdAt < :before")
+  List<UUID> findIdsByCustomerIdInAndCreatedAtBefore(
+      @Param("customerIds") List<UUID> customerIds, @Param("before") Instant before);
+
+  @Query("SELECT d.id FROM Document d WHERE d.createdAt < :before")
+  List<UUID> findIdsByCreatedAtBefore(@Param("before") Instant before);
 }

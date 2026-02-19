@@ -1,4 +1,4 @@
-package io.b2mash.b2b.b2bstrawman.compliance;
+package io.b2mash.b2b.b2bstrawman.retention;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -46,7 +46,19 @@ public class RetentionPolicy {
     this.triggerEvent = triggerEvent;
     this.action = action;
     this.active = true;
-    this.createdAt = Instant.now();
+    Instant now = Instant.now();
+    this.createdAt = now;
+    this.updatedAt = now;
+  }
+
+  public void update(int retentionDays, String action) {
+    this.retentionDays = retentionDays;
+    this.action = action;
+    this.updatedAt = Instant.now();
+  }
+
+  public void deactivate() {
+    this.active = false;
     this.updatedAt = Instant.now();
   }
 

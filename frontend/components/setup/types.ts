@@ -55,7 +55,6 @@ export interface FieldValueGridProps {
   fields: FieldValueProps[];
   groups?: FieldGroupInfo[];
   editHref?: string;
-  showUnfilledWarning?: boolean;
 }
 
 // ---- EmptyState (setup version) ----
@@ -81,7 +80,5 @@ export interface TemplateReadinessItem {
 
 export interface TemplateReadinessCardProps {
   templates: TemplateReadinessItem[];
-  entityType: "PROJECT" | "CUSTOMER";
-  entityId: string;
   generateHref: (templateId: string) => string;
 }

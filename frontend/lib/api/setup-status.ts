@@ -45,6 +45,6 @@ export async function fetchTemplateReadiness(
   entityId: string,
 ): Promise<TemplateReadiness[]> {
   return api.get<TemplateReadiness[]>(
-    `/api/templates/readiness?entityType=${entityType}&entityId=${entityId}`,
+    `/api/templates/readiness?entityType=${encodeURIComponent(entityType)}&entityId=${encodeURIComponent(entityId)}`,
   );
 }

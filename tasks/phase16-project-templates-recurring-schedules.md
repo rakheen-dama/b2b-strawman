@@ -215,7 +215,7 @@ Stage 4:  [120A] --> [120B]  //  [121A] --> [121B]   (parallel frontend tracks a
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **116A** | 116.1–116.8 | `ProjectTemplateService` with CRUD + `saveFromProject()` + `duplicate()`. Request/response DTOs. Audit events (`template.created`, `template.updated`, `template.deleted`, `template.duplicated`). Delete guard (409 if active schedules reference template). Service-level integration tests. ~12 tests. | |
+| **116A** | 116.1–116.8 | `ProjectTemplateService` with CRUD + `saveFromProject()` + `duplicate()`. Request/response DTOs. Audit events (`template.created`, `template.updated`, `template.deleted`, `template.duplicated`). Delete guard (409 if active schedules reference template). Service-level integration tests. ~12 tests. | **Done** (PR #237) |
 | **116B** | 116.9–116.16 | `ProjectTemplateController` with 7 REST endpoints. `SecurityConfig` update. Permission checks (admin/owner for mutations, lead for save-from-project). Controller integration tests with MockMvc. ~15 tests. | |
 
 ### Tasks

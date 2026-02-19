@@ -137,7 +137,7 @@ Stage 4:  [120A] --> [120B]  //  [121A] --> [121B]   (parallel frontend tracks a
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **115A** | 115.1–115.9 | V30 migration (4 tables + 1 join table), `ProjectTemplate` entity, `TemplateTask` entity, `RecurringSchedule` entity, `ScheduleExecution` entity, `ProjectTemplateRepository`, `TemplateTaskRepository`, `TemplateTagRepository` (JdbcClient), `RecurringScheduleRepository`, `ScheduleExecutionRepository`. Migration verification test + TemplateTagRepository integration test. ~10 tests. | **Done** (PR #235) |
-| **115B** | 115.10–115.16 | `PeriodCalculator` utility (all 6 frequencies, period start/end, next execution date). `NameTokenResolver` utility (6 tokens: customer, month, month_short, year, period_start, period_end). Comprehensive unit tests for both. ~22 unit tests. | |
+| **115B** | 115.10–115.16 | `PeriodCalculator` utility (all 6 frequencies, period start/end, next execution date). `NameTokenResolver` utility (6 tokens: customer, month, month_short, year, period_start, period_end). Comprehensive unit tests for both. ~22 unit tests. | **Done** (PR #236) |
 
 ### Tasks
 

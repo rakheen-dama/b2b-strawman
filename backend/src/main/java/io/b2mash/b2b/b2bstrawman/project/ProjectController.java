@@ -8,6 +8,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.setupstatus.ProjectSetupStatus;
 import io.b2mash.b2b.b2bstrawman.setupstatus.ProjectSetupStatusService;
+import io.b2mash.b2b.b2bstrawman.setupstatus.UnbilledTimeSummary;
+import io.b2mash.b2b.b2bstrawman.setupstatus.UnbilledTimeSummaryService;
 import io.b2mash.b2b.b2bstrawman.tag.EntityTagService;
 import io.b2mash.b2b.b2bstrawman.tag.TagFilterUtil;
 import io.b2mash.b2b.b2bstrawman.tag.dto.SetEntityTagsRequest;
@@ -46,18 +48,21 @@ public class ProjectController {
   private final SavedViewRepository savedViewRepository;
   private final ViewFilterService viewFilterService;
   private final ProjectSetupStatusService projectSetupStatusService;
+  private final UnbilledTimeSummaryService unbilledTimeSummaryService;
 
   public ProjectController(
       ProjectService projectService,
       EntityTagService entityTagService,
       SavedViewRepository savedViewRepository,
       ViewFilterService viewFilterService,
-      ProjectSetupStatusService projectSetupStatusService) {
+      ProjectSetupStatusService projectSetupStatusService,
+      UnbilledTimeSummaryService unbilledTimeSummaryService) {
     this.projectService = projectService;
     this.entityTagService = entityTagService;
     this.savedViewRepository = savedViewRepository;
     this.viewFilterService = viewFilterService;
     this.projectSetupStatusService = projectSetupStatusService;
+    this.unbilledTimeSummaryService = unbilledTimeSummaryService;
   }
 
   @GetMapping
@@ -239,6 +244,12 @@ public class ProjectController {
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER', 'ORG_MEMBER')")
   public ResponseEntity<ProjectSetupStatus> getSetupStatus(@PathVariable UUID id) {
     return ResponseEntity.ok(projectSetupStatusService.getSetupStatus(id));
+  }
+
+  @GetMapping("/{id}/unbilled-summary")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<UnbilledTimeSummary> getUnbilledSummary(@PathVariable UUID id) {
+    return ResponseEntity.ok(unbilledTimeSummaryService.getProjectUnbilledSummary(id));
   }
 
   private Map<String, String> extractCustomFieldFilters(Map<String, String> allParams) {

@@ -10,6 +10,8 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceService;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledTimeResponse;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
+import io.b2mash.b2b.b2bstrawman.setupstatus.UnbilledTimeSummary;
+import io.b2mash.b2b.b2bstrawman.setupstatus.UnbilledTimeSummaryService;
 import io.b2mash.b2b.b2bstrawman.tag.EntityTagService;
 import io.b2mash.b2b.b2bstrawman.tag.TagFilterUtil;
 import io.b2mash.b2b.b2bstrawman.tag.dto.SetEntityTagsRequest;
@@ -51,6 +53,7 @@ public class CustomerController {
   private final SavedViewRepository savedViewRepository;
   private final ViewFilterService viewFilterService;
   private final CustomerLifecycleService customerLifecycleService;
+  private final UnbilledTimeSummaryService unbilledTimeSummaryService;
 
   public CustomerController(
       CustomerService customerService,
@@ -59,7 +62,8 @@ public class CustomerController {
       EntityTagService entityTagService,
       SavedViewRepository savedViewRepository,
       ViewFilterService viewFilterService,
-      CustomerLifecycleService customerLifecycleService) {
+      CustomerLifecycleService customerLifecycleService,
+      UnbilledTimeSummaryService unbilledTimeSummaryService) {
     this.customerService = customerService;
     this.customerProjectService = customerProjectService;
     this.invoiceService = invoiceService;
@@ -67,6 +71,7 @@ public class CustomerController {
     this.savedViewRepository = savedViewRepository;
     this.viewFilterService = viewFilterService;
     this.customerLifecycleService = customerLifecycleService;
+    this.unbilledTimeSummaryService = unbilledTimeSummaryService;
   }
 
   @GetMapping
@@ -235,6 +240,12 @@ public class CustomerController {
     String orgRole = RequestScopes.getOrgRole();
     var projects = customerProjectService.listProjectsForCustomer(id, memberId, orgRole);
     return ResponseEntity.ok(projects.stream().map(LinkedProjectResponse::from).toList());
+  }
+
+  @GetMapping("/{id}/unbilled-summary")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<UnbilledTimeSummary> getUnbilledSummary(@PathVariable UUID id) {
+    return ResponseEntity.ok(unbilledTimeSummaryService.getCustomerUnbilledSummary(id));
   }
 
   @GetMapping("/{id}/unbilled-time")

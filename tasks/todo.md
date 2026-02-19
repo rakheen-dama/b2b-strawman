@@ -81,3 +81,56 @@ tail -20 tasks/.phase-14-progress.log
 
 ## Task File
 `tasks/phase14-customer-compliance-lifecycle.md`
+
+---
+
+# URGENT: Fix PDF Generation for Document Templates
+
+## Problem Summary
+
+Document template **preview** now works (renders HTML with placeholder `________` for unresolvable variables), but **Download PDF** and **Save to Documents** still fail because the PDF conversion step (`OpenHTMLToPDF`) crashes.
+
+## Root Causes
+
+### 1. SpEL cannot resolve Map properties with dot notation
+The Thymeleaf context builders (`ProjectContextBuilder`, `CustomerContextBuilder`, `InvoiceContextBuilder`, `TemplateContextHelper`) populate the rendering context using `LinkedHashMap<String, Object>`. Templates use `${project.name}`, `${org.name}`, `${customer.name}` etc.
+
+**Problem**: Spring's `ReflectivePropertyAccessor` (used by SpEL in Thymeleaf) does NOT support Map property access via dot notation. It looks for `getName()` getter methods, which `LinkedHashMap` doesn't have. This causes `SpelEvaluationException: EL1008E`.
+
+**Current workaround**: `LenientSpELEvaluator` catches all SpEL errors and returns `________` placeholder. This works for preview but produces broken HTML for PDF generation.
+
+**Proper fix options** (pick ONE):
+- **Option A (Recommended)**: Convert all context `LinkedHashMap` values to Java **records**. SpEL in Spring 6+ supports record-style accessors (`name()` instead of `getName()`). Create: `OrgContext`, `ProjectContext`, `CustomerContext`, `InvoiceContext`, `MemberContext` records. Change each context builder to return the record instead of a Map. The `extractEntityName()` method in `PdfRenderingService` also reads Maps — update it too.
+- **Option B**: Register Spring's `MapAccessor` on the Thymeleaf evaluation context. This requires creating a custom `IDialect` or finding a hook into `ThymeleafEvaluationContext`. The manually-created `SpringTemplateEngine` in `PdfRenderingService` doesn't have an `ApplicationContext`, which limits the hooks available.
+- **Option C**: Use a plain Thymeleaf `TemplateEngine` (OGNL) instead of `SpringTemplateEngine` (SpEL). OGNL natively supports `map.key` syntax. But OGNL has different expression syntax and security characteristics.
+
+### 2. OpenHTMLToPDF SAX parser rejects placeholder HTML
+When `LenientSpELEvaluator` inserts `________` into attributes (e.g., `th:src="${org.logoUrl}"` becomes `src="________"`), the resulting HTML may not be well-formed XHTML. OpenHTMLToPDF uses a strict XML parser (`SAXParser`) that rejects malformed input with `SAXException: Scanner State 24 not Recognized`.
+
+**Fix**: Once Option A is implemented (records with real values or nulls), the placeholders go away. For truly missing optional fields, templates should use `th:if` guards (which the seeded templates already do, e.g., `<img th:if="${org.logoUrl}" ...>`). With proper null handling (records return null for missing fields), `th:if` will correctly skip the block.
+
+### 3. Org name was missing from context (FIXED)
+`TemplateContextHelper.buildOrgContext()` didn't include the organization name. **Fixed** — it now resolves: tenant schema → `OrgSchemaMapping` (public) → `Organization.name` (public).
+
+## Key Files
+
+- `backend/.../template/PdfRenderingService.java` — `generatePdf()` (full pipeline), `previewHtml()` (HTML only), `renderThymeleaf()`, `htmlToPdf()`
+- `backend/.../template/LenientSpELEvaluator.java` — Catches SpEL errors, returns placeholder
+- `backend/.../template/LenientSpringDialect.java` — Plugs lenient evaluator into Thymeleaf
+- `backend/.../template/TemplateContextHelper.java` — Builds org context (with name fix)
+- `backend/.../template/ProjectContextBuilder.java` — Builds project/customer/member/tags context
+- `backend/.../template/CustomerContextBuilder.java` — Builds customer context
+- `backend/.../template/InvoiceContextBuilder.java` — Builds invoice context
+- `backend/.../template/DocumentTemplateController.java` — Preview uses `previewHtml()`, generate uses `generatePdf()`
+- `frontend/components/templates/GenerateDocumentDropdown.tsx` — Reads `?generateTemplate=<id>` URL param to auto-open dialog
+- `frontend/components/templates/GenerateDocumentDialog.tsx` — Preview + Download PDF + Save to Documents
+
+## What Works Now
+- Template preview (HTML rendering with lenient placeholders)
+- `?generateTemplate=<id>` URL param auto-opens dialog from setup cards
+- Org name appears in template context
+
+## What's Broken
+- **Download PDF button** — 500 from OpenHTMLToPDF SAX parser (the `generatePdf()` path still goes through `htmlToPdf()`)
+- **Save to Documents button** — same PDF pipeline failure
+- Both call `generateDocumentAction` → backend `POST /{id}/generate` → `PdfRenderingService.generatePdf()` → crashes at `htmlToPdf()`

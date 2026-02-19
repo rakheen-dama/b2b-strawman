@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { FileText, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,9 +26,21 @@ export function GenerateDocumentDropdown({
   entityType,
   onDocumentSaved,
 }: GenerateDocumentDropdownProps) {
+  const searchParams = useSearchParams();
   const [selectedTemplate, setSelectedTemplate] =
     useState<TemplateListResponse | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Auto-open dialog when ?generateTemplate=<id> is in the URL
+  const generateTemplateId = searchParams.get("generateTemplate");
+  useEffect(() => {
+    if (!generateTemplateId) return;
+    const match = templates.find((t) => t.id === generateTemplateId);
+    if (match) {
+      setSelectedTemplate(match);
+      setDialogOpen(true);
+    }
+  }, [generateTemplateId, templates]);
 
   if (templates.length === 0) {
     return (
@@ -54,8 +67,9 @@ export function GenerateDocumentDropdown({
               key={tpl.id}
               onSelect={() => {
                 setSelectedTemplate(tpl);
-                // Defer dialog open so the dropdown's focus cleanup completes first
-                requestAnimationFrame(() => setDialogOpen(true));
+                // Dropdown focus cleanup takes longer than one rAF —
+                // wait for Radix to fully unmount before opening the dialog
+                setTimeout(() => setDialogOpen(true), 150);
               }}
             >
               {tpl.name}

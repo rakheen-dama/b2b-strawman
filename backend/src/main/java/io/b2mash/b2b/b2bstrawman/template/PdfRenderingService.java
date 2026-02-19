@@ -93,6 +93,27 @@ public class PdfRenderingService {
     return new PdfResult(pdfBytes, fileName, fullHtml);
   }
 
+  /**
+   * Renders only the HTML preview (no PDF conversion). Used by the preview endpoint to avoid the
+   * cost and potential errors of PDF generation.
+   */
+  @Transactional(readOnly = true)
+  public String previewHtml(UUID templateId, UUID entityId, UUID memberId) {
+    var template =
+        documentTemplateRepository
+            .findById(templateId)
+            .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", templateId));
+
+    var builder = findBuilder(template.getPrimaryEntityType());
+    var contextMap = builder.buildContext(entityId, memberId);
+
+    String customCss = template.getCss() != null ? template.getCss() : "";
+    String mergedCss = defaultCss + "\n" + customCss;
+
+    String renderedBody = renderThymeleaf(template.getContent(), contextMap);
+    return wrapHtml(renderedBody, mergedCss);
+  }
+
   private TemplateContextBuilder findBuilder(TemplateEntityType entityType) {
     return contextBuilders.stream()
         .filter(b -> b.supports() == entityType)
@@ -171,6 +192,7 @@ public class PdfRenderingService {
 
   private static SpringTemplateEngine createStringTemplateEngine() {
     var engine = new SpringTemplateEngine();
+    engine.setDialect(new LenientSpringDialect());
     engine.setEnableSpringELCompiler(false);
     var resolver = new StringTemplateResolver();
     resolver.setTemplateMode(TemplateMode.HTML);

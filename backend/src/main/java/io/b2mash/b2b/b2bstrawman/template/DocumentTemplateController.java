@@ -115,11 +115,11 @@ public class DocumentTemplateController {
   public ResponseEntity<String> previewTemplate(
       @PathVariable UUID id, @Valid @RequestBody PreviewRequest request) {
     UUID memberId = RequestScopes.MEMBER_ID.get();
-    var result = pdfRenderingService.generatePdf(id, request.entityId(), memberId);
+    String html = pdfRenderingService.previewHtml(id, request.entityId(), memberId);
     return ResponseEntity.ok()
         .contentType(MediaType.TEXT_HTML)
         .header("Content-Security-Policy", "sandbox")
-        .body(result.htmlPreview());
+        .body(html);
   }
 
   @PostMapping("/{id}/generate")

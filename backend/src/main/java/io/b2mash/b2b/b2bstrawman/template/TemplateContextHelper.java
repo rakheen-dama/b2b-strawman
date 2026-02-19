@@ -1,6 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.tag.EntityTagRepository;
@@ -27,23 +30,33 @@ public class TemplateContextHelper {
   private final EntityTagRepository entityTagRepository;
   private final TagRepository tagRepository;
   private final S3PresignedUrlService s3PresignedUrlService;
+  private final OrgSchemaMappingRepository orgSchemaMappingRepository;
+  private final OrganizationRepository organizationRepository;
 
   public TemplateContextHelper(
       OrgSettingsRepository orgSettingsRepository,
       MemberRepository memberRepository,
       EntityTagRepository entityTagRepository,
       TagRepository tagRepository,
-      S3PresignedUrlService s3PresignedUrlService) {
+      S3PresignedUrlService s3PresignedUrlService,
+      OrgSchemaMappingRepository orgSchemaMappingRepository,
+      OrganizationRepository organizationRepository) {
     this.orgSettingsRepository = orgSettingsRepository;
     this.memberRepository = memberRepository;
     this.entityTagRepository = entityTagRepository;
     this.tagRepository = tagRepository;
     this.s3PresignedUrlService = s3PresignedUrlService;
+    this.orgSchemaMappingRepository = orgSchemaMappingRepository;
+    this.organizationRepository = organizationRepository;
   }
 
-  /** Builds the org context map from OrgSettings (currency, branding, logo URL). */
+  /** Builds the org context map from OrgSettings (currency, branding, logo URL) and org name. */
   public Map<String, Object> buildOrgContext() {
     var orgMap = new LinkedHashMap<String, Object>();
+
+    // Resolve org name from public schema: tenant schema → clerk org ID → organization name
+    resolveOrgName(orgMap);
+
     orgSettingsRepository
         .findForCurrentTenant()
         .ifPresentOrElse(
@@ -71,6 +84,20 @@ public class TemplateContextHelper {
               orgMap.put("logoUrl", null);
             });
     return orgMap;
+  }
+
+  private void resolveOrgName(Map<String, Object> orgMap) {
+    if (!RequestScopes.TENANT_ID.isBound()) {
+      orgMap.put("name", "Unknown Organization");
+      return;
+    }
+    var schemaName = RequestScopes.TENANT_ID.get();
+    orgSchemaMappingRepository
+        .findBySchemaName(schemaName)
+        .flatMap(mapping -> organizationRepository.findByClerkOrgId(mapping.getClerkOrgId()))
+        .ifPresentOrElse(
+            org -> orgMap.put("name", org.getName()),
+            () -> orgMap.put("name", "Unknown Organization"));
   }
 
   /** Builds the generatedBy map from the member who triggered generation. */

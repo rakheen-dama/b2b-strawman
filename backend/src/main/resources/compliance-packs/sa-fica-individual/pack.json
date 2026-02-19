@@ -89,6 +89,12 @@
       "triggerEvent": "CUSTOMER_OFFBOARDED",
       "retentionDays": 1825,
       "action": "FLAG"
+    },
+    {
+      "recordType": "AUDIT_EVENT",
+      "triggerEvent": "RECORD_CREATED",
+      "retentionDays": 2555,
+      "action": "FLAG"
     }
   ]
 }

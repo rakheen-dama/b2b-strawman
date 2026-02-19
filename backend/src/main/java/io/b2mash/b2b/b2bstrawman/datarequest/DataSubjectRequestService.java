@@ -156,4 +156,48 @@ public class DataSubjectRequestService {
         .findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("DataSubjectRequest", id));
   }
+
+  /**
+   * Checks for requests approaching or past their deadlines and logs audit events.
+   *
+   * <p>Finds requests with status RECEIVED or IN_PROGRESS whose deadline is within 7 days. For
+   * each, logs either a "data.request.overdue" or "data.request.deadline.approaching" audit event.
+   *
+   * @return the number of requests flagged
+   */
+  @Transactional
+  public int checkDeadlines() {
+    LocalDate now = LocalDate.now();
+    LocalDate horizon = now.plusDays(7);
+
+    var requests =
+        requestRepository.findByStatusInAndDeadlineBefore(
+            List.of("RECEIVED", "IN_PROGRESS"), horizon);
+
+    int flagged = 0;
+    for (var request : requests) {
+      String eventType;
+      if (request.getDeadline().isBefore(now)) {
+        eventType = "data.request.overdue";
+      } else {
+        eventType = "data.request.deadline.approaching";
+      }
+
+      auditService.log(
+          AuditEventBuilder.builder()
+              .eventType(eventType)
+              .entityType("data_subject_request")
+              .entityId(request.getId())
+              .details(
+                  Map.of(
+                      "deadline", request.getDeadline().toString(),
+                      "status", request.getStatus(),
+                      "customerId", request.getCustomerId().toString()))
+              .build());
+      flagged++;
+    }
+
+    log.info("Deadline check complete — {} requests flagged", flagged);
+    return flagged;
+  }
 }

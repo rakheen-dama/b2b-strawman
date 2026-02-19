@@ -160,8 +160,13 @@ public class DataSubjectRequestService {
   /**
    * Checks for requests approaching or past their deadlines and logs audit events.
    *
-   * <p>Finds requests with status RECEIVED or IN_PROGRESS whose deadline is within 7 days. For
-   * each, logs either a "data.request.overdue" or "data.request.deadline.approaching" audit event.
+   * <p>Finds requests with status RECEIVED or IN_PROGRESS whose deadline is within 7 days (or
+   * overdue by up to 30 days). The 30-day lookback window prevents re-flagging very old requests
+   * indefinitely on each call.
+   *
+   * <p>Note: This method is safe to call multiple times. Audit events are append-only logs, so
+   * duplicate entries for the same request indicate repeated checks rather than data corruption.
+   * Callers should schedule invocations appropriately (e.g., daily) to control event volume.
    *
    * @return the number of requests flagged
    */
@@ -169,10 +174,11 @@ public class DataSubjectRequestService {
   public int checkDeadlines() {
     LocalDate now = LocalDate.now();
     LocalDate horizon = now.plusDays(7);
+    LocalDate lookback = now.minusDays(30);
 
     var requests =
-        requestRepository.findByStatusInAndDeadlineBefore(
-            List.of("RECEIVED", "IN_PROGRESS"), horizon);
+        requestRepository.findByStatusInAndDeadlineBetween(
+            List.of("RECEIVED", "IN_PROGRESS"), lookback, horizon);
 
     int flagged = 0;
     for (var request : requests) {

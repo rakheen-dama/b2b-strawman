@@ -138,7 +138,7 @@ public class DataRequestController {
                 "documentsDeleted", result.documentsDeleted(),
                 "commentsRedacted", result.commentsRedacted(),
                 "portalContactsAnonymized", result.portalContactsAnonymized(),
-                "financialRecordsPreserved", result.financialRecordsPreserved())));
+                "invoicesPreserved", result.invoicesPreserved())));
   }
 
   @PostMapping("/check-deadlines")

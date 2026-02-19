@@ -142,6 +142,12 @@ public class CustomerController {
     return ResponseEntity.ok(customers);
   }
 
+  @GetMapping("/lifecycle-summary")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<Map<String, Long>> getLifecycleSummary() {
+    return ResponseEntity.ok(customerService.getLifecycleSummary());
+  }
+
   @GetMapping("/{id}")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<CustomerResponse> getCustomer(@PathVariable UUID id) {

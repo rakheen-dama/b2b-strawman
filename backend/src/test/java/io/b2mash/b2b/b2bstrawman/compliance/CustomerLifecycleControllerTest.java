@@ -164,6 +164,23 @@ class CustomerLifecycleControllerTest {
         .andExpect(status().isOk());
   }
 
+  @Test
+  void shouldReturnLifecycleSummaryForOwner() throws Exception {
+    createCustomer("Summary Test Corp", nextEmail());
+
+    mockMvc
+        .perform(get("/api/customers/lifecycle-summary").with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isMap());
+  }
+
+  @Test
+  void shouldReturn403ForMemberOnLifecycleSummary() throws Exception {
+    mockMvc
+        .perform(get("/api/customers/lifecycle-summary").with(memberJwt()))
+        .andExpect(status().isForbidden());
+  }
+
   // --- Helpers ---
 
   private String nextEmail() {

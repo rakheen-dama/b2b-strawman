@@ -62,7 +62,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     label: "Compliance",
-    href: (slug) => `/org/${slug}/compliance/requests`,
+    href: (slug) => `/org/${slug}/compliance`,
     icon: ShieldCheck,
   },
   {

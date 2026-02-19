@@ -26,7 +26,7 @@ This is a **pure read/aggregation layer** over existing data. No new database ta
 | 111 | Reusable Frontend Components & API Client | Frontend | 109, 110 | M | 111A | **Done** (PR #229) |
 | 112 | Project Detail Page Integration | Frontend | 111 | S | 112A | **Done** (PR #230) |
 | 113 | Customer Detail Page Integration | Frontend | 111 | S | 113A | **Done** (PR #231) |
-| 114 | Empty State Rollout | Frontend | 111 | S | 114A | |
+| 114 | Empty State Rollout | Frontend | 111 | S | 114A | **Done** (PR #232) |
 
 ---
 
@@ -85,7 +85,7 @@ This is a **pure read/aggregation layer** over existing data. No new database ta
 |-------|------|-------|-----------|
 | 3a | Epic 112 | 112A | Wire `SetupProgressCard`, `ActionCard`, `TemplateReadinessCard`, `FieldValueGrid` into project detail page. Parallel `Promise.all()` fetches. ~5 tests. | **Done** (PR #230) |
 | 3b | Epic 113 | 113A | Wire customer readiness, unbilled summary, template readiness into customer detail page. Lifecycle action prompt. ~5 tests. | **Done** (PR #231) |
-| 3c | Epic 114 | 114A | Upgrade existing `components/empty-state.tsx` with `actionHref`/`onAction` support and card-based styling. Replace 8 "No items" placeholders across the app. ~8 tests. |
+| 3c | Epic 114 | 114A | Upgrade existing `components/empty-state.tsx` with `actionHref`/`onAction` support and card-based styling. Replace 8 "No items" placeholders across the app. ~8 tests. | **Done** (PR #232) |
 
 ### Timeline
 
@@ -464,7 +464,7 @@ Stage 3:   [112A]  //  [113A]  //  [114A]   (page integrations — all parallel 
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **114A** | 114.1–114.12 | Replace empty states in 8 locations: project tasks tab, project time entries, project documents, project team, customer projects, customer documents, invoice list, custom fields section. Write ~8 rendering tests (one per location). | |
+| **114A** | 114.1–114.12 | Replace empty states in 8 locations: project tasks tab, project time entries, project documents, project team, customer projects, customer documents, invoice list, custom fields section. Write ~8 rendering tests (one per location). | **Done** (PR #232) |
 
 ### Tasks
 

@@ -134,7 +134,7 @@
 | 111 | Reusable Frontend Components & API Client | Frontend | 109, 110 | M | 111A | **Done** (PR #229) |
 | 112 | Project Detail Page Integration | Frontend | 111 | S | 112A | **Done** (PR #230) |
 | 113 | Customer Detail Page Integration | Frontend | 111 | S | 113A | **Done** (PR #231) |
-| 114 | Empty State Rollout | Frontend | 111 | S | 114A | |
+| 114 | Empty State Rollout | Frontend | 111 | S | 114A | **Done** (PR #232) |
 
 ---
 

@@ -208,7 +208,7 @@ Next.js 16 strictly enforces that only plain serializable values (strings, numbe
 - Class instances
 
 **Fix patterns:**
-- **Icon props**: Remove `"use client"` if the component doesn't actually need client interactivity (no hooks, no event handlers). `LucideIcon` components render fine in Server Components.
+- **Icon props**: Remove `"use client"` if the component doesn't actually need client interactivity (no hooks, no event handlers, no browser APIs). `LucideIcon` components render fine in Server Components.
 - **Callback props**: Replace function props with serializable data. E.g., instead of `generateHref={(id) => \`/path/${id}\`}`, pass `baseHref="/path"` and build the URL inside the client component.
 - **Component props**: Pass pre-rendered `ReactNode` (JSX) instead of component references, or restructure so the icon renders in the Server Component parent.
 

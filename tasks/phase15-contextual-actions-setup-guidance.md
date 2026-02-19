@@ -70,7 +70,7 @@ This is a **pure read/aggregation layer** over existing data. No new database ta
 |-------|------|-------|-----------|
 | 1a | Epic 109 | 109A | `ProjectSetupStatus` + `RequiredFieldStatus` + `FieldStatus` DTOs, `ProjectSetupStatusService`, `BillingRateRepository.existsByProjectIdIsNullAndCustomerIdIsNull()`, endpoint on `ProjectController`. ~26 tests. Foundation for project detail page. | **Done** (PR #225) |
 | 1b | Epic 109 | 109B | `UnbilledTimeSummary` + `ProjectUnbilledBreakdown` DTOs, `UnbilledTimeSummaryService` (two native SQL queries), project + customer unbilled endpoints on `ProjectController` and `CustomerController`. ~26 tests. |
-| 1c | Epic 110 | 110A | `CustomerReadiness` + `ChecklistProgress` DTOs, `CustomerReadinessService` (native SQL for checklist tables), endpoint on `CustomerController`. ~26 tests. Parallel with 109. |
+| 1c | Epic 110 | 110A | `CustomerReadiness` + `ChecklistProgress` DTOs, `CustomerReadinessService` (native SQL for checklist tables), endpoint on `CustomerController`. ~26 tests. Parallel with 109. | **Done** (PR #227) |
 | 1d | Epic 110 | 110B | `TemplateReadiness` DTO, `DocumentGenerationReadinessService` (context builder inspection, hardcoded key checks), endpoint on `DocumentTemplateController`. ~26 tests. Parallel with 109. |
 
 ### Stage 2: Frontend Components (After Stage 1)
@@ -204,7 +204,7 @@ Stage 3:   [112A]  //  [113A]  //  [114A]   (page integrations — all parallel 
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **110A** | 110.1–110.10 | `CustomerReadiness`, `ChecklistProgress` Java records. `CustomerReadinessService` with lifecycle status read, native SQL checklist progress query, required field check, linked project check, and `overallReadiness` computation. `GET /api/customers/{id}/readiness` endpoint on `CustomerController`. ~26 tests total. | |
+| **110A** | 110.1–110.10 | `CustomerReadiness`, `ChecklistProgress` Java records. `CustomerReadinessService` with lifecycle status read, native SQL checklist progress query, required field check, linked project check, and `overallReadiness` computation. `GET /api/customers/{id}/readiness` endpoint on `CustomerController`. ~26 tests total. | **Done** (PR #227) |
 | **110B** | 110.11–110.20 | `TemplateReadiness` Java record. `DocumentGenerationReadinessService` with `TemplateContextBuilder` inspection and hardcoded required-key checks per entity type. `GET /api/templates/readiness` endpoint on `DocumentTemplateController`. ~26 tests total. | |
 
 ### Tasks

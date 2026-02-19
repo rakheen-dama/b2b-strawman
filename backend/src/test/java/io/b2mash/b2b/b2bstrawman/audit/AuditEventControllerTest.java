@@ -149,7 +149,7 @@ class AuditEventControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
         .andExpect(jsonPath("$.content", hasSize(greaterThanOrEqualTo(1))))
-        .andExpect(jsonPath("$.totalElements", greaterThanOrEqualTo(1)));
+        .andExpect(jsonPath("$.page.totalElements", greaterThanOrEqualTo(1)));
   }
 
   @Test
@@ -158,7 +158,7 @@ class AuditEventControllerTest {
         .perform(get("/api/audit-events").with(adminJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
-        .andExpect(jsonPath("$.totalElements", greaterThanOrEqualTo(1)));
+        .andExpect(jsonPath("$.page.totalElements", greaterThanOrEqualTo(1)));
   }
 
   @Test
@@ -233,16 +233,16 @@ class AuditEventControllerTest {
         .perform(get("/api/audit-events").with(ownerJwt()).param("size", "2").param("page", "0"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content", hasSize(2)))
-        .andExpect(jsonPath("$.size").value(2))
-        .andExpect(jsonPath("$.number").value(0))
-        .andExpect(jsonPath("$.totalPages", greaterThanOrEqualTo(2)));
+        .andExpect(jsonPath("$.page.size").value(2))
+        .andExpect(jsonPath("$.page.number").value(0))
+        .andExpect(jsonPath("$.page.totalPages", greaterThanOrEqualTo(2)));
 
     // Request page 1
     mockMvc
         .perform(get("/api/audit-events").with(ownerJwt()).param("size", "2").param("page", "1"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content", hasSize(greaterThanOrEqualTo(1))))
-        .andExpect(jsonPath("$.number").value(1));
+        .andExpect(jsonPath("$.page.number").value(1));
   }
 
   @Test

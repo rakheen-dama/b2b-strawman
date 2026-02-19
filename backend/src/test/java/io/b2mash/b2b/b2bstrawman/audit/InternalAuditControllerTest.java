@@ -73,7 +73,7 @@ class InternalAuditControllerTest {
         .perform(get("/internal/audit-events").header("X-API-KEY", API_KEY).param("orgId", ORG_ID))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
-        .andExpect(jsonPath("$.totalElements", greaterThanOrEqualTo(1)));
+        .andExpect(jsonPath("$.page.totalElements", greaterThanOrEqualTo(1)));
   }
 
   @Test
@@ -140,9 +140,9 @@ class InternalAuditControllerTest {
                 .param("size", "2"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content", hasSize(2)))
-        .andExpect(jsonPath("$.size", is(2)))
-        .andExpect(jsonPath("$.number", is(0)))
-        .andExpect(jsonPath("$.totalElements", greaterThan(2)));
+        .andExpect(jsonPath("$.page.size", is(2)))
+        .andExpect(jsonPath("$.page.number", is(0)))
+        .andExpect(jsonPath("$.page.totalElements", greaterThan(2)));
   }
 
   @Test

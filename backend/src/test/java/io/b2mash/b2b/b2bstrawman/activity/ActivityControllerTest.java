@@ -179,7 +179,7 @@ class ActivityControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
         .andExpect(jsonPath("$.content", hasSize(5)))
-        .andExpect(jsonPath("$.totalElements").value(5))
+        .andExpect(jsonPath("$.page.totalElements").value(5))
         .andExpect(jsonPath("$.content[0].id").exists())
         .andExpect(jsonPath("$.content[0].message").exists())
         .andExpect(jsonPath("$.content[0].actorName").exists())
@@ -214,7 +214,7 @@ class ActivityControllerTest {
                 .with(ownerJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content", hasSize(0)))
-        .andExpect(jsonPath("$.totalElements").value(0));
+        .andExpect(jsonPath("$.page.totalElements").value(0));
   }
 
   @Test
@@ -239,7 +239,7 @@ class ActivityControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
         .andExpect(jsonPath("$.content", hasSize(0)))
-        .andExpect(jsonPath("$.totalElements").value(0));
+        .andExpect(jsonPath("$.page.totalElements").value(0));
   }
 
   @Test

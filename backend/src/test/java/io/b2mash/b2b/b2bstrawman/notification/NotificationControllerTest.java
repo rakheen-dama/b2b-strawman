@@ -152,7 +152,7 @@ class NotificationControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
         .andExpect(jsonPath("$.content", hasSize(3)))
-        .andExpect(jsonPath("$.totalElements").value(3))
+        .andExpect(jsonPath("$.page.totalElements").value(3))
         .andExpect(jsonPath("$.content[0].type").exists())
         .andExpect(jsonPath("$.content[0].title").exists())
         .andExpect(jsonPath("$.content[0].createdAt").exists());
@@ -252,7 +252,7 @@ class NotificationControllerTest {
     mockMvc
         .perform(get("/api/notifications").with(ownerJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.totalElements").value(2));
+        .andExpect(jsonPath("$.page.totalElements").value(2));
   }
 
   @Test

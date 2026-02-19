@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { TimeEntryList } from "@/components/tasks/time-entry-list";
 import type { TimeEntry } from "@/lib/types";
 
@@ -282,5 +283,36 @@ describe("TimeEntryList", () => {
     expect(billedBadge.getAttribute("data-variant")).toBe("success");
     const link = billedBadge.closest("a");
     expect(link).toHaveAttribute("href", "/org/acme/invoices/inv-456");
+  });
+
+  it("shows EmptyState when billing filter returns zero entries", async () => {
+    const user = userEvent.setup();
+
+    // Entry is billable+invoiced (billed), so filtering "unbilled" yields 0
+    const billedEntry = makeTimeEntry({
+      id: "te-billed",
+      memberId: "m1",
+      billable: true,
+      invoiceId: "inv-1",
+      invoiceNumber: "INV-001",
+    });
+
+    render(
+      <TimeEntryList
+        entries={[billedEntry]}
+        slug="acme"
+        projectId="p1"
+        currentMemberId="m1"
+        orgRole="org:member"
+      />,
+    );
+
+    // Click "Unbilled" filter button
+    await user.click(screen.getByRole("button", { name: "Unbilled" }));
+
+    expect(screen.getByText("No matching time entries")).toBeInTheDocument();
+    expect(
+      screen.getByText("Try a different billing status filter."),
+    ).toBeInTheDocument();
   });
 });

@@ -343,7 +343,7 @@ export function DocumentsPanel({
         <EmptyState
           icon={FileText}
           title="No documents yet"
-          description="Upload your first file above"
+          description="Upload proposals, contracts, and deliverables for this project."
         />
       ) : (
         <div className="rounded-lg border border-slate-200 dark:border-slate-800">

@@ -1,18 +1,18 @@
 import "dotenv/config";
 import { loadConfig } from "./config.js";
-import { AgentClient } from "./agentClient.js";
+import { ClaudeRunner } from "./claudeRunner.js";
 import { createSlackApp } from "./slackApp.js";
 
 async function main(): Promise<void> {
   const config = loadConfig();
 
   console.info("[boot] Claude Slack Bot starting...");
-  console.info(`[boot] Agent CWD: ${config.agent.cwd}`);
-  console.info(`[boot] Permission mode: ${config.agent.permissionMode}`);
-  console.info(`[boot] Model: ${config.agent.model}`);
+  console.info(`[boot] Claude CWD: ${config.claude.cwd}`);
+  console.info(`[boot] Permission mode: ${config.claude.permissionMode}`);
+  console.info(`[boot] Model: ${config.claude.model}`);
 
-  const agentClient = new AgentClient(config);
-  const app = createSlackApp(config, agentClient);
+  const runner = new ClaudeRunner(config);
+  const app = createSlackApp(config, runner);
 
   await app.start();
   console.info("[boot] Slack bot is running (Socket Mode)");
@@ -20,8 +20,11 @@ async function main(): Promise<void> {
   // Graceful shutdown
   const shutdown = async (signal: string) => {
     console.info(`[shutdown] Received ${signal}, stopping...`);
+    runner.abortAll();
     await app.stop();
-    console.info(`[shutdown] Active sessions: ${agentClient.sessionCount}`);
+    console.info(
+      `[shutdown] Sessions: ${runner.sessionCount}, Running: ${runner.runningCount}`,
+    );
     process.exit(0);
   };
 

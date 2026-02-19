@@ -1,17 +1,18 @@
 import { App } from "@slack/bolt";
 import type { Config } from "./config.js";
-import type { AgentClient } from "./agentClient.js";
+import type { ClaudeRunner } from "./claudeRunner.js";
 
-const HELP_TEXT = `Hey! I'm your Claude Code bot. Send me a message and I'll run it as a prompt against your repo.
+const HELP_TEXT = `Hey! I'm your Claude Code bot. Send me a message and I'll run it as a prompt against your repo using your local Claude Code.
 
 *Examples:*
 • \`What files handle authentication?\`
 • \`/review 225\` — review a PR
 • \`/breakdown 16\` — break down a phase
 • \`Explain the TenantFilter class\`
+• \`/stop\` — kill the running Claude process for this thread
 • \`/reset\` — clear this thread's conversation context
 
-I run with your CLAUDE.md, skills, and project context.`;
+Uses your Max subscription — no API credits.`;
 
 const GREETING_PATTERNS = /^(hi|hello|hey|sup|yo|howdy|greetings|help|\?)$/i;
 
@@ -28,7 +29,7 @@ class MessageUpdater {
 
   schedule(text: string): void {
     this.pending = text;
-    if (this.timer) return; // already scheduled
+    if (this.timer) return;
 
     const elapsed = Date.now() - this.lastUpdate;
     const delay = Math.max(0, this.intervalMs - elapsed);
@@ -39,7 +40,7 @@ class MessageUpdater {
         const t = this.pending;
         this.pending = null;
         this.lastUpdate = Date.now();
-        this.doUpdate(t).catch(() => {}); // fire-and-forget, errors logged elsewhere
+        this.doUpdate(t).catch(() => {});
       }
     }, delay);
   }
@@ -54,7 +55,7 @@ class MessageUpdater {
   }
 }
 
-export function createSlackApp(config: Config, agentClient: AgentClient): App {
+export function createSlackApp(config: Config, runner: ClaudeRunner): App {
   const app = new App({
     token: config.slack.botToken,
     socketMode: true,
@@ -69,9 +70,24 @@ export function createSlackApp(config: Config, agentClient: AgentClient): App {
     userId: string,
     client: App["client"],
   ): Promise<void> {
-    // /reset clears the thread's agent session
-    if (text.trim().toLowerCase() === "/reset") {
-      const cleared = agentClient.clearSession(threadTs);
+    const trimmed = text.trim().toLowerCase();
+
+    // /stop kills the running process
+    if (trimmed === "/stop") {
+      const stopped = runner.abort(threadTs);
+      await client.chat.postMessage({
+        channel: channelId,
+        thread_ts: threadTs,
+        text: stopped
+          ? "Stopped the running Claude process."
+          : "No running process for this thread.",
+      });
+      return;
+    }
+
+    // /reset clears the thread's session
+    if (trimmed === "/reset") {
+      const cleared = runner.clearSession(threadTs);
       await client.chat.postMessage({
         channel: channelId,
         thread_ts: threadTs,
@@ -92,7 +108,7 @@ export function createSlackApp(config: Config, agentClient: AgentClient): App {
       return;
     }
 
-    // Post initial "thinking" message that we'll update progressively
+    // Post initial "thinking" message
     const thinkingMsg = await client.chat.postMessage({
       channel: channelId,
       thread_ts: threadTs,
@@ -106,7 +122,6 @@ export function createSlackApp(config: Config, agentClient: AgentClient): App {
     }
 
     const updater = new MessageUpdater(async (content: string) => {
-      // Truncate to Slack's 40k char limit, leaving room for a truncation notice
       const maxLen = 39_000;
       const truncated =
         content.length > maxLen
@@ -122,10 +137,10 @@ export function createSlackApp(config: Config, agentClient: AgentClient): App {
 
     try {
       console.info(
-        `[agent] Running prompt for user=${userId} channel=${channelId} thread=${threadTs}`,
+        `[claude] Running prompt for user=${userId} channel=${channelId} thread=${threadTs}`,
       );
 
-      const response = await agentClient.runPrompt({
+      const response = await runner.runPrompt({
         threadId: threadTs,
         text,
         onChunk(accumulated) {
@@ -133,21 +148,20 @@ export function createSlackApp(config: Config, agentClient: AgentClient): App {
         },
       });
 
-      // Final update with complete response
       await updater.flush(response);
 
       console.info(
-        `[agent] Completed for user=${userId} channel=${channelId} thread=${threadTs} (${response.length} chars)`,
+        `[claude] Completed for user=${userId} channel=${channelId} thread=${threadTs} (${response.length} chars)`,
       );
     } catch (error) {
       const errMsg =
         error instanceof Error ? error.message : "Unknown error occurred";
       console.error(
-        `[agent] Error for user=${userId} channel=${channelId}: ${errMsg}`,
+        `[claude] Error for user=${userId} channel=${channelId}: ${errMsg}`,
       );
 
       await updater.flush(
-        `:x: Something went wrong running that prompt.\n\`\`\`${errMsg}\`\`\``,
+        `:x: Something went wrong.\n\`\`\`${errMsg}\`\`\``,
       );
     }
   }
@@ -156,7 +170,6 @@ export function createSlackApp(config: Config, agentClient: AgentClient): App {
 
   // Direct messages
   app.message(async ({ message, client }) => {
-    // Ignore bot messages, message_changed subtypes, etc.
     if (!("text" in message) || !message.text) return;
     if ("subtype" in message && message.subtype) return;
     if (!("user" in message) || !message.user) return;
@@ -176,7 +189,6 @@ export function createSlackApp(config: Config, agentClient: AgentClient): App {
 
   // @mentions in channels
   app.event("app_mention", async ({ event, client }) => {
-    // Strip the <@BOT_ID> mention prefix
     const text = event.text.replace(/<@[A-Z0-9]+>\s*/g, "").trim();
     const threadTs = event.thread_ts ?? event.ts;
     if (!event.user) return;

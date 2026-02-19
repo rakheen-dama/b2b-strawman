@@ -1,13 +1,18 @@
 import { resolve } from "node:path";
-import type { PermissionMode } from "@anthropic-ai/claude-agent-sdk";
+
+export type PermissionMode =
+  | "default"
+  | "acceptEdits"
+  | "bypassPermissions"
+  | "plan"
+  | "dontAsk";
 
 export interface Config {
   slack: {
     botToken: string;
     appToken: string;
   };
-  agent: {
-    apiKey: string;
+  claude: {
     cwd: string;
     permissionMode: PermissionMode;
     model: string;
@@ -15,15 +20,13 @@ export interface Config {
   };
 }
 
-/** Maps user-friendly env var values to SDK PermissionMode values. */
-const PERMISSION_MODE_MAP: Record<string, PermissionMode> = {
-  plan: "plan",
-  acceptEdits: "acceptEdits",
-  default: "default",
-  full: "bypassPermissions",
-  bypassPermissions: "bypassPermissions",
-  dontAsk: "dontAsk",
-};
+const VALID_PERMISSION_MODES: PermissionMode[] = [
+  "default",
+  "acceptEdits",
+  "bypassPermissions",
+  "plan",
+  "dontAsk",
+];
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -37,11 +40,11 @@ export function loadConfig(): Config {
   // Resolve the repo root: 3 levels up from src/ → tools/claude-slack-bot → tools → repo root
   const defaultCwd = resolve(import.meta.dirname, "..", "..", "..");
 
-  const rawMode = process.env.AGENT_PERMISSION_MODE ?? "bypassPermissions";
-  const permissionMode = PERMISSION_MODE_MAP[rawMode];
-  if (!permissionMode) {
+  const permissionMode = (process.env.CLAUDE_PERMISSION_MODE ??
+    "bypassPermissions") as PermissionMode;
+  if (!VALID_PERMISSION_MODES.includes(permissionMode)) {
     throw new Error(
-      `Invalid AGENT_PERMISSION_MODE: ${rawMode}. Must be one of: ${Object.keys(PERMISSION_MODE_MAP).join(", ")}`,
+      `Invalid CLAUDE_PERMISSION_MODE: ${permissionMode}. Must be one of: ${VALID_PERMISSION_MODES.join(", ")}`,
     );
   }
 
@@ -50,12 +53,11 @@ export function loadConfig(): Config {
       botToken: requireEnv("SLACK_BOT_TOKEN"),
       appToken: requireEnv("SLACK_APP_TOKEN"),
     },
-    agent: {
-      apiKey: requireEnv("ANTHROPIC_API_KEY"),
-      cwd: process.env.AGENT_CWD ?? defaultCwd,
+    claude: {
+      cwd: process.env.CLAUDE_CWD ?? defaultCwd,
       permissionMode,
-      model: process.env.AGENT_MODEL ?? "claude-sonnet-4-6",
-      maxTurns: parseInt(process.env.AGENT_MAX_TURNS ?? "50", 10),
+      model: process.env.CLAUDE_MODEL ?? "sonnet",
+      maxTurns: parseInt(process.env.CLAUDE_MAX_TURNS ?? "50", 10),
     },
   };
 }

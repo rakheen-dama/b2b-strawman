@@ -1,19 +1,27 @@
 # Claude Slack Bot
 
-A Slack bot that forwards messages to Claude Code agent sessions tied to this repo. Run it on your Mac and control your dev environment from Slack on your phone.
+A Slack bot that runs Claude Code CLI prompts locally on your Mac. Uses your Max subscription — no API credits.
 
 ## Architecture
 
 ```
-Slack (phone) → Socket Mode → Bolt.js → Agent SDK query() → Claude Code → repo
-                                                    ↑
-                                         reads CLAUDE.md, skills,
-                                         slash commands, project context
+Slack (phone) → Socket Mode → Bolt.js → spawns `claude -p` → your repo
+                                              ↑
+                                    uses local auth (Max sub),
+                                    reads CLAUDE.md, skills,
+                                    slash commands, project context
 ```
 
-- **Per-thread sessions**: Each Slack thread maintains its own agent conversation. Follow-ups have full context.
-- **Streaming updates**: The bot posts a "Working..." message and progressively updates it as the agent responds.
-- **Slash commands**: Type `/review 225` or `/epic 110A` — the text is passed through to the agent, which triggers your configured skills.
+- **Per-thread sessions**: Each Slack thread maintains its own Claude conversation via `--resume`.
+- **Streaming updates**: Posts a "Working..." message and progressively updates it as Claude streams output.
+- **Slash commands**: Type `/review 225` or `/epic 110A` — passed as the prompt text, triggering your configured skills.
+- **Stop/Reset**: `/stop` kills the running process, `/reset` clears thread context.
+
+## Prerequisites
+
+- Claude Code CLI installed and authenticated (`claude` command available in your PATH)
+- Node.js 20+ and pnpm
+- A Slack workspace you can install apps to
 
 ## Setup
 
@@ -21,27 +29,11 @@ Slack (phone) → Socket Mode → Bolt.js → Agent SDK query() → Claude Code 
 
 1. Go to [api.slack.com/apps](https://api.slack.com/apps) → **Create New App** → **From scratch**
 2. Name it (e.g. "Claude Code") and pick your workspace
-
-3. **Enable Socket Mode**:
-   - Settings → Socket Mode → **Enable**
-   - Generate an app-level token with `connections:write` scope → save as `SLACK_APP_TOKEN`
-
-4. **Add Bot User**:
-   - Features → App Home → toggle **Messages Tab** on
-   - Check "Allow users to send Slash commands and messages from the messages tab"
-
-5. **OAuth & Permissions** → Bot Token Scopes:
-   - `app_mentions:read`
-   - `chat:write`
-   - `im:history`
-   - `im:read`
-   - `im:write`
-
-6. **Event Subscriptions** → Enable Events → Subscribe to bot events:
-   - `app_mention`
-   - `message.im`
-
-7. **Install to Workspace** → copy the **Bot User OAuth Token** as `SLACK_BOT_TOKEN`
+3. **Socket Mode**: Settings → Socket Mode → Enable → generate app-level token with `connections:write` → save as `SLACK_APP_TOKEN`
+4. **Bot User**: Features → App Home → toggle Messages Tab on, check "Allow users to send messages"
+5. **OAuth Scopes**: `app_mentions:read`, `chat:write`, `im:history`, `im:read`, `im:write`
+6. **Event Subscriptions**: Enable → subscribe to `app_mention` + `message.im`
+7. **Install to Workspace** → copy Bot User OAuth Token as `SLACK_BOT_TOKEN`
 
 ### 2. Environment Variables
 
@@ -49,62 +41,61 @@ Slack (phone) → Socket Mode → Bolt.js → Agent SDK query() → Claude Code 
 cp .env.example .env
 ```
 
-Edit `.env` with your real values:
+Edit `.env`:
 
 ```env
 SLACK_BOT_TOKEN=xoxb-...
 SLACK_APP_TOKEN=xapp-...
-ANTHROPIC_API_KEY=sk-ant-...
-AGENT_CWD=/Users/you/Projects/2026/b2b-strawman
-AGENT_PERMISSION_MODE=acceptEdits
-AGENT_MODEL=claude-sonnet-4-6
+CLAUDE_CWD=/Users/you/Projects/2026/b2b-strawman
+CLAUDE_PERMISSION_MODE=bypassPermissions
+CLAUDE_MODEL=sonnet
 ```
+
+No `ANTHROPIC_API_KEY` needed — the bot spawns `claude` CLI which uses your local auth.
 
 ### 3. Install & Run
 
 ```bash
-# Install dependencies
 pnpm install
-
-# Development (auto-reload on changes)
-pnpm dev
-
-# Production
-pnpm build
-pnpm start
+pnpm dev        # development (auto-reload)
+# or
+pnpm build && pnpm start   # production
 ```
 
 ## Usage
 
 ### Direct Messages
-Open a DM with the bot and type:
+Open a DM with the bot:
 - `What files handle authentication?`
 - `/review 225`
 - `Explain the TenantFilter class`
 
 ### Channel Mentions
-In any channel the bot is in:
+In any channel the bot is invited to:
 - `@Claude Code What's the current git branch?`
 
 ### Thread Context
-Reply in the same thread to continue the conversation — the agent remembers everything it did.
+Reply in the same thread to continue the conversation — Claude remembers the full session.
 
-### Reset Session
-Type `/reset` in a thread to clear the conversation context and start fresh.
+### Commands
+- `/stop` — kill the running Claude process for this thread
+- `/reset` — clear this thread's conversation context and start fresh
 
-## Permission Modes
+## Configuration
 
-| Mode | Behavior | Use Case |
-|------|----------|----------|
-| `plan` | Read-only exploration | Safe browsing from phone |
-| `acceptEdits` | Auto-approves file reads/writes | Default — good for reviews, exploration |
-| `full` | Auto-approves everything incl. bash | Running `/epic`, `/phase`, deployments |
-
-Change via the `AGENT_PERMISSION_MODE` env var. Restart the bot after changing.
+| Env Var | Default | Description |
+|---------|---------|-------------|
+| `SLACK_BOT_TOKEN` | (required) | Bot User OAuth Token (xoxb-...) |
+| `SLACK_APP_TOKEN` | (required) | App-Level Token (xapp-...) |
+| `CLAUDE_CWD` | repo root | Working directory for Claude CLI |
+| `CLAUDE_PERMISSION_MODE` | `bypassPermissions` | CLI permission mode |
+| `CLAUDE_MODEL` | `sonnet` | Model alias or full ID |
+| `CLAUDE_MAX_TURNS` | `50` | Max agent turns per prompt |
 
 ## Troubleshooting
 
-- **"Missing required environment variable"**: Check your `.env` file exists and has all required values
-- **Bot doesn't respond to DMs**: Ensure `message.im` event subscription is enabled and the Messages Tab is toggled on
-- **Bot doesn't respond to @mentions**: Ensure `app_mention` event subscription is enabled and the bot is invited to the channel
-- **Agent errors**: Check the console logs. Common issues: invalid API key, incorrect `AGENT_CWD` path
+- **"Failed to spawn claude CLI"**: Ensure `claude` is in your PATH (`which claude`)
+- **"Missing required environment variable"**: Check `.env` has `SLACK_BOT_TOKEN` and `SLACK_APP_TOKEN`
+- **Bot doesn't respond to DMs**: Ensure `message.im` event is subscribed and Messages Tab is on
+- **Bot doesn't respond to @mentions**: Ensure `app_mention` is subscribed and bot is invited to the channel
+- **Process hangs**: Use `/stop` in the thread, or check console for errors

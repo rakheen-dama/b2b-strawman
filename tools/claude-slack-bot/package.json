@@ -1,8 +1,8 @@
 {
   "name": "claude-slack-bot",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "Slack bot that forwards messages to Claude Code agent sessions",
+  "description": "Slack bot that runs Claude Code CLI prompts locally (uses your Max subscription)",
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
@@ -11,7 +11,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@anthropic-ai/claude-agent-sdk": "^0.1.0",
     "@slack/bolt": "^4.3.0",
     "dotenv": "^16.5.0"
   },

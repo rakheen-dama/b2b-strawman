@@ -46,14 +46,6 @@ export async function updateComplianceSettings(
   return { success: true };
 }
 
-export async function getRetentionPolicies(): Promise<RetentionPolicy[]> {
-  try {
-    return await api.get<RetentionPolicy[]>("/api/retention-policies");
-  } catch {
-    return [];
-  }
-}
-
 export async function createRetentionPolicy(
   slug: string,
   data: CreateRetentionPolicyRequest,

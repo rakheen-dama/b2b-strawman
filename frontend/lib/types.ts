@@ -1018,6 +1018,7 @@ export interface CreateRetentionPolicyRequest {
 export interface UpdateRetentionPolicyRequest {
   retentionDays: number;
   action: string;
+  active: boolean;
 }
 
 export interface FlaggedRecords {

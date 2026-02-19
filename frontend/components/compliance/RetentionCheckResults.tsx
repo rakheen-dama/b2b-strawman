@@ -27,6 +27,12 @@ export function RetentionCheckResults({ result, onPurge }: RetentionCheckResults
   }
 
   async function handlePurge(key: string, recordType: string, recordIds: string[]) {
+    if (
+      !window.confirm(
+        `Purge ${recordIds.length} ${recordType} records? This cannot be undone.`,
+      )
+    )
+      return;
     setPurgingKeys((prev) => new Set(prev).add(key));
     try {
       await onPurge(recordType, recordIds);

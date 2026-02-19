@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { auth } from "@clerk/nextjs/server";
 import { api } from "@/lib/api";
+import { formatDate } from "@/lib/format";
 import { RetentionPolicyTable } from "@/components/compliance/RetentionPolicyTable";
 import { ComplianceSettingsForm } from "@/components/compliance/ComplianceSettingsForm";
 import type { OrgSettings, RetentionPolicy } from "@/lib/types";
@@ -38,15 +39,15 @@ export default async function ComplianceSettingsPage({
   let settings: OrgSettings = { defaultCurrency: "USD" };
   let policies: RetentionPolicy[] = [];
 
-  try {
-    const [settingsRes, policiesRes] = await Promise.all([
-      api.get<OrgSettings>("/api/settings"),
-      api.get<RetentionPolicy[]>("/api/retention-policies"),
-    ]);
-    settings = settingsRes;
-    policies = policiesRes ?? [];
-  } catch {
-    // Non-fatal: show empty state with defaults
+  const [settingsResult, policiesResult] = await Promise.allSettled([
+    api.get<OrgSettings>("/api/settings"),
+    api.get<RetentionPolicy[]>("/api/retention-policies"),
+  ]);
+  if (settingsResult.status === "fulfilled") {
+    settings = settingsResult.value;
+  }
+  if (policiesResult.status === "fulfilled") {
+    policies = policiesResult.value ?? [];
   }
 
   return (
@@ -76,7 +77,7 @@ export default async function ComplianceSettingsPage({
       />
 
       {/* Section 2: Retention Policies */}
-      <RetentionPolicyTable policies={policies} slug={slug} />
+      <RetentionPolicyTable key={JSON.stringify(policies)} policies={policies} slug={slug} />
 
       {/* Section 3: Compliance Packs */}
       <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
@@ -102,7 +103,7 @@ export default async function ComplianceSettingsPage({
                   </p>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Applied {new Date(pack.appliedAt).toLocaleDateString()}
+                  Applied {formatDate(pack.appliedAt)}
                 </p>
               </div>
             ))}

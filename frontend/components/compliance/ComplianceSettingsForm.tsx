@@ -65,7 +65,7 @@ export function ComplianceSettingsForm({
             type="number"
             min={1}
             value={dormancy}
-            onChange={(e) => setDormancy(parseInt(e.target.value) || 0)}
+            onChange={(e) => setDormancy(Math.max(1, parseInt(e.target.value) || 1))}
             className="mt-1 w-full"
           />
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
@@ -84,7 +84,7 @@ export function ComplianceSettingsForm({
             type="number"
             min={1}
             value={deadline}
-            onChange={(e) => setDeadline(parseInt(e.target.value) || 0)}
+            onChange={(e) => setDeadline(Math.max(1, parseInt(e.target.value) || 1))}
             className="mt-1 w-full"
           />
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">

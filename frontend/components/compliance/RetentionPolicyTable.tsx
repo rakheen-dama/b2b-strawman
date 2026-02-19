@@ -92,6 +92,7 @@ export function RetentionPolicyTable({ policies, slug }: RetentionPolicyTablePro
       result = await updateRetentionPolicy(slug, row.id, {
         retentionDays: row.retentionDays,
         action: row.action,
+        active: row.active,
       });
     } else {
       result = await createRetentionPolicy(slug, {
@@ -218,7 +219,7 @@ export function RetentionPolicyTable({ policies, slug }: RetentionPolicyTablePro
                       min={1}
                       value={row.retentionDays}
                       onChange={(e) =>
-                        updateRow(index, { retentionDays: parseInt(e.target.value) || 0 })
+                        updateRow(index, { retentionDays: Math.max(1, parseInt(e.target.value) || 1) })
                       }
                       className="w-24"
                     />

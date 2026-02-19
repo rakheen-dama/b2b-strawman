@@ -22,9 +22,15 @@ export function ChecklistTemplateActions({
   const [cloning, setCloning] = useState(false);
   const [deactivating, setDeactivating] = useState(false);
 
+  const [error, setError] = useState<string | null>(null);
+
   async function handleClone() {
     setCloning(true);
-    await cloneChecklistTemplate(slug, templateId);
+    setError(null);
+    const result = await cloneChecklistTemplate(slug, templateId);
+    if (!result.success) {
+      setError(result.error ?? "Failed to clone template.");
+    }
     setCloning(false);
   }
 
@@ -36,29 +42,34 @@ export function ChecklistTemplateActions({
   }
 
   return (
-    <div className="flex items-center justify-end gap-1">
-      <Button variant="ghost" size="sm" disabled={cloning} onClick={handleClone}>
-        {cloning ? (
-          <Loader2 className="size-4 animate-spin" />
-        ) : (
-          <Copy className="size-4" />
-        )}
-        <span className="sr-only">Clone {templateName}</span>
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        disabled={deactivating}
-        onClick={handleDeactivate}
-        className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300"
-      >
-        {deactivating ? (
-          <Loader2 className="size-4 animate-spin" />
-        ) : (
-          <XCircle className="size-4" />
-        )}
-        <span className="sr-only">Deactivate {templateName}</span>
-      </Button>
+    <div className="space-y-1">
+      <div className="flex items-center justify-end gap-1">
+        <Button variant="ghost" size="sm" disabled={cloning} onClick={handleClone}>
+          {cloning ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <Copy className="size-4" />
+          )}
+          <span className="sr-only">Clone {templateName}</span>
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled={deactivating}
+          onClick={handleDeactivate}
+          className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300"
+        >
+          {deactivating ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <XCircle className="size-4" />
+          )}
+          <span className="sr-only">Deactivate {templateName}</span>
+        </Button>
+      </div>
+      {error && (
+        <p className="text-right text-xs text-red-600 dark:text-red-400">{error}</p>
+      )}
     </div>
   );
 }

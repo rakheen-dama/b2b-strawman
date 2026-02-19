@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { isOverdue, formatLocalDate, formatComplianceDate } from "@/lib/format";
 import type { DataRequestResponse, DataRequestStatus, DataRequestType } from "@/lib/types";
 
 interface DataRequestTableProps {
@@ -10,15 +11,15 @@ interface DataRequestTableProps {
   slug: string;
 }
 
-type BadgeVariant = "success" | "warning" | "destructive" | "neutral";
+export type BadgeVariant = "success" | "warning" | "destructive" | "neutral";
 
-interface StatusConfig {
+export interface StatusConfig {
   label: string;
   variant: BadgeVariant;
   className?: string;
 }
 
-const STATUS_CONFIG: Record<DataRequestStatus, StatusConfig> = {
+export const STATUS_CONFIG: Record<DataRequestStatus, StatusConfig> = {
   RECEIVED: { label: "Received", variant: "neutral" },
   IN_PROGRESS: {
     label: "In Progress",
@@ -35,28 +36,6 @@ const TYPE_LABELS: Record<DataRequestType, string> = {
   CORRECTION: "Correction",
   OBJECTION: "Objection",
 };
-
-function isOverdue(deadline: string): boolean {
-  const today = new Date().toLocaleDateString("en-CA");
-  return deadline < today;
-}
-
-function formatLocalDate(yyyyMmDd: string): string {
-  const [year, month, day] = yyyyMmDd.split("-").map(Number);
-  return new Date(year, month - 1, day).toLocaleDateString("en-ZA", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
-
-function formatDate(isoString: string): string {
-  return new Date(isoString).toLocaleDateString("en-ZA", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
 
 export function DataRequestTable({ requests, slug }: DataRequestTableProps) {
   return (
@@ -126,7 +105,7 @@ export function DataRequestTable({ requests, slug }: DataRequestTableProps) {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
-                  {formatDate(request.requestedAt)}
+                  {formatComplianceDate(request.requestedAt)}
                 </td>
               </tr>
             );

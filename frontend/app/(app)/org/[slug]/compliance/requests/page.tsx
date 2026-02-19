@@ -35,10 +35,11 @@ export default async function DataRequestsPage({
   }
 
   let requests: DataRequestResponse[] = [];
+  let loadError = false;
   try {
-    requests = await getDataRequests(search.status);
+    requests = await getDataRequests(search.status as DataRequestStatus | undefined); // cast: URL param is untyped string
   } catch {
-    // Non-fatal: show empty state
+    loadError = true;
   }
 
   const statusOptions: { value: DataRequestStatus; label: string }[] = [
@@ -93,8 +94,14 @@ export default async function DataRequestsPage({
         ))}
       </div>
 
-      {/* Table or Empty State */}
-      {requests.length === 0 ? (
+      {/* Table, Error, or Empty State */}
+      {loadError ? (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-6 dark:border-red-900 dark:bg-red-950/30">
+          <p className="text-sm text-red-700 dark:text-red-400">
+            Failed to load data requests. Please try again.
+          </p>
+        </div>
+      ) : requests.length === 0 ? (
         <EmptyState
           icon={ShieldCheck}
           title="No data requests found"

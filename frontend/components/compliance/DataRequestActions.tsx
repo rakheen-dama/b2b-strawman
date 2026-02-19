@@ -56,18 +56,20 @@ export function DataRequestActions({ request, slug }: DataRequestActionsProps) {
     });
   }
 
-  async function handleDownloadExport() {
+  function handleDownloadExport() {
     setError(null);
-    try {
-      const result = await getExportUrl(request.id);
-      if (result.success && result.url) {
-        window.open(result.url, "_blank");
-      } else {
-        setError(result.error ?? "Failed to get download URL.");
+    startTransition(async () => {
+      try {
+        const result = await getExportUrl(request.id);
+        if (result.success && result.url) {
+          window.open(result.url, "_blank");
+        } else {
+          setError(result.error ?? "Failed to get download URL.");
+        }
+      } catch {
+        setError("An unexpected error occurred.");
       }
-    } catch {
-      setError("An unexpected error occurred.");
-    }
+    });
   }
 
   function handleRejectSubmit() {

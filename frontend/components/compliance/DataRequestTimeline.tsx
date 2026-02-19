@@ -1,30 +1,9 @@
 import { cn } from "@/lib/utils";
+import { isOverdue, formatLocalDate, formatComplianceDate } from "@/lib/format";
 import type { DataRequestResponse } from "@/lib/types";
 
 interface DataRequestTimelineProps {
   request: DataRequestResponse;
-}
-
-function isOverdue(deadline: string): boolean {
-  const today = new Date().toLocaleDateString("en-CA"); // "YYYY-MM-DD" local date
-  return deadline < today;
-}
-
-function formatDate(isoString: string): string {
-  return new Date(isoString).toLocaleDateString("en-ZA", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
-
-function formatLocalDate(yyyyMmDd: string): string {
-  const [year, month, day] = yyyyMmDd.split("-").map(Number);
-  return new Date(year, month - 1, day).toLocaleDateString("en-ZA", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
 }
 
 interface TimelineStageProps {
@@ -87,7 +66,7 @@ export function DataRequestTimeline({ request }: DataRequestTimelineProps) {
       {/* RECEIVED */}
       <TimelineStage
         label="Request Received"
-        date={formatDate(request.requestedAt)}
+        date={formatComplianceDate(request.requestedAt)}
         isComplete={currentIndex >= 0}
         isActive={request.status === "RECEIVED"}
       />
@@ -95,7 +74,6 @@ export function DataRequestTimeline({ request }: DataRequestTimelineProps) {
       {/* IN_PROGRESS */}
       <TimelineStage
         label="Processing Started"
-        date={isInProgress || isCompleted || isRejected ? undefined : undefined}
         isComplete={isCompleted || isRejected}
         isActive={isInProgress}
       />
@@ -104,14 +82,14 @@ export function DataRequestTimeline({ request }: DataRequestTimelineProps) {
       {isCompleted && (
         <TimelineStage
           label="Request Completed"
-          date={request.completedAt ? formatDate(request.completedAt) : undefined}
+          date={request.completedAt ? formatComplianceDate(request.completedAt) : undefined}
           isComplete={true}
         />
       )}
       {isRejected && (
         <TimelineStage
           label="Request Rejected"
-          date={request.completedAt ? formatDate(request.completedAt) : undefined}
+          date={request.completedAt ? formatComplianceDate(request.completedAt) : undefined}
           isComplete={true}
         >
           {request.rejectionReason && (

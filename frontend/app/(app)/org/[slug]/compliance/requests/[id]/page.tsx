@@ -4,29 +4,14 @@ import { handleApiError } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { DataRequestTimeline } from "@/components/compliance/DataRequestTimeline";
 import { DataRequestActions } from "@/components/compliance/DataRequestActions";
+import {
+  STATUS_CONFIG,
+} from "@/components/compliance/DataRequestTable";
+import { isOverdue, formatLocalDate, formatComplianceDateWithTime } from "@/lib/format";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import type { DataRequestStatus, DataRequestType } from "@/lib/types";
-
-type BadgeVariant = "success" | "warning" | "destructive" | "neutral";
-
-interface StatusConfig {
-  label: string;
-  variant: BadgeVariant;
-  className?: string;
-}
-
-const STATUS_CONFIG: Record<DataRequestStatus, StatusConfig> = {
-  RECEIVED: { label: "Received", variant: "neutral" },
-  IN_PROGRESS: {
-    label: "In Progress",
-    variant: "neutral",
-    className: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-  },
-  COMPLETED: { label: "Completed", variant: "success" },
-  REJECTED: { label: "Rejected", variant: "destructive" },
-};
+import type { DataRequestType } from "@/lib/types";
 
 const TYPE_LABELS: Record<DataRequestType, string> = {
   ACCESS: "Access Request",
@@ -34,30 +19,6 @@ const TYPE_LABELS: Record<DataRequestType, string> = {
   CORRECTION: "Correction Request",
   OBJECTION: "Objection Request",
 };
-
-function isOverdue(deadline: string): boolean {
-  const today = new Date().toLocaleDateString("en-CA");
-  return deadline < today;
-}
-
-function formatLocalDate(yyyyMmDd: string): string {
-  const [year, month, day] = yyyyMmDd.split("-").map(Number);
-  return new Date(year, month - 1, day).toLocaleDateString("en-ZA", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
-
-function formatDate(isoString: string): string {
-  return new Date(isoString).toLocaleDateString("en-ZA", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
 
 export default async function DataRequestDetailPage({
   params,
@@ -93,7 +54,7 @@ export default async function DataRequestDetailPage({
 
   const statusConfig = STATUS_CONFIG[request.status] ?? {
     label: request.status,
-    variant: "neutral" as BadgeVariant,
+    variant: "neutral" as const,
   };
   const overdue = isOverdue(request.deadline) && request.status !== "COMPLETED" && request.status !== "REJECTED";
 
@@ -129,7 +90,7 @@ export default async function DataRequestDetailPage({
 
         <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600 dark:text-slate-400">
           <span>
-            Requested: {formatDate(request.requestedAt)}
+            Requested: {formatComplianceDateWithTime(request.requestedAt)}
           </span>
           <span
             className={cn(
@@ -142,7 +103,7 @@ export default async function DataRequestDetailPage({
           {(request.status === "COMPLETED" || request.status === "REJECTED") && request.completedAt && (
             <span>
               {request.status === "COMPLETED" ? "Completed" : "Rejected"}:{" "}
-              {formatDate(request.completedAt)}
+              {formatComplianceDateWithTime(request.completedAt)}
             </span>
           )}
         </div>

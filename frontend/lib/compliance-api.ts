@@ -5,6 +5,7 @@ import type {
   LifecycleHistoryEntry,
   TransitionResponse,
   DataRequestResponse,
+  DataRequestStatus,
   AnonymizationResult,
 } from "@/lib/types";
 
@@ -35,7 +36,7 @@ export async function runDormancyCheck(): Promise<{
   return api.post(`/api/customers/dormancy-check`);
 }
 
-export async function getDataRequests(status?: string): Promise<DataRequestResponse[]> {
+export async function getDataRequests(status?: DataRequestStatus): Promise<DataRequestResponse[]> {
   const qs = status ? `?status=${encodeURIComponent(status)}` : "";
   return api.get<DataRequestResponse[]>(`/api/data-requests${qs}`);
 }

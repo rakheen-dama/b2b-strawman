@@ -37,6 +37,10 @@ interface DeletionResult {
 }
 
 export async function fetchCustomersForSelector(): Promise<Customer[]> {
+  const { orgRole } = await auth();
+  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+    throw new Error("Unauthorized");
+  }
   return api.get<Customer[]>("/api/customers");
 }
 

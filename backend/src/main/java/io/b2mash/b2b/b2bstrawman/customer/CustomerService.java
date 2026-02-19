@@ -262,6 +262,16 @@ public class CustomerService {
         .toList();
   }
 
+  @Transactional(readOnly = true)
+  public Map<String, Long> getLifecycleSummary() {
+    var rows = repository.countByLifecycleStatus();
+    var result = new LinkedHashMap<String, Long>();
+    for (var row : rows) {
+      result.put((String) row[0], ((Number) row[1]).longValue());
+    }
+    return result;
+  }
+
   @Transactional
   public Customer archiveCustomer(UUID id) {
     var customer =

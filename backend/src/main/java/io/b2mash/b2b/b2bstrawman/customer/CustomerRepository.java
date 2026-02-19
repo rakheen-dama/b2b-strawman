@@ -19,4 +19,10 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID> {
       "SELECT c.id FROM Customer c WHERE c.lifecycleStatus = :status AND c.offboardedAt < :before")
   List<UUID> findIdsByLifecycleStatusAndOffboardedAtBefore(
       @Param("status") LifecycleStatus status, @Param("before") Instant before);
+
+  @Query(
+      value =
+          "SELECT lifecycle_status, COUNT(*) AS cnt FROM customers WHERE status = 'ACTIVE' GROUP BY lifecycle_status",
+      nativeQuery = true)
+  List<Object[]> countByLifecycleStatus();
 }

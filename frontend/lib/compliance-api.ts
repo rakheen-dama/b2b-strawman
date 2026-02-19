@@ -81,3 +81,38 @@ export async function executeDataDeletion(
     confirmCustomerName,
   });
 }
+
+export async function getLifecycleStatusCounts(): Promise<Record<string, number>> {
+  return api.get<Record<string, number>>("/api/customers/lifecycle-summary");
+}
+
+export async function getOnboardingPipelineData(): Promise<
+  Array<{
+    id: string;
+    name: string;
+    lifecycleStatusChangedAt: string | null;
+    checklistProgress: { completed: number; total: number };
+  }>
+> {
+  const customers = await api.get<
+    Array<{ id: string; name: string; lifecycleStatusChangedAt?: string | null }>
+  >("/api/customers?lifecycleStatus=ONBOARDING");
+  // Return with stub checklistProgress — progress can't be fetched per-customer in bulk without N+1
+  // TODO: Add bulk checklist progress endpoint for efficient dashboard loading
+  return customers.map((c) => ({
+    id: c.id,
+    name: c.name,
+    lifecycleStatusChangedAt: c.lifecycleStatusChangedAt ?? null,
+    checklistProgress: { completed: 0, total: 0 },
+  }));
+}
+
+export async function getDashboardDataRequests(): Promise<DataRequestResponse[]> {
+  const [received, inProgress] = await Promise.all([
+    api.get<DataRequestResponse[]>("/api/data-requests?status=RECEIVED"),
+    api.get<DataRequestResponse[]>("/api/data-requests?status=IN_PROGRESS"),
+  ]);
+  const all = [...received, ...inProgress];
+  all.sort((a, b) => (a.deadline < b.deadline ? -1 : 1));
+  return all.slice(0, 5);
+}

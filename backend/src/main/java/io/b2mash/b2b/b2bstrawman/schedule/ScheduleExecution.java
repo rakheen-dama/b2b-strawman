@@ -27,7 +27,7 @@ public class ScheduleExecution {
   @Column(name = "schedule_id", nullable = false)
   private UUID scheduleId;
 
-  @Column(name = "project_id", nullable = false)
+  @Column(name = "project_id")
   private UUID projectId;
 
   @Column(name = "period_start", nullable = false)

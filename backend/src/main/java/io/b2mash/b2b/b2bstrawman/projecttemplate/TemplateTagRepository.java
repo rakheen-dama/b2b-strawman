@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.projecttemplate;
 
 import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Repository;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Repository;
  * search_path to the correct tenant schema).
  */
 @Repository
+@Transactional
 public class TemplateTagRepository {
 
   private final EntityManager entityManager;

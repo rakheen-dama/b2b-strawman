@@ -3,7 +3,7 @@
 -- ============================================================
 -- ProjectTemplate
 -- ============================================================
-CREATE TABLE project_templates (
+CREATE TABLE IF NOT EXISTS project_templates (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name            VARCHAR(300) NOT NULL,
     name_pattern    VARCHAR(300) NOT NULL,
@@ -17,13 +17,13 @@ CREATE TABLE project_templates (
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_project_templates_active ON project_templates (active);
-CREATE INDEX idx_project_templates_created_by ON project_templates (created_by);
+CREATE INDEX IF NOT EXISTS idx_project_templates_active ON project_templates (active);
+CREATE INDEX IF NOT EXISTS idx_project_templates_created_by ON project_templates (created_by);
 
 -- ============================================================
 -- TemplateTask
 -- ============================================================
-CREATE TABLE template_tasks (
+CREATE TABLE IF NOT EXISTS template_tasks (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     template_id     UUID NOT NULL REFERENCES project_templates(id) ON DELETE CASCADE,
     name            VARCHAR(300) NOT NULL,
@@ -38,12 +38,12 @@ CREATE TABLE template_tasks (
     CONSTRAINT uq_template_task_sort UNIQUE (template_id, sort_order)
 );
 
-CREATE INDEX idx_template_tasks_template_id ON template_tasks (template_id);
+CREATE INDEX IF NOT EXISTS idx_template_tasks_template_id ON template_tasks (template_id);
 
 -- ============================================================
 -- TemplateTag (join table, not a JPA entity)
 -- ============================================================
-CREATE TABLE template_tags (
+CREATE TABLE IF NOT EXISTS template_tags (
     template_id     UUID NOT NULL REFERENCES project_templates(id) ON DELETE CASCADE,
     tag_id          UUID NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
 
@@ -53,7 +53,7 @@ CREATE TABLE template_tags (
 -- ============================================================
 -- RecurringSchedule
 -- ============================================================
-CREATE TABLE recurring_schedules (
+CREATE TABLE IF NOT EXISTS recurring_schedules (
     id                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     template_id             UUID NOT NULL REFERENCES project_templates(id),
     customer_id             UUID NOT NULL REFERENCES customers(id),
@@ -73,22 +73,24 @@ CREATE TABLE recurring_schedules (
 
     CONSTRAINT uq_schedule_template_customer_freq UNIQUE (template_id, customer_id, frequency),
     CONSTRAINT chk_lead_time_non_negative CHECK (lead_time_days >= 0),
-    CONSTRAINT chk_end_after_start CHECK (end_date IS NULL OR end_date >= start_date)
+    CONSTRAINT chk_end_after_start CHECK (end_date IS NULL OR end_date >= start_date),
+    CONSTRAINT chk_schedule_status CHECK (status IN ('ACTIVE', 'PAUSED', 'COMPLETED')),
+    CONSTRAINT chk_schedule_frequency CHECK (frequency IN ('WEEKLY', 'FORTNIGHTLY', 'MONTHLY', 'QUARTERLY', 'SEMI_ANNUALLY', 'ANNUALLY'))
 );
 
-CREATE INDEX idx_recurring_schedules_status ON recurring_schedules (status);
-CREATE INDEX idx_recurring_schedules_next_exec ON recurring_schedules (next_execution_date)
+CREATE INDEX IF NOT EXISTS idx_recurring_schedules_status ON recurring_schedules (status);
+CREATE INDEX IF NOT EXISTS idx_recurring_schedules_next_exec ON recurring_schedules (next_execution_date)
     WHERE status = 'ACTIVE';
-CREATE INDEX idx_recurring_schedules_customer ON recurring_schedules (customer_id);
-CREATE INDEX idx_recurring_schedules_template ON recurring_schedules (template_id);
+CREATE INDEX IF NOT EXISTS idx_recurring_schedules_customer ON recurring_schedules (customer_id);
+CREATE INDEX IF NOT EXISTS idx_recurring_schedules_template ON recurring_schedules (template_id);
 
 -- ============================================================
 -- ScheduleExecution
 -- ============================================================
-CREATE TABLE schedule_executions (
+CREATE TABLE IF NOT EXISTS schedule_executions (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    schedule_id     UUID NOT NULL REFERENCES recurring_schedules(id),
-    project_id      UUID NOT NULL REFERENCES projects(id),
+    schedule_id     UUID NOT NULL REFERENCES recurring_schedules(id) ON DELETE CASCADE,
+    project_id      UUID REFERENCES projects(id) ON DELETE SET NULL,
     period_start    DATE NOT NULL,
     period_end      DATE NOT NULL,
     executed_at     TIMESTAMPTZ NOT NULL,
@@ -97,5 +99,5 @@ CREATE TABLE schedule_executions (
     CONSTRAINT uq_execution_schedule_period UNIQUE (schedule_id, period_start)
 );
 
-CREATE INDEX idx_schedule_executions_schedule ON schedule_executions (schedule_id);
-CREATE INDEX idx_schedule_executions_project ON schedule_executions (project_id);
+CREATE INDEX IF NOT EXISTS idx_schedule_executions_schedule ON schedule_executions (schedule_id);
+CREATE INDEX IF NOT EXISTS idx_schedule_executions_project ON schedule_executions (project_id);

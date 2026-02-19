@@ -4,6 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { ApiError } from "@/lib/api";
 import { transitionLifecycle, getLifecycleHistory } from "@/lib/compliance-api";
 import { revalidatePath } from "next/cache";
+import type { LifecycleHistoryEntry } from "@/lib/types";
 
 interface ActionResult {
   success: boolean;
@@ -36,7 +37,7 @@ export async function transitionCustomerLifecycle(
   return { success: true };
 }
 
-export async function fetchLifecycleHistory(customerId: string): Promise<unknown[]> {
+export async function fetchLifecycleHistory(customerId: string): Promise<LifecycleHistoryEntry[]> {
   try {
     return await getLifecycleHistory(customerId);
   } catch {

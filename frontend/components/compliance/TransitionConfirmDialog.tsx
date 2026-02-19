@@ -14,13 +14,14 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertTriangle } from "lucide-react";
 import { transitionCustomerLifecycle } from "@/app/(app)/org/[slug]/customers/[id]/lifecycle-actions";
+import type { LifecycleStatus } from "@/lib/types";
 
 interface TransitionConfirmDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   slug: string;
   customerId: string;
-  targetStatus: string;
+  targetStatus: LifecycleStatus;
   onSuccess?: () => void;
 }
 
@@ -32,7 +33,7 @@ interface TransitionMeta {
   requiresNotes: boolean;
 }
 
-const TRANSITION_META: Record<string, TransitionMeta> = {
+const TRANSITION_META: Partial<Record<LifecycleStatus, TransitionMeta>> = {
   ONBOARDING: {
     title: "Start Onboarding",
     description:

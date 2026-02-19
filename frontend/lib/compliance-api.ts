@@ -1,7 +1,7 @@
 import "server-only";
 
 import { api } from "@/lib/api";
-import type { TransitionResponse } from "@/lib/types";
+import type { LifecycleHistoryEntry, TransitionResponse } from "@/lib/types";
 
 export async function transitionLifecycle(
   id: string,
@@ -14,8 +14,8 @@ export async function transitionLifecycle(
   });
 }
 
-export async function getLifecycleHistory(id: string): Promise<unknown[]> {
-  return api.get<unknown[]>(`/api/customers/${id}/lifecycle`);
+export async function getLifecycleHistory(id: string): Promise<LifecycleHistoryEntry[]> {
+  return api.get<LifecycleHistoryEntry[]>(`/api/customers/${id}/lifecycle`);
 }
 
 export async function runDormancyCheck(): Promise<{

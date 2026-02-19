@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import type { LifecycleStatus } from "@/lib/types";
 
 type BadgeVariant = "success" | "warning" | "destructive" | "neutral";
 
@@ -9,7 +10,7 @@ interface StatusConfig {
   className?: string;
 }
 
-const STATUS_CONFIG: Record<string, StatusConfig> = {
+const STATUS_CONFIG: Record<LifecycleStatus, StatusConfig> = {
   PROSPECT: { label: "Prospect", variant: "neutral" },
   ONBOARDING: {
     label: "Onboarding",
@@ -23,7 +24,7 @@ const STATUS_CONFIG: Record<string, StatusConfig> = {
 };
 
 interface LifecycleStatusBadgeProps {
-  status: string;
+  status: LifecycleStatus;
   className?: string;
 }
 

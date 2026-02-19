@@ -11,9 +11,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TransitionConfirmDialog } from "@/components/compliance/TransitionConfirmDialog";
+import type { LifecycleStatus } from "@/lib/types";
 
 // Valid transitions per status (mirrors LifecycleStatus.java)
-const ALLOWED_TRANSITIONS: Record<string, string[]> = {
+const ALLOWED_TRANSITIONS: Record<LifecycleStatus, LifecycleStatus[]> = {
   PROSPECT: ["ONBOARDING", "ACTIVE"],
   ONBOARDING: ["ACTIVE", "OFFBOARDING"],
   ACTIVE: ["DORMANT", "OFFBOARDING"],
@@ -23,7 +24,7 @@ const ALLOWED_TRANSITIONS: Record<string, string[]> = {
 };
 
 // Human-readable labels for each target (context-aware)
-function getTransitionLabel(fromStatus: string, toStatus: string): string {
+function getTransitionLabel(fromStatus: LifecycleStatus, toStatus: LifecycleStatus): string {
   if (toStatus === "ONBOARDING") return "Start Onboarding";
   if (toStatus === "ACTIVE" && fromStatus === "PROSPECT") return "Activate";
   if (toStatus === "ACTIVE") return "Reactivate";
@@ -33,10 +34,10 @@ function getTransitionLabel(fromStatus: string, toStatus: string): string {
   return toStatus;
 }
 
-const DESTRUCTIVE_TARGETS = new Set(["OFFBOARDING", "OFFBOARDED"]);
+const DESTRUCTIVE_TARGETS = new Set<LifecycleStatus>(["OFFBOARDING", "OFFBOARDED"]);
 
 interface LifecycleTransitionDropdownProps {
-  currentStatus: string;
+  currentStatus: LifecycleStatus;
   customerId: string;
   slug: string;
   onTransition?: () => void;
@@ -48,7 +49,7 @@ export function LifecycleTransitionDropdown({
   slug,
   onTransition,
 }: LifecycleTransitionDropdownProps) {
-  const [pendingTarget, setPendingTarget] = useState<string | null>(null);
+  const [pendingTarget, setPendingTarget] = useState<LifecycleStatus | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const transitions = ALLOWED_TRANSITIONS[currentStatus] ?? [];
@@ -57,7 +58,7 @@ export function LifecycleTransitionDropdown({
     return null;
   }
 
-  function handleSelect(target: string) {
+  function handleSelect(target: LifecycleStatus) {
     setPendingTarget(target);
     setDialogOpen(true);
   }

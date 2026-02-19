@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { auth } from "@clerk/nextjs/server";
 import { api, handleApiError, getFieldDefinitions, getViews, getTags } from "@/lib/api";
-import type { Customer, CustomerStatus, FieldDefinitionResponse, SavedViewResponse, TagResponse } from "@/lib/types";
+import type { Customer, CustomerStatus, FieldDefinitionResponse, LifecycleStatus, SavedViewResponse, TagResponse } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { CreateCustomerDialog } from "@/components/customers/create-customer-dialog";
 import { CustomFieldBadges } from "@/components/field-definitions/CustomFieldBadges";
@@ -12,12 +12,22 @@ import { LifecycleStatusBadge } from "@/components/compliance/LifecycleStatusBad
 import { UserRound } from "lucide-react";
 import Link from "next/link";
 
-const LIFECYCLE_FILTER_OPTIONS = [
+const VALID_LIFECYCLE_STATUSES: ReadonlySet<LifecycleStatus> = new Set([
+  "PROSPECT",
+  "ONBOARDING",
+  "ACTIVE",
+  "DORMANT",
+  "OFFBOARDING",
+  "OFFBOARDED",
+]);
+
+const LIFECYCLE_FILTER_OPTIONS: Array<{ value: LifecycleStatus | ""; label: string }> = [
   { value: "", label: "All" },
   { value: "PROSPECT", label: "Prospect" },
   { value: "ONBOARDING", label: "Onboarding" },
   { value: "ACTIVE", label: "Active" },
   { value: "DORMANT", label: "Dormant" },
+  { value: "OFFBOARDING", label: "Offboarding" },
   { value: "OFFBOARDED", label: "Offboarded" },
 ];
 
@@ -40,7 +50,11 @@ export default async function CustomersPage({
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
 
   const currentViewId = typeof resolvedSearchParams.view === "string" ? resolvedSearchParams.view : null;
-  const lifecycleFilter = typeof resolvedSearchParams.lifecycleStatus === "string" ? resolvedSearchParams.lifecycleStatus : null;
+  const rawLifecycleFilter = typeof resolvedSearchParams.lifecycleStatus === "string" ? resolvedSearchParams.lifecycleStatus : null;
+  const lifecycleFilter: LifecycleStatus | null =
+    rawLifecycleFilter !== null && VALID_LIFECYCLE_STATUSES.has(rawLifecycleFilter as LifecycleStatus)
+      ? (rawLifecycleFilter as LifecycleStatus)
+      : null;
 
   // Fetch saved views for customer entity type
   let views: SavedViewResponse[] = [];

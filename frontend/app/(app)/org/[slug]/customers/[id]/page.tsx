@@ -16,6 +16,8 @@ import type {
   FieldGroupMemberResponse,
   TagResponse,
   TemplateListResponse,
+  ChecklistInstanceResponse,
+  ChecklistTemplateResponse,
 } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,6 +36,8 @@ import { GenerateDocumentDropdown } from "@/components/templates/GenerateDocumen
 import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocumentsList";
 import { LifecycleStatusBadge } from "@/components/compliance/LifecycleStatusBadge";
 import { LifecycleTransitionDropdown } from "@/components/compliance/LifecycleTransitionDropdown";
+import { ChecklistInstancePanel } from "@/components/compliance/ChecklistInstancePanel";
+import { getCustomerChecklists, getChecklistTemplates } from "@/lib/checklist-api";
 import { formatDate } from "@/lib/format";
 import { ArrowLeft, Pencil, Archive } from "lucide-react";
 import Link from "next/link";
@@ -170,6 +174,33 @@ export default async function CustomerDetailPage({
       // Non-fatal: hide generate button if template fetch fails
     }
   }
+
+  // Checklist instances for the Onboarding tab
+  let checklistInstances: ChecklistInstanceResponse[] = [];
+  try {
+    checklistInstances = await getCustomerChecklists(id);
+  } catch {
+    // Non-fatal: onboarding tab won't show if fetch fails
+  }
+
+  // Checklist templates for the "Manually Add" selector (admin only)
+  let checklistTemplates: ChecklistTemplateResponse[] = [];
+  if (isAdmin) {
+    try {
+      checklistTemplates = await getChecklistTemplates();
+    } catch {
+      // Non-fatal: hide add button if template fetch fails
+    }
+  }
+
+  // Build template name lookup for the onboarding panel
+  const checklistTemplateNames: Record<string, string> = {};
+  for (const t of checklistTemplates) {
+    checklistTemplateNames[t.id] = t.name;
+  }
+
+  const showOnboardingTab =
+    customer.lifecycleStatus === "ONBOARDING" || checklistInstances.length > 0;
 
   const statusBadge = STATUS_BADGE[customer.status];
 
@@ -354,6 +385,18 @@ export default async function CustomerDetailPage({
             <CustomerFinancialsTab
               profitability={customerProfitability}
               projectBreakdown={projectBreakdown}
+            />
+          ) : undefined
+        }
+        onboardingPanel={
+          showOnboardingTab ? (
+            <ChecklistInstancePanel
+              customerId={id}
+              instances={checklistInstances}
+              isAdmin={isAdmin}
+              slug={slug}
+              templateNames={checklistTemplateNames}
+              templates={isAdmin ? checklistTemplates : undefined}
             />
           ) : undefined
         }

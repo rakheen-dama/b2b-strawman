@@ -887,6 +887,76 @@ export interface GeneratedDocumentListResponse {
   generatedAt: string;
 }
 
+// ---- Checklist Templates (from ChecklistTemplateController.java) ----
+
+export interface ChecklistTemplateItemResponse {
+  id: string;
+  templateId: string;
+  name: string;
+  description: string | null;
+  sortOrder: number;
+  required: boolean;
+  requiresDocument: boolean;
+  requiredDocumentLabel: string | null;
+  dependsOnItemId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ChecklistTemplateResponse {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  customerType: string;
+  source: string;
+  packId: string | null;
+  active: boolean;
+  autoInstantiate: boolean;
+  sortOrder: number;
+  items: ChecklistTemplateItemResponse[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ---- Checklist Instances (from ChecklistInstanceController.java) ----
+
+export type ChecklistItemStatus = "PENDING" | "COMPLETED" | "SKIPPED" | "BLOCKED" | "CANCELLED";
+export type ChecklistInstanceStatus = "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
+
+export interface ChecklistInstanceItemResponse {
+  id: string;
+  instanceId: string;
+  templateItemId: string;
+  name: string;
+  description: string | null;
+  sortOrder: number;
+  required: boolean;
+  requiresDocument: boolean;
+  requiredDocumentLabel: string | null;
+  status: ChecklistItemStatus;
+  completedAt: string | null;
+  completedBy: string | null;
+  notes: string | null;
+  documentId: string | null;
+  dependsOnItemId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ChecklistInstanceResponse {
+  id: string;
+  templateId: string;
+  customerId: string;
+  status: ChecklistInstanceStatus;
+  startedAt: string;
+  completedAt: string | null;
+  completedBy: string | null;
+  items: ChecklistInstanceItemResponse[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ---- Error (RFC 9457 ProblemDetail) ----
 
 export interface ProblemDetail {

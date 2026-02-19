@@ -12,9 +12,10 @@ interface CustomerTabsProps {
   financialsPanel?: ReactNode;
   invoicesPanel?: ReactNode;
   generatedPanel?: ReactNode;
+  onboardingPanel?: ReactNode;
 }
 
-type TabId = "projects" | "documents" | "rates" | "financials" | "invoices" | "generated";
+type TabId = "projects" | "documents" | "onboarding" | "rates" | "financials" | "invoices" | "generated";
 
 interface TabDef {
   id: TabId;
@@ -24,6 +25,7 @@ interface TabDef {
 const baseTabs: TabDef[] = [
   { id: "projects", label: "Projects" },
   { id: "documents", label: "Documents" },
+  { id: "onboarding", label: "Onboarding" },
   { id: "invoices", label: "Invoices" },
   { id: "rates", label: "Rates" },
   { id: "generated", label: "Generated Docs" },
@@ -37,18 +39,20 @@ export function CustomerTabs({
   financialsPanel,
   invoicesPanel,
   generatedPanel,
+  onboardingPanel,
 }: CustomerTabsProps) {
   const [activeTab, setActiveTab] = useState<TabId>("projects");
 
   const tabs = useMemo(() => {
     return baseTabs.filter((t) => {
+      if (t.id === "onboarding" && !onboardingPanel) return false;
       if (t.id === "invoices" && !invoicesPanel) return false;
       if (t.id === "rates" && !ratesPanel) return false;
       if (t.id === "generated" && !generatedPanel) return false;
       if (t.id === "financials" && !financialsPanel) return false;
       return true;
     });
-  }, [invoicesPanel, ratesPanel, financialsPanel, generatedPanel]);
+  }, [onboardingPanel, invoicesPanel, ratesPanel, financialsPanel, generatedPanel]);
 
   return (
     <TabsPrimitive.Root value={activeTab} onValueChange={(v) => setActiveTab(v as TabId)}>
@@ -83,6 +87,11 @@ export function CustomerTabs({
       <TabsPrimitive.Content value="documents" className="pt-6 outline-none">
         {documentsPanel}
       </TabsPrimitive.Content>
+      {onboardingPanel && (
+        <TabsPrimitive.Content value="onboarding" className="pt-6 outline-none">
+          {onboardingPanel}
+        </TabsPrimitive.Content>
+      )}
       {invoicesPanel && (
         <TabsPrimitive.Content value="invoices" className="pt-6 outline-none">
           {invoicesPanel}

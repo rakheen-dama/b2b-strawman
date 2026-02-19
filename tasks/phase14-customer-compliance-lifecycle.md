@@ -18,7 +18,7 @@ Phase 14 adds a **jurisdiction-agnostic compliance system** managing the full cu
 | 103 | Compliance Pack Seeding & Instantiation | Backend | 101 | M | 103A, 103B | **Done** (PRs #214, #215) |
 | 104 | Data Subject Requests | Backend | 100 | M | 104A, 104B | |
 | 105 | Retention & Dormancy | Backend | 100 | M | 105A, 105B | |
-| 106 | Lifecycle & Checklist Frontend | Frontend | 102, 103 | M | 106A, 106B | |
+| 106 | Lifecycle & Checklist Frontend | Frontend | 102, 103 | M | 106A, 106B | **Done** (PRs #220, #221) |
 | 107 | Data Requests & Settings Frontend | Frontend | 104, 105 | M | 107A, 107B | |
 | 108 | Compliance Dashboard | Frontend | 106, 107 | S | 108A | |
 
@@ -122,7 +122,7 @@ Phase 14 adds a **jurisdiction-agnostic compliance system** managing the full cu
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 6a | Epic 106 | 106A | LifecycleStatusBadge, LifecycleTransitionDropdown, customer list lifecycle column, customer detail lifecycle section, transition dialogs, server actions. ~10 tests. | **Done** (PR #220) |
-| 6b | Epic 106 | 106B | ChecklistInstancePanel (Onboarding tab), ChecklistInstanceItemRow, progress bar, template selection, document upload link. ~10 tests. |
+| 6b | Epic 106 | 106B | ChecklistInstancePanel (Onboarding tab), ChecklistInstanceItemRow, progress bar, template selection, document upload link. ~10 tests. | **Done** (PR #221) |
 
 ### Stage 7: Frontend — Data Requests & Settings (Parallel with Stage 6)
 
@@ -584,7 +584,7 @@ Stage 8:  [108A]                                                      ← dashbo
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **106A** | 106.1–106.8 | LifecycleStatusBadge, LifecycleTransitionDropdown, customer list lifecycle column + filter, customer detail lifecycle section, transition confirmation dialogs, server actions for lifecycle API calls. Frontend tests (~10 tests). | **Done** (PR #220) |
-| **106B** | 106.9–106.15 | ChecklistInstancePanel (Onboarding tab on customer detail), ChecklistInstanceItemRow (complete/skip/reopen with document upload link), progress bar, template selector for manual instantiation, checklist API client. Frontend tests (~10 tests). | |
+| **106B** | 106.9–106.15 | ChecklistInstancePanel (Onboarding tab on customer detail), ChecklistInstanceItemRow (complete/skip/reopen with document upload link), progress bar, template selector for manual instantiation, checklist API client. Frontend tests (~10 tests). | **Done** (PR #221) |
 
 ### Tasks
 

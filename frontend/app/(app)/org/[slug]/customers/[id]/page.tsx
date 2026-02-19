@@ -52,7 +52,7 @@ import {
   fetchTemplateReadiness,
 } from "@/lib/api/setup-status";
 import { getCustomerChecklists, getChecklistTemplates } from "@/lib/checklist-api";
-import { formatDate, formatCurrency } from "@/lib/format";
+import { formatDate, formatCurrencySafe } from "@/lib/format";
 import { ArrowLeft, Pencil, Archive, Clock, UserCheck, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
@@ -453,7 +453,7 @@ export default async function CustomerDetailPage({
         <ActionCard
           icon={Clock}
           title="Unbilled Time"
-          description={`${formatCurrency(customerUnbilledSummary.totalAmount, customerUnbilledSummary.currency)} across ${customerUnbilledSummary.totalHours.toFixed(1)} hours`}
+          description={`${formatCurrencySafe(customerUnbilledSummary.totalAmount, customerUnbilledSummary.currency)} across ${customerUnbilledSummary.totalHours.toFixed(1)} hours`}
           primaryAction={
             isAdmin
               ? {

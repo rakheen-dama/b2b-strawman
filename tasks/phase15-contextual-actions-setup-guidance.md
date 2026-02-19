@@ -118,7 +118,7 @@ Stage 3:   [112A]  //  [113A]  //  [114A]   (page integrations — all parallel 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **109A** | 109.1–109.10 | `ProjectSetupStatus`, `RequiredFieldStatus`, `FieldStatus` Java records. `ProjectSetupStatusService` with 5-check aggregation logic and `computeRequiredFields()` helper. `BillingRateRepository` extension method. `GET /api/projects/{id}/setup-status` endpoint on `ProjectController`. Unit tests for all service combinations and integration tests for the endpoint. ~26 tests total. | **Done** (PR #225) |
-| **109B** | 109.11–109.20 | `UnbilledTimeSummary`, `ProjectUnbilledBreakdown` Java records. `UnbilledTimeSummaryService` with two native SQL queries (project-scoped and customer-scoped). `GET /api/projects/{id}/unbilled-summary` and `GET /api/customers/{id}/unbilled-summary` endpoints. Unit tests for SQL aggregation logic and integration tests for both endpoints. ~26 tests total. | |
+| **109B** | 109.11–109.20 | `UnbilledTimeSummary`, `ProjectUnbilledBreakdown` Java records. `UnbilledTimeSummaryService` with two native SQL queries (project-scoped and customer-scoped). `GET /api/projects/{id}/unbilled-summary` and `GET /api/customers/{id}/unbilled-summary` endpoints. Unit tests for SQL aggregation logic and integration tests for both endpoints. ~26 tests total. | **Done** (PR #226) |
 
 ### Tasks
 

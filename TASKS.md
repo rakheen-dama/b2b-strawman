@@ -129,7 +129,7 @@
 | 107 | Data Requests & Settings Frontend | Frontend | 104, 105 | M | 107A, 107B | **Done** (PRs #222, #223) |
 | 108 | Compliance Dashboard | Frontend | 106, 107 | S | 108A | **Done** (PR #224) |
 | **Phase 15 — Contextual Actions & Setup Guidance** | | | | | | See [tasks/phase15-contextual-actions-setup-guidance.md](tasks/phase15-contextual-actions-setup-guidance.md) |
-| 109 | Project Setup Status & Unbilled Time — Backend | Backend | -- | M | 109A, 109B | 109A **Done** (PR #225) |
+| 109 | Project Setup Status & Unbilled Time — Backend | Backend | -- | M | 109A, 109B | **Done** (PRs #225, #226) |
 | 110 | Customer Readiness & Document Generation Readiness — Backend | Backend | -- | M | 110A, 110B | |
 | 111 | Reusable Frontend Components & API Client | Frontend | 109, 110 | M | 111A | |
 | 112 | Project Detail Page Integration | Frontend | 111 | S | 112A | |

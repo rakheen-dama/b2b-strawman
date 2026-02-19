@@ -1052,6 +1052,71 @@ export interface UpdateComplianceSettingsRequest {
   dataRequestDeadlineDays?: number;
 }
 
+// ---- Setup Status ----
+
+export interface FieldStatus {
+  name: string;
+  slug: string;
+  filled: boolean;
+}
+
+export interface RequiredFieldStatus {
+  filled: number;
+  total: number;
+  fields: FieldStatus[];
+}
+
+export interface ChecklistProgress {
+  checklistName: string;
+  completed: number;
+  total: number;
+  percentComplete: number;
+}
+
+export interface ProjectSetupStatus {
+  projectId: string;
+  customerAssigned: boolean;
+  rateCardConfigured: boolean;
+  budgetConfigured: boolean;
+  teamAssigned: boolean;
+  requiredFields: RequiredFieldStatus;
+  completionPercentage: number;
+  overallComplete: boolean;
+}
+
+export interface CustomerReadiness {
+  customerId: string;
+  lifecycleStatus: string;
+  checklistProgress: ChecklistProgress | null;
+  requiredFields: RequiredFieldStatus;
+  hasLinkedProjects: boolean;
+  overallReadiness: string;
+}
+
+export interface ProjectUnbilledBreakdown {
+  projectId: string;
+  projectName: string;
+  hours: number;
+  amount: number;
+  entryCount: number;
+}
+
+export interface UnbilledTimeSummary {
+  totalHours: number;
+  totalAmount: number;
+  currency: string;
+  entryCount: number;
+  byProject: ProjectUnbilledBreakdown[] | null;
+}
+
+export interface TemplateReadiness {
+  templateId: string;
+  templateName: string;
+  templateSlug: string;
+  ready: boolean;
+  missingFields: string[];
+}
+
 // ---- Error (RFC 9457 ProblemDetail) ----
 
 export interface ProblemDetail {

@@ -78,3 +78,48 @@ export function formatRelativeDate(date: string | Date): string {
   }
   return rtf.format(seconds, "second");
 }
+
+/**
+ * Formats a "YYYY-MM-DD" date string using local calendar arithmetic
+ * (avoids UTC-midnight off-by-one issues).
+ */
+export function formatLocalDate(yyyyMmDd: string): string {
+  const [year, month, day] = yyyyMmDd.split("-").map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString("en-ZA", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+/**
+ * Returns true if the given "YYYY-MM-DD" deadline is strictly before today.
+ */
+export function isOverdue(deadline: string): boolean {
+  const today = new Date().toLocaleDateString("en-CA"); // "YYYY-MM-DD" in local timezone
+  return deadline < today;
+}
+
+/**
+ * Formats an ISO timestamp as a short date (en-ZA locale: "19 Feb 2026").
+ */
+export function formatComplianceDate(isoString: string): string {
+  return new Date(isoString).toLocaleDateString("en-ZA", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+/**
+ * Formats an ISO timestamp with date and time (en-ZA locale).
+ */
+export function formatComplianceDateWithTime(isoString: string): string {
+  return new Date(isoString).toLocaleDateString("en-ZA", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}

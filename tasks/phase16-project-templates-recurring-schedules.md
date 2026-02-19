@@ -22,7 +22,7 @@ Four new entities (`ProjectTemplate`, `TemplateTask`, `RecurringSchedule`, `Sche
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 115 | Entity Foundation & Utilities | Backend | -- | M | 115A, 115B | |
+| 115 | Entity Foundation & Utilities | Backend | -- | M | 115A, 115B | **Done** (PRs #235, #236) |
 | 116 | Template CRUD & Save from Project | Backend | 115 | M | 116A, 116B | |
 | 117 | Template Instantiation | Backend | 116 | S | 117A | |
 | 118 | Schedule CRUD & Lifecycle | Backend | 115 | M | 118A, 118B | |
@@ -78,8 +78,8 @@ Four new entities (`ProjectTemplate`, `TemplateTask`, `RecurringSchedule`, `Sche
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 1a | Epic 115 | 115A | V30 migration, 4 JPA entities, 5 repositories, `TemplateTagRepository` (JdbcClient). Foundation for everything else. |
-| 1b | Epic 115 | 115B | `PeriodCalculator`, `NameTokenResolver` utility classes + ~22 unit tests. Pure logic, no dependencies on services. |
+| 1a | Epic 115 | 115A | V30 migration, 4 JPA entities, 5 repositories, `TemplateTagRepository` (JdbcClient). Foundation for everything else. | **Done** (PR #235) |
+| 1b | Epic 115 | 115B | `PeriodCalculator`, `NameTokenResolver` utility classes + ~22 unit tests. Pure logic, no dependencies on services. | **Done** (PR #236) |
 
 ### Stage 2: Backend Domain Logic (Parallel tracks)
 

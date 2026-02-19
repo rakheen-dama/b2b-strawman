@@ -32,6 +32,8 @@ import { FieldGroupSelector } from "@/components/field-definitions/FieldGroupSel
 import { TagInput } from "@/components/tags/TagInput";
 import { GenerateDocumentDropdown } from "@/components/templates/GenerateDocumentDropdown";
 import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocumentsList";
+import { LifecycleStatusBadge } from "@/components/compliance/LifecycleStatusBadge";
+import { LifecycleTransitionDropdown } from "@/components/compliance/LifecycleTransitionDropdown";
 import { formatDate } from "@/lib/format";
 import { ArrowLeft, Pencil, Archive } from "lucide-react";
 import Link from "next/link";
@@ -192,8 +194,16 @@ export default async function CustomerDetailPage({
               {customer.name}
             </h1>
             <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
+            {customer.lifecycleStatus && (
+              <LifecycleStatusBadge status={customer.lifecycleStatus} />
+            )}
           </div>
           <p className="mt-1 text-slate-600 dark:text-slate-400">{customer.email}</p>
+          {customer.lifecycleStatusChangedAt && (
+            <p className="mt-1 text-sm text-slate-500">
+              Since {formatDate(customer.lifecycleStatusChangedAt)}
+            </p>
+          )}
           <p className="mt-3 text-sm text-slate-400 dark:text-slate-600">
             {customer.phone && (
               <>
@@ -215,6 +225,13 @@ export default async function CustomerDetailPage({
 
         {isAdmin && (
           <div className="flex shrink-0 gap-2">
+            {customer.status === "ACTIVE" && customer.lifecycleStatus && (
+              <LifecycleTransitionDropdown
+                currentStatus={customer.lifecycleStatus}
+                customerId={id}
+                slug={slug}
+              />
+            )}
             {customerTemplates.length > 0 && (
               <GenerateDocumentDropdown
                 templates={customerTemplates}

@@ -8,8 +8,18 @@ import { CustomFieldBadges } from "@/components/field-definitions/CustomFieldBad
 import { ViewSelectorClient } from "@/components/views/ViewSelectorClient";
 import { createSavedViewAction } from "./view-actions";
 import { formatDate } from "@/lib/format";
+import { LifecycleStatusBadge } from "@/components/compliance/LifecycleStatusBadge";
 import { UserRound } from "lucide-react";
 import Link from "next/link";
+
+const LIFECYCLE_FILTER_OPTIONS = [
+  { value: "", label: "All" },
+  { value: "PROSPECT", label: "Prospect" },
+  { value: "ONBOARDING", label: "Onboarding" },
+  { value: "ACTIVE", label: "Active" },
+  { value: "DORMANT", label: "Dormant" },
+  { value: "OFFBOARDED", label: "Offboarded" },
+];
 
 const STATUS_BADGE: Record<CustomerStatus, { label: string; variant: "success" | "neutral" }> = {
   ACTIVE: { label: "Active", variant: "success" },
@@ -30,6 +40,7 @@ export default async function CustomersPage({
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
 
   const currentViewId = typeof resolvedSearchParams.view === "string" ? resolvedSearchParams.view : null;
+  const lifecycleFilter = typeof resolvedSearchParams.lifecycleStatus === "string" ? resolvedSearchParams.lifecycleStatus : null;
 
   // Fetch saved views for customer entity type
   let views: SavedViewResponse[] = [];
@@ -43,6 +54,8 @@ export default async function CustomersPage({
   let customersEndpoint = "/api/customers";
   if (currentViewId) {
     customersEndpoint = `/api/customers?view=${currentViewId}`;
+  } else if (lifecycleFilter) {
+    customersEndpoint = `/api/customers?lifecycleStatus=${lifecycleFilter}`;
   }
 
   let customers: Customer[] = [];
@@ -100,6 +113,29 @@ export default async function CustomersPage({
         />
       </Suspense>
 
+      {/* Lifecycle Status Filter */}
+      <div className="flex flex-wrap gap-2">
+        {LIFECYCLE_FILTER_OPTIONS.map((option) => {
+          const isActive = lifecycleFilter === option.value || (!lifecycleFilter && option.value === "");
+          const href = option.value
+            ? `/org/${slug}/customers?lifecycleStatus=${option.value}`
+            : `/org/${slug}/customers`;
+          return (
+            <Link
+              key={option.value}
+              href={href}
+              className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
+                isActive
+                  ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
+              }`}
+            >
+              {option.label}
+            </Link>
+          );
+        })}
+      </div>
+
       {/* Customer Table or Empty State */}
       {customers.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -131,6 +167,9 @@ export default async function CustomersPage({
                 </th>
                 <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400 sm:table-cell">
                   Phone
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                  Lifecycle
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   Status
@@ -191,6 +230,11 @@ export default async function CustomersPage({
                     </td>
                     <td className="hidden px-4 py-3 text-sm text-slate-600 dark:text-slate-400 sm:table-cell">
                       {customer.phone || "\u2014"}
+                    </td>
+                    <td className="px-4 py-3">
+                      {customer.lifecycleStatus && (
+                        <LifecycleStatusBadge status={customer.lifecycleStatus} />
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>

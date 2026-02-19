@@ -105,6 +105,27 @@ export interface Customer {
   customFields?: Record<string, unknown>;
   appliedFieldGroups?: string[];
   tags?: TagResponse[];
+  lifecycleStatus?: string;
+  customerType?: string;
+  lifecycleStatusChangedAt?: string | null;
+}
+
+export type LifecycleStatus =
+  | "PROSPECT"
+  | "ONBOARDING"
+  | "ACTIVE"
+  | "DORMANT"
+  | "OFFBOARDING"
+  | "OFFBOARDED";
+
+export type CustomerType = "INDIVIDUAL" | "COMPANY";
+
+export interface TransitionResponse {
+  id: string;
+  name: string;
+  lifecycleStatus: string;
+  lifecycleStatusChangedAt: string;
+  lifecycleStatusChangedBy: string;
 }
 
 export interface CreateCustomerRequest {

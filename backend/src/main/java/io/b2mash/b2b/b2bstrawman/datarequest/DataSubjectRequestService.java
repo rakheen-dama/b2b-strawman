@@ -156,4 +156,54 @@ public class DataSubjectRequestService {
         .findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("DataSubjectRequest", id));
   }
+
+  /**
+   * Checks for requests approaching or past their deadlines and logs audit events.
+   *
+   * <p>Finds requests with status RECEIVED or IN_PROGRESS whose deadline is within 7 days (or
+   * overdue by up to 30 days). The 30-day lookback window prevents re-flagging very old requests
+   * indefinitely on each call.
+   *
+   * <p>Note: This method is safe to call multiple times. Audit events are append-only logs, so
+   * duplicate entries for the same request indicate repeated checks rather than data corruption.
+   * Callers should schedule invocations appropriately (e.g., daily) to control event volume.
+   *
+   * @return the number of requests flagged
+   */
+  @Transactional
+  public int checkDeadlines() {
+    LocalDate now = LocalDate.now();
+    LocalDate horizon = now.plusDays(7);
+    LocalDate lookback = now.minusDays(30);
+
+    var requests =
+        requestRepository.findByStatusInAndDeadlineBetween(
+            List.of("RECEIVED", "IN_PROGRESS"), lookback, horizon);
+
+    int flagged = 0;
+    for (var request : requests) {
+      String eventType;
+      if (request.getDeadline().isBefore(now)) {
+        eventType = "data.request.overdue";
+      } else {
+        eventType = "data.request.deadline.approaching";
+      }
+
+      auditService.log(
+          AuditEventBuilder.builder()
+              .eventType(eventType)
+              .entityType("data_subject_request")
+              .entityId(request.getId())
+              .details(
+                  Map.of(
+                      "deadline", request.getDeadline().toString(),
+                      "status", request.getStatus(),
+                      "customerId", request.getCustomerId().toString()))
+              .build());
+      flagged++;
+    }
+
+    log.info("Deadline check complete — {} requests flagged", flagged);
+    return flagged;
+  }
 }

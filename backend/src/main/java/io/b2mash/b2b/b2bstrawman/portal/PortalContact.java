@@ -81,6 +81,14 @@ public class PortalContact {
     this.updatedAt = Instant.now();
   }
 
+  /** Replaces PII fields with anonymized values (used for data deletion requests). */
+  public void anonymize(String replacementName) {
+    this.displayName = replacementName;
+    this.email = "anon-" + this.id + "@anonymized.invalid";
+    this.status = ContactStatus.ARCHIVED;
+    this.updatedAt = Instant.now();
+  }
+
   public UUID getId() {
     return id;
   }

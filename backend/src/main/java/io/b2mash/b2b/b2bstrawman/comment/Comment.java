@@ -75,6 +75,12 @@ public class Comment {
     this.updatedAt = Instant.now();
   }
 
+  /** Replaces body with the given replacement text (used for data anonymization). */
+  public void redact(String replacement) {
+    this.body = replacement;
+    this.updatedAt = Instant.now();
+  }
+
   public UUID getId() {
     return id;
   }

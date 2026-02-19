@@ -12,6 +12,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,16 +31,19 @@ public class DataRequestController {
 
   private final DataSubjectRequestService dataSubjectRequestService;
   private final DataExportService dataExportService;
+  private final DataAnonymizationService dataAnonymizationService;
   private final CustomerRepository customerRepository;
   private final S3PresignedUrlService s3PresignedUrlService;
 
   public DataRequestController(
       DataSubjectRequestService dataSubjectRequestService,
       DataExportService dataExportService,
+      DataAnonymizationService dataAnonymizationService,
       CustomerRepository customerRepository,
       S3PresignedUrlService s3PresignedUrlService) {
     this.dataSubjectRequestService = dataSubjectRequestService;
     this.dataExportService = dataExportService;
+    this.dataAnonymizationService = dataAnonymizationService;
     this.customerRepository = customerRepository;
     this.s3PresignedUrlService = s3PresignedUrlService;
   }
@@ -117,6 +121,33 @@ public class DataRequestController {
     return ResponseEntity.ok(new DownloadResponse(result.url(), result.expiresInSeconds()));
   }
 
+  @PostMapping("/{id}/execute-deletion")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<Map<String, Object>> executeDeletion(
+      @PathVariable UUID id, @Valid @RequestBody ExecuteDeletionBody body) {
+    var actorId = RequestScopes.requireMemberId();
+    var result =
+        dataAnonymizationService.executeAnonymization(id, body.confirmCustomerName(), actorId);
+    return ResponseEntity.ok(
+        Map.of(
+            "status",
+            "COMPLETED",
+            "anonymizationSummary",
+            Map.of(
+                "customerAnonymized", result.customerAnonymized(),
+                "documentsDeleted", result.documentsDeleted(),
+                "commentsRedacted", result.commentsRedacted(),
+                "portalContactsAnonymized", result.portalContactsAnonymized(),
+                "invoicesPreserved", result.invoicesPreserved())));
+  }
+
+  @PostMapping("/check-deadlines")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<Map<String, Object>> checkDeadlines() {
+    int flagged = dataSubjectRequestService.checkDeadlines();
+    return ResponseEntity.ok(Map.of("flagged", flagged));
+  }
+
   private String resolveCustomerName(UUID customerId) {
     return customerRepository.findById(customerId).map(c -> c.getName()).orElse("Unknown");
   }
@@ -126,6 +157,8 @@ public class DataRequestController {
       @NotNull UUID customerId, @NotBlank String requestType, @NotBlank String description) {}
 
   public record StatusTransitionBody(@NotBlank String action, String reason) {}
+
+  public record ExecuteDeletionBody(@NotBlank String confirmCustomerName) {}
 
   public record DataRequestResponse(
       UUID id,

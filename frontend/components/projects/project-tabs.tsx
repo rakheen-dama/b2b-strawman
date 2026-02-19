@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
+import { useSearchParams } from "next/navigation";
 import { Tabs as TabsPrimitive } from "radix-ui";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -40,8 +41,16 @@ const baseTabs: TabDef[] = [
   { id: "activity", label: "Activity" },
 ];
 
+const validTabIds = new Set<string>(["overview", "documents", "members", "customers", "tasks", "time", "budget", "financials", "activity", "rates", "generated"]);
+
 export function ProjectTabs({ overviewPanel, documentsPanel, membersPanel, customersPanel, tasksPanel, timePanel, activityPanel, ratesPanel, budgetPanel, financialsPanel, generatedPanel }: ProjectTabsProps) {
-  const [activeTab, setActiveTab] = useState<TabId>("overview");
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const urlTab = tabParam && validTabIds.has(tabParam) ? (tabParam as TabId) : null;
+  const [userTab, setUserTab] = useState<TabId | null>(null);
+
+  // URL param takes precedence, then user's manual selection, then default
+  const activeTab = urlTab ?? userTab ?? "overview";
 
   const tabs = useMemo(() => {
     let filtered = baseTabs;
@@ -52,7 +61,7 @@ export function ProjectTabs({ overviewPanel, documentsPanel, membersPanel, custo
   }, [ratesPanel, financialsPanel, generatedPanel]);
 
   return (
-    <TabsPrimitive.Root value={activeTab} onValueChange={(v) => setActiveTab(v as TabId)}>
+    <TabsPrimitive.Root value={activeTab} onValueChange={(v) => setUserTab(v as TabId)}>
       {/* Radix List provides role="tablist" + arrow-key navigation + roving focus */}
       <TabsPrimitive.List className="relative flex gap-6 border-b border-slate-200 dark:border-slate-800">
         {tabs.map((tab) => (

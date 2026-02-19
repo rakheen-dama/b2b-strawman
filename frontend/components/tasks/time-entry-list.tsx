@@ -141,17 +141,11 @@ export function TimeEntryList({
       </div>
 
       {filteredEntries.length === 0 ? (
-        <p className="py-4 text-center text-sm text-slate-500 dark:text-slate-400">
-          No{" "}
-          {billingFilter === "all"
-            ? ""
-            : billingFilter === "unbilled"
-              ? "unbilled "
-              : billingFilter === "billed"
-                ? "billed "
-                : "non-billable "}
-          time entries.
-        </p>
+        <EmptyState
+          icon={Clock}
+          title="No matching time entries"
+          description="Try a different billing status filter."
+        />
       ) : (
         <div className="rounded-lg border border-slate-200 dark:border-slate-800">
           <Table>

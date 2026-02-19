@@ -253,12 +253,20 @@ describe("CustomFieldSection", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("renders nothing when no field groups are applied", () => {
-    const { container } = render(
+  it("shows empty state when no field groups are applied", () => {
+    render(
       <CustomFieldSection {...defaultProps} appliedFieldGroups={[]} />,
     );
 
-    expect(container.innerHTML).toBe("");
+    expect(screen.getByText("No custom fields configured")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Custom fields let you track additional information specific to your workflow.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Configure Fields" }),
+    ).toHaveAttribute("href", "/org/acme/settings/custom-fields");
   });
 
   it("renders group name as card header", () => {

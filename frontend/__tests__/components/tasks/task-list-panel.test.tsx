@@ -328,4 +328,32 @@ describe("TaskListPanel", () => {
 
     expect(screen.getByText("No tasks yet")).toBeInTheDocument();
   });
+
+  // 114A: Filtered empty state uses EmptyState component
+  it("shows filtered empty state when filter returns zero tasks", async () => {
+    const user = userEvent.setup();
+    // First render with tasks so the filter bar appears
+    mockFetchTasks.mockResolvedValue([]);
+
+    render(
+      <TaskListPanel
+        tasks={[openUnassigned]}
+        slug="acme"
+        projectId="p1"
+        canManage={true}
+        currentMemberId="current-member"
+      />,
+    );
+
+    // Click "Done" filter — fetchTasks returns []
+    const filterGroup = screen.getByRole("group", { name: /task filters/i });
+    await user.click(within(filterGroup).getByText("Done"));
+
+    await waitFor(() => {
+      expect(screen.getByText("No tasks match this filter")).toBeInTheDocument();
+    });
+    expect(
+      screen.getByText("Try a different filter or clear the selection."),
+    ).toBeInTheDocument();
+  });
 });

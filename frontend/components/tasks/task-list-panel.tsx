@@ -321,9 +321,11 @@ export function TaskListPanel({
         </p>
       )}
       {tasks.length === 0 ? (
-        <p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
-          No tasks match the current filter.
-        </p>
+        <EmptyState
+          icon={ClipboardList}
+          title="No tasks match this filter"
+          description="Try a different filter or clear the selection."
+        />
       ) : (
         <div className="rounded-lg border border-slate-200 dark:border-slate-800">
           <Table>

@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Save, Loader2 } from "lucide-react";
+import { Save, Loader2, ListChecks } from "lucide-react";
+import { EmptyState } from "@/components/empty-state";
 import { updateEntityCustomFieldsAction } from "@/app/(app)/org/[slug]/settings/custom-fields/actions";
 import type {
   EntityType,
@@ -475,9 +476,17 @@ export function CustomFieldSection({
     }
   };
 
-  // If no groups are applied or no fields in applied groups, show nothing
+  // If no groups are applied or no fields in applied groups, show empty state
   if (fieldsByGroup.size === 0) {
-    return null;
+    return (
+      <EmptyState
+        icon={ListChecks}
+        title="No custom fields configured"
+        description="Custom fields let you track additional information specific to your workflow."
+        actionLabel="Configure Fields"
+        actionHref={`/org/${slug}/settings/custom-fields`}
+      />
+    );
   }
 
   return (

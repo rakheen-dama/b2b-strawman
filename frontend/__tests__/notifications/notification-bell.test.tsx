@@ -32,7 +32,7 @@ describe("NotificationBell", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockFetchUnreadCount.mockResolvedValue({ count: 0 });
-    mockFetchNotifications.mockResolvedValue({ content: [], totalElements: 0, totalPages: 0, size: 10, number: 0 });
+    mockFetchNotifications.mockResolvedValue({ content: [], page: { totalElements: 0, totalPages: 0, size: 10, number: 0 } });
     mockMarkAllNotificationsRead.mockResolvedValue({ success: true });
   });
 

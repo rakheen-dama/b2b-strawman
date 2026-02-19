@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,7 +9,6 @@ interface EmptyStateProps {
   action?: React.ReactNode;
   actionLabel?: string;
   actionHref?: string;
-  onAction?: () => void;
 }
 
 export function EmptyState({
@@ -21,7 +18,6 @@ export function EmptyState({
   action,
   actionLabel,
   actionHref,
-  onAction,
 }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center py-24 text-center gap-4">
@@ -35,11 +31,6 @@ export function EmptyState({
       {actionLabel && actionHref && (
         <Button asChild size="sm" variant="outline">
           <Link href={actionHref}>{actionLabel}</Link>
-        </Button>
-      )}
-      {actionLabel && onAction && !actionHref && (
-        <Button size="sm" variant="outline" onClick={onAction}>
-          {actionLabel}
         </Button>
       )}
       {action}

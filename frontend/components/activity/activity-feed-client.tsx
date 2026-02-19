@@ -33,7 +33,7 @@ export function ActivityFeedClient({
           0
         );
         setItems(data.content);
-        setTotalPages(data.totalPages);
+        setTotalPages(data.page.totalPages);
         setPage(0);
       } catch {
         // Keep existing state on error
@@ -57,7 +57,7 @@ export function ActivityFeedClient({
         nextPage
       );
       setItems((prev) => [...prev, ...data.content]);
-      setTotalPages(data.totalPages);
+      setTotalPages(data.page.totalPages);
       setPage(nextPage);
     } catch {
       // Keep existing state on error

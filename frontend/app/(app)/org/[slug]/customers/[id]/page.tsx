@@ -473,9 +473,7 @@ export default async function CustomerDetailPage({
       {customerTemplateReadiness.length > 0 && (
         <TemplateReadinessCard
           templates={customerTemplateReadiness}
-          generateHref={(templateId) =>
-            `/org/${slug}/customers/${id}?generateTemplate=${templateId}`
-          }
+          baseHref={`/org/${slug}/customers/${id}`}
         />
       )}
 

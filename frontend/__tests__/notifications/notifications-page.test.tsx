@@ -49,7 +49,7 @@ describe("NotificationsPageClient", () => {
     vi.clearAllMocks();
     mockFetchNotifications.mockResolvedValue({
       content: [],
-      totalElements: 0, totalPages: 0, size: 10, number: 0,
+      page: { totalElements: 0, totalPages: 0, size: 10, number: 0 },
     });
     mockMarkAllNotificationsRead.mockResolvedValue({ success: true });
   });
@@ -105,7 +105,7 @@ describe("NotificationsPageClient", () => {
 
     mockFetchNotifications.mockResolvedValueOnce({
       content: unreadOnly,
-      totalElements: 1, totalPages: 1, size: 10, number: 0,
+      page: { totalElements: 1, totalPages: 1, size: 10, number: 0 },
     });
 
     render(

@@ -196,6 +196,21 @@ The `components/ui/` directory started from Shadcn scaffolding but **base compon
 - Never use olive/neutral/zinc/gray color classes — use the **slate** scale instead
 - Never use indigo for accents — use **teal** instead
 - Never import `motion` in server components — it's client-only. Only import in `"use client"` files.
+- Never pass functions or component references as props from Server Components to `"use client"` components — Next.js 16 throws a runtime serialization error. Pass serializable data (strings, objects) instead.
+
+### RSC Serialization Boundary
+
+Next.js 16 strictly enforces that only plain serializable values (strings, numbers, booleans, plain objects, arrays) can be passed as props from Server Components to Client Components (`"use client"`).
+
+**Never pass these from Server → Client Components:**
+- Functions/callbacks (e.g., `onClick`, `generateHref`)
+- React component references (e.g., `icon={Activity}` where `Activity` is a Lucide icon)
+- Class instances
+
+**Fix patterns:**
+- **Icon props**: Remove `"use client"` if the component doesn't actually need client interactivity (no hooks, no event handlers). `LucideIcon` components render fine in Server Components.
+- **Callback props**: Replace function props with serializable data. E.g., instead of `generateHref={(id) => \`/path/${id}\`}`, pass `baseHref="/path"` and build the URL inside the client component.
+- **Component props**: Pass pre-rendered `ReactNode` (JSX) instead of component references, or restructure so the icon renders in the Server Component parent.
 
 ## Next.js 16 Patterns
 
@@ -269,6 +284,21 @@ Route: `app/api/webhooks/clerk/route.ts`
 - Backend API calls go through `lib/api.ts` with JWT auth
 - Billing data: `GET /api/billing/subscription` returns plan, limits, member count
 - S3 uploads: browser uploads directly via presigned URL from backend
+
+### Paginated Responses (Spring Data VIA_DTO)
+
+Backend paginated endpoints return this shape (not flat):
+```json
+{ "content": [...], "page": { "totalElements": 42, "totalPages": 3, "size": 20, "number": 0 } }
+```
+
+Frontend interfaces must nest pagination fields under `page`:
+```typescript
+interface PaginatedResponse<T> {
+  content: T[];
+  page: { totalElements: number; totalPages: number; size: number; number: number };
+}
+```
 
 ## Environment Variables
 

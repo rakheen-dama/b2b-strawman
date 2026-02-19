@@ -36,7 +36,7 @@ export function NotificationsPageClient({
       try {
         const data = await fetchNotifications(filterValue === "unread", 0);
         setNotifications(data.content);
-        setTotalPages(data.totalPages);
+        setTotalPages(data.page.totalPages);
         setPage(0);
       } catch {
         // Keep existing state on error
@@ -56,7 +56,7 @@ export function NotificationsPageClient({
       const nextPage = page + 1;
       const data = await fetchNotifications(unreadOnly, nextPage);
       setNotifications((prev) => [...prev, ...data.content]);
-      setTotalPages(data.totalPages);
+      setTotalPages(data.page.totalPages);
       setPage(nextPage);
     } catch {
       // Keep existing state on error

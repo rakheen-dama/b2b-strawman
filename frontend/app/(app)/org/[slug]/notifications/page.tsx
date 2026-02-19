@@ -11,10 +11,12 @@ export default async function NotificationsPage({
 
   let initialNotifications: NotificationsResponse = {
     content: [],
-    totalElements: 0,
-    totalPages: 0,
-    size: 10,
-    number: 0,
+    page: {
+      totalElements: 0,
+      totalPages: 0,
+      size: 10,
+      number: 0,
+    },
   };
   try {
     initialNotifications = await fetchNotifications(false, 0);
@@ -30,7 +32,7 @@ export default async function NotificationsPage({
 
       <NotificationsPageClient
         initialNotifications={initialNotifications.content}
-        initialTotalPages={initialNotifications.totalPages}
+        initialTotalPages={initialNotifications.page.totalPages}
         orgSlug={slug}
       />
     </div>

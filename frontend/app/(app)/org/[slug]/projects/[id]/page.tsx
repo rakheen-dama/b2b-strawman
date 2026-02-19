@@ -21,6 +21,17 @@ import { FieldGroupSelector } from "@/components/field-definitions/FieldGroupSel
 import { TagInput } from "@/components/tags/TagInput";
 import { GenerateDocumentDropdown } from "@/components/templates/GenerateDocumentDropdown";
 import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocumentsList";
+import {
+  fetchProjectSetupStatus,
+  fetchProjectUnbilledSummary,
+  fetchTemplateReadiness,
+} from "@/lib/api/setup-status";
+import type {
+  ProjectSetupStatus,
+  UnbilledTimeSummary,
+  TemplateReadiness,
+} from "@/lib/types";
+import type { SetupStep } from "@/components/setup/types";
 import { formatDate } from "@/lib/format";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
@@ -51,6 +62,60 @@ export default async function ProjectDetailPage({
   const canEdit = isAdmin || project.projectRole === "lead";
   const isCurrentLead = project.projectRole === "lead";
   const canManage = isAdmin || isCurrentLead;
+
+  // Setup guidance data (Epic 112A)
+  let setupStatus: ProjectSetupStatus | null = null;
+  let unbilledSummary: UnbilledTimeSummary | null = null;
+  let templateReadiness: TemplateReadiness[] = [];
+  try {
+    const [setupRes, unbilledRes, templateRes] = await Promise.all([
+      fetchProjectSetupStatus(id),
+      fetchProjectUnbilledSummary(id),
+      fetchTemplateReadiness("PROJECT", id),
+    ]);
+    setupStatus = setupRes;
+    unbilledSummary = unbilledRes;
+    templateReadiness = templateRes;
+  } catch {
+    // Non-fatal: setup guidance cards will not render if fetch fails
+  }
+
+  // Map setup status to steps
+  const setupSteps: SetupStep[] = setupStatus
+    ? [
+        {
+          label: "Customer assigned",
+          complete: setupStatus.customerAssigned,
+          actionHref: `?tab=customers`,
+        },
+        {
+          label: "Rate card configured",
+          complete: setupStatus.rateCardConfigured,
+          actionHref: `?tab=rates`,
+          permissionRequired: true,
+        },
+        {
+          label: "Budget set",
+          complete: setupStatus.budgetConfigured,
+          actionHref: `?tab=budget`,
+        },
+        {
+          label: "Team members added",
+          complete: setupStatus.teamAssigned,
+          actionHref: `?tab=members`,
+        },
+        {
+          label:
+            setupStatus.requiredFields.total === 0
+              ? "No required fields defined"
+              : `Required fields filled (${setupStatus.requiredFields.filled}/${setupStatus.requiredFields.total})`,
+          complete:
+            setupStatus.requiredFields.total === 0 ||
+            setupStatus.requiredFields.filled === setupStatus.requiredFields.total,
+          actionHref: "#custom-fields",
+        },
+      ]
+    : [];
 
   let documents: Document[] = [];
   try {
@@ -327,8 +392,13 @@ export default async function ProjectDetailPage({
             projectName={project.name}
             customerName={customers.length > 0 ? customers[0].name : null}
             canManage={canManage}
+            isAdmin={isAdmin}
             tasks={tasks}
             slug={slug}
+            setupStatus={setupStatus}
+            setupSteps={setupSteps}
+            unbilledSummary={unbilledSummary}
+            templateReadiness={templateReadiness}
           />
         }
         documentsPanel={

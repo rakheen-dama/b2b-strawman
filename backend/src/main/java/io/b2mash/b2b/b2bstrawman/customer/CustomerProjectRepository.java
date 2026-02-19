@@ -12,6 +12,8 @@ public interface CustomerProjectRepository extends JpaRepository<CustomerProject
 
   List<CustomerProject> findByCustomerId(UUID customerId);
 
+  boolean existsByCustomerId(UUID customerId);
+
   List<CustomerProject> findByProjectId(UUID projectId);
 
   boolean existsByCustomerIdAndProjectId(UUID customerId, UUID projectId);

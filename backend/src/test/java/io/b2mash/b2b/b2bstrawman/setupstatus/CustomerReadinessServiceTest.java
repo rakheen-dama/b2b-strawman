@@ -8,7 +8,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
-import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerType;
@@ -67,7 +66,7 @@ class CustomerReadinessServiceTest {
     mockCustomer(LifecycleStatus.PROSPECT);
     mockNoChecklist();
     mockNoRequiredFields();
-    when(customerProjectRepository.findByCustomerId(CUSTOMER_ID)).thenReturn(List.of());
+    when(customerProjectRepository.existsByCustomerId(CUSTOMER_ID)).thenReturn(false);
 
     var result = service.getReadiness(CUSTOMER_ID);
 
@@ -82,8 +81,7 @@ class CustomerReadinessServiceTest {
     mockCustomer(LifecycleStatus.ONBOARDING);
     mockChecklistProgress("SA FICA Onboarding", 3, 5);
     mockNoRequiredFields();
-    when(customerProjectRepository.findByCustomerId(CUSTOMER_ID))
-        .thenReturn(List.of(mock(CustomerProject.class)));
+    when(customerProjectRepository.existsByCustomerId(CUSTOMER_ID)).thenReturn(true);
 
     var result = service.getReadiness(CUSTOMER_ID);
 
@@ -100,8 +98,7 @@ class CustomerReadinessServiceTest {
     var customer = mockCustomer(LifecycleStatus.ACTIVE, Map.of("tax_number", "12345"));
     mockNoChecklist();
     mockRequiredField("Tax Number", "tax_number");
-    when(customerProjectRepository.findByCustomerId(CUSTOMER_ID))
-        .thenReturn(List.of(mock(CustomerProject.class)));
+    when(customerProjectRepository.existsByCustomerId(CUSTOMER_ID)).thenReturn(true);
 
     var result = service.getReadiness(CUSTOMER_ID);
 
@@ -118,8 +115,7 @@ class CustomerReadinessServiceTest {
     mockCustomer(LifecycleStatus.ACTIVE);
     mockChecklistProgress("SA FICA Onboarding", 5, 5);
     mockNoRequiredFields();
-    when(customerProjectRepository.findByCustomerId(CUSTOMER_ID))
-        .thenReturn(List.of(mock(CustomerProject.class)));
+    when(customerProjectRepository.existsByCustomerId(CUSTOMER_ID)).thenReturn(true);
 
     var result = service.getReadiness(CUSTOMER_ID);
 
@@ -132,8 +128,7 @@ class CustomerReadinessServiceTest {
     mockCustomer(LifecycleStatus.DORMANT);
     mockNoChecklist();
     mockNoRequiredFields();
-    when(customerProjectRepository.findByCustomerId(CUSTOMER_ID))
-        .thenReturn(List.of(mock(CustomerProject.class)));
+    when(customerProjectRepository.existsByCustomerId(CUSTOMER_ID)).thenReturn(true);
 
     var result = service.getReadiness(CUSTOMER_ID);
 
@@ -146,7 +141,7 @@ class CustomerReadinessServiceTest {
     mockCustomer(LifecycleStatus.ACTIVE);
     mockNoChecklist();
     mockNoRequiredFields();
-    when(customerProjectRepository.findByCustomerId(CUSTOMER_ID)).thenReturn(List.of());
+    when(customerProjectRepository.existsByCustomerId(CUSTOMER_ID)).thenReturn(false);
 
     var result = service.getReadiness(CUSTOMER_ID);
 
@@ -159,8 +154,7 @@ class CustomerReadinessServiceTest {
     mockCustomer(LifecycleStatus.ACTIVE);
     mockChecklistProgress("SA FICA Onboarding", 5, 5);
     mockNoRequiredFields();
-    when(customerProjectRepository.findByCustomerId(CUSTOMER_ID))
-        .thenReturn(List.of(mock(CustomerProject.class)));
+    when(customerProjectRepository.existsByCustomerId(CUSTOMER_ID)).thenReturn(true);
 
     var result = service.getReadiness(CUSTOMER_ID);
 
@@ -169,6 +163,19 @@ class CustomerReadinessServiceTest {
     assertThat(result.checklistProgress().completed()).isEqualTo(5);
     assertThat(result.checklistProgress().total()).isEqualTo(5);
     assertThat(result.checklistProgress().percentComplete()).isEqualTo(100);
+    assertThat(result.overallReadiness()).isEqualTo("Complete");
+  }
+
+  @Test
+  void getReadiness_nullLifecycleStatus_defaultsToActive() {
+    mockCustomer(null);
+    mockNoChecklist();
+    mockNoRequiredFields();
+    when(customerProjectRepository.existsByCustomerId(CUSTOMER_ID)).thenReturn(true);
+
+    var result = service.getReadiness(CUSTOMER_ID);
+
+    assertThat(result.lifecycleStatus()).isEqualTo("ACTIVE");
     assertThat(result.overallReadiness()).isEqualTo("Complete");
   }
 

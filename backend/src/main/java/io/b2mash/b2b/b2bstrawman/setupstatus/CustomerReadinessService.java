@@ -53,7 +53,7 @@ public class CustomerReadinessService {
     RequiredFieldStatus requiredFields =
         computeRequiredFields(EntityType.CUSTOMER, customer.getCustomFields());
 
-    boolean hasLinkedProjects = !customerProjectRepository.findByCustomerId(customerId).isEmpty();
+    boolean hasLinkedProjects = customerProjectRepository.existsByCustomerId(customerId);
 
     String overallReadiness =
         computeOverallReadiness(lifecycle, requiredFields, checklistProgress, hasLinkedProjects);

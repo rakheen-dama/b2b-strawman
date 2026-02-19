@@ -1,6 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.setupstatus.DocumentGenerationReadinessService;
+import io.b2mash.b2b.b2bstrawman.setupstatus.TemplateReadiness;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -29,14 +31,17 @@ public class DocumentTemplateController {
   private final DocumentTemplateService documentTemplateService;
   private final PdfRenderingService pdfRenderingService;
   private final GeneratedDocumentService generatedDocumentService;
+  private final DocumentGenerationReadinessService documentGenerationReadinessService;
 
   public DocumentTemplateController(
       DocumentTemplateService documentTemplateService,
       PdfRenderingService pdfRenderingService,
-      GeneratedDocumentService generatedDocumentService) {
+      GeneratedDocumentService generatedDocumentService,
+      DocumentGenerationReadinessService documentGenerationReadinessService) {
     this.documentTemplateService = documentTemplateService;
     this.pdfRenderingService = pdfRenderingService;
     this.generatedDocumentService = generatedDocumentService;
+    this.documentGenerationReadinessService = documentGenerationReadinessService;
   }
 
   @GetMapping
@@ -53,6 +58,14 @@ public class DocumentTemplateController {
       templates = documentTemplateService.listAll();
     }
     return ResponseEntity.ok(templates);
+  }
+
+  @GetMapping("/readiness")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER', 'ORG_MEMBER')")
+  public ResponseEntity<List<TemplateReadiness>> getReadiness(
+      @RequestParam TemplateEntityType entityType, @RequestParam UUID entityId) {
+    return ResponseEntity.ok(
+        documentGenerationReadinessService.checkReadiness(entityType, entityId));
   }
 
   @GetMapping("/{id}")

@@ -55,15 +55,6 @@ If a slice fails (review found unfixable issues, build errors, etc.):
 3. Once fixed and merged, restart: `./scripts/run-phase.sh 10`
    (it will skip all Done slices automatically)
 
-## Anti-Patterns
-
-- **Do NOT launch `run-phase.sh` from within a Claude session** — the script is designed to run in
-  a terminal tab. Launching it with `run_in_background: true` and then polling with `sleep`+`ps`
-  wastes an entire Claude session on monitoring cycles. Just run it in a terminal and use `tail -f`.
-- **Do NOT use `/phase` (v1) to invoke `run-phase.sh`** — the v1 orchestrator will try to monitor
-  the background process, creating the exact context waste that v2 was designed to eliminate.
-- **The script sends macOS notifications** on success (Glass sound) and failure (Basso sound), so
-  you don't need to watch it at all.
 
 ## Differences from /phase (v1)
 

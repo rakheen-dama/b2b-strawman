@@ -20,7 +20,7 @@ Phase 14 adds a **jurisdiction-agnostic compliance system** managing the full cu
 | 105 | Retention & Dormancy | Backend | 100 | M | 105A, 105B | |
 | 106 | Lifecycle & Checklist Frontend | Frontend | 102, 103 | M | 106A, 106B | **Done** (PRs #220, #221) |
 | 107 | Data Requests & Settings Frontend | Frontend | 104, 105 | M | 107A, 107B | **Done** (PRs #222, #223) |
-| 108 | Compliance Dashboard | Frontend | 106, 107 | S | 108A | |
+| 108 | Compliance Dashboard | Frontend | 106, 107 | S | 108A | **Done** (PR #224) |
 
 ## Dependency Graph
 
@@ -659,7 +659,7 @@ Stage 8:  [108A]                                                      ← dashbo
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **107A** | 107.1–107.7 | Data request list page (/compliance/requests), CreateDataRequestDialog, request detail with status timeline, export download, DeletionConfirmDialog (type customer name). Frontend tests (~8 tests). | **Done** (PR #222) |
-| **107B** | 107.8–107.14 | Compliance settings page (/settings/compliance), retention policy table (CRUD), "Run Retention Check" with results display, dormancy threshold + deadline days config, checklist template list in settings. Frontend tests (~7 tests). | |
+| **107B** | 107.8–107.14 | Compliance settings page (/settings/compliance), retention policy table (CRUD), "Run Retention Check" with results display, dormancy threshold + deadline days config, checklist template list in settings. Frontend tests (~7 tests). | **Done** (PR #223) |
 
 ### Tasks
 
@@ -731,7 +731,7 @@ Stage 8:  [108A]                                                      ← dashbo
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **108A** | 108.1–108.10 | ComplianceDashboardPage (/compliance), LifecycleDistributionSection (stat cards), OnboardingPipelineSection, DataRequestsSection, DormancyCandidateList, sidebar nav entry, GET /api/customers/lifecycle-summary backend endpoint. Frontend tests (~10 tests). | |
+| **108A** | 108.1–108.10 | ComplianceDashboardPage (/compliance), LifecycleDistributionSection (stat cards), OnboardingPipelineSection, DataRequestsSection, DormancyCandidateList, sidebar nav entry, GET /api/customers/lifecycle-summary backend endpoint. Frontend tests (~10 tests). | **Done** (PR #224) |
 
 ### Tasks
 

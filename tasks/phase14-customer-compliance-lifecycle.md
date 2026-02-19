@@ -121,7 +121,7 @@ Phase 14 adds a **jurisdiction-agnostic compliance system** managing the full cu
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 6a | Epic 106 | 106A | LifecycleStatusBadge, LifecycleTransitionDropdown, customer list lifecycle column, customer detail lifecycle section, transition dialogs, server actions. ~10 tests. |
+| 6a | Epic 106 | 106A | LifecycleStatusBadge, LifecycleTransitionDropdown, customer list lifecycle column, customer detail lifecycle section, transition dialogs, server actions. ~10 tests. | **Done** (PR #220) |
 | 6b | Epic 106 | 106B | ChecklistInstancePanel (Onboarding tab), ChecklistInstanceItemRow, progress bar, template selection, document upload link. ~10 tests. |
 
 ### Stage 7: Frontend — Data Requests & Settings (Parallel with Stage 6)
@@ -521,7 +521,7 @@ Stage 8:  [108A]                                                      ← dashbo
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **105A** | 105.1–105.6 | RetentionPolicy entity + repo, RetentionService (evaluate policies, flag records), RetentionCheckResult, dormancy threshold from OrgSettings. Integration tests (~10 tests). | **Done** (PR #218) |
-| **105B** | 105.7–105.11 | RetentionController (CRUD, check, purge endpoints), purge execution, default retention policy seeding, provisioning integration. Integration tests (~10 tests). | |
+| **105B** | 105.7–105.11 | RetentionController (CRUD, check, purge endpoints), purge execution, default retention policy seeding, provisioning integration. Integration tests (~10 tests). | **Done** (PR #219) |
 
 ### Tasks
 
@@ -583,7 +583,7 @@ Stage 8:  [108A]                                                      ← dashbo
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **106A** | 106.1–106.8 | LifecycleStatusBadge, LifecycleTransitionDropdown, customer list lifecycle column + filter, customer detail lifecycle section, transition confirmation dialogs, server actions for lifecycle API calls. Frontend tests (~10 tests). | |
+| **106A** | 106.1–106.8 | LifecycleStatusBadge, LifecycleTransitionDropdown, customer list lifecycle column + filter, customer detail lifecycle section, transition confirmation dialogs, server actions for lifecycle API calls. Frontend tests (~10 tests). | **Done** (PR #220) |
 | **106B** | 106.9–106.15 | ChecklistInstancePanel (Onboarding tab on customer detail), ChecklistInstanceItemRow (complete/skip/reopen with document upload link), progress bar, template selector for manual instantiation, checklist API client. Frontend tests (~10 tests). | |
 
 ### Tasks

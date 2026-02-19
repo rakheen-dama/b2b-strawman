@@ -125,7 +125,7 @@
 | 103 | Compliance Pack Seeding & Instantiation | Backend | 101 | M | 103A, 103B | **Done** (PRs #214, #215) |
 | 104 | Data Subject Requests | Backend | 100 | M | 104A, 104B | 104A **Done** (PR #216) |
 | 105 | Retention & Dormancy | Backend | 100 | M | 105A, 105B | 105A **Done** (PR #218) |
-| 106 | Lifecycle & Checklist Frontend | Frontend | 102, 103 | M | 106A, 106B | |
+| 106 | Lifecycle & Checklist Frontend | Frontend | 102, 103 | M | 106A, 106B | 106A **Done** (PR #220) |
 | 107 | Data Requests & Settings Frontend | Frontend | 104, 105 | M | 107A, 107B | |
 | 108 | Compliance Dashboard | Frontend | 106, 107 | S | 108A | |
 | **Phase 15 — Contextual Actions & Setup Guidance** | | | | | | See [tasks/phase15-contextual-actions-setup-guidance.md](tasks/phase15-contextual-actions-setup-guidance.md) |

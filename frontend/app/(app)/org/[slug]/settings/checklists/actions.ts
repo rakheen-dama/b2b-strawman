@@ -7,6 +7,53 @@ import type { ChecklistTemplateResponse } from "@/lib/types";
 interface ActionResult {
   success: boolean;
   error?: string;
+  data?: ChecklistTemplateResponse;
+}
+
+export interface CreateChecklistTemplateInput {
+  name: string;
+  description?: string;
+  customerType: string;
+  autoInstantiate: boolean;
+  items: {
+    name: string;
+    description?: string;
+    sortOrder: number;
+    required: boolean;
+    requiresDocument: boolean;
+    requiredDocumentLabel?: string;
+  }[];
+}
+
+export async function createChecklistTemplate(
+  slug: string,
+  input: CreateChecklistTemplateInput,
+): Promise<ActionResult> {
+  try {
+    const data = await api.post<ChecklistTemplateResponse>(
+      "/api/checklist-templates",
+      input,
+    );
+    revalidatePath(`/org/${slug}/settings/checklists`);
+    return { success: true, data };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 403) {
+        return {
+          success: false,
+          error: "Only admins and owners can create checklist templates.",
+        };
+      }
+      if (error.status === 409) {
+        return {
+          success: false,
+          error: "A checklist template with this name already exists.",
+        };
+      }
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
 }
 
 export async function cloneChecklistTemplate(

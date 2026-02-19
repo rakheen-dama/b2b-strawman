@@ -52,9 +52,10 @@ export function GenerateDocumentDropdown({
           {templates.map((tpl) => (
             <DropdownMenuItem
               key={tpl.id}
-              onClick={() => {
+              onSelect={() => {
                 setSelectedTemplate(tpl);
-                setDialogOpen(true);
+                // Defer dialog open so the dropdown's focus cleanup completes first
+                requestAnimationFrame(() => setDialogOpen(true));
               }}
             >
               {tpl.name}

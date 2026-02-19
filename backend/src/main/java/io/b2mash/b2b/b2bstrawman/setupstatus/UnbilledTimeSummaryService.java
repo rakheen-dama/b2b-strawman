@@ -1,5 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.setupstatus;
 
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import jakarta.persistence.EntityManager;
@@ -17,15 +20,26 @@ public class UnbilledTimeSummaryService {
 
   private final EntityManager entityManager;
   private final OrgSettingsRepository orgSettingsRepository;
+  private final ProjectRepository projectRepository;
+  private final CustomerRepository customerRepository;
 
   public UnbilledTimeSummaryService(
-      EntityManager entityManager, OrgSettingsRepository orgSettingsRepository) {
+      EntityManager entityManager,
+      OrgSettingsRepository orgSettingsRepository,
+      ProjectRepository projectRepository,
+      CustomerRepository customerRepository) {
     this.entityManager = entityManager;
     this.orgSettingsRepository = orgSettingsRepository;
+    this.projectRepository = projectRepository;
+    this.customerRepository = customerRepository;
   }
 
   @Transactional(readOnly = true)
   public UnbilledTimeSummary getProjectUnbilledSummary(UUID projectId) {
+    projectRepository
+        .findById(projectId)
+        .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+
     String currency = resolveCurrency();
 
     var query =
@@ -71,6 +85,10 @@ public class UnbilledTimeSummaryService {
 
   @Transactional(readOnly = true)
   public UnbilledTimeSummary getCustomerUnbilledSummary(UUID customerId) {
+    customerRepository
+        .findById(customerId)
+        .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+
     String currency = resolveCurrency();
 
     var query =
@@ -106,8 +124,8 @@ public class UnbilledTimeSummaryService {
     }
 
     List<ProjectUnbilledBreakdown> byProject = new ArrayList<>();
-    BigDecimal totalHours = BigDecimal.ZERO;
-    BigDecimal totalAmount = BigDecimal.ZERO;
+    BigDecimal totalMinutesRaw = BigDecimal.ZERO;
+    BigDecimal totalAmountRaw = BigDecimal.ZERO;
     int totalEntryCount = 0;
 
     for (Tuple row : results) {
@@ -122,10 +140,13 @@ public class UnbilledTimeSummaryService {
 
       byProject.add(
           new ProjectUnbilledBreakdown(projectId, projectName, hours, scaledAmount, entryCount));
-      totalHours = totalHours.add(hours);
-      totalAmount = totalAmount.add(scaledAmount);
+      totalMinutesRaw = totalMinutesRaw.add(minutes);
+      totalAmountRaw = totalAmountRaw.add(amount);
       totalEntryCount += entryCount;
     }
+
+    BigDecimal totalHours = totalMinutesRaw.divide(BigDecimal.valueOf(60), 2, RoundingMode.HALF_UP);
+    BigDecimal totalAmount = totalAmountRaw.setScale(2, RoundingMode.HALF_UP);
 
     return new UnbilledTimeSummary(
         totalHours, totalAmount, currency, totalEntryCount, List.copyOf(byProject));

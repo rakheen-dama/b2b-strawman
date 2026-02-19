@@ -1,11 +1,17 @@
 package io.b2mash.b2b.b2bstrawman.setupstatus;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.b2mash.b2b.b2bstrawman.customer.Customer;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.project.Project;
+import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import jakarta.persistence.EntityManager;
@@ -26,12 +32,16 @@ class UnbilledTimeSummaryServiceTest {
 
   @Mock private EntityManager entityManager;
   @Mock private OrgSettingsRepository orgSettingsRepository;
+  @Mock private ProjectRepository projectRepository;
+  @Mock private CustomerRepository customerRepository;
 
   private UnbilledTimeSummaryService service;
 
   @BeforeEach
   void setUp() {
-    service = new UnbilledTimeSummaryService(entityManager, orgSettingsRepository);
+    service =
+        new UnbilledTimeSummaryService(
+            entityManager, orgSettingsRepository, projectRepository, customerRepository);
   }
 
   @Test
@@ -39,6 +49,7 @@ class UnbilledTimeSummaryServiceTest {
     // 3 entries: 120 + 60 + 90 = 270 minutes = 4.50 hours
     // amounts: (120/60)*1500 + (60/60)*1500 + (90/60)*1500 = 3000 + 1500 + 2250 = 6750
     var projectId = UUID.randomUUID();
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(mock(Project.class)));
     var orgSettings = mock(OrgSettings.class);
     when(orgSettings.getDefaultCurrency()).thenReturn("ZAR");
     when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.of(orgSettings));
@@ -66,6 +77,7 @@ class UnbilledTimeSummaryServiceTest {
   @Test
   void getProjectUnbilledSummary_noEntries_returnsZeros() {
     var projectId = UUID.randomUUID();
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(mock(Project.class)));
     when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.empty());
 
     // Aggregate query with no matching rows still returns one row with zeros
@@ -92,6 +104,7 @@ class UnbilledTimeSummaryServiceTest {
   @Test
   void getProjectUnbilledSummary_emptyResultList_returnsZeros() {
     var projectId = UUID.randomUUID();
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(mock(Project.class)));
     when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.empty());
 
     @SuppressWarnings("unchecked")
@@ -115,6 +128,7 @@ class UnbilledTimeSummaryServiceTest {
     var projectId1 = UUID.randomUUID();
     var projectId2 = UUID.randomUUID();
 
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(mock(Customer.class)));
     var orgSettings = mock(OrgSettings.class);
     when(orgSettings.getDefaultCurrency()).thenReturn("ZAR");
     when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.of(orgSettings));
@@ -165,6 +179,7 @@ class UnbilledTimeSummaryServiceTest {
   @Test
   void getCustomerUnbilledSummary_noEntries_returnsZerosWithNullByProject() {
     var customerId = UUID.randomUUID();
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(mock(Customer.class)));
     when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.empty());
 
     @SuppressWarnings("unchecked")
@@ -185,6 +200,7 @@ class UnbilledTimeSummaryServiceTest {
   @Test
   void resolveCurrency_fromOrgSettings() {
     var projectId = UUID.randomUUID();
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(mock(Project.class)));
     var orgSettings = mock(OrgSettings.class);
     when(orgSettings.getDefaultCurrency()).thenReturn("EUR");
     when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.of(orgSettings));
@@ -203,5 +219,23 @@ class UnbilledTimeSummaryServiceTest {
     var result = service.getProjectUnbilledSummary(projectId);
 
     assertThat(result.currency()).isEqualTo("EUR");
+  }
+
+  @Test
+  void getProjectUnbilledSummary_nonExistentProject_throwsResourceNotFoundException() {
+    var projectId = UUID.randomUUID();
+    when(projectRepository.findById(projectId)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> service.getProjectUnbilledSummary(projectId))
+        .isInstanceOf(ResourceNotFoundException.class);
+  }
+
+  @Test
+  void getCustomerUnbilledSummary_nonExistentCustomer_throwsResourceNotFoundException() {
+    var customerId = UUID.randomUUID();
+    when(customerRepository.findById(customerId)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> service.getCustomerUnbilledSummary(customerId))
+        .isInstanceOf(ResourceNotFoundException.class);
   }
 }

@@ -247,7 +247,7 @@ public class ProjectController {
   }
 
   @GetMapping("/{id}/unbilled-summary")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER', 'ORG_MEMBER')")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<UnbilledTimeSummary> getUnbilledSummary(@PathVariable UUID id) {
     return ResponseEntity.ok(unbilledTimeSummaryService.getProjectUnbilledSummary(id));
   }

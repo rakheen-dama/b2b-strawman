@@ -20,6 +20,8 @@ import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
@@ -68,6 +70,7 @@ class UnbilledTimeSummaryControllerTest {
   @Autowired private CustomerRepository customerRepository;
   @Autowired private CustomerProjectRepository customerProjectRepository;
   @Autowired private InvoiceRepository invoiceRepository;
+  @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private EntityManager entityManager;
   @Autowired private TransactionTemplate transactionTemplate;
 
@@ -109,6 +112,10 @@ class UnbilledTimeSummaryControllerTest {
             () ->
                 transactionTemplate.executeWithoutResult(
                     tx -> {
+                      // === Phase 0: Create OrgSettings with ZAR currency ===
+                      orgSettingsRepository.deleteAll();
+                      orgSettingsRepository.save(new OrgSettings("ZAR"));
+
                       // === Phase 1: Create all parent entities ===
                       var customer =
                           new Customer(
@@ -257,7 +264,7 @@ class UnbilledTimeSummaryControllerTest {
         .andExpect(jsonPath("$.totalHours").value(3.0))
         .andExpect(jsonPath("$.totalAmount").value(4500.0))
         .andExpect(jsonPath("$.entryCount").value(2))
-        .andExpect(jsonPath("$.currency").value("USD"))
+        .andExpect(jsonPath("$.currency").value("ZAR"))
         .andExpect(jsonPath("$.byProject").doesNotExist());
   }
 
@@ -332,14 +339,37 @@ class UnbilledTimeSummaryControllerTest {
 
   @Test
   @Order(8)
-  void projectUnbilledSummary_nonExistentProject_returnsZeros() throws Exception {
-    // Non-existent project returns zeros (no matching entries), not 404
-    // The service does an aggregate query, not a findById
+  void projectUnbilledSummary_nonExistentProject_returns404() throws Exception {
     var nonExistent = UUID.randomUUID();
     mockMvc
         .perform(get("/api/projects/" + nonExistent + "/unbilled-summary").with(ownerJwt()))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.entryCount").value(0));
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  @Order(9)
+  void customerUnbilledSummary_nonExistentCustomer_returns404() throws Exception {
+    var nonExistent = UUID.randomUUID();
+    mockMvc
+        .perform(get("/api/customers/" + nonExistent + "/unbilled-summary").with(ownerJwt()))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  @Order(10)
+  void projectUnbilledSummary_memberRole_returns403() throws Exception {
+    mockMvc
+        .perform(get("/api/projects/" + projectIdA + "/unbilled-summary").with(memberJwt()))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  @Order(11)
+  void customerUnbilledSummary_memberRole_returns403() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/customers/" + customerIdWithEntries + "/unbilled-summary").with(memberJwt()))
+        .andExpect(status().isForbidden());
   }
 
   // --- Helpers ---
@@ -348,6 +378,14 @@ class UnbilledTimeSummaryControllerTest {
     return jwt()
         .jwt(j -> j.subject("user_unbilled_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
+  }
+
+  private JwtRequestPostProcessor memberJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_unbilled_member").claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
   }
 
   private String syncMember(

@@ -957,6 +957,40 @@ export interface ChecklistInstanceResponse {
   updatedAt: string;
 }
 
+// ---- Data Requests (from DataRequestController.java) ----
+
+export type DataRequestStatus = "RECEIVED" | "IN_PROGRESS" | "COMPLETED" | "REJECTED";
+export type DataRequestType = "ACCESS" | "DELETION" | "CORRECTION" | "OBJECTION";
+
+export interface DataRequestResponse {
+  id: string;
+  customerId: string;
+  customerName: string;
+  requestType: DataRequestType;
+  status: DataRequestStatus;
+  description: string;
+  rejectionReason: string | null;
+  deadline: string;          // "YYYY-MM-DD" local date
+  requestedAt: string;       // ISO instant
+  requestedBy: string;
+  completedAt: string | null;
+  completedBy: string | null;
+  hasExport: boolean;
+  notes: string | null;
+  createdAt: string;
+}
+
+export interface AnonymizationResult {
+  status: "COMPLETED";
+  anonymizationSummary: {
+    customerAnonymized: boolean;
+    documentsDeleted: number;
+    commentsRedacted: number;
+    portalContactsAnonymized: number;
+    invoicesPreserved: number;
+  };
+}
+
 // ---- Error (RFC 9457 ProblemDetail) ----
 
 export interface ProblemDetail {

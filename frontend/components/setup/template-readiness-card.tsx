@@ -19,7 +19,7 @@ import type { TemplateReadinessCardProps } from "./types";
 
 export function TemplateReadinessCard({
   templates,
-  generateHref,
+  baseHref,
 }: TemplateReadinessCardProps) {
   return (
     <Card>
@@ -44,7 +44,7 @@ export function TemplateReadinessCard({
 
               {tpl.ready ? (
                 <Button asChild size="sm" variant="outline">
-                  <Link href={generateHref(tpl.templateId)}>Generate</Link>
+                  <Link href={`${baseHref}?generateTemplate=${tpl.templateId}`}>Generate</Link>
                 </Button>
               ) : (
                 <TooltipProvider>

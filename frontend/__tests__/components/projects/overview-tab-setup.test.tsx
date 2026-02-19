@@ -151,7 +151,7 @@ describe("OverviewTab — Setup Guidance Cards", () => {
         {templateReadiness.length > 0 && (
           <TemplateReadinessCard
             templates={templateReadiness}
-            generateHref={(id) => `/generate/${id}`}
+            baseHref="/org/acme/projects/p1"
           />
         )}
         <p>Other content</p>

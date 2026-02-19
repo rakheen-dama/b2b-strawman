@@ -25,8 +25,7 @@ function makeTemplates(
   return defaults.map((tpl, i) => ({ ...tpl, ...overrides[i] }));
 }
 
-const generateHref = (templateId: string) =>
-  `/templates/${templateId}/generate`;
+const baseHref = "/org/acme/projects/p1";
 
 describe("TemplateReadinessCard", () => {
   beforeEach(() => {
@@ -41,24 +40,20 @@ describe("TemplateReadinessCard", () => {
     render(
       <TemplateReadinessCard
         templates={makeTemplates()}
-        entityType="PROJECT"
-        entityId="p1"
-        generateHref={generateHref}
+        baseHref={baseHref}
       />,
     );
 
     expect(screen.getByText("Engagement Letter")).toBeInTheDocument();
     const link = screen.getByRole("link", { name: "Generate" });
-    expect(link).toHaveAttribute("href", "/templates/t1/generate");
+    expect(link).toHaveAttribute("href", "/org/acme/projects/p1?generateTemplate=t1");
   });
 
   it("renders not-ready template with warning icon and disabled button", () => {
     render(
       <TemplateReadinessCard
         templates={makeTemplates()}
-        entityType="PROJECT"
-        entityId="p1"
-        generateHref={generateHref}
+        baseHref={baseHref}
       />,
     );
 
@@ -82,9 +77,7 @@ describe("TemplateReadinessCard", () => {
             missingFields: ["Tax Number"],
           },
         ]}
-        entityType="PROJECT"
-        entityId="p1"
-        generateHref={generateHref}
+        baseHref={baseHref}
       />,
     );
 
@@ -120,9 +113,7 @@ describe("TemplateReadinessCard", () => {
     render(
       <TemplateReadinessCard
         templates={templates}
-        entityType="CUSTOMER"
-        entityId="c1"
-        generateHref={generateHref}
+        baseHref="/org/acme/customers/c1"
       />,
     );
 

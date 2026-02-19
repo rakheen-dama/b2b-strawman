@@ -188,9 +188,7 @@ export async function OverviewTab({
       {templateReadiness.length > 0 && (
         <TemplateReadinessCard
           templates={templateReadiness}
-          generateHref={(templateId) =>
-            `/org/${slug}/projects/${projectId}?generateTemplate=${templateId}`
-          }
+          baseHref={`/org/${slug}/projects/${projectId}`}
         />
       )}
 

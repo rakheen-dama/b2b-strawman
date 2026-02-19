@@ -16,10 +16,12 @@ export interface Notification {
 
 export interface NotificationsResponse {
   content: Notification[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
+  page: {
+    totalElements: number;
+    totalPages: number;
+    size: number;
+    number: number;
+  };
 }
 
 export interface UnreadCountResponse {

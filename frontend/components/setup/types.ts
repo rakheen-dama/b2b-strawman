@@ -80,5 +80,6 @@ export interface TemplateReadinessItem {
 
 export interface TemplateReadinessCardProps {
   templates: TemplateReadinessItem[];
-  generateHref: (templateId: string) => string;
+  /** Base path (e.g. "/org/acme/projects/123") — component appends ?generateTemplate=<id> */
+  baseHref: string;
 }

@@ -67,6 +67,7 @@ Organize by **feature**, not by layer. Each feature package contains its entity,
 - Never build `ProblemDetail` directly in controllers or services — throw semantic exceptions from `exception/` package instead
 - Never return `Optional` from services for "not found" or "access denied" — throw `ResourceNotFoundException`
 - Never duplicate error helper methods in controllers — use `RequestScopes.requireMemberId()` and the shared exception classes
+- Never return `Page<T>` from controllers without `@EnableSpringDataWebSupport(pageSerializationMode = PageSerializationMode.VIA_DTO)` on the application class — raw `PageImpl` serialization produces an unstable JSON structure. The `VIA_DTO` mode nests pagination metadata under a `page` object: `{ content: [...], page: { totalElements, totalPages, size, number } }`
 
 ## Spring Boot 4 / Hibernate 7 Gotchas
 

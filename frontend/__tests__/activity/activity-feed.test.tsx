@@ -125,10 +125,12 @@ describe("ActivityFeedClient", () => {
 
     mockLoadMoreActivity.mockResolvedValue({
       content: [taskItem],
-      totalElements: 1,
-      totalPages: 1,
-      size: 20,
-      number: 0,
+      page: {
+        totalElements: 1,
+        totalPages: 1,
+        size: 20,
+        number: 0,
+      },
     });
 
     render(

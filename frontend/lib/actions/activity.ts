@@ -16,10 +16,12 @@ export interface ActivityItem {
 
 export interface ActivityResponse {
   content: ActivityItem[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
+  page: {
+    totalElements: number;
+    totalPages: number;
+    size: number;
+    number: number;
+  };
 }
 
 export async function fetchProjectActivity(

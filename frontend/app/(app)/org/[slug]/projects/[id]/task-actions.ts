@@ -25,6 +25,10 @@ export async function fetchTasks(
   return api.get<Task[]>(url);
 }
 
+export async function fetchTask(taskId: string): Promise<Task> {
+  return api.get<Task>(`/api/tasks/${taskId}`);
+}
+
 export async function createTask(
   slug: string,
   projectId: string,

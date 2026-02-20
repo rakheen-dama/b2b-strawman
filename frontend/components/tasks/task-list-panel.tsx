@@ -27,29 +27,9 @@ import {
 } from "@/app/(app)/org/[slug]/projects/[id]/task-actions";
 import { fetchTimeEntries } from "@/app/(app)/org/[slug]/projects/[id]/time-entry-actions";
 import { cn } from "@/lib/utils";
-import type { Task, TaskPriority, TaskStatus, TimeEntry } from "@/lib/types";
+import { PRIORITY_BADGE, STATUS_BADGE } from "@/components/tasks/task-badge-config";
+import type { Task, TaskStatus, TimeEntry } from "@/lib/types";
 import type { RetainerSummaryResponse } from "@/lib/types";
-
-// --- Priority badge config (40.8): HIGH=red, MEDIUM=amber, LOW=olive ---
-
-const PRIORITY_BADGE: Record<
-  TaskPriority,
-  { label: string; variant: "destructive" | "warning" | "neutral" }
-> = {
-  HIGH: { label: "High", variant: "destructive" },
-  MEDIUM: { label: "Medium", variant: "warning" },
-  LOW: { label: "Low", variant: "neutral" },
-};
-
-const STATUS_BADGE: Record<
-  TaskStatus,
-  { label: string; variant: "success" | "warning" | "neutral" | "destructive" }
-> = {
-  OPEN: { label: "Open", variant: "neutral" },
-  IN_PROGRESS: { label: "In Progress", variant: "warning" },
-  DONE: { label: "Done", variant: "success" },
-  CANCELLED: { label: "Cancelled", variant: "destructive" },
-};
 
 // --- Filter types (40.7) ---
 

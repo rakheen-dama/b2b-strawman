@@ -87,7 +87,7 @@ Four new entities (`ProjectTemplate`, `TemplateTask`, `RecurringSchedule`, `Sche
 |-------|------|-------|-----------|
 | 2a | Epic 116 | 116A | `ProjectTemplateService` — CRUD, saveFromProject, duplicate. DTOs. ~12 service tests. |
 | 2b | Epic 116 | 116B | `ProjectTemplateController` — 7 REST endpoints (all except instantiate). Permission checks. SecurityConfig. ~15 controller integration tests. | **Done** (PR #238) |
-| 2c | Epic 118 | 118A | `RecurringScheduleService` — CRUD, pause, resume, lifecycle. DTOs. ~12 service tests. Parallel with 116. |
+| 2c | Epic 118 | 118A | `RecurringScheduleService` — CRUD, pause, resume, lifecycle. DTOs. ~12 service tests. Parallel with 116. | **Done** (PR #240) |
 | 2d | Epic 118 | 118B | `RecurringScheduleController` — 8 REST endpoints. Permission checks. ~15 controller integration tests. Parallel with 116B. |
 
 ### Stage 3: Instantiation & Execution (Sequential)
@@ -348,7 +348,7 @@ Stage 4:  [120A] --> [120B]  //  [121A] --> [121B]   (parallel frontend tracks a
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **118A** | 118.1–118.8 | `RecurringScheduleService` with CRUD + lifecycle (pause, resume, complete, delete). Request/response DTOs. `next_execution_date` calculation on create/resume. Delete guard (only PAUSED/COMPLETED). Service integration tests. ~12 tests. | |
+| **118A** | 118.1–118.8 | `RecurringScheduleService` with CRUD + lifecycle (pause, resume, complete, delete). Request/response DTOs. `next_execution_date` calculation on create/resume. Delete guard (only PAUSED/COMPLETED). Service integration tests. ~12 tests. | **Done** (PR #240) |
 | **118B** | 118.9–118.15 | `RecurringScheduleController` with 8 REST endpoints. `SecurityConfig` update. Permission checks (admin/owner for mutations). Audit events. Controller integration tests. ~15 tests. | |
 
 ### Tasks

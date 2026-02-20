@@ -498,7 +498,7 @@ export default async function CustomerDetailPage({
           }
           secondaryAction={{
             label: "View Time",
-            href: `?tab=invoices`,
+            href: `?tab=time`,
           }}
           variant="accent"
         />

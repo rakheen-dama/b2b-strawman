@@ -107,7 +107,7 @@ Phase 17 adds a **retainer management layer** to the DocTeams platform -- per-cu
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 4a | Epic 126 | 126A | Retainer dashboard page, retainer list, API client, sidebar nav. ~8 tests. |
+| 4a | Epic 126 | 126A | Retainer dashboard page, retainer list, API client, sidebar nav. ~8 tests. | **Done** (PR #255) |
 | 4b | Epic 126 | 126B | Create retainer dialog, status badges, progress bar component. ~6 tests. |
 | 4c | Epic 127 | 127A | Customer retainer tab, active retainer card, period history table. ~5 tests. Parallel with 126. |
 | 4d | Epic 127 | 127B | Retainer detail page, edit dialog, close period dialog, lifecycle action buttons. ~6 tests. |
@@ -436,7 +436,7 @@ Stage 4:  [126A] --> [126B]  //  [127A] --> [127B]  //  [128A]  //  [128B]
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **126A** | 126.1--126.8 | Dashboard page (`/org/[slug]/retainers/page.tsx`), retainer list table, summary cards (active count, ready-to-close count), status filter tabs, sidebar navigation, API client (`lib/api/retainers.ts`), server actions. ~8 frontend tests. | |
+| **126A** | 126.1--126.8 | Dashboard page (`/org/[slug]/retainers/page.tsx`), retainer list table, summary cards (active count, ready-to-close count), status filter tabs, sidebar navigation, API client (`lib/api/retainers.ts`), server actions. ~8 frontend tests. | **Done** (PR #255) |
 | **126B** | 126.9--126.14 | Create retainer dialog (customer selector, type-conditional fields, frequency, rollover), status badges, progress bar component. ~6 frontend tests. | |
 
 ### Tasks

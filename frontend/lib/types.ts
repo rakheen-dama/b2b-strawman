@@ -185,6 +185,9 @@ export interface Task {
   version: number;
   createdAt: string;
   updatedAt: string;
+  customFields?: Record<string, unknown>;
+  appliedFieldGroups?: string[];
+  tags?: TagResponse[];
 }
 
 export interface CreateTaskRequest {

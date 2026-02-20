@@ -20,6 +20,8 @@ import {
 import { AssigneeSelector } from "@/components/tasks/assignee-selector";
 import { TimeEntryList } from "@/components/tasks/time-entry-list";
 import { CommentSectionClient } from "@/components/comments/comment-section-client";
+import { TagInput } from "@/components/tags/TagInput";
+import { CustomFieldSection } from "@/components/field-definitions/CustomFieldSection";
 import {
   fetchTask,
   updateTask,
@@ -27,7 +29,14 @@ import {
 import { fetchTimeEntries } from "@/app/(app)/org/[slug]/projects/[id]/time-entry-actions";
 import { formatDate } from "@/lib/format";
 import { PRIORITY_BADGE, STATUS_BADGE } from "@/components/tasks/task-badge-config";
-import type { Task, TimeEntry } from "@/lib/types";
+import type {
+  Task,
+  TimeEntry,
+  TagResponse,
+  FieldDefinitionResponse,
+  FieldGroupResponse,
+  FieldGroupMemberResponse,
+} from "@/lib/types";
 
 // --- State ---
 
@@ -85,6 +94,10 @@ interface TaskDetailSheetProps {
   currentMemberId: string;
   orgRole: string;
   members: { id: string; name: string; email: string }[];
+  allTags?: TagResponse[];
+  fieldDefinitions?: FieldDefinitionResponse[];
+  fieldGroups?: FieldGroupResponse[];
+  groupMembers?: Record<string, FieldGroupMemberResponse[]>;
 }
 
 // --- Component ---
@@ -98,10 +111,16 @@ export function TaskDetailSheet({
   currentMemberId,
   orgRole,
   members,
+  allTags = [],
+  fieldDefinitions = [],
+  fieldGroups = [],
+  groupMembers = {},
 }: TaskDetailSheetProps) {
   const [state, dispatch] = useReducer(sheetReducer, initialState);
   const { task, timeEntries, loadingTask, loadingEntries, error } = state;
   const [, startTransition] = useTransition();
+
+  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
 
   // Fetch task and time entries when taskId changes
   useEffect(() => {
@@ -179,6 +198,10 @@ export function TaskDetailSheet({
   const isOpen = taskId !== null;
   const priorityBadge = task ? PRIORITY_BADGE[task.priority] : null;
   const statusBadge = task ? STATUS_BADGE[task.status] : null;
+
+  const taskTags = task?.tags ?? [];
+  const taskAppliedFieldGroups = task?.appliedFieldGroups ?? [];
+  const hasCustomFields = taskAppliedFieldGroups.length > 0;
 
   return (
     <Sheet
@@ -308,6 +331,42 @@ export function TaskDetailSheet({
                 <p className="whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300">
                   {task.description}
                 </p>
+              </div>
+            )}
+
+            {/* Tags */}
+            <div className="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
+              <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                Tags
+              </h3>
+              <TagInput
+                entityType="TASK"
+                entityId={task.id}
+                tags={taskTags}
+                allTags={allTags}
+                editable={canManage}
+                canInlineCreate={isAdmin}
+                slug={slug}
+              />
+            </div>
+
+            {/* Custom Fields */}
+            {hasCustomFields && (
+              <div className="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
+                <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                  Custom Fields
+                </h3>
+                <CustomFieldSection
+                  entityType="TASK"
+                  entityId={task.id}
+                  customFields={task.customFields ?? {}}
+                  appliedFieldGroups={taskAppliedFieldGroups}
+                  editable={canManage}
+                  slug={slug}
+                  fieldDefinitions={fieldDefinitions}
+                  fieldGroups={fieldGroups}
+                  groupMembers={groupMembers}
+                />
               </div>
             )}
 

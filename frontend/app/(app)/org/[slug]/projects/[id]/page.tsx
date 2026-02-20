@@ -269,6 +269,34 @@ export default async function ProjectDetailPage({
     // Non-fatal: custom fields section won't render
   }
 
+  // Custom field definitions for tasks (for TaskDetailSheet)
+  let taskFieldDefs: FieldDefinitionResponse[] = [];
+  let taskFieldGroups: FieldGroupResponse[] = [];
+  const taskGroupMembers: Record<string, FieldGroupMemberResponse[]> = {};
+  try {
+    const [defs, groups] = await Promise.all([
+      getFieldDefinitions("TASK"),
+      getFieldGroups("TASK"),
+    ]);
+    taskFieldDefs = defs;
+    taskFieldGroups = groups;
+
+    // Pre-fetch members for all active TASK field groups
+    const activeGroupIds = groups.filter((g) => g.active).map((g) => g.id);
+    if (activeGroupIds.length > 0) {
+      const memberResults = await Promise.allSettled(
+        activeGroupIds.map((gId) => getGroupMembers(gId)),
+      );
+      memberResults.forEach((result, i) => {
+        if (result.status === "fulfilled") {
+          taskGroupMembers[activeGroupIds[i]] = result.value;
+        }
+      });
+    }
+  } catch {
+    // Non-fatal: custom fields section won't render in task sheet
+  }
+
   // Tags for the Tags section
   let projectTags: TagResponse[] = [];
   let allTags: TagResponse[] = [];
@@ -465,6 +493,10 @@ export default async function ProjectDetailPage({
             orgRole={orgRole}
             retainerSummary={taskRetainerSummary}
             members={members.map((m) => ({ id: m.memberId, name: m.name, email: m.email }))}
+            allTags={allTags}
+            fieldDefinitions={taskFieldDefs}
+            fieldGroups={taskFieldGroups}
+            groupMembers={taskGroupMembers}
           />
         }
         timePanel={

@@ -2,7 +2,13 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { TaskDetailSheet } from "@/components/tasks/task-detail-sheet";
-import type { Task } from "@/lib/types";
+import type {
+  Task,
+  TagResponse,
+  FieldDefinitionResponse,
+  FieldGroupResponse,
+  FieldGroupMemberResponse,
+} from "@/lib/types";
 
 // --- Mocks ---
 
@@ -30,7 +36,79 @@ vi.mock("@/lib/actions/comments", () => ({
   deleteComment: vi.fn().mockResolvedValue({ success: true }),
 }));
 
+const mockSetEntityTags = vi.fn();
+const mockUpdateEntityCustomFields = vi.fn();
+
+vi.mock("@/app/(app)/org/[slug]/settings/tags/actions", () => ({
+  createTagAction: vi.fn(),
+  setEntityTagsAction: (...args: unknown[]) => mockSetEntityTags(...args),
+}));
+
+vi.mock("@/app/(app)/org/[slug]/settings/custom-fields/actions", () => ({
+  updateEntityCustomFieldsAction: (...args: unknown[]) =>
+    mockUpdateEntityCustomFields(...args),
+}));
+
 // --- Test data ---
+
+const tag1: TagResponse = {
+  id: "tag-1",
+  name: "Urgent",
+  slug: "urgent",
+  color: "#FF0000",
+  createdAt: "2025-01-15T10:00:00Z",
+  updatedAt: "2025-01-15T10:00:00Z",
+};
+
+const tag2: TagResponse = {
+  id: "tag-2",
+  name: "Bug",
+  slug: "bug",
+  color: null,
+  createdAt: "2025-01-15T10:00:00Z",
+  updatedAt: "2025-01-15T10:00:00Z",
+};
+
+const textFieldDef: FieldDefinitionResponse = {
+  id: "fd-1",
+  entityType: "TASK",
+  name: "Sprint Number",
+  slug: "sprint_number",
+  fieldType: "TEXT",
+  description: null,
+  required: false,
+  defaultValue: null,
+  options: null,
+  validation: null,
+  sortOrder: 0,
+  packId: null,
+  packFieldKey: null,
+  active: true,
+  createdAt: "2025-01-01T00:00:00Z",
+  updatedAt: "2025-01-01T00:00:00Z",
+};
+
+const testFieldGroup: FieldGroupResponse = {
+  id: "grp-1",
+  entityType: "TASK",
+  name: "Sprint Fields",
+  slug: "sprint_fields",
+  description: null,
+  packId: null,
+  sortOrder: 0,
+  active: true,
+  createdAt: "2025-01-01T00:00:00Z",
+  updatedAt: "2025-01-01T00:00:00Z",
+};
+
+const testGroupMembers: FieldGroupMemberResponse[] = [
+  {
+    id: "gm-1",
+    fieldGroupId: "grp-1",
+    fieldDefinitionId: "fd-1",
+    sortOrder: 0,
+  },
+];
 
 function makeTask(overrides: Partial<Task> = {}): Task {
   return {
@@ -49,6 +127,9 @@ function makeTask(overrides: Partial<Task> = {}): Task {
     version: 1,
     createdAt: "2026-01-10T10:00:00Z",
     updatedAt: "2026-02-20T08:00:00Z",
+    tags: [],
+    customFields: {},
+    appliedFieldGroups: [],
     ...overrides,
   };
 }
@@ -64,6 +145,10 @@ const defaultProps = {
     { id: "m2", name: "Bob", email: "bob@example.com" },
   ],
   onClose: vi.fn(),
+  allTags: [tag1, tag2],
+  fieldDefinitions: [textFieldDef],
+  fieldGroups: [testFieldGroup],
+  groupMembers: { "grp-1": testGroupMembers },
 };
 
 describe("TaskDetailSheet", () => {
@@ -166,6 +251,104 @@ describe("TaskDetailSheet", () => {
     // CommentSectionClient renders its content — AddCommentForm has this label
     await waitFor(() => {
       expect(screen.getByLabelText("Add a comment")).toBeInTheDocument();
+    });
+  });
+
+  // Test 6: TagInput renders in sheet with current task tags
+  it("renders TagInput with current task tags when task has tags", async () => {
+    mockFetchTask.mockResolvedValue(
+      makeTask({ tags: [tag1], appliedFieldGroups: [] }),
+    );
+
+    render(<TaskDetailSheet {...defaultProps} taskId="t1" />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Fix login bug" })).toBeInTheDocument();
+    });
+
+    // TagInput renders with the "Urgent" tag badge
+    expect(screen.getByText("Urgent")).toBeInTheDocument();
+    // "Add Tag" button present (canManage=true)
+    expect(screen.getByRole("button", { name: /Add Tag/i })).toBeInTheDocument();
+  });
+
+  // Test 7: CustomFieldSection renders in sheet with current field values
+  it("renders CustomFieldSection when task has applied field groups", async () => {
+    mockFetchTask.mockResolvedValue(
+      makeTask({
+        tags: [],
+        appliedFieldGroups: ["grp-1"],
+        customFields: { sprint_number: "Sprint 42" },
+      }),
+    );
+
+    render(<TaskDetailSheet {...defaultProps} taskId="t1" />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Fix login bug" })).toBeInTheDocument();
+    });
+
+    // CustomFieldSection shows group name and field
+    expect(screen.getByText("Sprint Fields")).toBeInTheDocument();
+    expect(screen.getByLabelText(/Sprint Number/)).toBeInTheDocument();
+  });
+
+  // Test 8: Tag change calls setEntityTagsAction
+  it("calls setEntityTagsAction when a tag is removed", async () => {
+    const user = userEvent.setup();
+    mockSetEntityTags.mockResolvedValue({ success: true });
+    mockFetchTask.mockResolvedValue(
+      makeTask({ tags: [tag1, tag2], appliedFieldGroups: [] }),
+    );
+
+    render(<TaskDetailSheet {...defaultProps} taskId="t1" />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /Remove Urgent/i })).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole("button", { name: /Remove Urgent/i }));
+
+    await waitFor(() => {
+      expect(mockSetEntityTags).toHaveBeenCalledWith(
+        "acme",
+        "TASK",
+        "t1",
+        ["tag-2"],
+      );
+    });
+  });
+
+  // Test 9: Custom field change calls updateEntityCustomFieldsAction
+  it("calls updateEntityCustomFieldsAction when custom fields are saved", async () => {
+    const user = userEvent.setup();
+    mockUpdateEntityCustomFields.mockResolvedValue({ success: true });
+    mockFetchTask.mockResolvedValue(
+      makeTask({
+        tags: [],
+        appliedFieldGroups: ["grp-1"],
+        customFields: {},
+      }),
+    );
+
+    render(<TaskDetailSheet {...defaultProps} taskId="t1" />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/Sprint Number/)).toBeInTheDocument();
+    });
+
+    const sprintInput = screen.getByLabelText(/Sprint Number/);
+    await user.type(sprintInput, "42");
+
+    await user.click(screen.getByRole("button", { name: /Save Custom Fields/i }));
+
+    await waitFor(() => {
+      expect(mockUpdateEntityCustomFields).toHaveBeenCalledWith(
+        "acme",
+        "TASK",
+        "t1",
+        expect.objectContaining({ sprint_number: "42" }),
+      );
     });
   });
 });

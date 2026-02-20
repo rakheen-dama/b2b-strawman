@@ -36,6 +36,7 @@ interface OverviewTabProps {
   projectId: string;
   projectName: string;
   customerName: string | null;
+  customerId: string | null;
   canManage: boolean;
   isAdmin: boolean;
   tasks: Task[];
@@ -86,6 +87,7 @@ export async function OverviewTab({
   projectId,
   projectName,
   customerName,
+  customerId,
   canManage,
   isAdmin,
   tasks,
@@ -170,10 +172,10 @@ export async function OverviewTab({
           title="Unbilled Time"
           description={`${formatCurrency(unbilledSummary.totalAmount, unbilledSummary.currency)} across ${unbilledSummary.totalHours.toFixed(1)} hours`}
           primaryAction={
-            isAdmin
+            isAdmin && customerId
               ? {
                   label: "Create Invoice",
-                  href: `/org/${slug}/invoices/new?projectId=${projectId}`,
+                  href: `/org/${slug}/customers/${customerId}?tab=invoices`,
                 }
               : undefined
           }

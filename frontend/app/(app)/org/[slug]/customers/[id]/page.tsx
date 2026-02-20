@@ -492,13 +492,13 @@ export default async function CustomerDetailPage({
             isAdmin
               ? {
                   label: "Create Invoice",
-                  href: `/org/${slug}/invoices/new?customerId=${id}`,
+                  href: `?tab=invoices`,
                 }
               : undefined
           }
           secondaryAction={{
             label: "View Time",
-            href: `?tab=invoices`,
+            href: `?tab=time`,
           }}
           variant="accent"
         />

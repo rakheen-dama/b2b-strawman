@@ -108,7 +108,7 @@ describe("OverviewTab — Setup Guidance Cards", () => {
             icon={Clock}
             title="Unbilled Time"
             description="$1,250.00 across 23.5 hours"
-            primaryAction={{ label: "Create Invoice", href: "/org/acme/invoices/new?projectId=p1" }}
+            primaryAction={{ label: "Create Invoice", href: "/org/acme/customers/c1?tab=invoices" }}
             secondaryAction={{ label: "View Entries", href: "?tab=time" }}
             variant="accent"
           />

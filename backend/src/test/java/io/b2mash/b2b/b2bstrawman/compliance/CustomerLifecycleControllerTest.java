@@ -3,7 +3,6 @@ package io.b2mash.b2b.b2bstrawman.compliance;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -11,6 +10,7 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
@@ -69,7 +69,7 @@ class CustomerLifecycleControllerTest {
         .andExpect(jsonPath("$.lifecycleStatus").value("ONBOARDING"));
 
     // Complete all auto-instantiated checklist items — this auto-transitions to ACTIVE
-    completeChecklistItems(customerId, ownerJwt());
+    TestChecklistHelper.completeChecklistItems(mockMvc, customerId, ownerJwt());
 
     // Verify customer is now ACTIVE (auto-transitioned by checklist completion)
     mockMvc
@@ -141,7 +141,7 @@ class CustomerLifecycleControllerTest {
         .andExpect(status().isOk());
 
     // Complete checklists — auto-transitions to ACTIVE
-    completeChecklistItems(customerId, ownerJwt());
+    TestChecklistHelper.completeChecklistItems(mockMvc, customerId, ownerJwt());
 
     // Get lifecycle history
     mockMvc
@@ -229,43 +229,6 @@ class CustomerLifecycleControllerTest {
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.id");
-  }
-
-  @SuppressWarnings("unchecked")
-  private void completeChecklistItems(String customerId, JwtRequestPostProcessor jwt)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(get("/api/customers/" + customerId + "/checklists").with(jwt))
-            .andExpect(status().isOk())
-            .andReturn();
-    String json = result.getResponse().getContentAsString();
-    List<Map<String, Object>> instances = JsonPath.read(json, "$[*]");
-    for (Map<String, Object> instance : instances) {
-      List<Map<String, Object>> items = (List<Map<String, Object>>) instance.get("items");
-      if (items == null) continue;
-      for (Map<String, Object> item : items) {
-        String itemId = (String) item.get("id");
-        boolean requiresDocument = Boolean.TRUE.equals(item.get("requiresDocument"));
-        if (requiresDocument) {
-          mockMvc
-              .perform(
-                  put("/api/checklist-items/" + itemId + "/skip")
-                      .with(jwt)
-                      .contentType(MediaType.APPLICATION_JSON)
-                      .content("{\"reason\": \"skipped for test\"}"))
-              .andExpect(status().isOk());
-        } else {
-          mockMvc
-              .perform(
-                  put("/api/checklist-items/" + itemId + "/complete")
-                      .with(jwt)
-                      .contentType(MediaType.APPLICATION_JSON)
-                      .content("{\"notes\": \"auto-completed for test\"}"))
-              .andExpect(status().isOk());
-        }
-      }
-    }
   }
 
   private JwtRequestPostProcessor ownerJwt() {

@@ -12,6 +12,7 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -92,44 +93,7 @@ class RetainerAgreementControllerTest {
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))
         .andExpect(status().isOk());
     // Completing all checklist items auto-transitions ONBOARDING -> ACTIVE
-    completeChecklistItems(custId, ownerJwt());
-  }
-
-  @SuppressWarnings("unchecked")
-  private void completeChecklistItems(String customerId, JwtRequestPostProcessor jwt)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(get("/api/customers/" + customerId + "/checklists").with(jwt))
-            .andExpect(status().isOk())
-            .andReturn();
-    String json = result.getResponse().getContentAsString();
-    List<Map<String, Object>> instances = JsonPath.read(json, "$[*]");
-    for (Map<String, Object> instance : instances) {
-      List<Map<String, Object>> items = (List<Map<String, Object>>) instance.get("items");
-      if (items == null) continue;
-      for (Map<String, Object> item : items) {
-        String itemId = (String) item.get("id");
-        boolean requiresDocument = Boolean.TRUE.equals(item.get("requiresDocument"));
-        if (requiresDocument) {
-          mockMvc
-              .perform(
-                  put("/api/checklist-items/" + itemId + "/skip")
-                      .with(jwt)
-                      .contentType(MediaType.APPLICATION_JSON)
-                      .content("{\"reason\": \"skipped for test\"}"))
-              .andExpect(status().isOk());
-        } else {
-          mockMvc
-              .perform(
-                  put("/api/checklist-items/" + itemId + "/complete")
-                      .with(jwt)
-                      .contentType(MediaType.APPLICATION_JSON)
-                      .content("{\"notes\": \"auto-completed for test\"}"))
-              .andExpect(status().isOk());
-        }
-      }
-    }
+    TestChecklistHelper.completeChecklistItems(mockMvc, custId, ownerJwt());
   }
 
   // --- CRUD Tests ---

@@ -235,11 +235,15 @@ public class Customer {
 
   /**
    * Sets lifecycle status directly, bypassing transition validation. Used by system operations like
-   * archive/unarchive alignment.
+   * archive/unarchive alignment and auto-dormancy.
+   *
+   * @param lifecycleStatus the target status
+   * @param changedBy the actor UUID, or null for system-initiated changes
    */
-  public void setLifecycleStatus(LifecycleStatus lifecycleStatus) {
+  public void setLifecycleStatus(LifecycleStatus lifecycleStatus, UUID changedBy) {
     this.lifecycleStatus = lifecycleStatus;
     this.lifecycleStatusChangedAt = Instant.now();
+    this.lifecycleStatusChangedBy = changedBy;
     this.updatedAt = Instant.now();
   }
 

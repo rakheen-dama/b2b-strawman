@@ -282,7 +282,9 @@ public class CustomerService {
     // Align lifecycle: set to OFFBOARDED unless already in a terminal state
     if (customer.getLifecycleStatus() != LifecycleStatus.OFFBOARDING
         && customer.getLifecycleStatus() != LifecycleStatus.OFFBOARDED) {
-      customer.setLifecycleStatus(LifecycleStatus.OFFBOARDED);
+      customer.setLifecycleStatus(
+          LifecycleStatus.OFFBOARDED,
+          RequestScopes.MEMBER_ID.isBound() ? RequestScopes.MEMBER_ID.get() : null);
       customer.setOffboardedAt(Instant.now());
     }
 
@@ -317,7 +319,9 @@ public class CustomerService {
     }
 
     customer.unarchive();
-    customer.setLifecycleStatus(LifecycleStatus.DORMANT);
+    customer.setLifecycleStatus(
+        LifecycleStatus.DORMANT,
+        RequestScopes.MEMBER_ID.isBound() ? RequestScopes.MEMBER_ID.get() : null);
     customer.setOffboardedAt(null);
     var saved = repository.save(customer);
 

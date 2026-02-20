@@ -133,7 +133,7 @@ class OrgProfitabilityTest {
               customerId = customer.getId();
 
               // Set lifecycle directly to ACTIVE (bypass onboarding guard)
-              customer.setLifecycleStatus(LifecycleStatus.ACTIVE);
+              customer.setLifecycleStatus(LifecycleStatus.ACTIVE, null);
               customerRepository.save(customer);
 
               customerProjectService.linkCustomerToProject(

@@ -4,11 +4,11 @@ import { useState, useEffect, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Check, Circle, Ban, Lock, XCircle, FileText } from "lucide-react";
 import { formatDate } from "@/lib/format";
-import type { ChecklistInstanceItemResponse, ChecklistItemStatus } from "@/lib/types";
+import type { ChecklistInstanceItemResponse, ChecklistItemStatus, Document } from "@/lib/types";
 
 type BadgeVariant = "success" | "warning" | "destructive" | "neutral";
 
@@ -35,6 +35,7 @@ interface ChecklistInstanceItemRowProps {
   onSkip: (itemId: string, reason: string) => Promise<void>;
   onReopen: (itemId: string) => Promise<void>;
   isAdmin: boolean;
+  customerDocuments?: Document[];
 }
 
 export function ChecklistInstanceItemRow({
@@ -44,6 +45,7 @@ export function ChecklistInstanceItemRow({
   onSkip,
   onReopen,
   isAdmin,
+  customerDocuments,
 }: ChecklistInstanceItemRowProps) {
   const [isPending, setIsPending] = useState(false);
   const [showCompleteForm, setShowCompleteForm] = useState(false);
@@ -179,11 +181,31 @@ export function ChecklistInstanceItemRow({
                 rows={2}
               />
               {item.requiresDocument && (
-                <Input
-                  placeholder="Document ID (UUID)"
-                  value={documentId}
-                  onChange={(e) => setDocumentId(e.target.value)}
-                />
+                (() => {
+                  const uploadedDocs = (customerDocuments ?? []).filter(
+                    (d) => d.status === "UPLOADED",
+                  );
+                  return (
+                    <Select value={documentId} onValueChange={setDocumentId}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a document..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {uploadedDocs.length > 0 ? (
+                          uploadedDocs.map((doc) => (
+                            <SelectItem key={doc.id} value={doc.id}>
+                              {doc.fileName}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="__none__" disabled>
+                            No documents uploaded
+                          </SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                  );
+                })()
               )}
               <div className="flex gap-2">
                 <Button size="sm" onClick={handleComplete} disabled={isPending}>

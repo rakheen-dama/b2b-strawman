@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { ChecklistInstanceItemRow } from "@/components/compliance/ChecklistInstanceItemRow";
-import type { ChecklistInstanceItemResponse } from "@/lib/types";
+import type { ChecklistInstanceItemResponse, Document } from "@/lib/types";
 
 const baseItem: ChecklistInstanceItemResponse = {
   id: "item-1",
@@ -143,5 +144,124 @@ describe("ChecklistInstanceItemRow", () => {
       />,
     );
     expect(screen.queryByText("Reopen")).not.toBeInTheDocument();
+  });
+
+  it("shows document picker select when requiresDocument is true and complete form is open", async () => {
+    const user = userEvent.setup();
+    const docItem: ChecklistInstanceItemResponse = {
+      ...baseItem,
+      requiresDocument: true,
+      requiredDocumentLabel: "Certified ID copy",
+    };
+    const mockDocs: Document[] = [
+      {
+        id: "doc-1",
+        projectId: null,
+        fileName: "passport-scan.pdf",
+        contentType: "application/pdf",
+        size: 12345,
+        status: "UPLOADED",
+        scope: "CUSTOMER",
+        customerId: "c1",
+        visibility: "INTERNAL",
+        uploadedBy: "m1",
+        createdAt: "2026-02-18T10:00:00Z",
+        updatedAt: "2026-02-18T10:00:00Z",
+      },
+      {
+        id: "doc-2",
+        projectId: null,
+        fileName: "pending-file.pdf",
+        contentType: "application/pdf",
+        size: 999,
+        status: "PENDING",
+        scope: "CUSTOMER",
+        customerId: "c1",
+        visibility: "INTERNAL",
+        uploadedBy: "m1",
+        createdAt: "2026-02-18T10:00:00Z",
+        updatedAt: "2026-02-18T10:00:00Z",
+      },
+    ];
+
+    render(
+      <ChecklistInstanceItemRow
+        item={docItem}
+        instanceItems={[docItem]}
+        onComplete={mockOnComplete}
+        onSkip={mockOnSkip}
+        onReopen={mockOnReopen}
+        isAdmin={true}
+        customerDocuments={mockDocs}
+      />,
+    );
+
+    // Open the complete form
+    await user.click(screen.getByText("Mark Complete"));
+
+    // Should show "Select a document..." placeholder
+    expect(screen.getByText("Select a document...")).toBeInTheDocument();
+  });
+
+  it("shows 'No documents uploaded' when all documents have non-UPLOADED status", async () => {
+    const user = userEvent.setup();
+    const docItem: ChecklistInstanceItemResponse = {
+      ...baseItem,
+      requiresDocument: true,
+      requiredDocumentLabel: "Tax certificate",
+    };
+    const pendingDocs: Document[] = [
+      {
+        id: "doc-pending",
+        projectId: null,
+        fileName: "pending-file.pdf",
+        contentType: "application/pdf",
+        size: 999,
+        status: "PENDING",
+        scope: "CUSTOMER",
+        customerId: "c1",
+        visibility: "INTERNAL",
+        uploadedBy: "m1",
+        createdAt: "2026-02-18T10:00:00Z",
+        updatedAt: "2026-02-18T10:00:00Z",
+      },
+    ];
+
+    render(
+      <ChecklistInstanceItemRow
+        item={docItem}
+        instanceItems={[docItem]}
+        onComplete={mockOnComplete}
+        onSkip={mockOnSkip}
+        onReopen={mockOnReopen}
+        isAdmin={true}
+        customerDocuments={pendingDocs}
+      />,
+    );
+
+    // Open the complete form
+    await user.click(screen.getByText("Mark Complete"));
+
+    // The select trigger should be rendered with placeholder
+    expect(screen.getByText("Select a document...")).toBeInTheDocument();
+  });
+
+  it("does not show document picker when requiresDocument is false", async () => {
+    const user = userEvent.setup();
+    render(
+      <ChecklistInstanceItemRow
+        item={{ ...baseItem, requiresDocument: false }}
+        instanceItems={[baseItem]}
+        onComplete={mockOnComplete}
+        onSkip={mockOnSkip}
+        onReopen={mockOnReopen}
+        isAdmin={true}
+        customerDocuments={[]}
+      />,
+    );
+
+    await user.click(screen.getByText("Mark Complete"));
+
+    expect(screen.queryByText("Select a document...")).not.toBeInTheDocument();
   });
 });

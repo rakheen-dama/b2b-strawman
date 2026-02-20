@@ -27,6 +27,7 @@ import type {
   ChecklistInstanceResponse,
   ChecklistInstanceStatus,
   ChecklistTemplateResponse,
+  Document,
 } from "@/lib/types";
 
 type InstanceBadgeVariant = "success" | "neutral" | "destructive";
@@ -47,6 +48,7 @@ interface ChecklistInstancePanelProps {
   slug: string;
   templateNames: Record<string, string>;
   templates?: ChecklistTemplateResponse[];
+  customerDocuments?: Document[];
 }
 
 function computeProgress(instance: ChecklistInstanceResponse) {
@@ -69,6 +71,7 @@ export function ChecklistInstancePanel({
   slug,
   templateNames,
   templates,
+  customerDocuments,
 }: ChecklistInstancePanelProps) {
   const router = useRouter();
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => {
@@ -272,6 +275,7 @@ export function ChecklistInstancePanel({
                       onSkip={handleSkip}
                       onReopen={handleReopen}
                       isAdmin={isAdmin}
+                      customerDocuments={customerDocuments}
                     />
                   ))}
               </div>

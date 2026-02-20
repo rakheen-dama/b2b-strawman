@@ -602,6 +602,7 @@ export default async function CustomerDetailPage({
               slug={slug}
               templateNames={checklistTemplateNames}
               templates={isAdmin ? checklistTemplates : undefined}
+              customerDocuments={customerDocuments}
             />
           ) : undefined
         }

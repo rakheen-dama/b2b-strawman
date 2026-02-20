@@ -143,6 +143,14 @@
 | 119 | Scheduler Execution Engine | Backend | 117, 118 | M | 119A | **Done** (PR #242) |
 | 120 | Template Management UI | Frontend | 116, 117 | M | 120A, 120B | **Done** (PRs #243, #244) |
 | 121 | Schedule Management UI | Frontend | 118, 119 | M | 121A, 121B | **Done** (PRs #245, #246) |
+| **Phase 17 — Retainer Agreements & Billing** | | | | | | See [tasks/phase17-retainer-agreements-billing.md](tasks/phase17-retainer-agreements-billing.md) |
+| 122 | Entity Foundation & Migration | Backend | -- | M | 122A, 122B | 122A **Done** (PR #247) |
+| 123 | Retainer CRUD & Lifecycle | Backend | 122 | M | 123A, 123B | |
+| 124 | Consumption Tracking & Summary | Backend | 123 | M | 124A, 124B | |
+| 125 | Period Close & Invoice Generation | Backend | 124 | L | 125A, 125B | |
+| 126 | Retainer Dashboard & Create UI | Frontend | 123, 124, 125 | M | 126A, 126B | |
+| 127 | Customer Retainer Tab & Detail Page | Frontend | 126 | M | 127A, 127B | |
+| 128 | Time Entry Indicators & Notifications | Both | 124, 127 | M | 128A, 128B | |
 
 ---
 

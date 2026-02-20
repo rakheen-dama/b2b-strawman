@@ -491,14 +491,6 @@ public class ProjectTemplateService {
     return project;
   }
 
-  private UUID resolveAssignee(String assigneeRole, UUID projectLeadMemberId) {
-    return switch (assigneeRole) {
-      case "PROJECT_LEAD" -> projectLeadMemberId; // may be null if no lead provided
-      case "ANY_MEMBER", "UNASSIGNED" -> null;
-      default -> null;
-    };
-  }
-
   // --- Private helpers ---
 
   private void requireAdminOwnerOrProjectLead(String orgRole, UUID projectId, UUID memberId) {
@@ -533,6 +525,17 @@ public class ProjectTemplateService {
             tenantId,
             orgId,
             Instant.now()));
+  }
+
+  private UUID resolveAssignee(String assigneeRole, UUID projectLeadMemberId) {
+    if (assigneeRole == null) {
+      return null;
+    }
+    return switch (assigneeRole) {
+      case "PROJECT_LEAD" -> projectLeadMemberId; // may be null if no lead provided
+      case "ANY_MEMBER", "UNASSIGNED" -> null;
+      default -> null;
+    };
   }
 
   private ProjectTemplateResponse buildResponse(ProjectTemplate template) {

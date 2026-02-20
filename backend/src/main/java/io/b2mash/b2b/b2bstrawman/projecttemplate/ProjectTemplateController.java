@@ -91,7 +91,7 @@ public class ProjectTemplateController {
   @PostMapping("/{id}/instantiate")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ProjectController.ProjectResponse> instantiateTemplate(
-      @PathVariable UUID id, @RequestBody InstantiateTemplateRequest request) {
+      @PathVariable UUID id, @Valid @RequestBody InstantiateTemplateRequest request) {
     UUID memberId = RequestScopes.requireMemberId();
     var project = projectTemplateService.instantiateTemplate(id, request, memberId);
     return ResponseEntity.created(URI.create("/api/projects/" + project.getId()))

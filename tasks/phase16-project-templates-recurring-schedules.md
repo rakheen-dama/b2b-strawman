@@ -25,7 +25,7 @@ Four new entities (`ProjectTemplate`, `TemplateTask`, `RecurringSchedule`, `Sche
 | 115 | Entity Foundation & Utilities | Backend | -- | M | 115A, 115B | **Done** (PRs #235, #236) |
 | 116 | Template CRUD & Save from Project | Backend | 115 | M | 116A, 116B | **Done** (PRs #237, #238) |
 | 117 | Template Instantiation | Backend | 116 | S | 117A | **Done** (PR #239) |
-| 118 | Schedule CRUD & Lifecycle | Backend | 115 | M | 118A, 118B | |
+| 118 | Schedule CRUD & Lifecycle | Backend | 115 | M | 118A, 118B | **Done** (PRs #240, #241) |
 | 119 | Scheduler Execution Engine | Backend | 117, 118 | M | 119A | |
 | 120 | Template Management UI | Frontend | 116, 117 | M | 120A, 120B | |
 | 121 | Schedule Management UI | Frontend | 118, 119 | M | 121A, 121B | |
@@ -88,7 +88,7 @@ Four new entities (`ProjectTemplate`, `TemplateTask`, `RecurringSchedule`, `Sche
 | 2a | Epic 116 | 116A | `ProjectTemplateService` — CRUD, saveFromProject, duplicate. DTOs. ~12 service tests. |
 | 2b | Epic 116 | 116B | `ProjectTemplateController` — 7 REST endpoints (all except instantiate). Permission checks. SecurityConfig. ~15 controller integration tests. | **Done** (PR #238) |
 | 2c | Epic 118 | 118A | `RecurringScheduleService` — CRUD, pause, resume, lifecycle. DTOs. ~12 service tests. Parallel with 116. | **Done** (PR #240) |
-| 2d | Epic 118 | 118B | `RecurringScheduleController` — 8 REST endpoints. Permission checks. ~15 controller integration tests. Parallel with 116B. |
+| 2d | Epic 118 | 118B | `RecurringScheduleController` — 8 REST endpoints. Permission checks. ~15 controller integration tests. Parallel with 116B. | **Done** (PR #241) |
 
 ### Stage 3: Instantiation & Execution (Sequential)
 
@@ -349,7 +349,7 @@ Stage 4:  [120A] --> [120B]  //  [121A] --> [121B]   (parallel frontend tracks a
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **118A** | 118.1–118.8 | `RecurringScheduleService` with CRUD + lifecycle (pause, resume, complete, delete). Request/response DTOs. `next_execution_date` calculation on create/resume. Delete guard (only PAUSED/COMPLETED). Service integration tests. ~12 tests. | **Done** (PR #240) |
-| **118B** | 118.9–118.15 | `RecurringScheduleController` with 8 REST endpoints. `SecurityConfig` update. Permission checks (admin/owner for mutations). Audit events. Controller integration tests. ~15 tests. | |
+| **118B** | 118.9–118.15 | `RecurringScheduleController` with 8 REST endpoints. `SecurityConfig` update. Permission checks (admin/owner for mutations). Audit events. Controller integration tests. ~15 tests. | **Done** (PR #241) |
 
 ### Tasks
 

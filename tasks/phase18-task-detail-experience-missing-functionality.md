@@ -67,7 +67,7 @@ Phase 18 resolves four task UX gaps identified in QA gap analysis (Group A: find
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 3a | Epic 131 | 131A | Add `TagInput` + `CustomFieldSection` sections to `TaskDetailSheet`. Depends on props threaded in 130B. |
+| 3a | Epic 131 | 131A | Add `TagInput` + `CustomFieldSection` sections to `TaskDetailSheet`. Depends on props threaded in 130B. | **Done** (PR #264) |
 | 3b | Epic 131 | 131B | Add `ViewSelectorClient` to `TaskListPanel` header. Fetch TASK saved views server-side. Parallel with 131A and 132A. |
 | 3c | Epic 132 | 132A | Add `ViewSelectorClient` + `TaskDetailSheet` to My Work page. Potential backend change to `MyWorkController` for `?view=` param. Parallel with 131A/131B. |
 
@@ -290,7 +290,7 @@ interface TaskDetailSheetProps {
 
 | Slice | Summary | Status |
 |-------|---------|--------|
-| **131A** | Add `TagInput` + `CustomFieldSection` to `TaskDetailSheet`. Add server actions for tag/field mutations if not present. ~4 tests. | Pending |
+| **131A** | Add `TagInput` + `CustomFieldSection` to `TaskDetailSheet`. Add server actions for tag/field mutations if not present. ~4 tests. | **Done** (PR #264) |
 | **131B** | Add `ViewSelectorClient` to `TaskListPanel` header. Fetch TASK saved views server-side. Forward `view` param in task fetch. ~3 tests. | Pending |
 
 ### Tasks

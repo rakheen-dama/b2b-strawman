@@ -145,11 +145,13 @@ class PortalIntegrationTest {
                   customerService.createCustomer(
                       "Portal Customer A", "portal-cust-a@test.com", null, null, null, memberIdA);
               customerIdA = custA.getId();
+              customerLifecycleService.transition(customerIdA, "ACTIVE", null, memberIdA);
 
               var custB =
                   customerService.createCustomer(
                       "Other Customer B", "portal-cust-b@test.com", null, null, null, memberIdA);
               customerIdB = custB.getId();
+              customerLifecycleService.transition(customerIdB, "ACTIVE", null, memberIdA);
 
               // Create portal contacts for both customers
               portalContactService.createContact(
@@ -175,8 +177,6 @@ class PortalIntegrationTest {
                   projectRepository.save(
                       new Project("Unlinked Project", "Not linked to customer", memberIdA));
               unlinkedProjectId = unlinkedProj.getId();
-
-              // Customer defaults to ACTIVE — no transition needed
 
               // Link customer A to projectId
               customerProjectService.linkCustomerToProject(

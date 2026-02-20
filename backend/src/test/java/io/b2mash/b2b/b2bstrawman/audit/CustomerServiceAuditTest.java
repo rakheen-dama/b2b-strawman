@@ -354,9 +354,17 @@ class CustomerServiceAuditTest {
     return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 
-  /** No-op: customers now default to ACTIVE lifecycle status. */
   private void transitionToActive(UUID customerId) throws Exception {
-    // Customers default to ACTIVE — no transition needed
+    mockMvc
+        .perform(
+            post("/api/customers/" + customerId + "/transition")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"targetStatus": "ACTIVE"}
+                    """))
+        .andExpect(status().isOk());
   }
 
   private JwtRequestPostProcessor ownerJwt() {

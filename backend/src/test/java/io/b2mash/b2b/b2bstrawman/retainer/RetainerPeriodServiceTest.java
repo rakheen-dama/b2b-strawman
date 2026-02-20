@@ -9,7 +9,6 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.billingrate.BillingRate;
 import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateRepository;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
@@ -29,6 +28,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -105,7 +105,7 @@ class RetainerPeriodServiceTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  var customer = new Customer(name, email, null, null, null, memberId);
+                  var customer = TestCustomerFactory.createActiveCustomer(name, email, memberId);
                   customer = customerRepository.save(customer);
                   ref.set(customer.getId());
                 }));

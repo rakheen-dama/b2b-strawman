@@ -6,7 +6,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
@@ -20,6 +19,7 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.CreateRetainerRequest;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -115,13 +115,8 @@ class RetainerConsumptionListenerTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var customer =
-                      new Customer(
-                          "Customer " + nameSuffix,
-                          nameSuffix + "@test.com",
-                          null,
-                          null,
-                          null,
-                          memberId);
+                      TestCustomerFactory.createActiveCustomer(
+                          "Customer " + nameSuffix, nameSuffix + "@test.com", memberId);
                   customer = customerRepository.save(customer);
                   UUID cid = customer.getId();
 
@@ -348,8 +343,8 @@ class RetainerConsumptionListenerTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var customer =
-                      new Customer(
-                          "NoRetainer Corp", "noretainer@test.com", null, null, null, memberId);
+                      TestCustomerFactory.createActiveCustomer(
+                          "NoRetainer Corp", "noretainer@test.com", memberId);
                   customer = customerRepository.save(customer);
                   UUID cid = customer.getId();
 
@@ -491,7 +486,8 @@ class RetainerConsumptionListenerTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var customer =
-                      new Customer("FixedFee 124A", "ff124a@test.com", null, null, null, memberId);
+                      TestCustomerFactory.createActiveCustomer(
+                          "FixedFee 124A", "ff124a@test.com", memberId);
                   customer = customerRepository.save(customer);
                   UUID cid = customer.getId();
 

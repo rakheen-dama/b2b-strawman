@@ -143,6 +143,18 @@ class PortalEventPublicationTest {
             .andReturn();
     var customerId = extractIdFromLocation(customerResult);
 
+    // Transition to ACTIVE so the lifecycle guard permits linking
+    mockMvc
+        .perform(
+            post("/api/customers/" + customerId + "/transition")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"targetStatus": "ACTIVE"}
+                    """))
+        .andExpect(status().isOk());
+
     events.clear();
 
     mockMvc

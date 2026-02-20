@@ -492,8 +492,16 @@ class BillingRateControllerTest {
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
   }
 
-  /** No-op: customers now default to ACTIVE lifecycle status. */
   private void transitionCustomerToActive(String customerId) throws Exception {
-    // Customers default to ACTIVE — no transition needed
+    mockMvc
+        .perform(
+            post("/api/customers/" + customerId + "/transition")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"targetStatus": "ACTIVE"}
+                    """))
+        .andExpect(status().isOk());
   }
 }

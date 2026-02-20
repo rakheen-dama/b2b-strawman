@@ -363,6 +363,18 @@ class CustomerProjectIntegrationTest {
             .andReturn();
     var customerIdA = extractIdFromLocation(customerResultA);
 
+    // Transition to ACTIVE so lifecycle guard permits linking
+    mockMvc
+        .perform(
+            post("/api/customers/" + customerIdA + "/transition")
+                .with(starterAOwnerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"targetStatus": "ACTIVE"}
+                    """))
+        .andExpect(status().isOk());
+
     // Link in Starter A
     mockMvc
         .perform(
@@ -415,6 +427,18 @@ class CustomerProjectIntegrationTest {
             .andReturn();
     var customerIdB = extractIdFromLocation(customerResultB);
 
+    // Transition to ACTIVE so lifecycle guard doesn't interfere with isolation test
+    mockMvc
+        .perform(
+            post("/api/customers/" + customerIdB + "/transition")
+                .with(starterBOwnerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"targetStatus": "ACTIVE"}
+                    """))
+        .andExpect(status().isOk());
+
     // Starter B cannot link their customer to Starter A's project (project not visible)
     mockMvc
         .perform(
@@ -439,7 +463,22 @@ class CustomerProjectIntegrationTest {
                             .formatted(name, email)))
             .andExpect(status().isCreated())
             .andReturn();
-    return extractIdFromLocation(result);
+    var customerId = extractIdFromLocation(result);
+    transitionCustomerToActive(customerId);
+    return customerId;
+  }
+
+  private void transitionCustomerToActive(String customerId) throws Exception {
+    mockMvc
+        .perform(
+            post("/api/customers/" + customerId + "/transition")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"targetStatus": "ACTIVE"}
+                    """))
+        .andExpect(status().isOk());
   }
 
   private String extractIdFromLocation(MvcResult result) {

@@ -103,7 +103,19 @@ class RetainerPeriodControllerTest {
                     .content("{\"name\":\"%s\",\"email\":\"%s\"}".formatted(name, email)))
             .andExpect(status().isCreated())
             .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
+    String id = JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
+    transitionCustomerToActive(id);
+    return id;
+  }
+
+  private void transitionCustomerToActive(String custId) throws Exception {
+    mockMvc
+        .perform(
+            post("/api/customers/" + custId + "/transition")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"targetStatus\": \"ACTIVE\"}"))
+        .andExpect(status().isOk());
   }
 
   private String createRetainer(

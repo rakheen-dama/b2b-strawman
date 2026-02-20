@@ -18,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.CreateRetainerRequest;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.UpdateRetainerRequest;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -82,7 +83,7 @@ class RetainerAgreementServiceTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  var customer = new Customer(name, email, null, null, null, memberId);
+                  var customer = TestCustomerFactory.createActiveCustomer(name, email, memberId);
                   customer = customerRepository.save(customer);
                   ref.set(customer.getId());
                 }));

@@ -91,7 +91,7 @@ public class Customer {
     this.createdAt = Instant.now();
     this.updatedAt = Instant.now();
     this.customerType = CustomerType.INDIVIDUAL;
-    this.lifecycleStatus = LifecycleStatus.ACTIVE;
+    this.lifecycleStatus = LifecycleStatus.PROSPECT;
   }
 
   public Customer(
@@ -116,7 +116,7 @@ public class Customer {
       CustomerType customerType,
       LifecycleStatus lifecycleStatus) {
     this(name, email, phone, idNumber, notes, createdBy, customerType);
-    this.lifecycleStatus = lifecycleStatus != null ? lifecycleStatus : LifecycleStatus.ACTIVE;
+    this.lifecycleStatus = lifecycleStatus != null ? lifecycleStatus : LifecycleStatus.PROSPECT;
   }
 
   public void update(String name, String email, String phone, String idNumber, String notes) {

@@ -1,10 +1,13 @@
 import { auth } from "@clerk/nextjs/server";
 import { FileText, Plus } from "lucide-react";
 import Link from "next/link";
+import { api } from "@/lib/api";
 import { fetchRetainers } from "@/lib/api/retainers";
 import type { RetainerResponse, RetainerStatus } from "@/lib/api/retainers";
+import type { Customer } from "@/lib/types";
 import { RetainerSummaryCards } from "@/components/retainers/retainer-summary-cards";
 import { RetainerList } from "@/components/retainers/retainer-list";
+import { CreateRetainerDialog } from "@/components/retainers/create-retainer-dialog";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
 
@@ -57,15 +60,27 @@ export default async function RetainersPage({
     );
   }
 
-  let retainers: RetainerResponse[] = [];
-  try {
-    retainers = await fetchRetainers({
+  const [retainersResult, customersResult] = await Promise.allSettled([
+    fetchRetainers({
       status: search.status as RetainerStatus | undefined,
       customerId: search.customerId,
-    });
-  } catch {
-    // Non-fatal: show empty state
-  }
+    }),
+    api.get<Customer[]>("/api/customers"),
+  ]);
+
+  const retainers: RetainerResponse[] =
+    retainersResult.status === "fulfilled" ? retainersResult.value : [];
+
+  const customers: Array<{ id: string; name: string; email: string }> =
+    customersResult.status === "fulfilled"
+      ? customersResult.value
+          .filter(
+            (c) =>
+              c.lifecycleStatus !== "OFFBOARDED" &&
+              c.lifecycleStatus !== "PROSPECT",
+          )
+          .map((c) => ({ id: c.id, name: c.name, email: c.email }))
+      : [];
 
   const summary = computeSummary(retainers);
 
@@ -82,10 +97,12 @@ export default async function RetainersPage({
             </span>
           )}
         </div>
-        <Button disabled title="Coming in next update">
-          <Plus className="mr-2 size-4" />
-          New Retainer
-        </Button>
+        <CreateRetainerDialog slug={slug} customers={customers}>
+          <Button>
+            <Plus className="mr-2 size-4" />
+            New Retainer
+          </Button>
+        </CreateRetainerDialog>
       </div>
 
       {/* Summary Cards */}

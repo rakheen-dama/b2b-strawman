@@ -16,14 +16,8 @@ export type RetainerFrequency =
 export type RolloverPolicy = "FORFEIT" | "CARRY_FORWARD" | "CARRY_CAPPED";
 export type PeriodStatus = "OPEN" | "CLOSED";
 
-export const FREQUENCY_LABELS: Record<RetainerFrequency, string> = {
-  WEEKLY: "Weekly",
-  FORTNIGHTLY: "Fortnightly",
-  MONTHLY: "Monthly",
-  QUARTERLY: "Quarterly",
-  SEMI_ANNUALLY: "Semi-annually",
-  ANNUALLY: "Annually",
-};
+// Re-export shared constants so server-side consumers don't need a separate import
+export { FREQUENCY_LABELS } from "@/lib/retainer-constants";
 
 // ---- Response Interfaces ----
 

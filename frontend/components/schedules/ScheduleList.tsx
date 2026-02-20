@@ -43,6 +43,8 @@ export function ScheduleList({ slug, schedules }: ScheduleListProps) {
   const [actionInProgress, setActionInProgress] = useState<string | null>(null);
   const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [pauseDialogId, setPauseDialogId] = useState<string | null>(null);
+  const [isPausingId, setIsPausingId] = useState<string | null>(null);
 
   const filtered =
     activeTab === "ALL"
@@ -50,15 +52,17 @@ export function ScheduleList({ slug, schedules }: ScheduleListProps) {
       : schedules.filter((s) => s.status === activeTab);
 
   async function handlePause(id: string) {
-    if (actionInProgress) return;
-    setActionInProgress(id);
+    setIsPausingId(id);
     try {
       const result = await pauseScheduleAction(slug, id);
       if (!result.success && result.error) {
         setErrorMessages((prev) => ({ ...prev, [id]: result.error! }));
       }
+      setPauseDialogId(null);
+    } catch {
+      setErrorMessages((prev) => ({ ...prev, [id]: "An unexpected error occurred." }));
     } finally {
-      setActionInProgress(null);
+      setIsPausingId(null);
     }
   }
 
@@ -175,9 +179,12 @@ export function ScheduleList({ slug, schedules }: ScheduleListProps) {
                   className="border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/50"
                 >
                   <td className="px-4 py-3">
-                    <p className="font-medium text-slate-900 dark:text-slate-100">
+                    <Link
+                      href={`/org/${slug}/schedules/${schedule.id}`}
+                      className="font-medium text-slate-900 hover:text-teal-600 dark:text-slate-100 dark:hover:text-teal-400"
+                    >
                       {schedule.templateName}
-                    </p>
+                    </Link>
                     {schedule.nameOverride && (
                       <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                         {schedule.nameOverride}
@@ -221,16 +228,43 @@ export function ScheduleList({ slug, schedules }: ScheduleListProps) {
                       </Link>
 
                       {schedule.status === "ACTIVE" && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          title="Pause schedule"
-                          onClick={() => handlePause(schedule.id)}
-                          disabled={actionInProgress === schedule.id}
-                        >
-                          <Pause className="size-4" />
-                          <span className="sr-only">Pause {schedule.templateName}</span>
-                        </Button>
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            title="Pause schedule"
+                            onClick={() => setPauseDialogId(schedule.id)}
+                            disabled={isPausingId === schedule.id}
+                          >
+                            <Pause className="size-4" />
+                            <span className="sr-only">Pause {schedule.templateName}</span>
+                          </Button>
+                          <AlertDialog
+                            open={pauseDialogId === schedule.id}
+                            onOpenChange={(open) => {
+                              if (!open && isPausingId !== schedule.id) setPauseDialogId(null);
+                            }}
+                          >
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Pause Schedule</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Pausing this schedule will stop automatic project creation. You
+                                  can resume it at any time.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel disabled={isPausingId === schedule.id}>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handlePause(schedule.id)}
+                                  disabled={isPausingId === schedule.id}
+                                >
+                                  {isPausingId === schedule.id ? "Pausing..." : "Pause Schedule"}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </>
                       )}
 
                       {schedule.status === "PAUSED" && (

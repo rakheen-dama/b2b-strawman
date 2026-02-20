@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ScheduleList } from "@/components/schedules/ScheduleList";
 import type { ScheduleResponse } from "@/lib/api/schedules";
@@ -118,6 +118,46 @@ describe("ScheduleList", () => {
   it("does not show Delete button for ACTIVE schedule", () => {
     render(<ScheduleList slug="acme" schedules={[ACTIVE_SCHEDULE]} />);
     expect(screen.queryByTitle("Delete schedule")).not.toBeInTheDocument();
+  });
+
+  it("shows pause confirmation dialog when Pause button clicked", async () => {
+    const user = userEvent.setup();
+    render(<ScheduleList slug="acme" schedules={[ACTIVE_SCHEDULE]} />);
+    await user.click(screen.getByTitle("Pause schedule"));
+    expect(
+      screen.getByText(/Pausing this schedule will stop automatic project creation/),
+    ).toBeInTheDocument();
+  });
+
+  it("confirming pause calls pauseScheduleAction", async () => {
+    mockPauseSchedule.mockResolvedValue({ success: true });
+    const user = userEvent.setup();
+    render(<ScheduleList slug="acme" schedules={[ACTIVE_SCHEDULE]} />);
+    await user.click(screen.getByTitle("Pause schedule"));
+    await user.click(screen.getByRole("button", { name: "Pause Schedule" }));
+    await waitFor(() => {
+      expect(mockPauseSchedule).toHaveBeenCalledWith("acme", "sch-1");
+    });
+  });
+
+  it("shows delete confirmation dialog when Delete button clicked on paused schedule", async () => {
+    const user = userEvent.setup();
+    render(<ScheduleList slug="acme" schedules={ALL_SCHEDULES} />);
+    await user.click(screen.getByRole("button", { name: "Paused" }));
+    await user.click(screen.getByTitle("Delete schedule"));
+    expect(screen.getByText("Delete Schedule")).toBeInTheDocument();
+  });
+
+  it("confirming delete calls deleteScheduleAction", async () => {
+    mockDeleteSchedule.mockResolvedValue({ success: true });
+    const user = userEvent.setup();
+    render(<ScheduleList slug="acme" schedules={ALL_SCHEDULES} />);
+    await user.click(screen.getByRole("button", { name: "Paused" }));
+    await user.click(screen.getByTitle("Delete schedule"));
+    await user.click(screen.getByText("Delete"));
+    await waitFor(() => {
+      expect(mockDeleteSchedule).toHaveBeenCalledWith("acme", "sch-2");
+    });
   });
 
   it("filters to only ACTIVE schedules on Active tab and shows all on All tab", async () => {

@@ -4,6 +4,7 @@ import { ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import {
   createSchedule,
+  updateSchedule,
   deleteSchedule,
   pauseSchedule,
   resumeSchedule,
@@ -11,6 +12,7 @@ import {
 import type {
   ScheduleResponse,
   CreateScheduleRequest,
+  UpdateScheduleRequest,
 } from "@/lib/api/schedules";
 
 interface ActionResult {
@@ -41,6 +43,30 @@ export async function createScheduleAction(
   }
 }
 
+export async function updateScheduleAction(
+  slug: string,
+  id: string,
+  data: UpdateScheduleRequest,
+): Promise<ActionResult> {
+  try {
+    const updated = await updateSchedule(id, data);
+    revalidatePath(`/org/${slug}/schedules`);
+    revalidatePath(`/org/${slug}/schedules/${id}`);
+    return { success: true, data: updated };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 403) {
+        return { success: false, error: "You do not have permission to update schedules." };
+      }
+      if (error.status === 400) {
+        return { success: false, error: error.message || "Invalid schedule data." };
+      }
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+}
+
 export async function deleteScheduleAction(
   slug: string,
   id: string,
@@ -48,6 +74,7 @@ export async function deleteScheduleAction(
   try {
     await deleteSchedule(id);
     revalidatePath(`/org/${slug}/schedules`);
+    revalidatePath(`/org/${slug}/schedules/${id}`);
     return { success: true };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -70,6 +97,7 @@ export async function pauseScheduleAction(
   try {
     const data = await pauseSchedule(id);
     revalidatePath(`/org/${slug}/schedules`);
+    revalidatePath(`/org/${slug}/schedules/${id}`);
     return { success: true, data };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -92,6 +120,7 @@ export async function resumeScheduleAction(
   try {
     const data = await resumeSchedule(id);
     revalidatePath(`/org/${slug}/schedules`);
+    revalidatePath(`/org/${slug}/schedules/${id}`);
     return { success: true, data };
   } catch (error) {
     if (error instanceof ApiError) {

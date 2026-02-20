@@ -112,7 +112,17 @@ public class TaskService {
       UUID createdBy,
       String orgRole) {
     return createTask(
-        projectId, title, description, priority, type, dueDate, createdBy, orgRole, null, null);
+        projectId,
+        title,
+        description,
+        priority,
+        type,
+        dueDate,
+        createdBy,
+        orgRole,
+        null,
+        null,
+        null);
   }
 
   @Transactional
@@ -126,7 +136,8 @@ public class TaskService {
       UUID createdBy,
       String orgRole,
       Map<String, Object> customFields,
-      List<UUID> appliedFieldGroups) {
+      List<UUID> appliedFieldGroups,
+      UUID assigneeId) {
     // Any project member can create tasks; view access is sufficient
     projectAccessService.requireViewAccess(projectId, createdBy, orgRole);
 
@@ -143,14 +154,32 @@ public class TaskService {
       task.setAppliedFieldGroups(appliedFieldGroups);
     }
     task = taskRepository.save(task);
+
+    // Pre-assign at creation (admin/owner only; silently ignore for regular members)
+    boolean isAdminOrOwner = "admin".equals(orgRole) || "owner".equals(orgRole);
+    if (assigneeId != null && isAdminOrOwner) {
+      if (!projectMemberRepository.existsByProjectIdAndMemberId(projectId, assigneeId)) {
+        throw new ResourceNotFoundException("ProjectMember", assigneeId);
+      }
+      task.claim(assigneeId);
+      task = taskRepository.save(task);
+    }
+
     log.info("Created task {} in project {}", task.getId(), projectId);
+
+    var auditDetails = new LinkedHashMap<String, Object>();
+    auditDetails.put("title", task.getTitle());
+    auditDetails.put("project_id", projectId.toString());
+    if (task.getAssigneeId() != null) {
+      auditDetails.put("assignee_id", task.getAssigneeId().toString());
+    }
 
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("task.created")
             .entityType("task")
             .entityId(task.getId())
-            .details(Map.of("title", task.getTitle(), "project_id", projectId.toString()))
+            .details(auditDetails)
             .build());
 
     return task;

@@ -9,6 +9,11 @@ vi.mock("@/app/(app)/org/[slug]/projects/[id]/task-actions", () => ({
   createTask: (...args: unknown[]) => mockCreateTask(...args),
 }));
 
+const TEST_MEMBERS = [
+  { id: "m1", name: "Alice Smith", email: "alice@example.com" },
+  { id: "m2", name: "Bob Jones", email: "bob@example.com" },
+];
+
 describe("CreateTaskDialog", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -22,7 +27,7 @@ describe("CreateTaskDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <CreateTaskDialog slug="acme" projectId="p1">
+      <CreateTaskDialog slug="acme" projectId="p1" members={[]} canManage={false}>
         <button>Open Create Task Dialog</button>
       </CreateTaskDialog>,
     );
@@ -39,7 +44,7 @@ describe("CreateTaskDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <CreateTaskDialog slug="acme" projectId="p1">
+      <CreateTaskDialog slug="acme" projectId="p1" members={[]} canManage={false}>
         <button>Open Create Task Dialog</button>
       </CreateTaskDialog>,
     );
@@ -50,7 +55,7 @@ describe("CreateTaskDialog", () => {
     await user.click(screen.getByRole("button", { name: "Create Task" }));
 
     await waitFor(() => {
-      expect(mockCreateTask).toHaveBeenCalledWith("acme", "p1", expect.any(FormData));
+      expect(mockCreateTask).toHaveBeenCalledWith("acme", "p1", expect.any(FormData), null);
     });
   });
 
@@ -59,7 +64,7 @@ describe("CreateTaskDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <CreateTaskDialog slug="acme" projectId="p1">
+      <CreateTaskDialog slug="acme" projectId="p1" members={[]} canManage={false}>
         <button>Open Create Task Dialog</button>
       </CreateTaskDialog>,
     );
@@ -71,5 +76,35 @@ describe("CreateTaskDialog", () => {
     await waitFor(() => {
       expect(screen.getByText("Server error")).toBeInTheDocument();
     });
+  });
+
+  it("hides AssigneeSelector when canManage is false", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <CreateTaskDialog slug="acme" projectId="p1" members={TEST_MEMBERS} canManage={false}>
+        <button>Open Create Task Dialog No Manage</button>
+      </CreateTaskDialog>,
+    );
+
+    await user.click(screen.getByText("Open Create Task Dialog No Manage"));
+
+    expect(screen.queryByText("Assign to")).not.toBeInTheDocument();
+  });
+
+  it("shows AssigneeSelector when canManage is true and members provided", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <CreateTaskDialog slug="acme" projectId="p1" members={TEST_MEMBERS} canManage={true}>
+        <button>Open Create Task Dialog With Manage</button>
+      </CreateTaskDialog>,
+    );
+
+    await user.click(screen.getByText("Open Create Task Dialog With Manage"));
+
+    expect(screen.getByText("Assign to")).toBeInTheDocument();
+    // The AssigneeSelector renders a combobox button with "Unassigned" text
+    expect(screen.getByText("Unassigned")).toBeInTheDocument();
   });
 });

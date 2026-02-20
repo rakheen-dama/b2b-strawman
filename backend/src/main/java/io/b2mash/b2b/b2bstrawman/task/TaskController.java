@@ -77,7 +77,8 @@ public class TaskController {
             createdBy,
             orgRole,
             request.customFields(),
-            request.appliedFieldGroups());
+            request.appliedFieldGroups(),
+            request.assigneeId());
 
     var names = resolveNames(List.of(task));
     return ResponseEntity.created(URI.create("/api/tasks/" + task.getId()))
@@ -329,7 +330,8 @@ public class TaskController {
       @Size(max = 100, message = "type must be at most 100 characters") String type,
       LocalDate dueDate,
       Map<String, Object> customFields,
-      List<UUID> appliedFieldGroups) {}
+      List<UUID> appliedFieldGroups,
+      UUID assigneeId) {}
 
   public record UpdateTaskRequest(
       @NotBlank(message = "title is required")

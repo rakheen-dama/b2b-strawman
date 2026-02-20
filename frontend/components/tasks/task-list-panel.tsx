@@ -83,6 +83,7 @@ interface TaskListPanelProps {
   currentMemberId: string | null;
   orgRole?: string | null;
   retainerSummary?: RetainerSummaryResponse | null;
+  members?: { id: string; name: string; email: string }[];
 }
 
 export function TaskListPanel({
@@ -93,6 +94,7 @@ export function TaskListPanel({
   currentMemberId,
   orgRole,
   retainerSummary,
+  members = [],
 }: TaskListPanelProps) {
   const router = useRouter();
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
@@ -268,7 +270,7 @@ export function TaskListPanel({
         {tasks.length > 0 && <Badge variant="neutral">{tasks.length}</Badge>}
       </div>
       {canManage && (
-        <CreateTaskDialog slug={slug} projectId={projectId}>
+        <CreateTaskDialog slug={slug} projectId={projectId} members={members} canManage={canManage}>
           <Button size="sm" variant="outline">
             <Plus className="mr-1.5 size-4" />
             New Task

@@ -28,7 +28,7 @@ Four new entities (`ProjectTemplate`, `TemplateTask`, `RecurringSchedule`, `Sche
 | 118 | Schedule CRUD & Lifecycle | Backend | 115 | M | 118A, 118B | **Done** (PRs #240, #241) |
 | 119 | Scheduler Execution Engine | Backend | 117, 118 | M | 119A | **Done** (PR #242) |
 | 120 | Template Management UI | Frontend | 116, 117 | M | 120A, 120B | **Done** (PRs #243, #244) |
-| 121 | Schedule Management UI | Frontend | 118, 119 | M | 121A, 121B | |
+| 121 | Schedule Management UI | Frontend | 118, 119 | M | 121A, 121B | **Done** (PRs #245, #246) |
 
 ---
 
@@ -104,7 +104,7 @@ Four new entities (`ProjectTemplate`, `TemplateTask`, `RecurringSchedule`, `Sche
 | 4a | Epic 120 | 120A | Template list page, template editor page, API client. Settings nav update. ~14 tests. | **Done** (PR #243) |
 | 4b | Epic 120 | 120B | SaveAsTemplateDialog, NewFromTemplateDialog, TemplatePicker. Project page integrations. ~16 tests. | **Done** (PR #244) |
 | 4c | Epic 121 | 121A | Schedule list page, create dialog, API client. Sidebar nav update. ~15 tests. Parallel with 120. | **Done** (PR #245) |
-| 4d | Epic 121 | 121B | Schedule detail page, edit dialog, execution history, pause/resume/delete actions. ~12 tests. |
+| 4d | Epic 121 | 121B | Schedule detail page, edit dialog, execution history, pause/resume/delete actions. ~12 tests. | **Done** (PR #246) |
 
 ### Timeline
 
@@ -575,7 +575,7 @@ Stage 4:  [120A] --> [120B]  //  [121A] --> [121B]   (parallel frontend tracks a
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **121A** | 121.1–121.10 | API client (`lib/api/schedules.ts`), `ScheduleList` component with status tabs, schedule list page, `ScheduleCreateDialog`, sidebar nav update. ~15 tests. | **Done** (PR #245) |
-| **121B** | 121.11–121.19 | Schedule detail page, `ScheduleEditDialog`, `ExecutionHistory` component, pause/resume confirmation dialogs, delete action. ~12 tests. | |
+| **121B** | 121.11–121.19 | Schedule detail page, `ScheduleEditDialog`, `ExecutionHistory` component, pause/resume confirmation dialogs, delete action. ~12 tests. | **Done** (PR #246) |
 
 ### Tasks
 

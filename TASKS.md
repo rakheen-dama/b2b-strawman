@@ -142,7 +142,7 @@
 | 118 | Schedule CRUD & Lifecycle | Backend | 115 | M | 118A, 118B | **Done** (PRs #240, #241) |
 | 119 | Scheduler Execution Engine | Backend | 117, 118 | M | 119A | **Done** (PR #242) |
 | 120 | Template Management UI | Frontend | 116, 117 | M | 120A, 120B | **Done** (PRs #243, #244) |
-| 121 | Schedule Management UI | Frontend | 118, 119 | M | 121A, 121B | 121A **Done** (PR #245) |
+| 121 | Schedule Management UI | Frontend | 118, 119 | M | 121A, 121B | **Done** (PRs #245, #246) |
 
 ---
 

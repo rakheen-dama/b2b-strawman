@@ -443,7 +443,7 @@ class DataAnonymizationServiceTest {
                   projectId,
                   memberId,
                   "Shared comment — should be redacted",
-                  "EXTERNAL");
+                  "SHARED");
           sharedComment = commentRepository.save(sharedComment);
 
           var internalComment =

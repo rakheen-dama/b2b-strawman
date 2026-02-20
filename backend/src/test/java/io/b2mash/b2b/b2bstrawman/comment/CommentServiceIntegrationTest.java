@@ -232,12 +232,12 @@ class CommentServiceIntegrationTest {
                       "entityType": "TASK",
                       "entityId": "%s",
                       "body": "External comment by lead",
-                      "visibility": "EXTERNAL"
+                      "visibility": "SHARED"
                     }
                     """
                         .formatted(taskId)))
         .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.visibility").value("EXTERNAL"));
+        .andExpect(jsonPath("$.visibility").value("SHARED"));
   }
 
   @Test
@@ -253,7 +253,7 @@ class CommentServiceIntegrationTest {
                       "entityType": "TASK",
                       "entityId": "%s",
                       "body": "Should fail as external",
-                      "visibility": "EXTERNAL"
+                      "visibility": "SHARED"
                     }
                     """
                         .formatted(taskId)))
@@ -326,7 +326,7 @@ class CommentServiceIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"body": "Internal comment for vis test", "visibility": "EXTERNAL"}
+                    {"body": "Internal comment for vis test", "visibility": "SHARED"}
                     """))
         .andExpect(status().isForbidden());
   }

@@ -27,7 +27,7 @@ Four new entities (`ProjectTemplate`, `TemplateTask`, `RecurringSchedule`, `Sche
 | 117 | Template Instantiation | Backend | 116 | S | 117A | **Done** (PR #239) |
 | 118 | Schedule CRUD & Lifecycle | Backend | 115 | M | 118A, 118B | **Done** (PRs #240, #241) |
 | 119 | Scheduler Execution Engine | Backend | 117, 118 | M | 119A | **Done** (PR #242) |
-| 120 | Template Management UI | Frontend | 116, 117 | M | 120A, 120B | 120A **Done** (PR #243) |
+| 120 | Template Management UI | Frontend | 116, 117 | M | 120A, 120B | **Done** (PRs #243, #244) |
 | 121 | Schedule Management UI | Frontend | 118, 119 | M | 121A, 121B | |
 
 ---
@@ -102,7 +102,7 @@ Four new entities (`ProjectTemplate`, `TemplateTask`, `RecurringSchedule`, `Sche
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 4a | Epic 120 | 120A | Template list page, template editor page, API client. Settings nav update. ~14 tests. | **Done** (PR #243) |
-| 4b | Epic 120 | 120B | SaveAsTemplateDialog, NewFromTemplateDialog, TemplatePicker. Project page integrations. ~16 tests. |
+| 4b | Epic 120 | 120B | SaveAsTemplateDialog, NewFromTemplateDialog, TemplatePicker. Project page integrations. ~16 tests. | **Done** (PR #244) |
 | 4c | Epic 121 | 121A | Schedule list page, create dialog, API client. Sidebar nav update. ~15 tests. Parallel with 120. |
 | 4d | Epic 121 | 121B | Schedule detail page, edit dialog, execution history, pause/resume/delete actions. ~12 tests. |
 
@@ -485,7 +485,7 @@ Stage 4:  [120A] --> [120B]  //  [121A] --> [121B]   (parallel frontend tracks a
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **120A** | 120.1–120.10 | API client (`lib/api/templates.ts`), `TemplateList` component, template list settings page, `TemplateEditor` component, template editor page, settings nav update. ~14 tests. | **Done** (PR #243) |
-| **120B** | 120.11–120.20 | `SaveAsTemplateDialog`, `NewFromTemplateDialog`, `TemplatePicker` shared component, `NameTokenResolver` (frontend utility), project page integrations ("New from Template" button, "Save as Template" action). ~16 tests. | |
+| **120B** | 120.11–120.20 | `SaveAsTemplateDialog`, `NewFromTemplateDialog`, `TemplatePicker` shared component, `NameTokenResolver` (frontend utility), project page integrations ("New from Template" button, "Save as Template" action). ~16 tests. | **Done** (PR #244) |
 
 ### Tasks
 

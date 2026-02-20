@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.retainer;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -136,6 +137,7 @@ class RetainerAgreementControllerTest {
   @Test
   @Order(3)
   void getRetainer_asMember_returns200WithPeriodData() throws Exception {
+    assertNotNull(retainerId, "retainerId must be set by Order 1");
     mockMvc
         .perform(get("/api/retainers/" + retainerId).with(memberJwt()))
         .andExpect(status().isOk())
@@ -167,6 +169,7 @@ class RetainerAgreementControllerTest {
   @Test
   @Order(6)
   void updateRetainer_asOwner_returns200WithUpdatedFields() throws Exception {
+    assertNotNull(retainerId, "retainerId must be set by Order 1");
     mockMvc
         .perform(
             put("/api/retainers/" + retainerId)
@@ -192,6 +195,7 @@ class RetainerAgreementControllerTest {
   @Test
   @Order(7)
   void pauseRetainer_activeRetainer_returns200WithPausedStatus() throws Exception {
+    assertNotNull(retainerId, "retainerId must be set by Order 1");
     mockMvc
         .perform(post("/api/retainers/" + retainerId + "/pause").with(ownerJwt()))
         .andExpect(status().isOk())
@@ -201,6 +205,7 @@ class RetainerAgreementControllerTest {
   @Test
   @Order(8)
   void pauseRetainer_alreadyPaused_returns400() throws Exception {
+    assertNotNull(retainerId, "retainerId must be set by Order 1");
     mockMvc
         .perform(post("/api/retainers/" + retainerId + "/pause").with(ownerJwt()))
         .andExpect(status().isBadRequest());
@@ -209,6 +214,7 @@ class RetainerAgreementControllerTest {
   @Test
   @Order(9)
   void resumeRetainer_pausedRetainer_returns200WithActiveStatus() throws Exception {
+    assertNotNull(retainerId, "retainerId must be set by Order 1");
     mockMvc
         .perform(post("/api/retainers/" + retainerId + "/resume").with(ownerJwt()))
         .andExpect(status().isOk())
@@ -218,6 +224,7 @@ class RetainerAgreementControllerTest {
   @Test
   @Order(10)
   void terminateRetainer_returns200WithTerminatedStatus() throws Exception {
+    assertNotNull(retainerId, "retainerId must be set by Order 1");
     mockMvc
         .perform(post("/api/retainers/" + retainerId + "/terminate").with(ownerJwt()))
         .andExpect(status().isOk())
@@ -259,11 +266,59 @@ class RetainerAgreementControllerTest {
 
   @Test
   @Order(13)
-  void getRetainer_asMember_returns200() throws Exception {
+  void listRetainers_asAdmin_returns200() throws Exception {
     mockMvc
-        .perform(get("/api/retainers/" + retainerId).with(memberJwt()))
+        .perform(get("/api/retainers").with(adminJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(retainerId));
+        .andExpect(jsonPath("$").isArray());
+  }
+
+  @Test
+  @Order(14)
+  void updateRetainer_asMember_returns403() throws Exception {
+    var dummyId = UUID.randomUUID();
+    mockMvc
+        .perform(
+            put("/api/retainers/" + dummyId)
+                .with(memberJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "name": "Should Not Work",
+                      "allocatedHours": 10.00,
+                      "periodFee": 5000.00,
+                      "rolloverPolicy": "FORFEIT"
+                    }
+                    """))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  @Order(15)
+  void pauseRetainer_asMember_returns403() throws Exception {
+    var dummyId = UUID.randomUUID();
+    mockMvc
+        .perform(post("/api/retainers/" + dummyId + "/pause").with(memberJwt()))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  @Order(16)
+  void resumeRetainer_asMember_returns403() throws Exception {
+    var dummyId = UUID.randomUUID();
+    mockMvc
+        .perform(post("/api/retainers/" + dummyId + "/resume").with(memberJwt()))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  @Order(17)
+  void terminateRetainer_asMember_returns403() throws Exception {
+    var dummyId = UUID.randomUUID();
+    mockMvc
+        .perform(post("/api/retainers/" + dummyId + "/terminate").with(memberJwt()))
+        .andExpect(status().isForbidden());
   }
 
   // --- Helpers ---

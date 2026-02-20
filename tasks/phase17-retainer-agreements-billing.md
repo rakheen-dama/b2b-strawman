@@ -93,7 +93,7 @@ Phase 17 adds a **retainer management layer** to the DocTeams platform -- per-cu
 |-------|------|-------|-----------|
 | 2a | Epic 123 | 123A | `RetainerAgreementService` -- create (with first period), update, lifecycle transitions. DTOs. Audit events. ~12 service tests. | **Done** (PR #249) |
 | 2b | Epic 123 | 123B | `RetainerAgreementController` -- 7 REST endpoints, permission checks, SecurityConfig. ~12 controller tests. | **Done** (PR #250) |
-| 2c | Epic 124 | 124A | `TimeEntryChangedEvent`, `RetainerConsumptionListener`, consumption query, threshold logic. Modify `TimeEntryService`. ~10 integration tests. |
+| 2c | Epic 124 | 124A | `TimeEntryChangedEvent`, `RetainerConsumptionListener`, consumption query, threshold logic. Modify `TimeEntryService`. ~10 integration tests. | **Done** (PR #251) |
 | 2d | Epic 124 | 124B | `RetainerSummaryController` + `RetainerSummaryResponse`. Customer retainer summary endpoint. ~5 controller tests. |
 
 ### Stage 3: Period Close (Sequential)
@@ -293,7 +293,7 @@ Stage 4:  [126A] --> [126B]  //  [127A] --> [127B]  //  [128A]  //  [128B]
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **124A** | 124.1--124.8 | `TimeEntryChangedEvent` domain event. Modify `TimeEntryService` to publish event on create/update/delete. `RetainerConsumptionListener` with consumption query, threshold notifications. Integration tests. ~10 tests. | |
+| **124A** | 124.1--124.8 | `TimeEntryChangedEvent` domain event. Modify `TimeEntryService` to publish event on create/update/delete. `RetainerConsumptionListener` with consumption query, threshold notifications. Integration tests. ~10 tests. | **Done** (PR #251) |
 | **124B** | 124.9--124.13 | `RetainerSummaryController` + `RetainerSummaryResponse` DTO. Customer retainer summary endpoint (`GET /api/customers/{customerId}/retainer-summary`). Controller integration tests. ~5 tests. | |
 
 ### Tasks

@@ -146,7 +146,7 @@
 | **Phase 17 — Retainer Agreements & Billing** | | | | | | See [tasks/phase17-retainer-agreements-billing.md](tasks/phase17-retainer-agreements-billing.md) |
 | 122 | Entity Foundation & Migration | Backend | -- | M | 122A, 122B | **Done** (PRs #247, #248) |
 | 123 | Retainer CRUD & Lifecycle | Backend | 122 | M | 123A, 123B | **Done** (PRs #249, #250) |
-| 124 | Consumption Tracking & Summary | Backend | 123 | M | 124A, 124B | |
+| 124 | Consumption Tracking & Summary | Backend | 123 | M | 124A, 124B | 124A **Done** (PR #251) |
 | 125 | Period Close & Invoice Generation | Backend | 124 | L | 125A, 125B | |
 | 126 | Retainer Dashboard & Create UI | Frontend | 123, 124, 125 | M | 126A, 126B | |
 | 127 | Customer Retainer Tab & Detail Page | Frontend | 126 | M | 127A, 127B | |

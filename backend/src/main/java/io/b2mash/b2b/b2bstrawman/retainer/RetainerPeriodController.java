@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.retainer;
 
-import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.PeriodCloseResult;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.PeriodSummary;
@@ -21,12 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class RetainerPeriodController {
 
   private final RetainerPeriodService retainerPeriodService;
-  private final InvoiceLineRepository invoiceLineRepository;
 
-  public RetainerPeriodController(
-      RetainerPeriodService retainerPeriodService, InvoiceLineRepository invoiceLineRepository) {
+  public RetainerPeriodController(RetainerPeriodService retainerPeriodService) {
     this.retainerPeriodService = retainerPeriodService;
-    this.invoiceLineRepository = invoiceLineRepository;
   }
 
   @GetMapping("/{id}/periods")
@@ -49,8 +45,6 @@ public class RetainerPeriodController {
   public ResponseEntity<PeriodCloseResult> closePeriod(@PathVariable UUID id) {
     UUID memberId = RequestScopes.requireMemberId();
     var result = retainerPeriodService.closePeriod(id, memberId);
-    var lines =
-        invoiceLineRepository.findByInvoiceIdOrderBySortOrder(result.generatedInvoice().getId());
-    return ResponseEntity.ok(PeriodCloseResult.from(result, lines));
+    return ResponseEntity.ok(PeriodCloseResult.from(result));
   }
 }

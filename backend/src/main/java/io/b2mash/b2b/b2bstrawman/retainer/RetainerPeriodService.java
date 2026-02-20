@@ -14,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
+import io.b2mash.b2b.b2bstrawman.retainer.dto.PeriodReadyToCloseView;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.math.BigDecimal;
@@ -73,7 +74,10 @@ public class RetainerPeriodService {
   }
 
   public record PeriodCloseResult(
-      RetainerPeriod closedPeriod, Invoice generatedInvoice, RetainerPeriod nextPeriod) {}
+      RetainerPeriod closedPeriod,
+      Invoice generatedInvoice,
+      List<InvoiceLine> invoiceLines,
+      RetainerPeriod nextPeriod) {}
 
   private record ResolvedOverageRate(BigDecimal hourlyRate, String currency) {}
 
@@ -329,7 +333,8 @@ public class RetainerPeriodService {
         overageHours,
         rolloverHoursOut);
 
-    return new PeriodCloseResult(period, invoice, nextPeriod);
+    var invoiceLines = invoiceLineRepository.findByInvoiceIdOrderBySortOrder(invoice.getId());
+    return new PeriodCloseResult(period, invoice, invoiceLines, nextPeriod);
   }
 
   private ResolvedOverageRate resolveCustomerRate(UUID customerId, LocalDate closeDate) {
@@ -409,8 +414,20 @@ public class RetainerPeriodService {
         .map(
             period -> {
               var agreement = agreementRepository.findById(period.getAgreementId()).orElse(null);
-              if (agreement == null) return null;
+              if (agreement == null) {
+                log.warn(
+                    "Dangling period {}: agreement {} not found",
+                    period.getId(),
+                    period.getAgreementId());
+                return null;
+              }
               var customer = customerRepository.findById(agreement.getCustomerId()).orElse(null);
+              if (customer == null) {
+                log.warn(
+                    "Agreement {} references missing customer {}",
+                    agreement.getId(),
+                    agreement.getCustomerId());
+              }
               String customerName = customer != null ? customer.getName() : "Unknown";
               return new PeriodReadyToCloseView(
                   period.getId(),
@@ -425,14 +442,4 @@ public class RetainerPeriodService {
         .filter(v -> v != null)
         .toList();
   }
-
-  public record PeriodReadyToCloseView(
-      UUID periodId,
-      UUID agreementId,
-      String agreementName,
-      UUID customerId,
-      String customerName,
-      LocalDate periodEnd,
-      BigDecimal consumedHours,
-      BigDecimal allocatedHours) {}
 }

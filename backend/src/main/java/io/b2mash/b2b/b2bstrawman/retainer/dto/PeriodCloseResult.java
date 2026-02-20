@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.retainer.dto;
 
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
-import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
 import io.b2mash.b2b.b2bstrawman.retainer.RetainerPeriodService;
 import java.math.BigDecimal;
@@ -28,11 +27,10 @@ public record PeriodCloseResult(
   public record InvoiceLineSummary(
       String description, BigDecimal quantity, BigDecimal unitPrice, BigDecimal amount) {}
 
-  public static PeriodCloseResult from(
-      RetainerPeriodService.PeriodCloseResult result, List<InvoiceLine> lines) {
+  public static PeriodCloseResult from(RetainerPeriodService.PeriodCloseResult result) {
     Invoice inv = result.generatedInvoice();
     List<InvoiceLineSummary> lineSummaries =
-        lines.stream()
+        result.invoiceLines().stream()
             .map(
                 l ->
                     new InvoiceLineSummary(

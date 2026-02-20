@@ -143,7 +143,7 @@ class RetainerPeriodControllerTest {
         .andExpect(jsonPath("$.content[0].id").exists())
         .andExpect(jsonPath("$.content[0].periodStart").exists())
         .andExpect(jsonPath("$.content[0].status").value("OPEN"))
-        .andExpect(jsonPath("$.page.totalElements").exists());
+        .andExpect(jsonPath("$.page.totalElements").value(1));
   }
 
   @Test

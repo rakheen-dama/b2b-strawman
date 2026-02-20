@@ -112,6 +112,15 @@ public class RecurringSchedule {
     this.updatedAt = Instant.now();
   }
 
+  public void updateMutableFields(
+      String nameOverride, LocalDate endDate, int leadTimeDays, UUID projectLeadMemberId) {
+    this.nameOverride = nameOverride;
+    this.endDate = endDate;
+    this.leadTimeDays = leadTimeDays;
+    this.projectLeadMemberId = projectLeadMemberId;
+    this.updatedAt = Instant.now();
+  }
+
   public UUID getId() {
     return id;
   }

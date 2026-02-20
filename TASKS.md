@@ -151,6 +151,11 @@
 | 126 | Retainer Dashboard & Create UI | Frontend | 123, 124, 125 | M | 126A, 126B | **Done** (PRs #255, #256) |
 | 127 | Customer Retainer Tab & Detail Page | Frontend | 126 | M | 127A, 127B | **Done** (PRs #257, #258) |
 | 128 | Time Entry Indicators & Notifications | Both | 124, 127 | M | 128A, 128B | **Done** (PRs #259, #260) |
+| **Phase 18 — Task Detail Experience** | | | | | | See [tasks/phase18-task-detail-experience-missing-functionality.md](tasks/phase18-task-detail-experience-missing-functionality.md) |
+| 129 | Assignee Selection & Backend Prep | Both | -- | S | 129A | |
+| 130 | Task Detail Sheet Core | Frontend | 129 | L | 130A, 130B | |
+| 131 | Tags, Custom Fields & Saved Views | Frontend | 130 | M | 131A, 131B | |
+| 132 | My Work Enhancements | Frontend | 131 | S | 132A | |
 
 ---
 

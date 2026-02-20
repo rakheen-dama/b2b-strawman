@@ -1,7 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.projecttemplate;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.project.ProjectController;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.CreateTemplateRequest;
+import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.InstantiateTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.ProjectTemplateResponse;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.SaveFromProjectRequest;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.UpdateTemplateRequest;
@@ -84,5 +86,15 @@ public class ProjectTemplateController {
     var response = projectTemplateService.saveFromProject(projectId, request, memberId, orgRole);
     return ResponseEntity.created(URI.create("/api/project-templates/" + response.id()))
         .body(response);
+  }
+
+  @PostMapping("/{id}/instantiate")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<ProjectController.ProjectResponse> instantiateTemplate(
+      @PathVariable UUID id, @RequestBody InstantiateTemplateRequest request) {
+    UUID memberId = RequestScopes.requireMemberId();
+    var project = projectTemplateService.instantiateTemplate(id, request, memberId);
+    return ResponseEntity.created(URI.create("/api/projects/" + project.getId()))
+        .body(ProjectController.ProjectResponse.from(project));
   }
 }

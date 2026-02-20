@@ -564,6 +564,103 @@ class ProjectTemplateControllerTest {
         .andExpect(status().isNotFound());
   }
 
+  // --- Instantiate Tests ---
+
+  @Test
+  @Order(20)
+  void shouldInstantiateTemplateAsOwner() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/project-templates/" + createdTemplateId + "/instantiate")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "name": "Instantiated Project",
+                      "customerId": null,
+                      "projectLeadMemberId": null,
+                      "description": null
+                    }
+                    """))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.id").isNotEmpty())
+        .andExpect(jsonPath("$.name").value("Instantiated Project"));
+  }
+
+  @Test
+  @Order(21)
+  void shouldInstantiateTemplateAsMember() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/project-templates/" + createdTemplateId + "/instantiate")
+                .with(memberJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "name": "Member Instantiated Project"
+                    }
+                    """))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.name").value("Member Instantiated Project"));
+  }
+
+  @Test
+  @Order(22)
+  void shouldReturn404WhenInstantiatingUnknownTemplate() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/project-templates/" + UUID.randomUUID() + "/instantiate")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"name": "Shouldn't work"}
+                    """))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  @Order(23)
+  void shouldReturn400WhenInstantiatingInactiveTemplate() throws Exception {
+    // Create and deactivate a template in tenant context
+    final UUID[] inactiveTemplateId = new UUID[1];
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, ownerMemberId)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var t =
+                          templateRepository.saveAndFlush(
+                              new ProjectTemplate(
+                                  "Inactive For Instantiate",
+                                  "{customer}",
+                                  null,
+                                  false,
+                                  "MANUAL",
+                                  null,
+                                  ownerMemberId));
+                      t.deactivate();
+                      templateRepository.saveAndFlush(t);
+                      inactiveTemplateId[0] = t.getId();
+                    }));
+
+    mockMvc
+        .perform(
+            post("/api/project-templates/" + inactiveTemplateId[0] + "/instantiate")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"name": "Should Be 400"}
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
   // --- Helper methods ---
 
   private JwtRequestPostProcessor ownerJwt() {

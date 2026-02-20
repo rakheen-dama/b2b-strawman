@@ -2,20 +2,28 @@ package io.b2mash.b2b.b2bstrawman.schedule;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import io.b2mash.b2b.b2bstrawman.projecttemplate.NameTokenResolver;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.PeriodCalculator;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplateRepository;
+import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplateService;
 import io.b2mash.b2b.b2bstrawman.schedule.dto.CreateScheduleRequest;
 import io.b2mash.b2b.b2bstrawman.schedule.dto.ScheduleExecutionResponse;
 import io.b2mash.b2b.b2bstrawman.schedule.dto.ScheduleResponse;
 import io.b2mash.b2b.b2bstrawman.schedule.dto.UpdateScheduleRequest;
+import io.b2mash.b2b.b2bstrawman.schedule.event.RecurringProjectCreatedEvent;
+import io.b2mash.b2b.b2bstrawman.schedule.event.ScheduleCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.schedule.event.SchedulePausedEvent;
+import io.b2mash.b2b.b2bstrawman.schedule.event.ScheduleSkippedEvent;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -27,6 +35,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -43,6 +52,8 @@ public class RecurringScheduleService {
   private final ApplicationEventPublisher eventPublisher;
   private final ScheduleExecutionRepository executionRepository;
   private final ProjectRepository projectRepository;
+  private final ProjectTemplateService projectTemplateService;
+  private final NameTokenResolver nameTokenResolver;
 
   public RecurringScheduleService(
       RecurringScheduleRepository scheduleRepository,
@@ -53,7 +64,9 @@ public class RecurringScheduleService {
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
       ScheduleExecutionRepository executionRepository,
-      ProjectRepository projectRepository) {
+      ProjectRepository projectRepository,
+      ProjectTemplateService projectTemplateService,
+      NameTokenResolver nameTokenResolver) {
     this.scheduleRepository = scheduleRepository;
     this.templateRepository = templateRepository;
     this.customerRepository = customerRepository;
@@ -63,6 +76,8 @@ public class RecurringScheduleService {
     this.eventPublisher = eventPublisher;
     this.executionRepository = executionRepository;
     this.projectRepository = projectRepository;
+    this.projectTemplateService = projectTemplateService;
+    this.nameTokenResolver = nameTokenResolver;
   }
 
   @Transactional
@@ -345,6 +360,237 @@ public class RecurringScheduleService {
             scheduleId, PageRequest.of(0, 50));
 
     return page.getContent().stream().map(this::buildExecutionResponse).toList();
+  }
+
+  // --- Scheduler execution methods ---
+
+  /**
+   * Finds all due ACTIVE schedules for the current tenant. Called by {@link
+   * RecurringScheduleExecutor} with tenant ScopedValues already bound.
+   */
+  @Transactional(readOnly = true)
+  public List<RecurringSchedule> findDueSchedules() {
+    LocalDate today = LocalDate.now();
+    return scheduleRepository.findByStatusAndNextExecutionDateLessThanEqual("ACTIVE", today);
+  }
+
+  /**
+   * Executes a single recurring schedule: checks customer lifecycle, calculates period, creates
+   * project from template, records execution, and advances to next period.
+   *
+   * @return true if a project was created, false if skipped (idempotency, lifecycle)
+   */
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public boolean executeSingleSchedule(RecurringSchedule detachedSchedule, LocalDate today) {
+    // Re-load schedule in this REQUIRES_NEW transaction to avoid detached entity issues
+    var schedule =
+        scheduleRepository
+            .findById(detachedSchedule.getId())
+            .orElseThrow(
+                () -> new ResourceNotFoundException("RecurringSchedule", detachedSchedule.getId()));
+
+    // 1. Load customer and check lifecycle
+    var customer =
+        customerRepository
+            .findById(schedule.getCustomerId())
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", schedule.getCustomerId()));
+
+    var template =
+        templateRepository
+            .findById(schedule.getTemplateId())
+            .orElseThrow(
+                () -> new ResourceNotFoundException("ProjectTemplate", schedule.getTemplateId()));
+
+    String templateName = template.getName();
+    String customerName = customer.getName();
+
+    if (isInactiveLifecycle(customer)) {
+      log.warn(
+          "Skipping schedule {} — customer {} has lifecycle status {}",
+          schedule.getId(),
+          customerName,
+          customer.getLifecycleStatus());
+
+      publishScheduleSkippedEvent(schedule, templateName, customerName, customer);
+
+      auditService.log(
+          AuditEventBuilder.builder()
+              .eventType("schedule_execution.skipped")
+              .entityType("recurring_schedule")
+              .entityId(schedule.getId())
+              .details(
+                  Map.of(
+                      "reason",
+                      "Customer lifecycle: " + customer.getLifecycleStatus(),
+                      "customer_name",
+                      customerName,
+                      "customer_lifecycle_status",
+                      customer.getLifecycleStatus().toString()))
+              .build());
+
+      // Advance to next period even though this one was skipped
+      advanceToNextPeriod(schedule, schedule.getExecutionCount() + 1);
+      scheduleRepository.save(schedule);
+
+      // Check auto-completion after advancing
+      checkAutoCompletion(schedule, templateName, customerName);
+
+      return false;
+    }
+
+    // 2. Period calculation
+    var period =
+        periodCalculator.calculateNextPeriod(
+            schedule.getStartDate(), schedule.getFrequency(), schedule.getExecutionCount());
+
+    // 3. Idempotency check
+    if (executionRepository.existsByScheduleIdAndPeriodStart(schedule.getId(), period.start())) {
+      log.info(
+          "Schedule {} already executed for period starting {}", schedule.getId(), period.start());
+      advanceToNextPeriod(schedule, schedule.getExecutionCount());
+      scheduleRepository.save(schedule);
+      return false;
+    }
+
+    // 4. Resolve project name
+    String namePattern =
+        schedule.getNameOverride() != null ? schedule.getNameOverride() : template.getNamePattern();
+    String projectName =
+        nameTokenResolver.resolveNameTokens(
+            namePattern, customer, period.start(), period.start(), period.end());
+
+    // 5. Create project from template
+    UUID actingMemberId =
+        schedule.getProjectLeadMemberId() != null
+            ? schedule.getProjectLeadMemberId()
+            : schedule.getCreatedBy();
+    Project project =
+        projectTemplateService.instantiateFromTemplate(
+            template, projectName, customer, schedule.getProjectLeadMemberId(), actingMemberId);
+
+    // 6. Record execution
+    executionRepository.save(
+        new ScheduleExecution(
+            schedule.getId(), project.getId(), period.start(), period.end(), Instant.now()));
+
+    // 7. Advance schedule — recordExecution increments executionCount
+    schedule.recordExecution(Instant.now());
+    advanceToNextPeriod(schedule, schedule.getExecutionCount());
+    scheduleRepository.save(schedule);
+
+    // 8. Auto-completion check
+    checkAutoCompletion(schedule, templateName, customerName);
+
+    // 9. Audit log
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("recurring_project.created")
+            .entityType("recurring_schedule")
+            .entityId(schedule.getId())
+            .details(
+                Map.of(
+                    "template_name", templateName,
+                    "project_name", projectName,
+                    "customer_name", customerName,
+                    "period_start", period.start().toString(),
+                    "period_end", period.end().toString()))
+            .build());
+
+    // 10. Publish event
+    publishRecurringProjectCreatedEvent(schedule, project, projectName, customerName, templateName);
+
+    return true;
+  }
+
+  private boolean isInactiveLifecycle(Customer customer) {
+    var status = customer.getLifecycleStatus();
+    return status == LifecycleStatus.OFFBOARDED || status == LifecycleStatus.PROSPECT;
+  }
+
+  /**
+   * Advances the schedule's nextExecutionDate to the period after the given periodIndex. This
+   * ensures the next execution date always moves forward regardless of whether the current period
+   * was executed or skipped.
+   */
+  private void advanceToNextPeriod(RecurringSchedule schedule, int nextPeriodIndex) {
+    var nextPeriod =
+        periodCalculator.calculateNextPeriod(
+            schedule.getStartDate(), schedule.getFrequency(), nextPeriodIndex);
+    LocalDate nextExec =
+        periodCalculator.calculateNextExecutionDate(nextPeriod.start(), schedule.getLeadTimeDays());
+    schedule.setNextExecutionDate(nextExec);
+  }
+
+  private void checkAutoCompletion(
+      RecurringSchedule schedule, String templateName, String customerName) {
+    if (schedule.getEndDate() != null
+        && schedule.getNextExecutionDate() != null
+        && schedule.getNextExecutionDate().isAfter(schedule.getEndDate())) {
+      schedule.setStatus("COMPLETED");
+      scheduleRepository.save(schedule);
+      publishScheduleCompletedEvent(schedule, templateName, customerName);
+      auditService.log(
+          AuditEventBuilder.builder()
+              .eventType("schedule.completed")
+              .entityType("recurring_schedule")
+              .entityId(schedule.getId())
+              .details(Map.of("execution_count", String.valueOf(schedule.getExecutionCount())))
+              .build());
+    }
+  }
+
+  private void publishRecurringProjectCreatedEvent(
+      RecurringSchedule schedule,
+      Project project,
+      String projectName,
+      String customerName,
+      String templateName) {
+    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    eventPublisher.publishEvent(
+        new RecurringProjectCreatedEvent(
+            schedule.getId(),
+            project.getId(),
+            projectName,
+            customerName,
+            templateName,
+            schedule.getProjectLeadMemberId(),
+            null,
+            "Scheduler",
+            tenantId,
+            orgId,
+            Instant.now()));
+  }
+
+  private void publishScheduleSkippedEvent(
+      RecurringSchedule schedule, String templateName, String customerName, Customer customer) {
+    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    eventPublisher.publishEvent(
+        new ScheduleSkippedEvent(
+            schedule.getId(),
+            templateName,
+            customerName,
+            customer.getLifecycleStatus().toString(),
+            "Customer lifecycle: " + customer.getLifecycleStatus(),
+            tenantId,
+            orgId,
+            Instant.now()));
+  }
+
+  private void publishScheduleCompletedEvent(
+      RecurringSchedule schedule, String templateName, String customerName) {
+    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    eventPublisher.publishEvent(
+        new ScheduleCompletedEvent(
+            schedule.getId(),
+            templateName,
+            customerName,
+            schedule.getExecutionCount(),
+            tenantId,
+            orgId,
+            Instant.now()));
   }
 
   private ScheduleExecutionResponse buildExecutionResponse(ScheduleExecution execution) {

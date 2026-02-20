@@ -17,6 +17,9 @@ import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
+import io.b2mash.b2b.b2bstrawman.schedule.event.RecurringProjectCreatedEvent;
+import io.b2mash.b2b.b2bstrawman.schedule.event.ScheduleCompletedEvent;
+import io.b2mash.b2b.b2bstrawman.schedule.event.ScheduleSkippedEvent;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
 import java.util.ArrayList;
@@ -133,7 +136,10 @@ public class NotificationService {
           "INVOICE_SENT",
           "INVOICE_PAID",
           "INVOICE_VOIDED",
-          "DOCUMENT_GENERATED");
+          "DOCUMENT_GENERATED",
+          "RECURRING_PROJECT_CREATED",
+          "SCHEDULE_SKIPPED",
+          "SCHEDULE_COMPLETED");
 
   // --- Preference methods ---
 
@@ -517,6 +523,105 @@ public class NotificationService {
               "GENERATED_DOCUMENT",
               event.entityId(),
               event.projectId());
+      if (notification != null) {
+        created.add(notification);
+      }
+    }
+    return created;
+  }
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public List<Notification> handleRecurringProjectCreated(RecurringProjectCreatedEvent event) {
+    var recipients = new HashSet<UUID>();
+
+    // Notify project lead if set
+    if (event.projectLeadMemberId() != null) {
+      recipients.add(event.projectLeadMemberId());
+    }
+
+    // Notify org admins and owners
+    for (var m : memberRepository.findByOrgRoleIn(List.of("admin", "owner"))) {
+      recipients.add(m.getId());
+    }
+
+    // Exclude actor (null for scheduler — Set.remove(null) is safe)
+    recipients.remove(event.actorMemberId());
+
+    var title =
+        "Recurring project \"%s\" created for %s"
+            .formatted(event.projectName(), event.customerName());
+
+    var created = new ArrayList<Notification>();
+    for (var recipientId : recipients) {
+      var notification =
+          createIfEnabled(
+              recipientId,
+              "RECURRING_PROJECT_CREATED",
+              title,
+              null,
+              "PROJECT",
+              event.projectId(),
+              event.projectId());
+      if (notification != null) {
+        created.add(notification);
+      }
+    }
+    return created;
+  }
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public List<Notification> handleScheduleSkipped(ScheduleSkippedEvent event) {
+    var recipients = new HashSet<UUID>();
+
+    // Notify org admins and owners
+    for (var m : memberRepository.findByOrgRoleIn(List.of("admin", "owner"))) {
+      recipients.add(m.getId());
+    }
+
+    var title = "Schedule skipped for %s — %s".formatted(event.customerName(), event.reason());
+
+    var created = new ArrayList<Notification>();
+    for (var recipientId : recipients) {
+      var notification =
+          createIfEnabled(
+              recipientId,
+              "SCHEDULE_SKIPPED",
+              title,
+              null,
+              "RECURRING_SCHEDULE",
+              event.scheduleId(),
+              null);
+      if (notification != null) {
+        created.add(notification);
+      }
+    }
+    return created;
+  }
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public List<Notification> handleScheduleCompleted(ScheduleCompletedEvent event) {
+    var recipients = new HashSet<UUID>();
+
+    // Notify org admins and owners
+    for (var m : memberRepository.findByOrgRoleIn(List.of("admin", "owner"))) {
+      recipients.add(m.getId());
+    }
+
+    var title =
+        "Schedule for %s (%s) completed after %d executions"
+            .formatted(event.customerName(), event.templateName(), event.executionCount());
+
+    var created = new ArrayList<Notification>();
+    for (var recipientId : recipients) {
+      var notification =
+          createIfEnabled(
+              recipientId,
+              "SCHEDULE_COMPLETED",
+              title,
+              null,
+              "RECURRING_SCHEDULE",
+              event.scheduleId(),
+              null);
       if (notification != null) {
         created.add(notification);
       }

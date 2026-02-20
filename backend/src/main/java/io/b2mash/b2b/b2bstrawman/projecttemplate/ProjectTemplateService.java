@@ -491,6 +491,81 @@ public class ProjectTemplateService {
     return project;
   }
 
+  /**
+   * Creates a project from a template without requiring member context. Designed for scheduler use.
+   * The caller is responsible for audit logging and event publishing.
+   *
+   * @param template the project template to instantiate from
+   * @param resolvedName the already-resolved project name
+   * @param customer the customer to link (may be null)
+   * @param projectLeadMemberId the project lead member ID (may be null)
+   * @param actingMemberId the member ID to use as createdBy (may be null for system-created)
+   * @return the created project
+   */
+  @Transactional
+  public Project instantiateFromTemplate(
+      ProjectTemplate template,
+      String resolvedName,
+      Customer customer,
+      UUID projectLeadMemberId,
+      UUID actingMemberId) {
+    // 1. Create project
+    var project = new Project(resolvedName, template.getDescription(), actingMemberId);
+    project = projectRepository.save(project);
+
+    // 2. Link to customer
+    if (customer != null) {
+      customerProjectRepository.save(
+          new CustomerProject(customer.getId(), project.getId(), actingMemberId));
+    }
+
+    // 3. Set project lead
+    if (projectLeadMemberId != null) {
+      projectMemberRepository.save(
+          new ProjectMember(project.getId(), projectLeadMemberId, "LEAD", actingMemberId));
+    }
+
+    // 4. Create tasks from template (snapshot)
+    var templateTasks = templateTaskRepository.findByTemplateIdOrderBySortOrder(template.getId());
+    for (var tt : templateTasks) {
+      UUID assigneeId = resolveAssignee(tt.getAssigneeRole(), projectLeadMemberId);
+      var task =
+          new Task(
+              project.getId(),
+              tt.getName(),
+              tt.getDescription(),
+              "MEDIUM",
+              null,
+              null,
+              actingMemberId);
+      if (assigneeId != null) {
+        task.update(
+            task.getTitle(),
+            task.getDescription(),
+            task.getPriority(),
+            task.getStatus(),
+            task.getType(),
+            task.getDueDate(),
+            assigneeId);
+      }
+      projectTaskRepository.save(task);
+    }
+
+    // 5. Apply tags
+    var tagIds = templateTagRepository.findTagIdsByTemplateId(template.getId());
+    for (UUID tagId : tagIds) {
+      entityTagRepository.save(new EntityTag(tagId, "PROJECT", project.getId()));
+    }
+
+    log.info(
+        "Instantiated template {} -> project {} (name={}, scheduler)",
+        template.getId(),
+        project.getId(),
+        resolvedName);
+
+    return project;
+  }
+
   // --- Private helpers ---
 
   private void requireAdminOwnerOrProjectLead(String orgRole, UUID projectId, UUID memberId) {

@@ -1,6 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
-import { handleApiError } from "@/lib/api";
-import { api } from "@/lib/api";
+import { api, handleApiError } from "@/lib/api";
 import { getSchedule, getExecutions } from "@/lib/api/schedules";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -40,7 +39,6 @@ export default async function ScheduleDetailPage({
     schedule = await getSchedule(id);
   } catch (error) {
     handleApiError(error);
-    return null;
   }
 
   let executions: ScheduleExecutionResponse[] = [];

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Pause, Play, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +27,7 @@ interface ScheduleDetailActionsProps {
 }
 
 export function ScheduleDetailActions({ slug, schedule }: ScheduleDetailActionsProps) {
+  const router = useRouter();
   const [pauseDialogOpen, setPauseDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [actionInProgress, setActionInProgress] = useState(false);
@@ -61,11 +63,13 @@ export function ScheduleDetailActions({ slug, schedule }: ScheduleDetailActionsP
     setActionInProgress(true);
     try {
       const result = await deleteScheduleAction(slug, schedule.id);
-      if (!result.success) {
+      if (result.success) {
+        setDeleteDialogOpen(false);
+        router.push(`/org/${slug}/schedules`);
+      } else {
         setError(result.error ?? "Failed to delete schedule.");
         setDeleteDialogOpen(false);
       }
-      // On success: revalidatePath in action causes page to re-render
     } finally {
       setActionInProgress(false);
     }

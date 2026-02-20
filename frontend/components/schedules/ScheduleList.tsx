@@ -44,7 +44,7 @@ export function ScheduleList({ slug, schedules }: ScheduleListProps) {
   const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [pauseDialogId, setPauseDialogId] = useState<string | null>(null);
-  const [isPausing, setIsPausing] = useState(false);
+  const [isPausingId, setIsPausingId] = useState<string | null>(null);
 
   const filtered =
     activeTab === "ALL"
@@ -52,7 +52,7 @@ export function ScheduleList({ slug, schedules }: ScheduleListProps) {
       : schedules.filter((s) => s.status === activeTab);
 
   async function handlePause(id: string) {
-    setIsPausing(true);
+    setIsPausingId(id);
     try {
       const result = await pauseScheduleAction(slug, id);
       if (!result.success && result.error) {
@@ -62,7 +62,7 @@ export function ScheduleList({ slug, schedules }: ScheduleListProps) {
     } catch {
       setErrorMessages((prev) => ({ ...prev, [id]: "An unexpected error occurred." }));
     } finally {
-      setIsPausing(false);
+      setIsPausingId(null);
     }
   }
 
@@ -234,7 +234,7 @@ export function ScheduleList({ slug, schedules }: ScheduleListProps) {
                             size="sm"
                             title="Pause schedule"
                             onClick={() => setPauseDialogId(schedule.id)}
-                            disabled={actionInProgress === schedule.id}
+                            disabled={isPausingId === schedule.id}
                           >
                             <Pause className="size-4" />
                             <span className="sr-only">Pause {schedule.templateName}</span>
@@ -242,7 +242,7 @@ export function ScheduleList({ slug, schedules }: ScheduleListProps) {
                           <AlertDialog
                             open={pauseDialogId === schedule.id}
                             onOpenChange={(open) => {
-                              if (!open && !isPausing) setPauseDialogId(null);
+                              if (!open && isPausingId !== schedule.id) setPauseDialogId(null);
                             }}
                           >
                             <AlertDialogContent>
@@ -254,12 +254,12 @@ export function ScheduleList({ slug, schedules }: ScheduleListProps) {
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
-                                <AlertDialogCancel disabled={isPausing}>Cancel</AlertDialogCancel>
+                                <AlertDialogCancel disabled={isPausingId === schedule.id}>Cancel</AlertDialogCancel>
                                 <AlertDialogAction
                                   onClick={() => handlePause(schedule.id)}
-                                  disabled={isPausing}
+                                  disabled={isPausingId === schedule.id}
                                 >
-                                  {isPausing ? "Pausing..." : "Pause Schedule"}
+                                  {isPausingId === schedule.id ? "Pausing..." : "Pause Schedule"}
                                 </AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>

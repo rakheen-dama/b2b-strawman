@@ -74,6 +74,7 @@ export async function deleteScheduleAction(
   try {
     await deleteSchedule(id);
     revalidatePath(`/org/${slug}/schedules`);
+    revalidatePath(`/org/${slug}/schedules/${id}`);
     return { success: true };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -96,6 +97,7 @@ export async function pauseScheduleAction(
   try {
     const data = await pauseSchedule(id);
     revalidatePath(`/org/${slug}/schedules`);
+    revalidatePath(`/org/${slug}/schedules/${id}`);
     return { success: true, data };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -118,6 +120,7 @@ export async function resumeScheduleAction(
   try {
     const data = await resumeSchedule(id);
     revalidatePath(`/org/${slug}/schedules`);
+    revalidatePath(`/org/${slug}/schedules/${id}`);
     return { success: true, data };
   } catch (error) {
     if (error instanceof ApiError) {

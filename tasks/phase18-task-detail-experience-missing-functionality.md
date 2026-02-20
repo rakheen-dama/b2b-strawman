@@ -17,7 +17,7 @@ Phase 18 resolves four task UX gaps identified in QA gap analysis (Group A: find
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 129 | Assignee Selection & Backend Prep | Both | -- | S | 129A | Pending |
+| 129 | Assignee Selection & Backend Prep | Both | -- | S | 129A | **Done** (PR #261) |
 | 130 | Task Detail Sheet Core | Frontend | 129 | L | 130A, 130B | Pending |
 | 131 | Tags, Custom Fields & Saved Views | Frontend | 130 | M | 131A, 131B | Pending |
 | 132 | My Work Enhancements | Frontend | 131 | S | 132A | Pending |
@@ -54,7 +54,7 @@ Phase 18 resolves four task UX gaps identified in QA gap analysis (Group A: find
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 1a | Epic 129 | 129A | Optional `assigneeId` on `CreateTaskRequest` (backend) + new `AssigneeSelector` component (frontend). Foundation for all sheet assignee interactions. |
+| 1a | Epic 129 | 129A | Optional `assigneeId` on `CreateTaskRequest` (backend) + new `AssigneeSelector` component (frontend). Foundation for all sheet assignee interactions. | **Done** (PR #261) |
 
 ### Stage 2: Task Detail Sheet Core (Sequential)
 
@@ -100,7 +100,7 @@ Stage 3:  [131A] --> [131B]  //  [132A]
 
 | Slice | Summary | Status |
 |-------|---------|--------|
-| **129A** | Backend: `CreateTaskRequest` + `TaskService` change. Frontend: `AssigneeSelector` component, `CreateTaskDialog` update. ~4 tests. | Pending |
+| **129A** | Backend: `CreateTaskRequest` + `TaskService` change. Frontend: `AssigneeSelector` component, `CreateTaskDialog` update. ~4 tests. | **Done** (PR #261) |
 
 ### Tasks
 

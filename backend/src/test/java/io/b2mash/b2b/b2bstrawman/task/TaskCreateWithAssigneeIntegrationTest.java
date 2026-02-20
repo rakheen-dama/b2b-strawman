@@ -122,7 +122,7 @@ class TaskCreateWithAssigneeIntegrationTest {
                         .formatted(memberIdAdmin)))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.title").value("Member Created Task"))
-        .andExpect(jsonPath("$.assigneeId").isEmpty())
+        .andExpect(jsonPath("$.assigneeId").value(org.hamcrest.Matchers.nullValue()))
         .andExpect(jsonPath("$.status").value("OPEN"));
   }
 

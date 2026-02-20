@@ -321,6 +321,13 @@ public class TaskController {
 
   // --- DTOs ---
 
+  /**
+   * Request body for task creation.
+   *
+   * @param assigneeId Optional. The member to pre-assign the task to at creation time. Only honored
+   *     for admin/owner callers; silently ignored for regular members. See {@link
+   *     TaskService#createTask} for the permission asymmetry rationale.
+   */
   public record CreateTaskRequest(
       @NotBlank(message = "title is required")
           @Size(max = 500, message = "title must be at most 500 characters")

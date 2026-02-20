@@ -125,6 +125,16 @@ public class TaskService {
         null);
   }
 
+  /**
+   * Creates a task, optionally pre-assigning it to a member at creation time.
+   *
+   * <p><strong>Permission asymmetry</strong>: pre-assignment at creation is a privileged action
+   * (admin/owner only). This is intentional — assigning someone to a task before they have a chance
+   * to claim it is an administrative decision. By contrast, re-assignment during the task lifecycle
+   * (via {@link #updateTask}) is more permissive: the current assignee or any project lead can
+   * change the assignee, reflecting the collaborative nature of ongoing work. Regular members who
+   * supply {@code assigneeId} at creation have it silently ignored.
+   */
   @Transactional
   public Task createTask(
       UUID projectId,
@@ -162,6 +172,8 @@ public class TaskService {
         throw new ResourceNotFoundException("ProjectMember", assigneeId);
       }
       task.claim(assigneeId);
+      // TODO: Send assignee notification on pre-assign (deferred — task.created event captures
+      // assignee_id in audit details)
       task = taskRepository.save(task);
     }
 

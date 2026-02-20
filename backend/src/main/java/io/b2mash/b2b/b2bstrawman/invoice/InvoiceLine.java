@@ -111,6 +111,10 @@ public class InvoiceLine {
     return retainerPeriodId;
   }
 
+  public void setRetainerPeriodId(UUID retainerPeriodId) {
+    this.retainerPeriodId = retainerPeriodId;
+  }
+
   public String getDescription() {
     return description;
   }

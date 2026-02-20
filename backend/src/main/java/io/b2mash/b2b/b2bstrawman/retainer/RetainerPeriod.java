@@ -101,6 +101,9 @@ public class RetainerPeriod {
    * consumedHours, remainingHours stays 0
    */
   public void updateConsumption(BigDecimal newConsumedHours) {
+    if (this.status == PeriodStatus.CLOSED) {
+      throw new IllegalStateException("Cannot update consumption on a closed period");
+    }
     this.consumedHours = newConsumedHours;
     if (this.allocatedHours != null) {
       BigDecimal diff = this.allocatedHours.subtract(newConsumedHours);
@@ -115,6 +118,9 @@ public class RetainerPeriod {
    */
   public void close(
       UUID invoiceId, UUID closedBy, BigDecimal overageHours, BigDecimal rolloverHoursOut) {
+    if (this.status == PeriodStatus.CLOSED) {
+      throw new IllegalStateException("Period is already closed");
+    }
     this.status = PeriodStatus.CLOSED;
     this.invoiceId = invoiceId;
     this.closedBy = closedBy;

@@ -1,8 +1,8 @@
 "use client";
 
-import { Fragment, useEffect, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { AlertTriangle, Check, ChevronDown, ChevronRight, Clock, ClipboardList, Hand, Plus, Undo2 } from "lucide-react";
+import { useEffect, useState, useTransition } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { AlertTriangle, Check, Clock, ClipboardList, Hand, Plus, Undo2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
@@ -16,8 +16,7 @@ import {
 } from "@/components/ui/table";
 import { CreateTaskDialog } from "@/components/tasks/create-task-dialog";
 import { LogTimeDialog } from "@/components/tasks/log-time-dialog";
-import { TimeEntryList } from "@/components/tasks/time-entry-list";
-import { CommentSectionClient } from "@/components/comments/comment-section-client";
+import { TaskDetailSheet } from "@/components/tasks/task-detail-sheet";
 import { formatDate } from "@/lib/format";
 import {
   claimTask,
@@ -25,10 +24,9 @@ import {
   updateTask,
   fetchTasks,
 } from "@/app/(app)/org/[slug]/projects/[id]/task-actions";
-import { fetchTimeEntries } from "@/app/(app)/org/[slug]/projects/[id]/time-entry-actions";
 import { cn } from "@/lib/utils";
 import { PRIORITY_BADGE, STATUS_BADGE } from "@/components/tasks/task-badge-config";
-import type { Task, TaskStatus, TimeEntry } from "@/lib/types";
+import type { Task, TaskStatus } from "@/lib/types";
 import type { RetainerSummaryResponse } from "@/lib/types";
 
 // --- Filter types (40.7) ---
@@ -77,21 +75,32 @@ export function TaskListPanel({
   members = [],
 }: TaskListPanelProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const selectedTaskId = searchParams.get("taskId");
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [isPending, startTransition] = useTransition();
   const [actionTaskId, setActionTaskId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
-  const [timeEntries, setTimeEntries] = useState<Record<string, TimeEntry[]>>({});
-  const [loadingTimeEntries, setLoadingTimeEntries] = useState<string | null>(null);
 
   // Sync state when parent Server Component re-renders with fresh data.
-  // Clear time entry cache so expanded tasks re-fetch after mutations.
   useEffect(() => {
     setTasks(initialTasks);
-    setTimeEntries({});
   }, [initialTasks]);
+
+  // --- URL state helpers ---
+
+  function openTask(id: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("taskId", id);
+    router.push(`?${params.toString()}`, { scroll: false });
+  }
+
+  function closeTask() {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("taskId");
+    router.push(`?${params.toString()}`, { scroll: false });
+  }
 
   // --- Filter handler (40.7) ---
 
@@ -215,32 +224,6 @@ export function TaskListPanel({
     return filters;
   }
 
-  // --- Expand / collapse handler for time entries ---
-
-  function handleToggleExpand(taskId: string) {
-    if (expandedTaskId === taskId) {
-      setExpandedTaskId(null);
-      return;
-    }
-
-    setExpandedTaskId(taskId);
-
-    // Fetch time entries if not already cached
-    if (!timeEntries[taskId]) {
-      setLoadingTimeEntries(taskId);
-      fetchTimeEntries(taskId)
-        .then((entries) => {
-          setTimeEntries((prev) => ({ ...prev, [taskId]: entries }));
-        })
-        .catch(() => {
-          setTimeEntries((prev) => ({ ...prev, [taskId]: [] }));
-        })
-        .finally(() => {
-          setLoadingTimeEntries(null);
-        });
-    }
-  }
-
   // --- Render ---
 
   const header = (
@@ -342,9 +325,6 @@ export function TaskListPanel({
                 const statusBadge = STATUS_BADGE[task.status];
                 const overdue = isOverdue(task.dueDate, task.status);
                 const isActioning = actionTaskId === task.id && isPending;
-                const isExpanded = expandedTaskId === task.id;
-                const taskEntries = timeEntries[task.id];
-                const isLoadingEntries = loadingTimeEntries === task.id;
 
                 // 40.6: Determine available actions
                 const canClaim =
@@ -355,16 +335,10 @@ export function TaskListPanel({
                   currentMemberId != null &&
                   task.assigneeId === currentMemberId;
 
-                // Column count for expanded row (all visible columns)
-                const colSpan = 6;
-
                 return (
-                  <Fragment key={task.id}>
                   <TableRow
-                    className={cn(
-                      "border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900",
-                      isExpanded && "bg-slate-50/50 dark:bg-slate-900/50",
-                    )}
+                    key={task.id}
+                    className="border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900"
                   >
                     {/* 40.8: Priority badge */}
                     <TableCell>
@@ -375,18 +349,12 @@ export function TaskListPanel({
                     <TableCell>
                       <button
                         type="button"
-                        className="flex min-w-0 items-center gap-1.5 text-left"
-                        onClick={() => handleToggleExpand(task.id)}
-                        aria-expanded={isExpanded}
-                        aria-label={`${isExpanded ? "Collapse" : "Expand"} time entries for ${task.title}`}
+                        className="flex min-w-0 items-center gap-1.5 cursor-pointer text-left"
+                        onClick={() => openTask(task.id)}
+                        aria-label={`Open task detail for ${task.title}`}
                       >
-                        {isExpanded ? (
-                          <ChevronDown className="size-3.5 shrink-0 text-slate-400" />
-                        ) : (
-                          <ChevronRight className="size-3.5 shrink-0 text-slate-400" />
-                        )}
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-medium text-slate-950 dark:text-slate-50">
+                          <p className="truncate text-sm font-medium text-slate-950 hover:text-teal-600 dark:text-slate-50">
                             {task.title}
                           </p>
                           {task.type && (
@@ -437,7 +405,7 @@ export function TaskListPanel({
                             size="xs"
                             variant="outline"
                             onClick={(e) => {
-                              // Prevent row expand when clicking Log Time button
+                              // Prevent row click when clicking Log Time button
                               e.stopPropagation();
                             }}
                           >
@@ -481,46 +449,22 @@ export function TaskListPanel({
                       </div>
                     </TableCell>
                   </TableRow>
-                  {/* 45.5: Expanded time entries row */}
-                  {isExpanded && (
-                    <TableRow className="border-slate-100 dark:border-slate-800/50">
-                      <TableCell colSpan={colSpan} className="bg-slate-50/30 px-6 py-4 dark:bg-slate-900/30">
-                        {isLoadingEntries ? (
-                          <p className="text-sm text-slate-500 dark:text-slate-400">
-                            Loading time entries...
-                          </p>
-                        ) : (
-                          <>
-                            <TimeEntryList
-                              entries={taskEntries ?? []}
-                              slug={slug}
-                              projectId={projectId}
-                              currentMemberId={currentMemberId}
-                              orgRole={orgRole}
-                              canManage={canManage}
-                            />
-                            <div className="mt-4 border-t border-slate-200 pt-4 dark:border-slate-800">
-                              <CommentSectionClient
-                                projectId={projectId}
-                                entityType="TASK"
-                                entityId={task.id}
-                                orgSlug={slug}
-                                currentMemberId={currentMemberId ?? ""}
-                                canManageVisibility={canManage}
-                              />
-                            </div>
-                          </>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  )}
-                  </Fragment>
                 );
               })}
             </TableBody>
           </Table>
         </div>
       )}
+      <TaskDetailSheet
+        taskId={selectedTaskId}
+        onClose={closeTask}
+        projectId={projectId}
+        slug={slug}
+        canManage={canManage}
+        currentMemberId={currentMemberId ?? ""}
+        orgRole={orgRole ?? ""}
+        members={members}
+      />
     </div>
   );
 }

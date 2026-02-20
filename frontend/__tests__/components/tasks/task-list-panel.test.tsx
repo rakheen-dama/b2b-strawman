@@ -10,13 +10,16 @@ const mockClaimTask = vi.fn();
 const mockReleaseTask = vi.fn();
 const mockUpdateTask = vi.fn();
 const mockFetchTasks = vi.fn();
+const mockFetchTask = vi.fn();
 const mockRefresh = vi.fn();
+const mockPush = vi.fn();
 
 vi.mock("@/app/(app)/org/[slug]/projects/[id]/task-actions", () => ({
   claimTask: (...args: unknown[]) => mockClaimTask(...args),
   releaseTask: (...args: unknown[]) => mockReleaseTask(...args),
   updateTask: (...args: unknown[]) => mockUpdateTask(...args),
   fetchTasks: (...args: unknown[]) => mockFetchTasks(...args),
+  fetchTask: (...args: unknown[]) => mockFetchTask(...args),
 }));
 
 const mockFetchTimeEntries = vi.fn();
@@ -36,15 +39,19 @@ vi.mock("@/lib/actions/comments", () => ({
   deleteComment: vi.fn().mockResolvedValue({ success: true }),
 }));
 
+// Mutable search params for per-test URL state control
+let mockSearchParams = new URLSearchParams("tab=tasks");
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
-    push: vi.fn(),
+    push: mockPush,
     replace: vi.fn(),
     refresh: mockRefresh,
     back: vi.fn(),
     forward: vi.fn(),
     prefetch: vi.fn(),
   }),
+  useSearchParams: () => mockSearchParams,
 }));
 
 // --- Test data ---
@@ -84,7 +91,10 @@ const doneTask = makeTask({ id: "t3", title: "Completed task", status: "DONE", p
 describe("TaskListPanel", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSearchParams = new URLSearchParams("tab=tasks");
     mockFetchTasks.mockResolvedValue([openUnassigned, inProgressOwn, doneTask]);
+    mockFetchTask.mockResolvedValue(makeTask({ id: "t1", projectId: "p1", title: "Open unassigned task" }));
+    mockFetchTimeEntries.mockResolvedValue([]);
   });
 
   afterEach(() => {
@@ -355,5 +365,108 @@ describe("TaskListPanel", () => {
     expect(
       screen.getByText("Try a different filter or clear the selection."),
     ).toBeInTheDocument();
+  });
+
+  // 130B: Clicking task title updates URL with ?taskId=
+  it("clicking a task title opens the sheet by pushing ?taskId= to URL", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <TaskListPanel
+        tasks={[openUnassigned]}
+        slug="acme"
+        projectId="p1"
+        canManage={true}
+        currentMemberId="current-member"
+      />,
+    );
+
+    // Click the task title button (now a sheet opener, not an expand toggle)
+    const titleButton = screen.getByRole("button", { name: /Open task detail for Open unassigned task/i });
+    await user.click(titleButton);
+
+    expect(mockPush).toHaveBeenCalledWith(
+      expect.stringContaining("taskId=t1"),
+      { scroll: false },
+    );
+  });
+
+  // 130B: Sheet renders when URL has ?taskId=
+  it("renders TaskDetailSheet when URL has ?taskId=", async () => {
+    // Set URL to have taskId
+    mockSearchParams = new URLSearchParams("tab=tasks&taskId=t1");
+
+    render(
+      <TaskListPanel
+        tasks={[openUnassigned]}
+        slug="acme"
+        projectId="p1"
+        canManage={true}
+        currentMemberId="current-member"
+      />,
+    );
+
+    // TaskDetailSheet fetches task when taskId is non-null
+    await waitFor(() => {
+      expect(mockFetchTask).toHaveBeenCalledWith("t1");
+    });
+  });
+
+  // 130B: Closing the sheet clears ?taskId= from URL
+  it("closing the sheet clears taskId from URL", async () => {
+    // Set URL to have taskId
+    mockSearchParams = new URLSearchParams("tab=tasks&taskId=t1");
+
+    const user = userEvent.setup();
+
+    render(
+      <TaskListPanel
+        tasks={[openUnassigned]}
+        slug="acme"
+        projectId="p1"
+        canManage={true}
+        currentMemberId="current-member"
+      />,
+    );
+
+    // Wait for sheet to load task
+    await waitFor(() => {
+      expect(mockFetchTask).toHaveBeenCalledWith("t1");
+    });
+
+    // The sheet's close button triggers onClose, which calls closeTask()
+    const closeButton = await screen.findByRole("button", { name: /Close task detail/i });
+    await user.click(closeButton);
+
+    expect(mockPush).toHaveBeenCalledWith(
+      expect.stringContaining("tab=tasks"),
+      { scroll: false },
+    );
+    // taskId should NOT be in the push URL
+    const pushCall = mockPush.mock.calls[0][0] as string;
+    expect(pushCall).not.toContain("taskId");
+  });
+
+  // 130B: Inline expansion row is fully removed
+  it("does not render an inline expanded row (colSpan row) when task is clicked", async () => {
+    const user = userEvent.setup();
+
+    const { container } = render(
+      <TaskListPanel
+        tasks={[openUnassigned]}
+        slug="acme"
+        projectId="p1"
+        canManage={true}
+        currentMemberId="current-member"
+      />,
+    );
+
+    // Click the task title
+    const titleButton = screen.getByRole("button", { name: /Open task detail for Open unassigned task/i });
+    await user.click(titleButton);
+
+    // No colSpan row should appear in the table
+    const cells = container.querySelectorAll("td[colspan]");
+    expect(cells).toHaveLength(0);
   });
 });

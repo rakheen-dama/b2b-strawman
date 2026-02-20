@@ -52,6 +52,9 @@ import {
   fetchTemplateReadiness,
 } from "@/lib/api/setup-status";
 import { getCustomerChecklists, getChecklistTemplates } from "@/lib/checklist-api";
+import { fetchRetainers, fetchPeriods } from "@/lib/api/retainers";
+import type { RetainerResponse, PeriodSummary } from "@/lib/api/retainers";
+import { CustomerRetainerTab } from "@/components/customers/customer-retainer-tab";
 import { formatDate, formatCurrencySafe } from "@/lib/format";
 import { ArrowLeft, Pencil, Archive, Clock, UserCheck, ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -206,6 +209,37 @@ export default async function CustomerDetailPage({
       // Non-fatal: hide add button if template fetch fails
     }
   }
+
+  // Fetch retainer data for the Retainer tab
+  let customerRetainers: RetainerResponse[] = [];
+  try {
+    customerRetainers = await fetchRetainers({ customerId: id });
+  } catch {
+    // Non-fatal: retainer tab will show empty state
+  }
+
+  // Find active/most-recent retainer
+  const activeRetainer =
+    customerRetainers.find((r) => r.status === "ACTIVE") ??
+    customerRetainers.find((r) => r.status === "PAUSED") ??
+    customerRetainers[0] ??
+    null;
+
+  // Fetch periods for the active/latest retainer
+  let retainerPeriods: PeriodSummary[] = [];
+  if (activeRetainer) {
+    try {
+      const periodsRes = await fetchPeriods(activeRetainer.id, 0);
+      retainerPeriods = periodsRes.content;
+    } catch {
+      // Non-fatal: period history table will show empty
+    }
+  }
+
+  const showRetainerTab =
+    (customer.lifecycleStatus !== "OFFBOARDED" &&
+      customer.lifecycleStatus !== "PROSPECT") ||
+    customerRetainers.length > 0;
 
   // Build template name lookup for the onboarding panel
   const checklistTemplateNames: Record<string, string> = {};
@@ -517,6 +551,18 @@ export default async function CustomerDetailPage({
               slug={slug}
               canManage={isAdmin && customer.status === "ACTIVE"}
               defaultCurrency={defaultCurrency}
+            />
+          ) : undefined
+        }
+        retainerPanel={
+          showRetainerTab ? (
+            <CustomerRetainerTab
+              retainer={activeRetainer}
+              allRetainers={customerRetainers}
+              periods={retainerPeriods}
+              slug={slug}
+              customerId={id}
+              canManage={isAdmin && customer.status === "ACTIVE"}
             />
           ) : undefined
         }

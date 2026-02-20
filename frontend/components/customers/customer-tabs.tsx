@@ -11,11 +11,12 @@ interface CustomerTabsProps {
   ratesPanel?: ReactNode;
   financialsPanel?: ReactNode;
   invoicesPanel?: ReactNode;
+  retainerPanel?: ReactNode;
   generatedPanel?: ReactNode;
   onboardingPanel?: ReactNode;
 }
 
-type TabId = "projects" | "documents" | "onboarding" | "rates" | "financials" | "invoices" | "generated";
+type TabId = "projects" | "documents" | "onboarding" | "rates" | "financials" | "invoices" | "retainer" | "generated";
 
 interface TabDef {
   id: TabId;
@@ -27,6 +28,7 @@ const baseTabs: TabDef[] = [
   { id: "documents", label: "Documents" },
   { id: "onboarding", label: "Onboarding" },
   { id: "invoices", label: "Invoices" },
+  { id: "retainer", label: "Retainer" },
   { id: "rates", label: "Rates" },
   { id: "generated", label: "Generated Docs" },
   { id: "financials", label: "Financials" },
@@ -38,6 +40,7 @@ export function CustomerTabs({
   ratesPanel,
   financialsPanel,
   invoicesPanel,
+  retainerPanel,
   generatedPanel,
   onboardingPanel,
 }: CustomerTabsProps) {
@@ -47,12 +50,13 @@ export function CustomerTabs({
     return baseTabs.filter((t) => {
       if (t.id === "onboarding" && !onboardingPanel) return false;
       if (t.id === "invoices" && !invoicesPanel) return false;
+      if (t.id === "retainer" && !retainerPanel) return false;
       if (t.id === "rates" && !ratesPanel) return false;
       if (t.id === "generated" && !generatedPanel) return false;
       if (t.id === "financials" && !financialsPanel) return false;
       return true;
     });
-  }, [onboardingPanel, invoicesPanel, ratesPanel, financialsPanel, generatedPanel]);
+  }, [onboardingPanel, invoicesPanel, retainerPanel, ratesPanel, financialsPanel, generatedPanel]);
 
   return (
     <TabsPrimitive.Root value={activeTab} onValueChange={(v) => setActiveTab(v as TabId)}>
@@ -95,6 +99,11 @@ export function CustomerTabs({
       {invoicesPanel && (
         <TabsPrimitive.Content value="invoices" className="pt-6 outline-none">
           {invoicesPanel}
+        </TabsPrimitive.Content>
+      )}
+      {retainerPanel && (
+        <TabsPrimitive.Content value="retainer" className="pt-6 outline-none">
+          {retainerPanel}
         </TabsPrimitive.Content>
       )}
       {ratesPanel && (

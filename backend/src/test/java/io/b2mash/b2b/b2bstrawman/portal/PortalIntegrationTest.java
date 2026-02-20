@@ -8,9 +8,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectService;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
+import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
@@ -48,6 +51,7 @@ class PortalIntegrationTest {
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
   @Autowired private CustomerService customerService;
+  @Autowired private CustomerRepository customerRepository;
   @Autowired private PortalContactService portalContactService;
   @Autowired private CustomerProjectService customerProjectService;
   @Autowired private ProjectRepository projectRepository;
@@ -141,17 +145,33 @@ class PortalIntegrationTest {
         .run(
             () -> {
               // Create two customers
+              // Create customers directly with ACTIVE lifecycle status (bypassing
+              // PROSPECT -> ONBOARDING -> ACTIVE which auto-instantiates checklists)
               var custA =
-                  customerService.createCustomer(
-                      "Portal Customer A", "portal-cust-a@test.com", null, null, null, memberIdA);
+                  customerRepository.save(
+                      new Customer(
+                          "Portal Customer A",
+                          "portal-cust-a@test.com",
+                          null,
+                          null,
+                          null,
+                          memberIdA,
+                          null,
+                          LifecycleStatus.ACTIVE));
               customerIdA = custA.getId();
-              customerLifecycleService.transition(customerIdA, "ACTIVE", null, memberIdA);
 
               var custB =
-                  customerService.createCustomer(
-                      "Other Customer B", "portal-cust-b@test.com", null, null, null, memberIdA);
+                  customerRepository.save(
+                      new Customer(
+                          "Other Customer B",
+                          "portal-cust-b@test.com",
+                          null,
+                          null,
+                          null,
+                          memberIdA,
+                          null,
+                          LifecycleStatus.ACTIVE));
               customerIdB = custB.getId();
-              customerLifecycleService.transition(customerIdB, "ACTIVE", null, memberIdA);
 
               // Create portal contacts for both customers
               portalContactService.createContact(

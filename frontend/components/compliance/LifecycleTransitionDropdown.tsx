@@ -15,12 +15,12 @@ import type { LifecycleStatus } from "@/lib/types";
 
 // Valid transitions per status (mirrors LifecycleStatus.java)
 const ALLOWED_TRANSITIONS: Record<LifecycleStatus, LifecycleStatus[]> = {
-  PROSPECT: ["ONBOARDING", "ACTIVE"],
+  PROSPECT: ["ONBOARDING"],
   ONBOARDING: ["ACTIVE", "OFFBOARDING"],
   ACTIVE: ["DORMANT", "OFFBOARDING"],
   DORMANT: ["ACTIVE", "OFFBOARDING"],
   OFFBOARDING: ["OFFBOARDED"],
-  OFFBOARDED: [],
+  OFFBOARDED: ["ACTIVE"],
 };
 
 // Human-readable labels for each target (context-aware)

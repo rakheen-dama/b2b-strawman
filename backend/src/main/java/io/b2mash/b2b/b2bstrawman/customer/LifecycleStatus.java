@@ -14,12 +14,12 @@ public enum LifecycleStatus {
 
   private static final Map<LifecycleStatus, Set<LifecycleStatus>> ALLOWED_TRANSITIONS =
       Map.of(
-          PROSPECT, Set.of(ONBOARDING, ACTIVE),
+          PROSPECT, Set.of(ONBOARDING),
           ONBOARDING, Set.of(ACTIVE, OFFBOARDING),
           ACTIVE, Set.of(DORMANT, OFFBOARDING),
           DORMANT, Set.of(ACTIVE, OFFBOARDING),
           OFFBOARDING, Set.of(OFFBOARDED),
-          OFFBOARDED, Set.of());
+          OFFBOARDED, Set.of(ACTIVE));
 
   /** Returns true if transitioning from this status to the target is allowed. */
   public boolean canTransitionTo(LifecycleStatus target) {

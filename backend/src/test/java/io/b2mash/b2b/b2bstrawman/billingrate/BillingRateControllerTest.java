@@ -498,10 +498,46 @@ class BillingRateControllerTest {
             post("/api/customers/" + customerId + "/transition")
                 .with(ownerJwt())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"targetStatus": "ACTIVE"}
-                    """))
+                .content("{\"targetStatus\": \"ONBOARDING\"}"))
         .andExpect(status().isOk());
+    // Completing all checklist items auto-transitions ONBOARDING -> ACTIVE
+    completeChecklistItems(customerId, ownerJwt());
+  }
+
+  @SuppressWarnings("unchecked")
+  private void completeChecklistItems(String customerId, JwtRequestPostProcessor jwt)
+      throws Exception {
+    var result =
+        mockMvc
+            .perform(get("/api/customers/" + customerId + "/checklists").with(jwt))
+            .andExpect(status().isOk())
+            .andReturn();
+    String json = result.getResponse().getContentAsString();
+    List<Map<String, Object>> instances = JsonPath.read(json, "$[*]");
+    for (Map<String, Object> instance : instances) {
+      List<Map<String, Object>> items = (List<Map<String, Object>>) instance.get("items");
+      if (items == null) continue;
+      for (Map<String, Object> item : items) {
+        String itemId = (String) item.get("id");
+        boolean requiresDocument = Boolean.TRUE.equals(item.get("requiresDocument"));
+        if (requiresDocument) {
+          mockMvc
+              .perform(
+                  put("/api/checklist-items/" + itemId + "/skip")
+                      .with(jwt)
+                      .contentType(MediaType.APPLICATION_JSON)
+                      .content("{\"reason\": \"skipped for test\"}"))
+              .andExpect(status().isOk());
+        } else {
+          mockMvc
+              .perform(
+                  put("/api/checklist-items/" + itemId + "/complete")
+                      .with(jwt)
+                      .contentType(MediaType.APPLICATION_JSON)
+                      .content("{\"notes\": \"auto-completed for test\"}"))
+              .andExpect(status().isOk());
+        }
+      }
+    }
   }
 }

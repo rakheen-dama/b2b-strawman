@@ -212,6 +212,14 @@ public class CustomerController {
     return ResponseEntity.ok(CustomerResponse.from(customer, tags));
   }
 
+  @PostMapping("/{id}/unarchive")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<CustomerResponse> unarchiveCustomer(@PathVariable UUID id) {
+    var customer = customerService.unarchiveCustomer(id);
+    var tags = entityTagService.getEntityTags("CUSTOMER", id);
+    return ResponseEntity.ok(CustomerResponse.from(customer, tags));
+  }
+
   // --- Customer-Project linking endpoints ---
 
   @PostMapping("/{id}/projects/{projectId}")

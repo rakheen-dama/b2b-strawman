@@ -133,6 +133,11 @@ public class Customer {
     this.updatedAt = Instant.now();
   }
 
+  public void unarchive() {
+    this.status = "ACTIVE";
+    this.updatedAt = Instant.now();
+  }
+
   /**
    * Transitions the lifecycle status, recording the actor and timestamp.
    *
@@ -226,6 +231,16 @@ public class Customer {
 
   public LifecycleStatus getLifecycleStatus() {
     return lifecycleStatus;
+  }
+
+  /**
+   * Sets lifecycle status directly, bypassing transition validation. Used by system operations like
+   * archive/unarchive alignment.
+   */
+  public void setLifecycleStatus(LifecycleStatus lifecycleStatus) {
+    this.lifecycleStatus = lifecycleStatus;
+    this.lifecycleStatusChangedAt = Instant.now();
+    this.updatedAt = Instant.now();
   }
 
   public Instant getLifecycleStatusChangedAt() {

@@ -10,8 +10,11 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateService;
 import io.b2mash.b2b.b2bstrawman.costrate.CostRateService;
+import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectService;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
+import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
@@ -58,10 +61,8 @@ class CustomerProfitabilityTest {
   @Autowired private BillingRateService billingRateService;
   @Autowired private CostRateService costRateService;
   @Autowired private CustomerService customerService;
+  @Autowired private CustomerRepository customerRepository;
   @Autowired private CustomerProjectService customerProjectService;
-
-  @Autowired
-  private io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleService customerLifecycleService;
 
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
@@ -117,17 +118,17 @@ class CustomerProfitabilityTest {
 
               // Create customer and link to both projects
               var customer =
-                  customerService.createCustomer(
+                  new Customer(
                       "Test Customer",
                       "custprofit_customer@test.com",
                       null,
                       null,
                       null,
-                      memberIdOwner);
+                      memberIdOwner,
+                      null,
+                      LifecycleStatus.ACTIVE);
+              customer = customerRepository.save(customer);
               customerId = customer.getId();
-
-              // Transition PROSPECT -> ACTIVE so lifecycle guard permits linking
-              customerLifecycleService.transition(customerId, "ACTIVE", null, memberIdOwner);
 
               customerProjectService.linkCustomerToProject(
                   customerId, projectId1, memberIdOwner, memberIdOwner, "owner");

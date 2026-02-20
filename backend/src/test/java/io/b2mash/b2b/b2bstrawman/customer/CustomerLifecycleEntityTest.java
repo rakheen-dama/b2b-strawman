@@ -43,7 +43,28 @@ class CustomerLifecycleEntityTest {
   }
 
   @Test
-  void transitionLifecycleStatus_offboardedCannotGoBack() {
+  void transitionLifecycleStatus_offboardedCanReactivateToActive() {
+    var customer =
+        new Customer(
+            "Test Co",
+            "test@test.com",
+            null,
+            null,
+            null,
+            UUID.randomUUID(),
+            null,
+            LifecycleStatus.ACTIVE);
+    UUID actorId = UUID.randomUUID();
+    customer.transitionLifecycleStatus(LifecycleStatus.OFFBOARDING, actorId);
+    customer.transitionLifecycleStatus(LifecycleStatus.OFFBOARDED, actorId);
+
+    // OFFBOARDED -> ACTIVE is now allowed (reactivation)
+    customer.transitionLifecycleStatus(LifecycleStatus.ACTIVE, actorId);
+    assertThat(customer.getLifecycleStatus()).isEqualTo(LifecycleStatus.ACTIVE);
+  }
+
+  @Test
+  void transitionLifecycleStatus_offboardedCannotGoToProspect() {
     var customer =
         new Customer(
             "Test Co",
@@ -60,6 +81,17 @@ class CustomerLifecycleEntityTest {
 
     assertThatThrownBy(() -> customer.transitionLifecycleStatus(LifecycleStatus.PROSPECT, actorId))
         .isInstanceOf(InvalidStateException.class);
+  }
+
+  @Test
+  void transitionLifecycleStatus_prospectCannotTransitionDirectlyToActive() {
+    var customer = new Customer("Test Co", "test@test.com", null, null, null, UUID.randomUUID());
+    UUID actorId = UUID.randomUUID();
+
+    assertThat(customer.getLifecycleStatus()).isEqualTo(LifecycleStatus.PROSPECT);
+    assertThatThrownBy(() -> customer.transitionLifecycleStatus(LifecycleStatus.ACTIVE, actorId))
+        .isInstanceOf(InvalidStateException.class)
+        .hasMessageContaining("Cannot transition from PROSPECT to ACTIVE");
   }
 
   @Test

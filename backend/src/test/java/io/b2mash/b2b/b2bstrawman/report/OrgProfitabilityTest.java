@@ -11,7 +11,9 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateService;
 import io.b2mash.b2b.b2bstrawman.costrate.CostRateService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectService;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
+import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
@@ -58,6 +60,7 @@ class OrgProfitabilityTest {
   @Autowired private BillingRateService billingRateService;
   @Autowired private CostRateService costRateService;
   @Autowired private CustomerService customerService;
+  @Autowired private CustomerRepository customerRepository;
   @Autowired private CustomerProjectService customerProjectService;
 
   @Autowired
@@ -129,8 +132,9 @@ class OrgProfitabilityTest {
                       memberIdOwner);
               customerId = customer.getId();
 
-              // Transition PROSPECT -> ACTIVE so lifecycle guard permits linking
-              customerLifecycleService.transition(customerId, "ACTIVE", null, memberIdOwner);
+              // Set lifecycle directly to ACTIVE (bypass onboarding guard)
+              customer.setLifecycleStatus(LifecycleStatus.ACTIVE);
+              customerRepository.save(customer);
 
               customerProjectService.linkCustomerToProject(
                   customerId, projectId1, memberIdOwner, memberIdOwner, "owner");

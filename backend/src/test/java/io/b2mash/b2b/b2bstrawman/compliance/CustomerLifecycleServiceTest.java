@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventFilter;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.member.MemberSyncService;
@@ -35,6 +36,7 @@ class CustomerLifecycleServiceTest {
   private static final String ORG_ID = "org_lifecycle_svc_test";
 
   @Autowired private CustomerLifecycleService lifecycleService;
+  @Autowired private CustomerService customerService;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private AuditService auditService;
   @Autowired private TenantProvisioningService provisioningService;
@@ -109,9 +111,20 @@ class CustomerLifecycleServiceTest {
   }
 
   @Test
-  void offboardedHasNoAllowedTransitions() {
-    // The LifecycleStatus enum defines OFFBOARDED -> Set.of() (no outgoing transitions).
-    // Verify that attempting any transition from OFFBOARDED is blocked.
+  void offboardedCanReactivateToActive() {
+    UUID customerId = createActiveCustomer();
+    runInTenant(() -> lifecycleService.transition(customerId, "OFFBOARDING", null, memberId));
+    runInTenant(() -> lifecycleService.transition(customerId, "OFFBOARDED", null, memberId));
+
+    var customer =
+        runInTenant(
+            () -> lifecycleService.transition(customerId, "ACTIVE", "reactivate", memberId));
+    assertThat(customer.getLifecycleStatus()).isEqualTo(LifecycleStatus.ACTIVE);
+    assertThat(customer.getOffboardedAt()).isNull();
+  }
+
+  @Test
+  void offboardedCannotTransitionToProspect() {
     UUID customerId = createActiveCustomer();
     runInTenant(() -> lifecycleService.transition(customerId, "OFFBOARDING", null, memberId));
     runInTenant(() -> lifecycleService.transition(customerId, "OFFBOARDED", null, memberId));
@@ -120,7 +133,8 @@ class CustomerLifecycleServiceTest {
             () ->
                 runInTenant(
                     () ->
-                        lifecycleService.transition(customerId, "ACTIVE", "reactivate", memberId)))
+                        lifecycleService.transition(
+                            customerId, "PROSPECT", "reactivate", memberId)))
         .isInstanceOf(InvalidStateException.class);
   }
 
@@ -173,6 +187,55 @@ class CustomerLifecycleServiceTest {
 
     assertThat(events).isNotEmpty();
     assertThat(events.getFirst().getEventType()).isEqualTo("customer.lifecycle.transitioned");
+  }
+
+  @Test
+  void prospectToActiveDirectlyThrows() {
+    UUID customerId = createCustomer();
+    assertThatThrownBy(
+            () ->
+                runInTenant(
+                    () -> lifecycleService.transition(customerId, "ACTIVE", null, memberId)))
+        .isInstanceOf(InvalidStateException.class);
+  }
+
+  @Test
+  void archiveSetsLifecycleToOffboarded() {
+    UUID customerId = createActiveCustomer();
+    var customer = runInTenant(() -> customerService.archiveCustomer(customerId));
+
+    assertThat(customer.getStatus()).isEqualTo("ARCHIVED");
+    assertThat(customer.getLifecycleStatus()).isEqualTo(LifecycleStatus.OFFBOARDED);
+    assertThat(customer.getOffboardedAt()).isNotNull();
+  }
+
+  @Test
+  void archivePreservesTerminalLifecycleStatus() {
+    // Customer already in OFFBOARDING — archive should not change lifecycle to OFFBOARDED
+    UUID customerId = createActiveCustomer();
+    runInTenant(() -> lifecycleService.transition(customerId, "OFFBOARDING", null, memberId));
+
+    var customer = runInTenant(() -> customerService.archiveCustomer(customerId));
+    assertThat(customer.getStatus()).isEqualTo("ARCHIVED");
+    assertThat(customer.getLifecycleStatus()).isEqualTo(LifecycleStatus.OFFBOARDING);
+  }
+
+  @Test
+  void unarchiveSetsLifecycleToDormant() {
+    UUID customerId = createActiveCustomer();
+    runInTenant(() -> customerService.archiveCustomer(customerId));
+
+    var customer = runInTenant(() -> customerService.unarchiveCustomer(customerId));
+    assertThat(customer.getStatus()).isEqualTo("ACTIVE");
+    assertThat(customer.getLifecycleStatus()).isEqualTo(LifecycleStatus.DORMANT);
+    assertThat(customer.getOffboardedAt()).isNull();
+  }
+
+  @Test
+  void unarchiveNonArchivedThrows() {
+    UUID customerId = createActiveCustomer();
+    assertThatThrownBy(() -> runInTenant(() -> customerService.unarchiveCustomer(customerId)))
+        .isInstanceOf(InvalidStateException.class);
   }
 
   @Test

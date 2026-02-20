@@ -202,6 +202,63 @@ public class CustomerLifecycleService {
     return new DormancyCheckResult(thresholdDays, candidates);
   }
 
+  /**
+   * Executes dormancy transitions: identifies dormancy candidates and transitions ACTIVE → DORMANT.
+   *
+   * @return the number of customers transitioned to DORMANT
+   */
+  @Transactional
+  public int executeDormancyTransitions() {
+    var result = runDormancyCheck();
+    int transitioned = 0;
+
+    for (var candidate : result.candidates()) {
+      try {
+        var customer = customerRepository.findById(candidate.customerId()).orElse(null);
+        if (customer == null || customer.getLifecycleStatus() != LifecycleStatus.ACTIVE) {
+          continue;
+        }
+
+        customer.setLifecycleStatus(LifecycleStatus.DORMANT);
+        customerRepository.save(customer);
+
+        auditService.log(
+            AuditEventBuilder.builder()
+                .eventType("customer.lifecycle.auto_dormancy")
+                .entityType("customer")
+                .entityId(customer.getId())
+                .details(
+                    Map.of(
+                        "daysSinceActivity", candidate.daysSinceActivity(),
+                        "thresholdDays", result.thresholdDays(),
+                        "reason", "auto-dormancy scheduled job"))
+                .build());
+
+        eventPublisher.publishEvent(
+            new CustomerStatusChangedEvent(this, customer.getId(), "ACTIVE", "DORMANT"));
+
+        transitioned++;
+        log.info(
+            "Auto-dormancy: customer {} ({}) transitioned to DORMANT (inactive {} days)",
+            customer.getId(),
+            customer.getName(),
+            candidate.daysSinceActivity());
+      } catch (Exception e) {
+        log.error(
+            "Auto-dormancy: failed to transition customer {}: {}",
+            candidate.customerId(),
+            e.getMessage(),
+            e);
+      }
+    }
+
+    log.info(
+        "Auto-dormancy completed: {} candidates, {} transitioned",
+        result.candidates().size(),
+        transitioned);
+    return transitioned;
+  }
+
   @Transactional(readOnly = true)
   public List<AuditEvent> getLifecycleHistory(UUID customerId) {
     var filter =

@@ -75,15 +75,35 @@ describe("LifecycleTransitionDropdown", () => {
     expect(screen.getByText("Offboard Customer")).toBeInTheDocument();
   });
 
-  it("renders nothing for OFFBOARDED status (no transitions)", () => {
-    const { container } = render(
+  it("shows 'Reactivate' transition for OFFBOARDED status", async () => {
+    const user = userEvent.setup();
+
+    render(
       <LifecycleTransitionDropdown
         currentStatus="OFFBOARDED"
         customerId="c1"
         slug="acme"
       />,
     );
-    expect(container.firstChild).toBeNull();
+
+    await user.click(screen.getByText("Change Status"));
+    expect(screen.getByText("Reactivate")).toBeInTheDocument();
+  });
+
+  it("PROSPECT only shows Start Onboarding (not Activate)", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <LifecycleTransitionDropdown
+        currentStatus="PROSPECT"
+        customerId="c1"
+        slug="acme"
+      />,
+    );
+
+    await user.click(screen.getByText("Change Status"));
+    expect(screen.getByText("Start Onboarding")).toBeInTheDocument();
+    expect(screen.queryByText("Activate")).not.toBeInTheDocument();
   });
 
   it("calls onTransition callback after successful transition", async () => {

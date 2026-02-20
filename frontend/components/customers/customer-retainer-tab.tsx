@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { FileText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,6 +24,7 @@ export function CustomerRetainerTab({
   allRetainers,
   periods,
   slug,
+  canManage,
 }: CustomerRetainerTabProps) {
   // State 1: No retainer at all
   if (allRetainers.length === 0) {
@@ -33,9 +32,13 @@ export function CustomerRetainerTab({
       <EmptyState
         icon={FileText}
         title="No retainer agreement"
-        description="Set up a recurring engagement with this customer."
-        actionLabel="Set Up Retainer"
-        actionHref={`/org/${slug}/retainers`}
+        description={
+          canManage
+            ? "Set up a recurring engagement with this customer."
+            : "No retainer has been set up for this customer yet."
+        }
+        actionLabel={canManage ? "Set Up Retainer" : undefined}
+        actionHref={canManage ? `/org/${slug}/retainers` : undefined}
       />
     );
   }
@@ -49,11 +52,13 @@ export function CustomerRetainerTab({
           Historical retainer data
         </div>
         <PeriodHistoryTable periods={periods} slug={slug} />
-        <div className="flex justify-center">
-          <Button asChild variant="outline" size="sm">
-            <Link href={`/org/${slug}/retainers`}>Create New Retainer</Link>
-          </Button>
-        </div>
+        {canManage && (
+          <div className="flex justify-center">
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/org/${slug}/retainers`}>Create New Retainer</Link>
+            </Button>
+          </div>
+        )}
       </div>
     );
   }

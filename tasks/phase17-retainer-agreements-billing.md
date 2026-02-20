@@ -91,7 +91,7 @@ Phase 17 adds a **retainer management layer** to the DocTeams platform -- per-cu
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 2a | Epic 123 | 123A | `RetainerAgreementService` -- create (with first period), update, lifecycle transitions. DTOs. Audit events. ~12 service tests. |
+| 2a | Epic 123 | 123A | `RetainerAgreementService` -- create (with first period), update, lifecycle transitions. DTOs. Audit events. ~12 service tests. | **Done** (PR #249) |
 | 2b | Epic 123 | 123B | `RetainerAgreementController` -- 7 REST endpoints, permission checks, SecurityConfig. ~12 controller tests. |
 | 2c | Epic 124 | 124A | `TimeEntryChangedEvent`, `RetainerConsumptionListener`, consumption query, threshold logic. Modify `TimeEntryService`. ~10 integration tests. |
 | 2d | Epic 124 | 124B | `RetainerSummaryController` + `RetainerSummaryResponse`. Customer retainer summary endpoint. ~5 controller tests. |
@@ -221,7 +221,7 @@ Stage 4:  [126A] --> [126B]  //  [127A] --> [127B]  //  [128A]  //  [128B]
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **123A** | 123.1--123.8 | `RetainerAgreementService` -- create (validates customer, checks no duplicate, creates first period), update terms, pause, resume, terminate. Request/response DTOs. Audit events for all operations. Service-level integration tests. ~12 tests. | |
+| **123A** | 123.1--123.8 | `RetainerAgreementService` -- create (validates customer, checks no duplicate, creates first period), update terms, pause, resume, terminate. Request/response DTOs. Audit events for all operations. Service-level integration tests. ~12 tests. | **Done** (PR #249) |
 | **123B** | 123.9--123.15 | `RetainerAgreementController` -- 7 REST endpoints (list, get, create, update, pause, resume, terminate). `SecurityConfig` update. Permission checks (admin/owner for write, member+ for read). Controller integration tests. ~12 tests. | |
 
 ### Tasks

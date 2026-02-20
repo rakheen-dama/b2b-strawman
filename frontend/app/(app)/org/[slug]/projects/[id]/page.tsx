@@ -1,6 +1,6 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
-import { api, handleApiError, getFieldDefinitions, getFieldGroups, getGroupMembers, getTags, getTemplates } from "@/lib/api";
-import type { OrgMember, Project, Customer, Document, ProjectMember, ProjectRole, Task, ProjectTimeSummary, MemberTimeSummary, TaskTimeSummary, BillingRate, OrgSettings, BudgetStatusResponse, ProjectProfitabilityResponse, FieldDefinitionResponse, FieldGroupResponse, FieldGroupMemberResponse, TagResponse, TemplateListResponse } from "@/lib/types";
+import { api, handleApiError, getFieldDefinitions, getFieldGroups, getGroupMembers, getTags, getTemplates, getViews } from "@/lib/api";
+import type { OrgMember, Project, Customer, Document, ProjectMember, ProjectRole, Task, ProjectTimeSummary, MemberTimeSummary, TaskTimeSummary, BillingRate, OrgSettings, BudgetStatusResponse, ProjectProfitabilityResponse, FieldDefinitionResponse, FieldGroupResponse, FieldGroupMemberResponse, TagResponse, TemplateListResponse, SavedViewResponse } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EditProjectDialog } from "@/components/projects/edit-project-dialog";
@@ -34,6 +34,7 @@ import type {
 import type { SetupStep } from "@/components/setup/types";
 import { formatDate } from "@/lib/format";
 import { SaveAsTemplateDialog } from "@/components/templates/SaveAsTemplateDialog";
+import { createSavedViewAction } from "./view-actions";
 import { ArrowLeft, LayoutTemplate, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 
@@ -297,6 +298,20 @@ export default async function ProjectDetailPage({
     // Non-fatal: custom fields section won't render in task sheet
   }
 
+  // Saved views for TASK entity type (for ViewSelectorClient in TaskListPanel)
+  let savedTaskViews: SavedViewResponse[] = [];
+  try {
+    savedTaskViews = await getViews("TASK");
+  } catch {
+    // Non-fatal: view selector won't show saved views
+  }
+
+  // Inline server action for creating task views
+  async function handleCreateTaskView(req: import("@/lib/types").CreateSavedViewRequest) {
+    "use server";
+    return createSavedViewAction(slug, req);
+  }
+
   // Tags for the Tags section
   let projectTags: TagResponse[] = [];
   let allTags: TagResponse[] = [];
@@ -497,6 +512,8 @@ export default async function ProjectDetailPage({
             fieldDefinitions={taskFieldDefs}
             fieldGroups={taskFieldGroups}
             groupMembers={taskGroupMembers}
+            savedViews={savedTaskViews}
+            onSave={handleCreateTaskView}
           />
         }
         timePanel={

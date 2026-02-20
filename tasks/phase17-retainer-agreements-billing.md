@@ -26,7 +26,7 @@ Phase 17 adds a **retainer management layer** to the DocTeams platform -- per-cu
 | 125 | Period Close & Invoice Generation | Backend | 124 | L | 125A, 125B | **Done** (PRs #253, #254) |
 | 126 | Retainer Dashboard & Create UI | Frontend | 123, 124, 125 | M | 126A, 126B | **Done** (PRs #255, #256) |
 | 127 | Customer Retainer Tab & Detail Page | Frontend | 126 | M | 127A, 127B | **Done** (PRs #257, #258) |
-| 128 | Time Entry Indicators & Notifications | Both | 124, 127 | M | 128A, 128B | |
+| 128 | Time Entry Indicators & Notifications | Both | 124, 127 | M | 128A, 128B | **Done** (PRs #259, #260) |
 
 ---
 
@@ -112,7 +112,7 @@ Phase 17 adds a **retainer management layer** to the DocTeams platform -- per-cu
 | 4c | Epic 127 | 127A | Customer retainer tab, active retainer card, period history table. ~5 tests. Parallel with 126. | **Done** (PR #257) |
 | 4d | Epic 127 | 127B | Retainer detail page, edit dialog, close period dialog, lifecycle action buttons. ~6 tests. | **Done** (PR #258) |
 | 4e | Epic 128 | 128A | Retainer indicator on time entry form, overage warning. ~4 frontend tests. Parallel with 127. | **Done** (PR #259) |
-| 4f | Epic 128 | 128B | Backend notification wiring: RETAINER_PERIOD_READY_TO_CLOSE trigger, ensure all notification types are dispatched. ~5 backend tests. Parallel with frontend slices. |
+| 4f | Epic 128 | 128B | Backend notification wiring: RETAINER_PERIOD_READY_TO_CLOSE trigger, ensure all notification types are dispatched. ~5 backend tests. Parallel with frontend slices. | **Done** (PR #260) |
 
 ### Timeline
 
@@ -584,7 +584,7 @@ Stage 4:  [126A] --> [126B]  //  [127A] --> [127B]  //  [128A]  //  [128B]
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **128A** | 128.1--128.6 | Frontend: retainer indicator on time entry form ("X hrs remaining"), overage warning, retainer badge on project list. ~4 frontend tests. | **Done** (PR #259) |
-| **128B** | 128.7--128.12 | Backend: wire `RETAINER_PERIOD_READY_TO_CLOSE` notification trigger (on dashboard load or first detection), ensure all 5 notification types dispatch correctly, notification templates. ~5 backend tests. | |
+| **128B** | 128.7--128.12 | Backend: wire `RETAINER_PERIOD_READY_TO_CLOSE` notification trigger (on dashboard load or first detection), ensure all 5 notification types dispatch correctly, notification templates. ~5 backend tests. | **Done** (PR #260) |
 
 ### Tasks
 

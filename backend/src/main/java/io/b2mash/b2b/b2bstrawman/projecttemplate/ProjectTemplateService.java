@@ -2,13 +2,22 @@ package io.b2mash.b2b.b2bstrawman.projecttemplate;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.customer.Customer;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.CreateTemplateRequest;
+import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.InstantiateTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.ProjectTemplateResponse;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.SaveFromProjectRequest;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.TagResponse;
@@ -17,10 +26,13 @@ import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.UpdateTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.event.TemplateCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.schedule.RecurringScheduleRepository;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
+import io.b2mash.b2b.b2bstrawman.tag.EntityTag;
+import io.b2mash.b2b.b2bstrawman.tag.EntityTagRepository;
 import io.b2mash.b2b.b2bstrawman.tag.TagRepository;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -46,6 +58,10 @@ public class ProjectTemplateService {
   private final RecurringScheduleRepository scheduleRepository;
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
+  private final CustomerRepository customerRepository;
+  private final CustomerProjectRepository customerProjectRepository;
+  private final EntityTagRepository entityTagRepository;
+  private final NameTokenResolver nameTokenResolver;
 
   public ProjectTemplateService(
       ProjectTemplateRepository templateRepository,
@@ -57,7 +73,11 @@ public class ProjectTemplateService {
       ProjectMemberRepository projectMemberRepository,
       RecurringScheduleRepository scheduleRepository,
       AuditService auditService,
-      ApplicationEventPublisher eventPublisher) {
+      ApplicationEventPublisher eventPublisher,
+      CustomerRepository customerRepository,
+      CustomerProjectRepository customerProjectRepository,
+      EntityTagRepository entityTagRepository,
+      NameTokenResolver nameTokenResolver) {
     this.templateRepository = templateRepository;
     this.templateTaskRepository = templateTaskRepository;
     this.templateTagRepository = templateTagRepository;
@@ -68,6 +88,10 @@ public class ProjectTemplateService {
     this.scheduleRepository = scheduleRepository;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
+    this.customerRepository = customerRepository;
+    this.customerProjectRepository = customerProjectRepository;
+    this.entityTagRepository = entityTagRepository;
+    this.nameTokenResolver = nameTokenResolver;
   }
 
   @Transactional
@@ -357,6 +381,116 @@ public class ProjectTemplateService {
     return buildResponse(template);
   }
 
+  @Transactional
+  public Project instantiateTemplate(
+      UUID templateId, InstantiateTemplateRequest request, UUID memberId) {
+    // 1. Load and validate template
+    var template =
+        templateRepository
+            .findById(templateId)
+            .orElseThrow(() -> new ResourceNotFoundException("ProjectTemplate", templateId));
+    if (!template.isActive()) {
+      throw new InvalidStateException(
+          "Template inactive", "Cannot create project from an inactive template.");
+    }
+
+    // 2. Load customer (if requested)
+    Customer customer = null;
+    if (request.customerId() != null) {
+      customer =
+          customerRepository
+              .findById(request.customerId())
+              .orElseThrow(() -> new ResourceNotFoundException("Customer", request.customerId()));
+    }
+
+    // 3. Resolve project name
+    String resolvedName =
+        request.name() != null
+            ? request.name()
+            : nameTokenResolver.resolveNameTokens(
+                template.getNamePattern(), customer, LocalDate.now(), null, null);
+
+    // 4. Resolve description
+    String description =
+        request.description() != null ? request.description() : template.getDescription();
+
+    // 5. Create project
+    var project = new Project(resolvedName, description, memberId);
+    project = projectRepository.save(project);
+
+    // 6. Link to customer
+    if (customer != null) {
+      customerProjectRepository.save(
+          new CustomerProject(customer.getId(), project.getId(), memberId));
+    }
+
+    // 7. Set project lead
+    if (request.projectLeadMemberId() != null) {
+      projectMemberRepository.save(
+          new ProjectMember(project.getId(), request.projectLeadMemberId(), "LEAD", memberId));
+    }
+
+    // 8. Create tasks from template (snapshot — no live references)
+    // TemplateTask.getName() maps to Task.title (different field names!)
+    var templateTasks = templateTaskRepository.findByTemplateIdOrderBySortOrder(templateId);
+    for (var tt : templateTasks) {
+      UUID assigneeId = resolveAssignee(tt.getAssigneeRole(), request.projectLeadMemberId());
+      // Task constructor: (projectId, title, description, priority, type, dueDate, createdBy)
+      var task =
+          new Task(
+              project.getId(), tt.getName(), tt.getDescription(), "MEDIUM", null, null, memberId);
+      if (assigneeId != null) {
+        // Set assignee without changing status (stays OPEN)
+        task.update(
+            task.getTitle(),
+            task.getDescription(),
+            task.getPriority(),
+            task.getStatus(),
+            task.getType(),
+            task.getDueDate(),
+            assigneeId);
+      }
+      projectTaskRepository.save(task);
+    }
+
+    // 9. Apply tags
+    var tagIds = templateTagRepository.findTagIdsByTemplateId(templateId);
+    for (UUID tagId : tagIds) {
+      entityTagRepository.save(new EntityTag(tagId, "PROJECT", project.getId()));
+    }
+
+    log.info(
+        "Instantiated template {} -> project {} (name={})",
+        templateId,
+        project.getId(),
+        resolvedName);
+
+    // 10. Audit
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("project.created_from_template")
+            .entityType("project")
+            .entityId(project.getId())
+            .details(
+                Map.of(
+                    "template_name",
+                    template.getName(),
+                    "project_name",
+                    resolvedName,
+                    "customer_name",
+                    customer != null ? customer.getName() : "none"))
+            .build());
+
+    // 11. Publish notification event (informational — reuses ProjectCreatedEvent)
+    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    eventPublisher.publishEvent(
+        new ProjectCreatedEvent(
+            project.getId(), project.getName(), project.getDescription(), null, orgId, tenantId));
+
+    return project;
+  }
+
   // --- Private helpers ---
 
   private void requireAdminOwnerOrProjectLead(String orgRole, UUID projectId, UUID memberId) {
@@ -391,6 +525,17 @@ public class ProjectTemplateService {
             tenantId,
             orgId,
             Instant.now()));
+  }
+
+  private UUID resolveAssignee(String assigneeRole, UUID projectLeadMemberId) {
+    if (assigneeRole == null) {
+      return null;
+    }
+    return switch (assigneeRole) {
+      case "PROJECT_LEAD" -> projectLeadMemberId; // may be null if no lead provided
+      case "ANY_MEMBER", "UNASSIGNED" -> null;
+      default -> null;
+    };
   }
 
   private ProjectTemplateResponse buildResponse(ProjectTemplate template) {

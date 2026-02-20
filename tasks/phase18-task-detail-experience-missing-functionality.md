@@ -60,7 +60,7 @@ Phase 18 resolves four task UX gaps identified in QA gap analysis (Group A: find
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 2a | Epic 130 | 130A | New `TaskDetailSheet` component — full right-side panel with metadata, time entries, comments tabs. Depends on `AssigneeSelector` from 129A. |
+| 2a | Epic 130 | 130A | New `TaskDetailSheet` component — full right-side panel with metadata, time entries, comments tabs. Depends on `AssigneeSelector` from 129A. | **Done** (PR #262) |
 | 2b | Epic 130 | 130B | Wire sheet into `TaskListPanel` via URL state (`?taskId=`). Remove inline row expansion. Thread `members`, `allTags`, `fieldDefinitions`, `fieldGroups` props from page down to panel. |
 
 ### Stage 3: Feature Wiring (Parallel tracks after Stage 2)
@@ -162,7 +162,7 @@ Stage 3:  [131A] --> [131B]  //  [132A]
 
 | Slice | Summary | Status |
 |-------|---------|--------|
-| **130A** | New `TaskDetailSheet` component — header, metadata row, description, tabbed Time Entries + Comments. ~5 tests. | Pending |
+| **130A** | New `TaskDetailSheet` component — header, metadata row, description, tabbed Time Entries + Comments. ~5 tests. | **Done** (PR #262) |
 | **130B** | Wire sheet into `TaskListPanel` with `?taskId=` URL state. Remove inline row expansion. Thread props from project detail page. ~4 tests. | Pending |
 
 ### Tasks

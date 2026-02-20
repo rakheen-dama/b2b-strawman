@@ -88,7 +88,7 @@ function sheetReducer(state: SheetState, action: SheetAction): SheetState {
 interface TaskDetailSheetProps {
   taskId: string | null;
   onClose: () => void;
-  projectId: string;
+  projectId: string | null;
   slug: string;
   canManage: boolean;
   currentMemberId: string;
@@ -132,8 +132,8 @@ export function TaskDetailSheet({
     fetchTask(taskId)
       .then((data) => {
         if (cancelled) return;
-        // Guard: ensure the task belongs to this project
-        if (data.projectId !== projectId) {
+        // Guard: ensure the task belongs to this project (skip when projectId is null — cross-project context)
+        if (projectId !== null && data.projectId !== projectId) {
           dispatch({ type: "TASK_ERROR", error: "Task not found." });
           return;
         }
@@ -175,7 +175,7 @@ export function TaskDetailSheet({
     });
 
     startTransition(async () => {
-      const result = await updateTask(slug, task.id, projectId, {
+      const result = await updateTask(slug, task.id, effectiveProjectId, {
         title: task.title,
         description: task.description ?? undefined,
         priority: task.priority,
@@ -194,6 +194,9 @@ export function TaskDetailSheet({
       }
     });
   }
+
+  // When projectId is null (cross-project context like My Work), derive from the loaded task
+  const effectiveProjectId = projectId ?? task?.projectId ?? "";
 
   const isOpen = taskId !== null;
   const priorityBadge = task ? PRIORITY_BADGE[task.priority] : null;
@@ -387,7 +390,7 @@ export function TaskDetailSheet({
                     <TimeEntryList
                       entries={timeEntries}
                       slug={slug}
-                      projectId={projectId}
+                      projectId={effectiveProjectId}
                       currentMemberId={currentMemberId}
                       orgRole={orgRole}
                       canManage={canManage}
@@ -397,7 +400,7 @@ export function TaskDetailSheet({
 
                 <TabsContent value="comments" className="mt-4">
                   <CommentSectionClient
-                    projectId={projectId}
+                    projectId={effectiveProjectId}
                     entityType="TASK"
                     entityId={task.id}
                     orgSlug={slug}

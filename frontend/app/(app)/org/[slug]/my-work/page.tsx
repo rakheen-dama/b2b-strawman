@@ -1,17 +1,32 @@
-import { api, handleApiError } from "@/lib/api";
+import { auth, currentUser } from "@clerk/nextjs/server";
+import {
+  api,
+  handleApiError,
+  getViews,
+  getFieldDefinitions,
+  getFieldGroups,
+  getGroupMembers,
+  getTags,
+} from "@/lib/api";
 import type {
   MyWorkTasksResponse,
   MyWorkTimeSummary,
   MyWorkTimeEntryItem,
+  OrgMember,
+  SavedViewResponse,
+  TagResponse,
+  FieldDefinitionResponse,
+  FieldGroupResponse,
+  FieldGroupMemberResponse,
 } from "@/lib/types";
-import { UrgencyTaskList } from "@/components/my-work/urgency-task-list";
-import { AvailableTaskList } from "@/components/my-work/available-task-list";
 import { WeeklyTimeSummary } from "@/components/my-work/weekly-time-summary";
 import { TodayTimeEntries } from "@/components/my-work/today-time-entries";
 import { PersonalKpis } from "@/components/my-work/personal-kpis";
 import { TimeBreakdown } from "@/components/my-work/time-breakdown";
 import { UpcomingDeadlines } from "@/components/my-work/upcoming-deadlines";
 import { MyWorkHeader } from "./my-work-header";
+import { MyWorkTasksClient } from "./my-work-tasks-client";
+import { createMyWorkViewAction } from "./view-actions";
 import { fetchPersonalDashboard } from "@/lib/actions/dashboard";
 import { ApiError } from "@/lib/api";
 
@@ -60,6 +75,7 @@ export default async function MyWorkPage({
   searchParams: Promise<{ from?: string; to?: string }>;
 }) {
   const { slug } = await params;
+  const { orgRole } = await auth();
   const resolvedSearchParams = await searchParams;
   const { from, to } = resolveMyWorkDateRange(resolvedSearchParams);
 
@@ -101,6 +117,73 @@ export default async function MyWorkPage({
     // Non-fatal: show empty today entries
   }
 
+  // Resolve current member ID and org members in a single fetch
+  let currentMemberId = "";
+  let members: { id: string; name: string; email: string }[] = [];
+  try {
+    const [user, orgMembers] = await Promise.all([
+      currentUser(),
+      api.get<OrgMember[]>("/api/members"),
+    ]);
+    const email = user?.primaryEmailAddress?.emailAddress;
+    if (email) {
+      const match = orgMembers.find((m) => m.email === email);
+      if (match) currentMemberId = match.id;
+    }
+    members = orgMembers.map((m) => ({ id: m.id, name: m.name, email: m.email }));
+  } catch {
+    // Non-fatal
+  }
+
+  // Saved views for TASK
+  let savedViews: SavedViewResponse[] = [];
+  try {
+    savedViews = await getViews("TASK");
+  } catch {
+    // Non-fatal
+  }
+
+  // Tags and field definitions for TASK
+  let allTags: TagResponse[] = [];
+  let fieldDefinitions: FieldDefinitionResponse[] = [];
+  let fieldGroups: FieldGroupResponse[] = [];
+  const groupMembers: Record<string, FieldGroupMemberResponse[]> = {};
+  try {
+    const [tags, defs, groups] = await Promise.all([
+      getTags(),
+      getFieldDefinitions("TASK"),
+      getFieldGroups("TASK"),
+    ]);
+    allTags = tags;
+    fieldDefinitions = defs;
+    fieldGroups = groups;
+
+    const activeGroupIds = groups.filter((g) => g.active).map((g) => g.id);
+    if (activeGroupIds.length > 0) {
+      const memberResults = await Promise.allSettled(
+        activeGroupIds.map((gId) => getGroupMembers(gId)),
+      );
+      memberResults.forEach((result, i) => {
+        if (result.status === "fulfilled") {
+          groupMembers[activeGroupIds[i]] = result.value;
+        }
+      });
+    }
+  } catch {
+    // Non-fatal
+  }
+
+  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+  const canManage = isAdmin;
+
+  // Inline server action for creating task views
+  async function handleCreateTaskView(
+    req: import("@/lib/types").CreateSavedViewRequest,
+  ) {
+    "use server";
+    return createMyWorkViewAction(slug, req);
+  }
+
   // Determine period label from date range for KPIs
   const periodLabel = resolvedSearchParams.from ? undefined : "This Week";
 
@@ -126,8 +209,21 @@ export default async function MyWorkPage({
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         {/* Tasks Column (wider) */}
         <div className="space-y-8 lg:col-span-2">
-          <UrgencyTaskList tasks={tasksData.assigned} slug={slug} />
-          <AvailableTaskList tasks={tasksData.unassigned} slug={slug} />
+          <MyWorkTasksClient
+            assigned={tasksData.assigned}
+            unassigned={tasksData.unassigned}
+            slug={slug}
+            orgRole={orgRole ?? ""}
+            canManage={canManage}
+            currentMemberId={currentMemberId}
+            members={members}
+            allTags={allTags}
+            fieldDefinitions={fieldDefinitions}
+            fieldGroups={fieldGroups}
+            groupMembers={groupMembers}
+            savedViews={savedViews}
+            onSave={handleCreateTaskView}
+          />
         </div>
 
         {/* Time Summary Column */}

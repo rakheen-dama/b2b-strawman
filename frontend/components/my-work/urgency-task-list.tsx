@@ -109,9 +109,10 @@ interface TaskGroupTableProps {
   tasks: MyWorkTaskItem[];
   slug: string;
   isOverdue?: boolean;
+  onTaskClick?: (taskId: string) => void;
 }
 
-function TaskGroupTable({ tasks, slug, isOverdue }: TaskGroupTableProps) {
+function TaskGroupTable({ tasks, slug, isOverdue, onTaskClick }: TaskGroupTableProps) {
   const router = useRouter();
 
   return (
@@ -154,9 +155,13 @@ function TaskGroupTable({ tasks, slug, isOverdue }: TaskGroupTableProps) {
                   "cursor-pointer border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900",
                   isOverdue && "bg-red-50/30 dark:bg-red-950/10"
                 )}
-                onClick={() =>
-                  router.push(`/org/${slug}/projects/${task.projectId}`)
-                }
+                onClick={() => {
+                  if (onTaskClick) {
+                    onTaskClick(task.id);
+                  } else {
+                    router.push(`/org/${slug}/projects/${task.projectId}`);
+                  }
+                }}
               >
                 <TableCell>
                   <Badge variant="member">{task.projectName}</Badge>
@@ -251,9 +256,10 @@ function GroupHeader({ icon, label, count, variant }: GroupHeaderProps) {
 interface UrgencyTaskListProps {
   tasks: MyWorkTaskItem[];
   slug: string;
+  onTaskClick?: (taskId: string) => void;
 }
 
-export function UrgencyTaskList({ tasks, slug }: UrgencyTaskListProps) {
+export function UrgencyTaskList({ tasks, slug, onTaskClick }: UrgencyTaskListProps) {
   if (tasks.length === 0) {
     return (
       <div className="space-y-4">
@@ -299,6 +305,7 @@ export function UrgencyTaskList({ tasks, slug }: UrgencyTaskListProps) {
               tasks={groups.overdue}
               slug={slug}
               isOverdue
+              onTaskClick={onTaskClick}
             />
           </div>
         )}
@@ -311,7 +318,7 @@ export function UrgencyTaskList({ tasks, slug }: UrgencyTaskListProps) {
               count={groups.dueThisWeek.length}
               variant="warning"
             />
-            <TaskGroupTable tasks={groups.dueThisWeek} slug={slug} />
+            <TaskGroupTable tasks={groups.dueThisWeek} slug={slug} onTaskClick={onTaskClick} />
           </div>
         )}
 
@@ -323,7 +330,7 @@ export function UrgencyTaskList({ tasks, slug }: UrgencyTaskListProps) {
               count={groups.upcoming.length}
               variant="neutral"
             />
-            <TaskGroupTable tasks={groups.upcoming} slug={slug} />
+            <TaskGroupTable tasks={groups.upcoming} slug={slug} onTaskClick={onTaskClick} />
           </div>
         )}
 
@@ -335,7 +342,7 @@ export function UrgencyTaskList({ tasks, slug }: UrgencyTaskListProps) {
               count={groups.noDueDate.length}
               variant="neutral"
             />
-            <TaskGroupTable tasks={groups.noDueDate} slug={slug} />
+            <TaskGroupTable tasks={groups.noDueDate} slug={slug} onTaskClick={onTaskClick} />
           </div>
         )}
       </div>

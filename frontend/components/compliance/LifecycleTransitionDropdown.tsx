@@ -26,7 +26,8 @@ const ALLOWED_TRANSITIONS: Record<LifecycleStatus, LifecycleStatus[]> = {
 // Human-readable labels for each target (context-aware)
 function getTransitionLabel(fromStatus: LifecycleStatus, toStatus: LifecycleStatus): string {
   if (toStatus === "ONBOARDING") return "Start Onboarding";
-  if (toStatus === "ACTIVE" && fromStatus === "PROSPECT") return "Activate";
+  if (toStatus === "ACTIVE" && (fromStatus === "PROSPECT" || fromStatus === "ONBOARDING"))
+    return "Activate";
   if (toStatus === "ACTIVE") return "Reactivate";
   if (toStatus === "DORMANT") return "Mark as Dormant";
   if (toStatus === "OFFBOARDING") return "Offboard Customer";

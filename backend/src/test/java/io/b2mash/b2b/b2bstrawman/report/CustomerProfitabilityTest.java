@@ -59,6 +59,10 @@ class CustomerProfitabilityTest {
   @Autowired private CostRateService costRateService;
   @Autowired private CustomerService customerService;
   @Autowired private CustomerProjectService customerProjectService;
+
+  @Autowired
+  private io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleService customerLifecycleService;
+
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
@@ -121,6 +125,9 @@ class CustomerProfitabilityTest {
                       null,
                       memberIdOwner);
               customerId = customer.getId();
+
+              // Transition PROSPECT -> ACTIVE so lifecycle guard permits linking
+              customerLifecycleService.transition(customerId, "ACTIVE", null, memberIdOwner);
 
               customerProjectService.linkCustomerToProject(
                   customerId, projectId1, memberIdOwner, memberIdOwner, "owner");

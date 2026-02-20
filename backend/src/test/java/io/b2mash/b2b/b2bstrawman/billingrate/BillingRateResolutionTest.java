@@ -94,12 +94,13 @@ class BillingRateResolutionTest {
                       memberIdOwner);
               customerId = customer.getId();
 
+              // Transition PROSPECT -> ACTIVE so lifecycle guard permits linking
+              customerLifecycleService.transition(customerId, "ACTIVE", null, memberIdOwner);
+
               var project =
                   projectService.createProject(
                       "Rate Resolution Test Project", "Test", memberIdOwner);
               projectId = project.getId();
-
-              // Customer defaults to ACTIVE — no transition needed
 
               customerProjectService.linkCustomerToProject(
                   customerId, projectId, memberIdOwner, memberIdOwner, "owner");

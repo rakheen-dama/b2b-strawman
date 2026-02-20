@@ -198,7 +198,22 @@ class ProjectCustomerControllerIntegrationTest {
                             .formatted(name, email)))
             .andExpect(status().isCreated())
             .andReturn();
-    return extractIdFromLocation(result);
+    var customerId = extractIdFromLocation(result);
+    transitionCustomerToActive(customerId);
+    return customerId;
+  }
+
+  private void transitionCustomerToActive(String customerId) throws Exception {
+    mockMvc
+        .perform(
+            post("/api/customers/" + customerId + "/transition")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"targetStatus": "ACTIVE"}
+                    """))
+        .andExpect(status().isOk());
   }
 
   private String extractIdFromLocation(MvcResult result) {

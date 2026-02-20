@@ -19,6 +19,7 @@ import io.b2mash.b2b.b2bstrawman.projecttemplate.TemplateTaskRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -597,7 +598,8 @@ class RecurringScheduleExecutorTest {
                       templateId2[0] = t.getId();
                       var c =
                           customerRepository.saveAndFlush(
-                              new Customer("T2 Corp", "t2@corp.com", null, null, null, memberId2));
+                              TestCustomerFactory.createActiveCustomer(
+                                  "T2 Corp", "t2@corp.com", memberId2));
                       customerId2[0] = c.getId();
                     }));
 

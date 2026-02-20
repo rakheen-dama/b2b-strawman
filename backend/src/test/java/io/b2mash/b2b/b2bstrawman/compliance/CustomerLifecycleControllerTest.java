@@ -51,9 +51,23 @@ class CustomerLifecycleControllerTest {
 
   @Test
   void shouldTransitionLifecycleStatus() throws Exception {
-    // Customer defaults to ACTIVE; transition to DORMANT is valid
+    // Customer defaults to PROSPECT; transition to ACTIVE then DORMANT
     String customerId = createCustomer("Transition Test Corp", nextEmail());
 
+    // PROSPECT -> ACTIVE
+    mockMvc
+        .perform(
+            post("/api/customers/" + customerId + "/transition")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"targetStatus": "ACTIVE"}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.lifecycleStatus").value("ACTIVE"));
+
+    // ACTIVE -> DORMANT
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/transition")
@@ -85,7 +99,7 @@ class CustomerLifecycleControllerTest {
 
   @Test
   void shouldReturn400ForInvalidTransition() throws Exception {
-    // Customer defaults to ACTIVE; ACTIVE -> ONBOARDING is not a valid transition
+    // Customer defaults to PROSPECT; PROSPECT -> DORMANT is not a valid transition
     String customerId = createCustomer("Invalid Transition Corp", nextEmail());
 
     mockMvc
@@ -95,7 +109,7 @@ class CustomerLifecycleControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"targetStatus": "ONBOARDING"}
+                    {"targetStatus": "DORMANT"}
                     """))
         .andExpect(status().isBadRequest());
   }
@@ -104,7 +118,7 @@ class CustomerLifecycleControllerTest {
   void shouldReturnLifecycleHistory() throws Exception {
     String customerId = createCustomer("History Test Corp", nextEmail());
 
-    // Perform a transition to create an audit event (ACTIVE -> DORMANT is valid)
+    // Perform a transition to create an audit event (PROSPECT -> ACTIVE is valid)
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/transition")
@@ -112,7 +126,7 @@ class CustomerLifecycleControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"targetStatus": "DORMANT"}
+                    {"targetStatus": "ACTIVE"}
                     """))
         .andExpect(status().isOk());
 

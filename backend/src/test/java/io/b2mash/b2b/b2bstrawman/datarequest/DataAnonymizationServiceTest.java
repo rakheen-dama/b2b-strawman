@@ -10,7 +10,6 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.comment.Comment;
 import io.b2mash.b2b.b2bstrawman.comment.CommentRepository;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.document.Document;
@@ -30,6 +29,7 @@ import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.time.LocalDate;
@@ -286,13 +286,8 @@ class DataAnonymizationServiceTest {
         runInTenant(
             () -> {
               var customer =
-                  new Customer(
-                      "Type Test Customer",
-                      "type-test@test.com",
-                      "+1-555-9999",
-                      "TYP-001",
-                      "Type test",
-                      memberId);
+                  TestCustomerFactory.createActiveCustomer(
+                      "Type Test Customer", "type-test@test.com", memberId);
               return customerRepository.save(customer).getId();
             });
 
@@ -320,13 +315,8 @@ class DataAnonymizationServiceTest {
         runInTenant(
             () -> {
               var customer =
-                  new Customer(
-                      "Status Test Customer",
-                      "status-test@test.com",
-                      "+1-555-8888",
-                      "STA-001",
-                      "Status test",
-                      memberId);
+                  TestCustomerFactory.createActiveCustomer(
+                      "Status Test Customer", "status-test@test.com", memberId);
               return customerRepository.save(customer).getId();
             });
 
@@ -391,13 +381,8 @@ class DataAnonymizationServiceTest {
         () -> {
           // 1. Create customer (unique email per scenario to avoid unique constraint violations)
           var customer =
-              new Customer(
-                  CUSTOMER_NAME,
-                  "anon-customer-" + seq + "@test.com",
-                  "+1-555-0300",
-                  "ANON-" + seq,
-                  "Customer for anonymization test",
-                  memberId);
+              TestCustomerFactory.createActiveCustomer(
+                  CUSTOMER_NAME, "anon-customer-" + seq + "@test.com", memberId);
           customer = customerRepository.save(customer);
           UUID customerId = customer.getId();
 

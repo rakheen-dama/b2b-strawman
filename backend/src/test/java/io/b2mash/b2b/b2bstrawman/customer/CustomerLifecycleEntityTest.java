@@ -33,19 +33,27 @@ class CustomerLifecycleEntityTest {
 
   @Test
   void transitionLifecycleStatus_rejectsInvalidTransition() {
-    // ACTIVE cannot go directly to ONBOARDING
+    // PROSPECT cannot go directly to DORMANT
     var customer = new Customer("Test Co", "test@test.com", null, null, null, UUID.randomUUID());
     UUID actorId = UUID.randomUUID();
 
-    assertThatThrownBy(
-            () -> customer.transitionLifecycleStatus(LifecycleStatus.ONBOARDING, actorId))
+    assertThatThrownBy(() -> customer.transitionLifecycleStatus(LifecycleStatus.DORMANT, actorId))
         .isInstanceOf(InvalidStateException.class)
-        .hasMessageContaining("Cannot transition from ACTIVE to ONBOARDING");
+        .hasMessageContaining("Cannot transition from PROSPECT to DORMANT");
   }
 
   @Test
   void transitionLifecycleStatus_offboardedCannotGoBack() {
-    var customer = new Customer("Test Co", "test@test.com", null, null, null, UUID.randomUUID());
+    var customer =
+        new Customer(
+            "Test Co",
+            "test@test.com",
+            null,
+            null,
+            null,
+            UUID.randomUUID(),
+            null,
+            LifecycleStatus.ACTIVE);
     UUID actorId = UUID.randomUUID();
     customer.transitionLifecycleStatus(LifecycleStatus.OFFBOARDING, actorId);
     customer.transitionLifecycleStatus(LifecycleStatus.OFFBOARDED, actorId);
@@ -56,7 +64,16 @@ class CustomerLifecycleEntityTest {
 
   @Test
   void transitionLifecycleStatus_setsOffboardedAtWhenOffboarded() {
-    var customer = new Customer("Test Co", "test@test.com", null, null, null, UUID.randomUUID());
+    var customer =
+        new Customer(
+            "Test Co",
+            "test@test.com",
+            null,
+            null,
+            null,
+            UUID.randomUUID(),
+            null,
+            LifecycleStatus.ACTIVE);
     UUID actorId = UUID.randomUUID();
     customer.transitionLifecycleStatus(LifecycleStatus.OFFBOARDING, actorId);
 
@@ -82,9 +99,9 @@ class CustomerLifecycleEntityTest {
   }
 
   @Test
-  void defaultLifecycleIsActive() {
+  void defaultLifecycleIsProspect() {
     var customer = new Customer("New Co", "new@co.com", null, null, null, UUID.randomUUID());
-    assertThat(customer.getLifecycleStatus()).isEqualTo(LifecycleStatus.ACTIVE);
+    assertThat(customer.getLifecycleStatus()).isEqualTo(LifecycleStatus.PROSPECT);
   }
 
   @Test

@@ -78,6 +78,19 @@ class RetainerAgreementControllerTest {
             .andReturn();
     customerId =
         JsonPath.read(customerResult.getResponse().getContentAsString(), "$.id").toString();
+
+    // Transition customer from PROSPECT to ACTIVE (lifecycle guard blocks PROSPECT)
+    transitionCustomerToActive(customerId);
+  }
+
+  private void transitionCustomerToActive(String custId) throws Exception {
+    mockMvc
+        .perform(
+            post("/api/customers/" + custId + "/transition")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"targetStatus\": \"ACTIVE\"}"))
+        .andExpect(status().isOk());
   }
 
   // --- CRUD Tests ---

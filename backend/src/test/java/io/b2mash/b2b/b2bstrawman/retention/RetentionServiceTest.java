@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
@@ -14,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -98,13 +98,8 @@ class RetentionServiceTest {
         runInTenant(
             () -> {
               var customer =
-                  new Customer(
-                      "Offboarded Client",
-                      "offboarded-retention@test.com",
-                      null,
-                      null,
-                      null,
-                      memberId);
+                  TestCustomerFactory.createActiveCustomer(
+                      "Offboarded Client", "offboarded-retention@test.com", memberId);
               // ACTIVE -> OFFBOARDING -> OFFBOARDED
               customer.transitionLifecycleStatus(LifecycleStatus.OFFBOARDING, memberId);
               customer.transitionLifecycleStatus(LifecycleStatus.OFFBOARDED, memberId);
@@ -140,8 +135,8 @@ class RetentionServiceTest {
     runInTenant(
         () -> {
           var customer =
-              new Customer(
-                  "Active Client", "active-retention@test.com", null, null, null, memberId);
+              TestCustomerFactory.createActiveCustomer(
+                  "Active Client", "active-retention@test.com", memberId);
           customerRepository.save(customer);
         });
 
@@ -217,13 +212,8 @@ class RetentionServiceTest {
         runInTenant(
             () -> {
               var customer =
-                  new Customer(
-                      "Recently Offboarded",
-                      "recent-offboarded@test.com",
-                      null,
-                      null,
-                      null,
-                      memberId);
+                  TestCustomerFactory.createActiveCustomer(
+                      "Recently Offboarded", "recent-offboarded@test.com", memberId);
               customer.transitionLifecycleStatus(LifecycleStatus.OFFBOARDING, memberId);
               customer.transitionLifecycleStatus(LifecycleStatus.OFFBOARDED, memberId);
               customer.setOffboardedAt(Instant.now().minus(10, ChronoUnit.DAYS));

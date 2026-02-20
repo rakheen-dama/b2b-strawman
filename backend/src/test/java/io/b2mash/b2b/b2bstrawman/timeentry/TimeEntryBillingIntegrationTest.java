@@ -11,7 +11,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
@@ -23,6 +22,7 @@ import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -108,17 +108,10 @@ class TimeEntryBillingIntegrationTest {
                 transactionTemplate.executeWithoutResult(
                     tx -> {
                       var customer =
-                          new Customer(
-                              "Billing Test Corp",
-                              "billing@test.com",
-                              "+1-555-0700",
-                              "BTC-001",
-                              "Test customer for billing",
-                              memberIdOwner);
+                          TestCustomerFactory.createActiveCustomer(
+                              "Billing Test Corp", "billing@test.com", memberIdOwner);
                       customer = customerRepository.save(customer);
                       customerId = customer.getId();
-
-                      // Customer defaults to ACTIVE — no transition needed
 
                       var project =
                           new Project(

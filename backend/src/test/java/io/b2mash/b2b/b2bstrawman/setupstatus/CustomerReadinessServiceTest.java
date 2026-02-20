@@ -167,16 +167,16 @@ class CustomerReadinessServiceTest {
   }
 
   @Test
-  void getReadiness_nullLifecycleStatus_defaultsToActive() {
+  void getReadiness_nullLifecycleStatus_defaultsToProspect() {
     mockCustomer(null);
     mockNoChecklist();
     mockNoRequiredFields();
-    when(customerProjectRepository.existsByCustomerId(CUSTOMER_ID)).thenReturn(true);
+    when(customerProjectRepository.existsByCustomerId(CUSTOMER_ID)).thenReturn(false);
 
     var result = service.getReadiness(CUSTOMER_ID);
 
-    assertThat(result.lifecycleStatus()).isEqualTo("ACTIVE");
-    assertThat(result.overallReadiness()).isEqualTo("Complete");
+    assertThat(result.lifecycleStatus()).isEqualTo("PROSPECT");
+    assertThat(result.overallReadiness()).isEqualTo("Needs Attention");
   }
 
   // --- Helper methods ---

@@ -196,9 +196,11 @@ describe("TaskDetailSheet", () => {
       expect(screen.getByRole("heading", { name: "Fix login bug" })).toBeInTheDocument();
     });
 
-    // Open the assignee selector (combobox button labeled "Unassigned")
-    const assigneeButton = screen.getByRole("combobox");
-    await user.click(assigneeButton);
+    // Open the assignee selector (combobox) — multiple comboboxes now exist (status + assignee)
+    const comboboxes = screen.getAllByRole("combobox");
+    const assigneeButton = comboboxes.find((el) => el.textContent?.includes("Unassigned"));
+    expect(assigneeButton).toBeDefined();
+    await user.click(assigneeButton!);
 
     // Select "Alice" from the dropdown — use the option role to avoid the "Created By: Alice" text
     const aliceOption = await screen.findByRole("option", { name: /Alice/ });
@@ -212,6 +214,60 @@ describe("TaskDetailSheet", () => {
         expect.objectContaining({ assigneeId: "m1" }),
       );
     });
+  });
+
+  // Test 3b: Status change calls update endpoint
+  it("calls updateTask with new status when status is changed via select", async () => {
+    const user = userEvent.setup();
+
+    render(<TaskDetailSheet {...defaultProps} taskId="t1" />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Fix login bug" })).toBeInTheDocument();
+    });
+
+    // Open the status select (find the combobox with current status text)
+    const comboboxes = screen.getAllByRole("combobox");
+    const statusSelect = comboboxes.find((el) => el.textContent?.includes("In Progress"));
+    expect(statusSelect).toBeDefined();
+    await user.click(statusSelect!);
+
+    // Select "Done" from the dropdown
+    const doneOption = await screen.findByRole("option", { name: /Done/ });
+    await user.click(doneOption);
+
+    await waitFor(() => {
+      expect(mockUpdateTask).toHaveBeenCalledWith(
+        "acme",
+        "t1",
+        "p1",
+        expect.objectContaining({ status: "DONE" }),
+      );
+    });
+  });
+
+  // Test 3c: Status select not shown when user cannot manage
+  it("shows read-only status badge when canManage is false and not own task", async () => {
+    render(
+      <TaskDetailSheet
+        {...defaultProps}
+        taskId="t1"
+        canManage={false}
+        currentMemberId="different-member"
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Fix login bug" })).toBeInTheDocument();
+    });
+
+    // Status should be a read-only badge, not a combobox select
+    // Only the assignee combobox should exist (disabled), no status select
+    const comboboxes = screen.queryAllByRole("combobox");
+    const statusCombobox = comboboxes.find((el) => el.textContent?.includes("In Progress"));
+    expect(statusCombobox).toBeUndefined();
+    // The badge should still show
+    expect(screen.getByText("In Progress")).toBeInTheDocument();
   });
 
   // Test 4: Time Entries tab shows TimeEntryList

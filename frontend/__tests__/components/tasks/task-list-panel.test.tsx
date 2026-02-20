@@ -156,8 +156,8 @@ describe("TaskListPanel", () => {
     expect(within(table).getByRole("button", { name: /Done/i })).toBeInTheDocument();
   });
 
-  // 40.10: No action buttons for other people's tasks
-  it("does not show action buttons for tasks assigned to others", () => {
+  // 40.10: No Claim/Release buttons for other people's tasks, but Done visible for managers
+  it("does not show Claim or Release buttons for tasks assigned to others", () => {
     const othersTask = makeTask({
       id: "t4",
       title: "Someone else task",
@@ -177,11 +177,34 @@ describe("TaskListPanel", () => {
     );
 
     const table = screen.getByRole("table");
-    // Claim/Release/Done task management buttons should not appear for other people's tasks
     expect(within(table).queryByRole("button", { name: /Claim/i })).not.toBeInTheDocument();
     expect(within(table).queryByRole("button", { name: /Release/i })).not.toBeInTheDocument();
+    // Managers CAN mark other people's IN_PROGRESS tasks as Done
+    expect(within(table).getByRole("button", { name: /^Done$/i })).toBeInTheDocument();
+  });
+
+  // Verify non-managers cannot mark other people's tasks as Done
+  it("does not show Done button for non-managers on other people's tasks", () => {
+    const othersTask = makeTask({
+      id: "t4",
+      title: "Someone else task",
+      status: "IN_PROGRESS",
+      assigneeId: "other-member",
+      assigneeName: "Bob",
+    });
+
+    render(
+      <TaskListPanel
+        tasks={[othersTask]}
+        slug="acme"
+        projectId="p1"
+        canManage={false}
+        currentMemberId="current-member"
+      />,
+    );
+
+    const table = screen.getByRole("table");
     expect(within(table).queryByRole("button", { name: /^Done$/i })).not.toBeInTheDocument();
-    // "Log Time" button is always available regardless of task ownership (added in 45A)
   });
 
   // 40.10: Filter toggles

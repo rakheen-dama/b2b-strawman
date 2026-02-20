@@ -1,10 +1,13 @@
 import { auth } from "@clerk/nextjs/server";
 import { FileText, Plus } from "lucide-react";
 import Link from "next/link";
+import { api } from "@/lib/api";
 import { fetchRetainers } from "@/lib/api/retainers";
 import type { RetainerResponse, RetainerStatus } from "@/lib/api/retainers";
+import type { Customer } from "@/lib/types";
 import { RetainerSummaryCards } from "@/components/retainers/retainer-summary-cards";
 import { RetainerList } from "@/components/retainers/retainer-list";
+import { CreateRetainerDialog } from "@/components/retainers/create-retainer-dialog";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
 
@@ -58,6 +61,8 @@ export default async function RetainersPage({
   }
 
   let retainers: RetainerResponse[] = [];
+  let customers: Array<{ id: string; name: string; email: string }> = [];
+
   try {
     retainers = await fetchRetainers({
       status: search.status as RetainerStatus | undefined,
@@ -65,6 +70,19 @@ export default async function RetainersPage({
     });
   } catch {
     // Non-fatal: show empty state
+  }
+
+  try {
+    const allCustomers = await api.get<Customer[]>("/api/customers");
+    customers = allCustomers
+      .filter(
+        (c) =>
+          c.lifecycleStatus !== "OFFBOARDED" &&
+          c.lifecycleStatus !== "PROSPECT",
+      )
+      .map((c) => ({ id: c.id, name: c.name, email: c.email }));
+  } catch {
+    // Non-fatal: dialog will show empty customer list
   }
 
   const summary = computeSummary(retainers);
@@ -82,10 +100,12 @@ export default async function RetainersPage({
             </span>
           )}
         </div>
-        <Button disabled title="Coming in next update">
-          <Plus className="mr-2 size-4" />
-          New Retainer
-        </Button>
+        <CreateRetainerDialog slug={slug} customers={customers}>
+          <Button>
+            <Plus className="mr-2 size-4" />
+            New Retainer
+          </Button>
+        </CreateRetainerDialog>
       </div>
 
       {/* Summary Cards */}

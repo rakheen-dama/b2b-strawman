@@ -87,9 +87,10 @@ export function RetainerDetailActions({
   }
 
   return (
-    <>
+    <div className="flex flex-col gap-2">
       {error && <p className="text-sm text-destructive">{error}</p>}
 
+      <div className="flex items-center gap-2">
       {/* Close Period */}
       {currentPeriod?.readyToClose && (
         <Button
@@ -135,7 +136,7 @@ export function RetainerDetailActions({
                   Cancel
                 </AlertDialogCancel>
                 <AlertDialogAction
-                  onClick={handlePause}
+                  onClick={(e) => { e.preventDefault(); handlePause(); }}
                   disabled={actionInProgress}
                 >
                   {actionInProgress ? "Pausing..." : "Pause Retainer"}
@@ -194,7 +195,7 @@ export function RetainerDetailActions({
                 </AlertDialogCancel>
                 <AlertDialogAction
                   variant="destructive"
-                  onClick={handleTerminate}
+                  onClick={(e) => { e.preventDefault(); handleTerminate(); }}
                   disabled={actionInProgress}
                 >
                   {actionInProgress ? "Terminating..." : "Terminate"}
@@ -216,6 +217,7 @@ export function RetainerDetailActions({
           onOpenChange={setClosePeriodOpen}
         />
       )}
-    </>
+      </div>
+    </div>
   );
 }

@@ -38,7 +38,7 @@ export function ClosePeriodDialog({
   const baseFeeAmount = retainer.periodFee ?? 0;
   const hasOverage = period.overageHours > 0;
 
-  // Rollover preview
+  // Preview estimate — backend recalculates at close time
   const remainingHours = period.remainingHours;
   const rolloverOut =
     retainer.rolloverPolicy === "FORFEIT" || !retainer.rolloverPolicy
@@ -171,7 +171,7 @@ export function ClosePeriodDialog({
 
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isSubmitting}>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleClose} disabled={isSubmitting}>
+          <AlertDialogAction onClick={(e) => { e.preventDefault(); handleClose(); }} disabled={isSubmitting}>
             {isSubmitting ? "Closing..." : "Close Period & Generate Invoice"}
           </AlertDialogAction>
         </AlertDialogFooter>

@@ -46,6 +46,21 @@ public class RetainerConsumptionListener {
   @EventListener
   @Transactional
   public void onTimeEntryChanged(TimeEntryChangedEvent event) {
+    try {
+      handleTimeEntryChanged(event);
+    } catch (Exception e) {
+      // Consumption updates are self-healing (ADR-074) — a missed update will be
+      // corrected on the next time entry change. Swallow to avoid rolling back the
+      // outer time-entry transaction.
+      log.warn(
+          "Failed to update retainer consumption for time entry {}: {}",
+          event.entityId(),
+          e.getMessage(),
+          e);
+    }
+  }
+
+  private void handleTimeEntryChanged(TimeEntryChangedEvent event) {
     if (event.projectId() == null) {
       return;
     }

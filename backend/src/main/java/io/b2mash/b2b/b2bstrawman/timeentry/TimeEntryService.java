@@ -157,19 +157,7 @@ public class TimeEntryService {
     var orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
     budgetCheckService.checkAndAlert(task.getProjectId(), memberId, actorName, tenantId, orgId);
 
-    applicationEventPublisher.publishEvent(
-        new TimeEntryChangedEvent(
-            "time_entry.changed",
-            "time_entry",
-            saved.getId(),
-            task.getProjectId(),
-            "CREATED",
-            memberId,
-            null,
-            tenantId,
-            orgId,
-            Instant.now(),
-            Map.of("action", "CREATED")));
+    publishTimeEntryChangedEvent(saved.getId(), task.getProjectId(), "CREATED");
 
     return saved;
   }
@@ -240,19 +228,7 @@ public class TimeEntryService {
     var orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
     budgetCheckService.checkAndAlert(task.getProjectId(), memberId, actorName, tenantId, orgId);
 
-    applicationEventPublisher.publishEvent(
-        new TimeEntryChangedEvent(
-            "time_entry.changed",
-            "time_entry",
-            saved.getId(),
-            task.getProjectId(),
-            "UPDATED",
-            memberId,
-            null,
-            tenantId,
-            orgId,
-            Instant.now(),
-            Map.of("action", "UPDATED")));
+    publishTimeEntryChangedEvent(saved.getId(), task.getProjectId(), "UPDATED");
 
     return saved;
   }
@@ -414,19 +390,7 @@ public class TimeEntryService {
             .details(details)
             .build());
 
-    applicationEventPublisher.publishEvent(
-        new TimeEntryChangedEvent(
-            "time_entry.changed",
-            "time_entry",
-            entry.getId(),
-            task.getProjectId(),
-            "UPDATED",
-            memberId,
-            null,
-            RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null,
-            RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null,
-            Instant.now(),
-            Map.of("action", "UPDATED")));
+    publishTimeEntryChangedEvent(entry.getId(), task.getProjectId(), "UPDATED");
 
     // Check budget thresholds if duration, date, or billable changed (affects budget consumption)
     boolean durationChanged = durationMinutes != null && oldDurationMinutes != durationMinutes;
@@ -475,19 +439,7 @@ public class TimeEntryService {
                     "project_id", task.getProjectId().toString()))
             .build());
 
-    applicationEventPublisher.publishEvent(
-        new TimeEntryChangedEvent(
-            "time_entry.changed",
-            "time_entry",
-            entry.getId(),
-            task.getProjectId(),
-            "DELETED",
-            memberId,
-            null,
-            RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null,
-            RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null,
-            Instant.now(),
-            Map.of("action", "DELETED")));
+    publishTimeEntryChangedEvent(entry.getId(), task.getProjectId(), "DELETED");
   }
 
   // --- Project time summary aggregation methods (Epic 46A) ---
@@ -598,6 +550,25 @@ public class TimeEntryService {
     if (a == null && b == null) return true;
     if (a == null || b == null) return false;
     return a.compareTo(b) == 0;
+  }
+
+  private void publishTimeEntryChangedEvent(UUID timeEntryId, UUID projectId, String action) {
+    var memberId = RequestScopes.MEMBER_ID.isBound() ? RequestScopes.MEMBER_ID.get() : null;
+    var tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    var orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    applicationEventPublisher.publishEvent(
+        new TimeEntryChangedEvent(
+            "time_entry.changed",
+            "time_entry",
+            timeEntryId,
+            projectId,
+            action,
+            memberId,
+            null,
+            tenantId,
+            orgId,
+            Instant.now(),
+            Map.of("project_id", projectId.toString())));
   }
 
   /**

@@ -14,6 +14,11 @@ const NOTIFICATION_TYPE_LABELS: Record<string, string> = {
   COMMENT_ADDED: "Comment Added",
   DOCUMENT_SHARED: "Document Shared",
   MEMBER_INVITED: "Member Invited",
+  RETAINER_PERIOD_READY_TO_CLOSE: "Retainer Period Ready to Close",
+  RETAINER_PERIOD_CLOSED: "Retainer Period Closed",
+  RETAINER_APPROACHING_CAPACITY: "Retainer Approaching Capacity",
+  RETAINER_FULLY_CONSUMED: "Retainer Fully Consumed",
+  RETAINER_TERMINATED: "Retainer Terminated",
 };
 
 interface NotificationPreferencesFormProps {

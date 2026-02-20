@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.CreateRetainerRequest;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.PeriodSummary;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.RetainerResponse;
@@ -33,16 +34,19 @@ public class RetainerAgreementService {
   private final RetainerPeriodRepository periodRepository;
   private final CustomerRepository customerRepository;
   private final AuditService auditService;
+  private final NotificationService notificationService;
 
   public RetainerAgreementService(
       RetainerAgreementRepository agreementRepository,
       RetainerPeriodRepository periodRepository,
       CustomerRepository customerRepository,
-      AuditService auditService) {
+      AuditService auditService,
+      NotificationService notificationService) {
     this.agreementRepository = agreementRepository;
     this.periodRepository = periodRepository;
     this.customerRepository = customerRepository;
     this.auditService = auditService;
+    this.notificationService = notificationService;
   }
 
   @Transactional
@@ -333,6 +337,13 @@ public class RetainerAgreementService {
                     "customerName", customer.getName(),
                     "actorMemberId", actorMemberId.toString()))
             .build());
+
+    notificationService.notifyAdminsAndOwners(
+        "RETAINER_TERMINATED",
+        "Retainer for " + customer.getName() + " has been terminated",
+        "Agreement: %s, Customer: %s".formatted(agreement.getName(), customer.getName()),
+        "RETAINER_AGREEMENT",
+        agreement.getId());
 
     var currentPeriod =
         periodRepository

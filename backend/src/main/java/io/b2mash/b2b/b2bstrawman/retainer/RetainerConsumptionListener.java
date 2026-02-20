@@ -4,11 +4,9 @@ import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.event.TimeEntryChangedEvent;
-import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +23,6 @@ public class RetainerConsumptionListener {
   private final RetainerAgreementRepository retainerAgreementRepository;
   private final RetainerPeriodRepository retainerPeriodRepository;
   private final NotificationService notificationService;
-  private final MemberRepository memberRepository;
   private final CustomerRepository customerRepository;
 
   public RetainerConsumptionListener(
@@ -33,13 +30,11 @@ public class RetainerConsumptionListener {
       RetainerAgreementRepository retainerAgreementRepository,
       RetainerPeriodRepository retainerPeriodRepository,
       NotificationService notificationService,
-      MemberRepository memberRepository,
       CustomerRepository customerRepository) {
     this.customerProjectRepository = customerProjectRepository;
     this.retainerAgreementRepository = retainerAgreementRepository;
     this.retainerPeriodRepository = retainerPeriodRepository;
     this.notificationService = notificationService;
-    this.memberRepository = memberRepository;
     this.customerRepository = customerRepository;
   }
 
@@ -143,26 +138,37 @@ public class RetainerConsumptionListener {
       String title =
           "Retainer for %s is at %s%% capacity — %s hours remaining"
               .formatted(customerName, newPct.setScale(0, RoundingMode.HALF_UP), remaining);
-      notifyAdminsAndOwners("RETAINER_APPROACHING_CAPACITY", title, agreement.getId());
+      String body =
+          "Agreement: %s, Allocated: %s hrs, Consumed: %s hrs, Remaining: %s hrs, Usage: %s%%"
+              .formatted(
+                  agreement.getName(),
+                  allocated.stripTrailingZeros().toPlainString(),
+                  newConsumedHours.stripTrailingZeros().toPlainString(),
+                  remaining.stripTrailingZeros().toPlainString(),
+                  newPct.setScale(1, RoundingMode.HALF_UP));
+      notificationService.notifyAdminsAndOwners(
+          "RETAINER_APPROACHING_CAPACITY", title, body, "RETAINER_AGREEMENT", agreement.getId());
       log.info(
           "Retainer approaching capacity: agreement={}, consumed={}%", agreement.getId(), newPct);
     }
 
     // 100% threshold
     if (oldPct.compareTo(threshold100) < 0 && newPct.compareTo(threshold100) >= 0) {
+      BigDecimal remaining = period.getRemainingHours();
       String title =
           "Retainer for %s is fully consumed — further time will be billed as overage"
               .formatted(customerName);
-      notifyAdminsAndOwners("RETAINER_FULLY_CONSUMED", title, agreement.getId());
+      String body =
+          "Agreement: %s, Allocated: %s hrs, Consumed: %s hrs, Remaining: %s hrs, Usage: %s%%"
+              .formatted(
+                  agreement.getName(),
+                  allocated.stripTrailingZeros().toPlainString(),
+                  newConsumedHours.stripTrailingZeros().toPlainString(),
+                  remaining.stripTrailingZeros().toPlainString(),
+                  newPct.setScale(1, RoundingMode.HALF_UP));
+      notificationService.notifyAdminsAndOwners(
+          "RETAINER_FULLY_CONSUMED", title, body, "RETAINER_AGREEMENT", agreement.getId());
       log.info("Retainer fully consumed: agreement={}", agreement.getId());
-    }
-  }
-
-  private void notifyAdminsAndOwners(String type, String title, UUID agreementId) {
-    var adminsAndOwners = memberRepository.findByOrgRoleIn(List.of("admin", "owner"));
-    for (var member : adminsAndOwners) {
-      notificationService.createNotification(
-          member.getId(), type, title, null, "RETAINER_AGREEMENT", agreementId, null);
     }
   }
 }

@@ -2,26 +2,11 @@ import "server-only";
 
 import { api } from "@/lib/api";
 
-// ---- Types ----
+// Shared types/constants re-exported from schedule-constants (no server-only)
+export type { ScheduleStatus, RecurrenceFrequency } from "@/lib/schedule-constants";
+export { FREQUENCY_LABELS } from "@/lib/schedule-constants";
 
-export type ScheduleStatus = "ACTIVE" | "PAUSED" | "COMPLETED";
-
-export type RecurrenceFrequency =
-  | "WEEKLY"
-  | "FORTNIGHTLY"
-  | "MONTHLY"
-  | "QUARTERLY"
-  | "SEMI_ANNUALLY"
-  | "ANNUALLY";
-
-export const FREQUENCY_LABELS: Record<RecurrenceFrequency, string> = {
-  WEEKLY: "Weekly",
-  FORTNIGHTLY: "Fortnightly",
-  MONTHLY: "Monthly",
-  QUARTERLY: "Quarterly",
-  SEMI_ANNUALLY: "Semi-Annually",
-  ANNUALLY: "Annually",
-};
+import type { ScheduleStatus, RecurrenceFrequency } from "@/lib/schedule-constants";
 
 export interface ScheduleResponse {
   id: string;

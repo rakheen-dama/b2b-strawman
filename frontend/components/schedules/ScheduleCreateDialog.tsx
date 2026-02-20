@@ -16,18 +16,10 @@ import { Label } from "@/components/ui/label";
 import { TemplatePicker } from "@/components/templates/TemplatePicker";
 import { createScheduleAction } from "@/app/(app)/org/[slug]/schedules/actions";
 import { resolveNameTokens } from "@/lib/name-token-resolver";
+import { FREQUENCY_OPTIONS } from "@/lib/schedule-constants";
+import type { RecurrenceFrequency } from "@/lib/schedule-constants";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
 import type { OrgMember, Customer } from "@/lib/types";
-import type { RecurrenceFrequency } from "@/lib/api/schedules";
-
-const FREQUENCY_OPTIONS: { value: RecurrenceFrequency; label: string }[] = [
-  { value: "WEEKLY", label: "Weekly" },
-  { value: "FORTNIGHTLY", label: "Fortnightly" },
-  { value: "MONTHLY", label: "Monthly" },
-  { value: "QUARTERLY", label: "Quarterly" },
-  { value: "SEMI_ANNUALLY", label: "Semi-Annually" },
-  { value: "ANNUALLY", label: "Annually" },
-];
 
 interface ScheduleCreateDialogProps {
   slug: string;
@@ -36,6 +28,9 @@ interface ScheduleCreateDialogProps {
   orgMembers: OrgMember[];
   children: React.ReactNode;
 }
+
+const selectClasses =
+  "flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800";
 
 export function ScheduleCreateDialog({
   slug,
@@ -144,7 +139,7 @@ export function ScheduleCreateDialog({
               id="schedule-customer"
               value={customerId}
               onChange={(e) => setCustomerId(e.target.value)}
-              className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
+              className={selectClasses}
               required
             >
               <option value="">Select a customer...</option>
@@ -163,7 +158,7 @@ export function ScheduleCreateDialog({
               id="schedule-frequency"
               value={frequency}
               onChange={(e) => setFrequency(e.target.value as RecurrenceFrequency)}
-              className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
+              className={selectClasses}
             >
               {FREQUENCY_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -225,7 +220,7 @@ export function ScheduleCreateDialog({
                 id="schedule-lead-member"
                 value={projectLeadMemberId}
                 onChange={(e) => setProjectLeadMemberId(e.target.value)}
-                className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
+                className={selectClasses}
               >
                 <option value="">Unassigned</option>
                 {orgMembers.map((m) => (

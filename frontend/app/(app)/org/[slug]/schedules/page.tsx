@@ -27,16 +27,16 @@ export default async function SchedulesPage({
 
   try {
     schedules = await getSchedules();
-  } catch {
-    // Non-fatal: show empty state
+  } catch (e) {
+    console.error("Failed to fetch schedules", e);
   }
 
   if (isAdmin) {
     try {
       const allTemplates = await getProjectTemplates();
       activeTemplates = allTemplates.filter((t) => t.active);
-    } catch {
-      // Non-fatal
+    } catch (e) {
+      console.error("Failed to fetch templates", e);
     }
 
     const [membersResult, customersResult] = await Promise.allSettled([

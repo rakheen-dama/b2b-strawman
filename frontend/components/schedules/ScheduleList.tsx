@@ -14,7 +14,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
   pauseScheduleAction,
@@ -22,20 +21,9 @@ import {
   deleteScheduleAction,
 } from "@/app/(app)/org/[slug]/schedules/actions";
 import { formatDate } from "@/lib/format";
-import type {
-  ScheduleResponse,
-  ScheduleStatus,
-  RecurrenceFrequency,
-} from "@/lib/api/schedules";
-
-const FREQUENCY_LABELS: Record<RecurrenceFrequency, string> = {
-  WEEKLY: "Weekly",
-  FORTNIGHTLY: "Fortnightly",
-  MONTHLY: "Monthly",
-  QUARTERLY: "Quarterly",
-  SEMI_ANNUALLY: "Semi-Annually",
-  ANNUALLY: "Annually",
-};
+import { FREQUENCY_LABELS } from "@/lib/schedule-constants";
+import type { ScheduleStatus } from "@/lib/schedule-constants";
+import type { ScheduleResponse } from "@/lib/api/schedules";
 
 const STATUS_TABS: { label: string; value: ScheduleStatus | "ALL" }[] = [
   { label: "Active", value: "ACTIVE" },
@@ -53,6 +41,8 @@ export function ScheduleList({ slug, schedules }: ScheduleListProps) {
   const [activeTab, setActiveTab] = useState<ScheduleStatus | "ALL">("ACTIVE");
   const [errorMessages, setErrorMessages] = useState<Record<string, string>>({});
   const [actionInProgress, setActionInProgress] = useState<string | null>(null);
+  const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const filtered =
     activeTab === "ALL"
@@ -86,15 +76,17 @@ export function ScheduleList({ slug, schedules }: ScheduleListProps) {
   }
 
   async function handleDelete(id: string) {
-    if (actionInProgress) return;
-    setActionInProgress(id);
+    setIsDeleting(true);
     try {
       const result = await deleteScheduleAction(slug, id);
       if (!result.success && result.error) {
         setErrorMessages((prev) => ({ ...prev, [id]: result.error! }));
       }
+      setDeleteDialogId(null);
+    } catch {
+      setErrorMessages((prev) => ({ ...prev, [id]: "An unexpected error occurred." }));
     } finally {
-      setActionInProgress(null);
+      setIsDeleting(false);
     }
   }
 
@@ -255,39 +247,45 @@ export function ScheduleList({ slug, schedules }: ScheduleListProps) {
                       )}
 
                       {(schedule.status === "PAUSED" || schedule.status === "COMPLETED") && (
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300"
-                              title="Delete schedule"
-                            >
-                              <Trash2 className="size-4" />
-                              <span className="sr-only">Delete {schedule.templateName}</span>
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Schedule</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to delete the schedule for &quot;
-                                {schedule.templateName}&quot; ({schedule.customerName})? This
-                                action cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                className="bg-red-600 hover:bg-red-700"
-                                onClick={() => handleDelete(schedule.id)}
-                                disabled={actionInProgress === schedule.id}
-                              >
-                                {actionInProgress === schedule.id ? "Deleting..." : "Delete"}
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300"
+                            title="Delete schedule"
+                            onClick={() => setDeleteDialogId(schedule.id)}
+                          >
+                            <Trash2 className="size-4" />
+                            <span className="sr-only">Delete {schedule.templateName}</span>
+                          </Button>
+                          <AlertDialog
+                            open={deleteDialogId === schedule.id}
+                            onOpenChange={(open) => {
+                              if (!open && !isDeleting) setDeleteDialogId(null);
+                            }}
+                          >
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Schedule</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete the schedule for &quot;
+                                  {schedule.templateName}&quot; ({schedule.customerName})? This
+                                  action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  variant="destructive"
+                                  onClick={() => handleDelete(schedule.id)}
+                                  disabled={isDeleting}
+                                >
+                                  {isDeleting ? "Deleting..." : "Delete"}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </>
                       )}
                     </div>
                   </td>

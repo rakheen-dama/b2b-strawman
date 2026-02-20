@@ -20,7 +20,7 @@ Phase 17 adds a **retainer management layer** to the DocTeams platform -- per-cu
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 122 | Entity Foundation & Migration | Backend | -- | M | 122A, 122B | |
+| 122 | Entity Foundation & Migration | Backend | -- | M | 122A, 122B | **Done** (PRs #247, #248) |
 | 123 | Retainer CRUD & Lifecycle | Backend | 122 | M | 123A, 123B | |
 | 124 | Consumption Tracking & Summary | Backend | 123 | M | 124A, 124B | |
 | 125 | Period Close & Invoice Generation | Backend | 124 | L | 125A, 125B | |
@@ -85,7 +85,7 @@ Phase 17 adds a **retainer management layer** to the DocTeams platform -- per-cu
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 1a | Epic 122 | 122A | V31 migration, 2 JPA entities, 6 enums, InvoiceLine extension. Foundation for everything else. | **Done** (PR #247) |
-| 1b | Epic 122 | 122B | 2 repositories + `RetainerFrequency.calculateNextEnd()` utility + entity-level tests. |
+| 1b | Epic 122 | 122B | 2 repositories + `RetainerFrequency.calculateNextEnd()` utility + entity-level tests. | **Done** (PR #248) |
 
 ### Stage 2: Backend Domain Logic (Sequential)
 
@@ -145,7 +145,7 @@ Stage 4:  [126A] --> [126B]  //  [127A] --> [127B]  //  [128A]  //  [128B]
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **122A** | 122.1--122.9 | V31 migration (2 tables + 1 ALTER), `RetainerAgreement` entity, `RetainerPeriod` entity, 6 enums (`RetainerType`, `RetainerStatus`, `RetainerFrequency`, `RolloverPolicy`, `PeriodStatus`), `InvoiceLine` modification (add `retainerPeriodId`). ~9 files created/modified. | **Done** (PR #247) |
-| **122B** | 122.10--122.14 | `RetainerAgreementRepository`, `RetainerPeriodRepository`, `RetainerFrequency.calculateNextEnd()` period date utility, entity-level tests (constructor, lifecycle methods, validation), migration verification test. ~10 tests. | |
+| **122B** | 122.10--122.14 | `RetainerAgreementRepository`, `RetainerPeriodRepository`, `RetainerFrequency.calculateNextEnd()` period date utility, entity-level tests (constructor, lifecycle methods, validation), migration verification test. ~10 tests. | **Done** (PR #248) |
 
 ### Tasks
 

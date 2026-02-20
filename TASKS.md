@@ -144,7 +144,7 @@
 | 120 | Template Management UI | Frontend | 116, 117 | M | 120A, 120B | **Done** (PRs #243, #244) |
 | 121 | Schedule Management UI | Frontend | 118, 119 | M | 121A, 121B | **Done** (PRs #245, #246) |
 | **Phase 17 — Retainer Agreements & Billing** | | | | | | See [tasks/phase17-retainer-agreements-billing.md](tasks/phase17-retainer-agreements-billing.md) |
-| 122 | Entity Foundation & Migration | Backend | -- | M | 122A, 122B | 122A **Done** (PR #247) |
+| 122 | Entity Foundation & Migration | Backend | -- | M | 122A, 122B | **Done** (PRs #247, #248) |
 | 123 | Retainer CRUD & Lifecycle | Backend | 122 | M | 123A, 123B | |
 | 124 | Consumption Tracking & Summary | Backend | 123 | M | 124A, 124B | |
 | 125 | Period Close & Invoice Generation | Backend | 124 | L | 125A, 125B | |

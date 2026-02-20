@@ -200,6 +200,24 @@ class RetainerSummaryControllerTest {
         .andExpect(jsonPath("$.hasActiveRetainer").value(true));
   }
 
+  @Test
+  @Order(6)
+  void getSummary_unauthenticated_returns401() throws Exception {
+    mockMvc
+        .perform(get("/api/customers/" + customerHourBank + "/retainer-summary"))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  @Order(7)
+  void getSummary_nonExistentCustomer_returns404() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/customers/00000000-0000-0000-0000-000000000099/retainer-summary")
+                .with(ownerJwt()))
+        .andExpect(status().isNotFound());
+  }
+
   // --- Helpers ---
 
   private String createCustomer(String name, String email) throws Exception {

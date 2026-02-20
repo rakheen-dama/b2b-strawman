@@ -270,9 +270,11 @@ public class RetainerPeriodService {
         // Already terminated — ignore
       }
       agreementRepository.save(agreement);
-      notifyAdminsAndOwners(
+      notificationService.notifyAdminsAndOwners(
           "RETAINER_TERMINATED",
           "Retainer for " + customer.getName() + " has been automatically terminated",
+          "Agreement: %s, Customer: %s".formatted(agreement.getName(), customer.getName()),
+          "RETAINER_AGREEMENT",
           agreement.getId());
     }
 
@@ -325,9 +327,17 @@ public class RetainerPeriodService {
     }
 
     // 12. Notify: period closed
-    notifyAdminsAndOwners(
+    notificationService.notifyAdminsAndOwners(
         "RETAINER_PERIOD_CLOSED",
         "Retainer period closed for " + customer.getName(),
+        "Agreement: %s, Customer: %s, Period: %s to %s, Consumed: %s hrs"
+            .formatted(
+                agreement.getName(),
+                customer.getName(),
+                period.getPeriodStart(),
+                period.getPeriodEnd(),
+                finalConsumedHours.stripTrailingZeros().toPlainString()),
+        "RETAINER_AGREEMENT",
         agreement.getId());
 
     log.info(
@@ -382,14 +392,6 @@ public class RetainerPeriodService {
     BigDecimal subtotal =
         lines.stream().map(InvoiceLine::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
     invoice.recalculateTotals(subtotal);
-  }
-
-  private void notifyAdminsAndOwners(String type, String title, UUID agreementId) {
-    var adminsAndOwners = memberRepository.findByOrgRoleIn(List.of("admin", "owner"));
-    for (var member : adminsAndOwners) {
-      notificationService.createNotification(
-          member.getId(), type, title, null, "RETAINER_AGREEMENT", agreementId, null);
-    }
   }
 
   @Transactional(readOnly = true)

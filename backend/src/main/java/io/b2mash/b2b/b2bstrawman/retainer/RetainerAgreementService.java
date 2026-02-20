@@ -8,7 +8,6 @@ import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
-import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.CreateRetainerRequest;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.PeriodSummary;
@@ -36,21 +35,18 @@ public class RetainerAgreementService {
   private final CustomerRepository customerRepository;
   private final AuditService auditService;
   private final NotificationService notificationService;
-  private final MemberRepository memberRepository;
 
   public RetainerAgreementService(
       RetainerAgreementRepository agreementRepository,
       RetainerPeriodRepository periodRepository,
       CustomerRepository customerRepository,
       AuditService auditService,
-      NotificationService notificationService,
-      MemberRepository memberRepository) {
+      NotificationService notificationService) {
     this.agreementRepository = agreementRepository;
     this.periodRepository = periodRepository;
     this.customerRepository = customerRepository;
     this.auditService = auditService;
     this.notificationService = notificationService;
-    this.memberRepository = memberRepository;
   }
 
   @Transactional
@@ -342,9 +338,11 @@ public class RetainerAgreementService {
                     "actorMemberId", actorMemberId.toString()))
             .build());
 
-    notifyAdminsAndOwners(
+    notificationService.notifyAdminsAndOwners(
         "RETAINER_TERMINATED",
         "Retainer for " + customer.getName() + " has been terminated",
+        "Agreement: %s, Customer: %s".formatted(agreement.getName(), customer.getName()),
+        "RETAINER_AGREEMENT",
         agreement.getId());
 
     var currentPeriod =
@@ -533,14 +531,6 @@ public class RetainerAgreementService {
         "endDate", agreement.getEndDate() != null ? agreement.getEndDate().toString() : null);
     values.put("notes", agreement.getNotes());
     return values;
-  }
-
-  private void notifyAdminsAndOwners(String type, String title, UUID agreementId) {
-    var adminsAndOwners = memberRepository.findByOrgRoleIn(List.of("admin", "owner"));
-    for (var member : adminsAndOwners) {
-      notificationService.createNotification(
-          member.getId(), type, title, null, "RETAINER_AGREEMENT", agreementId, null);
-    }
   }
 
   private Map<String, Object> buildDiff(Map<String, Object> oldValues, RetainerAgreement updated) {

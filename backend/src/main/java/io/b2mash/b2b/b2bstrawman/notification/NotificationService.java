@@ -634,6 +634,21 @@ public class NotificationService {
     return created;
   }
 
+  // --- Admin/owner fan-out helper (used by retainer services) ---
+
+  /**
+   * Creates a notification for all org admins and owners. Used by retainer services for
+   * agreement-level notifications.
+   */
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public void notifyAdminsAndOwners(
+      String type, String title, String body, String entityType, UUID entityId) {
+    var adminsAndOwners = memberRepository.findByOrgRoleIn(List.of("admin", "owner"));
+    for (var member : adminsAndOwners) {
+      createNotification(member.getId(), type, title, body, entityType, entityId, null);
+    }
+  }
+
   // --- Private helpers ---
 
   /**

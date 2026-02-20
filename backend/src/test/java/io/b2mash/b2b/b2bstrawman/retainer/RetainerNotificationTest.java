@@ -243,6 +243,7 @@ class RetainerNotificationTest {
           assertThat(notification.getBody()).contains("Allocated:");
           assertThat(notification.getBody()).contains("Consumed:");
           assertThat(notification.getBody()).contains("Remaining:");
+          assertThat(notification.getBody()).contains("Usage:");
         });
   }
 
@@ -277,6 +278,36 @@ class RetainerNotificationTest {
           assertThat(notification.getTitle()).contains("fully consumed");
           assertThat(notification.getBody()).contains("Allocated:");
           assertThat(notification.getBody()).contains("Consumed:");
+          assertThat(notification.getBody()).contains("Usage:");
+        });
+  }
+
+  @Test
+  void closePeriod_sendsPeriodClosedNotification() {
+    // Create a retainer with a period that started far enough in the past that it's closeable
+    var setup =
+        createHourBankSetup("period-closed", new BigDecimal("20"), LocalDate.of(2025, 11, 1));
+
+    // The period end will be ~2025-12-01 (monthly), which is in the past
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> retainerPeriodService.closePeriod(setup.agreementId(), memberId)));
+
+    runInTenant(
+        () -> {
+          var notifications =
+              notificationRepository.findAll().stream()
+                  .filter(n -> "RETAINER_PERIOD_CLOSED".equals(n.getType()))
+                  .filter(n -> n.getTitle().contains("Customer period-closed"))
+                  .toList();
+          assertThat(notifications).isNotEmpty();
+          var notification = notifications.getFirst();
+          assertThat(notification.getTitle()).contains("period closed");
+          assertThat(notification.getBody()).isNotNull();
+          assertThat(notification.getBody()).contains("Agreement:");
+          assertThat(notification.getBody()).contains("Customer:");
+          assertThat(notification.getBody()).contains("Consumed:");
         });
   }
 
@@ -298,9 +329,12 @@ class RetainerNotificationTest {
                   .filter(n -> n.getTitle().contains("Customer terminate-notif"))
                   .toList();
           assertThat(notifications).isNotEmpty();
-          assertThat(notifications.getFirst().getTitle()).contains("has been terminated");
-          assertThat(notifications.getFirst().getReferenceEntityId())
-              .isEqualTo(setup.agreementId());
+          var notification = notifications.getFirst();
+          assertThat(notification.getTitle()).contains("has been terminated");
+          assertThat(notification.getBody()).isNotNull();
+          assertThat(notification.getBody()).contains("Agreement:");
+          assertThat(notification.getBody()).contains("Customer:");
+          assertThat(notification.getReferenceEntityId()).isEqualTo(setup.agreementId());
         });
   }
 }

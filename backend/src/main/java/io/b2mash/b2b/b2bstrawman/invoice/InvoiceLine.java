@@ -28,6 +28,9 @@ public class InvoiceLine {
   @Column(name = "time_entry_id")
   private UUID timeEntryId;
 
+  @Column(name = "retainer_period_id")
+  private UUID retainerPeriodId;
+
   @Column(name = "description", nullable = false, columnDefinition = "TEXT")
   private String description;
 
@@ -102,6 +105,10 @@ public class InvoiceLine {
 
   public UUID getTimeEntryId() {
     return timeEntryId;
+  }
+
+  public UUID getRetainerPeriodId() {
+    return retainerPeriodId;
   }
 
   public String getDescription() {

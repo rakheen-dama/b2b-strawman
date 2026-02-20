@@ -24,7 +24,7 @@ Four new entities (`ProjectTemplate`, `TemplateTask`, `RecurringSchedule`, `Sche
 |------|------|-------|------|--------|--------|--------|
 | 115 | Entity Foundation & Utilities | Backend | -- | M | 115A, 115B | **Done** (PRs #235, #236) |
 | 116 | Template CRUD & Save from Project | Backend | 115 | M | 116A, 116B | **Done** (PRs #237, #238) |
-| 117 | Template Instantiation | Backend | 116 | S | 117A | |
+| 117 | Template Instantiation | Backend | 116 | S | 117A | **Done** (PR #239) |
 | 118 | Schedule CRUD & Lifecycle | Backend | 115 | M | 118A, 118B | |
 | 119 | Scheduler Execution Engine | Backend | 117, 118 | M | 119A | |
 | 120 | Template Management UI | Frontend | 116, 117 | M | 120A, 120B | |
@@ -94,7 +94,7 @@ Four new entities (`ProjectTemplate`, `TemplateTask`, `RecurringSchedule`, `Sche
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 3a | Epic 117 | 117A | `instantiateTemplate()` in `ProjectTemplateService`. POST endpoint. Assignee resolution, tag application. Audit + notification events. ~15 integration tests. |
+| 3a | Epic 117 | 117A | `instantiateTemplate()` in `ProjectTemplateService`. POST endpoint. Assignee resolution, tag application. Audit + notification events. ~15 integration tests. | **Done** (PR #239) |
 | 3b | Epic 119 | 119A | `RecurringScheduleExecutor` (@Scheduled cron), `processSchedulesForTenant()`, `executeSingleSchedule()`. Tenant iteration via `OrgSchemaMappingRepository`. Idempotency, lifecycle check, error isolation. Notification events. ~18 integration tests. |
 
 ### Stage 4: Frontend (Parallel tracks)
@@ -290,7 +290,7 @@ Stage 4:  [120A] --> [120B]  //  [121A] --> [121B]   (parallel frontend tracks a
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **117A** | 117.1–117.9 | `InstantiateTemplateRequest` DTO. `instantiateTemplate()` in `ProjectTemplateService`. `POST /api/project-templates/{id}/instantiate` endpoint. Assignee role resolution. Tag application via `EntityTagRepository`. Customer link via `CustomerProjectRepository`. Name token resolution. Audit event (`project.created_from_template`). Integration tests. ~15 tests. | |
+| **117A** | 117.1–117.9 | `InstantiateTemplateRequest` DTO. `instantiateTemplate()` in `ProjectTemplateService`. `POST /api/project-templates/{id}/instantiate` endpoint. Assignee role resolution. Tag application via `EntityTagRepository`. Customer link via `CustomerProjectRepository`. Name token resolution. Audit event (`project.created_from_template`). Integration tests. ~15 tests. | **Done** (PR #239) |
 
 ### Tasks
 

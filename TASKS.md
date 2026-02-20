@@ -138,7 +138,7 @@
 | **Phase 16 — Project Templates & Recurring Schedules** | | | | | | See [tasks/phase16-project-templates-recurring-schedules.md](tasks/phase16-project-templates-recurring-schedules.md) |
 | 115 | Entity Foundation & Utilities | Backend | -- | M | 115A, 115B | **Done** (PRs #235, #236) |
 | 116 | Template CRUD & Save from Project | Backend | 115 | M | 116A, 116B | **Done** (PRs #237, #238) |
-| 117 | Template Instantiation | Backend | 116 | S | 117A | |
+| 117 | Template Instantiation | Backend | 116 | S | 117A | **Done** (PR #239) |
 | 118 | Schedule CRUD & Lifecycle | Backend | 115 | M | 118A, 118B | |
 | 119 | Scheduler Execution Engine | Backend | 117, 118 | M | 119A | |
 | 120 | Template Management UI | Frontend | 116, 117 | M | 120A, 120B | |

@@ -1,15 +1,19 @@
 import { Suspense } from "react";
 import { auth } from "@clerk/nextjs/server";
 import { api, handleApiError, getFieldDefinitions, getViews, getTags } from "@/lib/api";
-import type { Project, ProjectRole, LightweightBudgetStatus, FieldDefinitionResponse, SavedViewResponse, TagResponse } from "@/lib/types";
+import { getProjectTemplates } from "@/lib/api/templates";
+import type { ProjectTemplateResponse } from "@/lib/api/templates";
+import type { Project, ProjectRole, LightweightBudgetStatus, FieldDefinitionResponse, SavedViewResponse, TagResponse, OrgMember, Customer } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { BudgetStatusDot } from "@/components/projects/budget-status-dot";
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
+import { NewFromTemplateDialog } from "@/components/templates/NewFromTemplateDialog";
 import { CustomFieldBadges } from "@/components/field-definitions/CustomFieldBadges";
 import { ViewSelectorClient } from "@/components/views/ViewSelectorClient";
 import { createSavedViewAction } from "./view-actions";
 import { formatDate } from "@/lib/format";
-import { FileText, FolderOpen, Users } from "lucide-react";
+import { FileText, FolderOpen, LayoutTemplate, Users } from "lucide-react";
 import Link from "next/link";
 
 const ROLE_BADGE: Record<ProjectRole, { label: string; variant: "lead" | "member" }> = {
@@ -70,6 +74,31 @@ export default async function ProjectsPage({
     // Non-fatal
   }
 
+  // Fetch active project templates for "New from Template" button
+  let activeTemplates: ProjectTemplateResponse[] = [];
+  try {
+    const allTemplates = await getProjectTemplates();
+    activeTemplates = allTemplates.filter((t) => t.active);
+  } catch {
+    // Non-fatal: hide "New from Template" button
+  }
+
+  // Fetch org members for NewFromTemplateDialog
+  let orgMembers: OrgMember[] = [];
+  try {
+    orgMembers = await api.get<OrgMember[]>("/api/members");
+  } catch {
+    // Non-fatal
+  }
+
+  // Fetch customers for NewFromTemplateDialog
+  let allCustomers: Customer[] = [];
+  try {
+    allCustomers = await api.get<Customer[]>("/api/customers");
+  } catch {
+    // Non-fatal
+  }
+
   // Fetch budget status for each project (admin-only, non-fatal — 404 means no budget)
   const budgetStatuses = new Map<string, LightweightBudgetStatus>();
   if (isAdmin && projects.length > 0) {
@@ -100,7 +129,22 @@ export default async function ProjectsPage({
             {projects.length} {projects.length === 1 ? "project" : "projects"}
           </p>
         </div>
-        <CreateProjectDialog slug={slug} />
+        <div className="flex items-center gap-2">
+          {activeTemplates.length > 0 && (
+            <NewFromTemplateDialog
+              slug={slug}
+              templates={activeTemplates}
+              orgMembers={orgMembers}
+              customers={allCustomers}
+            >
+              <Button variant="outline" size="sm">
+                <LayoutTemplate className="mr-1.5 size-4" />
+                New from Template
+              </Button>
+            </NewFromTemplateDialog>
+          )}
+          <CreateProjectDialog slug={slug} />
+        </div>
       </div>
 
       {/* Upgrade Prompt (Starter only) */}

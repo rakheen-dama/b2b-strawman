@@ -7,11 +7,15 @@ import {
   duplicateProjectTemplate,
   createProjectTemplate,
   updateProjectTemplate,
+  saveProjectFromTemplate,
+  instantiateProjectTemplate,
 } from "@/lib/api/templates";
 import type {
   ProjectTemplateResponse,
   CreateProjectTemplateRequest,
   UpdateProjectTemplateRequest,
+  SaveFromProjectRequest,
+  InstantiateTemplateRequest,
 } from "@/lib/api/templates";
 
 interface ActionResult {
@@ -108,6 +112,61 @@ export async function updateProjectTemplateAction(
         return {
           success: false,
           error: "You do not have permission to update templates.",
+        };
+      }
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+}
+
+export async function saveAsTemplateAction(
+  slug: string,
+  projectId: string,
+  data: SaveFromProjectRequest,
+): Promise<ActionResult> {
+  try {
+    const created = await saveProjectFromTemplate(projectId, data);
+    revalidatePath(`/org/${slug}/settings/project-templates`);
+    return { success: true, data: created };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 403) {
+        return {
+          success: false,
+          error: "You do not have permission to create templates.",
+        };
+      }
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+}
+
+export async function instantiateTemplateAction(
+  slug: string,
+  templateId: string,
+  data: InstantiateTemplateRequest,
+): Promise<{ success: boolean; error?: string; projectId?: string }> {
+  try {
+    const result = (await instantiateProjectTemplate(templateId, data)) as {
+      id: string;
+    };
+    revalidatePath(`/org/${slug}/projects`);
+    return { success: true, projectId: result.id };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 403) {
+        return {
+          success: false,
+          error:
+            "You do not have permission to create projects from templates.",
+        };
+      }
+      if (error.status === 400) {
+        return {
+          success: false,
+          error: error.message || "Template is inactive or invalid.",
         };
       }
       return { success: false, error: error.message };

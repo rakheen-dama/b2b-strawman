@@ -280,7 +280,7 @@ class ProjectTemplateControllerTest {
     mockMvc
         .perform(
             post("/api/project-templates/" + createdTemplateId + "/duplicate").with(ownerJwt()))
-        .andExpect(status().isOk())
+        .andExpect(status().isCreated())
         .andExpect(jsonPath("$.name").value(org.hamcrest.Matchers.endsWith("(Copy)")))
         .andExpect(jsonPath("$.source").value("MANUAL"))
         .andExpect(jsonPath("$.id").value(org.hamcrest.Matchers.notNullValue()));

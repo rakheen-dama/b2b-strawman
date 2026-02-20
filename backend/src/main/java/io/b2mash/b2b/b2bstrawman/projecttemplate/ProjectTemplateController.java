@@ -70,7 +70,9 @@ public class ProjectTemplateController {
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ProjectTemplateResponse> duplicateTemplate(@PathVariable UUID id) {
     UUID memberId = RequestScopes.requireMemberId();
-    return ResponseEntity.ok(projectTemplateService.duplicate(id, memberId));
+    var response = projectTemplateService.duplicate(id, memberId);
+    return ResponseEntity.created(URI.create("/api/project-templates/" + response.id()))
+        .body(response);
   }
 
   @PostMapping("/from-project/{projectId}")

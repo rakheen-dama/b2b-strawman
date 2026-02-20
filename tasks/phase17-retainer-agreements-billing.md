@@ -23,7 +23,7 @@ Phase 17 adds a **retainer management layer** to the DocTeams platform -- per-cu
 | 122 | Entity Foundation & Migration | Backend | -- | M | 122A, 122B | **Done** (PRs #247, #248) |
 | 123 | Retainer CRUD & Lifecycle | Backend | 122 | M | 123A, 123B | **Done** (PRs #249, #250) |
 | 124 | Consumption Tracking & Summary | Backend | 123 | M | 124A, 124B | **Done** (PRs #251, #252) |
-| 125 | Period Close & Invoice Generation | Backend | 124 | L | 125A, 125B | |
+| 125 | Period Close & Invoice Generation | Backend | 124 | L | 125A, 125B | **Done** (PRs #253, #254) |
 | 126 | Retainer Dashboard & Create UI | Frontend | 123, 124, 125 | M | 126A, 126B | |
 | 127 | Customer Retainer Tab & Detail Page | Frontend | 126 | M | 127A, 127B | |
 | 128 | Time Entry Indicators & Notifications | Both | 124, 127 | M | 128A, 128B | |
@@ -101,7 +101,7 @@ Phase 17 adds a **retainer management layer** to the DocTeams platform -- per-cu
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 3a | Epic 125 | 125A | `RetainerPeriodService.closePeriod()` -- overage calculation, rollover logic (all 3 policies), invoice generation via InvoiceService, rate resolution via BillingRateService, next period creation, auto-termination. ~15 service tests. | **Done** (PR #253) |
-| 3b | Epic 125 | 125B | `RetainerPeriodController` -- period list, current period, close endpoint. Audit events for close. ~8 controller tests. |
+| 3b | Epic 125 | 125B | `RetainerPeriodController` -- period list, current period, close endpoint. Audit events for close. ~8 controller tests. | **Done** (PR #254) |
 
 ### Stage 4: Frontend (Parallel tracks after Stage 3)
 
@@ -363,7 +363,7 @@ Stage 4:  [126A] --> [126B]  //  [127A] --> [127B]  //  [128A]  //  [128B]
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **125A** | 125.1--125.9 | `RetainerPeriodService` -- `closePeriod()` with full close flow. Overage calculation for HOUR_BANK. Rollover logic (all 3 policies). Invoice generation via `InvoiceService`. Rate resolution via `BillingRateService`. Next period creation with rollover. Auto-termination at end date. Service integration tests. ~15 tests. | **Done** (PR #253) |
-| **125B** | 125.10--125.16 | `RetainerPeriodController` -- period list, current period, close endpoint. `PeriodResponse`, `PeriodCloseResult` DTOs. Audit events for close. Period-ready-to-close query. Controller integration tests. ~8 tests. | |
+| **125B** | 125.10--125.16 | `RetainerPeriodController` -- period list, current period, close endpoint. `PeriodResponse`, `PeriodCloseResult` DTOs. Audit events for close. Period-ready-to-close query. Controller integration tests. ~8 tests. | **Done** (PR #254) |
 
 ### Tasks
 

@@ -12,6 +12,8 @@ public interface RetainerPeriodRepository extends JpaRepository<RetainerPeriod, 
 
   Optional<RetainerPeriod> findByAgreementIdAndStatus(UUID agreementId, PeriodStatus status);
 
+  List<RetainerPeriod> findByAgreementIdInAndStatus(List<UUID> agreementIds, PeriodStatus status);
+
   Page<RetainerPeriod> findByAgreementIdOrderByPeriodStartDesc(UUID agreementId, Pageable pageable);
 
   @Query(

@@ -13,7 +13,6 @@ import io.b2mash.b2b.b2bstrawman.retainer.dto.PeriodSummary;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.RetainerResponse;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.UpdateRetainerRequest;
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -147,45 +146,52 @@ public class RetainerAgreementService {
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("RetainerAgreement", id));
 
-    // 2. Validate CARRY_CAPPED rollover cap
-    if (request.rolloverPolicy() == RolloverPolicy.CARRY_CAPPED
-        && (request.rolloverCapHours() == null
-            || request.rolloverCapHours().compareTo(BigDecimal.ZERO) <= 0)) {
+    // 2. Reject updates to terminated retainers
+    if (agreement.getStatus() == RetainerStatus.TERMINATED) {
+      throw new InvalidStateException(
+          "Invalid retainer state", "Cannot update a terminated retainer");
+    }
+
+    // 3. If rolloverPolicy is null in update, keep the existing value
+    var effectiveRolloverPolicy =
+        request.rolloverPolicy() != null ? request.rolloverPolicy() : agreement.getRolloverPolicy();
+    var effectiveRolloverCapHours =
+        request.rolloverPolicy() != null
+            ? request.rolloverCapHours()
+            : agreement.getRolloverCapHours();
+
+    // 5. Validate CARRY_CAPPED rollover cap
+    if (effectiveRolloverPolicy == RolloverPolicy.CARRY_CAPPED
+        && (effectiveRolloverCapHours == null
+            || effectiveRolloverCapHours.compareTo(BigDecimal.ZERO) <= 0)) {
       throw new InvalidStateException(
           "Missing field", "CARRY_CAPPED rollover policy requires rolloverCapHours > 0");
     }
 
-    // 3. Snapshot old values for audit diff
-    var oldValues = new HashMap<String, String>();
-    oldValues.put("name", agreement.getName());
-    oldValues.put("allocatedHours", Objects.toString(agreement.getAllocatedHours(), "null"));
-    oldValues.put("periodFee", Objects.toString(agreement.getPeriodFee(), "null"));
-    oldValues.put("rolloverPolicy", agreement.getRolloverPolicy().name());
-    oldValues.put("rolloverCapHours", Objects.toString(agreement.getRolloverCapHours(), "null"));
-    oldValues.put("endDate", Objects.toString(agreement.getEndDate(), "null"));
-    oldValues.put("notes", Objects.toString(agreement.getNotes(), "null"));
+    // 6. Snapshot old values for audit diff
+    var oldValues = snapshotValues(agreement);
 
-    // 4. Update terms
+    // 7. Update terms
     agreement.updateTerms(
         request.name(),
         request.allocatedHours(),
         request.periodFee(),
-        request.rolloverPolicy(),
-        request.rolloverCapHours(),
+        effectiveRolloverPolicy,
+        effectiveRolloverCapHours,
         request.endDate(),
         request.notes());
 
-    // 5. Save agreement
+    // 8. Save agreement
     agreementRepository.save(agreement);
 
-    // 6. Load customer for name
+    // 9. Load customer for name
     var customer =
         customerRepository
             .findById(agreement.getCustomerId())
             .orElseThrow(
                 () -> new ResourceNotFoundException("Customer", agreement.getCustomerId()));
 
-    // 7. Audit RETAINER_UPDATED with diff
+    // 10. Audit RETAINER_UPDATED with diff
     var changes = buildDiff(oldValues, agreement);
     auditService.log(
         AuditEventBuilder.builder()
@@ -195,14 +201,14 @@ public class RetainerAgreementService {
             .details(Map.of("agreementId", agreement.getId().toString(), "changes", changes))
             .build());
 
-    // 8. Load current open period
+    // 11. Load current open period
     var currentPeriod =
         periodRepository
             .findByAgreementIdAndStatus(id, PeriodStatus.OPEN)
             .map(PeriodSummary::from)
             .orElse(null);
 
-    // 9. Return response
+    // 12. Return response
     return RetainerResponse.from(agreement, customer.getName(), currentPeriod, null);
   }
 
@@ -236,7 +242,8 @@ public class RetainerAgreementService {
                 Map.of(
                     "agreementId", agreement.getId().toString(),
                     "customerId", agreement.getCustomerId().toString(),
-                    "customerName", customer.getName()))
+                    "customerName", customer.getName(),
+                    "actorMemberId", actorMemberId.toString()))
             .build());
 
     var currentPeriod =
@@ -278,7 +285,8 @@ public class RetainerAgreementService {
                 Map.of(
                     "agreementId", agreement.getId().toString(),
                     "customerId", agreement.getCustomerId().toString(),
-                    "customerName", customer.getName()))
+                    "customerName", customer.getName(),
+                    "actorMemberId", actorMemberId.toString()))
             .build());
 
     var currentPeriod =
@@ -320,7 +328,8 @@ public class RetainerAgreementService {
                 Map.of(
                     "agreementId", agreement.getId().toString(),
                     "customerId", agreement.getCustomerId().toString(),
-                    "customerName", customer.getName()))
+                    "customerName", customer.getName(),
+                    "actorMemberId", actorMemberId.toString()))
             .build());
 
     var currentPeriod =
@@ -356,16 +365,19 @@ public class RetainerAgreementService {
         customerRepository.findAllById(customerIds).stream()
             .collect(Collectors.toMap(Customer::getId, Function.identity()));
 
+    // Batch load current open periods (fixes N+1)
+    var agreementIds = agreements.stream().map(RetainerAgreement::getId).toList();
+    var periodMap =
+        periodRepository.findByAgreementIdInAndStatus(agreementIds, PeriodStatus.OPEN).stream()
+            .collect(Collectors.toMap(RetainerPeriod::getAgreementId, Function.identity()));
+
     return agreements.stream()
         .map(
             agreement -> {
               var customer = customerMap.get(agreement.getCustomerId());
               var customerName = customer != null ? customer.getName() : "Unknown";
-              var currentPeriod =
-                  periodRepository
-                      .findByAgreementIdAndStatus(agreement.getId(), PeriodStatus.OPEN)
-                      .map(PeriodSummary::from)
-                      .orElse(null);
+              var period = periodMap.get(agreement.getId());
+              var currentPeriod = period != null ? PeriodSummary.from(period) : null;
               return RetainerResponse.from(agreement, customerName, currentPeriod, null);
             })
         .toList();
@@ -428,15 +440,28 @@ public class RetainerAgreementService {
     }
   }
 
-  private Map<String, Object> buildDiff(Map<String, String> oldValues, RetainerAgreement updated) {
-    var newValues = new HashMap<String, String>();
-    newValues.put("name", updated.getName());
-    newValues.put("allocatedHours", Objects.toString(updated.getAllocatedHours(), "null"));
-    newValues.put("periodFee", Objects.toString(updated.getPeriodFee(), "null"));
-    newValues.put("rolloverPolicy", updated.getRolloverPolicy().name());
-    newValues.put("rolloverCapHours", Objects.toString(updated.getRolloverCapHours(), "null"));
-    newValues.put("endDate", Objects.toString(updated.getEndDate(), "null"));
-    newValues.put("notes", Objects.toString(updated.getNotes(), "null"));
+  private Map<String, Object> snapshotValues(RetainerAgreement agreement) {
+    var values = new LinkedHashMap<String, Object>();
+    values.put("name", agreement.getName());
+    values.put(
+        "allocatedHours",
+        agreement.getAllocatedHours() != null ? agreement.getAllocatedHours().toString() : null);
+    values.put(
+        "periodFee", agreement.getPeriodFee() != null ? agreement.getPeriodFee().toString() : null);
+    values.put("rolloverPolicy", agreement.getRolloverPolicy().name());
+    values.put(
+        "rolloverCapHours",
+        agreement.getRolloverCapHours() != null
+            ? agreement.getRolloverCapHours().toString()
+            : null);
+    values.put(
+        "endDate", agreement.getEndDate() != null ? agreement.getEndDate().toString() : null);
+    values.put("notes", agreement.getNotes());
+    return values;
+  }
+
+  private Map<String, Object> buildDiff(Map<String, Object> oldValues, RetainerAgreement updated) {
+    var newValues = snapshotValues(updated);
 
     var diff = new LinkedHashMap<String, Object>();
     for (var entry : oldValues.entrySet()) {
@@ -444,7 +469,10 @@ public class RetainerAgreementService {
       var oldVal = entry.getValue();
       var newVal = newValues.get(key);
       if (!Objects.equals(oldVal, newVal)) {
-        diff.put(key, Map.of("old", oldVal, "new", newVal));
+        var change = new LinkedHashMap<String, Object>();
+        change.put("old", oldVal);
+        change.put("new", newVal);
+        diff.put(key, change);
       }
     }
     return diff;

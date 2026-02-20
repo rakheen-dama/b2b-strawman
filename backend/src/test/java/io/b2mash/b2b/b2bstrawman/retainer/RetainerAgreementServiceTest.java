@@ -520,6 +520,115 @@ class RetainerAgreementServiceTest {
   }
 
   @Test
+  void updateRetainer_terminatedRetainer_throws400() {
+    var customerId = createCustomer("Terminated Update Corp", "termupdate@test.com");
+
+    runInTenant(
+        () -> {
+          var request =
+              new CreateRetainerRequest(
+                  customerId,
+                  null,
+                  "To Be Terminated",
+                  RetainerType.HOUR_BANK,
+                  RetainerFrequency.MONTHLY,
+                  LocalDate.of(2026, 3, 1),
+                  null,
+                  new BigDecimal("40"),
+                  new BigDecimal("20000"),
+                  RolloverPolicy.FORFEIT,
+                  null,
+                  null);
+
+          var created = retainerAgreementService.createRetainer(request, memberId);
+          retainerAgreementService.terminateRetainer(created.id(), memberId);
+
+          var updateRequest =
+              new UpdateRetainerRequest(
+                  "New Name",
+                  new BigDecimal("50"),
+                  new BigDecimal("25000"),
+                  RolloverPolicy.FORFEIT,
+                  null,
+                  null,
+                  null);
+
+          assertThatThrownBy(
+                  () ->
+                      retainerAgreementService.updateRetainer(
+                          created.id(), updateRequest, memberId))
+              .isInstanceOf(InvalidStateException.class)
+              .hasMessageContaining("terminated");
+        });
+  }
+
+  @Test
+  void listRetainers_filterByStatus() {
+    var customerId = createCustomer("ListStatus Corp", "liststatus@test.com");
+
+    runInTenant(
+        () -> {
+          var request =
+              new CreateRetainerRequest(
+                  customerId,
+                  null,
+                  "Active Retainer for Filter",
+                  RetainerType.HOUR_BANK,
+                  RetainerFrequency.MONTHLY,
+                  LocalDate.of(2026, 3, 1),
+                  null,
+                  new BigDecimal("40"),
+                  new BigDecimal("20000"),
+                  RolloverPolicy.FORFEIT,
+                  null,
+                  null);
+
+          retainerAgreementService.createRetainer(request, memberId);
+
+          var activeResults = retainerAgreementService.listRetainers(RetainerStatus.ACTIVE, null);
+          assertThat(activeResults).isNotEmpty();
+          assertThat(activeResults).allMatch(r -> r.status() == RetainerStatus.ACTIVE);
+
+          var terminatedResults =
+              retainerAgreementService.listRetainers(RetainerStatus.TERMINATED, null);
+          assertThat(terminatedResults).allMatch(r -> r.status() == RetainerStatus.TERMINATED);
+        });
+  }
+
+  @Test
+  void listRetainers_filterByCustomerId() {
+    var customerId = createCustomer("ListCustomer Corp", "listcustomer@test.com");
+    var otherCustomerId = createCustomer("Other Corp", "other@test.com");
+
+    runInTenant(
+        () -> {
+          var request =
+              new CreateRetainerRequest(
+                  customerId,
+                  null,
+                  "Customer Filter Retainer",
+                  RetainerType.HOUR_BANK,
+                  RetainerFrequency.MONTHLY,
+                  LocalDate.of(2026, 3, 1),
+                  null,
+                  new BigDecimal("40"),
+                  new BigDecimal("20000"),
+                  RolloverPolicy.FORFEIT,
+                  null,
+                  null);
+
+          retainerAgreementService.createRetainer(request, memberId);
+
+          var results = retainerAgreementService.listRetainers(null, customerId);
+          assertThat(results).isNotEmpty();
+          assertThat(results).allMatch(r -> r.customerName().equals("ListCustomer Corp"));
+
+          var otherResults = retainerAgreementService.listRetainers(null, otherCustomerId);
+          assertThat(otherResults).noneMatch(r -> r.customerName().equals("ListCustomer Corp"));
+        });
+  }
+
+  @Test
   void getRetainer_includesCurrentPeriodAndRecentPeriods() {
     var customerId = createCustomer("Get Corp", "get@test.com");
 

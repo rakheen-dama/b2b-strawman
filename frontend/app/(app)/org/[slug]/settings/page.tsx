@@ -12,6 +12,7 @@ import {
   FileText,
   ClipboardCheck,
   ShieldAlert,
+  LayoutTemplate,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { LucideIcon } from "lucide-react";
@@ -79,6 +80,13 @@ const settingsCards: SettingsCard[] = [
     title: "Compliance",
     description: "Configure retention policies, dormancy thresholds, and data requests",
     href: "compliance",
+    comingSoon: false,
+  },
+  {
+    icon: LayoutTemplate,
+    title: "Project Templates",
+    description: "Create and manage reusable project blueprints",
+    href: "project-templates",
     comingSoon: false,
   },
   {

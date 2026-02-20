@@ -22,6 +22,7 @@ interface MyWorkTasksClientProps {
   slug: string;
   orgRole: string;
   canManage: boolean;
+  canCreateShared: boolean;
   currentMemberId: string;
   members: { id: string; name: string; email: string }[];
   allTags: TagResponse[];
@@ -40,6 +41,7 @@ export function MyWorkTasksClient({
   slug,
   orgRole,
   canManage,
+  canCreateShared,
   currentMemberId,
   members,
   allTags,
@@ -64,8 +66,6 @@ export function MyWorkTasksClient({
     params.delete("taskId");
     router.push(`?${params.toString()}`, { scroll: false });
   }
-
-  const canCreateShared = orgRole === "org:admin" || orgRole === "org:owner";
 
   return (
     <div className="space-y-8">

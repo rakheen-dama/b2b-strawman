@@ -157,6 +157,9 @@ export function TaskDetailSheet({
     };
   }, [taskId, projectId]);
 
+  // When projectId is null (cross-project context like My Work), derive from the loaded task
+  const effectiveProjectId = projectId ?? task?.projectId ?? "";
+
   // Handle assignee change — optimistic update + server action
   function handleAssigneeChange(newAssigneeId: string | null) {
     if (!task) return;
@@ -194,9 +197,6 @@ export function TaskDetailSheet({
       }
     });
   }
-
-  // When projectId is null (cross-project context like My Work), derive from the loaded task
-  const effectiveProjectId = projectId ?? task?.projectId ?? "";
 
   const isOpen = taskId !== null;
   const priorityBadge = task ? PRIORITY_BADGE[task.priority] : null;

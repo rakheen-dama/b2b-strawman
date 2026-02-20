@@ -131,8 +131,8 @@ export default async function MyWorkPage({
       if (match) currentMemberId = match.id;
     }
     members = orgMembers.map((m) => ({ id: m.id, name: m.name, email: m.email }));
-  } catch {
-    // Non-fatal
+  } catch (e) {
+    console.error("Failed to resolve current member:", e);
   }
 
   // Saved views for TASK
@@ -175,6 +175,7 @@ export default async function MyWorkPage({
 
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
   const canManage = isAdmin;
+  const canCreateShared = isAdmin;
 
   // Inline server action for creating task views
   async function handleCreateTaskView(
@@ -215,6 +216,7 @@ export default async function MyWorkPage({
             slug={slug}
             orgRole={orgRole ?? ""}
             canManage={canManage}
+            canCreateShared={canCreateShared}
             currentMemberId={currentMemberId}
             members={members}
             allTags={allTags}

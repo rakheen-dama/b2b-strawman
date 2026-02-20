@@ -66,6 +66,11 @@ export const NAV_ITEMS: NavItem[] = [
     icon: CalendarClock,
   },
   {
+    label: "Retainers",
+    href: (slug) => `/org/${slug}/retainers`,
+    icon: FileText,
+  },
+  {
     label: "Compliance",
     href: (slug) => `/org/${slug}/compliance`,
     icon: ShieldCheck,

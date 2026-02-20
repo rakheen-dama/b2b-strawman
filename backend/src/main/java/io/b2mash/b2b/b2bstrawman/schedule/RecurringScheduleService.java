@@ -73,6 +73,13 @@ public class RecurringScheduleService {
         .findById(request.customerId())
         .orElseThrow(() -> new ResourceNotFoundException("Customer", request.customerId()));
 
+    if (request.projectLeadMemberId() != null) {
+      memberRepository
+          .findById(request.projectLeadMemberId())
+          .orElseThrow(
+              () -> new ResourceNotFoundException("Member", request.projectLeadMemberId()));
+    }
+
     var schedule =
         new RecurringSchedule(
             request.templateId(),
@@ -126,6 +133,18 @@ public class RecurringScheduleService {
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("RecurringSchedule", id));
 
+    if ("COMPLETED".equals(schedule.getStatus())) {
+      throw new InvalidStateException(
+          "Cannot update completed schedule", "Cannot update a completed schedule");
+    }
+
+    if (request.projectLeadMemberId() != null) {
+      memberRepository
+          .findById(request.projectLeadMemberId())
+          .orElseThrow(
+              () -> new ResourceNotFoundException("Member", request.projectLeadMemberId()));
+    }
+
     schedule.updateMutableFields(
         request.nameOverride(),
         request.endDate(),
@@ -178,19 +197,24 @@ public class RecurringScheduleService {
 
     if (status != null && customerId != null && templateId != null) {
       schedules =
-          scheduleRepository.findByStatusAndCustomerIdAndTemplateId(status, customerId, templateId);
+          scheduleRepository.findByStatusAndCustomerIdAndTemplateIdOrderByCreatedAtDesc(
+              status, customerId, templateId);
     } else if (status != null && customerId != null) {
-      schedules = scheduleRepository.findByStatusAndCustomerId(status, customerId);
+      schedules =
+          scheduleRepository.findByStatusAndCustomerIdOrderByCreatedAtDesc(status, customerId);
     } else if (status != null && templateId != null) {
-      schedules = scheduleRepository.findByStatusAndTemplateId(status, templateId);
+      schedules =
+          scheduleRepository.findByStatusAndTemplateIdOrderByCreatedAtDesc(status, templateId);
     } else if (customerId != null && templateId != null) {
-      schedules = scheduleRepository.findByCustomerIdAndTemplateId(customerId, templateId);
+      schedules =
+          scheduleRepository.findByCustomerIdAndTemplateIdOrderByCreatedAtDesc(
+              customerId, templateId);
     } else if (status != null) {
-      schedules = scheduleRepository.findByStatus(status);
+      schedules = scheduleRepository.findByStatusOrderByCreatedAtDesc(status);
     } else if (customerId != null) {
-      schedules = scheduleRepository.findByCustomerId(customerId);
+      schedules = scheduleRepository.findByCustomerIdOrderByCreatedAtDesc(customerId);
     } else if (templateId != null) {
-      schedules = scheduleRepository.findByTemplateId(templateId);
+      schedules = scheduleRepository.findByTemplateIdOrderByCreatedAtDesc(templateId);
     } else {
       schedules = scheduleRepository.findAllByOrderByCreatedAtDesc();
     }

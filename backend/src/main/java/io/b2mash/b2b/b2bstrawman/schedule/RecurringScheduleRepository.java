@@ -9,21 +9,24 @@ public interface RecurringScheduleRepository extends JpaRepository<RecurringSche
   List<RecurringSchedule> findByStatusAndNextExecutionDateLessThanEqual(
       String status, LocalDate date);
 
-  List<RecurringSchedule> findByTemplateId(UUID templateId);
+  List<RecurringSchedule> findByTemplateIdOrderByCreatedAtDesc(UUID templateId);
 
-  List<RecurringSchedule> findByCustomerId(UUID customerId);
+  List<RecurringSchedule> findByCustomerIdOrderByCreatedAtDesc(UUID customerId);
 
   boolean existsByTemplateId(UUID templateId);
 
-  List<RecurringSchedule> findByStatus(String status);
+  List<RecurringSchedule> findByStatusOrderByCreatedAtDesc(String status);
 
-  List<RecurringSchedule> findByStatusAndCustomerId(String status, UUID customerId);
+  List<RecurringSchedule> findByStatusAndCustomerIdOrderByCreatedAtDesc(
+      String status, UUID customerId);
 
-  List<RecurringSchedule> findByStatusAndTemplateId(String status, UUID templateId);
+  List<RecurringSchedule> findByStatusAndTemplateIdOrderByCreatedAtDesc(
+      String status, UUID templateId);
 
-  List<RecurringSchedule> findByCustomerIdAndTemplateId(UUID customerId, UUID templateId);
+  List<RecurringSchedule> findByCustomerIdAndTemplateIdOrderByCreatedAtDesc(
+      UUID customerId, UUID templateId);
 
-  List<RecurringSchedule> findByStatusAndCustomerIdAndTemplateId(
+  List<RecurringSchedule> findByStatusAndCustomerIdAndTemplateIdOrderByCreatedAtDesc(
       String status, UUID customerId, UUID templateId);
 
   List<RecurringSchedule> findAllByOrderByCreatedAtDesc();

@@ -14,6 +14,9 @@ import io.b2mash.b2b.b2bstrawman.event.TaskClaimedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.channel.NotificationDispatcher;
+import io.b2mash.b2b.b2bstrawman.schedule.event.RecurringProjectCreatedEvent;
+import io.b2mash.b2b.b2bstrawman.schedule.event.ScheduleCompletedEvent;
+import io.b2mash.b2b.b2bstrawman.schedule.event.ScheduleSkippedEvent;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -247,6 +250,60 @@ public class NotificationEventHandler {
           } catch (Exception e) {
             log.warn(
                 "Failed to create notifications for invoice.voided event={}", event.entityId(), e);
+          }
+        });
+  }
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onRecurringProjectCreated(RecurringProjectCreatedEvent event) {
+    handleInTenantScope(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            var notifications = notificationService.handleRecurringProjectCreated(event);
+            dispatchAll(notifications);
+          } catch (Exception e) {
+            log.warn(
+                "Failed to create notifications for recurring_project.created schedule={}",
+                event.scheduleId(),
+                e);
+          }
+        });
+  }
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onScheduleSkipped(ScheduleSkippedEvent event) {
+    handleInTenantScope(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            var notifications = notificationService.handleScheduleSkipped(event);
+            dispatchAll(notifications);
+          } catch (Exception e) {
+            log.warn(
+                "Failed to create notifications for schedule_execution.skipped schedule={}",
+                event.scheduleId(),
+                e);
+          }
+        });
+  }
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onScheduleCompleted(ScheduleCompletedEvent event) {
+    handleInTenantScope(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            var notifications = notificationService.handleScheduleCompleted(event);
+            dispatchAll(notifications);
+          } catch (Exception e) {
+            log.warn(
+                "Failed to create notifications for schedule.completed schedule={}",
+                event.scheduleId(),
+                e);
           }
         });
   }

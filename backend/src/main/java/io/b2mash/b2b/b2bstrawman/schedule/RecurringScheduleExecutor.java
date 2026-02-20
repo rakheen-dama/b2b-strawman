@@ -2,7 +2,6 @@ package io.b2mash.b2b.b2bstrawman.schedule;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import java.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -60,7 +59,6 @@ public class RecurringScheduleExecutor {
    * transaction via the service proxy, providing error isolation.
    */
   private int[] processSchedulesForTenant() {
-    LocalDate today = LocalDate.now();
     var dueSchedules = scheduleService.findDueSchedules();
 
     int processed = 0;
@@ -68,7 +66,7 @@ public class RecurringScheduleExecutor {
 
     for (var schedule : dueSchedules) {
       try {
-        boolean projectCreated = scheduleService.executeSingleSchedule(schedule, today);
+        boolean projectCreated = scheduleService.executeSingleSchedule(schedule);
         processed++;
         if (projectCreated) {
           created++;

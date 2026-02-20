@@ -381,7 +381,7 @@ public class RecurringScheduleService {
    * @return true if a project was created, false if skipped (idempotency, lifecycle)
    */
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  public boolean executeSingleSchedule(RecurringSchedule detachedSchedule, LocalDate today) {
+  public boolean executeSingleSchedule(RecurringSchedule detachedSchedule) {
     // Re-load schedule in this REQUIRES_NEW transaction to avoid detached entity issues
     var schedule =
         scheduleRepository
@@ -428,8 +428,9 @@ public class RecurringScheduleService {
                       customer.getLifecycleStatus().toString()))
               .build());
 
-      // Advance to next period even though this one was skipped
-      advanceToNextPeriod(schedule, schedule.getExecutionCount() + 1);
+      // Record execution to permanently skip this period (increments executionCount)
+      schedule.recordExecution(Instant.now());
+      advanceToNextPeriod(schedule, schedule.getExecutionCount());
       scheduleRepository.save(schedule);
 
       // Check auto-completion after advancing

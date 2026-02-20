@@ -33,10 +33,8 @@ export default async function TemplateEditorPage({
       const err = error as { status?: number };
       if (err?.status === 404) {
         notFound = true;
-      }
-      // Other errors: treat as not found
-      else {
-        notFound = true;
+      } else {
+        throw error;
       }
     }
   }

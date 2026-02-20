@@ -30,6 +30,7 @@ interface TemplateListProps {
 
 export function TemplateList({ slug, templates, canManage }: TemplateListProps) {
   const [errorMessages, setErrorMessages] = useState<Record<string, string>>({});
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   async function handleDuplicate(id: string) {
     const result = await duplicateTemplateAction(slug, id);
@@ -39,9 +40,15 @@ export function TemplateList({ slug, templates, canManage }: TemplateListProps) 
   }
 
   async function handleDelete(id: string) {
-    const result = await deleteTemplateAction(slug, id);
-    if (!result.success && result.error) {
-      setErrorMessages((prev) => ({ ...prev, [id]: result.error! }));
+    if (deleting) return;
+    setDeleting(id);
+    try {
+      const result = await deleteTemplateAction(slug, id);
+      if (!result.success && result.error) {
+        setErrorMessages((prev) => ({ ...prev, [id]: result.error! }));
+      }
+    } finally {
+      setDeleting(null);
     }
   }
 
@@ -169,8 +176,9 @@ export function TemplateList({ slug, templates, canManage }: TemplateListProps) 
                           <AlertDialogAction
                             className="bg-red-600 hover:bg-red-700"
                             onClick={() => handleDelete(template.id)}
+                            disabled={deleting === template.id}
                           >
-                            Delete
+                            {deleting === template.id ? "Deleting..." : "Delete"}
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>

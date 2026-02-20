@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,20 +29,20 @@ interface TaskRow {
   assigneeRole: "PROJECT_LEAD" | "ANY_MEMBER" | "UNASSIGNED";
 }
 
-let nextKey = 0;
-function newTask(): TaskRow {
-  return {
-    key: `task-${nextKey++}`,
-    name: "",
-    description: "",
-    estimatedHours: "",
-    billable: false,
-    assigneeRole: "UNASSIGNED",
-  };
-}
-
 export function TemplateEditor({ slug, template, availableTags }: TemplateEditorProps) {
   const router = useRouter();
+  const nextKeyRef = useRef(0);
+
+  function newTask(): TaskRow {
+    return {
+      key: `task-${nextKeyRef.current++}`,
+      name: "",
+      description: "",
+      estimatedHours: "",
+      billable: false,
+      assigneeRole: "UNASSIGNED",
+    };
+  }
 
   const [name, setName] = useState(template?.name ?? "");
   const [namePattern, setNamePattern] = useState(template?.namePattern ?? "");
@@ -54,7 +54,7 @@ export function TemplateEditor({ slug, template, availableTags }: TemplateEditor
         .slice()
         .sort((a, b) => a.sortOrder - b.sortOrder)
         .map((t) => ({
-          key: `task-${nextKey++}`,
+          key: `task-${nextKeyRef.current++}`,
           name: t.name,
           description: t.description ?? "",
           estimatedHours: t.estimatedHours != null ? String(t.estimatedHours) : "",
@@ -65,7 +65,7 @@ export function TemplateEditor({ slug, template, availableTags }: TemplateEditor
     return [];
   });
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>(() =>
-    template?.tags.map((t) => t.id) ?? [],
+    template?.tags?.map((t) => t.id) ?? [],
   );
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -83,8 +83,8 @@ export function TemplateEditor({ slug, template, availableTags }: TemplateEditor
   }
 
   function moveTaskUp(index: number) {
-    if (index === 0) return;
     setTasks((prev) => {
+      if (index <= 0) return prev;
       const next = [...prev];
       [next[index - 1], next[index]] = [next[index], next[index - 1]];
       return next;
@@ -92,8 +92,8 @@ export function TemplateEditor({ slug, template, availableTags }: TemplateEditor
   }
 
   function moveTaskDown(index: number) {
-    if (index === tasks.length - 1) return;
     setTasks((prev) => {
+      if (index >= prev.length - 1) return prev;
       const next = [...prev];
       [next[index], next[index + 1]] = [next[index + 1], next[index]];
       return next;
@@ -103,6 +103,12 @@ export function TemplateEditor({ slug, template, availableTags }: TemplateEditor
   async function handleSave() {
     if (!name.trim() || !namePattern.trim()) {
       setError("Name and Name Pattern are required.");
+      return;
+    }
+
+    const emptyTasks = tasks.filter((t) => !t.name.trim());
+    if (emptyTasks.length > 0) {
+      setError("All tasks must have a name.");
       return;
     }
 

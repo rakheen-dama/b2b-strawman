@@ -382,6 +382,8 @@ export function TaskListPanel({
                   task.assigneeId != null &&
                   currentMemberId != null &&
                   task.assigneeId === currentMemberId;
+                const canMarkDone =
+                  task.status === "IN_PROGRESS" && (isOwnTask || canManage);
 
                 return (
                   <TableRow
@@ -473,26 +475,26 @@ export function TaskListPanel({
                           </Button>
                         )}
                         {isOwnTask && (
-                          <>
-                            <Button
-                              size="xs"
-                              variant="ghost"
-                              disabled={isActioning}
-                              onClick={() => handleRelease(task.id)}
-                            >
-                              <Undo2 className="size-3" />
-                              Release
-                            </Button>
-                            <Button
-                              size="xs"
-                              variant="default"
-                              disabled={isActioning}
-                              onClick={() => handleMarkDone(task)}
-                            >
-                              <Check className="size-3" />
-                              Done
-                            </Button>
-                          </>
+                          <Button
+                            size="xs"
+                            variant="ghost"
+                            disabled={isActioning}
+                            onClick={() => handleRelease(task.id)}
+                          >
+                            <Undo2 className="size-3" />
+                            Release
+                          </Button>
+                        )}
+                        {canMarkDone && (
+                          <Button
+                            size="xs"
+                            variant="default"
+                            disabled={isActioning}
+                            onClick={() => handleMarkDone(task)}
+                          >
+                            <Check className="size-3" />
+                            Done
+                          </Button>
                         )}
                       </div>
                     </TableCell>

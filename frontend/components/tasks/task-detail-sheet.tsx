@@ -1,9 +1,16 @@
 "use client";
 
 import { useEffect, useReducer, useTransition } from "react";
-import { X } from "lucide-react";
+import { Check, Circle, Loader2, X, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Sheet,
   SheetContent,
@@ -31,6 +38,7 @@ import { formatDate } from "@/lib/format";
 import { PRIORITY_BADGE, STATUS_BADGE } from "@/components/tasks/task-badge-config";
 import type {
   Task,
+  TaskStatus,
   TimeEntry,
   TagResponse,
   FieldDefinitionResponse,
@@ -98,6 +106,48 @@ interface TaskDetailSheetProps {
   fieldDefinitions?: FieldDefinitionResponse[];
   fieldGroups?: FieldGroupResponse[];
   groupMembers?: Record<string, FieldGroupMemberResponse[]>;
+}
+
+// --- Status Select ---
+
+const STATUS_OPTIONS: { value: TaskStatus; label: string; icon: typeof Circle }[] = [
+  { value: "OPEN", label: "Open", icon: Circle },
+  { value: "IN_PROGRESS", label: "In Progress", icon: Loader2 },
+  { value: "DONE", label: "Done", icon: Check },
+  { value: "CANCELLED", label: "Cancelled", icon: XCircle },
+];
+
+function StatusSelect({
+  value,
+  onChange,
+}: {
+  value: TaskStatus;
+  onChange: (status: TaskStatus) => void;
+}) {
+  const current = STATUS_OPTIONS.find((o) => o.value === value);
+  const CurrentIcon = current?.icon ?? Circle;
+
+  return (
+    <Select value={value} onValueChange={(v) => onChange(v as TaskStatus)}>
+      <SelectTrigger className="h-7 w-auto gap-1.5 rounded-full border-slate-200 px-2.5 text-xs font-medium dark:border-slate-700">
+        <CurrentIcon className="size-3" />
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {STATUS_OPTIONS.map((opt) => {
+          const Icon = opt.icon;
+          return (
+            <SelectItem key={opt.value} value={opt.value}>
+              <span className="flex items-center gap-1.5">
+                <Icon className="size-3" />
+                {opt.label}
+              </span>
+            </SelectItem>
+          );
+        })}
+      </SelectContent>
+    </Select>
+  );
 }
 
 // --- Component ---
@@ -198,6 +248,33 @@ export function TaskDetailSheet({
     });
   }
 
+  // Handle status change — optimistic update + server action
+  function handleStatusChange(newStatus: TaskStatus) {
+    if (!task || newStatus === task.status) return;
+
+    const prevStatus = task.status;
+    dispatch({ type: "UPDATE_TASK", task: { ...task, status: newStatus } });
+
+    startTransition(async () => {
+      const result = await updateTask(slug, task.id, effectiveProjectId, {
+        title: task.title,
+        description: task.description ?? undefined,
+        priority: task.priority,
+        status: newStatus,
+        type: task.type ?? undefined,
+        dueDate: task.dueDate ?? undefined,
+        assigneeId: task.assigneeId ?? undefined,
+      });
+
+      if (!result.success) {
+        dispatch({ type: "UPDATE_TASK", task: { ...task, status: prevStatus } });
+      }
+    });
+  }
+
+  const isOwnTask = task?.assigneeId === currentMemberId;
+  const canChangeStatus = canManage || isOwnTask;
+
   const isOpen = taskId !== null;
   const priorityBadge = task ? PRIORITY_BADGE[task.priority] : null;
   const statusBadge = task ? STATUS_BADGE[task.status] : null;
@@ -252,10 +329,17 @@ export function TaskDetailSheet({
                   {task.title}
                 </h2>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
-                  {statusBadge && (
-                    <Badge variant={statusBadge.variant}>
-                      {statusBadge.label}
-                    </Badge>
+                  {canChangeStatus ? (
+                    <StatusSelect
+                      value={task.status}
+                      onChange={handleStatusChange}
+                    />
+                  ) : (
+                    statusBadge && (
+                      <Badge variant={statusBadge.variant}>
+                        {statusBadge.label}
+                      </Badge>
+                    )
                   )}
                   {priorityBadge && (
                     <Badge variant={priorityBadge.variant}>

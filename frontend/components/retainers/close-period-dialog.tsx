@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,6 +33,7 @@ export function ClosePeriodDialog({
   open,
   onOpenChange,
 }: ClosePeriodDialogProps) {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -53,7 +55,10 @@ export function ClosePeriodDialog({
 
     try {
       const result = await closePeriodAction(slug, retainerId);
-      if (result.success) {
+      if (result.success && result.data?.generatedInvoice?.id) {
+        onOpenChange(false);
+        router.push(`/org/${slug}/invoices/${result.data.generatedInvoice.id}`);
+      } else if (result.success) {
         onOpenChange(false);
       } else {
         setError(result.error ?? "Failed to close period.");

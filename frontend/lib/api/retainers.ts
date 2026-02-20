@@ -90,7 +90,7 @@ export interface PeriodCloseResult {
       unitPrice: number;
       amount: number;
     }>;
-  };
+  } | null;
   nextPeriod: PeriodSummary | null;
 }
 

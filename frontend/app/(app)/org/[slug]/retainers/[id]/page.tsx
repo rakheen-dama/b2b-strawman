@@ -10,7 +10,8 @@ import { EditRetainerDialog } from "@/components/retainers/edit-retainer-dialog"
 import { RetainerDetailActions } from "@/components/retainers/retainer-detail-actions";
 import { FREQUENCY_LABELS, TYPE_LABELS } from "@/lib/retainer-constants";
 import { formatLocalDate, formatCurrency } from "@/lib/format";
-import { ArrowLeft, Pencil } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ArrowLeft, Pencil, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import type { RetainerResponse, PeriodSummary } from "@/lib/api/retainers";
 
@@ -159,6 +160,40 @@ export default async function RetainerDetailPage({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Consumption alerts — HOUR_BANK only, OPEN periods */}
+            {retainer.type === "HOUR_BANK" &&
+              retainer.currentPeriod.status === "OPEN" &&
+              retainer.allocatedHours != null &&
+              retainer.allocatedHours > 0 &&
+              (() => {
+                const consumptionPercent =
+                  (retainer.currentPeriod.consumedHours /
+                    retainer.allocatedHours) *
+                  100;
+                if (consumptionPercent >= 100) {
+                  return (
+                    <Alert variant="destructive">
+                      <AlertTriangle className="size-4" />
+                      <AlertDescription>
+                        Retainer fully consumed — additional hours are overage.
+                      </AlertDescription>
+                    </Alert>
+                  );
+                }
+                if (consumptionPercent >= 80) {
+                  return (
+                    <Alert variant="warning">
+                      <AlertTriangle className="size-4" />
+                      <AlertDescription>
+                        Retainer at {Math.round(consumptionPercent)}% capacity —
+                        approaching limit.
+                      </AlertDescription>
+                    </Alert>
+                  );
+                }
+                return null;
+              })()}
+
             <div className="text-sm text-slate-600 dark:text-slate-400">
               {formatLocalDate(retainer.currentPeriod.periodStart)} &ndash;{" "}
               {formatLocalDate(retainer.currentPeriod.periodEnd)}

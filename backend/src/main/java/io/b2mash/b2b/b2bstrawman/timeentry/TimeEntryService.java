@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.compliance.LifecycleAction;
 import io.b2mash.b2b.b2bstrawman.costrate.CostRateService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.event.TimeEntryChangedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
@@ -27,6 +28,7 @@ import java.util.Objects;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,6 +48,7 @@ public class TimeEntryService {
   private final CustomerLifecycleGuard customerLifecycleGuard;
   private final CustomerProjectRepository customerProjectRepository;
   private final CustomerRepository customerRepository;
+  private final ApplicationEventPublisher applicationEventPublisher;
 
   public TimeEntryService(
       TimeEntryRepository timeEntryRepository,
@@ -58,7 +61,8 @@ public class TimeEntryService {
       MemberRepository memberRepository,
       CustomerLifecycleGuard customerLifecycleGuard,
       CustomerProjectRepository customerProjectRepository,
-      CustomerRepository customerRepository) {
+      CustomerRepository customerRepository,
+      ApplicationEventPublisher applicationEventPublisher) {
     this.timeEntryRepository = timeEntryRepository;
     this.taskRepository = taskRepository;
     this.projectAccessService = projectAccessService;
@@ -70,6 +74,7 @@ public class TimeEntryService {
     this.customerLifecycleGuard = customerLifecycleGuard;
     this.customerProjectRepository = customerProjectRepository;
     this.customerRepository = customerRepository;
+    this.applicationEventPublisher = applicationEventPublisher;
   }
 
   @Transactional
@@ -152,6 +157,20 @@ public class TimeEntryService {
     var orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
     budgetCheckService.checkAndAlert(task.getProjectId(), memberId, actorName, tenantId, orgId);
 
+    applicationEventPublisher.publishEvent(
+        new TimeEntryChangedEvent(
+            "time_entry.changed",
+            "time_entry",
+            saved.getId(),
+            task.getProjectId(),
+            "CREATED",
+            memberId,
+            null,
+            tenantId,
+            orgId,
+            Instant.now(),
+            Map.of("action", "CREATED")));
+
     return saved;
   }
 
@@ -220,6 +239,20 @@ public class TimeEntryService {
     var tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
     var orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
     budgetCheckService.checkAndAlert(task.getProjectId(), memberId, actorName, tenantId, orgId);
+
+    applicationEventPublisher.publishEvent(
+        new TimeEntryChangedEvent(
+            "time_entry.changed",
+            "time_entry",
+            saved.getId(),
+            task.getProjectId(),
+            "UPDATED",
+            memberId,
+            null,
+            tenantId,
+            orgId,
+            Instant.now(),
+            Map.of("action", "UPDATED")));
 
     return saved;
   }
@@ -381,6 +414,20 @@ public class TimeEntryService {
             .details(details)
             .build());
 
+    applicationEventPublisher.publishEvent(
+        new TimeEntryChangedEvent(
+            "time_entry.changed",
+            "time_entry",
+            entry.getId(),
+            task.getProjectId(),
+            "UPDATED",
+            memberId,
+            null,
+            RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null,
+            RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null,
+            Instant.now(),
+            Map.of("action", "UPDATED")));
+
     // Check budget thresholds if duration, date, or billable changed (affects budget consumption)
     boolean durationChanged = durationMinutes != null && oldDurationMinutes != durationMinutes;
     boolean billableChanged = billable != null && !billable.equals(oldBillable);
@@ -427,6 +474,20 @@ public class TimeEntryService {
                     "task_id", entry.getTaskId().toString(),
                     "project_id", task.getProjectId().toString()))
             .build());
+
+    applicationEventPublisher.publishEvent(
+        new TimeEntryChangedEvent(
+            "time_entry.changed",
+            "time_entry",
+            entry.getId(),
+            task.getProjectId(),
+            "DELETED",
+            memberId,
+            null,
+            RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null,
+            RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null,
+            Instant.now(),
+            Map.of("action", "DELETED")));
   }
 
   // --- Project time summary aggregation methods (Epic 46A) ---

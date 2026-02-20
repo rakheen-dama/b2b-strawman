@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.retainer;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -7,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface RetainerPeriodRepository extends JpaRepository<RetainerPeriod, UUID> {
 
@@ -19,4 +21,22 @@ public interface RetainerPeriodRepository extends JpaRepository<RetainerPeriod, 
   @Query(
       "SELECT rp FROM RetainerPeriod rp WHERE rp.status = 'OPEN' AND rp.periodEnd <= CURRENT_DATE")
   List<RetainerPeriod> findPeriodsReadyToClose();
+
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT COALESCE(SUM(te.duration_minutes), 0)
+          FROM time_entries te
+            JOIN tasks t ON t.id = te.task_id
+            JOIN customer_projects cp ON cp.project_id = t.project_id
+          WHERE cp.customer_id = :customerId
+            AND te.billable = true
+            AND te.date >= :periodStart
+            AND te.date < :periodEnd
+          """)
+  long sumConsumedMinutes(
+      @Param("customerId") UUID customerId,
+      @Param("periodStart") LocalDate periodStart,
+      @Param("periodEnd") LocalDate periodEnd);
 }

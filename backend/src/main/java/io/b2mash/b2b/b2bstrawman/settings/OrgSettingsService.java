@@ -233,6 +233,57 @@ public class OrgSettingsService {
         .orElse(DEFAULT_CURRENCY);
   }
 
+  /** Updates compliance-related settings (dormancy threshold, data request deadline). */
+  @Transactional
+  public SettingsResponse updateComplianceSettings(
+      Integer dormancyThresholdDays,
+      Integer dataRequestDeadlineDays,
+      UUID memberId,
+      String orgRole) {
+    requireAdminOrOwner(orgRole);
+
+    if (dormancyThresholdDays == null && dataRequestDeadlineDays == null) {
+      return getSettingsWithBranding();
+    }
+
+    var settings =
+        orgSettingsRepository
+            .findForCurrentTenant()
+            .orElseGet(
+                () -> {
+                  var newSettings = new OrgSettings(DEFAULT_CURRENCY);
+                  return orgSettingsRepository.save(newSettings);
+                });
+
+    if (dormancyThresholdDays != null) {
+      settings.setDormancyThresholdDays(dormancyThresholdDays);
+    }
+    if (dataRequestDeadlineDays != null) {
+      settings.setDataRequestDeadlineDays(dataRequestDeadlineDays);
+    }
+    settings = orgSettingsRepository.save(settings);
+
+    log.info(
+        "Updated compliance settings: dormancyThresholdDays={}, dataRequestDeadlineDays={}",
+        dormancyThresholdDays,
+        dataRequestDeadlineDays);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("org_settings.compliance_updated")
+            .entityType("org_settings")
+            .entityId(settings.getId())
+            .details(
+                Map.of(
+                    "dormancy_threshold_days",
+                    dormancyThresholdDays != null ? dormancyThresholdDays : "",
+                    "data_request_deadline_days",
+                    dataRequestDeadlineDays != null ? dataRequestDeadlineDays : ""))
+            .build());
+
+    return toSettingsResponse(settings);
+  }
+
   private void requireAdminOrOwner(String orgRole) {
     if (!Roles.ORG_ADMIN.equals(orgRole) && !Roles.ORG_OWNER.equals(orgRole)) {
       throw new ForbiddenException(

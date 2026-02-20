@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -87,6 +89,18 @@ public class OrgSettingsController {
     return ResponseEntity.ok(orgSettingsService.deleteLogo(memberId, orgRole));
   }
 
+  @PatchMapping("/compliance")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<SettingsResponse> updateComplianceSettings(
+      @Valid @RequestBody UpdateComplianceSettingsRequest request) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+
+    return ResponseEntity.ok(
+        orgSettingsService.updateComplianceSettings(
+            request.dormancyThresholdDays(), request.dataRequestDeadlineDays(), memberId, orgRole));
+  }
+
   // --- DTOs ---
 
   public record SettingsResponse(
@@ -105,4 +119,9 @@ public class OrgSettingsController {
       @Pattern(regexp = "^#[0-9a-fA-F]{6}$", message = "brandColor must be a valid hex color")
           String brandColor,
       String documentFooterText) {}
+
+  public record UpdateComplianceSettingsRequest(
+      @Positive(message = "dormancyThresholdDays must be positive") Integer dormancyThresholdDays,
+      @Positive(message = "dataRequestDeadlineDays must be positive")
+          Integer dataRequestDeadlineDays) {}
 }

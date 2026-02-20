@@ -14,8 +14,9 @@ import org.springframework.stereotype.Component;
  * that gap. The underlying {@link CompliancePackSeeder} is idempotent, so running on every boot is
  * safe.
  *
- * <p>Ordered after TenantMigrationRunner (which has no explicit order, defaults to
- * Ordered.LOWEST_PRECEDENCE) to ensure schemas are fully migrated before seeding.
+ * <p>Ordered after TenantMigrationRunner ({@code @Order(50)}) to ensure schemas are fully migrated
+ * before seeding. Note: the underlying seeder checks packId only, not version — pack upgrades are
+ * not yet supported (future work).
  */
 @Component
 @Order(100)

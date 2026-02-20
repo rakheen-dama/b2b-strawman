@@ -8,9 +8,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 @Component
+@Order(50)
 public class TenantMigrationRunner implements ApplicationRunner {
 
   private static final Logger log = LoggerFactory.getLogger(TenantMigrationRunner.class);

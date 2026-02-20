@@ -242,6 +242,10 @@ public class OrgSettingsService {
       String orgRole) {
     requireAdminOrOwner(orgRole);
 
+    if (dormancyThresholdDays == null && dataRequestDeadlineDays == null) {
+      return getSettingsWithBranding();
+    }
+
     var settings =
         orgSettingsRepository
             .findForCurrentTenant()

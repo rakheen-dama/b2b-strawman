@@ -23,7 +23,7 @@ Four new entities (`ProjectTemplate`, `TemplateTask`, `RecurringSchedule`, `Sche
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 115 | Entity Foundation & Utilities | Backend | -- | M | 115A, 115B | **Done** (PRs #235, #236) |
-| 116 | Template CRUD & Save from Project | Backend | 115 | M | 116A, 116B | |
+| 116 | Template CRUD & Save from Project | Backend | 115 | M | 116A, 116B | **Done** (PRs #237, #238) |
 | 117 | Template Instantiation | Backend | 116 | S | 117A | |
 | 118 | Schedule CRUD & Lifecycle | Backend | 115 | M | 118A, 118B | |
 | 119 | Scheduler Execution Engine | Backend | 117, 118 | M | 119A | |
@@ -86,7 +86,7 @@ Four new entities (`ProjectTemplate`, `TemplateTask`, `RecurringSchedule`, `Sche
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 2a | Epic 116 | 116A | `ProjectTemplateService` — CRUD, saveFromProject, duplicate. DTOs. ~12 service tests. |
-| 2b | Epic 116 | 116B | `ProjectTemplateController` — 7 REST endpoints (all except instantiate). Permission checks. SecurityConfig. ~15 controller integration tests. |
+| 2b | Epic 116 | 116B | `ProjectTemplateController` — 7 REST endpoints (all except instantiate). Permission checks. SecurityConfig. ~15 controller integration tests. | **Done** (PR #238) |
 | 2c | Epic 118 | 118A | `RecurringScheduleService` — CRUD, pause, resume, lifecycle. DTOs. ~12 service tests. Parallel with 116. |
 | 2d | Epic 118 | 118B | `RecurringScheduleController` — 8 REST endpoints. Permission checks. ~15 controller integration tests. Parallel with 116B. |
 
@@ -216,7 +216,7 @@ Stage 4:  [120A] --> [120B]  //  [121A] --> [121B]   (parallel frontend tracks a
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **116A** | 116.1–116.8 | `ProjectTemplateService` with CRUD + `saveFromProject()` + `duplicate()`. Request/response DTOs. Audit events (`template.created`, `template.updated`, `template.deleted`, `template.duplicated`). Delete guard (409 if active schedules reference template). Service-level integration tests. ~12 tests. | **Done** (PR #237) |
-| **116B** | 116.9–116.16 | `ProjectTemplateController` with 7 REST endpoints. `SecurityConfig` update. Permission checks (admin/owner for mutations, lead for save-from-project). Controller integration tests with MockMvc. ~15 tests. | |
+| **116B** | 116.9–116.16 | `ProjectTemplateController` with 7 REST endpoints. `SecurityConfig` update. Permission checks (admin/owner for mutations, lead for save-from-project). Controller integration tests with MockMvc. ~15 tests. | **Done** (PR #238) |
 
 ### Tasks
 

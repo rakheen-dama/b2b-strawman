@@ -26,7 +26,7 @@ Four new entities (`ProjectTemplate`, `TemplateTask`, `RecurringSchedule`, `Sche
 | 116 | Template CRUD & Save from Project | Backend | 115 | M | 116A, 116B | **Done** (PRs #237, #238) |
 | 117 | Template Instantiation | Backend | 116 | S | 117A | **Done** (PR #239) |
 | 118 | Schedule CRUD & Lifecycle | Backend | 115 | M | 118A, 118B | **Done** (PRs #240, #241) |
-| 119 | Scheduler Execution Engine | Backend | 117, 118 | M | 119A | |
+| 119 | Scheduler Execution Engine | Backend | 117, 118 | M | 119A | **Done** (PR #242) |
 | 120 | Template Management UI | Frontend | 116, 117 | M | 120A, 120B | |
 | 121 | Schedule Management UI | Frontend | 118, 119 | M | 121A, 121B | |
 
@@ -95,7 +95,7 @@ Four new entities (`ProjectTemplate`, `TemplateTask`, `RecurringSchedule`, `Sche
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 3a | Epic 117 | 117A | `instantiateTemplate()` in `ProjectTemplateService`. POST endpoint. Assignee resolution, tag application. Audit + notification events. ~15 integration tests. | **Done** (PR #239) |
-| 3b | Epic 119 | 119A | `RecurringScheduleExecutor` (@Scheduled cron), `processSchedulesForTenant()`, `executeSingleSchedule()`. Tenant iteration via `OrgSchemaMappingRepository`. Idempotency, lifecycle check, error isolation. Notification events. ~18 integration tests. |
+| 3b | Epic 119 | 119A | `RecurringScheduleExecutor` (@Scheduled cron), `processSchedulesForTenant()`, `executeSingleSchedule()`. Tenant iteration via `OrgSchemaMappingRepository`. Idempotency, lifecycle check, error isolation. Notification events. ~18 integration tests. | **Done** (PR #242) |
 
 ### Stage 4: Frontend (Parallel tracks)
 
@@ -419,7 +419,7 @@ Stage 4:  [120A] --> [120B]  //  [121A] --> [121B]   (parallel frontend tracks a
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **119A** | 119.1–119.12 | `RecurringScheduleExecutor` with `@Scheduled(cron)`. `processSchedulesForTenant()` and `executeSingleSchedule()` in `RecurringScheduleService`. Tenant iteration via `OrgSchemaMappingRepository`. Idempotency via `(schedule_id, period_start)` unique constraint. Customer lifecycle check. Error isolation (REQUIRES_NEW per schedule, try/catch per tenant). Auto-completion when past end date. Notification events (`RECURRING_PROJECT_CREATED`, `SCHEDULE_SKIPPED`, `SCHEDULE_COMPLETED`). Integration tests. ~18 tests. | |
+| **119A** | 119.1–119.12 | `RecurringScheduleExecutor` with `@Scheduled(cron)`. `processSchedulesForTenant()` and `executeSingleSchedule()` in `RecurringScheduleService`. Tenant iteration via `OrgSchemaMappingRepository`. Idempotency via `(schedule_id, period_start)` unique constraint. Customer lifecycle check. Error isolation (REQUIRES_NEW per schedule, try/catch per tenant). Auto-completion when past end date. Notification events (`RECURRING_PROJECT_CREATED`, `SCHEDULE_SKIPPED`, `SCHEDULE_COMPLETED`). Integration tests. ~18 tests. | **Done** (PR #242) |
 
 ### Tasks
 

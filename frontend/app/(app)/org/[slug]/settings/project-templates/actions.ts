@@ -149,9 +149,7 @@ export async function instantiateTemplateAction(
   data: InstantiateTemplateRequest,
 ): Promise<{ success: boolean; error?: string; projectId?: string }> {
   try {
-    const result = (await instantiateProjectTemplate(templateId, data)) as {
-      id: string;
-    };
+    const result = await instantiateProjectTemplate(templateId, data);
     revalidatePath(`/org/${slug}/projects`);
     return { success: true, projectId: result.id };
   } catch (error) {

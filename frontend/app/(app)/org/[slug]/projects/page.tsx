@@ -74,29 +74,28 @@ export default async function ProjectsPage({
     // Non-fatal
   }
 
-  // Fetch active project templates for "New from Template" button
+  // Fetch active project templates for "New from Template" button (admin/owner only)
   let activeTemplates: ProjectTemplateResponse[] = [];
-  try {
-    const allTemplates = await getProjectTemplates();
-    activeTemplates = allTemplates.filter((t) => t.active);
-  } catch {
-    // Non-fatal: hide "New from Template" button
-  }
-
-  // Fetch org members for NewFromTemplateDialog
   let orgMembers: OrgMember[] = [];
-  try {
-    orgMembers = await api.get<OrgMember[]>("/api/members");
-  } catch {
-    // Non-fatal
-  }
-
-  // Fetch customers for NewFromTemplateDialog
   let allCustomers: Customer[] = [];
-  try {
-    allCustomers = await api.get<Customer[]>("/api/customers");
-  } catch {
-    // Non-fatal
+
+  if (isAdmin) {
+    try {
+      const allTemplates = await getProjectTemplates();
+      activeTemplates = allTemplates.filter((t) => t.active);
+    } catch {
+      // Non-fatal: hide "New from Template" button
+    }
+
+    // Only fetch members + customers if there are active templates to instantiate
+    if (activeTemplates.length > 0) {
+      const [membersResult, customersResult] = await Promise.allSettled([
+        api.get<OrgMember[]>("/api/members"),
+        api.get<Customer[]>("/api/customers"),
+      ]);
+      if (membersResult.status === "fulfilled") orgMembers = membersResult.value;
+      if (customersResult.status === "fulfilled") allCustomers = customersResult.value;
+    }
   }
 
   // Fetch budget status for each project (admin-only, non-fatal — 404 means no budget)

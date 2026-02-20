@@ -109,7 +109,7 @@ Phase 17 adds a **retainer management layer** to the DocTeams platform -- per-cu
 |-------|------|-------|-----------|
 | 4a | Epic 126 | 126A | Retainer dashboard page, retainer list, API client, sidebar nav. ~8 tests. | **Done** (PR #255) |
 | 4b | Epic 126 | 126B | Create retainer dialog, status badges, progress bar component. ~6 tests. | **Done** (PR #256) |
-| 4c | Epic 127 | 127A | Customer retainer tab, active retainer card, period history table. ~5 tests. Parallel with 126. |
+| 4c | Epic 127 | 127A | Customer retainer tab, active retainer card, period history table. ~5 tests. Parallel with 126. | **Done** (PR #257) |
 | 4d | Epic 127 | 127B | Retainer detail page, edit dialog, close period dialog, lifecycle action buttons. ~6 tests. |
 | 4e | Epic 128 | 128A | Retainer indicator on time entry form, overage warning. ~4 frontend tests. Parallel with 127. |
 | 4f | Epic 128 | 128B | Backend notification wiring: RETAINER_PERIOD_READY_TO_CLOSE trigger, ensure all notification types are dispatched. ~5 backend tests. Parallel with frontend slices. |
@@ -513,7 +513,7 @@ Stage 4:  [126A] --> [126B]  //  [127A] --> [127B]  //  [128A]  //  [128B]
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **127A** | 127.1--127.6 | Customer retainer tab (`customer-retainer-tab.tsx`), active retainer card with progress, period history table. ~5 frontend tests. | |
+| **127A** | 127.1--127.6 | Customer retainer tab (`customer-retainer-tab.tsx`), active retainer card with progress, period history table. ~5 frontend tests. | **Done** (PR #257) |
 | **127B** | 127.7--127.13 | Retainer detail page (`/org/[slug]/retainers/[id]/page.tsx`), edit retainer dialog, close period confirmation dialog with invoice preview, pause/resume/terminate action buttons. ~6 frontend tests. | |
 
 ### Tasks

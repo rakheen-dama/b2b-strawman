@@ -26,8 +26,15 @@ import {
 } from "@/app/(app)/org/[slug]/projects/[id]/task-actions";
 import { cn } from "@/lib/utils";
 import { PRIORITY_BADGE, STATUS_BADGE } from "@/components/tasks/task-badge-config";
-import type { Task, TaskStatus } from "@/lib/types";
-import type { RetainerSummaryResponse } from "@/lib/types";
+import type {
+  Task,
+  TaskStatus,
+  RetainerSummaryResponse,
+  TagResponse,
+  FieldDefinitionResponse,
+  FieldGroupResponse,
+  FieldGroupMemberResponse,
+} from "@/lib/types";
 
 // --- Filter types (40.7) ---
 
@@ -62,6 +69,10 @@ interface TaskListPanelProps {
   orgRole?: string | null;
   retainerSummary?: RetainerSummaryResponse | null;
   members?: { id: string; name: string; email: string }[];
+  allTags?: TagResponse[];
+  fieldDefinitions?: FieldDefinitionResponse[];
+  fieldGroups?: FieldGroupResponse[];
+  groupMembers?: Record<string, FieldGroupMemberResponse[]>;
 }
 
 export function TaskListPanel({
@@ -73,6 +84,10 @@ export function TaskListPanel({
   orgRole,
   retainerSummary,
   members = [],
+  allTags = [],
+  fieldDefinitions = [],
+  fieldGroups = [],
+  groupMembers = {},
 }: TaskListPanelProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -464,6 +479,10 @@ export function TaskListPanel({
         currentMemberId={currentMemberId ?? ""}
         orgRole={orgRole ?? ""}
         members={members}
+        allTags={allTags}
+        fieldDefinitions={fieldDefinitions}
+        fieldGroups={fieldGroups}
+        groupMembers={groupMembers}
       />
     </div>
   );

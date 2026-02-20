@@ -184,6 +184,19 @@ class OrgSettingsIntegrationTest {
   }
 
   @Test
+  @Order(5)
+  void getSettings_returnsCompliancePackStatus() throws Exception {
+    mockMvc
+        .perform(get("/api/settings").with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.compliancePackStatus").isArray())
+        .andExpect(jsonPath("$.compliancePackStatus").isNotEmpty())
+        .andExpect(jsonPath("$.compliancePackStatus[0].packId").isString())
+        .andExpect(jsonPath("$.compliancePackStatus[0].version").isString())
+        .andExpect(jsonPath("$.compliancePackStatus[0].appliedAt").isString());
+  }
+
+  @Test
   void putSettings_rejectsBlankCurrency() throws Exception {
     mockMvc
         .perform(

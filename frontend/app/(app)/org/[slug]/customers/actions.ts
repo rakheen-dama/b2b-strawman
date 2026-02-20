@@ -3,7 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
-import type { Customer, CreateCustomerRequest, UpdateCustomerRequest } from "@/lib/types";
+import type { Customer, CustomerType, CreateCustomerRequest, UpdateCustomerRequest } from "@/lib/types";
 
 interface ActionResult {
   success: boolean;
@@ -21,6 +21,7 @@ export async function createCustomer(slug: string, formData: FormData): Promise<
   const phone = formData.get("phone")?.toString().trim() || undefined;
   const idNumber = formData.get("idNumber")?.toString().trim() || undefined;
   const notes = formData.get("notes")?.toString().trim() || undefined;
+  const customerType = (formData.get("customerType")?.toString() as CustomerType) || undefined;
 
   if (!name) {
     return { success: false, error: "Customer name is required." };
@@ -29,7 +30,7 @@ export async function createCustomer(slug: string, formData: FormData): Promise<
     return { success: false, error: "Customer email is required." };
   }
 
-  const body: CreateCustomerRequest = { name, email, phone, idNumber, notes };
+  const body: CreateCustomerRequest = { name, email, phone, idNumber, notes, customerType };
 
   try {
     await api.post<Customer>("/api/customers", body);
@@ -61,6 +62,7 @@ export async function updateCustomer(
   const phone = formData.get("phone")?.toString().trim() || undefined;
   const idNumber = formData.get("idNumber")?.toString().trim() || undefined;
   const notes = formData.get("notes")?.toString().trim() || undefined;
+  const customerType = (formData.get("customerType")?.toString() as CustomerType) || undefined;
 
   if (!name) {
     return { success: false, error: "Customer name is required." };
@@ -69,7 +71,7 @@ export async function updateCustomer(
     return { success: false, error: "Customer email is required." };
   }
 
-  const body: UpdateCustomerRequest = { name, email, phone, idNumber, notes };
+  const body: UpdateCustomerRequest = { name, email, phone, idNumber, notes, customerType };
 
   try {
     await api.put<Customer>(`/api/customers/${id}`, body);

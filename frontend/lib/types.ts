@@ -118,7 +118,7 @@ export type LifecycleStatus =
   | "OFFBOARDING"
   | "OFFBOARDED";
 
-export type CustomerType = "INDIVIDUAL" | "COMPANY";
+export type CustomerType = "INDIVIDUAL" | "COMPANY" | "TRUST";
 
 export interface TransitionResponse {
   id: string;
@@ -146,6 +146,7 @@ export interface CreateCustomerRequest {
   phone?: string;
   idNumber?: string;
   notes?: string;
+  customerType?: CustomerType;
 }
 
 export interface UpdateCustomerRequest {
@@ -154,6 +155,7 @@ export interface UpdateCustomerRequest {
   phone?: string;
   idNumber?: string;
   notes?: string;
+  customerType?: CustomerType;
 }
 
 export interface CustomerProject {

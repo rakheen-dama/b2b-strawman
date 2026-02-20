@@ -26,28 +26,8 @@ import {
 } from "@/app/(app)/org/[slug]/projects/[id]/task-actions";
 import { fetchTimeEntries } from "@/app/(app)/org/[slug]/projects/[id]/time-entry-actions";
 import { formatDate } from "@/lib/format";
-import type { Task, TaskPriority, TaskStatus, TimeEntry } from "@/lib/types";
-
-// --- Badge config (mirrors task-list-panel.tsx) ---
-
-const PRIORITY_BADGE: Record<
-  TaskPriority,
-  { label: string; variant: "destructive" | "warning" | "neutral" }
-> = {
-  HIGH: { label: "High", variant: "destructive" },
-  MEDIUM: { label: "Medium", variant: "warning" },
-  LOW: { label: "Low", variant: "neutral" },
-};
-
-const STATUS_BADGE: Record<
-  TaskStatus,
-  { label: string; variant: "success" | "warning" | "neutral" | "destructive" }
-> = {
-  OPEN: { label: "Open", variant: "neutral" },
-  IN_PROGRESS: { label: "In Progress", variant: "warning" },
-  DONE: { label: "Done", variant: "success" },
-  CANCELLED: { label: "Cancelled", variant: "destructive" },
-};
+import { PRIORITY_BADGE, STATUS_BADGE } from "@/components/tasks/task-badge-config";
+import type { Task, TimeEntry } from "@/lib/types";
 
 // --- State ---
 
@@ -132,7 +112,13 @@ export function TaskDetailSheet({
 
     fetchTask(taskId)
       .then((data) => {
-        if (!cancelled) dispatch({ type: "TASK_LOADED", task: data });
+        if (cancelled) return;
+        // Guard: ensure the task belongs to this project
+        if (data.projectId !== projectId) {
+          dispatch({ type: "TASK_ERROR", error: "Task not found." });
+          return;
+        }
+        dispatch({ type: "TASK_LOADED", task: data });
       })
       .catch(() => {
         if (!cancelled)
@@ -150,7 +136,7 @@ export function TaskDetailSheet({
     return () => {
       cancelled = true;
     };
-  }, [taskId]);
+  }, [taskId, projectId]);
 
   // Handle assignee change — optimistic update + server action
   function handleAssigneeChange(newAssigneeId: string | null) {

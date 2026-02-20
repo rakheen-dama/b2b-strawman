@@ -11,8 +11,10 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.CreateRetainerRequest;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.PeriodSummary;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.RetainerResponse;
+import io.b2mash.b2b.b2bstrawman.retainer.dto.RetainerSummaryResponse;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.UpdateRetainerRequest;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -411,6 +413,66 @@ public class RetainerAgreementService {
             .toList();
 
     return RetainerResponse.from(agreement, customer.getName(), currentPeriod, recentPeriods);
+  }
+
+  @Transactional(readOnly = true)
+  public RetainerSummaryResponse getRetainerSummary(UUID customerId) {
+    // Validate customer exists in this tenant
+    customerRepository
+        .findById(customerId)
+        .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+
+    var agreementOpt = agreementRepository.findActiveOrPausedByCustomerId(customerId);
+    if (agreementOpt.isEmpty()) {
+      return RetainerSummaryResponse.noRetainer();
+    }
+    var agreement = agreementOpt.get();
+
+    // Find open period — there may be none if the retainer was just created or is paused
+    var periodOpt =
+        periodRepository.findByAgreementIdAndStatus(agreement.getId(), PeriodStatus.OPEN);
+
+    BigDecimal consumedHours =
+        periodOpt.map(RetainerPeriod::getConsumedHours).orElse(BigDecimal.ZERO);
+
+    if (agreement.getType() == RetainerType.FIXED_FEE) {
+      return new RetainerSummaryResponse(
+          true,
+          agreement.getId(),
+          agreement.getName(),
+          agreement.getType(),
+          null,
+          consumedHours,
+          null,
+          null,
+          false);
+    }
+
+    // HOUR_BANK: full summary
+    BigDecimal allocatedHours = agreement.getAllocatedHours();
+    BigDecimal remainingHours =
+        periodOpt.map(RetainerPeriod::getRemainingHours).orElse(allocatedHours);
+
+    BigDecimal percentConsumed = null;
+    boolean isOverage = false;
+    if (allocatedHours != null && allocatedHours.signum() > 0) {
+      percentConsumed =
+          consumedHours
+              .multiply(BigDecimal.valueOf(100))
+              .divide(allocatedHours, 1, RoundingMode.HALF_UP);
+      isOverage = consumedHours.compareTo(allocatedHours) > 0;
+    }
+
+    return new RetainerSummaryResponse(
+        true,
+        agreement.getId(),
+        agreement.getName(),
+        agreement.getType(),
+        allocatedHours,
+        consumedHours,
+        remainingHours,
+        percentConsumed,
+        isOverage);
   }
 
   private void validateTypeSpecificFields(CreateRetainerRequest request) {

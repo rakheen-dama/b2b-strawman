@@ -125,9 +125,14 @@ export async function saveProjectFromTemplate(
   );
 }
 
+export interface InstantiateTemplateResponse {
+  id: string;
+  name: string;
+}
+
 export async function instantiateProjectTemplate(
   templateId: string,
   data: InstantiateTemplateRequest,
-): Promise<unknown> {
-  return api.post<unknown>(`/api/project-templates/${templateId}/instantiate`, data);
+): Promise<InstantiateTemplateResponse> {
+  return api.post<InstantiateTemplateResponse>(`/api/project-templates/${templateId}/instantiate`, data);
 }

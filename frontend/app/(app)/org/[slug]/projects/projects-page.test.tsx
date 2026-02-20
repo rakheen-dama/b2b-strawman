@@ -21,6 +21,16 @@ vi.mock("@/lib/api", () => ({
   getTags: vi.fn().mockResolvedValue([]),
 }));
 
+// Mock templates API (has "server-only" import)
+vi.mock("@/lib/api/templates", () => ({
+  getProjectTemplates: vi.fn().mockResolvedValue([]),
+}));
+
+// Mock NewFromTemplateDialog (client component with hooks)
+vi.mock("@/components/templates/NewFromTemplateDialog", () => ({
+  NewFromTemplateDialog: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 // Mock ViewSelectorClient (client component with hooks)
 vi.mock("@/components/views/ViewSelectorClient", () => ({
   ViewSelectorClient: () => <div data-testid="view-selector-client" />,

@@ -33,7 +33,8 @@ import type {
 } from "@/lib/types";
 import type { SetupStep } from "@/components/setup/types";
 import { formatDate } from "@/lib/format";
-import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
+import { SaveAsTemplateDialog } from "@/components/templates/SaveAsTemplateDialog";
+import { ArrowLeft, LayoutTemplate, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 
 const ROLE_BADGE: Record<ProjectRole, { label: string; variant: "lead" | "member" }> = {
@@ -318,7 +319,7 @@ export default async function ProjectDetailPage({
           </p>
         </div>
 
-        {(canEdit || isOwner || (canManage && projectTemplates.length > 0)) && (
+        {(canEdit || isOwner || canManage) && (
           <div className="flex shrink-0 gap-2">
             {canManage && projectTemplates.length > 0 && (
               <GenerateDocumentDropdown
@@ -326,6 +327,19 @@ export default async function ProjectDetailPage({
                 entityId={id}
                 entityType="PROJECT"
               />
+            )}
+            {canManage && (
+              <SaveAsTemplateDialog
+                slug={slug}
+                projectId={id}
+                projectTasks={tasks}
+                projectTags={projectTags}
+              >
+                <Button variant="outline" size="sm">
+                  <LayoutTemplate className="mr-1.5 size-4" />
+                  Save as Template
+                </Button>
+              </SaveAsTemplateDialog>
             )}
             {canEdit && (
               <EditProjectDialog project={project} slug={slug}>

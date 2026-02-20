@@ -8,9 +8,11 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.PeriodCalculator;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.schedule.dto.CreateScheduleRequest;
+import io.b2mash.b2b.b2bstrawman.schedule.dto.ScheduleExecutionResponse;
 import io.b2mash.b2b.b2bstrawman.schedule.dto.ScheduleResponse;
 import io.b2mash.b2b.b2bstrawman.schedule.dto.UpdateScheduleRequest;
 import io.b2mash.b2b.b2bstrawman.schedule.event.SchedulePausedEvent;
@@ -23,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +41,8 @@ public class RecurringScheduleService {
   private final PeriodCalculator periodCalculator;
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
+  private final ScheduleExecutionRepository executionRepository;
+  private final ProjectRepository projectRepository;
 
   public RecurringScheduleService(
       RecurringScheduleRepository scheduleRepository,
@@ -46,7 +51,9 @@ public class RecurringScheduleService {
       MemberRepository memberRepository,
       PeriodCalculator periodCalculator,
       AuditService auditService,
-      ApplicationEventPublisher eventPublisher) {
+      ApplicationEventPublisher eventPublisher,
+      ScheduleExecutionRepository executionRepository,
+      ProjectRepository projectRepository) {
     this.scheduleRepository = scheduleRepository;
     this.templateRepository = templateRepository;
     this.customerRepository = customerRepository;
@@ -54,6 +61,8 @@ public class RecurringScheduleService {
     this.periodCalculator = periodCalculator;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
+    this.executionRepository = executionRepository;
+    this.projectRepository = projectRepository;
   }
 
   @Transactional
@@ -323,6 +332,34 @@ public class RecurringScheduleService {
             .build());
 
     return buildResponse(schedule);
+  }
+
+  @Transactional(readOnly = true)
+  public List<ScheduleExecutionResponse> listExecutions(UUID scheduleId) {
+    scheduleRepository
+        .findById(scheduleId)
+        .orElseThrow(() -> new ResourceNotFoundException("RecurringSchedule", scheduleId));
+
+    var page =
+        executionRepository.findByScheduleIdOrderByPeriodStartDesc(
+            scheduleId, PageRequest.of(0, 50));
+
+    return page.getContent().stream().map(this::buildExecutionResponse).toList();
+  }
+
+  private ScheduleExecutionResponse buildExecutionResponse(ScheduleExecution execution) {
+    String projectName = null;
+    if (execution.getProjectId() != null) {
+      projectName =
+          projectRepository.findById(execution.getProjectId()).map(p -> p.getName()).orElse(null);
+    }
+    return new ScheduleExecutionResponse(
+        execution.getId(),
+        execution.getProjectId(),
+        projectName,
+        execution.getPeriodStart(),
+        execution.getPeriodEnd(),
+        execution.getExecutedAt());
   }
 
   private ScheduleResponse buildResponse(RecurringSchedule schedule) {

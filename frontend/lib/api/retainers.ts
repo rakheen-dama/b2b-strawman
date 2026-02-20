@@ -5,6 +5,7 @@ import { api } from "@/lib/api";
 // ---- Enums / Union Types ----
 
 export type RetainerStatus = "ACTIVE" | "PAUSED" | "TERMINATED";
+// RetainerType is also exported from @/lib/types for client component use
 export type RetainerType = "HOUR_BANK" | "FIXED_FEE";
 export type RetainerFrequency =
   | "WEEKLY"
@@ -62,6 +63,7 @@ export interface RetainerResponse {
   recentPeriods: PeriodSummary[];
 }
 
+// RetainerSummaryResponse is also exported from @/lib/types for client component use
 export interface RetainerSummaryResponse {
   hasActiveRetainer: boolean;
   agreementId: string | null;

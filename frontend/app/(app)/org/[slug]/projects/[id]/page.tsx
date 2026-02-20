@@ -146,6 +146,19 @@ export default async function ProjectDetailPage({
     // Non-fatal: show empty customers list if fetch fails
   }
 
+  // Fetch retainer summary for the project's primary customer (for RetainerIndicator in LogTimeDialog).
+  // Uses customers[0] — the first linked customer is treated as the primary customer for retainer lookups.
+  // The backend returns customers in link order, so index 0 is the earliest-linked (primary) customer.
+  let taskRetainerSummary: import("@/lib/types").RetainerSummaryResponse | null = null;
+  if (customers.length > 0) {
+    try {
+      const { fetchRetainerSummary } = await import("@/lib/api/retainers");
+      taskRetainerSummary = await fetchRetainerSummary(customers[0].id);
+    } catch {
+      // Non-fatal: indicator just won't show
+    }
+  }
+
   // Time summary data for the "Time" tab
   let timeSummary: ProjectTimeSummary = {
     billableMinutes: 0,
@@ -450,6 +463,7 @@ export default async function ProjectDetailPage({
             canManage={canManage}
             currentMemberId={currentMemberId}
             orgRole={orgRole}
+            retainerSummary={taskRetainerSummary}
           />
         }
         timePanel={

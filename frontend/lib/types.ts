@@ -1117,6 +1117,22 @@ export interface TemplateReadiness {
   missingFields: string[];
 }
 
+// ---- Retainers (shared types for client components — API functions live in @/lib/api/retainers) ----
+
+export type RetainerType = "HOUR_BANK" | "FIXED_FEE";
+
+export interface RetainerSummaryResponse {
+  hasActiveRetainer: boolean;
+  agreementId: string | null;
+  agreementName: string | null;
+  type: RetainerType | null;
+  allocatedHours: number | null;
+  consumedHours: number | null;
+  remainingHours: number | null;
+  percentConsumed: number | null;
+  isOverage: boolean;
+}
+
 // ---- Error (RFC 9457 ProblemDetail) ----
 
 export interface ProblemDetail {

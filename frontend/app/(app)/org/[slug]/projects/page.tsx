@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import { auth } from "@clerk/nextjs/server";
 import { api, handleApiError, getFieldDefinitions, getViews, getTags } from "@/lib/api";
+import { fetchRetainerSummary } from "@/lib/api/retainers";
+import type { RetainerSummaryResponse } from "@/lib/types";
 import { getProjectTemplates } from "@/lib/api/templates";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
 import type { Project, ProjectRole, LightweightBudgetStatus, FieldDefinitionResponse, SavedViewResponse, TagResponse, OrgMember, Customer } from "@/lib/types";
@@ -13,7 +15,7 @@ import { CustomFieldBadges } from "@/components/field-definitions/CustomFieldBad
 import { ViewSelectorClient } from "@/components/views/ViewSelectorClient";
 import { createSavedViewAction } from "./view-actions";
 import { formatDate } from "@/lib/format";
-import { FileText, FolderOpen, LayoutTemplate, Users } from "lucide-react";
+import { Clock, FileText, FolderOpen, LayoutTemplate, Users } from "lucide-react";
 import Link from "next/link";
 
 const ROLE_BADGE: Record<ProjectRole, { label: string; variant: "lead" | "member" }> = {
@@ -113,6 +115,39 @@ export default async function ProjectsPage({
     });
   }
 
+  // Fetch project-customer mappings and retainer summaries for badge display (non-fatal).
+  // Customer IDs are deduplicated before fetching retainer summaries, so this is
+  // O(projects) for customer lookups + O(unique customers) for retainer summaries —
+  // multiple projects sharing the same customer only trigger one retainer API call.
+  const projectCustomerMap = new Map<string, string>();
+  const retainerSummaryMap = new Map<string, RetainerSummaryResponse>();
+  if (projects.length > 0) {
+    try {
+      const customerResults = await Promise.allSettled(
+        projects.map((p) => api.get<Customer[]>(`/api/projects/${p.id}/customers`)),
+      );
+      customerResults.forEach((result, i) => {
+        if (result.status === "fulfilled" && result.value.length > 0) {
+          projectCustomerMap.set(projects[i].id, result.value[0].id);
+        }
+      });
+
+      const uniqueCustomerIds = [...new Set(projectCustomerMap.values())];
+      if (uniqueCustomerIds.length > 0) {
+        const summaryResults = await Promise.allSettled(
+          uniqueCustomerIds.map((cid) => fetchRetainerSummary(cid)),
+        );
+        summaryResults.forEach((result, i) => {
+          if (result.status === "fulfilled") {
+            retainerSummaryMap.set(uniqueCustomerIds[i], result.value);
+          }
+        });
+      }
+    } catch {
+      // Non-fatal: retainer badges won't render
+    }
+  }
+
   async function handleCreateView(req: import("@/lib/types").CreateSavedViewRequest) {
     "use server";
     return createSavedViewAction(slug, req);
@@ -198,6 +233,9 @@ export default async function ProjectsPage({
           {projects.map((project) => {
             const roleBadge = project.projectRole ? ROLE_BADGE[project.projectRole] : null;
             const budgetStatus = budgetStatuses.get(project.id);
+            const customerId = projectCustomerMap.get(project.id);
+            const retainerSummary = customerId ? retainerSummaryMap.get(customerId) : undefined;
+            const hasRetainer = retainerSummary?.hasActiveRetainer === true;
             return (
               <Link
                 key={project.id}
@@ -217,6 +255,16 @@ export default async function ProjectsPage({
                     )}
                     {budgetStatus?.overallStatus && (
                       <BudgetStatusDot status={budgetStatus.overallStatus} />
+                    )}
+                    {hasRetainer && (
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-2 py-0.5 text-xs font-medium text-teal-700 dark:bg-teal-900/30 dark:text-teal-400"
+                        title="Customer has an active retainer"
+                        data-testid="retainer-badge"
+                      >
+                        <Clock className="size-3" />
+                        Retainer
+                      </span>
                     )}
                   </div>
 

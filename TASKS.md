@@ -147,7 +147,7 @@
 | 122 | Entity Foundation & Migration | Backend | -- | M | 122A, 122B | **Done** (PRs #247, #248) |
 | 123 | Retainer CRUD & Lifecycle | Backend | 122 | M | 123A, 123B | **Done** (PRs #249, #250) |
 | 124 | Consumption Tracking & Summary | Backend | 123 | M | 124A, 124B | **Done** (PRs #251, #252) |
-| 125 | Period Close & Invoice Generation | Backend | 124 | L | 125A, 125B | |
+| 125 | Period Close & Invoice Generation | Backend | 124 | L | 125A, 125B | 125A **Done** (PR #253) |
 | 126 | Retainer Dashboard & Create UI | Frontend | 123, 124, 125 | M | 126A, 126B | |
 | 127 | Customer Retainer Tab & Detail Page | Frontend | 126 | M | 127A, 127B | |
 | 128 | Time Entry Indicators & Notifications | Both | 124, 127 | M | 128A, 128B | |

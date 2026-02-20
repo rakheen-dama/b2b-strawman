@@ -100,7 +100,7 @@ Phase 17 adds a **retainer management layer** to the DocTeams platform -- per-cu
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 3a | Epic 125 | 125A | `RetainerPeriodService.closePeriod()` -- overage calculation, rollover logic (all 3 policies), invoice generation via InvoiceService, rate resolution via BillingRateService, next period creation, auto-termination. ~15 service tests. |
+| 3a | Epic 125 | 125A | `RetainerPeriodService.closePeriod()` -- overage calculation, rollover logic (all 3 policies), invoice generation via InvoiceService, rate resolution via BillingRateService, next period creation, auto-termination. ~15 service tests. | **Done** (PR #253) |
 | 3b | Epic 125 | 125B | `RetainerPeriodController` -- period list, current period, close endpoint. Audit events for close. ~8 controller tests. |
 
 ### Stage 4: Frontend (Parallel tracks after Stage 3)
@@ -362,7 +362,7 @@ Stage 4:  [126A] --> [126B]  //  [127A] --> [127B]  //  [128A]  //  [128B]
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **125A** | 125.1--125.9 | `RetainerPeriodService` -- `closePeriod()` with full close flow. Overage calculation for HOUR_BANK. Rollover logic (all 3 policies). Invoice generation via `InvoiceService`. Rate resolution via `BillingRateService`. Next period creation with rollover. Auto-termination at end date. Service integration tests. ~15 tests. | |
+| **125A** | 125.1--125.9 | `RetainerPeriodService` -- `closePeriod()` with full close flow. Overage calculation for HOUR_BANK. Rollover logic (all 3 policies). Invoice generation via `InvoiceService`. Rate resolution via `BillingRateService`. Next period creation with rollover. Auto-termination at end date. Service integration tests. ~15 tests. | **Done** (PR #253) |
 | **125B** | 125.10--125.16 | `RetainerPeriodController` -- period list, current period, close endpoint. `PeriodResponse`, `PeriodCloseResult` DTOs. Audit events for close. Period-ready-to-close query. Controller integration tests. ~8 tests. | |
 
 ### Tasks

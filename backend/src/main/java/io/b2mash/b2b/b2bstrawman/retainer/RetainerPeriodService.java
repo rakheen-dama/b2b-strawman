@@ -11,7 +11,9 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
+import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.math.BigDecimal;
@@ -38,6 +40,7 @@ public class RetainerPeriodService {
   private final BillingRateRepository billingRateRepository;
   private final OrgSettingsRepository orgSettingsRepository;
   private final CustomerRepository customerRepository;
+  private final OrganizationRepository organizationRepository;
   private final MemberRepository memberRepository;
   private final AuditService auditService;
   private final NotificationService notificationService;
@@ -50,6 +53,7 @@ public class RetainerPeriodService {
       BillingRateRepository billingRateRepository,
       OrgSettingsRepository orgSettingsRepository,
       CustomerRepository customerRepository,
+      OrganizationRepository organizationRepository,
       MemberRepository memberRepository,
       AuditService auditService,
       NotificationService notificationService) {
@@ -60,6 +64,7 @@ public class RetainerPeriodService {
     this.billingRateRepository = billingRateRepository;
     this.orgSettingsRepository = orgSettingsRepository;
     this.customerRepository = customerRepository;
+    this.organizationRepository = organizationRepository;
     this.memberRepository = memberRepository;
     this.auditService = auditService;
     this.notificationService = notificationService;
@@ -78,10 +83,10 @@ public class RetainerPeriodService {
             .findById(agreementId)
             .orElseThrow(() -> new ResourceNotFoundException("RetainerAgreement", agreementId));
 
-    // 2. Load open period
+    // 2. Load open period (with pessimistic lock to prevent double-close)
     var period =
         periodRepository
-            .findByAgreementIdAndStatus(agreementId, PeriodStatus.OPEN)
+            .findByAgreementIdAndStatusForUpdate(agreementId, PeriodStatus.OPEN)
             .orElseThrow(
                 () ->
                     new ResourceNotFoundException(
@@ -92,6 +97,12 @@ public class RetainerPeriodService {
       throw new InvalidStateException(
           "Period not ready to close",
           "Period end date " + period.getPeriodEnd() + " has not passed yet");
+    }
+
+    // 3b. Validate: periodFee must be set before closing
+    if (agreement.getPeriodFee() == null) {
+      throw new InvalidStateException(
+          "Period fee required", "Period fee must be set before closing a period");
     }
 
     // 4. Load customer
@@ -157,7 +168,25 @@ public class RetainerPeriodService {
             .map(OrgSettings::getDefaultCurrency)
             .orElse("ZAR");
 
-    // 8. Create DRAFT invoice directly (do NOT use InvoiceService — it requires RequestScopes)
+    // 7b. Validate currency match between overage rate and org settings
+    if (resolvedRate != null && !resolvedRate.currency().equals(currency)) {
+      throw new InvalidStateException(
+          "Currency mismatch",
+          "Billing rate currency ("
+              + resolvedRate.currency()
+              + ") does not match organization currency ("
+              + currency
+              + ")");
+    }
+
+    // 8. Look up org name for invoice snapshot
+    String orgId = RequestScopes.requireOrgId();
+    var organization =
+        organizationRepository
+            .findByClerkOrgId(orgId)
+            .orElseThrow(() -> new ResourceNotFoundException("Organization", orgId));
+
+    // 9. Create DRAFT invoice directly (do NOT use InvoiceService — it requires RequestScopes)
     var invoice =
         new Invoice(
             agreement.getCustomerId(),
@@ -165,7 +194,7 @@ public class RetainerPeriodService {
             customer.getName(),
             customer.getEmail(),
             null, // customerAddress
-            "", // orgName — not available in service context; required field but display-only
+            organization.getName(),
             actorMemberId);
     invoice = invoiceRepository.save(invoice);
 
@@ -302,12 +331,20 @@ public class RetainerPeriodService {
   }
 
   private ResolvedOverageRate resolveCustomerRate(UUID customerId, LocalDate closeDate) {
-    // 1. Customer-level rates (any member, this customer, no project scope)
+    // 1. Customer-level rates — prefer member-agnostic (memberId == null) rates first
     var customerRates =
         billingRateRepository.findByFilters(null, null, customerId).stream()
             .filter(r -> r.getProjectId() == null)
             .filter(r -> r.getEffectiveFrom() != null && !r.getEffectiveFrom().isAfter(closeDate))
             .filter(r -> r.getEffectiveTo() == null || !r.getEffectiveTo().isBefore(closeDate))
+            .sorted(
+                (a, b) -> {
+                  // Prefer member-agnostic rates (memberId == null) over member-specific ones
+                  boolean aNull = a.getMemberId() == null;
+                  boolean bNull = b.getMemberId() == null;
+                  if (aNull != bNull) return aNull ? -1 : 1;
+                  return 0;
+                })
             .toList();
     if (!customerRates.isEmpty()) {
       var rate = customerRates.getFirst();

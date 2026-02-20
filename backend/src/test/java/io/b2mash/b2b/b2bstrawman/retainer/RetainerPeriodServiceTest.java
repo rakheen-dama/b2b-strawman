@@ -10,6 +10,8 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.billingrate.BillingRate;
 import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateRepository;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -18,11 +20,16 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.project.Project;
+import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.CreateRetainerRequest;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import io.b2mash.b2b.b2bstrawman.task.Task;
+import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -59,6 +66,10 @@ class RetainerPeriodServiceTest {
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private InvoiceRepository invoiceRepository;
   @Autowired private InvoiceLineRepository invoiceLineRepository;
+  @Autowired private ProjectRepository projectRepository;
+  @Autowired private CustomerProjectRepository customerProjectRepository;
+  @Autowired private TaskRepository taskRepository;
+  @Autowired private TimeEntryService timeEntryService;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
@@ -218,18 +229,14 @@ class RetainerPeriodServiceTest {
   }
 
   // ======================================================================
-  // Test 1: HOUR_BANK with overage creates invoice with two lines
+  // Test 1: HOUR_BANK with no consumption creates invoice with base fee only
   // ======================================================================
   @Test
-  void closePeriod_hourBank_withOverage_createsInvoiceWithTwoLines() {
-    var customerId = createCustomer("Overage Corp", "overage@test.com");
+  void closePeriod_hourBank_noConsumption_createsInvoiceWithBaseFeeOnly() {
+    var customerId = createCustomer("NoConsumption Corp", "noconsumption@test.com");
     ensureOrgSettings("ZAR");
 
-    // Start date 2 months ago — period end is 1 month ago (past, closeable)
     LocalDate pastStart = LocalDate.now().minusMonths(2);
-
-    // Setup billing rate for this customer (needed for overage calculation)
-    setupBillingRate(memberId, customerId, new BigDecimal("300"), pastStart);
 
     var agreementId =
         createHourBankRetainer(
@@ -240,25 +247,6 @@ class RetainerPeriodServiceTest {
             null,
             pastStart,
             null);
-
-    // No actual time entries — consumption will be 0 from sumConsumedMinutes
-    // But we need overage, so we need consumed > allocated.
-    // Since we can't easily create time entries here (need project/task/customer_projects linkage),
-    // the consumption finalization will re-query and get 0.
-    // For overage test, we manually update the period's consumed hours before close.
-    // Actually, closePeriod re-queries from time entries, so consumed will be 0.
-    // This means overage won't happen with 0 time entries.
-    // We need a different approach: reduce allocated to 0 is not valid (HOUR_BANK requires > 0).
-    // The simplest approach: test overage by verifying the flow works with no overage,
-    // and test the overage line creation path by pre-setting consumed hours.
-
-    // Since closePeriod finalizes consumption from time entries and we can't easily create them,
-    // let's test the no-overage path here and rely on other tests for edge cases.
-    // Actually, we CAN test this properly: zero time entries = zero consumed = no overage.
-    // Let's verify the single-line invoice is created correctly.
-
-    // For the overage test, we need to pre-populate time entries. Let's use a native SQL insert
-    // to simulate consumed time.
 
     runInTenant(
         () -> {
@@ -280,6 +268,94 @@ class RetainerPeriodServiceTest {
           assertThat(lines.getFirst().getAmount()).isEqualByComparingTo("20000.00");
           assertThat(lines.getFirst().getRetainerPeriodId())
               .isEqualTo(result.closedPeriod().getId());
+        });
+  }
+
+  // ======================================================================
+  // Test 1b: HOUR_BANK with actual overage creates invoice with two lines
+  // ======================================================================
+  @Test
+  void closePeriod_hourBank_withRealOverage_createsInvoiceWithTwoLines() {
+    var customerId = createCustomer("RealOverage Corp", "realoverage@test.com");
+    ensureOrgSettings("ZAR");
+
+    // Start date 2 months ago — period end is 1 month ago (past, closeable)
+    LocalDate pastStart = LocalDate.now().minusMonths(2);
+    LocalDate periodEnd = pastStart.plusMonths(1);
+
+    // Setup billing rate for this customer (needed for overage calculation)
+    setupBillingRate(memberId, customerId, new BigDecimal("300"), pastStart);
+
+    // Create project + task linked to customer via CustomerProject
+    var projectRef = new AtomicReference<UUID>();
+    var taskRef = new AtomicReference<UUID>();
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var project = new Project("Overage Project", null, memberId);
+                  project = projectRepository.save(project);
+                  projectRef.set(project.getId());
+
+                  customerProjectRepository.save(
+                      new CustomerProject(customerId, project.getId(), memberId));
+
+                  var task =
+                      new Task(project.getId(), "Overage Task", null, null, null, null, memberId);
+                  task = taskRepository.save(task);
+                  taskRef.set(task.getId());
+                }));
+
+    // Allocate only 2 hours — we'll log 3 hours of billable time to create overage
+    var agreementId =
+        createHourBankRetainer(
+            customerId,
+            new BigDecimal("2"),
+            new BigDecimal("5000"),
+            RolloverPolicy.FORFEIT,
+            null,
+            pastStart,
+            null);
+
+    // Create billable time entry: 180 min = 3 hours (within period date range)
+    LocalDate entryDate = pastStart.plusDays(10);
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  timeEntryService.createTimeEntry(
+                      taskRef.get(), entryDate, 180, true, null, "Overage work", memberId, "owner");
+                }));
+
+    runInTenant(
+        () -> {
+          var result = retainerPeriodService.closePeriod(agreementId, memberId);
+
+          assertThat(result.closedPeriod().getStatus()).isEqualTo(PeriodStatus.CLOSED);
+          assertThat(result.generatedInvoice().getStatus()).isEqualTo(InvoiceStatus.DRAFT);
+
+          // 3h consumed, 2h allocated => 1h overage
+          assertThat(result.closedPeriod().getConsumedHours()).isEqualByComparingTo("3.00");
+          assertThat(result.closedPeriod().getOverageHours()).isEqualByComparingTo("1.00");
+
+          // Two lines: base fee + overage
+          var lines =
+              invoiceLineRepository.findByInvoiceIdOrderBySortOrder(
+                  result.generatedInvoice().getId());
+          assertThat(lines).hasSize(2);
+
+          // Line 1: base fee
+          assertThat(lines.get(0).getDescription()).startsWith("Retainer");
+          assertThat(lines.get(0).getUnitPrice()).isEqualByComparingTo("5000");
+
+          // Line 2: overage (1h @ 300/hr)
+          assertThat(lines.get(1).getDescription()).contains("Overage");
+          assertThat(lines.get(1).getQuantity()).isEqualByComparingTo("1.00");
+          assertThat(lines.get(1).getUnitPrice()).isEqualByComparingTo("300");
+          assertThat(lines.get(1).getAmount()).isEqualByComparingTo("300.00");
+
+          // Total = 5000 + 300 = 5300
+          assertThat(result.generatedInvoice().getTotal()).isEqualByComparingTo("5300.00");
         });
   }
 
@@ -590,35 +666,58 @@ class RetainerPeriodServiceTest {
     ensureOrgSettings("ZAR");
     LocalDate pastStart = LocalDate.now().minusMonths(2);
 
-    // Allocate only 0.01 hours so any time entry causes overage
-    // Actually, sumConsumedMinutes returns 0 with no time entries, so no overage.
-    // We need actual time entries to trigger overage. Without them, this test can't trigger
-    // the "no billing rate" error because there's no overage to calculate.
-    // Skip this test as it requires time entry infrastructure not available in service-level tests.
+    // Create project + task linked to customer to generate real time entries
+    var taskRef = new AtomicReference<UUID>();
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var project = new Project("NoRate Project", null, memberId);
+                  project = projectRepository.save(project);
 
-    // Alternative: we can test this indirectly by verifying the rate resolution returns null
-    // and the service doesn't throw when there's no overage.
-    // The error path is: overage > 0 AND no rate => throw.
-    // Since we can't create time entries easily, let's verify the success path instead
-    // (no time entries = no overage = no rate needed = success).
+                  customerProjectRepository.save(
+                      new CustomerProject(customerId, project.getId(), memberId));
 
+                  var task =
+                      new Task(project.getId(), "NoRate Task", null, null, null, null, memberId);
+                  task = taskRepository.save(task);
+                  taskRef.set(task.getId());
+                }));
+
+    // Allocate only 1 hour so any significant time entry creates overage
     var agreementId =
         createHourBankRetainer(
             customerId,
-            new BigDecimal("40"),
-            new BigDecimal("20000"),
+            new BigDecimal("1"),
+            new BigDecimal("5000"),
             RolloverPolicy.FORFEIT,
             null,
             pastStart,
             null);
 
-    // DO NOT set up billing rate — but with 0 consumed hours, there's no overage
+    // Create billable time entry: 120 min = 2 hours > 1h allocated => overage
+    LocalDate entryDate = pastStart.plusDays(10);
     runInTenant(
-        () -> {
-          // Should succeed because 0 consumed = no overage = no rate needed
-          var result = retainerPeriodService.closePeriod(agreementId, memberId);
-          assertThat(result.closedPeriod().getOverageHours()).isEqualByComparingTo("0.00");
-        });
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  timeEntryService.createTimeEntry(
+                      taskRef.get(),
+                      entryDate,
+                      120,
+                      true,
+                      null,
+                      "Work without rate",
+                      memberId,
+                      "owner");
+                }));
+
+    // DO NOT set up billing rate — overage exists but no rate => should throw
+    runInTenant(
+        () ->
+            assertThatThrownBy(() -> retainerPeriodService.closePeriod(agreementId, memberId))
+                .isInstanceOf(InvalidStateException.class)
+                .hasMessageContaining("Cannot calculate overage"));
   }
 
   // ======================================================================

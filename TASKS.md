@@ -154,7 +154,7 @@
 | **Phase 18 — Task Detail Experience** | | | | | | See [tasks/phase18-task-detail-experience-missing-functionality.md](tasks/phase18-task-detail-experience-missing-functionality.md) |
 | 129 | Assignee Selection & Backend Prep | Both | -- | S | 129A | **Done** (PR #261) |
 | 130 | Task Detail Sheet Core | Frontend | 129 | L | 130A, 130B | **Done** (PRs #262, #263) |
-| 131 | Tags, Custom Fields & Saved Views | Frontend | 130 | M | 131A, 131B | 131A **Done** (PR #264) |
+| 131 | Tags, Custom Fields & Saved Views | Frontend | 130 | M | 131A, 131B | **Done** (PRs #264, #265) |
 | 132 | My Work Enhancements | Frontend | 131 | S | 132A | |
 
 ---

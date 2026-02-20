@@ -19,7 +19,7 @@ Phase 18 resolves four task UX gaps identified in QA gap analysis (Group A: find
 |------|------|-------|------|--------|--------|--------|
 | 129 | Assignee Selection & Backend Prep | Both | -- | S | 129A | **Done** (PR #261) |
 | 130 | Task Detail Sheet Core | Frontend | 129 | L | 130A, 130B | **Done** (PRs #262, #263) |
-| 131 | Tags, Custom Fields & Saved Views | Frontend | 130 | M | 131A, 131B | Pending |
+| 131 | Tags, Custom Fields & Saved Views | Frontend | 130 | M | 131A, 131B | **Done** (PRs #264, #265) |
 | 132 | My Work Enhancements | Frontend | 131 | S | 132A | Pending |
 
 ---
@@ -68,7 +68,7 @@ Phase 18 resolves four task UX gaps identified in QA gap analysis (Group A: find
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 3a | Epic 131 | 131A | Add `TagInput` + `CustomFieldSection` sections to `TaskDetailSheet`. Depends on props threaded in 130B. | **Done** (PR #264) |
-| 3b | Epic 131 | 131B | Add `ViewSelectorClient` to `TaskListPanel` header. Fetch TASK saved views server-side. Parallel with 131A and 132A. |
+| 3b | Epic 131 | 131B | Add `ViewSelectorClient` to `TaskListPanel` header. Fetch TASK saved views server-side. Parallel with 131A and 132A. | **Done** (PR #265) |
 | 3c | Epic 132 | 132A | Add `ViewSelectorClient` + `TaskDetailSheet` to My Work page. Potential backend change to `MyWorkController` for `?view=` param. Parallel with 131A/131B. |
 
 ### Timeline
@@ -291,7 +291,7 @@ interface TaskDetailSheetProps {
 | Slice | Summary | Status |
 |-------|---------|--------|
 | **131A** | Add `TagInput` + `CustomFieldSection` to `TaskDetailSheet`. Add server actions for tag/field mutations if not present. ~4 tests. | **Done** (PR #264) |
-| **131B** | Add `ViewSelectorClient` to `TaskListPanel` header. Fetch TASK saved views server-side. Forward `view` param in task fetch. ~3 tests. | Pending |
+| **131B** | Add `ViewSelectorClient` to `TaskListPanel` header. Fetch TASK saved views server-side. Forward `view` param in task fetch. ~3 tests. | **Done** (PR #265) |
 
 ### Tasks
 

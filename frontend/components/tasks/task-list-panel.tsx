@@ -488,9 +488,12 @@ export function TaskListPanel({
                         {canMarkDone && (
                           <Button
                             size="xs"
-                            variant="default"
+                            variant="soft"
                             disabled={isActioning}
-                            onClick={() => handleMarkDone(task)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMarkDone(task);
+                            }}
                           >
                             <Check className="size-3" />
                             Done

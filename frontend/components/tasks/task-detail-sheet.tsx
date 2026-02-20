@@ -133,7 +133,7 @@ function StatusSelect({
         <CurrentIcon className="size-3" />
         <SelectValue />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent position="popper" sideOffset={4}>
         {STATUS_OPTIONS.map((opt) => {
           const Icon = opt.icon;
           return (
@@ -294,6 +294,15 @@ export function TaskDetailSheet({
         side="right"
         className="flex w-full flex-col gap-0 overflow-y-auto p-0 sm:max-w-xl"
         showCloseButton={false}
+        onPointerDownOutside={(e) => {
+          // Prevent Sheet from closing when clicking portaled elements (Select, Combobox)
+          // that render outside the Sheet DOM. Only the overlay backdrop (data-slot="sheet-overlay")
+          // should close the sheet.
+          const target = e.target as HTMLElement | null;
+          if (!target?.closest("[data-slot='sheet-overlay']")) {
+            e.preventDefault();
+          }
+        }}
       >
         {/* Accessibility: required by Radix Dialog */}
         <SheetTitle className="sr-only">Task Detail</SheetTitle>

@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { RetainerIndicator } from "@/components/time-entries/retainer-indicator";
-import type { RetainerSummaryResponse } from "@/lib/api/retainers";
+import type { RetainerSummaryResponse } from "@/lib/types";
 
 describe("RetainerIndicator", () => {
   afterEach(() => {

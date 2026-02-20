@@ -28,7 +28,7 @@ import {
 import { fetchTimeEntries } from "@/app/(app)/org/[slug]/projects/[id]/time-entry-actions";
 import { cn } from "@/lib/utils";
 import type { Task, TaskPriority, TaskStatus, TimeEntry } from "@/lib/types";
-import type { RetainerSummaryResponse } from "@/lib/api/retainers";
+import type { RetainerSummaryResponse } from "@/lib/types";
 
 // --- Priority badge config (40.8): HIGH=red, MEDIUM=amber, LOW=olive ---
 

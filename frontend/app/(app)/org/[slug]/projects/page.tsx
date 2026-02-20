@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { auth } from "@clerk/nextjs/server";
 import { api, handleApiError, getFieldDefinitions, getViews, getTags } from "@/lib/api";
 import { fetchRetainerSummary } from "@/lib/api/retainers";
-import type { RetainerSummaryResponse } from "@/lib/api/retainers";
+import type { RetainerSummaryResponse } from "@/lib/types";
 import { getProjectTemplates } from "@/lib/api/templates";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
 import type { Project, ProjectRole, LightweightBudgetStatus, FieldDefinitionResponse, SavedViewResponse, TagResponse, OrgMember, Customer } from "@/lib/types";
@@ -115,7 +115,10 @@ export default async function ProjectsPage({
     });
   }
 
-  // Fetch project-customer mappings and retainer summaries for badge display (non-fatal)
+  // Fetch project-customer mappings and retainer summaries for badge display (non-fatal).
+  // Customer IDs are deduplicated before fetching retainer summaries, so this is
+  // O(projects) for customer lookups + O(unique customers) for retainer summaries —
+  // multiple projects sharing the same customer only trigger one retainer API call.
   const projectCustomerMap = new Map<string, string>();
   const retainerSummaryMap = new Map<string, RetainerSummaryResponse>();
   if (projects.length > 0) {

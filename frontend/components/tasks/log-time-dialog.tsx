@@ -20,7 +20,7 @@ import {
 } from "@/app/(app)/org/[slug]/projects/[id]/time-entry-actions";
 import { formatCurrency, formatDuration } from "@/lib/format";
 import type { ResolvedRate } from "@/lib/types";
-import type { RetainerSummaryResponse } from "@/lib/api/retainers";
+import type { RetainerSummaryResponse } from "@/lib/types";
 import { RetainerIndicator } from "@/components/time-entries/retainer-indicator";
 
 /** Maps backend source enum to human-readable label */

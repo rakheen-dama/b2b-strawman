@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import type { RetainerSummaryResponse } from "@/lib/api/retainers";
+import type { RetainerSummaryResponse } from "@/lib/types";
 
 interface RetainerIndicatorProps {
   summary: RetainerSummaryResponse | null;
@@ -20,6 +20,7 @@ export function RetainerIndicator({
   if (summary.type === "FIXED_FEE") {
     return (
       <div
+        aria-label={`Fixed fee retainer${summary.agreementName ? `: ${summary.agreementName}` : ""}`}
         className={cn(
           "rounded-md border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-800 dark:bg-slate-900/50",
           className,
@@ -50,7 +51,10 @@ export function RetainerIndicator({
   const remainingHours = summary.remainingHours ?? 0;
 
   return (
-    <div className={cn("space-y-2", className)}>
+    <div
+      className={cn("space-y-2", className)}
+      aria-label={`Hour bank retainer: ${remainingHours.toFixed(1)} hours remaining${summary.isOverage ? ", overage active" : ""}`}
+    >
       <div
         className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-800 dark:bg-slate-900/50"
         data-testid="retainer-indicator"

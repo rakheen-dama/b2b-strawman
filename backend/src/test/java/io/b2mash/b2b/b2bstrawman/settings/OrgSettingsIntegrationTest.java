@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.settings;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -194,6 +195,82 @@ class OrgSettingsIntegrationTest {
         .andExpect(jsonPath("$.compliancePackStatus[0].packId").isString())
         .andExpect(jsonPath("$.compliancePackStatus[0].version").isString())
         .andExpect(jsonPath("$.compliancePackStatus[0].appliedAt").isString());
+  }
+
+  @Test
+  @Order(6)
+  void patchComplianceSettings_updatesDormancyThreshold() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/compliance")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"dormancyThresholdDays": 90, "dataRequestDeadlineDays": 30}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.dormancyThresholdDays").value(90))
+        .andExpect(jsonPath("$.dataRequestDeadlineDays").value(30));
+  }
+
+  @Test
+  @Order(7)
+  void patchComplianceSettings_partialUpdateOnlyDormancy() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/compliance")
+                .with(adminJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"dormancyThresholdDays": 120}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.dormancyThresholdDays").value(120))
+        .andExpect(jsonPath("$.dataRequestDeadlineDays").value(30));
+  }
+
+  @Test
+  void patchComplianceSettings_memberGetsForbidden() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/compliance")
+                .with(memberJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"dormancyThresholdDays": 90}
+                    """))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void patchComplianceSettings_rejectsNegativeValues() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/compliance")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"dormancyThresholdDays": -1}
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void patchComplianceSettings_rejectsZeroValues() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/compliance")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"dataRequestDeadlineDays": 0}
+                    """))
+        .andExpect(status().isBadRequest());
   }
 
   @Test

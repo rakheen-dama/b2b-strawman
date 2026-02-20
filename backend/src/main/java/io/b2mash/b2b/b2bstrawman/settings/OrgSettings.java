@@ -161,6 +161,11 @@ public class OrgSettings {
     return dormancyThresholdDays;
   }
 
+  public void setDormancyThresholdDays(Integer dormancyThresholdDays) {
+    this.dormancyThresholdDays = dormancyThresholdDays;
+    this.updatedAt = Instant.now();
+  }
+
   public Integer getDataRequestDeadlineDays() {
     return dataRequestDeadlineDays;
   }

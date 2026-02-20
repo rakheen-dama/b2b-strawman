@@ -87,7 +87,11 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
    */
   @Query(
       value =
-          "SELECT MAX(ae.occurred_at) FROM audit_events ae WHERE (ae.details->>'project_id') = CAST(:projectId AS TEXT)",
+          """
+          SELECT MAX(ae.occurred_at) FROM audit_events ae
+          WHERE (ae.details->>'project_id') = CAST(:projectId AS TEXT)
+             OR (ae.entity_type = 'project' AND ae.entity_id = :projectId)
+          """,
       nativeQuery = true)
   Optional<Instant> findMostRecentByProject(@Param("projectId") UUID projectId);
 

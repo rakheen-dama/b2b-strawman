@@ -771,7 +771,7 @@ public class DashboardService {
   private int computeDaysSinceLastActivity(UUID projectId) {
     Optional<Instant> lastActivity = auditEventRepository.findMostRecentByProject(projectId);
     if (lastActivity.isEmpty()) {
-      return Integer.MAX_VALUE;
+      return 0; // No audit events — treat as fresh (not stale)
     }
     return (int) Duration.between(lastActivity.get(), Instant.now()).toDays();
   }

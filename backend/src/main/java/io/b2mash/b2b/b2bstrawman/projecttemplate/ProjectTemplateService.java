@@ -563,6 +563,22 @@ public class ProjectTemplateService {
         project.getId(),
         resolvedName);
 
+    // 6. Audit — mirrors the DTO-based overload's audit event
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("project.created_from_template")
+            .entityType("project")
+            .entityId(project.getId())
+            .details(
+                Map.of(
+                    "template_name",
+                    template.getName(),
+                    "project_name",
+                    resolvedName,
+                    "customer_name",
+                    customer != null ? customer.getName() : "none"))
+            .build());
+
     return project;
   }
 

@@ -167,8 +167,8 @@ export default async function RetainerDetailPage({
               retainer.allocatedHours > 0 &&
               (() => {
                 const consumptionPercent =
-                  (retainer.currentPeriod!.consumedHours /
-                    retainer.allocatedHours!) *
+                  (retainer.currentPeriod.consumedHours /
+                    retainer.allocatedHours) *
                   100;
                 if (consumptionPercent >= 100) {
                   return (

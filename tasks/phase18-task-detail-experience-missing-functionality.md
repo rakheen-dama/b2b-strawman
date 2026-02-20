@@ -18,7 +18,7 @@ Phase 18 resolves four task UX gaps identified in QA gap analysis (Group A: find
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 129 | Assignee Selection & Backend Prep | Both | -- | S | 129A | **Done** (PR #261) |
-| 130 | Task Detail Sheet Core | Frontend | 129 | L | 130A, 130B | Pending |
+| 130 | Task Detail Sheet Core | Frontend | 129 | L | 130A, 130B | **Done** (PRs #262, #263) |
 | 131 | Tags, Custom Fields & Saved Views | Frontend | 130 | M | 131A, 131B | Pending |
 | 132 | My Work Enhancements | Frontend | 131 | S | 132A | Pending |
 
@@ -61,7 +61,7 @@ Phase 18 resolves four task UX gaps identified in QA gap analysis (Group A: find
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 2a | Epic 130 | 130A | New `TaskDetailSheet` component — full right-side panel with metadata, time entries, comments tabs. Depends on `AssigneeSelector` from 129A. | **Done** (PR #262) |
-| 2b | Epic 130 | 130B | Wire sheet into `TaskListPanel` via URL state (`?taskId=`). Remove inline row expansion. Thread `members`, `allTags`, `fieldDefinitions`, `fieldGroups` props from page down to panel. |
+| 2b | Epic 130 | 130B | Wire sheet into `TaskListPanel` via URL state (`?taskId=`). Remove inline row expansion. Thread `members`, `allTags`, `fieldDefinitions`, `fieldGroups` props from page down to panel. | **Done** (PR #263) |
 
 ### Stage 3: Feature Wiring (Parallel tracks after Stage 2)
 
@@ -163,7 +163,7 @@ Stage 3:  [131A] --> [131B]  //  [132A]
 | Slice | Summary | Status |
 |-------|---------|--------|
 | **130A** | New `TaskDetailSheet` component — header, metadata row, description, tabbed Time Entries + Comments. ~5 tests. | **Done** (PR #262) |
-| **130B** | Wire sheet into `TaskListPanel` with `?taskId=` URL state. Remove inline row expansion. Thread props from project detail page. ~4 tests. | Pending |
+| **130B** | Wire sheet into `TaskListPanel` with `?taskId=` URL state. Remove inline row expansion. Thread props from project detail page. ~4 tests. | **Done** (PR #263) |
 
 ### Tasks
 

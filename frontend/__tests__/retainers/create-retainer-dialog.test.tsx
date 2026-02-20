@@ -49,8 +49,10 @@ describe("CreateRetainerDialog", () => {
     });
 
     expect(screen.getByLabelText("Name")).toBeInTheDocument();
-    expect(screen.getByLabelText("Type")).toBeInTheDocument();
-    expect(screen.getByLabelText("Frequency")).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Type" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("combobox", { name: "Frequency" }),
+    ).toBeInTheDocument();
     expect(screen.getByLabelText("Start Date")).toBeInTheDocument();
     expect(screen.getByText("Select a customer...")).toBeInTheDocument();
   });
@@ -66,14 +68,19 @@ describe("CreateRetainerDialog", () => {
 
     // HOUR_BANK is default — allocated hours and rollover policy should be visible
     expect(screen.getByLabelText("Allocated Hours")).toBeInTheDocument();
-    expect(screen.getByLabelText("Rollover Policy")).toBeInTheDocument();
+    expect(
+      screen.getByRole("combobox", { name: "Rollover Policy" }),
+    ).toBeInTheDocument();
 
-    // Switch to FIXED_FEE
-    await user.selectOptions(screen.getByLabelText("Type"), "FIXED_FEE");
+    // Switch to FIXED_FEE via Radix Select: click trigger, then click option
+    await user.click(screen.getByRole("combobox", { name: "Type" }));
+    await user.click(screen.getByRole("option", { name: "Fixed Fee" }));
 
     // HOUR_BANK fields should be gone
     expect(screen.queryByLabelText("Allocated Hours")).not.toBeInTheDocument();
-    expect(screen.queryByLabelText("Rollover Policy")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("combobox", { name: "Rollover Policy" }),
+    ).not.toBeInTheDocument();
   });
 
   it("shows rolloverCapHours field when CARRY_CAPPED is selected", async () => {
@@ -90,10 +97,12 @@ describe("CreateRetainerDialog", () => {
       screen.queryByLabelText("Rollover Cap (hours)"),
     ).not.toBeInTheDocument();
 
-    // Change rollover policy to CARRY_CAPPED
-    await user.selectOptions(
-      screen.getByLabelText("Rollover Policy"),
-      "CARRY_CAPPED",
+    // Change rollover policy to CARRY_CAPPED via Radix Select
+    await user.click(
+      screen.getByRole("combobox", { name: "Rollover Policy" }),
+    );
+    await user.click(
+      screen.getByRole("option", { name: "Carry forward (capped)" }),
     );
 
     expect(screen.getByLabelText("Rollover Cap (hours)")).toBeInTheDocument();

@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Popover,
   PopoverContent,
@@ -27,6 +28,13 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { createRetainerAction } from "@/app/(app)/org/[slug]/retainers/actions";
 import { cn } from "@/lib/utils";
 import type {
@@ -35,30 +43,11 @@ import type {
   RolloverPolicy,
   CreateRetainerRequest,
 } from "@/lib/api/retainers";
-
-// Value constants — cannot import from "server-only" module
-const FREQUENCY_OPTIONS: { value: RetainerFrequency; label: string }[] = [
-  { value: "WEEKLY", label: "Weekly" },
-  { value: "FORTNIGHTLY", label: "Fortnightly" },
-  { value: "MONTHLY", label: "Monthly" },
-  { value: "QUARTERLY", label: "Quarterly" },
-  { value: "SEMI_ANNUALLY", label: "Semi-annually" },
-  { value: "ANNUALLY", label: "Annually" },
-];
-
-const TYPE_OPTIONS: { value: RetainerType; label: string }[] = [
-  { value: "HOUR_BANK", label: "Hour Bank" },
-  { value: "FIXED_FEE", label: "Fixed Fee" },
-];
-
-const ROLLOVER_OPTIONS: { value: RolloverPolicy; label: string }[] = [
-  { value: "FORFEIT", label: "Forfeit unused hours" },
-  { value: "CARRY_FORWARD", label: "Carry forward (unlimited)" },
-  { value: "CARRY_CAPPED", label: "Carry forward (capped)" },
-];
-
-const selectClasses =
-  "flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800";
+import {
+  FREQUENCY_LABELS,
+  TYPE_LABELS,
+  ROLLOVER_LABELS,
+} from "@/lib/retainer-constants";
 
 interface CreateRetainerDialogProps {
   slug: string;
@@ -252,38 +241,42 @@ export function CreateRetainerDialog({
 
           {/* Type */}
           <div className="space-y-2">
-            <Label htmlFor="retainer-type">Type</Label>
-            <select
-              id="retainer-type"
-              className={selectClasses}
+            <Label>Type</Label>
+            <Select
               value={type}
-              onChange={(e) => setType(e.target.value as RetainerType)}
+              onValueChange={(v) => setType(v as RetainerType)}
             >
-              {TYPE_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full" aria-label="Type">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(TYPE_LABELS).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Frequency */}
           <div className="space-y-2">
-            <Label htmlFor="retainer-frequency">Frequency</Label>
-            <select
-              id="retainer-frequency"
-              className={selectClasses}
+            <Label>Frequency</Label>
+            <Select
               value={frequency}
-              onChange={(e) =>
-                setFrequency(e.target.value as RetainerFrequency)
-              }
+              onValueChange={(v) => setFrequency(v as RetainerFrequency)}
             >
-              {FREQUENCY_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full" aria-label="Frequency">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(FREQUENCY_LABELS).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* HOUR_BANK specific fields */}
@@ -316,21 +309,24 @@ export function CreateRetainerDialog({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="rollover-policy">Rollover Policy</Label>
-                <select
-                  id="rollover-policy"
-                  className={selectClasses}
+                <Label>Rollover Policy</Label>
+                <Select
                   value={rolloverPolicy}
-                  onChange={(e) =>
-                    setRolloverPolicy(e.target.value as RolloverPolicy)
+                  onValueChange={(v) =>
+                    setRolloverPolicy(v as RolloverPolicy)
                   }
                 >
-                  {ROLLOVER_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="w-full" aria-label="Rollover Policy">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(ROLLOVER_LABELS).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {rolloverPolicy === "CARRY_CAPPED" && (
@@ -406,9 +402,9 @@ export function CreateRetainerDialog({
                 (optional)
               </span>
             </Label>
-            <textarea
+            <Textarea
               id="retainer-notes"
-              className={cn(selectClasses, "min-h-[80px] py-2")}
+              className="min-h-[80px]"
               placeholder="Additional notes..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}

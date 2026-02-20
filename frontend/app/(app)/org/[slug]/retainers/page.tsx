@@ -60,30 +60,27 @@ export default async function RetainersPage({
     );
   }
 
-  let retainers: RetainerResponse[] = [];
-  let customers: Array<{ id: string; name: string; email: string }> = [];
-
-  try {
-    retainers = await fetchRetainers({
+  const [retainersResult, customersResult] = await Promise.allSettled([
+    fetchRetainers({
       status: search.status as RetainerStatus | undefined,
       customerId: search.customerId,
-    });
-  } catch {
-    // Non-fatal: show empty state
-  }
+    }),
+    api.get<Customer[]>("/api/customers"),
+  ]);
 
-  try {
-    const allCustomers = await api.get<Customer[]>("/api/customers");
-    customers = allCustomers
-      .filter(
-        (c) =>
-          c.lifecycleStatus !== "OFFBOARDED" &&
-          c.lifecycleStatus !== "PROSPECT",
-      )
-      .map((c) => ({ id: c.id, name: c.name, email: c.email }));
-  } catch {
-    // Non-fatal: dialog will show empty customer list
-  }
+  const retainers: RetainerResponse[] =
+    retainersResult.status === "fulfilled" ? retainersResult.value : [];
+
+  const customers: Array<{ id: string; name: string; email: string }> =
+    customersResult.status === "fulfilled"
+      ? customersResult.value
+          .filter(
+            (c) =>
+              c.lifecycleStatus !== "OFFBOARDED" &&
+              c.lifecycleStatus !== "PROSPECT",
+          )
+          .map((c) => ({ id: c.id, name: c.name, email: c.email }))
+      : [];
 
   const summary = computeSummary(retainers);
 

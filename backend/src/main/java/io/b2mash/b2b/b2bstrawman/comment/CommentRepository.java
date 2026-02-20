@@ -42,7 +42,7 @@ public interface CommentRepository extends JpaRepository<Comment, UUID> {
       SELECT c FROM Comment c
       JOIN Document d ON c.entityId = d.id AND c.entityType = 'DOCUMENT'
       WHERE d.customerId = :customerId
-        AND c.visibility = 'EXTERNAL'
+        AND c.visibility = 'SHARED'
       ORDER BY c.createdAt ASC
       """)
   List<Comment> findPortalVisibleByCustomerId(@Param("customerId") UUID customerId);

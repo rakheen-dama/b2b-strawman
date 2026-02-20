@@ -75,12 +75,12 @@ public class CommentService {
     // Verify entity exists and belongs to project
     validateEntityBelongsToProject(entityType, entityId, projectId);
 
-    // EXTERNAL visibility requires canEdit (lead/admin/owner)
+    // SHARED visibility requires canEdit (lead/admin/owner)
     String resolvedVisibility = visibility != null ? visibility : "INTERNAL";
-    if ("EXTERNAL".equals(resolvedVisibility) && !access.canEdit()) {
+    if ("SHARED".equals(resolvedVisibility) && !access.canEdit()) {
       throw new ForbiddenException(
-          "Cannot create external comment",
-          "Only leads, admins, and owners can create EXTERNAL comments");
+          "Cannot create shared comment",
+          "Only leads, admins, and owners can create SHARED comments");
     }
 
     var comment = new Comment(entityType, entityId, projectId, memberId, body, resolvedVisibility);
@@ -156,9 +156,9 @@ public class CommentService {
     }
 
     // Validate visibility value if provided
-    if (visibility != null && !"INTERNAL".equals(visibility) && !"EXTERNAL".equals(visibility)) {
+    if (visibility != null && !"INTERNAL".equals(visibility) && !"SHARED".equals(visibility)) {
       throw new InvalidStateException(
-          "Invalid visibility", "visibility must be INTERNAL or EXTERNAL");
+          "Invalid visibility", "visibility must be INTERNAL or SHARED");
     }
 
     // Visibility changes require canEdit (lead/admin/owner) for own comments,

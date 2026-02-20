@@ -232,12 +232,12 @@ class CommentServiceIntegrationTest {
                       "entityType": "TASK",
                       "entityId": "%s",
                       "body": "External comment by lead",
-                      "visibility": "EXTERNAL"
+                      "visibility": "SHARED"
                     }
                     """
                         .formatted(taskId)))
         .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.visibility").value("EXTERNAL"));
+        .andExpect(jsonPath("$.visibility").value("SHARED"));
   }
 
   @Test
@@ -253,7 +253,29 @@ class CommentServiceIntegrationTest {
                       "entityType": "TASK",
                       "entityId": "%s",
                       "body": "Should fail as external",
-                      "visibility": "EXTERNAL"
+                      "visibility": "SHARED"
+                    }
+                    """
+                        .formatted(taskId)))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void createComment_memberCannotCreateSharedComment() throws Exception {
+    // Regression test: regular member (ORG_MEMBER, non-lead) sending visibility SHARED gets 403.
+    // This was previously only enforced on the frontend.
+    mockMvc
+        .perform(
+            post("/api/projects/" + projectId + "/comments")
+                .with(memberJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "entityType": "TASK",
+                      "entityId": "%s",
+                      "body": "Should be rejected — member cannot create SHARED comment",
+                      "visibility": "SHARED"
                     }
                     """
                         .formatted(taskId)))
@@ -326,7 +348,7 @@ class CommentServiceIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"body": "Internal comment for vis test", "visibility": "EXTERNAL"}
+                    {"body": "Internal comment for vis test", "visibility": "SHARED"}
                     """))
         .andExpect(status().isForbidden());
   }

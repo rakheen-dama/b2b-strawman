@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS comments (
     created_at          TIMESTAMPTZ  NOT NULL DEFAULT now(),
     updated_at          TIMESTAMPTZ  NOT NULL DEFAULT now(),
     CONSTRAINT chk_comment_entity_type CHECK (entity_type IN ('TASK', 'DOCUMENT')),
-    CONSTRAINT chk_comment_visibility CHECK (visibility IN ('INTERNAL', 'SHARED'))
+    CONSTRAINT chk_comment_visibility CHECK (visibility IN ('INTERNAL', 'EXTERNAL'))
 );
 
 -- Indexes for primary query patterns

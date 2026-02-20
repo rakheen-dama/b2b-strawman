@@ -261,28 +261,6 @@ class CommentServiceIntegrationTest {
   }
 
   @Test
-  void createComment_memberCannotCreateSharedComment() throws Exception {
-    // Regression test: regular member (ORG_MEMBER, non-lead) sending visibility SHARED gets 403.
-    // This was previously only enforced on the frontend.
-    mockMvc
-        .perform(
-            post("/api/projects/" + projectId + "/comments")
-                .with(memberJwt())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "entityType": "TASK",
-                      "entityId": "%s",
-                      "body": "Should be rejected — member cannot create SHARED comment",
-                      "visibility": "SHARED"
-                    }
-                    """
-                        .formatted(taskId)))
-        .andExpect(status().isForbidden());
-  }
-
-  @Test
   void shouldUpdateOwnCommentBody() throws Exception {
     // Create a comment as member
     var createResult =

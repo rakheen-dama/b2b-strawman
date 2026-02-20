@@ -15,7 +15,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { updateCustomer } from "@/app/(app)/org/[slug]/customers/actions";
-import type { Customer } from "@/lib/types";
+import type { Customer, CustomerType } from "@/lib/types";
+
+const CUSTOMER_TYPES: { value: CustomerType; label: string }[] = [
+  { value: "INDIVIDUAL", label: "Individual" },
+  { value: "COMPANY", label: "Company" },
+  { value: "TRUST", label: "Trust" },
+];
 
 interface EditCustomerDialogProps {
   customer: Customer;
@@ -72,6 +78,21 @@ export function EditCustomerDialog({ customer, slug, children }: EditCustomerDia
               maxLength={255}
               autoFocus
             />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="edit-customer-type">Type</Label>
+            <select
+              id="edit-customer-type"
+              name="customerType"
+              defaultValue={customer.customerType ?? "INDIVIDUAL"}
+              className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
+            >
+              {CUSTOMER_TYPES.map((ct) => (
+                <option key={ct.value} value={ct.value}>
+                  {ct.label}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="edit-customer-email">Email</Label>

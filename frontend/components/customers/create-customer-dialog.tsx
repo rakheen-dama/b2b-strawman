@@ -15,7 +15,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createCustomer } from "@/app/(app)/org/[slug]/customers/actions";
+import type { CustomerType } from "@/lib/types";
 import { Plus } from "lucide-react";
+
+const CUSTOMER_TYPES: { value: CustomerType; label: string }[] = [
+  { value: "INDIVIDUAL", label: "Individual" },
+  { value: "COMPANY", label: "Company" },
+  { value: "TRUST", label: "Trust" },
+];
 
 interface CreateCustomerDialogProps {
   slug: string;
@@ -77,6 +84,21 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
               maxLength={255}
               autoFocus
             />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="customer-type">Type</Label>
+            <select
+              id="customer-type"
+              name="customerType"
+              defaultValue="INDIVIDUAL"
+              className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
+            >
+              {CUSTOMER_TYPES.map((ct) => (
+                <option key={ct.value} value={ct.value}>
+                  {ct.label}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="customer-email">Email</Label>

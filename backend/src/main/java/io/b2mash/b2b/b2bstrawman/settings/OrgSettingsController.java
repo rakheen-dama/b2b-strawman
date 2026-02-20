@@ -6,6 +6,8 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -88,7 +90,13 @@ public class OrgSettingsController {
   // --- DTOs ---
 
   public record SettingsResponse(
-      String defaultCurrency, String logoUrl, String brandColor, String documentFooterText) {}
+      String defaultCurrency,
+      String logoUrl,
+      String brandColor,
+      String documentFooterText,
+      Integer dormancyThresholdDays,
+      Integer dataRequestDeadlineDays,
+      List<Map<String, Object>> compliancePackStatus) {}
 
   public record UpdateSettingsRequest(
       @NotBlank(message = "defaultCurrency is required")

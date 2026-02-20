@@ -16,6 +16,7 @@ import type { CustomerType } from "@/lib/types";
 const CUSTOMER_TYPES: { value: CustomerType; label: string }[] = [
   { value: "INDIVIDUAL", label: "Individual" },
   { value: "COMPANY", label: "Company" },
+  { value: "TRUST", label: "Trust" },
 ];
 
 interface ChecklistItem {

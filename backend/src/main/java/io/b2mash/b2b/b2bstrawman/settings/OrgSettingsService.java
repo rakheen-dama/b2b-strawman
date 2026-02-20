@@ -63,13 +63,8 @@ public class OrgSettingsService {
   public SettingsResponse getSettingsWithBranding() {
     return orgSettingsRepository
         .findForCurrentTenant()
-        .map(
-            s -> {
-              String logoUrl = generateLogoUrl(s.getLogoS3Key());
-              return new SettingsResponse(
-                  s.getDefaultCurrency(), logoUrl, s.getBrandColor(), s.getDocumentFooterText());
-            })
-        .orElse(new SettingsResponse(DEFAULT_CURRENCY, null, null, null));
+        .map(this::toSettingsResponse)
+        .orElse(new SettingsResponse(DEFAULT_CURRENCY, null, null, null, null, null, null));
   }
 
   /** Updates settings including branding fields. */
@@ -115,12 +110,7 @@ public class OrgSettingsService {
                     brandColor != null ? brandColor : ""))
             .build());
 
-    String logoUrl = generateLogoUrl(settings.getLogoS3Key());
-    return new SettingsResponse(
-        settings.getDefaultCurrency(),
-        logoUrl,
-        settings.getBrandColor(),
-        settings.getDocumentFooterText());
+    return toSettingsResponse(settings);
   }
 
   /** Uploads a logo to S3 and updates the org settings. */
@@ -180,12 +170,7 @@ public class OrgSettingsService {
             .details(Map.of("s3_key", s3Key))
             .build());
 
-    String logoUrl = generateLogoUrl(settings.getLogoS3Key());
-    return new SettingsResponse(
-        settings.getDefaultCurrency(),
-        logoUrl,
-        settings.getBrandColor(),
-        settings.getDocumentFooterText());
+    return toSettingsResponse(settings);
   }
 
   /** Deletes the logo from S3 and clears the logoS3Key in org settings. */
@@ -220,11 +205,20 @@ public class OrgSettingsService {
               .build());
     }
 
+    return toSettingsResponse(settings);
+  }
+
+  /** Maps an OrgSettings entity to a SettingsResponse DTO including compliance fields. */
+  private SettingsResponse toSettingsResponse(OrgSettings settings) {
+    String logoUrl = generateLogoUrl(settings.getLogoS3Key());
     return new SettingsResponse(
         settings.getDefaultCurrency(),
-        null,
+        logoUrl,
         settings.getBrandColor(),
-        settings.getDocumentFooterText());
+        settings.getDocumentFooterText(),
+        settings.getDormancyThresholdDays(),
+        settings.getDataRequestDeadlineDays(),
+        settings.getCompliancePackStatus());
   }
 
   /**

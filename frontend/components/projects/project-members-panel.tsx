@@ -25,10 +25,12 @@ import { removeProjectMember } from "@/app/(app)/org/[slug]/projects/[id]/member
 import { formatDate } from "@/lib/format";
 import type { ProjectMember, ProjectRole } from "@/lib/types";
 
-const ROLE_BADGE: Record<ProjectRole, { label: string; variant: "lead" | "member" }> = {
+const ROLE_BADGE: Record<string, { label: string; variant: "lead" | "member" }> = {
   lead: { label: "Lead", variant: "lead" },
   member: { label: "Member", variant: "member" },
 };
+
+const DEFAULT_BADGE = { label: "Member", variant: "member" } as const;
 
 const AVATAR_COLORS = [
   "bg-slate-200 text-slate-700",
@@ -153,7 +155,7 @@ export function ProjectMembersPanel({
           </TableHeader>
           <TableBody>
             {members.map((member) => {
-              const badge = ROLE_BADGE[member.projectRole];
+              const badge = ROLE_BADGE[member.projectRole] ?? DEFAULT_BADGE;
               const isLead = member.projectRole === "lead";
               const isRemoving = removingMemberId === member.memberId;
 

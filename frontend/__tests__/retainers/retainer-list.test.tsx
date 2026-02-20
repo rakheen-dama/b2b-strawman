@@ -126,7 +126,8 @@ describe("RetainerList", () => {
     expect(screen.getByText("No retainers found.")).toBeInTheDocument();
   });
 
-  it("shows Pause button for ACTIVE retainer but not for TERMINATED", () => {
+  it("shows Pause button for ACTIVE retainer but not for TERMINATED", async () => {
+    const user = userEvent.setup();
     render(
       <RetainerList
         slug="acme"
@@ -134,7 +135,7 @@ describe("RetainerList", () => {
       />,
     );
     // Switch to All tab
-    screen.getByText("All").click();
+    await user.click(screen.getByText("All"));
     expect(screen.getByTitle("Pause retainer")).toBeInTheDocument();
     // Terminated retainer should not have pause button - there's only one
     const pauseButtons = screen.getAllByTitle("Pause retainer");

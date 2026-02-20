@@ -1,5 +1,6 @@
 "use server";
 
+import { auth } from "@clerk/nextjs/server";
 import { ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import {
@@ -20,6 +21,11 @@ export async function createRetainerAction(
   slug: string,
   data: CreateRetainerRequest,
 ): Promise<ActionResult> {
+  const { orgRole } = await auth();
+  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+    return { success: false, error: "You do not have permission to perform this action." };
+  }
+
   try {
     const created = await createRetainer(data);
     revalidatePath(`/org/${slug}/retainers`);
@@ -45,6 +51,11 @@ export async function pauseRetainerAction(
   slug: string,
   id: string,
 ): Promise<ActionResult> {
+  const { orgRole } = await auth();
+  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+    return { success: false, error: "You do not have permission to perform this action." };
+  }
+
   try {
     const data = await pauseRetainer(id);
     revalidatePath(`/org/${slug}/retainers`);
@@ -68,6 +79,11 @@ export async function resumeRetainerAction(
   slug: string,
   id: string,
 ): Promise<ActionResult> {
+  const { orgRole } = await auth();
+  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+    return { success: false, error: "You do not have permission to perform this action." };
+  }
+
   try {
     const data = await resumeRetainer(id);
     revalidatePath(`/org/${slug}/retainers`);
@@ -91,6 +107,11 @@ export async function terminateRetainerAction(
   slug: string,
   id: string,
 ): Promise<ActionResult> {
+  const { orgRole } = await auth();
+  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+    return { success: false, error: "You do not have permission to perform this action." };
+  }
+
   try {
     const data = await terminateRetainer(id);
     revalidatePath(`/org/${slug}/retainers`);

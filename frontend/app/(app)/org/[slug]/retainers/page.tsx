@@ -82,7 +82,7 @@ export default async function RetainersPage({
             </span>
           )}
         </div>
-        <Button disabled>
+        <Button disabled title="Coming in next update">
           <Plus className="mr-2 size-4" />
           New Retainer
         </Button>

@@ -20,59 +20,15 @@ import {
   resumeRetainerAction,
   terminateRetainerAction,
 } from "@/app/(app)/org/[slug]/retainers/actions";
+import type {
+  RetainerStatus,
+  RetainerType,
+  RetainerFrequency,
+  PeriodStatus,
+  RetainerResponse,
+} from "@/lib/api/retainers";
 
-type RetainerStatus = "ACTIVE" | "PAUSED" | "TERMINATED";
-type RetainerType = "HOUR_BANK" | "FIXED_FEE";
-type PeriodStatus = "OPEN" | "CLOSED";
-type RetainerFrequency =
-  | "WEEKLY"
-  | "FORTNIGHTLY"
-  | "MONTHLY"
-  | "QUARTERLY"
-  | "SEMI_ANNUALLY"
-  | "ANNUALLY";
-
-interface PeriodSummary {
-  id: string;
-  periodStart: string;
-  periodEnd: string;
-  status: PeriodStatus;
-  allocatedHours: number;
-  baseAllocatedHours: number;
-  consumedHours: number;
-  remainingHours: number;
-  rolloverHoursIn: number;
-  overageHours: number;
-  rolloverHoursOut: number;
-  invoiceId: string | null;
-  closedAt: string | null;
-  closedBy: string | null;
-  readyToClose: boolean;
-}
-
-interface RetainerResponse {
-  id: string;
-  customerId: string;
-  scheduleId: string | null;
-  customerName: string;
-  name: string;
-  type: RetainerType;
-  status: RetainerStatus;
-  frequency: RetainerFrequency;
-  startDate: string;
-  endDate: string | null;
-  allocatedHours: number | null;
-  periodFee: number | null;
-  rolloverPolicy: string | null;
-  rolloverCapHours: number | null;
-  notes: string | null;
-  createdBy: string;
-  createdAt: string;
-  updatedAt: string;
-  currentPeriod: PeriodSummary | null;
-  recentPeriods: PeriodSummary[];
-}
-
+// Value constants kept local — cannot import from "server-only" module
 const FREQUENCY_LABELS: Record<RetainerFrequency, string> = {
   WEEKLY: "Weekly",
   FORTNIGHTLY: "Fortnightly",

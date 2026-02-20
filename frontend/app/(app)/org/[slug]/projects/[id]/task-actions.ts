@@ -28,7 +28,8 @@ export async function fetchTasks(
 export async function createTask(
   slug: string,
   projectId: string,
-  formData: FormData
+  formData: FormData,
+  assigneeId?: string | null
 ): Promise<ActionResult> {
   // Backend enforces access via ProjectAccessService — any project member can create tasks
   const title = formData.get("title")?.toString().trim() ?? "";
@@ -41,7 +42,14 @@ export async function createTask(
   const type = formData.get("type")?.toString().trim() || undefined;
   const dueDate = formData.get("dueDate")?.toString() || undefined;
 
-  const body: CreateTaskRequest = { title, description, priority: priority as CreateTaskRequest["priority"], type, dueDate };
+  const body: CreateTaskRequest = {
+    title,
+    description,
+    priority: priority as CreateTaskRequest["priority"],
+    type,
+    dueDate,
+    assigneeId: assigneeId ?? undefined,
+  };
 
   try {
     await api.post<Task>(`/api/projects/${projectId}/tasks`, body);

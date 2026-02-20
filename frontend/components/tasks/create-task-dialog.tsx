@@ -15,17 +15,27 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createTask } from "@/app/(app)/org/[slug]/projects/[id]/task-actions";
+import { AssigneeSelector } from "@/components/tasks/assignee-selector";
 
 interface CreateTaskDialogProps {
   slug: string;
   projectId: string;
   children: ReactNode;
+  members?: { id: string; name: string; email: string }[];
+  canManage?: boolean;
 }
 
-export function CreateTaskDialog({ slug, projectId, children }: CreateTaskDialogProps) {
+export function CreateTaskDialog({
+  slug,
+  projectId,
+  children,
+  members = [],
+  canManage = false,
+}: CreateTaskDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedAssigneeId, setSelectedAssigneeId] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
   async function handleSubmit(formData: FormData) {
@@ -33,9 +43,10 @@ export function CreateTaskDialog({ slug, projectId, children }: CreateTaskDialog
     setIsSubmitting(true);
 
     try {
-      const result = await createTask(slug, projectId, formData);
+      const result = await createTask(slug, projectId, formData, selectedAssigneeId);
       if (result.success) {
         formRef.current?.reset();
+        setSelectedAssigneeId(null);
         setOpen(false);
       } else {
         setError(result.error ?? "Failed to create task.");
@@ -50,6 +61,7 @@ export function CreateTaskDialog({ slug, projectId, children }: CreateTaskDialog
   function handleOpenChange(newOpen: boolean) {
     if (newOpen) {
       setError(null);
+      setSelectedAssigneeId(null);
     }
     setOpen(newOpen);
   }
@@ -118,6 +130,19 @@ export function CreateTaskDialog({ slug, projectId, children }: CreateTaskDialog
             </Label>
             <Input id="task-due-date" name="dueDate" type="date" />
           </div>
+          {canManage && (
+            <div className="space-y-2">
+              <Label>
+                Assign to <span className="font-normal text-muted-foreground">(optional)</span>
+              </Label>
+              <AssigneeSelector
+                members={members}
+                currentAssigneeId={selectedAssigneeId}
+                onAssigneeChange={setSelectedAssigneeId}
+                disabled={isSubmitting}
+              />
+            </div>
+          )}
           {error && <p className="text-sm text-destructive">{error}</p>}
           <DialogFooter>
             <Button

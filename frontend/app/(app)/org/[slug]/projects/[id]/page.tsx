@@ -464,6 +464,7 @@ export default async function ProjectDetailPage({
             currentMemberId={currentMemberId}
             orgRole={orgRole}
             retainerSummary={taskRetainerSummary}
+            members={members.map((m) => ({ id: m.memberId, name: m.name, email: m.email }))}
           />
         }
         timePanel={

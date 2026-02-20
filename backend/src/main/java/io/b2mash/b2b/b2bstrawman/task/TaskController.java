@@ -77,7 +77,8 @@ public class TaskController {
             createdBy,
             orgRole,
             request.customFields(),
-            request.appliedFieldGroups());
+            request.appliedFieldGroups(),
+            request.assigneeId());
 
     var names = resolveNames(List.of(task));
     return ResponseEntity.created(URI.create("/api/tasks/" + task.getId()))
@@ -320,6 +321,13 @@ public class TaskController {
 
   // --- DTOs ---
 
+  /**
+   * Request body for task creation.
+   *
+   * @param assigneeId Optional. The member to pre-assign the task to at creation time. Only honored
+   *     for admin/owner callers; silently ignored for regular members. See {@link
+   *     TaskService#createTask} for the permission asymmetry rationale.
+   */
   public record CreateTaskRequest(
       @NotBlank(message = "title is required")
           @Size(max = 500, message = "title must be at most 500 characters")
@@ -329,7 +337,8 @@ public class TaskController {
       @Size(max = 100, message = "type must be at most 100 characters") String type,
       LocalDate dueDate,
       Map<String, Object> customFields,
-      List<UUID> appliedFieldGroups) {}
+      List<UUID> appliedFieldGroups,
+      UUID assigneeId) {}
 
   public record UpdateTaskRequest(
       @NotBlank(message = "title is required")

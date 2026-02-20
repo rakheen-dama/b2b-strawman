@@ -193,6 +193,7 @@ export interface CreateTaskRequest {
   priority?: TaskPriority;
   type?: string;
   dueDate?: string;
+  assigneeId?: string;
 }
 
 export interface UpdateTaskRequest {

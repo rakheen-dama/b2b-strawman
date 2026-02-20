@@ -33,6 +33,8 @@ cd frontend && pnpm dev
 2. Click **"Get Started"** on the landing page
 3. Sign up with an email (this becomes Sarah, the org owner)
 4. After sign-up, you'll land on the **Dashboard** page — it prompts you to create an organization
+
+> **Actual**: After sign-up with no org, you are redirected directly to `/create-org` (Clerk's CreateOrganization widget). There is no empty dashboard prompt.
 5. Click **"Create Organization"** → name it **"Apex Accounting"**
 6. You're now inside the org at `/org/apex-accounting/dashboard`
 
@@ -71,6 +73,9 @@ You'll see a grid of settings cards. Work through these:
 This is the org's default rate card — what each team member's time is worth.
 
 1. Click **"Add Rate"**
+
+> **Actual**: There is no single top-level "Add Rate" button. Rate creation is per-member via an inline button in each row that has no rate set. Look for the `+ Add Rate` action on each member's row in the table.
+
 2. Create rates for each member:
    - Sarah Chen: **R1,500/hr** (partner rate)
    - James Park: **R900/hr** (senior rate)
@@ -81,6 +86,9 @@ This is the org's default rate card — what each team member's time is worth.
 > **Domain context**: Rate cards are the foundation of the revenue engine. Every time entry captures a "snapshot" of the applicable rate at the time of logging. The 3-level hierarchy (org → project → customer) lets you override rates for specific engagements without changing the defaults.
 
 ##### Cost Rates (Settings → Rates, scroll down)
+
+> **Actual**: Billing Rates and Cost Rates are in separate **tabs** (Billing Rates | Cost Rates), not stacked vertically. Switch to the "Cost Rates" tab — don't scroll down.
+
 Cost rates represent what each team member actually costs the firm (salary + overhead).
 
 1. Add cost rates:
@@ -127,14 +135,21 @@ These let you track firm-specific data on projects, tasks, and customers.
 
 1. Navigate to **Customers** in the sidebar
 2. Click **"Add Customer"**
+
+> **Actual**: The button label is **"New Customer"**, not "Add Customer".
+
 3. Fill in:
    - Name: **GreenTech Solutions**
    - Contact Name: **Lisa Moyo**
    - Contact Email: **lisa@greentech.example.com**
    - Phone: **+27 11 555 0123**
+
+> **Actual**: There is no separate "Contact Name" field. The form fields are: Name, Email, Phone, ID Number, Notes. Use the Name field for the company name ("GreenTech Solutions") and the Email field for the contact email.
 4. After creation, you land on the customer detail page
 
 **Explore the customer detail page**: Notice the tabs — Projects, Documents, Invoices, Rates, Generated Docs, Financials, and Onboarding. Most are empty. The **Setup Guidance** cards on the Overview tell you what's missing.
+
+> **Actual**: The tab list also includes a **"Retainer"** tab (visible once the customer has an active retainer or is in certain lifecycle states). Some tabs (Financials, Rates, Generated Docs) are only visible to admins/owners.
 
 #### 2.2 Set Custom Field Values
 
@@ -156,12 +171,16 @@ These let you track firm-specific data on projects, tasks, and customers.
 
 > **Domain context**: Customer lifecycle (Prospect → Onboarding → Active → Offboarded) tracks where each client is in your pipeline. The onboarding stage triggers compliance checklists.
 
+> **Actual**: The full lifecycle state machine includes additional states: **DORMANT** (between Active and Offboarding) and **OFFBOARDING** (between Active/Dormant and Offboarded). The simplified 4-state view above omits these intermediate states.
+
 #### 2.5 Attach a Compliance Checklist
 
 If compliance pack seeding ran (it does automatically), you should have checklist templates available.
 
 1. Go to the **Onboarding** tab
 2. Click **"Start Checklist"** and select a template (e.g., "FICA Compliance")
+
+> **Actual**: The button label is **"Manually Add Checklist"**, not "Start Checklist".
 3. You'll see checklist items like:
    - Collect ID document
    - Verify proof of address
@@ -176,6 +195,8 @@ If compliance pack seeding ran (it does automatically), you should have checklis
 1. Go to the **Documents** tab on the customer detail page
 2. Upload a file (any PDF or image — pretend it's a FICA ID document)
 3. After upload, click **"Confirm"** to finalize
+
+> **Actual**: Upload happens automatically via presigned URL with a progress indicator. There is no separate "Confirm" button — the dialog auto-closes after upload completes.
 
 #### 2.7 Complete Onboarding
 
@@ -199,6 +220,8 @@ If compliance pack seeding ran (it does automatically), you should have checklis
 
 **Explore the project detail page**: Tabs for Overview, Documents, Customers, Members, Tasks, Time, Budget, Financials, Rates, Generated Docs, Activity. The **Overview tab** shows setup guidance — what's missing to make this project operational.
 
+> **Actual**: The tab order is Overview, Documents, **Members, Customers** (swapped from above), Tasks, Time, Budget, Financials, Rates, Generated Docs, Activity. Some tabs (Financials, Rates, Generated Docs) are only visible to admin/owner/lead roles.
+
 #### 3.2 Link the Customer
 
 1. Go to the **Customers** tab
@@ -211,6 +234,8 @@ If compliance pack seeding ran (it does automatically), you should have checklis
 1. Go to the **Members** tab
 2. Click **"Add Member"** → add **James Park** and **Priya Naidoo**
 3. Transfer the **Project Lead** role to James (click the role indicator next to his name)
+
+> **Actual**: Lead transfer is accessed via the three-dot (⋮) dropdown menu on a non-lead member's row → "Transfer Lead" item. The role badge itself is not clickable.
 
 > **Domain context**: The project lead has elevated permissions (edit project, manage budget, view financials) without needing org-level admin. This maps to how firms work — a senior accountant runs the engagement but doesn't need access to firm-wide settings.
 
@@ -230,6 +255,8 @@ If compliance pack seeding ran (it does automatically), you should have checklis
 
 3. For each task, set the **priority** and **assignee**
 
+> **Actual**: The Create Task dialog has Title, Description, Priority, Type, and Due Date — but **no Assignee selector**. Tasks are created unassigned (OPEN status) by design (ADR-019). Team members claim tasks from the pool. Leads/admins can assign via edit after creation.
+
 > **Tip**: You can also leave tasks unassigned and let team members **"Claim"** them — useful for firms where juniors pick up available work.
 
 #### 3.5 Set a Budget
@@ -240,6 +267,8 @@ If compliance pack seeding ran (it does automatically), you should have checklis
    - Hours budget: **40 hours**
    - Amount budget: **R25,000** (ZAR)
    - Alert threshold: **80%**
+
+> **Actual**: The budget form also includes **Currency** (required when amount is set) and **Notes** (optional) fields not listed above.
 
 > **Domain context**: Budget tracking prevents scope creep — the #1 profitability killer in professional services. The 80% alert triggers a notification so the project lead can take action before the budget is blown.
 
@@ -267,11 +296,17 @@ Sign in as Priya (or stay as Sarah and imagine you're Priya — the member dropd
 1. Navigate to **Projects** → **GreenTech Monthly Bookkeeping**
 2. Go to the **Tasks** tab
 3. Click on **"Reconcile bank accounts"**
+
+> **Actual**: Clicking a task row expands it inline (no separate task detail page). The expanded row shows time entries and comments. There is no `/tasks/[taskId]` route — the walkthrough's "task detail page" is actually this inline expansion.
+
 4. Click **"Log Time"**
 5. Fill in:
    - Date: **today**
    - Duration: **2.5 hours** (or 150 minutes)
    - Notes: "Reconciled Standard Bank cheque account, 47 transactions"
+
+> **Actual**: Duration input uses two separate numeric fields (Hours + Minutes side by side), not a single field with a unit toggle. The form also includes a prominent **"Billable"** checkbox not listed above.
+
 6. The entry appears in the task's time list with the snapshotted billing rate
 
 Repeat for a few more tasks to build up data:
@@ -283,6 +318,8 @@ Repeat for a few more tasks to build up data:
 1. Navigate to **My Work** in the sidebar
 2. You'll see:
    - **Personal KPIs**: Hours logged this week, utilization rate
+
+> **Actual**: The KPI card is labelled **"Billable %"**, not "utilization rate". Same concept, different label.
    - **Assigned tasks** across all projects
    - **Today's time entries**
    - **Weekly time summary**
@@ -298,11 +335,16 @@ Repeat for a few more tasks to build up data:
 
 > **Visibility note**: Comments can be **Internal** (only visible to the team) or **Shared** (visible in the client portal too). Internal is the default — toggle visibility if you want the client to see it.
 
+> **Actual**: The visibility toggle (Internal/Shared) is only shown to users with lead/admin/owner permissions. Regular members cannot toggle visibility — their comments default to Internal. This is by design (ADR-037) to prevent accidental customer exposure.
+
 #### 4.4 Upload a Work Document
 
 1. Go to the project's **Documents** tab
 2. Upload a file (pretend it's the monthly reconciliation report)
 3. Confirm the upload
+
+> **Actual**: Upload auto-completes (no "Confirm" step, same as customer document upload above).
+
 4. Optionally toggle visibility to **Shared** if the client should see it in the portal
 
 #### 4.5 Check Notifications
@@ -314,6 +356,8 @@ Repeat for a few more tasks to build up data:
    - Budget alerts (if you've hit the threshold)
 3. Navigate to **Notifications** page for the full inbox
 4. Check **Settings → Notifications** to see preference controls (per-type, in-app/email toggles)
+
+> **Actual**: The email toggle column is permanently disabled with a **"Coming soon"** tooltip. Only in-app notifications are functional. Email delivery (SES) is stubbed for a future phase.
 
 ---
 
@@ -340,11 +384,17 @@ Repeat for a few more tasks to build up data:
 
 1. Navigate to **Invoices** in the sidebar
 2. Click **"New Invoice"** (or use the "Generate Invoice" action from the project/customer)
+
+> **Actual**: The Invoices list page has **no "New Invoice" button** — this is by design (invoices are customer-scoped). Instead, navigate to the **Customer detail page → Invoices tab** and click the **"New Invoice"** button there to open the `InvoiceGenerationDialog`. The "Create Invoice" links on project/customer overview cards currently point to a non-existent route (known bug — see accepted-gap-analysis.md Group B).
+
 3. In the invoice generation dialog:
    - Select customer: **GreenTech Solutions**
    - Select project: **GreenTech Monthly Bookkeeping**
    - Date range: **this month**
    - The system shows all unbilled time entries with rates
+
+> **Actual**: The dialog is pre-scoped to the customer (opened from their Invoices tab). There is no customer or project selector — all unbilled time for the customer is shown grouped by project. You select a date range and currency, then check/uncheck individual time entries.
+
 4. Review the line items — each time entry becomes an invoice line
 5. Click **"Generate"** — this creates a **DRAFT** invoice
 
@@ -415,6 +465,9 @@ Before setting up the retainer, capture the current project structure as a reusa
    - Frequency: **Monthly**
    - Project name pattern: **"{customer} Bookkeeping — {month} {year}"**
    - Start date: **next month**
+
+> **Actual**: The name pattern with `{customer}`, `{month}`, `{year}` tokens is defined on the **template**, not on the schedule. The schedule form has an optional "Name Override" field that can override the template's pattern, but no pattern editor with token placeholders.
+
 4. The schedule will automatically create a new project each month from the template
 
 > **Domain context**: This eliminates the "create a new project every month" drudgery. For a firm with 50 monthly bookkeeping clients, that's 50 manual project setups avoided. The scheduler runs daily and creates projects when due.
@@ -442,6 +495,8 @@ Before setting up the retainer, capture the current project structure as a reusa
 3. At **80% consumption**, team members get a notification warning
 4. At **100%**, an overage alert fires — additional hours are billed at the standard rate
 
+> **Actual**: Backend notifications fire correctly at 80% and 100% thresholds (to admins/owners, not all team members). The progress bar changes color (green → amber at 80% → red at 100%). However, there are **no visible inline alert banners** on the retainer detail page — the visual indicator is the progress bar color only. Alert banners are planned for Epic 128G.
+
 #### 6.6 Close a Retainer Period
 
 At month-end:
@@ -454,6 +509,8 @@ At month-end:
    - Applies rollover policy (carries unused hours if configured)
    - Generates a **DRAFT invoice** for the retainer fee (+ any overage)
 5. Review the draft invoice and proceed through the approval → send → paid workflow
+
+> **Actual**: After closing the period, the dialog simply closes — there is no automatic navigation to the generated draft invoice. You can find the invoice via the period history table (which links to the invoice) or navigate to the customer's Invoices tab. The backend returns the invoice ID but the frontend doesn't use it for navigation (known UX gap — see accepted-gap-analysis.md Group D).
 
 ---
 
@@ -489,6 +546,8 @@ Imagine a former client requests their data (under POPIA):
 4. Process the request:
    - **Start Processing** → status changes to In Progress
    - **Export Data** → generates a data package (JSON/PDF) stored in S3
+
+> **Actual**: The button label is **"Generate Export"**, not "Export Data".
    - **Complete** → marks as fulfilled
 5. For erasure requests, there's a separate **"Execute Deletion"** action (irreversible anonymization)
 
@@ -521,10 +580,14 @@ Imagine a former client requests their data (under POPIA):
    - Invoice (used internally by the invoice preview)
 3. Click into one to see the Thymeleaf HTML template
 
+> **Actual**: Template names in the list are **not clickable links**. There is no read-only detail page. To view a template's content, use the **Edit** action from the three-dot menu on the template row (navigates to `/settings/templates/[id]/edit`).
+
 #### 8.2 Preview a Template
 
 1. Click **"Preview"** on a template
 2. Select the entity to render against (e.g., GreenTech project)
+
+> **Actual**: The preview form requires typing a **raw entity UUID**, not a searchable entity selector. Copy the project/customer/invoice UUID from the URL bar or API response. A user-friendly entity picker is a planned enhancement (see accepted-gap-analysis.md Group E).
 3. See the rendered HTML with real data filled in (customer name, project details, org branding)
 
 #### 8.3 Generate a Document
@@ -560,6 +623,8 @@ Imagine a former client requests their data (under POPIA):
    - Hours logged
    - Active projects count
    - Overdue tasks
+
+> **Actual**: The KPI cards are: **Active Projects**, **Hours Logged**, **Billable %** (admin-only), **Overdue Tasks**, **Avg. Margin** (admin-only). There is no "Total Revenue" card — multi-currency support (ADR-041) makes a single revenue number non-trivial. Regular members see 3 cards; admins see all 5.
 3. **Project Health widget**: Shows green/yellow/red status for each project
 4. **Team Workload widget**: Hours per team member
 5. **Recent Activity**: Cross-project activity feed
@@ -583,6 +648,9 @@ Imagine a former client requests their data (under POPIA):
    - Overdue tasks
    - Days since last activity
    - Team capacity
+
+> **Actual**: The health calculator uses: budget consumption %, budget-vs-completion divergence, overdue task ratio, days since last activity, and task existence. **"Team capacity" is not a signal** — it was never implemented as a health factor.
+
 3. Click through the health reasons to understand what's driving the score
 
 ---
@@ -596,6 +664,8 @@ Imagine a former client requests their data (under POPIA):
 3. Click **"Save View"** → name it "Monthly Engagements"
 4. The saved view appears in the view dropdown for quick access
 5. Works the same on Customers and Tasks lists
+
+> **Actual**: Saved views are wired to **Projects** and **Customers** list pages only. Tasks don't have a standalone list page (they live inside project detail), so saved views are not available on tasks yet — even though the backend fully supports `entityType="TASK"`. See accepted-gap-analysis.md Group A.
 
 #### 10.2 Customer Portal (Dev Harness)
 
@@ -616,6 +686,9 @@ Test what your clients see:
 #### 10.3 Tags & Custom Fields on Entities
 
 1. Go to any project/task/customer
+
+> **Actual**: Tags and custom fields are wired to **Projects** and **Customers** detail pages only. **Tasks** do not have tag or custom field UI — the backend supports it (Task entity has `custom_fields` JSONB and EntityTag polymorphic support), but the frontend integration was not completed because tasks lack a detail page. See accepted-gap-analysis.md Group A.
+
 2. Add tags and fill in custom field values
 3. Go back to the list page and use tag/custom field filters
 4. Save a filtered view for quick access
@@ -629,6 +702,8 @@ Test what your clients see:
    - Budget alert
    - Retainer consumption warning
 3. Each type has in-app and email toggles
+
+> **Actual**: The email toggle column is permanently disabled with a **"Coming soon"** tooltip. Only in-app notifications work. See note at Chapter 4.5 above.
 
 ---
 
@@ -646,7 +721,9 @@ Each card is self-contained. Prerequisites are listed at the top.
 2. Transition lifecycle: Prospect → Onboarding → Active
 3. **Projects** → New Project → link to customer → add members → add tasks
 4. Log time entries against tasks (several hours across multiple tasks)
-5. **Invoices** → New Invoice → select customer + project + date range → Generate
+5. **Customer detail → Invoices tab** → New Invoice → select date range + currency → check entries → Generate
+
+> **Actual**: Invoice creation is from the customer Invoices tab, not from a top-level Invoices page. See Chapter 5.3 note above.
 6. Review draft → Approve → Send → Record Payment
 
 **Validates**: Customer lifecycle, project setup, time logging, invoice generation, lifecycle states
@@ -729,6 +806,8 @@ Each card is self-contained. Prerequisites are listed at the top.
 **Prereqs**: Org exists
 
 1. **Settings → Custom Fields** → create fields for Projects/Customers/Tasks
+
+> **Actual**: Field definitions support 9 types (Text, Number, Date, Dropdown, Boolean, Currency, URL, Email, Phone) — the walkthrough elsewhere mentions only 3. Custom fields are configurable for all entity types in settings, but **task UI integration is missing** (see Group A in accepted-gap-analysis.md).
 2. Create a Field Group → add fields to it
 3. **Settings → Tags** → create several tags
 4. Go to entities → apply tags and fill in custom field values

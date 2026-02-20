@@ -68,6 +68,7 @@ Organize by **feature**, not by layer. Each feature package contains its entity,
 - Never return `Optional` from services for "not found" or "access denied" — throw `ResourceNotFoundException`
 - Never duplicate error helper methods in controllers — use `RequestScopes.requireMemberId()` and the shared exception classes
 - Never return `Page<T>` from controllers without `@EnableSpringDataWebSupport(pageSerializationMode = PageSerializationMode.VIA_DTO)` on the application class — raw `PageImpl` serialization produces an unstable JSON structure. The `VIA_DTO` mode nests pagination metadata under a `page` object: `{ content: [...], page: { totalElements, totalPages, size, number } }`
+- Never create `Customer` objects in tests using the raw constructor without explicit `LifecycleStatus` — use `TestCustomerFactory` instead. Customers default to `PROSPECT`, so tests that need ACTIVE customers will fail without it.
 
 ## Spring Boot 4 / Hibernate 7 Gotchas
 
@@ -188,6 +189,17 @@ src/main/resources/db/migration/
 - **REST tests**: MockMvc + Spring REST Docs (generates API documentation from tests)
 - **Test config**: `TestcontainersConfiguration.java` provides `@ServiceConnection` PostgreSQL container
 - Run `TestBackendApplication.main()` for local dev with Testcontainers (no Docker Compose needed)
+
+### Test Factories
+Always use `TestCustomerFactory` (in `testutil/`) to create customers in tests:
+```java
+// For tests that need an ACTIVE customer (most common)
+var customer = TestCustomerFactory.createActiveCustomer("Name", "email@test.com", memberId);
+
+// For tests that need a specific lifecycle status
+var customer = TestCustomerFactory.createCustomerWithStatus("Name", "email@test.com", memberId, LifecycleStatus.PROSPECT);
+```
+Never use the raw `new Customer(...)` constructor without explicit `LifecycleStatus.ACTIVE` — the default is `PROSPECT`, which blocks operations guarded by `CustomerLifecycleGuard` (project creation, invoicing, time entries, etc.).
 
 ### Integration Test Setup
 ```java

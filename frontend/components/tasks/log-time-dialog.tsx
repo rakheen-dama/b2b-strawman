@@ -20,6 +20,8 @@ import {
 } from "@/app/(app)/org/[slug]/projects/[id]/time-entry-actions";
 import { formatCurrency, formatDuration } from "@/lib/format";
 import type { ResolvedRate } from "@/lib/types";
+import type { RetainerSummaryResponse } from "@/lib/api/retainers";
+import { RetainerIndicator } from "@/components/time-entries/retainer-indicator";
 
 /** Maps backend source enum to human-readable label */
 function formatRateSource(source: string): string {
@@ -40,6 +42,7 @@ interface LogTimeDialogProps {
   projectId: string;
   taskId: string;
   memberId?: string | null;
+  retainerSummary?: RetainerSummaryResponse | null;
   children: ReactNode;
 }
 
@@ -48,6 +51,7 @@ export function LogTimeDialog({
   projectId,
   taskId,
   memberId,
+  retainerSummary,
   children,
 }: LogTimeDialogProps) {
   const [open, setOpen] = useState(false);
@@ -218,6 +222,9 @@ export function LogTimeDialog({
               </div>
             </div>
           </div>
+
+          {/* Retainer Indicator */}
+          <RetainerIndicator summary={retainerSummary ?? null} />
 
           {/* Date */}
           <div className="space-y-2">

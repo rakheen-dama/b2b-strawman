@@ -14,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMemberRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -277,6 +278,16 @@ public class CustomerService {
     var customer =
         repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Customer", id));
     customer.archive();
+
+    // Align lifecycle: set to OFFBOARDED unless already in a terminal state
+    if (customer.getLifecycleStatus() != LifecycleStatus.OFFBOARDING
+        && customer.getLifecycleStatus() != LifecycleStatus.OFFBOARDED) {
+      customer.setLifecycleStatus(
+          LifecycleStatus.OFFBOARDED,
+          RequestScopes.MEMBER_ID.isBound() ? RequestScopes.MEMBER_ID.get() : null);
+      customer.setOffboardedAt(Instant.now());
+    }
+
     var saved = repository.save(customer);
 
     auditService.log(
@@ -284,6 +295,42 @@ public class CustomerService {
             .eventType("customer.archived")
             .entityType("customer")
             .entityId(saved.getId())
+            .details(Map.of("lifecycleStatus", saved.getLifecycleStatus().name()))
+            .build());
+
+    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    eventPublisher.publishEvent(
+        new CustomerUpdatedEvent(
+            saved.getId(), saved.getName(), saved.getEmail(), saved.getStatus(), orgId, tenantId));
+
+    return saved;
+  }
+
+  @Transactional
+  public Customer unarchiveCustomer(UUID id) {
+    var customer =
+        repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Customer", id));
+
+    if (!"ARCHIVED".equals(customer.getStatus())) {
+      throw new InvalidStateException(
+          "Cannot unarchive",
+          "Customer is not archived (current status: " + customer.getStatus() + ")");
+    }
+
+    customer.unarchive();
+    customer.setLifecycleStatus(
+        LifecycleStatus.DORMANT,
+        RequestScopes.MEMBER_ID.isBound() ? RequestScopes.MEMBER_ID.get() : null);
+    customer.setOffboardedAt(null);
+    var saved = repository.save(customer);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("customer.unarchived")
+            .entityType("customer")
+            .entityId(saved.getId())
+            .details(Map.of("lifecycleStatus", saved.getLifecycleStatus().name()))
             .build());
 
     String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;

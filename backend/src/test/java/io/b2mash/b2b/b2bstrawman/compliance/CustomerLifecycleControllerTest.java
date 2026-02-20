@@ -10,6 +10,7 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
@@ -51,10 +52,10 @@ class CustomerLifecycleControllerTest {
 
   @Test
   void shouldTransitionLifecycleStatus() throws Exception {
-    // Customer defaults to PROSPECT; transition to ACTIVE then DORMANT
+    // Customer defaults to PROSPECT; transition to ONBOARDING -> ACTIVE then DORMANT
     String customerId = createCustomer("Transition Test Corp", nextEmail());
 
-    // PROSPECT -> ACTIVE
+    // PROSPECT -> ONBOARDING
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/transition")
@@ -62,8 +63,17 @@ class CustomerLifecycleControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"targetStatus": "ACTIVE"}
+                    {"targetStatus": "ONBOARDING"}
                     """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.lifecycleStatus").value("ONBOARDING"));
+
+    // Complete all auto-instantiated checklist items — this auto-transitions to ACTIVE
+    TestChecklistHelper.completeChecklistItems(mockMvc, customerId, ownerJwt());
+
+    // Verify customer is now ACTIVE (auto-transitioned by checklist completion)
+    mockMvc
+        .perform(get("/api/customers/" + customerId).with(ownerJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.lifecycleStatus").value("ACTIVE"));
 
@@ -118,7 +128,7 @@ class CustomerLifecycleControllerTest {
   void shouldReturnLifecycleHistory() throws Exception {
     String customerId = createCustomer("History Test Corp", nextEmail());
 
-    // Perform a transition to create an audit event (PROSPECT -> ACTIVE is valid)
+    // Perform transitions to create audit events (PROSPECT -> ONBOARDING -> ACTIVE)
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/transition")
@@ -126,9 +136,12 @@ class CustomerLifecycleControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"targetStatus": "ACTIVE"}
+                    {"targetStatus": "ONBOARDING"}
                     """))
         .andExpect(status().isOk());
+
+    // Complete checklists — auto-transitions to ACTIVE
+    TestChecklistHelper.completeChecklistItems(mockMvc, customerId, ownerJwt());
 
     // Get lifecycle history
     mockMvc

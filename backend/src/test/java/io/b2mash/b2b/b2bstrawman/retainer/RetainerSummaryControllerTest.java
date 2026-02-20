@@ -11,6 +11,7 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
@@ -245,8 +246,10 @@ class RetainerSummaryControllerTest {
             post("/api/customers/" + custId + "/transition")
                 .with(ownerJwt())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"targetStatus\": \"ACTIVE\"}"))
+                .content("{\"targetStatus\": \"ONBOARDING\"}"))
         .andExpect(status().isOk());
+    // Completing all checklist items auto-transitions ONBOARDING -> ACTIVE
+    TestChecklistHelper.completeChecklistItems(mockMvc, custId, ownerJwt());
   }
 
   private String syncMember(

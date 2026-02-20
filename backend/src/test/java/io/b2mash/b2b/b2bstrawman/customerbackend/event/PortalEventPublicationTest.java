@@ -12,6 +12,7 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -143,17 +144,8 @@ class PortalEventPublicationTest {
             .andReturn();
     var customerId = extractIdFromLocation(customerResult);
 
-    // Transition to ACTIVE so the lifecycle guard permits linking
-    mockMvc
-        .perform(
-            post("/api/customers/" + customerId + "/transition")
-                .with(ownerJwt())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"targetStatus": "ACTIVE"}
-                    """))
-        .andExpect(status().isOk());
+    // Transition PROSPECT -> ONBOARDING -> ACTIVE so lifecycle guard permits linking
+    transitionCustomerToActive(customerId);
 
     events.clear();
 
@@ -318,6 +310,18 @@ class PortalEventPublicationTest {
             .andReturn();
 
     return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
+  }
+
+  private void transitionCustomerToActive(String customerId) throws Exception {
+    mockMvc
+        .perform(
+            post("/api/customers/" + customerId + "/transition")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"targetStatus\": \"ONBOARDING\"}"))
+        .andExpect(status().isOk());
+    // Completing all checklist items auto-transitions ONBOARDING -> ACTIVE
+    TestChecklistHelper.completeChecklistItems(mockMvc, customerId, ownerJwt());
   }
 
   private JwtRequestPostProcessor ownerJwt() {

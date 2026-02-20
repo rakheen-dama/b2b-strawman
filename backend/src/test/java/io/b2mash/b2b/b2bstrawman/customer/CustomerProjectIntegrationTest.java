@@ -15,6 +15,7 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
@@ -363,17 +364,8 @@ class CustomerProjectIntegrationTest {
             .andReturn();
     var customerIdA = extractIdFromLocation(customerResultA);
 
-    // Transition to ACTIVE so lifecycle guard permits linking
-    mockMvc
-        .perform(
-            post("/api/customers/" + customerIdA + "/transition")
-                .with(starterAOwnerJwt())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"targetStatus": "ACTIVE"}
-                    """))
-        .andExpect(status().isOk());
+    // Transition PROSPECT -> ONBOARDING -> ACTIVE so lifecycle guard permits linking
+    transitionCustomerToActive(customerIdA, starterAOwnerJwt());
 
     // Link in Starter A
     mockMvc
@@ -427,17 +419,8 @@ class CustomerProjectIntegrationTest {
             .andReturn();
     var customerIdB = extractIdFromLocation(customerResultB);
 
-    // Transition to ACTIVE so lifecycle guard doesn't interfere with isolation test
-    mockMvc
-        .perform(
-            post("/api/customers/" + customerIdB + "/transition")
-                .with(starterBOwnerJwt())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"targetStatus": "ACTIVE"}
-                    """))
-        .andExpect(status().isOk());
+    // Transition PROSPECT -> ONBOARDING -> ACTIVE so lifecycle guard doesn't interfere
+    transitionCustomerToActive(customerIdB, starterBOwnerJwt());
 
     // Starter B cannot link their customer to Starter A's project (project not visible)
     mockMvc
@@ -469,16 +452,20 @@ class CustomerProjectIntegrationTest {
   }
 
   private void transitionCustomerToActive(String customerId) throws Exception {
+    transitionCustomerToActive(customerId, ownerJwt());
+  }
+
+  private void transitionCustomerToActive(String customerId, JwtRequestPostProcessor jwt)
+      throws Exception {
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/transition")
-                .with(ownerJwt())
+                .with(jwt)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"targetStatus": "ACTIVE"}
-                    """))
+                .content("{\"targetStatus\": \"ONBOARDING\"}"))
         .andExpect(status().isOk());
+    // Completing all checklist items auto-transitions ONBOARDING -> ACTIVE
+    TestChecklistHelper.completeChecklistItems(mockMvc, customerId, jwt);
   }
 
   private String extractIdFromLocation(MvcResult result) {

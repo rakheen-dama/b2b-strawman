@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepos
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -194,11 +195,10 @@ class PortalResyncIntegrationTest {
             post("/api/customers/" + customerId + "/transition")
                 .with(ownerJwt())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"targetStatus": "ACTIVE"}
-                    """))
+                .content("{\"targetStatus\": \"ONBOARDING\"}"))
         .andExpect(status().isOk());
+    // Completing all checklist items auto-transitions ONBOARDING -> ACTIVE
+    TestChecklistHelper.completeChecklistItems(mockMvc, customerId, ownerJwt());
   }
 
   private String uploadAndConfirmDocument(String projectId) throws Exception {

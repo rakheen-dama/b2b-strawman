@@ -10,6 +10,7 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
@@ -209,11 +210,10 @@ class ProjectCustomerControllerIntegrationTest {
             post("/api/customers/" + customerId + "/transition")
                 .with(ownerJwt())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"targetStatus": "ACTIVE"}
-                    """))
+                .content("{\"targetStatus\": \"ONBOARDING\"}"))
         .andExpect(status().isOk());
+    // Completing all checklist items auto-transitions ONBOARDING -> ACTIVE
+    TestChecklistHelper.completeChecklistItems(mockMvc, customerId, ownerJwt());
   }
 
   private String extractIdFromLocation(MvcResult result) {

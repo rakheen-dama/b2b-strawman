@@ -224,6 +224,10 @@ public class ChecklistInstanceService {
             .build());
 
     log.info("Skipped checklist item '{}' ({})", item.getName(), item.getId());
+
+    // Auto-cascade: check if instance is now fully complete (all items completed or skipped)
+    checkInstanceCompletion(item.getInstanceId(), actorId);
+
     return item;
   }
 
@@ -357,8 +361,8 @@ public class ChecklistInstanceService {
 
   private void checkInstanceCompletion(UUID instanceId, UUID actorId) {
     boolean anyRequiredNotComplete =
-        instanceItemRepository.existsByInstanceIdAndRequiredAndStatusNot(
-            instanceId, true, "COMPLETED");
+        instanceItemRepository.existsByInstanceIdAndRequiredAndStatusNotIn(
+            instanceId, true, List.of("COMPLETED", "SKIPPED"));
 
     if (anyRequiredNotComplete) {
       return;

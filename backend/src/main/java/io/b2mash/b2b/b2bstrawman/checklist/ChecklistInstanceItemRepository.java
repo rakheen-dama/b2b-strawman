@@ -16,4 +16,7 @@ public interface ChecklistInstanceItemRepository
 
   boolean existsByInstanceIdAndRequiredAndStatusNot(
       UUID instanceId, boolean required, String status);
+
+  boolean existsByInstanceIdAndRequiredAndStatusNotIn(
+      UUID instanceId, boolean required, List<String> statuses);
 }

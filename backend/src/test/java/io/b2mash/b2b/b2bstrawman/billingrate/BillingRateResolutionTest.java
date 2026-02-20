@@ -6,9 +6,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectService;
-import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
@@ -45,16 +47,13 @@ class BillingRateResolutionTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private BillingRateService billingRateService;
   @Autowired private BillingRateRepository billingRateRepository;
-  @Autowired private CustomerService customerService;
   @Autowired private CustomerProjectService customerProjectService;
   @Autowired private CustomerProjectRepository customerProjectRepository;
   @Autowired private ProjectService projectService;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
-
-  @Autowired
-  private io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleService customerLifecycleService;
+  @Autowired private CustomerRepository customerRepository;
 
   private String tenantSchema;
   private UUID memberIdOwner;
@@ -85,17 +84,17 @@ class BillingRateResolutionTest {
         .run(
             () -> {
               var customer =
-                  customerService.createCustomer(
+                  new Customer(
                       "Rate Test Customer",
                       "rate-customer@test.com",
                       null,
                       null,
                       null,
-                      memberIdOwner);
+                      memberIdOwner,
+                      null,
+                      LifecycleStatus.ACTIVE);
+              customer = customerRepository.save(customer);
               customerId = customer.getId();
-
-              // Transition PROSPECT -> ACTIVE so lifecycle guard permits linking
-              customerLifecycleService.transition(customerId, "ACTIVE", null, memberIdOwner);
 
               var project =
                   projectService.createProject(

@@ -12,12 +12,13 @@ interface ActionResult {
 
 export async function fetchTasks(
   projectId: string,
-  filters?: { status?: string; assigneeId?: string; priority?: string }
+  filters?: { status?: string; assigneeId?: string; priority?: string; viewId?: string }
 ): Promise<Task[]> {
   const params = new URLSearchParams();
   if (filters?.status) params.set("status", filters.status);
   if (filters?.assigneeId) params.set("assigneeId", filters.assigneeId);
   if (filters?.priority) params.set("priority", filters.priority);
+  if (filters?.viewId) params.set("view", filters.viewId);
 
   const query = params.toString();
   const url = `/api/projects/${projectId}/tasks${query ? `?${query}` : ""}`;

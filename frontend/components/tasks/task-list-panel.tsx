@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { Suspense, useEffect, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AlertTriangle, Check, Clock, ClipboardList, Hand, Plus, Undo2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +26,7 @@ import {
 } from "@/app/(app)/org/[slug]/projects/[id]/task-actions";
 import { cn } from "@/lib/utils";
 import { PRIORITY_BADGE, STATUS_BADGE } from "@/components/tasks/task-badge-config";
+import { ViewSelectorClient } from "@/components/views/ViewSelectorClient";
 import type {
   Task,
   TaskStatus,
@@ -34,6 +35,8 @@ import type {
   FieldDefinitionResponse,
   FieldGroupResponse,
   FieldGroupMemberResponse,
+  SavedViewResponse,
+  CreateSavedViewRequest,
 } from "@/lib/types";
 
 // --- Filter types (40.7) ---
@@ -73,6 +76,8 @@ interface TaskListPanelProps {
   fieldDefinitions?: FieldDefinitionResponse[];
   fieldGroups?: FieldGroupResponse[];
   groupMembers?: Record<string, FieldGroupMemberResponse[]>;
+  savedViews?: SavedViewResponse[];
+  onSave?: (req: CreateSavedViewRequest) => Promise<{ success: boolean; error?: string }>;
 }
 
 export function TaskListPanel({
@@ -88,6 +93,8 @@ export function TaskListPanel({
   fieldDefinitions = [],
   fieldGroups = [],
   groupMembers = {},
+  savedViews = [],
+  onSave,
 }: TaskListPanelProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -123,9 +130,11 @@ export function TaskListPanel({
     setActiveFilter(key);
     setError(null);
 
+    const currentViewId = searchParams.get("view");
+
     startTransition(async () => {
       try {
-        const filters: { status?: string; assigneeId?: string } = {};
+        const filters: { status?: string; assigneeId?: string; viewId?: string } = {};
         if (key === "OPEN" || key === "IN_PROGRESS" || key === "DONE") {
           filters.status = key;
         } else if (key === "my") {
@@ -134,6 +143,9 @@ export function TaskListPanel({
             return;
           }
           filters.assigneeId = currentMemberId;
+        }
+        if (currentViewId) {
+          filters.viewId = currentViewId;
         }
         const fetched = await fetchTasks(projectId, filters);
         setTasks(fetched);
@@ -225,8 +237,8 @@ export function TaskListPanel({
     });
   }
 
-  function buildCurrentFilters(): { status?: string; assigneeId?: string } {
-    const filters: { status?: string; assigneeId?: string } = {};
+  function buildCurrentFilters(): { status?: string; assigneeId?: string; viewId?: string } {
+    const filters: { status?: string; assigneeId?: string; viewId?: string } = {};
     if (
       activeFilter === "OPEN" ||
       activeFilter === "IN_PROGRESS" ||
@@ -235,6 +247,10 @@ export function TaskListPanel({
       filters.status = activeFilter;
     } else if (activeFilter === "my" && currentMemberId) {
       filters.assigneeId = currentMemberId;
+    }
+    const currentViewId = searchParams.get("view");
+    if (currentViewId) {
+      filters.viewId = currentViewId;
     }
     return filters;
   }
@@ -281,10 +297,26 @@ export function TaskListPanel({
     </div>
   );
 
+  const viewSelector = onSave ? (
+    <Suspense fallback={null}>
+      <ViewSelectorClient
+        entityType="TASK"
+        views={savedViews}
+        canCreate={canManage}
+        canCreateShared={orgRole === "org:admin" || orgRole === "org:owner"}
+        slug={slug}
+        allTags={allTags}
+        fieldDefinitions={fieldDefinitions}
+        onSave={onSave}
+      />
+    </Suspense>
+  ) : null;
+
   if (tasks.length === 0 && activeFilter === "all") {
     return (
       <div className="space-y-4">
         {header}
+        {viewSelector}
         <EmptyState
           icon={ClipboardList}
           title="No tasks yet"
@@ -297,6 +329,7 @@ export function TaskListPanel({
   return (
     <div className="space-y-4">
       {header}
+      {viewSelector}
       {filterBar}
       {error && (
         <p className="text-sm text-red-600 dark:text-red-400" role="alert">

@@ -461,6 +461,7 @@ export default async function ProjectDetailPage({
             projectId={id}
             projectName={project.name}
             customerName={customers.length > 0 ? customers[0].name : null}
+            customerId={customers.length > 0 ? customers[0].id : null}
             canManage={canManage}
             isAdmin={isAdmin}
             tasks={tasks}

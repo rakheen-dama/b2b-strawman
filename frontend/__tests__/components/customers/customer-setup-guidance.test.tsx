@@ -90,7 +90,7 @@ describe("CustomerDetailPage — Setup Guidance Cards", () => {
             description="$2,400.00 across 16.0 hours"
             primaryAction={{
               label: "Create Invoice",
-              href: "/org/acme/invoices/new?customerId=c1",
+              href: "?tab=invoices",
             }}
             secondaryAction={{ label: "View Time", href: "?tab=invoices" }}
             variant="accent"

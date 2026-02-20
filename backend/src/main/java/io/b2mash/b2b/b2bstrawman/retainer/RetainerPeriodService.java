@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.PeriodReadyToCloseView;
@@ -47,6 +48,7 @@ public class RetainerPeriodService {
   private final MemberRepository memberRepository;
   private final AuditService auditService;
   private final NotificationService notificationService;
+  private final NotificationRepository notificationRepository;
 
   public RetainerPeriodService(
       RetainerAgreementRepository agreementRepository,
@@ -59,7 +61,8 @@ public class RetainerPeriodService {
       OrganizationRepository organizationRepository,
       MemberRepository memberRepository,
       AuditService auditService,
-      NotificationService notificationService) {
+      NotificationService notificationService,
+      NotificationRepository notificationRepository) {
     this.agreementRepository = agreementRepository;
     this.periodRepository = periodRepository;
     this.invoiceRepository = invoiceRepository;
@@ -71,6 +74,7 @@ public class RetainerPeriodService {
     this.memberRepository = memberRepository;
     this.auditService = auditService;
     this.notificationService = notificationService;
+    this.notificationRepository = notificationRepository;
   }
 
   public record PeriodCloseResult(
@@ -406,6 +410,52 @@ public class RetainerPeriodService {
         .orElseThrow(
             () ->
                 new ResourceNotFoundException("No open period for RetainerAgreement", agreementId));
+  }
+
+  @Transactional
+  public void checkAndNotifyReadyToClose() {
+    var readyPeriods = periodRepository.findPeriodsReadyToClose();
+    for (var period : readyPeriods) {
+      // Dedup: skip if notification already sent for this period
+      if (notificationRepository.existsByTypeAndReferenceEntityId(
+          "RETAINER_PERIOD_READY_TO_CLOSE", period.getId())) {
+        continue;
+      }
+
+      var agreement = agreementRepository.findById(period.getAgreementId()).orElse(null);
+      if (agreement == null) {
+        log.warn(
+            "Dangling period {}: agreement {} not found", period.getId(), period.getAgreementId());
+        continue;
+      }
+
+      var customer = customerRepository.findById(agreement.getCustomerId()).orElse(null);
+      String customerName = customer != null ? customer.getName() : "Unknown";
+
+      String title =
+          "Retainer period for %s is ready to close (ended %s)"
+              .formatted(customerName, period.getPeriodEnd());
+      String body =
+          "Agreement: %s, Period: %s to %s"
+              .formatted(agreement.getName(), period.getPeriodStart(), period.getPeriodEnd());
+
+      var adminsAndOwners = memberRepository.findByOrgRoleIn(List.of("admin", "owner"));
+      for (var member : adminsAndOwners) {
+        notificationService.createNotification(
+            member.getId(),
+            "RETAINER_PERIOD_READY_TO_CLOSE",
+            title,
+            body,
+            "RETAINER_PERIOD",
+            period.getId(),
+            null);
+      }
+
+      log.info(
+          "Sent RETAINER_PERIOD_READY_TO_CLOSE notification for period {} (agreement {})",
+          period.getId(),
+          agreement.getId());
+    }
   }
 
   @Transactional(readOnly = true)

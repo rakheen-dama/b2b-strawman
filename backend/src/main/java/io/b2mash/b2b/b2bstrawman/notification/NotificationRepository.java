@@ -44,4 +44,13 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
         AND n.isRead = false
       """)
   void markAllAsRead(@Param("memberId") UUID memberId);
+
+  @Query(
+      """
+      SELECT COUNT(n) > 0 FROM Notification n
+      WHERE n.type = :type
+        AND n.referenceEntityId = :entityId
+      """)
+  boolean existsByTypeAndReferenceEntityId(
+      @Param("type") String type, @Param("entityId") UUID entityId);
 }

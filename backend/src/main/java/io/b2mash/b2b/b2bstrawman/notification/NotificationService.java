@@ -139,7 +139,12 @@ public class NotificationService {
           "DOCUMENT_GENERATED",
           "RECURRING_PROJECT_CREATED",
           "SCHEDULE_SKIPPED",
-          "SCHEDULE_COMPLETED");
+          "SCHEDULE_COMPLETED",
+          "RETAINER_PERIOD_READY_TO_CLOSE",
+          "RETAINER_PERIOD_CLOSED",
+          "RETAINER_APPROACHING_CAPACITY",
+          "RETAINER_FULLY_CONSUMED",
+          "RETAINER_TERMINATED");
 
   // --- Preference methods ---
 

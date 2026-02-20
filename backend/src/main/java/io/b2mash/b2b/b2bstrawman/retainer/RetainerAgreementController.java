@@ -24,9 +24,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class RetainerAgreementController {
 
   private final RetainerAgreementService retainerAgreementService;
+  private final RetainerPeriodService retainerPeriodService;
 
-  public RetainerAgreementController(RetainerAgreementService retainerAgreementService) {
+  public RetainerAgreementController(
+      RetainerAgreementService retainerAgreementService,
+      RetainerPeriodService retainerPeriodService) {
     this.retainerAgreementService = retainerAgreementService;
+    this.retainerPeriodService = retainerPeriodService;
   }
 
   @GetMapping
@@ -34,6 +38,8 @@ public class RetainerAgreementController {
   public ResponseEntity<List<RetainerResponse>> listRetainers(
       @RequestParam(required = false) RetainerStatus status,
       @RequestParam(required = false) UUID customerId) {
+    // Trigger ready-to-close notifications (deduped, safe to call repeatedly)
+    retainerPeriodService.checkAndNotifyReadyToClose();
     return ResponseEntity.ok(retainerAgreementService.listRetainers(status, customerId));
   }
 

@@ -143,7 +143,14 @@ public class RetainerConsumptionListener {
       String title =
           "Retainer for %s is at %s%% capacity — %s hours remaining"
               .formatted(customerName, newPct.setScale(0, RoundingMode.HALF_UP), remaining);
-      notifyAdminsAndOwners("RETAINER_APPROACHING_CAPACITY", title, agreement.getId());
+      String body =
+          "Agreement: %s, Allocated: %s hrs, Consumed: %s hrs, Remaining: %s hrs"
+              .formatted(
+                  agreement.getName(),
+                  allocated.stripTrailingZeros().toPlainString(),
+                  newConsumedHours.stripTrailingZeros().toPlainString(),
+                  remaining.stripTrailingZeros().toPlainString());
+      notifyAdminsAndOwners("RETAINER_APPROACHING_CAPACITY", title, body, agreement.getId());
       log.info(
           "Retainer approaching capacity: agreement={}, consumed={}%", agreement.getId(), newPct);
     }
@@ -153,16 +160,22 @@ public class RetainerConsumptionListener {
       String title =
           "Retainer for %s is fully consumed — further time will be billed as overage"
               .formatted(customerName);
-      notifyAdminsAndOwners("RETAINER_FULLY_CONSUMED", title, agreement.getId());
+      String body =
+          "Agreement: %s, Allocated: %s hrs, Consumed: %s hrs"
+              .formatted(
+                  agreement.getName(),
+                  allocated.stripTrailingZeros().toPlainString(),
+                  newConsumedHours.stripTrailingZeros().toPlainString());
+      notifyAdminsAndOwners("RETAINER_FULLY_CONSUMED", title, body, agreement.getId());
       log.info("Retainer fully consumed: agreement={}", agreement.getId());
     }
   }
 
-  private void notifyAdminsAndOwners(String type, String title, UUID agreementId) {
+  private void notifyAdminsAndOwners(String type, String title, String body, UUID agreementId) {
     var adminsAndOwners = memberRepository.findByOrgRoleIn(List.of("admin", "owner"));
     for (var member : adminsAndOwners) {
       notificationService.createNotification(
-          member.getId(), type, title, null, "RETAINER_AGREEMENT", agreementId, null);
+          member.getId(), type, title, body, "RETAINER_AGREEMENT", agreementId, null);
     }
   }
 }

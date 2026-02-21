@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
@@ -28,7 +29,10 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -243,7 +247,13 @@ public class RecurringScheduleService {
       schedules = scheduleRepository.findAllByOrderByCreatedAtDesc();
     }
 
-    return schedules.stream().map(this::buildResponse).toList();
+    var templateNames = resolveTemplateNames(schedules);
+    var customerNames = resolveCustomerNames(schedules);
+    var memberNames = resolveMemberNames(schedules);
+
+    return schedules.stream()
+        .map(s -> buildResponse(s, templateNames, customerNames, memberNames))
+        .toList();
   }
 
   @Transactional(readOnly = true)
@@ -359,7 +369,22 @@ public class RecurringScheduleService {
         executionRepository.findByScheduleIdOrderByPeriodStartDesc(
             scheduleId, PageRequest.of(0, 50));
 
-    return page.getContent().stream().map(this::buildExecutionResponse).toList();
+    var executions = page.getContent();
+    var projectNames = resolveProjectNames(executions);
+
+    return executions.stream()
+        .map(
+            e ->
+                new ScheduleExecutionResponse(
+                    e.getId(),
+                    e.getProjectId(),
+                    e.getProjectId() != null
+                        ? projectNames.getOrDefault(e.getProjectId(), "")
+                        : null,
+                    e.getPeriodStart(),
+                    e.getPeriodEnd(),
+                    e.getExecutedAt()))
+        .toList();
   }
 
   // --- Scheduler execution methods ---
@@ -594,25 +619,11 @@ public class RecurringScheduleService {
             Instant.now()));
   }
 
-  private ScheduleExecutionResponse buildExecutionResponse(ScheduleExecution execution) {
-    String projectName = null;
-    if (execution.getProjectId() != null) {
-      projectName =
-          projectRepository.findById(execution.getProjectId()).map(p -> p.getName()).orElse(null);
-    }
-    return new ScheduleExecutionResponse(
-        execution.getId(),
-        execution.getProjectId(),
-        projectName,
-        execution.getPeriodStart(),
-        execution.getPeriodEnd(),
-        execution.getExecutedAt());
-  }
-
   private ScheduleResponse buildResponse(RecurringSchedule schedule) {
     String templateName = resolveTemplateName(schedule.getTemplateId());
     String customerName = resolveCustomerName(schedule.getCustomerId());
     String projectLeadName = resolveMemberName(schedule.getProjectLeadMemberId());
+    String createdByName = resolveMemberName(schedule.getCreatedBy());
 
     return new ScheduleResponse(
         schedule.getId(),
@@ -632,8 +643,97 @@ public class RecurringScheduleService {
         projectLeadName,
         schedule.getNameOverride(),
         schedule.getCreatedBy(),
+        createdByName,
         schedule.getCreatedAt(),
         schedule.getUpdatedAt());
+  }
+
+  private ScheduleResponse buildResponse(
+      RecurringSchedule schedule,
+      Map<UUID, String> templateNames,
+      Map<UUID, String> customerNames,
+      Map<UUID, String> memberNames) {
+    return new ScheduleResponse(
+        schedule.getId(),
+        schedule.getTemplateId(),
+        templateNames.getOrDefault(schedule.getTemplateId(), ""),
+        schedule.getCustomerId(),
+        customerNames.getOrDefault(schedule.getCustomerId(), ""),
+        schedule.getFrequency(),
+        schedule.getStartDate(),
+        schedule.getEndDate(),
+        schedule.getLeadTimeDays(),
+        schedule.getStatus(),
+        schedule.getNextExecutionDate(),
+        schedule.getLastExecutedAt(),
+        schedule.getExecutionCount(),
+        schedule.getProjectLeadMemberId(),
+        schedule.getProjectLeadMemberId() != null
+            ? memberNames.getOrDefault(schedule.getProjectLeadMemberId(), "")
+            : null,
+        schedule.getNameOverride(),
+        schedule.getCreatedBy(),
+        schedule.getCreatedBy() != null
+            ? memberNames.getOrDefault(schedule.getCreatedBy(), "")
+            : null,
+        schedule.getCreatedAt(),
+        schedule.getUpdatedAt());
+  }
+
+  private Map<UUID, String> resolveTemplateNames(List<RecurringSchedule> schedules) {
+    var ids =
+        schedules.stream()
+            .map(RecurringSchedule::getTemplateId)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+    if (ids.isEmpty()) return Map.of();
+    return templateRepository.findAllById(ids).stream()
+        .collect(
+            Collectors.toMap(
+                t -> t.getId(), t -> t.getName() != null ? t.getName() : "", (a, b) -> a));
+  }
+
+  private Map<UUID, String> resolveCustomerNames(List<RecurringSchedule> schedules) {
+    var ids =
+        schedules.stream()
+            .map(RecurringSchedule::getCustomerId)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+    if (ids.isEmpty()) return Map.of();
+    return customerRepository.findAllById(ids).stream()
+        .collect(
+            Collectors.toMap(
+                Customer::getId, c -> c.getName() != null ? c.getName() : "", (a, b) -> a));
+  }
+
+  private Map<UUID, String> resolveMemberNames(List<RecurringSchedule> schedules) {
+    var ids =
+        schedules.stream()
+            .flatMap(s -> Stream.of(s.getProjectLeadMemberId(), s.getCreatedBy()))
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+    if (ids.isEmpty()) return Map.of();
+    return memberRepository.findAllById(ids).stream()
+        .collect(
+            Collectors.toMap(
+                Member::getId, m -> m.getName() != null ? m.getName() : "", (a, b) -> a));
+  }
+
+  private Map<UUID, String> resolveProjectNames(List<ScheduleExecution> executions) {
+    var ids =
+        executions.stream()
+            .map(ScheduleExecution::getProjectId)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+    if (ids.isEmpty()) return Map.of();
+    return projectRepository.findAllById(ids).stream()
+        .collect(
+            Collectors.toMap(
+                Project::getId, p -> p.getName() != null ? p.getName() : "", (a, b) -> a));
   }
 
   private String resolveTemplateName(UUID templateId) {

@@ -37,6 +37,7 @@ const SCHEDULE: ScheduleResponse = {
   projectLeadName: null,
   nameOverride: "Custom Name",
   createdBy: "user-1",
+  createdByName: null,
   createdAt: "2026-01-01T00:00:00Z",
   updatedAt: "2026-02-01T10:00:00Z",
 };

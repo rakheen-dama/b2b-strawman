@@ -65,12 +65,15 @@ public class DataRequestController {
             ? dataSubjectRequestService.listByStatus(status)
             : dataSubjectRequestService.listAll();
     var memberNames = resolveMemberNames(requests);
+    var customerNames = resolveCustomerNames(requests);
     var responses =
         requests.stream()
             .map(
                 req ->
                     DataRequestResponse.from(
-                        req, resolveCustomerName(req.getCustomerId()), memberNames))
+                        req,
+                        customerNames.getOrDefault(req.getCustomerId(), "Unknown"),
+                        memberNames))
             .toList();
     return ResponseEntity.ok(responses);
   }
@@ -80,9 +83,10 @@ public class DataRequestController {
   public ResponseEntity<DataRequestResponse> getRequest(@PathVariable UUID id) {
     var request = dataSubjectRequestService.getById(id);
     var memberNames = resolveMemberNames(List.of(request));
+    var customerNames = resolveCustomerNames(List.of(request));
     return ResponseEntity.ok(
         DataRequestResponse.from(
-            request, resolveCustomerName(request.getCustomerId()), memberNames));
+            request, customerNames.getOrDefault(request.getCustomerId(), "Unknown"), memberNames));
   }
 
   @PostMapping
@@ -94,9 +98,10 @@ public class DataRequestController {
         dataSubjectRequestService.createRequest(
             body.customerId(), body.requestType(), body.description(), actorId);
     var memberNames = resolveMemberNames(List.of(request));
+    var customerNames = resolveCustomerNames(List.of(request));
     var response =
         DataRequestResponse.from(
-            request, resolveCustomerName(request.getCustomerId()), memberNames);
+            request, customerNames.getOrDefault(request.getCustomerId(), "Unknown"), memberNames);
     return ResponseEntity.created(URI.create("/api/data-requests/" + request.getId()))
         .body(response);
   }
@@ -116,9 +121,10 @@ public class DataRequestController {
                   "Unknown action", "Action must be START_PROCESSING, COMPLETE, or REJECT");
         };
     var memberNames = resolveMemberNames(List.of(request));
+    var customerNames = resolveCustomerNames(List.of(request));
     return ResponseEntity.ok(
         DataRequestResponse.from(
-            request, resolveCustomerName(request.getCustomerId()), memberNames));
+            request, customerNames.getOrDefault(request.getCustomerId(), "Unknown"), memberNames));
   }
 
   @PostMapping("/{id}/export")
@@ -167,8 +173,18 @@ public class DataRequestController {
     return ResponseEntity.ok(Map.of("flagged", flagged));
   }
 
-  private String resolveCustomerName(UUID customerId) {
-    return customerRepository.findById(customerId).map(c -> c.getName()).orElse("Unknown");
+  private Map<UUID, String> resolveCustomerNames(List<DataSubjectRequest> requests) {
+    var ids =
+        requests.stream()
+            .map(DataSubjectRequest::getCustomerId)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+    if (ids.isEmpty()) return Map.of();
+    return customerRepository.findAllById(ids).stream()
+        .collect(
+            Collectors.toMap(
+                c -> c.getId(), c -> c.getName() != null ? c.getName() : "Unknown", (a, b) -> a));
   }
 
   private Map<UUID, String> resolveMemberNames(List<DataSubjectRequest> requests) {

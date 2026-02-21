@@ -22,5 +22,6 @@ public record ScheduleResponse(
     String projectLeadName,
     String nameOverride,
     UUID createdBy,
+    String createdByName,
     Instant createdAt,
     Instant updatedAt) {}

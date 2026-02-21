@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.reporting;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
+import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -8,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -29,12 +33,18 @@ public class ReportingController {
 
   private final ReportDefinitionRepository reportDefinitionRepository;
   private final ReportExecutionService reportExecutionService;
+  private final ReportRenderingService reportRenderingService;
+  private final AuditService auditService;
 
   public ReportingController(
       ReportDefinitionRepository reportDefinitionRepository,
-      ReportExecutionService reportExecutionService) {
+      ReportExecutionService reportExecutionService,
+      ReportRenderingService reportRenderingService,
+      AuditService auditService) {
     this.reportDefinitionRepository = reportDefinitionRepository;
     this.reportExecutionService = reportExecutionService;
+    this.reportRenderingService = reportRenderingService;
+    this.auditService = auditService;
   }
 
   @GetMapping
@@ -93,6 +103,62 @@ public class ReportingController {
     var pageable = PageRequest.of(request.page(), request.size());
     var response = reportExecutionService.execute(slug, request.parameters(), pageable);
     return ResponseEntity.ok(response);
+  }
+
+  @GetMapping("/{slug}/preview")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<String> previewReport(
+      @PathVariable String slug, @RequestParam Map<String, Object> parameters) {
+    var definition =
+        reportDefinitionRepository
+            .findBySlug(slug)
+            .orElseThrow(() -> new ResourceNotFoundException("ReportDefinition", slug));
+
+    var result = reportExecutionService.executeForExport(slug, parameters);
+    // Limit to 50 rows for preview
+    var limitedRows = result.rows().size() > 50 ? result.rows().subList(0, 50) : result.rows();
+    var limitedResult =
+        new ReportResult(
+            limitedRows, result.summary(), result.totalElements(), result.totalPages());
+
+    String html = reportRenderingService.renderHtml(definition, limitedResult, parameters);
+    return ResponseEntity.ok().contentType(MediaType.TEXT_HTML).body(html);
+  }
+
+  @GetMapping("/{slug}/export/pdf")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<byte[]> exportPdf(
+      @PathVariable String slug, @RequestParam Map<String, Object> parameters) {
+    var definition =
+        reportDefinitionRepository
+            .findBySlug(slug)
+            .orElseThrow(() -> new ResourceNotFoundException("ReportDefinition", slug));
+
+    var result = reportExecutionService.executeForExport(slug, parameters);
+    byte[] pdfBytes = reportRenderingService.renderPdf(definition, result, parameters);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("REPORT_EXPORTED")
+            .entityType("REPORT")
+            .entityId(definition.getId())
+            .details(
+                Map.of(
+                    "slug",
+                    slug,
+                    "parameters",
+                    parameters,
+                    "format",
+                    "pdf",
+                    "rowCount",
+                    result.totalElements()))
+            .build());
+
+    String filename = reportRenderingService.generateFilename(slug, parameters, "pdf");
+    return ResponseEntity.ok()
+        .contentType(MediaType.APPLICATION_PDF)
+        .header("Content-Disposition", "attachment; filename=\"" + filename + "\"")
+        .body(pdfBytes);
   }
 
   // --- Request/Response DTOs ---

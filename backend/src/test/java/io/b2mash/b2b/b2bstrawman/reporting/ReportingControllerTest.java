@@ -1,13 +1,17 @@
 package io.b2mash.b2b.b2bstrawman.reporting;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
@@ -52,19 +56,23 @@ class ReportingControllerTest {
   @Autowired private ProjectRepository projectRepository;
   @Autowired private TaskRepository taskRepository;
   @Autowired private TimeEntryRepository timeEntryRepository;
+  @Autowired private AuditEventRepository auditEventRepository;
 
   @Autowired
   private org.springframework.transaction.support.TransactionTemplate transactionTemplate;
+
+  private String tenantSchema;
+  private UUID ownerMemberId;
 
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Reporting Controller Test Org");
     planSyncService.syncPlan(ORG_ID, "pro-plan");
-    var ownerMemberId =
+    ownerMemberId =
         UUID.fromString(
             syncMember(ORG_ID, "user_rc_owner", "rc_owner@test.com", "RC Owner", "owner"));
 
-    var tenantSchema =
+    tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     // Create test data for execute endpoint tests
@@ -254,6 +262,86 @@ class ReportingControllerTest {
         .andExpect(jsonPath("$.pagination.totalElements").value(2))
         .andExpect(jsonPath("$.pagination.totalPages").value(2))
         .andExpect(jsonPath("$.rows.length()").value(1));
+  }
+
+  // --- Preview endpoint tests ---
+
+  @Test
+  void previewReportReturns200TextHtml() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/report-definitions/timesheet/preview")
+                .with(memberJwt())
+                .param("dateFrom", "2025-06-01")
+                .param("dateTo", "2025-06-30")
+                .param("groupBy", "member"))
+        .andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML));
+  }
+
+  @Test
+  void previewReportUnknownSlugReturns404() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/report-definitions/nonexistent-report/preview")
+                .with(memberJwt())
+                .param("dateFrom", "2025-06-01")
+                .param("dateTo", "2025-06-30"))
+        .andExpect(status().isNotFound());
+  }
+
+  // --- PDF export endpoint tests ---
+
+  @Test
+  void exportPdfReturns200ApplicationPdfWithContentDisposition() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/report-definitions/timesheet/export/pdf")
+                .with(memberJwt())
+                .param("dateFrom", "2025-06-01")
+                .param("dateTo", "2025-06-30")
+                .param("groupBy", "member"))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_PDF))
+        .andExpect(
+            header()
+                .string(
+                    "Content-Disposition",
+                    "attachment; filename=\"timesheet-2025-06-01-to-2025-06-30.pdf\""));
+  }
+
+  @Test
+  void exportPdfPersistsReportExportedAuditEvent() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/report-definitions/timesheet/export/pdf")
+                .with(memberJwt())
+                .param("dateFrom", "2025-06-01")
+                .param("dateTo", "2025-06-30")
+                .param("groupBy", "member"))
+        .andExpect(status().isOk());
+
+    // Verify audit event was persisted
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, ownerMemberId)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              var auditPage =
+                  auditEventRepository.findByFilter(
+                      "REPORT",
+                      null,
+                      null,
+                      "REPORT_EXPORTED",
+                      null,
+                      null,
+                      org.springframework.data.domain.PageRequest.of(0, 10));
+              assertThat(auditPage.getContent()).isNotEmpty();
+              var latestEvent = auditPage.getContent().getFirst();
+              assertThat(latestEvent.getEventType()).isEqualTo("REPORT_EXPORTED");
+              assertThat(latestEvent.getEntityType()).isEqualTo("REPORT");
+            });
   }
 
   // --- Helpers ---

@@ -16,6 +16,9 @@ import type {
   TemplateDetailResponse,
   OrgSettings,
   UpdateOrgSettingsRequest,
+  Project,
+  Customer,
+  InvoiceResponse,
 } from "@/lib/types";
 
 interface ActionResult {
@@ -311,4 +314,18 @@ export async function saveBrandingAction(
     }
     return { success: false, error: "Failed to save branding settings." };
   }
+}
+
+// ---- Entity Picker Actions ----
+
+export async function fetchProjectsForPicker(): Promise<Project[]> {
+  return api.get<Project[]>("/api/projects");
+}
+
+export async function fetchCustomersForPicker(): Promise<Customer[]> {
+  return api.get<Customer[]>("/api/customers");
+}
+
+export async function fetchInvoicesForPicker(): Promise<InvoiceResponse[]> {
+  return api.get<InvoiceResponse[]>("/api/invoices");
 }

@@ -1,6 +1,7 @@
-"use server";
+import "server-only";
 
 import type { AuthContext } from "./types";
+// TODO(138B): Switch to dynamic imports for tree-shaking — both providers are stubs now
 import * as clerkProvider from "./providers/clerk";
 import * as mockProvider from "./providers/mock/server";
 

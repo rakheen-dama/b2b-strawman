@@ -53,4 +53,15 @@ describe("Auth types — compile-time type assertions", () => {
     expect(member.email).toBe("bob@example.com");
     expect(member.name).toBe("Bob Jones");
   });
+
+  it("OrgMemberInfo allows null name", () => {
+    const member = {
+      id: "member_789",
+      role: "admin",
+      email: "bob@example.com",
+      name: null,
+    } satisfies OrgMemberInfo;
+
+    expect(member.name).toBeNull();
+  });
 });

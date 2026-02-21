@@ -8,6 +8,7 @@
 export interface AuthContext {
   orgId: string;
   orgSlug: string;
+  /** Role string from the auth provider (e.g. "org:admin", "org:member") */
   orgRole: string;
   userId: string;
 }
@@ -25,5 +26,5 @@ export interface OrgMemberInfo {
   id: string;
   role: string;
   email: string;
-  name: string;
+  name: string | null;
 }

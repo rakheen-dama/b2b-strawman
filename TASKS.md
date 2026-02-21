@@ -169,7 +169,16 @@
 | 141 | Frontend Mock Provider — Server + Middleware | Frontend | 138 | M | 141A, 141B | **Done** (PRs #297, #298) |
 | 142 | Frontend Mock Provider — Client Components | Frontend | 138 | S | 142A | **Done** (PR #299) |
 | 143 | Docker Compose E2E Stack + Boot-Seed Container | Infra | 140, 141, 142 | M | 143A | **Done** (PR #300) |
-| 144 | Playwright Fixtures + Smoke Tests | Frontend/E2E | 143 | S | 144A | |
+| 144 | Playwright Fixtures + Smoke Tests | Frontend/E2E | 143 | S | 144A | **Done** (PR #301) |
+| **Phase 21 — Integration Ports, BYOAK Infrastructure & Feature Flags** | | | | | | See [tasks/phase21-integration-ports-byoak.md](tasks/phase21-integration-ports-byoak.md) |
+| 145 | StorageService Port + S3 Refactoring | Backend | — | M | 145A, 145B | |
+| 146 | SecretStore Port + Encrypted Database Implementation | Backend | — | S | 146A | |
+| 147 | Integration Port Interfaces + NoOp Stubs | Backend | — | M | 147A, 147B | |
+| 148 | OrgIntegration Entity + IntegrationRegistry + BYOAK Infrastructure | Backend | 147 | M | 148A, 148B | |
+| 149 | Feature Flags + IntegrationGuardService | Backend | — | S | 149A | |
+| 150 | Integration Management API (Controller + Service) | Backend | 146, 148 | M | 150A, 150B | |
+| 151 | Audit Integration for Config Events | Backend | 150 | S | 151A | |
+| 152 | Integrations Settings UI | Frontend | 149, 150 | M | 152A, 152B | |
 
 ---
 

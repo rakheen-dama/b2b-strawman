@@ -25,7 +25,7 @@ Phase 20 introduces an **auth provider abstraction layer** that decouples the fr
 | 141 | Frontend Mock Provider — Server + Middleware | Frontend | 138 | M | 141A, 141B | **Done** (PRs #297, #298) |
 | 142 | Frontend Mock Provider — Client Components | Frontend | 138 | S | 142A | **Done** (PR #299) |
 | 143 | Docker Compose E2E Stack + Boot-Seed Container | Infra | 140, 141, 142 | M | 143A | **Done** (PR #300) |
-| 144 | Playwright Fixtures + Smoke Tests | Frontend/E2E | 143 | S | 144A | |
+| 144 | Playwright Fixtures + Smoke Tests | Frontend/E2E | 143 | S | 144A | **Done** (PR #301) |
 
 ---
 
@@ -112,7 +112,7 @@ Phase 20 introduces an **auth provider abstraction layer** that decouples the fr
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 5 | Epic 144 | 144A | `e2e/fixtures/auth.ts` + `e2e/playwright.config.ts` + 3 smoke tests. The E2E stack (143A) must be running and healthy. |
+| 5 | Epic 144 | 144A | `e2e/fixtures/auth.ts` + `e2e/playwright.config.ts` + 3 smoke tests. The E2E stack (143A) must be running and healthy. | **Done** (PR #301) |
 
 ### Timeline
 
@@ -490,7 +490,7 @@ Stage 5:  [144A]                                (after 143A)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **144A** | 144.1–144.7 | `e2e/playwright.config.ts`, `e2e/fixtures/auth.ts`, 3 smoke tests, `package.json` update, `e2e/README.md`. ~6 files created, 1 modified. |  |
+| **144A** | 144.1–144.7 | `e2e/playwright.config.ts`, `e2e/fixtures/auth.ts`, 3 smoke tests, `package.json` update, `e2e/README.md`. ~6 files created, 1 modified. | **Done** (PR #301) |
 
 ### Tasks
 

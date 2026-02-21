@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Trash2, ArrowUp, ArrowDown, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +20,11 @@ interface TemplateEditorProps {
   availableTags: TagResponse[];
 }
 
+interface TaskItemRow {
+  key: string;
+  title: string;
+}
+
 interface TaskRow {
   key: string;
   name: string;
@@ -27,11 +32,13 @@ interface TaskRow {
   estimatedHours: string;
   billable: boolean;
   assigneeRole: "PROJECT_LEAD" | "ANY_MEMBER" | "UNASSIGNED";
+  items: TaskItemRow[];
 }
 
 export function TemplateEditor({ slug, template, availableTags }: TemplateEditorProps) {
   const router = useRouter();
   const nextKeyRef = useRef(0);
+  const nextItemKeyRef = useRef(0);
 
   function newTask(): TaskRow {
     return {
@@ -41,6 +48,7 @@ export function TemplateEditor({ slug, template, availableTags }: TemplateEditor
       estimatedHours: "",
       billable: false,
       assigneeRole: "UNASSIGNED",
+      items: [],
     };
   }
 
@@ -60,6 +68,10 @@ export function TemplateEditor({ slug, template, availableTags }: TemplateEditor
           estimatedHours: t.estimatedHours != null ? String(t.estimatedHours) : "",
           billable: t.billable,
           assigneeRole: t.assigneeRole,
+          items: t.items?.map((item) => ({
+            key: `item-${nextItemKeyRef.current++}`,
+            title: item.title,
+          })) ?? [],
         }));
     }
     return [];
@@ -100,6 +112,34 @@ export function TemplateEditor({ slug, template, availableTags }: TemplateEditor
     });
   }
 
+  function addItem(taskKey: string) {
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.key === taskKey
+          ? { ...t, items: [...t.items, { key: `item-${nextItemKeyRef.current++}`, title: "" }] }
+          : t,
+      ),
+    );
+  }
+
+  function removeItem(taskKey: string, itemKey: string) {
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.key === taskKey ? { ...t, items: t.items.filter((i) => i.key !== itemKey) } : t,
+      ),
+    );
+  }
+
+  function updateItem(taskKey: string, itemKey: string, title: string) {
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.key === taskKey
+          ? { ...t, items: t.items.map((i) => (i.key === itemKey ? { ...i, title } : i)) }
+          : t,
+      ),
+    );
+  }
+
   async function handleSave() {
     if (!name.trim() || !namePattern.trim()) {
       setError("Name and Name Pattern are required.");
@@ -109,6 +149,12 @@ export function TemplateEditor({ slug, template, availableTags }: TemplateEditor
     const emptyTasks = tasks.filter((t) => !t.name.trim());
     if (emptyTasks.length > 0) {
       setError("All tasks must have a name.");
+      return;
+    }
+
+    const hasEmptyItems = tasks.some((t) => t.items.some((i) => !i.title.trim()));
+    if (hasEmptyItems) {
+      setError("All sub-items must have a title.");
       return;
     }
 
@@ -127,6 +173,10 @@ export function TemplateEditor({ slug, template, availableTags }: TemplateEditor
         sortOrder: index,
         billable: t.billable,
         assigneeRole: t.assigneeRole,
+        items: t.items.map((item, j) => ({
+          title: item.title.trim(),
+          sortOrder: j,
+        })),
       })),
       tagIds: selectedTagIds,
     };
@@ -337,6 +387,40 @@ export function TemplateEditor({ slug, template, availableTags }: TemplateEditor
                     >
                       Billable
                     </label>
+                  </div>
+
+                  {/* Sub-items */}
+                  <div className="ml-8 mt-2 space-y-1">
+                    {task.items.map((item) => (
+                      <div key={item.key} className="flex items-center gap-2">
+                        <div className="size-1.5 shrink-0 rounded-full bg-slate-300 dark:bg-slate-600" />
+                        <Input
+                          placeholder="Sub-item title"
+                          value={item.title}
+                          onChange={(e) => updateItem(task.key, item.key, e.target.value)}
+                          className="h-8 flex-1 text-sm"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeItem(task.key, item.key)}
+                          className="h-8 w-8 p-0 text-slate-400 hover:text-red-500"
+                        >
+                          <X className="size-3.5" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => addItem(task.key)}
+                      className="h-7 gap-1 text-xs text-slate-500 hover:text-slate-700"
+                    >
+                      <Plus className="size-3" />
+                      Add sub-item
+                    </Button>
                   </div>
                 </div>
               </div>

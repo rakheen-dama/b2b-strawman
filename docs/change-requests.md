@@ -69,6 +69,9 @@ Reuse the existing checklist system by broadening its scope from customer-only t
 
 ## CR-003: Project template tasks should include sub-items
 
+**Status**: IMPLEMENTED — PR #282
+**Decision doc**: `docs/cr-003-template-task-sub-items.md`
+
 **Priority**: low
 **Area**: Both — Project Templates + Task Sub-Items
 **Found in**: Project creation from template

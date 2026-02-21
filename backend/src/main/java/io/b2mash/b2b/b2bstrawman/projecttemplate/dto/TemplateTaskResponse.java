@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.projecttemplate.dto;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 public record TemplateTaskResponse(
@@ -10,4 +11,5 @@ public record TemplateTaskResponse(
     BigDecimal estimatedHours,
     int sortOrder,
     boolean billable,
-    String assigneeRole) {}
+    String assigneeRole,
+    List<TemplateTaskItemResponse> items) {}

@@ -10,6 +10,12 @@ export interface ProjectTemplateTagResponse {
   color: string | null;
 }
 
+export interface TemplateTaskItemResponse {
+  id: string;
+  title: string;
+  sortOrder: number;
+}
+
 export interface TemplateTaskResponse {
   id: string;
   name: string;
@@ -18,6 +24,7 @@ export interface TemplateTaskResponse {
   sortOrder: number;
   billable: boolean;
   assigneeRole: "PROJECT_LEAD" | "ANY_MEMBER" | "UNASSIGNED";
+  items: TemplateTaskItemResponse[];
 }
 
 // ---- Template Response ----
@@ -41,6 +48,11 @@ export interface ProjectTemplateResponse {
 
 // ---- Requests ----
 
+export interface TemplateTaskItemRequest {
+  title: string;
+  sortOrder: number;
+}
+
 export interface TemplateTaskRequest {
   name: string;
   description?: string;
@@ -48,6 +60,7 @@ export interface TemplateTaskRequest {
   sortOrder: number;
   billable: boolean;
   assigneeRole: "PROJECT_LEAD" | "ANY_MEMBER" | "UNASSIGNED";
+  items?: TemplateTaskItemRequest[];
 }
 
 export interface CreateProjectTemplateRequest {

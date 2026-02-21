@@ -21,6 +21,7 @@ import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.InstantiateTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.ProjectTemplateResponse;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.SaveFromProjectRequest;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.TagResponse;
+import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.TemplateTaskItemResponse;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.TemplateTaskResponse;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.UpdateTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.event.TemplateCreatedEvent;
@@ -30,6 +31,8 @@ import io.b2mash.b2b.b2bstrawman.tag.EntityTag;
 import io.b2mash.b2b.b2bstrawman.tag.EntityTagRepository;
 import io.b2mash.b2b.b2bstrawman.tag.TagRepository;
 import io.b2mash.b2b.b2bstrawman.task.Task;
+import io.b2mash.b2b.b2bstrawman.task.TaskItem;
+import io.b2mash.b2b.b2bstrawman.task.TaskItemRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -50,9 +53,11 @@ public class ProjectTemplateService {
 
   private final ProjectTemplateRepository templateRepository;
   private final TemplateTaskRepository templateTaskRepository;
+  private final TemplateTaskItemRepository templateTaskItemRepository;
   private final TemplateTagRepository templateTagRepository;
   private final TagRepository tagLookupRepository;
   private final TaskRepository projectTaskRepository;
+  private final TaskItemRepository taskItemRepository;
   private final ProjectRepository projectRepository;
   private final ProjectMemberRepository projectMemberRepository;
   private final RecurringScheduleRepository scheduleRepository;
@@ -66,9 +71,11 @@ public class ProjectTemplateService {
   public ProjectTemplateService(
       ProjectTemplateRepository templateRepository,
       TemplateTaskRepository templateTaskRepository,
+      TemplateTaskItemRepository templateTaskItemRepository,
       TemplateTagRepository templateTagRepository,
       TagRepository tagLookupRepository,
       TaskRepository projectTaskRepository,
+      TaskItemRepository taskItemRepository,
       ProjectRepository projectRepository,
       ProjectMemberRepository projectMemberRepository,
       RecurringScheduleRepository scheduleRepository,
@@ -80,9 +87,11 @@ public class ProjectTemplateService {
       NameTokenResolver nameTokenResolver) {
     this.templateRepository = templateRepository;
     this.templateTaskRepository = templateTaskRepository;
+    this.templateTaskItemRepository = templateTaskItemRepository;
     this.templateTagRepository = templateTagRepository;
     this.tagLookupRepository = tagLookupRepository;
     this.projectTaskRepository = projectTaskRepository;
+    this.taskItemRepository = taskItemRepository;
     this.projectRepository = projectRepository;
     this.projectMemberRepository = projectMemberRepository;
     this.scheduleRepository = scheduleRepository;
@@ -120,6 +129,12 @@ public class ProjectTemplateService {
                 taskReq.billable(),
                 taskReq.assigneeRole());
         templateTaskRepository.save(task);
+        if (taskReq.items() != null) {
+          for (var itemReq : taskReq.items()) {
+            templateTaskItemRepository.save(
+                new TemplateTaskItem(task.getId(), itemReq.title(), itemReq.sortOrder()));
+          }
+        }
         taskCount++;
       }
     }
@@ -162,7 +177,14 @@ public class ProjectTemplateService {
         request.name(), request.namePattern(), request.description(), request.billableDefault());
     template = templateRepository.save(template);
 
-    // Replace tasks: delete all + re-insert
+    // Replace tasks: delete items first (JPQL delete doesn't cascade), then tasks, then re-insert
+    var existingTaskIds =
+        templateTaskRepository.findByTemplateIdOrderBySortOrder(id).stream()
+            .map(TemplateTask::getId)
+            .toList();
+    if (!existingTaskIds.isEmpty()) {
+      templateTaskItemRepository.deleteByTemplateTaskIdIn(existingTaskIds);
+    }
     templateTaskRepository.deleteByTemplateId(id);
     if (request.tasks() != null) {
       for (var taskReq : request.tasks()) {
@@ -176,6 +198,12 @@ public class ProjectTemplateService {
                 taskReq.billable(),
                 taskReq.assigneeRole());
         templateTaskRepository.save(task);
+        if (taskReq.items() != null) {
+          for (var itemReq : taskReq.items()) {
+            templateTaskItemRepository.save(
+                new TemplateTaskItem(task.getId(), itemReq.title(), itemReq.sortOrder()));
+          }
+        }
       }
     }
 
@@ -248,6 +276,14 @@ public class ProjectTemplateService {
             memberId);
     copy = templateRepository.save(copy);
 
+    var taskIds = tasks.stream().map(TemplateTask::getId).toList();
+    var allSourceItems =
+        taskIds.isEmpty()
+            ? List.<TemplateTaskItem>of()
+            : templateTaskItemRepository.findByTemplateTaskIdInOrderBySortOrder(taskIds);
+    var itemsBySourceTaskId =
+        allSourceItems.stream().collect(Collectors.groupingBy(TemplateTaskItem::getTemplateTaskId));
+
     for (var task : tasks) {
       var taskCopy =
           new TemplateTask(
@@ -259,6 +295,10 @@ public class ProjectTemplateService {
               task.isBillable(),
               task.getAssigneeRole());
       templateTaskRepository.save(taskCopy);
+      for (var item : itemsBySourceTaskId.getOrDefault(task.getId(), List.of())) {
+        templateTaskItemRepository.save(
+            new TemplateTaskItem(taskCopy.getId(), item.getTitle(), item.getSortOrder()));
+      }
     }
 
     for (UUID tagId : tagIds) {
@@ -328,6 +368,15 @@ public class ProjectTemplateService {
     List<Task> projectTasks = projectTaskRepository.findByProjectId(projectId);
     Map<UUID, Task> taskMap = projectTasks.stream().collect(Collectors.toMap(Task::getId, t -> t));
 
+    // Batch-load all task items for selected tasks (avoids N+1)
+    List<UUID> selectedTaskIds = request.taskIds() != null ? request.taskIds() : List.of();
+    var allTaskItems =
+        selectedTaskIds.isEmpty()
+            ? List.<TaskItem>of()
+            : taskItemRepository.findByTaskIdInOrderBySortOrder(selectedTaskIds);
+    var taskItemsByTaskId =
+        allTaskItems.stream().collect(Collectors.groupingBy(TaskItem::getTaskId));
+
     int sortOrder = 0;
     if (request.taskIds() != null) {
       for (UUID taskId : request.taskIds()) {
@@ -347,6 +396,10 @@ public class ProjectTemplateService {
                 template.isBillableDefault(),
                 role);
         templateTaskRepository.save(templateTask);
+        for (var ti : taskItemsByTaskId.getOrDefault(taskId, List.of())) {
+          templateTaskItemRepository.save(
+              new TemplateTaskItem(templateTask.getId(), ti.getTitle(), ti.getSortOrder()));
+        }
       }
     }
 
@@ -433,6 +486,15 @@ public class ProjectTemplateService {
     // 8. Create tasks from template (snapshot — no live references)
     // TemplateTask.getName() maps to Task.title (different field names!)
     var templateTasks = templateTaskRepository.findByTemplateIdOrderBySortOrder(templateId);
+    var templateTaskIds = templateTasks.stream().map(TemplateTask::getId).toList();
+    var allTemplateItems =
+        templateTaskIds.isEmpty()
+            ? List.<TemplateTaskItem>of()
+            : templateTaskItemRepository.findByTemplateTaskIdInOrderBySortOrder(templateTaskIds);
+    var templateItemsByTaskId =
+        allTemplateItems.stream()
+            .collect(Collectors.groupingBy(TemplateTaskItem::getTemplateTaskId));
+
     for (var tt : templateTasks) {
       UUID assigneeId = resolveAssignee(tt.getAssigneeRole(), request.projectLeadMemberId());
       // Task constructor: (projectId, title, description, priority, type, dueDate, createdBy)
@@ -451,6 +513,9 @@ public class ProjectTemplateService {
             assigneeId);
       }
       projectTaskRepository.save(task);
+      for (var ti : templateItemsByTaskId.getOrDefault(tt.getId(), List.of())) {
+        taskItemRepository.save(new TaskItem(task.getId(), ti.getTitle(), ti.getSortOrder()));
+      }
     }
 
     // 9. Apply tags
@@ -527,6 +592,15 @@ public class ProjectTemplateService {
 
     // 4. Create tasks from template (snapshot)
     var templateTasks = templateTaskRepository.findByTemplateIdOrderBySortOrder(template.getId());
+    var templateTaskIds = templateTasks.stream().map(TemplateTask::getId).toList();
+    var allTemplateItems =
+        templateTaskIds.isEmpty()
+            ? List.<TemplateTaskItem>of()
+            : templateTaskItemRepository.findByTemplateTaskIdInOrderBySortOrder(templateTaskIds);
+    var templateItemsByTaskId =
+        allTemplateItems.stream()
+            .collect(Collectors.groupingBy(TemplateTaskItem::getTemplateTaskId));
+
     for (var tt : templateTasks) {
       UUID assigneeId = resolveAssignee(tt.getAssigneeRole(), projectLeadMemberId);
       var task =
@@ -549,6 +623,9 @@ public class ProjectTemplateService {
             assigneeId);
       }
       projectTaskRepository.save(task);
+      for (var ti : templateItemsByTaskId.getOrDefault(tt.getId(), List.of())) {
+        taskItemRepository.save(new TaskItem(task.getId(), ti.getTitle(), ti.getSortOrder()));
+      }
     }
 
     // 5. Apply tags
@@ -630,8 +707,19 @@ public class ProjectTemplateService {
   }
 
   private ProjectTemplateResponse buildResponse(ProjectTemplate template) {
+    var templateTasks = templateTaskRepository.findByTemplateIdOrderBySortOrder(template.getId());
+
+    // Batch-load all items for this template's tasks (avoids N+1)
+    var taskIds = templateTasks.stream().map(TemplateTask::getId).toList();
+    var allItems =
+        taskIds.isEmpty()
+            ? List.<TemplateTaskItem>of()
+            : templateTaskItemRepository.findByTemplateTaskIdInOrderBySortOrder(taskIds);
+    var itemsByTaskId =
+        allItems.stream().collect(Collectors.groupingBy(TemplateTaskItem::getTemplateTaskId));
+
     var tasks =
-        templateTaskRepository.findByTemplateIdOrderBySortOrder(template.getId()).stream()
+        templateTasks.stream()
             .map(
                 t ->
                     new TemplateTaskResponse(
@@ -641,7 +729,13 @@ public class ProjectTemplateService {
                         t.getEstimatedHours(),
                         t.getSortOrder(),
                         t.isBillable(),
-                        t.getAssigneeRole()))
+                        t.getAssigneeRole(),
+                        itemsByTaskId.getOrDefault(t.getId(), List.of()).stream()
+                            .map(
+                                i ->
+                                    new TemplateTaskItemResponse(
+                                        i.getId(), i.getTitle(), i.getSortOrder()))
+                            .toList()))
             .toList();
 
     var tagIds = templateTagRepository.findTagIdsByTemplateId(template.getId());

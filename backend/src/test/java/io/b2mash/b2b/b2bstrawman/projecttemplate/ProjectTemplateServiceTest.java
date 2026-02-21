@@ -105,9 +105,9 @@ class ProjectTemplateServiceTest {
                   true,
                   List.of(
                       new TemplateTaskRequest(
-                          "Collect docs", null, BigDecimal.valueOf(2), 0, true, "ANY_MEMBER"),
+                          "Collect docs", null, BigDecimal.valueOf(2), 0, true, "ANY_MEMBER", null),
                       new TemplateTaskRequest(
-                          "Process", null, BigDecimal.valueOf(4), 1, true, "ANY_MEMBER")),
+                          "Process", null, BigDecimal.valueOf(4), 1, true, "ANY_MEMBER", null)),
                   List.of(tag.getId()));
 
           var response = templateService.create(request, memberId);
@@ -153,7 +153,9 @@ class ProjectTemplateServiceTest {
                   "{customer}",
                   null,
                   false,
-                  List.of(new TemplateTaskRequest("Old Task", null, null, 0, false, "UNASSIGNED")),
+                  List.of(
+                      new TemplateTaskRequest(
+                          "Old Task", null, null, 0, false, "UNASSIGNED", null)),
                   List.of());
           var created = templateService.create(createReq, memberId);
 
@@ -164,8 +166,10 @@ class ProjectTemplateServiceTest {
                   "New desc",
                   true,
                   List.of(
-                      new TemplateTaskRequest("New Task 1", null, null, 0, true, "ANY_MEMBER"),
-                      new TemplateTaskRequest("New Task 2", null, null, 1, true, "PROJECT_LEAD")),
+                      new TemplateTaskRequest(
+                          "New Task 1", null, null, 0, true, "ANY_MEMBER", null),
+                      new TemplateTaskRequest(
+                          "New Task 2", null, null, 1, true, "PROJECT_LEAD", null)),
                   List.of());
           var updated = templateService.update(created.id(), updateReq);
 
@@ -253,7 +257,8 @@ class ProjectTemplateServiceTest {
                   "{customer}",
                   "Desc",
                   true,
-                  List.of(new TemplateTaskRequest("Task A", null, null, 0, true, "ANY_MEMBER")),
+                  List.of(
+                      new TemplateTaskRequest("Task A", null, null, 0, true, "ANY_MEMBER", null)),
                   List.of(tag.getId()));
           var original = templateService.create(request, memberId);
 
@@ -451,7 +456,7 @@ class ProjectTemplateServiceTest {
                   true,
                   List.of(
                       new TemplateTaskRequest(
-                          "Get Task", "desc", BigDecimal.valueOf(1), 0, true, "UNASSIGNED")),
+                          "Get Task", "desc", BigDecimal.valueOf(1), 0, true, "UNASSIGNED", null)),
                   List.of(tag.getId()));
           var created = templateService.create(request, memberId);
 

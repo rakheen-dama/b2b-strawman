@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.projecttemplate;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -659,6 +660,375 @@ class ProjectTemplateControllerTest {
                     {"name": "Should Be 400"}
                     """))
         .andExpect(status().isBadRequest());
+  }
+
+  // --- Sub-Item Tests ---
+
+  @Test
+  @Order(30)
+  void createTemplate_withSubItems_subItemsArePersisted() throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                post("/api/project-templates")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "name": "Sub-Item Template",
+                          "namePattern": "Test - {customer}",
+                          "billableDefault": true,
+                          "tasks": [
+                            {
+                              "name": "Task 1",
+                              "sortOrder": 0,
+                              "billable": true,
+                              "assigneeRole": "UNASSIGNED",
+                              "items": [
+                                {"title": "Sub-item A", "sortOrder": 0},
+                                {"title": "Sub-item B", "sortOrder": 1}
+                              ]
+                            },
+                            {
+                              "name": "Task 2",
+                              "sortOrder": 1,
+                              "billable": false,
+                              "assigneeRole": "UNASSIGNED",
+                              "items": [
+                                {"title": "Sub-item C", "sortOrder": 0}
+                              ]
+                            }
+                          ],
+                          "tagIds": []
+                        }
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    String templateId = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
+
+    // GET the template and verify nested items
+    mockMvc
+        .perform(get("/api/project-templates/" + templateId).with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.tasks.length()").value(2))
+        .andExpect(jsonPath("$.tasks[0].items.length()").value(2))
+        .andExpect(jsonPath("$.tasks[0].items[0].title").value("Sub-item A"))
+        .andExpect(jsonPath("$.tasks[0].items[0].sortOrder").value(0))
+        .andExpect(jsonPath("$.tasks[0].items[1].title").value("Sub-item B"))
+        .andExpect(jsonPath("$.tasks[0].items[1].sortOrder").value(1))
+        .andExpect(jsonPath("$.tasks[1].items.length()").value(1))
+        .andExpect(jsonPath("$.tasks[1].items[0].title").value("Sub-item C"))
+        .andExpect(jsonPath("$.tasks[1].items[0].sortOrder").value(0));
+  }
+
+  @Test
+  @Order(31)
+  void updateTemplate_withSubItems_subItemsAreReplaced() throws Exception {
+    // Create a template with 1 task having 2 sub-items
+    var createResult =
+        mockMvc
+            .perform(
+                post("/api/project-templates")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "name": "Update Sub-Items Template",
+                          "namePattern": "{customer}",
+                          "billableDefault": false,
+                          "tasks": [
+                            {
+                              "name": "Original Task",
+                              "sortOrder": 0,
+                              "billable": true,
+                              "assigneeRole": "UNASSIGNED",
+                              "items": [
+                                {"title": "Old Item 1", "sortOrder": 0},
+                                {"title": "Old Item 2", "sortOrder": 1}
+                              ]
+                            }
+                          ],
+                          "tagIds": []
+                        }
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    String templateId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
+
+    // Update: replace the task with a new task having 1 different sub-item
+    mockMvc
+        .perform(
+            put("/api/project-templates/" + templateId)
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "name": "Update Sub-Items Template",
+                      "namePattern": "{customer}",
+                      "billableDefault": false,
+                      "tasks": [
+                        {
+                          "name": "Replaced Task",
+                          "sortOrder": 0,
+                          "billable": false,
+                          "assigneeRole": "UNASSIGNED",
+                          "items": [
+                            {"title": "New Item Only", "sortOrder": 0}
+                          ]
+                        }
+                      ],
+                      "tagIds": []
+                    }
+                    """))
+        .andExpect(status().isOk());
+
+    // GET and verify old items are gone, new item exists
+    mockMvc
+        .perform(get("/api/project-templates/" + templateId).with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.tasks.length()").value(1))
+        .andExpect(jsonPath("$.tasks[0].name").value("Replaced Task"))
+        .andExpect(jsonPath("$.tasks[0].items.length()").value(1))
+        .andExpect(jsonPath("$.tasks[0].items[0].title").value("New Item Only"));
+  }
+
+  @Test
+  @Order(32)
+  void duplicateTemplate_withSubItems_subItemsAreCopied() throws Exception {
+    // Create a template with sub-items
+    var createResult =
+        mockMvc
+            .perform(
+                post("/api/project-templates")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "name": "Duplicate Sub-Items Template",
+                          "namePattern": "{customer}",
+                          "billableDefault": true,
+                          "tasks": [
+                            {
+                              "name": "Task With Items",
+                              "sortOrder": 0,
+                              "billable": true,
+                              "assigneeRole": "UNASSIGNED",
+                              "items": [
+                                {"title": "Item X", "sortOrder": 0},
+                                {"title": "Item Y", "sortOrder": 1}
+                              ]
+                            }
+                          ],
+                          "tagIds": []
+                        }
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    String sourceId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
+
+    // Duplicate
+    var dupResult =
+        mockMvc
+            .perform(post("/api/project-templates/" + sourceId + "/duplicate").with(ownerJwt()))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    String dupId = JsonPath.read(dupResult.getResponse().getContentAsString(), "$.id");
+
+    // GET the duplicate and verify items are present
+    mockMvc
+        .perform(get("/api/project-templates/" + dupId).with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.tasks.length()").value(1))
+        .andExpect(jsonPath("$.tasks[0].items.length()").value(2))
+        .andExpect(jsonPath("$.tasks[0].items[0].title").value("Item X"))
+        .andExpect(jsonPath("$.tasks[0].items[1].title").value("Item Y"));
+  }
+
+  @Test
+  @Order(33)
+  void instantiateTemplate_withSubItems_taskItemsAreCreated() throws Exception {
+    // Create a template with sub-items
+    var createResult =
+        mockMvc
+            .perform(
+                post("/api/project-templates")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "name": "Instantiate Sub-Items Template",
+                          "namePattern": "{customer}",
+                          "billableDefault": true,
+                          "tasks": [
+                            {
+                              "name": "Template Task A",
+                              "sortOrder": 0,
+                              "billable": true,
+                              "assigneeRole": "UNASSIGNED",
+                              "items": [
+                                {"title": "Step 1", "sortOrder": 0},
+                                {"title": "Step 2", "sortOrder": 1}
+                              ]
+                            },
+                            {
+                              "name": "Template Task B",
+                              "sortOrder": 1,
+                              "billable": false,
+                              "assigneeRole": "UNASSIGNED",
+                              "items": [
+                                {"title": "Step 3", "sortOrder": 0}
+                              ]
+                            }
+                          ],
+                          "tagIds": []
+                        }
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    String templateId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
+
+    // Instantiate the template
+    var instantiateResult =
+        mockMvc
+            .perform(
+                post("/api/project-templates/" + templateId + "/instantiate")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "name": "Instantiated With Items"
+                        }
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    String projectIdStr =
+        JsonPath.read(instantiateResult.getResponse().getContentAsString(), "$.id");
+
+    // GET the project's tasks
+    var tasksResult =
+        mockMvc
+            .perform(get("/api/projects/" + projectIdStr + "/tasks").with(ownerJwt()))
+            .andExpect(status().isOk())
+            .andReturn();
+
+    // Extract task IDs and titles so we can match by name (order may vary)
+    List<Map<String, Object>> tasks =
+        JsonPath.read(tasksResult.getResponse().getContentAsString(), "$[*]");
+
+    String taskAId = null;
+    String taskBId = null;
+    for (var task : tasks) {
+      if ("Template Task A".equals(task.get("title"))) {
+        taskAId = task.get("id").toString();
+      } else if ("Template Task B".equals(task.get("title"))) {
+        taskBId = task.get("id").toString();
+      }
+    }
+    assertThat(taskAId).as("Task A should exist").isNotNull();
+    assertThat(taskBId).as("Task B should exist").isNotNull();
+
+    // Task A should have 2 items (Step 1, Step 2)
+    mockMvc
+        .perform(get("/api/tasks/" + taskAId + "/items").with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(2))
+        .andExpect(jsonPath("$[0].title").value("Step 1"))
+        .andExpect(jsonPath("$[0].sortOrder").value(0))
+        .andExpect(jsonPath("$[0].completed").value(false))
+        .andExpect(jsonPath("$[1].title").value("Step 2"))
+        .andExpect(jsonPath("$[1].sortOrder").value(1));
+
+    // Task B should have 1 item (Step 3)
+    mockMvc
+        .perform(get("/api/tasks/" + taskBId + "/items").with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(1))
+        .andExpect(jsonPath("$[0].title").value("Step 3"))
+        .andExpect(jsonPath("$[0].sortOrder").value(0))
+        .andExpect(jsonPath("$[0].completed").value(false));
+  }
+
+  @Test
+  @Order(34)
+  void saveFromProject_tasksWithItems_itemsCopiedToTemplate() throws Exception {
+    // Create task items on the existing project tasks (taskId1, taskId2)
+    mockMvc
+        .perform(
+            post("/api/tasks/" + taskId1 + "/items")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"title": "Project Sub-Item 1", "sortOrder": 0}
+                    """))
+        .andExpect(status().isCreated());
+
+    mockMvc
+        .perform(
+            post("/api/tasks/" + taskId1 + "/items")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"title": "Project Sub-Item 2", "sortOrder": 1}
+                    """))
+        .andExpect(status().isCreated());
+
+    mockMvc
+        .perform(
+            post("/api/tasks/" + taskId2 + "/items")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"title": "Project Sub-Item 3", "sortOrder": 0}
+                    """))
+        .andExpect(status().isCreated());
+
+    // Save project as template including both tasks
+    var saveResult =
+        mockMvc
+            .perform(
+                post("/api/project-templates/from-project/" + projectId)
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "name": "From Project With Items",
+                          "namePattern": "{customer} - Items",
+                          "taskIds": ["%s", "%s"],
+                          "tagIds": []
+                        }
+                        """
+                            .formatted(taskId1, taskId2)))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    String savedTemplateId = JsonPath.read(saveResult.getResponse().getContentAsString(), "$.id");
+
+    // GET the template and verify items were copied
+    mockMvc
+        .perform(get("/api/project-templates/" + savedTemplateId).with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.tasks.length()").value(2))
+        .andExpect(jsonPath("$.tasks[0].items.length()").value(2))
+        .andExpect(jsonPath("$.tasks[0].items[0].title").value("Project Sub-Item 1"))
+        .andExpect(jsonPath("$.tasks[0].items[1].title").value("Project Sub-Item 2"))
+        .andExpect(jsonPath("$.tasks[1].items.length()").value(1))
+        .andExpect(jsonPath("$.tasks[1].items[0].title").value("Project Sub-Item 3"));
   }
 
   // --- Helper methods ---

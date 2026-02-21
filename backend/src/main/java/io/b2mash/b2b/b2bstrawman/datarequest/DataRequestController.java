@@ -3,6 +3,8 @@ package io.b2mash.b2b.b2bstrawman.datarequest;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.member.Member;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
 import jakarta.validation.Valid;
@@ -13,7 +15,10 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,6 +38,7 @@ public class DataRequestController {
   private final DataExportService dataExportService;
   private final DataAnonymizationService dataAnonymizationService;
   private final CustomerRepository customerRepository;
+  private final MemberRepository memberRepository;
   private final S3PresignedUrlService s3PresignedUrlService;
 
   public DataRequestController(
@@ -40,11 +46,13 @@ public class DataRequestController {
       DataExportService dataExportService,
       DataAnonymizationService dataAnonymizationService,
       CustomerRepository customerRepository,
+      MemberRepository memberRepository,
       S3PresignedUrlService s3PresignedUrlService) {
     this.dataSubjectRequestService = dataSubjectRequestService;
     this.dataExportService = dataExportService;
     this.dataAnonymizationService = dataAnonymizationService;
     this.customerRepository = customerRepository;
+    this.memberRepository = memberRepository;
     this.s3PresignedUrlService = s3PresignedUrlService;
   }
 
@@ -56,9 +64,13 @@ public class DataRequestController {
         status != null && !status.isBlank()
             ? dataSubjectRequestService.listByStatus(status)
             : dataSubjectRequestService.listAll();
+    var memberNames = resolveMemberNames(requests);
     var responses =
         requests.stream()
-            .map(req -> DataRequestResponse.from(req, resolveCustomerName(req.getCustomerId())))
+            .map(
+                req ->
+                    DataRequestResponse.from(
+                        req, resolveCustomerName(req.getCustomerId()), memberNames))
             .toList();
     return ResponseEntity.ok(responses);
   }
@@ -67,8 +79,10 @@ public class DataRequestController {
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<DataRequestResponse> getRequest(@PathVariable UUID id) {
     var request = dataSubjectRequestService.getById(id);
+    var memberNames = resolveMemberNames(List.of(request));
     return ResponseEntity.ok(
-        DataRequestResponse.from(request, resolveCustomerName(request.getCustomerId())));
+        DataRequestResponse.from(
+            request, resolveCustomerName(request.getCustomerId()), memberNames));
   }
 
   @PostMapping
@@ -79,7 +93,10 @@ public class DataRequestController {
     var request =
         dataSubjectRequestService.createRequest(
             body.customerId(), body.requestType(), body.description(), actorId);
-    var response = DataRequestResponse.from(request, resolveCustomerName(request.getCustomerId()));
+    var memberNames = resolveMemberNames(List.of(request));
+    var response =
+        DataRequestResponse.from(
+            request, resolveCustomerName(request.getCustomerId()), memberNames);
     return ResponseEntity.created(URI.create("/api/data-requests/" + request.getId()))
         .body(response);
   }
@@ -98,8 +115,10 @@ public class DataRequestController {
               throw new InvalidStateException(
                   "Unknown action", "Action must be START_PROCESSING, COMPLETE, or REJECT");
         };
+    var memberNames = resolveMemberNames(List.of(request));
     return ResponseEntity.ok(
-        DataRequestResponse.from(request, resolveCustomerName(request.getCustomerId())));
+        DataRequestResponse.from(
+            request, resolveCustomerName(request.getCustomerId()), memberNames));
   }
 
   @PostMapping("/{id}/export")
@@ -152,6 +171,18 @@ public class DataRequestController {
     return customerRepository.findById(customerId).map(c -> c.getName()).orElse("Unknown");
   }
 
+  private Map<UUID, String> resolveMemberNames(List<DataSubjectRequest> requests) {
+    var ids =
+        requests.stream()
+            .flatMap(r -> Stream.of(r.getRequestedBy(), r.getCompletedBy()))
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+    if (ids.isEmpty()) return Map.of();
+    return memberRepository.findAllById(ids).stream()
+        .collect(Collectors.toMap(Member::getId, Member::getName, (a, b) -> a));
+  }
+
   // DTOs
   public record CreateDataRequestBody(
       @NotNull UUID customerId, @NotBlank String requestType, @NotBlank String description) {}
@@ -171,13 +202,16 @@ public class DataRequestController {
       LocalDate deadline,
       Instant requestedAt,
       UUID requestedBy,
+      String requestedByName,
       Instant completedAt,
       UUID completedBy,
+      String completedByName,
       boolean hasExport,
       String notes,
       Instant createdAt) {
 
-    public static DataRequestResponse from(DataSubjectRequest req, String customerName) {
+    public static DataRequestResponse from(
+        DataSubjectRequest req, String customerName, Map<UUID, String> memberNames) {
       return new DataRequestResponse(
           req.getId(),
           req.getCustomerId(),
@@ -189,8 +223,10 @@ public class DataRequestController {
           req.getDeadline(),
           req.getRequestedAt(),
           req.getRequestedBy(),
+          req.getRequestedBy() != null ? memberNames.get(req.getRequestedBy()) : null,
           req.getCompletedAt(),
           req.getCompletedBy(),
+          req.getCompletedBy() != null ? memberNames.get(req.getCompletedBy()) : null,
           req.getExportFileKey() != null,
           req.getNotes(),
           req.getCreatedAt());

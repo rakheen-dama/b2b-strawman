@@ -5,6 +5,7 @@ export interface Project {
   name: string;
   description: string | null;
   createdBy: string;
+  createdByName: string | null;
   createdAt: string;
   updatedAt: string;
   projectRole: ProjectRole | null;
@@ -42,6 +43,7 @@ export interface Document {
   customerId: string | null;
   visibility: DocumentVisibility;
   uploadedBy: string | null;
+  uploadedByName: string | null;
   uploadedAt: string | null;
   createdAt: string;
 }
@@ -100,6 +102,7 @@ export interface Customer {
   status: CustomerStatus;
   notes: string | null;
   createdBy: string;
+  createdByName: string | null;
   createdAt: string;
   updatedAt: string;
   customFields?: Record<string, unknown>;
@@ -126,6 +129,7 @@ export interface TransitionResponse {
   lifecycleStatus: LifecycleStatus;
   lifecycleStatusChangedAt: string;
   lifecycleStatusChangedBy: string;
+  lifecycleStatusChangedByName: string | null;
 }
 
 export interface LifecycleHistoryEntry {
@@ -655,7 +659,9 @@ export interface InvoiceResponse {
   customerAddress: string | null;
   orgName: string;
   createdBy: string;
+  createdByName: string | null;
   approvedBy: string | null;
+  approvedByName: string | null;
   createdAt: string;
   updatedAt: string;
   lines: InvoiceLineResponse[];
@@ -893,7 +899,7 @@ export interface GeneratedDocumentListResponse {
   templateName: string;
   fileName: string;
   fileSize: number;
-  generatedBy: string;
+  generatedByName: string;
   generatedAt: string;
 }
 
@@ -947,6 +953,7 @@ export interface ChecklistInstanceItemResponse {
   status: ChecklistItemStatus;
   completedAt: string | null;
   completedBy: string | null;
+  completedByName: string | null;
   notes: string | null;
   documentId: string | null;
   dependsOnItemId: string | null;
@@ -962,6 +969,7 @@ export interface ChecklistInstanceResponse {
   startedAt: string;
   completedAt: string | null;
   completedBy: string | null;
+  completedByName: string | null;
   items: ChecklistInstanceItemResponse[];
   createdAt: string;
   updatedAt: string;
@@ -983,8 +991,10 @@ export interface DataRequestResponse {
   deadline: string;          // "YYYY-MM-DD" local date
   requestedAt: string;       // ISO instant
   requestedBy: string;
+  requestedByName: string | null;
   completedAt: string | null;
   completedBy: string | null;
+  completedByName: string | null;
   hasExport: boolean;
   notes: string | null;
   createdAt: string;

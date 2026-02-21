@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.checklist;
 import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public final class ChecklistInstanceDtos {
@@ -25,13 +26,15 @@ public final class ChecklistInstanceDtos {
       String status,
       Instant completedAt,
       UUID completedBy,
+      String completedByName,
       String notes,
       UUID documentId,
       UUID dependsOnItemId,
       Instant createdAt,
       Instant updatedAt) {
 
-    public static ChecklistInstanceItemResponse from(ChecklistInstanceItem item) {
+    public static ChecklistInstanceItemResponse from(
+        ChecklistInstanceItem item, Map<UUID, String> memberNames) {
       return new ChecklistInstanceItemResponse(
           item.getId(),
           item.getInstanceId(),
@@ -45,6 +48,7 @@ public final class ChecklistInstanceDtos {
           item.getStatus(),
           item.getCompletedAt(),
           item.getCompletedBy(),
+          item.getCompletedBy() != null ? memberNames.get(item.getCompletedBy()) : null,
           item.getNotes(),
           item.getDocumentId(),
           item.getDependsOnItemId(),
@@ -67,12 +71,15 @@ public final class ChecklistInstanceDtos {
       Instant startedAt,
       Instant completedAt,
       UUID completedBy,
+      String completedByName,
       List<ChecklistInstanceItemResponse> items,
       Instant createdAt,
       Instant updatedAt) {
 
     public static ChecklistInstanceResponse from(
-        ChecklistInstance instance, List<ChecklistInstanceItem> items) {
+        ChecklistInstance instance,
+        List<ChecklistInstanceItem> items,
+        Map<UUID, String> memberNames) {
       return new ChecklistInstanceResponse(
           instance.getId(),
           instance.getTemplateId(),
@@ -81,7 +88,10 @@ public final class ChecklistInstanceDtos {
           instance.getStartedAt(),
           instance.getCompletedAt(),
           instance.getCompletedBy(),
-          items.stream().map(ChecklistInstanceItemResponse::from).toList(),
+          instance.getCompletedBy() != null ? memberNames.get(instance.getCompletedBy()) : null,
+          items.stream()
+              .map(item -> ChecklistInstanceItemResponse.from(item, memberNames))
+              .toList(),
           instance.getCreatedAt(),
           instance.getUpdatedAt());
     }

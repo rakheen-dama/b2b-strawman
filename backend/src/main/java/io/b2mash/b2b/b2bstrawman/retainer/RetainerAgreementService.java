@@ -8,6 +8,8 @@ import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.member.Member;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.CreateRetainerRequest;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.PeriodSummary;
@@ -35,18 +37,21 @@ public class RetainerAgreementService {
   private final CustomerRepository customerRepository;
   private final AuditService auditService;
   private final NotificationService notificationService;
+  private final MemberRepository memberRepository;
 
   public RetainerAgreementService(
       RetainerAgreementRepository agreementRepository,
       RetainerPeriodRepository periodRepository,
       CustomerRepository customerRepository,
       AuditService auditService,
-      NotificationService notificationService) {
+      NotificationService notificationService,
+      MemberRepository memberRepository) {
     this.agreementRepository = agreementRepository;
     this.periodRepository = periodRepository;
     this.customerRepository = customerRepository;
     this.auditService = auditService;
     this.notificationService = notificationService;
+    this.memberRepository = memberRepository;
   }
 
   @Transactional
@@ -140,7 +145,9 @@ public class RetainerAgreementService {
             .build());
 
     // 9. Build and return response
-    return RetainerResponse.from(agreement, customer.getName(), PeriodSummary.from(period), null);
+    var memberNames = resolveRetainerMemberNames(agreement);
+    return RetainerResponse.from(
+        agreement, customer.getName(), PeriodSummary.from(period), null, memberNames);
   }
 
   @Transactional
@@ -215,7 +222,8 @@ public class RetainerAgreementService {
             .orElse(null);
 
     // 12. Return response
-    return RetainerResponse.from(agreement, customer.getName(), currentPeriod, null);
+    var memberNames = resolveRetainerMemberNames(agreement);
+    return RetainerResponse.from(agreement, customer.getName(), currentPeriod, null, memberNames);
   }
 
   @Transactional
@@ -255,10 +263,11 @@ public class RetainerAgreementService {
     var currentPeriod =
         periodRepository
             .findByAgreementIdAndStatus(id, PeriodStatus.OPEN)
-            .map(PeriodSummary::from)
+            .map(p -> PeriodSummary.from(p))
             .orElse(null);
 
-    return RetainerResponse.from(agreement, customer.getName(), currentPeriod, null);
+    var memberNames = resolveRetainerMemberNames(agreement);
+    return RetainerResponse.from(agreement, customer.getName(), currentPeriod, null, memberNames);
   }
 
   @Transactional
@@ -298,10 +307,11 @@ public class RetainerAgreementService {
     var currentPeriod =
         periodRepository
             .findByAgreementIdAndStatus(id, PeriodStatus.OPEN)
-            .map(PeriodSummary::from)
+            .map(p -> PeriodSummary.from(p))
             .orElse(null);
 
-    return RetainerResponse.from(agreement, customer.getName(), currentPeriod, null);
+    var memberNames = resolveRetainerMemberNames(agreement);
+    return RetainerResponse.from(agreement, customer.getName(), currentPeriod, null, memberNames);
   }
 
   @Transactional
@@ -348,10 +358,11 @@ public class RetainerAgreementService {
     var currentPeriod =
         periodRepository
             .findByAgreementIdAndStatus(id, PeriodStatus.OPEN)
-            .map(PeriodSummary::from)
+            .map(p -> PeriodSummary.from(p))
             .orElse(null);
 
-    return RetainerResponse.from(agreement, customer.getName(), currentPeriod, null);
+    var memberNames = resolveRetainerMemberNames(agreement);
+    return RetainerResponse.from(agreement, customer.getName(), currentPeriod, null, memberNames);
   }
 
   @Transactional(readOnly = true)
@@ -384,6 +395,9 @@ public class RetainerAgreementService {
         periodRepository.findByAgreementIdInAndStatus(agreementIds, PeriodStatus.OPEN).stream()
             .collect(Collectors.toMap(RetainerPeriod::getAgreementId, Function.identity()));
 
+    // Batch resolve member names for createdBy
+    var memberNames = resolveRetainerMemberNames(agreements);
+
     return agreements.stream()
         .map(
             agreement -> {
@@ -391,7 +405,8 @@ public class RetainerAgreementService {
               var customerName = customer != null ? customer.getName() : "Unknown";
               var period = periodMap.get(agreement.getId());
               var currentPeriod = period != null ? PeriodSummary.from(period) : null;
-              return RetainerResponse.from(agreement, customerName, currentPeriod, null);
+              return RetainerResponse.from(
+                  agreement, customerName, currentPeriod, null, memberNames);
             })
         .toList();
   }
@@ -420,10 +435,12 @@ public class RetainerAgreementService {
             .findByAgreementIdOrderByPeriodStartDesc(id, PageRequest.of(0, 6))
             .getContent()
             .stream()
-            .map(PeriodSummary::from)
+            .map(p -> PeriodSummary.from(p))
             .toList();
 
-    return RetainerResponse.from(agreement, customer.getName(), currentPeriod, recentPeriods);
+    var memberNames = resolveRetainerMemberNames(agreement);
+    return RetainerResponse.from(
+        agreement, customer.getName(), currentPeriod, recentPeriods, memberNames);
   }
 
   @Transactional(readOnly = true)
@@ -484,6 +501,24 @@ public class RetainerAgreementService {
         remainingHours,
         percentConsumed,
         isOverage);
+  }
+
+  private Map<UUID, String> resolveRetainerMemberNames(RetainerAgreement agreement) {
+    if (agreement.getCreatedBy() == null) return Map.of();
+    return memberRepository.findAllById(List.of(agreement.getCreatedBy())).stream()
+        .collect(Collectors.toMap(Member::getId, Member::getName, (a, b) -> a));
+  }
+
+  private Map<UUID, String> resolveRetainerMemberNames(List<RetainerAgreement> agreements) {
+    var ids =
+        agreements.stream()
+            .map(RetainerAgreement::getCreatedBy)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+    if (ids.isEmpty()) return Map.of();
+    return memberRepository.findAllById(ids).stream()
+        .collect(Collectors.toMap(Member::getId, Member::getName, (a, b) -> a));
   }
 
   private void validateTypeSpecificFields(CreateRetainerRequest request) {

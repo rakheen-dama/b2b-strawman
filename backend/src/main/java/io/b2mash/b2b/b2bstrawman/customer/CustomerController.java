@@ -8,6 +8,8 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceService;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledTimeResponse;
+import io.b2mash.b2b.b2bstrawman.member.Member;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.setupstatus.CustomerReadiness;
@@ -30,7 +32,10 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -57,6 +62,7 @@ public class CustomerController {
   private final CustomerLifecycleService customerLifecycleService;
   private final UnbilledTimeSummaryService unbilledTimeSummaryService;
   private final CustomerReadinessService customerReadinessService;
+  private final MemberRepository memberRepository;
 
   public CustomerController(
       CustomerService customerService,
@@ -67,7 +73,8 @@ public class CustomerController {
       ViewFilterService viewFilterService,
       CustomerLifecycleService customerLifecycleService,
       UnbilledTimeSummaryService unbilledTimeSummaryService,
-      CustomerReadinessService customerReadinessService) {
+      CustomerReadinessService customerReadinessService,
+      MemberRepository memberRepository) {
     this.customerService = customerService;
     this.customerProjectService = customerProjectService;
     this.invoiceService = invoiceService;
@@ -77,6 +84,7 @@ public class CustomerController {
     this.customerLifecycleService = customerLifecycleService;
     this.unbilledTimeSummaryService = unbilledTimeSummaryService;
     this.customerReadinessService = customerReadinessService;
+    this.memberRepository = memberRepository;
   }
 
   @GetMapping
@@ -105,12 +113,14 @@ public class CustomerController {
       if (filtered != null) {
         var customerIds = filtered.stream().map(Customer::getId).toList();
         var tagsByEntityId = entityTagService.getEntityTagsBatch("CUSTOMER", customerIds);
+        var memberNames = resolveNames(filtered);
 
         var responses =
             filtered.stream()
                 .map(
                     c ->
-                        CustomerResponse.from(c, tagsByEntityId.getOrDefault(c.getId(), List.of())))
+                        CustomerResponse.from(
+                            c, tagsByEntityId.getOrDefault(c.getId(), List.of()), memberNames))
                 .toList();
         return ResponseEntity.ok(responses);
       }
@@ -125,10 +135,14 @@ public class CustomerController {
     // Batch-load tags for all customers (2 queries instead of 2N)
     var customerIds = customerEntities.stream().map(Customer::getId).toList();
     var tagsByEntityId = entityTagService.getEntityTagsBatch("CUSTOMER", customerIds);
+    var memberNames = resolveNames(customerEntities);
 
     var customers =
         customerEntities.stream()
-            .map(c -> CustomerResponse.from(c, tagsByEntityId.getOrDefault(c.getId(), List.of())))
+            .map(
+                c ->
+                    CustomerResponse.from(
+                        c, tagsByEntityId.getOrDefault(c.getId(), List.of()), memberNames))
             .toList();
 
     // Apply custom field filtering if present
@@ -163,7 +177,8 @@ public class CustomerController {
   public ResponseEntity<CustomerResponse> getCustomer(@PathVariable UUID id) {
     var customer = customerService.getCustomer(id);
     var tags = entityTagService.getEntityTags("CUSTOMER", id);
-    return ResponseEntity.ok(CustomerResponse.from(customer, tags));
+    var memberNames = resolveNames(List.of(customer));
+    return ResponseEntity.ok(CustomerResponse.from(customer, tags, memberNames));
   }
 
   @PostMapping
@@ -182,8 +197,9 @@ public class CustomerController {
             request.customFields(),
             request.appliedFieldGroups(),
             request.customerType());
+    var memberNames = resolveNames(List.of(customer));
     return ResponseEntity.created(URI.create("/api/customers/" + customer.getId()))
-        .body(CustomerResponse.from(customer, List.of()));
+        .body(CustomerResponse.from(customer, List.of(), memberNames));
   }
 
   @PutMapping("/{id}")
@@ -201,7 +217,8 @@ public class CustomerController {
             request.customFields(),
             request.appliedFieldGroups());
     var tags = entityTagService.getEntityTags("CUSTOMER", id);
-    return ResponseEntity.ok(CustomerResponse.from(customer, tags));
+    var memberNames = resolveNames(List.of(customer));
+    return ResponseEntity.ok(CustomerResponse.from(customer, tags, memberNames));
   }
 
   @DeleteMapping("/{id}")
@@ -209,7 +226,8 @@ public class CustomerController {
   public ResponseEntity<CustomerResponse> archiveCustomer(@PathVariable UUID id) {
     var customer = customerService.archiveCustomer(id);
     var tags = entityTagService.getEntityTags("CUSTOMER", id);
-    return ResponseEntity.ok(CustomerResponse.from(customer, tags));
+    var memberNames = resolveNames(List.of(customer));
+    return ResponseEntity.ok(CustomerResponse.from(customer, tags, memberNames));
   }
 
   @PostMapping("/{id}/unarchive")
@@ -217,7 +235,8 @@ public class CustomerController {
   public ResponseEntity<CustomerResponse> unarchiveCustomer(@PathVariable UUID id) {
     var customer = customerService.unarchiveCustomer(id);
     var tags = entityTagService.getEntityTags("CUSTOMER", id);
-    return ResponseEntity.ok(CustomerResponse.from(customer, tags));
+    var memberNames = resolveNames(List.of(customer));
+    return ResponseEntity.ok(CustomerResponse.from(customer, tags, memberNames));
   }
 
   // --- Customer-Project linking endpoints ---
@@ -312,7 +331,8 @@ public class CustomerController {
     UUID actorId = RequestScopes.requireMemberId();
     var customer =
         customerLifecycleService.transition(id, request.targetStatus(), request.notes(), actorId);
-    return ResponseEntity.ok(TransitionResponse.from(customer));
+    var memberNames = resolveNames(List.of(customer));
+    return ResponseEntity.ok(TransitionResponse.from(customer, memberNames));
   }
 
   @GetMapping("/{id}/lifecycle")
@@ -327,6 +347,18 @@ public class CustomerController {
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<DormancyCheckResult> runDormancyCheck() {
     return ResponseEntity.ok(customerLifecycleService.runDormancyCheck());
+  }
+
+  private Map<UUID, String> resolveNames(List<Customer> customers) {
+    var ids =
+        customers.stream()
+            .flatMap(c -> Stream.of(c.getCreatedBy(), c.getLifecycleStatusChangedBy()))
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+    if (ids.isEmpty()) return Map.of();
+    return memberRepository.findAllById(ids).stream()
+        .collect(Collectors.toMap(Member::getId, Member::getName, (a, b) -> a));
   }
 
   private Map<String, String> extractCustomFieldFilters(Map<String, String> allParams) {
@@ -397,6 +429,7 @@ public class CustomerController {
       String status,
       String notes,
       UUID createdBy,
+      String createdByName,
       Instant createdAt,
       Instant updatedAt,
       Map<String, Object> customFields,
@@ -407,26 +440,15 @@ public class CustomerController {
       Instant lifecycleStatusChangedAt) {
 
     public static CustomerResponse from(Customer customer) {
-      return new CustomerResponse(
-          customer.getId(),
-          customer.getName(),
-          customer.getEmail(),
-          customer.getPhone(),
-          customer.getIdNumber(),
-          customer.getStatus(),
-          customer.getNotes(),
-          customer.getCreatedBy(),
-          customer.getCreatedAt(),
-          customer.getUpdatedAt(),
-          customer.getCustomFields(),
-          customer.getAppliedFieldGroups(),
-          List.of(),
-          customer.getLifecycleStatus(),
-          customer.getCustomerType(),
-          customer.getLifecycleStatusChangedAt());
+      return from(customer, List.of(), Map.of());
     }
 
     public static CustomerResponse from(Customer customer, List<TagResponse> tags) {
+      return from(customer, tags, Map.of());
+    }
+
+    public static CustomerResponse from(
+        Customer customer, List<TagResponse> tags, Map<UUID, String> memberNames) {
       return new CustomerResponse(
           customer.getId(),
           customer.getName(),
@@ -436,6 +458,7 @@ public class CustomerController {
           customer.getStatus(),
           customer.getNotes(),
           customer.getCreatedBy(),
+          customer.getCreatedBy() != null ? memberNames.get(customer.getCreatedBy()) : null,
           customer.getCreatedAt(),
           customer.getUpdatedAt(),
           customer.getCustomFields(),
@@ -473,15 +496,23 @@ public class CustomerController {
       String name,
       String lifecycleStatus,
       Instant lifecycleStatusChangedAt,
-      UUID lifecycleStatusChangedBy) {
+      UUID lifecycleStatusChangedBy,
+      String lifecycleStatusChangedByName) {
 
     public static TransitionResponse from(Customer customer) {
+      return from(customer, Map.of());
+    }
+
+    public static TransitionResponse from(Customer customer, Map<UUID, String> memberNames) {
       return new TransitionResponse(
           customer.getId(),
           customer.getName(),
           customer.getLifecycleStatus().name(),
           customer.getLifecycleStatusChangedAt(),
-          customer.getLifecycleStatusChangedBy());
+          customer.getLifecycleStatusChangedBy(),
+          customer.getLifecycleStatusChangedBy() != null
+              ? memberNames.get(customer.getLifecycleStatusChangedBy())
+              : null);
     }
   }
 

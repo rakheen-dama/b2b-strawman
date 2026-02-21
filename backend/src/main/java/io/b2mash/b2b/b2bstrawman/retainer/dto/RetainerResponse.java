@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public record RetainerResponse(
@@ -28,6 +29,7 @@ public record RetainerResponse(
     BigDecimal rolloverCapHours,
     String notes,
     UUID createdBy,
+    String createdByName,
     Instant createdAt,
     Instant updatedAt,
     PeriodSummary currentPeriod,
@@ -37,7 +39,8 @@ public record RetainerResponse(
       RetainerAgreement a,
       String customerName,
       PeriodSummary currentPeriod,
-      List<PeriodSummary> recentPeriods) {
+      List<PeriodSummary> recentPeriods,
+      Map<UUID, String> memberNames) {
     return new RetainerResponse(
         a.getId(),
         a.getCustomerId(),
@@ -55,9 +58,18 @@ public record RetainerResponse(
         a.getRolloverCapHours(),
         a.getNotes(),
         a.getCreatedBy(),
+        a.getCreatedBy() != null ? memberNames.get(a.getCreatedBy()) : null,
         a.getCreatedAt(),
         a.getUpdatedAt(),
         currentPeriod,
         recentPeriods);
+  }
+
+  public static RetainerResponse from(
+      RetainerAgreement a,
+      String customerName,
+      PeriodSummary currentPeriod,
+      List<PeriodSummary> recentPeriods) {
+    return from(a, customerName, currentPeriod, recentPeriods, Map.of());
   }
 }

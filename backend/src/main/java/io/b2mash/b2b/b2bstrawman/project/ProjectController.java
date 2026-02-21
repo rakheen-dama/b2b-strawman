@@ -4,6 +4,8 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
+import io.b2mash.b2b.b2bstrawman.member.Member;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.setupstatus.ProjectSetupStatus;
@@ -24,6 +26,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -49,6 +52,7 @@ public class ProjectController {
   private final ViewFilterService viewFilterService;
   private final ProjectSetupStatusService projectSetupStatusService;
   private final UnbilledTimeSummaryService unbilledTimeSummaryService;
+  private final MemberRepository memberRepository;
 
   public ProjectController(
       ProjectService projectService,
@@ -56,13 +60,15 @@ public class ProjectController {
       SavedViewRepository savedViewRepository,
       ViewFilterService viewFilterService,
       ProjectSetupStatusService projectSetupStatusService,
-      UnbilledTimeSummaryService unbilledTimeSummaryService) {
+      UnbilledTimeSummaryService unbilledTimeSummaryService,
+      MemberRepository memberRepository) {
     this.projectService = projectService;
     this.entityTagService = entityTagService;
     this.savedViewRepository = savedViewRepository;
     this.viewFilterService = viewFilterService;
     this.projectSetupStatusService = projectSetupStatusService;
     this.unbilledTimeSummaryService = unbilledTimeSummaryService;
+    this.memberRepository = memberRepository;
   }
 
   @GetMapping
@@ -104,13 +110,17 @@ public class ProjectController {
 
         var projectIds = filtered.stream().map(Project::getId).toList();
         var tagsByEntityId = entityTagService.getEntityTagsBatch("PROJECT", projectIds);
+        var memberNames = resolveNames(filtered);
 
         var responses =
             filtered.stream()
                 .map(
                     p ->
                         ProjectResponse.from(
-                            p, null, tagsByEntityId.getOrDefault(p.getId(), List.of())))
+                            p,
+                            null,
+                            tagsByEntityId.getOrDefault(p.getId(), List.of()),
+                            memberNames))
                 .toList();
         return ResponseEntity.ok(responses);
       }
@@ -122,6 +132,8 @@ public class ProjectController {
     // Batch-load tags for all projects (2 queries instead of 2N)
     var projectIds = projectsWithRoles.stream().map(pwr -> pwr.project().getId()).toList();
     var tagsByEntityId = entityTagService.getEntityTagsBatch("PROJECT", projectIds);
+    var allProjects = projectsWithRoles.stream().map(pwr -> pwr.project()).toList();
+    var memberNames = resolveNames(allProjects);
 
     var projects =
         projectsWithRoles.stream()
@@ -130,7 +142,8 @@ public class ProjectController {
                     ProjectResponse.from(
                         pwr.project(),
                         pwr.projectRole(),
-                        tagsByEntityId.getOrDefault(pwr.project().getId(), List.of())))
+                        tagsByEntityId.getOrDefault(pwr.project().getId(), List.of()),
+                        memberNames))
             .toList();
 
     // Apply custom field filtering if present
@@ -161,7 +174,9 @@ public class ProjectController {
     String orgRole = RequestScopes.getOrgRole();
     var pwr = projectService.getProject(id, memberId, orgRole);
     var tags = entityTagService.getEntityTags("PROJECT", id);
-    return ResponseEntity.ok(ProjectResponse.from(pwr.project(), pwr.projectRole(), tags));
+    var memberNames = resolveNames(List.of(pwr.project()));
+    return ResponseEntity.ok(
+        ProjectResponse.from(pwr.project(), pwr.projectRole(), tags, memberNames));
   }
 
   @PostMapping
@@ -176,8 +191,9 @@ public class ProjectController {
             createdBy,
             request.customFields(),
             request.appliedFieldGroups());
+    var memberNames = resolveNames(List.of(project));
     return ResponseEntity.created(URI.create("/api/projects/" + project.getId()))
-        .body(ProjectResponse.from(project, Roles.PROJECT_LEAD, List.of()));
+        .body(ProjectResponse.from(project, Roles.PROJECT_LEAD, memberNames));
   }
 
   @PutMapping("/{id}")
@@ -196,7 +212,9 @@ public class ProjectController {
             request.customFields(),
             request.appliedFieldGroups());
     var tags = entityTagService.getEntityTags("PROJECT", id);
-    return ResponseEntity.ok(ProjectResponse.from(pwr.project(), pwr.projectRole(), tags));
+    var memberNames = resolveNames(List.of(pwr.project()));
+    return ResponseEntity.ok(
+        ProjectResponse.from(pwr.project(), pwr.projectRole(), tags, memberNames));
   }
 
   @DeleteMapping("/{id}")
@@ -252,6 +270,14 @@ public class ProjectController {
     return ResponseEntity.ok(unbilledTimeSummaryService.getProjectUnbilledSummary(id));
   }
 
+  private Map<UUID, String> resolveNames(List<Project> projects) {
+    var ids =
+        projects.stream().map(Project::getCreatedBy).filter(Objects::nonNull).distinct().toList();
+    if (ids.isEmpty()) return Map.of();
+    return memberRepository.findAllById(ids).stream()
+        .collect(Collectors.toMap(Member::getId, Member::getName, (a, b) -> a));
+  }
+
   private Map<String, String> extractCustomFieldFilters(Map<String, String> allParams) {
     var filters = new HashMap<String, String>();
     if (allParams != null) {
@@ -301,6 +327,7 @@ public class ProjectController {
       String name,
       String description,
       UUID createdBy,
+      String createdByName,
       Instant createdAt,
       Instant updatedAt,
       String projectRole,
@@ -309,11 +336,16 @@ public class ProjectController {
       List<TagResponse> tags) {
 
     public static ProjectResponse from(Project project) {
+      return from(project, Map.of());
+    }
+
+    public static ProjectResponse from(Project project, Map<UUID, String> memberNames) {
       return new ProjectResponse(
           project.getId(),
           project.getName(),
           project.getDescription(),
           project.getCreatedBy(),
+          project.getCreatedBy() != null ? memberNames.get(project.getCreatedBy()) : null,
           project.getCreatedAt(),
           project.getUpdatedAt(),
           null,
@@ -322,12 +354,14 @@ public class ProjectController {
           List.of());
     }
 
-    public static ProjectResponse from(Project project, String projectRole) {
+    public static ProjectResponse from(
+        Project project, String projectRole, Map<UUID, String> memberNames) {
       return new ProjectResponse(
           project.getId(),
           project.getName(),
           project.getDescription(),
           project.getCreatedBy(),
+          project.getCreatedBy() != null ? memberNames.get(project.getCreatedBy()) : null,
           project.getCreatedAt(),
           project.getUpdatedAt(),
           projectRole,
@@ -337,12 +371,16 @@ public class ProjectController {
     }
 
     public static ProjectResponse from(
-        Project project, String projectRole, List<TagResponse> tags) {
+        Project project,
+        String projectRole,
+        List<TagResponse> tags,
+        Map<UUID, String> memberNames) {
       return new ProjectResponse(
           project.getId(),
           project.getName(),
           project.getDescription(),
           project.getCreatedBy(),
+          project.getCreatedBy() != null ? memberNames.get(project.getCreatedBy()) : null,
           project.getCreatedAt(),
           project.getUpdatedAt(),
           projectRole,

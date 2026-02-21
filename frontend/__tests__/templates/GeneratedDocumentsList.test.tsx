@@ -26,7 +26,7 @@ const SAMPLE_DOCS = [
     templateName: "Engagement Letter",
     fileName: "engagement-letter.pdf",
     fileSize: 2048,
-    generatedBy: "John Doe",
+    generatedByName: "John Doe",
     generatedAt: "2026-01-15T10:00:00Z",
   },
   {
@@ -34,7 +34,7 @@ const SAMPLE_DOCS = [
     templateName: "Invoice Template",
     fileName: "invoice.pdf",
     fileSize: 1048576,
-    generatedBy: "Jane Smith",
+    generatedByName: "Jane Smith",
     generatedAt: "2026-01-16T14:00:00Z",
   },
 ];

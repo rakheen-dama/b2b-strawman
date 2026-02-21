@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public record InvoiceResponse(
@@ -28,12 +29,15 @@ public record InvoiceResponse(
     String customerAddress,
     String orgName,
     UUID createdBy,
+    String createdByName,
     UUID approvedBy,
+    String approvedByName,
     Instant createdAt,
     Instant updatedAt,
     List<InvoiceLineResponse> lines) {
 
-  public static InvoiceResponse from(Invoice invoice, List<InvoiceLineResponse> lines) {
+  public static InvoiceResponse from(
+      Invoice invoice, List<InvoiceLineResponse> lines, Map<UUID, String> memberNames) {
     return new InvoiceResponse(
         invoice.getId(),
         invoice.getCustomerId(),
@@ -54,7 +58,9 @@ public record InvoiceResponse(
         invoice.getCustomerAddress(),
         invoice.getOrgName(),
         invoice.getCreatedBy(),
+        invoice.getCreatedBy() != null ? memberNames.get(invoice.getCreatedBy()) : null,
         invoice.getApprovedBy(),
+        invoice.getApprovedBy() != null ? memberNames.get(invoice.getApprovedBy()) : null,
         invoice.getCreatedAt(),
         invoice.getUpdatedAt(),
         lines);

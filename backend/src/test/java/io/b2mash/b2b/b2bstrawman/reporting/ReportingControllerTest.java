@@ -414,6 +414,28 @@ class ReportingControllerTest {
             });
   }
 
+  @Test
+  void exportCsvWithoutAuthenticationReturns401() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/report-definitions/timesheet/export/csv")
+                .param("dateFrom", "2025-06-01")
+                .param("dateTo", "2025-06-30")
+                .param("groupBy", "member"))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void exportCsvUnknownSlugReturns404() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/report-definitions/nonexistent/export/csv")
+                .with(memberJwt())
+                .param("dateFrom", "2025-06-01")
+                .param("dateTo", "2025-06-30"))
+        .andExpect(status().isNotFound());
+  }
+
   // --- Helpers ---
 
   private JwtRequestPostProcessor memberJwt() {

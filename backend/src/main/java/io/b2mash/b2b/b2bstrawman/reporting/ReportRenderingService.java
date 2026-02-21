@@ -162,6 +162,10 @@ public class ReportRenderingService {
     if (value == null) {
       return "";
     }
+    // Defuse CSV formula injection (OWASP recommendation)
+    if (!value.isEmpty() && "=+-@\t\r".indexOf(value.charAt(0)) >= 0) {
+      value = "'" + value;
+    }
     if (value.contains(",")
         || value.contains("\"")
         || value.contains("\n")

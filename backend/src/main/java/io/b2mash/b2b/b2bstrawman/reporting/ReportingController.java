@@ -170,24 +170,26 @@ public class ReportingController {
     response.setContentType("text/csv; charset=UTF-8");
     response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
 
-    reportRenderingService.writeCsv(definition, result, parameters, response.getOutputStream());
-
-    auditService.log(
-        AuditEventBuilder.builder()
-            .eventType("REPORT_EXPORTED")
-            .entityType("REPORT")
-            .entityId(definition.getId())
-            .details(
-                Map.of(
-                    "slug",
-                    slug,
-                    "parameters",
-                    parameters,
-                    "format",
-                    "csv",
-                    "rowCount",
-                    result.totalElements()))
-            .build());
+    try {
+      reportRenderingService.writeCsv(definition, result, parameters, response.getOutputStream());
+    } finally {
+      auditService.log(
+          AuditEventBuilder.builder()
+              .eventType("REPORT_EXPORTED")
+              .entityType("REPORT")
+              .entityId(definition.getId())
+              .details(
+                  Map.of(
+                      "slug",
+                      slug,
+                      "parameters",
+                      parameters,
+                      "format",
+                      "csv",
+                      "rowCount",
+                      result.totalElements()))
+              .build());
+    }
   }
 
   // --- Request/Response DTOs ---

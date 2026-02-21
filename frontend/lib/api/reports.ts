@@ -1,6 +1,7 @@
 import "server-only";
 
 import { getAuthToken } from "@/lib/auth";
+import { redirect } from "next/navigation";
 import { api, ApiError } from "@/lib/api";
 
 // ---- Response Interfaces ----
@@ -115,7 +116,12 @@ export async function exportReportCsv(
   slug: string,
   parameters: Record<string, unknown>,
 ): Promise<string> {
-  const token = await getAuthToken();
+  let token: string;
+  try {
+    token = await getAuthToken();
+  } catch {
+    redirect("/sign-in");
+  }
   const qs = buildExportQueryParams(parameters);
 
   const response = await fetch(
@@ -138,7 +144,12 @@ export async function exportReportPdf(
   slug: string,
   parameters: Record<string, unknown>,
 ): Promise<string> {
-  const token = await getAuthToken();
+  let token: string;
+  try {
+    token = await getAuthToken();
+  } catch {
+    redirect("/sign-in");
+  }
   const qs = buildExportQueryParams(parameters);
 
   const response = await fetch(

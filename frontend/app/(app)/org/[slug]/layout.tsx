@@ -1,4 +1,5 @@
-import { getAuthContext } from "@/lib/auth";
+// CLERK-SPECIFIC: needs nullable orgId for redirect guard — not abstracted per ADR-085
+import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";
 import { DesktopSidebar } from "@/components/desktop-sidebar";
@@ -16,7 +17,7 @@ export default async function OrgLayout({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { orgSlug, orgId } = await getAuthContext();
+  const { orgSlug, orgId } = await auth();
 
   if (!orgId) {
     redirect("/dashboard");

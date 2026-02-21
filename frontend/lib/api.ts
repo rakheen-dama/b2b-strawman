@@ -58,7 +58,12 @@ interface ApiRequestOptions {
  * Use only in Server Components, Server Actions, or Route Handlers.
  */
 async function apiRequest<T>(endpoint: string, options: ApiRequestOptions = {}): Promise<T> {
-  const token = await getAuthToken();
+  let token: string;
+  try {
+    token = await getAuthToken();
+  } catch {
+    redirect("/sign-in");
+  }
 
   const response = await fetch(`${BACKEND_URL}${endpoint}`, {
     method: options.method || "GET",
@@ -372,7 +377,12 @@ export async function previewTemplate(
   id: string,
   entityId: string,
 ): Promise<string> {
-  const token = await getAuthToken();
+  let token: string;
+  try {
+    token = await getAuthToken();
+  } catch {
+    redirect("/sign-in");
+  }
 
   const response = await fetch(`${BACKEND_URL}/api/templates/${id}/preview`, {
     method: "POST",
@@ -403,7 +413,12 @@ export async function updateOrgSettings(
 }
 
 export async function uploadOrgLogo(file: File): Promise<OrgSettings> {
-  const token = await getAuthToken();
+  let token: string;
+  try {
+    token = await getAuthToken();
+  } catch {
+    redirect("/sign-in");
+  }
 
   const formData = new FormData();
   formData.append("file", file);
@@ -441,7 +456,12 @@ export async function generateDocument(
   entityId: string,
   saveToDocuments: boolean,
 ): Promise<GenerateDocumentResponse | Blob> {
-  const token = await getAuthToken();
+  let token: string;
+  try {
+    token = await getAuthToken();
+  } catch {
+    redirect("/sign-in");
+  }
 
   const response = await fetch(
     `${BACKEND_URL}/api/templates/${templateId}/generate`,
@@ -487,7 +507,12 @@ export async function deleteGeneratedDocument(id: string): Promise<void> {
 }
 
 export async function downloadGeneratedDocument(id: string): Promise<Blob> {
-  const token = await getAuthToken();
+  let token: string;
+  try {
+    token = await getAuthToken();
+  } catch {
+    redirect("/sign-in");
+  }
 
   const response = await fetch(
     `${BACKEND_URL}/api/generated-documents/${id}/download`,

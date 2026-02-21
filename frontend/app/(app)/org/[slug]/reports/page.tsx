@@ -19,10 +19,12 @@ export default async function ReportsPage({
   const { slug } = await params;
 
   let data: ReportListResponse = { categories: [] };
+  let fetchError = false;
   try {
     data = await getReportDefinitions();
-  } catch {
-    // Non-fatal: show empty state
+  } catch (e) {
+    console.error("Failed to fetch report definitions:", e);
+    fetchError = true;
   }
 
   return (
@@ -38,8 +40,12 @@ export default async function ReportsPage({
       {data.categories.length === 0 ? (
         <EmptyState
           icon={BarChart3}
-          title="No reports available"
-          description="Report definitions will appear here once configured."
+          title={fetchError ? "Unable to load reports" : "No reports available"}
+          description={
+            fetchError
+              ? "There was a problem loading report definitions. Please try again later."
+              : "Report definitions will appear here once configured."
+          }
         />
       ) : (
         data.categories.map((category) => (

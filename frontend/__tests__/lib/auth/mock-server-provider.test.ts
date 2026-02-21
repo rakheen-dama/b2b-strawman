@@ -50,7 +50,7 @@ describe("Mock auth provider", () => {
       userId: "user_e2e_alice",
       orgId: "org_e2e_test",
       orgSlug: "e2e-test-org",
-      orgRole: "owner",
+      orgRole: "org:owner",
     });
   });
 
@@ -90,6 +90,7 @@ describe("Mock auth provider", () => {
     expect(email).toBe("alice@e2e-test.local");
     expect(mockFetch).toHaveBeenCalledWith(
       expect.stringContaining("/userinfo/user_e2e_alice"),
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
     );
   });
 

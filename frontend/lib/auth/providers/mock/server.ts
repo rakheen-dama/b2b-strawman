@@ -51,7 +51,7 @@ export async function getAuthContext(): Promise<AuthContext> {
     userId,
     orgId: org.id,
     orgSlug: org.slg,
-    orgRole: org.rol,
+    orgRole: org.rol.startsWith("org:") ? org.rol : `org:${org.rol}`,
   };
 }
 
@@ -71,7 +71,9 @@ export async function getCurrentUserEmail(): Promise<string | null> {
   }
 
   try {
-    const response = await fetch(`${MOCK_IDP_URL}/userinfo/${userId}`);
+    const response = await fetch(`${MOCK_IDP_URL}/userinfo/${userId}`, {
+      signal: AbortSignal.timeout(3000),
+    });
     if (!response.ok) {
       return null;
     }
@@ -91,18 +93,15 @@ export async function requireRole(
     return;
   }
 
-  // Mock roles don't have "org:" prefix — they are just "owner", "admin", "member"
-  // Normalize: accept both "org:owner" and "owner" formats
-  const normalizedRole = orgRole.replace("org:", "");
-
-  if (role === "owner" && normalizedRole !== "owner") {
+  // orgRole is always normalized to "org:" prefix format (matches Clerk convention)
+  if (role === "owner" && orgRole !== "org:owner") {
     throw new Error("Insufficient permissions — owner role required");
   }
 
   if (
     role === "admin" &&
-    normalizedRole !== "admin" &&
-    normalizedRole !== "owner"
+    orgRole !== "org:admin" &&
+    orgRole !== "org:owner"
   ) {
     throw new Error("Insufficient permissions — admin role required");
   }

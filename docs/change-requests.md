@@ -33,6 +33,9 @@ UX improvements and design refinements identified during product walkthrough tes
 
 ## CR-002: Ability to attach checklists to tasks
 
+**Status**: RESOLVED — rejected checklist reuse, implemented lightweight task sub-items (PR #279)
+**Decision doc**: `docs/cr-002-task-checklists-design.md`
+
 **Priority**: low
 **Area**: Both — Tasks + Checklists
 **Found in**: Task management workflow
@@ -61,6 +64,37 @@ Reuse the existing checklist system by broadening its scope from customer-only t
 - `ChecklistInstanceController` — new endpoints for task-scoped checklists
 - Task detail frontend — render checklist panel
 - Migration — schema changes to `checklist_instances` table
+
+---
+
+## CR-003: Project template tasks should include sub-items
+
+**Priority**: low
+**Area**: Both — Project Templates + Task Sub-Items
+**Found in**: Project creation from template
+**Follows**: CR-002 (task sub-items, merged in PR #279)
+
+**Description**: When a project is created from a template, preset `TemplateTask` rows become real `Task` rows — but the new task sub-items feature (PR #279) isn't wired into the template system. Templates can define tasks with title, description, assignee role, and estimated hours, but cannot define sub-items per task. A template for "Annual Return Preparation" should be able to preset sub-items like "Collect IRP5s", "Verify tax certificates" on each task.
+
+**Current Implementation**: `ProjectTemplateService.instantiateTemplate()` loops over `TemplateTask` rows and creates `Task` entities. `TemplateTask` (`template_tasks` table) has: `name`, `description`, `estimatedHours`, `sortOrder`, `billable`, `assigneeRole`. No sub-item concept exists on the template side.
+
+**Suggested Change**:
+1. New migration (V34): `template_task_items` table — `id`, `template_task_id` (FK CASCADE), `title` (VARCHAR 500), `sort_order` (INT)
+2. New entity: `TemplateTaskItem` (~40 lines) + `TemplateTaskItemRepository` (1 query method)
+3. In `ProjectTemplateService.instantiateTemplate()`, after creating each `Task`, query its `TemplateTaskItem` rows and create `TaskItem` rows with matching titles and sort orders (~10 lines in the existing loop)
+4. Extend `TemplateTask` DTOs to accept/return `items: [{title, sortOrder}]`
+5. Frontend: template editor form — add nested sub-item inputs per template task (the most work)
+6. 3-4 new test cases in existing `ProjectTemplateIntegrationTest`
+
+**Estimated Effort**: ~1 slice (backend is trivial, frontend template editor is the bulk)
+
+**Affected Files**:
+- `backend/src/main/resources/db/migration/tenant/V34__*.sql` — new table
+- `backend/.../projecttemplate/TemplateTaskItem.java` — new entity
+- `backend/.../projecttemplate/TemplateTaskItemRepository.java` — new repo
+- `backend/.../projecttemplate/ProjectTemplateService.java` — extend instantiation loop
+- `backend/.../projecttemplate/ProjectTemplateDtos.java` — extend DTOs
+- `frontend/components/project-templates/template-task-form.tsx` — nested sub-item inputs
 
 ---
 

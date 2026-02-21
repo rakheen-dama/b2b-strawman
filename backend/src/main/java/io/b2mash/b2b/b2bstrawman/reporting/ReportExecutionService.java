@@ -24,14 +24,26 @@ public class ReportExecutionService {
       List<ReportQuery> queries,
       ReportDefinitionRepository reportDefinitionRepository,
       AuditService auditService) {
-    // Collectors.toMap throws IllegalStateException on duplicate keys
     this.queryMap =
-        queries.stream().collect(Collectors.toMap(ReportQuery::getSlug, Function.identity()));
+        queries.stream()
+            .collect(
+                Collectors.toMap(
+                    ReportQuery::getSlug,
+                    Function.identity(),
+                    (existing, duplicate) -> {
+                      throw new IllegalStateException(
+                          "Duplicate ReportQuery slug '"
+                              + existing.getSlug()
+                              + "': "
+                              + existing.getClass().getSimpleName()
+                              + " and "
+                              + duplicate.getClass().getSimpleName());
+                    }));
     this.reportDefinitionRepository = reportDefinitionRepository;
     this.auditService = auditService;
   }
 
-  @Transactional(readOnly = true)
+  @Transactional
   public ReportExecutionResponse execute(
       String slug, Map<String, Object> parameters, Pageable pageable) {
     var definition =
@@ -93,16 +105,21 @@ public class ReportExecutionService {
       ReportResult result,
       Pageable pageable) {
     var colDefs = definition.getColumnDefinitions();
+    var rawColumns = colDefs.get("columns");
+    if (rawColumns == null) {
+      throw new InvalidStateException(
+          "Invalid report definition",
+          "ReportDefinition '"
+              + definition.getSlug()
+              + "' has invalid column_definitions: missing 'columns' array");
+    }
     var columns =
-        ((List<Map<String, String>>) colDefs.get("columns"))
+        ((List<Map<String, String>>) rawColumns)
             .stream()
                 .map(
                     c ->
                         new ColumnDefinition(
-                            c.get("key"),
-                            c.get("label"),
-                            c.get("type"),
-                            c.getOrDefault("format", null)))
+                            c.get("key"), c.get("label"), c.get("type"), c.get("format")))
                 .toList();
 
     return new ReportExecutionResponse(

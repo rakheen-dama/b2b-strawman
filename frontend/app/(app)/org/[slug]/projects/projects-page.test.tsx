@@ -1,8 +1,10 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import ProjectsPage from "./page";
 import type { Project } from "@/lib/types";
+
+// Mock server-only before any imports that pull it in
+vi.mock("server-only", () => ({}));
 
 // Mock Clerk auth
 const mockAuth = vi.fn();
@@ -25,6 +27,9 @@ vi.mock("@/lib/api", () => ({
 vi.mock("@/lib/api/templates", () => ({
   getProjectTemplates: vi.fn().mockResolvedValue([]),
 }));
+
+// Import page after mocks are set up
+import ProjectsPage from "./page";
 
 // Mock NewFromTemplateDialog (client component with hooks)
 vi.mock("@/components/templates/NewFromTemplateDialog", () => ({

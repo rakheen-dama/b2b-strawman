@@ -7,6 +7,12 @@ import type { TemplateListResponse } from "@/lib/types";
 const mockPreviewTemplate = vi.fn();
 const mockGenerateDocument = vi.fn();
 
+vi.mock("next/navigation", () => ({
+  useSearchParams: () => new URLSearchParams(),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  usePathname: () => "/org/acme/projects/proj-1",
+}));
+
 vi.mock("@/app/(app)/org/[slug]/settings/templates/actions", () => ({
   previewTemplateAction: (...args: unknown[]) => mockPreviewTemplate(...args),
   generateDocumentAction: (...args: unknown[]) => mockGenerateDocument(...args),

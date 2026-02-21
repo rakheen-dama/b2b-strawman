@@ -162,7 +162,7 @@ public class CostRateController {
       return new CostRateResponse(
           rate.getId(),
           rate.getMemberId(),
-          memberNames.get(rate.getMemberId()),
+          memberNames.getOrDefault(rate.getMemberId(), ""),
           rate.getCurrency(),
           rate.getHourlyCost(),
           rate.getEffectiveFrom(),

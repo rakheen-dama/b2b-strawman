@@ -191,43 +191,293 @@ All 9 entities above have been fixed. The remaining issues below were discovered
 
 > Found during the PR #276 code review. These are NOT regressions — they existed before the member name work.
 
-### 10. RecurringScheduleService — N+1 per schedule in `list()`
+### 10. RecurringScheduleService — 3N+1 queries per list call
 
-**Status**: Pre-existing bug. `resolveMemberName()` calls `memberRepository.findById()` per schedule instead of batch-loading.
+**Status**: ✅ DONE — batch-loaded in fix/n-plus-one-batch-loading branch. `buildResponse()` made 3 individual `findById()` calls per schedule.
 
-| What | Where |
-|------|-------|
-| N+1 source | `schedule/RecurringScheduleService.java` — `resolveMemberName()` (~line 647-651) |
-| Affected endpoint | `list()` (~line 246) — iterates schedules, calls `buildResponse()` per item |
-| Also N+1 | `resolveTemplateName()` and `resolveCustomerName()` in same file — same per-entity `findById()` pattern |
+| What | Where | Detail |
+|------|-------|--------|
+| N+1 source #1 | `RecurringScheduleService.java:639-641` | `resolveTemplateName()` → `ProjectTemplateRepository.findById()` per schedule |
+| N+1 source #2 | `RecurringScheduleService.java:643-645` | `resolveCustomerName()` → `CustomerRepository.findById()` per schedule |
+| N+1 source #3 | `RecurringScheduleService.java:647-652` | `resolveMemberName()` → `MemberRepository.findById()` per schedule |
+| Affected endpoint | `list()` (line 246) | Streams all schedules through `buildResponse()` |
+| Secondary N+1 | `listExecutions()` (line 362) | `buildExecutionResponse()` → `projectRepository.findById()` per execution (up to 50) |
+| Missing field | `ScheduleResponse` | Has `UUID createdBy` but no `String createdByName` — missed in PR #276 |
 
-**Fix**: Extract all `projectLeadMemberId` + `createdBy` UUIDs from the schedule list, batch-load via `findAllById()`, pass `Map<UUID, String>` into `buildResponse()`. Same for template and customer names.
+**Impact**: 10 schedules = 30 queries. 50 schedules = 150 queries. Plus up to 50 more for executions.
 
-**Bonus**: `ScheduleResponse` has `UUID createdBy` but no `String createdByName` — add it while fixing the N+1.
+**Fix plan**:
+1. Add three batch-load helpers: `resolveTemplateNames()`, `resolveCustomerNames()`, `resolveMemberNames()` — collect IDs from schedule list, `findAllById()`, return `Map<UUID, String>`
+2. Modify `list()` to call batch-loaders once, pass maps into `buildResponse(schedule, templateNames, customerNames, memberNames)`
+3. Add batch `resolveProjectNames()` for `listExecutions()`
+4. Add `createdByName` to `ScheduleResponse` (include `createdBy` in member batch-load)
+5. Keep single-item methods (`get()`, `create()`, etc.) with individual resolution — 3 queries for 1 item is acceptable
 
 ---
 
 ### 11. DataRequestController — N+1 for customer names in `listRequests()`
 
-**Status**: Pre-existing. `resolveCustomerName()` calls `customerRepository.findById()` per request.
+**Status**: ✅ DONE — batch-loaded in fix/n-plus-one-batch-loading branch. `resolveCustomerName()` (line 170-172) called `customerRepository.findById()` per request.
 
-| What | Where |
-|------|-------|
-| N+1 source | `datarequest/DataRequestController.java` — `resolveCustomerName()` (~line 170) |
-| Affected endpoint | `listRequests()` (~line 62) — iterates requests, resolves customer name per item |
+| What | Where | Detail |
+|------|-------|--------|
+| N+1 source | `DataRequestController.java:170-172` | `resolveCustomerName()` — per-request `findById()` |
+| Affected endpoint | `listRequests()` (line 62-76) | Iterates requests, resolves customer name per item |
+| Already fixed | `resolveMemberNames()` (lines 174-186) | Member names correctly batch-loaded in PR #276 |
+| Repository | `CustomerRepository` | `findAllById()` inherited from `JpaRepository` — ready to use |
 
-**Fix**: Collect all `customerId` UUIDs, batch-load via `customerRepository.findAllById()`, pass `Map<UUID, String>` into `DataRequestResponse.from()`.
-
-Note: Member names in this controller were fixed correctly in PR #276 (batch `resolveMemberNames()`). Only the customer name path is N+1.
+**Fix plan**:
+1. Add `resolveCustomerNames(List<DataSubjectRequest>)` — mirror existing `resolveMemberNames()` pattern
+2. Update `listRequests()` to batch-load customer names: `var customerNames = resolveCustomerNames(requests)`
+3. Change `DataRequestResponse.from()` call to use `customerNames.getOrDefault(req.getCustomerId(), "Unknown")`
+4. Delete per-item `resolveCustomerName()` method
 
 ---
 
-### 12. CostRateResponse — missing null guard
+### 12. CostRateResponse + BillingRateResponse — missing null guards on member name lookup
 
-**Status**: Pre-existing. `memberNames.get(rate.getMemberId())` has no null guard — will NPE if `memberId` is null.
+**Status**: ✅ DONE — null guards added in fix/n-plus-one-batch-loading branch. `memberNames.get(rate.getMemberId())` had no fallback if member was deleted after cost/billing rate was created.
 
-| What | Where |
-|------|-------|
-| Risk | `costrate/CostRateController.java` — `CostRateResponse.from()` (~line 163) |
+| What | Where | Detail |
+|------|-------|--------|
+| CostRate risk | `CostRateController.java:165` | `CostRateResponse.from()` — `memberNames.get(rate.getMemberId())` with no fallback |
+| BillingRate risk | `BillingRateController.java:228` | `BillingRateResponse.from()` — same pattern (newly discovered) |
+| DB constraint | `CostRate.java:22-23` | `@Column(nullable = false)` — DB prevents null `memberId`, but doesn't prevent missing lookups |
+| Note | BillingRateController lines 230/232 | `projectId`/`customerId` correctly guarded with ternary — only `memberId` is unguarded |
 
-**Fix**: Add `rate.getMemberId() != null ? memberNames.get(rate.getMemberId()) : null` (same pattern as all other entities).
+**Fix plan**:
+1. `CostRateResponse.from()`: change to `memberNames.getOrDefault(rate.getMemberId(), "")`
+2. `BillingRateResponse.from()`: change to `memberNames.getOrDefault(rate.getMemberId(), "")`
+3. Consistent with collector pattern `m.getName() != null ? m.getName() : ""` used in `resolveMemberNames()`
+
+---
+
+## 13. Member Webhook Sync — Founding Member Placeholder Data (ROOT CAUSE)
+
+> **Priority**: P0 | **Status**: DONE (PR #277) | **Risk**: Medium (touches auth/member pipeline)
+
+### Problem
+
+The org founding member has `user_39p2TMx0TN7d9ypFbq4FhY35dQX` as their name and `user_39p2TMx0TN7d9ypFbq4FhY35dQX@placeholder.internal` as their email in the `members` table. The Clerk user has a real first/last name set. This means all the companion `{field}Name` work from PR #276 correctly resolves... to a Clerk user ID string.
+
+### Root Cause Analysis
+
+Two code paths can create a `Member` record, and they race:
+
+1. **`MemberFilter.lazyCreateMember()`** (`member/MemberFilter.java:113-139`) — fires on the **first authenticated API request**. Only has the JWT `sub` claim (Clerk user ID). Creates a member with placeholder data:
+   - `name` = `clerkUserId` (the raw `user_39p2TMx...` string)
+   - `email` = `clerkUserId + "@placeholder.internal"`
+   - `avatarUrl` = `null`
+
+2. **`MemberSyncService.syncMember()`** (`member/MemberSyncService.java:48-98`) — fires when the Clerk `organizationMembership.created` webhook arrives. Has real name/email from Clerk API. If the member already exists, calls `member.updateFrom(email, name, avatarUrl, orgRole)`.
+
+**The race — CONFIRMED via Clerk webhook logs**:
+
+Clerk fires `organization.created` and `organizationMembership.created` within **8ms** of each other (`created_at: 1771378703848` vs `1771378703856`). The webhook payload contains the correct data (`first_name: "Rakheen"`, `last_name: "Dama"`, `email: "rakheend.subscriptions@gmail.com"`), so the webhook **was delivered**.
+
+The failure happens in `MemberSyncService.syncMember()` at line 55:
+```java
+String schemaName = resolveSchema(clerkOrgId);
+```
+which calls (line 160-166):
+```java
+private String resolveSchema(String clerkOrgId) {
+    return mappingRepository.findByClerkOrgId(clerkOrgId)
+        .orElseThrow(() -> new IllegalArgumentException("No tenant provisioned for org: " + clerkOrgId))
+        .getSchemaName();
+}
+```
+
+If the `organizationMembership.created` webhook is processed before the `organization.created` provisioning completes (which creates the `org_schema_mapping` row), `resolveSchema` throws `IllegalArgumentException`. The frontend webhook handler catches and logs this silently (`frontend/lib/webhook-handlers.ts:153-159`), and the member is never synced. The user's subsequent API requests hit `MemberFilter.lazyCreateMember()` which stores the Clerk user ID as the name.
+
+**This affects EVERY new org's founding member** — it's not a one-off.
+
+### Contributing Factors
+
+| Factor | File | Issue |
+|--------|------|-------|
+| Webhook race: membership sync before provisioning completes | `member/MemberSyncService.java:160-166` | `resolveSchema()` throws if schema not yet provisioned |
+| Webhook error swallowed silently | `frontend/lib/webhook-handlers.ts:153-159` | `catch` logs but doesn't retry — member permanently stuck |
+| Placeholder uses raw Clerk ID as name | `member/MemberFilter.java:119` | `clerkUserId` used as name — should be `null` or `"Unknown"` |
+| `updateFrom()` blindly overwrites with null | `member/Member.java:85-91` | If webhook sends `name: null`, it blanks existing data instead of preserving it |
+| Webhook swallows errors | `frontend/lib/webhook-handlers.ts:153-159` | `catch` logs but doesn't retry or flag the member as stale |
+| No self-healing mechanism | `member/MemberFilter.java:106-111` | `resolveOrCreateMember` doesn't detect or log stale placeholder members |
+| No re-sync endpoint for members | — | No way to trigger a bulk member re-sync from Clerk |
+| Cache hides staleness | `member/MemberFilter.java:32-33` | Caffeine cache (1h TTL) means even if the DB is fixed, the stale ID is cached |
+
+### Confirmed Root Cause (from investigation)
+
+The race condition is **architectural** — Clerk fires `organization.created` and `organizationMembership.created` as independent HTTP requests (8ms apart). Even though the frontend `handleOrganizationCreated()` awaits provisioning before returning, it only blocks *its own handler*. A separate `organizationMembership.created` request can be processed concurrently on another server process.
+
+**Timeline of failure:**
+```
+T+0ms     Clerk fires organization.created → Frontend handler A starts
+T+8ms     Clerk fires organizationMembership.created → Frontend handler B starts
+T+8ms     Handler B calls POST /internal/members/sync
+T+8ms     MemberSyncService.resolveSchema() → findByClerkOrgId() → EMPTY
+T+8ms     ❌ IllegalArgumentException("No tenant provisioned for org: ...")
+T+8ms     Handler B catches error, logs, returns 200 to Clerk (no retry)
+T+1500ms  Handler A finishes provisioning (schema + 28 migrations + seeders + mapping)
+T+5000ms  User's first API request → MemberFilter.lazyCreateMember()
+T+5000ms  Member saved with name="user_39p2TMx..." email="user_39p2TMx...@placeholder.internal"
+T+5000ms  Member cached in Caffeine for 1 hour → stale data served everywhere
+```
+
+**This affects EVERY new org's founding member** — the 8ms gap is faster than the 1-3s provisioning time.
+
+---
+
+### Solution Design
+
+#### Approach: Retry with backoff in `syncMember()` (backend-side)
+
+**Why backend, not frontend?** The frontend webhook handler is fire-and-forget by design (returns 200 to Clerk immediately). Adding retry logic in the backend's `MemberSyncService` is simpler, keeps the fix in one layer, and handles any future callers of the sync endpoint.
+
+**Why not a queue?** Overkill for a 1-3s delay. A simple retry loop with `Thread.sleep()` (or virtual thread equivalent) is sufficient — this is an internal endpoint called once per member creation.
+
+---
+
+### Implementation Plan
+
+#### Layer 1: Fix the race (P0)
+
+| # | What | Where | Details |
+|---|------|-------|---------|
+| A | **Retry `resolveSchema()` with backoff** | `MemberSyncService.java:55` | If `findByClerkOrgId()` returns empty, retry up to 5 times with 500ms intervals (total wait: up to 2.5s). Only for `IllegalArgumentException` from `resolveSchema()`. Log each retry at WARN level. |
+| B | **Change placeholder name to `null`** | `MemberFilter.java:119` | `new Member(clerkUserId, clerkUserId + "@placeholder.internal", null, null, orgRole)` — name becomes `null` instead of the raw Clerk user ID. Companion `*Name` fields already handle null → `"—"` in the frontend. |
+| C | **Make `updateFrom()` null-safe** | `Member.java:85-91` | Only overwrite a field if the new value is non-null: `if (email != null) this.email = email;` etc. Prevents Clerk sending partial data from blanking existing fields. |
+
+**Layer 1 is a single PR — ~20 lines of production code.**
+
+#### Layer 2: Self-healing for existing data (P1)
+
+| # | What | Where | Details |
+|---|------|-------|---------|
+| D | **Add `GET /internal/members/stale`** | New endpoint in `MemberSyncController` | `memberRepository.findByEmailEndingWith("@placeholder.internal")` — returns list of `{clerkUserId, name, email}`. Requires a new repo method. |
+| E | **Add `POST /internal/members/sync-all`** | New endpoint in `MemberSyncController` | Accepts `List<SyncMemberRequest>`, loops through `syncMember()` for each. Idempotent — safe to call repeatedly. |
+| F | **Frontend stale-member repair on org load** | `frontend/lib/webhook-handlers.ts` or a new API route | On `organization.created` (after provisioning succeeds), re-fetch all org members from Clerk API and POST to `/internal/members/sync-all`. This catches the founder who was missed during the race. |
+
+**Alternative for F**: Instead of a webhook-time repair, add a **Server Component check** on the Settings page that calls `/internal/members/stale` and shows a "Re-sync members" button for admins.
+
+#### Layer 3: Observability (P2)
+
+| # | What | Where | Details |
+|---|------|-------|---------|
+| G | **Log stale member detection on login** | `MemberFilter.resolveOrCreateMember()` | After finding an existing member, check if `email` ends with `@placeholder.internal`. If so, log WARN: `"Stale placeholder member detected: {clerkUserId} in tenant {tenantId}"`. |
+| H | **Evict cache on sync** | `MemberSyncService.syncMember()` | After updating a member, call `memberFilter.evictFromCache(tenantId, clerkUserId)` — already done in `deleteMember()` but missing in `syncMember()`. This ensures the next request picks up the real name. |
+
+---
+
+### Recommended Implementation Order
+
+```
+1. ✅ Layer 1A (retry in syncMember)     — eliminates the race for all new orgs
+2. ✅ Layer 1B (null placeholder name)   — stops showing Clerk user IDs in UI
+3. ✅ Layer 1C (null-safe updateFrom)    — defensive, prevents future data loss
+4. ✅ Layer 2H (cache eviction on sync)  — ensures fixed data propagates immediately
+5. ✅ Layer 2D (stale endpoint)          — enables data repair for existing orgs
+6. Layer 2E+F (bulk sync + auto-repair) — self-healing, no manual intervention
+7. Layer 3G (login detection)           — observability for any remaining edge cases
+```
+
+Items 1–5 shipped in PR #277 (18 files, +323/-63). Also fixed null-safe `Collectors.toMap()` across 12 controllers (cascade from 1B). Items 6–7 can follow.
+
+---
+
+### Code Sketches
+
+#### 1A: Retry in `MemberSyncService.syncMember()`
+
+```java
+// Replace: String schemaName = resolveSchema(clerkOrgId);
+// With:
+String schemaName = resolveSchemaWithRetry(clerkOrgId);
+
+private String resolveSchemaWithRetry(String clerkOrgId) {
+    for (int attempt = 1; attempt <= 5; attempt++) {
+        var mapping = mappingRepository.findByClerkOrgId(clerkOrgId);
+        if (mapping.isPresent()) {
+            return mapping.get().getSchemaName();
+        }
+        if (attempt < 5) {
+            log.warn("Schema not yet provisioned for org {} (attempt {}/5), retrying in 500ms...",
+                clerkOrgId, attempt);
+            try { Thread.sleep(500); } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalArgumentException("Interrupted while waiting for schema: " + clerkOrgId);
+            }
+        }
+    }
+    throw new IllegalArgumentException("No tenant provisioned for org after 5 attempts: " + clerkOrgId);
+}
+```
+
+#### 1B: Null placeholder name in `MemberFilter.lazyCreateMember()`
+
+```java
+// Change line 119 from:
+var member = new Member(clerkUserId, clerkUserId + "@placeholder.internal", clerkUserId, null, orgRole);
+// To:
+var member = new Member(clerkUserId, clerkUserId + "@placeholder.internal", null, null, orgRole);
+```
+
+#### 1C: Null-safe `Member.updateFrom()`
+
+```java
+public void updateFrom(String email, String name, String avatarUrl, String orgRole) {
+    if (email != null) this.email = email;
+    if (name != null) this.name = name;
+    if (avatarUrl != null) this.avatarUrl = avatarUrl;
+    if (orgRole != null) this.orgRole = orgRole;
+    this.updatedAt = Instant.now();
+}
+```
+
+#### 2H: Cache eviction in `MemberSyncService.syncMember()`
+
+```java
+// After member save (both create and update paths), add:
+memberFilter.evictFromCache(schemaName, clerkUserId);
+```
+
+---
+
+### Data Repair (existing stale members)
+
+For orgs already affected, run after deploying Layer 2D+E:
+
+```bash
+# 1. Find all tenant schemas
+psql -c "SELECT schema_name, clerk_org_id FROM public.org_schema_mapping;"
+
+# 2. For each schema, find stale members
+psql -c "SELECT clerk_user_id, name, email FROM tenant_abc123.members WHERE email LIKE '%@placeholder.internal';"
+
+# 3. Use the /internal/members/sync-all endpoint with data from Clerk API
+# Or manually update:
+psql -c "UPDATE tenant_abc123.members SET name='Rakheen Dama', email='rakheend.subscriptions@gmail.com' WHERE clerk_user_id='user_39p2TMx0TN7d9ypFbq4FhY35dQX';"
+```
+
+---
+
+### Tests Required
+
+| Test | Where | What |
+|------|-------|------|
+| Retry succeeds after delay | `MemberSyncServiceIntegrationTest` | Create member sync request without provisioning first, provision in a separate thread after 1s, assert member is synced with real data |
+| Retry exhausted | `MemberSyncServiceIntegrationTest` | Call sync without ever provisioning, assert `IllegalArgumentException` after 5 attempts |
+| Null-safe updateFrom | `MemberTest` (unit) | Call `updateFrom(null, null, null, null)` on a member with real data, assert fields unchanged |
+| Placeholder name is null | `MemberFilterIntegrationTest` | Assert lazy-created member has `name == null` (not the Clerk user ID) |
+| Cache eviction on sync | `MemberSyncServiceIntegrationTest` | Lazy-create member (placeholder), sync with real data, assert subsequent `MemberFilter` resolution returns real name |
+| Stale endpoint | `MemberSyncControllerIntegrationTest` | Create placeholder member, call `GET /internal/members/stale`, assert it appears |
+
+---
+
+### Decisions NOT Taken (and why)
+
+| Option | Rejected Because |
+|--------|-----------------|
+| **Fetch from Clerk API in `MemberFilter`** (Layer 3I in original) | Adds 100-300ms latency to every first request per member. The retry approach fixes the root cause without impacting request latency. |
+| **Frontend-side retry in webhook handler** | The webhook handler returns 200 to Clerk regardless. Adding frontend retry means managing timeouts, state, and error handling across two layers. Backend retry is self-contained. |
+| **Event queue between provisioning and member sync** | Over-engineered for a 1-3s delay. `Thread.sleep()` is fine for an internal endpoint called once per member creation. |
+| **Make `MemberFilter` never create placeholders** | Would break the first-request flow — member ID is needed for `RequestScopes.MEMBER_ID` binding, which all downstream services depend on. |

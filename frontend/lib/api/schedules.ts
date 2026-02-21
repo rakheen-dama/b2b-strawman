@@ -26,6 +26,7 @@ export interface ScheduleResponse {
   projectLeadName: string | null;
   nameOverride: string | null;
   createdBy: string;
+  createdByName: string | null;
   createdAt: string;
   updatedAt: string;
 }

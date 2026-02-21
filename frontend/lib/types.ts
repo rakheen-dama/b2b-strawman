@@ -86,6 +86,7 @@ export interface ProjectMember {
   email: string;
   avatarUrl: string | null;
   projectRole: ProjectRole;
+  orgRole: string;
   createdAt: string;
 }
 

@@ -10,4 +10,5 @@ public record ProjectMemberInfo(
     String email,
     String avatarUrl,
     String projectRole,
+    String orgRole,
     Instant createdAt) {}

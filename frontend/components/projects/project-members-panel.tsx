@@ -25,9 +25,14 @@ import { removeProjectMember } from "@/app/(app)/org/[slug]/projects/[id]/member
 import { formatDate } from "@/lib/format";
 import type { ProjectMember, ProjectRole } from "@/lib/types";
 
-const ROLE_BADGE: Record<string, { label: string; variant: "lead" | "member" }> = {
+const ROLE_BADGE: Record<
+  string,
+  { label: string; variant: "lead" | "member" | "admin" | "owner" }
+> = {
   lead: { label: "Lead", variant: "lead" },
   member: { label: "Member", variant: "member" },
+  admin: { label: "Admin", variant: "admin" },
+  owner: { label: "Owner", variant: "owner" },
 };
 
 const DEFAULT_BADGE = { label: "Member", variant: "member" } as const;
@@ -155,7 +160,11 @@ export function ProjectMembersPanel({
           </TableHeader>
           <TableBody>
             {members.map((member) => {
-              const badge = ROLE_BADGE[member.projectRole] ?? DEFAULT_BADGE;
+              const displayRole =
+                member.orgRole === "admin" || member.orgRole === "owner"
+                  ? member.orgRole
+                  : member.projectRole;
+              const badge = ROLE_BADGE[displayRole] ?? DEFAULT_BADGE;
               const isLead = member.projectRole === "lead";
               const isRemoving = removingMemberId === member.memberId;
 

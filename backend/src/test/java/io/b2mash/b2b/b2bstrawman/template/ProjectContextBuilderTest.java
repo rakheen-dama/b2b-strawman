@@ -190,10 +190,24 @@ class ProjectContextBuilderTest {
     var devId = UUID.randomUUID();
     var leadInfo =
         new ProjectMemberInfo(
-            UUID.randomUUID(), leadId, "Lead User", "lead@test.com", null, "lead", Instant.now());
+            UUID.randomUUID(),
+            leadId,
+            "Lead User",
+            "lead@test.com",
+            null,
+            "lead",
+            "owner",
+            Instant.now());
     var devInfo =
         new ProjectMemberInfo(
-            UUID.randomUUID(), devId, "Dev User", "dev@test.com", null, "member", Instant.now());
+            UUID.randomUUID(),
+            devId,
+            "Dev User",
+            "dev@test.com",
+            null,
+            "member",
+            "member",
+            Instant.now());
     when(projectMemberRepository.findProjectMembersWithDetails(projectId))
         .thenReturn(List.of(leadInfo, devInfo));
 

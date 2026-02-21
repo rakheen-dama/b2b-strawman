@@ -84,6 +84,7 @@ public class ProjectMemberController {
       String email,
       String avatarUrl,
       String projectRole,
+      String orgRole,
       Instant createdAt) {
 
     public static ProjectMemberResponse from(ProjectMemberInfo info) {
@@ -94,6 +95,7 @@ public class ProjectMemberController {
           info.email(),
           info.avatarUrl(),
           info.projectRole(),
+          info.orgRole(),
           info.createdAt());
     }
   }

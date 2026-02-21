@@ -74,8 +74,32 @@ class ProjectMemberIntegrationTest {
         .andExpect(jsonPath("$", hasSize(1)))
         .andExpect(jsonPath("$[0].memberId").value(ownerMemberId))
         .andExpect(jsonPath("$[0].projectRole").value("lead"))
+        .andExpect(jsonPath("$[0].orgRole").value("owner"))
         .andExpect(jsonPath("$[0].name").value("Owner"))
         .andExpect(jsonPath("$[0].email").value("owner@test.com"));
+  }
+
+  @Test
+  void memberListIncludesOrgRoleForAdminAddedAsProjectMember() throws Exception {
+    var projectId = createProject(adminJwt(), "OrgRole Test Project");
+
+    // Admin created the project (lead), add a regular member
+    mockMvc
+        .perform(
+            post("/api/projects/" + projectId + "/members")
+                .with(adminJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"memberId\": \"%s\"}".formatted(memberMemberId)))
+        .andExpect(status().isCreated());
+
+    mockMvc
+        .perform(get("/api/projects/" + projectId + "/members").with(adminJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasSize(2)))
+        .andExpect(
+            jsonPath("$[?(@.memberId == '%s')].orgRole".formatted(adminMemberId)).value("admin"))
+        .andExpect(
+            jsonPath("$[?(@.memberId == '%s')].orgRole".formatted(memberMemberId)).value("member"));
   }
 
   // --- Add member ---

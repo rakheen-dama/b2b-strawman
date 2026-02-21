@@ -42,6 +42,7 @@ const mockMembers: ProjectMember[] = [
     email: "alice@example.com",
     avatarUrl: null,
     projectRole: "lead",
+    orgRole: "member",
     createdAt: "2024-01-15T10:00:00Z",
   },
   {
@@ -51,6 +52,7 @@ const mockMembers: ProjectMember[] = [
     email: "bob@example.com",
     avatarUrl: null,
     projectRole: "member",
+    orgRole: "member",
     createdAt: "2024-01-20T14:30:00Z",
   },
 ];
@@ -209,6 +211,68 @@ describe("ProjectMembersPanel", () => {
       await user.click(actionButton);
 
       expect(screen.queryByTestId("transfer-lead-dialog")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("org role badge display", () => {
+    it("displays Admin badge when member has orgRole admin", () => {
+      const adminMember: ProjectMember = {
+        id: "pm3",
+        memberId: "user3",
+        name: "Carol Admin",
+        email: "carol@example.com",
+        avatarUrl: null,
+        projectRole: "member",
+        orgRole: "admin",
+        createdAt: "2024-01-25T10:00:00Z",
+      };
+
+      render(<ProjectMembersPanel {...defaultProps} members={[adminMember]} />);
+
+      expect(screen.getByText("Admin")).toBeInTheDocument();
+      // The "Member" text should only appear as the table column header, not as a role badge
+      const memberTexts = screen.getAllByText("Member");
+      // Only the table column header should contain "Member", not a badge
+      expect(memberTexts).toHaveLength(1);
+      expect(memberTexts[0].tagName).toBe("TH");
+    });
+
+    it("displays Owner badge when member has orgRole owner", () => {
+      const ownerMember: ProjectMember = {
+        id: "pm4",
+        memberId: "user4",
+        name: "Dave Owner",
+        email: "dave@example.com",
+        avatarUrl: null,
+        projectRole: "member",
+        orgRole: "owner",
+        createdAt: "2024-01-25T10:00:00Z",
+      };
+
+      render(<ProjectMembersPanel {...defaultProps} members={[ownerMember]} />);
+
+      expect(screen.getByText("Owner")).toBeInTheDocument();
+      // The "Member" text should only appear as the table column header, not as a role badge
+      const memberTexts = screen.getAllByText("Member");
+      expect(memberTexts).toHaveLength(1);
+      expect(memberTexts[0].tagName).toBe("TH");
+    });
+
+    it("displays project role badge when orgRole is member", () => {
+      const regularMember: ProjectMember = {
+        id: "pm5",
+        memberId: "user5",
+        name: "Eve Regular",
+        email: "eve@example.com",
+        avatarUrl: null,
+        projectRole: "lead",
+        orgRole: "member",
+        createdAt: "2024-01-25T10:00:00Z",
+      };
+
+      render(<ProjectMembersPanel {...defaultProps} members={[regularMember]} />);
+
+      expect(screen.getByText("Lead")).toBeInTheDocument();
     });
   });
 });

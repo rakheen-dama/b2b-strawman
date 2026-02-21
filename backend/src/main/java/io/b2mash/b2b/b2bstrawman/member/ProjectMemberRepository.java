@@ -24,7 +24,7 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, UU
   @Query(
       """
       SELECT new io.b2mash.b2b.b2bstrawman.member.ProjectMemberInfo(
-          pm.id, pm.memberId, m.name, m.email, m.avatarUrl, pm.projectRole, pm.createdAt
+          pm.id, pm.memberId, m.name, m.email, m.avatarUrl, pm.projectRole, m.orgRole, pm.createdAt
       )
       FROM ProjectMember pm JOIN Member m ON pm.memberId = m.id
       WHERE pm.projectId = :projectId

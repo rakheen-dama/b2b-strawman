@@ -20,7 +20,7 @@ Phase 20 introduces an **auth provider abstraction layer** that decouples the fr
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 138 | Auth Abstraction Layer — Interface + Clerk Provider | Frontend | — | M | 138A, 138B | **Done** (PRs #292, #293) |
-| 139 | 44-File Mechanical Refactor | Frontend | 138 | M | 139A, 139B | |
+| 139 | 44-File Mechanical Refactor | Frontend | 138 | M | 139A, 139B | **Done** (PRs #294, #295) |
 | 140 | Mock IDP Container + Backend E2E Profile | Infra | — | S | 140A | |
 | 141 | Frontend Mock Provider — Server + Middleware | Frontend | 138 | M | 141A, 141B | |
 | 142 | Frontend Mock Provider — Client Components | Frontend | 138 | S | 142A | |
@@ -98,7 +98,7 @@ Phase 20 introduces an **auth provider abstraction layer** that decouples the fr
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 3a (parallel) | Epic 139 | 139B | Second half of mechanical refactor — remaining pages, `lib/api.ts`, `app/layout.tsx`. Completes the 44-file migration. `pnpm build` + `pnpm test` must pass. |
+| 3a (parallel) | Epic 139 | 139B | Second half of mechanical refactor — remaining pages, `lib/api.ts`, `app/layout.tsx`. Completes the 44-file migration. `pnpm build` + `pnpm test` must pass. | **Done** (PR #295) |
 | 3b (parallel) | Epic 141 | 141B | `MockLoginPage` at `app/(mock-auth)/sign-in/page.tsx` — user picker dropdown, calls mock IDP `/token`, sets `mock-auth-token` cookie, redirects to dashboard. |
 | 3c (parallel) | Epic 142 | 142A | `MockAuthProvider` React context, `useAuthUser()`, `useOrgMembers()`, `MockUserButton`, `MockOrgSwitcher`. Client-side mock UI components. |
 
@@ -211,7 +211,7 @@ Stage 5:  [144A]                                (after 143A)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **139A** | 139.1–139.5 | Refactor first 25 files: all `actions.ts` server actions in `app/(app)/org/[slug]/**`. Each file: replace import + replace `auth()` destructure + replace any `currentUser()` call. Run `pnpm build` at end to verify no TypeScript errors. ~25 files modified. | **Done** (PR #294) |
-| **139B** | 139.6–139.10 | Refactor remaining files: all `page.tsx` server components that call `auth()`, `lib/api.ts` (replace `getToken()`), any remaining files. Run full `pnpm build` + `pnpm test` — all tests must pass. Add `server-only` import to `lib/auth/server.ts`. ~22 files modified. |  |
+| **139B** | 139.6–139.10 | Refactor remaining files: all `page.tsx` server components that call `auth()`, `lib/api.ts` (replace `getToken()`), any remaining files. Run full `pnpm build` + `pnpm test` — all tests must pass. Add `server-only` import to `lib/auth/server.ts`. ~22 files modified. | **Done** (PR #295) |
 
 ### Tasks
 

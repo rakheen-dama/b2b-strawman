@@ -161,7 +161,7 @@
 | 134 | Report Execution Framework + Timesheet Query | Backend | 133 | M | 134A, 134B | **Done** (PRs #285, #286) |
 | 135 | Invoice Aging + Project Profitability Queries | Backend | 134 | M | 135A | **Done** (PR #287) |
 | 136 | Rendering & Export Pipeline | Backend | 134 | M | 136A, 136B | **Done** (PRs #288, #289) |
-| 137 | Reports Frontend | Frontend | 133, 134 | M | 137A, 137B | |
+| 137 | Reports Frontend | Frontend | 133, 134 | M | 137A, 137B | 137A **Done** (PR #290) |
 | **Phase 20 — Auth Abstraction & E2E Testing Infrastructure** | | | | | | See [tasks/phase20-e2e-auth-abstraction.md](tasks/phase20-e2e-auth-abstraction.md) |
 | 138 | Auth Abstraction Layer — Interface + Clerk Provider | Frontend | — | M | 138A, 138B | |
 | 139 | 44-File Mechanical Refactor | Frontend | 138 | M | 139A, 139B | |

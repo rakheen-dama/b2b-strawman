@@ -96,7 +96,7 @@ This phase **extends** the existing `report/` package (Phase 8 profitability end
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 4a | Epic 137 | 137A | API client functions (`lib/api/reports.ts`) + Reports list page (`/reports`) with category grouping + sidebar nav entry. Can start after 133B. |
+| 4a | Epic 137 | 137A | API client functions (`lib/api/reports.ts`) + Reports list page (`/reports`) with category grouping + sidebar nav entry. Can start after 133B. | **Done** (PR #290) |
 | 4b | Epic 137 | 137B | Report detail page (`/reports/[reportSlug]`) + `ReportRunner` client component + `ReportParameterForm` + `ReportResults` + export buttons. Requires 134B execute endpoint. |
 
 ### Timeline
@@ -414,7 +414,7 @@ Stage 4:  [137A] --> [137B]             (137A can start after 133B, 137B after 1
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **137A** | 137.1–137.8 | API client functions (`lib/api/reports.ts`), TypeScript interfaces, "Reports" sidebar nav entry, reports list page (`/reports`) with category grouping and report cards. Frontend tests (~6 tests). ~4 files created/modified. |  |
+| **137A** | 137.1–137.8 | API client functions (`lib/api/reports.ts`), TypeScript interfaces, "Reports" sidebar nav entry, reports list page (`/reports`) with category grouping and report cards. Frontend tests (~6 tests). ~4 files created/modified. | **Done** (PR #290) |
 | **137B** | 137.9–137.18 | Report detail page (`/reports/[reportSlug]`), `ReportRunner` client component (form + results + export), `ReportParameterForm` (dynamic field rendering), `ReportResults` (summary cards + data table + pagination). Frontend tests (~10 tests). ~6 files created. |  |
 
 ### Tasks

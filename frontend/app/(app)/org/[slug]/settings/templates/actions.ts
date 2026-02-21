@@ -1,6 +1,5 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
 import {
   api,
   ApiError,
@@ -320,19 +319,13 @@ export async function saveBrandingAction(
 // ---- Entity Picker Actions ----
 
 export async function fetchProjectsForPicker(): Promise<Project[]> {
-  const { orgRole } = await auth();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") throw new Error("Unauthorized");
   return api.get<Project[]>("/api/projects");
 }
 
 export async function fetchCustomersForPicker(): Promise<Customer[]> {
-  const { orgRole } = await auth();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") throw new Error("Unauthorized");
   return api.get<Customer[]>("/api/customers");
 }
 
 export async function fetchInvoicesForPicker(): Promise<InvoiceResponse[]> {
-  const { orgRole } = await auth();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") throw new Error("Unauthorized");
   return api.get<InvoiceResponse[]>("/api/invoices");
 }

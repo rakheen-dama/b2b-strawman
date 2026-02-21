@@ -30,7 +30,12 @@ import {
   fetchCustomersForPicker,
   fetchInvoicesForPicker,
 } from "@/app/(app)/org/[slug]/settings/templates/actions";
-import type { TemplateEntityType } from "@/lib/types";
+import type {
+  TemplateEntityType,
+  Project,
+  Customer,
+  InvoiceResponse,
+} from "@/lib/types";
 
 interface TemplatePreviewDialogProps {
   templateId: string;
@@ -44,15 +49,30 @@ interface PickerItem {
   searchValue: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- raw API responses have varying shapes per entity type
-function mapToPickerItems(entityType: TemplateEntityType, data: Record<string, any>[]): PickerItem[] {
+type PickerData = Project | Customer | InvoiceResponse;
+
+function mapToPickerItems(entityType: TemplateEntityType, data: PickerData[]): PickerItem[] {
   switch (entityType) {
     case "PROJECT":
-      return data.map((p) => ({ id: p.id, label: p.name, searchValue: p.name }));
+      return (data as Project[]).map((p) => ({
+        id: p.id,
+        label: p.name,
+        searchValue: p.name,
+      }));
     case "CUSTOMER":
-      return data.map((c) => ({ id: c.id, label: c.name, sublabel: c.email, searchValue: `${c.name} ${c.email ?? ""}` }));
+      return (data as Customer[]).map((c) => ({
+        id: c.id,
+        label: c.name,
+        sublabel: c.email,
+        searchValue: `${c.name} ${c.email ?? ""}`,
+      }));
     case "INVOICE":
-      return data.map((i) => ({ id: i.id, label: i.invoiceNumber, sublabel: i.customerName, searchValue: `${i.invoiceNumber} ${i.customerName ?? ""}` }));
+      return (data as InvoiceResponse[]).map((i) => ({
+        id: i.id,
+        label: i.invoiceNumber ?? `Draft (${i.id.slice(0, 8)}\u2026)`,
+        sublabel: i.customerName,
+        searchValue: `${i.invoiceNumber ?? ""} ${i.customerName ?? ""}`,
+      }));
   }
 }
 
@@ -91,17 +111,33 @@ export function TemplatePreviewDialog({
           ? fetchCustomersForPicker
           : fetchInvoicesForPicker;
 
-    fetcher().then((data) => {
-      if (!cancelled) {
-        setEntities(mapToPickerItems(entityType, data));
-        setEntitiesLoading(false);
-      }
-    });
+    fetcher()
+      .then((data) => {
+        if (!cancelled) {
+          setEntities(mapToPickerItems(entityType, data));
+          setEntitiesLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setEntitiesLoading(false);
+          setError(`Failed to load ${entityLabel.toLowerCase()}s.`);
+        }
+      });
 
     return () => {
       cancelled = true;
     };
-  }, [open, entityType]);
+  }, [open, entityType, entityLabel]);
+
+  function handleDialogChange(next: boolean) {
+    setOpen(next);
+    if (!next) {
+      setEntityId("");
+      setHtml(null);
+      setError(null);
+    }
+  }
 
   async function handlePreview() {
     if (!entityId.trim()) return;
@@ -124,7 +160,7 @@ export function TemplatePreviewDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleDialogChange}>
       <DialogTrigger asChild>
         <Button type="button" variant="soft" size="sm">
           <Eye className="mr-1 size-4" />
@@ -168,6 +204,7 @@ export function TemplatePreviewDialog({
                               setEntityId(item.id);
                               setPickerOpen(false);
                             }}
+                            className="data-[selected=true]:bg-slate-100 dark:data-[selected=true]:bg-slate-800"
                           >
                             <Check
                               className={cn(
@@ -175,10 +212,10 @@ export function TemplatePreviewDialog({
                                 entityId === item.id ? "opacity-100" : "opacity-0"
                               )}
                             />
-                            <div>
+                            <div className="min-w-0 flex-1">
                               <span className="font-medium">{item.label}</span>
                               {item.sublabel && (
-                                <p className="text-xs text-slate-500">{item.sublabel}</p>
+                                <p className="truncate text-xs text-slate-500">{item.sublabel}</p>
                               )}
                             </div>
                           </CommandItem>

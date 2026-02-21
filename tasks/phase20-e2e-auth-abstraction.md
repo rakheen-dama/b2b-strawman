@@ -23,7 +23,7 @@ Phase 20 introduces an **auth provider abstraction layer** that decouples the fr
 | 139 | 44-File Mechanical Refactor | Frontend | 138 | M | 139A, 139B | **Done** (PRs #294, #295) |
 | 140 | Mock IDP Container + Backend E2E Profile | Infra | — | S | 140A | **Done** (PR #296) |
 | 141 | Frontend Mock Provider — Server + Middleware | Frontend | 138 | M | 141A, 141B | **Done** (PRs #297, #298) |
-| 142 | Frontend Mock Provider — Client Components | Frontend | 138 | S | 142A | |
+| 142 | Frontend Mock Provider — Client Components | Frontend | 138 | S | 142A | **Done** (PR #299) |
 | 143 | Docker Compose E2E Stack + Boot-Seed Container | Infra | 140, 141, 142 | M | 143A | |
 | 144 | Playwright Fixtures + Smoke Tests | Frontend/E2E | 143 | S | 144A | |
 
@@ -100,7 +100,7 @@ Phase 20 introduces an **auth provider abstraction layer** that decouples the fr
 |-------|------|-------|-----------|
 | 3a (parallel) | Epic 139 | 139B | Second half of mechanical refactor — remaining pages, `lib/api.ts`, `app/layout.tsx`. Completes the 44-file migration. `pnpm build` + `pnpm test` must pass. | **Done** (PR #295) |
 | 3b (parallel) | Epic 141 | 141B | `MockLoginPage` at `app/(mock-auth)/sign-in/page.tsx` — user picker dropdown, calls mock IDP `/token`, sets `mock-auth-token` cookie, redirects to dashboard. | **Done** (PR #298) |
-| 3c (parallel) | Epic 142 | 142A | `MockAuthProvider` React context, `useAuthUser()`, `useOrgMembers()`, `MockUserButton`, `MockOrgSwitcher`. Client-side mock UI components. |
+| 3c (parallel) | Epic 142 | 142A | `MockAuthProvider` React context, `useAuthUser()`, `useOrgMembers()`, `MockUserButton`, `MockOrgSwitcher`. Client-side mock UI components. | **Done** (PR #299) |
 
 ### Stage 4: Integration
 
@@ -388,7 +388,7 @@ Stage 5:  [144A]                                (after 143A)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **142A** | 142.1–142.8 | `lib/auth/client/mock-context.tsx`, `lib/auth/client/hooks.ts`, `MockUserButton`, `MockOrgSwitcher`, update `auth-provider.tsx`, unit tests (~5 tests). ~5 files created, 1 modified. |  |
+| **142A** | 142.1–142.8 | `lib/auth/client/mock-context.tsx`, `lib/auth/client/hooks.ts`, `MockUserButton`, `MockOrgSwitcher`, update `auth-provider.tsx`, unit tests (~5 tests). ~5 files created, 1 modified. | **Done** (PR #299) |
 
 ### Tasks
 

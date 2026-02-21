@@ -1,6 +1,8 @@
 import "server-only";
 
-import { api } from "@/lib/api";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+import { api, ApiError } from "@/lib/api";
 
 // ---- Response Interfaces ----
 
@@ -93,7 +95,75 @@ export async function executeReport(
   size: number,
 ): Promise<ReportExecutionResponse> {
   return api.post<ReportExecutionResponse>(
-    `/api/report-definitions/${slug}/execute`,
+    `/api/report-definitions/${encodeURIComponent(slug)}/execute`,
     { parameters, page, size },
   );
+}
+
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
+
+function buildExportQueryParams(parameters: Record<string, unknown>): string {
+  const queryParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(parameters)) {
+    if (value != null && value !== "") {
+      queryParams.set(key, String(value));
+    }
+  }
+  return queryParams.toString();
+}
+
+async function getAuthToken(): Promise<string> {
+  const { getToken } = await auth();
+  const token = await getToken();
+  if (!token) {
+    redirect("/sign-in");
+  }
+  return token;
+}
+
+export async function exportReportCsv(
+  slug: string,
+  parameters: Record<string, unknown>,
+): Promise<string> {
+  const token = await getAuthToken();
+  const qs = buildExportQueryParams(parameters);
+
+  const response = await fetch(
+    `${BACKEND_URL}/api/report-definitions/${encodeURIComponent(slug)}/export/csv?${qs}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  if (!response.ok) {
+    throw new ApiError(response.status, `Export failed: ${response.statusText}`);
+  }
+
+  return response.text();
+}
+
+export async function exportReportPdf(
+  slug: string,
+  parameters: Record<string, unknown>,
+): Promise<string> {
+  const token = await getAuthToken();
+  const qs = buildExportQueryParams(parameters);
+
+  const response = await fetch(
+    `${BACKEND_URL}/api/report-definitions/${encodeURIComponent(slug)}/export/pdf?${qs}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  if (!response.ok) {
+    throw new ApiError(response.status, `Export failed: ${response.statusText}`);
+  }
+
+  const buffer = await response.arrayBuffer();
+  return Buffer.from(buffer).toString("base64");
 }

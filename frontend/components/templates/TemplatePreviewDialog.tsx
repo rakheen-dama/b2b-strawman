@@ -1,8 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { Eye } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Check, ChevronsUpDown, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import {
   Dialog,
   DialogContent,
@@ -10,9 +18,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { previewTemplateAction } from "@/app/(app)/org/[slug]/settings/templates/actions";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import {
+  previewTemplateAction,
+  fetchProjectsForPicker,
+  fetchCustomersForPicker,
+  fetchInvoicesForPicker,
+} from "@/app/(app)/org/[slug]/settings/templates/actions";
 import type { TemplateEntityType } from "@/lib/types";
 
 interface TemplatePreviewDialogProps {
@@ -20,12 +37,34 @@ interface TemplatePreviewDialogProps {
   entityType: TemplateEntityType;
 }
 
+interface PickerItem {
+  id: string;
+  label: string;
+  sublabel?: string;
+  searchValue: string;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- raw API responses have varying shapes per entity type
+function mapToPickerItems(entityType: TemplateEntityType, data: Record<string, any>[]): PickerItem[] {
+  switch (entityType) {
+    case "PROJECT":
+      return data.map((p) => ({ id: p.id, label: p.name, searchValue: p.name }));
+    case "CUSTOMER":
+      return data.map((c) => ({ id: c.id, label: c.name, sublabel: c.email, searchValue: `${c.name} ${c.email ?? ""}` }));
+    case "INVOICE":
+      return data.map((i) => ({ id: i.id, label: i.invoiceNumber, sublabel: i.customerName, searchValue: `${i.invoiceNumber} ${i.customerName ?? ""}` }));
+  }
+}
+
 export function TemplatePreviewDialog({
   templateId,
   entityType,
 }: TemplatePreviewDialogProps) {
   const [open, setOpen] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [entityId, setEntityId] = useState("");
+  const [entities, setEntities] = useState<PickerItem[]>([]);
+  const [entitiesLoading, setEntitiesLoading] = useState(false);
   const [html, setHtml] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,6 +75,33 @@ export function TemplatePreviewDialog({
       : entityType === "CUSTOMER"
         ? "Customer"
         : "Invoice";
+
+  const selectedLabel =
+    entities.find((e) => e.id === entityId)?.label ?? `Select a ${entityLabel.toLowerCase()}`;
+
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    setEntitiesLoading(true);
+
+    const fetcher =
+      entityType === "PROJECT"
+        ? fetchProjectsForPicker
+        : entityType === "CUSTOMER"
+          ? fetchCustomersForPicker
+          : fetchInvoicesForPicker;
+
+    fetcher().then((data) => {
+      if (!cancelled) {
+        setEntities(mapToPickerItems(entityType, data));
+        setEntitiesLoading(false);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, entityType]);
 
   async function handlePreview() {
     if (!entityId.trim()) return;
@@ -72,19 +138,65 @@ export function TemplatePreviewDialog({
 
         <div className="space-y-4">
           <div className="flex items-end gap-3">
-            <div className="flex-1">
-              <Label htmlFor="preview-entity-id">{entityLabel} ID</Label>
-              <Input
-                id="preview-entity-id"
-                placeholder={`Enter ${entityLabel.toLowerCase()} UUID...`}
-                value={entityId}
-                onChange={(e) => setEntityId(e.target.value)}
-              />
+            <div className="flex-1 space-y-1.5">
+              <span className="text-sm font-medium">Select a {entityLabel}</span>
+              <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="plain"
+                    role="combobox"
+                    aria-expanded={pickerOpen}
+                    disabled={entitiesLoading}
+                    className="w-full justify-between border border-slate-200 bg-white px-3 font-normal dark:border-slate-800 dark:bg-slate-950"
+                  >
+                    {entitiesLoading ? "Loading..." : selectedLabel}
+                    <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[400px] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder={`Search ${entityLabel.toLowerCase()}s...`} />
+                    <CommandList>
+                      <CommandEmpty>No {entityLabel.toLowerCase()}s found.</CommandEmpty>
+                      <CommandGroup>
+                        {entities.map((item) => (
+                          <CommandItem
+                            key={item.id}
+                            value={item.searchValue}
+                            onSelect={() => {
+                              setEntityId(item.id);
+                              setPickerOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 size-4",
+                                entityId === item.id ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            <div>
+                              <span className="font-medium">{item.label}</span>
+                              {item.sublabel && (
+                                <p className="text-xs text-slate-500">{item.sublabel}</p>
+                              )}
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
             <Button onClick={handlePreview} disabled={isLoading || !entityId.trim()}>
               {isLoading ? "Generating..." : "Generate Preview"}
             </Button>
           </div>
+
+          <p className="text-xs text-slate-500">
+            Preview includes all related data (customer, members, org settings, etc.)
+          </p>
 
           {error && <p className="text-sm text-destructive">{error}</p>}
 

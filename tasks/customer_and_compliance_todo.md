@@ -49,100 +49,100 @@
 
 ---
 
-## Phase 2 — Lifecycle Default Fix (Test Migration Required)
+## Phase 2 — Lifecycle Default Fix (Test Migration Required) ✅ PR #273
 
 ### 2.1 Create Shared Test Factory
-- [ ] Create `TestCustomerFactory` utility class in test sources
-- [ ] `createActiveCustomer(name, email, memberId)` — uses 8-arg constructor with explicit `LifecycleStatus.ACTIVE`
-- [ ] `createCustomerWithStatus(name, email, memberId, status)` — configurable lifecycle status
-- [ ] `createProspectCustomer(name, email, memberId)` — uses PROSPECT (new default)
+- [x] Create `TestCustomerFactory` utility class in test sources
+- [x] `createActiveCustomer(name, email, memberId)` — uses 8-arg constructor with explicit `LifecycleStatus.ACTIVE`
+- [x] `createCustomerWithStatus(name, email, memberId, status)` — configurable lifecycle status
+- [x] `createProspectCustomer(name, email, memberId)` — uses PROSPECT (new default)
 
 **File:** `backend/src/test/java/.../testutil/TestCustomerFactory.java` (new)
 
 ### 2.2 Change Customer Default to PROSPECT
-- [ ] Change `Customer.java` line 94: `this.lifecycleStatus = LifecycleStatus.PROSPECT`
-- [ ] Update all three constructors to default to PROSPECT instead of ACTIVE
+- [x] Change `Customer.java` line 94: `this.lifecycleStatus = LifecycleStatus.PROSPECT`
+- [x] Update all three constructors to default to PROSPECT instead of ACTIVE
 
 **File:** `backend/.../customer/Customer.java` (lines 82-120)
 
 ### 2.3 Migrate Affected Test Files (~21 files, ~195 tests)
 
 **Retainer tests (4 files, ~47 tests):**
-- [ ] `RetainerAgreementServiceTest.java` — update `createCustomer()` helper to use factory
-- [ ] `RetainerPeriodServiceTest.java` — update `createCustomer()` helper
-- [ ] `RetainerConsumptionListenerTest.java` — update `createHourBankSetup()` helper
-- [ ] `RetainerNotificationTest.java` — update customer creation
+- [x] `RetainerAgreementServiceTest.java` — update `createCustomer()` helper to use factory
+- [x] `RetainerPeriodServiceTest.java` — update `createCustomer()` helper
+- [x] `RetainerConsumptionListenerTest.java` — update `createHourBankSetup()` helper
+- [x] `RetainerNotificationTest.java` — update customer creation
 
 **Retainer controller tests (3 files, ~38 tests):**
-- [ ] `RetainerAgreementControllerTest.java` — transition customer to ACTIVE after API creation
-- [ ] `RetainerPeriodControllerTest.java` — same pattern
-- [ ] `RetainerSummaryControllerTest.java` — same pattern
+- [x] `RetainerAgreementControllerTest.java` — transition customer to ACTIVE after API creation
+- [x] `RetainerPeriodControllerTest.java` — same pattern
+- [x] `RetainerSummaryControllerTest.java` — same pattern
 
 **Invoice tests (5 files, ~53 tests):**
-- [ ] `InvoiceIntegrationTest.java` — update `@BeforeAll` customer creation
-- [ ] `InvoiceLifecycleIntegrationTest.java` — update `@BeforeAll` + time entry setup
-- [ ] `InvoiceControllerIntegrationTest.java` — update `@BeforeAll`
-- [ ] `UnbilledTimeIntegrationTest.java` — update `@BeforeAll`
-- [ ] `InvoicePreviewIntegrationTest.java` — update customer creation
+- [x] `InvoiceIntegrationTest.java` — update `@BeforeAll` customer creation
+- [x] `InvoiceLifecycleIntegrationTest.java` — update `@BeforeAll` + time entry setup
+- [x] `InvoiceControllerIntegrationTest.java` — update `@BeforeAll`
+- [x] `UnbilledTimeIntegrationTest.java` — update `@BeforeAll`
+- [x] `InvoicePreviewIntegrationTest.java` — update customer creation
 
 **Time entry tests (1 file, ~5 tests):**
-- [ ] `TimeEntryBillingIntegrationTest.java` — update line 121 comment + customer creation
+- [x] `TimeEntryBillingIntegrationTest.java` — update line 121 comment + customer creation
 
 **Schedule tests (2 files, ~6 tests):**
-- [ ] `RecurringScheduleServiceTest.java` — update `@BeforeAll`
-- [ ] `RecurringScheduleExecutorTest.java` — fix 1 inline 6-arg usage (line 599)
+- [x] `RecurringScheduleServiceTest.java` — update `@BeforeAll`
+- [x] `RecurringScheduleExecutorTest.java` — fix 1 inline 6-arg usage (line 599)
 
 **Report tests (2 files, ~14 tests):**
-- [ ] `CustomerProfitabilityTest.java` — update `setup()` customer creation
-- [ ] `OrgProfitabilityTest.java` — same
+- [x] `CustomerProfitabilityTest.java` — update `setup()` customer creation
+- [x] `OrgProfitabilityTest.java` — same
 
 **Customer/portal tests (2 files, ~13 tests):**
-- [ ] `CustomerProjectIntegrationTest.java` — transition customer after API creation
-- [ ] `PortalIntegrationTest.java` — already uses lifecycleService, verify transitions
+- [x] `CustomerProjectIntegrationTest.java` — transition customer after API creation
+- [x] `PortalIntegrationTest.java` — already uses lifecycleService, verify transitions
 
 **Audit tests (1 file, ~3 tests):**
-- [ ] `CustomerServiceAuditTest.java` — transition customer after API creation
+- [x] `CustomerServiceAuditTest.java` — transition customer after API creation
 
 **Lifecycle/readiness tests (1 file):**
-- [ ] `CustomerReadinessServiceTest.java` — update assertions (default now PROSPECT)
+- [x] `CustomerReadinessServiceTest.java` — update assertions (default now PROSPECT)
 
 ### 2.4 Fix Frontend Lifecycle Label
-- [ ] Change `ONBOARDING → ACTIVE` label from "Reactivate" to "Activate"
+- [x] Change `ONBOARDING → ACTIVE` label from "Reactivate" to "Activate"
 
 **File:** `frontend/components/compliance/LifecycleTransitionDropdown.tsx` (line 30)
 
 ---
 
-## Phase 3 — Design Gap Fixes (Optional, Lower Priority)
+## Phase 3 — Design Gap Fixes ✅ PR #275
 
 ### 3.1 Remove PROSPECT → ACTIVE Shortcut
-- [ ] Remove `ACTIVE` from `PROSPECT.allowedTransitions` in `LifecycleStatus.java`
-- [ ] Update frontend `ALLOWED_TRANSITIONS` map to remove `PROSPECT → ACTIVE`
-- [ ] Force all customers through onboarding
+- [x] Remove `ACTIVE` from `PROSPECT.allowedTransitions` in `LifecycleStatus.java`
+- [x] Update frontend `ALLOWED_TRANSITIONS` map to remove `PROSPECT → ACTIVE`
+- [x] Force all customers through onboarding
 
 ### 3.2 Add OFFBOARDED → ACTIVE Reactivation
-- [ ] Add `ACTIVE` to `OFFBOARDED.allowedTransitions` in `LifecycleStatus.java`
-- [ ] Update frontend transition map
-- [ ] Add "Reactivate" transition label and confirmation dialog
+- [x] Add `ACTIVE` to `OFFBOARDED.allowedTransitions` in `LifecycleStatus.java`
+- [x] Update frontend transition map
+- [x] Add "Reactivate" transition label and confirmation dialog
 
 ### 3.3 Align Archive with Lifecycle
-- [ ] When archiving a customer, set `lifecycleStatus = OFFBOARDED` if not already terminal
-- [ ] When unarchiving, restore to `DORMANT` (not ACTIVE)
+- [x] When archiving a customer, set `lifecycleStatus = OFFBOARDED` if not already terminal
+- [x] When unarchiving, restore to `DORMANT` (not ACTIVE)
 
 ### 3.4 Auto-Dormancy Transition
-- [ ] Add scheduled job to run `CustomerLifecycleService.runDormancyCheck()`
-- [ ] Auto-transition candidates from ACTIVE → DORMANT
-- [ ] Send notification to org admins
+- [x] Add scheduled job to run `CustomerLifecycleService.runDormancyCheck()`
+- [x] Auto-transition candidates from ACTIVE → DORMANT
+- [x] Send notification to org admins
 
 ---
 
-## Phase 4 — Checklist Document Picker (Frontend Only)
+## Phase 4 — Checklist Document Picker (Frontend Only) ✅ PR #274
 
 ### 4.1 Replace UUID Text Input with Document Dropdown
-- [ ] Thread `customerDocuments` prop from `page.tsx` → `ChecklistInstancePanel` → `ChecklistInstanceItemRow`
-- [ ] Replace `<Input placeholder="Document ID (UUID)">` with a `<Select>` dropdown showing document filenames
-- [ ] Filter dropdown to `status === "UPLOADED"` documents only
-- [ ] Handle empty state: show "No documents uploaded" when customer has no documents
+- [x] Thread `customerDocuments` prop from `page.tsx` → `ChecklistInstancePanel` → `ChecklistInstanceItemRow`
+- [x] Replace `<Input placeholder="Document ID (UUID)">` with a `<Select>` dropdown showing document filenames
+- [x] Filter dropdown to `status === "UPLOADED"` documents only
+- [x] Handle empty state: show "No documents uploaded" when customer has no documents
 
 **No backend changes needed** — `GET /api/documents?scope=CUSTOMER&customerId=<id>` already exists and is already fetched server-side in `page.tsx` (line 91).
 

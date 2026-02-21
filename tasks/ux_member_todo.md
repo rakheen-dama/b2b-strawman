@@ -178,3 +178,56 @@ For each entity, follow the Task pattern:
 5. **Tests**: Add assertions for name fields in integration tests
 
 **Key rule**: Never remove the UUID field — keep both `createdBy` (for programmatic use) and `createdByName` (for display). This ensures zero breaking changes.
+
+---
+
+## Status: Companion Name Fields — DONE (PR #276)
+
+All 9 entities above have been fixed. The remaining issues below were discovered during code review.
+
+---
+
+## Follow-up: Pre-existing N+1 Query Issues
+
+> Found during the PR #276 code review. These are NOT regressions — they existed before the member name work.
+
+### 10. RecurringScheduleService — N+1 per schedule in `list()`
+
+**Status**: Pre-existing bug. `resolveMemberName()` calls `memberRepository.findById()` per schedule instead of batch-loading.
+
+| What | Where |
+|------|-------|
+| N+1 source | `schedule/RecurringScheduleService.java` — `resolveMemberName()` (~line 647-651) |
+| Affected endpoint | `list()` (~line 246) — iterates schedules, calls `buildResponse()` per item |
+| Also N+1 | `resolveTemplateName()` and `resolveCustomerName()` in same file — same per-entity `findById()` pattern |
+
+**Fix**: Extract all `projectLeadMemberId` + `createdBy` UUIDs from the schedule list, batch-load via `findAllById()`, pass `Map<UUID, String>` into `buildResponse()`. Same for template and customer names.
+
+**Bonus**: `ScheduleResponse` has `UUID createdBy` but no `String createdByName` — add it while fixing the N+1.
+
+---
+
+### 11. DataRequestController — N+1 for customer names in `listRequests()`
+
+**Status**: Pre-existing. `resolveCustomerName()` calls `customerRepository.findById()` per request.
+
+| What | Where |
+|------|-------|
+| N+1 source | `datarequest/DataRequestController.java` — `resolveCustomerName()` (~line 170) |
+| Affected endpoint | `listRequests()` (~line 62) — iterates requests, resolves customer name per item |
+
+**Fix**: Collect all `customerId` UUIDs, batch-load via `customerRepository.findAllById()`, pass `Map<UUID, String>` into `DataRequestResponse.from()`.
+
+Note: Member names in this controller were fixed correctly in PR #276 (batch `resolveMemberNames()`). Only the customer name path is N+1.
+
+---
+
+### 12. CostRateResponse — missing null guard
+
+**Status**: Pre-existing. `memberNames.get(rate.getMemberId())` has no null guard — will NPE if `memberId` is null.
+
+| What | Where |
+|------|-------|
+| Risk | `costrate/CostRateController.java` — `CostRateResponse.from()` (~line 163) |
+
+**Fix**: Add `rate.getMemberId() != null ? memberNames.get(rate.getMemberId()) : null` (same pattern as all other entities).

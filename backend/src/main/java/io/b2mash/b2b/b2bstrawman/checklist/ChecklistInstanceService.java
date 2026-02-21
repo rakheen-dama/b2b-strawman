@@ -10,13 +10,18 @@ import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.member.Member;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -34,6 +39,7 @@ public class ChecklistInstanceService {
   private final AuditService auditService;
   private final CustomerRepository customerRepository;
   private final CustomerLifecycleService customerLifecycleService;
+  private final MemberRepository memberRepository;
 
   public ChecklistInstanceService(
       ChecklistInstanceRepository instanceRepository,
@@ -42,7 +48,8 @@ public class ChecklistInstanceService {
       ChecklistTemplateItemRepository templateItemRepository,
       AuditService auditService,
       CustomerRepository customerRepository,
-      CustomerLifecycleService customerLifecycleService) {
+      CustomerLifecycleService customerLifecycleService,
+      MemberRepository memberRepository) {
     this.instanceRepository = instanceRepository;
     this.instanceItemRepository = instanceItemRepository;
     this.templateRepository = templateRepository;
@@ -50,6 +57,7 @@ public class ChecklistInstanceService {
     this.auditService = auditService;
     this.customerRepository = customerRepository;
     this.customerLifecycleService = customerLifecycleService;
+    this.memberRepository = memberRepository;
   }
 
   @Transactional
@@ -127,7 +135,8 @@ public class ChecklistInstanceService {
   public ChecklistInstanceResponse createFromTemplateWithItems(UUID templateId, UUID customerId) {
     var instance = createFromTemplate(templateId, customerId);
     var items = instanceItemRepository.findByInstanceIdOrderBySortOrder(instance.getId());
-    return ChecklistInstanceResponse.from(instance, items);
+    var memberNames = resolveNames(instance, items);
+    return ChecklistInstanceResponse.from(instance, items, memberNames);
   }
 
   @Transactional
@@ -312,7 +321,8 @@ public class ChecklistInstanceService {
   public ChecklistInstanceResponse getInstanceWithItems(UUID instanceId) {
     var instance = getInstance(instanceId);
     var items = instanceItemRepository.findByInstanceIdOrderBySortOrder(instance.getId());
-    return ChecklistInstanceResponse.from(instance, items);
+    var memberNames = resolveNames(instance, items);
+    return ChecklistInstanceResponse.from(instance, items, memberNames);
   }
 
   @Transactional(readOnly = true)
@@ -336,11 +346,27 @@ public class ChecklistInstanceService {
       itemsByInstanceId.computeIfAbsent(item.getInstanceId(), k -> new ArrayList<>()).add(item);
     }
 
+    // Batch-resolve all member UUIDs across all instances and items
+    var allMemberIds =
+        Stream.concat(
+                instances.stream().map(ChecklistInstance::getCompletedBy),
+                allItems.stream().map(ChecklistInstanceItem::getCompletedBy))
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+    Map<UUID, String> memberNames =
+        allMemberIds.isEmpty()
+            ? Map.of()
+            : memberRepository.findAllById(allMemberIds).stream()
+                .collect(Collectors.toMap(Member::getId, Member::getName, (a, b) -> a));
+
     return instances.stream()
         .map(
             instance ->
                 ChecklistInstanceResponse.from(
-                    instance, itemsByInstanceId.getOrDefault(instance.getId(), List.of())))
+                    instance,
+                    itemsByInstanceId.getOrDefault(instance.getId(), List.of()),
+                    memberNames))
         .toList();
   }
 
@@ -390,6 +416,20 @@ public class ChecklistInstanceService {
     log.info("Checklist instance {} auto-completed", instanceId);
 
     checkLifecycleAdvance(instance.getCustomerId(), actorId);
+  }
+
+  private Map<UUID, String> resolveNames(
+      ChecklistInstance instance, List<ChecklistInstanceItem> items) {
+    var ids =
+        Stream.concat(
+                Stream.of(instance.getCompletedBy()),
+                items.stream().map(ChecklistInstanceItem::getCompletedBy))
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+    if (ids.isEmpty()) return Map.of();
+    return memberRepository.findAllById(ids).stream()
+        .collect(Collectors.toMap(Member::getId, Member::getName, (a, b) -> a));
   }
 
   private void checkLifecycleAdvance(UUID customerId, UUID actorId) {

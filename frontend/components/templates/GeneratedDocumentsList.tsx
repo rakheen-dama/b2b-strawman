@@ -169,7 +169,7 @@ export function GeneratedDocumentsList({
           {documents.map((doc) => (
             <TableRow key={doc.id}>
               <TableCell className="font-medium">{doc.templateName}</TableCell>
-              <TableCell>{doc.generatedBy}</TableCell>
+              <TableCell>{doc.generatedByName}</TableCell>
               <TableCell>{formatDate(doc.generatedAt)}</TableCell>
               <TableCell>{formatFileSize(doc.fileSize)}</TableCell>
               <TableCell>

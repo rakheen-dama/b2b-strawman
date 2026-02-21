@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.document;
 
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.MissingOrganizationContextException;
+import io.b2mash.b2b.b2bstrawman.member.Member;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.security.ClerkJwtUtils;
 import jakarta.validation.Valid;
@@ -10,7 +12,10 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -27,9 +32,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class DocumentController {
 
   private final DocumentService documentService;
+  private final MemberRepository memberRepository;
 
-  public DocumentController(DocumentService documentService) {
+  public DocumentController(DocumentService documentService, MemberRepository memberRepository) {
     this.documentService = documentService;
+    this.memberRepository = memberRepository;
   }
 
   // --- PROJECT-scoped upload-init (existing) ---
@@ -125,7 +132,8 @@ public class DocumentController {
           default ->
               throw new InvalidStateException("Invalid scope", "scope must be 'ORG' or 'CUSTOMER'");
         };
-    var response = documents.stream().map(DocumentResponse::from).toList();
+    var memberNames = resolveNames(documents);
+    var response = documents.stream().map(d -> DocumentResponse.from(d, memberNames)).toList();
     return ResponseEntity.ok(response);
   }
 
@@ -137,7 +145,8 @@ public class DocumentController {
     UUID memberId = RequestScopes.requireMemberId();
     String orgRole = RequestScopes.getOrgRole();
     var document = documentService.confirmUpload(documentId, memberId, orgRole);
-    return ResponseEntity.ok(DocumentResponse.from(document));
+    var memberNames = resolveNames(List.of(document));
+    return ResponseEntity.ok(DocumentResponse.from(document, memberNames));
   }
 
   @DeleteMapping("/api/documents/{documentId}/cancel")
@@ -155,7 +164,8 @@ public class DocumentController {
     UUID memberId = RequestScopes.requireMemberId();
     String orgRole = RequestScopes.getOrgRole();
     var documents = documentService.listDocuments(projectId, memberId, orgRole);
-    var response = documents.stream().map(DocumentResponse::from).toList();
+    var memberNames = resolveNames(documents);
+    var response = documents.stream().map(d -> DocumentResponse.from(d, memberNames)).toList();
     return ResponseEntity.ok(response);
   }
 
@@ -175,7 +185,20 @@ public class DocumentController {
   public ResponseEntity<DocumentResponse> toggleVisibility(
       @PathVariable UUID documentId, @Valid @RequestBody VisibilityRequest request) {
     var document = documentService.toggleVisibility(documentId, request.visibility());
-    return ResponseEntity.ok(DocumentResponse.from(document));
+    var memberNames = resolveNames(List.of(document));
+    return ResponseEntity.ok(DocumentResponse.from(document, memberNames));
+  }
+
+  private Map<UUID, String> resolveNames(List<Document> documents) {
+    var ids =
+        documents.stream()
+            .map(Document::getUploadedBy)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+    if (ids.isEmpty()) return Map.of();
+    return memberRepository.findAllById(ids).stream()
+        .collect(Collectors.toMap(Member::getId, Member::getName, (a, b) -> a));
   }
 
   // --- DTOs ---
@@ -207,10 +230,15 @@ public class DocumentController {
       UUID customerId,
       String visibility,
       UUID uploadedBy,
+      String uploadedByName,
       Instant uploadedAt,
       Instant createdAt) {
 
     public static DocumentResponse from(Document document) {
+      return from(document, Map.of());
+    }
+
+    public static DocumentResponse from(Document document, Map<UUID, String> memberNames) {
       return new DocumentResponse(
           document.getId(),
           document.getProjectId(),
@@ -222,6 +250,7 @@ public class DocumentController {
           document.getCustomerId(),
           document.getVisibility(),
           document.getUploadedBy(),
+          document.getUploadedBy() != null ? memberNames.get(document.getUploadedBy()) : null,
           document.getUploadedAt(),
           document.getCreatedAt());
     }

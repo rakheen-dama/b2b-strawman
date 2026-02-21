@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.retainer.RetainerPeriod;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.UUID;
 
 public record PeriodSummary(
@@ -22,9 +23,10 @@ public record PeriodSummary(
     UUID invoiceId,
     Instant closedAt,
     UUID closedBy,
+    String closedByName,
     boolean readyToClose) {
 
-  public static PeriodSummary from(RetainerPeriod p) {
+  public static PeriodSummary from(RetainerPeriod p, Map<UUID, String> memberNames) {
     boolean readyToClose =
         p.getStatus() == PeriodStatus.OPEN && !p.getPeriodEnd().isAfter(LocalDate.now());
     return new PeriodSummary(
@@ -42,6 +44,11 @@ public record PeriodSummary(
         p.getInvoiceId(),
         p.getClosedAt(),
         p.getClosedBy(),
+        p.getClosedBy() != null ? memberNames.get(p.getClosedBy()) : null,
         readyToClose);
+  }
+
+  public static PeriodSummary from(RetainerPeriod p) {
+    return from(p, Map.of());
   }
 }

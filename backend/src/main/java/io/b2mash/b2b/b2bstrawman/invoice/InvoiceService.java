@@ -42,6 +42,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -1055,7 +1056,19 @@ public class InvoiceService {
                         line.getProjectId() != null ? projectNames.get(line.getProjectId()) : null))
             .toList();
 
-    return InvoiceResponse.from(invoice, lineResponses);
+    var memberNames = resolveMemberNames(invoice);
+    return InvoiceResponse.from(invoice, lineResponses, memberNames);
+  }
+
+  private Map<UUID, String> resolveMemberNames(Invoice invoice) {
+    var ids =
+        Stream.of(invoice.getCreatedBy(), invoice.getApprovedBy())
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+    if (ids.isEmpty()) return Map.of();
+    return memberRepository.findAllById(ids).stream()
+        .collect(Collectors.toMap(m -> m.getId(), m -> m.getName(), (a, b) -> a));
   }
 
   private String buildTimeEntryDescription(

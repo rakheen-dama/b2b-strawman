@@ -37,6 +37,7 @@ export interface PeriodSummary {
   invoiceId: string | null;
   closedAt: string | null;
   closedBy: string | null;
+  closedByName: string | null;
   readyToClose: boolean;
 }
 
@@ -57,6 +58,7 @@ export interface RetainerResponse {
   rolloverCapHours: number | null;
   notes: string | null;
   createdBy: string;
+  createdByName: string | null;
   createdAt: string;
   updatedAt: string;
   currentPeriod: PeriodSummary | null;

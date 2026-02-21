@@ -98,7 +98,12 @@ export function TemplatesContent({
                 {grouped[cat].map((template) => (
                   <TableRow key={template.id}>
                     <TableCell>
-                      <span className="font-medium">{template.name}</span>
+                      <Link
+                        href={`/org/${slug}/settings/templates/${template.id}/edit`}
+                        className="font-medium text-slate-950 hover:text-teal-600 hover:underline dark:text-slate-50 dark:hover:text-teal-400"
+                      >
+                        {template.name}
+                      </Link>
                       {template.description && (
                         <p className="text-xs text-slate-500 dark:text-slate-400">
                           {template.description}

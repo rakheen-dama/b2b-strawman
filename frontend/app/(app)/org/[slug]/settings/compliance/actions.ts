@@ -9,6 +9,7 @@ import type {
   CreateRetentionPolicyRequest,
   UpdateRetentionPolicyRequest,
   UpdateComplianceSettingsRequest,
+  CompliancePackDetail,
 } from "@/lib/types";
 
 interface ActionResult {
@@ -161,5 +162,20 @@ export async function executePurge(
       return { success: false, error: error.message };
     }
     return { success: false, error: "An unexpected error occurred." };
+  }
+}
+
+export async function getCompliancePackDetail(
+  packId: string,
+): Promise<CompliancePackDetail | null> {
+  try {
+    return await api.get<CompliancePackDetail>(
+      `/api/compliance-packs/${encodeURIComponent(packId)}`,
+    );
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return null;
+    }
+    return null;
   }
 }

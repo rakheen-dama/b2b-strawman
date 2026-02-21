@@ -1063,6 +1063,43 @@ export interface CompliancePackEntry {
   appliedAt: string;
 }
 
+export interface CompliancePackDetail {
+  packId: string;
+  name: string;
+  description: string;
+  version: string;
+  jurisdiction: string | null;
+  customerType: string;
+  checklistTemplate: {
+    name: string;
+    slug: string;
+    autoInstantiate: boolean;
+    items: Array<{
+      name: string;
+      description: string;
+      sortOrder: number;
+      required: boolean;
+      requiresDocument: boolean;
+      requiredDocumentLabel: string | null;
+      dependsOnItemKey: string | null;
+    }>;
+  } | null;
+  fieldDefinitions: Array<{
+    fieldKey: string;
+    label: string;
+    fieldType: string;
+    required: boolean;
+    options: string[];
+    groupName: string | null;
+  }> | null;
+  retentionOverrides: Array<{
+    recordType: string;
+    triggerEvent: string;
+    retentionDays: number;
+    action: string;
+  }> | null;
+}
+
 export interface UpdateComplianceSettingsRequest {
   dormancyThresholdDays?: number;
   dataRequestDeadlineDays?: number;

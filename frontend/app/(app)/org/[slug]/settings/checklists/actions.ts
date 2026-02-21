@@ -79,6 +79,38 @@ export async function cloneChecklistTemplate(
   return { success: true };
 }
 
+export type UpdateChecklistTemplateInput = CreateChecklistTemplateInput;
+
+export async function updateChecklistTemplate(
+  slug: string,
+  id: string,
+  data: UpdateChecklistTemplateInput,
+): Promise<ActionResult> {
+  try {
+    await api.put(`/api/checklist-templates/${id}`, data);
+    revalidatePath(`/org/${slug}/settings/checklists`);
+    revalidatePath(`/org/${slug}/settings/checklists/${id}`);
+    return { success: true };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 403) {
+        return {
+          success: false,
+          error: "Only admins and owners can update checklist templates.",
+        };
+      }
+      if (error.status === 409) {
+        return {
+          success: false,
+          error: "A checklist template with this name already exists.",
+        };
+      }
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+}
+
 export async function deactivateChecklistTemplate(
   slug: string,
   id: string,

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { MoreHorizontal, Copy, Pencil, RotateCcw, Power } from "lucide-react";
+import { MoreHorizontal, Copy, Eye, Pencil, RotateCcw, Power } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -91,6 +91,17 @@ export function TemplateActionsMenu({
           >
             <Pencil className="mr-2 size-4" />
             Edit
+          </DropdownMenuItem>
+        )}
+
+        {isPlatform && (
+          <DropdownMenuItem
+            onClick={() =>
+              router.push(`/org/${slug}/settings/templates/${template.id}/edit`)
+            }
+          >
+            <Eye className="mr-2 size-4" />
+            View
           </DropdownMenuItem>
         )}
 

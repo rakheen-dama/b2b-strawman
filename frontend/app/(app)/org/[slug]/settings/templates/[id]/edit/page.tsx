@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { auth } from "@clerk/nextjs/server";
 import { getTemplateDetail } from "@/lib/api";
@@ -14,10 +13,6 @@ export default async function TemplateEditorPage({
   const { slug, id } = await params;
   const { orgRole } = await auth();
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
-
-  if (!isAdmin) {
-    redirect(`/org/${slug}/settings/templates`);
-  }
 
   let template: TemplateDetailResponse;
   try {
@@ -40,6 +35,8 @@ export default async function TemplateEditorPage({
     );
   }
 
+  const readOnly = !isAdmin || template.source === "PLATFORM";
+
   return (
     <div className="space-y-8">
       <Link
@@ -52,14 +49,14 @@ export default async function TemplateEditorPage({
 
       <div>
         <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Edit Template
+          {readOnly ? "View Template" : "Edit Template"}
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           {template.name}
         </p>
       </div>
 
-      <TemplateEditorForm slug={slug} template={template} />
+      <TemplateEditorForm slug={slug} template={template} readOnly={readOnly} />
     </div>
   );
 }

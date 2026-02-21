@@ -114,9 +114,12 @@ export default async function ChecklistsSettingsPage({
                   className="border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/50"
                 >
                   <td className="px-4 py-3">
-                    <p className="font-medium text-slate-900 dark:text-slate-100">
+                    <Link
+                      href={`/org/${slug}/settings/checklists/${template.id}`}
+                      className="font-medium text-slate-900 hover:underline dark:text-slate-100"
+                    >
                       {template.name}
-                    </p>
+                    </Link>
                     {template.description && (
                       <p className="text-xs text-slate-500 dark:text-slate-400">
                         {template.description}
@@ -152,6 +155,7 @@ export default async function ChecklistsSettingsPage({
                       slug={slug}
                       templateId={template.id}
                       templateName={template.name}
+                      source={template.source}
                     />
                   </td>
                 </tr>

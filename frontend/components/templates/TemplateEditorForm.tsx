@@ -13,9 +13,10 @@ import type { TemplateDetailResponse } from "@/lib/types";
 interface TemplateEditorFormProps {
   slug: string;
   template: TemplateDetailResponse;
+  readOnly?: boolean;
 }
 
-export function TemplateEditorForm({ slug, template }: TemplateEditorFormProps) {
+export function TemplateEditorForm({ slug, template, readOnly }: TemplateEditorFormProps) {
   const [name, setName] = useState(template.name);
   const [description, setDescription] = useState(template.description ?? "");
   const [content, setContent] = useState(template.content);
@@ -59,15 +60,17 @@ export function TemplateEditorForm({ slug, template }: TemplateEditorFormProps) 
             entityType={template.primaryEntityType}
           />
         </div>
-        <div className="flex items-center gap-3">
-          {successMsg && (
-            <span className="text-sm text-teal-600">{successMsg}</span>
-          )}
-          {error && <span className="text-sm text-destructive">{error}</span>}
-          <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? "Saving..." : "Save Changes"}
-          </Button>
-        </div>
+        {!readOnly && (
+          <div className="flex items-center gap-3">
+            {successMsg && (
+              <span className="text-sm text-teal-600">{successMsg}</span>
+            )}
+            {error && <span className="text-sm text-destructive">{error}</span>}
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -79,6 +82,7 @@ export function TemplateEditorForm({ slug, template }: TemplateEditorFormProps) 
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Template name"
+              disabled={readOnly}
             />
           </div>
 
@@ -90,6 +94,7 @@ export function TemplateEditorForm({ slug, template }: TemplateEditorFormProps) 
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Brief description of this template"
               rows={2}
+              disabled={readOnly}
             />
           </div>
 
@@ -102,6 +107,7 @@ export function TemplateEditorForm({ slug, template }: TemplateEditorFormProps) 
               placeholder="<html>...</html>"
               rows={20}
               className="font-mono text-sm"
+              disabled={readOnly}
             />
           </div>
 
@@ -114,6 +120,7 @@ export function TemplateEditorForm({ slug, template }: TemplateEditorFormProps) 
               placeholder="/* Custom styles */"
               rows={10}
               className="font-mono text-sm"
+              disabled={readOnly}
             />
           </div>
         </div>

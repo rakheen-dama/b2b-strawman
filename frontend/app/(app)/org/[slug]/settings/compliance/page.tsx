@@ -2,9 +2,9 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { auth } from "@clerk/nextjs/server";
 import { api } from "@/lib/api";
-import { formatDate } from "@/lib/format";
 import { RetentionPolicyTable } from "@/components/compliance/RetentionPolicyTable";
 import { ComplianceSettingsForm } from "@/components/compliance/ComplianceSettingsForm";
+import { CompliancePackList } from "@/components/compliance/CompliancePackList";
 import type { OrgSettings, RetentionPolicy } from "@/lib/types";
 
 export default async function ComplianceSettingsPage({
@@ -85,34 +85,12 @@ export default async function ComplianceSettingsPage({
           Compliance Packs
         </h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Applied compliance packs and their versions.
+          Applied compliance packs and their versions. Click a pack to view its
+          full contents.
         </p>
-        {settings.compliancePackStatus && settings.compliancePackStatus.length > 0 ? (
-          <div className="mt-4 space-y-2">
-            {settings.compliancePackStatus.map((pack) => (
-              <div
-                key={pack.packId}
-                className="flex items-center justify-between rounded-md border border-slate-100 px-4 py-2 dark:border-slate-800"
-              >
-                <div>
-                  <p className="font-medium text-slate-900 dark:text-slate-100">
-                    {pack.packId}
-                  </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Version {pack.version}
-                  </p>
-                </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Applied {formatDate(pack.appliedAt)}
-                </p>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
-            No compliance packs applied.
-          </p>
-        )}
+        <CompliancePackList
+          packs={settings.compliancePackStatus ?? []}
+        />
       </div>
     </div>
   );

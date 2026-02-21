@@ -38,12 +38,15 @@ export function ClosePeriodDialog({
   const [error, setError] = useState<string | null>(null);
 
   const baseFeeAmount = retainer.periodFee ?? 0;
-  const hasOverage = period.overageHours > 0;
+  const hasOverage = (period.overageHours ?? 0) > 0;
+  const isHourBank = retainer.type === "HOUR_BANK";
 
   // Preview estimate — backend recalculates at close time
-  const remainingHours = period.remainingHours;
+  const remainingHours = period.remainingHours ?? 0;
   const rolloverOut =
-    retainer.rolloverPolicy === "FORFEIT" || !retainer.rolloverPolicy
+    !isHourBank ||
+    retainer.rolloverPolicy === "FORFEIT" ||
+    !retainer.rolloverPolicy
       ? 0
       : retainer.rolloverPolicy === "CARRY_CAPPED"
         ? Math.min(remainingHours, retainer.rolloverCapHours ?? 0)
@@ -96,14 +99,16 @@ export function ClosePeriodDialog({
                   {formatLocalDate(period.periodEnd)}
                 </dd>
               </div>
-              <div className="flex justify-between">
-                <dt className="text-slate-500 dark:text-slate-400">
-                  Allocated Hours:
-                </dt>
-                <dd className="font-medium text-slate-900 dark:text-slate-100">
-                  {period.allocatedHours.toFixed(1)}h
-                </dd>
-              </div>
+              {period.allocatedHours != null && (
+                <div className="flex justify-between">
+                  <dt className="text-slate-500 dark:text-slate-400">
+                    Allocated Hours:
+                  </dt>
+                  <dd className="font-medium text-slate-900 dark:text-slate-100">
+                    {period.allocatedHours.toFixed(1)}h
+                  </dd>
+                </div>
+              )}
               <div className="flex justify-between">
                 <dt className="text-slate-500 dark:text-slate-400">
                   Consumed Hours:
@@ -118,7 +123,7 @@ export function ClosePeriodDialog({
           {/* Overage warning */}
           {hasOverage && (
             <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
-              {period.overageHours.toFixed(1)} overage hours recorded.
+              {(period.overageHours ?? 0).toFixed(1)} overage hours recorded.
               Overage charges will apply.
             </div>
           )}
@@ -148,7 +153,7 @@ export function ClosePeriodDialog({
                 {hasOverage && (
                   <div className="flex justify-between">
                     <span className="text-slate-600 dark:text-slate-400">
-                      Overage ({period.overageHours.toFixed(1)}h)
+                      Overage ({(period.overageHours ?? 0).toFixed(1)}h)
                     </span>
                     <span className="font-medium text-amber-600 dark:text-amber-400">
                       Calculated at close

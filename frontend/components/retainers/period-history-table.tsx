@@ -83,15 +83,17 @@ export function PeriodHistoryTable({ periods, slug }: PeriodHistoryTableProps) {
                   )}
                 </td>
                 <td className="px-4 py-3 text-right font-mono text-sm tabular-nums text-slate-700 dark:text-slate-300">
-                  {period.allocatedHours.toFixed(1)}h
+                  {period.allocatedHours != null
+                    ? `${period.allocatedHours.toFixed(1)}h`
+                    : "\u2014"}
                 </td>
                 <td className="px-4 py-3 text-right font-mono text-sm tabular-nums text-slate-700 dark:text-slate-300">
                   {period.consumedHours.toFixed(1)}h
                 </td>
                 <td className="px-4 py-3 text-right font-mono text-sm tabular-nums">
-                  {period.overageHours > 0 ? (
+                  {(period.overageHours ?? 0) > 0 ? (
                     <span className="text-amber-600 dark:text-amber-400">
-                      {period.overageHours.toFixed(1)}h
+                      {(period.overageHours ?? 0).toFixed(1)}h
                     </span>
                   ) : (
                     <span className="text-slate-400 dark:text-slate-600">

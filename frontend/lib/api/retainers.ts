@@ -27,12 +27,12 @@ export interface PeriodSummary {
   periodStart: string;
   periodEnd: string;
   status: PeriodStatus;
-  allocatedHours: number;
-  baseAllocatedHours: number;
+  allocatedHours: number | null;
+  baseAllocatedHours: number | null;
   consumedHours: number;
-  remainingHours: number;
+  remainingHours: number | null;
   rolloverHoursIn: number;
-  overageHours: number;
+  overageHours: number | null;
   rolloverHoursOut: number;
   invoiceId: string | null;
   closedAt: string | null;

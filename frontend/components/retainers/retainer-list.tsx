@@ -242,20 +242,20 @@ export function RetainerList({ slug, retainers }: RetainerListProps) {
                       <div className="space-y-1">
                         <div className="flex justify-between text-xs text-slate-600 dark:text-slate-400">
                           <span>{retainer.currentPeriod.consumedHours.toFixed(1)}h</span>
-                          <span>{retainer.currentPeriod.allocatedHours.toFixed(1)}h</span>
+                          <span>{(retainer.currentPeriod.allocatedHours ?? 0).toFixed(1)}h</span>
                         </div>
                         <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                           <div
                             className={`h-full rounded-full transition-all ${
-                              retainer.currentPeriod.overageHours > 0
+                              (retainer.currentPeriod.overageHours ?? 0) > 0
                                 ? "bg-amber-500"
                                 : "bg-teal-500"
                             }`}
                             style={{
                               width: `${Math.min(
                                 100,
-                                retainer.currentPeriod.allocatedHours > 0
-                                  ? (retainer.currentPeriod.consumedHours / retainer.currentPeriod.allocatedHours) * 100
+                                (retainer.currentPeriod.allocatedHours ?? 0) > 0
+                                  ? (retainer.currentPeriod.consumedHours / (retainer.currentPeriod.allocatedHours ?? 0)) * 100
                                   : 0,
                               )}%`,
                             }}

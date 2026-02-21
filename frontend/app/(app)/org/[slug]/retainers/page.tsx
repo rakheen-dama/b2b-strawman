@@ -26,8 +26,8 @@ function computeSummary(retainers: RetainerResponse[]) {
   for (const r of retainers) {
     if (r.status === "ACTIVE") activeCount++;
     if (r.currentPeriod?.readyToClose) readyToCloseCount++;
-    if (r.currentPeriod && r.currentPeriod.overageHours > 0) {
-      totalOverageHours += r.currentPeriod.overageHours;
+    if (r.currentPeriod && (r.currentPeriod.overageHours ?? 0) > 0) {
+      totalOverageHours += r.currentPeriod.overageHours ?? 0;
     }
   }
 

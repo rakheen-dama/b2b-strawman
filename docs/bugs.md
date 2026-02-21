@@ -126,6 +126,194 @@ Bugs found during product walkthrough testing. Each entry has enough context for
 
 ---
 
+## BUG-004: Retainer consumption stays at zero — silent date-range mismatch + no feedback
+
+**Severity**: high
+**Area**: Both — Retainer consumption / time tracking
+**Found in**: Walkthrough — logging time against a retainer customer's task
+
+**Description**: After logging 2 sets of hours against a task on a project linked to a retainer customer (40h HOUR_BANK), the retainer summary still shows "0 of 40 hours" consumed. Page refresh doesn't help — consumed hours remain 0 in the database.
+
+**Root Cause**: The `RetainerConsumptionListener` calculates consumption via a native SQL query (`sumConsumedMinutes`) that filters time entries by date range: `te.date >= :periodStart AND te.date < :periodEnd`. The period dates are derived from the retainer's `startDate` + frequency (e.g., MONTHLY → `[startDate, startDate+1month)`). **If time entries fall outside this range, the sum is 0 and the listener silently updates consumption to 0.**
+
+Three compounding issues:
+
+1. **Date-range mismatch (primary cause)**: If the retainer start date doesn't encompass today's date within its period window, time logged today scores 0. Example: retainer startDate = 2026-03-01 (MONTHLY) → period = [Mar 1, Apr 1). Time logged on Feb 21 → outside range → sum = 0. There is NO validation or warning when logging time outside the active retainer period.
+
+2. **Silent failure pattern**: `RetainerConsumptionListener.onTimeEntryChanged()` wraps all logic in a try/catch that swallows exceptions (ADR-074 "self-healing"). If the listener fails OR computes 0, the user gets identical feedback: nothing. There's no distinction between "consumption updated to 0 because no billable hours in range" and "consumption update failed."
+
+3. **No frontend feedback loop**: After creating a time entry, the frontend doesn't revalidate retainer data, show consumption impact, or warn when the entry date falls outside the retainer period.
+
+The consumption query itself is correct (tested in `RetainerConsumptionListenerTest` — 10 passing tests). The issue is the gap between what the user expects (log time → hours decrement) and what happens when dates don't align.
+
+**Affected Files**:
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/retainer/RetainerConsumptionListener.java` — needs to surface when consumption is 0 despite time entries existing
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/retainer/RetainerPeriodRepository.java` — `sumConsumedMinutes()` query (line 36-49) — correct but silent on date exclusions
+- `frontend/components/tasks/log-time-dialog.tsx` — no retainer context shown, no warning for out-of-period dates
+- `frontend/app/(app)/org/[slug]/projects/[id]/time-entry-actions.ts` — no revalidation of retainer data after time entry creation
+- `frontend/components/customers/retainer-progress.tsx` — stale display, no refresh trigger
+
+**Fix Guidance**:
+
+**Backend (consumption reliability)**:
+1. In `RetainerConsumptionListener.handleTimeEntryChanged()`, after step 4 (consumption query), add an INFO log that includes the period date range and the time entry count/sum. This makes "0 because out of range" visible in logs vs "0 because query failed."
+2. Consider adding a validation in `TimeEntryService.createTimeEntry()`: when the task's project is linked to a customer with an active retainer, check if the time entry's date falls within the current open period. If not, log a warning. This doesn't block creation — just surfaces the mismatch.
+
+**Frontend (feedback loop)**:
+3. In `time-entry-actions.ts`, after a successful `createTimeEntry` call, add `revalidatePath` for the project page and customer pages to force server components to refetch retainer data.
+4. In the `LogTimeDialog`, when the task's project has a retainer customer, fetch the current period dates and show a subtle indicator: "Current retainer period: Feb 1 – Mar 1". If the selected date falls outside this range, show an amber warning: "This date is outside the current retainer period — hours won't count toward the retainer."
+5. After successful time entry creation, show a toast with retainer impact: "Logged 2h — retainer: 4h / 40h consumed" (requires a follow-up API call to `GET /api/customers/{id}/retainer-summary`).
+
+**Data fix (if applicable)**:
+6. If the retainer was created with wrong start date, user can edit the retainer's start date from the retainer detail page (if the period hasn't been closed). This will recompute the period range. Alternatively, create a new retainer with the correct start date.
+
+**Impact**: The retainer feature appears completely broken — users log time and nothing changes. The actual computation is correct, but the lack of date-range feedback makes it seem like the system doesn't track consumption at all. This undermines trust in the entire billing/retainer system.
+
+---
+
+## BUG-005: Report parameter form requires raw UUID input instead of entity picker
+
+**Severity**: high
+**Area**: Frontend — Reports
+**Found in**: Walkthrough — generating a report (e.g., Timesheet, Profitability)
+
+**Description**: When running a report that accepts project or member parameters, the form displays raw text input fields asking for UUIDs (e.g., "Project ID (UUID)"). Users don't know UUIDs — they need searchable dropdowns showing entity names. The backend parameter schema already includes an `entityType` field ("project", "member") that could drive entity pickers, but the frontend ignores it.
+
+**Root Cause**: `frontend/components/reports/report-parameter-form.tsx` lines 116-126 — all `uuid`-type parameters render as `<Input type="text">` with placeholder `{entityType ?? "Entity"} ID (UUID)`. The `entityType` field from the parameter schema is used only in the placeholder text, not to select a picker component.
+
+The backend `StandardReportPackSeeder.java` seeds parameters with both `type: "uuid"` and `entityType: "project"` / `"member"`, and the frontend `ParameterDefinition` TypeScript interface includes `entityType?: string` — but the form component never branches on it.
+
+**Affected Files**:
+- `frontend/components/reports/report-parameter-form.tsx` — replace `<Input>` with entity picker for uuid params with entityType
+- `frontend/lib/api/reports.ts` — `ParameterDefinition` interface already has `entityType`, no changes needed
+- `frontend/__tests__/report-parameter-form.test.tsx` — update tests to expect combobox instead of text input for entity-typed uuid params
+
+**Fix Guidance**:
+1. In `report-parameter-form.tsx`, for `param.type === "uuid"` parameters that have `param.entityType`, render a searchable `<Combobox>` (Shadcn Command-based) instead of `<Input>`.
+2. The combobox should fetch entities based on `entityType`:
+   - `"project"` → `GET /api/projects` — display project name
+   - `"member"` → `GET /api/members` — display member name + email
+   - `"customer"` → `GET /api/customers` — display customer name
+3. Selected entity's UUID becomes the parameter value (same as what the text input would have accepted).
+4. For uuid params WITHOUT `entityType`, keep the text input as fallback.
+5. Use the existing `useEffect` + `fetch` pattern or a client-side API helper. The entity lists are already fetched on other pages, so the API endpoints exist.
+6. Update tests to verify that uuid+entityType params render a combobox with entity names, and that selecting an entity sets the correct UUID value.
+
+**Impact**: The reports feature is effectively unusable for non-technical users. All standard reports (Timesheet, Profitability by Project/Customer) require project/member selection, and users cannot provide UUIDs. This is the same class of issue as BUG-003 (template preview UUID input) — entity pickers were not implemented for UUID parameter types.
+
+---
+
+## BUG-006: Org admin displayed as "Member" on project member list
+
+**Severity**: low
+**Area**: Both — Project members display
+**Found in**: Walkthrough — viewing project members as an admin
+
+**Description**: When an org-level admin views a project's member list, they appear with a "Member" badge instead of an "Admin" designation. This is confusing because admins have full project access but their elevated role isn't visible in the project context.
+
+**Root Cause**: The project member list query (`ProjectMemberRepository.findProjectMembersWithDetails()`) only returns entries from the `project_members` table. Org admins get implicit project access via `ProjectAccessService` (which checks org role before project role), but they may not have a row in `project_members`. If they were explicitly added, they get the `"member"` project role. The frontend `ROLE_BADGE` map in `project-members-panel.tsx` only knows `"lead"` and `"member"` — there's no admin badge. When `projectRole` is null or unrecognized, `DEFAULT_BADGE` renders "Member".
+
+**Affected Files**:
+- `frontend/components/projects/project-members-panel.tsx` — `ROLE_BADGE` map needs "admin" entry; display logic needs to consider org role
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/member/ProjectMemberController.java` — member list endpoint could include org role info
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/member/ProjectMemberRepository.java` — query only returns explicit project members
+
+**Fix Guidance**:
+1. Decide on the desired UX: (a) admins always appear in project member lists with an "Admin" badge, (b) admins only appear if explicitly added but show "Admin" badge, or (c) keep current behavior and mark this as "won't fix".
+2. If option (a): modify the member list endpoint to also return org admins/owners who are not explicit project members, with a synthetic `projectRole = "admin"`. Add an `"admin"` entry to the frontend `ROLE_BADGE` map with an appropriate variant.
+3. If option (b): when an admin is added to a project, store their org role as metadata. In the frontend, check if the member's org role is "admin"/"owner" and override the badge display.
+4. Add `"admin"` and `"owner"` to the `ROLE_BADGE` map in `project-members-panel.tsx` with distinct styling (e.g., different color badge).
+5. Consider whether org owners should also get special treatment.
+
+**Impact**: Cosmetic/UX issue only. Actual permissions are correct — admins can still manage the project. But it's confusing for the admin themselves and for other team members who see an admin listed as "Member".
+
+---
+
+## BUG-007: Project template editor cannot add sub-tasks (task items)
+
+**Severity**: high
+**Area**: Frontend — Project templates
+**Found in**: Walkthrough — Settings > Project Templates > Edit > Tasks
+
+**Description**: When editing a project template's tasks, there is no way to add sub-tasks (task items / checklist items) to individual tasks. The backend fully supports template task items (`TemplateTaskItem` entity, create/update/duplicate operations), but the frontend editor doesn't expose this functionality. Existing templates with items (e.g., from `saveFromProject`) will silently lose their items when edited and saved.
+
+**Root Cause**: The frontend `TemplateEditor.tsx` component and its TypeScript types are missing task item support:
+
+1. `frontend/lib/api/templates.ts` — `TemplateTaskResponse` and `TemplateTaskRequest` interfaces don't include an `items` field, even though the backend returns and accepts them.
+2. `frontend/components/templates/TemplateEditor.tsx` — `TaskRow` interface (line 23-30) has no `items` property. The `addTask()` function creates tasks without items. The save payload (lines 118-132) doesn't include items. No UI exists for adding/editing/removing sub-tasks.
+3. The backend `TemplateTaskResponse` includes `List<TemplateTaskItemResponse> items` and `TemplateTaskRequest` accepts `List<TemplateTaskItemRequest> items`, but these are silently dropped by the frontend.
+
+**Affected Files**:
+- `frontend/lib/api/templates.ts` — add `items` field to `TemplateTaskRequest` and `TemplateTaskResponse`
+- `frontend/components/templates/TemplateEditor.tsx` — add `items` to `TaskRow` interface, add sub-task management UI, include items in save payload
+- `frontend/__tests__/template-editor.test.tsx` — add tests for sub-task add/edit/delete/reorder
+
+**Fix Guidance**:
+1. In `frontend/lib/api/templates.ts`, add to `TemplateTaskResponse`:
+   ```typescript
+   items: Array<{ id: string; name: string; sortOrder: number }>;
+   ```
+   And to `TemplateTaskRequest`:
+   ```typescript
+   items?: Array<{ name: string; sortOrder: number }>;
+   ```
+2. In `TemplateEditor.tsx`, extend the `TaskRow` interface to include `items: Array<{ id?: string; name: string; sortOrder: number }>`.
+3. When loading a template, map `task.items` into the `TaskRow` state.
+4. Add an expandable sub-section within each task card showing its items as a simple list.
+5. Add an "Add Item" button per task that appends a new item with an inline text input.
+6. Items should support: add, rename (inline edit), delete, reorder (move up/down).
+7. When saving, include `items` in each task's payload sent to `PUT /api/project-templates/{id}`.
+8. Add tests verifying: items display on load, add item, delete item, items included in save payload.
+
+**Impact**: Project templates cannot define task-level checklists or sub-tasks. This means templates created from existing projects (via "Save as Template") will lose their task items when re-opened for editing. The template-to-project flow may also create projects without expected sub-tasks.
+
+---
+
+## BUG-008: Retainer detail page crashes for FIXED_FEE retainers (null allocatedHours)
+
+**Severity**: critical
+**Area**: Frontend — Retainer detail page
+**Found in**: Walkthrough — clicking into a FIXED_FEE retainer
+
+**Description**: Navigating to a FIXED_FEE retainer's detail page crashes with a React render error. The `ClosePeriodDialog` component calls `.toFixed(1)` on `period.allocatedHours`, which is `null` for FIXED_FEE retainers (they use a flat fee, not allocated hours). The error is: `TypeError: Cannot read properties of null (reading 'toFixed')`.
+
+**Root Cause**: `frontend/components/retainers/close-period-dialog.tsx` line 104 — `{period.allocatedHours.toFixed(1)}h` crashes when `allocatedHours` is `null`. The `PeriodSummary` TypeScript interface declares `allocatedHours: number` (non-nullable), but the backend returns `null` for FIXED_FEE retainer periods. The type definition is wrong.
+
+Multiple null-unsafe accesses in the same component:
+- Line 104: `period.allocatedHours.toFixed(1)` — **crashes**
+- Line 41: `period.overageHours > 0` — could be null for FIXED_FEE
+- Line 44: `period.remainingHours` — could be null for FIXED_FEE
+- Line 112: `period.consumedHours.toFixed(1)` — could be null
+
+The `RetainerDetailActions` component (line 210) checks `currentPeriod && (...)` before rendering `ClosePeriodDialog`, but it doesn't check the retainer type. The dialog renders unconditionally for any retainer with an open period, including FIXED_FEE.
+
+**Affected Files**:
+- `frontend/lib/api/retainers.ts` — `PeriodSummary.allocatedHours` should be `number | null`, same for `remainingHours`, `overageHours`, `baseAllocatedHours`
+- `frontend/components/retainers/close-period-dialog.tsx` — null-guard all hour fields; conditionally hide hour-based rows for FIXED_FEE retainers
+- `frontend/components/retainers/retainer-detail-actions.tsx` — consider passing retainer type to dialog for conditional rendering
+
+**Fix Guidance**:
+1. In `frontend/lib/api/retainers.ts`, change `PeriodSummary` fields to nullable:
+   ```typescript
+   allocatedHours: number | null;
+   baseAllocatedHours: number | null;
+   remainingHours: number | null;
+   overageHours: number | null;
+   ```
+2. In `close-period-dialog.tsx`, null-guard all hour accesses:
+   - Line 104: `{period.allocatedHours?.toFixed(1) ?? "N/A"}h` or conditionally hide the "Allocated Hours" row when `allocatedHours` is null.
+   - Line 112: `{period.consumedHours?.toFixed(1) ?? "0.0"}h`
+   - Line 41: `const hasOverage = (period.overageHours ?? 0) > 0;`
+   - Line 44: `const remainingHours = period.remainingHours ?? 0;`
+3. For FIXED_FEE retainers, the "Allocated Hours" and "Remaining Hours" rows are meaningless — conditionally hide them. Check `retainer.type === "FIXED_FEE"` and only show "Consumed Hours" and "Period Fee".
+4. Update rollover preview section (lines 127-131) to also null-guard — rollover is an HOUR_BANK concept, not applicable to FIXED_FEE.
+5. Fix any other components that render `PeriodSummary` fields — search for `.allocatedHours`, `.remainingHours`, `.overageHours` across the frontend.
+6. Add a test case: render `ClosePeriodDialog` with a FIXED_FEE period (null hours fields) and verify it doesn't crash.
+
+**Impact**: The retainer detail page is completely broken for FIXED_FEE retainers. Users cannot view, manage, or close FIXED_FEE retainer periods. Since the error occurs during React render, it's an unrecoverable crash — the entire page fails to load.
+
+---
+
 <!-- TEMPLATE — copy this for new bugs:
 
 ## BUG-NNN: [Short description]

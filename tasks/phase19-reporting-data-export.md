@@ -22,7 +22,7 @@ This phase **extends** the existing `report/` package (Phase 8 profitability end
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 133 | ReportDefinition Entity Foundation | Backend | — | M | 133A, 133B | |
+| 133 | ReportDefinition Entity Foundation | Backend | — | M | 133A, 133B | **Done** (PRs #283, #284) |
 | 134 | Report Execution Framework + Timesheet Query | Backend | 133 | M | 134A, 134B | |
 | 135 | Invoice Aging + Project Profitability Queries | Backend | 134 | M | 135A | |
 | 136 | Rendering & Export Pipeline | Backend | 134 | M | 136A, 136B | |
@@ -75,7 +75,7 @@ This phase **extends** the existing `report/` package (Phase 8 profitability end
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 1a | Epic 133 | 133A | V35 migration + `ReportDefinition` entity + `ReportDefinitionRepository` + `OrgSettings.reportPackStatus` field. Foundation for all other slices. | **Done** (PR #283) |
-| 1b | Epic 133 | 133B | `StandardReportPackSeeder` with all 3 definitions and templates + list/detail GET endpoints. Establishes the API surface that the frontend reads. |
+| 1b | Epic 133 | 133B | `StandardReportPackSeeder` with all 3 definitions and templates + list/detail GET endpoints. Establishes the API surface that the frontend reads. | **Done** (PR #284) |
 
 ### Stage 2: Execution Framework (Sequential)
 
@@ -129,7 +129,7 @@ Stage 4:  [137A] --> [137B]             (137A can start after 133B, 137B after 1
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **133A** | 133.1–133.6 | V35 migration (1 new table + 1 ALTER on `org_settings`), `ReportDefinition` entity (all 11 fields, JSONB mappings, `updateTemplate()` method), `ReportDefinitionRepository` (with `findBySlug()`), `OrgSettings` extension (`reportPackStatus` JSONB field + `recordReportPackApplication()` method). ~5 files created/modified. | **Done** (PR #283) |
-| **133B** | 133.7–133.14 | `StandardReportPackSeeder` seeding all 3 report definitions with full Thymeleaf templates and correct parameter/column JSON. `ReportingController` with `GET /api/report-definitions` (categorized list) and `GET /api/report-definitions/{slug}` (detail). `TenantProvisioningService` integration. `SecurityConfig` update. Integration tests (~8 tests). ~6 files created/modified. |  |
+| **133B** | 133.7–133.14 | `StandardReportPackSeeder` seeding all 3 report definitions with full Thymeleaf templates and correct parameter/column JSON. `ReportingController` with `GET /api/report-definitions` (categorized list) and `GET /api/report-definitions/{slug}` (detail). `TenantProvisioningService` integration. `SecurityConfig` update. Integration tests (~8 tests). ~6 files created/modified. | **Done** (PR #284) |
 
 ### Tasks
 

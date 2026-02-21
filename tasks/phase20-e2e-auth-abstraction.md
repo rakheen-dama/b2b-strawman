@@ -90,7 +90,7 @@ Phase 20 introduces an **auth provider abstraction layer** that decouples the fr
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 2a (parallel) | Epic 139 | 139A | First half of mechanical refactor — all `actions.ts` files (25 of 44). Import swap + function rename only. No logic changes. |
+| 2a (parallel) | Epic 139 | 139A | First half of mechanical refactor — all `actions.ts` files (25 of 44). Import swap + function rename only. No logic changes. | **Done** (PR #294) |
 | 2b (parallel) | Epic 140 | 140A | Mock IDP Node.js container + `application-e2e.yml`. Independent of frontend abstraction work. Can complete while 139/141/142 are in progress. |
 | 2c (parallel) | Epic 141 | 141A | `lib/auth/providers/mock/server.ts` — reads JWT from cookie, exposes `getAuthContext()` / `getAuthToken()` for mock mode. Mock middleware (`lib/auth/providers/mock/middleware.ts`). |
 
@@ -210,7 +210,7 @@ Stage 5:  [144A]                                (after 143A)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **139A** | 139.1–139.5 | Refactor first 25 files: all `actions.ts` server actions in `app/(app)/org/[slug]/**`. Each file: replace import + replace `auth()` destructure + replace any `currentUser()` call. Run `pnpm build` at end to verify no TypeScript errors. ~25 files modified. |  |
+| **139A** | 139.1–139.5 | Refactor first 25 files: all `actions.ts` server actions in `app/(app)/org/[slug]/**`. Each file: replace import + replace `auth()` destructure + replace any `currentUser()` call. Run `pnpm build` at end to verify no TypeScript errors. ~25 files modified. | **Done** (PR #294) |
 | **139B** | 139.6–139.10 | Refactor remaining files: all `page.tsx` server components that call `auth()`, `lib/api.ts` (replace `getToken()`), any remaining files. Run full `pnpm build` + `pnpm test` — all tests must pass. Add `server-only` import to `lib/auth/server.ts`. ~22 files modified. |  |
 
 ### Tasks

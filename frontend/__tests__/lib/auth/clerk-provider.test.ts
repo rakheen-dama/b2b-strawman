@@ -19,7 +19,7 @@ import {
   getCurrentUserEmail,
   requireRole,
 } from "@/lib/auth/providers/clerk";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 
 describe("Clerk auth provider", () => {
   beforeEach(() => {
@@ -72,5 +72,41 @@ describe("Clerk auth provider", () => {
     await expect(requireRole("admin")).rejects.toThrow(
       "Insufficient permissions — admin role required",
     );
+  });
+
+  it("getAuthContext() throws when orgId is null", async () => {
+    vi.mocked(auth).mockResolvedValueOnce({
+      orgId: null,
+      orgSlug: null,
+      orgRole: null,
+      userId: "user_1",
+      getToken: vi.fn().mockResolvedValue("tok_123"),
+    } as never);
+
+    await expect(getAuthContext()).rejects.toThrow(
+      "No active organization — select an organization first",
+    );
+  });
+
+  it("getAuthToken() throws when token is null", async () => {
+    vi.mocked(auth).mockResolvedValueOnce({
+      orgId: "org_test",
+      orgSlug: "test-org",
+      orgRole: "org:owner",
+      userId: "user_1",
+      getToken: vi.fn().mockResolvedValue(null),
+    } as never);
+
+    await expect(getAuthToken()).rejects.toThrow(
+      "No auth token available — user may not be authenticated",
+    );
+  });
+
+  it("getCurrentUserEmail() returns null when currentUser() returns null", async () => {
+    vi.mocked(currentUser).mockResolvedValueOnce(null as never);
+
+    const email = await getCurrentUserEmail();
+
+    expect(email).toBeNull();
   });
 });

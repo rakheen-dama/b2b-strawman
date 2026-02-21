@@ -18,7 +18,12 @@ export async function getAuthContext(): Promise<AuthContext> {
 
 export async function getAuthToken(): Promise<string> {
   const { getToken } = await auth();
-  return (await getToken()) ?? "";
+  const token = await getToken();
+  if (!token)
+    throw new Error(
+      "No auth token available — user may not be authenticated",
+    );
+  return token;
 }
 
 export async function getCurrentUserEmail(): Promise<string | null> {

@@ -92,7 +92,7 @@ Phase 20 introduces an **auth provider abstraction layer** that decouples the fr
 |-------|------|-------|-----------|
 | 2a (parallel) | Epic 139 | 139A | First half of mechanical refactor — all `actions.ts` files (25 of 44). Import swap + function rename only. No logic changes. | **Done** (PR #294) |
 | 2b (parallel) | Epic 140 | 140A | Mock IDP Node.js container + `application-e2e.yml`. Independent of frontend abstraction work. Can complete while 139/141/142 are in progress. | **Done** (PR #296) |
-| 2c (parallel) | Epic 141 | 141A | `lib/auth/providers/mock/server.ts` — reads JWT from cookie, exposes `getAuthContext()` / `getAuthToken()` for mock mode. Mock middleware (`lib/auth/providers/mock/middleware.ts`). |
+| 2c (parallel) | Epic 141 | 141A | `lib/auth/providers/mock/server.ts` — reads JWT from cookie, exposes `getAuthContext()` / `getAuthToken()` for mock mode. Mock middleware (`lib/auth/providers/mock/middleware.ts`). | **Done** (PR #297) |
 
 ### Stage 3: Complete Parallel Tracks
 
@@ -328,7 +328,7 @@ Stage 5:  [144A]                                (after 143A)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **141A** | 141.1–141.5 | Real `lib/auth/providers/mock/server.ts` (reads `mock-auth-token` cookie, decodes JWT), `lib/auth/middleware.ts` (`createAuthMiddleware()`), mock middleware implementation. ~3 files created, 1 modified. |  |
+| **141A** | 141.1–141.5 | Real `lib/auth/providers/mock/server.ts` (reads `mock-auth-token` cookie, decodes JWT), `lib/auth/middleware.ts` (`createAuthMiddleware()`), mock middleware implementation. ~3 files created, 1 modified. | **Done** (PR #297) |
 | **141B** | 141.6–141.10 | `app/(mock-auth)/sign-in/page.tsx` — `MockLoginPage` with user picker, client form action, cookie setting. Update sign-in page redirect. Unit tests (~5 tests). ~4 files created, 1 modified. |  |
 
 ### Tasks

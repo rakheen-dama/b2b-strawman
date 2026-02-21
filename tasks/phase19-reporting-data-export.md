@@ -24,7 +24,7 @@ This phase **extends** the existing `report/` package (Phase 8 profitability end
 |------|------|-------|------|--------|--------|--------|
 | 133 | ReportDefinition Entity Foundation | Backend | — | M | 133A, 133B | **Done** (PRs #283, #284) |
 | 134 | Report Execution Framework + Timesheet Query | Backend | 133 | M | 134A, 134B | **Done** (PRs #285, #286) |
-| 135 | Invoice Aging + Project Profitability Queries | Backend | 134 | M | 135A | |
+| 135 | Invoice Aging + Project Profitability Queries | Backend | 134 | M | 135A | **Done** (PR #287) |
 | 136 | Rendering & Export Pipeline | Backend | 134 | M | 136A, 136B | |
 | 137 | Reports Frontend | Frontend | 133, 134 | M | 137A, 137B | |
 
@@ -88,7 +88,7 @@ This phase **extends** the existing `report/` package (Phase 8 profitability end
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 3a (parallel) | Epic 135 | 135A | `InvoiceAgingReportQuery` + `ProjectProfitabilityReportQuery`. Two query implementations that register themselves via `@Component` — no framework changes. Can run in parallel with 136A/136B. |
+| 3a (parallel) | Epic 135 | 135A | `InvoiceAgingReportQuery` + `ProjectProfitabilityReportQuery`. Two query implementations that register themselves via `@Component` — no framework changes. Can run in parallel with 136A/136B. | **Done** (PR #287) |
 | 3b (parallel) | Epic 136 | 136A | `ReportRenderingService` + HTML preview endpoint + PDF export endpoint + `REPORT_EXPORTED` audit. Can run in parallel with 135A. |
 | 3c (parallel) | Epic 136 | 136B | CSV export: `writeCsv()` in `ReportRenderingService` + CSV export endpoint + RFC 4180 escaping. Depends on 136A (service exists), can run in parallel with 135A. |
 
@@ -284,7 +284,7 @@ Stage 4:  [137A] --> [137B]             (137A can start after 133B, 137B after 1
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **135A** | 135.1–135.12 | `InvoiceAgingReportQuery` (native SQL with age buckets, bucket-to-label mapping, summary aggregation, customer filter), `ProjectProfitabilityReportQuery` (delegation to `ReportRepository.getOrgProjectRevenue()` + `getOrgProjectCost()`, row merging, margin computation, optional project/customer filter). Integration tests for both queries (~15 tests). ~4 files created. |  |
+| **135A** | 135.1–135.12 | `InvoiceAgingReportQuery` (native SQL with age buckets, bucket-to-label mapping, summary aggregation, customer filter), `ProjectProfitabilityReportQuery` (delegation to `ReportRepository.getOrgProjectRevenue()` + `getOrgProjectCost()`, row merging, margin computation, optional project/customer filter). Integration tests for both queries (~15 tests). ~4 files created. | **Done** (PR #287) |
 
 ### Tasks
 

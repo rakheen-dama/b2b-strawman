@@ -159,7 +159,7 @@
 | **Phase 19 — Reporting & Data Export** | | | | | | See [tasks/phase19-reporting-data-export.md](tasks/phase19-reporting-data-export.md) |
 | 133 | ReportDefinition Entity Foundation | Backend | — | M | 133A, 133B | **Done** (PRs #283, #284) |
 | 134 | Report Execution Framework + Timesheet Query | Backend | 133 | M | 134A, 134B | **Done** (PRs #285, #286) |
-| 135 | Invoice Aging + Project Profitability Queries | Backend | 134 | M | 135A | |
+| 135 | Invoice Aging + Project Profitability Queries | Backend | 134 | M | 135A | **Done** (PR #287) |
 | 136 | Rendering & Export Pipeline | Backend | 134 | M | 136A, 136B | |
 | 137 | Reports Frontend | Frontend | 133, 134 | M | 137A, 137B | |
 

@@ -55,7 +55,7 @@ export function MockLoginForm({ mockIdpUrl }: MockLoginFormProps) {
       }
 
       const { access_token } = await response.json();
-      document.cookie = `mock-auth-token=${access_token}; path=/`;
+      document.cookie = `mock-auth-token=${access_token}; path=/; SameSite=Lax`;
       router.push(`/org/${DEFAULT_ORG.orgSlug}/dashboard`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign-in failed");

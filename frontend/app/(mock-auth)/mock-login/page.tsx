@@ -1,8 +1,13 @@
+import { redirect } from "next/navigation";
 import { MockLoginForm } from "@/components/auth/mock-login-form";
 
 const MOCK_IDP_URL = process.env.MOCK_IDP_URL || "http://localhost:8090";
 
 export default function MockLoginPage() {
+  const authMode = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
+  if (authMode !== "mock") {
+    redirect("/sign-in");
+  }
   return (
     <div className="w-full max-w-sm">
       <h1 className="font-display mb-6 text-center text-xl text-slate-900 dark:text-slate-100">

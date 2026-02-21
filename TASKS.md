@@ -163,7 +163,7 @@
 | 136 | Rendering & Export Pipeline | Backend | 134 | M | 136A, 136B | **Done** (PRs #288, #289) |
 | 137 | Reports Frontend | Frontend | 133, 134 | M | 137A, 137B | **Done** (PRs #290, #291) |
 | **Phase 20 — Auth Abstraction & E2E Testing Infrastructure** | | | | | | See [tasks/phase20-e2e-auth-abstraction.md](tasks/phase20-e2e-auth-abstraction.md) |
-| 138 | Auth Abstraction Layer — Interface + Clerk Provider | Frontend | — | M | 138A, 138B | |
+| 138 | Auth Abstraction Layer — Interface + Clerk Provider | Frontend | — | M | 138A, 138B | 138A **Done** (PR #292) |
 | 139 | 44-File Mechanical Refactor | Frontend | 138 | M | 139A, 139B | |
 | 140 | Mock IDP Container + Backend E2E Profile | Infra | — | S | 140A | |
 | 141 | Frontend Mock Provider — Server + Middleware | Frontend | 138 | M | 141A, 141B | |

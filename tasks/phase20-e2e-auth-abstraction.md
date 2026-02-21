@@ -83,7 +83,7 @@ Phase 20 introduces an **auth provider abstraction layer** that decouples the fr
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 1a | Epic 138 | 138A | `lib/auth/types.ts` + `lib/auth/server.ts` interface (function signatures, no implementation). Foundation types that all subsequent slices import. |
+| 1a | Epic 138 | 138A | `lib/auth/types.ts` + `lib/auth/server.ts` interface (function signatures, no implementation). Foundation types that all subsequent slices import. | **Done** (PR #292) |
 | 1b | Epic 138 | 138B | `lib/auth/providers/clerk.ts` (wraps existing Clerk calls), `lib/auth/index.ts` (re-exports), `lib/auth/client/auth-provider.tsx` stub. Validates that Clerk production path is unbroken before touching the 44 files. |
 
 ### Stage 2: Parallel Tracks (After 138)
@@ -144,7 +144,7 @@ Stage 5:  [144A]                                (after 143A)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **138A** | 138.1–138.4 | `lib/auth/types.ts` (3 platform-owned types), `lib/auth/server.ts` (4 exported async functions with provider dispatch, exports `AUTH_MODE` constant). No Clerk dependency yet. ~2 files created. |  |
+| **138A** | 138.1–138.4 | `lib/auth/types.ts` (3 platform-owned types), `lib/auth/server.ts` (4 exported async functions with provider dispatch, exports `AUTH_MODE` constant). No Clerk dependency yet. ~2 files created. | **Done** (PR #292) |
 | **138B** | 138.5–138.9 | `lib/auth/providers/clerk.ts` (Clerk implementation of all 4 server functions), `lib/auth/providers/mock/server.ts` stub (throws "not yet implemented"), `lib/auth/index.ts` (barrel re-export), `lib/auth/client/auth-provider.tsx` (conditional ClerkProvider wrapper), unit tests (~4 tests). ~5 files created, 1 file modified. |  |
 
 ### Tasks

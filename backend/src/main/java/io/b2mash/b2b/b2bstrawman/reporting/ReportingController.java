@@ -109,19 +109,7 @@ public class ReportingController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<String> previewReport(
       @PathVariable String slug, @RequestParam Map<String, Object> parameters) {
-    var definition =
-        reportDefinitionRepository
-            .findBySlug(slug)
-            .orElseThrow(() -> new ResourceNotFoundException("ReportDefinition", slug));
-
-    var result = reportExecutionService.executeForExport(slug, parameters);
-    // Limit to 50 rows for preview
-    var limitedRows = result.rows().size() > 50 ? result.rows().subList(0, 50) : result.rows();
-    var limitedResult =
-        new ReportResult(
-            limitedRows, result.summary(), result.totalElements(), result.totalPages());
-
-    String html = reportRenderingService.renderHtml(definition, limitedResult, parameters);
+    String html = reportRenderingService.renderPreviewHtml(slug, parameters);
     return ResponseEntity.ok().contentType(MediaType.TEXT_HTML).body(html);
   }
 

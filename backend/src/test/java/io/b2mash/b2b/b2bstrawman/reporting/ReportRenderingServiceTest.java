@@ -172,6 +172,7 @@ class ReportRenderingServiceTest {
                       var settings = orgSettingsRepository.findForCurrentTenant().orElse(null);
                       if (settings != null) {
                         settings.setDocumentFooterText("Confidential - RRS Test Org");
+                        orgSettingsRepository.save(settings);
                       }
                     }));
 

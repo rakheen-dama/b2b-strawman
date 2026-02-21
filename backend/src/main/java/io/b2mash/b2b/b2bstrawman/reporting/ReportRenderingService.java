@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.reporting;
 
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.template.LenientStandardDialect;
 import io.b2mash.b2b.b2bstrawman.template.PdfRenderingService;
@@ -10,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templatemode.TemplateMode;
@@ -29,14 +31,23 @@ import org.thymeleaf.templateresolver.StringTemplateResolver;
 @Service
 public class ReportRenderingService {
 
+  private static final int PREVIEW_ROW_LIMIT = 50;
+
   private final PdfRenderingService pdfRenderingService;
   private final OrgSettingsRepository orgSettingsRepository;
+  private final ReportDefinitionRepository reportDefinitionRepository;
+  private final ReportExecutionService reportExecutionService;
   private final TemplateEngine reportTemplateEngine;
 
   public ReportRenderingService(
-      PdfRenderingService pdfRenderingService, OrgSettingsRepository orgSettingsRepository) {
+      PdfRenderingService pdfRenderingService,
+      OrgSettingsRepository orgSettingsRepository,
+      ReportDefinitionRepository reportDefinitionRepository,
+      ReportExecutionService reportExecutionService) {
     this.pdfRenderingService = pdfRenderingService;
     this.orgSettingsRepository = orgSettingsRepository;
+    this.reportDefinitionRepository = reportDefinitionRepository;
+    this.reportExecutionService = reportExecutionService;
     this.reportTemplateEngine = createReportTemplateEngine();
   }
 
@@ -44,6 +55,7 @@ public class ReportRenderingService {
    * Render HTML preview from report definition + execution result. Report templates are
    * self-contained (full HTML documents with inline styles), so no wrapHtml() needed.
    */
+  @Transactional(readOnly = true)
   public String renderHtml(
       ReportDefinition definition, ReportResult result, Map<String, Object> parameters) {
     Map<String, Object> context = buildContext(definition, result, parameters);
@@ -53,6 +65,7 @@ public class ReportRenderingService {
   }
 
   /** Render PDF from report definition + full execution result. */
+  @Transactional(readOnly = true)
   public byte[] renderPdf(
       ReportDefinition definition, ReportResult result, Map<String, Object> parameters) {
     String html = renderHtml(definition, result, parameters);
@@ -60,23 +73,49 @@ public class ReportRenderingService {
   }
 
   /**
+   * Render an HTML preview for a report, limited to {@value #PREVIEW_ROW_LIMIT} rows. Loads the
+   * definition by slug, executes the query, and renders the result.
+   */
+  @Transactional(readOnly = true)
+  public String renderPreviewHtml(String slug, Map<String, Object> parameters) {
+    var definition =
+        reportDefinitionRepository
+            .findBySlug(slug)
+            .orElseThrow(() -> new ResourceNotFoundException("ReportDefinition", slug));
+
+    var result = reportExecutionService.executeForExport(slug, parameters);
+    var limitedRows =
+        result.rows().size() > PREVIEW_ROW_LIMIT
+            ? result.rows().subList(0, PREVIEW_ROW_LIMIT)
+            : result.rows();
+    var limitedResult =
+        new ReportResult(
+            limitedRows, result.summary(), result.totalElements(), result.totalPages());
+
+    return renderHtml(definition, limitedResult, parameters);
+  }
+
+  /**
    * Generate a filename for the exported report based on slug and date parameters. Pattern:
    * {slug}-{dateFrom}-to-{dateTo}.{ext} or {slug}-{asOfDate}.{ext} or {slug}.{ext}
    */
   String generateFilename(String slug, Map<String, Object> parameters, String extension) {
+    String filename;
     if (parameters.containsKey("dateFrom") && parameters.containsKey("dateTo")) {
-      return slug
-          + "-"
-          + parameters.get("dateFrom")
-          + "-to-"
-          + parameters.get("dateTo")
-          + "."
-          + extension;
+      filename =
+          slug
+              + "-"
+              + parameters.get("dateFrom")
+              + "-to-"
+              + parameters.get("dateTo")
+              + "."
+              + extension;
+    } else if (parameters.containsKey("asOfDate")) {
+      filename = slug + "-" + parameters.get("asOfDate") + "." + extension;
+    } else {
+      filename = slug + "." + extension;
     }
-    if (parameters.containsKey("asOfDate")) {
-      return slug + "-" + parameters.get("asOfDate") + "." + extension;
-    }
-    return slug + "." + extension;
+    return filename.replaceAll("[^a-zA-Z0-9._-]", "");
   }
 
   private Map<String, Object> buildContext(
@@ -116,7 +155,13 @@ public class ReportRenderingService {
   @SuppressWarnings("unchecked")
   private List<ColumnDefinition> getColumns(ReportDefinition definition) {
     var colDefs = definition.getColumnDefinitions();
+    if (colDefs == null) {
+      return List.of();
+    }
     var columns = (List<Map<String, String>>) colDefs.get("columns");
+    if (columns == null) {
+      return List.of();
+    }
     return columns.stream()
         .map(
             c ->

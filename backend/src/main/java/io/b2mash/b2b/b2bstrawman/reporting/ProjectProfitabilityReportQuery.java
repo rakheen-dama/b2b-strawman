@@ -141,11 +141,11 @@ public class ProjectProfitabilityReportQuery implements ReportQuery {
     }
 
     var totalMargin = totalRevenue.subtract(totalCost);
-    BigDecimal avgMarginPercent;
+    BigDecimal overallMarginPercent;
     if (totalRevenue.compareTo(BigDecimal.ZERO) == 0) {
-      avgMarginPercent = BigDecimal.ZERO;
+      overallMarginPercent = BigDecimal.ZERO;
     } else {
-      avgMarginPercent =
+      overallMarginPercent =
           totalMargin
               .multiply(BigDecimal.valueOf(100))
               .divide(totalRevenue, 2, RoundingMode.HALF_UP);
@@ -155,7 +155,7 @@ public class ProjectProfitabilityReportQuery implements ReportQuery {
     summary.put("totalRevenue", totalRevenue);
     summary.put("totalCost", totalCost);
     summary.put("totalMargin", totalMargin);
-    summary.put("avgMarginPercent", avgMarginPercent);
+    summary.put("overallMarginPercent", overallMarginPercent);
 
     return summary;
   }

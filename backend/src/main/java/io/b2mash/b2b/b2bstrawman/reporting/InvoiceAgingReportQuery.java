@@ -76,6 +76,7 @@ public class InvoiceAgingReportQuery implements ReportQuery {
             END AS age_bucket
         FROM invoices i
         WHERE i.status = 'SENT'
+          AND i.due_date IS NOT NULL
           AND (CAST(:customerId AS UUID) IS NULL OR i.customer_id = CAST(:customerId AS UUID))
         ORDER BY days_overdue DESC
         """;
@@ -103,7 +104,7 @@ public class InvoiceAgingReportQuery implements ReportQuery {
               var bucket = t.get("age_bucket", String.class);
               row.put("ageBucket", bucket);
               row.put("ageBucketLabel", mapBucketLabel(bucket));
-              return (Map<String, Object>) (Map<String, ?>) row;
+              return (Map<String, Object>) row;
             })
         .toList();
   }
@@ -219,7 +220,7 @@ public class InvoiceAgingReportQuery implements ReportQuery {
       return bd;
     }
     if (value instanceof Number n) {
-      return BigDecimal.valueOf(n.doubleValue());
+      return new BigDecimal(n.toString());
     }
     return new BigDecimal(value.toString());
   }

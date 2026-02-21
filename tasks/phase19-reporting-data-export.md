@@ -89,7 +89,7 @@ This phase **extends** the existing `report/` package (Phase 8 profitability end
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 3a (parallel) | Epic 135 | 135A | `InvoiceAgingReportQuery` + `ProjectProfitabilityReportQuery`. Two query implementations that register themselves via `@Component` — no framework changes. Can run in parallel with 136A/136B. | **Done** (PR #287) |
-| 3b (parallel) | Epic 136 | 136A | `ReportRenderingService` + HTML preview endpoint + PDF export endpoint + `REPORT_EXPORTED` audit. Can run in parallel with 135A. |
+| 3b (parallel) | Epic 136 | 136A | `ReportRenderingService` + HTML preview endpoint + PDF export endpoint + `REPORT_EXPORTED` audit. Can run in parallel with 135A. | **Done** (PR #288) |
 | 3c (parallel) | Epic 136 | 136B | CSV export: `writeCsv()` in `ReportRenderingService` + CSV export endpoint + RFC 4180 escaping. Depends on 136A (service exists), can run in parallel with 135A. |
 
 ### Stage 4: Frontend (After Stages 1–3)
@@ -344,7 +344,7 @@ Stage 4:  [137A] --> [137B]             (137A can start after 133B, 137B after 1
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **136A** | 136.1–136.9 | `ReportRenderingService` with `buildContext()`, `renderHtml()`, `renderPdf()`. `GET /api/report-definitions/{slug}/preview` (HTML) and `GET /api/report-definitions/{slug}/export/pdf` (PDF download) endpoints. `REPORT_EXPORTED` audit event. Content-Disposition filename generation. Integration tests for HTML and PDF (~8 tests). ~3 files created/modified. |  |
+| **136A** | 136.1–136.9 | `ReportRenderingService` with `buildContext()`, `renderHtml()`, `renderPdf()`. `GET /api/report-definitions/{slug}/preview` (HTML) and `GET /api/report-definitions/{slug}/export/pdf` (PDF download) endpoints. `REPORT_EXPORTED` audit event. Content-Disposition filename generation. Integration tests for HTML and PDF (~8 tests). ~3 files created/modified. | **Done** (PR #288) |
 | **136B** | 136.10–136.16 | Add `writeCsv()` to `ReportRenderingService`. `GET /api/report-definitions/{slug}/export/csv` endpoint. RFC 4180 escaping, metadata header rows, streaming to `ServletOutputStream`. Integration tests for CSV (~7 tests). ~1 file modified. |  |
 
 ### Tasks

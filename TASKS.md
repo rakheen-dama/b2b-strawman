@@ -160,8 +160,16 @@
 | 133 | ReportDefinition Entity Foundation | Backend | — | M | 133A, 133B | **Done** (PRs #283, #284) |
 | 134 | Report Execution Framework + Timesheet Query | Backend | 133 | M | 134A, 134B | **Done** (PRs #285, #286) |
 | 135 | Invoice Aging + Project Profitability Queries | Backend | 134 | M | 135A | **Done** (PR #287) |
-| 136 | Rendering & Export Pipeline | Backend | 134 | M | 136A, 136B | |
+| 136 | Rendering & Export Pipeline | Backend | 134 | M | 136A, 136B | 136A **Done** (PR #288) |
 | 137 | Reports Frontend | Frontend | 133, 134 | M | 137A, 137B | |
+| **Phase 20 — Auth Abstraction & E2E Testing Infrastructure** | | | | | | See [tasks/phase20-e2e-auth-abstraction.md](tasks/phase20-e2e-auth-abstraction.md) |
+| 138 | Auth Abstraction Layer — Interface + Clerk Provider | Frontend | — | M | 138A, 138B | |
+| 139 | 44-File Mechanical Refactor | Frontend | 138 | M | 139A, 139B | |
+| 140 | Mock IDP Container + Backend E2E Profile | Infra | — | S | 140A | |
+| 141 | Frontend Mock Provider — Server + Middleware | Frontend | 138 | M | 141A, 141B | |
+| 142 | Frontend Mock Provider — Client Components | Frontend | 138 | S | 142A | |
+| 143 | Docker Compose E2E Stack + Boot-Seed Container | Infra | 140, 141, 142 | M | 143A | |
+| 144 | Playwright Fixtures + Smoke Tests | Frontend/E2E | 143 | S | 144A | |
 
 ---
 

@@ -21,7 +21,7 @@ Phase 20 introduces an **auth provider abstraction layer** that decouples the fr
 |------|------|-------|------|--------|--------|--------|
 | 138 | Auth Abstraction Layer — Interface + Clerk Provider | Frontend | — | M | 138A, 138B | **Done** (PRs #292, #293) |
 | 139 | 44-File Mechanical Refactor | Frontend | 138 | M | 139A, 139B | **Done** (PRs #294, #295) |
-| 140 | Mock IDP Container + Backend E2E Profile | Infra | — | S | 140A | |
+| 140 | Mock IDP Container + Backend E2E Profile | Infra | — | S | 140A | **Done** (PR #296) |
 | 141 | Frontend Mock Provider — Server + Middleware | Frontend | 138 | M | 141A, 141B | |
 | 142 | Frontend Mock Provider — Client Components | Frontend | 138 | S | 142A | |
 | 143 | Docker Compose E2E Stack + Boot-Seed Container | Infra | 140, 141, 142 | M | 143A | |
@@ -91,7 +91,7 @@ Phase 20 introduces an **auth provider abstraction layer** that decouples the fr
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 2a (parallel) | Epic 139 | 139A | First half of mechanical refactor — all `actions.ts` files (25 of 44). Import swap + function rename only. No logic changes. | **Done** (PR #294) |
-| 2b (parallel) | Epic 140 | 140A | Mock IDP Node.js container + `application-e2e.yml`. Independent of frontend abstraction work. Can complete while 139/141/142 are in progress. |
+| 2b (parallel) | Epic 140 | 140A | Mock IDP Node.js container + `application-e2e.yml`. Independent of frontend abstraction work. Can complete while 139/141/142 are in progress. | **Done** (PR #296) |
 | 2c (parallel) | Epic 141 | 141A | `lib/auth/providers/mock/server.ts` — reads JWT from cookie, exposes `getAuthContext()` / `getAuthToken()` for mock mode. Mock middleware (`lib/auth/providers/mock/middleware.ts`). |
 
 ### Stage 3: Complete Parallel Tracks
@@ -272,7 +272,7 @@ Stage 5:  [144A]                                (after 143A)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **140A** | 140.1–140.9 | `compose/mock-idp/` directory with `Dockerfile`, `package.json`, `tsconfig.json`, `src/index.ts` (Express server with JWKS + `/token` + `/userinfo`), `src/keys.ts` (RSA key generation), `src/users.ts` (seed user definitions). `backend/src/main/resources/application-e2e.yml`. ~8 files created. |  |
+| **140A** | 140.1–140.9 | `compose/mock-idp/` directory with `Dockerfile`, `package.json`, `tsconfig.json`, `src/index.ts` (Express server with JWKS + `/token` + `/userinfo`), `src/keys.ts` (RSA key generation), `src/users.ts` (seed user definitions). `backend/src/main/resources/application-e2e.yml`. ~8 files created. | **Done** (PR #296) |
 
 ### Tasks
 

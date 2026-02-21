@@ -165,7 +165,7 @@
 | **Phase 20 — Auth Abstraction & E2E Testing Infrastructure** | | | | | | See [tasks/phase20-e2e-auth-abstraction.md](tasks/phase20-e2e-auth-abstraction.md) |
 | 138 | Auth Abstraction Layer — Interface + Clerk Provider | Frontend | — | M | 138A, 138B | **Done** (PRs #292, #293) |
 | 139 | 44-File Mechanical Refactor | Frontend | 138 | M | 139A, 139B | **Done** (PRs #294, #295) |
-| 140 | Mock IDP Container + Backend E2E Profile | Infra | — | S | 140A | |
+| 140 | Mock IDP Container + Backend E2E Profile | Infra | — | S | 140A | **Done** (PR #296) |
 | 141 | Frontend Mock Provider — Server + Middleware | Frontend | 138 | M | 141A, 141B | |
 | 142 | Frontend Mock Provider — Client Components | Frontend | 138 | S | 142A | |
 | 143 | Docker Compose E2E Stack + Boot-Seed Container | Infra | 140, 141, 142 | M | 143A | |

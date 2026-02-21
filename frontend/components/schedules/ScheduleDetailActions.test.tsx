@@ -37,6 +37,7 @@ const makeSchedule = (overrides: Partial<ScheduleResponse> = {}): ScheduleRespon
   lastExecutedAt: null,
   nextExecutionDate: "2026-02-01",
   createdBy: "user-1",
+  createdByName: null,
   createdAt: "2026-01-01T00:00:00Z",
   updatedAt: "2026-01-01T00:00:00Z",
   ...overrides,

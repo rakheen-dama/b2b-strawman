@@ -23,7 +23,7 @@ This phase **extends** the existing `report/` package (Phase 8 profitability end
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 133 | ReportDefinition Entity Foundation | Backend | — | M | 133A, 133B | **Done** (PRs #283, #284) |
-| 134 | Report Execution Framework + Timesheet Query | Backend | 133 | M | 134A, 134B | |
+| 134 | Report Execution Framework + Timesheet Query | Backend | 133 | M | 134A, 134B | **Done** (PRs #285, #286) |
 | 135 | Invoice Aging + Project Profitability Queries | Backend | 134 | M | 135A | |
 | 136 | Rendering & Export Pipeline | Backend | 134 | M | 136A, 136B | |
 | 137 | Reports Frontend | Frontend | 133, 134 | M | 137A, 137B | |
@@ -82,7 +82,7 @@ This phase **extends** the existing `report/` package (Phase 8 profitability end
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 2a | Epic 134 | 134A | `ReportQuery` interface + `ReportResult` record + `ReportExecutionService` with slug dispatch and startup validation. Core dispatch framework. | **Done** (PR #285) |
-| 2b | Epic 134 | 134B | `TimesheetReportQuery` (all grouping modes) + `POST /api/report-definitions/{slug}/execute` endpoint + `REPORT_GENERATED` audit. First end-to-end executable report. |
+| 2b | Epic 134 | 134B | `TimesheetReportQuery` (all grouping modes) + `POST /api/report-definitions/{slug}/execute` endpoint + `REPORT_GENERATED` audit. First end-to-end executable report. | **Done** (PR #286) |
 
 ### Stage 3: Parallel Backend Tracks (After 134B)
 
@@ -210,7 +210,7 @@ Stage 4:  [137A] --> [137B]             (137A can start after 133B, 137B after 1
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **134A** | 134.1–134.6 | `ReportQuery` strategy interface, `ReportResult` record, `ReportExecutionService` (slug-based dispatch, startup validation, `execute()` + `executeForExport()` methods, audit integration). No concrete query implementations yet. ~3 files created. | **Done** (PR #285) |
-| **134B** | 134.7–134.16 | `TimesheetReportQuery` with all three grouping modes (member/project/date), optional filters (projectId, memberId), date filtering, billable/non-billable split, summary computation. `POST /api/report-definitions/{slug}/execute` controller endpoint added to `ReportingController`. `REPORT_GENERATED` audit event. Integration tests for query and execute endpoint (~16 tests). ~3 files created/modified. |  |
+| **134B** | 134.7–134.16 | `TimesheetReportQuery` with all three grouping modes (member/project/date), optional filters (projectId, memberId), date filtering, billable/non-billable split, summary computation. `POST /api/report-definitions/{slug}/execute` controller endpoint added to `ReportingController`. `REPORT_GENERATED` audit event. Integration tests for query and execute endpoint (~16 tests). ~3 files created/modified. | **Done** (PR #286) |
 
 ### Tasks
 

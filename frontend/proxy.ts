@@ -1,35 +1,6 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { createAuthMiddleware } from "@/lib/auth/middleware";
 
-const isPublicRoute = createRouteMatcher([
-  "/",
-  "/sign-in(.*)",
-  "/sign-up(.*)",
-  "/api/webhooks(.*)",
-  "/portal(.*)",
-]);
-
-export default clerkMiddleware(
-  async (auth, request) => {
-    if (!isPublicRoute(request)) {
-      await auth.protect();
-    }
-
-    // Redirect /dashboard to org-scoped dashboard
-    if (request.nextUrl.pathname === "/dashboard") {
-      const { orgSlug } = await auth();
-      if (orgSlug) {
-        return NextResponse.redirect(new URL(`/org/${orgSlug}/dashboard`, request.url));
-      }
-      return NextResponse.redirect(new URL("/create-org", request.url));
-    }
-  },
-  {
-    organizationSyncOptions: {
-      organizationPatterns: ["/org/:slug", "/org/:slug/(.*)"],
-    },
-  }
-);
+export default createAuthMiddleware();
 
 export const config = {
   matcher: [

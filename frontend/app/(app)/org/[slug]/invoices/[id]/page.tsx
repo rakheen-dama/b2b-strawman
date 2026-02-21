@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { api, handleApiError, getTemplates } from "@/lib/api";
 import type { InvoiceResponse, TemplateListResponse } from "@/lib/types";
 import { InvoiceDetailClient } from "@/components/invoices/invoice-detail-client";
@@ -13,7 +13,7 @@ export default async function InvoiceDetailPage({
   params: Promise<{ slug: string; id: string }>;
 }) {
   const { slug, id } = await params;
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
 
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
 

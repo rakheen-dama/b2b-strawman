@@ -1,3 +1,4 @@
+// CLERK-SPECIFIC: needs nullable orgId for redirect guard — not abstracted per ADR-085
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";

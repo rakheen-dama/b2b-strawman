@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { api, handleApiError } from "@/lib/api";
 import { getSchedule, getExecutions } from "@/lib/api/schedules";
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +30,7 @@ export default async function ScheduleDetailPage({
   params: Promise<{ slug: string; id: string }>;
 }) {
   const { slug, id } = await params;
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
 
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
 

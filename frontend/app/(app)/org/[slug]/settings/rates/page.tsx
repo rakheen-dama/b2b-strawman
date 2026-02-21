@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { api } from "@/lib/api";
 import { MemberRatesTable } from "@/components/rates/member-rates-table";
 import type { OrgSettings, OrgMember, BillingRate, CostRate } from "@/lib/types";
@@ -11,7 +11,7 @@ export default async function RatesSettingsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
 
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return (

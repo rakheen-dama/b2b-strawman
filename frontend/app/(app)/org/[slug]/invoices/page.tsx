@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { api } from "@/lib/api";
 import type { InvoiceResponse, InvoiceStatus } from "@/lib/types";
 import { StatusBadge } from "@/components/invoices/status-badge";
@@ -56,7 +56,7 @@ export default async function InvoicesPage({
 }) {
   const { slug } = await params;
   const search = await searchParams;
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
 
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
 

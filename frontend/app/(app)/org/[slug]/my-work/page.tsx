@@ -1,4 +1,4 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { getAuthContext, getCurrentUserEmail } from "@/lib/auth";
 import {
   api,
   handleApiError,
@@ -75,7 +75,7 @@ export default async function MyWorkPage({
   searchParams: Promise<{ from?: string; to?: string }>;
 }) {
   const { slug } = await params;
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   const resolvedSearchParams = await searchParams;
   const { from, to } = resolveMyWorkDateRange(resolvedSearchParams);
 
@@ -121,11 +121,10 @@ export default async function MyWorkPage({
   let currentMemberId = "";
   let members: { id: string; name: string; email: string }[] = [];
   try {
-    const [user, orgMembers] = await Promise.all([
-      currentUser(),
+    const [email, orgMembers] = await Promise.all([
+      getCurrentUserEmail(),
       api.get<OrgMember[]>("/api/members"),
     ]);
-    const email = user?.primaryEmailAddress?.emailAddress;
     if (email) {
       const match = orgMembers.find((m) => m.email === email);
       if (match) currentMemberId = match.id;

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { getChecklistTemplateDetail } from "../../queries";
 import { EditChecklistTemplateForm } from "@/components/compliance/EditChecklistTemplateForm";
 import type { ChecklistTemplateResponse } from "@/lib/types";
@@ -12,7 +12,7 @@ export default async function EditChecklistTemplatePage({
   params: Promise<{ slug: string; id: string }>;
 }) {
   const { slug, id } = await params;
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
 
   if (!isAdmin) {

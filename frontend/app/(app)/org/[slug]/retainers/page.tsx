@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { FileText, Plus } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/lib/api";
@@ -43,7 +43,7 @@ export default async function RetainersPage({
 }) {
   const { slug } = await params;
   const search = await searchParams;
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
 
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
 

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { auth } from "@clerk/nextjs/server";
+import { getAuthToken } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { api, ApiError } from "@/lib/api";
 
@@ -112,20 +112,16 @@ function buildExportQueryParams(parameters: Record<string, unknown>): string {
   return queryParams.toString();
 }
 
-async function getAuthToken(): Promise<string> {
-  const { getToken } = await auth();
-  const token = await getToken();
-  if (!token) {
-    redirect("/sign-in");
-  }
-  return token;
-}
-
 export async function exportReportCsv(
   slug: string,
   parameters: Record<string, unknown>,
 ): Promise<string> {
-  const token = await getAuthToken();
+  let token: string;
+  try {
+    token = await getAuthToken();
+  } catch {
+    redirect("/sign-in");
+  }
   const qs = buildExportQueryParams(parameters);
 
   const response = await fetch(
@@ -148,7 +144,12 @@ export async function exportReportPdf(
   slug: string,
   parameters: Record<string, unknown>,
 ): Promise<string> {
-  const token = await getAuthToken();
+  let token: string;
+  try {
+    token = await getAuthToken();
+  } catch {
+    redirect("/sign-in");
+  }
   const qs = buildExportQueryParams(parameters);
 
   const response = await fetch(

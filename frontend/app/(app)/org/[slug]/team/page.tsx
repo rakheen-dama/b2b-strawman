@@ -1,11 +1,11 @@
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { InviteMemberForm } from "@/components/team/invite-member-form";
 import { TeamTabs } from "@/components/team/team-tabs";
 import { api } from "@/lib/api";
 import type { BillingResponse } from "@/lib/internal-api";
 
 export default async function TeamPage() {
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
 
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
 

@@ -124,7 +124,7 @@ public class PdfRenderingService {
                     "No context builder registered for entity type: " + entityType));
   }
 
-  String renderThymeleaf(String templateContent, Map<String, Object> contextMap) {
+  public String renderThymeleaf(String templateContent, Map<String, Object> contextMap) {
     TemplateSecurityValidator.validate(templateContent);
     var ctx = new Context();
     contextMap.forEach(ctx::setVariable);
@@ -148,7 +148,7 @@ public class PdfRenderingService {
         + "\n</body>\n</html>";
   }
 
-  byte[] htmlToPdf(String html) {
+  public byte[] htmlToPdf(String html) {
     try (var outputStream = new ByteArrayOutputStream()) {
       var builder = new PdfRendererBuilder();
       builder.withHtmlContent(html, null);

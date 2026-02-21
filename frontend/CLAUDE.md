@@ -184,6 +184,7 @@ The `components/ui/` directory started from Shadcn scaffolding but **base compon
 - Test files: colocated (`*.test.tsx`) or in `__tests__/` directory
 - Radix UI components leak DOM between tests — always add `afterEach(() => cleanup())` in test files using Dialog/AlertDialog
 - Use unique trigger text per test file to avoid "multiple elements found" errors
+- If any tests are failing, make sure they pass before merging, even if you think they are existing issues
 
 ## Anti-Patterns — Never Do This
 

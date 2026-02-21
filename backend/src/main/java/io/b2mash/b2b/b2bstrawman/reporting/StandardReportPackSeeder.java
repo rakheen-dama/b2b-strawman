@@ -620,9 +620,9 @@ public class StandardReportPackSeeder {
               </div>
               <div class="summary-card">
                   <div class="value"
-                       th:classappend="${summary.avgMarginPercent >= 0} ? 'margin-positive' : 'margin-negative'"
-                       th:text="${#numbers.formatDecimal(summary.avgMarginPercent, 1, 1)} + '%'">0.0%</div>
-                  <div class="label">Avg Margin %</div>
+                       th:classappend="${summary.overallMarginPercent >= 0} ? 'margin-positive' : 'margin-negative'"
+                       th:text="${#numbers.formatDecimal(summary.overallMarginPercent, 1, 1)} + '%'">0.0%</div>
+                  <div class="label">Overall Margin %</div>
               </div>
           </div>
 
@@ -665,8 +665,8 @@ public class StandardReportPackSeeder {
                           th:classappend="${summary.totalMargin >= 0} ? 'margin-positive' : 'margin-negative'"
                           th:text="${#numbers.formatDecimal(summary.totalMargin, 1, 2)}">0.00</td>
                       <td class="text-right"
-                          th:classappend="${summary.avgMarginPercent >= 0} ? 'margin-positive' : 'margin-negative'"
-                          th:text="${#numbers.formatDecimal(summary.avgMarginPercent, 1, 1)} + '%'">0.0%</td>
+                          th:classappend="${summary.overallMarginPercent >= 0} ? 'margin-positive' : 'margin-negative'"
+                          th:text="${#numbers.formatDecimal(summary.overallMarginPercent, 1, 1)} + '%'">0.0%</td>
                   </tr>
               </tfoot>
           </table>

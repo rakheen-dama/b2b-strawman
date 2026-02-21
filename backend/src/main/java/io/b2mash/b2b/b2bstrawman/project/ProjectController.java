@@ -275,7 +275,9 @@ public class ProjectController {
         projects.stream().map(Project::getCreatedBy).filter(Objects::nonNull).distinct().toList();
     if (ids.isEmpty()) return Map.of();
     return memberRepository.findAllById(ids).stream()
-        .collect(Collectors.toMap(Member::getId, Member::getName, (a, b) -> a));
+        .collect(
+            Collectors.toMap(
+                Member::getId, m -> m.getName() != null ? m.getName() : "", (a, b) -> a));
   }
 
   private Map<String, String> extractCustomFieldFilters(Map<String, String> allParams) {

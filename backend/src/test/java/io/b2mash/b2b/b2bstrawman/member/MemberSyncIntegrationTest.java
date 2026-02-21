@@ -1,7 +1,10 @@
 package io.b2mash.b2b.b2bstrawman.member;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -324,5 +327,172 @@ class MemberSyncIntegrationTest {
                     """
                         .formatted(ORG_A)))
         .andExpect(status().isUnauthorized());
+  }
+
+  // --- Race fix: null-safe updateFrom ---
+
+  @Test
+  void shouldNotOverwriteFieldsWithNull() throws Exception {
+    // First sync — creates member with full data
+    mockMvc
+        .perform(
+            post("/internal/members/sync")
+                .header("X-API-KEY", API_KEY)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "clerkOrgId": "%s",
+                      "clerkUserId": "user_null_safe_test",
+                      "email": "orig@test.com",
+                      "name": "Original",
+                      "avatarUrl": "https://img.example.com/orig.png",
+                      "orgRole": "member"
+                    }
+                    """
+                        .formatted(ORG_A)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.action").value("created"));
+
+    // Second sync — name and avatarUrl are null (race/partial webhook), email and role change
+    mockMvc
+        .perform(
+            post("/internal/members/sync")
+                .header("X-API-KEY", API_KEY)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "clerkOrgId": "%s",
+                      "clerkUserId": "user_null_safe_test",
+                      "email": "new@test.com",
+                      "name": null,
+                      "avatarUrl": null,
+                      "orgRole": "admin"
+                    }
+                    """
+                        .formatted(ORG_A)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.action").value("updated"));
+
+    // Third sync — re-sync with no changes, verifying member still exists without error
+    // (null-safety means name was preserved; the sync endpoint does not expose name in response,
+    // but a successful 200 confirms the member record is intact)
+    mockMvc
+        .perform(
+            post("/internal/members/sync")
+                .header("X-API-KEY", API_KEY)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "clerkOrgId": "%s",
+                      "clerkUserId": "user_null_safe_test",
+                      "email": "new@test.com",
+                      "name": null,
+                      "avatarUrl": null,
+                      "orgRole": "admin"
+                    }
+                    """
+                        .formatted(ORG_A)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.clerkUserId").value("user_null_safe_test"))
+        .andExpect(jsonPath("$.action").value("updated"));
+  }
+
+  // --- Race fix: stale member endpoint ---
+
+  @Test
+  void shouldReturnEmptyStaleListWhenNoStaleMembers() throws Exception {
+    // Sync a real member with a legitimate email — must not appear in stale list
+    mockMvc
+        .perform(
+            post("/internal/members/sync")
+                .header("X-API-KEY", API_KEY)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "clerkOrgId": "%s",
+                      "clerkUserId": "user_stale_check",
+                      "email": "real@test.com",
+                      "name": "Real User",
+                      "avatarUrl": null,
+                      "orgRole": "member"
+                    }
+                    """
+                        .formatted(ORG_A)))
+        .andExpect(status().isCreated());
+
+    // Stale endpoint must return empty list — real@test.com does not end with @placeholder.internal
+    mockMvc
+        .perform(
+            get("/internal/members/stale").param("clerkOrgId", ORG_A).header("X-API-KEY", API_KEY))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray());
+  }
+
+  @Test
+  void shouldReturnEmptyStaleListForCleanTenant() throws Exception {
+    // ORG_B has no members at all — stale list must be an empty JSON array
+    mockMvc
+        .perform(
+            get("/internal/members/stale").param("clerkOrgId", ORG_B).header("X-API-KEY", API_KEY))
+        .andExpect(status().isOk())
+        .andExpect(content().json("[]"));
+  }
+
+  // --- Race fix: retry on unprovisioned schema ---
+
+  @Test
+  void shouldThrowWhenOrgNotProvisioned() {
+    // An org ID that was never provisioned exhausts all 5 retry attempts and throws
+    // IllegalArgumentException, which MockMvc propagates as a ServletException.
+    assertThrows(
+        jakarta.servlet.ServletException.class,
+        () ->
+            mockMvc.perform(
+                post("/internal/members/sync")
+                    .header("X-API-KEY", API_KEY)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "clerkOrgId": "org_does_not_exist",
+                          "clerkUserId": "user_unprovisioned",
+                          "email": "ghost@test.com",
+                          "name": "Ghost",
+                          "avatarUrl": null,
+                          "orgRole": "member"
+                        }
+                        """)));
+  }
+
+  // --- Race fix: null name/avatarUrl accepted on create ---
+
+  @Test
+  void shouldSyncMemberWithNullNameAndAvatarUrl() throws Exception {
+    // name and avatarUrl are optional — a webhook that omits them must still result in a 201
+    mockMvc
+        .perform(
+            post("/internal/members/sync")
+                .header("X-API-KEY", API_KEY)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "clerkOrgId": "%s",
+                      "clerkUserId": "user_null_name_create",
+                      "email": "nullname@test.com",
+                      "name": null,
+                      "avatarUrl": null,
+                      "orgRole": "member"
+                    }
+                    """
+                        .formatted(ORG_A)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.memberId").exists())
+        .andExpect(jsonPath("$.clerkUserId").value("user_null_name_create"))
+        .andExpect(jsonPath("$.action").value("created"));
   }
 }

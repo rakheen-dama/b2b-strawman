@@ -3,11 +3,13 @@ package io.b2mash.b2b.b2bstrawman.member;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -64,6 +66,14 @@ public class MemberSyncController {
     return ResponseEntity.noContent().build();
   }
 
+  @GetMapping("/stale")
+  public ResponseEntity<List<StaleMemberResponse>> listStaleMembers(
+      @RequestParam String clerkOrgId) {
+    log.info("Checking stale members for org: {}", clerkOrgId);
+    var staleMembers = syncService.findStaleMembers(clerkOrgId);
+    return ResponseEntity.ok(staleMembers);
+  }
+
   public record SyncMemberRequest(
       @NotBlank(message = "clerkOrgId is required") String clerkOrgId,
       @NotBlank(message = "clerkUserId is required") String clerkUserId,
@@ -73,4 +83,6 @@ public class MemberSyncController {
       @NotBlank(message = "orgRole is required") String orgRole) {}
 
   public record SyncMemberResponse(UUID memberId, String clerkUserId, String action) {}
+
+  public record StaleMemberResponse(UUID memberId, String clerkUserId, String name, String email) {}
 }

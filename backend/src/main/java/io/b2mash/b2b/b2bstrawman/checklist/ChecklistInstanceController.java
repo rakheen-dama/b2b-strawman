@@ -90,6 +90,8 @@ public class ChecklistInstanceController {
   private Map<UUID, String> resolveItemNames(ChecklistInstanceItem item) {
     if (item.getCompletedBy() == null) return Map.of();
     return memberRepository.findAllById(List.of(item.getCompletedBy())).stream()
-        .collect(Collectors.toMap(Member::getId, Member::getName, (a, b) -> a));
+        .collect(
+            Collectors.toMap(
+                Member::getId, m -> m.getName() != null ? m.getName() : "", (a, b) -> a));
   }
 }

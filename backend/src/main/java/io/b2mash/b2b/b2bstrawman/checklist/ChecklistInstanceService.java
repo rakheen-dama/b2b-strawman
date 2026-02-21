@@ -358,7 +358,9 @@ public class ChecklistInstanceService {
         allMemberIds.isEmpty()
             ? Map.of()
             : memberRepository.findAllById(allMemberIds).stream()
-                .collect(Collectors.toMap(Member::getId, Member::getName, (a, b) -> a));
+                .collect(
+                    Collectors.toMap(
+                        Member::getId, m -> m.getName() != null ? m.getName() : "", (a, b) -> a));
 
     return instances.stream()
         .map(
@@ -429,7 +431,9 @@ public class ChecklistInstanceService {
             .toList();
     if (ids.isEmpty()) return Map.of();
     return memberRepository.findAllById(ids).stream()
-        .collect(Collectors.toMap(Member::getId, Member::getName, (a, b) -> a));
+        .collect(
+            Collectors.toMap(
+                Member::getId, m -> m.getName() != null ? m.getName() : "", (a, b) -> a));
   }
 
   private void checkLifecycleAdvance(UUID customerId, UUID actorId) {

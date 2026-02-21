@@ -14,6 +14,8 @@ public interface MemberRepository extends JpaRepository<Member, UUID> {
 
   boolean existsByClerkUserId(String clerkUserId);
 
+  List<Member> findByEmailEndingWith(String suffix);
+
   @Query("SELECT m FROM Member m WHERE m.orgRole IN :roles")
   List<Member> findByOrgRoleIn(@Param("roles") List<String> roles);
 }

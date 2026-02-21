@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { api, ApiError } from "@/lib/api";
 import {
   createDataRequestApi,
@@ -37,7 +37,7 @@ interface DeletionResult {
 }
 
 export async function fetchCustomersForSelector(): Promise<Customer[]> {
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     throw new Error("Unauthorized");
   }
@@ -57,7 +57,7 @@ export async function createDataRequest(
   requestType: string,
   description: string,
 ): Promise<DataRequestActionResult> {
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return { success: false, error: "Only admins and owners can create data requests." };
   }
@@ -80,7 +80,7 @@ export async function updateRequestStatus(
   action: string,
   reason?: string,
 ): Promise<DataRequestActionResult> {
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return { success: false, error: "Only admins and owners can update data requests." };
   }
@@ -98,7 +98,7 @@ export async function updateRequestStatus(
 }
 
 export async function generateExport(slug: string, id: string): Promise<ActionResult> {
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return { success: false, error: "Only admins and owners can generate exports." };
   }
@@ -116,7 +116,7 @@ export async function generateExport(slug: string, id: string): Promise<ActionRe
 }
 
 export async function getExportUrl(id: string): Promise<ExportDownloadResult> {
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return { success: false, error: "Only admins and owners can download exports." };
   }
@@ -137,7 +137,7 @@ export async function executeDeletion(
   id: string,
   confirmCustomerName: string,
 ): Promise<DeletionResult> {
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return { success: false, error: "Only admins and owners can execute data deletions." };
   }

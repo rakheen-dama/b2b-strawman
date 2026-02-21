@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import type { Task, CreateTaskRequest } from "@/lib/types";
@@ -97,7 +97,7 @@ export async function deleteTask(
   taskId: string,
   projectId: string
 ): Promise<ActionResult> {
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
 
   if (!isAdmin) {

@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import {
@@ -21,7 +21,7 @@ export async function createRetainerAction(
   slug: string,
   data: CreateRetainerRequest,
 ): Promise<ActionResult> {
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return { success: false, error: "You do not have permission to perform this action." };
   }
@@ -51,7 +51,7 @@ export async function pauseRetainerAction(
   slug: string,
   id: string,
 ): Promise<ActionResult> {
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return { success: false, error: "You do not have permission to perform this action." };
   }
@@ -79,7 +79,7 @@ export async function resumeRetainerAction(
   slug: string,
   id: string,
 ): Promise<ActionResult> {
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return { success: false, error: "You do not have permission to perform this action." };
   }
@@ -107,7 +107,7 @@ export async function terminateRetainerAction(
   slug: string,
   id: string,
 ): Promise<ActionResult> {
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return { success: false, error: "You do not have permission to perform this action." };
   }

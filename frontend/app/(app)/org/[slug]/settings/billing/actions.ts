@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import type { BillingResponse, UpgradeRequest } from "@/lib/internal-api";
@@ -12,7 +12,7 @@ interface UpgradeResult {
 }
 
 export async function upgradeToPro(slug: string): Promise<UpgradeResult> {
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return { success: false, error: "Only admins and owners can upgrade plans." };
   }

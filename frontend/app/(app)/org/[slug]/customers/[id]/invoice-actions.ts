@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import type {
@@ -26,7 +26,7 @@ export async function fetchUnbilledTime(
   from?: string,
   to?: string,
 ): Promise<UnbilledTimeResult> {
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return { success: false, error: "Only admins and owners can view unbilled time." };
   }
@@ -52,7 +52,7 @@ export async function createInvoiceDraft(
   customerId: string,
   request: CreateInvoiceDraftRequest,
 ): Promise<CreateDraftResult> {
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return { success: false, error: "Only admins and owners can create invoices." };
   }

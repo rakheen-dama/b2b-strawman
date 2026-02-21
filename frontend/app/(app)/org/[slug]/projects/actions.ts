@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -67,7 +67,7 @@ export async function updateProject(
 }
 
 export async function deleteProject(slug: string, id: string): Promise<ActionResult> {
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   if (orgRole !== "org:owner") {
     return { success: false, error: "Only organization owners can delete projects." };
   }

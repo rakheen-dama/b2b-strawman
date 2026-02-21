@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import type { Customer, CustomerType, CreateCustomerRequest, UpdateCustomerRequest } from "@/lib/types";
@@ -11,7 +11,7 @@ interface ActionResult {
 }
 
 export async function createCustomer(slug: string, formData: FormData): Promise<ActionResult> {
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return { success: false, error: "Only admins and owners can manage customers." };
   }
@@ -52,7 +52,7 @@ export async function updateCustomer(
   id: string,
   formData: FormData
 ): Promise<ActionResult> {
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return { success: false, error: "Only admins and owners can manage customers." };
   }
@@ -90,7 +90,7 @@ export async function updateCustomer(
 }
 
 export async function archiveCustomer(slug: string, id: string): Promise<ActionResult> {
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return { success: false, error: "Only admins and owners can manage customers." };
   }

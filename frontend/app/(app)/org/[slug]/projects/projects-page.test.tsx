@@ -97,7 +97,7 @@ beforeEach(() => {
 describe("ProjectsPage", () => {
   describe("New Project button", () => {
     it("renders for org:member role", async () => {
-      mockAuth.mockResolvedValue({ orgRole: "org:member", has: () => false });
+      mockAuth.mockResolvedValue({ orgId: "org_1", orgSlug: "acme", userId: "user_1", orgRole: "org:member", has: () => false });
       mockApiGet.mockResolvedValue([makeProject()]);
 
       const jsx = await ProjectsPage({ params, searchParams });
@@ -107,7 +107,7 @@ describe("ProjectsPage", () => {
     });
 
     it("renders for org:admin role", async () => {
-      mockAuth.mockResolvedValue({ orgRole: "org:admin", has: () => false });
+      mockAuth.mockResolvedValue({ orgId: "org_1", orgSlug: "acme", userId: "user_1", orgRole: "org:admin", has: () => false });
       mockApiGet.mockResolvedValue([makeProject()]);
 
       const jsx = await ProjectsPage({ params, searchParams });
@@ -117,7 +117,7 @@ describe("ProjectsPage", () => {
     });
 
     it("renders for org:owner role", async () => {
-      mockAuth.mockResolvedValue({ orgRole: "org:owner", has: () => false });
+      mockAuth.mockResolvedValue({ orgId: "org_1", orgSlug: "acme", userId: "user_1", orgRole: "org:owner", has: () => false });
       mockApiGet.mockResolvedValue([makeProject()]);
 
       const jsx = await ProjectsPage({ params, searchParams });
@@ -129,7 +129,7 @@ describe("ProjectsPage", () => {
 
   describe("role badges on project cards", () => {
     it("shows Lead badge when projectRole is lead", async () => {
-      mockAuth.mockResolvedValue({ orgRole: "org:member", has: () => false });
+      mockAuth.mockResolvedValue({ orgId: "org_1", orgSlug: "acme", userId: "user_1", orgRole: "org:member", has: () => false });
       mockApiGet.mockResolvedValue([makeProject({ projectRole: "lead" })]);
 
       const jsx = await ProjectsPage({ params, searchParams });
@@ -139,7 +139,7 @@ describe("ProjectsPage", () => {
     });
 
     it("shows Member badge when projectRole is member", async () => {
-      mockAuth.mockResolvedValue({ orgRole: "org:member", has: () => false });
+      mockAuth.mockResolvedValue({ orgId: "org_1", orgSlug: "acme", userId: "user_1", orgRole: "org:member", has: () => false });
       mockApiGet.mockResolvedValue([makeProject({ projectRole: "member" })]);
 
       const jsx = await ProjectsPage({ params, searchParams });
@@ -149,7 +149,7 @@ describe("ProjectsPage", () => {
     });
 
     it("shows no role badge when projectRole is null", async () => {
-      mockAuth.mockResolvedValue({ orgRole: "org:admin", has: () => false });
+      mockAuth.mockResolvedValue({ orgId: "org_1", orgSlug: "acme", userId: "user_1", orgRole: "org:admin", has: () => false });
       mockApiGet.mockResolvedValue([makeProject({ projectRole: null })]);
 
       const jsx = await ProjectsPage({ params, searchParams });
@@ -162,7 +162,7 @@ describe("ProjectsPage", () => {
 
   describe("empty state", () => {
     it("shows member-specific message for org:member", async () => {
-      mockAuth.mockResolvedValue({ orgRole: "org:member", has: () => false });
+      mockAuth.mockResolvedValue({ orgId: "org_1", orgSlug: "acme", userId: "user_1", orgRole: "org:member", has: () => false });
       mockApiGet.mockResolvedValue([]);
 
       const jsx = await ProjectsPage({ params, searchParams });
@@ -172,7 +172,7 @@ describe("ProjectsPage", () => {
     });
 
     it("shows admin message for org:admin", async () => {
-      mockAuth.mockResolvedValue({ orgRole: "org:admin", has: () => false });
+      mockAuth.mockResolvedValue({ orgId: "org_1", orgSlug: "acme", userId: "user_1", orgRole: "org:admin", has: () => false });
       mockApiGet.mockResolvedValue([]);
 
       const jsx = await ProjectsPage({ params, searchParams });
@@ -182,7 +182,7 @@ describe("ProjectsPage", () => {
     });
 
     it("shows New Project button in empty state for members", async () => {
-      mockAuth.mockResolvedValue({ orgRole: "org:member", has: () => false });
+      mockAuth.mockResolvedValue({ orgId: "org_1", orgSlug: "acme", userId: "user_1", orgRole: "org:member", has: () => false });
       mockApiGet.mockResolvedValue([]);
 
       const jsx = await ProjectsPage({ params, searchParams });
@@ -195,7 +195,7 @@ describe("ProjectsPage", () => {
 
   describe("plan-aware feature gating", () => {
     it("shows upgrade prompt for starter orgs", async () => {
-      mockAuth.mockResolvedValue({ orgRole: "org:member", has: () => false });
+      mockAuth.mockResolvedValue({ orgId: "org_1", orgSlug: "acme", userId: "user_1", orgRole: "org:member", has: () => false });
       mockApiGet.mockResolvedValue([makeProject()]);
 
       const jsx = await ProjectsPage({ params, searchParams });
@@ -205,7 +205,7 @@ describe("ProjectsPage", () => {
     });
 
     it("hides upgrade prompt for pro orgs", async () => {
-      mockAuth.mockResolvedValue({ orgRole: "org:member", has: () => true });
+      mockAuth.mockResolvedValue({ orgId: "org_1", orgSlug: "acme", userId: "user_1", orgRole: "org:member", has: () => true });
       mockApiGet.mockResolvedValue([makeProject()]);
 
       const jsx = await ProjectsPage({ params, searchParams });

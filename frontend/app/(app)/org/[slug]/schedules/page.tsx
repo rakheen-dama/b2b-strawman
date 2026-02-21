@@ -1,5 +1,5 @@
 import { Plus } from "lucide-react";
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { ScheduleList } from "@/components/schedules/ScheduleList";
 import { ScheduleCreateDialog } from "@/components/schedules/ScheduleCreateDialog";
@@ -16,7 +16,7 @@ export default async function SchedulesPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
 
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
 

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft, Pencil } from "lucide-react";
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +18,7 @@ export default async function ChecklistTemplateDetailPage({
   params: Promise<{ slug: string; id: string }>;
 }) {
   const { slug, id } = await params;
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
 
   let template: ChecklistTemplateResponse | null = null;

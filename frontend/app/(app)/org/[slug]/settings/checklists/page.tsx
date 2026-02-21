@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft, ClipboardCheck, Plus } from "lucide-react";
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { api } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ export default async function ChecklistsSettingsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
 
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return (

@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";
 import { DesktopSidebar } from "@/components/desktop-sidebar";
@@ -16,7 +16,7 @@ export default async function OrgLayout({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { orgSlug, orgId } = await auth();
+  const { orgSlug, orgId } = await getAuthContext();
 
   if (!orgId) {
     redirect("/dashboard");

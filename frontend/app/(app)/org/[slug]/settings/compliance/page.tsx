@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { api } from "@/lib/api";
 import { RetentionPolicyTable } from "@/components/compliance/RetentionPolicyTable";
 import { ComplianceSettingsForm } from "@/components/compliance/ComplianceSettingsForm";
@@ -13,7 +13,7 @@ export default async function ComplianceSettingsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
 
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return (

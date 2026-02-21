@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { ApiError, handleApiError } from "@/lib/api";
 import { Loader2 } from "lucide-react";
 import { ProvisioningPendingRefresh } from "./provisioning-pending-refresh";
@@ -24,7 +24,7 @@ export default async function OrgDashboardPage({
 }) {
   const { slug } = await params;
   const resolvedSearchParams = await searchParams;
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
   const { from, to } = resolveDateRange(resolvedSearchParams);
 

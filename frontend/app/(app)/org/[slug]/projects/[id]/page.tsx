@@ -1,4 +1,4 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { getAuthContext, getCurrentUserEmail } from "@/lib/auth";
 import { api, handleApiError, getFieldDefinitions, getFieldGroups, getGroupMembers, getTags, getTemplates, getViews } from "@/lib/api";
 import type { OrgMember, Project, Customer, Document, ProjectMember, ProjectRole, Task, ProjectTimeSummary, MemberTimeSummary, TaskTimeSummary, BillingRate, OrgSettings, BudgetStatusResponse, ProjectProfitabilityResponse, FieldDefinitionResponse, FieldGroupResponse, FieldGroupMemberResponse, TagResponse, TemplateListResponse, SavedViewResponse } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -49,7 +49,7 @@ export default async function ProjectDetailPage({
   params: Promise<{ slug: string; id: string }>;
 }) {
   const { slug, id } = await params;
-  const { orgRole, userId } = await auth();
+  const { orgRole, userId } = await getAuthContext();
 
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
   const isOwner = orgRole === "org:owner";
@@ -229,11 +229,10 @@ export default async function ProjectDetailPage({
   // Match Clerk user email against org members list from the backend.
   let currentMemberId: string | null = null;
   try {
-    const [user, orgMembers] = await Promise.all([
-      currentUser(),
+    const [email, orgMembers] = await Promise.all([
+      getCurrentUserEmail(),
       api.get<OrgMember[]>("/api/members"),
     ]);
-    const email = user?.primaryEmailAddress?.emailAddress;
     if (email) {
       const match = orgMembers.find((m) => m.email === email);
       if (match) currentMemberId = match.id;

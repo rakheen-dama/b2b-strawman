@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { getComplianceDashboardData } from "./actions";
 import { LifecycleDistributionSection } from "@/components/compliance/LifecycleDistributionSection";
 import { OnboardingPipelineSection } from "@/components/compliance/OnboardingPipelineSection";
@@ -11,7 +11,7 @@ export default async function ComplianceDashboardPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
 
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
 

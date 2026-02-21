@@ -1,3 +1,4 @@
+// CLERK-SPECIFIC: has() plan check — not abstracted per ADR-085
 import { auth } from "@clerk/nextjs/server";
 import { Badge } from "@/components/ui/badge";
 

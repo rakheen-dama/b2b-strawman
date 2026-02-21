@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { getDataRequest } from "@/lib/compliance-api";
 import { handleApiError } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +26,7 @@ export default async function DataRequestDetailPage({
   params: Promise<{ slug: string; id: string }>;
 }) {
   const { slug, id } = await params;
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
 
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
 

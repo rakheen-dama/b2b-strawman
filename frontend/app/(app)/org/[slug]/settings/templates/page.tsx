@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { getTemplates, getOrgSettings } from "@/lib/api";
 import { TemplatesContent } from "./templates-content";
 import type { TemplateListResponse, OrgSettings } from "@/lib/types";
@@ -11,7 +11,7 @@ export default async function TemplatesSettingsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
 
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
 

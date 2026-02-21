@@ -1,7 +1,6 @@
 import "server-only";
 
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
+import { getAuthToken } from "@/lib/auth";
 import { api, ApiError } from "@/lib/api";
 
 // ---- Response Interfaces ----
@@ -110,15 +109,6 @@ function buildExportQueryParams(parameters: Record<string, unknown>): string {
     }
   }
   return queryParams.toString();
-}
-
-async function getAuthToken(): Promise<string> {
-  const { getToken } = await auth();
-  const token = await getToken();
-  if (!token) {
-    redirect("/sign-in");
-  }
-  return token;
 }
 
 export async function exportReportCsv(

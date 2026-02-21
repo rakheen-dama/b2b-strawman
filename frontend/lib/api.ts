@@ -1,6 +1,6 @@
 import "server-only";
 
-import { auth } from "@clerk/nextjs/server";
+import { getAuthToken } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { notFound } from "next/navigation";
 import type { ProblemDetail } from "@/lib/types";
@@ -58,12 +58,7 @@ interface ApiRequestOptions {
  * Use only in Server Components, Server Actions, or Route Handlers.
  */
 async function apiRequest<T>(endpoint: string, options: ApiRequestOptions = {}): Promise<T> {
-  const { getToken } = await auth();
-  const token = await getToken();
-
-  if (!token) {
-    redirect("/sign-in");
-  }
+  const token = await getAuthToken();
 
   const response = await fetch(`${BACKEND_URL}${endpoint}`, {
     method: options.method || "GET",
@@ -377,12 +372,7 @@ export async function previewTemplate(
   id: string,
   entityId: string,
 ): Promise<string> {
-  const { getToken } = await auth();
-  const token = await getToken();
-
-  if (!token) {
-    redirect("/sign-in");
-  }
+  const token = await getAuthToken();
 
   const response = await fetch(`${BACKEND_URL}/api/templates/${id}/preview`, {
     method: "POST",
@@ -413,12 +403,7 @@ export async function updateOrgSettings(
 }
 
 export async function uploadOrgLogo(file: File): Promise<OrgSettings> {
-  const { getToken } = await auth();
-  const token = await getToken();
-
-  if (!token) {
-    redirect("/sign-in");
-  }
+  const token = await getAuthToken();
 
   const formData = new FormData();
   formData.append("file", file);
@@ -456,12 +441,7 @@ export async function generateDocument(
   entityId: string,
   saveToDocuments: boolean,
 ): Promise<GenerateDocumentResponse | Blob> {
-  const { getToken } = await auth();
-  const token = await getToken();
-
-  if (!token) {
-    redirect("/sign-in");
-  }
+  const token = await getAuthToken();
 
   const response = await fetch(
     `${BACKEND_URL}/api/templates/${templateId}/generate`,
@@ -507,12 +487,7 @@ export async function deleteGeneratedDocument(id: string): Promise<void> {
 }
 
 export async function downloadGeneratedDocument(id: string): Promise<Blob> {
-  const { getToken } = await auth();
-  const token = await getToken();
-
-  if (!token) {
-    redirect("/sign-in");
-  }
+  const token = await getAuthToken();
 
   const response = await fetch(
     `${BACKEND_URL}/api/generated-documents/${id}/download`,

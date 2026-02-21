@@ -1,5 +1,6 @@
 import { Suspense } from "react";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server"; // CLERK-SPECIFIC: has() plan check — not abstracted per ADR-085
+import { getAuthContext } from "@/lib/auth";
 import { api, handleApiError, getFieldDefinitions, getViews, getTags } from "@/lib/api";
 import { fetchRetainerSummary } from "@/lib/api/retainers";
 import type { RetainerSummaryResponse } from "@/lib/types";
@@ -32,7 +33,8 @@ export default async function ProjectsPage({
 }) {
   const { slug } = await params;
   const resolvedSearchParams = await searchParams;
-  const { orgRole, has } = await auth();
+  const { orgRole } = await getAuthContext();
+  const { has } = await auth();
 
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
   const isPro = has?.({ plan: "pro" }) ?? false;

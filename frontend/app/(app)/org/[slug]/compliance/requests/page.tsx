@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { getDataRequests } from "@/lib/compliance-api";
 import { EmptyState } from "@/components/empty-state";
 import { DataRequestTable } from "@/components/compliance/DataRequestTable";
@@ -16,7 +16,7 @@ export default async function DataRequestsPage({
 }) {
   const { slug } = await params;
   const search = await searchParams;
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
 
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
 

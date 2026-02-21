@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { getTemplateDetail } from "@/lib/api";
 import { TemplateEditorForm } from "@/components/templates/TemplateEditorForm";
 import type { TemplateDetailResponse } from "@/lib/types";
@@ -11,7 +11,7 @@ export default async function TemplateEditorPage({
   params: Promise<{ slug: string; id: string }>;
 }) {
   const { slug, id } = await params;
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
 
   let template: TemplateDetailResponse;

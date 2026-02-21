@@ -1,5 +1,5 @@
 import "server-only";
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext, getAuthToken } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
@@ -17,14 +17,16 @@ export async function GET(
     return new NextResponse("Bad Request", { status: 400 });
   }
 
-  const { getToken, orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
 
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return new NextResponse("Forbidden", { status: 403 });
   }
 
-  const token = await getToken();
-  if (!token) {
+  let token: string;
+  try {
+    token = await getAuthToken();
+  } catch {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 

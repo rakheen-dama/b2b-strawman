@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { api, handleApiError, getFieldDefinitions, getViews, getTags } from "@/lib/api";
 import type { Customer, CustomerStatus, FieldDefinitionResponse, LifecycleStatus, SavedViewResponse, TagResponse } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
@@ -45,7 +45,7 @@ export default async function CustomersPage({
 }) {
   const { slug } = await params;
   const resolvedSearchParams = await searchParams;
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
 
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
 

@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { api } from "@/lib/api";
 import type {
   UtilizationResponse,
@@ -24,7 +24,7 @@ export default async function ProfitabilityPage({
   params: Promise<{ slug: string }>;
 }) {
   await params;
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
 
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return (

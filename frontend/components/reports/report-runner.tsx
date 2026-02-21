@@ -17,7 +17,6 @@ import type {
 
 interface ReportRunnerProps {
   definition: ReportDefinitionDetail;
-  orgSlug: string;
 }
 
 const PAGE_SIZE = 25;
@@ -58,14 +57,14 @@ export function ReportRunner({ definition }: ReportRunnerProps) {
     [definition.slug],
   );
 
-  function handleSubmit(parameters: Record<string, unknown>) {
+  async function handleSubmit(parameters: Record<string, unknown>) {
     setCurrentParams(parameters);
-    runReport(parameters, 0);
+    await runReport(parameters, 0);
   }
 
-  function handlePageChange(newPage: number) {
+  async function handlePageChange(newPage: number) {
     if (!currentParams) return;
-    runReport(currentParams, newPage);
+    await runReport(currentParams, newPage);
   }
 
   async function handleExportCsv() {
@@ -80,6 +79,8 @@ export function ReportRunner({ definition }: ReportRunnerProps) {
       a.download = `${definition.slug}-report.csv`;
       a.click();
       URL.revokeObjectURL(url);
+    } else {
+      setError(result.error ?? "Failed to export CSV.");
     }
   }
 
@@ -101,6 +102,8 @@ export function ReportRunner({ definition }: ReportRunnerProps) {
       a.download = `${definition.slug}-report.pdf`;
       a.click();
       URL.revokeObjectURL(url);
+    } else {
+      setError(result.error ?? "Failed to export PDF.");
     }
   }
 

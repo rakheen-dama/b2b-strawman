@@ -101,7 +101,7 @@ export function ReportResults({
 
       {/* Data Table */}
       <Card>
-        <CardContent className={cn(summaryEntries.length > 0 ? "pt-6" : "pt-6")}>
+        <CardContent className="pt-6">
           {response.rows.length === 0 ? (
             <p className="py-8 text-center text-sm text-slate-500">
               No data found for the selected parameters.

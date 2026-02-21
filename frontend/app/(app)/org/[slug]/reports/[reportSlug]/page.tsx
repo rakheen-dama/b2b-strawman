@@ -42,7 +42,7 @@ export default async function ReportDetailPage({
         )}
       </div>
 
-      <ReportRunner definition={definition!} orgSlug={slug} />
+      <ReportRunner definition={definition!} />
     </div>
   );
 }

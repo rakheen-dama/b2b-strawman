@@ -287,7 +287,9 @@ describe("Mock client auth hooks", () => {
     await user.click(screen.getByTestId("sign-out"));
 
     expect(mockPush).toHaveBeenCalledWith("/mock-login");
-    // Cookie cleared
-    expect(document.cookie).not.toContain("mock-auth-token=user");
+    // Cookie should be cleared (max-age=0). In a real browser the cookie disappears;
+    // in the test environment the raw set-cookie string is retained, so we verify
+    // the original token value is no longer present.
+    expect(document.cookie).not.toContain(buildMockJwt(defaultPayload));
   });
 });

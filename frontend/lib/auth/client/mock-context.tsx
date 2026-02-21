@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { AuthUser } from "@/lib/auth/types";
+import { getTokenFromDocumentCookie } from "./cookie-util";
 
 const MOCK_IDP_URL =
   process.env.NEXT_PUBLIC_MOCK_IDP_URL || "http://localhost:8090";
@@ -15,12 +16,12 @@ interface MockAuthContextValue {
 
 export const MockAuthContext = createContext<MockAuthContextValue | null>(null);
 
-function getTokenFromDocumentCookie(): string | null {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(/(?:^|;\s*)mock-auth-token=([^;]+)/);
-  return match ? decodeURIComponent(match[1]) : null;
-}
-
+/**
+ * Decode the payload segment of a JWT token.
+ * The token value is already URL-decoded when read from the cookie via
+ * `decodeURIComponent` in `getTokenFromDocumentCookie`, so the input
+ * here is a standard dot-separated JWT string.
+ */
 function decodeJwtPayload(token: string): Record<string, unknown> | null {
   try {
     const parts = token.split(".");
@@ -82,8 +83,8 @@ export function MockAuthContextProvider({
           });
         }
       })
-      .catch(() => {
-        // Silent failure — auth user stays null
+      .catch((e) => {
+        console.error("MockAuthContextProvider: failed to fetch userinfo", e);
       })
       .finally(() => {
         if (!cancelled) setIsLoaded(true);

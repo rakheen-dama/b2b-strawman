@@ -1,20 +1,16 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useMockAuthContext } from "./mock-context";
 import type { AuthUser, OrgMemberInfo } from "@/lib/auth/types";
 
+// This URL is used for direct browser-to-backend calls in mock/E2E mode only.
+// In production, Clerk-authenticated requests go through Next.js route handlers.
+// Since this module is only loaded when NEXT_PUBLIC_AUTH_PROVIDER=mock,
+// there is no security concern with the browser calling the backend directly.
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
-
-// --- Helper ---
-
-function getTokenFromDocumentCookie(): string | null {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(/(?:^|;\s*)mock-auth-token=([^;]+)/);
-  return match ? decodeURIComponent(match[1]) : null;
-}
 
 // --- useAuthUser ---
 
@@ -29,18 +25,18 @@ export function useOrgMembers(): {
   members: OrgMemberInfo[];
   isLoaded: boolean;
 } {
-  // Read cookie synchronously to determine if a fetch is needed
-  const initialToken = useMemo(() => getTokenFromDocumentCookie(), []);
+  // Read token from context to stay in sync with the provider
+  const { token } = useMockAuthContext();
   const [members, setMembers] = useState<OrgMemberInfo[]>([]);
-  const [isLoaded, setIsLoaded] = useState(!initialToken);
+  const [isLoaded, setIsLoaded] = useState(!token);
 
   useEffect(() => {
-    if (!initialToken) return;
+    if (!token) return;
 
     let cancelled = false;
 
     fetch(`${BACKEND_URL}/api/members`, {
-      headers: { Authorization: `Bearer ${initialToken}` },
+      headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => (res.ok ? res.json() : []))
       .then((data: OrgMemberInfo[]) => {
@@ -58,7 +54,7 @@ export function useOrgMembers(): {
     return () => {
       cancelled = true;
     };
-  }, [initialToken]);
+  }, [token]);
 
   return { members, isLoaded };
 }
@@ -68,10 +64,10 @@ export function useOrgMembers(): {
 export function useSignOut(): { signOut: () => void } {
   const router = useRouter();
 
-  const signOut = () => {
+  const signOut = useCallback(() => {
     document.cookie = "mock-auth-token=; max-age=0; path=/";
     router.push("/mock-login");
-  };
+  }, [router]);
 
   return { signOut };
 }

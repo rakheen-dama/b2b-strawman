@@ -1,12 +1,10 @@
 "use client";
 
-import { useContext } from "react";
-import { MockAuthContext } from "@/lib/auth/client/mock-context";
+import { useMockAuthContext } from "@/lib/auth/client/mock-context";
 import { Badge } from "@/components/ui/badge";
 
 export function MockOrgSwitcher() {
-  const ctx = useContext(MockAuthContext);
-  const orgSlug = ctx?.orgSlug ?? null;
+  const { orgSlug } = useMockAuthContext();
 
   return (
     <div className="flex items-center gap-2">

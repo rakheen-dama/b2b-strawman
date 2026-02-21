@@ -1,2 +1,1 @@
-// Placeholder — AuthProvider component added in Epic 138B
-export {};
+export { AuthProvider } from "./auth-provider";

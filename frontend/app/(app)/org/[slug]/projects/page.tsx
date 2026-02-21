@@ -10,12 +10,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BudgetStatusDot } from "@/components/projects/budget-status-dot";
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
-import { NewFromTemplateDialog } from "@/components/templates/NewFromTemplateDialog";
+import { NewFromTemplateWrapper } from "@/components/templates/NewFromTemplateWrapper";
 import { CustomFieldBadges } from "@/components/field-definitions/CustomFieldBadges";
 import { ViewSelectorClient } from "@/components/views/ViewSelectorClient";
 import { createSavedViewAction } from "./view-actions";
 import { formatDate } from "@/lib/format";
-import { Clock, FileText, FolderOpen, LayoutTemplate, Users } from "lucide-react";
+import { Clock, FileText, FolderOpen, Users } from "lucide-react";
 import Link from "next/link";
 
 const ROLE_BADGE: Record<ProjectRole, { label: string; variant: "lead" | "member" }> = {
@@ -164,19 +164,12 @@ export default async function ProjectsPage({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {activeTemplates.length > 0 && (
-            <NewFromTemplateDialog
-              slug={slug}
-              templates={activeTemplates}
-              orgMembers={orgMembers}
-              customers={allCustomers}
-            >
-              <Button variant="outline" size="sm">
-                <LayoutTemplate className="mr-1.5 size-4" />
-                New from Template
-              </Button>
-            </NewFromTemplateDialog>
-          )}
+          <NewFromTemplateWrapper
+            slug={slug}
+            templates={activeTemplates}
+            orgMembers={orgMembers}
+            customers={allCustomers}
+          />
           <CreateProjectDialog slug={slug} />
         </div>
       </div>

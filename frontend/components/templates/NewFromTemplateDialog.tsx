@@ -51,6 +51,9 @@ export function NewFromTemplateDialog({
   const [customerId, setCustomerId] = useState("");
   const [projectLeadMemberId, setProjectLeadMemberId] = useState("");
 
+  // Hide when no templates — must be after all hooks (rules of hooks)
+  if (templates.length === 0) return null;
+
   const selectedTemplate = templates.find((t) => t.id === selectedTemplateId) ?? null;
 
   const selectedCustomerName = customers.find((c) => c.id === customerId)?.name;

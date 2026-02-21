@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import type { ParameterSchema } from "@/lib/api/reports";
+import { EntityPicker } from "@/components/reports/entity-picker";
 
 interface ReportParameterFormProps {
   schema: ParameterSchema;
@@ -113,11 +114,22 @@ export function ReportParameterForm({
               </Select>
             )}
 
-            {param.type === "uuid" && (
+            {param.type === "uuid" && param.entityType && (
+              <EntityPicker
+                id={`param-${param.name}`}
+                entityType={param.entityType}
+                value={String(values[param.name] ?? "")}
+                onChange={(v) => updateValue(param.name, v)}
+                disabled={isLoading}
+                hasError={!!errors[param.name]}
+              />
+            )}
+
+            {param.type === "uuid" && !param.entityType && (
               <Input
                 id={`param-${param.name}`}
                 type="text"
-                placeholder={`${param.entityType ?? "Entity"} ID (UUID)`}
+                placeholder="Entity ID (UUID)"
                 value={String(values[param.name] ?? "")}
                 onChange={(e) => updateValue(param.name, e.target.value)}
                 disabled={isLoading}

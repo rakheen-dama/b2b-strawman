@@ -158,7 +158,7 @@
 | 132 | My Work Enhancements | Frontend | 131 | S | 132A | **Done** (PR #266) |
 | **Phase 19 — Reporting & Data Export** | | | | | | See [tasks/phase19-reporting-data-export.md](tasks/phase19-reporting-data-export.md) |
 | 133 | ReportDefinition Entity Foundation | Backend | — | M | 133A, 133B | **Done** (PRs #283, #284) |
-| 134 | Report Execution Framework + Timesheet Query | Backend | 133 | M | 134A, 134B | |
+| 134 | Report Execution Framework + Timesheet Query | Backend | 133 | M | 134A, 134B | 134A **Done** (PR #285) |
 | 135 | Invoice Aging + Project Profitability Queries | Backend | 134 | M | 135A | |
 | 136 | Rendering & Export Pipeline | Backend | 134 | M | 136A, 136B | |
 | 137 | Reports Frontend | Frontend | 133, 134 | M | 137A, 137B | |

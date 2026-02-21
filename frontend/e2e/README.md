@@ -31,8 +31,13 @@ Services exposed on the host:
 - Backend: http://localhost:8081
 - Mock IDP: http://localhost:8090
 
-Note: Playwright tests use `http://localhost:3000` as `baseURL`. If running tests against
-the Dockerized frontend, update `baseURL` in `playwright.config.ts` to `http://localhost:3001`.
+Note: Playwright tests default to `http://localhost:3000` as `baseURL`. To run tests against
+the Dockerized frontend (port 3001), set the `PLAYWRIGHT_BASE_URL` env var:
+
+```bash
+PLAYWRIGHT_BASE_URL=http://localhost:3001 pnpm test:e2e
+```
+
 Alternatively, run the frontend locally (`pnpm dev`) pointing at the E2E backend.
 
 ## 2. Install Playwright Browsers

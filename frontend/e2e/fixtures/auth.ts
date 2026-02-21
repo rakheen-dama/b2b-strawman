@@ -28,5 +28,7 @@ export async function loginAs(page: Page, user: SeedUser): Promise<void> {
     value: access_token,
     domain: 'localhost',
     path: '/',
+    httpOnly: false,
+    sameSite: 'Lax',
   }])
 }

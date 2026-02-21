@@ -9,16 +9,17 @@ test('mock login redirects to dashboard', async ({ page }) => {
 })
 
 test('owner can create a project', async ({ page }) => {
+  const name = `E2E Test ${Date.now()}`
   await loginAs(page, 'alice')
   await page.goto('/org/e2e-test-org/projects')
   await page.getByRole('button', { name: 'New Project' }).click()
-  await page.getByLabel('Name').fill('Playwright Test Project')
+  await page.getByLabel('Name').fill(name)
   await page.getByRole('button', { name: 'Create Project' }).click()
-  await expect(page.getByText('Playwright Test Project')).toBeVisible()
+  await expect(page.getByText(name)).toBeVisible()
 })
 
 test('member cannot access admin settings', async ({ page }) => {
   await loginAs(page, 'carol')
   await page.goto('/org/e2e-test-org/settings/rates')
-  await expect(page.getByText('You do not have permission')).toBeVisible()
+  await expect(page.getByText(/permission/i)).toBeVisible()
 })

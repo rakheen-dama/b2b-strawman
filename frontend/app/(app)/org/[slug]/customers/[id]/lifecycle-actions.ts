@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { ApiError } from "@/lib/api";
 import { transitionLifecycle, getLifecycleHistory } from "@/lib/compliance-api";
 import { revalidatePath } from "next/cache";
@@ -17,7 +17,7 @@ export async function transitionCustomerLifecycle(
   targetStatus: string,
   notes?: string,
 ): Promise<ActionResult> {
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return { success: false, error: "Only admins and owners can manage customer lifecycle." };
   }

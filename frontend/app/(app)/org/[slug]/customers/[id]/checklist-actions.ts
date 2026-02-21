@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { ApiError } from "@/lib/api";
 import {
   getCustomerChecklists,
@@ -20,7 +20,7 @@ interface ActionResult {
 export async function fetchCustomerChecklists(
   customerId: string,
 ): Promise<ChecklistInstanceResponse[]> {
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   if (!orgRole) {
     return [];
   }
@@ -39,7 +39,7 @@ export async function completeChecklistItem(
   notes: string,
   documentId?: string,
 ): Promise<ActionResult> {
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return { success: false, error: "Only admins and owners can manage checklist items." };
   }
@@ -63,7 +63,7 @@ export async function skipChecklistItem(
   itemId: string,
   reason: string,
 ): Promise<ActionResult> {
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return { success: false, error: "Only admins and owners can manage checklist items." };
   }
@@ -86,7 +86,7 @@ export async function reopenChecklistItem(
   customerId: string,
   itemId: string,
 ): Promise<ActionResult> {
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return { success: false, error: "Only admins and owners can manage checklist items." };
   }
@@ -109,7 +109,7 @@ export async function instantiateChecklist(
   templateId: string,
   slug: string,
 ): Promise<ActionResult> {
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return { success: false, error: "Only admins and owners can instantiate checklists." };
   }

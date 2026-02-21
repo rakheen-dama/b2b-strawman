@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+import { getAuthContext } from "@/lib/auth";
 import { api, ApiError } from "@/lib/api";
 import type {
   UtilizationResponse,
@@ -18,7 +18,7 @@ export async function getUtilization(
   from: string,
   to: string,
 ): Promise<ActionResult<UtilizationResponse>> {
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return { data: null, error: "Forbidden" };
   }
@@ -41,7 +41,7 @@ export async function getOrgProfitability(
   to?: string,
   customerId?: string,
 ): Promise<ActionResult<OrgProfitabilityResponse>> {
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return { data: null, error: "Forbidden" };
   }
@@ -69,7 +69,7 @@ export async function getProjectProfitability(
   from?: string,
   to?: string,
 ): Promise<ActionResult<ProjectProfitabilityResponse>> {
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return { data: null, error: "Forbidden" };
   }
@@ -96,7 +96,7 @@ export async function getCustomerProfitability(
   from?: string,
   to?: string,
 ): Promise<ActionResult<CustomerProfitabilityResponse>> {
-  const { orgRole } = await auth();
+  const { orgRole } = await getAuthContext();
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return { data: null, error: "Forbidden" };
   }

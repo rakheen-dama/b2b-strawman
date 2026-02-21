@@ -1,5 +1,6 @@
 "use server";
 
+// CLERK-SPECIFIC: clerkClient() — not abstracted per ADR-085
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { headers } from "next/headers";
 

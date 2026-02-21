@@ -224,7 +224,10 @@ export function LogTimeDialog({
           </div>
 
           {/* Retainer Indicator */}
-          <RetainerIndicator summary={retainerSummary ?? null} />
+          <RetainerIndicator
+            summary={retainerSummary ?? null}
+            selectedDate={date}
+          />
 
           {/* Date */}
           <div className="space-y-2">

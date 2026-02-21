@@ -98,10 +98,15 @@ public class RetainerConsumptionListener {
     period.updateConsumption(newConsumedHours);
 
     log.info(
-        "Updated retainer period {} consumption: {} hours (was {} hours)",
+        "Updated retainer period {} consumption: {} hours (was {} hours), "
+            + "period range: {} to {}, total billable minutes: {}, customer: {}",
         period.getId(),
         newConsumedHours,
-        oldConsumedHours);
+        oldConsumedHours,
+        period.getPeriodStart(),
+        period.getPeriodEnd(),
+        totalMinutes,
+        customerId);
 
     // 8. Check thresholds (HOUR_BANK only)
     if (agreement.getType() == RetainerType.HOUR_BANK

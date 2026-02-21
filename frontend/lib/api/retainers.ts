@@ -76,6 +76,8 @@ export interface RetainerSummaryResponse {
   remainingHours: number | null;
   percentConsumed: number | null;
   isOverage: boolean;
+  periodStart: string | null;
+  periodEnd: string | null;
 }
 
 export interface PeriodCloseResult {

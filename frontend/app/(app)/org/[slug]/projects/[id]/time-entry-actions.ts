@@ -55,6 +55,8 @@ export async function createTimeEntry(
   }
 
   revalidatePath(`/org/${slug}/projects/${projectId}`);
+  // Also revalidate customer pages so retainer summaries refresh (BUG-004)
+  revalidatePath(`/org/${slug}/customers`, "layout");
 
   return { success: true };
 }
@@ -81,6 +83,7 @@ export async function updateTimeEntry(
   }
 
   revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/customers`, "layout");
 
   return { success: true };
 }
@@ -106,6 +109,7 @@ export async function deleteTimeEntry(
   }
 
   revalidatePath(`/org/${slug}/projects/${projectId}`);
+  revalidatePath(`/org/${slug}/customers`, "layout");
 
   return { success: true };
 }

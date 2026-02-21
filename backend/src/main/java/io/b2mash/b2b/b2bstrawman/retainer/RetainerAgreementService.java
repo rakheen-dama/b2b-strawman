@@ -18,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.retainer.dto.RetainerSummaryResponse;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.UpdateRetainerRequest;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -463,6 +464,9 @@ public class RetainerAgreementService {
     BigDecimal consumedHours =
         periodOpt.map(RetainerPeriod::getConsumedHours).orElse(BigDecimal.ZERO);
 
+    LocalDate periodStart = periodOpt.map(RetainerPeriod::getPeriodStart).orElse(null);
+    LocalDate periodEnd = periodOpt.map(RetainerPeriod::getPeriodEnd).orElse(null);
+
     if (agreement.getType() == RetainerType.FIXED_FEE) {
       return new RetainerSummaryResponse(
           true,
@@ -473,7 +477,9 @@ public class RetainerAgreementService {
           consumedHours,
           null,
           null,
-          false);
+          false,
+          periodStart,
+          periodEnd);
     }
 
     // HOUR_BANK: full summary
@@ -500,7 +506,9 @@ public class RetainerAgreementService {
         consumedHours,
         remainingHours,
         percentConsumed,
-        isOverage);
+        isOverage,
+        periodStart,
+        periodEnd);
   }
 
   private Map<UUID, String> resolveRetainerMemberNames(RetainerAgreement agreement) {

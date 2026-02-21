@@ -552,4 +552,47 @@ class RetainerConsumptionListenerTest {
           assertThat(notifications).isEmpty();
         });
   }
+
+  @Test
+  void timeEntry_outsidePeriodDateRange_consumptionRemainsZero() {
+    // Period: 2026-03-01 to ~2026-04-01 (monthly). Time entry date: 2026-05-15 (outside range).
+    var setup = createHourBankSetup("out-of-range", new BigDecimal("40"), LocalDate.of(2026, 3, 1));
+
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  timeEntryService.createTimeEntry(
+                      setup.taskId(),
+                      LocalDate.of(2026, 5, 15), // outside the March period
+                      120,
+                      true,
+                      null,
+                      "Out-of-period work",
+                      memberId,
+                      "owner");
+                }));
+
+    runInTenant(
+        () -> {
+          var period = retainerPeriodRepository.findById(setup.periodId()).orElseThrow();
+          // Consumption should remain 0 because the time entry date is outside the period range
+          assertThat(period.getConsumedHours()).isEqualByComparingTo("0.00");
+          assertThat(period.getRemainingHours()).isEqualByComparingTo("40.00");
+        });
+  }
+
+  @Test
+  void retainerSummary_includesPeriodDates() {
+    var setup =
+        createHourBankSetup("summary-dates", new BigDecimal("20"), LocalDate.of(2026, 3, 1));
+
+    runInTenant(
+        () -> {
+          var summary = retainerAgreementService.getRetainerSummary(setup.customerId());
+          assertThat(summary.hasActiveRetainer()).isTrue();
+          assertThat(summary.periodStart()).isEqualTo(LocalDate.of(2026, 3, 1));
+          assertThat(summary.periodEnd()).isNotNull();
+        });
+  }
 }

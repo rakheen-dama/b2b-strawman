@@ -46,6 +46,10 @@ const SAMPLE_TEMPLATE: ProjectTemplateResponse = {
       sortOrder: 0,
       billable: true,
       assigneeRole: "PROJECT_LEAD",
+      items: [
+        { id: "item-1", title: "Gather bank statements", sortOrder: 0 },
+        { id: "item-2", title: "Reconcile accounts", sortOrder: 1 },
+      ],
     },
   ],
   tags: [],
@@ -139,6 +143,64 @@ describe("TemplateEditor", () => {
       "acme",
       "pt-1",
       expect.objectContaining({ name: "Monthly Accounting Package" }),
+    );
+  });
+
+  it("displays sub-tasks when template is loaded with task items", () => {
+    render(
+      <TemplateEditor slug="acme" template={SAMPLE_TEMPLATE} availableTags={[]} />,
+    );
+    // Items are expanded by default when they exist
+    expect(screen.getByText("Sub-tasks (2)")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Gather bank statements")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Reconcile accounts")).toBeInTheDocument();
+  });
+
+  it("can add a new sub-task item", async () => {
+    const user = userEvent.setup();
+    render(
+      <TemplateEditor slug="acme" template={SAMPLE_TEMPLATE} availableTags={[]} />,
+    );
+    expect(screen.getByText("Sub-tasks (2)")).toBeInTheDocument();
+    await user.click(screen.getByText("Add sub-task"));
+    expect(screen.getByText("Sub-tasks (3)")).toBeInTheDocument();
+    const inputs = screen.getAllByPlaceholderText("Sub-task title");
+    expect(inputs).toHaveLength(3);
+  });
+
+  it("can delete a sub-task item", async () => {
+    const user = userEvent.setup();
+    render(
+      <TemplateEditor slug="acme" template={SAMPLE_TEMPLATE} availableTags={[]} />,
+    );
+    expect(screen.getByDisplayValue("Gather bank statements")).toBeInTheDocument();
+    const removeButtons = screen.getAllByTitle("Remove sub-task");
+    await user.click(removeButtons[0]);
+    expect(screen.queryByDisplayValue("Gather bank statements")).not.toBeInTheDocument();
+    expect(screen.getByText("Sub-tasks (1)")).toBeInTheDocument();
+  });
+
+  it("includes items in the save payload", async () => {
+    mockUpdateTemplate.mockResolvedValue({ success: true });
+    const user = userEvent.setup();
+    render(
+      <TemplateEditor slug="acme" template={SAMPLE_TEMPLATE} availableTags={[]} />,
+    );
+    await user.click(screen.getByRole("button", { name: /save changes/i }));
+    expect(mockUpdateTemplate).toHaveBeenCalledWith(
+      "acme",
+      "pt-1",
+      expect.objectContaining({
+        tasks: expect.arrayContaining([
+          expect.objectContaining({
+            name: "Prepare financials",
+            items: [
+              { title: "Gather bank statements", sortOrder: 0 },
+              { title: "Reconcile accounts", sortOrder: 1 },
+            ],
+          }),
+        ]),
+      }),
     );
   });
 });

@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Trash2, ArrowUp, ArrowDown, X, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +20,11 @@ interface TemplateEditorProps {
   availableTags: TagResponse[];
 }
 
+interface TaskItemRow {
+  key: string;
+  title: string;
+}
+
 interface TaskRow {
   key: string;
   name: string;
@@ -27,6 +32,8 @@ interface TaskRow {
   estimatedHours: string;
   billable: boolean;
   assigneeRole: "PROJECT_LEAD" | "ANY_MEMBER" | "UNASSIGNED";
+  items: TaskItemRow[];
+  itemsExpanded: boolean;
 }
 
 export function TemplateEditor({ slug, template, availableTags }: TemplateEditorProps) {
@@ -41,6 +48,15 @@ export function TemplateEditor({ slug, template, availableTags }: TemplateEditor
       estimatedHours: "",
       billable: false,
       assigneeRole: "UNASSIGNED",
+      items: [],
+      itemsExpanded: false,
+    };
+  }
+
+  function newItem(): TaskItemRow {
+    return {
+      key: `item-${nextKeyRef.current++}`,
+      title: "",
     };
   }
 
@@ -60,6 +76,14 @@ export function TemplateEditor({ slug, template, availableTags }: TemplateEditor
           estimatedHours: t.estimatedHours != null ? String(t.estimatedHours) : "",
           billable: t.billable,
           assigneeRole: t.assigneeRole,
+          items: (t.items ?? [])
+            .slice()
+            .sort((a, b) => a.sortOrder - b.sortOrder)
+            .map((item) => ({
+              key: `item-${nextKeyRef.current++}`,
+              title: item.title,
+            })),
+          itemsExpanded: (t.items ?? []).length > 0,
         }));
     }
     return [];
@@ -100,6 +124,60 @@ export function TemplateEditor({ slug, template, availableTags }: TemplateEditor
     });
   }
 
+  function toggleItemsExpanded(taskKey: string) {
+    setTasks((prev) =>
+      prev.map((t) => (t.key === taskKey ? { ...t, itemsExpanded: !t.itemsExpanded } : t)),
+    );
+  }
+
+  function addItem(taskKey: string) {
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.key === taskKey ? { ...t, items: [...t.items, newItem()], itemsExpanded: true } : t,
+      ),
+    );
+  }
+
+  function removeItem(taskKey: string, itemKey: string) {
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.key === taskKey ? { ...t, items: t.items.filter((i) => i.key !== itemKey) } : t,
+      ),
+    );
+  }
+
+  function updateItemTitle(taskKey: string, itemKey: string, title: string) {
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.key === taskKey
+          ? { ...t, items: t.items.map((i) => (i.key === itemKey ? { ...i, title } : i)) }
+          : t,
+      ),
+    );
+  }
+
+  function moveItemUp(taskKey: string, itemIndex: number) {
+    setTasks((prev) =>
+      prev.map((t) => {
+        if (t.key !== taskKey || itemIndex <= 0) return t;
+        const next = [...t.items];
+        [next[itemIndex - 1], next[itemIndex]] = [next[itemIndex], next[itemIndex - 1]];
+        return { ...t, items: next };
+      }),
+    );
+  }
+
+  function moveItemDown(taskKey: string, itemIndex: number) {
+    setTasks((prev) =>
+      prev.map((t) => {
+        if (t.key !== taskKey || itemIndex >= t.items.length - 1) return t;
+        const next = [...t.items];
+        [next[itemIndex], next[itemIndex + 1]] = [next[itemIndex + 1], next[itemIndex]];
+        return { ...t, items: next };
+      }),
+    );
+  }
+
   async function handleSave() {
     if (!name.trim() || !namePattern.trim()) {
       setError("Name and Name Pattern are required.");
@@ -109,6 +187,12 @@ export function TemplateEditor({ slug, template, availableTags }: TemplateEditor
     const emptyTasks = tasks.filter((t) => !t.name.trim());
     if (emptyTasks.length > 0) {
       setError("All tasks must have a name.");
+      return;
+    }
+
+    const emptyItems = tasks.some((t) => t.items.some((i) => !i.title.trim()));
+    if (emptyItems) {
+      setError("All sub-tasks must have a title.");
       return;
     }
 
@@ -127,6 +211,7 @@ export function TemplateEditor({ slug, template, availableTags }: TemplateEditor
         sortOrder: index,
         billable: t.billable,
         assigneeRole: t.assigneeRole,
+        items: t.items.map((item, idx) => ({ title: item.title.trim(), sortOrder: idx })),
       })),
       tagIds: selectedTagIds,
     };
@@ -337,6 +422,73 @@ export function TemplateEditor({ slug, template, availableTags }: TemplateEditor
                     >
                       Billable
                     </label>
+                  </div>
+
+                  {/* Sub-tasks */}
+                  <div className="border-t border-slate-100 pt-3 dark:border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => toggleItemsExpanded(task.key)}
+                      className="flex items-center gap-1 text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
+                    >
+                      {task.itemsExpanded ? (
+                        <ChevronDown className="size-3.5" />
+                      ) : (
+                        <ChevronRight className="size-3.5" />
+                      )}
+                      Sub-tasks ({task.items.length})
+                    </button>
+
+                    {task.itemsExpanded && (
+                      <div className="ml-5 mt-2 space-y-1.5">
+                        {task.items.map((item, itemIndex) => (
+                          <div key={item.key} className="flex items-center gap-1.5">
+                            <div className="flex flex-col">
+                              <button
+                                type="button"
+                                onClick={() => moveItemUp(task.key, itemIndex)}
+                                disabled={itemIndex === 0}
+                                className="text-slate-400 hover:text-slate-600 disabled:opacity-30 dark:hover:text-slate-300"
+                                title="Move sub-task up"
+                              >
+                                <ArrowUp className="size-3" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => moveItemDown(task.key, itemIndex)}
+                                disabled={itemIndex === task.items.length - 1}
+                                className="text-slate-400 hover:text-slate-600 disabled:opacity-30 dark:hover:text-slate-300"
+                                title="Move sub-task down"
+                              >
+                                <ArrowDown className="size-3" />
+                              </button>
+                            </div>
+                            <Input
+                              value={item.title}
+                              onChange={(e) => updateItemTitle(task.key, item.key, e.target.value)}
+                              placeholder="Sub-task title"
+                              className="h-8 flex-1 text-sm"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeItem(task.key, item.key)}
+                              className="shrink-0 text-slate-400 hover:text-red-600 dark:hover:text-red-400"
+                              title="Remove sub-task"
+                            >
+                              <X className="size-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => addItem(task.key)}
+                          className="mt-1 flex items-center gap-1 text-xs font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
+                        >
+                          <Plus className="size-3" />
+                          Add sub-task
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

@@ -1,0 +1,16 @@
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://mock-idp:8090/.well-known/jwks.json
+
+internal:
+  api:
+    key: e2e-test-api-key
+
+portal:
+  jwt:
+    secret: e2e-test-portal-secret-must-be-at-least-32-bytes-long
+  magic-link:
+    secret: e2e-test-magic-link-secret-must-be-at-least-32-bytes

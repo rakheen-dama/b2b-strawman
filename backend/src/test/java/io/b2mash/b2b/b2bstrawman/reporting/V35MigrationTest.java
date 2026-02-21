@@ -178,25 +178,28 @@ class V35MigrationTest {
   }
 
   @Test
-  void reportPackStatusIsNullableOnOrgSettings() {
+  void reportPackStatusRoundTripsOnOrgSettings() {
     runInTenant(
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var settings = orgSettingsRepository.findForCurrentTenant();
                   assertThat(settings).isPresent();
-                  // report_pack_status should be null by default (nullable JSONB column)
-                  assertThat(settings.get().getReportPackStatus()).isNull();
+                  // report_pack_status already has standard-reports from provisioning seeder
+                  assertThat(settings.get().getReportPackStatus()).isNotNull();
+                  int initialSize = settings.get().getReportPackStatus().size();
+                  assertThat(settings.get().getReportPackStatus())
+                      .anyMatch(entry -> "standard-reports".equals(entry.get("packId")));
 
-                  // Record a pack application and verify round-trip
-                  settings.get().recordReportPackApplication("standard-reports", 1);
+                  // Record an additional pack application and verify round-trip
+                  settings.get().recordReportPackApplication("custom-reports", 1);
                   orgSettingsRepository.saveAndFlush(settings.get());
 
                   var updated = orgSettingsRepository.findForCurrentTenant().orElseThrow();
                   assertThat(updated.getReportPackStatus()).isNotNull();
-                  assertThat(updated.getReportPackStatus()).hasSize(1);
-                  assertThat(updated.getReportPackStatus().getFirst().get("packId"))
-                      .isEqualTo("standard-reports");
+                  assertThat(updated.getReportPackStatus()).hasSize(initialSize + 1);
+                  assertThat(updated.getReportPackStatus())
+                      .anyMatch(entry -> "custom-reports".equals(entry.get("packId")));
                 }));
   }
 

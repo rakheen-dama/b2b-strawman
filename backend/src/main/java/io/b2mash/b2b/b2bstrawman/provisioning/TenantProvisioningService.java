@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldPackSeeder;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.reporting.StandardReportPackSeeder;
 import io.b2mash.b2b.b2bstrawman.template.TemplatePackSeeder;
 import java.sql.SQLException;
 import javax.sql.DataSource;
@@ -28,6 +29,7 @@ public class TenantProvisioningService {
   private final FieldPackSeeder fieldPackSeeder;
   private final TemplatePackSeeder templatePackSeeder;
   private final CompliancePackSeeder compliancePackSeeder;
+  private final StandardReportPackSeeder standardReportPackSeeder;
 
   public TenantProvisioningService(
       OrganizationRepository organizationRepository,
@@ -36,7 +38,8 @@ public class TenantProvisioningService {
       SubscriptionService subscriptionService,
       FieldPackSeeder fieldPackSeeder,
       TemplatePackSeeder templatePackSeeder,
-      CompliancePackSeeder compliancePackSeeder) {
+      CompliancePackSeeder compliancePackSeeder,
+      StandardReportPackSeeder standardReportPackSeeder) {
     this.organizationRepository = organizationRepository;
     this.mappingRepository = mappingRepository;
     this.migrationDataSource = migrationDataSource;
@@ -44,6 +47,7 @@ public class TenantProvisioningService {
     this.fieldPackSeeder = fieldPackSeeder;
     this.templatePackSeeder = templatePackSeeder;
     this.compliancePackSeeder = compliancePackSeeder;
+    this.standardReportPackSeeder = standardReportPackSeeder;
   }
 
   @Retryable(
@@ -81,6 +85,7 @@ public class TenantProvisioningService {
       fieldPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
       templatePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
       compliancePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+      standardReportPackSeeder.seedForTenant(schemaName, clerkOrgId);
       createMapping(clerkOrgId, schemaName);
       String planSlug = org.getPlanSlug() != null ? org.getPlanSlug() : "starter";
       subscriptionService.createSubscription(org.getId(), planSlug);

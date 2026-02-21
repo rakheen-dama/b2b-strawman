@@ -1,6 +1,8 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import type { NextMiddleware } from "next/server";
+import type { NextMiddleware, NextRequest } from "next/server";
+
+const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
 
 const isPublicRoute = createRouteMatcher([
   "/",
@@ -8,14 +10,21 @@ const isPublicRoute = createRouteMatcher([
   "/sign-up(.*)",
   "/api/webhooks(.*)",
   "/portal(.*)",
+  "/mock-login(.*)",
 ]);
 
 /**
  * Auth middleware factory.
  * Returns Clerk middleware for production, mock middleware for E2E tests.
- * Epic 141 will add the mock branch — for now, always returns Clerk middleware.
  */
 export function createAuthMiddleware(): NextMiddleware {
+  if (AUTH_MODE === "mock") {
+    return createMockMiddleware();
+  }
+  return createClerkMiddleware();
+}
+
+function createClerkMiddleware(): NextMiddleware {
   return clerkMiddleware(
     async (auth, request) => {
       if (!isPublicRoute(request)) {
@@ -39,4 +48,25 @@ export function createAuthMiddleware(): NextMiddleware {
       },
     },
   );
+}
+
+function createMockMiddleware(): NextMiddleware {
+  return (request: NextRequest) => {
+    const { pathname } = request.nextUrl;
+
+    // Public routes skip auth check
+    if (isPublicRoute(request)) {
+      return NextResponse.next();
+    }
+
+    // Check for mock auth cookie
+    const token = request.cookies.get("mock-auth-token")?.value;
+    if (!token) {
+      const loginUrl = new URL("/mock-login", request.url);
+      loginUrl.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    return NextResponse.next();
+  };
 }

@@ -168,7 +168,7 @@
 | 140 | Mock IDP Container + Backend E2E Profile | Infra | — | S | 140A | **Done** (PR #296) |
 | 141 | Frontend Mock Provider — Server + Middleware | Frontend | 138 | M | 141A, 141B | **Done** (PRs #297, #298) |
 | 142 | Frontend Mock Provider — Client Components | Frontend | 138 | S | 142A | **Done** (PR #299) |
-| 143 | Docker Compose E2E Stack + Boot-Seed Container | Infra | 140, 141, 142 | M | 143A | |
+| 143 | Docker Compose E2E Stack + Boot-Seed Container | Infra | 140, 141, 142 | M | 143A | **Done** (PR #300) |
 | 144 | Playwright Fixtures + Smoke Tests | Frontend/E2E | 143 | S | 144A | |
 
 ---

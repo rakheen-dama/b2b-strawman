@@ -24,7 +24,7 @@ Phase 20 introduces an **auth provider abstraction layer** that decouples the fr
 | 140 | Mock IDP Container + Backend E2E Profile | Infra | — | S | 140A | **Done** (PR #296) |
 | 141 | Frontend Mock Provider — Server + Middleware | Frontend | 138 | M | 141A, 141B | **Done** (PRs #297, #298) |
 | 142 | Frontend Mock Provider — Client Components | Frontend | 138 | S | 142A | **Done** (PR #299) |
-| 143 | Docker Compose E2E Stack + Boot-Seed Container | Infra | 140, 141, 142 | M | 143A | |
+| 143 | Docker Compose E2E Stack + Boot-Seed Container | Infra | 140, 141, 142 | M | 143A | **Done** (PR #300) |
 | 144 | Playwright Fixtures + Smoke Tests | Frontend/E2E | 143 | S | 144A | |
 
 ---
@@ -106,7 +106,7 @@ Phase 20 introduces an **auth provider abstraction layer** that decouples the fr
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 4 | Epic 143 | 143A | `docker-compose.e2e.yml` + `compose/seed/seed.sh` + `compose/seed/wait-for-backend.sh`. Depends on 140A (mock IDP image), 141B (mock login page), 142A (mock client). Brings up the full stack and validates it end-to-end. |
+| 4 | Epic 143 | 143A | `docker-compose.e2e.yml` + `compose/seed/seed.sh` + `compose/seed/wait-for-backend.sh`. Depends on 140A (mock IDP image), 141B (mock login page), 142A (mock client). Brings up the full stack and validates it end-to-end. | **Done** (PR #300) |
 
 ### Stage 5: Playwright
 
@@ -439,7 +439,7 @@ Stage 5:  [144A]                                (after 143A)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **143A** | 143.1–143.8 | `compose/docker-compose.e2e.yml` (6 services), `compose/seed/Dockerfile`, `compose/seed/seed.sh`, `compose/seed/wait-for-backend.sh`. ~4 files created. |  |
+| **143A** | 143.1–143.8 | `compose/docker-compose.e2e.yml` (6 services), `compose/seed/Dockerfile`, `compose/seed/seed.sh`, `compose/seed/wait-for-backend.sh`. ~4 files created. | **Done** (PR #300) |
 
 ### Tasks
 

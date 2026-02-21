@@ -4,10 +4,13 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,9 +25,13 @@ public class ReportingController {
           "PROJECT", "Project");
 
   private final ReportDefinitionRepository reportDefinitionRepository;
+  private final ReportExecutionService reportExecutionService;
 
-  public ReportingController(ReportDefinitionRepository reportDefinitionRepository) {
+  public ReportingController(
+      ReportDefinitionRepository reportDefinitionRepository,
+      ReportExecutionService reportExecutionService) {
     this.reportDefinitionRepository = reportDefinitionRepository;
+    this.reportExecutionService = reportExecutionService;
   }
 
   @GetMapping
@@ -75,6 +82,19 @@ public class ReportingController {
             definition.getColumnDefinitions(),
             definition.isSystem()));
   }
+
+  @PostMapping("/{slug}/execute")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<ReportExecutionResponse> executeReport(
+      @PathVariable String slug, @RequestBody ExecuteReportRequest request) {
+    var pageable = PageRequest.of(request.page(), request.size());
+    var response = reportExecutionService.execute(slug, request.parameters(), pageable);
+    return ResponseEntity.ok(response);
+  }
+
+  // --- Request/Response DTOs ---
+
+  public record ExecuteReportRequest(Map<String, Object> parameters, int page, int size) {}
 
   // --- Response DTOs ---
 

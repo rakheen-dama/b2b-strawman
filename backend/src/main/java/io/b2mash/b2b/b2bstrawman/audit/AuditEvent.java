@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
+import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -18,8 +19,12 @@ import org.hibernate.type.SqlTypes;
  * append-only -- once written, rows are never updated (enforced by DB trigger).
  *
  * <p>Key differences from standard entities: no {@code updatedAt}, no {@code @Version}, no setters.
+ * {@code @Immutable} tells Hibernate to skip dirty-checking and never issue UPDATEs, which is
+ * essential because the JSONB {@code details} column triggers false dirty-detection and the DB
+ * trigger rejects any UPDATE.
  */
 @Entity
+@Immutable
 @Table(name = "audit_events")
 public class AuditEvent {
 

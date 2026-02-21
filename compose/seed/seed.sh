@@ -154,10 +154,11 @@ STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
   -X POST "${BACKEND_URL}/api/projects" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer ${ALICE_JWT}" \
-  -d '{
-    "name": "Website Redesign",
-    "description": "E2E seed project for testing"
-  }')
+  -d "{
+    \"name\": \"Website Redesign\",
+    \"description\": \"E2E seed project for testing\",
+    \"customerId\": \"${CUSTOMER_ID}\"
+  }")
 check_status "Create project" "$STATUS"
 
 echo ""

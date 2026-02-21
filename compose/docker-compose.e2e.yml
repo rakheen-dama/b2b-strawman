@@ -1,3 +1,5 @@
+# Ephemeral E2E-only stack — credentials below are throwaway defaults
+# used only in local/CI containers. No real secrets here.
 services:
   postgres:
     image: postgres:16-alpine
@@ -71,13 +73,11 @@ services:
       SPRING_DATASOURCE_PORTAL_JDBC_URL: jdbc:postgresql://postgres:5432/app
       SPRING_DATASOURCE_PORTAL_USERNAME: postgres
       SPRING_DATASOURCE_PORTAL_PASSWORD: changeme
-      MOCK_IDP_JWKS_URI: http://mock-idp:8090/.well-known/jwks.json
       AWS_S3_ENDPOINT: http://localstack:4566
       AWS_S3_REGION: us-east-1
       AWS_S3_BUCKET_NAME: docteams-dev
       AWS_CREDENTIALS_ACCESS_KEY_ID: test
       AWS_CREDENTIALS_SECRET_ACCESS_KEY: test
-      INTERNAL_API_KEY: e2e-test-api-key
     ports:
       - "8081:8080"
     depends_on:
@@ -109,6 +109,12 @@ services:
       INTERNAL_API_KEY: e2e-test-api-key
     ports:
       - "3001:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
     depends_on:
       backend:
         condition: service_healthy
@@ -125,7 +131,7 @@ services:
       backend:
         condition: service_healthy
       frontend:
-        condition: service_started
+        condition: service_healthy
       mock-idp:
         condition: service_healthy
     networks:

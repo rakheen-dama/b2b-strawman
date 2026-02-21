@@ -1,6 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.reporting;
 
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -86,7 +89,7 @@ public class ReportingController {
   @PostMapping("/{slug}/execute")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ReportExecutionResponse> executeReport(
-      @PathVariable String slug, @RequestBody ExecuteReportRequest request) {
+      @PathVariable String slug, @Valid @RequestBody ExecuteReportRequest request) {
     var pageable = PageRequest.of(request.page(), request.size());
     var response = reportExecutionService.execute(slug, request.parameters(), pageable);
     return ResponseEntity.ok(response);
@@ -94,7 +97,8 @@ public class ReportingController {
 
   // --- Request/Response DTOs ---
 
-  public record ExecuteReportRequest(Map<String, Object> parameters, int page, int size) {}
+  public record ExecuteReportRequest(
+      Map<String, Object> parameters, @Min(0) int page, @Min(1) @Max(500) int size) {}
 
   // --- Response DTOs ---
 

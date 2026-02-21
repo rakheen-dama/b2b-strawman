@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.reporting;
 
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
 import java.time.LocalDate;
@@ -221,7 +222,12 @@ public class TimesheetReportQuery implements ReportQuery {
     if (value instanceof UUID uuid) {
       return uuid;
     }
-    return UUID.fromString(value.toString());
+    try {
+      return UUID.fromString(value.toString());
+    } catch (IllegalArgumentException e) {
+      throw new InvalidStateException(
+          "Invalid parameter", "Parameter '%s' is not a valid UUID: %s".formatted(key, value));
+    }
   }
 
   private double toDouble(Object value) {

@@ -83,10 +83,10 @@ public class Member {
   }
 
   public void updateFrom(String email, String name, String avatarUrl, String orgRole) {
-    this.email = email;
-    this.name = name;
-    this.avatarUrl = avatarUrl;
-    this.orgRole = orgRole;
+    if (email != null) this.email = email;
+    if (name != null) this.name = name;
+    if (avatarUrl != null) this.avatarUrl = avatarUrl;
+    if (orgRole != null) this.orgRole = orgRole;
     this.updatedAt = Instant.now();
   }
 }

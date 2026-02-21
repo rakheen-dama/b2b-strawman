@@ -506,7 +506,9 @@ public class RetainerAgreementService {
   private Map<UUID, String> resolveRetainerMemberNames(RetainerAgreement agreement) {
     if (agreement.getCreatedBy() == null) return Map.of();
     return memberRepository.findAllById(List.of(agreement.getCreatedBy())).stream()
-        .collect(Collectors.toMap(Member::getId, Member::getName, (a, b) -> a));
+        .collect(
+            Collectors.toMap(
+                Member::getId, m -> m.getName() != null ? m.getName() : "", (a, b) -> a));
   }
 
   private Map<UUID, String> resolveRetainerMemberNames(List<RetainerAgreement> agreements) {
@@ -518,7 +520,9 @@ public class RetainerAgreementService {
             .toList();
     if (ids.isEmpty()) return Map.of();
     return memberRepository.findAllById(ids).stream()
-        .collect(Collectors.toMap(Member::getId, Member::getName, (a, b) -> a));
+        .collect(
+            Collectors.toMap(
+                Member::getId, m -> m.getName() != null ? m.getName() : "", (a, b) -> a));
   }
 
   private void validateTypeSpecificFields(CreateRetainerRequest request) {

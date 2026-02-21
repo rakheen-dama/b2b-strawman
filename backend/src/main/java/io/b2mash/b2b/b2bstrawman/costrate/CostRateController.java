@@ -117,7 +117,9 @@ public class CostRateController {
     }
 
     return memberRepository.findAllById(memberIds).stream()
-        .collect(Collectors.toMap(Member::getId, Member::getName, (a, b) -> a));
+        .collect(
+            Collectors.toMap(
+                Member::getId, m -> m.getName() != null ? m.getName() : "", (a, b) -> a));
   }
 
   // --- DTOs ---

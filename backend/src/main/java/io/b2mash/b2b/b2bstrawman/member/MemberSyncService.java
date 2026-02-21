@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanLimits;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -52,59 +53,63 @@ public class MemberSyncService {
       String name,
       String avatarUrl,
       String orgRole) {
-    String schemaName = resolveSchema(clerkOrgId);
-    return ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
-        .where(RequestScopes.ORG_ID, clerkOrgId)
-        .call(
-            () ->
-                txTemplate.execute(
-                    status -> {
-                      var existing = memberRepository.findByClerkUserId(clerkUserId);
-                      if (existing.isPresent()) {
-                        var member = existing.get();
+    String schemaName = resolveSchemaWithRetry(clerkOrgId);
+    var result =
+        ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+            .where(RequestScopes.ORG_ID, clerkOrgId)
+            .call(
+                () ->
+                    txTemplate.execute(
+                        status -> {
+                          var existing = memberRepository.findByClerkUserId(clerkUserId);
+                          if (existing.isPresent()) {
+                            var member = existing.get();
 
-                        // Capture old role before mutation
-                        String oldRole = member.getOrgRole();
+                            // Capture old role before mutation
+                            String oldRole = member.getOrgRole();
 
-                        member.updateFrom(email, name, avatarUrl, orgRole);
-                        memberRepository.save(member);
-                        log.info("Updated member {} in tenant {}", clerkUserId, schemaName);
+                            member.updateFrom(email, name, avatarUrl, orgRole);
+                            memberRepository.save(member);
+                            log.info("Updated member {} in tenant {}", clerkUserId, schemaName);
 
-                        // Only emit role_changed if role actually changed
-                        if (!oldRole.equals(orgRole)) {
+                            // Only emit role_changed if role actually changed
+                            if (orgRole != null && !oldRole.equals(orgRole)) {
+                              auditService.log(
+                                  AuditEventBuilder.builder()
+                                      .eventType("member.role_changed")
+                                      .entityType("member")
+                                      .entityId(member.getId())
+                                      .actorType("WEBHOOK")
+                                      .source("WEBHOOK")
+                                      .details(
+                                          Map.of(
+                                              "org_role", Map.of("from", oldRole, "to", orgRole)))
+                                      .build());
+                            }
+
+                            return new SyncResult(member.getId(), false);
+                          }
+
+                          enforceMemberLimit(clerkOrgId);
+
+                          var member = new Member(clerkUserId, email, name, avatarUrl, orgRole);
+                          memberRepository.save(member);
+                          log.info("Created member {} in tenant {}", clerkUserId, schemaName);
+
                           auditService.log(
                               AuditEventBuilder.builder()
-                                  .eventType("member.role_changed")
+                                  .eventType("member.synced")
                                   .entityType("member")
                                   .entityId(member.getId())
                                   .actorType("WEBHOOK")
                                   .source("WEBHOOK")
-                                  .details(
-                                      Map.of("org_role", Map.of("from", oldRole, "to", orgRole)))
+                                  .details(Map.of("action", "added", "email", email))
                                   .build());
-                        }
 
-                        return new SyncResult(member.getId(), false);
-                      }
-
-                      enforceMemberLimit(clerkOrgId);
-
-                      var member = new Member(clerkUserId, email, name, avatarUrl, orgRole);
-                      memberRepository.save(member);
-                      log.info("Created member {} in tenant {}", clerkUserId, schemaName);
-
-                      auditService.log(
-                          AuditEventBuilder.builder()
-                              .eventType("member.synced")
-                              .entityType("member")
-                              .entityId(member.getId())
-                              .actorType("WEBHOOK")
-                              .source("WEBHOOK")
-                              .details(Map.of("action", "added", "email", email))
-                              .build());
-
-                      return new SyncResult(member.getId(), true);
-                    }));
+                          return new SyncResult(member.getId(), true);
+                        }));
+    memberFilter.evictFromCache(schemaName, clerkUserId);
+    return result;
   }
 
   public void deleteMember(String clerkOrgId, String clerkUserId) {
@@ -142,6 +147,22 @@ public class MemberSyncService {
             });
   }
 
+  public List<MemberSyncController.StaleMemberResponse> findStaleMembers(String clerkOrgId) {
+    String schemaName = resolveSchema(clerkOrgId);
+    return ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+        .where(RequestScopes.ORG_ID, clerkOrgId)
+        .call(
+            () ->
+                txTemplate.execute(
+                    status ->
+                        memberRepository.findByEmailEndingWith("@placeholder.internal").stream()
+                            .map(
+                                m ->
+                                    new MemberSyncController.StaleMemberResponse(
+                                        m.getId(), m.getClerkUserId(), m.getName(), m.getEmail()))
+                            .toList()));
+  }
+
   private void enforceMemberLimit(String clerkOrgId) {
     var org =
         organizationRepository
@@ -155,6 +176,33 @@ public class MemberSyncService {
           "Member limit reached (%d/%d). Upgrade to add more members."
               .formatted(currentCount, limit));
     }
+  }
+
+  private String resolveSchemaWithRetry(String clerkOrgId) {
+    for (int attempt = 1; attempt <= 5; attempt++) {
+      var mapping = mappingRepository.findByClerkOrgId(clerkOrgId);
+      if (mapping.isPresent()) {
+        if (attempt > 1) {
+          log.info("Schema resolved for org {} on attempt {}", clerkOrgId, attempt);
+        }
+        return mapping.get().getSchemaName();
+      }
+      if (attempt < 5) {
+        log.warn(
+            "Schema not yet provisioned for org {} (attempt {}/5), retrying in 500ms...",
+            clerkOrgId,
+            attempt);
+        try {
+          Thread.sleep(500);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          throw new IllegalArgumentException(
+              "Interrupted while waiting for schema provisioning: " + clerkOrgId);
+        }
+      }
+    }
+    throw new IllegalArgumentException(
+        "No tenant provisioned for org after 5 attempts: " + clerkOrgId);
   }
 
   private String resolveSchema(String clerkOrgId) {

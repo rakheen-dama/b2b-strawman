@@ -116,7 +116,7 @@ public class MemberFilter extends OncePerRequestFilter {
           new Member(
               clerkUserId,
               clerkUserId + "@placeholder.internal",
-              clerkUserId,
+              null,
               null,
               orgRole != null ? orgRole : Roles.ORG_MEMBER);
       member = memberRepository.save(member);

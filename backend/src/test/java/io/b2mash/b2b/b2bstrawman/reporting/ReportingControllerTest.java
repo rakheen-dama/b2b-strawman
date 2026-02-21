@@ -344,6 +344,98 @@ class ReportingControllerTest {
             });
   }
 
+  // --- CSV export endpoint tests ---
+
+  @Test
+  void exportCsvReturns200TextCsvWithContentDisposition() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/report-definitions/timesheet/export/csv")
+                .with(memberJwt())
+                .param("dateFrom", "2025-06-01")
+                .param("dateTo", "2025-06-30")
+                .param("groupBy", "member"))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType("text/csv;charset=UTF-8"))
+        .andExpect(
+            header()
+                .string(
+                    "Content-Disposition",
+                    "attachment; filename=\"timesheet-2025-06-01-to-2025-06-30.csv\""));
+  }
+
+  @Test
+  void exportCsvPersistsReportExportedAuditEventWithCsvFormat() throws Exception {
+    // Clear any existing audit events by counting before
+    long countBefore =
+        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+            .where(RequestScopes.ORG_ID, ORG_ID)
+            .where(RequestScopes.MEMBER_ID, ownerMemberId)
+            .where(RequestScopes.ORG_ROLE, "owner")
+            .call(
+                () ->
+                    auditEventRepository
+                        .findByFilter(
+                            "REPORT",
+                            null,
+                            null,
+                            "REPORT_EXPORTED",
+                            null,
+                            null,
+                            org.springframework.data.domain.PageRequest.of(0, 100))
+                        .getTotalElements());
+
+    mockMvc
+        .perform(
+            get("/api/report-definitions/timesheet/export/csv")
+                .with(memberJwt())
+                .param("dateFrom", "2025-06-01")
+                .param("dateTo", "2025-06-30")
+                .param("groupBy", "member"))
+        .andExpect(status().isOk());
+
+    // Verify a new audit event was persisted
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, ownerMemberId)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              var auditPage =
+                  auditEventRepository.findByFilter(
+                      "REPORT",
+                      null,
+                      null,
+                      "REPORT_EXPORTED",
+                      null,
+                      null,
+                      org.springframework.data.domain.PageRequest.of(0, 100));
+              assertThat(auditPage.getTotalElements()).isGreaterThan(countBefore);
+            });
+  }
+
+  @Test
+  void exportCsvWithoutAuthenticationReturns401() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/report-definitions/timesheet/export/csv")
+                .param("dateFrom", "2025-06-01")
+                .param("dateTo", "2025-06-30")
+                .param("groupBy", "member"))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void exportCsvUnknownSlugReturns404() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/report-definitions/nonexistent/export/csv")
+                .with(memberJwt())
+                .param("dateFrom", "2025-06-01")
+                .param("dateTo", "2025-06-30"))
+        .andExpect(status().isNotFound());
+  }
+
   // --- Helpers ---
 
   private JwtRequestPostProcessor memberJwt() {

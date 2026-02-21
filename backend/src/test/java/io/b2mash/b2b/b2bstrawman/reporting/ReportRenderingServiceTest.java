@@ -18,8 +18,11 @@ import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
+import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -221,6 +224,170 @@ class ReportRenderingServiceTest {
 
     String filename = reportRenderingService.generateFilename("timesheet", params, "pdf");
     assertThat(filename).isEqualTo("timesheet.pdf");
+  }
+
+  // --- CSV tests ---
+
+  @Test
+  void writeCsvContainsMetadataHeadersAndColumnHeaders() {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              var definition = reportDefinitionRepository.findBySlug("timesheet").orElseThrow();
+              var params = new HashMap<String, Object>();
+              params.put("dateFrom", "2025-04-01");
+              params.put("dateTo", "2025-04-30");
+              params.put("groupBy", "member");
+
+              var result = reportExecutionService.executeForExport("timesheet", params);
+              var outputStream = new ByteArrayOutputStream();
+              try {
+                reportRenderingService.writeCsv(definition, result, params, outputStream);
+              } catch (Exception e) {
+                throw new RuntimeException(e);
+              }
+
+              String csv = outputStream.toString();
+              String[] lines = csv.split("\n");
+
+              // Metadata lines
+              assertThat(lines[0]).startsWith("# Timesheet Report");
+              assertThat(lines[1]).startsWith("# Generated:");
+              assertThat(lines[2]).startsWith("# Parameters:");
+
+              // Column header line (line index 3)
+              assertThat(lines[3]).isNotEmpty();
+            });
+  }
+
+  @Test
+  void writeCsvContainsDataRows() {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              var definition = reportDefinitionRepository.findBySlug("timesheet").orElseThrow();
+              var params = new HashMap<String, Object>();
+              params.put("dateFrom", "2025-04-01");
+              params.put("dateTo", "2025-04-30");
+              params.put("groupBy", "member");
+
+              var result = reportExecutionService.executeForExport("timesheet", params);
+              var outputStream = new ByteArrayOutputStream();
+              try {
+                reportRenderingService.writeCsv(definition, result, params, outputStream);
+              } catch (Exception e) {
+                throw new RuntimeException(e);
+              }
+
+              String csv = outputStream.toString();
+              String[] lines = csv.split("\n");
+
+              // 3 metadata + 1 header + at least 1 data row
+              assertThat(lines.length).isGreaterThanOrEqualTo(5);
+            });
+  }
+
+  @Test
+  void writeCsvFormatsParametersInMetadataLine() {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              var definition = reportDefinitionRepository.findBySlug("timesheet").orElseThrow();
+              var params = new HashMap<String, Object>();
+              params.put("dateFrom", "2025-04-01");
+              params.put("dateTo", "2025-04-30");
+
+              var result = reportExecutionService.executeForExport("timesheet", params);
+              var outputStream = new ByteArrayOutputStream();
+              try {
+                reportRenderingService.writeCsv(definition, result, params, outputStream);
+              } catch (Exception e) {
+                throw new RuntimeException(e);
+              }
+
+              String csv = outputStream.toString();
+              String[] lines = csv.split("\n");
+
+              // Parameters line should contain key=value pairs
+              assertThat(lines[2]).contains("dateFrom=2025-04-01");
+              assertThat(lines[2]).contains("dateTo=2025-04-30");
+            });
+  }
+
+  @Test
+  void writeCsvWithEmptyResultProducesHeadersOnly() {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              var definition = reportDefinitionRepository.findBySlug("timesheet").orElseThrow();
+              var params = new HashMap<String, Object>();
+              params.put("dateFrom", "2099-01-01");
+              params.put("dateTo", "2099-01-31");
+              params.put("groupBy", "member");
+
+              var result = reportExecutionService.executeForExport("timesheet", params);
+              var outputStream = new ByteArrayOutputStream();
+              try {
+                reportRenderingService.writeCsv(definition, result, params, outputStream);
+              } catch (Exception e) {
+                throw new RuntimeException(e);
+              }
+
+              String csv = outputStream.toString();
+              String[] lines = csv.split("\n");
+
+              // 3 metadata + 1 header = 4 lines, no data rows
+              assertThat(lines.length).isEqualTo(4);
+            });
+  }
+
+  @Test
+  void writeCsvEscapesValuesWithCommasAndQuotes() {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              var definition = reportDefinitionRepository.findBySlug("timesheet").orElseThrow();
+
+              // Get the actual column keys from the definition
+              @SuppressWarnings("unchecked")
+              var columns =
+                  (List<Map<String, String>>) definition.getColumnDefinitions().get("columns");
+              assertThat(columns).isNotEmpty();
+              String firstKey = columns.getFirst().get("key");
+
+              // Build a synthetic result with a value that needs CSV escaping
+              var row = new HashMap<String, Object>();
+              row.put(firstKey, "Doe, John \"Jr\"");
+
+              var syntheticResult = new ReportResult(List.of(row), Map.of());
+              var params = new HashMap<String, Object>();
+
+              var outputStream = new ByteArrayOutputStream();
+              try {
+                reportRenderingService.writeCsv(definition, syntheticResult, params, outputStream);
+              } catch (Exception e) {
+                throw new RuntimeException(e);
+              }
+
+              String csv = outputStream.toString();
+              // Value with comma and quotes should be escaped per RFC 4180
+              assertThat(csv).contains("\"Doe, John \"\"Jr\"\"\"");
+            });
   }
 
   // --- Helpers ---

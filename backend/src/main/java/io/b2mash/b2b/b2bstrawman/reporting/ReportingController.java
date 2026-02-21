@@ -3,9 +3,11 @@ package io.b2mash.b2b.b2bstrawman.reporting;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -147,6 +149,47 @@ public class ReportingController {
         .contentType(MediaType.APPLICATION_PDF)
         .header("Content-Disposition", "attachment; filename=\"" + filename + "\"")
         .body(pdfBytes);
+  }
+
+  @GetMapping("/{slug}/export/csv")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public void exportCsv(
+      @PathVariable String slug,
+      @RequestParam Map<String, Object> parameters,
+      HttpServletResponse response)
+      throws IOException {
+    var definition =
+        reportDefinitionRepository
+            .findBySlug(slug)
+            .orElseThrow(() -> new ResourceNotFoundException("ReportDefinition", slug));
+
+    var result = reportExecutionService.executeForExport(slug, parameters);
+
+    // Set headers BEFORE writing to stream
+    String filename = reportRenderingService.generateFilename(slug, parameters, "csv");
+    response.setContentType("text/csv; charset=UTF-8");
+    response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+
+    try {
+      reportRenderingService.writeCsv(definition, result, parameters, response.getOutputStream());
+    } finally {
+      auditService.log(
+          AuditEventBuilder.builder()
+              .eventType("REPORT_EXPORTED")
+              .entityType("REPORT")
+              .entityId(definition.getId())
+              .details(
+                  Map.of(
+                      "slug",
+                      slug,
+                      "parameters",
+                      parameters,
+                      "format",
+                      "csv",
+                      "rowCount",
+                      result.totalElements()))
+              .build());
+    }
   }
 
   // --- Request/Response DTOs ---

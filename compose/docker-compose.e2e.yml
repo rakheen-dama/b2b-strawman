@@ -1,0 +1,140 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: e2e-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: changeme
+      POSTGRES_DB: app
+    ports:
+      - "5433:5432"
+    volumes:
+      - e2e_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d app"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - e2e-network
+
+  localstack:
+    image: localstack/localstack:3
+    container_name: e2e-localstack
+    environment:
+      SERVICES: s3
+      AWS_DEFAULT_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      S3_BUCKET_NAME: docteams-dev
+    ports:
+      - "4567:4566"
+    volumes:
+      - e2e_localstack_data:/var/lib/localstack
+      - ./data/s3:/etc/localstack/init/ready.d
+    healthcheck:
+      test: ["CMD-SHELL", "awslocal s3 ls"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - e2e-network
+
+  mock-idp:
+    build:
+      context: ./mock-idp
+      dockerfile: Dockerfile
+    container_name: e2e-mock-idp
+    ports:
+      - "8090:8090"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8090/.well-known/jwks.json || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - e2e-network
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: e2e-backend
+    environment:
+      SPRING_PROFILES_ACTIVE: e2e
+      SPRING_DATASOURCE_APP_JDBC_URL: jdbc:postgresql://postgres:5432/app
+      SPRING_DATASOURCE_APP_USERNAME: postgres
+      SPRING_DATASOURCE_APP_PASSWORD: changeme
+      SPRING_DATASOURCE_MIGRATION_JDBC_URL: jdbc:postgresql://postgres:5432/app
+      SPRING_DATASOURCE_MIGRATION_USERNAME: postgres
+      SPRING_DATASOURCE_MIGRATION_PASSWORD: changeme
+      SPRING_DATASOURCE_PORTAL_JDBC_URL: jdbc:postgresql://postgres:5432/app
+      SPRING_DATASOURCE_PORTAL_USERNAME: postgres
+      SPRING_DATASOURCE_PORTAL_PASSWORD: changeme
+      MOCK_IDP_JWKS_URI: http://mock-idp:8090/.well-known/jwks.json
+      AWS_S3_ENDPOINT: http://localstack:4566
+      AWS_S3_REGION: us-east-1
+      AWS_S3_BUCKET_NAME: docteams-dev
+      AWS_CREDENTIALS_ACCESS_KEY_ID: test
+      AWS_CREDENTIALS_SECRET_ACCESS_KEY: test
+      INTERNAL_API_KEY: e2e-test-api-key
+    ports:
+      - "8081:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+      mock-idp:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 60s
+    networks:
+      - e2e-network
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_AUTH_MODE: mock
+        NEXT_PUBLIC_MOCK_IDP_URL: http://localhost:8090
+    container_name: e2e-frontend
+    environment:
+      BACKEND_URL: http://backend:8080
+      INTERNAL_API_KEY: e2e-test-api-key
+    ports:
+      - "3001:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - e2e-network
+
+  seed:
+    build:
+      context: ./seed
+      dockerfile: Dockerfile
+    container_name: e2e-seed
+    restart: "no"
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+      mock-idp:
+        condition: service_healthy
+    networks:
+      - e2e-network
+
+volumes:
+  e2e_postgres_data:
+  e2e_localstack_data:
+
+networks:
+  e2e-network:
+    driver: bridge

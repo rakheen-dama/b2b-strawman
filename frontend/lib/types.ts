@@ -215,6 +215,18 @@ export interface UpdateTaskRequest {
   assigneeId?: string;
 }
 
+// ---- Task Items (from TaskItemController.java) ----
+
+export interface TaskItem {
+  id: string;
+  taskId: string;
+  title: string;
+  completed: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ---- Time Entries (from TimeEntryController.java) ----
 
 export interface TimeEntry {

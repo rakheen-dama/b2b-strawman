@@ -28,6 +28,7 @@ import { AssigneeSelector } from "@/components/tasks/assignee-selector";
 import { TimeEntryList } from "@/components/tasks/time-entry-list";
 import { CommentSectionClient } from "@/components/comments/comment-section-client";
 import { TagInput } from "@/components/tags/TagInput";
+import { TaskSubItems } from "@/components/tasks/task-sub-items";
 import { CustomFieldSection } from "@/components/field-definitions/CustomFieldSection";
 import {
   fetchTask,
@@ -465,6 +466,14 @@ export function TaskDetailSheet({
                 />
               </div>
             )}
+
+            {/* Sub-Items */}
+            <TaskSubItems
+              taskId={task.id}
+              slug={slug}
+              projectId={effectiveProjectId}
+              canManage={canManage}
+            />
 
             {/* Tabbed content */}
             <div className="flex-1 px-6 py-4">

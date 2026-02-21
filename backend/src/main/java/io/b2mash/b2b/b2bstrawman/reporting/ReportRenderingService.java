@@ -4,12 +4,18 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.template.LenientStandardDialect;
 import io.b2mash.b2b.b2bstrawman.template.PdfRenderingService;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.TemplateEngine;
@@ -116,6 +122,88 @@ public class ReportRenderingService {
       filename = slug + "." + extension;
     }
     return filename.replaceAll("[^a-zA-Z0-9._-]", "");
+  }
+
+  /** Write CSV to output stream from execution result + column definitions. */
+  public void writeCsv(
+      ReportDefinition definition,
+      ReportResult result,
+      Map<String, Object> parameters,
+      OutputStream outputStream)
+      throws IOException {
+    var writer = new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8));
+
+    // Metadata header
+    writer.write("# " + definition.getName());
+    writer.newLine();
+    writer.write("# Generated: " + Instant.now().toString());
+    writer.newLine();
+    writer.write("# Parameters: " + formatParametersForCsv(parameters));
+    writer.newLine();
+
+    // Column headers
+    var columns = getColumns(definition);
+    writer.write(columns.stream().map(c -> escapeCsv(c.label())).collect(Collectors.joining(",")));
+    writer.newLine();
+
+    // Data rows
+    for (var row : result.rows()) {
+      writer.write(
+          columns.stream()
+              .map(c -> escapeCsv(formatValue(row.get(c.key()), c.type(), c.format())))
+              .collect(Collectors.joining(",")));
+      writer.newLine();
+    }
+
+    writer.flush();
+  }
+
+  private String escapeCsv(String value) {
+    if (value == null) {
+      return "";
+    }
+    if (value.contains(",")
+        || value.contains("\"")
+        || value.contains("\n")
+        || value.contains("\r")) {
+      return "\"" + value.replace("\"", "\"\"") + "\"";
+    }
+    return value;
+  }
+
+  private String formatValue(Object value, String type, String format) {
+    if (value == null) {
+      return "";
+    }
+    return switch (type) {
+      case "decimal", "currency" -> {
+        if (value instanceof Number number) {
+          if (format != null && format.contains(".")) {
+            int decimals = format.length() - format.indexOf('.') - 1;
+            yield String.format("%." + decimals + "f", number.doubleValue());
+          }
+          yield String.format("%.2f", number.doubleValue());
+        }
+        yield value.toString();
+      }
+      case "integer" -> {
+        if (value instanceof Number number) {
+          yield String.valueOf(number.longValue());
+        }
+        yield value.toString();
+      }
+      default -> value.toString();
+    };
+  }
+
+  private String formatParametersForCsv(Map<String, Object> parameters) {
+    if (parameters == null || parameters.isEmpty()) {
+      return "";
+    }
+    return parameters.entrySet().stream()
+        .filter(e -> e.getValue() != null)
+        .map(e -> e.getKey() + "=" + e.getValue())
+        .collect(Collectors.joining(", "));
   }
 
   private Map<String, Object> buildContext(

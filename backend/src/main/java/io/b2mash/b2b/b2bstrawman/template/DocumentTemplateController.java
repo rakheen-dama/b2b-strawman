@@ -114,7 +114,7 @@ public class DocumentTemplateController {
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<String> previewTemplate(
       @PathVariable UUID id, @Valid @RequestBody PreviewRequest request) {
-    UUID memberId = RequestScopes.MEMBER_ID.get();
+    UUID memberId = RequestScopes.requireMemberId();
     String html = pdfRenderingService.previewHtml(id, request.entityId(), memberId);
     return ResponseEntity.ok()
         .contentType(MediaType.TEXT_HTML)
@@ -126,7 +126,7 @@ public class DocumentTemplateController {
   @PreAuthorize("isAuthenticated()")
   public ResponseEntity<?> generateDocument(
       @PathVariable UUID id, @Valid @RequestBody GenerateDocumentRequest request) {
-    UUID memberId = RequestScopes.MEMBER_ID.get();
+    UUID memberId = RequestScopes.requireMemberId();
 
     var result =
         generatedDocumentService.generateDocument(

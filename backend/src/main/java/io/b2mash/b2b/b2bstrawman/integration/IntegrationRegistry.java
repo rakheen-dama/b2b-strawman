@@ -1,0 +1,131 @@
+package io.b2mash.b2b.b2bstrawman.integration;
+
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import java.time.Duration;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.stereotype.Component;
+
+@Component
+public class IntegrationRegistry {
+
+  // Built at startup: domain -> slug -> adapter bean
+  private final Map<IntegrationDomain, Map<String, Object>> adapterMap = new ConcurrentHashMap<>();
+
+  // Caffeine cache: "tenantSchema:DOMAIN" -> OrgIntegrationCacheEntry (never null)
+  private final Cache<String, OrgIntegrationCacheEntry> configCache;
+
+  private final OrgIntegrationRepository orgIntegrationRepository;
+
+  public IntegrationRegistry(
+      ApplicationContext applicationContext, OrgIntegrationRepository orgIntegrationRepository) {
+    this.orgIntegrationRepository = orgIntegrationRepository;
+    this.configCache =
+        Caffeine.newBuilder().expireAfterWrite(Duration.ofSeconds(60)).maximumSize(1000).build();
+
+    // Scan for all beans with @IntegrationAdapter.
+    // Fail fast if two adapters register with the same domain+slug combination.
+    applicationContext
+        .getBeansWithAnnotation(IntegrationAdapter.class)
+        .forEach(
+            (name, bean) -> {
+              var annotation =
+                  AnnotationUtils.findAnnotation(bean.getClass(), IntegrationAdapter.class);
+              var slugMap =
+                  adapterMap.computeIfAbsent(annotation.domain(), k -> new ConcurrentHashMap<>());
+              var existing = slugMap.putIfAbsent(annotation.slug(), bean);
+              if (existing != null) {
+                throw new IllegalStateException(
+                    "Duplicate @IntegrationAdapter: domain="
+                        + annotation.domain()
+                        + ", slug="
+                        + annotation.slug()
+                        + " registered by both "
+                        + existing.getClass().getName()
+                        + " and "
+                        + bean.getClass().getName());
+              }
+            });
+  }
+
+  /**
+   * Resolve the active adapter for the current tenant and domain. Returns the NoOp adapter if no
+   * integration is configured or enabled.
+   */
+  @SuppressWarnings("unchecked")
+  public <T> T resolve(IntegrationDomain domain, Class<T> portInterface) {
+    if (!RequestScopes.TENANT_ID.isBound()) {
+      throw new IllegalStateException("resolve() must be called within a tenant-scoped context");
+    }
+    var tenantSchema = RequestScopes.TENANT_ID.get();
+    var cacheKey = tenantSchema + ":" + domain.name();
+
+    // IMPORTANT: Caffeine cache.get(key, loader) throws NPE if loader returns null.
+    // Always use .orElse(EMPTY) -- never return null from this lambda.
+    var entry =
+        configCache.get(
+            cacheKey,
+            k ->
+                orgIntegrationRepository
+                    .findByDomain(domain)
+                    .map(OrgIntegrationCacheEntry::of)
+                    .orElse(OrgIntegrationCacheEntry.EMPTY));
+
+    var slugMap = adapterMap.getOrDefault(domain, Map.of());
+
+    if (entry == OrgIntegrationCacheEntry.EMPTY || !entry.enabled()) {
+      // Return NoOp adapter (slug = "noop")
+      var noop = slugMap.get("noop");
+      if (noop == null) {
+        throw new IllegalStateException("No noop adapter registered for domain " + domain);
+      }
+      return (T) noop;
+    }
+
+    var adapter = slugMap.get(entry.providerSlug());
+    if (adapter == null) {
+      // Configured slug has no registered adapter -- fall back to NoOp
+      var noop = slugMap.get("noop");
+      if (noop == null) {
+        throw new IllegalStateException("No noop adapter registered for domain " + domain);
+      }
+      return (T) noop;
+    }
+
+    if (!portInterface.isInstance(adapter)) {
+      throw new IllegalStateException(
+          "Adapter "
+              + adapter.getClass().getName()
+              + " does not implement "
+              + portInterface.getName()
+              + " for domain "
+              + domain);
+    }
+
+    return (T) adapter;
+  }
+
+  /** Lists available provider slugs for a given domain. */
+  public List<String> availableProviders(IntegrationDomain domain) {
+    return List.copyOf(adapterMap.getOrDefault(domain, Map.of()).keySet());
+  }
+
+  /** Evict cached config for a tenant + domain (called on config change). */
+  public void evict(String tenantSchema, IntegrationDomain domain) {
+    configCache.invalidate(tenantSchema + ":" + domain.name());
+  }
+
+  private record OrgIntegrationCacheEntry(String providerSlug, boolean enabled, String configJson) {
+    static final OrgIntegrationCacheEntry EMPTY = new OrgIntegrationCacheEntry(null, false, null);
+
+    static OrgIntegrationCacheEntry of(OrgIntegration integration) {
+      return new OrgIntegrationCacheEntry(
+          integration.getProviderSlug(), integration.isEnabled(), integration.getConfigJson());
+    }
+  }
+}

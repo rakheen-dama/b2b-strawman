@@ -86,7 +86,7 @@ After this phase, adding any vendor adapter (Xero, OpenAI, DocuSign, Stripe) is 
 |-------|------|-------|-----------|
 | 1a (parallel) | Epic 145 | 145A | `StorageService` interface + `PresignedUrl` record. Foundation types for the port — no service code yet. | **Done** (PR #302) |
 | 1b (parallel) | Epic 146 | 146A | V36 migration (`org_secrets` table) + `OrgSecret` entity + `OrgSecretRepository` + `EncryptedDatabaseSecretStore` with AES-256-GCM. Fully independent. | **Done** (PR #304) |
-| 1c (parallel) | Epic 147 | 147A | `AccountingProvider` + `AiProvider` interfaces + all their domain records + `NoOpAccountingProvider` + `NoOpAiProvider`. Independent of entity layer. |
+| 1c (parallel) | Epic 147 | 147A | `AccountingProvider` + `AiProvider` interfaces + all their domain records + `NoOpAccountingProvider` + `NoOpAiProvider`. Independent of entity layer. | **Done** (PR #305) |
 | 1d (parallel) | Epic 149 | 149A | 3 boolean columns on `OrgSettings` (V36 migration portion) + `IntegrationGuardService` + `IntegrationDisabledException`. Reads existing `OrgSettingsService`. |
 
 ### Stage 2: Build on foundations (partially parallel)
@@ -282,7 +282,7 @@ Stage 6: [152B]                                        (after 152A)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **147A** | 147.1–147.8 | `AccountingProvider` interface + 4 domain records + `NoOpAccountingProvider` + `AiProvider` interface + 2 domain records + `NoOpAiProvider`. ~10 new files. | |
+| **147A** | 147.1–147.8 | `AccountingProvider` interface + 4 domain records + `NoOpAccountingProvider` + `AiProvider` interface + 2 domain records + `NoOpAiProvider`. ~10 new files. | **Done** (PR #305) |
 | **147B** | 147.9–147.15 | `DocumentSigningProvider` interface + 3 domain records + `SigningState` enum + `NoOpSigningProvider` + `ConnectionTestResult` shared record + `IntegrationDomain` enum. ~8 new files. | |
 
 ### Tasks

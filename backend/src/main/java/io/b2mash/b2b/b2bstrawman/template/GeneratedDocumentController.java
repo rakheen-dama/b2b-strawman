@@ -41,7 +41,7 @@ public class GeneratedDocumentController {
   public ResponseEntity<List<GeneratedDocumentListResponse>> listGeneratedDocuments(
       @RequestParam TemplateEntityType entityType, @RequestParam UUID entityId) {
     if (entityType == TemplateEntityType.PROJECT) {
-      UUID memberId = RequestScopes.MEMBER_ID.get();
+      UUID memberId = RequestScopes.requireMemberId();
       String orgRole = RequestScopes.getOrgRole();
       projectAccessService.requireViewAccess(entityId, memberId, orgRole);
     }
@@ -54,7 +54,7 @@ public class GeneratedDocumentController {
   public ResponseEntity<Void> downloadGeneratedDocument(@PathVariable UUID id) {
     var generatedDoc = generatedDocumentService.getById(id);
     if (generatedDoc.getPrimaryEntityType() == TemplateEntityType.PROJECT) {
-      UUID memberId = RequestScopes.MEMBER_ID.get();
+      UUID memberId = RequestScopes.requireMemberId();
       String orgRole = RequestScopes.getOrgRole();
       projectAccessService.requireViewAccess(generatedDoc.getPrimaryEntityId(), memberId, orgRole);
     }

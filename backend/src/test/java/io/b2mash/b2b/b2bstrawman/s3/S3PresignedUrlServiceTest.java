@@ -11,65 +11,19 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.localstack.LocalStackContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.S3Configuration;
-import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 
 /** Tests the StorageService (S3StorageAdapter) and S3PresignedUrlService key builders. */
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
-@Testcontainers
 class S3PresignedUrlServiceTest {
 
   private static final String TEST_BUCKET = "test-bucket";
-
-  @Container
-  static LocalStackContainer localstack =
-      new LocalStackContainer(DockerImageName.parse("localstack/localstack:latest"))
-          .withServices(LocalStackContainer.Service.S3);
-
-  @DynamicPropertySource
-  static void overrideS3Properties(
-      org.springframework.test.context.DynamicPropertyRegistry registry) {
-    registry.add(
-        "aws.s3.endpoint",
-        () -> localstack.getEndpointOverride(LocalStackContainer.Service.S3).toString());
-    registry.add("aws.s3.region", localstack::getRegion);
-    registry.add("aws.s3.bucket-name", () -> TEST_BUCKET);
-    registry.add("aws.credentials.access-key-id", localstack::getAccessKey);
-    registry.add("aws.credentials.secret-access-key", localstack::getSecretKey);
-  }
-
-  @BeforeAll
-  static void createBucket() {
-    try (var s3 =
-        S3Client.builder()
-            .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
-            .region(Region.of(localstack.getRegion()))
-            .credentialsProvider(
-                StaticCredentialsProvider.create(
-                    AwsBasicCredentials.create(
-                        localstack.getAccessKey(), localstack.getSecretKey())))
-            .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
-            .build()) {
-      s3.createBucket(CreateBucketRequest.builder().bucket(TEST_BUCKET).build());
-    }
-  }
 
   @Autowired private StorageService storageService;
 

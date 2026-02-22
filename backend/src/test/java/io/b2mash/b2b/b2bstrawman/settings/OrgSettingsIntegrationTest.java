@@ -287,6 +287,49 @@ class OrgSettingsIntegrationTest {
         .andExpect(status().isBadRequest());
   }
 
+  @Test
+  @Order(8)
+  void getSettings_includesIntegrationFlagsDefaultFalse() throws Exception {
+    mockMvc
+        .perform(get("/api/settings").with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.accountingEnabled").value(false))
+        .andExpect(jsonPath("$.aiEnabled").value(false))
+        .andExpect(jsonPath("$.documentSigningEnabled").value(false));
+  }
+
+  @Test
+  @Order(9)
+  void putSettings_setsIntegrationFlags() throws Exception {
+    // Set flags to true
+    mockMvc
+        .perform(
+            put("/api/settings")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "defaultCurrency": "USD",
+                      "accountingEnabled": true,
+                      "aiEnabled": true,
+                      "documentSigningEnabled": false
+                    }
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.accountingEnabled").value(true))
+        .andExpect(jsonPath("$.aiEnabled").value(true))
+        .andExpect(jsonPath("$.documentSigningEnabled").value(false));
+
+    // Verify via GET
+    mockMvc
+        .perform(get("/api/settings").with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.accountingEnabled").value(true))
+        .andExpect(jsonPath("$.aiEnabled").value(true))
+        .andExpect(jsonPath("$.documentSigningEnabled").value(false));
+  }
+
   // --- Helpers ---
 
   private String syncMember(

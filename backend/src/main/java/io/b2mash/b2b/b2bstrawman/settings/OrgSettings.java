@@ -63,12 +63,24 @@ public class OrgSettings {
   @Column(name = "report_pack_status", columnDefinition = "jsonb")
   private List<Map<String, Object>> reportPackStatus;
 
+  @Column(name = "accounting_enabled", nullable = false)
+  private boolean accountingEnabled;
+
+  @Column(name = "ai_enabled", nullable = false)
+  private boolean aiEnabled;
+
+  @Column(name = "document_signing_enabled", nullable = false)
+  private boolean documentSigningEnabled;
+
   protected OrgSettings() {}
 
   public OrgSettings(String defaultCurrency) {
     this.defaultCurrency = defaultCurrency;
     this.createdAt = Instant.now();
     this.updatedAt = Instant.now();
+    this.accountingEnabled = false;
+    this.aiEnabled = false;
+    this.documentSigningEnabled = false;
   }
 
   public void updateCurrency(String currency) {
@@ -214,6 +226,26 @@ public class OrgSettings {
     entry.put("version", version);
     entry.put("appliedAt", Instant.now().toString());
     this.reportPackStatus.add(entry);
+    this.updatedAt = Instant.now();
+  }
+
+  public boolean isAccountingEnabled() {
+    return accountingEnabled;
+  }
+
+  public boolean isAiEnabled() {
+    return aiEnabled;
+  }
+
+  public boolean isDocumentSigningEnabled() {
+    return documentSigningEnabled;
+  }
+
+  /** Updates all three integration domain flags and the timestamp. */
+  public void updateIntegrationFlags(boolean accounting, boolean ai, boolean documentSigning) {
+    this.accountingEnabled = accounting;
+    this.aiEnabled = ai;
+    this.documentSigningEnabled = documentSigning;
     this.updatedAt = Instant.now();
   }
 }

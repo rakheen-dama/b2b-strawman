@@ -24,3 +24,8 @@ CREATE TABLE org_integrations (
     updated_at      TIMESTAMP NOT NULL DEFAULT now(),
     CONSTRAINT uq_org_integrations_domain UNIQUE (domain)
 );
+
+-- Feature flags for integration domains (ADR-091)
+ALTER TABLE org_settings ADD COLUMN accounting_enabled BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE org_settings ADD COLUMN ai_enabled BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE org_settings ADD COLUMN document_signing_enabled BOOLEAN NOT NULL DEFAULT FALSE;

@@ -55,7 +55,9 @@ public class OrgSettingsService {
     return orgSettingsRepository
         .findForCurrentTenant()
         .map(this::toSettingsResponse)
-        .orElse(new SettingsResponse(DEFAULT_CURRENCY, null, null, null, null, null, null));
+        .orElse(
+            new SettingsResponse(
+                DEFAULT_CURRENCY, null, null, null, null, null, null, false, false, false));
   }
 
   /** Updates settings including branding fields. */
@@ -64,6 +66,9 @@ public class OrgSettingsService {
       String defaultCurrency,
       String brandColor,
       String documentFooterText,
+      Boolean accountingEnabled,
+      Boolean aiEnabled,
+      Boolean documentSigningEnabled,
       UUID memberId,
       String orgRole) {
     requireAdminOrOwner(orgRole);
@@ -81,6 +86,15 @@ public class OrgSettingsService {
 
     settings.setBrandColor(brandColor);
     settings.setDocumentFooterText(documentFooterText);
+
+    // Update integration flags if provided (null = don't change)
+    settings.updateIntegrationFlags(
+        accountingEnabled != null ? accountingEnabled : settings.isAccountingEnabled(),
+        aiEnabled != null ? aiEnabled : settings.isAiEnabled(),
+        documentSigningEnabled != null
+            ? documentSigningEnabled
+            : settings.isDocumentSigningEnabled());
+
     settings = orgSettingsRepository.save(settings);
 
     log.info(
@@ -196,7 +210,10 @@ public class OrgSettingsService {
         settings.getDocumentFooterText(),
         settings.getDormancyThresholdDays(),
         settings.getDataRequestDeadlineDays(),
-        settings.getCompliancePackStatus());
+        settings.getCompliancePackStatus(),
+        settings.isAccountingEnabled(),
+        settings.isAiEnabled(),
+        settings.isDocumentSigningEnabled());
   }
 
   /**

@@ -29,7 +29,7 @@ After this phase, adding any vendor adapter (Xero, OpenAI, DocuSign, Stripe) is 
 | 149 | Feature Flags + IntegrationGuardService | Backend | — | S | 149A | **Done** (PR #309) |
 | 150 | Integration Management API (Controller + Service) | Backend | 146, 148 | M | 150A, 150B | **Done** (PRs #310, #311) |
 | 151 | Audit Integration for Config Events | Backend | 150 | S | 151A | **Done** (PR #312) |
-| 152 | Integrations Settings UI | Frontend | 149, 150 | M | 152A, 152B | |
+| 152 | Integrations Settings UI | Frontend | 149, 150 | M | 152A, 152B | **Done** (PRs #313, #314) |
 
 ---
 
@@ -121,7 +121,7 @@ After this phase, adding any vendor adapter (Xero, OpenAI, DocuSign, Stripe) is 
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 6 | Epic 152 | 152B | Integrations settings page + `IntegrationCard` + `SetApiKeyDialog` + `ConnectionTestButton`. Depends on 152A (API client). |
+| 6 | Epic 152 | 152B | Integrations settings page + `IntegrationCard` + `SetApiKeyDialog` + `ConnectionTestButton`. Depends on 152A (API client). | **Done** (PR #314) |
 
 ### Timeline
 
@@ -598,7 +598,7 @@ Stage 6: [152B]                                        (after 152A)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **152A** | 152.1–152.6 | `lib/api/integrations.ts` API client + OrgSettings TypeScript type extension + settings sidebar nav update + types. ~4 modified/new files. | **Done** (PR #313) |
-| **152B** | 152.7–152.13 | Integrations settings page + `IntegrationCard` + `SetApiKeyDialog` + `ConnectionTestButton` components + tests. ~6 new files. | |
+| **152B** | 152.7–152.13 | Integrations settings page + `IntegrationCard` + `SetApiKeyDialog` + `ConnectionTestButton` components + tests. ~6 new files. | **Done** (PR #314) |
 
 ### Tasks
 

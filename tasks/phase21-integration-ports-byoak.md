@@ -22,7 +22,7 @@ After this phase, adding any vendor adapter (Xero, OpenAI, DocuSign, Stripe) is 
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 145 | StorageService Port + S3 Refactoring | Backend | — | M | 145A, 145B | 145A Done (PR #302) |
+| 145 | StorageService Port + S3 Refactoring | Backend | — | M | 145A, 145B | **Done** (PRs #302, #303) |
 | 146 | SecretStore Port + Encrypted Database Implementation | Backend | — | S | 146A | |
 | 147 | Integration Port Interfaces + NoOp Stubs | Backend | — | M | 147A, 147B | |
 | 148 | OrgIntegration Entity + IntegrationRegistry + BYOAK Infrastructure | Backend | 147 | M | 148A, 148B | |
@@ -93,7 +93,7 @@ After this phase, adding any vendor adapter (Xero, OpenAI, DocuSign, Stripe) is 
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 2a (parallel) | Epic 145 | 145B | `S3StorageAdapter` + refactor 5 domain services to inject `StorageService`. Depends on 145A interface. |
+| 2a (parallel) | Epic 145 | 145B | `S3StorageAdapter` + refactor 5 domain services to inject `StorageService`. Depends on 145A interface. | **Done** (PR #303) |
 | 2b (parallel) | Epic 147 | 147B | `DocumentSigningProvider` interface + domain records + `NoOpSigningProvider` + `ConnectionTestResult` shared record + `IntegrationDomain` enum. Depends on 147A (package established). |
 
 ### Stage 3: Registry layer
@@ -155,7 +155,7 @@ Stage 6: [152B]                                        (after 152A)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **145A** | 145.1–145.4 | `StorageService` interface + `PresignedUrl` record + `integration/storage/` package scaffolding + unit test. ~3 new files. | **Done** (PR #302) |
-| **145B** | 145.5–145.11 | `S3StorageAdapter` implementation + refactor `GeneratedDocumentService`, `OrgSettingsService`, `DataExportService`, `DataAnonymizationService`, `RetentionService` + delete/subsume `S3PresignedUrlService` presign methods. ~8 files modified, 1 new file. | |
+| **145B** | 145.5–145.11 | `S3StorageAdapter` implementation + refactor `GeneratedDocumentService`, `OrgSettingsService`, `DataExportService`, `DataAnonymizationService`, `RetentionService` + delete/subsume `S3PresignedUrlService` presign methods. ~8 files modified, 1 new file. | **Done** (PR #303) |
 
 ### Tasks
 

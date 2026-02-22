@@ -385,12 +385,48 @@ export interface OrgSettings {
   dormancyThresholdDays?: number;
   dataRequestDeadlineDays?: number;
   compliancePackStatus?: CompliancePackEntry[];
+  // integration feature flags
+  accountingEnabled?: boolean;
+  aiEnabled?: boolean;
+  documentSigningEnabled?: boolean;
 }
 
 export interface UpdateOrgSettingsRequest {
   defaultCurrency: string;
   brandColor?: string;
   documentFooterText?: string;
+}
+
+// ---- Integrations (from IntegrationController.java) ----
+
+export type IntegrationDomain = "ACCOUNTING" | "AI" | "DOCUMENT_SIGNING" | "PAYMENT";
+
+export interface OrgIntegration {
+  domain: IntegrationDomain;
+  providerSlug: string | null;
+  enabled: boolean;
+  keySuffix: string | null;
+  configJson: string | null;
+  updatedAt: string | null;
+}
+
+export interface ConnectionTestResult {
+  success: boolean;
+  providerName: string;
+  errorMessage: string | null;
+}
+
+export interface UpsertIntegrationRequest {
+  providerSlug: string;
+  configJson?: string;
+}
+
+export interface SetApiKeyRequest {
+  apiKey: string;
+}
+
+export interface ToggleIntegrationRequest {
+  enabled: boolean;
 }
 
 // ---- Document Templates (from DocumentTemplateController.java) ----

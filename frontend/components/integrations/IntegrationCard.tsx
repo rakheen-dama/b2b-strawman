@@ -58,6 +58,7 @@ export function IntegrationCard({
   const [isTogglingProvider, setIsTogglingProvider] = useState(false);
   const [isTogglingEnabled, setIsTogglingEnabled] = useState(false);
   const [isDeletingKey, setIsDeletingKey] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const Icon = DOMAIN_ICONS[domain];
   const hasProvider = !!integration?.providerSlug;
@@ -76,8 +77,16 @@ export function IntegrationCard({
 
   async function handleProviderChange(providerSlug: string) {
     setIsTogglingProvider(true);
+    setError(null);
     try {
-      await upsertIntegrationAction(slug, domain, { providerSlug });
+      const result = await upsertIntegrationAction(slug, domain, {
+        providerSlug,
+      });
+      if (!result.success) {
+        setError(result.error ?? "Failed to update provider.");
+      }
+    } catch {
+      setError("An unexpected error occurred.");
     } finally {
       setIsTogglingProvider(false);
     }
@@ -85,8 +94,16 @@ export function IntegrationCard({
 
   async function handleToggle(checked: boolean) {
     setIsTogglingEnabled(true);
+    setError(null);
     try {
-      await toggleIntegrationAction(slug, domain, { enabled: checked });
+      const result = await toggleIntegrationAction(slug, domain, {
+        enabled: checked,
+      });
+      if (!result.success) {
+        setError(result.error ?? "Failed to toggle integration.");
+      }
+    } catch {
+      setError("An unexpected error occurred.");
     } finally {
       setIsTogglingEnabled(false);
     }
@@ -94,8 +111,14 @@ export function IntegrationCard({
 
   async function handleDeleteKey() {
     setIsDeletingKey(true);
+    setError(null);
     try {
-      await deleteApiKeyAction(slug, domain);
+      const result = await deleteApiKeyAction(slug, domain);
+      if (!result.success) {
+        setError(result.error ?? "Failed to remove API key.");
+      }
+    } catch {
+      setError("An unexpected error occurred.");
     } finally {
       setIsDeletingKey(false);
     }
@@ -116,9 +139,18 @@ export function IntegrationCard({
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {error && (
+          <p className="text-sm text-destructive" role="alert">
+            {error}
+          </p>
+        )}
+
         {/* Provider selector */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+          <label
+            htmlFor={`provider-${domain}`}
+            className="text-sm font-medium text-slate-700 dark:text-slate-300"
+          >
             Provider
           </label>
           <Select
@@ -126,7 +158,7 @@ export function IntegrationCard({
             onValueChange={handleProviderChange}
             disabled={isTogglingProvider}
           >
-            <SelectTrigger className="w-full">
+            <SelectTrigger id={`provider-${domain}`} className="w-full">
               <SelectValue placeholder="Select provider" />
             </SelectTrigger>
             <SelectContent>
@@ -142,10 +174,13 @@ export function IntegrationCard({
         {/* API Key section */}
         {hasProvider && (
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            <label
+              htmlFor={`api-key-${domain}`}
+              className="text-sm font-medium text-slate-700 dark:text-slate-300"
+            >
               API Key
             </label>
-            <div className="flex items-center gap-3">
+            <div id={`api-key-${domain}`} className="flex items-center gap-3">
               {hasKey ? (
                 <>
                   <span className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
@@ -181,10 +216,14 @@ export function IntegrationCard({
         {/* Enable/disable toggle */}
         {hasProvider && (
           <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            <label
+              htmlFor={`enabled-${domain}`}
+              className="text-sm font-medium text-slate-700 dark:text-slate-300"
+            >
               Enabled
             </label>
             <Switch
+              id={`enabled-${domain}`}
               checked={isEnabled}
               onCheckedChange={handleToggle}
               disabled={!hasProvider || isTogglingEnabled}

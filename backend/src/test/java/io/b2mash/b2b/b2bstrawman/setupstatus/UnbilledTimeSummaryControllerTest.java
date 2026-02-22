@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.setupstatus;
 
+import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -8,7 +9,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
@@ -118,24 +118,12 @@ class UnbilledTimeSummaryControllerTest {
 
                       // === Phase 1: Create all parent entities ===
                       var customer =
-                          new Customer(
-                              "Test Customer",
-                              "customer@test.com",
-                              "0123456789",
-                              null,
-                              null,
-                              memberIdOwner);
+                          createActiveCustomer("Test Customer", "customer@test.com", memberIdOwner);
                       customer = customerRepository.save(customer);
                       customerIdWithEntries = customer.getId();
 
                       var emptyCustomer =
-                          new Customer(
-                              "Empty Customer",
-                              "empty@test.com",
-                              "0000000000",
-                              null,
-                              null,
-                              memberIdOwner);
+                          createActiveCustomer("Empty Customer", "empty@test.com", memberIdOwner);
                       emptyCustomer = customerRepository.save(emptyCustomer);
                       customerIdEmpty = emptyCustomer.getId();
 

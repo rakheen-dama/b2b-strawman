@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.setupstatus;
 
+import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -8,7 +9,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
@@ -110,8 +110,7 @@ class DocumentGenerationReadinessControllerTest {
                           new Project("Project With Customer", null, memberIdOwner);
                       projectWithCust = projectRepository.save(projectWithCust);
                       var customer =
-                          new Customer(
-                              "Acme Corp", "acme@test.com", null, null, null, memberIdOwner);
+                          createActiveCustomer("Acme Corp", "acme@test.com", memberIdOwner);
                       customer = customerRepository.save(customer);
                       entityManager.flush();
                       var link =

@@ -1,10 +1,10 @@
 package io.b2mash.b2b.b2bstrawman.checklist;
 
+import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
@@ -550,12 +550,9 @@ class ChecklistInstanceServiceTest {
   private UUID createCustomer() {
     emailCounter++;
     var customer =
-        new Customer(
+        createActiveCustomer(
             "Test Customer " + emailCounter,
             "ci_svc_customer_" + emailCounter + "@test.com",
-            null,
-            null,
-            null,
             memberId);
     return customerRepository.save(customer).getId();
   }

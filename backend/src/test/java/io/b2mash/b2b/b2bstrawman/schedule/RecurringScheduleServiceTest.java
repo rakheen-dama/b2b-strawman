@@ -1,12 +1,12 @@
 package io.b2mash.b2b.b2bstrawman.schedule;
 
+import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
@@ -87,7 +87,7 @@ class RecurringScheduleServiceTest {
 
                   var customer =
                       customerRepository.saveAndFlush(
-                          new Customer("Acme Corp", "acme@test.com", null, null, null, memberId));
+                          createActiveCustomer("Acme Corp", "acme@test.com", memberId));
                   customerId = customer.getId();
                 }));
   }

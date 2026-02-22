@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.retainer;
 
+import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -7,7 +8,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
@@ -77,8 +77,7 @@ class V31MigrationTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var customer =
-                      new Customer(
-                          "Retainer Test Corp", "retainer_ag@test.com", null, null, null, memberId);
+                      createActiveCustomer("Retainer Test Corp", "retainer_ag@test.com", memberId);
                   customer = customerRepository.saveAndFlush(customer);
 
                   var agreement =
@@ -122,13 +121,8 @@ class V31MigrationTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var customer =
-                      new Customer(
-                          "Period Test Corp",
-                          "retainer_period@test.com",
-                          null,
-                          null,
-                          null,
-                          memberId);
+                      createActiveCustomer(
+                          "Period Test Corp", "retainer_period@test.com", memberId);
                   customer = customerRepository.saveAndFlush(customer);
 
                   var agreement =
@@ -180,13 +174,8 @@ class V31MigrationTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var customer =
-                      new Customer(
-                          "Unique Constraint Corp",
-                          "retainer_unique@test.com",
-                          null,
-                          null,
-                          null,
-                          memberId);
+                      createActiveCustomer(
+                          "Unique Constraint Corp", "retainer_unique@test.com", memberId);
                   customer = customerRepository.saveAndFlush(customer);
 
                   var agreement =
@@ -242,13 +231,8 @@ class V31MigrationTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var customer =
-                      new Customer(
-                          "Invoice Line Test Corp",
-                          "retainer_invoice@test.com",
-                          null,
-                          null,
-                          null,
-                          memberId);
+                      createActiveCustomer(
+                          "Invoice Line Test Corp", "retainer_invoice@test.com", memberId);
                   customer = customerRepository.saveAndFlush(customer);
 
                   var invoice =

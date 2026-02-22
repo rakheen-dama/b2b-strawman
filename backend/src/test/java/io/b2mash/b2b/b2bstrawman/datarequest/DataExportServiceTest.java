@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.datarequest;
 
+import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -7,7 +8,6 @@ import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.member.MemberSyncService;
@@ -79,13 +79,8 @@ class DataExportServiceTest {
         runInTenant(
             () -> {
               var customer =
-                  new Customer(
-                      "Export Test Customer",
-                      "export-customer@test.com",
-                      "+1-555-0200",
-                      "EXP-001",
-                      "Test customer for export",
-                      memberId);
+                  createActiveCustomer(
+                      "Export Test Customer", "export-customer@test.com", memberId);
               customer = customerRepository.save(customer);
               return customer.getId();
             });

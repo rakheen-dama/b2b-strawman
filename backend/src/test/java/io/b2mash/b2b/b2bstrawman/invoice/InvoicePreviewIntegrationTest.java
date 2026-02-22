@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
+import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -9,7 +10,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
@@ -100,13 +100,7 @@ class InvoicePreviewIntegrationTest {
                     tx -> {
                       // Customer
                       var customer =
-                          new Customer(
-                              "Preview Corp",
-                              "preview@test.com",
-                              "+1-555-0600",
-                              "PVC-001",
-                              "Preview test customer",
-                              memberIdOwner);
+                          createActiveCustomer("Preview Corp", "preview@test.com", memberIdOwner);
                       customer = customerRepository.save(customer);
                       customerId = customer.getId();
 

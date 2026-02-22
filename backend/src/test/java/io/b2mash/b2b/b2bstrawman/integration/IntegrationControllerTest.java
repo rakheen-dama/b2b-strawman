@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.integration;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
@@ -41,7 +42,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class IntegrationControllerTest {
 
-  private static final String API_KEY = "test-api-key";
+  private static final String INTERNAL_API_KEY = "test-api-key";
   private static final String ORG_ID = "org_integration_ctrl_test";
   private static final String TEST_API_KEY = "sk_live_abc123def456xyz789";
 
@@ -154,8 +155,8 @@ class IntegrationControllerTest {
     String body = result.getResponse().getContentAsString();
     // keySuffix should be last 6 chars of TEST_API_KEY
     String expectedSuffix = TEST_API_KEY.substring(TEST_API_KEY.length() - 6);
-    assert body.contains(expectedSuffix) : "Response should contain keySuffix";
-    assert !body.contains(TEST_API_KEY) : "Response must NOT contain the full API key";
+    assertThat(body).contains(expectedSuffix);
+    assertThat(body).doesNotContain(TEST_API_KEY);
   }
 
   @Test
@@ -240,7 +241,7 @@ class IntegrationControllerTest {
         mockMvc
             .perform(
                 post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
+                    .header("X-API-KEY", INTERNAL_API_KEY)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """

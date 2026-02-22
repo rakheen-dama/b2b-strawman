@@ -72,7 +72,9 @@ public class IntegrationController {
 
   // --- DTOs ---
 
-  public record UpsertIntegrationRequest(String providerSlug, String configJson) {}
+  public record UpsertIntegrationRequest(
+      @NotBlank(message = "providerSlug must not be blank") String providerSlug,
+      String configJson) {}
 
   public record SetApiKeyRequest(@NotBlank(message = "apiKey must not be blank") String apiKey) {}
 

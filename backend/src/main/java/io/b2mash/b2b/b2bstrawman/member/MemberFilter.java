@@ -41,7 +41,7 @@ public class MemberFilter extends OncePerRequestFilter {
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
 
-    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    String tenantId = RequestScopes.getTenantIdOrNull();
 
     if (tenantId != null) {
       MemberInfo info = resolveMember(tenantId);

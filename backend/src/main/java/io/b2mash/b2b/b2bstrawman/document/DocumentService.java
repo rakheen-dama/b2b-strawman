@@ -233,8 +233,8 @@ public class DocumentService {
             .details(Map.of("visibility", Map.of("from", oldVisibility, "to", visibility)))
             .build());
 
-    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    String tenantId = RequestScopes.getTenantIdOrNull();
+    String orgId = RequestScopes.getOrgIdOrNull();
     eventPublisher.publishEvent(
         new DocumentVisibilityChangedEvent(
             document.getId(), document.getVisibility(), oldVisibility, orgId, tenantId));
@@ -272,8 +272,8 @@ public class DocumentService {
 
       // Only publish notification event for PROJECT-scoped documents (notifications are
       // project-scoped)
-      String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-      String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+      String tenantId = RequestScopes.getTenantIdOrNull();
+      String orgId = RequestScopes.getOrgIdOrNull();
       if (document.isProjectScoped() && document.getProjectId() != null) {
         String actorName = resolveActorName(memberId);
         eventPublisher.publishEvent(
@@ -341,8 +341,8 @@ public class DocumentService {
             .details(deleteDetails)
             .build());
 
-    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    String tenantId = RequestScopes.getTenantIdOrNull();
+    String orgId = RequestScopes.getOrgIdOrNull();
     eventPublisher.publishEvent(new DocumentDeletedEvent(document.getId(), orgId, tenantId));
   }
 

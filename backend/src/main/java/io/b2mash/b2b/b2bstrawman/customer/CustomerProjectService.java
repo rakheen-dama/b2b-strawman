@@ -90,8 +90,8 @@ public class CustomerProjectService {
             .details(Map.of("project_id", projectId.toString()))
             .build());
 
-    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    String tenantId = RequestScopes.getTenantIdOrNull();
+    String orgId = RequestScopes.getOrgIdOrNull();
     eventPublisher.publishEvent(
         new CustomerProjectLinkedEvent(customerId, projectId, orgId, tenantId));
 
@@ -130,8 +130,8 @@ public class CustomerProjectService {
             .details(Map.of("project_id", projectId.toString()))
             .build());
 
-    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    String tenantId = RequestScopes.getTenantIdOrNull();
+    String orgId = RequestScopes.getOrgIdOrNull();
     eventPublisher.publishEvent(
         new CustomerProjectUnlinkedEvent(customerId, projectId, orgId, tenantId));
   }

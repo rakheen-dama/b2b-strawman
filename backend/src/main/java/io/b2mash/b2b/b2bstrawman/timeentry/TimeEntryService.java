@@ -153,8 +153,8 @@ public class TimeEntryService {
 
     // Check budget thresholds after time entry creation
     var actorName = memberRepository.findById(memberId).map(m -> m.getName()).orElse("Unknown");
-    var tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    var orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    var tenantId = RequestScopes.getTenantIdOrNull();
+    var orgId = RequestScopes.getOrgIdOrNull();
     budgetCheckService.checkAndAlert(task.getProjectId(), memberId, actorName, tenantId, orgId);
 
     publishTimeEntryChangedEvent(saved.getId(), task.getProjectId(), "CREATED");
@@ -224,8 +224,8 @@ public class TimeEntryService {
 
     // Check budget thresholds after billable toggle (affects budget consumption)
     var actorName = memberRepository.findById(memberId).map(m -> m.getName()).orElse("Unknown");
-    var tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    var orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    var tenantId = RequestScopes.getTenantIdOrNull();
+    var orgId = RequestScopes.getOrgIdOrNull();
     budgetCheckService.checkAndAlert(task.getProjectId(), memberId, actorName, tenantId, orgId);
 
     publishTimeEntryChangedEvent(saved.getId(), task.getProjectId(), "UPDATED");
@@ -397,8 +397,8 @@ public class TimeEntryService {
     boolean billableChanged = billable != null && !billable.equals(oldBillable);
     if (dateChanged || durationChanged || billableChanged) {
       var actorName = memberRepository.findById(memberId).map(m -> m.getName()).orElse("Unknown");
-      var tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-      var orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+      var tenantId = RequestScopes.getTenantIdOrNull();
+      var orgId = RequestScopes.getOrgIdOrNull();
       budgetCheckService.checkAndAlert(task.getProjectId(), memberId, actorName, tenantId, orgId);
     }
 
@@ -554,8 +554,8 @@ public class TimeEntryService {
 
   private void publishTimeEntryChangedEvent(UUID timeEntryId, UUID projectId, String action) {
     var memberId = RequestScopes.MEMBER_ID.isBound() ? RequestScopes.MEMBER_ID.get() : null;
-    var tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    var orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    var tenantId = RequestScopes.getTenantIdOrNull();
+    var orgId = RequestScopes.getOrgIdOrNull();
     applicationEventPublisher.publishEvent(
         new TimeEntryChangedEvent(
             "time_entry.changed",

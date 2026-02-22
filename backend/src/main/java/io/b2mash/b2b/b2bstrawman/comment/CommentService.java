@@ -107,8 +107,8 @@ public class CommentService {
             .build());
 
     String actorName = resolveActorName(memberId);
-    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    String tenantId = RequestScopes.getTenantIdOrNull();
+    String orgId = RequestScopes.getOrgIdOrNull();
     eventPublisher.publishEvent(
         new CommentCreatedEvent(
             "comment.created",
@@ -197,8 +197,8 @@ public class CommentService {
             .build());
 
     String actorName = resolveActorName(memberId);
-    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    String tenantId = RequestScopes.getTenantIdOrNull();
+    String orgId = RequestScopes.getOrgIdOrNull();
     eventPublisher.publishEvent(
         new CommentUpdatedEvent(
             "comment.updated",
@@ -290,8 +290,8 @@ public class CommentService {
             .build());
 
     String actorName = resolveActorName(memberId);
-    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    String tenantId = RequestScopes.getTenantIdOrNull();
+    String orgId = RequestScopes.getOrgIdOrNull();
     eventPublisher.publishEvent(
         new CommentDeletedEvent(
             "comment.deleted",

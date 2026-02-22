@@ -339,8 +339,8 @@ public class TaskService {
     // Event publication for notification fan-out
     boolean assigneeChanged = !Objects.equals(oldAssigneeId, assigneeId);
     boolean statusChanged = !Objects.equals(oldStatus, status);
-    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    String tenantId = RequestScopes.getTenantIdOrNull();
+    String orgId = RequestScopes.getOrgIdOrNull();
 
     if (assigneeChanged && assigneeId != null) {
       String actorName = resolveActorName(memberId);
@@ -504,8 +504,8 @@ public class TaskService {
             .build());
 
     String actorName = resolveActorName(memberId);
-    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    String tenantId = RequestScopes.getTenantIdOrNull();
+    String orgId = RequestScopes.getOrgIdOrNull();
     eventPublisher.publishEvent(
         new TaskClaimedEvent(
             "task.claimed",

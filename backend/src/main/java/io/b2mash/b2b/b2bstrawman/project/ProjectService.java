@@ -119,8 +119,8 @@ public class ProjectService {
             .details(Map.of("name", project.getName()))
             .build());
 
-    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    String tenantId = RequestScopes.getTenantIdOrNull();
+    String orgId = RequestScopes.getOrgIdOrNull();
     eventPublisher.publishEvent(
         new ProjectCreatedEvent(
             project.getId(), project.getName(), project.getDescription(), null, orgId, tenantId));
@@ -188,8 +188,8 @@ public class ProjectService {
             .details(details.isEmpty() ? null : details)
             .build());
 
-    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    String tenantId = RequestScopes.getTenantIdOrNull();
+    String orgId = RequestScopes.getOrgIdOrNull();
     eventPublisher.publishEvent(
         new ProjectUpdatedEvent(
             project.getId(), project.getName(), project.getDescription(), null, orgId, tenantId));

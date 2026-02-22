@@ -132,8 +132,8 @@ public class CustomerService {
             .details(Map.of("name", customer.getName(), "email", customer.getEmail()))
             .build());
 
-    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    String tenantId = RequestScopes.getTenantIdOrNull();
+    String orgId = RequestScopes.getOrgIdOrNull();
     eventPublisher.publishEvent(
         new CustomerCreatedEvent(
             customer.getId(), customer.getName(), customer.getEmail(), orgId, tenantId));
@@ -216,8 +216,8 @@ public class CustomerService {
             .details(details.isEmpty() ? null : details)
             .build());
 
-    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    String tenantId = RequestScopes.getTenantIdOrNull();
+    String orgId = RequestScopes.getOrgIdOrNull();
     eventPublisher.publishEvent(
         new CustomerUpdatedEvent(
             saved.getId(), saved.getName(), saved.getEmail(), saved.getStatus(), orgId, tenantId));
@@ -298,8 +298,8 @@ public class CustomerService {
             .details(Map.of("lifecycleStatus", saved.getLifecycleStatus().name()))
             .build());
 
-    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    String tenantId = RequestScopes.getTenantIdOrNull();
+    String orgId = RequestScopes.getOrgIdOrNull();
     eventPublisher.publishEvent(
         new CustomerUpdatedEvent(
             saved.getId(), saved.getName(), saved.getEmail(), saved.getStatus(), orgId, tenantId));
@@ -333,8 +333,8 @@ public class CustomerService {
             .details(Map.of("lifecycleStatus", saved.getLifecycleStatus().name()))
             .build());
 
-    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    String tenantId = RequestScopes.getTenantIdOrNull();
+    String orgId = RequestScopes.getOrgIdOrNull();
     eventPublisher.publishEvent(
         new CustomerUpdatedEvent(
             saved.getId(), saved.getName(), saved.getEmail(), saved.getStatus(), orgId, tenantId));

@@ -547,8 +547,8 @@ public class ProjectTemplateService {
             .build());
 
     // 11. Publish notification event (informational — reuses ProjectCreatedEvent)
-    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    String tenantId = RequestScopes.getTenantIdOrNull();
+    String orgId = RequestScopes.getOrgIdOrNull();
     eventPublisher.publishEvent(
         new ProjectCreatedEvent(
             project.getId(), project.getName(), project.getDescription(), null, orgId, tenantId));
@@ -682,8 +682,8 @@ public class ProjectTemplateService {
   }
 
   private void publishCreatedEvent(ProjectTemplate template, UUID memberId) {
-    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    String tenantId = RequestScopes.getTenantIdOrNull();
+    String orgId = RequestScopes.getOrgIdOrNull();
     eventPublisher.publishEvent(
         new TemplateCreatedEvent(
             template.getId(),

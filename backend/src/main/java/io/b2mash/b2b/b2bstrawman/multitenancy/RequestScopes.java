@@ -53,6 +53,16 @@ public final class RequestScopes {
     return ORG_ROLE.isBound() ? ORG_ROLE.get() : null;
   }
 
+  /** Returns the tenant schema name, or null if not bound. */
+  public static String getTenantIdOrNull() {
+    return TENANT_ID.isBound() ? TENANT_ID.get() : null;
+  }
+
+  /** Returns the Clerk org ID, or null if not bound. */
+  public static String getOrgIdOrNull() {
+    return ORG_ID.isBound() ? ORG_ID.get() : null;
+  }
+
   /** Returns the authenticated customer's UUID. Throws if not bound by CustomerAuthFilter. */
   public static UUID requireCustomerId() {
     if (!CUSTOMER_ID.isBound()) {

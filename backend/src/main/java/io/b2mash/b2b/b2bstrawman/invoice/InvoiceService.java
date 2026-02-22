@@ -733,9 +733,8 @@ public class InvoiceService {
                     String.valueOf(lines.stream().filter(l -> l.getTimeEntryId() != null).count())))
             .build());
 
-    String tenantIdForEvent =
-        RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    String orgIdForEvent = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    String tenantIdForEvent = RequestScopes.getTenantIdOrNull();
+    String orgIdForEvent = RequestScopes.getOrgIdOrNull();
     eventPublisher.publishEvent(
         new InvoiceApprovedEvent(
             "invoice.approved",
@@ -780,9 +779,8 @@ public class InvoiceService {
             .details(Map.of("invoice_number", invoice.getInvoiceNumber()))
             .build());
 
-    String tenantIdForEvent =
-        RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    String orgIdForEvent = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    String tenantIdForEvent = RequestScopes.getTenantIdOrNull();
+    String orgIdForEvent = RequestScopes.getOrgIdOrNull();
     eventPublisher.publishEvent(
         new InvoiceSentEvent(
             "invoice.sent",
@@ -859,9 +857,8 @@ public class InvoiceService {
                     invoice.getPaidAt().toString()))
             .build());
 
-    String tenantIdForEvent =
-        RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    String orgIdForEvent = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    String tenantIdForEvent = RequestScopes.getTenantIdOrNull();
+    String orgIdForEvent = RequestScopes.getOrgIdOrNull();
     eventPublisher.publishEvent(
         new InvoicePaidEvent(
             "invoice.paid",
@@ -935,9 +932,8 @@ public class InvoiceService {
                     String.valueOf(lines.stream().filter(l -> l.getTimeEntryId() != null).count())))
             .build());
 
-    String tenantIdForEvent =
-        RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    String orgIdForEvent = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    String tenantIdForEvent = RequestScopes.getTenantIdOrNull();
+    String orgIdForEvent = RequestScopes.getOrgIdOrNull();
     eventPublisher.publishEvent(
         new InvoiceVoidedEvent(
             "invoice.voided",

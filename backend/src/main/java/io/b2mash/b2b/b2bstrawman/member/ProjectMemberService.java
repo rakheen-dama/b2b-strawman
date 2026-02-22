@@ -77,8 +77,8 @@ public class ProjectMemberService {
             .build());
 
     String actorName = resolveActorName(addedBy);
-    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    String tenantId = RequestScopes.getTenantIdOrNull();
+    String orgId = RequestScopes.getOrgIdOrNull();
     String projectName =
         projectRepository.findById(projectId).map(p -> p.getName()).orElse("Unknown Project");
     eventPublisher.publishEvent(

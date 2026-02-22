@@ -571,8 +571,8 @@ public class RecurringScheduleService {
       String projectName,
       String customerName,
       String templateName) {
-    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    String tenantId = RequestScopes.getTenantIdOrNull();
+    String orgId = RequestScopes.getOrgIdOrNull();
     eventPublisher.publishEvent(
         new RecurringProjectCreatedEvent(
             schedule.getId(),
@@ -590,8 +590,8 @@ public class RecurringScheduleService {
 
   private void publishScheduleSkippedEvent(
       RecurringSchedule schedule, String templateName, String customerName, Customer customer) {
-    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    String tenantId = RequestScopes.getTenantIdOrNull();
+    String orgId = RequestScopes.getOrgIdOrNull();
     eventPublisher.publishEvent(
         new ScheduleSkippedEvent(
             schedule.getId(),
@@ -606,8 +606,8 @@ public class RecurringScheduleService {
 
   private void publishScheduleCompletedEvent(
       RecurringSchedule schedule, String templateName, String customerName) {
-    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    String tenantId = RequestScopes.getTenantIdOrNull();
+    String orgId = RequestScopes.getOrgIdOrNull();
     eventPublisher.publishEvent(
         new ScheduleCompletedEvent(
             schedule.getId(),
@@ -753,8 +753,8 @@ public class RecurringScheduleService {
 
   private void publishSchedulePausedEvent(
       RecurringSchedule schedule, String templateName, String customerName) {
-    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
-    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
+    String tenantId = RequestScopes.getTenantIdOrNull();
+    String orgId = RequestScopes.getOrgIdOrNull();
     UUID actorMemberId = RequestScopes.MEMBER_ID.isBound() ? RequestScopes.MEMBER_ID.get() : null;
     eventPublisher.publishEvent(
         new SchedulePausedEvent(

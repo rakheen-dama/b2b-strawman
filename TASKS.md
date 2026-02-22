@@ -178,7 +178,7 @@
 | 149 | Feature Flags + IntegrationGuardService | Backend | — | S | 149A | **Done** (PR #309) |
 | 150 | Integration Management API (Controller + Service) | Backend | 146, 148 | M | 150A, 150B | **Done** (PRs #310, #311) |
 | 151 | Audit Integration for Config Events | Backend | 150 | S | 151A | **Done** (PR #312) |
-| 152 | Integrations Settings UI | Frontend | 149, 150 | M | 152A, 152B | |
+| 152 | Integrations Settings UI | Frontend | 149, 150 | M | 152A, 152B | 152A **Done** (PR #313) |
 
 ---
 

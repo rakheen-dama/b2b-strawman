@@ -115,7 +115,7 @@ After this phase, adding any vendor adapter (Xero, OpenAI, DocuSign, Stripe) is 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 5a (parallel) | Epic 151 | 151A | Wire 6 audit event types into `IntegrationService`. Depends on 150B. | **Done** (PR #312) |
-| 5b (parallel) | Epic 152 | 152A | `lib/api/integrations.ts` API client + settings sidebar nav update + feature flag types. Depends on 149A (OrgSettings DTO has flags) and 150B (API endpoints exist). |
+| 5b (parallel) | Epic 152 | 152A | `lib/api/integrations.ts` API client + settings sidebar nav update + feature flag types. Depends on 149A (OrgSettings DTO has flags) and 150B (API endpoints exist). | **Done** (PR #313) |
 
 ### Stage 6: Frontend UI
 
@@ -597,7 +597,7 @@ Stage 6: [152B]                                        (after 152A)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **152A** | 152.1–152.6 | `lib/api/integrations.ts` API client + OrgSettings TypeScript type extension + settings sidebar nav update + types. ~4 modified/new files. | |
+| **152A** | 152.1–152.6 | `lib/api/integrations.ts` API client + OrgSettings TypeScript type extension + settings sidebar nav update + types. ~4 modified/new files. | **Done** (PR #313) |
 | **152B** | 152.7–152.13 | Integrations settings page + `IntegrationCard` + `SetApiKeyDialog` + `ConnectionTestButton` components + tests. ~6 new files. | |
 
 ### Tasks

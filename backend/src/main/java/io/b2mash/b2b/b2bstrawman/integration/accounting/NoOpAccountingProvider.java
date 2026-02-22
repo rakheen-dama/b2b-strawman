@@ -1,12 +1,15 @@
 package io.b2mash.b2b.b2bstrawman.integration.accounting;
 
 import io.b2mash.b2b.b2bstrawman.integration.ConnectionTestResult;
+import io.b2mash.b2b.b2bstrawman.integration.IntegrationAdapter;
+import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
+@IntegrationAdapter(domain = IntegrationDomain.ACCOUNTING, slug = "noop")
 public class NoOpAccountingProvider implements AccountingProvider {
 
   private static final Logger log = LoggerFactory.getLogger(NoOpAccountingProvider.class);

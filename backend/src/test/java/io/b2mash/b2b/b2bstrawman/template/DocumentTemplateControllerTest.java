@@ -40,12 +40,14 @@ class DocumentTemplateControllerTest {
 
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_dt_ctrl_test";
+  private static final String ORG_ID_B = "org_dt_ctrl_test_b";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
 
   private String memberIdOwner;
+  private String memberIdOwnerB;
   private String createdTemplateId;
 
   @BeforeAll
@@ -58,6 +60,17 @@ class DocumentTemplateControllerTest {
             ORG_ID, "user_dt_ctrl_owner", "dt_ctrl_owner@test.com", "DT Ctrl Owner", "owner");
     syncMember(
         ORG_ID, "user_dt_ctrl_member", "dt_ctrl_member@test.com", "DT Ctrl Member", "member");
+
+    // Provision tenant B for isolation tests
+    provisioningService.provisionTenant(ORG_ID_B, "DT Controller Test Org B");
+    planSyncService.syncPlan(ORG_ID_B, "pro-plan");
+    memberIdOwnerB =
+        syncMember(
+            ORG_ID_B,
+            "user_dt_ctrl_owner_b",
+            "dt_ctrl_owner_b@test.com",
+            "DT Ctrl Owner B",
+            "owner");
   }
 
   @Test
@@ -226,6 +239,18 @@ class DocumentTemplateControllerTest {
         .andExpect(status().isForbidden());
   }
 
+  // --- Tenant Isolation Tests ---
+
+  @Test
+  @Order(10)
+  void templateInTenantAIsNotVisibleInTenantB() throws Exception {
+    // createdTemplateId was created by tenant A in order 1
+    // Attempt to GET it from tenant B — should return 404
+    mockMvc
+        .perform(get("/api/templates/" + createdTemplateId).with(ownerJwtTenantB()))
+        .andExpect(status().isNotFound());
+  }
+
   // --- JWT Helpers ---
 
   private JwtRequestPostProcessor ownerJwt() {
@@ -239,6 +264,15 @@ class DocumentTemplateControllerTest {
         .jwt(
             j -> j.subject("user_dt_ctrl_member").claim("o", Map.of("id", ORG_ID, "rol", "member")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+
+  private JwtRequestPostProcessor ownerJwtTenantB() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_dt_ctrl_owner_b")
+                    .claim("o", Map.of("id", ORG_ID_B, "rol", "owner")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
   }
 
   // --- Helpers ---

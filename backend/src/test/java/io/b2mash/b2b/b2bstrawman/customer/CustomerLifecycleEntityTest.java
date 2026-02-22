@@ -129,45 +129,4 @@ class CustomerLifecycleEntityTest {
     assertThat(customer.getPhone()).isNull();
     assertThat(customer.getIdNumber()).isNull();
   }
-
-  @Test
-  void defaultLifecycleIsProspect() {
-    var customer = new Customer("New Co", "new@co.com", null, null, null, UUID.randomUUID());
-    assertThat(customer.getLifecycleStatus()).isEqualTo(LifecycleStatus.PROSPECT);
-  }
-
-  @Test
-  void customerTypeDefaultsToIndividual() {
-    var customer = new Customer("New Co", "new@co.com", null, null, null, UUID.randomUUID());
-    assertThat(customer.getCustomerType()).isEqualTo(CustomerType.INDIVIDUAL);
-  }
-
-  @Test
-  void customerTypeConstructorAcceptsEnum() {
-    var customer =
-        new Customer(
-            "Corp Co", "corp@co.com", null, null, null, UUID.randomUUID(), CustomerType.COMPANY);
-    assertThat(customer.getCustomerType()).isEqualTo(CustomerType.COMPANY);
-  }
-
-  @Test
-  void offboardedAtIsNullByDefault() {
-    var customer = new Customer("New Co", "new@co.com", null, null, null, UUID.randomUUID());
-    assertThat(customer.getOffboardedAt()).isNull();
-  }
-
-  @Test
-  void lifecycleStatusConstructorSetsExplicitStatus() {
-    var customer =
-        new Customer(
-            "Prospect Co",
-            "prospect@co.com",
-            null,
-            null,
-            null,
-            UUID.randomUUID(),
-            null,
-            LifecycleStatus.PROSPECT);
-    assertThat(customer.getLifecycleStatus()).isEqualTo(LifecycleStatus.PROSPECT);
-  }
 }

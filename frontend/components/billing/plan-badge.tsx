@@ -1,5 +1,4 @@
-// CLERK-SPECIFIC: has() plan check — not abstracted per ADR-085
-import { auth } from "@clerk/nextjs/server";
+import { hasPlan } from "@/lib/auth";
 import { Badge } from "@/components/ui/badge";
 
 interface PlanBadgeDisplayProps {
@@ -17,8 +16,7 @@ export function PlanBadgeDisplay({ isPro }: PlanBadgeDisplayProps) {
 
 /** Server component that auto-detects the org's plan from Clerk session. */
 export async function PlanBadge() {
-  const { has } = await auth();
-  const isPro = has?.({ plan: "pro" }) ?? false;
+  const isPro = await hasPlan("pro");
 
   return <PlanBadgeDisplay isPro={isPro} />;
 }

@@ -27,6 +27,11 @@ export async function getCurrentUserEmail(): Promise<string | null> {
   return clerkProvider.getCurrentUserEmail();
 }
 
+export async function hasPlan(plan: string): Promise<boolean> {
+  if (AUTH_MODE === "mock") return mockProvider.hasPlan(plan);
+  return clerkProvider.hasPlan(plan);
+}
+
 export async function requireRole(
   role: "admin" | "owner" | "any",
 ): Promise<void> {

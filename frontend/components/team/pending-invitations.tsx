@@ -7,13 +7,15 @@ import { EmptyState } from "@/components/empty-state";
 import { useState } from "react";
 import { formatDate } from "@/lib/format";
 
+const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
+
 const ROLE_BADGES: Record<string, { label: string; variant: "owner" | "admin" | "member" }> = {
   "org:owner": { label: "Owner", variant: "owner" },
   "org:admin": { label: "Admin", variant: "admin" },
   "org:member": { label: "Member", variant: "member" },
 };
 
-export function PendingInvitations({ isAdmin }: { isAdmin: boolean }) {
+function ClerkPendingInvitations({ isAdmin }: { isAdmin: boolean }) {
   const { invitations, memberships, isLoaded } = useOrganization({
     invitations: {
       pageSize: 10,
@@ -135,4 +137,19 @@ export function PendingInvitations({ isAdmin }: { isAdmin: boolean }) {
       )}
     </div>
   );
+}
+
+function MockPendingInvitations() {
+  return (
+    <EmptyState
+      icon={Mail}
+      title="No pending invitations"
+      description="Invitations are managed through the auth provider"
+    />
+  );
+}
+
+export function PendingInvitations({ isAdmin }: { isAdmin: boolean }) {
+  if (AUTH_MODE === "mock") return <MockPendingInvitations />;
+  return <ClerkPendingInvitations isAdmin={isAdmin} />;
 }

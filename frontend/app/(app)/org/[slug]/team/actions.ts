@@ -1,7 +1,6 @@
 "use server";
 
-// CLERK-SPECIFIC: clerkClient() — not abstracted per ADR-085
-import { auth, clerkClient } from "@clerk/nextjs/server";
+import { getAuthContext, AUTH_MODE } from "@/lib/auth";
 import { headers } from "next/headers";
 
 interface ActionResult {
@@ -13,14 +12,15 @@ export async function inviteMember(
   emailAddress: string,
   role: "org:member" | "org:admin"
 ): Promise<ActionResult> {
-  const { orgId, userId, orgRole } = await auth();
-
-  if (!orgId || !userId) {
-    return { success: false, error: "No active organization." };
-  }
+  const { orgId, userId, orgRole } = await getAuthContext();
 
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return { success: false, error: "You must be an admin to invite members." };
+  }
+
+  if (AUTH_MODE === "mock") {
+    // Mock mode: stub success — E2E tests don't exercise Clerk invitations
+    return { success: true };
   }
 
   const headersList = await headers();
@@ -29,6 +29,7 @@ export async function inviteMember(
   const redirectUrl = `${protocol}://${host}/sign-up`;
 
   try {
+    const { clerkClient } = await import("@clerk/nextjs/server");
     const client = await clerkClient();
     await client.organizations.createOrganizationInvitation({
       organizationId: orgId,

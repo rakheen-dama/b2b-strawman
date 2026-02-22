@@ -7,28 +7,77 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { inviteMember } from "@/app/(app)/org/[slug]/team/actions";
 
+const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
+
 interface InviteMemberFormProps {
   maxMembers: number;
   currentMembers: number;
   planTier: string;
+  orgSlug: string;
 }
 
-export function InviteMemberForm({ maxMembers, currentMembers, planTier }: InviteMemberFormProps) {
+function ClerkInviteMemberForm({ maxMembers, currentMembers, planTier, orgSlug }: InviteMemberFormProps) {
   const { organization, invitations } = useOrganization({
     invitations: {
       pageSize: 5,
       keepPreviousData: true,
     },
   });
+
+  const pendingInvitations = organization?.pendingInvitationsCount ?? 0;
+
+  return (
+    <InviteFormUI
+      maxMembers={maxMembers}
+      currentMembers={currentMembers}
+      pendingInvitations={pendingInvitations}
+      planTier={planTier}
+      orgSlug={orgSlug}
+      onInviteSent={() => invitations?.revalidate?.()}
+      ready={!!organization}
+    />
+  );
+}
+
+function MockInviteMemberForm({ maxMembers, currentMembers, planTier, orgSlug }: InviteMemberFormProps) {
+  return (
+    <InviteFormUI
+      maxMembers={maxMembers}
+      currentMembers={currentMembers}
+      pendingInvitations={0}
+      planTier={planTier}
+      orgSlug={orgSlug}
+      onInviteSent={() => {}}
+      ready={true}
+    />
+  );
+}
+
+function InviteFormUI({
+  maxMembers,
+  currentMembers,
+  pendingInvitations,
+  planTier,
+  orgSlug,
+  onInviteSent,
+  ready,
+}: {
+  maxMembers: number;
+  currentMembers: number;
+  pendingInvitations: number;
+  planTier: string;
+  orgSlug: string;
+  onInviteSent: () => void;
+  ready: boolean;
+}) {
   const [emailAddress, setEmailAddress] = useState("");
   const [role, setRole] = useState<"org:member" | "org:admin">("org:member");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  if (!organization) return null;
+  if (!ready) return null;
 
-  const pendingInvitations = organization.pendingInvitationsCount ?? 0;
   const totalUsed = currentMembers + pendingInvitations;
   const isAtLimit = maxMembers > 0 && totalUsed >= maxMembers;
   const fillPercent = maxMembers > 0 ? Math.min((totalUsed / maxMembers) * 100, 100) : 0;
@@ -52,7 +101,7 @@ export function InviteMemberForm({ maxMembers, currentMembers, planTier }: Invit
         setError(result.error ?? "Failed to send invitation.");
         return;
       }
-      await invitations?.revalidate?.();
+      onInviteSent();
       setEmailAddress("");
       setSuccess(`Invitation sent to ${trimmedEmail}.`);
     } catch (err: unknown) {
@@ -110,7 +159,7 @@ export function InviteMemberForm({ maxMembers, currentMembers, planTier }: Invit
         <p className="text-sm text-slate-600 dark:text-slate-400">
           Member limit reached.{" "}
           <Link
-            href={`/org/${organization.slug}/settings/billing`}
+            href={`/org/${orgSlug}/settings/billing`}
             className="font-medium text-teal-600 underline underline-offset-4 hover:text-teal-500"
           >
             Upgrade
@@ -139,4 +188,9 @@ export function InviteMemberForm({ maxMembers, currentMembers, planTier }: Invit
       {success && <p className="text-sm text-emerald-600">{success}</p>}
     </div>
   );
+}
+
+export function InviteMemberForm(props: InviteMemberFormProps) {
+  if (AUTH_MODE === "mock") return <MockInviteMemberForm {...props} />;
+  return <ClerkInviteMemberForm {...props} />;
 }

@@ -9,6 +9,9 @@ internal:
   api:
     key: e2e-test-api-key
 
+integration:
+  encryption-key: "+kW8MHOTHhm4Cq+FCJG3Gk1rsJ6s87v0gdC7oZYYo4o="
+
 portal:
   jwt:
     secret: e2e-test-portal-secret-must-be-at-least-32-bytes-long

@@ -39,7 +39,7 @@ function mockOrg(overrides: Record<string, unknown> = {}) {
 describe("InviteMemberForm", () => {
   it("renders form when under member limit", () => {
     mockUseOrganization.mockReturnValue(mockOrg());
-    render(<InviteMemberForm maxMembers={2} currentMembers={1} planTier="SHARED" />);
+    render(<InviteMemberForm maxMembers={2} currentMembers={1} planTier="SHARED" orgSlug="acme" />);
 
     expect(screen.getByLabelText("Email address")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Send Invite" })).toBeInTheDocument();
@@ -47,7 +47,7 @@ describe("InviteMemberForm", () => {
 
   it("shows upgrade message when at member limit", () => {
     mockUseOrganization.mockReturnValue(mockOrg());
-    render(<InviteMemberForm maxMembers={2} currentMembers={2} planTier="SHARED" />);
+    render(<InviteMemberForm maxMembers={2} currentMembers={2} planTier="SHARED" orgSlug="acme" />);
 
     expect(screen.queryByLabelText("Email address")).not.toBeInTheDocument();
     expect(screen.getByText(/Member limit reached/)).toBeInTheDocument();
@@ -55,7 +55,7 @@ describe("InviteMemberForm", () => {
 
   it("counts pending invitations toward the limit", () => {
     mockUseOrganization.mockReturnValue(mockOrg({ pendingInvitationsCount: 1 }));
-    render(<InviteMemberForm maxMembers={2} currentMembers={1} planTier="SHARED" />);
+    render(<InviteMemberForm maxMembers={2} currentMembers={1} planTier="SHARED" orgSlug="acme" />);
 
     expect(screen.queryByLabelText("Email address")).not.toBeInTheDocument();
     expect(screen.getByText(/Member limit reached/)).toBeInTheDocument();
@@ -63,14 +63,14 @@ describe("InviteMemberForm", () => {
 
   it("renders form when maxMembers is 0 (unlimited)", () => {
     mockUseOrganization.mockReturnValue(mockOrg());
-    render(<InviteMemberForm maxMembers={0} currentMembers={50} planTier="DEDICATED" />);
+    render(<InviteMemberForm maxMembers={0} currentMembers={50} planTier="DEDICATED" orgSlug="acme" />);
 
     expect(screen.getByLabelText("Email address")).toBeInTheDocument();
   });
 
   it("shows billing link with correct slug", () => {
-    mockUseOrganization.mockReturnValue(mockOrg({ slug: "my-org" }));
-    render(<InviteMemberForm maxMembers={2} currentMembers={2} planTier="SHARED" />);
+    mockUseOrganization.mockReturnValue(mockOrg());
+    render(<InviteMemberForm maxMembers={2} currentMembers={2} planTier="SHARED" orgSlug="my-org" />);
 
     const link = screen.getByRole("link", { name: "Upgrade" });
     expect(link).toHaveAttribute("href", "/org/my-org/settings/billing");
@@ -90,7 +90,7 @@ describe("InviteMemberForm", () => {
 
   it("shows progress bar with member count", () => {
     mockUseOrganization.mockReturnValue(mockOrg());
-    render(<InviteMemberForm maxMembers={10} currentMembers={3} planTier="SHARED" />);
+    render(<InviteMemberForm maxMembers={10} currentMembers={3} planTier="SHARED" orgSlug="acme" />);
 
     expect(screen.getByText("3 of 10 members")).toBeInTheDocument();
   });

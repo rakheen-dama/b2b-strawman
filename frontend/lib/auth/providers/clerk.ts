@@ -31,6 +31,11 @@ export async function getCurrentUserEmail(): Promise<string | null> {
   return user?.primaryEmailAddress?.emailAddress ?? null;
 }
 
+export async function hasPlan(plan: string): Promise<boolean> {
+  const { has } = await auth();
+  return has?.({ plan }) ?? false;
+}
+
 export async function requireRole(
   role: "admin" | "owner" | "any",
 ): Promise<void> {

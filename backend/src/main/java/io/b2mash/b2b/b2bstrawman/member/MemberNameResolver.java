@@ -19,6 +19,10 @@ public class MemberNameResolver {
     return memberRepository.findById(memberId).map(Member::getName).orElse("Unknown");
   }
 
+  public String resolveNameOrNull(UUID memberId) {
+    return memberRepository.findById(memberId).map(Member::getName).orElse(null);
+  }
+
   public Map<UUID, String> resolveNames(Collection<UUID> memberIds) {
     if (memberIds.isEmpty()) return Map.of();
 

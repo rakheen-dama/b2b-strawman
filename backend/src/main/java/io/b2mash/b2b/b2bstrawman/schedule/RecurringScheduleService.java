@@ -747,7 +747,7 @@ public class RecurringScheduleService {
     if (memberId == null) {
       return null;
     }
-    return memberNameResolver.resolveName(memberId);
+    return memberNameResolver.resolveNameOrNull(memberId);
   }
 
   private void publishSchedulePausedEvent(

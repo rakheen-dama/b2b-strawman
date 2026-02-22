@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.costrate;
 
-import io.b2mash.b2b.b2bstrawman.member.Member;
-import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -16,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -34,11 +32,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class CostRateController {
 
   private final CostRateService costRateService;
-  private final MemberRepository memberRepository;
+  private final MemberNameResolver memberNameResolver;
 
-  public CostRateController(CostRateService costRateService, MemberRepository memberRepository) {
+  public CostRateController(
+      CostRateService costRateService, MemberNameResolver memberNameResolver) {
     this.costRateService = costRateService;
-    this.memberRepository = memberRepository;
+    this.memberNameResolver = memberNameResolver;
   }
 
   @GetMapping
@@ -111,15 +110,7 @@ public class CostRateController {
   private Map<UUID, String> resolveMemberNames(List<CostRate> rates) {
     var memberIds =
         rates.stream().map(CostRate::getMemberId).filter(Objects::nonNull).distinct().toList();
-
-    if (memberIds.isEmpty()) {
-      return Map.of();
-    }
-
-    return memberRepository.findAllById(memberIds).stream()
-        .collect(
-            Collectors.toMap(
-                Member::getId, m -> m.getName() != null ? m.getName() : "", (a, b) -> a));
+    return memberNameResolver.resolveNames(memberIds);
   }
 
   // --- DTOs ---

@@ -10,7 +10,7 @@ import io.b2mash.b2b.b2bstrawman.event.CommentVisibilityChangedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
-import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
@@ -37,7 +37,7 @@ public class CommentService {
   private final DocumentRepository documentRepository;
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
-  private final MemberRepository memberRepository;
+  private final MemberNameResolver memberNameResolver;
 
   public CommentService(
       CommentRepository commentRepository,
@@ -46,14 +46,14 @@ public class CommentService {
       DocumentRepository documentRepository,
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
-      MemberRepository memberRepository) {
+      MemberNameResolver memberNameResolver) {
     this.commentRepository = commentRepository;
     this.projectAccessService = projectAccessService;
     this.taskRepository = taskRepository;
     this.documentRepository = documentRepository;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
-    this.memberRepository = memberRepository;
+    this.memberNameResolver = memberNameResolver;
   }
 
   @Transactional
@@ -341,6 +341,6 @@ public class CommentService {
   }
 
   private String resolveActorName(UUID memberId) {
-    return memberRepository.findById(memberId).map(m -> m.getName()).orElse("Unknown");
+    return memberNameResolver.resolveName(memberId);
   }
 }

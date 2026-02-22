@@ -23,7 +23,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledTimeEntry;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledTimeResponse;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UpdateInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UpdateLineItemRequest;
-import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
@@ -64,7 +64,7 @@ public class InvoiceService {
   private final OrganizationRepository organizationRepository;
   private final ProjectRepository projectRepository;
   private final TaskRepository taskRepository;
-  private final MemberRepository memberRepository;
+  private final MemberNameResolver memberNameResolver;
   private final InvoiceNumberService invoiceNumberService;
   private final PaymentProvider paymentProvider;
   private final EntityManager entityManager;
@@ -82,7 +82,7 @@ public class InvoiceService {
       OrganizationRepository organizationRepository,
       ProjectRepository projectRepository,
       TaskRepository taskRepository,
-      MemberRepository memberRepository,
+      MemberNameResolver memberNameResolver,
       InvoiceNumberService invoiceNumberService,
       PaymentProvider paymentProvider,
       EntityManager entityManager,
@@ -98,7 +98,7 @@ public class InvoiceService {
     this.organizationRepository = organizationRepository;
     this.projectRepository = projectRepository;
     this.taskRepository = taskRepository;
-    this.memberRepository = memberRepository;
+    this.memberNameResolver = memberNameResolver;
     this.invoiceNumberService = invoiceNumberService;
     this.paymentProvider = paymentProvider;
     this.entityManager = entityManager;
@@ -1017,7 +1017,7 @@ public class InvoiceService {
 
   private String resolveActorName(UUID memberId) {
     if (memberId == null) return "System";
-    return memberRepository.findById(memberId).map(m -> m.getName()).orElse("Unknown");
+    return memberNameResolver.resolveName(memberId);
   }
 
   private void recalculateInvoiceTotals(Invoice invoice) {
@@ -1062,9 +1062,7 @@ public class InvoiceService {
             .filter(Objects::nonNull)
             .distinct()
             .toList();
-    if (ids.isEmpty()) return Map.of();
-    return memberRepository.findAllById(ids).stream()
-        .collect(Collectors.toMap(m -> m.getId(), m -> m.getName(), (a, b) -> a));
+    return memberNameResolver.resolveNames(ids);
   }
 
   private String buildTimeEntryDescription(
@@ -1078,11 +1076,7 @@ public class InvoiceService {
     }
 
     if (timeEntry.getMemberId() != null) {
-      memberName =
-          memberRepository
-              .findById(timeEntry.getMemberId())
-              .map(m -> m.getName())
-              .orElse("Unknown");
+      memberName = memberNameResolver.resolveName(timeEntry.getMemberId());
     }
 
     return taskTitle + " -- " + timeEntry.getDate() + " -- " + memberName;

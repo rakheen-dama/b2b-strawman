@@ -2,8 +2,7 @@ package io.b2mash.b2b.b2bstrawman.timeentry;
 
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
-import io.b2mash.b2b.b2bstrawman.member.Member;
-import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -33,15 +32,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class TimeEntryController {
 
   private final TimeEntryService timeEntryService;
-  private final MemberRepository memberRepository;
+  private final MemberNameResolver memberNameResolver;
   private final InvoiceRepository invoiceRepository;
 
   public TimeEntryController(
       TimeEntryService timeEntryService,
-      MemberRepository memberRepository,
+      MemberNameResolver memberNameResolver,
       InvoiceRepository invoiceRepository) {
     this.timeEntryService = timeEntryService;
-    this.memberRepository = memberRepository;
+    this.memberNameResolver = memberNameResolver;
     this.invoiceRepository = invoiceRepository;
   }
 
@@ -143,15 +142,7 @@ public class TimeEntryController {
   private Map<UUID, String> resolveNames(List<TimeEntry> entries) {
     var ids =
         entries.stream().map(TimeEntry::getMemberId).filter(Objects::nonNull).distinct().toList();
-
-    if (ids.isEmpty()) {
-      return Map.of();
-    }
-
-    return memberRepository.findAllById(ids).stream()
-        .collect(
-            Collectors.toMap(
-                Member::getId, m -> m.getName() != null ? m.getName() : "", (a, b) -> a));
+    return memberNameResolver.resolveNames(ids);
   }
 
   /**

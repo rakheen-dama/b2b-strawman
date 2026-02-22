@@ -8,7 +8,7 @@ import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
-import io.b2mash.b2b.b2bstrawman.member.Member;
+import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
@@ -51,6 +51,7 @@ public class RecurringScheduleService {
   private final ProjectTemplateRepository templateRepository;
   private final CustomerRepository customerRepository;
   private final MemberRepository memberRepository;
+  private final MemberNameResolver memberNameResolver;
   private final PeriodCalculator periodCalculator;
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
@@ -64,6 +65,7 @@ public class RecurringScheduleService {
       ProjectTemplateRepository templateRepository,
       CustomerRepository customerRepository,
       MemberRepository memberRepository,
+      MemberNameResolver memberNameResolver,
       PeriodCalculator periodCalculator,
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
@@ -75,6 +77,7 @@ public class RecurringScheduleService {
     this.templateRepository = templateRepository;
     this.customerRepository = customerRepository;
     this.memberRepository = memberRepository;
+    this.memberNameResolver = memberNameResolver;
     this.periodCalculator = periodCalculator;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
@@ -715,11 +718,7 @@ public class RecurringScheduleService {
             .filter(Objects::nonNull)
             .distinct()
             .toList();
-    if (ids.isEmpty()) return Map.of();
-    return memberRepository.findAllById(ids).stream()
-        .collect(
-            Collectors.toMap(
-                Member::getId, m -> m.getName() != null ? m.getName() : "", (a, b) -> a));
+    return memberNameResolver.resolveNames(ids);
   }
 
   private Map<UUID, String> resolveProjectNames(List<ScheduleExecution> executions) {
@@ -748,7 +747,7 @@ public class RecurringScheduleService {
     if (memberId == null) {
       return null;
     }
-    return memberRepository.findById(memberId).map(m -> m.getName()).orElse(null);
+    return memberNameResolver.resolveNameOrNull(memberId);
   }
 
   private void publishSchedulePausedEvent(

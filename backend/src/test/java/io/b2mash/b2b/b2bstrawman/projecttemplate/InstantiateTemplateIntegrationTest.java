@@ -1,12 +1,12 @@
 package io.b2mash.b2b.b2bstrawman.projecttemplate;
 
+import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
@@ -112,7 +112,7 @@ class InstantiateTemplateIntegrationTest {
               transactionTemplate.execute(
                   tx ->
                       customerRepository.saveAndFlush(
-                          new Customer("Acme Corp", "acme@test.com", null, null, null, memberId)));
+                          createActiveCustomer("Acme Corp", "acme@test.com", memberId)));
 
           var template =
               transactionTemplate.execute(
@@ -142,8 +142,7 @@ class InstantiateTemplateIntegrationTest {
               transactionTemplate.execute(
                   tx ->
                       customerRepository.saveAndFlush(
-                          new Customer(
-                              "Linked Customer", "linked@test.com", null, null, null, memberId)));
+                          createActiveCustomer("Linked Customer", "linked@test.com", memberId)));
           var template =
               transactionTemplate.execute(
                   tx ->

@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
+import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -7,7 +8,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -78,13 +78,7 @@ class InvoiceIntegrationTest {
                 transactionTemplate.executeWithoutResult(
                     tx -> {
                       var customer =
-                          new Customer(
-                              "Acme Corp",
-                              "acme@test.com",
-                              "+1-555-0100",
-                              "ACM-001",
-                              "Test customer",
-                              memberIdOwner);
+                          createActiveCustomer("Acme Corp", "acme@test.com", memberIdOwner);
                       customer = customerRepository.save(customer);
                       customerId = customer.getId();
                     }));
@@ -115,13 +109,7 @@ class InvoiceIntegrationTest {
                 transactionTemplate.executeWithoutResult(
                     tx -> {
                       var customer =
-                          new Customer(
-                              "Beta Inc",
-                              "beta@test.com",
-                              "+1-555-0200",
-                              "BET-001",
-                              "Test customer B",
-                              memberIdOwnerB);
+                          createActiveCustomer("Beta Inc", "beta@test.com", memberIdOwnerB);
                       customer = customerRepository.save(customer);
                       customerIdB = customer.getId();
                     }));

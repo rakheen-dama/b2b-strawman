@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.projecttemplate;
 
+import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -11,7 +12,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
@@ -349,13 +349,8 @@ class ProjectTemplateControllerTest {
 
                       var customer =
                           customerRepository.saveAndFlush(
-                              new Customer(
-                                  "Schedule Cust",
-                                  "sched_cust@test.com",
-                                  null,
-                                  null,
-                                  null,
-                                  ownerMemberId));
+                              createActiveCustomer(
+                                  "Schedule Cust", "sched_cust@test.com", ownerMemberId));
 
                       scheduleRepository.saveAndFlush(
                           new RecurringSchedule(

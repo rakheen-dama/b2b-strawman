@@ -1,12 +1,12 @@
 package io.b2mash.b2b.b2bstrawman.projecttemplate;
 
+import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -219,8 +219,7 @@ class ProjectTemplateServiceTest {
 
                     var customer =
                         customerRepository.saveAndFlush(
-                            new Customer(
-                                "Schedule Customer", "cust@test.com", null, null, null, memberId));
+                            createActiveCustomer("Schedule Customer", "cust@test.com", memberId));
 
                     scheduleRepository.saveAndFlush(
                         new RecurringSchedule(

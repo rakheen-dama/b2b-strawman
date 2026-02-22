@@ -1,11 +1,11 @@
 package io.b2mash.b2b.b2bstrawman.datarequest;
 
+import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.member.MemberSyncService;
@@ -72,13 +72,7 @@ class DataSubjectRequestServiceTest {
         runInTenant(
             () -> {
               var customer =
-                  new Customer(
-                      "DSR Test Customer",
-                      "dsr-customer@test.com",
-                      "+1-555-0100",
-                      "DSR-001",
-                      "Test customer for DSR",
-                      memberId);
+                  createActiveCustomer("DSR Test Customer", "dsr-customer@test.com", memberId);
               customer = customerRepository.save(customer);
               return customer.getId();
             });

@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.view;
 
+import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -8,7 +9,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -133,19 +133,13 @@ class ViewFilterIntegrationTest {
 
                   // Create customers
                   var c1 =
-                      new Customer(
-                          "Active Customer", "active_vf@test.com", null, null, null, memberIdOwner);
+                      createActiveCustomer("Active Customer", "active_vf@test.com", memberIdOwner);
                   c1 = customerRepository.saveAndFlush(c1);
                   customerActiveId = c1.getId();
 
                   var c2 =
-                      new Customer(
-                          "Archived Customer",
-                          "archived_vf@test.com",
-                          null,
-                          null,
-                          null,
-                          memberIdOwner);
+                      createActiveCustomer(
+                          "Archived Customer", "archived_vf@test.com", memberIdOwner);
                   c2.archive();
                   c2 = customerRepository.saveAndFlush(c2);
                   customerArchivedId = c2.getId();

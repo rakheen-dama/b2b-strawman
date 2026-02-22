@@ -1,11 +1,11 @@
 package io.b2mash.b2b.b2bstrawman.projecttemplate;
 
+import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -187,13 +187,7 @@ class V30MigrationTest {
                   template = projectTemplateRepository.saveAndFlush(template);
 
                   var customer =
-                      new Customer(
-                          "Schedule Test Customer",
-                          "schedule@test.com",
-                          null,
-                          null,
-                          null,
-                          memberId);
+                      createActiveCustomer("Schedule Test Customer", "schedule@test.com", memberId);
                   customer = customerRepository.saveAndFlush(customer);
 
                   var schedule =
@@ -237,13 +231,8 @@ class V30MigrationTest {
                   template = projectTemplateRepository.saveAndFlush(template);
 
                   var customer =
-                      new Customer(
-                          "Execution Test Customer",
-                          "execution@test.com",
-                          null,
-                          null,
-                          null,
-                          memberId);
+                      createActiveCustomer(
+                          "Execution Test Customer", "execution@test.com", memberId);
                   customer = customerRepository.saveAndFlush(customer);
 
                   var schedule =

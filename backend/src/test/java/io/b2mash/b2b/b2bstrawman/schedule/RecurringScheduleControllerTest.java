@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.schedule;
 
+import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -11,7 +12,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -109,8 +109,7 @@ class RecurringScheduleControllerTest {
 
                       var customer =
                           customerRepository.saveAndFlush(
-                              new Customer(
-                                  "Acme Corp", "acme@test.com", null, null, null, ownerMemberId));
+                              createActiveCustomer("Acme Corp", "acme@test.com", ownerMemberId));
                       customerId = customer.getId();
 
                       var activeSchedule =

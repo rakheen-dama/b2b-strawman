@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.checklist;
 
+import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -561,12 +562,9 @@ class ChecklistInstanceAdvancedTest {
   private UUID createCustomer() {
     emailCounter++;
     var customer =
-        new Customer(
+        createActiveCustomer(
             "Test Customer " + emailCounter,
             "adv_test_customer_" + emailCounter + "@test.com",
-            null,
-            null,
-            null,
             memberId);
     return customerRepository.save(customer).getId();
   }

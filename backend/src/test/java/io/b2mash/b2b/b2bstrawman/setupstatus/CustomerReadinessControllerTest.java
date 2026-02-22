@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.setupstatus;
 
+import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -178,13 +179,8 @@ class CustomerReadinessControllerTest {
                 transactionTemplate.executeWithoutResult(
                     tx -> {
                       var customer =
-                          new Customer(
-                              "Tenant B Customer",
-                              "tenantb@readiness.com",
-                              null,
-                              null,
-                              null,
-                              memberIdOwnerB);
+                          createActiveCustomer(
+                              "Tenant B Customer", "tenantb@readiness.com", memberIdOwnerB);
                       customer = customerRepository.save(customer);
                       customerIdB = customer.getId();
                     }));

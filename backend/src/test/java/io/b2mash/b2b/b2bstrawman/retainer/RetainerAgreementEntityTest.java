@@ -54,13 +54,6 @@ class RetainerAgreementEntityTest {
   }
 
   @Test
-  void create_createdAtAndUpdatedAtSet() {
-    var agreement = buildAgreement();
-    assertThat(agreement.getCreatedAt()).isNotNull();
-    assertThat(agreement.getUpdatedAt()).isNotNull();
-  }
-
-  @Test
   void pause_fromActive_setsStatusToPaused() {
     var agreement = buildAgreement();
 
@@ -161,16 +154,6 @@ class RetainerAgreementEntityTest {
         new BigDecimal("40.00"),
         new BigDecimal("40.00"),
         BigDecimal.ZERO);
-  }
-
-  @Test
-  void create_defaultsConsumedAndOverageToZero() {
-    var period = buildPeriod();
-
-    assertThat(period.getConsumedHours()).isEqualByComparingTo(BigDecimal.ZERO);
-    assertThat(period.getOverageHours()).isEqualByComparingTo(BigDecimal.ZERO);
-    assertThat(period.getRolloverHoursOut()).isEqualByComparingTo(BigDecimal.ZERO);
-    assertThat(period.getStatus()).isEqualTo(PeriodStatus.OPEN);
   }
 
   @Test

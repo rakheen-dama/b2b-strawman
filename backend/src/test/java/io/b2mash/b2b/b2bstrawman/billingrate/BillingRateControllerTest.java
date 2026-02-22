@@ -435,6 +435,29 @@ class BillingRateControllerTest {
         .andExpect(jsonPath("$.hourlyRate").isEmpty());
   }
 
+  @Test
+  @Order(15)
+  void postWithBothProjectAndCustomerReturns400() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/billing-rates")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "memberId": "%s",
+                      "projectId": "%s",
+                      "customerId": "%s",
+                      "currency": "USD",
+                      "hourlyRate": 100.00,
+                      "effectiveFrom": "2025-01-01"
+                    }
+                    """
+                        .formatted(memberIdOwner, projectId, customerId)))
+        .andExpect(status().isBadRequest());
+  }
+
   // --- Helpers ---
 
   private String syncMember(

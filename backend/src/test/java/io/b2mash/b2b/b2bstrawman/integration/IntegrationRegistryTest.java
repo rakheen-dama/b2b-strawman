@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingProvider;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingSyncResult;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.CustomerSyncRequest;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.InvoiceSyncRequest;
+import io.b2mash.b2b.b2bstrawman.integration.signing.DocumentSigningProvider;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import java.util.Map;
 import java.util.Optional;
@@ -217,6 +218,47 @@ class IntegrationRegistryTest {
       var providers = registry.availableProviders(IntegrationDomain.AI);
 
       assertThat(providers).isEmpty();
+    }
+
+    @Test
+    void resolveThrowsWhenAdapterDoesNotImplementPortInterface() {
+      var noopAdapter = new TestNoOpAccountingAdapter();
+      var xeroAdapter = new TestXeroAdapter();
+      var repo = mock(OrgIntegrationRepository.class);
+
+      var enabledIntegration = new OrgIntegration(IntegrationDomain.ACCOUNTING, "xero");
+      enabledIntegration.enable();
+
+      when(repo.findByDomain(IntegrationDomain.ACCOUNTING))
+          .thenReturn(Optional.of(enabledIntegration));
+
+      var registry =
+          buildRegistry(Map.of("noopAccounting", noopAdapter, "xeroAccounting", xeroAdapter), repo);
+
+      ScopedValue.where(RequestScopes.TENANT_ID, "tenant_test_schema")
+          .run(
+              () -> {
+                // xeroAdapter implements AccountingProvider, not DocumentSigningProvider
+                assertThatThrownBy(
+                        () ->
+                            registry.resolve(
+                                IntegrationDomain.ACCOUNTING, DocumentSigningProvider.class))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("does not implement");
+              });
+    }
+
+    @Test
+    void resolveThrowsWhenTenantIdNotBound() {
+      var noopAdapter = new TestNoOpAccountingAdapter();
+      var repo = mock(OrgIntegrationRepository.class);
+      var registry = buildRegistry(Map.of("noopAccounting", noopAdapter), repo);
+
+      // Call resolve() outside of any ScopedValue binding
+      assertThatThrownBy(
+              () -> registry.resolve(IntegrationDomain.ACCOUNTING, AccountingProvider.class))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("tenant-scoped context");
     }
   }
 }

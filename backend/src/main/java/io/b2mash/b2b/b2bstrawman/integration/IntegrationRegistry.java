@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -33,7 +34,8 @@ public class IntegrationRegistry {
         .getBeansWithAnnotation(IntegrationAdapter.class)
         .forEach(
             (name, bean) -> {
-              var annotation = bean.getClass().getAnnotation(IntegrationAdapter.class);
+              var annotation =
+                  AnnotationUtils.findAnnotation(bean.getClass(), IntegrationAdapter.class);
               var slugMap =
                   adapterMap.computeIfAbsent(annotation.domain(), k -> new ConcurrentHashMap<>());
               var existing = slugMap.putIfAbsent(annotation.slug(), bean);
@@ -57,6 +59,9 @@ public class IntegrationRegistry {
    */
   @SuppressWarnings("unchecked")
   public <T> T resolve(IntegrationDomain domain, Class<T> portInterface) {
+    if (!RequestScopes.TENANT_ID.isBound()) {
+      throw new IllegalStateException("resolve() must be called within a tenant-scoped context");
+    }
     var tenantSchema = RequestScopes.TENANT_ID.get();
     var cacheKey = tenantSchema + ":" + domain.name();
 
@@ -75,13 +80,21 @@ public class IntegrationRegistry {
 
     if (entry == OrgIntegrationCacheEntry.EMPTY || !entry.enabled()) {
       // Return NoOp adapter (slug = "noop")
-      return (T) slugMap.get("noop");
+      var noop = slugMap.get("noop");
+      if (noop == null) {
+        throw new IllegalStateException("No noop adapter registered for domain " + domain);
+      }
+      return (T) noop;
     }
 
     var adapter = slugMap.get(entry.providerSlug());
     if (adapter == null) {
       // Configured slug has no registered adapter -- fall back to NoOp
-      return (T) slugMap.get("noop");
+      var noop = slugMap.get("noop");
+      if (noop == null) {
+        throw new IllegalStateException("No noop adapter registered for domain " + domain);
+      }
+      return (T) noop;
     }
 
     if (!portInterface.isInstance(adapter)) {

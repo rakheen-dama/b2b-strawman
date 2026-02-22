@@ -84,38 +84,77 @@ class IntegrationRegistryIntegrationTest {
   void evictClearsCacheEntry() {
     runInTenant(
         () -> {
-          // First resolve caches EMPTY
+          // First resolve with no DB row -- caches EMPTY sentinel, returns noop
           var result =
               integrationRegistry.resolve(IntegrationDomain.ACCOUNTING, AccountingProvider.class);
           assertThat(result).isInstanceOf(NoOpAccountingProvider.class);
 
-          // Save an enabled OrgIntegration with slug "noop"
+          // Insert an enabled integration with a slug that has no registered adapter.
+          // This will change the resolve path: instead of EMPTY -> noop, it goes through
+          // "configured slug not found" -> noop fallback. Without eviction, the cache
+          // still holds EMPTY so the DB change is invisible.
           transactionTemplate.executeWithoutResult(
               status -> {
-                var integration = new OrgIntegration(IntegrationDomain.ACCOUNTING, "noop");
+                var integration =
+                    new OrgIntegration(IntegrationDomain.ACCOUNTING, "nonexistent-provider");
                 integration.enable();
                 orgIntegrationRepository.save(integration);
               });
 
-          // Still returns noop (cached EMPTY)
+          // Without eviction, the cached EMPTY sentinel is still served
           var result2 =
               integrationRegistry.resolve(IntegrationDomain.ACCOUNTING, AccountingProvider.class);
           assertThat(result2).isInstanceOf(NoOpAccountingProvider.class);
 
-          // Evict and resolve again -- should load fresh from DB
+          // Evict the cache entry
           integrationRegistry.evict(tenantSchema, IntegrationDomain.ACCOUNTING);
 
+          // Now resolve again -- the cache is cleared so it hits the DB,
+          // finds the enabled integration, and returns noop via the
+          // "adapter not found for slug" fallback path.
           var result3 =
               integrationRegistry.resolve(IntegrationDomain.ACCOUNTING, AccountingProvider.class);
           assertThat(result3).isInstanceOf(NoOpAccountingProvider.class);
 
-          // Clean up
+          // Now disable the integration and evict again -- the DB read should find
+          // a disabled integration, returning noop via the "disabled" path.
+          transactionTemplate.executeWithoutResult(
+              status -> {
+                orgIntegrationRepository
+                    .findByDomain(IntegrationDomain.ACCOUNTING)
+                    .ifPresent(
+                        integration -> {
+                          integration.disable();
+                          orgIntegrationRepository.save(integration);
+                        });
+              });
+
+          // Without eviction: still serves the previous cached entry (enabled +
+          // nonexistent-provider)
+          var result4 =
+              integrationRegistry.resolve(IntegrationDomain.ACCOUNTING, AccountingProvider.class);
+          assertThat(result4).isInstanceOf(NoOpAccountingProvider.class);
+
+          // Evict and verify the disabled state is now reflected
+          integrationRegistry.evict(tenantSchema, IntegrationDomain.ACCOUNTING);
+
+          var result5 =
+              integrationRegistry.resolve(IntegrationDomain.ACCOUNTING, AccountingProvider.class);
+          assertThat(result5).isInstanceOf(NoOpAccountingProvider.class);
+
+          // Finally, delete the integration and evict to confirm we're back to the
+          // EMPTY sentinel path
           transactionTemplate.executeWithoutResult(
               status -> {
                 orgIntegrationRepository
                     .findByDomain(IntegrationDomain.ACCOUNTING)
                     .ifPresent(orgIntegrationRepository::delete);
               });
+          integrationRegistry.evict(tenantSchema, IntegrationDomain.ACCOUNTING);
+
+          var result6 =
+              integrationRegistry.resolve(IntegrationDomain.ACCOUNTING, AccountingProvider.class);
+          assertThat(result6).isInstanceOf(NoOpAccountingProvider.class);
         });
   }
 

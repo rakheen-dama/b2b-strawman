@@ -7,6 +7,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
@@ -50,34 +52,38 @@ public class OrgIntegration {
     this.domain = domain;
     this.providerSlug = providerSlug;
     this.enabled = false;
+  }
+
+  @PrePersist
+  void onPrePersist() {
     this.createdAt = Instant.now();
+    this.updatedAt = Instant.now();
+  }
+
+  @PreUpdate
+  void onPreUpdate() {
     this.updatedAt = Instant.now();
   }
 
   public void updateProvider(String providerSlug, String configJson) {
     this.providerSlug = providerSlug;
     this.configJson = configJson;
-    this.updatedAt = Instant.now();
   }
 
   public void setKeySuffix(String keySuffix) {
     this.keySuffix = keySuffix;
-    this.updatedAt = Instant.now();
   }
 
   public void clearKeySuffix() {
     this.keySuffix = null;
-    this.updatedAt = Instant.now();
   }
 
   public void enable() {
     this.enabled = true;
-    this.updatedAt = Instant.now();
   }
 
   public void disable() {
     this.enabled = false;
-    this.updatedAt = Instant.now();
   }
 
   public UUID getId() {

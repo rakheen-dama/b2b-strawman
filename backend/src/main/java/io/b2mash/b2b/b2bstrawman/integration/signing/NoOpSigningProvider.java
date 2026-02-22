@@ -1,6 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.integration.signing;
 
 import io.b2mash.b2b.b2bstrawman.integration.ConnectionTestResult;
+import io.b2mash.b2b.b2bstrawman.integration.IntegrationAdapter;
+import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
 import java.time.Instant;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -8,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
+@IntegrationAdapter(domain = IntegrationDomain.DOCUMENT_SIGNING, slug = "noop")
 public class NoOpSigningProvider implements DocumentSigningProvider {
 
   private static final Logger log = LoggerFactory.getLogger(NoOpSigningProvider.class);

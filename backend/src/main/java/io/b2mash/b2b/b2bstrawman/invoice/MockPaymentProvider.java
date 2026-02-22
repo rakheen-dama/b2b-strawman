@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
+import io.b2mash.b2b.b2bstrawman.integration.IntegrationAdapter;
+import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @ConditionalOnProperty(name = "payment.provider", havingValue = "mock", matchIfMissing = true)
+@IntegrationAdapter(domain = IntegrationDomain.PAYMENT, slug = "mock")
 public class MockPaymentProvider implements PaymentProvider {
 
   private static final Logger log = LoggerFactory.getLogger(MockPaymentProvider.class);

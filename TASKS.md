@@ -176,7 +176,7 @@
 | 147 | Integration Port Interfaces + NoOp Stubs | Backend | — | M | 147A, 147B | **Done** (PRs #305, #306) |
 | 148 | OrgIntegration Entity + IntegrationRegistry + BYOAK Infrastructure | Backend | 147 | M | 148A, 148B | **Done** (PRs #307, #308) |
 | 149 | Feature Flags + IntegrationGuardService | Backend | — | S | 149A | **Done** (PR #309) |
-| 150 | Integration Management API (Controller + Service) | Backend | 146, 148 | M | 150A, 150B | 150A **Done** (PR #310) |
+| 150 | Integration Management API (Controller + Service) | Backend | 146, 148 | M | 150A, 150B | **Done** (PRs #310, #311) |
 | 151 | Audit Integration for Config Events | Backend | 150 | S | 151A | |
 | 152 | Integrations Settings UI | Frontend | 149, 150 | M | 152A, 152B | |
 

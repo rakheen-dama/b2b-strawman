@@ -27,7 +27,7 @@ After this phase, adding any vendor adapter (Xero, OpenAI, DocuSign, Stripe) is 
 | 147 | Integration Port Interfaces + NoOp Stubs | Backend | — | M | 147A, 147B | **Done** (PRs #305, #306) |
 | 148 | OrgIntegration Entity + IntegrationRegistry + BYOAK Infrastructure | Backend | 147 | M | 148A, 148B | **Done** (PRs #307, #308) |
 | 149 | Feature Flags + IntegrationGuardService | Backend | — | S | 149A | **Done** (PR #309) |
-| 150 | Integration Management API (Controller + Service) | Backend | 146, 148 | M | 150A, 150B | |
+| 150 | Integration Management API (Controller + Service) | Backend | 146, 148 | M | 150A, 150B | **Done** (PRs #310, #311) |
 | 151 | Audit Integration for Config Events | Backend | 150 | S | 151A | |
 | 152 | Integrations Settings UI | Frontend | 149, 150 | M | 152A, 152B | |
 
@@ -108,7 +108,7 @@ After this phase, adding any vendor adapter (Xero, OpenAI, DocuSign, Stripe) is 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 4a | Epic 150 | 150A | `IntegrationService` (upsert, set-key, test, toggle, key-delete). Depends on 146A (SecretStore) and 148B (IntegrationRegistry). | **Done** (PR #310) |
-| 4b | Epic 150 | 150B | `IntegrationController` + request/response DTOs + `@PreAuthorize` security. Depends on 150A. |
+| 4b | Epic 150 | 150B | `IntegrationController` + request/response DTOs + `@PreAuthorize` security. Depends on 150A. | **Done** (PR #311) |
 
 ### Stage 5: Parallel finishers
 
@@ -490,7 +490,7 @@ Stage 6: [152B]                                        (after 152A)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **150A** | 150.1–150.6 | `IntegrationService` with all domain operations: upsert, set-key, delete-key, test, toggle + cache eviction. ~2 new files. | **Done** (PR #310) |
-| **150B** | 150.7–150.12 | `IntegrationController` + request/response DTOs + `@PreAuthorize` + MockMvc integration tests for all 7 endpoints. ~2 new files (1 test file). | |
+| **150B** | 150.7–150.12 | `IntegrationController` + request/response DTOs + `@PreAuthorize` + MockMvc integration tests for all 7 endpoints. ~2 new files (1 test file). | **Done** (PR #311) |
 
 ### Tasks
 

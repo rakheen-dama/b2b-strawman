@@ -25,7 +25,7 @@ After this phase, adding any vendor adapter (Xero, OpenAI, DocuSign, Stripe) is 
 | 145 | StorageService Port + S3 Refactoring | Backend | — | M | 145A, 145B | **Done** (PRs #302, #303) |
 | 146 | SecretStore Port + Encrypted Database Implementation | Backend | — | S | 146A | **Done** (PR #304) |
 | 147 | Integration Port Interfaces + NoOp Stubs | Backend | — | M | 147A, 147B | **Done** (PRs #305, #306) |
-| 148 | OrgIntegration Entity + IntegrationRegistry + BYOAK Infrastructure | Backend | 147 | M | 148A, 148B | |
+| 148 | OrgIntegration Entity + IntegrationRegistry + BYOAK Infrastructure | Backend | 147 | M | 148A, 148B | **Done** (PRs #307, #308) |
 | 149 | Feature Flags + IntegrationGuardService | Backend | — | S | 149A | |
 | 150 | Integration Management API (Controller + Service) | Backend | 146, 148 | M | 150A, 150B | |
 | 151 | Audit Integration for Config Events | Backend | 150 | S | 151A | |
@@ -101,7 +101,7 @@ After this phase, adding any vendor adapter (Xero, OpenAI, DocuSign, Stripe) is 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 3a | Epic 148 | 148A | V36 migration (`org_integrations` table) + `OrgIntegration` entity + `OrgIntegrationRepository` + `@IntegrationAdapter` annotation. Depends on 147B (IntegrationDomain enum must exist). | **Done** (PR #307) |
-| 3b | Epic 148 | 148B | `IntegrationRegistry` component (startup bean discovery, Caffeine cache, `resolve()`, `evict()`). Also annotates `MockPaymentProvider` with `@IntegrationAdapter`. Depends on 148A. |
+| 3b | Epic 148 | 148B | `IntegrationRegistry` component (startup bean discovery, Caffeine cache, `resolve()`, `evict()`). Also annotates `MockPaymentProvider` with `@IntegrationAdapter`. Depends on 148A. | **Done** (PR #308) |
 
 ### Stage 4: API layer
 
@@ -365,7 +365,7 @@ Stage 6: [152B]                                        (after 152A)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **148A** | 148.1–148.5 | V36 migration (`org_integrations` table) + `OrgIntegration` entity + `OrgIntegrationRepository` + `@IntegrationAdapter` annotation + annotate the 4 NoOp/stub adapters. ~5 new files, 4 modified. | **Done** (PR #307) |
-| **148B** | 148.6–148.11 | `IntegrationRegistry` component (startup bean discovery, Caffeine cache, `resolve()`, `evict()`, `availableProviders()`) + unit tests for registry behavior. ~2 new files. | |
+| **148B** | 148.6–148.11 | `IntegrationRegistry` component (startup bean discovery, Caffeine cache, `resolve()`, `evict()`, `availableProviders()`) + unit tests for registry behavior. ~2 new files. | **Done** (PR #308) |
 
 ### Tasks
 

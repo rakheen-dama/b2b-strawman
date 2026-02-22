@@ -16,7 +16,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.PresignedUrl;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
-import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccess;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import java.lang.reflect.Field;
@@ -42,7 +42,7 @@ class DocumentServiceTest {
   @Mock private StorageService storageService;
   @Mock private AuditService auditService;
   @Mock private ApplicationEventPublisher eventPublisher;
-  @Mock private MemberRepository memberRepository;
+  @Mock private MemberNameResolver memberNameResolver;
   @InjectMocks private DocumentService service;
 
   private static final UUID PROJECT_ID = UUID.randomUUID();

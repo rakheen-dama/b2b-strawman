@@ -14,7 +14,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
-import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
@@ -44,7 +44,7 @@ public class TimeEntryService {
   private final BillingRateService billingRateService;
   private final CostRateService costRateService;
   private final BudgetCheckService budgetCheckService;
-  private final MemberRepository memberRepository;
+  private final MemberNameResolver memberNameResolver;
   private final CustomerLifecycleGuard customerLifecycleGuard;
   private final CustomerProjectRepository customerProjectRepository;
   private final CustomerRepository customerRepository;
@@ -58,7 +58,7 @@ public class TimeEntryService {
       BillingRateService billingRateService,
       CostRateService costRateService,
       BudgetCheckService budgetCheckService,
-      MemberRepository memberRepository,
+      MemberNameResolver memberNameResolver,
       CustomerLifecycleGuard customerLifecycleGuard,
       CustomerProjectRepository customerProjectRepository,
       CustomerRepository customerRepository,
@@ -70,7 +70,7 @@ public class TimeEntryService {
     this.billingRateService = billingRateService;
     this.costRateService = costRateService;
     this.budgetCheckService = budgetCheckService;
-    this.memberRepository = memberRepository;
+    this.memberNameResolver = memberNameResolver;
     this.customerLifecycleGuard = customerLifecycleGuard;
     this.customerProjectRepository = customerProjectRepository;
     this.customerRepository = customerRepository;
@@ -152,7 +152,7 @@ public class TimeEntryService {
             .build());
 
     // Check budget thresholds after time entry creation
-    var actorName = memberRepository.findById(memberId).map(m -> m.getName()).orElse("Unknown");
+    var actorName = memberNameResolver.resolveName(memberId);
     var tenantId = RequestScopes.getTenantIdOrNull();
     var orgId = RequestScopes.getOrgIdOrNull();
     budgetCheckService.checkAndAlert(task.getProjectId(), memberId, actorName, tenantId, orgId);
@@ -223,7 +223,7 @@ public class TimeEntryService {
             .build());
 
     // Check budget thresholds after billable toggle (affects budget consumption)
-    var actorName = memberRepository.findById(memberId).map(m -> m.getName()).orElse("Unknown");
+    var actorName = memberNameResolver.resolveName(memberId);
     var tenantId = RequestScopes.getTenantIdOrNull();
     var orgId = RequestScopes.getOrgIdOrNull();
     budgetCheckService.checkAndAlert(task.getProjectId(), memberId, actorName, tenantId, orgId);
@@ -396,7 +396,7 @@ public class TimeEntryService {
     boolean durationChanged = durationMinutes != null && oldDurationMinutes != durationMinutes;
     boolean billableChanged = billable != null && !billable.equals(oldBillable);
     if (dateChanged || durationChanged || billableChanged) {
-      var actorName = memberRepository.findById(memberId).map(m -> m.getName()).orElse("Unknown");
+      var actorName = memberNameResolver.resolveName(memberId);
       var tenantId = RequestScopes.getTenantIdOrNull();
       var orgId = RequestScopes.getOrgIdOrNull();
       budgetCheckService.checkAndAlert(task.getProjectId(), memberId, actorName, tenantId, orgId);

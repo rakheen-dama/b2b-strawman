@@ -4,8 +4,7 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
-import io.b2mash.b2b.b2bstrawman.member.Member;
-import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -39,7 +38,7 @@ public class DataRequestController {
   private final DataExportService dataExportService;
   private final DataAnonymizationService dataAnonymizationService;
   private final CustomerRepository customerRepository;
-  private final MemberRepository memberRepository;
+  private final MemberNameResolver memberNameResolver;
   private final StorageService storageService;
 
   public DataRequestController(
@@ -47,13 +46,13 @@ public class DataRequestController {
       DataExportService dataExportService,
       DataAnonymizationService dataAnonymizationService,
       CustomerRepository customerRepository,
-      MemberRepository memberRepository,
+      MemberNameResolver memberNameResolver,
       StorageService storageService) {
     this.dataSubjectRequestService = dataSubjectRequestService;
     this.dataExportService = dataExportService;
     this.dataAnonymizationService = dataAnonymizationService;
     this.customerRepository = customerRepository;
-    this.memberRepository = memberRepository;
+    this.memberNameResolver = memberNameResolver;
     this.storageService = storageService;
   }
 
@@ -196,11 +195,7 @@ public class DataRequestController {
             .filter(Objects::nonNull)
             .distinct()
             .toList();
-    if (ids.isEmpty()) return Map.of();
-    return memberRepository.findAllById(ids).stream()
-        .collect(
-            Collectors.toMap(
-                Member::getId, m -> m.getName() != null ? m.getName() : "", (a, b) -> a));
+    return memberNameResolver.resolveNames(ids);
   }
 
   // DTOs

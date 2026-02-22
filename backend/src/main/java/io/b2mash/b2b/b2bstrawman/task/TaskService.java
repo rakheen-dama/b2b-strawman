@@ -14,7 +14,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMemberRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
-import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -43,7 +43,7 @@ public class TaskService {
   private final ProjectMemberRepository projectMemberRepository;
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
-  private final MemberRepository memberRepository;
+  private final MemberNameResolver memberNameResolver;
   private final CustomFieldValidator customFieldValidator;
   private final FieldGroupRepository fieldGroupRepository;
   private final FieldGroupMemberRepository fieldGroupMemberRepository;
@@ -55,7 +55,7 @@ public class TaskService {
       ProjectMemberRepository projectMemberRepository,
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
-      MemberRepository memberRepository,
+      MemberNameResolver memberNameResolver,
       CustomFieldValidator customFieldValidator,
       FieldGroupRepository fieldGroupRepository,
       FieldGroupMemberRepository fieldGroupMemberRepository,
@@ -65,7 +65,7 @@ public class TaskService {
     this.projectMemberRepository = projectMemberRepository;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
-    this.memberRepository = memberRepository;
+    this.memberNameResolver = memberNameResolver;
     this.customFieldValidator = customFieldValidator;
     this.fieldGroupRepository = fieldGroupRepository;
     this.fieldGroupMemberRepository = fieldGroupMemberRepository;
@@ -567,6 +567,6 @@ public class TaskService {
   }
 
   private String resolveActorName(UUID memberId) {
-    return memberRepository.findById(memberId).map(m -> m.getName()).orElse("Unknown");
+    return memberNameResolver.resolveName(memberId);
   }
 }

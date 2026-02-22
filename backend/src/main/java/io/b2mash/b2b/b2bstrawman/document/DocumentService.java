@@ -13,7 +13,7 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
-import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
@@ -39,7 +39,7 @@ public class DocumentService {
   private final StorageService storageService;
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
-  private final MemberRepository memberRepository;
+  private final MemberNameResolver memberNameResolver;
   private final CustomerLifecycleGuard customerLifecycleGuard;
 
   public DocumentService(
@@ -49,7 +49,7 @@ public class DocumentService {
       StorageService storageService,
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
-      MemberRepository memberRepository,
+      MemberNameResolver memberNameResolver,
       CustomerLifecycleGuard customerLifecycleGuard) {
     this.documentRepository = documentRepository;
     this.projectAccessService = projectAccessService;
@@ -57,7 +57,7 @@ public class DocumentService {
     this.storageService = storageService;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
-    this.memberRepository = memberRepository;
+    this.memberNameResolver = memberNameResolver;
     this.customerLifecycleGuard = customerLifecycleGuard;
   }
 
@@ -406,7 +406,7 @@ public class DocumentService {
   }
 
   private String resolveActorName(UUID memberId) {
-    return memberRepository.findById(memberId).map(m -> m.getName()).orElse("Unknown");
+    return memberNameResolver.resolveName(memberId);
   }
 
   public record UploadInitResult(UUID documentId, String presignedUrl, long expiresInSeconds) {}

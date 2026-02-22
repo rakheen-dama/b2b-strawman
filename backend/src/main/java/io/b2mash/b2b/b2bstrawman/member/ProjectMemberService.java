@@ -26,6 +26,7 @@ public class ProjectMemberService {
 
   private final ProjectMemberRepository projectMemberRepository;
   private final MemberRepository memberRepository;
+  private final MemberNameResolver memberNameResolver;
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
   private final ProjectRepository projectRepository;
@@ -33,11 +34,13 @@ public class ProjectMemberService {
   public ProjectMemberService(
       ProjectMemberRepository projectMemberRepository,
       MemberRepository memberRepository,
+      MemberNameResolver memberNameResolver,
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
       ProjectRepository projectRepository) {
     this.projectMemberRepository = projectMemberRepository;
     this.memberRepository = memberRepository;
+    this.memberNameResolver = memberNameResolver;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
     this.projectRepository = projectRepository;
@@ -196,6 +199,6 @@ public class ProjectMemberService {
   }
 
   private String resolveActorName(UUID memberId) {
-    return memberRepository.findById(memberId).map(m -> m.getName()).orElse("Unknown");
+    return memberNameResolver.resolveName(memberId);
   }
 }

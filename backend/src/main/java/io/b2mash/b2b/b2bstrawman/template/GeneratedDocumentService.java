@@ -7,7 +7,7 @@ import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.event.DocumentGeneratedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
-import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.TemplateDetailResponse;
 import java.time.Instant;
@@ -28,7 +28,7 @@ public class GeneratedDocumentService {
 
   private final GeneratedDocumentRepository generatedDocumentRepository;
   private final DocumentTemplateRepository documentTemplateRepository;
-  private final MemberRepository memberRepository;
+  private final MemberNameResolver memberNameResolver;
   private final PdfRenderingService pdfRenderingService;
   private final DocumentTemplateService documentTemplateService;
   private final StorageService storageService;
@@ -39,7 +39,7 @@ public class GeneratedDocumentService {
   public GeneratedDocumentService(
       GeneratedDocumentRepository generatedDocumentRepository,
       DocumentTemplateRepository documentTemplateRepository,
-      MemberRepository memberRepository,
+      MemberNameResolver memberNameResolver,
       PdfRenderingService pdfRenderingService,
       DocumentTemplateService documentTemplateService,
       StorageService storageService,
@@ -48,7 +48,7 @@ public class GeneratedDocumentService {
       ApplicationEventPublisher eventPublisher) {
     this.generatedDocumentRepository = generatedDocumentRepository;
     this.documentTemplateRepository = documentTemplateRepository;
-    this.memberRepository = memberRepository;
+    this.memberNameResolver = memberNameResolver;
     this.pdfRenderingService = pdfRenderingService;
     this.documentTemplateService = documentTemplateService;
     this.storageService = storageService;
@@ -258,7 +258,7 @@ public class GeneratedDocumentService {
   }
 
   private String resolveActorName(UUID memberId) {
-    return memberRepository.findById(memberId).map(m -> m.getName()).orElse("Unknown");
+    return memberNameResolver.resolveName(memberId);
   }
 
   private GeneratedDocumentListResponse toListResponse(GeneratedDocument gd) {
@@ -284,7 +284,7 @@ public class GeneratedDocumentService {
   }
 
   private String resolveGeneratedByName(UUID memberId) {
-    return memberRepository.findById(memberId).map(m -> m.getName()).orElse("Unknown");
+    return memberNameResolver.resolveName(memberId);
   }
 
   /**

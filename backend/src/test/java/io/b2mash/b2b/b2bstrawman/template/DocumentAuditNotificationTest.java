@@ -29,17 +29,8 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.testcontainers.containers.localstack.LocalStackContainer;
-import org.testcontainers.utility.DockerImageName;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.S3Configuration;
-import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -50,27 +41,6 @@ class DocumentAuditNotificationTest {
 
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_audit_notif_test";
-  private static final String TEST_BUCKET = "test-bucket";
-
-  static LocalStackContainer localstack =
-      new LocalStackContainer(DockerImageName.parse("localstack/localstack:latest"))
-          .withServices(LocalStackContainer.Service.S3);
-
-  static {
-    localstack.start();
-  }
-
-  @DynamicPropertySource
-  static void overrideS3Properties(
-      org.springframework.test.context.DynamicPropertyRegistry registry) {
-    registry.add(
-        "aws.s3.endpoint",
-        () -> localstack.getEndpointOverride(LocalStackContainer.Service.S3).toString());
-    registry.add("aws.s3.region", localstack::getRegion);
-    registry.add("aws.s3.bucket-name", () -> TEST_BUCKET);
-    registry.add("aws.credentials.access-key-id", localstack::getAccessKey);
-    registry.add("aws.credentials.secret-access-key", localstack::getSecretKey);
-  }
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
@@ -88,19 +58,6 @@ class DocumentAuditNotificationTest {
 
   @BeforeAll
   void setup() throws Exception {
-    try (var s3 =
-        S3Client.builder()
-            .endpointOverride(localstack.getEndpointOverride(LocalStackContainer.Service.S3))
-            .region(Region.of(localstack.getRegion()))
-            .credentialsProvider(
-                StaticCredentialsProvider.create(
-                    AwsBasicCredentials.create(
-                        localstack.getAccessKey(), localstack.getSecretKey())))
-            .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
-            .build()) {
-      s3.createBucket(CreateBucketRequest.builder().bucket(TEST_BUCKET).build());
-    }
-
     provisioningService.provisionTenant(ORG_ID, "Audit Notif Test Org");
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 

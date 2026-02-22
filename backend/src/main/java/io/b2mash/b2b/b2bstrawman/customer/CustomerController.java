@@ -2,8 +2,6 @@ package io.b2mash.b2b.b2bstrawman.customer;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
 import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleService;
-import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
-import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceService;
@@ -20,8 +18,8 @@ import io.b2mash.b2b.b2bstrawman.tag.EntityTagService;
 import io.b2mash.b2b.b2bstrawman.tag.TagFilterUtil;
 import io.b2mash.b2b.b2bstrawman.tag.dto.SetEntityTagsRequest;
 import io.b2mash.b2b.b2bstrawman.tag.dto.TagResponse;
-import io.b2mash.b2b.b2bstrawman.view.SavedViewRepository;
-import io.b2mash.b2b.b2bstrawman.view.ViewFilterService;
+import io.b2mash.b2b.b2bstrawman.view.CustomFieldFilterUtil;
+import io.b2mash.b2b.b2bstrawman.view.ViewFilterHelper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -29,7 +27,6 @@ import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -57,8 +54,7 @@ public class CustomerController {
   private final CustomerProjectService customerProjectService;
   private final InvoiceService invoiceService;
   private final EntityTagService entityTagService;
-  private final SavedViewRepository savedViewRepository;
-  private final ViewFilterService viewFilterService;
+  private final ViewFilterHelper viewFilterHelper;
   private final CustomerLifecycleService customerLifecycleService;
   private final UnbilledTimeSummaryService unbilledTimeSummaryService;
   private final CustomerReadinessService customerReadinessService;
@@ -69,8 +65,7 @@ public class CustomerController {
       CustomerProjectService customerProjectService,
       InvoiceService invoiceService,
       EntityTagService entityTagService,
-      SavedViewRepository savedViewRepository,
-      ViewFilterService viewFilterService,
+      ViewFilterHelper viewFilterHelper,
       CustomerLifecycleService customerLifecycleService,
       UnbilledTimeSummaryService unbilledTimeSummaryService,
       CustomerReadinessService customerReadinessService,
@@ -79,8 +74,7 @@ public class CustomerController {
     this.customerProjectService = customerProjectService;
     this.invoiceService = invoiceService;
     this.entityTagService = entityTagService;
-    this.savedViewRepository = savedViewRepository;
-    this.viewFilterService = viewFilterService;
+    this.viewFilterHelper = viewFilterHelper;
     this.customerLifecycleService = customerLifecycleService;
     this.unbilledTimeSummaryService = unbilledTimeSummaryService;
     this.customerReadinessService = customerReadinessService;
@@ -96,19 +90,9 @@ public class CustomerController {
 
     // --- View-based filtering (server-side SQL) ---
     if (view != null) {
-      var savedView =
-          savedViewRepository
-              .findById(view)
-              .orElseThrow(() -> new ResourceNotFoundException("SavedView", view));
-
-      if (!"CUSTOMER".equals(savedView.getEntityType())) {
-        throw new InvalidStateException(
-            "View type mismatch", "Expected CUSTOMER view but got " + savedView.getEntityType());
-      }
-
       List<Customer> filtered =
-          viewFilterService.executeFilterQuery(
-              "customers", Customer.class, savedView.getFilters(), "CUSTOMER");
+          viewFilterHelper.applyViewFilter(
+              view, "CUSTOMER", "customers", Customer.class, null, null);
 
       if (filtered != null) {
         var customerIds = filtered.stream().map(Customer::getId).toList();
@@ -146,11 +130,15 @@ public class CustomerController {
             .toList();
 
     // Apply custom field filtering if present
-    Map<String, String> customFieldFilters = extractCustomFieldFilters(allParams);
+    Map<String, String> customFieldFilters =
+        CustomFieldFilterUtil.extractCustomFieldFilters(allParams);
     if (!customFieldFilters.isEmpty()) {
       customers =
           customers.stream()
-              .filter(c -> matchesCustomFieldFilters(c.customFields(), customFieldFilters))
+              .filter(
+                  c ->
+                      CustomFieldFilterUtil.matchesCustomFieldFilters(
+                          c.customFields(), customFieldFilters))
               .toList();
     }
 
@@ -361,34 +349,6 @@ public class CustomerController {
         .collect(
             Collectors.toMap(
                 Member::getId, m -> m.getName() != null ? m.getName() : "", (a, b) -> a));
-  }
-
-  private Map<String, String> extractCustomFieldFilters(Map<String, String> allParams) {
-    var filters = new HashMap<String, String>();
-    if (allParams != null) {
-      allParams.forEach(
-          (key, value) -> {
-            if (key.startsWith("customField[") && key.endsWith("]")) {
-              String slug = key.substring("customField[".length(), key.length() - 1);
-              filters.put(slug, value);
-            }
-          });
-    }
-    return filters;
-  }
-
-  private boolean matchesCustomFieldFilters(
-      Map<String, Object> customFields, Map<String, String> filters) {
-    if (customFields == null) {
-      return filters.isEmpty();
-    }
-    for (var entry : filters.entrySet()) {
-      Object fieldValue = customFields.get(entry.getKey());
-      if (fieldValue == null || !fieldValue.toString().equals(entry.getValue())) {
-        return false;
-      }
-    }
-    return true;
   }
 
   // --- DTOs ---

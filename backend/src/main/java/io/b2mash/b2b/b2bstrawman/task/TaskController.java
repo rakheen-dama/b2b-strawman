@@ -1,7 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.task;
 
-import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
-import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
 import io.b2mash.b2b.b2bstrawman.member.Member;
@@ -11,15 +9,14 @@ import io.b2mash.b2b.b2bstrawman.tag.EntityTagService;
 import io.b2mash.b2b.b2bstrawman.tag.TagFilterUtil;
 import io.b2mash.b2b.b2bstrawman.tag.dto.SetEntityTagsRequest;
 import io.b2mash.b2b.b2bstrawman.tag.dto.TagResponse;
-import io.b2mash.b2b.b2bstrawman.view.SavedViewRepository;
-import io.b2mash.b2b.b2bstrawman.view.ViewFilterService;
+import io.b2mash.b2b.b2bstrawman.view.CustomFieldFilterUtil;
+import io.b2mash.b2b.b2bstrawman.view.ViewFilterHelper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -43,20 +40,17 @@ public class TaskController {
   private final TaskService taskService;
   private final MemberRepository memberRepository;
   private final EntityTagService entityTagService;
-  private final SavedViewRepository savedViewRepository;
-  private final ViewFilterService viewFilterService;
+  private final ViewFilterHelper viewFilterHelper;
 
   public TaskController(
       TaskService taskService,
       MemberRepository memberRepository,
       EntityTagService entityTagService,
-      SavedViewRepository savedViewRepository,
-      ViewFilterService viewFilterService) {
+      ViewFilterHelper viewFilterHelper) {
     this.taskService = taskService;
     this.memberRepository = memberRepository;
     this.entityTagService = entityTagService;
-    this.savedViewRepository = savedViewRepository;
-    this.viewFilterService = viewFilterService;
+    this.viewFilterHelper = viewFilterHelper;
   }
 
   @PostMapping("/api/projects/{projectId}/tasks")
@@ -100,19 +94,8 @@ public class TaskController {
 
     // --- View-based filtering (server-side SQL) ---
     if (view != null) {
-      var savedView =
-          savedViewRepository
-              .findById(view)
-              .orElseThrow(() -> new ResourceNotFoundException("SavedView", view));
-
-      if (!"TASK".equals(savedView.getEntityType())) {
-        throw new InvalidStateException(
-            "View type mismatch", "Expected TASK view but got " + savedView.getEntityType());
-      }
-
       List<Task> filtered =
-          viewFilterService.executeFilterQueryForProject(
-              "tasks", Task.class, savedView.getFilters(), "TASK", projectId);
+          viewFilterHelper.applyViewFilterForProject(view, "TASK", "tasks", Task.class, projectId);
 
       if (filtered != null) {
         var names = resolveNames(filtered);
@@ -147,11 +130,15 @@ public class TaskController {
             .toList();
 
     // Apply custom field filtering if present
-    Map<String, String> customFieldFilters = extractCustomFieldFilters(allParams);
+    Map<String, String> customFieldFilters =
+        CustomFieldFilterUtil.extractCustomFieldFilters(allParams);
     if (!customFieldFilters.isEmpty()) {
       tasks =
           tasks.stream()
-              .filter(t -> matchesCustomFieldFilters(t.customFields(), customFieldFilters))
+              .filter(
+                  t ->
+                      CustomFieldFilterUtil.matchesCustomFieldFilters(
+                          t.customFields(), customFieldFilters))
               .toList();
     }
 
@@ -291,34 +278,6 @@ public class TaskController {
         .collect(
             Collectors.toMap(
                 Member::getId, m -> m.getName() != null ? m.getName() : "", (a, b) -> a));
-  }
-
-  private Map<String, String> extractCustomFieldFilters(Map<String, String> allParams) {
-    var filters = new HashMap<String, String>();
-    if (allParams != null) {
-      allParams.forEach(
-          (key, value) -> {
-            if (key.startsWith("customField[") && key.endsWith("]")) {
-              String slug = key.substring("customField[".length(), key.length() - 1);
-              filters.put(slug, value);
-            }
-          });
-    }
-    return filters;
-  }
-
-  private boolean matchesCustomFieldFilters(
-      Map<String, Object> customFields, Map<String, String> filters) {
-    if (customFields == null) {
-      return filters.isEmpty();
-    }
-    for (var entry : filters.entrySet()) {
-      Object fieldValue = customFields.get(entry.getKey());
-      if (fieldValue == null || !fieldValue.toString().equals(entry.getValue())) {
-        return false;
-      }
-    }
-    return true;
   }
 
   // --- DTOs ---

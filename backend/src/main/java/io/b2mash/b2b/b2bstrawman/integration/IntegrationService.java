@@ -109,6 +109,9 @@ public class IntegrationService {
    */
   @Transactional
   public void setApiKey(IntegrationDomain domain, String apiKey) {
+    if (apiKey == null || apiKey.isBlank()) {
+      throw new InvalidStateException("API key required", "API key must not be blank");
+    }
     var integration = findByDomainOrThrow(domain);
     var secretKey = buildSecretKey(domain, integration.getProviderSlug());
 
@@ -150,6 +153,7 @@ public class IntegrationService {
    * Tests connectivity to the provider configured for the given domain. Resolves the adapter via
    * the registry and delegates to its {@code testConnection()} method.
    */
+  @Transactional(readOnly = true)
   public ConnectionTestResult testConnection(IntegrationDomain domain) {
     var result =
         switch (domain) {
@@ -228,6 +232,6 @@ public class IntegrationService {
   }
 
   private static String buildSecretKey(IntegrationDomain domain, String providerSlug) {
-    return domain.name() + ":" + providerSlug + ":api_key";
+    return domain.name().toLowerCase() + ":" + providerSlug + ":api_key";
   }
 }

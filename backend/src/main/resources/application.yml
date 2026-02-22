@@ -53,6 +53,9 @@ logging:
     format:
       console: ecs
 
+integration:
+  encryption-key: ${INTEGRATION_ENCRYPTION_KEY:}
+
 payment:
   provider: mock
 

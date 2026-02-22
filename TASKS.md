@@ -171,7 +171,7 @@
 | 143 | Docker Compose E2E Stack + Boot-Seed Container | Infra | 140, 141, 142 | M | 143A | **Done** (PR #300) |
 | 144 | Playwright Fixtures + Smoke Tests | Frontend/E2E | 143 | S | 144A | **Done** (PR #301) |
 | **Phase 21 — Integration Ports, BYOAK Infrastructure & Feature Flags** | | | | | | See [tasks/phase21-integration-ports-byoak.md](tasks/phase21-integration-ports-byoak.md) |
-| 145 | StorageService Port + S3 Refactoring | Backend | — | M | 145A, 145B | |
+| 145 | StorageService Port + S3 Refactoring | Backend | — | M | 145A, 145B | 145A Done (PR #302) |
 | 146 | SecretStore Port + Encrypted Database Implementation | Backend | — | S | 146A | |
 | 147 | Integration Port Interfaces + NoOp Stubs | Backend | — | M | 147A, 147B | |
 | 148 | OrgIntegration Entity + IntegrationRegistry + BYOAK Infrastructure | Backend | 147 | M | 148A, 148B | |

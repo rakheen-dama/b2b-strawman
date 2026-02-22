@@ -26,7 +26,7 @@ After this phase, adding any vendor adapter (Xero, OpenAI, DocuSign, Stripe) is 
 | 146 | SecretStore Port + Encrypted Database Implementation | Backend | — | S | 146A | **Done** (PR #304) |
 | 147 | Integration Port Interfaces + NoOp Stubs | Backend | — | M | 147A, 147B | **Done** (PRs #305, #306) |
 | 148 | OrgIntegration Entity + IntegrationRegistry + BYOAK Infrastructure | Backend | 147 | M | 148A, 148B | **Done** (PRs #307, #308) |
-| 149 | Feature Flags + IntegrationGuardService | Backend | — | S | 149A | |
+| 149 | Feature Flags + IntegrationGuardService | Backend | — | S | 149A | **Done** (PR #309) |
 | 150 | Integration Management API (Controller + Service) | Backend | 146, 148 | M | 150A, 150B | |
 | 151 | Audit Integration for Config Events | Backend | 150 | S | 151A | |
 | 152 | Integrations Settings UI | Frontend | 149, 150 | M | 152A, 152B | |
@@ -87,7 +87,7 @@ After this phase, adding any vendor adapter (Xero, OpenAI, DocuSign, Stripe) is 
 | 1a (parallel) | Epic 145 | 145A | `StorageService` interface + `PresignedUrl` record. Foundation types for the port — no service code yet. | **Done** (PR #302) |
 | 1b (parallel) | Epic 146 | 146A | V36 migration (`org_secrets` table) + `OrgSecret` entity + `OrgSecretRepository` + `EncryptedDatabaseSecretStore` with AES-256-GCM. Fully independent. | **Done** (PR #304) |
 | 1c (parallel) | Epic 147 | 147A | `AccountingProvider` + `AiProvider` interfaces + all their domain records + `NoOpAccountingProvider` + `NoOpAiProvider`. Independent of entity layer. | **Done** (PR #305) |
-| 1d (parallel) | Epic 149 | 149A | 3 boolean columns on `OrgSettings` (V36 migration portion) + `IntegrationGuardService` + `IntegrationDisabledException`. Reads existing `OrgSettingsService`. |
+| 1d (parallel) | Epic 149 | 149A | 3 boolean columns on `OrgSettings` (V36 migration portion) + `IntegrationGuardService` + `IntegrationDisabledException`. Reads existing `OrgSettingsService`. | **Done** (PR #309) |
 
 ### Stage 2: Build on foundations (partially parallel)
 
@@ -431,7 +431,7 @@ Stage 6: [152B]                                        (after 152A)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **149A** | 149.1–149.8 | V36 migration (ALTER TABLE org_settings) + OrgSettings entity extension + IntegrationGuardService + IntegrationDisabledException + DTO + API updates + tests. ~4 modified files, 2 new files. | |
+| **149A** | 149.1–149.8 | V36 migration (ALTER TABLE org_settings) + OrgSettings entity extension + IntegrationGuardService + IntegrationDisabledException + DTO + API updates + tests. ~4 modified files, 2 new files. | **Done** (PR #309) |
 
 ### Tasks
 

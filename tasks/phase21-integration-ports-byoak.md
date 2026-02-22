@@ -107,7 +107,7 @@ After this phase, adding any vendor adapter (Xero, OpenAI, DocuSign, Stripe) is 
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 4a | Epic 150 | 150A | `IntegrationService` (upsert, set-key, test, toggle, key-delete). Depends on 146A (SecretStore) and 148B (IntegrationRegistry). |
+| 4a | Epic 150 | 150A | `IntegrationService` (upsert, set-key, test, toggle, key-delete). Depends on 146A (SecretStore) and 148B (IntegrationRegistry). | **Done** (PR #310) |
 | 4b | Epic 150 | 150B | `IntegrationController` + request/response DTOs + `@PreAuthorize` security. Depends on 150A. |
 
 ### Stage 5: Parallel finishers
@@ -489,7 +489,7 @@ Stage 6: [152B]                                        (after 152A)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **150A** | 150.1–150.6 | `IntegrationService` with all domain operations: upsert, set-key, delete-key, test, toggle + cache eviction. ~2 new files. | |
+| **150A** | 150.1–150.6 | `IntegrationService` with all domain operations: upsert, set-key, delete-key, test, toggle + cache eviction. ~2 new files. | **Done** (PR #310) |
 | **150B** | 150.7–150.12 | `IntegrationController` + request/response DTOs + `@PreAuthorize` + MockMvc integration tests for all 7 endpoints. ~2 new files (1 test file). | |
 
 ### Tasks

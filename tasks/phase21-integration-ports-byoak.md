@@ -24,7 +24,7 @@ After this phase, adding any vendor adapter (Xero, OpenAI, DocuSign, Stripe) is 
 |------|------|-------|------|--------|--------|--------|
 | 145 | StorageService Port + S3 Refactoring | Backend | — | M | 145A, 145B | **Done** (PRs #302, #303) |
 | 146 | SecretStore Port + Encrypted Database Implementation | Backend | — | S | 146A | **Done** (PR #304) |
-| 147 | Integration Port Interfaces + NoOp Stubs | Backend | — | M | 147A, 147B | |
+| 147 | Integration Port Interfaces + NoOp Stubs | Backend | — | M | 147A, 147B | **Done** (PRs #305, #306) |
 | 148 | OrgIntegration Entity + IntegrationRegistry + BYOAK Infrastructure | Backend | 147 | M | 148A, 148B | |
 | 149 | Feature Flags + IntegrationGuardService | Backend | — | S | 149A | |
 | 150 | Integration Management API (Controller + Service) | Backend | 146, 148 | M | 150A, 150B | |
@@ -94,7 +94,7 @@ After this phase, adding any vendor adapter (Xero, OpenAI, DocuSign, Stripe) is 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 2a (parallel) | Epic 145 | 145B | `S3StorageAdapter` + refactor 5 domain services to inject `StorageService`. Depends on 145A interface. | **Done** (PR #303) |
-| 2b (parallel) | Epic 147 | 147B | `DocumentSigningProvider` interface + domain records + `NoOpSigningProvider` + `ConnectionTestResult` shared record + `IntegrationDomain` enum. Depends on 147A (package established). |
+| 2b (parallel) | Epic 147 | 147B | `DocumentSigningProvider` interface + domain records + `NoOpSigningProvider` + `ConnectionTestResult` shared record + `IntegrationDomain` enum. Depends on 147A (package established). | **Done** (PR #306) |
 
 ### Stage 3: Registry layer
 
@@ -283,7 +283,7 @@ Stage 6: [152B]                                        (after 152A)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **147A** | 147.1–147.8 | `AccountingProvider` interface + 4 domain records + `NoOpAccountingProvider` + `AiProvider` interface + 2 domain records + `NoOpAiProvider`. ~10 new files. | **Done** (PR #305) |
-| **147B** | 147.9–147.15 | `DocumentSigningProvider` interface + 3 domain records + `SigningState` enum + `NoOpSigningProvider` + `ConnectionTestResult` shared record + `IntegrationDomain` enum. ~8 new files. | |
+| **147B** | 147.9–147.15 | `DocumentSigningProvider` interface + 3 domain records + `SigningState` enum + `NoOpSigningProvider` + `ConnectionTestResult` shared record + `IntegrationDomain` enum. ~8 new files. | **Done** (PR #306) |
 
 ### Tasks
 

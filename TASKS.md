@@ -173,7 +173,7 @@
 | **Phase 21 — Integration Ports, BYOAK Infrastructure & Feature Flags** | | | | | | See [tasks/phase21-integration-ports-byoak.md](tasks/phase21-integration-ports-byoak.md) |
 | 145 | StorageService Port + S3 Refactoring | Backend | — | M | 145A, 145B | **Done** (PRs #302, #303) |
 | 146 | SecretStore Port + Encrypted Database Implementation | Backend | — | S | 146A | **Done** (PR #304) |
-| 147 | Integration Port Interfaces + NoOp Stubs | Backend | — | M | 147A, 147B | |
+| 147 | Integration Port Interfaces + NoOp Stubs | Backend | — | M | 147A, 147B | **Done** (PRs #305, #306) |
 | 148 | OrgIntegration Entity + IntegrationRegistry + BYOAK Infrastructure | Backend | 147 | M | 148A, 148B | |
 | 149 | Feature Flags + IntegrationGuardService | Backend | — | S | 149A | |
 | 150 | Integration Management API (Controller + Service) | Backend | 146, 148 | M | 150A, 150B | |

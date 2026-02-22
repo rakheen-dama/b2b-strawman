@@ -56,6 +56,9 @@ public class OrgSettingsController {
             request.defaultCurrency(),
             request.brandColor(),
             request.documentFooterText(),
+            request.accountingEnabled(),
+            request.aiEnabled(),
+            request.documentSigningEnabled(),
             memberId,
             orgRole));
   }
@@ -110,7 +113,10 @@ public class OrgSettingsController {
       String documentFooterText,
       Integer dormancyThresholdDays,
       Integer dataRequestDeadlineDays,
-      List<Map<String, Object>> compliancePackStatus) {}
+      List<Map<String, Object>> compliancePackStatus,
+      boolean accountingEnabled,
+      boolean aiEnabled,
+      boolean documentSigningEnabled) {}
 
   public record UpdateSettingsRequest(
       @NotBlank(message = "defaultCurrency is required")
@@ -118,7 +124,10 @@ public class OrgSettingsController {
           String defaultCurrency,
       @Pattern(regexp = "^#[0-9a-fA-F]{6}$", message = "brandColor must be a valid hex color")
           String brandColor,
-      String documentFooterText) {}
+      String documentFooterText,
+      Boolean accountingEnabled,
+      Boolean aiEnabled,
+      Boolean documentSigningEnabled) {}
 
   public record UpdateComplianceSettingsRequest(
       @Positive(message = "dormancyThresholdDays must be positive") Integer dormancyThresholdDays,

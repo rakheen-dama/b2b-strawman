@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -142,7 +143,7 @@ public class DataRequestController {
     if (request.getExportFileKey() == null) {
       throw new ResourceNotFoundException("Export", id);
     }
-    var expiry = java.time.Duration.ofHours(1);
+    var expiry = Duration.ofHours(1);
     var presigned = storageService.generateDownloadUrl(request.getExportFileKey(), expiry);
     return ResponseEntity.ok(new DownloadResponse(presigned.url(), expiry.toSeconds()));
   }

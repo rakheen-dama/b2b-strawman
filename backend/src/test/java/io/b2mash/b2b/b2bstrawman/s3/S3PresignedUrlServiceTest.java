@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.s3;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
@@ -149,6 +150,28 @@ class S3PresignedUrlServiceTest {
     byte[] downloaded = storageService.download(key);
 
     assertThat(downloaded).isEqualTo(content);
+  }
+
+  @Test
+  void generateDownloadUrlRejectsInvalidKey() {
+    assertThatThrownBy(
+            () -> storageService.generateDownloadUrl("../../etc/passwd", Duration.ofHours(1)))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  void generateUploadUrlRejectsInvalidKey() {
+    assertThatThrownBy(
+            () ->
+                storageService.generateUploadUrl(
+                    "arbitrary/path", "text/plain", Duration.ofHours(1)))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  void generateDownloadUrlRejectsNullKey() {
+    assertThatThrownBy(() -> storageService.generateDownloadUrl(null, Duration.ofHours(1)))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test

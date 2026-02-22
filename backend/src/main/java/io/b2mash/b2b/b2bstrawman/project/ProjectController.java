@@ -1,7 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.project;
 
-import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
-import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
 import io.b2mash.b2b.b2bstrawman.member.Member;
@@ -16,14 +14,13 @@ import io.b2mash.b2b.b2bstrawman.tag.EntityTagService;
 import io.b2mash.b2b.b2bstrawman.tag.TagFilterUtil;
 import io.b2mash.b2b.b2bstrawman.tag.dto.SetEntityTagsRequest;
 import io.b2mash.b2b.b2bstrawman.tag.dto.TagResponse;
-import io.b2mash.b2b.b2bstrawman.view.SavedViewRepository;
-import io.b2mash.b2b.b2bstrawman.view.ViewFilterService;
+import io.b2mash.b2b.b2bstrawman.view.CustomFieldFilterUtil;
+import io.b2mash.b2b.b2bstrawman.view.ViewFilterHelper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -48,8 +45,7 @@ public class ProjectController {
 
   private final ProjectService projectService;
   private final EntityTagService entityTagService;
-  private final SavedViewRepository savedViewRepository;
-  private final ViewFilterService viewFilterService;
+  private final ViewFilterHelper viewFilterHelper;
   private final ProjectSetupStatusService projectSetupStatusService;
   private final UnbilledTimeSummaryService unbilledTimeSummaryService;
   private final MemberRepository memberRepository;
@@ -57,15 +53,13 @@ public class ProjectController {
   public ProjectController(
       ProjectService projectService,
       EntityTagService entityTagService,
-      SavedViewRepository savedViewRepository,
-      ViewFilterService viewFilterService,
+      ViewFilterHelper viewFilterHelper,
       ProjectSetupStatusService projectSetupStatusService,
       UnbilledTimeSummaryService unbilledTimeSummaryService,
       MemberRepository memberRepository) {
     this.projectService = projectService;
     this.entityTagService = entityTagService;
-    this.savedViewRepository = savedViewRepository;
-    this.viewFilterService = viewFilterService;
+    this.viewFilterHelper = viewFilterHelper;
     this.projectSetupStatusService = projectSetupStatusService;
     this.unbilledTimeSummaryService = unbilledTimeSummaryService;
     this.memberRepository = memberRepository;
@@ -82,32 +76,21 @@ public class ProjectController {
 
     // --- View-based filtering (server-side SQL) ---
     if (view != null) {
-      var savedView =
-          savedViewRepository
-              .findById(view)
-              .orElseThrow(() -> new ResourceNotFoundException("SavedView", view));
-
-      if (!"PROJECT".equals(savedView.getEntityType())) {
-        throw new InvalidStateException(
-            "View type mismatch", "Expected PROJECT view but got " + savedView.getEntityType());
+      // Build access control set: regular members only see projects they have access to
+      boolean isAdminOrOwner = "admin".equals(orgRole) || "owner".equals(orgRole);
+      Set<UUID> accessibleIds = null;
+      if (!isAdminOrOwner) {
+        accessibleIds =
+            projectService.listProjects(memberId, orgRole).stream()
+                .map(pwr -> pwr.project().getId())
+                .collect(Collectors.toSet());
       }
 
       List<Project> filtered =
-          viewFilterService.executeFilterQuery(
-              "projects", Project.class, savedView.getFilters(), "PROJECT");
+          viewFilterHelper.applyViewFilter(
+              view, "PROJECT", "projects", Project.class, accessibleIds, Project::getId);
 
       if (filtered != null) {
-        // Apply project access control: regular members only see projects they have access to.
-        // Admin/owner see all projects; members must be in project_members.
-        boolean isAdminOrOwner = "admin".equals(orgRole) || "owner".equals(orgRole);
-        if (!isAdminOrOwner) {
-          Set<UUID> accessibleIds =
-              projectService.listProjects(memberId, orgRole).stream()
-                  .map(pwr -> pwr.project().getId())
-                  .collect(Collectors.toSet());
-          filtered = filtered.stream().filter(p -> accessibleIds.contains(p.getId())).toList();
-        }
-
         var projectIds = filtered.stream().map(Project::getId).toList();
         var tagsByEntityId = entityTagService.getEntityTagsBatch("PROJECT", projectIds);
         var memberNames = resolveNames(filtered);
@@ -147,11 +130,15 @@ public class ProjectController {
             .toList();
 
     // Apply custom field filtering if present
-    Map<String, String> customFieldFilters = extractCustomFieldFilters(allParams);
+    Map<String, String> customFieldFilters =
+        CustomFieldFilterUtil.extractCustomFieldFilters(allParams);
     if (!customFieldFilters.isEmpty()) {
       projects =
           projects.stream()
-              .filter(p -> matchesCustomFieldFilters(p.customFields(), customFieldFilters))
+              .filter(
+                  p ->
+                      CustomFieldFilterUtil.matchesCustomFieldFilters(
+                          p.customFields(), customFieldFilters))
               .toList();
     }
 
@@ -278,34 +265,6 @@ public class ProjectController {
         .collect(
             Collectors.toMap(
                 Member::getId, m -> m.getName() != null ? m.getName() : "", (a, b) -> a));
-  }
-
-  private Map<String, String> extractCustomFieldFilters(Map<String, String> allParams) {
-    var filters = new HashMap<String, String>();
-    if (allParams != null) {
-      allParams.forEach(
-          (key, value) -> {
-            if (key.startsWith("customField[") && key.endsWith("]")) {
-              String slug = key.substring("customField[".length(), key.length() - 1);
-              filters.put(slug, value);
-            }
-          });
-    }
-    return filters;
-  }
-
-  private boolean matchesCustomFieldFilters(
-      Map<String, Object> customFields, Map<String, String> filters) {
-    if (customFields == null) {
-      return filters.isEmpty();
-    }
-    for (var entry : filters.entrySet()) {
-      Object fieldValue = customFields.get(entry.getKey());
-      if (fieldValue == null || !fieldValue.toString().equals(entry.getValue())) {
-        return false;
-      }
-    }
-    return true;
   }
 
   public record CreateProjectRequest(

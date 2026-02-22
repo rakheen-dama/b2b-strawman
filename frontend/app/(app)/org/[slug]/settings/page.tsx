@@ -107,8 +107,8 @@ const settingsCards: SettingsCard[] = [
     icon: Puzzle,
     title: "Integrations",
     description: "Connect third-party tools and services",
-    href: null,
-    comingSoon: true,
+    href: "integrations",
+    comingSoon: false,
   },
 ];
 

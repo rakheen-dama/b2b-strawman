@@ -402,7 +402,7 @@ export interface UpdateOrgSettingsRequest {
 export type IntegrationDomain = "ACCOUNTING" | "AI" | "DOCUMENT_SIGNING" | "PAYMENT";
 
 export interface OrgIntegration {
-  domain: string;
+  domain: IntegrationDomain;
   providerSlug: string | null;
   enabled: boolean;
   keySuffix: string | null;

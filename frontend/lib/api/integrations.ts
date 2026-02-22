@@ -5,6 +5,9 @@ import type {
   OrgIntegration,
   ConnectionTestResult,
   IntegrationDomain,
+  UpsertIntegrationRequest,
+  SetApiKeyRequest,
+  ToggleIntegrationRequest,
 } from "@/lib/types";
 
 // ---- API Functions ----
@@ -13,22 +16,22 @@ export async function listIntegrations(): Promise<OrgIntegration[]> {
   return api.get<OrgIntegration[]>("/api/integrations");
 }
 
-export async function listProviders(): Promise<Record<string, string[]>> {
-  return api.get<Record<string, string[]>>("/api/integrations/providers");
+export async function listProviders(): Promise<Partial<Record<IntegrationDomain, string[]>>> {
+  return api.get<Partial<Record<IntegrationDomain, string[]>>>("/api/integrations/providers");
 }
 
 export async function upsertIntegration(
   domain: IntegrationDomain,
-  data: { providerSlug: string; configJson?: string },
+  data: UpsertIntegrationRequest,
 ): Promise<OrgIntegration> {
   return api.put<OrgIntegration>(`/api/integrations/${domain}`, data);
 }
 
 export async function setApiKey(
   domain: IntegrationDomain,
-  apiKey: string,
+  data: SetApiKeyRequest,
 ): Promise<void> {
-  return api.post<void>(`/api/integrations/${domain}/set-key`, { apiKey });
+  return api.post<void>(`/api/integrations/${domain}/set-key`, data);
 }
 
 export async function testConnection(
@@ -45,7 +48,7 @@ export async function deleteApiKey(
 
 export async function toggleIntegration(
   domain: IntegrationDomain,
-  enabled: boolean,
+  data: ToggleIntegrationRequest,
 ): Promise<OrgIntegration> {
-  return api.patch<OrgIntegration>(`/api/integrations/${domain}/toggle`, { enabled });
+  return api.patch<OrgIntegration>(`/api/integrations/${domain}/toggle`, data);
 }

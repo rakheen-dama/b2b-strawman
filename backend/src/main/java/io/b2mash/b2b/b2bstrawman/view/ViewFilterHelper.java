@@ -39,16 +39,7 @@ public class ViewFilterHelper {
       Set<UUID> accessibleIds,
       Function<T, UUID> idExtractor) {
 
-    var savedView =
-        savedViewRepository
-            .findById(viewId)
-            .orElseThrow(() -> new ResourceNotFoundException("SavedView", viewId));
-
-    if (!entityType.equals(savedView.getEntityType())) {
-      throw new InvalidStateException(
-          "View type mismatch",
-          "Expected " + entityType + " view but got " + savedView.getEntityType());
-    }
+    var savedView = resolveAndValidate(viewId, entityType);
 
     List<T> filtered =
         viewFilterService.executeFilterQuery(
@@ -75,6 +66,13 @@ public class ViewFilterHelper {
   public <T> List<T> applyViewFilterForProject(
       UUID viewId, String entityType, String tableName, Class<T> entityClass, UUID projectId) {
 
+    var savedView = resolveAndValidate(viewId, entityType);
+
+    return viewFilterService.executeFilterQueryForProject(
+        tableName, entityClass, savedView.getFilters(), entityType, projectId);
+  }
+
+  private SavedView resolveAndValidate(UUID viewId, String entityType) {
     var savedView =
         savedViewRepository
             .findById(viewId)
@@ -86,7 +84,6 @@ public class ViewFilterHelper {
           "Expected " + entityType + " view but got " + savedView.getEntityType());
     }
 
-    return viewFilterService.executeFilterQueryForProject(
-        tableName, entityClass, savedView.getFilters(), entityType, projectId);
+    return savedView;
   }
 }

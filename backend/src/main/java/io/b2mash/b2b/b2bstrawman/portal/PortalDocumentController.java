@@ -53,9 +53,9 @@ public class PortalDocumentController {
   public ResponseEntity<PortalPresignDownloadResponse> presignDownload(
       @PathVariable UUID documentId) {
     UUID customerId = RequestScopes.requireCustomerId();
-    var result = portalQueryService.getPresignedDownloadUrl(documentId, customerId);
+    var downloadResult = portalQueryService.getPresignedDownloadUrl(documentId, customerId);
     return ResponseEntity.ok(
-        new PortalPresignDownloadResponse(result.url(), result.expiresInSeconds()));
+        new PortalPresignDownloadResponse(downloadResult.url(), downloadResult.expiresInSeconds()));
   }
 
   // --- DTOs ---

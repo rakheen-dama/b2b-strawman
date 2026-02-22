@@ -4,12 +4,12 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.comment.CommentRepository;
 import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleService;
-import io.b2mash.b2b.b2bstrawman.config.S3Config.S3Properties;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import java.util.Map;
@@ -18,8 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 
 @Service
 public class DataAnonymizationService {
@@ -33,8 +31,7 @@ public class DataAnonymizationService {
   private final PortalContactRepository portalContactRepository;
   private final InvoiceRepository invoiceRepository;
   private final CustomerLifecycleService customerLifecycleService;
-  private final S3Client s3Client;
-  private final S3Properties s3Properties;
+  private final StorageService storageService;
   private final AuditService auditService;
 
   public DataAnonymizationService(
@@ -45,8 +42,7 @@ public class DataAnonymizationService {
       PortalContactRepository portalContactRepository,
       InvoiceRepository invoiceRepository,
       CustomerLifecycleService customerLifecycleService,
-      S3Client s3Client,
-      S3Properties s3Properties,
+      StorageService storageService,
       AuditService auditService) {
     this.requestRepository = requestRepository;
     this.customerRepository = customerRepository;
@@ -55,8 +51,7 @@ public class DataAnonymizationService {
     this.portalContactRepository = portalContactRepository;
     this.invoiceRepository = invoiceRepository;
     this.customerLifecycleService = customerLifecycleService;
-    this.s3Client = s3Client;
-    this.s3Properties = s3Properties;
+    this.storageService = storageService;
     this.auditService = auditService;
   }
 
@@ -118,23 +113,12 @@ public class DataAnonymizationService {
       commentRepository.save(comment);
     }
 
-    // Step 3: Delete customer-scoped documents from S3 (best-effort) and DB
+    // Step 3: Delete customer-scoped documents from storage (best-effort) and DB
     var documents = documentRepository.findByCustomerId(customerId);
     int documentsDeleted = documents.size();
     for (var doc : documents) {
       if (doc.getS3Key() != null && !"pending".equals(doc.getS3Key())) {
-        try {
-          s3Client.deleteObject(
-              DeleteObjectRequest.builder()
-                  .bucket(s3Properties.bucketName())
-                  .key(doc.getS3Key())
-                  .build());
-        } catch (Exception e) {
-          log.warn(
-              "Best-effort S3 deletion failed for key={} — object may remain as orphan: {}",
-              doc.getS3Key(),
-              e.getMessage());
-        }
+        storageService.delete(doc.getS3Key());
       }
       documentRepository.delete(doc);
     }

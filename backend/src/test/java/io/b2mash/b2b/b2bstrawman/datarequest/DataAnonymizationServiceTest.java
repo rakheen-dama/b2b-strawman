@@ -16,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
+import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.member.MemberSyncService;
@@ -50,9 +51,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.support.TransactionTemplate;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
-import software.amazon.awssdk.services.s3.model.DeleteObjectResponse;
 
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
@@ -83,7 +81,7 @@ class DataAnonymizationServiceTest {
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
-  @MockitoBean private S3Client s3Client;
+  @MockitoBean private StorageService storageService;
 
   private String tenantSchema;
   private UUID memberId;
@@ -104,9 +102,6 @@ class DataAnonymizationServiceTest {
   void customerPiiAnonymized() {
     var ids = setupFullScenario();
 
-    org.mockito.Mockito.when(s3Client.deleteObject(any(DeleteObjectRequest.class)))
-        .thenReturn(DeleteObjectResponse.builder().build());
-
     runInTenant(
         () ->
             dataAnonymizationService.executeAnonymization(ids.requestId, CUSTOMER_NAME, memberId));
@@ -125,22 +120,16 @@ class DataAnonymizationServiceTest {
   void documentsDeletedFromS3() {
     var ids = setupFullScenario();
 
-    org.mockito.Mockito.when(s3Client.deleteObject(any(DeleteObjectRequest.class)))
-        .thenReturn(DeleteObjectResponse.builder().build());
-
     runInTenant(
         () ->
             dataAnonymizationService.executeAnonymization(ids.requestId, CUSTOMER_NAME, memberId));
 
-    verify(s3Client, times(2)).deleteObject(any(DeleteObjectRequest.class));
+    verify(storageService, times(2)).delete(any(String.class));
   }
 
   @Test
   void documentsDeletedFromDb() {
     var ids = setupFullScenario();
-
-    org.mockito.Mockito.when(s3Client.deleteObject(any(DeleteObjectRequest.class)))
-        .thenReturn(DeleteObjectResponse.builder().build());
 
     runInTenant(
         () ->
@@ -156,9 +145,6 @@ class DataAnonymizationServiceTest {
   @Test
   void portalVisibleCommentsRedacted() {
     var ids = setupFullScenario();
-
-    org.mockito.Mockito.when(s3Client.deleteObject(any(DeleteObjectRequest.class)))
-        .thenReturn(DeleteObjectResponse.builder().build());
 
     runInTenant(
         () ->
@@ -176,9 +162,6 @@ class DataAnonymizationServiceTest {
   void internalCommentsPreserved() {
     var ids = setupFullScenario();
 
-    org.mockito.Mockito.when(s3Client.deleteObject(any(DeleteObjectRequest.class)))
-        .thenReturn(DeleteObjectResponse.builder().build());
-
     runInTenant(
         () ->
             dataAnonymizationService.executeAnonymization(ids.requestId, CUSTOMER_NAME, memberId));
@@ -193,9 +176,6 @@ class DataAnonymizationServiceTest {
   @Test
   void portalContactsAnonymized() {
     var ids = setupFullScenario();
-
-    org.mockito.Mockito.when(s3Client.deleteObject(any(DeleteObjectRequest.class)))
-        .thenReturn(DeleteObjectResponse.builder().build());
 
     runInTenant(
         () ->
@@ -214,9 +194,6 @@ class DataAnonymizationServiceTest {
   void invoicesPreserved() {
     var ids = setupFullScenario();
 
-    org.mockito.Mockito.when(s3Client.deleteObject(any(DeleteObjectRequest.class)))
-        .thenReturn(DeleteObjectResponse.builder().build());
-
     runInTenant(
         () ->
             dataAnonymizationService.executeAnonymization(ids.requestId, CUSTOMER_NAME, memberId));
@@ -231,9 +208,6 @@ class DataAnonymizationServiceTest {
   @Test
   void timeEntriesPreserved() {
     var ids = setupFullScenario();
-
-    org.mockito.Mockito.when(s3Client.deleteObject(any(DeleteObjectRequest.class)))
-        .thenReturn(DeleteObjectResponse.builder().build());
 
     runInTenant(
         () ->
@@ -251,9 +225,6 @@ class DataAnonymizationServiceTest {
   @Test
   void customerTransitionedToOffboarded() {
     var ids = setupFullScenario();
-
-    org.mockito.Mockito.when(s3Client.deleteObject(any(DeleteObjectRequest.class)))
-        .thenReturn(DeleteObjectResponse.builder().build());
 
     runInTenant(
         () ->
@@ -339,9 +310,6 @@ class DataAnonymizationServiceTest {
   void auditEventRecordsCounts() {
     var ids = setupFullScenario();
 
-    org.mockito.Mockito.when(s3Client.deleteObject(any(DeleteObjectRequest.class)))
-        .thenReturn(DeleteObjectResponse.builder().build());
-
     runInTenant(
         () ->
             dataAnonymizationService.executeAnonymization(ids.requestId, CUSTOMER_NAME, memberId));
@@ -368,7 +336,7 @@ class DataAnonymizationServiceTest {
   @AfterEach
   void clearSecurityContext() {
     SecurityContextHolder.clearContext();
-    org.mockito.Mockito.reset(s3Client);
+    org.mockito.Mockito.reset(storageService);
   }
 
   /**

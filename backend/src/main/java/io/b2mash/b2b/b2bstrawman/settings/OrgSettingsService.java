@@ -2,13 +2,13 @@ package io.b2mash.b2b.b2bstrawman.settings;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
-import io.b2mash.b2b.b2bstrawman.config.S3Config.S3Properties;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
+import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsController.SettingsResponse;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -16,34 +16,25 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 @Service
 public class OrgSettingsService {
 
   private static final Logger log = LoggerFactory.getLogger(OrgSettingsService.class);
   private static final String DEFAULT_CURRENCY = "USD";
+  private static final Duration LOGO_URL_EXPIRY = Duration.ofHours(1);
 
   private final OrgSettingsRepository orgSettingsRepository;
   private final AuditService auditService;
-  private final S3Client s3Client;
-  private final S3PresignedUrlService s3PresignedUrlService;
-  private final String bucketName;
+  private final StorageService storageService;
 
   public OrgSettingsService(
       OrgSettingsRepository orgSettingsRepository,
       AuditService auditService,
-      S3Client s3Client,
-      S3PresignedUrlService s3PresignedUrlService,
-      S3Properties s3Properties) {
+      StorageService storageService) {
     this.orgSettingsRepository = orgSettingsRepository;
     this.auditService = auditService;
-    this.s3Client = s3Client;
-    this.s3PresignedUrlService = s3PresignedUrlService;
-    this.bucketName = s3Properties.bucketName();
+    this.storageService = storageService;
   }
 
   /**
@@ -113,7 +104,7 @@ public class OrgSettingsService {
     return toSettingsResponse(settings);
   }
 
-  /** Uploads a logo to S3 and updates the org settings. */
+  /** Uploads a logo to storage and updates the org settings. */
   @Transactional
   public SettingsResponse uploadLogo(MultipartFile file, UUID memberId, String orgRole) {
     requireAdminOrOwner(orgRole);
@@ -123,17 +114,9 @@ public class OrgSettingsService {
     String s3Key = "org/" + tenantId + "/branding/logo." + ext;
 
     try {
-      var putRequest =
-          PutObjectRequest.builder()
-              .bucket(bucketName)
-              .key(s3Key)
-              .contentType(file.getContentType())
-              .build();
-
-      s3Client.putObject(
-          putRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+      storageService.upload(s3Key, file.getInputStream(), file.getSize(), file.getContentType());
     } catch (IOException e) {
-      throw new IllegalStateException("Failed to upload logo to S3", e);
+      throw new IllegalStateException("Failed to upload logo to storage", e);
     }
 
     OrgSettings settings;
@@ -150,13 +133,9 @@ public class OrgSettingsService {
       settings.setLogoS3Key(s3Key);
       settings = orgSettingsRepository.save(settings);
     } catch (RuntimeException e) {
-      // DB save failed — clean up the orphaned S3 object
-      log.warn("DB save failed after S3 upload, deleting orphaned object: {}", s3Key);
-      try {
-        s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucketName).key(s3Key).build());
-      } catch (RuntimeException s3ex) {
-        log.error("Failed to clean up orphaned S3 object: {}", s3Key, s3ex);
-      }
+      // DB save failed — clean up the orphaned storage object
+      log.warn("DB save failed after storage upload, deleting orphaned object: {}", s3Key);
+      storageService.delete(s3Key);
       throw e;
     }
 
@@ -173,7 +152,7 @@ public class OrgSettingsService {
     return toSettingsResponse(settings);
   }
 
-  /** Deletes the logo from S3 and clears the logoS3Key in org settings. */
+  /** Deletes the logo from storage and clears the logoS3Key in org settings. */
   @Transactional
   public SettingsResponse deleteLogo(UUID memberId, String orgRole) {
     requireAdminOrOwner(orgRole);
@@ -189,8 +168,7 @@ public class OrgSettingsService {
 
     String oldKey = settings.getLogoS3Key();
     if (oldKey != null) {
-      var deleteRequest = DeleteObjectRequest.builder().bucket(bucketName).key(oldKey).build();
-      s3Client.deleteObject(deleteRequest);
+      storageService.delete(oldKey);
       settings.setLogoS3Key(null);
       settings = orgSettingsRepository.save(settings);
 
@@ -296,11 +274,9 @@ public class OrgSettingsService {
       return null;
     }
     try {
-      return s3PresignedUrlService.generateDownloadUrl(logoS3Key).url();
-    } catch (IllegalArgumentException e) {
-      // Key doesn't match expected pattern; generate URL directly
-      log.warn(
-          "Logo S3 key does not match presigned URL pattern, generating directly: {}", logoS3Key);
+      return storageService.generateDownloadUrl(logoS3Key, LOGO_URL_EXPIRY).url();
+    } catch (Exception e) {
+      log.warn("Failed to generate logo download URL for key: {}", logoS3Key, e);
       return null;
     }
   }

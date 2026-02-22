@@ -3,10 +3,10 @@ package io.b2mash.b2b.b2bstrawman.datarequest;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -39,7 +39,7 @@ public class DataRequestController {
   private final DataAnonymizationService dataAnonymizationService;
   private final CustomerRepository customerRepository;
   private final MemberRepository memberRepository;
-  private final S3PresignedUrlService s3PresignedUrlService;
+  private final StorageService storageService;
 
   public DataRequestController(
       DataSubjectRequestService dataSubjectRequestService,
@@ -47,13 +47,13 @@ public class DataRequestController {
       DataAnonymizationService dataAnonymizationService,
       CustomerRepository customerRepository,
       MemberRepository memberRepository,
-      S3PresignedUrlService s3PresignedUrlService) {
+      StorageService storageService) {
     this.dataSubjectRequestService = dataSubjectRequestService;
     this.dataExportService = dataExportService;
     this.dataAnonymizationService = dataAnonymizationService;
     this.customerRepository = customerRepository;
     this.memberRepository = memberRepository;
-    this.s3PresignedUrlService = s3PresignedUrlService;
+    this.storageService = storageService;
   }
 
   @GetMapping
@@ -142,8 +142,9 @@ public class DataRequestController {
     if (request.getExportFileKey() == null) {
       throw new ResourceNotFoundException("Export", id);
     }
-    var result = s3PresignedUrlService.generateDownloadUrl(request.getExportFileKey());
-    return ResponseEntity.ok(new DownloadResponse(result.url(), result.expiresInSeconds()));
+    var expiry = java.time.Duration.ofHours(1);
+    var presigned = storageService.generateDownloadUrl(request.getExportFileKey(), expiry);
+    return ResponseEntity.ok(new DownloadResponse(presigned.url(), expiry.toSeconds()));
   }
 
   @PostMapping("/{id}/execute-deletion")

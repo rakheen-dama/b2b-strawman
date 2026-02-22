@@ -5,9 +5,10 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
-import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -26,24 +27,25 @@ import org.springframework.transaction.annotation.Transactional;
 public class PortalQueryService {
 
   private static final Logger log = LoggerFactory.getLogger(PortalQueryService.class);
+  private static final Duration URL_EXPIRY = Duration.ofHours(1);
 
   private final CustomerRepository customerRepository;
   private final CustomerProjectRepository customerProjectRepository;
   private final ProjectRepository projectRepository;
   private final DocumentRepository documentRepository;
-  private final S3PresignedUrlService s3Service;
+  private final StorageService storageService;
 
   public PortalQueryService(
       CustomerRepository customerRepository,
       CustomerProjectRepository customerProjectRepository,
       ProjectRepository projectRepository,
       DocumentRepository documentRepository,
-      S3PresignedUrlService s3Service) {
+      StorageService storageService) {
     this.customerRepository = customerRepository;
     this.customerProjectRepository = customerProjectRepository;
     this.projectRepository = projectRepository;
     this.documentRepository = documentRepository;
-    this.s3Service = s3Service;
+    this.storageService = storageService;
   }
 
   /** Validates that the customer exists in the current tenant. */
@@ -142,13 +144,13 @@ public class PortalQueryService {
 
   /** Generates a presigned download URL for a portal-accessible document. */
   @Transactional(readOnly = true)
-  public S3PresignedUrlService.PresignedDownloadResult getPresignedDownloadUrl(
-      UUID documentId, UUID customerId) {
+  public PortalPresignedDownloadResult getPresignedDownloadUrl(UUID documentId, UUID customerId) {
     var document = getDocument(documentId, customerId);
     if (document.getStatus() != Document.Status.UPLOADED) {
       throw new ResourceNotFoundException("Document", documentId);
     }
-    return s3Service.generateDownloadUrl(document.getS3Key());
+    var presigned = storageService.generateDownloadUrl(document.getS3Key(), URL_EXPIRY);
+    return new PortalPresignedDownloadResult(presigned.url(), URL_EXPIRY.toSeconds());
   }
 
   /** Counts SHARED documents in a project that are visible to a portal customer. */
@@ -164,4 +166,7 @@ public class PortalQueryService {
       throw new ResourceNotFoundException("Project", projectId);
     }
   }
+
+  /** Result DTO for portal presigned download URLs. */
+  public record PortalPresignedDownloadResult(String url, long expiresInSeconds) {}
 }

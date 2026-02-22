@@ -153,7 +153,7 @@ public class IntegrationService {
    * Tests connectivity to the provider configured for the given domain. Resolves the adapter via
    * the registry and delegates to its {@code testConnection()} method.
    */
-  @Transactional(readOnly = true)
+  @Transactional
   public ConnectionTestResult testConnection(IntegrationDomain domain) {
     var result =
         switch (domain) {

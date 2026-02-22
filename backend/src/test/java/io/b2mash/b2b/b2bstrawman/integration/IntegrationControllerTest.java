@@ -14,10 +14,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -28,11 +32,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -49,10 +55,14 @@ class IntegrationControllerTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
+  @Autowired private AuditEventRepository auditEventRepository;
+  @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
+  @Autowired private TransactionTemplate transactionTemplate;
 
   private String memberIdOwner;
   private String memberIdAdmin;
   private String memberIdMember;
+  private String tenantSchema;
 
   @BeforeAll
   void provisionTenant() throws Exception {
@@ -65,6 +75,9 @@ class IntegrationControllerTest {
         syncMember(ORG_ID, "user_intctrl_admin", "intctrl_admin@test.com", "Admin", "admin");
     memberIdMember =
         syncMember(ORG_ID, "user_intctrl_member", "intctrl_member@test.com", "Member", "member");
+
+    tenantSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
   }
 
   @Test
@@ -232,7 +245,144 @@ class IntegrationControllerTest {
         .andExpect(status().isForbidden());
   }
 
+  // --- Audit event assertions ---
+
+  @Test
+  @Order(100)
+  void auditEventCreatedOnIntegrationConfigured() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var page =
+                      auditEventRepository.findByFilter(
+                          "org_integration",
+                          null,
+                          null,
+                          "integration.configured",
+                          null,
+                          null,
+                          PageRequest.of(0, 10));
+                  assertThat(page.getContent()).isNotEmpty();
+                  var event = page.getContent().getFirst();
+                  assertThat(event.getEventType()).isEqualTo("integration.configured");
+                  assertThat(event.getEntityType()).isEqualTo("org_integration");
+                  assertThat(event.getDetails()).containsKey("domain");
+                  assertThat(event.getDetails()).containsKey("providerSlug");
+                }));
+  }
+
+  @Test
+  @Order(101)
+  void auditEventCreatedOnKeySetAndKeyRemoved() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  // Verify key_set event exists
+                  var keySetPage =
+                      auditEventRepository.findByFilter(
+                          "org_integration",
+                          null,
+                          null,
+                          "integration.key_set",
+                          null,
+                          null,
+                          PageRequest.of(0, 10));
+                  assertThat(keySetPage.getContent()).isNotEmpty();
+                  var keySetEvent = keySetPage.getContent().getFirst();
+                  assertThat(keySetEvent.getEventType()).isEqualTo("integration.key_set");
+                  assertThat(keySetEvent.getEntityType()).isEqualTo("org_integration");
+                  assertThat(keySetEvent.getDetails()).containsKey("domain");
+                  // CRITICAL: API key must NEVER appear in audit details
+                  assertThat(keySetEvent.getDetails()).doesNotContainKey("apiKey");
+                  keySetEvent
+                      .getDetails()
+                      .values()
+                      .forEach(
+                          value ->
+                              assertThat(String.valueOf(value))
+                                  .as("Audit details must not contain the full API key")
+                                  .doesNotContain(TEST_API_KEY));
+
+                  // Verify key_removed event exists
+                  var keyRemovedPage =
+                      auditEventRepository.findByFilter(
+                          "org_integration",
+                          null,
+                          null,
+                          "integration.key_removed",
+                          null,
+                          null,
+                          PageRequest.of(0, 10));
+                  assertThat(keyRemovedPage.getContent()).isNotEmpty();
+                  var keyRemovedEvent = keyRemovedPage.getContent().getFirst();
+                  assertThat(keyRemovedEvent.getEventType()).isEqualTo("integration.key_removed");
+                  assertThat(keyRemovedEvent.getEntityType()).isEqualTo("org_integration");
+                  assertThat(keyRemovedEvent.getDetails()).containsKey("domain");
+                }));
+  }
+
+  @Test
+  @Order(102)
+  void auditEventCreatedOnToggle() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var page =
+                      auditEventRepository.findByFilter(
+                          "org_integration",
+                          null,
+                          null,
+                          "integration.enabled",
+                          null,
+                          null,
+                          PageRequest.of(0, 10));
+                  assertThat(page.getContent()).isNotEmpty();
+                  var event = page.getContent().getFirst();
+                  assertThat(event.getEventType()).isEqualTo("integration.enabled");
+                  assertThat(event.getEntityType()).isEqualTo("org_integration");
+                  assertThat(event.getDetails()).containsKey("domain");
+                  assertThat(event.getDetails()).containsKey("providerSlug");
+                }));
+  }
+
+  @Test
+  @Order(103)
+  void auditEventCreatedOnConnectionTested() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var page =
+                      auditEventRepository.findByFilter(
+                          "org_integration",
+                          null,
+                          null,
+                          "integration.connection_tested",
+                          null,
+                          null,
+                          PageRequest.of(0, 10));
+                  assertThat(page.getContent()).isNotEmpty();
+                  var event = page.getContent().getFirst();
+                  assertThat(event.getEventType()).isEqualTo("integration.connection_tested");
+                  assertThat(event.getEntityType()).isEqualTo("org_integration");
+                  assertThat(event.getDetails()).containsKey("domain");
+                  assertThat(event.getDetails()).containsKey("providerSlug");
+                  assertThat(event.getDetails()).containsKey("success");
+                }));
+  }
+
   // --- Helpers ---
+
+  private void runInTenant(Runnable action) {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, UUID.fromString(memberIdOwner))
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(action);
+  }
 
   private String syncMember(
       String orgId, String clerkUserId, String email, String name, String orgRole)

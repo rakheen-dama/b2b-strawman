@@ -4,7 +4,12 @@ import { TeamTabs } from "@/components/team/team-tabs";
 import { api } from "@/lib/api";
 import type { BillingResponse } from "@/lib/internal-api";
 
-export default async function TeamPage() {
+export default async function TeamPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
   const { orgRole } = await getAuthContext();
 
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
@@ -29,6 +34,7 @@ export default async function TeamPage() {
             maxMembers={billing.limits.maxMembers}
             currentMembers={billing.limits.currentMembers}
             planTier={billing.tier}
+            orgSlug={slug}
           />
         </div>
       )}

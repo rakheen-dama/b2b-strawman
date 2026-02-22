@@ -1,12 +1,12 @@
-# Phase 18 — Customer Portal Frontend
+# Phase 22 — Customer Portal Frontend
 
-> This is a standalone architecture document for Phase 18. It supplements ARCHITECTURE.md.
+> This is a standalone architecture document for Phase 22. It supplements ARCHITECTURE.md.
 
 ---
 
-## 18.1 Overview
+## 22.1 Overview
 
-Phase 18 builds the **customer-facing portal frontend** — a separate Next.js 16 application that gives clients a branded, self-service window into their projects, documents, invoices, and comment threads. The portal backend APIs were established in Phase 7; this phase builds the client experience on top of them and fills the remaining backend gaps (invoice and task data in the portal read-model).
+Phase 22 builds the **customer-facing portal frontend** — a separate Next.js 16 application that gives clients a branded, self-service window into their projects, documents, invoices, and comment threads. The portal backend APIs were established in Phase 7; this phase builds the client experience on top of them and fills the remaining backend gaps (invoice and task data in the portal read-model).
 
 ### What's New
 
@@ -40,7 +40,7 @@ Phase 7 established the portal's **backend prototype**: `PortalContact`, `MagicL
 
 ---
 
-## 18.2 Portal Application Architecture
+## 22.2 Portal Application Architecture
 
 ### Monorepo Integration
 
@@ -194,7 +194,7 @@ Add to `compose/docker-compose.yml` as a new service alongside the existing (com
 
 ---
 
-## 18.3 Authentication Flow
+## 22.3 Authentication Flow
 
 The portal uses **magic link authentication** built on the Phase 7 backend (`/portal/auth/*` endpoints). See [ADR-077](../adr/ADR-077-portal-jwt-storage.md) for the JWT storage decision.
 
@@ -280,7 +280,7 @@ sequenceDiagram
 
 ---
 
-## 18.4 Portal Shell and Branding
+## 22.4 Portal Shell and Branding
 
 ### Header Layout
 
@@ -341,9 +341,9 @@ Fixed at the page bottom. Contains:
 
 ---
 
-## 18.5 Portal Pages
+## 22.5 Portal Pages
 
-### 18.5.1 Project List (Home/Dashboard)
+### 22.5.1 Project List (Home/Dashboard)
 
 **URL**: `/(authenticated)/projects`
 
@@ -365,7 +365,7 @@ This is the default landing page after authentication. Projects are displayed as
 
 **No filtering or search in v1.** Clients typically have 5-20 projects — a simple grid is sufficient.
 
-### 18.5.2 Project Detail
+### 22.5.2 Project Detail
 
 **URL**: `/(authenticated)/projects/[id]`
 
@@ -409,7 +409,7 @@ Single page with multiple sections, rendered in order.
 - Posts via `POST /portal/projects/{projectId}/comments` (NEW endpoint).
 - Max 2000 characters. Character count indicator shown when > 1800 characters.
 
-### 18.5.3 Invoice List
+### 22.5.3 Invoice List
 
 **URL**: `/(authenticated)/invoices`
 
@@ -424,7 +424,7 @@ Single page with multiple sections, rendered in order.
 - Sorted by issue date descending (newest first), applied on the backend
 - **Empty state**: "No invoices yet."
 
-### 18.5.4 Invoice Detail
+### 22.5.4 Invoice Detail
 
 **URL**: `/(authenticated)/invoices/[id]`
 
@@ -438,7 +438,7 @@ Single page with multiple sections, rendered in order.
 - **Notes section**: Displayed below totals if `notes` is not null. Read-only text block.
 - No payment action in v1 — the portal shows invoice status but clients cannot pay online.
 
-### 18.5.5 Profile Page
+### 22.5.5 Profile Page
 
 **URL**: `/(authenticated)/profile`
 
@@ -451,9 +451,9 @@ Single page with multiple sections, rendered in order.
 
 ---
 
-## 18.6 Backend Additions
+## 22.6 Backend Additions
 
-### 18.6.1 Portal Read-Model Extensions (V8 Global Migration)
+### 22.6.1 Portal Read-Model Extensions (V8 Global Migration)
 
 Three new tables in the `portal` schema, added via global migration `V8__extend_portal_read_model.sql`. See [ADR-078](../adr/ADR-078-portal-read-model-extension.md) for why the read-model approach is used rather than direct tenant schema queries.
 
@@ -535,7 +535,7 @@ CREATE INDEX IF NOT EXISTS idx_portal_tasks_org
 
 Rationale: Tasks are queried by project (detail page) and cleaned up by org (on org deletion). Only minimal data is synced — name, status, assignee display name. No description, estimated hours, or billable flag. Internal details stay internal.
 
-### 18.6.2 Invoice Sync via Domain Events
+### 22.6.2 Invoice Sync via Domain Events
 
 The existing `PortalEventHandler` is extended with invoice event handlers. The sync follows the same pattern as project and document sync — listen for `@TransactionalEventListener(phase = AFTER_COMMIT)` events, then upsert or delete in the portal read-model.
 
@@ -567,7 +567,7 @@ The sync handler reads the full invoice + line items from the tenant schema (wit
 - `findInvoiceById(UUID id, String orgId)` — returns `Optional<PortalInvoiceView>`
 - `findInvoiceLinesByInvoice(UUID portalInvoiceId)` — returns `List<PortalInvoiceLineView>`
 
-### 18.6.3 Task Sync via Domain Events
+### 22.6.3 Task Sync via Domain Events
 
 **New portal domain events** (added to `portal/event/`):
 
@@ -598,7 +598,7 @@ These are published by `TaskService` alongside existing `DomainEvent` records. T
 - `deletePortalTasksByOrg(String orgId)`
 - `findTasksByProject(UUID portalProjectId, String orgId)` — returns `List<PortalTaskView>`
 
-### 18.6.4 Portal Invoice Endpoints
+### 22.6.4 Portal Invoice Endpoints
 
 Three new endpoints in a `PortalInvoiceController`:
 
@@ -625,7 +625,7 @@ Three new endpoints in a `PortalInvoiceController`:
 - Returns a presigned S3 download URL (same pattern as `PortalDocumentController.presignDownload()`).
 - If no PDF exists, returns 404 with a message indicating the PDF is not yet available.
 
-### 18.6.5 Portal Task Endpoint
+### 22.6.5 Portal Task Endpoint
 
 **`GET /portal/projects/{projectId}/tasks`** — List tasks for a project.
 
@@ -636,7 +636,7 @@ Three new endpoints in a `PortalInvoiceController`:
 
 This endpoint is added to the existing `PortalProjectController` or a new `PortalTaskController`.
 
-### 18.6.6 Public Branding Endpoint
+### 22.6.6 Public Branding Endpoint
 
 **`GET /portal/branding?orgId={orgId}`** — Fetch org branding without authentication.
 
@@ -650,7 +650,7 @@ This endpoint is added to the existing `PortalProjectController` or a new `Porta
 - If org has no branding configured, returns defaults (no logo, null brand color, org name from schema mapping).
 - If `orgId` is invalid or not provisioned, returns 404 (not 401 — this is a public endpoint, so we reveal whether an org exists; this is acceptable because org IDs are not secret and the endpoint returns only branding data).
 
-### 18.6.7 Comment POST Endpoint
+### 22.6.7 Comment POST Endpoint
 
 The existing `PortalCommentController` at `/portal/projects/{projectId}/comments` only supports `GET` (list comments). A `POST` endpoint is needed for clients to submit comments.
 
@@ -667,7 +667,7 @@ The existing `PortalCommentController` at `/portal/projects/{projectId}/comments
 
 ---
 
-## 18.7 API Surface
+## 22.7 API Surface
 
 ### Complete Portal Endpoint Table
 
@@ -815,9 +815,9 @@ Existing endpoints shown in plain text. **New endpoints** (Phase 18) shown in bo
 
 ---
 
-## 18.8 Sequence Diagrams
+## 22.8 Sequence Diagrams
 
-### 18.8.1 Invoice Viewing Flow
+### 22.8.1 Invoice Viewing Flow
 
 ```mermaid
 sequenceDiagram
@@ -850,7 +850,7 @@ sequenceDiagram
     S3-->>C: PDF file download
 ```
 
-### 18.8.2 Comment Posting Flow
+### 22.8.2 Comment Posting Flow
 
 ```mermaid
 sequenceDiagram
@@ -873,7 +873,7 @@ sequenceDiagram
     B->>B: Fan out notifications to project team members
 ```
 
-### 18.8.3 Invoice Sync Flow (Backend-Only)
+### 22.8.3 Invoice Sync Flow (Backend-Only)
 
 ```mermaid
 sequenceDiagram
@@ -899,7 +899,7 @@ sequenceDiagram
 
 ---
 
-## 18.9 Database Migration
+## 22.9 Database Migration
 
 ### V8 — Extend Portal Read-Model
 
@@ -972,7 +972,7 @@ CREATE INDEX IF NOT EXISTS idx_portal_tasks_org
 
 ---
 
-## 18.10 Implementation Guidance
+## 22.10 Implementation Guidance
 
 ### Backend Changes
 
@@ -998,7 +998,7 @@ CREATE INDEX IF NOT EXISTS idx_portal_tasks_org
 
 ### Portal Frontend Files
 
-All files listed in the directory structure (Section 18.2). Key implementation order:
+All files listed in the directory structure (Section 22.2). Key implementation order:
 
 1. **Scaffolding**: `package.json`, `next.config.ts`, `tsconfig.json`, `tailwind.config.ts`, `Dockerfile`
 2. **Auth layer**: `lib/auth.ts`, `lib/api-client.ts`, `hooks/use-auth.ts`
@@ -1032,7 +1032,7 @@ All files listed in the directory structure (Section 18.2). Key implementation o
 
 ---
 
-## 18.11 Permission Model Summary
+## 22.11 Permission Model Summary
 
 ### Portal Contact Access Boundaries
 
@@ -1069,7 +1069,7 @@ The read-model is a **security boundary** — portal queries never touch tenant 
 
 ---
 
-## 18.12 Capability Slices
+## 22.12 Capability Slices
 
 ### Slice 126A — Backend: Invoice Sync + Portal Invoice Endpoints
 
@@ -1226,7 +1226,7 @@ The read-model is a **security boundary** — portal queries never touch tenant 
 
 ---
 
-## 18.13 ADR Index
+## 22.13 ADR Index
 
 | ADR | Title | File |
 |-----|-------|------|

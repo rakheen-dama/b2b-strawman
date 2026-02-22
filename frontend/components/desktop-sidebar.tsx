@@ -2,10 +2,10 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { useUser } from "@clerk/nextjs";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "@/lib/nav-items";
+import { SidebarUserFooter } from "@/components/sidebar-user-footer";
 
 interface DesktopSidebarProps {
   slug: string;
@@ -13,13 +13,6 @@ interface DesktopSidebarProps {
 
 export function DesktopSidebar({ slug }: DesktopSidebarProps) {
   const pathname = usePathname();
-  const { user } = useUser();
-
-  const initials = user
-    ? `${user.firstName?.charAt(0) ?? ""}${user.lastName?.charAt(0) ?? ""}`.toUpperCase() ||
-      user.primaryEmailAddress?.emailAddress?.charAt(0).toUpperCase() ||
-      "?"
-    : "?";
 
   return (
     <aside className="hidden w-60 flex-col bg-slate-950 md:flex">
@@ -68,20 +61,7 @@ export function DesktopSidebar({ slug }: DesktopSidebarProps) {
       </nav>
 
       {/* Footer */}
-      <div className="mx-4 border-t border-white/10" />
-      <div className="flex items-center gap-3 px-4 py-3">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-800 text-xs font-medium text-white">
-          {initials}
-        </div>
-        <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-white">
-            {user?.fullName ?? "User"}
-          </p>
-          <p className="truncate text-xs text-white/60">
-            {user?.primaryEmailAddress?.emailAddress ?? ""}
-          </p>
-        </div>
-      </div>
+      <SidebarUserFooter />
     </aside>
   );
 }

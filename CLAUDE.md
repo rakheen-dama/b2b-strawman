@@ -43,6 +43,47 @@ When working in a git worktree, ALWAYS verify the correct working directory befo
 The worktree path is NOT inside the main repo directory. Before writing the first file, run `pwd` and confirm you 
 are in the worktree directory, not the main repo. Never write files to the main repo when a worktree is active.
 
+## Agent UI Navigation (Mock Auth)
+
+Clerk uses CAPTCHA — agents cannot authenticate on port 3000.
+Use the E2E mock-auth stack on port 3001 instead.
+
+| Service | URL |
+|---------|-----|
+| Frontend (mock auth) | http://localhost:3001 |
+| Backend (e2e profile) | http://localhost:8081 |
+| Mock IDP | http://localhost:8090 |
+| Postgres | localhost:5433 (user: postgres, pass: changeme, db: app) |
+
+**Start/stop the stack:**
+```bash
+bash compose/scripts/start-mock-dev.sh   # Build + start (takes ~3-5 min first time)
+bash compose/scripts/stop-mock-dev.sh    # Tear down + wipe data
+bash compose/scripts/reseed-mock-dev.sh  # Reset data without rebuild
+```
+
+**To authenticate in Playwright:**
+1. Navigate to http://localhost:3001/mock-login
+2. Click "Sign In" (defaults to Alice, owner role)
+3. Redirected to dashboard — proceed with navigation
+
+**Available users:** Alice (owner), Bob (admin), Carol (member)
+**Org slug:** e2e-test-org
+
+**Tailing logs:**
+```bash
+docker compose -f compose/docker-compose.e2e.yml logs -f backend   # Backend logs
+docker compose -f compose/docker-compose.e2e.yml logs -f frontend  # Frontend logs
+```
+
+**Database access:**
+```bash
+docker exec -it e2e-postgres psql -U postgres -d app
+```
+
+**Working in a worktree:** Agents can use `isolation: "worktree"` on the Task tool.
+The E2E stack builds from relative paths, so it picks up the worktree's source code automatically.
+
 ## Reference Docs
 
 - `architecture/ARCHITECTURE.md` — Technical architecture, ADRs, sequence diagrams

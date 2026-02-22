@@ -4,7 +4,6 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Menu } from "lucide-react";
-import { useUser } from "@clerk/nextjs";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -16,6 +15,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { NAV_ITEMS } from "@/lib/nav-items";
+import { SidebarUserFooter } from "@/components/sidebar-user-footer";
 
 interface MobileSidebarProps {
   slug: string;
@@ -24,13 +24,6 @@ interface MobileSidebarProps {
 export function MobileSidebar({ slug }: MobileSidebarProps) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
-  const { user } = useUser();
-
-  const initials = user
-    ? `${user.firstName?.charAt(0) ?? ""}${user.lastName?.charAt(0) ?? ""}`.toUpperCase() ||
-      user.primaryEmailAddress?.emailAddress?.charAt(0).toUpperCase() ||
-      "?"
-    : "?";
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -99,20 +92,7 @@ export function MobileSidebar({ slug }: MobileSidebarProps) {
         </nav>
 
         {/* Footer */}
-        <div className="mx-4 border-t border-white/10" />
-        <div className="flex items-center gap-3 px-4 py-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-800 text-xs font-medium text-white">
-            {initials}
-          </div>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-white">
-              {user?.fullName ?? "User"}
-            </p>
-            <p className="truncate text-xs text-white/60">
-              {user?.primaryEmailAddress?.emailAddress ?? ""}
-            </p>
-          </div>
-        </div>
+        <SidebarUserFooter />
       </SheetContent>
     </Sheet>
   );

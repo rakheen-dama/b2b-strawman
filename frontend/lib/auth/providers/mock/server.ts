@@ -84,6 +84,11 @@ export async function getCurrentUserEmail(): Promise<string | null> {
   }
 }
 
+export async function hasPlan(_plan: string): Promise<boolean> {
+  // Mock mode always returns true — E2E tests run with full Pro features
+  return true;
+}
+
 export async function requireRole(
   role: "admin" | "owner" | "any",
 ): Promise<void> {

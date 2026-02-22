@@ -1,13 +1,12 @@
-// CLERK-SPECIFIC: needs nullable orgId for redirect guard — not abstracted per ADR-085
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";
+import { getAuthContext } from "@/lib/auth";
 import { DesktopSidebar } from "@/components/desktop-sidebar";
 import { MobileSidebar } from "@/components/mobile-sidebar";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { PlanBadge } from "@/components/billing/plan-badge";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { PageTransition } from "@/components/page-transition";
+import { AuthHeaderControls } from "@/components/auth-header-controls";
 
 export default async function OrgLayout({
   children,
@@ -17,13 +16,17 @@ export default async function OrgLayout({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { orgSlug, orgId } = await auth();
 
-  if (!orgId) {
+  let orgSlug: string;
+  try {
+    const ctx = await getAuthContext();
+    orgSlug = ctx.orgSlug;
+  } catch {
+    // No valid auth context (no token or missing org claims) — redirect to dashboard
     redirect("/dashboard");
   }
 
-  if (orgSlug && orgSlug !== slug) {
+  if (orgSlug !== slug) {
     redirect(`/org/${orgSlug}/dashboard`);
   }
 
@@ -35,14 +38,9 @@ export default async function OrgLayout({
           <MobileSidebar slug={slug} />
           <Breadcrumbs slug={slug} />
           <div className="ml-auto flex items-center gap-3">
-            <OrganizationSwitcher
-              afterSelectOrganizationUrl="/org/:slug/dashboard"
-              afterCreateOrganizationUrl="/org/:slug/dashboard"
-              hidePersonal
-            />
+            <AuthHeaderControls />
             <PlanBadge />
             <NotificationBell orgSlug={slug} />
-            <UserButton />
           </div>
         </header>
         <main className="flex-1 bg-background dark:bg-slate-950">

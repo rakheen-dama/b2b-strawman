@@ -23,7 +23,7 @@ After this phase, adding any vendor adapter (Xero, OpenAI, DocuSign, Stripe) is 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 145 | StorageService Port + S3 Refactoring | Backend | — | M | 145A, 145B | **Done** (PRs #302, #303) |
-| 146 | SecretStore Port + Encrypted Database Implementation | Backend | — | S | 146A | |
+| 146 | SecretStore Port + Encrypted Database Implementation | Backend | — | S | 146A | **Done** (PR #304) |
 | 147 | Integration Port Interfaces + NoOp Stubs | Backend | — | M | 147A, 147B | |
 | 148 | OrgIntegration Entity + IntegrationRegistry + BYOAK Infrastructure | Backend | 147 | M | 148A, 148B | |
 | 149 | Feature Flags + IntegrationGuardService | Backend | — | S | 149A | |
@@ -85,7 +85,7 @@ After this phase, adding any vendor adapter (Xero, OpenAI, DocuSign, Stripe) is 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 1a (parallel) | Epic 145 | 145A | `StorageService` interface + `PresignedUrl` record. Foundation types for the port — no service code yet. | **Done** (PR #302) |
-| 1b (parallel) | Epic 146 | 146A | V36 migration (`org_secrets` table) + `OrgSecret` entity + `OrgSecretRepository` + `EncryptedDatabaseSecretStore` with AES-256-GCM. Fully independent. |
+| 1b (parallel) | Epic 146 | 146A | V36 migration (`org_secrets` table) + `OrgSecret` entity + `OrgSecretRepository` + `EncryptedDatabaseSecretStore` with AES-256-GCM. Fully independent. | **Done** (PR #304) |
 | 1c (parallel) | Epic 147 | 147A | `AccountingProvider` + `AiProvider` interfaces + all their domain records + `NoOpAccountingProvider` + `NoOpAiProvider`. Independent of entity layer. |
 | 1d (parallel) | Epic 149 | 149A | 3 boolean columns on `OrgSettings` (V36 migration portion) + `IntegrationGuardService` + `IntegrationDisabledException`. Reads existing `OrgSettingsService`. |
 
@@ -222,7 +222,7 @@ Stage 6: [152B]                                        (after 152A)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **146A** | 146.1–146.8 | V36 migration (`org_secrets` table) + `OrgSecret` entity + `OrgSecretRepository` + `SecretStore` interface + `EncryptedDatabaseSecretStore` (AES-256-GCM) + integration tests for encrypt/decrypt round-trip, missing key fail-fast, cross-tenant isolation. ~6 new files. | |
+| **146A** | 146.1–146.8 | V36 migration (`org_secrets` table) + `OrgSecret` entity + `OrgSecretRepository` + `SecretStore` interface + `EncryptedDatabaseSecretStore` (AES-256-GCM) + integration tests for encrypt/decrypt round-trip, missing key fail-fast, cross-tenant isolation. ~6 new files. | **Done** (PR #304) |
 
 ### Tasks
 

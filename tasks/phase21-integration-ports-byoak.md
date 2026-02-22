@@ -100,7 +100,7 @@ After this phase, adding any vendor adapter (Xero, OpenAI, DocuSign, Stripe) is 
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 3a | Epic 148 | 148A | V36 migration (`org_integrations` table) + `OrgIntegration` entity + `OrgIntegrationRepository` + `@IntegrationAdapter` annotation. Depends on 147B (IntegrationDomain enum must exist). |
+| 3a | Epic 148 | 148A | V36 migration (`org_integrations` table) + `OrgIntegration` entity + `OrgIntegrationRepository` + `@IntegrationAdapter` annotation. Depends on 147B (IntegrationDomain enum must exist). | **Done** (PR #307) |
 | 3b | Epic 148 | 148B | `IntegrationRegistry` component (startup bean discovery, Caffeine cache, `resolve()`, `evict()`). Also annotates `MockPaymentProvider` with `@IntegrationAdapter`. Depends on 148A. |
 
 ### Stage 4: API layer
@@ -364,7 +364,7 @@ Stage 6: [152B]                                        (after 152A)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **148A** | 148.1–148.5 | V36 migration (`org_integrations` table) + `OrgIntegration` entity + `OrgIntegrationRepository` + `@IntegrationAdapter` annotation + annotate the 4 NoOp/stub adapters. ~5 new files, 4 modified. | |
+| **148A** | 148.1–148.5 | V36 migration (`org_integrations` table) + `OrgIntegration` entity + `OrgIntegrationRepository` + `@IntegrationAdapter` annotation + annotate the 4 NoOp/stub adapters. ~5 new files, 4 modified. | **Done** (PR #307) |
 | **148B** | 148.6–148.11 | `IntegrationRegistry` component (startup bean discovery, Caffeine cache, `resolve()`, `evict()`, `availableProviders()`) + unit tests for registry behavior. ~2 new files. | |
 
 ### Tasks

@@ -4,10 +4,10 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.comment.CommentRepository;
-import io.b2mash.b2b.b2bstrawman.config.S3Config.S3Properties;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
+import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -17,8 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 
 @Service
 public class RetentionService {
@@ -31,8 +29,7 @@ public class RetentionService {
   private final DocumentRepository documentRepository;
   private final CommentRepository commentRepository;
   private final AuditService auditService;
-  private final S3Client s3Client;
-  private final S3Properties s3Properties;
+  private final StorageService storageService;
 
   public RetentionService(
       RetentionPolicyRepository policyRepository,
@@ -41,16 +38,14 @@ public class RetentionService {
       DocumentRepository documentRepository,
       CommentRepository commentRepository,
       AuditService auditService,
-      S3Client s3Client,
-      S3Properties s3Properties) {
+      StorageService storageService) {
     this.policyRepository = policyRepository;
     this.customerRepository = customerRepository;
     this.auditEventRepository = auditEventRepository;
     this.documentRepository = documentRepository;
     this.commentRepository = commentRepository;
     this.auditService = auditService;
-    this.s3Client = s3Client;
-    this.s3Properties = s3Properties;
+    this.storageService = storageService;
   }
 
   @Transactional
@@ -157,19 +152,7 @@ public class RetentionService {
             if (docOpt.isPresent()) {
               var doc = docOpt.get();
               if (doc.getS3Key() != null && !"pending".equals(doc.getS3Key())) {
-                try {
-                  s3Client.deleteObject(
-                      DeleteObjectRequest.builder()
-                          .bucket(s3Properties.bucketName())
-                          .key(doc.getS3Key())
-                          .build());
-                } catch (Exception e) {
-                  log.warn(
-                      "Best-effort S3 deletion failed for key={} — object may remain as orphan:"
-                          + " {}",
-                      doc.getS3Key(),
-                      e.getMessage());
-                }
+                storageService.delete(doc.getS3Key());
               }
               documentRepository.delete(doc);
               purged++;

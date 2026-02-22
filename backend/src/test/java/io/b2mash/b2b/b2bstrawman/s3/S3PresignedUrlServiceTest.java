@@ -4,11 +4,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 
+/** Tests the StorageService (S3StorageAdapter) and S3PresignedUrlService key builders. */
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
@@ -68,7 +71,7 @@ class S3PresignedUrlServiceTest {
     }
   }
 
-  @Autowired private S3PresignedUrlService service;
+  @Autowired private StorageService storageService;
 
   @Test
   void uploadUrlAllowsPutAndDownloadUrlAllowsGet() throws IOException, InterruptedException {
@@ -78,12 +81,14 @@ class S3PresignedUrlServiceTest {
     String contentType = "text/plain";
     String fileContent = "Hello, S3 integration test!";
 
-    // Generate upload URL
-    var uploadResult = service.generateUploadUrl(orgId, projectId, documentId, contentType);
+    // Build key using utility
+    String s3Key = S3PresignedUrlService.buildKey(orgId, projectId, documentId);
+
+    // Generate upload URL via StorageService
+    var uploadResult = storageService.generateUploadUrl(s3Key, contentType, Duration.ofHours(1));
 
     assertThat(uploadResult.url()).isNotBlank();
-    assertThat(uploadResult.s3Key()).isEqualTo("org/org_test123/project/proj-aaa/doc-111");
-    assertThat(uploadResult.expiresInSeconds()).isEqualTo(3600);
+    assertThat(uploadResult.expiresAt()).isNotNull();
 
     // Upload via presigned URL
     try (var httpClient = HttpClient.newHttpClient()) {
@@ -97,10 +102,10 @@ class S3PresignedUrlServiceTest {
       var putResponse = httpClient.send(putRequest, HttpResponse.BodyHandlers.ofString());
       assertThat(putResponse.statusCode()).isEqualTo(200);
 
-      // Generate download URL
-      var downloadResult = service.generateDownloadUrl(uploadResult.s3Key());
+      // Generate download URL via StorageService
+      var downloadResult = storageService.generateDownloadUrl(s3Key, Duration.ofHours(1));
       assertThat(downloadResult.url()).isNotBlank();
-      assertThat(downloadResult.expiresInSeconds()).isEqualTo(3600);
+      assertThat(downloadResult.expiresAt()).isNotNull();
 
       // Download via presigned URL and verify content
       var getRequest = HttpRequest.newBuilder().uri(URI.create(downloadResult.url())).GET().build();
@@ -129,21 +134,54 @@ class S3PresignedUrlServiceTest {
 
   @Test
   void uploadUrlContainsBucketAndKey() {
-    var result = service.generateUploadUrl("org_x", "proj-y", "doc-z", "application/pdf");
+    String key = S3PresignedUrlService.buildKey("org_x", "proj-y", "doc-z");
+    var result = storageService.generateUploadUrl(key, "application/pdf", Duration.ofHours(1));
 
     assertThat(result.url()).contains(TEST_BUCKET);
     assertThat(result.url()).contains("org/org_x/project/proj-y/doc-z");
   }
 
   @Test
-  void downloadUrlRejectsInvalidKeyFormat() {
-    assertThatThrownBy(() -> service.generateDownloadUrl("../../etc/passwd"))
-        .isInstanceOf(IllegalArgumentException.class);
+  void uploadAndDownloadBytes() {
+    String key = "org/test-org/project/test-proj/roundtrip-test";
+    byte[] content = "Round-trip test content".getBytes();
 
-    assertThatThrownBy(() -> service.generateDownloadUrl("arbitrary-key"))
-        .isInstanceOf(IllegalArgumentException.class);
+    storageService.upload(key, content, "text/plain");
+    byte[] downloaded = storageService.download(key);
 
-    assertThatThrownBy(() -> service.generateDownloadUrl(null))
+    assertThat(downloaded).isEqualTo(content);
+  }
+
+  @Test
+  void generateDownloadUrlRejectsInvalidKey() {
+    assertThatThrownBy(
+            () -> storageService.generateDownloadUrl("../../etc/passwd", Duration.ofHours(1)))
         .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  void generateUploadUrlRejectsInvalidKey() {
+    assertThatThrownBy(
+            () ->
+                storageService.generateUploadUrl(
+                    "arbitrary/path", "text/plain", Duration.ofHours(1)))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  void generateDownloadUrlRejectsNullKey() {
+    assertThatThrownBy(() -> storageService.generateDownloadUrl(null, Duration.ofHours(1)))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  void deleteIsIdempotent() {
+    String key = "org/test-org/project/test-proj/delete-test";
+    storageService.upload(key, "to-delete".getBytes(), "text/plain");
+
+    // First delete succeeds
+    storageService.delete(key);
+    // Second delete is best-effort (no exception)
+    storageService.delete(key);
   }
 }

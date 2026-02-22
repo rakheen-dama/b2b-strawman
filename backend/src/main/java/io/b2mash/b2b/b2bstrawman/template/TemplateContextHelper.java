@@ -1,13 +1,14 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
+import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
-import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.tag.EntityTagRepository;
 import io.b2mash.b2b.b2bstrawman.tag.TagRepository;
+import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,12 +25,13 @@ import org.springframework.stereotype.Component;
 public class TemplateContextHelper {
 
   private static final Logger log = LoggerFactory.getLogger(TemplateContextHelper.class);
+  private static final Duration LOGO_URL_EXPIRY = Duration.ofHours(1);
 
   private final OrgSettingsRepository orgSettingsRepository;
   private final MemberRepository memberRepository;
   private final EntityTagRepository entityTagRepository;
   private final TagRepository tagRepository;
-  private final S3PresignedUrlService s3PresignedUrlService;
+  private final StorageService storageService;
   private final OrgSchemaMappingRepository orgSchemaMappingRepository;
   private final OrganizationRepository organizationRepository;
 
@@ -38,14 +40,14 @@ public class TemplateContextHelper {
       MemberRepository memberRepository,
       EntityTagRepository entityTagRepository,
       TagRepository tagRepository,
-      S3PresignedUrlService s3PresignedUrlService,
+      StorageService storageService,
       OrgSchemaMappingRepository orgSchemaMappingRepository,
       OrganizationRepository organizationRepository) {
     this.orgSettingsRepository = orgSettingsRepository;
     this.memberRepository = memberRepository;
     this.entityTagRepository = entityTagRepository;
     this.tagRepository = tagRepository;
-    this.s3PresignedUrlService = s3PresignedUrlService;
+    this.storageService = storageService;
     this.orgSchemaMappingRepository = orgSchemaMappingRepository;
     this.organizationRepository = organizationRepository;
   }
@@ -54,7 +56,7 @@ public class TemplateContextHelper {
   public Map<String, Object> buildOrgContext() {
     var orgMap = new LinkedHashMap<String, Object>();
 
-    // Resolve org name from public schema: tenant schema → clerk org ID → organization name
+    // Resolve org name from public schema: tenant schema -> clerk org ID -> organization name
     resolveOrgName(orgMap);
 
     orgSettingsRepository
@@ -67,8 +69,9 @@ public class TemplateContextHelper {
 
               if (settings.getLogoS3Key() != null && !settings.getLogoS3Key().isBlank()) {
                 try {
-                  var result = s3PresignedUrlService.generateDownloadUrl(settings.getLogoS3Key());
-                  orgMap.put("logoUrl", result.url());
+                  var presigned =
+                      storageService.generateDownloadUrl(settings.getLogoS3Key(), LOGO_URL_EXPIRY);
+                  orgMap.put("logoUrl", presigned.url());
                 } catch (Exception e) {
                   log.warn("Failed to generate logo URL for key: {}", settings.getLogoS3Key(), e);
                   orgMap.put("logoUrl", null);

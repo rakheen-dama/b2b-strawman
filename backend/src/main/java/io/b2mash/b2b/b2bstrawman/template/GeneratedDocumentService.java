@@ -2,11 +2,11 @@ package io.b2mash.b2b.b2bstrawman.template;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
-import io.b2mash.b2b.b2bstrawman.config.S3Config.S3Properties;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.event.DocumentGeneratedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.TemplateDetailResponse;
@@ -20,9 +20,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 @Service
 public class GeneratedDocumentService {
@@ -34,8 +31,7 @@ public class GeneratedDocumentService {
   private final MemberRepository memberRepository;
   private final PdfRenderingService pdfRenderingService;
   private final DocumentTemplateService documentTemplateService;
-  private final S3Client s3Client;
-  private final S3Properties s3Properties;
+  private final StorageService storageService;
   private final DocumentRepository documentRepository;
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
@@ -46,8 +42,7 @@ public class GeneratedDocumentService {
       MemberRepository memberRepository,
       PdfRenderingService pdfRenderingService,
       DocumentTemplateService documentTemplateService,
-      S3Client s3Client,
-      S3Properties s3Properties,
+      StorageService storageService,
       DocumentRepository documentRepository,
       AuditService auditService,
       ApplicationEventPublisher eventPublisher) {
@@ -56,8 +51,7 @@ public class GeneratedDocumentService {
     this.memberRepository = memberRepository;
     this.pdfRenderingService = pdfRenderingService;
     this.documentTemplateService = documentTemplateService;
-    this.s3Client = s3Client;
-    this.s3Properties = s3Properties;
+    this.storageService = storageService;
     this.documentRepository = documentRepository;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
@@ -79,10 +73,10 @@ public class GeneratedDocumentService {
     // 2. Load template metadata
     var templateDetail = documentTemplateService.getById(templateId);
 
-    // 3. Upload to S3
+    // 3. Upload to storage
     String tenantId = RequestScopes.TENANT_ID.get();
     String s3Key = "org/" + tenantId + "/generated/" + pdfResult.fileName();
-    uploadToS3(s3Key, pdfResult.pdfBytes());
+    uploadToStorage(s3Key, pdfResult.pdfBytes());
 
     // 4. Build context snapshot
     var contextSnapshot = buildContextSnapshot(templateDetail, entityId);
@@ -197,17 +191,11 @@ public class GeneratedDocumentService {
     return generatedDocument;
   }
 
-  private void uploadToS3(String s3Key, byte[] pdfBytes) {
+  private void uploadToStorage(String s3Key, byte[] pdfBytes) {
     try {
-      var putRequest =
-          PutObjectRequest.builder()
-              .bucket(s3Properties.bucketName())
-              .key(s3Key)
-              .contentType("application/pdf")
-              .build();
-      s3Client.putObject(putRequest, RequestBody.fromBytes(pdfBytes));
+      storageService.upload(s3Key, pdfBytes, "application/pdf");
     } catch (Exception e) {
-      throw new PdfGenerationException("Failed to upload generated PDF to S3", e);
+      throw new PdfGenerationException("Failed to upload generated PDF to storage", e);
     }
   }
 

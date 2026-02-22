@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.member.MemberSyncService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -32,10 +33,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.support.TransactionTemplate;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
@@ -56,7 +53,7 @@ class DataExportServiceTest {
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
-  @MockitoBean private S3Client s3Client;
+  @MockitoBean private StorageService storageService;
 
   private String tenantSchema;
   private UUID memberId;
@@ -96,8 +93,8 @@ class DataExportServiceTest {
 
   @Test
   void generateExport_setsExportFileKeyOnRequest() {
-    when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
-        .thenReturn(PutObjectResponse.builder().build());
+    when(storageService.upload(any(String.class), any(byte[].class), any(String.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
 
     var request =
         runInTenant(
@@ -115,8 +112,8 @@ class DataExportServiceTest {
 
   @Test
   void generateExport_uploadsToS3() {
-    when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
-        .thenReturn(PutObjectResponse.builder().build());
+    when(storageService.upload(any(String.class), any(byte[].class), any(String.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
 
     var request =
         runInTenant(
@@ -126,18 +123,19 @@ class DataExportServiceTest {
 
     runInTenant(() -> dataExportService.generateExport(request.getId(), memberId));
 
-    var putCaptor = ArgumentCaptor.forClass(PutObjectRequest.class);
-    verify(s3Client).putObject(putCaptor.capture(), any(RequestBody.class));
+    var keyCaptor = ArgumentCaptor.forClass(String.class);
+    var contentTypeCaptor = ArgumentCaptor.forClass(String.class);
+    verify(storageService)
+        .upload(keyCaptor.capture(), any(byte[].class), contentTypeCaptor.capture());
 
-    assertThat(putCaptor.getValue().key()).contains("exports/" + request.getId() + ".zip");
-    assertThat(putCaptor.getValue().contentType()).isEqualTo("application/zip");
+    assertThat(keyCaptor.getValue()).contains("exports/" + request.getId() + ".zip");
+    assertThat(contentTypeCaptor.getValue()).isEqualTo("application/zip");
   }
 
   @Test
   void generateExport_producesZipWithCorrectEntries() {
-    var bodyCaptor = ArgumentCaptor.forClass(RequestBody.class);
-    when(s3Client.putObject(any(PutObjectRequest.class), bodyCaptor.capture()))
-        .thenReturn(PutObjectResponse.builder().build());
+    when(storageService.upload(any(String.class), any(byte[].class), any(String.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
 
     var request =
         runInTenant(
@@ -147,15 +145,14 @@ class DataExportServiceTest {
 
     runInTenant(() -> dataExportService.generateExport(request.getId(), memberId));
 
-    // Extract the bytes from the captured RequestBody
-    // We verify the S3 upload was called; the ZIP structure is tested via the entries
-    verify(s3Client).putObject(any(PutObjectRequest.class), any(RequestBody.class));
+    // Verify the storage upload was called
+    verify(storageService).upload(any(String.class), any(byte[].class), any(String.class));
   }
 
   @Test
   void generateExport_auditEventLogged() {
-    when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
-        .thenReturn(PutObjectResponse.builder().build());
+    when(storageService.upload(any(String.class), any(byte[].class), any(String.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
 
     var request =
         runInTenant(

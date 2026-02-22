@@ -3,12 +3,12 @@ package io.b2mash.b2b.b2bstrawman.datarequest;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.comment.CommentRepository;
-import io.b2mash.b2b.b2bstrawman.config.S3Config.S3Properties;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
@@ -28,9 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
@@ -46,8 +43,7 @@ public class DataExportService {
   private final InvoiceRepository invoiceRepository;
   private final TimeEntryRepository timeEntryRepository;
   private final CommentRepository commentRepository;
-  private final S3Client s3Client;
-  private final S3Properties s3Properties;
+  private final StorageService storageService;
   private final ObjectMapper objectMapper;
   private final AuditService auditService;
 
@@ -59,8 +55,7 @@ public class DataExportService {
       InvoiceRepository invoiceRepository,
       TimeEntryRepository timeEntryRepository,
       CommentRepository commentRepository,
-      S3Client s3Client,
-      S3Properties s3Properties,
+      StorageService storageService,
       ObjectMapper objectMapper,
       AuditService auditService) {
     this.requestRepository = requestRepository;
@@ -70,8 +65,7 @@ public class DataExportService {
     this.invoiceRepository = invoiceRepository;
     this.timeEntryRepository = timeEntryRepository;
     this.commentRepository = commentRepository;
-    this.s3Client = s3Client;
-    this.s3Properties = s3Properties;
+    this.storageService = storageService;
     this.objectMapper = objectMapper;
     this.auditService = auditService;
   }
@@ -119,16 +113,9 @@ public class DataExportService {
     // Create ZIP
     byte[] zipBytes = generateZip(jsonBytes, csvBytes);
 
-    // Upload to S3
+    // Upload to storage
     String s3Key = "org/" + RequestScopes.TENANT_ID.get() + "/exports/" + requestId + ".zip";
-
-    PutObjectRequest putRequest =
-        PutObjectRequest.builder()
-            .bucket(s3Properties.bucketName())
-            .key(s3Key)
-            .contentType("application/zip")
-            .build();
-    s3Client.putObject(putRequest, RequestBody.fromBytes(zipBytes));
+    storageService.upload(s3Key, zipBytes, "application/zip");
 
     // Update request with export file key
     request.setExportFileKey(s3Key);

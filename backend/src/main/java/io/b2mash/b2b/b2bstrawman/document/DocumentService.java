@@ -12,10 +12,12 @@ import io.b2mash.b2b.b2bstrawman.event.DocumentUploadedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
@@ -29,10 +31,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class DocumentService {
 
+  private static final Duration URL_EXPIRY = Duration.ofHours(1);
+
   private final DocumentRepository documentRepository;
   private final ProjectAccessService projectAccessService;
   private final CustomerRepository customerRepository;
-  private final S3PresignedUrlService s3Service;
+  private final StorageService storageService;
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
   private final MemberRepository memberRepository;
@@ -42,7 +46,7 @@ public class DocumentService {
       DocumentRepository documentRepository,
       ProjectAccessService projectAccessService,
       CustomerRepository customerRepository,
-      S3PresignedUrlService s3Service,
+      StorageService storageService,
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
       MemberRepository memberRepository,
@@ -50,7 +54,7 @@ public class DocumentService {
     this.documentRepository = documentRepository;
     this.projectAccessService = projectAccessService;
     this.customerRepository = customerRepository;
-    this.s3Service = s3Service;
+    this.storageService = storageService;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
     this.memberRepository = memberRepository;
@@ -93,11 +97,11 @@ public class DocumentService {
     var document =
         documentRepository.save(new Document(projectId, fileName, contentType, size, memberId));
 
-    var presigned =
-        s3Service.generateUploadUrl(
-            orgId, projectId.toString(), document.getId().toString(), contentType);
+    String s3Key =
+        S3PresignedUrlService.buildKey(orgId, projectId.toString(), document.getId().toString());
+    var presigned = storageService.generateUploadUrl(s3Key, contentType, URL_EXPIRY);
 
-    document.assignS3Key(presigned.s3Key());
+    document.assignS3Key(s3Key);
     documentRepository.save(document);
 
     auditService.log(
@@ -110,7 +114,7 @@ public class DocumentService {
                     "scope", "PROJECT", "file_name", fileName, "project_id", projectId.toString()))
             .build());
 
-    return new UploadInitResult(document.getId(), presigned.url(), presigned.expiresInSeconds());
+    return new UploadInitResult(document.getId(), presigned.url(), URL_EXPIRY.toSeconds());
   }
 
   /** Initiate an ORG-scoped document upload. S3 key: org/{orgId}/org-docs/{docId}. */
@@ -129,9 +133,10 @@ public class DocumentService {
             Document.Visibility.INTERNAL);
     document = documentRepository.save(document);
 
-    var presigned = s3Service.generateOrgUploadUrl(orgId, document.getId().toString(), contentType);
+    String s3Key = S3PresignedUrlService.buildOrgKey(orgId, document.getId().toString());
+    var presigned = storageService.generateUploadUrl(s3Key, contentType, URL_EXPIRY);
 
-    document.assignS3Key(presigned.s3Key());
+    document.assignS3Key(s3Key);
     documentRepository.save(document);
 
     auditService.log(
@@ -142,7 +147,7 @@ public class DocumentService {
             .details(Map.of("scope", "ORG", "file_name", fileName))
             .build());
 
-    return new UploadInitResult(document.getId(), presigned.url(), presigned.expiresInSeconds());
+    return new UploadInitResult(document.getId(), presigned.url(), URL_EXPIRY.toSeconds());
   }
 
   /**
@@ -177,11 +182,12 @@ public class DocumentService {
             Document.Visibility.INTERNAL);
     document = documentRepository.save(document);
 
-    var presigned =
-        s3Service.generateCustomerUploadUrl(
-            orgId, customerId.toString(), document.getId().toString(), contentType);
+    String s3Key =
+        S3PresignedUrlService.buildCustomerKey(
+            orgId, customerId.toString(), document.getId().toString());
+    var presigned = storageService.generateUploadUrl(s3Key, contentType, URL_EXPIRY);
 
-    document.assignS3Key(presigned.s3Key());
+    document.assignS3Key(s3Key);
     documentRepository.save(document);
 
     auditService.log(
@@ -192,7 +198,7 @@ public class DocumentService {
             .details(Map.of("scope", "CUSTOMER", "file_name", fileName))
             .build());
 
-    return new UploadInitResult(document.getId(), presigned.url(), presigned.expiresInSeconds());
+    return new UploadInitResult(document.getId(), presigned.url(), URL_EXPIRY.toSeconds());
   }
 
   /** Toggle document visibility between INTERNAL and SHARED. */
@@ -352,7 +358,7 @@ public class DocumentService {
       throw new InvalidStateException(
           "Document not uploaded", "Document has not been uploaded yet");
     }
-    var presigned = s3Service.generateDownloadUrl(document.getS3Key());
+    var presigned = storageService.generateDownloadUrl(document.getS3Key(), URL_EXPIRY);
 
     var accessDetails = new HashMap<String, Object>();
     accessDetails.put("scope", document.getScope());
@@ -384,7 +390,7 @@ public class DocumentService {
               .build());
     }
 
-    return new PresignDownloadResult(presigned.url(), presigned.expiresInSeconds());
+    return new PresignDownloadResult(presigned.url(), URL_EXPIRY.toSeconds());
   }
 
   /**

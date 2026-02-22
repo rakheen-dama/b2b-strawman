@@ -14,13 +14,14 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.integration.storage.PresignedUrl;
+import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccess;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
-import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
-import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService.PresignedDownloadResult;
-import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService.PresignedUploadResult;
 import java.lang.reflect.Field;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -38,7 +39,7 @@ class DocumentServiceTest {
   @Mock private DocumentRepository documentRepository;
   @Mock private ProjectAccessService projectAccessService;
   @Mock private CustomerRepository customerRepository;
-  @Mock private S3PresignedUrlService s3Service;
+  @Mock private StorageService storageService;
   @Mock private AuditService auditService;
   @Mock private ApplicationEventPublisher eventPublisher;
   @Mock private MemberRepository memberRepository;
@@ -112,23 +113,23 @@ class DocumentServiceTest {
               return doc;
             });
 
-    when(s3Service.generateUploadUrl(
-            eq(ORG_ID), eq(PROJECT_ID.toString()), any(), eq("application/pdf")))
+    when(storageService.generateUploadUrl(
+            any(String.class), eq("application/pdf"), any(Duration.class)))
         .thenReturn(
-            new PresignedUploadResult("https://s3.example.com/upload", "org/test/key", 3600));
+            new PresignedUrl("https://s3.example.com/upload", Instant.now().plusSeconds(3600)));
 
     var result =
         service.initiateUpload(
             PROJECT_ID, "doc.pdf", "application/pdf", 5000, ORG_ID, MEMBER_ID, ORG_ROLE);
 
     assertThat(result.presignedUrl()).isEqualTo("https://s3.example.com/upload");
-    assertThat(result.expiresInSeconds()).isEqualTo(3600);
+    assertThat(result.expiresInSeconds()).isGreaterThan(3500); // approximately 3600
     assertThat(result.documentId()).isNotNull();
 
     // Verify document saved twice: initial creation + S3 key assignment
     var captor = ArgumentCaptor.forClass(Document.class);
     verify(documentRepository, times(2)).save(captor.capture());
-    assertThat(captor.getAllValues().getLast().getS3Key()).isEqualTo("org/test/key");
+    assertThat(captor.getAllValues().getLast().getS3Key()).startsWith("org/org_test/project/");
   }
 
   @Test
@@ -155,7 +156,7 @@ class DocumentServiceTest {
                     PROJECT_ID, "doc.pdf", "application/pdf", 5000, ORG_ID, MEMBER_ID, ORG_ROLE))
         .isInstanceOf(ResourceNotFoundException.class);
     verify(documentRepository, never()).save(any());
-    verify(s3Service, never()).generateUploadUrl(any(), any(), any(), any());
+    verify(storageService, never()).generateUploadUrl(any(), any(), any());
   }
 
   @Test
@@ -279,8 +280,9 @@ class DocumentServiceTest {
     when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
     when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, ORG_ROLE))
         .thenReturn(GRANTED);
-    when(s3Service.generateDownloadUrl("org/test/project/123/abc"))
-        .thenReturn(new PresignedDownloadResult("https://s3.example.com/download", 3600));
+    when(storageService.generateDownloadUrl(eq("org/test/project/123/abc"), any(Duration.class)))
+        .thenReturn(
+            new PresignedUrl("https://s3.example.com/download", Instant.now().plusSeconds(3600)));
 
     var result = service.getPresignedDownloadUrl(docId, MEMBER_ID, ORG_ROLE);
 
@@ -299,7 +301,7 @@ class DocumentServiceTest {
 
     assertThatThrownBy(() -> service.getPresignedDownloadUrl(docId, MEMBER_ID, ORG_ROLE))
         .isInstanceOf(InvalidStateException.class);
-    verify(s3Service, never()).generateDownloadUrl(any());
+    verify(storageService, never()).generateDownloadUrl(any(), any());
   }
 
   @Test
@@ -324,7 +326,7 @@ class DocumentServiceTest {
 
     assertThatThrownBy(() -> service.getPresignedDownloadUrl(docId, MEMBER_ID, ORG_ROLE))
         .isInstanceOf(ResourceNotFoundException.class);
-    verify(s3Service, never()).generateDownloadUrl(any());
+    verify(storageService, never()).generateDownloadUrl(any(), any());
   }
 
   // --- ORG-scoped and CUSTOMER-scoped document access tests ---
@@ -394,10 +396,9 @@ class DocumentServiceTest {
     doc.confirmUpload();
 
     when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
-    when(s3Service.generateDownloadUrl("org/test/org-level/abc"))
+    when(storageService.generateDownloadUrl(eq("org/test/org-level/abc"), any(Duration.class)))
         .thenReturn(
-            new S3PresignedUrlService.PresignedDownloadResult(
-                "https://s3.example.com/download", 3600));
+            new PresignedUrl("https://s3.example.com/download", Instant.now().plusSeconds(3600)));
 
     var result = service.getPresignedDownloadUrl(docId, MEMBER_ID, ORG_ROLE);
 
@@ -424,10 +425,9 @@ class DocumentServiceTest {
     doc.confirmUpload();
 
     when(documentRepository.findById(docId)).thenReturn(Optional.of(doc));
-    when(s3Service.generateDownloadUrl("org/test/customer/abc"))
+    when(storageService.generateDownloadUrl(eq("org/test/customer/abc"), any(Duration.class)))
         .thenReturn(
-            new S3PresignedUrlService.PresignedDownloadResult(
-                "https://s3.example.com/download", 3600));
+            new PresignedUrl("https://s3.example.com/download", Instant.now().plusSeconds(3600)));
 
     var result = service.getPresignedDownloadUrl(docId, MEMBER_ID, ORG_ROLE);
 

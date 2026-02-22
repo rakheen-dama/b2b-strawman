@@ -1,12 +1,15 @@
 package io.b2mash.b2b.b2bstrawman.integration.ai;
 
 import io.b2mash.b2b.b2bstrawman.integration.ConnectionTestResult;
+import io.b2mash.b2b.b2bstrawman.integration.IntegrationAdapter;
+import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
+@IntegrationAdapter(domain = IntegrationDomain.AI, slug = "noop")
 public class NoOpAiProvider implements AiProvider {
 
   private static final Logger log = LoggerFactory.getLogger(NoOpAiProvider.class);

@@ -95,9 +95,50 @@ Organize by **feature**, not by layer. Each feature package contains its entity,
 - `prod` — Neon main, AWS S3, full observability
 
 ### Architecture Conventions
-- Never put business logic in controllers. Controllers delegate to services only.
 - Avoid premature abstractions — do not create provider/adapter patterns until there are two concrete implementations (YAGNI).
-- When implementing new features, read existing controller and service patterns in the codebase FIRST before writing code.
+- When implementing new features, read existing service patterns in the codebase FIRST before writing code. Note: some existing controllers violate the thin-controller rule below — do NOT copy their patterns.
+
+### Controller Discipline (Critical — Read This Before Writing Any Controller)
+
+Controllers are **HTTP adapters only**. Every controller method must be a one-liner that delegates to a single service method and wraps the result in `ResponseEntity`. No exceptions.
+
+**Controllers MUST:**
+- Call exactly ONE service method per endpoint
+- Return `ResponseEntity` wrapping the service result
+- Use `@PreAuthorize` for role checks (declarative, not imperative)
+
+**Controllers MUST NOT:**
+- Inject repositories — if you need data, the service fetches it
+- Contain `if/else`, `switch`, or any conditional business logic
+- Orchestrate multiple service calls in sequence
+- Define private helper methods (name resolution, validation, mapping, etc.)
+- Perform data transformation, grouping, or stream operations on results
+- Hardcode business policy constants (file size limits, expiry durations, etc.)
+- Trigger side effects unrelated to the endpoint's purpose (e.g., notification checks in a GET)
+
+**❌ BAD — business logic in controller:**
+```java
+@GetMapping("/reports/{slug}/export-pdf")
+public ResponseEntity<byte[]> exportPdf(@PathVariable String slug, @RequestParam Map<String, String> params) {
+    var definition = reportDefinitionRepository.findBySlug(slug)       // ← repo in controller
+            .orElseThrow(() -> new ResourceNotFoundException(...));
+    var result = reportExecutionService.executeForExport(slug, params); // ← multi-service orchestration
+    byte[] pdf = reportRenderingService.renderPdf(definition, result, params);
+    auditService.log(AuditEventBuilder.builder()...build());           // ← side effect
+    return ResponseEntity.ok().contentType(MediaType.APPLICATION_PDF).body(pdf);
+}
+```
+
+**✅ GOOD — pure delegation:**
+```java
+@GetMapping("/reports/{slug}/export-pdf")
+public ResponseEntity<byte[]> exportPdf(@PathVariable String slug, @RequestParam Map<String, String> params) {
+    var pdf = reportService.exportPdf(slug, params);
+    return ResponseEntity.ok().contentType(MediaType.APPLICATION_PDF).body(pdf.bytes());
+}
+```
+
+**⚠️ Known violations:** Several existing controllers (PortalAuthController, ReportingController, DocumentController, DataRequestController, DashboardController, OrgSettingsController, RetainerAgreementController) predate this rule enforcement. Do NOT use them as reference patterns. All new controllers must follow this discipline.
 
 ## Multitenancy
 

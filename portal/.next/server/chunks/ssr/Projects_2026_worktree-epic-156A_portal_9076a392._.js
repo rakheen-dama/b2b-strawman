@@ -1,3 +1,0 @@
-module.exports=[10420,a=>{a.n(a.i(38051))},58623,a=>{a.n(a.i(89568))},34541,a=>{a.n(a.i(76166))},9831,a=>{a.n(a.i(2459))},90876,a=>{"use strict";var b=a.i(31562);function c(){return(0,b.jsx)("main",{className:"flex min-h-screen items-center justify-center",children:(0,b.jsx)("h1",{className:"text-2xl font-semibold text-foreground",children:"DocTeams Client Portal"})})}a.s(["default",()=>c])}];
-
-//# sourceMappingURL=Projects_2026_worktree-epic-156A_portal_9076a392._.js.map

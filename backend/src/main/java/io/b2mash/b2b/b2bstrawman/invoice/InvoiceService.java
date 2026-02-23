@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleGuard;
 import io.b2mash.b2b.b2bstrawman.compliance.LifecycleAction;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.InvoiceSyncEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoiceApprovedEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoicePaidEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoiceSentEvent;
@@ -801,6 +802,22 @@ public class InvoiceService {
             invoice.getInvoiceNumber(),
             invoice.getCustomerName()));
 
+    eventPublisher.publishEvent(
+        new InvoiceSyncEvent(
+            invoice.getId(),
+            invoice.getCustomerId(),
+            invoice.getInvoiceNumber(),
+            "SENT",
+            invoice.getIssueDate(),
+            invoice.getDueDate(),
+            invoice.getSubtotal(),
+            invoice.getTaxAmount(),
+            invoice.getTotal(),
+            invoice.getCurrency(),
+            invoice.getNotes(),
+            orgIdForEvent,
+            tenantIdForEvent));
+
     return buildResponse(invoice);
   }
 
@@ -882,6 +899,22 @@ public class InvoiceService {
             invoice.getCustomerName(),
             effectiveReference));
 
+    eventPublisher.publishEvent(
+        new InvoiceSyncEvent(
+            invoice.getId(),
+            invoice.getCustomerId(),
+            invoice.getInvoiceNumber(),
+            "PAID",
+            invoice.getIssueDate(),
+            invoice.getDueDate(),
+            invoice.getSubtotal(),
+            invoice.getTaxAmount(),
+            invoice.getTotal(),
+            invoice.getCurrency(),
+            invoice.getNotes(),
+            orgIdForEvent,
+            tenantIdForEvent));
+
     return buildResponse(invoice);
   }
 
@@ -954,6 +987,22 @@ public class InvoiceService {
             invoice.getInvoiceNumber(),
             invoice.getCustomerName(),
             invoice.getApprovedBy()));
+
+    eventPublisher.publishEvent(
+        new InvoiceSyncEvent(
+            invoice.getId(),
+            invoice.getCustomerId(),
+            invoice.getInvoiceNumber(),
+            "VOID",
+            invoice.getIssueDate(),
+            invoice.getDueDate(),
+            invoice.getSubtotal(),
+            invoice.getTaxAmount(),
+            invoice.getTotal(),
+            invoice.getCurrency(),
+            invoice.getNotes(),
+            orgIdForEvent,
+            tenantIdForEvent));
 
     return buildResponse(invoice);
   }

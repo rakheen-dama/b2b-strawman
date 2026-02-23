@@ -20,7 +20,7 @@ Phase 22 builds the **customer-facing portal frontend** -- a separate Next.js 16
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 153 | Portal Read-Model Extension -- Invoice Sync + Endpoints | Backend | -- | M | 153A, 153B | |
+| 153 | Portal Read-Model Extension -- Invoice Sync + Endpoints | Backend | -- | M | 153A, 153B | **Done** (PRs #323, #324) |
 | 154 | Portal Read-Model Extension -- Task Sync + Endpoint | Backend | 153A | S | 154A | |
 | 155 | Portal Branding Endpoint + Comment POST | Backend | -- | S | 155A | |
 | 156 | Portal App Scaffolding + Auth Flow | Portal | 155 | M | 156A, 156B | |
@@ -68,7 +68,7 @@ Phase 22 builds the **customer-facing portal frontend** -- a separate Next.js 16
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 2a (parallel) | Epic 153 | 153B | `PortalInvoiceController` with 3 endpoints. Depends on 153A (read-model repo methods exist). |
+| 2a (parallel) | Epic 153 | 153B | `PortalInvoiceController` with 3 endpoints. Depends on 153A (read-model repo methods exist). | **Done** (PR #324) |
 | 2b (parallel) | Epic 154 | 154A | Task portal events + `PortalEventHandler` task sync + `GET /portal/projects/{id}/tasks`. Depends on 153A (V8 migration includes `portal_tasks` table). |
 
 ### Stage 3: Portal scaffold
@@ -123,7 +123,7 @@ Stage 5: [160A]                                 (after all)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **153A** | 153.1--153.10 | V8 global migration (3 tables, 5 indexes) + `InvoiceSyncEvent` portal domain event + `PortalDomainEvent` permits update + `PortalEventHandler` invoice sync handlers (SENT upsert, PAID status update, VOID delete) + `PortalReadModelRepository` invoice upsert/delete/query methods + `PortalInvoiceView` and `PortalInvoiceLineView` records + `InvoiceService` publishes `InvoiceSyncEvent` on status transitions. ~6 new files, ~4 modified files. | **Done** (PR #323) |
-| **153B** | 153.11--153.16 | `PortalInvoiceController` with 3 endpoints (list, detail, download) + response DTOs + `PortalReadModelService` invoice query methods + integration tests for all endpoints. ~3 new files, ~2 modified files. |  |
+| **153B** | 153.11--153.16 | `PortalInvoiceController` with 3 endpoints (list, detail, download) + response DTOs + `PortalReadModelService` invoice query methods + integration tests for all endpoints. ~3 new files, ~2 modified files. | **Done** (PR #324) |
 
 ### Tasks
 

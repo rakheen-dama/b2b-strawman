@@ -22,7 +22,7 @@ Phase 22 builds the **customer-facing portal frontend** -- a separate Next.js 16
 |------|------|-------|------|--------|--------|--------|
 | 153 | Portal Read-Model Extension -- Invoice Sync + Endpoints | Backend | -- | M | 153A, 153B | **Done** (PRs #323, #324) |
 | 154 | Portal Read-Model Extension -- Task Sync + Endpoint | Backend | 153A | S | 154A | **Done** (PR #325) |
-| 155 | Portal Branding Endpoint + Comment POST | Backend | -- | S | 155A | |
+| 155 | Portal Branding Endpoint + Comment POST | Backend | -- | S | 155A | **Done** (PR #326) |
 | 156 | Portal App Scaffolding + Auth Flow | Portal | 155 | M | 156A, 156B | |
 | 157 | Portal Shell, Branding + Project List Page | Portal | 156 | M | 157A | |
 | 158 | Portal Project Detail Page | Portal | 157, 154, 155 | M | 158A | |
@@ -62,7 +62,7 @@ Phase 22 builds the **customer-facing portal frontend** -- a separate Next.js 16
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 1a (parallel) | Epic 153 | 153A | V8 global migration (all 3 tables) + `InvoiceSyncEvent` + `PortalEventHandler` invoice sync handlers + `PortalReadModelRepository` invoice methods + view records. Foundation for both invoice and task endpoints. | **Done** (PR #323) |
-| 1b (parallel) | Epic 155 | 155A | `PortalBrandingController` (public endpoint) + `PortalCommentController` POST method. Independent of invoice/task sync. |
+| 1b (parallel) | Epic 155 | 155A | `PortalBrandingController` (public endpoint) + `PortalCommentController` POST method. Independent of invoice/task sync. | **Done** (PR #326) |
 
 ### Stage 2: Backend -- remaining endpoints (parallel)
 
@@ -261,7 +261,7 @@ Stage 5: [160A]                                 (after all)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **155A** | 155.1--155.9 | `PortalBrandingController` (public endpoint, no auth) + `CustomerAuthFilter` skip path update + `PortalCommentController` POST method + content validation + comment source=PORTAL + integration tests. ~2 new files, ~3 modified files. |  |
+| **155A** | 155.1--155.9 | `PortalBrandingController` (public endpoint, no auth) + `CustomerAuthFilter` skip path update + `PortalCommentController` POST method + content validation + comment source=PORTAL + integration tests. ~2 new files, ~3 modified files. | **Done** (PR #326) |
 
 ### Tasks
 

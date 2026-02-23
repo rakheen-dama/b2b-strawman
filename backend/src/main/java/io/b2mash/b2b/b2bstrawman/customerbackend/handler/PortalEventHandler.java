@@ -7,10 +7,13 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerUpdatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentDeletedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentVisibilityChangedEvent;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.InvoiceSyncEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectUpdatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.TimeEntryAggregatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import org.slf4j.Logger;
@@ -45,16 +48,22 @@ public class PortalEventHandler {
   private final ProjectRepository projectRepository;
   private final DocumentRepository documentRepository;
   private final CustomerProjectRepository customerProjectRepository;
+  private final InvoiceRepository invoiceRepository;
+  private final InvoiceLineRepository invoiceLineRepository;
 
   public PortalEventHandler(
       PortalReadModelRepository readModelRepo,
       ProjectRepository projectRepository,
       DocumentRepository documentRepository,
-      CustomerProjectRepository customerProjectRepository) {
+      CustomerProjectRepository customerProjectRepository,
+      InvoiceRepository invoiceRepository,
+      InvoiceLineRepository invoiceLineRepository) {
     this.readModelRepo = readModelRepo;
     this.projectRepository = projectRepository;
     this.documentRepository = documentRepository;
     this.customerProjectRepository = customerProjectRepository;
+    this.invoiceRepository = invoiceRepository;
+    this.invoiceLineRepository = invoiceLineRepository;
   }
 
   // ── Customer-project events ────────────────────────────────────────
@@ -302,6 +311,60 @@ public class PortalEventHandler {
             log.warn(
                 "Failed to project TimeEntryAggregatedEvent: projectId={}",
                 event.getProjectId(),
+                e);
+          }
+        });
+  }
+
+  // ── Invoice events ─────────────────────────────────────────────────
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onInvoiceSynced(InvoiceSyncEvent event) {
+    handleInTenantScope(
+        event.getTenantId(),
+        event.getOrgId(),
+        () -> {
+          try {
+            switch (event.getStatus()) {
+              case "SENT" -> {
+                // Upsert the invoice row
+                readModelRepo.upsertPortalInvoice(
+                    event.getInvoiceId(),
+                    event.getOrgId(),
+                    event.getCustomerId(),
+                    event.getInvoiceNumber(),
+                    event.getStatus(),
+                    event.getIssueDate(),
+                    event.getDueDate(),
+                    event.getSubtotal(),
+                    event.getTaxAmount(),
+                    event.getTotal(),
+                    event.getCurrency(),
+                    event.getNotes());
+
+                // Upsert all line items from the tenant schema
+                var lines =
+                    invoiceLineRepository.findByInvoiceIdOrderBySortOrder(event.getInvoiceId());
+                for (var line : lines) {
+                  readModelRepo.upsertPortalInvoiceLine(
+                      line.getId(),
+                      event.getInvoiceId(),
+                      line.getDescription(),
+                      line.getQuantity(),
+                      line.getUnitPrice(),
+                      line.getAmount(),
+                      line.getSortOrder());
+                }
+              }
+              case "PAID" -> readModelRepo.updatePortalInvoiceStatus(event.getInvoiceId(), "PAID");
+              case "VOID" -> readModelRepo.deletePortalInvoice(event.getInvoiceId());
+              default -> log.warn("Unknown InvoiceSyncEvent status: {}", event.getStatus());
+            }
+          } catch (Exception e) {
+            log.warn(
+                "Failed to project InvoiceSyncEvent: invoiceId={}, status={}",
+                event.getInvoiceId(),
+                event.getStatus(),
                 e);
           }
         });

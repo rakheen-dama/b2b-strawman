@@ -2,11 +2,14 @@ package io.b2mash.b2b.b2bstrawman.customerbackend.repository;
 
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalCommentView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalDocumentView;
+import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalInvoiceLineView;
+import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalInvoiceView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalProjectSummaryView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalProjectView;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -395,5 +398,150 @@ public class PortalReadModelRepository {
         .params(projectId, customerId, orgId)
         .query(PortalProjectSummaryView.class)
         .optional();
+  }
+
+  // ── Invoice methods ──────────────────────────────────────────────────
+
+  public void upsertPortalInvoice(
+      UUID id,
+      String orgId,
+      UUID customerId,
+      String invoiceNumber,
+      String status,
+      LocalDate issueDate,
+      LocalDate dueDate,
+      BigDecimal subtotal,
+      BigDecimal taxAmount,
+      BigDecimal total,
+      String currency,
+      String notes) {
+    jdbc.sql(
+            """
+            INSERT INTO portal.portal_invoices
+                (id, org_id, customer_id, invoice_number, status, issue_date, due_date,
+                 subtotal, tax_amount, total, currency, notes, synced_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now())
+            ON CONFLICT (id)
+            DO UPDATE SET status = EXCLUDED.status,
+                          invoice_number = EXCLUDED.invoice_number,
+                          issue_date = EXCLUDED.issue_date,
+                          due_date = EXCLUDED.due_date,
+                          subtotal = EXCLUDED.subtotal,
+                          tax_amount = EXCLUDED.tax_amount,
+                          total = EXCLUDED.total,
+                          notes = EXCLUDED.notes,
+                          synced_at = now()
+            """)
+        .params(
+            id,
+            orgId,
+            customerId,
+            invoiceNumber,
+            status,
+            issueDate,
+            dueDate,
+            subtotal,
+            taxAmount,
+            total,
+            currency,
+            notes)
+        .update();
+  }
+
+  public void upsertPortalInvoiceLine(
+      UUID id,
+      UUID portalInvoiceId,
+      String description,
+      BigDecimal quantity,
+      BigDecimal unitPrice,
+      BigDecimal amount,
+      int sortOrder) {
+    jdbc.sql(
+            """
+            INSERT INTO portal.portal_invoice_lines
+                (id, portal_invoice_id, description, quantity, unit_price, amount, sort_order, synced_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, now())
+            ON CONFLICT (id)
+            DO UPDATE SET description = EXCLUDED.description,
+                          quantity = EXCLUDED.quantity,
+                          unit_price = EXCLUDED.unit_price,
+                          amount = EXCLUDED.amount,
+                          sort_order = EXCLUDED.sort_order,
+                          synced_at = now()
+            """)
+        .params(id, portalInvoiceId, description, quantity, unitPrice, amount, sortOrder)
+        .update();
+  }
+
+  public void updatePortalInvoiceStatus(UUID id, String status) {
+    jdbc.sql(
+            """
+            UPDATE portal.portal_invoices
+            SET status = ?, synced_at = now()
+            WHERE id = ?
+            """)
+        .params(status, id)
+        .update();
+  }
+
+  public void deletePortalInvoice(UUID id) {
+    jdbc.sql(
+            """
+            DELETE FROM portal.portal_invoices
+            WHERE id = ?
+            """)
+        .params(id)
+        .update();
+  }
+
+  public void deletePortalInvoicesByOrg(String orgId) {
+    jdbc.sql(
+            """
+            DELETE FROM portal.portal_invoices
+            WHERE org_id = ?
+            """)
+        .params(orgId)
+        .update();
+  }
+
+  public List<PortalInvoiceView> findInvoicesByCustomer(String orgId, UUID customerId) {
+    return jdbc.sql(
+            """
+            SELECT id, org_id, customer_id, invoice_number, status, issue_date, due_date,
+                   subtotal, tax_amount, total, currency, notes, synced_at
+            FROM portal.portal_invoices
+            WHERE org_id = ? AND customer_id = ?
+            ORDER BY issue_date DESC
+            """)
+        .params(orgId, customerId)
+        .query(PortalInvoiceView.class)
+        .list();
+  }
+
+  public Optional<PortalInvoiceView> findInvoiceById(UUID id, String orgId) {
+    return jdbc.sql(
+            """
+            SELECT id, org_id, customer_id, invoice_number, status, issue_date, due_date,
+                   subtotal, tax_amount, total, currency, notes, synced_at
+            FROM portal.portal_invoices
+            WHERE id = ? AND org_id = ?
+            """)
+        .params(id, orgId)
+        .query(PortalInvoiceView.class)
+        .optional();
+  }
+
+  public List<PortalInvoiceLineView> findInvoiceLinesByInvoice(UUID portalInvoiceId) {
+    return jdbc.sql(
+            """
+            SELECT id, portal_invoice_id, description, quantity, unit_price, amount,
+                   sort_order, synced_at
+            FROM portal.portal_invoice_lines
+            WHERE portal_invoice_id = ?
+            ORDER BY sort_order
+            """)
+        .params(portalInvoiceId)
+        .query(PortalInvoiceLineView.class)
+        .list();
   }
 }

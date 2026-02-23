@@ -19,7 +19,8 @@ public abstract sealed class PortalDomainEvent
         DocumentCreatedEvent,
         DocumentVisibilityChangedEvent,
         DocumentDeletedEvent,
-        TimeEntryAggregatedEvent {
+        TimeEntryAggregatedEvent,
+        InvoiceSyncEvent {
 
   private final String orgId;
   private final String tenantId;

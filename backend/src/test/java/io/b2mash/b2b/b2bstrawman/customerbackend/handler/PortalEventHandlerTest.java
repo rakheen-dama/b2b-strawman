@@ -43,6 +43,8 @@ class PortalEventHandlerTest {
   @Mock private ProjectRepository projectRepository;
   @Mock private DocumentRepository documentRepository;
   @Mock private CustomerProjectRepository customerProjectRepository;
+  @Mock private io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository invoiceRepository;
+  @Mock private io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository invoiceLineRepository;
 
   @InjectMocks private PortalEventHandler handler;
 

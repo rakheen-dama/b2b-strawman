@@ -179,6 +179,15 @@
 | 150 | Integration Management API (Controller + Service) | Backend | 146, 148 | M | 150A, 150B | **Done** (PRs #310, #311) |
 | 151 | Audit Integration for Config Events | Backend | 150 | S | 151A | **Done** (PR #312) |
 | 152 | Integrations Settings UI | Frontend | 149, 150 | M | 152A, 152B | **Done** (PRs #313, #314) |
+| **Phase 22 — Customer Portal Frontend** | | | | | | See [tasks/phase22-customer-portal-frontend.md](tasks/phase22-customer-portal-frontend.md) |
+| 153 | Portal Read-Model Extension -- Invoice Sync + Endpoints | Backend | -- | M | 153A, 153B | 153A **Done** (PR #323) |
+| 154 | Portal Read-Model Extension -- Task Sync + Endpoint | Backend | 153A | S | 154A | |
+| 155 | Portal Branding Endpoint + Comment POST | Backend | -- | S | 155A | |
+| 156 | Portal App Scaffolding + Auth Flow | Portal | 155 | M | 156A, 156B | |
+| 157 | Portal Shell, Branding + Project List Page | Portal | 156 | M | 157A | |
+| 158 | Portal Project Detail Page | Portal | 157, 154, 155 | M | 158A | |
+| 159 | Portal Invoice List + Detail Pages | Portal | 157, 153 | M | 159A | |
+| 160 | Portal Profile, Responsive Polish + Docker | Portal | 156-159 | S | 160A | |
 
 ---
 

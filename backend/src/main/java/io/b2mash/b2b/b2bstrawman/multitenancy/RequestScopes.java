@@ -53,6 +53,14 @@ public final class RequestScopes {
     return ORG_ROLE.isBound() ? ORG_ROLE.get() : null;
   }
 
+  /** Returns the tenant schema name. Throws if not bound by filter chain. */
+  public static String requireTenantId() {
+    if (!TENANT_ID.isBound()) {
+      throw new IllegalStateException("Tenant context not available — TENANT_ID not bound");
+    }
+    return TENANT_ID.get();
+  }
+
   /** Returns the tenant schema name, or null if not bound. */
   public static String getTenantIdOrNull() {
     return TENANT_ID.isBound() ? TENANT_ID.get() : null;

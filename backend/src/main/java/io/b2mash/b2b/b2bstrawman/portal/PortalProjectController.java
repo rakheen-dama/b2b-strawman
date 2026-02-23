@@ -67,6 +67,24 @@ public class PortalProjectController {
             project.createdAt()));
   }
 
+  /** Lists tasks for a specific project linked to the authenticated customer. */
+  @GetMapping("/{projectId}/tasks")
+  public ResponseEntity<List<PortalTaskResponse>> listTasks(@PathVariable UUID projectId) {
+    UUID customerId = RequestScopes.requireCustomerId();
+    String orgId = RequestScopes.requireOrgId();
+    var tasks = portalReadModelService.listTasks(orgId, customerId, projectId);
+
+    var response =
+        tasks.stream()
+            .map(
+                t ->
+                    new PortalTaskResponse(
+                        t.id(), t.name(), t.status(), t.assigneeName(), t.sortOrder()))
+            .toList();
+
+    return ResponseEntity.ok(response);
+  }
+
   public record PortalProjectResponse(
       UUID id, String name, String description, long documentCount, Instant createdAt) {}
 
@@ -78,4 +96,7 @@ public class PortalProjectController {
       int documentCount,
       int commentCount,
       Instant createdAt) {}
+
+  public record PortalTaskResponse(
+      UUID id, String name, String status, String assigneeName, int sortOrder) {}
 }

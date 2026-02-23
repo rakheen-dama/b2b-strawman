@@ -8,6 +8,9 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentDeletedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentVisibilityChangedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.InvoiceSyncEvent;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.PortalTaskCreatedEvent;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.PortalTaskDeletedEvent;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.PortalTaskUpdatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectUpdatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.TimeEntryAggregatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
@@ -108,6 +111,7 @@ public class PortalEventHandler {
         event.getOrgId(),
         () -> {
           try {
+            readModelRepo.deleteTasksByPortalProjectId(event.getProjectId(), event.getOrgId());
             readModelRepo.deletePortalProject(event.getProjectId(), event.getCustomerId());
           } catch (Exception e) {
             log.warn(
@@ -372,6 +376,64 @@ public class PortalEventHandler {
                 event.getInvoiceId(),
                 event.getStatus(),
                 e);
+          }
+        });
+  }
+
+  // ── Task events ────────────────────────────────────────────────────
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onTaskCreated(PortalTaskCreatedEvent event) {
+    handleInTenantScope(
+        event.getTenantId(),
+        event.getOrgId(),
+        () -> {
+          try {
+            readModelRepo.upsertPortalTask(
+                event.getTaskId(),
+                event.getOrgId(),
+                event.getProjectId(),
+                event.getName(),
+                event.getStatus(),
+                event.getAssigneeName(),
+                event.getSortOrder());
+          } catch (Exception e) {
+            log.warn("Failed to project PortalTaskCreatedEvent: taskId={}", event.getTaskId(), e);
+          }
+        });
+  }
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onTaskUpdated(PortalTaskUpdatedEvent event) {
+    handleInTenantScope(
+        event.getTenantId(),
+        event.getOrgId(),
+        () -> {
+          try {
+            readModelRepo.upsertPortalTask(
+                event.getTaskId(),
+                event.getOrgId(),
+                event.getProjectId(),
+                event.getName(),
+                event.getStatus(),
+                event.getAssigneeName(),
+                event.getSortOrder());
+          } catch (Exception e) {
+            log.warn("Failed to project PortalTaskUpdatedEvent: taskId={}", event.getTaskId(), e);
+          }
+        });
+  }
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onTaskDeleted(PortalTaskDeletedEvent event) {
+    handleInTenantScope(
+        event.getTenantId(),
+        event.getOrgId(),
+        () -> {
+          try {
+            readModelRepo.deletePortalTask(event.getTaskId(), event.getOrgId());
+          } catch (Exception e) {
+            log.warn("Failed to project PortalTaskDeletedEvent: taskId={}", event.getTaskId(), e);
           }
         });
   }

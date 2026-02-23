@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalInvoiceLineView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalInvoiceView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalProjectSummaryView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalProjectView;
+import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalTaskView;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -552,6 +553,75 @@ public class PortalReadModelRepository {
             """)
         .params(portalInvoiceId)
         .query(PortalInvoiceLineView.class)
+        .list();
+  }
+
+  // ── Task methods ─────────────────────────────────────────────────────
+
+  public void upsertPortalTask(
+      UUID id,
+      String orgId,
+      UUID portalProjectId,
+      String name,
+      String status,
+      String assigneeName,
+      int sortOrder) {
+    jdbc.sql(
+            """
+            INSERT INTO portal.portal_tasks
+                (id, org_id, portal_project_id, name, status, assignee_name, sort_order, synced_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, now())
+            ON CONFLICT (id)
+            DO UPDATE SET name = EXCLUDED.name,
+                          status = EXCLUDED.status,
+                          assignee_name = EXCLUDED.assignee_name,
+                          sort_order = EXCLUDED.sort_order,
+                          synced_at = now()
+            """)
+        .params(id, orgId, portalProjectId, name, status, assigneeName, sortOrder)
+        .update();
+  }
+
+  public void deletePortalTask(UUID id, String orgId) {
+    jdbc.sql(
+            """
+            DELETE FROM portal.portal_tasks
+            WHERE id = ? AND org_id = ?
+            """)
+        .params(id, orgId)
+        .update();
+  }
+
+  public void deleteTasksByPortalProjectId(UUID portalProjectId, String orgId) {
+    jdbc.sql(
+            """
+            DELETE FROM portal.portal_tasks
+            WHERE portal_project_id = ? AND org_id = ?
+            """)
+        .params(portalProjectId, orgId)
+        .update();
+  }
+
+  public void deletePortalTasksByOrg(String orgId) {
+    jdbc.sql(
+            """
+            DELETE FROM portal.portal_tasks
+            WHERE org_id = ?
+            """)
+        .params(orgId)
+        .update();
+  }
+
+  public List<PortalTaskView> findTasksByProject(UUID portalProjectId, String orgId) {
+    return jdbc.sql(
+            """
+            SELECT id, org_id, portal_project_id, name, status, assignee_name, sort_order
+            FROM portal.portal_tasks
+            WHERE portal_project_id = ? AND org_id = ?
+            ORDER BY sort_order ASC
+            """)
+        .params(portalProjectId, orgId)
+        .query(PortalTaskView.class)
         .list();
   }
 }

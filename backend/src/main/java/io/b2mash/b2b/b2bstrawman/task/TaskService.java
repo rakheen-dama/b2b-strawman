@@ -2,6 +2,10 @@ package io.b2mash.b2b.b2bstrawman.task;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.PortalTaskCreatedEvent;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.PortalTaskDeletedEvent;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.PortalTaskUpdatedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskAssignedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskClaimedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
@@ -48,6 +52,7 @@ public class TaskService {
   private final FieldGroupRepository fieldGroupRepository;
   private final FieldGroupMemberRepository fieldGroupMemberRepository;
   private final FieldDefinitionRepository fieldDefinitionRepository;
+  private final CustomerProjectRepository customerProjectRepository;
 
   public TaskService(
       TaskRepository taskRepository,
@@ -59,7 +64,8 @@ public class TaskService {
       CustomFieldValidator customFieldValidator,
       FieldGroupRepository fieldGroupRepository,
       FieldGroupMemberRepository fieldGroupMemberRepository,
-      FieldDefinitionRepository fieldDefinitionRepository) {
+      FieldDefinitionRepository fieldDefinitionRepository,
+      CustomerProjectRepository customerProjectRepository) {
     this.taskRepository = taskRepository;
     this.projectAccessService = projectAccessService;
     this.projectMemberRepository = projectMemberRepository;
@@ -70,6 +76,7 @@ public class TaskService {
     this.fieldGroupRepository = fieldGroupRepository;
     this.fieldGroupMemberRepository = fieldGroupMemberRepository;
     this.fieldDefinitionRepository = fieldDefinitionRepository;
+    this.customerProjectRepository = customerProjectRepository;
   }
 
   @Transactional(readOnly = true)
@@ -193,6 +200,9 @@ public class TaskService {
             .entityId(task.getId())
             .details(auditDetails)
             .build());
+
+    // Publish portal task event if project is customer-linked
+    publishPortalTaskEventIfLinked(task, PortalTaskCreatedEvent::new);
 
     return task;
   }
@@ -339,8 +349,8 @@ public class TaskService {
     // Event publication for notification fan-out
     boolean assigneeChanged = !Objects.equals(oldAssigneeId, assigneeId);
     boolean statusChanged = !Objects.equals(oldStatus, status);
-    String tenantId = RequestScopes.getTenantIdOrNull();
-    String orgId = RequestScopes.getOrgIdOrNull();
+    String tenantId = RequestScopes.requireTenantId();
+    String orgId = RequestScopes.requireOrgId();
 
     if (assigneeChanged && assigneeId != null) {
       String actorName = resolveActorName(memberId);
@@ -384,6 +394,9 @@ public class TaskService {
               task.getAssigneeId(),
               task.getTitle()));
     }
+
+    // Publish portal task event if project is customer-linked
+    publishPortalTaskEventIfLinked(task, PortalTaskUpdatedEvent::new);
 
     return task;
   }
@@ -460,6 +473,14 @@ public class TaskService {
             .entityId(task.getId())
             .details(Map.of("title", task.getTitle(), "project_id", task.getProjectId().toString()))
             .build());
+
+    // Publish portal task deleted event if project is customer-linked
+    var customerLinksForDelete = customerProjectRepository.findByProjectId(task.getProjectId());
+    if (!customerLinksForDelete.isEmpty()) {
+      String tenantId = RequestScopes.requireTenantId();
+      String orgId = RequestScopes.requireOrgId();
+      eventPublisher.publishEvent(new PortalTaskDeletedEvent(task.getId(), orgId, tenantId));
+    }
   }
 
   @Transactional
@@ -504,8 +525,8 @@ public class TaskService {
             .build());
 
     String actorName = resolveActorName(memberId);
-    String tenantId = RequestScopes.getTenantIdOrNull();
-    String orgId = RequestScopes.getOrgIdOrNull();
+    String tenantId = RequestScopes.requireTenantId();
+    String orgId = RequestScopes.requireOrgId();
     eventPublisher.publishEvent(
         new TaskClaimedEvent(
             "task.claimed",
@@ -520,6 +541,9 @@ public class TaskService {
             Map.of("title", task.getTitle()),
             null, // previousAssigneeId (always null — claim only works on unassigned tasks)
             task.getTitle()));
+
+    // Publish portal task updated event if project is customer-linked
+    publishPortalTaskEventIfLinked(task, PortalTaskUpdatedEvent::new);
 
     return task;
   }
@@ -563,7 +587,49 @@ public class TaskService {
                     "project_id", task.getProjectId().toString()))
             .build());
 
+    // Publish portal task updated event if project is customer-linked
+    publishPortalTaskEventIfLinked(task, PortalTaskUpdatedEvent::new);
+
     return task;
+  }
+
+  /**
+   * Publishes a portal task event if the task's project is linked to any customer. The event
+   * factory is used to construct the correct event subtype (created, updated, deleted).
+   */
+  private void publishPortalTaskEventIfLinked(Task task, PortalTaskEventFactory eventFactory) {
+    var customerLinks = customerProjectRepository.findByProjectId(task.getProjectId());
+    if (!customerLinks.isEmpty()) {
+      String tenantId = RequestScopes.requireTenantId();
+      String orgId = RequestScopes.requireOrgId();
+      String assigneeName =
+          task.getAssigneeId() != null
+              ? memberNameResolver.resolveNameOrNull(task.getAssigneeId())
+              : null;
+      eventPublisher.publishEvent(
+          eventFactory.create(
+              task.getId(),
+              task.getProjectId(),
+              task.getTitle(),
+              task.getStatus(),
+              assigneeName,
+              0,
+              orgId,
+              tenantId));
+    }
+  }
+
+  @FunctionalInterface
+  private interface PortalTaskEventFactory {
+    Object create(
+        UUID taskId,
+        UUID projectId,
+        String name,
+        String status,
+        String assigneeName,
+        int sortOrder,
+        String orgId,
+        String tenantId);
   }
 
   private String resolveActorName(UUID memberId) {

@@ -1,9 +1,10 @@
 // === Auth ===
 
 export interface AuthExchangeResponse {
-  token: string;
+  jwt: string;
   customerId: string;
   customerName: string;
+  email: string;
 }
 
 export interface MagicLinkResponse {

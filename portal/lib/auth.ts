@@ -1,3 +1,11 @@
+/**
+ * Portal authentication state stored in localStorage.
+ *
+ * Security note: Storing JWTs in localStorage is an accepted tradeoff for the
+ * customer portal. The portal is a separate Next.js app (not the main SaaS
+ * frontend) with limited scope. Customer portal JWTs are short-lived and
+ * scoped to a single tenant. See ADR-077 for the full rationale.
+ */
 import { decodeJwt } from "jose";
 
 const JWT_KEY = "portal_jwt";
@@ -10,6 +18,29 @@ export interface CustomerInfo {
   orgId: string;
 }
 
+// --- External store change notification ---
+// Used by useSyncExternalStore in useAuth hook.
+let listeners: Array<() => void> = [];
+let version = 0;
+
+export function subscribeAuth(listener: () => void): () => void {
+  listeners = [...listeners, listener];
+  return () => {
+    listeners = listeners.filter((l) => l !== listener);
+  };
+}
+
+export function emitAuthChange(): void {
+  version++;
+  for (const listener of listeners) {
+    listener();
+  }
+}
+
+export function getAuthVersion(): number {
+  return version;
+}
+
 /**
  * Stores the portal JWT and customer info in localStorage.
  * Called after successful token exchange.
@@ -18,6 +49,7 @@ export function storeAuth(jwt: string, customer: CustomerInfo): void {
   if (typeof window === "undefined") return;
   localStorage.setItem(JWT_KEY, jwt);
   localStorage.setItem(CUSTOMER_KEY, JSON.stringify(customer));
+  emitAuthChange();
 }
 
 /**
@@ -62,6 +94,7 @@ export function clearAuth(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(JWT_KEY);
   localStorage.removeItem(CUSTOMER_KEY);
+  emitAuthChange();
 }
 
 /**

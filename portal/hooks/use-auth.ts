@@ -2,7 +2,13 @@
 
 import { useCallback, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
-import { getAuth, clearAuth, type CustomerInfo } from "@/lib/auth";
+import {
+  getAuth,
+  clearAuth,
+  subscribeAuth,
+  getAuthVersion,
+  type CustomerInfo,
+} from "@/lib/auth";
 
 interface UseAuthReturn {
   isAuthenticated: boolean;
@@ -19,28 +25,20 @@ interface AuthSnapshot {
 
 const emptySnapshot: AuthSnapshot = { jwt: null, customer: null };
 
-// Listeners for useSyncExternalStore
-let listeners: Array<() => void> = [];
-
-function subscribe(listener: () => void): () => void {
-  listeners = [...listeners, listener];
-  return () => {
-    listeners = listeners.filter((l) => l !== listener);
-  };
-}
-
-function emitChange(): void {
-  for (const listener of listeners) {
-    listener();
-  }
-}
+// Cached snapshot — only recomputed when version changes.
+let cachedSnapshot: AuthSnapshot = emptySnapshot;
+let cachedVersion = -1;
 
 function getSnapshot(): AuthSnapshot {
-  const auth = getAuth();
-  if (auth) {
-    return { jwt: auth.jwt, customer: auth.customer };
+  const currentVersion = getAuthVersion();
+  if (currentVersion !== cachedVersion) {
+    cachedVersion = currentVersion;
+    const auth = getAuth();
+    cachedSnapshot = auth
+      ? { jwt: auth.jwt, customer: auth.customer }
+      : emptySnapshot;
   }
-  return emptySnapshot;
+  return cachedSnapshot;
 }
 
 function getServerSnapshot(): AuthSnapshot {
@@ -50,14 +48,18 @@ function getServerSnapshot(): AuthSnapshot {
 /**
  * React hook for portal authentication state.
  * Uses useSyncExternalStore to read from localStorage without useEffect.
+ * Auth changes (storeAuth/clearAuth) emit notifications automatically.
  */
 export function useAuth(): UseAuthReturn {
   const router = useRouter();
-  const snapshot = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const snapshot = useSyncExternalStore(
+    subscribeAuth,
+    getSnapshot,
+    getServerSnapshot
+  );
 
   const logout = useCallback(() => {
     clearAuth();
-    emitChange();
     router.push("/login");
   }, [router]);
 

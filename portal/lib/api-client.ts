@@ -4,7 +4,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_PORTAL_API_URL ?? "http://localhost:808
 
 /**
  * Portal API fetch wrapper. Injects the JWT as a Bearer token.
- * On 401, clears auth and redirects to /login.
+ * On 401, clears auth (triggers useAuth re-render) and redirects to /login.
  */
 export async function portalFetch(
   path: string,
@@ -26,6 +26,7 @@ export async function portalFetch(
   });
 
   if (response.status === 401) {
+    // clearAuth() emits change so useAuth hook updates immediately
     clearAuth();
     if (typeof window !== "undefined") {
       window.location.href = "/login";
@@ -43,7 +44,8 @@ export async function portalFetch(
 export async function portalGet<T>(path: string): Promise<T> {
   const response = await portalFetch(path);
   if (!response.ok) {
-    throw new Error(`API error: ${response.status} ${response.statusText}`);
+    const body = await response.text();
+    throw new Error(`API error: ${response.status} ${body}`);
   }
   return response.json() as Promise<T>;
 }
@@ -58,7 +60,8 @@ export async function portalPost<T>(path: string, body: unknown): Promise<T> {
     body: JSON.stringify(body),
   });
   if (!response.ok) {
-    throw new Error(`API error: ${response.status} ${response.statusText}`);
+    const respBody = await response.text();
+    throw new Error(`API error: ${response.status} ${respBody}`);
   }
   return response.json() as Promise<T>;
 }

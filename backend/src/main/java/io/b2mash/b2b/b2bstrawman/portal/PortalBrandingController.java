@@ -5,12 +5,15 @@ import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,16 +33,20 @@ public class PortalBrandingController {
   private final OrganizationRepository organizationRepository;
   private final OrgSettingsRepository orgSettingsRepository;
   private final StorageService storageService;
+  private final TransactionTemplate readOnlyTxTemplate;
 
   public PortalBrandingController(
       OrgSchemaMappingRepository orgSchemaMappingRepository,
       OrganizationRepository organizationRepository,
       OrgSettingsRepository orgSettingsRepository,
-      StorageService storageService) {
+      StorageService storageService,
+      PlatformTransactionManager txManager) {
     this.orgSchemaMappingRepository = orgSchemaMappingRepository;
     this.organizationRepository = organizationRepository;
     this.orgSettingsRepository = orgSettingsRepository;
     this.storageService = storageService;
+    this.readOnlyTxTemplate = new TransactionTemplate(txManager);
+    this.readOnlyTxTemplate.setReadOnly(true);
   }
 
   @GetMapping("/portal/branding")
@@ -56,11 +63,13 @@ public class PortalBrandingController {
             .findByClerkOrgId(orgId)
             .orElseThrow(() -> new ResourceNotFoundException("Organization", orgId));
 
-    // Read OrgSettings within tenant scope (branding endpoint is unauthenticated, no TENANT_ID
-    // bound)
-    var settings =
+    // Read OrgSettings within tenant scope with a transaction
+    OrgSettings settings =
         ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
-            .call(() -> orgSettingsRepository.findForCurrentTenant().orElse(null));
+            .call(
+                () ->
+                    readOnlyTxTemplate.execute(
+                        status -> orgSettingsRepository.findForCurrentTenant().orElse(null)));
 
     // Build response
     String logoUrl = null;

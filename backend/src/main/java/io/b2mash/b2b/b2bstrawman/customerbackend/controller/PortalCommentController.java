@@ -1,10 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.customerbackend.controller;
 
-import io.b2mash.b2b.b2bstrawman.comment.Comment;
-import io.b2mash.b2b.b2bstrawman.comment.CommentRepository;
-import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
+import io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalCommentService;
 import io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalReadModelService;
-import io.b2mash.b2b.b2bstrawman.event.CommentCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import jakarta.validation.Valid;
@@ -12,9 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,22 +28,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class PortalCommentController {
 
   private final PortalReadModelService portalReadModelService;
-  private final CommentRepository commentRepository;
+  private final PortalCommentService portalCommentService;
   private final PortalContactRepository portalContactRepository;
-  private final PortalReadModelRepository readModelRepository;
-  private final ApplicationEventPublisher eventPublisher;
 
   public PortalCommentController(
       PortalReadModelService portalReadModelService,
-      CommentRepository commentRepository,
-      PortalContactRepository portalContactRepository,
-      PortalReadModelRepository readModelRepository,
-      ApplicationEventPublisher eventPublisher) {
+      PortalCommentService portalCommentService,
+      PortalContactRepository portalContactRepository) {
     this.portalReadModelService = portalReadModelService;
-    this.commentRepository = commentRepository;
+    this.portalCommentService = portalCommentService;
     this.portalContactRepository = portalContactRepository;
-    this.readModelRepository = readModelRepository;
-    this.eventPublisher = eventPublisher;
   }
 
   /** Lists comments for a portal project. Returns 404 if the project is not linked to customer. */
@@ -88,32 +77,10 @@ public class PortalCommentController {
       }
     }
 
-    // Create comment (TENANT_ID already bound by CustomerAuthFilter — uses correct schema)
+    // Delegate to service (transactional: save, read-model sync, audit, event)
     var comment =
-        new Comment("PROJECT", projectId, projectId, authorId, request.content(), "SHARED");
-    comment = commentRepository.save(comment);
-
-    // Sync to portal read-model
-    readModelRepository.upsertPortalComment(
-        comment.getId(), orgId, projectId, authorName, request.content(), comment.getCreatedAt());
-
-    // Publish event for notifications
-    String tenantId = RequestScopes.getTenantIdOrNull();
-    eventPublisher.publishEvent(
-        new CommentCreatedEvent(
-            "comment.created",
-            "comment",
-            comment.getId(),
-            projectId,
-            authorId,
-            authorName,
-            tenantId,
-            orgId,
-            Instant.now(),
-            Map.of("body", request.content(), "source", "PORTAL"),
-            "PROJECT",
-            projectId,
-            "SHARED"));
+        portalCommentService.createPortalComment(
+            projectId, authorId, authorName, request.content(), orgId);
 
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(

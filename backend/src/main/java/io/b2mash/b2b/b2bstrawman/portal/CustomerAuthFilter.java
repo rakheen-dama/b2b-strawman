@@ -114,6 +114,10 @@ public class CustomerAuthFilter extends OncePerRequestFilter {
     if (path.startsWith("/portal/dev/")) {
       return true;
     }
+    // Allow unauthenticated access to /portal/branding (public branding for login page)
+    if (path.startsWith("/portal/branding")) {
+      return true;
+    }
     // Allow unauthenticated access to /portal/auth/** (magic link request/verify)
     return path.startsWith("/portal/auth/");
   }

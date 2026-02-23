@@ -75,7 +75,7 @@ Phase 22 builds the **customer-facing portal frontend** -- a separate Next.js 16
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 3a | Epic 156 | 156A | Portal app scaffolding: `package.json`, Next.js config, Tailwind, Shadcn init, `lib/auth.ts`, `lib/api-client.ts`, `lib/types.ts`, `hooks/use-auth.ts`. |
+| 3a | Epic 156 | 156A | Portal app scaffolding: `package.json`, Next.js config, Tailwind, Shadcn init, `lib/auth.ts`, `lib/api-client.ts`, `lib/types.ts`, `hooks/use-auth.ts`. | **Done** (PR #327) |
 | 3b | Epic 156 | 156B | Login page, token exchange page, root redirect. Depends on 156A (auth layer) and 155A (branding endpoint). |
 
 ### Stage 4: Portal pages (partially parallel)
@@ -319,7 +319,7 @@ Stage 5: [160A]                                 (after all)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **156A** | 156.1--156.7 | Portal directory scaffolding: `package.json`, `next.config.ts`, `tsconfig.json`, `tailwind.config.ts`, `vitest.config.ts`, Shadcn UI init (Button, Card, Input, Label), `lib/auth.ts`, `lib/api-client.ts`, `lib/types.ts`, `hooks/use-auth.ts`, `app/layout.tsx` (root HTML shell). ~12 new files. |  |
+| **156A** | 156.1--156.7 | Portal directory scaffolding: `package.json`, `next.config.ts`, `tsconfig.json`, `tailwind.config.ts`, `vitest.config.ts`, Shadcn UI init (Button, Card, Input, Label), `lib/auth.ts`, `lib/api-client.ts`, `lib/types.ts`, `hooks/use-auth.ts`, `app/layout.tsx` (root HTML shell). ~12 new files. | **Done** (PR #327) |
 | **156B** | 156.8--156.14 | `app/login/page.tsx` (magic link request form with org branding), `app/auth/exchange/page.tsx` (token exchange + JWT storage + redirect), `app/page.tsx` (root redirect), `app/not-found.tsx`, auth flow tests. ~6 new files. |  |
 
 ### Tasks

@@ -14,16 +14,19 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerUpdatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentDeletedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentVisibilityChangedEvent;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.InvoiceSyncEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectUpdatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.TimeEntryAggregatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalDocumentView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -395,7 +398,148 @@ class PortalEventHandlerTest {
     verifyNoInteractions(readModelRepo);
   }
 
+  // ── 12. InvoiceSynced SENT -> upserts invoice + line items ──────────
+
+  @Test
+  void onInvoiceSynced_sent_upsertsInvoiceAndLineItems() {
+    var invoiceId = UUID.randomUUID();
+    var customerId = UUID.randomUUID();
+    var lineId1 = UUID.randomUUID();
+    var lineId2 = UUID.randomUUID();
+    var event =
+        new InvoiceSyncEvent(
+            invoiceId,
+            customerId,
+            "INV-001",
+            "SENT",
+            LocalDate.of(2026, 2, 1),
+            LocalDate.of(2026, 3, 1),
+            new BigDecimal("1000.00"),
+            new BigDecimal("150.00"),
+            new BigDecimal("1150.00"),
+            "ZAR",
+            "Test notes",
+            ORG_ID,
+            TENANT_ID);
+
+    var line1 =
+        new InvoiceLine(
+            invoiceId, null, null, "Service A", new BigDecimal("10"), new BigDecimal("100.00"), 0);
+    setFieldSilent(line1, "id", lineId1);
+    var line2 =
+        new InvoiceLine(
+            invoiceId, null, null, "Service B", new BigDecimal("5"), new BigDecimal("50.00"), 1);
+    setFieldSilent(line2, "id", lineId2);
+
+    when(invoiceLineRepository.findByInvoiceIdOrderBySortOrder(invoiceId))
+        .thenReturn(List.of(line1, line2));
+
+    handler.onInvoiceSynced(event);
+
+    verify(readModelRepo)
+        .upsertPortalInvoice(
+            invoiceId,
+            ORG_ID,
+            customerId,
+            "INV-001",
+            "SENT",
+            LocalDate.of(2026, 2, 1),
+            LocalDate.of(2026, 3, 1),
+            new BigDecimal("1000.00"),
+            new BigDecimal("150.00"),
+            new BigDecimal("1150.00"),
+            "ZAR",
+            "Test notes");
+    verify(readModelRepo).deletePortalInvoiceLinesByInvoice(invoiceId);
+    verify(readModelRepo)
+        .upsertPortalInvoiceLine(
+            lineId1,
+            invoiceId,
+            "Service A",
+            new BigDecimal("10"),
+            new BigDecimal("100.00"),
+            line1.getAmount(),
+            0);
+    verify(readModelRepo)
+        .upsertPortalInvoiceLine(
+            lineId2,
+            invoiceId,
+            "Service B",
+            new BigDecimal("5"),
+            new BigDecimal("50.00"),
+            line2.getAmount(),
+            1);
+  }
+
+  // ── 13. InvoiceSynced PAID -> updates status only ──────────────────
+
+  @Test
+  void onInvoiceSynced_paid_updatesStatusOnly() {
+    var invoiceId = UUID.randomUUID();
+    var customerId = UUID.randomUUID();
+    var event =
+        new InvoiceSyncEvent(
+            invoiceId,
+            customerId,
+            "INV-002",
+            "PAID",
+            LocalDate.of(2026, 2, 1),
+            LocalDate.of(2026, 3, 1),
+            new BigDecimal("500.00"),
+            BigDecimal.ZERO,
+            new BigDecimal("500.00"),
+            "ZAR",
+            null,
+            ORG_ID,
+            TENANT_ID);
+
+    handler.onInvoiceSynced(event);
+
+    verify(readModelRepo).updatePortalInvoiceStatus(invoiceId, ORG_ID, "PAID");
+    verify(readModelRepo, never())
+        .upsertPortalInvoice(
+            any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any());
+  }
+
+  // ── 14. InvoiceSynced VOID -> deletes invoice ──────────────────────
+
+  @Test
+  void onInvoiceSynced_void_deletesInvoice() {
+    var invoiceId = UUID.randomUUID();
+    var customerId = UUID.randomUUID();
+    var event =
+        new InvoiceSyncEvent(
+            invoiceId,
+            customerId,
+            "INV-003",
+            "VOID",
+            LocalDate.of(2026, 2, 1),
+            LocalDate.of(2026, 3, 1),
+            new BigDecimal("200.00"),
+            BigDecimal.ZERO,
+            new BigDecimal("200.00"),
+            "ZAR",
+            null,
+            ORG_ID,
+            TENANT_ID);
+
+    handler.onInvoiceSynced(event);
+
+    verify(readModelRepo).deletePortalInvoice(invoiceId, ORG_ID);
+    verify(readModelRepo, never())
+        .upsertPortalInvoice(
+            any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any());
+  }
+
   // ── Helper methods ─────────────────────────────────────────────────
+
+  private void setFieldSilent(Object target, String fieldName, Object value) {
+    try {
+      setField(target, fieldName, value);
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to set field " + fieldName, e);
+    }
+  }
 
   private Project createProject(UUID projectId, String name, String description) {
     try {

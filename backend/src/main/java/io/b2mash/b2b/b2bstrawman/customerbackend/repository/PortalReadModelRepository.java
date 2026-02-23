@@ -473,24 +473,34 @@ public class PortalReadModelRepository {
         .update();
   }
 
-  public void updatePortalInvoiceStatus(UUID id, String status) {
+  public void updatePortalInvoiceStatus(UUID id, String orgId, String status) {
     jdbc.sql(
             """
             UPDATE portal.portal_invoices
             SET status = ?, synced_at = now()
-            WHERE id = ?
+            WHERE id = ? AND org_id = ?
             """)
-        .params(status, id)
+        .params(status, id, orgId)
         .update();
   }
 
-  public void deletePortalInvoice(UUID id) {
+  public void deletePortalInvoice(UUID id, String orgId) {
     jdbc.sql(
             """
             DELETE FROM portal.portal_invoices
-            WHERE id = ?
+            WHERE id = ? AND org_id = ?
             """)
-        .params(id)
+        .params(id, orgId)
+        .update();
+  }
+
+  public void deletePortalInvoiceLinesByInvoice(UUID portalInvoiceId) {
+    jdbc.sql(
+            """
+            DELETE FROM portal.portal_invoice_lines
+            WHERE portal_invoice_id = ?
+            """)
+        .params(portalInvoiceId)
         .update();
   }
 

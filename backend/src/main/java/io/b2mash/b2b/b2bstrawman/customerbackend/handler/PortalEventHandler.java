@@ -342,6 +342,9 @@ public class PortalEventHandler {
                     event.getCurrency(),
                     event.getNotes());
 
+                // Remove stale line items before re-upserting (handles line item changes)
+                readModelRepo.deletePortalInvoiceLinesByInvoice(event.getInvoiceId());
+
                 // Upsert all line items from the tenant schema
                 var lines =
                     invoiceLineRepository.findByInvoiceIdOrderBySortOrder(event.getInvoiceId());
@@ -356,8 +359,11 @@ public class PortalEventHandler {
                       line.getSortOrder());
                 }
               }
-              case "PAID" -> readModelRepo.updatePortalInvoiceStatus(event.getInvoiceId(), "PAID");
-              case "VOID" -> readModelRepo.deletePortalInvoice(event.getInvoiceId());
+              case "PAID" ->
+                  readModelRepo.updatePortalInvoiceStatus(
+                      event.getInvoiceId(), event.getOrgId(), "PAID");
+              case "VOID" ->
+                  readModelRepo.deletePortalInvoice(event.getInvoiceId(), event.getOrgId());
               default -> log.warn("Unknown InvoiceSyncEvent status: {}", event.getStatus());
             }
           } catch (Exception e) {

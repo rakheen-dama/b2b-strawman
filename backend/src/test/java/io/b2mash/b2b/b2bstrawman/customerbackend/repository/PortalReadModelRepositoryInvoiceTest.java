@@ -116,7 +116,7 @@ class PortalReadModelRepositoryInvoiceTest {
     assertThat(lines.get(1).sortOrder()).isEqualTo(1);
 
     // Delete invoice — cascade should remove lines
-    repository.deletePortalInvoice(invoiceId);
+    repository.deletePortalInvoice(invoiceId, ORG_ID);
 
     var linesAfter = repository.findInvoiceLinesByInvoice(invoiceId);
     assertThat(linesAfter).isEmpty();

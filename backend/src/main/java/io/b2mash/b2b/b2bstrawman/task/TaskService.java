@@ -202,25 +202,7 @@ public class TaskService {
             .build());
 
     // Publish portal task event if project is customer-linked
-    var customerLinks = customerProjectRepository.findByProjectId(projectId);
-    if (!customerLinks.isEmpty()) {
-      String tenantIdForPortal = RequestScopes.getTenantIdOrNull();
-      String orgIdForPortal = RequestScopes.getOrgIdOrNull();
-      String assigneeName =
-          task.getAssigneeId() != null
-              ? memberNameResolver.resolveNameOrNull(task.getAssigneeId())
-              : null;
-      eventPublisher.publishEvent(
-          new PortalTaskCreatedEvent(
-              task.getId(),
-              task.getProjectId(),
-              task.getTitle(),
-              task.getStatus(),
-              assigneeName,
-              0,
-              orgIdForPortal,
-              tenantIdForPortal));
-    }
+    publishPortalTaskEventIfLinked(task, PortalTaskCreatedEvent::new);
 
     return task;
   }
@@ -367,8 +349,8 @@ public class TaskService {
     // Event publication for notification fan-out
     boolean assigneeChanged = !Objects.equals(oldAssigneeId, assigneeId);
     boolean statusChanged = !Objects.equals(oldStatus, status);
-    String tenantId = RequestScopes.getTenantIdOrNull();
-    String orgId = RequestScopes.getOrgIdOrNull();
+    String tenantId = RequestScopes.requireTenantId();
+    String orgId = RequestScopes.requireOrgId();
 
     if (assigneeChanged && assigneeId != null) {
       String actorName = resolveActorName(memberId);
@@ -414,23 +396,7 @@ public class TaskService {
     }
 
     // Publish portal task event if project is customer-linked
-    var customerLinksForUpdate = customerProjectRepository.findByProjectId(task.getProjectId());
-    if (!customerLinksForUpdate.isEmpty()) {
-      String assigneeNameForPortal =
-          task.getAssigneeId() != null
-              ? memberNameResolver.resolveNameOrNull(task.getAssigneeId())
-              : null;
-      eventPublisher.publishEvent(
-          new PortalTaskUpdatedEvent(
-              task.getId(),
-              task.getProjectId(),
-              task.getTitle(),
-              task.getStatus(),
-              assigneeNameForPortal,
-              0,
-              orgId,
-              tenantId));
-    }
+    publishPortalTaskEventIfLinked(task, PortalTaskUpdatedEvent::new);
 
     return task;
   }
@@ -511,8 +477,8 @@ public class TaskService {
     // Publish portal task deleted event if project is customer-linked
     var customerLinksForDelete = customerProjectRepository.findByProjectId(task.getProjectId());
     if (!customerLinksForDelete.isEmpty()) {
-      String tenantId = RequestScopes.getTenantIdOrNull();
-      String orgId = RequestScopes.getOrgIdOrNull();
+      String tenantId = RequestScopes.requireTenantId();
+      String orgId = RequestScopes.requireOrgId();
       eventPublisher.publishEvent(new PortalTaskDeletedEvent(task.getId(), orgId, tenantId));
     }
   }
@@ -559,8 +525,8 @@ public class TaskService {
             .build());
 
     String actorName = resolveActorName(memberId);
-    String tenantId = RequestScopes.getTenantIdOrNull();
-    String orgId = RequestScopes.getOrgIdOrNull();
+    String tenantId = RequestScopes.requireTenantId();
+    String orgId = RequestScopes.requireOrgId();
     eventPublisher.publishEvent(
         new TaskClaimedEvent(
             "task.claimed",
@@ -577,20 +543,7 @@ public class TaskService {
             task.getTitle()));
 
     // Publish portal task updated event if project is customer-linked
-    var customerLinksForClaim = customerProjectRepository.findByProjectId(task.getProjectId());
-    if (!customerLinksForClaim.isEmpty()) {
-      String assigneeNameForPortal = memberNameResolver.resolveNameOrNull(task.getAssigneeId());
-      eventPublisher.publishEvent(
-          new PortalTaskUpdatedEvent(
-              task.getId(),
-              task.getProjectId(),
-              task.getTitle(),
-              task.getStatus(),
-              assigneeNameForPortal,
-              0,
-              orgId,
-              tenantId));
-    }
+    publishPortalTaskEventIfLinked(task, PortalTaskUpdatedEvent::new);
 
     return task;
   }
@@ -635,23 +588,48 @@ public class TaskService {
             .build());
 
     // Publish portal task updated event if project is customer-linked
-    var customerLinksForRelease = customerProjectRepository.findByProjectId(task.getProjectId());
-    if (!customerLinksForRelease.isEmpty()) {
-      String tenantId = RequestScopes.getTenantIdOrNull();
-      String orgId = RequestScopes.getOrgIdOrNull();
+    publishPortalTaskEventIfLinked(task, PortalTaskUpdatedEvent::new);
+
+    return task;
+  }
+
+  /**
+   * Publishes a portal task event if the task's project is linked to any customer. The event
+   * factory is used to construct the correct event subtype (created, updated, deleted).
+   */
+  private void publishPortalTaskEventIfLinked(Task task, PortalTaskEventFactory eventFactory) {
+    var customerLinks = customerProjectRepository.findByProjectId(task.getProjectId());
+    if (!customerLinks.isEmpty()) {
+      String tenantId = RequestScopes.requireTenantId();
+      String orgId = RequestScopes.requireOrgId();
+      String assigneeName =
+          task.getAssigneeId() != null
+              ? memberNameResolver.resolveNameOrNull(task.getAssigneeId())
+              : null;
       eventPublisher.publishEvent(
-          new PortalTaskUpdatedEvent(
+          eventFactory.create(
               task.getId(),
               task.getProjectId(),
               task.getTitle(),
               task.getStatus(),
-              null, // assignee cleared on release
+              assigneeName,
               0,
               orgId,
               tenantId));
     }
+  }
 
-    return task;
+  @FunctionalInterface
+  private interface PortalTaskEventFactory {
+    Object create(
+        UUID taskId,
+        UUID projectId,
+        String name,
+        String status,
+        String assigneeName,
+        int sortOrder,
+        String orgId,
+        String tenantId);
   }
 
   private String resolveActorName(UUID memberId) {

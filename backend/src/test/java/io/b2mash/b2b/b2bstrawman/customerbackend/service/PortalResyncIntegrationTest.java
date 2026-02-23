@@ -92,6 +92,7 @@ class PortalResyncIntegrationTest {
     var result = resyncService.resyncOrg(EMPTY_ORG_ID);
     assertThat(result.projectsProjected()).isEqualTo(0);
     assertThat(result.documentsProjected()).isEqualTo(0);
+    assertThat(result.tasksProjected()).isEqualTo(0);
   }
 
   @Test
@@ -118,6 +119,7 @@ class PortalResyncIntegrationTest {
     // Both runs should produce the same result
     assertThat(result1.projectsProjected()).isEqualTo(result2.projectsProjected());
     assertThat(result1.documentsProjected()).isEqualTo(result2.documentsProjected());
+    assertThat(result1.tasksProjected()).isEqualTo(result2.tasksProjected());
 
     // Verify data is intact after double resync
     var projects = readModelRepo.findProjectsByCustomer(ORG_ID, UUID.fromString(customerId));
@@ -129,7 +131,8 @@ class PortalResyncIntegrationTest {
     // First resync to ensure data exists
     resyncService.resyncOrg(ORG_ID);
 
-    // Manually delete portal projects for this org
+    // Manually delete portal data for this org
+    readModelRepo.deletePortalTasksByOrg(ORG_ID);
     readModelRepo.deletePortalDocumentsByOrg(ORG_ID);
     readModelRepo.deletePortalProjectsByOrg(ORG_ID);
 

@@ -5,9 +5,12 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepos
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import io.b2mash.b2b.b2bstrawman.task.Task;
+import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +31,8 @@ public class PortalResyncService {
   private final CustomerProjectRepository customerProjectRepository;
   private final ProjectRepository projectRepository;
   private final DocumentRepository documentRepository;
+  private final TaskRepository taskRepository;
+  private final MemberNameResolver memberNameResolver;
   private final OrgSchemaMappingRepository orgSchemaMappingRepository;
   private final TransactionTemplate portalTxTemplate;
 
@@ -36,12 +41,16 @@ public class PortalResyncService {
       CustomerProjectRepository customerProjectRepository,
       ProjectRepository projectRepository,
       DocumentRepository documentRepository,
+      TaskRepository taskRepository,
+      MemberNameResolver memberNameResolver,
       OrgSchemaMappingRepository orgSchemaMappingRepository,
       @Qualifier("portalTransactionManager") PlatformTransactionManager portalTxManager) {
     this.readModelRepo = readModelRepo;
     this.customerProjectRepository = customerProjectRepository;
     this.projectRepository = projectRepository;
     this.documentRepository = documentRepository;
+    this.taskRepository = taskRepository;
+    this.memberNameResolver = memberNameResolver;
     this.orgSchemaMappingRepository = orgSchemaMappingRepository;
     this.portalTxTemplate = new TransactionTemplate(portalTxManager);
   }
@@ -90,67 +99,97 @@ public class PortalResyncService {
                           .toList();
                     });
 
-            projections.add(new ProjectionData(project, customerId, sharedDocs));
+            // Load tasks for this project
+            var tasks = taskRepository.findByProjectId(projectId);
+
+            projections.add(new ProjectionData(project, customerId, sharedDocs, tasks));
           }
         });
 
     // Step 2: Wipe and rebuild portal data atomically within a portal transaction
-    portalTxTemplate.executeWithoutResult(
-        status -> {
-          // Wipe portal projects and documents for this org.
-          // Comments and summaries are NOT wiped because resync does not rebuild them —
-          // deleting them would cause permanent data loss.
-          readModelRepo.deletePortalDocumentsByOrg(orgId);
-          readModelRepo.deletePortalProjectsByOrg(orgId);
+    int tasksProjected =
+        portalTxTemplate.execute(
+            status -> {
+              // Wipe portal tasks, documents, and projects for this org.
+              // Tasks must be deleted before projects (FK ordering).
+              // Comments and summaries are NOT wiped because resync does not rebuild them —
+              // deleting them would cause permanent data loss.
+              readModelRepo.deletePortalTasksByOrg(orgId);
+              readModelRepo.deletePortalDocumentsByOrg(orgId);
+              readModelRepo.deletePortalProjectsByOrg(orgId);
 
-          // Rebuild from collected tenant data
-          for (var data : projections) {
-            var project = data.project();
-            var customerId = data.customerId();
+              int taskCount = 0;
 
-            readModelRepo.upsertPortalProject(
-                project.getId(),
-                customerId,
-                orgId,
-                project.getName(),
-                "ACTIVE",
-                project.getDescription(),
-                project.getCreatedAt());
+              // Rebuild from collected tenant data
+              for (var data : projections) {
+                var project = data.project();
+                var customerId = data.customerId();
 
-            for (var doc : data.sharedDocs()) {
-              readModelRepo.upsertPortalDocument(
-                  doc.getId(),
-                  orgId,
-                  customerId,
-                  project.getId(),
-                  doc.getFileName(),
-                  doc.getContentType(),
-                  doc.getSize(),
-                  doc.getScope(),
-                  doc.getS3Key(),
-                  doc.getUploadedAt());
-            }
+                readModelRepo.upsertPortalProject(
+                    project.getId(),
+                    customerId,
+                    orgId,
+                    project.getName(),
+                    "ACTIVE",
+                    project.getDescription(),
+                    project.getCreatedAt());
 
-            readModelRepo.setDocumentCount(project.getId(), customerId, data.sharedDocs().size());
-          }
-        });
+                for (var doc : data.sharedDocs()) {
+                  readModelRepo.upsertPortalDocument(
+                      doc.getId(),
+                      orgId,
+                      customerId,
+                      project.getId(),
+                      doc.getFileName(),
+                      doc.getContentType(),
+                      doc.getSize(),
+                      doc.getScope(),
+                      doc.getS3Key(),
+                      doc.getUploadedAt());
+                }
+
+                readModelRepo.setDocumentCount(
+                    project.getId(), customerId, data.sharedDocs().size());
+
+                // Rebuild portal tasks for this project
+                for (var task : data.tasks()) {
+                  String assigneeName =
+                      task.getAssigneeId() != null
+                          ? memberNameResolver.resolveNameOrNull(task.getAssigneeId())
+                          : null;
+                  readModelRepo.upsertPortalTask(
+                      task.getId(),
+                      orgId,
+                      project.getId(),
+                      task.getTitle(),
+                      task.getStatus(),
+                      assigneeName,
+                      0);
+                  taskCount++;
+                }
+              }
+
+              return taskCount;
+            });
 
     int projectsProjected = projections.size();
     int documentsProjected = projections.stream().mapToInt(d -> d.sharedDocs().size()).sum();
 
     log.info(
-        "Portal resync completed for org={}: projects={}, documents={}",
+        "Portal resync completed for org={}: projects={}, documents={}, tasks={}",
         orgId,
         projectsProjected,
-        documentsProjected);
+        documentsProjected,
+        tasksProjected);
 
-    return new ResyncResult(projectsProjected, documentsProjected);
+    return new ResyncResult(projectsProjected, documentsProjected, tasksProjected);
   }
 
-  public record ResyncResult(int projectsProjected, int documentsProjected) {}
+  public record ResyncResult(int projectsProjected, int documentsProjected, int tasksProjected) {}
 
   private record ProjectionData(
       io.b2mash.b2b.b2bstrawman.project.Project project,
       UUID customerId,
-      List<Document> sharedDocs) {}
+      List<Document> sharedDocs,
+      List<Task> tasks) {}
 }

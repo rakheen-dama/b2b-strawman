@@ -131,6 +131,7 @@ public class PortalReadModelService {
   }
 
   /** Returns a presigned download URL for the most recent PDF generated for this invoice. */
+  @Transactional(readOnly = true)
   public String getInvoiceDownloadUrl(UUID invoiceId, UUID customerId, String orgId) {
     // Verify ownership
     getInvoiceDetail(invoiceId, customerId, orgId);

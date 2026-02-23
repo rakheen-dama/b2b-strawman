@@ -316,6 +316,15 @@ class PortalInvoiceControllerIntegrationTest {
   }
 
   @Test
+  void download_wrong_customer_returns_404() throws Exception {
+    mockMvc
+        .perform(
+            get("/portal/invoices/{id}/download", otherCustomerInvoiceId)
+                .header("Authorization", "Bearer " + portalToken))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
   void download_no_pdf_returns_404() throws Exception {
     mockMvc
         .perform(

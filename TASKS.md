@@ -181,7 +181,7 @@
 | 152 | Integrations Settings UI | Frontend | 149, 150 | M | 152A, 152B | **Done** (PRs #313, #314) |
 | **Phase 22 — Customer Portal Frontend** | | | | | | See [tasks/phase22-customer-portal-frontend.md](tasks/phase22-customer-portal-frontend.md) |
 | 153 | Portal Read-Model Extension -- Invoice Sync + Endpoints | Backend | -- | M | 153A, 153B | **Done** (PRs #323, #324) |
-| 154 | Portal Read-Model Extension -- Task Sync + Endpoint | Backend | 153A | S | 154A | |
+| 154 | Portal Read-Model Extension -- Task Sync + Endpoint | Backend | 153A | S | 154A | **Done** (PR #325) |
 | 155 | Portal Branding Endpoint + Comment POST | Backend | -- | S | 155A | |
 | 156 | Portal App Scaffolding + Auth Flow | Portal | 155 | M | 156A, 156B | |
 | 157 | Portal Shell, Branding + Project List Page | Portal | 156 | M | 157A | |

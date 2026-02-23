@@ -21,7 +21,7 @@ Phase 22 builds the **customer-facing portal frontend** -- a separate Next.js 16
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 153 | Portal Read-Model Extension -- Invoice Sync + Endpoints | Backend | -- | M | 153A, 153B | **Done** (PRs #323, #324) |
-| 154 | Portal Read-Model Extension -- Task Sync + Endpoint | Backend | 153A | S | 154A | |
+| 154 | Portal Read-Model Extension -- Task Sync + Endpoint | Backend | 153A | S | 154A | **Done** (PR #325) |
 | 155 | Portal Branding Endpoint + Comment POST | Backend | -- | S | 155A | |
 | 156 | Portal App Scaffolding + Auth Flow | Portal | 155 | M | 156A, 156B | |
 | 157 | Portal Shell, Branding + Project List Page | Portal | 156 | M | 157A | |
@@ -69,7 +69,7 @@ Phase 22 builds the **customer-facing portal frontend** -- a separate Next.js 16
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 2a (parallel) | Epic 153 | 153B | `PortalInvoiceController` with 3 endpoints. Depends on 153A (read-model repo methods exist). | **Done** (PR #324) |
-| 2b (parallel) | Epic 154 | 154A | Task portal events + `PortalEventHandler` task sync + `GET /portal/projects/{id}/tasks`. Depends on 153A (V8 migration includes `portal_tasks` table). |
+| 2b (parallel) | Epic 154 | 154A | Task portal events + `PortalEventHandler` task sync + `GET /portal/projects/{id}/tasks`. Depends on 153A (V8 migration includes `portal_tasks` table). | **Done** (PR #325) |
 
 ### Stage 3: Portal scaffold
 
@@ -200,7 +200,7 @@ Stage 5: [160A]                                 (after all)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **154A** | 154.1--154.9 | `PortalTaskCreatedEvent`, `PortalTaskUpdatedEvent`, `PortalTaskDeletedEvent` portal domain events + `PortalDomainEvent` permits update + `PortalEventHandler` task sync handlers + `PortalReadModelRepository` task methods + `PortalTaskView` record + `GET /portal/projects/{id}/tasks` endpoint + `TaskService` publishes portal events + integration tests. ~5 new files, ~5 modified files. |  |
+| **154A** | 154.1--154.9 | `PortalTaskCreatedEvent`, `PortalTaskUpdatedEvent`, `PortalTaskDeletedEvent` portal domain events + `PortalDomainEvent` permits update + `PortalEventHandler` task sync handlers + `PortalReadModelRepository` task methods + `PortalTaskView` record + `GET /portal/projects/{id}/tasks` endpoint + `TaskService` publishes portal events + integration tests. ~5 new files, ~5 modified files. | **Done** (PR #325) |
 
 ### Tasks
 

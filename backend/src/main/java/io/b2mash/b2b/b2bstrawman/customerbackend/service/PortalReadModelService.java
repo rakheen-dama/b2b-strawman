@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalInvoiceLineView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalInvoiceView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalProjectSummaryView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalProjectView;
+import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalTaskView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
@@ -106,6 +107,16 @@ public class PortalReadModelService {
       String email,
       String displayName,
       String role) {}
+
+  /** Lists tasks for a portal project. Verifies the customer is linked to the project. */
+  public List<PortalTaskView> listTasks(String orgId, UUID customerId, UUID projectId) {
+    // Verify customer is linked to the project
+    readModelRepository
+        .findProjectDetail(projectId, customerId, orgId)
+        .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+
+    return readModelRepository.findTasksByProject(projectId, orgId);
+  }
 
   // ── Invoice methods ──────────────────────────────────────────────────
 

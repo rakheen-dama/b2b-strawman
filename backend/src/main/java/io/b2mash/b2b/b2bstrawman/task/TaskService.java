@@ -2,6 +2,10 @@ package io.b2mash.b2b.b2bstrawman.task;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.PortalTaskCreatedEvent;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.PortalTaskDeletedEvent;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.PortalTaskUpdatedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskAssignedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskClaimedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
@@ -48,6 +52,7 @@ public class TaskService {
   private final FieldGroupRepository fieldGroupRepository;
   private final FieldGroupMemberRepository fieldGroupMemberRepository;
   private final FieldDefinitionRepository fieldDefinitionRepository;
+  private final CustomerProjectRepository customerProjectRepository;
 
   public TaskService(
       TaskRepository taskRepository,
@@ -59,7 +64,8 @@ public class TaskService {
       CustomFieldValidator customFieldValidator,
       FieldGroupRepository fieldGroupRepository,
       FieldGroupMemberRepository fieldGroupMemberRepository,
-      FieldDefinitionRepository fieldDefinitionRepository) {
+      FieldDefinitionRepository fieldDefinitionRepository,
+      CustomerProjectRepository customerProjectRepository) {
     this.taskRepository = taskRepository;
     this.projectAccessService = projectAccessService;
     this.projectMemberRepository = projectMemberRepository;
@@ -70,6 +76,7 @@ public class TaskService {
     this.fieldGroupRepository = fieldGroupRepository;
     this.fieldGroupMemberRepository = fieldGroupMemberRepository;
     this.fieldDefinitionRepository = fieldDefinitionRepository;
+    this.customerProjectRepository = customerProjectRepository;
   }
 
   @Transactional(readOnly = true)
@@ -193,6 +200,27 @@ public class TaskService {
             .entityId(task.getId())
             .details(auditDetails)
             .build());
+
+    // Publish portal task event if project is customer-linked
+    var customerLinks = customerProjectRepository.findByProjectId(projectId);
+    if (!customerLinks.isEmpty()) {
+      String tenantIdForPortal = RequestScopes.getTenantIdOrNull();
+      String orgIdForPortal = RequestScopes.getOrgIdOrNull();
+      String assigneeName =
+          task.getAssigneeId() != null
+              ? memberNameResolver.resolveNameOrNull(task.getAssigneeId())
+              : null;
+      eventPublisher.publishEvent(
+          new PortalTaskCreatedEvent(
+              task.getId(),
+              task.getProjectId(),
+              task.getTitle(),
+              task.getStatus(),
+              assigneeName,
+              0,
+              orgIdForPortal,
+              tenantIdForPortal));
+    }
 
     return task;
   }
@@ -385,6 +413,25 @@ public class TaskService {
               task.getTitle()));
     }
 
+    // Publish portal task event if project is customer-linked
+    var customerLinksForUpdate = customerProjectRepository.findByProjectId(task.getProjectId());
+    if (!customerLinksForUpdate.isEmpty()) {
+      String assigneeNameForPortal =
+          task.getAssigneeId() != null
+              ? memberNameResolver.resolveNameOrNull(task.getAssigneeId())
+              : null;
+      eventPublisher.publishEvent(
+          new PortalTaskUpdatedEvent(
+              task.getId(),
+              task.getProjectId(),
+              task.getTitle(),
+              task.getStatus(),
+              assigneeNameForPortal,
+              0,
+              orgId,
+              tenantId));
+    }
+
     return task;
   }
 
@@ -460,6 +507,14 @@ public class TaskService {
             .entityId(task.getId())
             .details(Map.of("title", task.getTitle(), "project_id", task.getProjectId().toString()))
             .build());
+
+    // Publish portal task deleted event if project is customer-linked
+    var customerLinksForDelete = customerProjectRepository.findByProjectId(task.getProjectId());
+    if (!customerLinksForDelete.isEmpty()) {
+      String tenantId = RequestScopes.getTenantIdOrNull();
+      String orgId = RequestScopes.getOrgIdOrNull();
+      eventPublisher.publishEvent(new PortalTaskDeletedEvent(task.getId(), orgId, tenantId));
+    }
   }
 
   @Transactional
@@ -521,6 +576,22 @@ public class TaskService {
             null, // previousAssigneeId (always null — claim only works on unassigned tasks)
             task.getTitle()));
 
+    // Publish portal task updated event if project is customer-linked
+    var customerLinksForClaim = customerProjectRepository.findByProjectId(task.getProjectId());
+    if (!customerLinksForClaim.isEmpty()) {
+      String assigneeNameForPortal = memberNameResolver.resolveNameOrNull(task.getAssigneeId());
+      eventPublisher.publishEvent(
+          new PortalTaskUpdatedEvent(
+              task.getId(),
+              task.getProjectId(),
+              task.getTitle(),
+              task.getStatus(),
+              assigneeNameForPortal,
+              0,
+              orgId,
+              tenantId));
+    }
+
     return task;
   }
 
@@ -562,6 +633,23 @@ public class TaskService {
                     "previous_assignee_id", previousAssigneeId.toString(),
                     "project_id", task.getProjectId().toString()))
             .build());
+
+    // Publish portal task updated event if project is customer-linked
+    var customerLinksForRelease = customerProjectRepository.findByProjectId(task.getProjectId());
+    if (!customerLinksForRelease.isEmpty()) {
+      String tenantId = RequestScopes.getTenantIdOrNull();
+      String orgId = RequestScopes.getOrgIdOrNull();
+      eventPublisher.publishEvent(
+          new PortalTaskUpdatedEvent(
+              task.getId(),
+              task.getProjectId(),
+              task.getTitle(),
+              task.getStatus(),
+              null, // assignee cleared on release
+              0,
+              orgId,
+              tenantId));
+    }
 
     return task;
   }

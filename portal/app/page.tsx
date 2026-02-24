@@ -1,9 +1,19 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { isAuthenticated } from "@/lib/auth";
+
 export default function HomePage() {
-  return (
-    <main className="flex min-h-screen items-center justify-center">
-      <h1 className="text-2xl font-semibold text-foreground">
-        DocTeams Client Portal
-      </h1>
-    </main>
-  );
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isAuthenticated()) {
+      router.push("/projects");
+    } else {
+      router.push("/login");
+    }
+  }, [router]);
+
+  return null;
 }

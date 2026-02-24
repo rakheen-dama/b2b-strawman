@@ -26,7 +26,7 @@ Phase 22 builds the **customer-facing portal frontend** -- a separate Next.js 16
 | 156 | Portal App Scaffolding + Auth Flow | Portal | 155 | M | 156A, 156B | **Done** (PRs #327, #328) |
 | 157 | Portal Shell, Branding + Project List Page | Portal | 156 | M | 157A | **Done** (PR #329) |
 | 158 | Portal Project Detail Page | Portal | 157, 154, 155 | M | 158A | **Done** (PR #330) |
-| 159 | Portal Invoice List + Detail Pages | Portal | 157, 153 | M | 159A | |
+| 159 | Portal Invoice List + Detail Pages | Portal | 157, 153 | M | 159A | **Done** (PR #331) |
 | 160 | Portal Profile, Responsive Polish + Docker | Portal | 156-159 | S | 160A | |
 
 ---
@@ -84,7 +84,7 @@ Phase 22 builds the **customer-facing portal frontend** -- a separate Next.js 16
 |-------|------|-------|-----------|
 | 4a | Epic 157 | 157A | Shell layout, BrandingProvider, header, footer, project list page. Depends on 156B (auth flow complete). | **Done** (PR #329) |
 | 4b (parallel) | Epic 158 | 158A | Project detail page (tasks, documents, comments, summary). Depends on 157A (shell) + 154A (task endpoint) + 155A (comment POST). | **Done** (PR #330) |
-| 4c (parallel) | Epic 159 | 159A | Invoice list and detail pages. Depends on 157A (shell) + 153B (invoice endpoints). |
+| 4c (parallel) | Epic 159 | 159A | Invoice list and detail pages. Depends on 157A (shell) + 153B (invoice endpoints). | **Done** (PR #331) |
 
 ### Stage 5: Polish
 
@@ -521,7 +521,7 @@ Stage 5: [160A]                                 (after all)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **159A** | 159.1--159.8 | `invoice-status-badge.tsx` + `invoice-line-table.tsx` + `(authenticated)/invoices/page.tsx` (invoice list table) + `(authenticated)/invoices/[id]/page.tsx` (invoice detail with lines, totals, PDF download) + tests. ~6 new files. |  |
+| **159A** | 159.1--159.8 | `invoice-status-badge.tsx` + `invoice-line-table.tsx` + `(authenticated)/invoices/page.tsx` (invoice list table) + `(authenticated)/invoices/[id]/page.tsx` (invoice detail with lines, totals, PDF download) + tests. ~6 new files. | **Done** (PR #331) |
 
 ### Tasks
 

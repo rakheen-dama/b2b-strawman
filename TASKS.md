@@ -186,7 +186,7 @@
 | 156 | Portal App Scaffolding + Auth Flow | Portal | 155 | M | 156A, 156B | **Done** (PRs #327, #328) |
 | 157 | Portal Shell, Branding + Project List Page | Portal | 156 | M | 157A | **Done** (PR #329) |
 | 158 | Portal Project Detail Page | Portal | 157, 154, 155 | M | 158A | **Done** (PR #330) |
-| 159 | Portal Invoice List + Detail Pages | Portal | 157, 153 | M | 159A | |
+| 159 | Portal Invoice List + Detail Pages | Portal | 157, 153 | M | 159A | **Done** (PR #331) |
 | 160 | Portal Profile, Responsive Polish + Docker | Portal | 156-159 | S | 160A | |
 
 ---

@@ -146,8 +146,8 @@ describe("ProjectDetailPage", () => {
     ).toBeInTheDocument();
     // Task
     expect(screen.getByText("Design mockups")).toBeInTheDocument();
-    // Document
-    expect(screen.getByText("proposal.pdf")).toBeInTheDocument();
+    // Document (renders in both mobile card and desktop table layouts)
+    expect(screen.getAllByText("proposal.pdf").length).toBeGreaterThanOrEqual(1);
     // Comment
     expect(screen.getByText("Looks good!")).toBeInTheDocument();
     // Summary

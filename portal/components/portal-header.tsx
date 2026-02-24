@@ -104,7 +104,7 @@ export function PortalHeader() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="rounded-md px-3 py-2 text-sm font-medium"
+                  className="rounded-md px-3 py-3 min-h-[44px] inline-flex items-center text-sm font-medium"
                   style={{
                     color: isActive ? brandColor : undefined,
                     backgroundColor: isActive
@@ -123,12 +123,18 @@ export function PortalHeader() {
               <span className="text-sm text-slate-600">{customer?.name}</span>
               <Link
                 href="/profile"
-                className="text-sm text-slate-500 hover:text-slate-700"
+                className="inline-flex min-h-[44px] items-center text-sm text-slate-500 hover:text-slate-700"
+                onClick={() => setMobileMenuOpen(false)}
               >
                 Profile
               </Link>
             </div>
-            <Button variant="ghost" size="sm" onClick={logout}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="min-h-[44px] min-w-[44px]"
+              onClick={logout}
+            >
               <LogOut className="size-4" />
               Logout
             </Button>

@@ -49,11 +49,12 @@ describe("DocumentList", () => {
       />,
     );
 
-    expect(screen.getByText("report.pdf")).toBeInTheDocument();
-    expect(screen.getByText("1.0 MB")).toBeInTheDocument();
+    // Both mobile and desktop layouts render; use getAllByText
+    expect(screen.getAllByText("report.pdf").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("1.0 MB").length).toBeGreaterThanOrEqual(1);
 
-    expect(screen.getByText("photo.jpg")).toBeInTheDocument();
-    expect(screen.getByText("512.0 KB")).toBeInTheDocument();
+    expect(screen.getAllByText("photo.jpg").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("512.0 KB").length).toBeGreaterThanOrEqual(1);
   });
 
   it("triggers download via presigned URL", async () => {
@@ -79,7 +80,8 @@ describe("DocumentList", () => {
     );
 
     const user = userEvent.setup();
-    const downloadBtn = screen.getByLabelText("Download report.pdf");
+    // Both mobile and desktop layouts render; use first match
+    const downloadBtn = screen.getAllByLabelText("Download report.pdf")[0];
     await user.click(downloadBtn);
 
     expect(mockPortalGet).toHaveBeenCalledWith(

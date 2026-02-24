@@ -60,11 +60,7 @@ vi.mock("@/hooks/use-branding", () => ({
 }));
 
 // Mock window.open
-const mockWindowOpen = vi.fn();
-Object.defineProperty(window, "open", {
-  value: mockWindowOpen,
-  writable: true,
-});
+let mockWindowOpen: ReturnType<typeof vi.fn>;
 
 import InvoiceDetailPage from "@/app/(authenticated)/invoices/[id]/page";
 
@@ -94,9 +90,13 @@ const mockInvoiceDetail = {
 describe("InvoiceDetailPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockWindowOpen = vi.fn();
+    vi.spyOn(window, "open").mockImplementation(mockWindowOpen);
+    window.alert = vi.fn();
   });
 
   afterEach(() => {
+    vi.restoreAllMocks();
     cleanup();
   });
 

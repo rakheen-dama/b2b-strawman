@@ -60,7 +60,7 @@ export default function InvoicesPage() {
       );
       window.open(data.downloadUrl, "_blank");
     } catch {
-      // Download failed silently — user can retry
+      alert("Download failed. Please try again.");
     }
   }
 
@@ -89,7 +89,7 @@ export default function InvoicesPage() {
 
       {!isLoading && !error && invoices.length > 0 && (
         <div className="overflow-x-auto rounded-lg border border-slate-200">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm" aria-label="Invoice list">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50">
                 <th className="px-4 py-3 text-left font-medium text-slate-600">

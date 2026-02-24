@@ -24,7 +24,7 @@ function PageSkeleton() {
 
 export default function InvoiceDetailPage() {
   const params = useParams();
-  const invoiceId = params.id as string;
+  const invoiceId = Array.isArray(params.id) ? params.id[0] : (params.id ?? "");
 
   const [invoice, setInvoice] = useState<PortalInvoiceDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -68,7 +68,7 @@ export default function InvoiceDetailPage() {
       );
       window.open(data.downloadUrl, "_blank");
     } catch {
-      // Download failed silently — user can retry
+      alert("Download failed. Please try again.");
     }
   }
 
@@ -118,6 +118,7 @@ export default function InvoiceDetailPage() {
         <button
           onClick={handleDownload}
           className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700"
+          aria-label={`Download ${invoice.invoiceNumber} as PDF`}
         >
           <Download className="size-4" />
           Download PDF

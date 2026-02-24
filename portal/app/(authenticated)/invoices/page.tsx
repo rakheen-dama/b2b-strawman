@@ -98,10 +98,10 @@ export default function InvoicesPage() {
                 <th className="px-4 py-3 text-left font-medium text-slate-600">
                   Status
                 </th>
-                <th className="px-4 py-3 text-left font-medium text-slate-600">
+                <th className="hidden px-4 py-3 text-left font-medium text-slate-600 sm:table-cell">
                   Issue Date
                 </th>
-                <th className="px-4 py-3 text-left font-medium text-slate-600">
+                <th className="hidden px-4 py-3 text-left font-medium text-slate-600 sm:table-cell">
                   Due Date
                 </th>
                 <th className="px-4 py-3 text-right font-medium text-slate-600">
@@ -121,7 +121,7 @@ export default function InvoicesPage() {
                   <td className="px-4 py-3">
                     <Link
                       href={`/invoices/${invoice.id}`}
-                      className="font-medium text-teal-600 hover:text-teal-700 hover:underline"
+                      className="inline-flex min-h-[44px] items-center font-medium text-teal-600 hover:text-teal-700 hover:underline"
                     >
                       {invoice.invoiceNumber}
                     </Link>
@@ -129,10 +129,10 @@ export default function InvoicesPage() {
                   <td className="px-4 py-3">
                     <InvoiceStatusBadge status={invoice.status} />
                   </td>
-                  <td className="px-4 py-3 text-slate-700">
+                  <td className="hidden px-4 py-3 text-slate-700 sm:table-cell">
                     {formatDate(invoice.issueDate)}
                   </td>
-                  <td className="px-4 py-3 text-slate-700">
+                  <td className="hidden px-4 py-3 text-slate-700 sm:table-cell">
                     {formatDate(invoice.dueDate)}
                   </td>
                   <td className="px-4 py-3 text-right font-medium text-slate-900">
@@ -142,13 +142,13 @@ export default function InvoicesPage() {
                     <div className="flex items-center justify-end gap-2">
                       <Link
                         href={`/invoices/${invoice.id}`}
-                        className="text-sm text-slate-500 hover:text-slate-700"
+                        className="inline-flex min-h-[44px] items-center text-sm text-slate-500 hover:text-slate-700"
                       >
                         View
                       </Link>
                       <button
                         onClick={() => handleDownload(invoice.id)}
-                        className="inline-flex items-center gap-1 text-sm text-teal-600 hover:text-teal-700"
+                        className="inline-flex min-h-[44px] items-center gap-1 text-sm text-teal-600 hover:text-teal-700"
                         aria-label={`Download ${invoice.invoiceNumber}`}
                       >
                         <Download className="size-4" />

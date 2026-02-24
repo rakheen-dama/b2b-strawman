@@ -41,50 +41,88 @@ export function DocumentList({ documents }: DocumentListProps) {
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-200/80">
-      <table className="w-full text-sm">
-        <thead className="bg-slate-50 text-left text-xs font-medium text-slate-500">
-          <tr>
-            <th className="px-4 py-3">File</th>
-            <th className="px-4 py-3">Size</th>
-            <th className="px-4 py-3">Uploaded</th>
-            <th className="px-4 py-3 text-right">Action</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-100">
-          {documents.map((doc) => {
-            const Icon = getFileIcon(doc.contentType);
-            return (
-              <tr key={doc.id} className="bg-white">
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <Icon className="size-4 shrink-0 text-slate-400" />
-                    <span className="font-medium text-slate-900">
-                      {doc.fileName}
-                    </span>
-                  </div>
-                </td>
-                <td className="px-4 py-3 text-slate-600">
-                  {formatFileSize(doc.size)}
-                </td>
-                <td className="px-4 py-3 text-slate-600">
-                  {formatDate(doc.createdAt)}
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <Button
-                    variant="ghost"
-                    size="icon-xs"
-                    onClick={() => handleDownload(doc.id)}
-                    aria-label={`Download ${doc.fileName}`}
-                  >
-                    <Download className="size-4" />
-                  </Button>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+    <>
+      {/* Mobile: Card layout */}
+      <div className="flex flex-col gap-3 md:hidden">
+        {documents.map((doc) => {
+          const Icon = getFileIcon(doc.contentType);
+          return (
+            <div
+              key={doc.id}
+              className="flex items-center justify-between rounded-lg border border-slate-200/80 bg-white p-4"
+            >
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <Icon className="size-4 shrink-0 text-slate-400" />
+                  <span className="truncate text-sm font-medium text-slate-900">
+                    {doc.fileName}
+                  </span>
+                </div>
+                <div className="mt-1 flex gap-3 text-xs text-slate-500">
+                  <span>{formatFileSize(doc.size)}</span>
+                  <span>{formatDate(doc.createdAt)}</span>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="ml-2 min-h-[44px] min-w-[44px] shrink-0"
+                onClick={() => handleDownload(doc.id)}
+                aria-label={`Download ${doc.fileName}`}
+              >
+                <Download className="size-4" />
+              </Button>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Desktop: Table layout */}
+      <div className="hidden overflow-hidden rounded-lg border border-slate-200/80 md:block">
+        <table className="w-full text-sm">
+          <thead className="bg-slate-50 text-left text-xs font-medium text-slate-500">
+            <tr>
+              <th className="px-4 py-3">File</th>
+              <th className="px-4 py-3">Size</th>
+              <th className="px-4 py-3">Uploaded</th>
+              <th className="px-4 py-3 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {documents.map((doc) => {
+              const Icon = getFileIcon(doc.contentType);
+              return (
+                <tr key={doc.id} className="bg-white">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <Icon className="size-4 shrink-0 text-slate-400" />
+                      <span className="font-medium text-slate-900">
+                        {doc.fileName}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-slate-600">
+                    {formatFileSize(doc.size)}
+                  </td>
+                  <td className="px-4 py-3 text-slate-600">
+                    {formatDate(doc.createdAt)}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      onClick={() => handleDownload(doc.id)}
+                      aria-label={`Download ${doc.fileName}`}
+                    >
+                      <Download className="size-4" />
+                    </Button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }

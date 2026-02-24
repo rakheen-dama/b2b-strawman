@@ -27,7 +27,7 @@ Phase 22 builds the **customer-facing portal frontend** -- a separate Next.js 16
 | 157 | Portal Shell, Branding + Project List Page | Portal | 156 | M | 157A | **Done** (PR #329) |
 | 158 | Portal Project Detail Page | Portal | 157, 154, 155 | M | 158A | **Done** (PR #330) |
 | 159 | Portal Invoice List + Detail Pages | Portal | 157, 153 | M | 159A | **Done** (PR #331) |
-| 160 | Portal Profile, Responsive Polish + Docker | Portal | 156-159 | S | 160A | |
+| 160 | Portal Profile, Responsive Polish + Docker | Portal | 156-159 | S | 160A | **Done** (PR #332) |
 
 ---
 
@@ -90,7 +90,7 @@ Phase 22 builds the **customer-facing portal frontend** -- a separate Next.js 16
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 5 | Epic 160 | 160A | Profile page, responsive polish, Dockerfile, Docker Compose entry. Depends on all portal slices. |
+| 5 | Epic 160 | 160A | Profile page, responsive polish, Dockerfile, Docker Compose entry. Depends on all portal slices. | **Done** (PR #332) |
 
 ### Timeline
 
@@ -579,7 +579,7 @@ Stage 5: [160A]                                 (after all)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **160A** | 160.1--160.8 | `(authenticated)/profile/page.tsx` (contact info display) + responsive polish (mobile hamburger, touch-friendly buttons, responsive tables) + `portal/Dockerfile` (multi-stage, port 3001) + Docker Compose entry (commented out) + tests. ~4 new files, ~4 modified files. |  |
+| **160A** | 160.1--160.8 | `(authenticated)/profile/page.tsx` (contact info display) + responsive polish (mobile hamburger, touch-friendly buttons, responsive tables) + `portal/Dockerfile` (multi-stage, port 3001) + Docker Compose entry (commented out) + tests. ~4 new files, ~4 modified files. | **Done** (PR #332) |
 
 ### Tasks
 

@@ -11,7 +11,6 @@ import { DocumentList } from "@/components/document-list";
 import { CommentSection } from "@/components/comment-section";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatCurrency } from "@/lib/format";
 import type {
   PortalProjectDetail,
   PortalTask,
@@ -100,7 +99,7 @@ export default function ProjectDetailPage() {
       `/portal/projects/${projectId}/comments`,
     ).then((comments) => {
       setData((prev) => (prev ? { ...prev, comments } : prev));
-    });
+    }).catch(() => {});
   }
 
   if (isLoading) {

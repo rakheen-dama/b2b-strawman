@@ -3,6 +3,7 @@
 import { createContext, useEffect, useState, type ReactNode } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { publicFetch } from "@/lib/api-client";
+import { isSafeImageUrl, isValidHexColor } from "@/lib/utils";
 import type { BrandingInfo } from "@/lib/types";
 
 const DEFAULT_BRAND_COLOR = "#3B82F6";
@@ -60,10 +61,16 @@ export function BrandingProvider({ children }: BrandingProviderProps) {
     };
   }, [customer?.orgId]);
 
+  const rawLogoUrl = branding?.logoUrl ?? null;
+  const rawBrandColor = branding?.brandColor ?? null;
+
   const value: BrandingContextValue = {
     orgName: branding?.orgName ?? customer?.name ?? "",
-    logoUrl: branding?.logoUrl ?? null,
-    brandColor: branding?.brandColor ?? DEFAULT_BRAND_COLOR,
+    logoUrl: rawLogoUrl && isSafeImageUrl(rawLogoUrl) ? rawLogoUrl : null,
+    brandColor:
+      rawBrandColor && isValidHexColor(rawBrandColor)
+        ? rawBrandColor
+        : DEFAULT_BRAND_COLOR,
     footerText: branding?.footerText ?? null,
     isLoading,
   };

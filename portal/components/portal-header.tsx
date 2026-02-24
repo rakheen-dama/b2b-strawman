@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Menu, X, LogOut, User } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useBranding } from "@/hooks/use-branding";
+import { isSafeImageUrl } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 const NAV_LINKS = [
@@ -24,7 +25,7 @@ export function PortalHeader() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Left: Logo / Org Name */}
         <div className="flex items-center gap-3">
-          {logoUrl ? (
+          {logoUrl && isSafeImageUrl(logoUrl) ? (
             <img
               src={logoUrl}
               alt={`${orgName} logo`}
@@ -106,7 +107,9 @@ export function PortalHeader() {
                   className="rounded-md px-3 py-2 text-sm font-medium"
                   style={{
                     color: isActive ? brandColor : undefined,
-                    backgroundColor: isActive ? `${brandColor}10` : undefined,
+                    backgroundColor: isActive
+                      ? `color-mix(in srgb, ${brandColor} 10%, transparent)`
+                      : undefined,
                   }}
                   onClick={() => setMobileMenuOpen(false)}
                 >

@@ -25,7 +25,7 @@ Phase 22 builds the **customer-facing portal frontend** -- a separate Next.js 16
 | 155 | Portal Branding Endpoint + Comment POST | Backend | -- | S | 155A | **Done** (PR #326) |
 | 156 | Portal App Scaffolding + Auth Flow | Portal | 155 | M | 156A, 156B | **Done** (PRs #327, #328) |
 | 157 | Portal Shell, Branding + Project List Page | Portal | 156 | M | 157A | **Done** (PR #329) |
-| 158 | Portal Project Detail Page | Portal | 157, 154, 155 | M | 158A | |
+| 158 | Portal Project Detail Page | Portal | 157, 154, 155 | M | 158A | **Done** (PR #330) |
 | 159 | Portal Invoice List + Detail Pages | Portal | 157, 153 | M | 159A | |
 | 160 | Portal Profile, Responsive Polish + Docker | Portal | 156-159 | S | 160A | |
 
@@ -83,7 +83,7 @@ Phase 22 builds the **customer-facing portal frontend** -- a separate Next.js 16
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 4a | Epic 157 | 157A | Shell layout, BrandingProvider, header, footer, project list page. Depends on 156B (auth flow complete). | **Done** (PR #329) |
-| 4b (parallel) | Epic 158 | 158A | Project detail page (tasks, documents, comments, summary). Depends on 157A (shell) + 154A (task endpoint) + 155A (comment POST). |
+| 4b (parallel) | Epic 158 | 158A | Project detail page (tasks, documents, comments, summary). Depends on 157A (shell) + 154A (task endpoint) + 155A (comment POST). | **Done** (PR #330) |
 | 4c (parallel) | Epic 159 | 159A | Invoice list and detail pages. Depends on 157A (shell) + 153B (invoice endpoints). |
 
 ### Stage 5: Polish
@@ -462,7 +462,7 @@ Stage 5: [160A]                                 (after all)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **158A** | 158.1--158.9 | `(authenticated)/projects/[id]/page.tsx` (project detail with 5 sections) + `task-list.tsx` + `document-list.tsx` + `comment-section.tsx` (with reply form) + summary card + tests. ~6 new files. |  |
+| **158A** | 158.1--158.9 | `(authenticated)/projects/[id]/page.tsx` (project detail with 5 sections) + `task-list.tsx` + `document-list.tsx` + `comment-section.tsx` (with reply form) + summary card + tests. ~6 new files. | **Done** (PR #330) |
 
 ### Tasks
 

@@ -183,7 +183,7 @@
 | 153 | Portal Read-Model Extension -- Invoice Sync + Endpoints | Backend | -- | M | 153A, 153B | **Done** (PRs #323, #324) |
 | 154 | Portal Read-Model Extension -- Task Sync + Endpoint | Backend | 153A | S | 154A | **Done** (PR #325) |
 | 155 | Portal Branding Endpoint + Comment POST | Backend | -- | S | 155A | **Done** (PR #326) |
-| 156 | Portal App Scaffolding + Auth Flow | Portal | 155 | M | 156A, 156B | |
+| 156 | Portal App Scaffolding + Auth Flow | Portal | 155 | M | 156A, 156B | **Done** (PRs #327, #328) |
 | 157 | Portal Shell, Branding + Project List Page | Portal | 156 | M | 157A | |
 | 158 | Portal Project Detail Page | Portal | 157, 154, 155 | M | 158A | |
 | 159 | Portal Invoice List + Detail Pages | Portal | 157, 153 | M | 159A | |

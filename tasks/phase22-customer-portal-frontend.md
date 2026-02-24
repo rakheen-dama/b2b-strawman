@@ -23,7 +23,7 @@ Phase 22 builds the **customer-facing portal frontend** -- a separate Next.js 16
 | 153 | Portal Read-Model Extension -- Invoice Sync + Endpoints | Backend | -- | M | 153A, 153B | **Done** (PRs #323, #324) |
 | 154 | Portal Read-Model Extension -- Task Sync + Endpoint | Backend | 153A | S | 154A | **Done** (PR #325) |
 | 155 | Portal Branding Endpoint + Comment POST | Backend | -- | S | 155A | **Done** (PR #326) |
-| 156 | Portal App Scaffolding + Auth Flow | Portal | 155 | M | 156A, 156B | |
+| 156 | Portal App Scaffolding + Auth Flow | Portal | 155 | M | 156A, 156B | **Done** (PRs #327, #328) |
 | 157 | Portal Shell, Branding + Project List Page | Portal | 156 | M | 157A | |
 | 158 | Portal Project Detail Page | Portal | 157, 154, 155 | M | 158A | |
 | 159 | Portal Invoice List + Detail Pages | Portal | 157, 153 | M | 159A | |
@@ -76,7 +76,7 @@ Phase 22 builds the **customer-facing portal frontend** -- a separate Next.js 16
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 3a | Epic 156 | 156A | Portal app scaffolding: `package.json`, Next.js config, Tailwind, Shadcn init, `lib/auth.ts`, `lib/api-client.ts`, `lib/types.ts`, `hooks/use-auth.ts`. | **Done** (PR #327) |
-| 3b | Epic 156 | 156B | Login page, token exchange page, root redirect. Depends on 156A (auth layer) and 155A (branding endpoint). |
+| 3b | Epic 156 | 156B | Login page, token exchange page, root redirect. Depends on 156A (auth layer) and 155A (branding endpoint). | **Done** (PR #328) |
 
 ### Stage 4: Portal pages (partially parallel)
 
@@ -320,7 +320,7 @@ Stage 5: [160A]                                 (after all)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **156A** | 156.1--156.7 | Portal directory scaffolding: `package.json`, `next.config.ts`, `tsconfig.json`, `tailwind.config.ts`, `vitest.config.ts`, Shadcn UI init (Button, Card, Input, Label), `lib/auth.ts`, `lib/api-client.ts`, `lib/types.ts`, `hooks/use-auth.ts`, `app/layout.tsx` (root HTML shell). ~12 new files. | **Done** (PR #327) |
-| **156B** | 156.8--156.14 | `app/login/page.tsx` (magic link request form with org branding), `app/auth/exchange/page.tsx` (token exchange + JWT storage + redirect), `app/page.tsx` (root redirect), `app/not-found.tsx`, auth flow tests. ~6 new files. |  |
+| **156B** | 156.8--156.14 | `app/login/page.tsx` (magic link request form with org branding), `app/auth/exchange/page.tsx` (token exchange + JWT storage + redirect), `app/page.tsx` (root redirect), `app/not-found.tsx`, auth flow tests. ~6 new files. | **Done** (PR #328) |
 
 ### Tasks
 

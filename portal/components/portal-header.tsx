@@ -104,7 +104,7 @@ export function PortalHeader() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="rounded-md px-3 py-3 text-sm font-medium"
+                  className="rounded-md px-3 py-3 min-h-[44px] inline-flex items-center text-sm font-medium"
                   style={{
                     color: isActive ? brandColor : undefined,
                     backgroundColor: isActive

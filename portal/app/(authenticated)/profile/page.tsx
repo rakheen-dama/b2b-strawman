@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { User } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 import { portalGet } from "@/lib/api-client";
 import {
   Card,
@@ -36,11 +38,18 @@ function formatRole(role: string): string {
 }
 
 export default function ProfilePage() {
+  const { jwt } = useAuth();
+  const router = useRouter();
   const [profile, setProfile] = useState<PortalProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!jwt) {
+      router.push("/login");
+      return;
+    }
+
     let cancelled = false;
 
     async function fetchProfile() {
@@ -51,9 +60,14 @@ export default function ProfilePage() {
         }
       } catch (err) {
         if (!cancelled) {
-          setError(
-            err instanceof Error ? err.message : "Failed to load profile",
-          );
+          // portalFetch already redirects on 401, but handle edge cases
+          const message =
+            err instanceof Error ? err.message : "Failed to load profile";
+          if (message === "Unauthorized") {
+            router.push("/login");
+          } else {
+            setError(message);
+          }
         }
       } finally {
         if (!cancelled) {
@@ -67,7 +81,7 @@ export default function ProfilePage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [jwt, router]);
 
   return (
     <div>

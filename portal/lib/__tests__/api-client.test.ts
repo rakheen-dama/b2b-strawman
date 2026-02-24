@@ -15,7 +15,7 @@ const mockFetch = vi.fn();
 vi.stubGlobal("fetch", mockFetch);
 
 // Import after mocks are set up
-import { portalFetch, portalGet } from "@/lib/api-client";
+import { portalFetch, portalGet, publicFetch } from "@/lib/api-client";
 
 describe("api-client", () => {
   beforeEach(() => {
@@ -53,8 +53,47 @@ describe("api-client", () => {
     mockGetJwt.mockReturnValue("expired-token");
     mockFetch.mockResolvedValue(new Response("Unauthorized", { status: 401 }));
 
+    // Mock window.location
+    const originalLocation = window.location;
+    Object.defineProperty(window, "location", {
+      writable: true,
+      value: { ...originalLocation, href: "" },
+    });
+
     await expect(portalFetch("/portal/projects")).rejects.toThrow("Unauthorized");
     expect(mockClearAuth).toHaveBeenCalledTimes(1);
+    expect(window.location.href).toBe("/login");
+
+    // Restore
+    Object.defineProperty(window, "location", {
+      writable: true,
+      value: originalLocation,
+    });
+  });
+
+  it("publicFetch calls fetch without Authorization header", async () => {
+    mockFetch.mockResolvedValue(new Response(JSON.stringify({}), { status: 200 }));
+
+    await publicFetch("/portal/branding?orgId=org_abc");
+
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    const [url, options] = mockFetch.mock.calls[0];
+    expect(url).toBe("http://localhost:8080/portal/branding?orgId=org_abc");
+    const headers = options.headers as Headers;
+    expect(headers.has("Authorization")).toBe(false);
+  });
+
+  it("publicFetch sets Content-Type for requests with body", async () => {
+    mockFetch.mockResolvedValue(new Response(JSON.stringify({}), { status: 200 }));
+
+    await publicFetch("/portal/auth/request-link", {
+      method: "POST",
+      body: JSON.stringify({ email: "test@example.com" }),
+    });
+
+    const [, options] = mockFetch.mock.calls[0];
+    const headers = options.headers as Headers;
+    expect(headers.get("Content-Type")).toBe("application/json");
   });
 
   it("portalGet parses JSON response", async () => {

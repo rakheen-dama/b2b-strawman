@@ -46,6 +46,7 @@ describe("ExchangePage", () => {
       new Response(
         JSON.stringify({
           token: "jwt-token-here",
+          email: "alice@testcorp.com",
           customerId: "cust-1",
           customerName: "Test Corp",
         }),
@@ -59,7 +60,7 @@ describe("ExchangePage", () => {
       expect(mockStoreAuth).toHaveBeenCalledWith("jwt-token-here", {
         id: "cust-1",
         name: "Test Corp",
-        email: "",
+        email: "alice@testcorp.com",
         orgId: "org_xyz",
       });
       expect(mockPush).toHaveBeenCalledWith("/projects");
@@ -89,5 +90,23 @@ describe("ExchangePage", () => {
     render(<ExchangePage />);
 
     expect(screen.getByText("Verifying your link...")).toBeInTheDocument();
+  });
+
+  it("shows error when token param is missing", () => {
+    mockSearchParams = new URLSearchParams("orgId=org_xyz");
+
+    render(<ExchangePage />);
+
+    expect(screen.getByText(/Invalid login link/)).toBeInTheDocument();
+    expect(mockPublicFetch).not.toHaveBeenCalled();
+  });
+
+  it("shows error when orgId param is missing", () => {
+    mockSearchParams = new URLSearchParams("token=abc123");
+
+    render(<ExchangePage />);
+
+    expect(screen.getByText(/Invalid login link/)).toBeInTheDocument();
+    expect(mockPublicFetch).not.toHaveBeenCalled();
   });
 });

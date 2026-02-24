@@ -22,7 +22,7 @@ export default function NotFound() {
         </CardHeader>
         <CardContent>
           <Button variant="accent" asChild>
-            <Link href="/projects">Go to Projects</Link>
+            <Link href="/">Go Home</Link>
           </Button>
         </CardContent>
       </Card>

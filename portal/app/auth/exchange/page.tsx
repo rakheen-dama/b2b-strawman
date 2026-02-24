@@ -15,6 +15,7 @@ import { storeAuth } from "@/lib/auth";
 
 interface ExchangeBackendResponse {
   token: string;
+  email: string;
   customerId: string;
   customerName: string;
 }
@@ -52,10 +53,17 @@ function ExchangeHandler() {
 
         const data: ExchangeBackendResponse = await response.json();
 
+        if (!data.token) {
+          if (!cancelled) {
+            setError("Link expired or invalid. Please request a new login link.");
+          }
+          return;
+        }
+
         storeAuth(data.token, {
           id: data.customerId,
           name: data.customerName,
-          email: "",
+          email: data.email,
           orgId: orgId!,
         });
 

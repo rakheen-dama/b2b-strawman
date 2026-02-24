@@ -82,8 +82,6 @@ describe("auth", () => {
   });
 
   it("isAuthenticated returns false when no JWT is stored", () => {
-    mockDecodeJwt.mockReturnValue({ exp: Math.floor(Date.now() / 1000) + 3600 } as ReturnType<typeof decodeJwt>);
-
     expect(isAuthenticated()).toBe(false);
   });
 });

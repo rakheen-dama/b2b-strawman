@@ -2,7 +2,6 @@
 
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -99,13 +98,10 @@ function LoginForm() {
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             {logoUrl && (
-              <Image
+              <img
                 src={logoUrl}
                 alt={`${orgName} logo`}
-                width={48}
-                height={48}
                 className="mx-auto mb-2 h-12 w-auto"
-                unoptimized
               />
             )}
             <CardTitle className="text-xl">{orgName}</CardTitle>

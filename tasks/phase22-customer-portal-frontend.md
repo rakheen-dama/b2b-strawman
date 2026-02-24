@@ -24,7 +24,7 @@ Phase 22 builds the **customer-facing portal frontend** -- a separate Next.js 16
 | 154 | Portal Read-Model Extension -- Task Sync + Endpoint | Backend | 153A | S | 154A | **Done** (PR #325) |
 | 155 | Portal Branding Endpoint + Comment POST | Backend | -- | S | 155A | **Done** (PR #326) |
 | 156 | Portal App Scaffolding + Auth Flow | Portal | 155 | M | 156A, 156B | **Done** (PRs #327, #328) |
-| 157 | Portal Shell, Branding + Project List Page | Portal | 156 | M | 157A | |
+| 157 | Portal Shell, Branding + Project List Page | Portal | 156 | M | 157A | **Done** (PR #329) |
 | 158 | Portal Project Detail Page | Portal | 157, 154, 155 | M | 158A | |
 | 159 | Portal Invoice List + Detail Pages | Portal | 157, 153 | M | 159A | |
 | 160 | Portal Profile, Responsive Polish + Docker | Portal | 156-159 | S | 160A | |
@@ -82,7 +82,7 @@ Phase 22 builds the **customer-facing portal frontend** -- a separate Next.js 16
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 4a | Epic 157 | 157A | Shell layout, BrandingProvider, header, footer, project list page. Depends on 156B (auth flow complete). |
+| 4a | Epic 157 | 157A | Shell layout, BrandingProvider, header, footer, project list page. Depends on 156B (auth flow complete). | **Done** (PR #329) |
 | 4b (parallel) | Epic 158 | 158A | Project detail page (tasks, documents, comments, summary). Depends on 157A (shell) + 154A (task endpoint) + 155A (comment POST). |
 | 4c (parallel) | Epic 159 | 159A | Invoice list and detail pages. Depends on 157A (shell) + 153B (invoice endpoints). |
 
@@ -399,7 +399,7 @@ Stage 5: [160A]                                 (after all)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **157A** | 157.1--157.10 | `BrandingProvider` context + `use-branding` hook + `(authenticated)/layout.tsx` (auth guard + shell) + `portal-header.tsx` (logo, nav, profile, mobile menu) + `portal-footer.tsx` + CSS custom properties + `project-card.tsx` + `status-badge.tsx` + `(authenticated)/projects/page.tsx` (project grid, empty state) + tests. ~10 new files. |  |
+| **157A** | 157.1--157.10 | `BrandingProvider` context + `use-branding` hook + `(authenticated)/layout.tsx` (auth guard + shell) + `portal-header.tsx` (logo, nav, profile, mobile menu) + `portal-footer.tsx` + CSS custom properties + `project-card.tsx` + `status-badge.tsx` + `(authenticated)/projects/page.tsx` (project grid, empty state) + tests. ~10 new files. | **Done** (PR #329) |
 
 ### Tasks
 

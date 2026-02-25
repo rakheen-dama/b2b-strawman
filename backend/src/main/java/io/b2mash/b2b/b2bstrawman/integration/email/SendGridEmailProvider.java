@@ -20,6 +20,7 @@ import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.stereotype.Component;
 
@@ -36,18 +37,21 @@ public class SendGridEmailProvider implements EmailProvider {
   private static final Logger log = LoggerFactory.getLogger(SendGridEmailProvider.class);
 
   static final String SECRET_KEY = "email:sendgrid:api_key";
-  private static final String SENDER_ADDRESS = "noreply@docteams.app";
 
   private final SecretStore secretStore;
+  private final String senderAddress;
   private final Function<String, SendGrid> sendGridFactory;
 
   @Autowired
-  public SendGridEmailProvider(SecretStore secretStore) {
-    this(secretStore, SendGrid::new);
+  public SendGridEmailProvider(
+      SecretStore secretStore, @Value("${docteams.email.sender-address}") String senderAddress) {
+    this(secretStore, senderAddress, SendGrid::new);
   }
 
-  SendGridEmailProvider(SecretStore secretStore, Function<String, SendGrid> sendGridFactory) {
+  SendGridEmailProvider(
+      SecretStore secretStore, String senderAddress, Function<String, SendGrid> sendGridFactory) {
     this.secretStore = secretStore;
+    this.senderAddress = senderAddress;
     this.sendGridFactory = sendGridFactory;
   }
 
@@ -107,7 +111,12 @@ public class SendGridEmailProvider implements EmailProvider {
   }
 
   private Mail buildMail(EmailMessage message) {
-    Email from = new Email(SENDER_ADDRESS);
+    if (message.htmlBody() == null && message.plainTextBody() == null) {
+      throw new IllegalArgumentException(
+          "Email must have at least one of htmlBody or plainTextBody");
+    }
+
+    Email from = new Email(senderAddress);
 
     Personalization personalization = new Personalization();
     personalization.addTo(new Email(message.to()));
@@ -123,6 +132,10 @@ public class SendGridEmailProvider implements EmailProvider {
     mail.setFrom(from);
     mail.setSubject(message.subject());
     mail.addPersonalization(personalization);
+
+    if (message.replyTo() != null) {
+      mail.setReplyTo(new Email(message.replyTo()));
+    }
 
     if (message.plainTextBody() != null) {
       mail.addContent(new Content("text/plain", message.plainTextBody()));
@@ -146,7 +159,7 @@ public class SendGridEmailProvider implements EmailProvider {
     int status = response.getStatusCode();
 
     if (status >= 200 && status < 300) {
-      String sgMessageId = response.getHeaders().getOrDefault("X-Message-Id", null);
+      String sgMessageId = response.getHeaders().get("X-Message-Id");
       log.debug("SendGrid email sent, sg_message_id: {}", sgMessageId);
       return new SendResult(true, sgMessageId, null);
     } else {

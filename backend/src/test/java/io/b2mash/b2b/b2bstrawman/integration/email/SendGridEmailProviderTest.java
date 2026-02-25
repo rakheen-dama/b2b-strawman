@@ -42,7 +42,8 @@ class SendGridEmailProviderTest {
     when(mockSendGrid.api(any(Request.class))).thenReturn(mockResponse);
 
     // Use package-private factory constructor
-    provider = new SendGridEmailProvider(secretStore, apiKey -> mockSendGrid);
+    provider =
+        new SendGridEmailProvider(secretStore, "noreply@docteams.app", apiKey -> mockSendGrid);
   }
 
   @Test
@@ -180,5 +181,40 @@ class SendGridEmailProviderTest {
     assertThat(result.success()).isTrue();
     assertThat(result.providerName()).isEqualTo("sendgrid");
     assertThat(result.errorMessage()).isNull();
+  }
+
+  @Test
+  void testConnection_succeeds_with_restricted_scope() throws IOException {
+    when(mockResponse.getStatusCode()).thenReturn(403);
+    when(mockResponse.getHeaders()).thenReturn(Map.of());
+
+    var result = provider.testConnection();
+
+    assertThat(result.success()).isTrue();
+    assertThat(result.providerName()).isEqualTo("sendgrid");
+    assertThat(result.errorMessage()).isNull();
+  }
+
+  @Test
+  void testConnection_fails_with_server_error() throws IOException {
+    when(mockResponse.getStatusCode()).thenReturn(500);
+    when(mockResponse.getHeaders()).thenReturn(Map.of());
+
+    var result = provider.testConnection();
+
+    assertThat(result.success()).isFalse();
+    assertThat(result.providerName()).isEqualTo("sendgrid");
+    assertThat(result.errorMessage()).contains("500");
+  }
+
+  @Test
+  void testConnection_fails_with_io_exception() throws IOException {
+    when(mockSendGrid.api(any(Request.class))).thenThrow(new IOException("Connection refused"));
+
+    var result = provider.testConnection();
+
+    assertThat(result.success()).isFalse();
+    assertThat(result.providerName()).isEqualTo("sendgrid");
+    assertThat(result.errorMessage()).isEqualTo("Connection refused");
   }
 }

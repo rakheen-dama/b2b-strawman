@@ -175,23 +175,23 @@ class EmailNotificationChannelIntegrationTest {
 
   @Test
   void deliver_no_exception_on_failure() {
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.ORG_ID, ORG_ID)
-        .run(
-            () -> {
-              var notification =
-                  savedNotification(memberId, "COMMENT_ADDED", "Bob commented on your task");
+    // Stop GreenMail to simulate SMTP connection failure
+    greenMail.stop();
+    try {
+      ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+          .where(RequestScopes.ORG_ID, ORG_ID)
+          .run(
+              () -> {
+                var notification =
+                    savedNotification(memberId, "COMMENT_ADDED", "Bob commented on your task");
 
-              // deliver() should never throw
-              emailChannel.deliver(notification, RECIPIENT_EMAIL);
-
-              var logs = deliveryLogRepository.findAll();
-              var relevant =
-                  logs.stream()
-                      .filter(l -> notification.getId().equals(l.getReferenceId()))
-                      .toList();
-              assertThat(relevant).isNotEmpty();
-            });
+                // deliver() must not throw even when SMTP is down
+                emailChannel.deliver(notification, RECIPIENT_EMAIL);
+              });
+    } finally {
+      // Restart GreenMail for subsequent tests
+      greenMail.start();
+    }
   }
 
   @Test

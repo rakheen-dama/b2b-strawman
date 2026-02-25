@@ -61,6 +61,12 @@ public class EmailNotificationChannel implements NotificationChannel {
       return;
     }
 
+    if (!RequestScopes.TENANT_ID.isBound()) {
+      log.warn(
+          "Skipping email for notification {} -- no tenant context bound", notification.getId());
+      return;
+    }
+
     try {
       // 1. Resolve provider
       EmailProvider provider =
@@ -68,6 +74,13 @@ public class EmailNotificationChannel implements NotificationChannel {
 
       // 2. Map type to template
       String templateName = resolveTemplateName(notification.getType());
+      if (templateName == null) {
+        log.warn(
+            "Skipping email for notification {} -- unmapped type '{}'",
+            notification.getId(),
+            notification.getType());
+        return;
+      }
 
       // 3. Build context
       String recipientName =
@@ -166,24 +179,27 @@ public class EmailNotificationChannel implements NotificationChannel {
           "RETAINER_FULLY_CONSUMED",
           "RETAINER_TERMINATED" ->
           "notification-retainer";
-      default -> "notification-task";
+      default -> {
+        log.warn("No email template mapping for notification type '{}'", notificationType);
+        yield null;
+      }
     };
   }
 
   private Map<String, Object> buildNotificationContext(
       Notification notification, String recipientName) {
+    // TODO(Epic 172): Wire unsubscribe URL (currently null)
     Map<String, Object> context = emailContextBuilder.buildBaseContext(recipientName, null);
 
     context.put("subject", notification.getTitle());
+    context.put("notificationTitle", notification.getTitle());
+    context.put("notificationBody", notification.getBody());
 
     String type = notification.getType();
     String appUrl = (String) context.get("appUrl");
 
     switch (type) {
       case "TASK_ASSIGNED", "TASK_CLAIMED", "TASK_UPDATED" -> {
-        context.put("actorName", notification.getTitle());
-        context.put("taskName", notification.getTitle());
-        context.put("projectName", null);
         context.put(
             "action",
             switch (type) {
@@ -203,28 +219,19 @@ public class EmailNotificationChannel implements NotificationChannel {
                 : null);
       }
       case "COMMENT_ADDED" -> {
-        context.put("actorName", notification.getTitle());
         String preview = notification.getBody();
         context.put(
             "commentPreview",
             preview != null && preview.length() > 200 ? preview.substring(0, 200) : preview);
-        context.put("entityName", notification.getTitle());
         context.put("entityUrl", null);
       }
       case "DOCUMENT_SHARED", "DOCUMENT_GENERATED" -> {
-        context.put("actorName", notification.getTitle());
-        context.put("documentName", notification.getTitle());
-        context.put("projectName", null);
         context.put("documentUrl", null);
       }
       case "MEMBER_INVITED" -> {
-        context.put("inviterName", notification.getTitle());
         context.put("joinUrl", appUrl);
       }
       case "BUDGET_ALERT" -> {
-        context.put("projectName", notification.getTitle());
-        context.put("budgetPercentage", null);
-        context.put("threshold", null);
         context.put(
             "projectUrl",
             notification.getReferenceEntityId() != null
@@ -232,10 +239,6 @@ public class EmailNotificationChannel implements NotificationChannel {
                 : null);
       }
       case "INVOICE_APPROVED", "INVOICE_SENT", "INVOICE_PAID", "INVOICE_VOIDED" -> {
-        context.put("invoiceNumber", notification.getTitle());
-        context.put("customerName", notification.getTitle());
-        context.put("amount", null);
-        context.put("currency", null);
         String statusSuffix = type.substring("INVOICE_".length()).toLowerCase();
         context.put("status", statusSuffix);
         context.put(
@@ -245,8 +248,6 @@ public class EmailNotificationChannel implements NotificationChannel {
                 : null);
       }
       case "RECURRING_PROJECT_CREATED", "SCHEDULE_SKIPPED", "SCHEDULE_COMPLETED" -> {
-        context.put("scheduleName", notification.getTitle());
-        context.put("projectName", notification.getTitle());
         context.put(
             "action",
             switch (type) {
@@ -256,12 +257,15 @@ public class EmailNotificationChannel implements NotificationChannel {
             });
         context.put("scheduleUrl", appUrl);
       }
-      default -> {
-        context.put("retainerName", notification.getTitle());
-        context.put("customerName", notification.getTitle());
-        context.put("periodLabel", null);
-        context.put("utilization", null);
+      case "RETAINER_PERIOD_READY_TO_CLOSE",
+          "RETAINER_PERIOD_CLOSED",
+          "RETAINER_APPROACHING_CAPACITY",
+          "RETAINER_FULLY_CONSUMED",
+          "RETAINER_TERMINATED" -> {
         context.put("retainerUrl", appUrl);
+      }
+      default -> {
+        // No additional context for unmapped types
       }
     }
 

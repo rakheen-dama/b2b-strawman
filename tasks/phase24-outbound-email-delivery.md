@@ -21,7 +21,7 @@ The design introduces a **two-tier email architecture**: every org gets working 
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 167 | EmailProvider Port + SMTP Adapter | Backend | -- | M | 167A, 167B | |
+| 167 | EmailProvider Port + SMTP Adapter | Backend | -- | M | 167A, 167B | 167A **Done** (PR #348) |
 | 168 | Email Template Rendering | Backend | -- | M | 168A, 168B | |
 | 169 | EmailNotificationChannel + Delivery Log + Migration | Backend | 167, 168 | L | 169A, 169B | |
 | 170 | Invoice Delivery + Portal Magic Link Email | Backend | 169 | M | 170A, 170B | |
@@ -66,9 +66,9 @@ The design introduces a **two-tier email architecture**: every org gets working 
 
 ### Stage 0: Foundation (parallel tracks)
 
-| Order | Epic | Slice | Summary |
-|-------|------|-------|---------|
-| 0a (parallel) | 167 | 167A | EmailProvider port interface + value objects + IntegrationDomain.EMAIL + defaultSlug refactor |
+| Order | Epic | Slice | Summary | Status |
+|-------|------|-------|---------|--------|
+| 0a (parallel) | 167 | 167A | EmailProvider port interface + value objects + IntegrationDomain.EMAIL + defaultSlug refactor | **Done** (PR #348) |
 | 0b (parallel) | 168 | 168A | EmailTemplateRenderer service + base.html layout template + test-email.html |
 | 0c (parallel) | 167 | 167B | SmtpEmailProvider adapter + NoOpEmailProvider + Maven dependency + application properties |
 | 0d (parallel) | 168 | 168B | All 10 per-type email templates (8 notification groups + portal-magic-link + invoice-delivery) |
@@ -133,7 +133,7 @@ Stage 4: [173A] --> [173B]                               (sequential, after 172B
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **167A** | 167.1–167.6 | `EmailProvider` port interface + `EmailMessage`, `EmailAttachment`, `SendResult`, `RenderedEmail` value objects + `EmailDeliveryStatus` enum + `IntegrationDomain.EMAIL` with `defaultSlug` field + `IntegrationRegistry.resolve()` refactor to use `domain.getDefaultSlug()` + integration tests for backward compatibility. ~6 new files, ~2 modified files. Backend only. | |
+| **167A** | 167.1–167.6 | `EmailProvider` port interface + `EmailMessage`, `EmailAttachment`, `SendResult`, `RenderedEmail` value objects + `EmailDeliveryStatus` enum + `IntegrationDomain.EMAIL` with `defaultSlug` field + `IntegrationRegistry.resolve()` refactor to use `domain.getDefaultSlug()` + integration tests for backward compatibility. ~6 new files, ~2 modified files. Backend only. | **Done** (PR #348) |
 | **167B** | 167.7–167.13 | `SmtpEmailProvider` with `@ConditionalOnProperty` + `NoOpEmailProvider` with `@ConditionalOnMissingBean` + `spring-boot-starter-mail` Maven dependency + `docteams.email.*` application properties + GreenMail test dependency + integration tests. ~3 new files, ~2 modified files. Backend only. | |
 
 ### Tasks

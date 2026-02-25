@@ -196,7 +196,7 @@
 | 165 | Template Required Fields & Generation Validation | Backend + Frontend | 161, 164A | L | 165A, 165B, 165C | **Done** (PRs #342, #343, #344) |
 | 166 | Rate Warnings & Bug Fixes | Backend + Frontend | -- | M | 166A, 166B | **Done** (PRs #345, #346) |
 | **Phase 24 — Outbound Email Delivery** | | | | | | See [tasks/phase24-outbound-email-delivery.md](tasks/phase24-outbound-email-delivery.md) |
-| 167 | EmailProvider Port + SMTP Adapter | Backend | -- | M | 167A, 167B | |
+| 167 | EmailProvider Port + SMTP Adapter | Backend | -- | M | 167A, 167B | 167A **Done** (PR #348) |
 | 168 | Email Template Rendering | Backend | -- | M | 168A, 168B | |
 | 169 | EmailNotificationChannel + Delivery Log + Migration | Backend | 167, 168 | L | 169A, 169B | |
 | 170 | Invoice Delivery + Portal Magic Link Email | Backend | 169 | M | 170A, 170B | |

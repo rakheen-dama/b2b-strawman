@@ -73,6 +73,11 @@ public class FieldGroupService {
     fg.setSortOrder(request.sortOrder());
     fg.setAutoApply(request.autoApplyOrDefault());
 
+    if (request.dependsOn() != null && !request.dependsOn().isEmpty()) {
+      validateDependsOn(null, request.entityType(), request.dependsOn());
+      fg.setDependsOn(request.dependsOn());
+    }
+
     try {
       fg = fieldGroupRepository.save(fg);
     } catch (DataIntegrityViolationException ex) {
@@ -111,6 +116,11 @@ public class FieldGroupService {
     fg.updateMetadata(request.name(), request.description(), request.sortOrder());
     if (request.autoApply() != null) {
       fg.setAutoApply(request.autoApply());
+    }
+
+    if (request.dependsOn() != null) {
+      validateDependsOn(fg.getId(), fg.getEntityType(), request.dependsOn());
+      fg.setDependsOn(request.dependsOn().isEmpty() ? null : request.dependsOn());
     }
 
     fg = fieldGroupRepository.save(fg);
@@ -354,6 +364,82 @@ public class FieldGroupService {
       }
     }
     return new ArrayList<>(groupIds);
+  }
+
+  // --- Dependency validation and resolution ---
+
+  /**
+   * Validates the dependsOn list for a field group.
+   *
+   * @param groupId The ID of the group being created/updated (null for create)
+   * @param entityType The entity type of the group
+   * @param dependsOn The list of dependency group IDs
+   */
+  private void validateDependsOn(UUID groupId, EntityType entityType, List<UUID> dependsOn) {
+    if (dependsOn == null || dependsOn.isEmpty()) {
+      return;
+    }
+
+    for (UUID depId : dependsOn) {
+      // Self-reference check
+      if (depId.equals(groupId)) {
+        throw new InvalidStateException("Self-reference", "A field group cannot depend on itself");
+      }
+
+      // Existence and entity type check
+      var depGroup =
+          fieldGroupRepository
+              .findById(depId)
+              .orElseThrow(
+                  () ->
+                      new InvalidStateException(
+                          "Invalid dependency", "Dependency group " + depId + " does not exist"));
+
+      if (!depGroup.isActive()) {
+        throw new InvalidStateException(
+            "Invalid dependency", "Dependency group " + depId + " is not active");
+      }
+
+      if (depGroup.getEntityType() != entityType) {
+        throw new InvalidStateException(
+            "Invalid dependency",
+            "Dependency group "
+                + depId
+                + " has entity type "
+                + depGroup.getEntityType()
+                + " but expected "
+                + entityType);
+      }
+
+      // Mutual dependency check (A depends on B and B depends on A)
+      if (groupId != null
+          && depGroup.getDependsOn() != null
+          && depGroup.getDependsOn().contains(groupId)) {
+        throw new InvalidStateException(
+            "Circular dependency",
+            "Mutual dependency detected: group " + depId + " already depends on " + groupId);
+      }
+    }
+  }
+
+  /**
+   * Resolves one-level dependencies for the given list of applied field groups. Returns the
+   * expanded list including dependency group IDs.
+   */
+  public List<UUID> resolveDependencies(List<UUID> appliedFieldGroups) {
+    var resolved = new LinkedHashSet<>(appliedFieldGroups);
+    for (UUID groupId : appliedFieldGroups) {
+      var group = fieldGroupRepository.findById(groupId);
+      if (group.isPresent() && group.get().getDependsOn() != null) {
+        for (UUID depId : group.get().getDependsOn()) {
+          var depGroup = fieldGroupRepository.findById(depId);
+          if (depGroup.isPresent() && depGroup.get().isActive()) {
+            resolved.add(depId);
+          }
+        }
+      }
+    }
+    return new ArrayList<>(resolved);
   }
 
   private String resolveUniqueSlug(EntityType entityType, String baseSlug) {

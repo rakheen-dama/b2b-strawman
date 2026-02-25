@@ -236,6 +236,9 @@ public class ProjectService {
       }
     }
 
+    // Resolve one-level dependencies
+    appliedFieldGroups = fieldGroupService.resolveDependencies(appliedFieldGroups);
+
     project.setAppliedFieldGroups(appliedFieldGroups);
     repository.save(project);
 

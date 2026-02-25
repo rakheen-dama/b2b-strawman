@@ -263,6 +263,9 @@ public class CustomerService {
       }
     }
 
+    // Resolve one-level dependencies
+    appliedFieldGroups = fieldGroupService.resolveDependencies(appliedFieldGroups);
+
     customer.setAppliedFieldGroups(appliedFieldGroups);
     repository.save(customer);
 

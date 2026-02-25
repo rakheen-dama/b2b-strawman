@@ -445,6 +445,9 @@ public class TaskService {
       }
     }
 
+    // Resolve one-level dependencies
+    appliedFieldGroups = fieldGroupService.resolveDependencies(appliedFieldGroups);
+
     task.setAppliedFieldGroups(appliedFieldGroups);
     taskRepository.save(task);
 

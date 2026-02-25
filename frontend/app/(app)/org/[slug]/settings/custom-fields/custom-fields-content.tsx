@@ -202,6 +202,7 @@ export function CustomFieldsContent({
                   slug={slug}
                   entityType={tab.value}
                   availableFields={allFields}
+                  allGroups={groupsByType[tab.value]}
                 >
                   <Button size="sm" variant="outline">
                     <Plus className="mr-1 size-4" />
@@ -265,6 +266,7 @@ export function CustomFieldsContent({
                               entityType={tab.value}
                               group={group}
                               availableFields={allFields}
+                              allGroups={groupsByType[tab.value]}
                             >
                               <DropdownMenuItem
                                 onSelect={(e) => e.preventDefault()}

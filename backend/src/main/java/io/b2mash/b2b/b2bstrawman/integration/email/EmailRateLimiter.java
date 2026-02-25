@@ -20,6 +20,8 @@ public class EmailRateLimiter {
 
   private static final String PLATFORM_AGGREGATE_KEY = "platform-aggregate";
 
+  // @Autowired needed: two constructors exist (Spring injection + test with custom Ticker),
+  // so Spring cannot auto-disambiguate the primary constructor.
   @Autowired
   public EmailRateLimiter(
       @Value("${docteams.email.rate-limit.smtp:50}") int smtpLimit,
@@ -46,6 +48,15 @@ public class EmailRateLimiter {
             .build();
   }
 
+  /**
+   * Attempts to acquire a send permit for the given tenant and provider.
+   *
+   * <p>Note: the tenant counter and aggregate counter are updated in two separate atomic
+   * operations, so a narrow race window exists where two concurrent calls could both pass the
+   * tenant check before either increments the aggregate. This is acceptable for rate limiting — the
+   * worst case is a small transient over-count that self-corrects on the next hourly window reset.
+   * False early rejections are safe (callers retry or record RATE_LIMITED).
+   */
   public boolean tryAcquire(String tenantSchema, String providerSlug) {
     int tenantLimit = getLimitForProvider(providerSlug);
     String tenantKey = "tenant:" + tenantSchema + ":" + providerSlug;

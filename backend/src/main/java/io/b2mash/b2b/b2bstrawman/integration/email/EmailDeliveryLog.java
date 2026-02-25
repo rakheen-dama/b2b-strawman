@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.integration.email;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -31,8 +33,9 @@ public class EmailDeliveryLog {
   @Column(name = "reference_id")
   private UUID referenceId;
 
+  @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false, length = 20)
-  private String status;
+  private EmailDeliveryStatus status;
 
   @Column(name = "provider_message_id", length = 200)
   private String providerMessageId;
@@ -56,7 +59,7 @@ public class EmailDeliveryLog {
       String templateName,
       String referenceType,
       UUID referenceId,
-      String status,
+      EmailDeliveryStatus status,
       String providerMessageId,
       String providerSlug,
       String errorMessage) {
@@ -83,7 +86,7 @@ public class EmailDeliveryLog {
   }
 
   public void updateDeliveryStatus(EmailDeliveryStatus newStatus, String errorMessage) {
-    this.status = newStatus.name();
+    this.status = newStatus;
     this.errorMessage = errorMessage;
   }
 
@@ -107,7 +110,7 @@ public class EmailDeliveryLog {
     return referenceId;
   }
 
-  public String getStatus() {
+  public EmailDeliveryStatus getStatus() {
     return status;
   }
 

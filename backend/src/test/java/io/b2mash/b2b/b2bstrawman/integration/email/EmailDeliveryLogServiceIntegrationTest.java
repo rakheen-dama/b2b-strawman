@@ -63,7 +63,7 @@ class EmailDeliveryLogServiceIntegrationTest {
               assertThat(log.getTemplateName()).isEqualTo("task-assigned");
               assertThat(log.getReferenceType()).isEqualTo("NOTIFICATION");
               assertThat(log.getReferenceId()).isEqualTo(referenceId);
-              assertThat(log.getStatus()).isEqualTo("SENT");
+              assertThat(log.getStatus()).isEqualTo(EmailDeliveryStatus.SENT);
               assertThat(log.getProviderMessageId()).isEqualTo("msg-001");
               assertThat(log.getProviderSlug()).isEqualTo("smtp");
               assertThat(log.getErrorMessage()).isNull();
@@ -88,7 +88,7 @@ class EmailDeliveryLogServiceIntegrationTest {
                       "smtp",
                       result);
 
-              assertThat(log.getStatus()).isEqualTo("FAILED");
+              assertThat(log.getStatus()).isEqualTo(EmailDeliveryStatus.FAILED);
               assertThat(log.getErrorMessage()).isEqualTo("Connection refused");
             });
   }
@@ -108,7 +108,7 @@ class EmailDeliveryLogServiceIntegrationTest {
 
               var updated = deliveryLogRepository.findByProviderMessageId("msg-update-001");
               assertThat(updated).isPresent();
-              assertThat(updated.get().getStatus()).isEqualTo("DELIVERED");
+              assertThat(updated.get().getStatus()).isEqualTo(EmailDeliveryStatus.DELIVERED);
             });
   }
 
@@ -139,12 +139,14 @@ class EmailDeliveryLogServiceIntegrationTest {
               var sentPage =
                   deliveryLogService.findByFilters(
                       EmailDeliveryStatus.SENT, from, to, PageRequest.of(0, 50));
-              assertThat(sentPage.getContent()).allMatch(l -> "SENT".equals(l.getStatus()));
+              assertThat(sentPage.getContent())
+                  .allMatch(l -> EmailDeliveryStatus.SENT.equals(l.getStatus()));
 
               var failedPage =
                   deliveryLogService.findByFilters(
                       EmailDeliveryStatus.FAILED, from, to, PageRequest.of(0, 50));
-              assertThat(failedPage.getContent()).allMatch(l -> "FAILED".equals(l.getStatus()));
+              assertThat(failedPage.getContent())
+                  .allMatch(l -> EmailDeliveryStatus.FAILED.equals(l.getStatus()));
             });
   }
 
@@ -175,11 +177,17 @@ class EmailDeliveryLogServiceIntegrationTest {
                   "stats-tmpl",
                   "h@example.com",
                   "smtp",
-                  new SendResult(false, null, "bounced"));
+                  new SendResult(false, null, "send error"));
+
+              // Transition one SENT entry to BOUNCED to verify bounced7d count
+              deliveryLogService.updateStatus(
+                  "msg-stats-1", EmailDeliveryStatus.BOUNCED, "mailbox full");
 
               var stats = deliveryLogService.getStats("smtp", 50);
 
               assertThat(stats.sent24h()).isGreaterThanOrEqualTo(2);
+              assertThat(stats.bounced7d()).isGreaterThanOrEqualTo(1);
+              assertThat(stats.failed7d()).isGreaterThanOrEqualTo(1);
               assertThat(stats.hourlyLimit()).isEqualTo(50);
               assertThat(stats.providerSlug()).isEqualTo("smtp");
             });

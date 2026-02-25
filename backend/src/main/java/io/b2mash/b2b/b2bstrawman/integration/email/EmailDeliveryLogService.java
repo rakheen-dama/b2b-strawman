@@ -25,8 +25,7 @@ public class EmailDeliveryLogService {
       String recipientEmail,
       String providerSlug,
       SendResult result) {
-    var status =
-        result.success() ? EmailDeliveryStatus.SENT.name() : EmailDeliveryStatus.FAILED.name();
+    var status = result.success() ? EmailDeliveryStatus.SENT : EmailDeliveryStatus.FAILED;
     var log =
         new EmailDeliveryLog(
             recipientEmail,
@@ -52,27 +51,33 @@ public class EmailDeliveryLogService {
   public Page<EmailDeliveryLog> findByFilters(
       EmailDeliveryStatus status, Instant from, Instant to, Pageable pageable) {
     if (status != null) {
-      return repository.findByStatusAndCreatedAtBetween(status.name(), from, to, pageable);
+      return repository.findByStatusAndCreatedAtBetween(status, from, to, pageable);
     }
     return repository.findByCreatedAtBetween(from, to, pageable);
   }
 
+  /**
+   * Returns aggregated delivery statistics for the email dashboard.
+   *
+   * <p>Stats are intentionally unfiltered (global across all providers) because the dashboard shows
+   * overall health. The {@code providerSlug} parameter is passed through for display purposes only
+   * (shown alongside the stats) and is not used to filter queries.
+   */
   @Transactional(readOnly = true)
   public EmailDeliveryStats getStats(String providerSlug, int hourlyLimit) {
     var now = Instant.now();
     var twentyFourHoursAgo = now.minus(24, ChronoUnit.HOURS);
     var sevenDaysAgo = now.minus(7, ChronoUnit.DAYS);
-    var oneHourAgo = now.truncatedTo(ChronoUnit.HOURS);
+    var currentHourStart = now.truncatedTo(ChronoUnit.HOURS);
 
     long sent24h = repository.countByCreatedAtAfter(twentyFourHoursAgo);
     long bounced7d =
-        repository.countByStatusAndCreatedAtAfter(EmailDeliveryStatus.BOUNCED.name(), sevenDaysAgo);
+        repository.countByStatusAndCreatedAtAfter(EmailDeliveryStatus.BOUNCED, sevenDaysAgo);
     long failed7d =
-        repository.countByStatusAndCreatedAtAfter(EmailDeliveryStatus.FAILED.name(), sevenDaysAgo);
+        repository.countByStatusAndCreatedAtAfter(EmailDeliveryStatus.FAILED, sevenDaysAgo);
     long rateLimited7d =
-        repository.countByStatusAndCreatedAtAfter(
-            EmailDeliveryStatus.RATE_LIMITED.name(), sevenDaysAgo);
-    long currentHourUsage = repository.countByCreatedAtAfter(oneHourAgo);
+        repository.countByStatusAndCreatedAtAfter(EmailDeliveryStatus.RATE_LIMITED, sevenDaysAgo);
+    long currentHourUsage = repository.countByCreatedAtAfter(currentHourStart);
 
     return new EmailDeliveryStats(
         sent24h, bounced7d, failed7d, rateLimited7d, currentHourUsage, hourlyLimit, providerSlug);

@@ -12,11 +12,11 @@ public interface EmailDeliveryLogRepository extends JpaRepository<EmailDeliveryL
   Optional<EmailDeliveryLog> findByProviderMessageId(String providerMessageId);
 
   Page<EmailDeliveryLog> findByStatusAndCreatedAtBetween(
-      String status, Instant from, Instant to, Pageable pageable);
+      EmailDeliveryStatus status, Instant from, Instant to, Pageable pageable);
 
   Page<EmailDeliveryLog> findByCreatedAtBetween(Instant from, Instant to, Pageable pageable);
 
-  long countByStatusAndCreatedAtAfter(String status, Instant after);
+  long countByStatusAndCreatedAtAfter(EmailDeliveryStatus status, Instant after);
 
   long countByCreatedAtAfter(Instant after);
 }

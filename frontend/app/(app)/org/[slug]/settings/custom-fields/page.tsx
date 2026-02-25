@@ -9,7 +9,7 @@ import type {
   EntityType,
 } from "@/lib/types";
 
-const ENTITY_TYPES: EntityType[] = ["PROJECT", "TASK", "CUSTOMER"];
+const ENTITY_TYPES: EntityType[] = ["PROJECT", "TASK", "CUSTOMER", "INVOICE"];
 
 export default async function CustomFieldsSettingsPage({
   params,
@@ -46,11 +46,13 @@ export default async function CustomFieldsSettingsPage({
     PROJECT: [],
     TASK: [],
     CUSTOMER: [],
+    INVOICE: [],
   };
   const groupsByType: Record<EntityType, FieldGroupResponse[]> = {
     PROJECT: [],
     TASK: [],
     CUSTOMER: [],
+    INVOICE: [],
   };
 
   try {
@@ -86,7 +88,7 @@ export default async function CustomFieldsSettingsPage({
           Custom Fields
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Define custom fields and groups for projects, tasks, and customers.
+          Define custom fields and groups for projects, tasks, customers, and invoices.
         </p>
       </div>
 

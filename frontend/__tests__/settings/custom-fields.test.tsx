@@ -107,11 +107,13 @@ function makeProps(canManage = true) {
     PROJECT: makeFieldDefinitions("PROJECT"),
     TASK: makeFieldDefinitions("TASK"),
     CUSTOMER: makeFieldDefinitions("CUSTOMER"),
+    INVOICE: makeFieldDefinitions("INVOICE"),
   };
   const groupsByType: Record<EntityType, FieldGroupResponse[]> = {
     PROJECT: makeFieldGroups("PROJECT"),
     TASK: makeFieldGroups("TASK"),
     CUSTOMER: makeFieldGroups("CUSTOMER"),
+    INVOICE: makeFieldGroups("INVOICE"),
   };
   return { slug: "acme", fieldsByType, groupsByType, canManage };
 }

@@ -714,6 +714,8 @@ export interface InvoiceResponse {
   createdAt: string;
   updatedAt: string;
   lines: InvoiceLineResponse[];
+  customFields?: Record<string, unknown>;
+  appliedFieldGroups?: string[];
 }
 
 export interface CreateInvoiceDraftRequest {
@@ -784,7 +786,7 @@ export interface UnbilledTimeResponse {
 
 // ---- Custom Fields (from FieldDefinitionController, FieldGroupController) ----
 
-export type EntityType = "PROJECT" | "TASK" | "CUSTOMER";
+export type EntityType = "PROJECT" | "TASK" | "CUSTOMER" | "INVOICE";
 export type FieldType =
   | "TEXT"
   | "NUMBER"

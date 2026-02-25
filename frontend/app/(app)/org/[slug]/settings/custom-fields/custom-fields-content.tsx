@@ -33,6 +33,7 @@ const ENTITY_TYPE_TABS: { value: EntityType; label: string }[] = [
   { value: "PROJECT", label: "Projects" },
   { value: "TASK", label: "Tasks" },
   { value: "CUSTOMER", label: "Customers" },
+  { value: "INVOICE", label: "Invoices" },
 ];
 
 interface CustomFieldsContentProps {
@@ -54,6 +55,7 @@ export function CustomFieldsContent({
     ...fieldsByType.PROJECT,
     ...fieldsByType.TASK,
     ...fieldsByType.CUSTOMER,
+    ...fieldsByType.INVOICE,
   ];
 
   return (

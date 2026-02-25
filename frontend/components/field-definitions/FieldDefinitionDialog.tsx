@@ -43,7 +43,9 @@ const FIELD_TYPES: { value: FieldType; label: string }[] = [
   { value: "PHONE", label: "Phone" },
 ];
 
-const CONDITION_OPERATORS: { value: string; label: string }[] = [
+type ConditionOperator = "eq" | "neq" | "in";
+
+const CONDITION_OPERATORS: { value: ConditionOperator; label: string }[] = [
   { value: "eq", label: "equals" },
   { value: "neq", label: "does not equal" },
   { value: "in", label: "is one of" },
@@ -116,14 +118,14 @@ export function FieldDefinitionDialog({
   const [conditionFieldSlug, setConditionFieldSlug] = useState(
     field?.visibilityCondition?.dependsOnSlug ?? "",
   );
-  const [conditionOperator, setConditionOperator] = useState(
-    field?.visibilityCondition?.operator ?? "eq",
+  const [conditionOperator, setConditionOperator] = useState<ConditionOperator>(
+    (field?.visibilityCondition?.operator as ConditionOperator) ?? "eq",
   );
-  const [conditionValue, setConditionValue] = useState<string>(
-    Array.isArray(field?.visibilityCondition?.value)
-      ? field.visibilityCondition.value.join(", ")
-      : (field?.visibilityCondition?.value as string) ?? "",
-  );
+  const [conditionValue, setConditionValue] = useState<string>(() => {
+    const v = field?.visibilityCondition?.value;
+    if (Array.isArray(v)) return v.join(", ");
+    return typeof v === "string" ? v : "";
+  });
 
   const availableControllingFields = (allFieldsForType ?? []).filter(
     (f) => f.active && f.id !== field?.id,
@@ -177,11 +179,12 @@ export function FieldDefinitionDialog({
     setOptions(f.options ?? [{ value: "", label: "" }]);
     setShowConditionally(!!f.visibilityCondition);
     setConditionFieldSlug(f.visibilityCondition?.dependsOnSlug ?? "");
-    setConditionOperator(f.visibilityCondition?.operator ?? "eq");
+    setConditionOperator(
+      (f.visibilityCondition?.operator as ConditionOperator) ?? "eq",
+    );
+    const v = f.visibilityCondition?.value;
     setConditionValue(
-      Array.isArray(f.visibilityCondition?.value)
-        ? f.visibilityCondition.value.join(", ")
-        : (f.visibilityCondition?.value as string) ?? "",
+      Array.isArray(v) ? v.join(", ") : typeof v === "string" ? v : "",
     );
     setError(null);
   }
@@ -595,7 +598,7 @@ export function FieldDefinitionDialog({
                   <select
                     id="fd-condition-operator"
                     value={conditionOperator}
-                    onChange={(e) => setConditionOperator(e.target.value)}
+                    onChange={(e) => setConditionOperator(e.target.value as ConditionOperator)}
                     className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 dark:border-slate-700"
                   >
                     {CONDITION_OPERATORS.map((op) => (

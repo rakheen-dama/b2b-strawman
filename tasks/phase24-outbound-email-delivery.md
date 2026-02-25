@@ -22,7 +22,7 @@ The design introduces a **two-tier email architecture**: every org gets working 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 167 | EmailProvider Port + SMTP Adapter | Backend | -- | M | 167A, 167B | **Done** (PRs #348, #349) |
-| 168 | Email Template Rendering | Backend | -- | M | 168A, 168B | |
+| 168 | Email Template Rendering | Backend | -- | M | 168A, 168B | **Done** (PRs #350, #351) |
 | 169 | EmailNotificationChannel + Delivery Log + Migration | Backend | 167, 168 | L | 169A, 169B | |
 | 170 | Invoice Delivery + Portal Magic Link Email | Backend | 169 | M | 170A, 170B | |
 | 171 | SendGrid BYOAK + Bounce Webhooks | Backend | 169 | M | 171A, 171B | |
@@ -71,7 +71,7 @@ The design introduces a **two-tier email architecture**: every org gets working 
 | 0a (parallel) | 167 | 167A | EmailProvider port interface + value objects + IntegrationDomain.EMAIL + defaultSlug refactor | **Done** (PR #348) |
 | 0b (parallel) | 168 | 168A | EmailTemplateRenderer service + base.html layout template + test-email.html | **Done** (PR #350) |
 | 0c (parallel) | 167 | 167B | SmtpEmailProvider adapter + NoOpEmailProvider + Maven dependency + application properties | **Done** (PR #349) |
-| 0d (parallel) | 168 | 168B | All 10 per-type email templates (8 notification groups + portal-magic-link + invoice-delivery) |
+| 0d (parallel) | 168 | 168B | All 10 per-type email templates (8 notification groups + portal-magic-link + invoice-delivery) | **Done** (PR #351) |
 
 ### Stage 1: Core enabling slice
 
@@ -209,7 +209,7 @@ Stage 4: [173A] --> [173B]                               (sequential, after 172B
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **168A** | 168.1–168.6 | `EmailTemplateRenderer` service with `ClassLoaderTemplateResolver` + `base.html` branded layout + `test-email.html` template + `toPlainText()` utility + unit tests. ~3 new Java files, ~2 new template files. Backend only. | **Done** (PR #350) |
-| **168B** | 168.7–168.12 | All 10 per-type email templates (8 notification groups + `portal-magic-link.html` + `invoice-delivery.html`) + rendering tests. ~10 new template files, ~1 new test file. Backend only. | |
+| **168B** | 168.7–168.12 | All 10 per-type email templates (8 notification groups + `portal-magic-link.html` + `invoice-delivery.html`) + rendering tests. ~10 new template files, ~1 new test file. Backend only. | **Done** (PR #351) |
 
 ### Tasks
 

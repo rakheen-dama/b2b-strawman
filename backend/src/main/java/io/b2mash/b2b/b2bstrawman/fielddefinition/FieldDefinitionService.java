@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.CreateFieldDefinitionRequest;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.UpdateFieldDefinitionRequest;
+import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,11 +26,15 @@ public class FieldDefinitionService {
 
   private final FieldDefinitionRepository fieldDefinitionRepository;
   private final AuditService auditService;
+  private final EntityManager entityManager;
 
   public FieldDefinitionService(
-      FieldDefinitionRepository fieldDefinitionRepository, AuditService auditService) {
+      FieldDefinitionRepository fieldDefinitionRepository,
+      AuditService auditService,
+      EntityManager entityManager) {
     this.fieldDefinitionRepository = fieldDefinitionRepository;
     this.auditService = auditService;
+    this.entityManager = entityManager;
   }
 
   @Transactional(readOnly = true)
@@ -103,6 +108,12 @@ public class FieldDefinitionService {
         fieldDefinitionRepository
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("FieldDefinition", id));
+
+    // Field type immutability check
+    if (request.fieldType() != null && request.fieldType() != fd.getFieldType()) {
+      checkFieldTypeChangeAllowed(fd);
+      fd.setFieldType(request.fieldType());
+    }
 
     fd.updateMetadata(
         request.name(), request.description(), request.required(), request.validation());
@@ -200,5 +211,31 @@ public class FieldDefinitionService {
       suffix++;
     }
     return finalSlug;
+  }
+
+  private void checkFieldTypeChangeAllowed(FieldDefinition fd) {
+    String tableName = entityTableName(fd.getEntityType());
+    var query =
+        entityManager.createNativeQuery(
+            "SELECT EXISTS (SELECT 1 FROM "
+                + tableName
+                + " WHERE custom_fields ->> :slug IS NOT NULL)");
+    query.setParameter("slug", fd.getSlug());
+    Boolean exists = (Boolean) query.getSingleResult();
+    if (Boolean.TRUE.equals(exists)) {
+      throw new InvalidStateException(
+          "Field type cannot be changed",
+          "Field type cannot be changed after values exist. Create a new field instead.");
+    }
+  }
+
+  // Safe: closed enum switch — no SQL injection risk from user input.
+  private String entityTableName(EntityType entityType) {
+    return switch (entityType) {
+      case CUSTOMER -> "customers";
+      case PROJECT -> "projects";
+      case TASK -> "tasks";
+      case INVOICE -> "invoices";
+    };
   }
 }

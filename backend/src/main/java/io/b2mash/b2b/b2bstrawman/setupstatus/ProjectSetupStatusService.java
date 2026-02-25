@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateRepository;
 import io.b2mash.b2b.b2bstrawman.budget.ProjectBudgetRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldUtils;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
@@ -99,10 +100,8 @@ public class ProjectSetupStatusService {
         requiredDefs.stream()
             .map(
                 fd -> {
-                  boolean filled =
-                      customFields != null
-                          && customFields.get(fd.getSlug()) != null
-                          && !customFields.get(fd.getSlug()).toString().isBlank();
+                  Object value = customFields != null ? customFields.get(fd.getSlug()) : null;
+                  boolean filled = CustomFieldUtils.isFieldValueFilled(fd, value);
                   return new FieldStatus(fd.getName(), fd.getSlug(), filled);
                 })
             .toList();

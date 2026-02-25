@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.fielddefinition.dto;
 
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.util.List;
@@ -13,4 +14,5 @@ public record UpdateFieldDefinitionRequest(
     List<Map<String, String>> options,
     Map<String, Object> validation,
     int sortOrder,
-    Map<String, Object> visibilityCondition) {}
+    Map<String, Object> visibilityCondition,
+    FieldType fieldType) {}

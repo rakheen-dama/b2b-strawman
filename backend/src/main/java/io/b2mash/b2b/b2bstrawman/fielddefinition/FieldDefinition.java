@@ -234,4 +234,14 @@ public class FieldDefinition {
   public void setVisibilityCondition(Map<String, Object> visibilityCondition) {
     this.visibilityCondition = visibilityCondition;
   }
+
+  public void setRequired(boolean required) {
+    this.required = required;
+    this.updatedAt = Instant.now();
+  }
+
+  public void setFieldType(FieldType fieldType) {
+    this.fieldType = fieldType;
+    this.updatedAt = Instant.now();
+  }
 }

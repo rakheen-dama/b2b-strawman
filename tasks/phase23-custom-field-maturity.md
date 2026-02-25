@@ -20,7 +20,7 @@ Phase 23 hardens the custom fields system from "data entry convenience" to "data
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 161 | Auto-Apply Field Groups & V38 Migration | Backend | -- | L | 161A, 161B | **Done** (PRs #333, #334) |
-| 162 | Field Group Dependencies | Backend + Frontend | 161 | S | 162A | |
+| 162 | Field Group Dependencies | Backend + Frontend | 161 | S | 162A | **Done** (PR #335) |
 | 163 | Conditional Field Visibility | Backend + Frontend | 161 | M | 163A, 163B, 163C | |
 | 164 | Invoice Custom Fields & Task Pack | Backend + Frontend | 161 | M | 164A, 164B, 164C | |
 | 165 | Template Required Fields & Generation Validation | Backend + Frontend | 161, 164A | L | 165A, 165B, 165C | |
@@ -75,7 +75,7 @@ Phase 23 hardens the custom fields system from "data entry convenience" to "data
 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
-| 2a (parallel) | 162 | 162A | Field group dependencies -- backend validation, dependency resolution in group application, frontend dependency selector in edit dialog |
+| 2a (parallel) | 162 | 162A | Field group dependencies -- backend validation, dependency resolution in group application, frontend dependency selector in edit dialog | **Done** (PR #335) |
 | 2b (parallel) | 163 | 163A | Conditional visibility backend -- `FieldDefinition.visibilityCondition`, `CustomFieldValidator` visibility evaluation, condition validation at save time |
 | 2c (parallel) | 164 | 164A | Invoice custom fields backend -- `EntityType.INVOICE`, `Invoice` entity columns, custom field + field group endpoints, `InvoiceContextBuilder` extension, auto-apply integration |
 | 2d (parallel) | 165 | 165A | Template required fields backend -- `DocumentTemplate.requiredContextFields`, `TemplateValidationService`, preview/generate endpoint extensions |
@@ -206,7 +206,7 @@ Stage 4: [163C] // [165C]                                (parallel, after Stage 
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **162A** | 162.1--162.7 | Dependency validation in `FieldGroupService` (same entityType, no self-ref, no mutual dep) + dependency resolution in field group application endpoint + updated `FieldGroupSelector` to handle deps from server response + dependency selector in field group edit dialog (multi-select) + integration tests + frontend tests. ~3 modified backend files, ~3 modified frontend files. | |
+| **162A** | 162.1--162.7 | Dependency validation in `FieldGroupService` (same entityType, no self-ref, no mutual dep) + dependency resolution in field group application endpoint + updated `FieldGroupSelector` to handle deps from server response + dependency selector in field group edit dialog (multi-select) + integration tests + frontend tests. ~3 modified backend files, ~3 modified frontend files. | **Done** (PR #335) |
 
 ### Tasks
 

@@ -82,17 +82,18 @@ class IntegrationControllerTest {
 
   @Test
   @Order(1)
-  void listIntegrations_returnsAllFourDomains() throws Exception {
+  void listIntegrations_returnsAllFiveDomains() throws Exception {
     mockMvc
         .perform(get("/api/integrations").with(ownerJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(4)))
+        .andExpect(jsonPath("$", hasSize(5)))
         .andExpect(jsonPath("$[0].domain").value("ACCOUNTING"))
         .andExpect(jsonPath("$[0].providerSlug").value(nullValue()))
         .andExpect(jsonPath("$[0].enabled").value(false))
         .andExpect(jsonPath("$[1].domain").value("AI"))
         .andExpect(jsonPath("$[2].domain").value("DOCUMENT_SIGNING"))
-        .andExpect(jsonPath("$[3].domain").value("PAYMENT"));
+        .andExpect(jsonPath("$[3].domain").value("EMAIL"))
+        .andExpect(jsonPath("$[4].domain").value("PAYMENT"));
   }
 
   @Test
@@ -119,7 +120,7 @@ class IntegrationControllerTest {
     mockMvc
         .perform(get("/api/integrations").with(adminJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(4)));
+        .andExpect(jsonPath("$", hasSize(5)));
   }
 
   @Test

@@ -23,4 +23,13 @@ export const STANDARD_COLUMNS: Record<EntityType, { value: string; label: string
     { value: "dueDate", label: "Due Date" },
     { value: "createdAt", label: "Created At" },
   ],
+  INVOICE: [
+    { value: "invoiceNumber", label: "Invoice Number" },
+    { value: "customerName", label: "Customer" },
+    { value: "status", label: "Status" },
+    { value: "total", label: "Total" },
+    { value: "issueDate", label: "Issue Date" },
+    { value: "dueDate", label: "Due Date" },
+    { value: "createdAt", label: "Created At" },
+  ],
 };

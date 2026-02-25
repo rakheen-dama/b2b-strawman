@@ -1,9 +1,24 @@
 import { getAuthContext } from "@/lib/auth";
-import { api, handleApiError, getTemplates } from "@/lib/api";
-import type { InvoiceResponse, TemplateListResponse } from "@/lib/types";
+import {
+  api,
+  handleApiError,
+  getFieldDefinitions,
+  getFieldGroups,
+  getGroupMembers,
+  getTemplates,
+} from "@/lib/api";
+import type {
+  InvoiceResponse,
+  TemplateListResponse,
+  FieldDefinitionResponse,
+  FieldGroupResponse,
+  FieldGroupMemberResponse,
+} from "@/lib/types";
 import { InvoiceDetailClient } from "@/components/invoices/invoice-detail-client";
 import { GenerateDocumentDropdown } from "@/components/templates/GenerateDocumentDropdown";
 import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocumentsList";
+import { CustomFieldSection } from "@/components/field-definitions/CustomFieldSection";
+import { FieldGroupSelector } from "@/components/field-definitions/FieldGroupSelector";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
@@ -46,6 +61,34 @@ export default async function InvoiceDetailPage({
     // Non-fatal: hide generate button if template fetch fails
   }
 
+  // Custom field definitions and groups for the Custom Fields section
+  let invoiceFieldDefs: FieldDefinitionResponse[] = [];
+  let invoiceFieldGroups: FieldGroupResponse[] = [];
+  const invoiceGroupMembers: Record<string, FieldGroupMemberResponse[]> = {};
+  try {
+    const [defs, groups] = await Promise.all([
+      getFieldDefinitions("INVOICE"),
+      getFieldGroups("INVOICE"),
+    ]);
+    invoiceFieldDefs = defs;
+    invoiceFieldGroups = groups;
+
+    // Fetch members for each applied group
+    const appliedGroups = invoice!.appliedFieldGroups ?? [];
+    if (appliedGroups.length > 0) {
+      const memberResults = await Promise.allSettled(
+        appliedGroups.map((gId) => getGroupMembers(gId)),
+      );
+      memberResults.forEach((result, i) => {
+        if (result.status === "fulfilled") {
+          invoiceGroupMembers[appliedGroups[i]] = result.value;
+        }
+      });
+    }
+  } catch {
+    // Non-fatal: custom fields section won't render
+  }
+
   return (
     <div className="space-y-8">
       {/* Back link */}
@@ -70,6 +113,27 @@ export default async function InvoiceDetailPage({
         invoice={invoice!}
         slug={slug}
         isAdmin={isAdmin}
+      />
+
+      {/* Custom Fields */}
+      <FieldGroupSelector
+        entityType="INVOICE"
+        entityId={id}
+        appliedFieldGroups={invoice!.appliedFieldGroups ?? []}
+        slug={slug}
+        canManage={isAdmin}
+        allGroups={invoiceFieldGroups}
+      />
+      <CustomFieldSection
+        entityType="INVOICE"
+        entityId={id}
+        customFields={invoice!.customFields ?? {}}
+        appliedFieldGroups={invoice!.appliedFieldGroups ?? []}
+        editable={isAdmin}
+        slug={slug}
+        fieldDefinitions={invoiceFieldDefs}
+        fieldGroups={invoiceFieldGroups}
+        groupMembers={invoiceGroupMembers}
       />
 
       {/* Generated Documents section */}

@@ -86,8 +86,12 @@ public class SmtpEmailProvider implements EmailProvider {
   @Override
   public ConnectionTestResult testConnection() {
     try {
-      ((JavaMailSenderImpl) mailSender).testConnection();
-      return new ConnectionTestResult(true, "smtp", null);
+      if (mailSender instanceof JavaMailSenderImpl impl) {
+        impl.testConnection();
+        return new ConnectionTestResult(true, "smtp", null);
+      }
+      return new ConnectionTestResult(
+          false, "smtp", "Cannot test connection: unsupported JavaMailSender implementation");
     } catch (MessagingException e) {
       log.error("SMTP connection test failed: {}", e.getMessage());
       return new ConnectionTestResult(false, "smtp", e.getMessage());
@@ -96,6 +100,10 @@ public class SmtpEmailProvider implements EmailProvider {
 
   private void populateMessage(MimeMessageHelper helper, EmailMessage message)
       throws MessagingException {
+    if (message.htmlBody() == null && message.plainTextBody() == null) {
+      throw new IllegalArgumentException(
+          "Email must have at least one of htmlBody or plainTextBody");
+    }
     helper.setFrom(senderAddress);
     helper.setTo(message.to());
     helper.setSubject(message.subject());

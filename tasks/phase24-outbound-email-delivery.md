@@ -24,7 +24,7 @@ The design introduces a **two-tier email architecture**: every org gets working 
 | 167 | EmailProvider Port + SMTP Adapter | Backend | -- | M | 167A, 167B | **Done** (PRs #348, #349) |
 | 168 | Email Template Rendering | Backend | -- | M | 168A, 168B | **Done** (PRs #350, #351) |
 | 169 | EmailNotificationChannel + Delivery Log + Migration | Backend | 167, 168 | L | 169A, 169B | **Done** (PRs #352, #353) |
-| 170 | Invoice Delivery + Portal Magic Link Email | Backend | 169 | M | 170A, 170B | |
+| 170 | Invoice Delivery + Portal Magic Link Email | Backend | 169 | M | 170A, 170B | **Done** (PRs #354, #355) |
 | 171 | SendGrid BYOAK + Bounce Webhooks | Backend | 169 | M | 171A, 171B | |
 | 172 | Unsubscribe + Admin Endpoints | Backend | 169 | M | 172A, 172B | |
 | 173 | Frontend — Email Toggle + Integration Card + Delivery Log | Frontend | 172 | M | 173A, 173B | |
@@ -85,7 +85,7 @@ The design introduces a **two-tier email architecture**: every org gets working 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
 | 2a (parallel) | 170 | 170A | InvoiceEmailService + @TransactionalEventListener on InvoiceSentEvent + PDF attachment | **Done** (PR #354) |
-| 2b (parallel) | 170 | 170B | PortalEmailService + MagicLinkService integration + magic link template wiring |
+| 2b (parallel) | 170 | 170B | PortalEmailService + MagicLinkService integration + magic link template wiring | **Done** (PR #355) |
 | 2c (parallel) | 171 | 171A | SendGridEmailProvider adapter + sendgrid-java dependency + @ConditionalOnClass |
 | 2d (parallel) | 172 | 172A | UnsubscribeService (HMAC tokens) + UnsubscribeController + confirmation HTML page |
 
@@ -355,7 +355,7 @@ Stage 4: [173A] --> [173B]                               (sequential, after 172B
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **170A** | 170.1–170.6 | `InvoiceEmailService` + `@TransactionalEventListener` on `InvoiceSentEvent` + PDF attachment + delivery log + integration tests. ~2 new files, ~1 modified file. Backend only. | **Done** (PR #354) |
-| **170B** | 170.7–170.12 | `PortalEmailService` + `MagicLinkService` integration + delivery log + integration tests. ~2 new files, ~1 modified file. Backend only. | |
+| **170B** | 170.7–170.12 | `PortalEmailService` + `MagicLinkService` integration + delivery log + integration tests. ~2 new files, ~1 modified file. Backend only. | **Done** (PR #355) |
 
 ### Tasks
 

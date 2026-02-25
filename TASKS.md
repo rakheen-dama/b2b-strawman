@@ -199,10 +199,18 @@
 | 167 | EmailProvider Port + SMTP Adapter | Backend | -- | M | 167A, 167B | **Done** (PRs #348, #349) |
 | 168 | Email Template Rendering | Backend | -- | M | 168A, 168B | **Done** (PRs #350, #351) |
 | 169 | EmailNotificationChannel + Delivery Log + Migration | Backend | 167, 168 | L | 169A, 169B | **Done** (PRs #352, #353) |
-| 170 | Invoice Delivery + Portal Magic Link Email | Backend | 169 | M | 170A, 170B | 170A **Done** (PR #354) |
+| 170 | Invoice Delivery + Portal Magic Link Email | Backend | 169 | M | 170A, 170B | **Done** (PRs #354, #355) |
 | 171 | SendGrid BYOAK + Bounce Webhooks | Backend | 169 | M | 171A, 171B | |
 | 172 | Unsubscribe + Admin Endpoints | Backend | 169 | M | 172A, 172B | |
 | 173 | Frontend — Email Toggle + Integration Card + Delivery Log | Frontend | 172 | M | 173A, 173B | |
+| **Phase 25 — Online Payment Collection** | | | | | | See [tasks/phase25-online-payment-collection.md](tasks/phase25-online-payment-collection.md) |
+| 174 | PaymentGateway Port + NoOp Adapter + InvoiceService Migration | Backend | -- | M | 174A, 174B | |
+| 175 | PaymentEvent Entity + Migration + Invoice Extension | Backend | 174 | M | 175A, 175B | |
+| 176 | Stripe Adapter | Backend | 174 | M | 176A, 176B | |
+| 177 | PayFast Adapter | Backend | 174 | M | 177A, 177B | |
+| 178 | Payment Link Generation + Webhook Reconciliation | Backend | 174, 175 | L | 178A, 178B | |
+| 179 | Portal Payment Flow + Read-Model Extension | Both | 178 | M | 179A, 179B | |
+| 180 | Integration Settings UI + Invoice Payment UX | Frontend | 178 | M | 180A, 180B | |
 
 ---
 

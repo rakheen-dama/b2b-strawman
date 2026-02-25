@@ -11,9 +11,9 @@ import java.util.HexFormat;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Generates and verifies time-limited magic link tokens for customer portal access. Tokens are
@@ -25,24 +25,24 @@ public class MagicLinkService {
 
   private static final Logger log = LoggerFactory.getLogger(MagicLinkService.class);
   private static final int TOKEN_BYTES = 32;
-  private static final long TOKEN_TTL_MINUTES = 15;
+  static final long TOKEN_TTL_MINUTES = 15;
   private static final int MAX_TOKENS_PER_5_MINUTES = 3;
 
   private final MagicLinkTokenRepository tokenRepository;
   private final PortalContactRepository portalContactRepository;
   private final PortalEmailService portalEmailService;
+  private final TransactionTemplate transactionTemplate;
   private final SecureRandom secureRandom;
-  private final String appBaseUrl;
 
   public MagicLinkService(
       MagicLinkTokenRepository tokenRepository,
       PortalContactRepository portalContactRepository,
       PortalEmailService portalEmailService,
-      @Value("${docteams.app.base-url:http://localhost:3000}") String appBaseUrl) {
+      TransactionTemplate transactionTemplate) {
     this.tokenRepository = tokenRepository;
     this.portalContactRepository = portalContactRepository;
     this.portalEmailService = portalEmailService;
-    this.appBaseUrl = appBaseUrl;
+    this.transactionTemplate = transactionTemplate;
     try {
       this.secureRandom = SecureRandom.getInstanceStrong();
     } catch (NoSuchAlgorithmException e) {
@@ -51,54 +51,73 @@ public class MagicLinkService {
   }
 
   /**
-   * Generates a cryptographically random magic link token for the given portal contact.
+   * Generates a cryptographically random magic link token for the given portal contact. The token
+   * is persisted in a transaction, then the magic link email is sent after the transaction commits.
+   * This ensures the token is always persisted even if email delivery fails.
    *
    * @param portalContactId the portal contact UUID
    * @param createdIp the IP address of the requester (nullable)
    * @return the raw token string (URL-safe Base64) to embed in the magic link
    * @throws PortalAuthException if rate limit is exceeded (3 tokens per 5 minutes)
    */
-  @Transactional
   public String generateToken(UUID portalContactId, String createdIp) {
-    // Rate-limit check: max 3 tokens per contact per 5 minutes
-    long recentCount =
-        tokenRepository.countByPortalContactIdAndCreatedAtAfter(
-            portalContactId, Instant.now().minus(5, ChronoUnit.MINUTES));
-    if (recentCount >= MAX_TOKENS_PER_5_MINUTES) {
-      throw new PortalAuthException("Too many login attempts");
-    }
+    // 1. Persist token in its own transaction (commits before email send)
+    var result = persistToken(portalContactId, createdIp);
 
-    // Generate 32 bytes of cryptographic randomness
-    byte[] tokenBytes = new byte[TOKEN_BYTES];
-    secureRandom.nextBytes(tokenBytes);
-    String rawToken = Base64.getUrlEncoder().withoutPadding().encodeToString(tokenBytes);
-
-    // SHA-256 hash the raw token for storage
-    String tokenHash = hashToken(rawToken);
-
-    // Persist the token hash
-    Instant expiresAt = Instant.now().plus(TOKEN_TTL_MINUTES, ChronoUnit.MINUTES);
-    var magicLinkToken = new MagicLinkToken(portalContactId, tokenHash, expiresAt, createdIp);
-    magicLinkToken = tokenRepository.save(magicLinkToken);
-
-    log.debug("Generated magic link token for portal contact {}", portalContactId);
-
-    // Send magic link email (fire-and-forget)
+    // 2. Send magic link email outside the transaction boundary (fire-and-forget).
+    // This avoids holding a DB connection open during SMTP I/O.
     try {
-      var savedToken = magicLinkToken;
       portalContactRepository
           .findById(portalContactId)
-          .ifPresent(
-              contact -> {
-                String magicLinkUrl = appBaseUrl + "/portal/auth?token=" + rawToken;
-                portalEmailService.sendMagicLinkEmail(contact, magicLinkUrl, savedToken.getId());
-              });
+          .ifPresentOrElse(
+              contact ->
+                  portalEmailService.sendMagicLinkEmail(
+                      contact, result.rawToken(), result.tokenId()),
+              () ->
+                  log.warn(
+                      "Portal contact {} not found, skipping magic link email", portalContactId));
     } catch (Exception e) {
       log.warn("Failed to send magic link email for contact {}", portalContactId, e);
     }
 
-    return rawToken;
+    return result.rawToken();
   }
+
+  /**
+   * Persists the token within an explicit transaction boundary. Uses TransactionTemplate to
+   * guarantee the transaction commits before email sending begins.
+   */
+  private TokenGenerationResult persistToken(UUID portalContactId, String createdIp) {
+    return transactionTemplate.execute(
+        status -> {
+          // Rate-limit check: max 3 tokens per contact per 5 minutes
+          long recentCount =
+              tokenRepository.countByPortalContactIdAndCreatedAtAfter(
+                  portalContactId, Instant.now().minus(5, ChronoUnit.MINUTES));
+          if (recentCount >= MAX_TOKENS_PER_5_MINUTES) {
+            throw new PortalAuthException("Too many login attempts");
+          }
+
+          // Generate 32 bytes of cryptographic randomness
+          byte[] tokenBytes = new byte[TOKEN_BYTES];
+          secureRandom.nextBytes(tokenBytes);
+          String rawToken = Base64.getUrlEncoder().withoutPadding().encodeToString(tokenBytes);
+
+          // SHA-256 hash the raw token for storage
+          String tokenHash = hashToken(rawToken);
+
+          // Persist the token hash
+          Instant expiresAt = Instant.now().plus(TOKEN_TTL_MINUTES, ChronoUnit.MINUTES);
+          var magicLinkToken = new MagicLinkToken(portalContactId, tokenHash, expiresAt, createdIp);
+          magicLinkToken = tokenRepository.save(magicLinkToken);
+
+          log.debug("Generated magic link token for portal contact {}", portalContactId);
+          return new TokenGenerationResult(rawToken, magicLinkToken.getId());
+        });
+  }
+
+  /** Internal result holder for the token generation transaction. */
+  record TokenGenerationResult(String rawToken, UUID tokenId) {}
 
   /**
    * Verifies and consumes a magic link token. The token is looked up by its SHA-256 hash, validated

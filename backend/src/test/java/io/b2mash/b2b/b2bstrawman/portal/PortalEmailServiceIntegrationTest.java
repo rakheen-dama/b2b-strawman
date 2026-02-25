@@ -119,11 +119,11 @@ class PortalEmailServiceIntegrationTest {
   @Test
   void sends_email_to_contact() throws Exception {
     UUID tokenId = UUID.randomUUID();
-    String magicLinkUrl = "http://localhost:3000/portal/auth?token=test-token";
+    String rawToken = "test-token";
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
-        .run(() -> portalEmailService.sendMagicLinkEmail(savedContact, magicLinkUrl, tokenId));
+        .run(() -> portalEmailService.sendMagicLinkEmail(savedContact, rawToken, tokenId));
 
     MimeMessage[] received = greenMail.getReceivedMessages();
     assertThat(received).hasSize(1);
@@ -134,11 +134,11 @@ class PortalEmailServiceIntegrationTest {
   @Test
   void records_delivery_log() {
     UUID tokenId = UUID.randomUUID();
-    String magicLinkUrl = "http://localhost:3000/portal/auth?token=test-token";
+    String rawToken = "test-token";
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
-        .run(() -> portalEmailService.sendMagicLinkEmail(savedContact, magicLinkUrl, tokenId));
+        .run(() -> portalEmailService.sendMagicLinkEmail(savedContact, rawToken, tokenId));
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
@@ -159,7 +159,7 @@ class PortalEmailServiceIntegrationTest {
     greenMail.stop();
     try {
       UUID tokenId = UUID.randomUUID();
-      String magicLinkUrl = "http://localhost:3000/portal/auth?token=test-token";
+      String rawToken = "test-token";
       assertThatCode(
               () ->
                   ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -167,7 +167,7 @@ class PortalEmailServiceIntegrationTest {
                       .run(
                           () ->
                               portalEmailService.sendMagicLinkEmail(
-                                  savedContact, magicLinkUrl, tokenId)))
+                                  savedContact, rawToken, tokenId)))
           .doesNotThrowAnyException();
     } finally {
       greenMail.start();
@@ -205,11 +205,11 @@ class PortalEmailServiceIntegrationTest {
   @Test
   void no_unsubscribe_link_in_magic_link_email() throws Exception {
     UUID tokenId = UUID.randomUUID();
-    String magicLinkUrl = "http://localhost:3000/portal/auth?token=test-token";
+    String rawToken = "test-token";
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
-        .run(() -> portalEmailService.sendMagicLinkEmail(savedContact, magicLinkUrl, tokenId));
+        .run(() -> portalEmailService.sendMagicLinkEmail(savedContact, rawToken, tokenId));
 
     MimeMessage[] received = greenMail.getReceivedMessages();
     assertThat(received).hasSize(1);
@@ -233,7 +233,7 @@ class PortalEmailServiceIntegrationTest {
               var latestToken =
                   tokens.stream()
                       .filter(t -> savedContact.getId().equals(t.getPortalContactId()))
-                      .reduce((a, b) -> b) // last one = most recent
+                      .max(java.util.Comparator.comparing(MagicLinkToken::getCreatedAt))
                       .orElseThrow();
 
               // Find the delivery log entry

@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -32,29 +33,32 @@ public class PortalEmailService {
   private final EmailContextBuilder emailContextBuilder;
   private final EmailDeliveryLogService deliveryLogService;
   private final EmailRateLimiter emailRateLimiter;
+  private final String appBaseUrl;
 
   public PortalEmailService(
       IntegrationRegistry integrationRegistry,
       EmailTemplateRenderer emailTemplateRenderer,
       EmailContextBuilder emailContextBuilder,
       EmailDeliveryLogService deliveryLogService,
-      EmailRateLimiter emailRateLimiter) {
+      EmailRateLimiter emailRateLimiter,
+      @Value("${docteams.app.base-url:http://localhost:3000}") String appBaseUrl) {
     this.integrationRegistry = integrationRegistry;
     this.emailTemplateRenderer = emailTemplateRenderer;
     this.emailContextBuilder = emailContextBuilder;
     this.deliveryLogService = deliveryLogService;
     this.emailRateLimiter = emailRateLimiter;
+    this.appBaseUrl = appBaseUrl;
   }
 
   /**
    * Sends a magic link email to a portal contact. Fire-and-forget: exceptions are caught and
-   * logged, never propagated.
+   * logged, never propagated. Constructs the full magic link URL internally from the raw token.
    *
    * @param contact the portal contact to email
-   * @param magicLinkUrl the full magic link URL
+   * @param rawToken the raw token string to embed in the magic link URL
    * @param tokenId the MagicLinkToken UUID (used as referenceId in delivery log)
    */
-  public void sendMagicLinkEmail(PortalContact contact, String magicLinkUrl, UUID tokenId) {
+  public void sendMagicLinkEmail(PortalContact contact, String rawToken, UUID tokenId) {
     String recipientEmail = contact.getEmail();
     if (recipientEmail == null || recipientEmail.isBlank()) {
       log.warn("Skipping magic link email for contact {} -- no email address", contact.getId());
@@ -72,11 +76,12 @@ public class PortalEmailService {
           integrationRegistry.resolve(IntegrationDomain.EMAIL, EmailProvider.class);
 
       // 2. Build context (base + magic-link-specific). No unsubscribe for transactional emails.
+      String magicLinkUrl = appBaseUrl + "/portal/auth?token=" + rawToken;
       Map<String, Object> context =
           emailContextBuilder.buildBaseContext(contact.getDisplayName(), null);
       context.put("contactName", contact.getDisplayName());
       context.put("magicLinkUrl", magicLinkUrl);
-      context.put("expiryMinutes", "15");
+      context.put("expiryMinutes", String.valueOf(MagicLinkService.TOKEN_TTL_MINUTES));
       String orgName = (String) context.get("orgName");
       context.put("subject", "Your portal access link from " + orgName);
 

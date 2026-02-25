@@ -84,7 +84,7 @@ The design introduces a **two-tier email architecture**: every org gets working 
 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
-| 2a (parallel) | 170 | 170A | InvoiceEmailService + @TransactionalEventListener on InvoiceSentEvent + PDF attachment |
+| 2a (parallel) | 170 | 170A | InvoiceEmailService + @TransactionalEventListener on InvoiceSentEvent + PDF attachment | **Done** (PR #354) |
 | 2b (parallel) | 170 | 170B | PortalEmailService + MagicLinkService integration + magic link template wiring |
 | 2c (parallel) | 171 | 171A | SendGridEmailProvider adapter + sendgrid-java dependency + @ConditionalOnClass |
 | 2d (parallel) | 172 | 172A | UnsubscribeService (HMAC tokens) + UnsubscribeController + confirmation HTML page |
@@ -354,7 +354,7 @@ Stage 4: [173A] --> [173B]                               (sequential, after 172B
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **170A** | 170.1–170.6 | `InvoiceEmailService` + `@TransactionalEventListener` on `InvoiceSentEvent` + PDF attachment + delivery log + integration tests. ~2 new files, ~1 modified file. Backend only. | |
+| **170A** | 170.1–170.6 | `InvoiceEmailService` + `@TransactionalEventListener` on `InvoiceSentEvent` + PDF attachment + delivery log + integration tests. ~2 new files, ~1 modified file. Backend only. | **Done** (PR #354) |
 | **170B** | 170.7–170.12 | `PortalEmailService` + `MagicLinkService` integration + delivery log + integration tests. ~2 new files, ~1 modified file. Backend only. | |
 
 ### Tasks

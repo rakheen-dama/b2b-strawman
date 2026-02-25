@@ -199,7 +199,7 @@
 | 167 | EmailProvider Port + SMTP Adapter | Backend | -- | M | 167A, 167B | **Done** (PRs #348, #349) |
 | 168 | Email Template Rendering | Backend | -- | M | 168A, 168B | **Done** (PRs #350, #351) |
 | 169 | EmailNotificationChannel + Delivery Log + Migration | Backend | 167, 168 | L | 169A, 169B | **Done** (PRs #352, #353) |
-| 170 | Invoice Delivery + Portal Magic Link Email | Backend | 169 | M | 170A, 170B | |
+| 170 | Invoice Delivery + Portal Magic Link Email | Backend | 169 | M | 170A, 170B | 170A **Done** (PR #354) |
 | 171 | SendGrid BYOAK + Bounce Webhooks | Backend | 169 | M | 171A, 171B | |
 | 172 | Unsubscribe + Admin Endpoints | Backend | 169 | M | 172A, 172B | |
 | 173 | Frontend — Email Toggle + Integration Card + Delivery Log | Frontend | 172 | M | 173A, 173B | |

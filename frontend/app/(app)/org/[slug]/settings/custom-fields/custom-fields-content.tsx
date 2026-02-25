@@ -78,7 +78,7 @@ export function CustomFieldsContent({
                 Field Definitions
               </h2>
               {canManage && (
-                <FieldDefinitionDialog slug={slug} entityType={tab.value}>
+                <FieldDefinitionDialog slug={slug} entityType={tab.value} allFieldsForType={fieldsByType[tab.value]}>
                   <Button size="sm">
                     <Plus className="mr-1 size-4" />
                     Add Field
@@ -161,6 +161,7 @@ export function CustomFieldsContent({
                                 slug={slug}
                                 entityType={tab.value}
                                 field={field}
+                                allFieldsForType={fieldsByType[tab.value]}
                               >
                                 <DropdownMenuItem
                                   onSelect={(e) => e.preventDefault()}

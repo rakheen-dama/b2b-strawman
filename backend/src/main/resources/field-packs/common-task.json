@@ -1,0 +1,44 @@
+{
+  "packId": "common-task",
+  "version": 1,
+  "entityType": "TASK",
+  "group": {
+    "slug": "task_info",
+    "name": "Task Info",
+    "description": "Standard task metadata fields",
+    "autoApply": true
+  },
+  "fields": [
+    {
+      "slug": "priority",
+      "name": "Priority",
+      "fieldType": "DROPDOWN",
+      "description": "Task priority level",
+      "required": false,
+      "options": [
+        { "value": "low", "label": "Low" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "high", "label": "High" },
+        { "value": "urgent", "label": "Urgent" }
+      ],
+      "sortOrder": 1
+    },
+    {
+      "slug": "category",
+      "name": "Category",
+      "fieldType": "TEXT",
+      "description": "Task category or type",
+      "required": false,
+      "sortOrder": 2
+    },
+    {
+      "slug": "estimated_hours",
+      "name": "Estimated Hours",
+      "fieldType": "NUMBER",
+      "description": "Estimated time to complete in hours",
+      "required": false,
+      "validation": { "min": 0 },
+      "sortOrder": 3
+    }
+  ]
+}

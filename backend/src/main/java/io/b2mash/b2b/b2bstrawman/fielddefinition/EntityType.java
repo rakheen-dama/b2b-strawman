@@ -4,5 +4,6 @@ package io.b2mash.b2b.b2bstrawman.fielddefinition;
 public enum EntityType {
   PROJECT,
   TASK,
-  CUSTOMER
+  CUSTOMER,
+  INVOICE
 }

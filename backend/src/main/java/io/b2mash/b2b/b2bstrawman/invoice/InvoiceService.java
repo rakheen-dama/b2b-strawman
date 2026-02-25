@@ -14,6 +14,13 @@ import io.b2mash.b2b.b2bstrawman.event.InvoiceVoidedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldValidator;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMemberRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupService;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.AddLineItemRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.CreateInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.CurrencyTotal;
@@ -73,6 +80,11 @@ public class InvoiceService {
   private final ApplicationEventPublisher eventPublisher;
   private final ITemplateEngine templateEngine;
   private final CustomerLifecycleGuard customerLifecycleGuard;
+  private final CustomFieldValidator customFieldValidator;
+  private final FieldGroupService fieldGroupService;
+  private final FieldGroupRepository fieldGroupRepository;
+  private final FieldGroupMemberRepository fieldGroupMemberRepository;
+  private final FieldDefinitionRepository fieldDefinitionRepository;
 
   public InvoiceService(
       InvoiceRepository invoiceRepository,
@@ -90,7 +102,12 @@ public class InvoiceService {
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
       ITemplateEngine templateEngine,
-      CustomerLifecycleGuard customerLifecycleGuard) {
+      CustomerLifecycleGuard customerLifecycleGuard,
+      CustomFieldValidator customFieldValidator,
+      FieldGroupService fieldGroupService,
+      FieldGroupRepository fieldGroupRepository,
+      FieldGroupMemberRepository fieldGroupMemberRepository,
+      FieldDefinitionRepository fieldDefinitionRepository) {
     this.invoiceRepository = invoiceRepository;
     this.lineRepository = lineRepository;
     this.customerRepository = customerRepository;
@@ -107,6 +124,11 @@ public class InvoiceService {
     this.eventPublisher = eventPublisher;
     this.templateEngine = templateEngine;
     this.customerLifecycleGuard = customerLifecycleGuard;
+    this.customFieldValidator = customFieldValidator;
+    this.fieldGroupService = fieldGroupService;
+    this.fieldGroupRepository = fieldGroupRepository;
+    this.fieldGroupMemberRepository = fieldGroupMemberRepository;
+    this.fieldDefinitionRepository = fieldDefinitionRepository;
   }
 
   @Transactional
@@ -239,6 +261,22 @@ public class InvoiceService {
         timeEntry.setInvoiceId(invoice.getId());
       }
       timeEntryRepository.saveAll(linkedTimeEntries);
+    }
+
+    // Auto-apply field groups before save so audit events capture final state
+    var autoApplyIds = fieldGroupService.resolveAutoApplyGroupIds(EntityType.INVOICE);
+    if (!autoApplyIds.isEmpty()) {
+      var merged =
+          new ArrayList<>(
+              invoice.getAppliedFieldGroups() != null
+                  ? invoice.getAppliedFieldGroups()
+                  : List.of());
+      for (UUID autoId : autoApplyIds) {
+        if (!merged.contains(autoId)) {
+          merged.add(autoId);
+        }
+      }
+      invoice.setAppliedFieldGroups(merged);
     }
 
     // Recompute totals
@@ -1005,6 +1043,107 @@ public class InvoiceService {
             tenantIdForEvent));
 
     return buildResponse(invoice);
+  }
+
+  // --- Custom fields ---
+
+  @Transactional
+  public InvoiceResponse updateCustomFields(UUID invoiceId, Map<String, Object> customFields) {
+    var invoice =
+        invoiceRepository
+            .findById(invoiceId)
+            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+
+    if (invoice.getStatus() != InvoiceStatus.DRAFT) {
+      throw new ResourceConflictException(
+          "Invoice not editable", "Custom fields can only be updated on draft invoices");
+    }
+
+    Map<String, Object> validatedFields =
+        customFieldValidator.validate(
+            EntityType.INVOICE,
+            customFields != null ? customFields : new java.util.HashMap<>(),
+            invoice.getAppliedFieldGroups());
+
+    invoice.setCustomFields(validatedFields);
+    invoice = invoiceRepository.save(invoice);
+
+    log.info("Updated custom fields on invoice {}", invoiceId);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("invoice.custom_fields_updated")
+            .entityType("invoice")
+            .entityId(invoice.getId())
+            .details(
+                Map.of(
+                    "invoice_number",
+                    invoice.getInvoiceNumber() != null ? invoice.getInvoiceNumber() : ""))
+            .build());
+
+    return buildResponse(invoice);
+  }
+
+  @Transactional
+  public List<FieldDefinitionResponse> setFieldGroups(
+      UUID invoiceId, List<UUID> appliedFieldGroups) {
+    var invoice =
+        invoiceRepository
+            .findById(invoiceId)
+            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+
+    if (invoice.getStatus() != InvoiceStatus.DRAFT) {
+      throw new ResourceConflictException(
+          "Invoice not editable", "Field groups can only be updated on draft invoices");
+    }
+
+    // Validate all field groups exist and match entity type
+    for (UUID groupId : appliedFieldGroups) {
+      var group =
+          fieldGroupRepository
+              .findById(groupId)
+              .orElseThrow(() -> new ResourceNotFoundException("FieldGroup", groupId));
+      if (group.getEntityType() != EntityType.INVOICE) {
+        throw new InvalidStateException(
+            "Invalid field group", "Field group " + groupId + " is not for entity type INVOICE");
+      }
+    }
+
+    // Resolve one-level dependencies
+    appliedFieldGroups = fieldGroupService.resolveDependencies(appliedFieldGroups);
+
+    invoice.setAppliedFieldGroups(appliedFieldGroups);
+    invoiceRepository.save(invoice);
+
+    log.info("Updated field groups on invoice {}", invoiceId);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("invoice.field_groups_updated")
+            .entityType("invoice")
+            .entityId(invoice.getId())
+            .details(
+                Map.of(
+                    "invoice_number",
+                    invoice.getInvoiceNumber() != null ? invoice.getInvoiceNumber() : ""))
+            .build());
+
+    // Collect field definition IDs from applied groups
+    var fieldDefIds = new ArrayList<UUID>();
+    for (UUID groupId : appliedFieldGroups) {
+      var members = fieldGroupMemberRepository.findByFieldGroupIdOrderBySortOrder(groupId);
+      for (var member : members) {
+        fieldDefIds.add(member.getFieldDefinitionId());
+      }
+    }
+
+    return fieldDefIds.stream()
+        .distinct()
+        .map(fdId -> fieldDefinitionRepository.findById(fdId))
+        .filter(java.util.Optional::isPresent)
+        .map(java.util.Optional::get)
+        .map(FieldDefinitionResponse::from)
+        .toList();
   }
 
   // --- Preview ---

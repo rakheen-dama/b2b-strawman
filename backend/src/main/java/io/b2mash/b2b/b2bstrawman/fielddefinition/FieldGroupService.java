@@ -337,6 +337,7 @@ public class FieldGroupService {
       case CUSTOMER -> "customers";
       case PROJECT -> "projects";
       case TASK -> "tasks";
+      case INVOICE -> "invoices";
     };
   }
 

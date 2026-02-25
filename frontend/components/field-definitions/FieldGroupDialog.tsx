@@ -79,6 +79,7 @@ export function FieldGroupDialog({
   const [selectedFieldIds, setSelectedFieldIds] = useState<string[]>(
     initialFieldIds ?? [],
   );
+  const [autoApply, setAutoApply] = useState(group?.autoApply ?? false);
 
   // Filter available fields by entityType
   const filteredFields = availableFields.filter(
@@ -98,6 +99,7 @@ export function FieldGroupDialog({
     setDescription("");
     setSortOrder(0);
     setSelectedFieldIds([]);
+    setAutoApply(false);
     setError(null);
   }
 
@@ -108,6 +110,7 @@ export function FieldGroupDialog({
     setDescription(g.description ?? "");
     setSortOrder(g.sortOrder);
     setSelectedFieldIds(initialFieldIds ?? []);
+    setAutoApply(g.autoApply ?? false);
     setError(null);
   }
 
@@ -151,6 +154,7 @@ export function FieldGroupDialog({
           description: description.trim() || undefined,
           sortOrder,
           fieldDefinitionIds: selectedFieldIds,
+          autoApply,
         });
 
         if (result.success) {
@@ -166,6 +170,7 @@ export function FieldGroupDialog({
           description: description.trim() || undefined,
           sortOrder,
           fieldDefinitionIds: selectedFieldIds,
+          autoApply,
         });
 
         if (result.success) {
@@ -277,6 +282,25 @@ export function FieldGroupDialog({
               onChange={(e) => setSortOrder(parseInt(e.target.value, 10) || 0)}
               min={0}
             />
+          </div>
+
+          {/* Auto-apply */}
+          <div className="flex items-start gap-3">
+            <input
+              id="fg-auto-apply"
+              type="checkbox"
+              checked={autoApply}
+              onChange={(e) => setAutoApply(e.target.checked)}
+              className="mt-0.5 size-4 rounded border-slate-300 accent-teal-600"
+            />
+            <div className="space-y-0.5">
+              <Label htmlFor="fg-auto-apply" className="cursor-pointer font-medium">
+                Auto-apply to new entities
+              </Label>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                When enabled, this group is automatically applied when a new entity of this type is created.
+              </p>
+            </div>
           </div>
 
           {/* Field Selection */}

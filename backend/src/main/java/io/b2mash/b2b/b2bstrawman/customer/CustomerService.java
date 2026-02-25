@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMemberRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupService;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import java.time.Instant;
@@ -40,6 +41,7 @@ public class CustomerService {
   private final FieldGroupRepository fieldGroupRepository;
   private final FieldGroupMemberRepository fieldGroupMemberRepository;
   private final FieldDefinitionRepository fieldDefinitionRepository;
+  private final FieldGroupService fieldGroupService;
 
   public CustomerService(
       CustomerRepository repository,
@@ -48,7 +50,8 @@ public class CustomerService {
       CustomFieldValidator customFieldValidator,
       FieldGroupRepository fieldGroupRepository,
       FieldGroupMemberRepository fieldGroupMemberRepository,
-      FieldDefinitionRepository fieldDefinitionRepository) {
+      FieldDefinitionRepository fieldDefinitionRepository,
+      FieldGroupService fieldGroupService) {
     this.repository = repository;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
@@ -56,6 +59,7 @@ public class CustomerService {
     this.fieldGroupRepository = fieldGroupRepository;
     this.fieldGroupMemberRepository = fieldGroupMemberRepository;
     this.fieldDefinitionRepository = fieldDefinitionRepository;
+    this.fieldGroupService = fieldGroupService;
   }
 
   @Transactional(readOnly = true)
@@ -122,6 +126,24 @@ public class CustomerService {
       customer.setAppliedFieldGroups(appliedFieldGroups);
     }
     customer = repository.save(customer);
+
+    // Auto-apply field groups
+    var autoApplyIds = fieldGroupService.resolveAutoApplyGroupIds(EntityType.CUSTOMER);
+    if (!autoApplyIds.isEmpty()) {
+      var merged =
+          new ArrayList<>(
+              customer.getAppliedFieldGroups() != null
+                  ? customer.getAppliedFieldGroups()
+                  : List.of());
+      for (UUID id : autoApplyIds) {
+        if (!merged.contains(id)) {
+          merged.add(id);
+        }
+      }
+      customer.setAppliedFieldGroups(merged);
+      customer = repository.save(customer);
+    }
+
     log.info("Created customer {} with email {}", customer.getId(), email);
 
     auditService.log(

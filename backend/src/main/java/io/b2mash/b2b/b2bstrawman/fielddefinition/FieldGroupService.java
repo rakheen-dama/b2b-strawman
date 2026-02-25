@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.CreateFieldGroupRequest;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldGroupResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.UpdateFieldGroupRequest;
 import jakarta.persistence.EntityManager;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -326,6 +327,26 @@ public class FieldGroupService {
       case PROJECT -> "projects";
       case TASK -> "tasks";
     };
+  }
+
+  /**
+   * Resolves all group IDs that should be auto-applied to a new entity of the given type. Includes
+   * direct auto-apply groups plus one level of dependsOn dependencies.
+   */
+  public List<UUID> resolveAutoApplyGroupIds(EntityType entityType) {
+    var autoGroups = fieldGroupRepository.findByEntityTypeAndAutoApplyTrueAndActiveTrue(entityType);
+    var groupIds = new ArrayList<>(autoGroups.stream().map(FieldGroup::getId).toList());
+    // Resolve one-level dependencies
+    for (var group : autoGroups) {
+      if (group.getDependsOn() != null) {
+        for (UUID depId : group.getDependsOn()) {
+          if (!groupIds.contains(depId)) {
+            groupIds.add(depId);
+          }
+        }
+      }
+    }
+    return groupIds;
   }
 
   private String resolveUniqueSlug(EntityType entityType, String baseSlug) {

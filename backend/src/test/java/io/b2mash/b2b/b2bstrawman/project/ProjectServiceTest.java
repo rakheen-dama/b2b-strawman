@@ -16,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldValidator;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMemberRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccess;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
@@ -44,6 +45,7 @@ class ProjectServiceTest {
   @Mock private FieldGroupRepository fieldGroupRepository;
   @Mock private FieldGroupMemberRepository fieldGroupMemberRepository;
   @Mock private FieldDefinitionRepository fieldDefinitionRepository;
+  @Mock private FieldGroupService fieldGroupService;
   @InjectMocks private ProjectService service;
 
   @Test

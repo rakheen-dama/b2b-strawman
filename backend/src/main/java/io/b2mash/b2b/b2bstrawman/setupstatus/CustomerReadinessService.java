@@ -4,10 +4,10 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldUtils;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
-import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
 import java.util.List;
@@ -144,27 +144,12 @@ public class CustomerReadinessService {
             .map(
                 fd -> {
                   Object value = customFields != null ? customFields.get(fd.getSlug()) : null;
-                  boolean filled = isFieldValueFilled(fd, value);
+                  boolean filled = CustomFieldUtils.isFieldValueFilled(fd, value);
                   return new FieldStatus(fd.getName(), fd.getSlug(), filled);
                 })
             .toList();
 
     int filled = (int) fieldStatuses.stream().filter(FieldStatus::filled).count();
     return new RequiredFieldStatus(filled, fieldStatuses.size(), fieldStatuses);
-  }
-
-  private boolean isFieldValueFilled(FieldDefinition fd, Object value) {
-    if (value == null) {
-      return false;
-    }
-    if (fd.getFieldType() == FieldType.CURRENCY) {
-      if (!(value instanceof Map<?, ?> map)) {
-        return false;
-      }
-      var amount = map.get("amount");
-      var currency = map.get("currency");
-      return amount != null && currency != null && !currency.toString().isBlank();
-    }
-    return !value.toString().isBlank();
   }
 }

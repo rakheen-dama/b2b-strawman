@@ -15,8 +15,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import io.b2mash.b2b.b2bstrawman.setupstatus.CustomerReadinessService;
-import io.b2mash.b2b.b2bstrawman.setupstatus.ProjectSetupStatusService;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -49,9 +47,6 @@ class FieldValidationBugFixIntegrationTest {
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private CustomFieldValidator validator;
   @Autowired private FieldDefinitionRepository fieldDefinitionRepository;
-  @Autowired private CustomerReadinessService customerReadinessService;
-  @Autowired private ProjectSetupStatusService projectSetupStatusService;
-
   private String tenantSchema;
   private UUID memberIdOwner;
 
@@ -141,27 +136,19 @@ class FieldValidationBugFixIntegrationTest {
               new FieldDefinition(
                   EntityType.PROJECT, "Budget Amount", "budget_amt_bf", FieldType.CURRENCY);
           fd.setValidation(null);
-          try {
-            var reqField = FieldDefinition.class.getDeclaredField("required");
-            reqField.setAccessible(true);
-            reqField.set(fd, true);
-          } catch (Exception e) {
-            throw new RuntimeException(e);
-          }
+          fd.setRequired(true);
           fieldDefinitionRepository.save(fd);
-
-          // Create a project via API with CURRENCY field that has empty currency code
-          // The readiness services check if value.toString().isBlank() which fails for Map objects
-          // So we test the isFieldValueFilled logic indirectly through field definition required
-          // check
 
           // Test that a CURRENCY with empty currency code is detected as unfilled
           Map<String, Object> currencyValue = Map.of("amount", 100, "currency", "");
-          assertThat(isCurrencyFilled(currencyValue)).isFalse();
+          assertThat(CustomFieldUtils.isFieldValueFilled(fd, currencyValue)).isFalse();
 
           // Also test null amount
           Map<String, Object> nullAmountValue = Map.of("currency", "ZAR");
-          assertThat(isCurrencyFilled(nullAmountValue)).isFalse();
+          assertThat(CustomFieldUtils.isFieldValueFilled(fd, nullAmountValue)).isFalse();
+
+          // Null value
+          assertThat(CustomFieldUtils.isFieldValueFilled(fd, null)).isFalse();
         });
   }
 
@@ -169,8 +156,14 @@ class FieldValidationBugFixIntegrationTest {
   void currency_with_valid_code_detected_as_filled() {
     runInTenant(
         () -> {
+          var fd =
+              new FieldDefinition(
+                  EntityType.PROJECT, "Valid Budget", "valid_budget_bf", FieldType.CURRENCY);
+          fd.setRequired(true);
+          fieldDefinitionRepository.save(fd);
+
           Map<String, Object> validCurrency = Map.of("amount", 500, "currency", "ZAR");
-          assertThat(isCurrencyFilled(validCurrency)).isTrue();
+          assertThat(CustomFieldUtils.isFieldValueFilled(fd, validCurrency)).isTrue();
         });
   }
 
@@ -290,19 +283,6 @@ class FieldValidationBugFixIntegrationTest {
         .where(RequestScopes.MEMBER_ID, memberIdOwner)
         .where(RequestScopes.ORG_ROLE, "owner")
         .run(action);
-  }
-
-  /**
-   * Tests the CURRENCY fill check logic that was fixed in CustomerReadinessService and
-   * ProjectSetupStatusService. Both services now use the same isFieldValueFilled() pattern.
-   */
-  private boolean isCurrencyFilled(Map<String, Object> value) {
-    if (value == null) {
-      return false;
-    }
-    var amount = value.get("amount");
-    var currency = value.get("currency");
-    return amount != null && currency != null && !currency.toString().isBlank();
   }
 
   private String syncMember(

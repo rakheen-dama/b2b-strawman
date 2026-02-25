@@ -235,6 +235,11 @@ public class FieldDefinition {
     this.visibilityCondition = visibilityCondition;
   }
 
+  public void setRequired(boolean required) {
+    this.required = required;
+    this.updatedAt = Instant.now();
+  }
+
   public void setFieldType(FieldType fieldType) {
     this.fieldType = fieldType;
     this.updatedAt = Instant.now();

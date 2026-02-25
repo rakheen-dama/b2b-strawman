@@ -332,6 +332,15 @@ public class CommentService {
       UUID memberId,
       String orgRole) {
     projectAccessService.requireViewAccess(projectId, memberId, orgRole);
+
+    if ("PROJECT".equals(entityType)) {
+      return commentRepository.findProjectLevelComments(projectId, pageable);
+    }
+
+    if (entityId == null) {
+      throw new InvalidStateException(
+          "entityId is required", "entityId is required for " + entityType + " comments");
+    }
     return commentRepository.findByTargetAndProject(entityType, entityId, projectId, pageable);
   }
 

@@ -11,6 +11,7 @@ import java.util.HexFormat;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,10 +29,20 @@ public class MagicLinkService {
   private static final int MAX_TOKENS_PER_5_MINUTES = 3;
 
   private final MagicLinkTokenRepository tokenRepository;
+  private final PortalContactRepository portalContactRepository;
+  private final PortalEmailService portalEmailService;
   private final SecureRandom secureRandom;
+  private final String appBaseUrl;
 
-  public MagicLinkService(MagicLinkTokenRepository tokenRepository) {
+  public MagicLinkService(
+      MagicLinkTokenRepository tokenRepository,
+      PortalContactRepository portalContactRepository,
+      PortalEmailService portalEmailService,
+      @Value("${docteams.app.base-url:http://localhost:3000}") String appBaseUrl) {
     this.tokenRepository = tokenRepository;
+    this.portalContactRepository = portalContactRepository;
+    this.portalEmailService = portalEmailService;
+    this.appBaseUrl = appBaseUrl;
     try {
       this.secureRandom = SecureRandom.getInstanceStrong();
     } catch (NoSuchAlgorithmException e) {
@@ -68,9 +79,24 @@ public class MagicLinkService {
     // Persist the token hash
     Instant expiresAt = Instant.now().plus(TOKEN_TTL_MINUTES, ChronoUnit.MINUTES);
     var magicLinkToken = new MagicLinkToken(portalContactId, tokenHash, expiresAt, createdIp);
-    tokenRepository.save(magicLinkToken);
+    magicLinkToken = tokenRepository.save(magicLinkToken);
 
     log.debug("Generated magic link token for portal contact {}", portalContactId);
+
+    // Send magic link email (fire-and-forget)
+    try {
+      var savedToken = magicLinkToken;
+      portalContactRepository
+          .findById(portalContactId)
+          .ifPresent(
+              contact -> {
+                String magicLinkUrl = appBaseUrl + "/portal/auth?token=" + rawToken;
+                portalEmailService.sendMagicLinkEmail(contact, magicLinkUrl, savedToken.getId());
+              });
+    } catch (Exception e) {
+      log.warn("Failed to send magic link email for contact {}", portalContactId, e);
+    }
+
     return rawToken;
   }
 

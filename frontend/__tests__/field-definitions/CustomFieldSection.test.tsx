@@ -479,4 +479,98 @@ describe("CustomFieldSection", () => {
       expect(screen.queryByText("Court Reference is required")).not.toBeInTheDocument();
     });
   });
+
+  describe("DATE min/max validation", () => {
+    const dateField = makeFieldDef({
+      id: "fd-date-val",
+      name: "Start Date",
+      slug: "start_date",
+      fieldType: "DATE",
+      validation: { min: "2025-01-01", max: "2025-12-31" },
+    });
+
+    const dateGroup: FieldGroupResponse = {
+      id: "grp-date",
+      entityType: "PROJECT",
+      name: "Date Fields",
+      slug: "date_fields",
+      description: null,
+      packId: null,
+      sortOrder: 0,
+      active: true,
+      autoApply: false,
+      dependsOn: null,
+      createdAt: "2025-01-01T00:00:00Z",
+      updatedAt: "2025-01-01T00:00:00Z",
+    };
+
+    const dateGroupMembers: FieldGroupMemberResponse[] = [
+      {
+        id: "gm-date-0",
+        fieldGroupId: "grp-date",
+        fieldDefinitionId: "fd-date-val",
+        sortOrder: 0,
+      },
+    ];
+
+    const dateProps = {
+      entityType: "PROJECT" as const,
+      entityId: "proj-date",
+      customFields: {},
+      appliedFieldGroups: ["grp-date"],
+      editable: true,
+      slug: "acme",
+      fieldDefinitions: [dateField],
+      fieldGroups: [dateGroup],
+      groupMembers: { "grp-date": dateGroupMembers },
+    };
+
+    it("shows error when date is before min", async () => {
+      const user = userEvent.setup();
+      mockUpdateEntityCustomFields.mockResolvedValue({ success: true });
+
+      render(
+        <CustomFieldSection
+          {...dateProps}
+          customFields={{ start_date: "2024-06-15" }}
+        />,
+      );
+
+      await user.click(
+        screen.getByRole("button", { name: /Save Custom Fields/i }),
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("Must be on or after 2025-01-01"),
+        ).toBeInTheDocument();
+      });
+
+      expect(mockUpdateEntityCustomFields).not.toHaveBeenCalled();
+    });
+
+    it("shows error when date is after max", async () => {
+      const user = userEvent.setup();
+      mockUpdateEntityCustomFields.mockResolvedValue({ success: true });
+
+      render(
+        <CustomFieldSection
+          {...dateProps}
+          customFields={{ start_date: "2026-03-01" }}
+        />,
+      );
+
+      await user.click(
+        screen.getByRole("button", { name: /Save Custom Fields/i }),
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("Must be on or before 2025-12-31"),
+        ).toBeInTheDocument();
+      });
+
+      expect(mockUpdateEntityCustomFields).not.toHaveBeenCalled();
+    });
+  });
 });

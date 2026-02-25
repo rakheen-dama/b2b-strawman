@@ -140,6 +140,19 @@ function validateField(
       }
       break;
     }
+    case "DATE": {
+      if (strVal) {
+        const min = validation.min as string | undefined;
+        const max = validation.max as string | undefined;
+        if (min && strVal < min) {
+          return `Must be on or after ${min}`;
+        }
+        if (max && strVal > max) {
+          return `Must be on or before ${max}`;
+        }
+      }
+      break;
+    }
     case "EMAIL": {
       if (strVal && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(strVal)) {
         return `Must be a valid email address`;

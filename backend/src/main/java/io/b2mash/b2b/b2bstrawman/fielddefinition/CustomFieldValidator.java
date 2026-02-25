@@ -106,7 +106,7 @@ public class CustomFieldValidator {
     return switch (definition.getFieldType()) {
       case TEXT -> validateText(definition, value);
       case NUMBER -> validateNumber(definition, value);
-      case DATE -> validateDate(value);
+      case DATE -> validateDate(definition, value);
       case DROPDOWN -> validateDropdown(definition, value);
       case BOOLEAN -> validateBoolean(value);
       case CURRENCY -> validateCurrency(value);
@@ -184,7 +184,7 @@ public class CustomFieldValidator {
     return null;
   }
 
-  private String validateDate(Object value) {
+  private String validateDate(FieldDefinition definition, Object value) {
     if (!(value instanceof String str)) {
       return "Expected a date string in YYYY-MM-DD format";
     }
@@ -193,6 +193,24 @@ public class CustomFieldValidator {
     } catch (DateTimeParseException e) {
       return "Invalid date format, expected YYYY-MM-DD";
     }
+
+    var validation = definition.getValidation();
+    if (validation != null) {
+      var minVal = validation.get("min");
+      if (minVal instanceof String minStr && !minStr.isBlank()) {
+        if (str.compareTo(minStr) < 0) {
+          return "Date must be on or after " + minStr;
+        }
+      }
+
+      var maxVal = validation.get("max");
+      if (maxVal instanceof String maxStr && !maxStr.isBlank()) {
+        if (str.compareTo(maxStr) > 0) {
+          return "Date must be on or before " + maxStr;
+        }
+      }
+    }
+
     return null;
   }
 

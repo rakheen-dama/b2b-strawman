@@ -198,7 +198,7 @@
 | **Phase 24 — Outbound Email Delivery** | | | | | | See [tasks/phase24-outbound-email-delivery.md](tasks/phase24-outbound-email-delivery.md) |
 | 167 | EmailProvider Port + SMTP Adapter | Backend | -- | M | 167A, 167B | **Done** (PRs #348, #349) |
 | 168 | Email Template Rendering | Backend | -- | M | 168A, 168B | **Done** (PRs #350, #351) |
-| 169 | EmailNotificationChannel + Delivery Log + Migration | Backend | 167, 168 | L | 169A, 169B | |
+| 169 | EmailNotificationChannel + Delivery Log + Migration | Backend | 167, 168 | L | 169A, 169B | 169A **Done** (PR #352) |
 | 170 | Invoice Delivery + Portal Magic Link Email | Backend | 169 | M | 170A, 170B | |
 | 171 | SendGrid BYOAK + Bounce Webhooks | Backend | 169 | M | 171A, 171B | |
 | 172 | Unsubscribe + Admin Endpoints | Backend | 169 | M | 172A, 172B | |

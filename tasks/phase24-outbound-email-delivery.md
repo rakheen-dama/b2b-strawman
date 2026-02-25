@@ -77,7 +77,7 @@ The design introduces a **two-tier email architecture**: every org gets working 
 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
-| 1a | 169 | 169A | V41 migration + EmailDeliveryLog entity + repository + EmailDeliveryLogService + EmailRateLimiter |
+| 1a | 169 | 169A | V41 migration + EmailDeliveryLog entity + repository + EmailDeliveryLogService + EmailRateLimiter | **Done** (PR #352) |
 | 1b | 169 | 169B | EmailNotificationChannel production wiring (replace stub) + notification type-to-template mapping + integration tests |
 
 ### Stage 2: Parallel feature tracks (after Stage 1)
@@ -283,7 +283,7 @@ Stage 4: [173A] --> [173B]                               (sequential, after 172B
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **169A** | 169.1–169.8 | V41 migration + `EmailDeliveryLog` entity + `EmailDeliveryLogRepository` + `EmailDeliveryLogService` + `EmailRateLimiter` (Caffeine-based) + integration tests. ~6 new files. Backend only. | |
+| **169A** | 169.1–169.8 | V41 migration + `EmailDeliveryLog` entity + `EmailDeliveryLogRepository` + `EmailDeliveryLogService` + `EmailRateLimiter` (Caffeine-based) + integration tests. ~6 new files. Backend only. | **Done** (PR #352) |
 | **169B** | 169.9–169.14 | Replace `EmailNotificationChannel` stub with production implementation + notification type-to-template mapping + rate limiter integration + end-to-end tests. ~1 modified file, ~1 new test file. Backend only. | |
 
 ### Tasks

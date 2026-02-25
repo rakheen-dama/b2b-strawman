@@ -259,6 +259,75 @@ class ConditionalVisibilityIntegrationTest {
         .andExpect(status().isBadRequest());
   }
 
+  @Test
+  void visible_required_field_without_value_returns_400() throws Exception {
+    String controllingId =
+        createDropdownField("Vis Req Control", "vis_req_control", "show", "hide");
+
+    // Dependent is visible when vis_req_control = "show", and it is required
+    String dependentId =
+        createFieldWithCondition(
+            "Vis Req Dep", "vis_req_dep", true, "vis_req_control", "eq", "\"show\"");
+
+    UUID customerId = createCustomer("Vis Req Customer");
+
+    String groupId = createFieldGroup("Vis Req Group", "vis_req_group");
+    addMemberToGroup(groupId, controllingId);
+    addMemberToGroup(groupId, dependentId);
+    applyFieldGroups(customerId, List.of(groupId));
+
+    // Controlling = "show" => dependent is visible => required => no value provided => 400
+    mockMvc
+        .perform(
+            put("/api/customers/" + customerId)
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "name": "Vis Req Customer",
+                      "email": "visreq@test.com",
+                      "customFields": {"vis_req_control": "show"}
+                    }
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void hidden_field_with_invalid_type_value_is_still_rejected() throws Exception {
+    String controllingId =
+        createDropdownField("Type Val Control", "type_val_control", "show", "hide");
+
+    // Create a NUMBER field that is hidden when type_val_control = "hide"
+    String dependentId =
+        createNumberFieldWithCondition(
+            "Type Val Number", "type_val_number", false, "type_val_control", "eq", "\"show\"");
+
+    UUID customerId = createCustomer("Type Val Customer");
+
+    String groupId = createFieldGroup("Type Val Group", "type_val_group");
+    addMemberToGroup(groupId, controllingId);
+    addMemberToGroup(groupId, dependentId);
+    applyFieldGroups(customerId, List.of(groupId));
+
+    // Controlling = "hide" => dependent is hidden, but sending a string for a NUMBER field
+    // should still be rejected by type validation
+    mockMvc
+        .perform(
+            put("/api/customers/" + customerId)
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "name": "Type Val Customer",
+                      "email": "typeval@test.com",
+                      "customFields": {"type_val_control": "hide", "type_val_number": "not_a_number"}
+                    }
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
   // --- Helper methods ---
 
   private JwtRequestPostProcessor ownerJwt() {
@@ -422,6 +491,42 @@ class ConditionalVisibilityIntegrationTest {
         .where(RequestScopes.MEMBER_ID, memberIdOwner)
         .where(RequestScopes.ORG_ROLE, "owner")
         .call(() -> transactionTemplate.execute(tx -> action.get()));
+  }
+
+  private String createNumberFieldWithCondition(
+      String name,
+      String slug,
+      boolean required,
+      String dependsOnSlug,
+      String operator,
+      String valueJson)
+      throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                post("/api/field-definitions")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "entityType": "CUSTOMER",
+                          "name": "%s",
+                          "slug": "%s",
+                          "fieldType": "NUMBER",
+                          "required": %s,
+                          "sortOrder": 0,
+                          "visibilityCondition": {
+                            "dependsOnSlug": "%s",
+                            "operator": "%s",
+                            "value": %s
+                          }
+                        }
+                        """
+                            .formatted(name, slug, required, dependsOnSlug, operator, valueJson)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return JsonPath.read(result.getResponse().getContentAsString(), "$.id");
   }
 
   private String syncMember(

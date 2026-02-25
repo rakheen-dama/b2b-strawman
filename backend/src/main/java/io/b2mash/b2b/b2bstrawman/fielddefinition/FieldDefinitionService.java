@@ -168,6 +168,15 @@ public class FieldDefinitionService {
           "Invalid visibility condition", "operator must be one of: eq, neq, in");
     }
 
+    var value = condition.get("value");
+    if (value == null) {
+      throw new InvalidStateException("Invalid visibility condition", "value must not be null");
+    }
+    if ("in".equals(op) && !(value instanceof List<?>)) {
+      throw new InvalidStateException(
+          "Invalid visibility condition", "value must be a list for the 'in' operator");
+    }
+
     if (slug.equals(ownSlug)) {
       throw new InvalidStateException(
           "Invalid visibility condition", "A field cannot depend on itself");

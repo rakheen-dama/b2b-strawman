@@ -77,18 +77,13 @@ public class CustomFieldValidator {
         continue;
       }
 
-      // Skip all validation for hidden fields (conditional visibility)
-      if (!isFieldVisible(definition, input, slugToDefinition)) {
-        validated.put(slug, value);
-        continue;
-      }
-
       // 3. Type-check and validate
       if (value == null) {
         validated.put(slug, null);
         continue;
       }
 
+      // Hidden fields: still type-validate if a value is provided, but skip required check later
       String error = validateFieldValue(definition, value);
       if (error != null) {
         errors.add(Map.of("field", slug, "message", error));

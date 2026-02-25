@@ -37,6 +37,7 @@ function makeFieldDef(
     sortOrder: 0,
     packId: null,
     packFieldKey: null,
+    visibilityCondition: null,
     active: true,
     createdAt: "2025-01-01T00:00:00Z",
     updatedAt: "2025-01-01T00:00:00Z",
@@ -110,6 +111,8 @@ const testGroup: FieldGroupResponse = {
   packId: null,
   sortOrder: 0,
   active: true,
+  autoApply: false,
+  dependsOn: null,
   createdAt: "2025-01-01T00:00:00Z",
   updatedAt: "2025-01-01T00:00:00Z",
 };
@@ -311,6 +314,169 @@ describe("CustomFieldSection", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Validation failed on server")).toBeInTheDocument();
+    });
+  });
+
+  describe("conditional visibility", () => {
+    const controllingField = makeFieldDef({
+      id: "fd-ctrl",
+      name: "Matter Type",
+      slug: "matter_type",
+      fieldType: "DROPDOWN",
+      options: [
+        { value: "litigation", label: "Litigation" },
+        { value: "advisory", label: "Advisory" },
+      ],
+    });
+
+    const dependentFieldEq = makeFieldDef({
+      id: "fd-dep-eq",
+      name: "Court Name",
+      slug: "court_name",
+      fieldType: "TEXT",
+      visibilityCondition: {
+        dependsOnSlug: "matter_type",
+        operator: "eq",
+        value: "litigation",
+      },
+    });
+
+    const dependentFieldNeq = makeFieldDef({
+      id: "fd-dep-neq",
+      name: "Advisory Scope",
+      slug: "advisory_scope",
+      fieldType: "TEXT",
+      visibilityCondition: {
+        dependsOnSlug: "matter_type",
+        operator: "neq",
+        value: "litigation",
+      },
+    });
+
+    const dependentFieldIn = makeFieldDef({
+      id: "fd-dep-in",
+      name: "Tribunal Ref",
+      slug: "tribunal_ref",
+      fieldType: "TEXT",
+      visibilityCondition: {
+        dependsOnSlug: "matter_type",
+        operator: "in",
+        value: ["litigation", "arbitration"],
+      },
+    });
+
+    const requiredHiddenField = makeFieldDef({
+      id: "fd-req-hidden",
+      name: "Court Reference",
+      slug: "court_reference",
+      fieldType: "TEXT",
+      required: true,
+      visibilityCondition: {
+        dependsOnSlug: "matter_type",
+        operator: "eq",
+        value: "litigation",
+      },
+    });
+
+    const visibilityFields = [controllingField, dependentFieldEq, dependentFieldNeq, dependentFieldIn, requiredHiddenField];
+
+    const visibilityMembers: FieldGroupMemberResponse[] = visibilityFields.map(
+      (f, i) => ({
+        id: `gm-vis-${i}`,
+        fieldGroupId: "grp-vis",
+        fieldDefinitionId: f.id,
+        sortOrder: i,
+      }),
+    );
+
+    const visibilityGroup: FieldGroupResponse = {
+      id: "grp-vis",
+      entityType: "PROJECT",
+      name: "Visibility Test Group",
+      slug: "visibility_test_group",
+      description: null,
+      packId: null,
+      sortOrder: 0,
+      active: true,
+      autoApply: false,
+      dependsOn: null,
+      createdAt: "2025-01-01T00:00:00Z",
+      updatedAt: "2025-01-01T00:00:00Z",
+    };
+
+    const visibilityProps = {
+      ...defaultProps,
+      fieldDefinitions: visibilityFields,
+      fieldGroups: [visibilityGroup],
+      groupMembers: { "grp-vis": visibilityMembers },
+      appliedFieldGroups: ["grp-vis"],
+    };
+
+    it("shows eq-dependent field when controlling field matches", () => {
+      render(
+        <CustomFieldSection
+          {...visibilityProps}
+          customFields={{ matter_type: "litigation" }}
+        />,
+      );
+
+      expect(screen.getByLabelText(/Court Name/)).toBeInTheDocument();
+    });
+
+    it("hides eq-dependent field when controlling field does not match", () => {
+      render(
+        <CustomFieldSection
+          {...visibilityProps}
+          customFields={{ matter_type: "advisory" }}
+        />,
+      );
+
+      expect(screen.queryByLabelText(/Court Name/)).not.toBeInTheDocument();
+    });
+
+    it("shows neq-dependent field when controlling field does not match", () => {
+      render(
+        <CustomFieldSection
+          {...visibilityProps}
+          customFields={{ matter_type: "advisory" }}
+        />,
+      );
+
+      expect(screen.getByLabelText(/Advisory Scope/)).toBeInTheDocument();
+    });
+
+    it("shows in-dependent field when controlling field matches one of the values", () => {
+      render(
+        <CustomFieldSection
+          {...visibilityProps}
+          customFields={{ matter_type: "litigation" }}
+        />,
+      );
+
+      expect(screen.getByLabelText(/Tribunal Ref/)).toBeInTheDocument();
+    });
+
+    it("skips validation for hidden required field on save", async () => {
+      const user = userEvent.setup();
+      mockUpdateEntityCustomFields.mockResolvedValue({ success: true });
+
+      // matter_type = "advisory" hides the required court_reference field (it requires "litigation")
+      render(
+        <CustomFieldSection
+          {...visibilityProps}
+          customFields={{ matter_type: "advisory" }}
+        />,
+      );
+
+      // court_reference is hidden and required, but should not block save
+      await user.click(screen.getByRole("button", { name: /Save Custom Fields/i }));
+
+      await waitFor(() => {
+        expect(mockUpdateEntityCustomFields).toHaveBeenCalled();
+      });
+
+      // No validation error for the hidden required field
+      expect(screen.queryByText("Court Reference is required")).not.toBeInTheDocument();
     });
   });
 });

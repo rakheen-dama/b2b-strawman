@@ -96,8 +96,7 @@ public class InvoiceEmailService {
 
       // 6. Construct attachment
       var attachment =
-          new EmailAttachment(
-              "INV-" + invoice.getInvoiceNumber() + ".pdf", "application/pdf", pdfBytes);
+          new EmailAttachment(invoice.getInvoiceNumber() + ".pdf", "application/pdf", pdfBytes);
 
       // 7. Send with attachment
       var result = provider.sendEmailWithAttachment(message, attachment);

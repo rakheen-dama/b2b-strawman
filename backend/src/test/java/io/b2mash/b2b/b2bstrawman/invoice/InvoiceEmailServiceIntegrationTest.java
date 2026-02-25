@@ -276,7 +276,7 @@ class InvoiceEmailServiceIntegrationTest {
     for (int i = 0; i < multipart.getCount(); i++) {
       var part = multipart.getBodyPart(i);
       if (part.getFileName() != null) {
-        assertThat(part.getFileName()).isEqualTo("INV-INV-2026-0001.pdf");
+        assertThat(part.getFileName()).isEqualTo("INV-2026-0001.pdf");
         assertThat(part.getContentType()).contains("application/pdf");
         foundAttachment = true;
       }

@@ -15,6 +15,8 @@ import io.b2mash.b2b.b2bstrawman.event.CommentDeletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.CommentVisibilityChangedEvent;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
+import io.b2mash.b2b.b2bstrawman.member.Member;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import java.time.Instant;
 import java.util.List;
@@ -40,6 +42,7 @@ class PortalEventHandlerCommentTest {
   @Mock private InvoiceRepository invoiceRepository;
   @Mock private InvoiceLineRepository invoiceLineRepository;
   @Mock private CommentRepository commentRepository;
+  @Mock private MemberRepository memberRepository;
 
   @InjectMocks private PortalEventHandler handler;
 
@@ -142,6 +145,7 @@ class PortalEventHandlerCommentTest {
     var commentId = UUID.randomUUID();
     var projectId = UUID.randomUUID();
     var customerId = UUID.randomUUID();
+    var authorMemberId = UUID.randomUUID();
     var createdAt = Instant.now().minusSeconds(3600);
     var event =
         new CommentVisibilityChangedEvent(
@@ -149,8 +153,8 @@ class PortalEventHandlerCommentTest {
             "COMMENT",
             commentId,
             projectId,
-            UUID.randomUUID(),
-            "Alice",
+            UUID.randomUUID(), // actorId — the person who changed visibility, NOT the author
+            "Visibility Changer",
             TENANT_ID,
             ORG_ID,
             Instant.now(),
@@ -158,16 +162,20 @@ class PortalEventHandlerCommentTest {
             "INTERNAL",
             "SHARED");
 
-    var comment = createComment(commentId, projectId, "Shared comment body", createdAt);
+    var comment =
+        createComment(commentId, projectId, "Shared comment body", createdAt, authorMemberId);
     when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
+    var author = new Member("clerk_author", "author@test.com", "Original Author", null, "member");
+    when(memberRepository.findById(authorMemberId)).thenReturn(Optional.of(author));
     when(readModelRepo.findCustomerIdsByProjectId(projectId, ORG_ID))
         .thenReturn(List.of(customerId));
 
     handler.onCommentVisibilityChanged(event);
 
+    // Should use the original author's name, not the visibility changer's
     verify(readModelRepo)
         .upsertPortalComment(
-            commentId, ORG_ID, projectId, "Alice", "Shared comment body", createdAt);
+            commentId, ORG_ID, projectId, "Original Author", "Shared comment body", createdAt);
     verify(readModelRepo).incrementCommentCount(projectId, customerId);
   }
 
@@ -194,6 +202,7 @@ class PortalEventHandlerCommentTest {
             "PROJECT",
             projectId);
 
+    when(readModelRepo.portalCommentExists(commentId, ORG_ID)).thenReturn(true);
     when(readModelRepo.findCustomerIdsByProjectId(projectId, ORG_ID))
         .thenReturn(List.of(customer1, customer2));
 
@@ -202,6 +211,34 @@ class PortalEventHandlerCommentTest {
     verify(readModelRepo).deletePortalComment(commentId, ORG_ID);
     verify(readModelRepo).decrementCommentCount(projectId, customer1);
     verify(readModelRepo).decrementCommentCount(projectId, customer2);
+  }
+
+  @Test
+  void onCommentDeleted_internalComment_deletesButDoesNotDecrement() {
+    var commentId = UUID.randomUUID();
+    var projectId = UUID.randomUUID();
+    var event =
+        new CommentDeletedEvent(
+            "COMMENT_DELETED",
+            "COMMENT",
+            commentId,
+            projectId,
+            UUID.randomUUID(),
+            "Alice",
+            TENANT_ID,
+            ORG_ID,
+            Instant.now(),
+            Map.of(),
+            "TASK",
+            UUID.randomUUID());
+
+    // Comment was INTERNAL — never projected to portal
+    when(readModelRepo.portalCommentExists(commentId, ORG_ID)).thenReturn(false);
+
+    handler.onCommentDeleted(event);
+
+    verify(readModelRepo).deletePortalComment(commentId, ORG_ID);
+    verify(readModelRepo, never()).decrementCommentCount(any(), any());
   }
 
   // ── 6. Null actor name defaults to "Unknown" ───────────────────────
@@ -240,8 +277,13 @@ class PortalEventHandlerCommentTest {
   // ── Helper methods ──────────────────────────────────────────────────
 
   private Comment createComment(UUID id, UUID projectId, String body, Instant createdAt) {
+    return createComment(id, projectId, body, createdAt, UUID.randomUUID());
+  }
+
+  private Comment createComment(
+      UUID id, UUID projectId, String body, Instant createdAt, UUID authorMemberId) {
     try {
-      var comment = new Comment("PROJECT", projectId, projectId, UUID.randomUUID(), body, "SHARED");
+      var comment = new Comment("PROJECT", projectId, projectId, authorMemberId, body, "SHARED");
       setField(comment, "id", id);
       setField(comment, "createdAt", createdAt);
       return comment;

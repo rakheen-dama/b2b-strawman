@@ -37,10 +37,9 @@ export async function fetchComments(
 export async function fetchProjectComments(
   projectId: string
 ): Promise<Comment[]> {
-  const response = await api.get<{ content: Comment[] }>(
+  return api.get<Comment[]>(
     `/api/projects/${projectId}/comments?entityType=PROJECT&size=50`
   );
-  return response?.content ?? [];
 }
 
 export async function createProjectComment(

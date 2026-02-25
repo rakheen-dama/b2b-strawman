@@ -21,6 +21,8 @@ import io.b2mash.b2b.b2bstrawman.event.CommentDeletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.CommentVisibilityChangedEvent;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
+import io.b2mash.b2b.b2bstrawman.member.Member;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import org.slf4j.Logger;
@@ -58,6 +60,7 @@ public class PortalEventHandler {
   private final InvoiceRepository invoiceRepository;
   private final InvoiceLineRepository invoiceLineRepository;
   private final CommentRepository commentRepository;
+  private final MemberRepository memberRepository;
 
   public PortalEventHandler(
       PortalReadModelRepository readModelRepo,
@@ -66,7 +69,8 @@ public class PortalEventHandler {
       CustomerProjectRepository customerProjectRepository,
       InvoiceRepository invoiceRepository,
       InvoiceLineRepository invoiceLineRepository,
-      CommentRepository commentRepository) {
+      CommentRepository commentRepository,
+      MemberRepository memberRepository) {
     this.readModelRepo = readModelRepo;
     this.projectRepository = projectRepository;
     this.documentRepository = documentRepository;
@@ -74,6 +78,7 @@ public class PortalEventHandler {
     this.invoiceRepository = invoiceRepository;
     this.invoiceLineRepository = invoiceLineRepository;
     this.commentRepository = commentRepository;
+    this.memberRepository = memberRepository;
   }
 
   // ── Customer-project events ────────────────────────────────────────
@@ -491,7 +496,12 @@ public class PortalEventHandler {
               var comment = commentOpt.get();
               var projectId = comment.getProjectId();
               var customerIds = readModelRepo.findCustomerIdsByProjectId(projectId, event.orgId());
-              var authorName = event.actorName() != null ? event.actorName() : "Unknown";
+              // Resolve the original comment author's name, not the visibility changer's
+              var authorName =
+                  memberRepository
+                      .findById(comment.getAuthorMemberId())
+                      .map(Member::getName)
+                      .orElse("Unknown");
               for (var customerId : customerIds) {
                 readModelRepo.upsertPortalComment(
                     comment.getId(),
@@ -528,10 +538,15 @@ public class PortalEventHandler {
         () -> {
           try {
             var projectId = event.projectId();
-            var customerIds = readModelRepo.findCustomerIdsByProjectId(projectId, event.orgId());
+            // Only decrement count if the comment was actually in the portal read model
+            // (INTERNAL comments are never projected, so deleting them should not affect counts)
+            boolean existed = readModelRepo.portalCommentExists(event.entityId(), event.orgId());
             readModelRepo.deletePortalComment(event.entityId(), event.orgId());
-            for (var customerId : customerIds) {
-              readModelRepo.decrementCommentCount(projectId, customerId);
+            if (existed) {
+              var customerIds = readModelRepo.findCustomerIdsByProjectId(projectId, event.orgId());
+              for (var customerId : customerIds) {
+                readModelRepo.decrementCommentCount(projectId, customerId);
+              }
             }
           } catch (Exception e) {
             log.warn("Failed to project CommentDeletedEvent: commentId={}", event.entityId(), e);

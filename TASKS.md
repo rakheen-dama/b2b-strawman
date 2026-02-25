@@ -189,7 +189,7 @@
 | 159 | Portal Invoice List + Detail Pages | Portal | 157, 153 | M | 159A | **Done** (PR #331) |
 | 160 | Portal Profile, Responsive Polish + Docker | Portal | 156-159 | S | 160A | **Done** (PR #332) |
 | **Phase 23 — Custom Field Maturity & Data Integrity** | | | | | | See [tasks/phase23-custom-field-maturity.md](tasks/phase23-custom-field-maturity.md) |
-| 161 | Auto-Apply Field Groups & V38 Migration | Backend | -- | L | 161A, 161B | 161A **Done** (PR #333) |
+| 161 | Auto-Apply Field Groups & V38 Migration | Backend | -- | L | 161A, 161B | **Done** (PRs #333, #334) |
 | 162 | Field Group Dependencies | Backend + Frontend | 161 | S | 162A | |
 | 163 | Conditional Field Visibility | Backend + Frontend | 161 | M | 163A, 163B, 163C | |
 | 164 | Invoice Custom Fields & Task Pack | Backend + Frontend | 161 | M | 164A, 164B, 164C | |

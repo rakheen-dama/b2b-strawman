@@ -46,6 +46,9 @@ public class Comment {
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
 
+  @Column(name = "source", nullable = false, length = 20)
+  private String source = "INTERNAL";
+
   protected Comment() {}
 
   public Comment(
@@ -61,6 +64,25 @@ public class Comment {
     this.authorMemberId = authorMemberId;
     this.body = body;
     this.visibility = visibility;
+    this.createdAt = Instant.now();
+    this.updatedAt = Instant.now();
+  }
+
+  public Comment(
+      String entityType,
+      UUID entityId,
+      UUID projectId,
+      UUID authorMemberId,
+      String body,
+      String visibility,
+      String source) {
+    this.entityType = entityType;
+    this.entityId = entityId;
+    this.projectId = projectId;
+    this.authorMemberId = authorMemberId;
+    this.body = body;
+    this.visibility = visibility;
+    this.source = source;
     this.createdAt = Instant.now();
     this.updatedAt = Instant.now();
   }
@@ -123,5 +145,9 @@ public class Comment {
 
   public Instant getUpdatedAt() {
     return updatedAt;
+  }
+
+  public String getSource() {
+    return source;
   }
 }

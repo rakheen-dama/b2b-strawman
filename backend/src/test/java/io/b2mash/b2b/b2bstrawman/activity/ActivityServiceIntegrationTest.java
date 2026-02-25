@@ -200,7 +200,7 @@ class ActivityServiceIntegrationTest {
   }
 
   @Test
-  void unknownActorFallsBackToUuidString() {
+  void unknownActorFallsBackToSystemName() {
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
         .run(
@@ -209,14 +209,16 @@ class ActivityServiceIntegrationTest {
                   activityService.getProjectActivity(
                       projectId, null, null, PageRequest.of(0, 20), memberId, "owner");
 
-              // Find the event with the unknown actor
+              // Find the event with the unknown actor — now resolved to "System" via
+              // enrichActorName()
+              // since the UUID doesn't match any member (BUG-010 fix)
               var unknownActorItem =
                   page.getContent().stream()
-                      .filter(item -> unknownActorId.toString().equals(item.actorName()))
+                      .filter(item -> "System".equals(item.actorName()))
                       .findFirst();
 
               assertThat(unknownActorItem).isPresent();
-              assertThat(unknownActorItem.get().actorName()).isEqualTo(unknownActorId.toString());
+              assertThat(unknownActorItem.get().actorName()).isEqualTo("System");
               assertThat(unknownActorItem.get().actorAvatarUrl()).isNull();
             });
   }

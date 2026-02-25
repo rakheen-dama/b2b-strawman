@@ -67,7 +67,7 @@ public class CommentController {
   public ResponseEntity<List<CommentResponse>> listComments(
       @PathVariable UUID projectId,
       @RequestParam String entityType,
-      @RequestParam UUID entityId,
+      @RequestParam(required = false) UUID entityId,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "50") int size) {
     UUID memberId = RequestScopes.requireMemberId();
@@ -158,6 +158,7 @@ public class CommentController {
       String authorAvatarUrl,
       String body,
       String visibility,
+      String source,
       UUID parentId,
       Instant createdAt,
       Instant updatedAt) {
@@ -174,6 +175,7 @@ public class CommentController {
           author != null ? author.avatarUrl() : null,
           comment.getBody(),
           comment.getVisibility(),
+          comment.getSource(),
           comment.getParentId(),
           comment.getCreatedAt(),
           comment.getUpdatedAt());

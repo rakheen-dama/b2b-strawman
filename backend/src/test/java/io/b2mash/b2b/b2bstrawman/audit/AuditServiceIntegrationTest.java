@@ -97,7 +97,9 @@ class AuditServiceIntegrationTest {
 
               assertThat(page.getTotalElements()).isEqualTo(1);
               var event = page.getContent().getFirst();
-              assertThat(event.getDetails()).isNull();
+              // After BUG-010 fix: enrichActorName always populates actor_name, even when
+              // original details are null. System actors get "System" as default actor_name.
+              assertThat(event.getDetails()).containsEntry("actor_name", "System");
               assertThat(event.getActorId()).isNull();
             });
   }
@@ -389,6 +391,85 @@ class AuditServiceIntegrationTest {
                       PageRequest.of(2, 2));
 
               assertThat(page2.getContent()).hasSize(1);
+            });
+  }
+
+  /**
+   * Regression test for BUG-010: When an audit event has actorType PORTAL_USER and details already
+   * contains "actor_name", the enrichActorName method must preserve the existing value (not
+   * overwrite it). The cross-project activity query's COALESCE falls back to details->>'actor_name'
+   * when no member match exists, so this ensures portal user names are correctly displayed.
+   */
+  @Test
+  void enrichActorNamePreservesExistingActorNameInDetails() {
+    var entityId = UUID.randomUUID();
+    var details =
+        Map.<String, Object>of(
+            "actor_name", "Customer Jane", "project_id", UUID.randomUUID().toString());
+    var record =
+        new AuditEventRecord(
+            "comment.created",
+            "comment",
+            entityId,
+            null, // no actorId — portal users don't have member records
+            "PORTAL_USER",
+            "PORTAL",
+            null,
+            null,
+            details);
+
+    ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+        .run(
+            () -> {
+              auditService.log(record);
+
+              var page =
+                  auditService.findEvents(
+                      new AuditEventFilter(null, entityId, null, null, null, null),
+                      PageRequest.of(0, 10));
+
+              assertThat(page.getTotalElements()).isEqualTo(1);
+              var event = page.getContent().getFirst();
+              // BUG-010 fix: actor_name must be preserved, not overwritten
+              assertThat(event.getDetails()).containsEntry("actor_name", "Customer Jane");
+              assertThat(event.getActorType()).isEqualTo("PORTAL_USER");
+            });
+  }
+
+  /**
+   * Regression test for BUG-010: When actorType is USER and no actor_name is provided,
+   * enrichActorName should resolve the name from the member repository. When actorId is null and no
+   * actor_name is set, it should default to "System".
+   */
+  @Test
+  void enrichActorNameDefaultsToSystemWhenNoActorIdAndNoExistingName() {
+    var entityId = UUID.randomUUID();
+    var record =
+        new AuditEventRecord(
+            "task.system_update",
+            "task",
+            entityId,
+            null, // no actorId
+            "SYSTEM",
+            "INTERNAL",
+            null,
+            null,
+            null); // no details at all
+
+    ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+        .run(
+            () -> {
+              auditService.log(record);
+
+              var page =
+                  auditService.findEvents(
+                      new AuditEventFilter(null, entityId, null, null, null, null),
+                      PageRequest.of(0, 10));
+
+              assertThat(page.getTotalElements()).isEqualTo(1);
+              var event = page.getContent().getFirst();
+              // enrichActorName should default to "System" when no actorId and no existing name
+              assertThat(event.getDetails()).containsEntry("actor_name", "System");
             });
   }
 

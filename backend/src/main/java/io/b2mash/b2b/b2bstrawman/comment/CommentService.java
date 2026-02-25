@@ -68,8 +68,23 @@ public class CommentService {
     var access = projectAccessService.requireViewAccess(projectId, memberId, orgRole);
 
     // Validate entity type
-    if (!"TASK".equals(entityType) && !"DOCUMENT".equals(entityType)) {
-      throw new InvalidStateException("Invalid entity type", "entityType must be TASK or DOCUMENT");
+    if ("PROJECT".equals(entityType)) {
+      // PROJECT-level comments are only allowed with SHARED visibility (staff replies to portal
+      // thread)
+      String resolvedVis = visibility != null ? visibility : "INTERNAL";
+      if (!"SHARED".equals(resolvedVis)) {
+        throw new InvalidStateException(
+            "Invalid visibility for project comment",
+            "PROJECT-level comments must have SHARED visibility");
+      }
+      if (!entityId.equals(projectId)) {
+        throw new InvalidStateException(
+            "Invalid entity for project comment",
+            "entityId must match projectId for PROJECT-level comments");
+      }
+    } else if (!"TASK".equals(entityType) && !"DOCUMENT".equals(entityType)) {
+      throw new InvalidStateException(
+          "Invalid entity type", "entityType must be TASK, DOCUMENT, or PROJECT");
     }
 
     // Verify entity exists and belongs to project
@@ -317,10 +332,22 @@ public class CommentService {
       UUID memberId,
       String orgRole) {
     projectAccessService.requireViewAccess(projectId, memberId, orgRole);
+
+    if ("PROJECT".equals(entityType)) {
+      return commentRepository.findProjectLevelComments(projectId, pageable);
+    }
+
+    if (entityId == null) {
+      throw new InvalidStateException(
+          "entityId is required", "entityId is required for " + entityType + " comments");
+    }
     return commentRepository.findByTargetAndProject(entityType, entityId, projectId, pageable);
   }
 
   private void validateEntityBelongsToProject(String entityType, UUID entityId, UUID projectId) {
+    if ("PROJECT".equals(entityType)) {
+      return; // PROJECT comments reference the project itself
+    }
     if ("TASK".equals(entityType)) {
       var task =
           taskRepository

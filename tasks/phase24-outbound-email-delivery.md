@@ -69,7 +69,7 @@ The design introduces a **two-tier email architecture**: every org gets working 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 0a (parallel) | 167 | 167A | EmailProvider port interface + value objects + IntegrationDomain.EMAIL + defaultSlug refactor | **Done** (PR #348) |
-| 0b (parallel) | 168 | 168A | EmailTemplateRenderer service + base.html layout template + test-email.html |
+| 0b (parallel) | 168 | 168A | EmailTemplateRenderer service + base.html layout template + test-email.html | **Done** (PR #350) |
 | 0c (parallel) | 167 | 167B | SmtpEmailProvider adapter + NoOpEmailProvider + Maven dependency + application properties | **Done** (PR #349) |
 | 0d (parallel) | 168 | 168B | All 10 per-type email templates (8 notification groups + portal-magic-link + invoice-delivery) |
 
@@ -208,7 +208,7 @@ Stage 4: [173A] --> [173B]                               (sequential, after 172B
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **168A** | 168.1–168.6 | `EmailTemplateRenderer` service with `ClassLoaderTemplateResolver` + `base.html` branded layout + `test-email.html` template + `toPlainText()` utility + unit tests. ~3 new Java files, ~2 new template files. Backend only. | |
+| **168A** | 168.1–168.6 | `EmailTemplateRenderer` service with `ClassLoaderTemplateResolver` + `base.html` branded layout + `test-email.html` template + `toPlainText()` utility + unit tests. ~3 new Java files, ~2 new template files. Backend only. | **Done** (PR #350) |
 | **168B** | 168.7–168.12 | All 10 per-type email templates (8 notification groups + `portal-magic-link.html` + `invoice-delivery.html`) + rendering tests. ~10 new template files, ~1 new test file. Backend only. | |
 
 ### Tasks

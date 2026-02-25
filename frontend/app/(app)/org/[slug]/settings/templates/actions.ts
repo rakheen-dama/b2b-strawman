@@ -165,10 +165,10 @@ export async function deactivateTemplateAction(
 export async function previewTemplateAction(
   id: string,
   entityId: string,
-): Promise<{ success: boolean; html?: string; error?: string }> {
+): Promise<{ success: boolean; html?: string; validationResult?: import("@/lib/types").TemplateValidationResult; error?: string }> {
   try {
-    const html = await previewTemplate(id, entityId);
-    return { success: true, html };
+    const result = await previewTemplate(id, entityId);
+    return { success: true, html: result.html, validationResult: result.validationResult ?? undefined };
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
@@ -183,10 +183,11 @@ export async function generateDocumentAction(
   templateId: string,
   entityId: string,
   saveToDocuments: boolean,
+  acknowledgeWarnings: boolean = false,
 ): Promise<{ success: boolean; data?: import("@/lib/types").GenerateDocumentResponse; pdfBase64?: string; error?: string }> {
   try {
     const { generateDocument } = await import("@/lib/api");
-    const result = await generateDocument(templateId, entityId, saveToDocuments);
+    const result = await generateDocument(templateId, entityId, saveToDocuments, acknowledgeWarnings);
 
     if (saveToDocuments) {
       return {

@@ -470,6 +470,7 @@ export interface TemplateDetailResponse {
   sourceTemplateId: string | null;
   packId: string | null;
   packTemplateKey: string | null;
+  requiredContextFields?: Array<{ entity: string; field: string }> | null;
   active: boolean;
   sortOrder: number;
   createdAt: string;
@@ -484,6 +485,7 @@ export interface CreateTemplateRequest {
   content: string;
   css?: string;
   slug?: string;
+  requiredContextFields?: Array<{ entity: string; field: string }>;
 }
 
 export interface UpdateTemplateRequest {
@@ -492,6 +494,24 @@ export interface UpdateTemplateRequest {
   content: string;
   css?: string;
   sortOrder?: number;
+  requiredContextFields?: Array<{ entity: string; field: string }> | null;
+}
+
+export interface FieldValidationResult {
+  entity: string;
+  field: string;
+  present: boolean;
+  reason: string | null;
+}
+
+export interface TemplateValidationResult {
+  allPresent: boolean;
+  fields: FieldValidationResult[];
+}
+
+export interface PreviewResponse {
+  html: string;
+  validationResult?: TemplateValidationResult | null;
 }
 
 // ---- BillingRate (from BillingRateController.java) ----

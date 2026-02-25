@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +22,11 @@ export function TemplateEditorForm({ slug, template, readOnly }: TemplateEditorF
   const [description, setDescription] = useState(template.description ?? "");
   const [content, setContent] = useState(template.content);
   const [css, setCss] = useState(template.css ?? "");
+  const [requiredFields, setRequiredFields] = useState<Array<{ entity: string; field: string }>>(
+    template.requiredContextFields ?? [],
+  );
+  const [newEntity, setNewEntity] = useState("project");
+  const [newField, setNewField] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -36,6 +42,7 @@ export function TemplateEditorForm({ slug, template, readOnly }: TemplateEditorF
         description: description || undefined,
         content,
         css: css || undefined,
+        requiredContextFields: requiredFields.length > 0 ? requiredFields : null,
       });
 
       if (result.success) {
@@ -122,6 +129,82 @@ export function TemplateEditorForm({ slug, template, readOnly }: TemplateEditorF
               className="font-mono text-sm"
               disabled={readOnly}
             />
+          </div>
+
+          <div className="space-y-3">
+            <Label>Required Context Fields</Label>
+            {!readOnly && (
+              <div className="flex items-end gap-2">
+                <div className="space-y-1">
+                  <span className="text-xs text-slate-500">Entity</span>
+                  <select
+                    value={newEntity}
+                    onChange={(e) => setNewEntity(e.target.value)}
+                    className="flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
+                    aria-label="Entity type"
+                  >
+                    <option value="customer">customer</option>
+                    <option value="project">project</option>
+                    <option value="task">task</option>
+                    <option value="invoice">invoice</option>
+                    <option value="org">org</option>
+                  </select>
+                </div>
+                <div className="flex-1 space-y-1">
+                  <span className="text-xs text-slate-500">Field slug</span>
+                  <Input
+                    value={newField}
+                    onChange={(e) => setNewField(e.target.value)}
+                    placeholder="e.g. name"
+                    aria-label="Field slug"
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const trimmed = newField.trim();
+                    if (!trimmed) return;
+                    if (!/^[a-z][a-z0-9_]*$/i.test(trimmed)) return;
+                    const exists = requiredFields.some(
+                      (f) => f.entity === newEntity && f.field === trimmed,
+                    );
+                    if (!exists) {
+                      setRequiredFields((prev) => [...prev, { entity: newEntity, field: trimmed }]);
+                    }
+                    setNewField("");
+                  }}
+                  disabled={!newField.trim()}
+                >
+                  Add
+                </Button>
+              </div>
+            )}
+            {requiredFields.length > 0 && (
+              <ul className="space-y-1">
+                {requiredFields.map((rf, idx) => (
+                  <li
+                    key={`${rf.entity}-${rf.field}-${idx}`}
+                    className="flex items-center justify-between rounded border border-slate-200 px-3 py-1.5 text-sm dark:border-slate-800"
+                  >
+                    <code className="text-xs text-teal-600 dark:text-teal-400">
+                      {rf.entity}.{rf.field}
+                    </code>
+                    {!readOnly && (
+                      <button
+                        type="button"
+                        onClick={() => setRequiredFields((prev) => prev.filter((_, i) => i !== idx))}
+                        className="text-slate-400 hover:text-red-600 dark:hover:text-red-400"
+                        aria-label={`Remove ${rf.entity}.${rf.field}`}
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
 

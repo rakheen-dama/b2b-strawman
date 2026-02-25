@@ -29,6 +29,7 @@ import type {
   GenerateDocumentResponse,
   GeneratedDocumentListResponse,
   TemplateEntityType,
+  PreviewResponse,
 } from "@/lib/types";
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
@@ -376,7 +377,7 @@ export async function resetTemplate(id: string): Promise<void> {
 export async function previewTemplate(
   id: string,
   entityId: string,
-): Promise<string> {
+): Promise<PreviewResponse> {
   let token: string;
   try {
     token = await getAuthToken();
@@ -397,7 +398,7 @@ export async function previewTemplate(
     throw new ApiError(response.status, response.statusText);
   }
 
-  return response.text();
+  return response.json() as Promise<PreviewResponse>;
 }
 
 // ---- Org Settings (Branding) ----
@@ -455,6 +456,7 @@ export async function generateDocument(
   templateId: string,
   entityId: string,
   saveToDocuments: boolean,
+  acknowledgeWarnings: boolean = false,
 ): Promise<GenerateDocumentResponse | Blob> {
   let token: string;
   try {
@@ -471,7 +473,7 @@ export async function generateDocument(
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ entityId, saveToDocuments }),
+      body: JSON.stringify({ entityId, saveToDocuments, acknowledgeWarnings }),
     },
   );
 

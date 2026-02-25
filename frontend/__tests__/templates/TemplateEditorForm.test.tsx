@@ -91,6 +91,7 @@ describe("TemplateEditorForm", () => {
         description: "Standard engagement letter",
         content: "<h1>Hello ${project.name}</h1>",
         css: "h1 { color: blue; }",
+        requiredContextFields: null,
       });
     });
   });
@@ -116,5 +117,30 @@ describe("TemplateEditorForm", () => {
     expect(screen.getByText("Template Info")).toBeInTheDocument();
     expect(screen.getByText("ENGAGEMENT LETTER")).toBeInTheDocument();
     expect(screen.getByText("PROJECT")).toBeInTheDocument();
+  });
+
+  it("renders required fields selector section", () => {
+    render(<TemplateEditorForm slug="acme" template={TEMPLATE} />);
+    expect(screen.getByLabelText("Entity type")).toBeInTheDocument();
+    expect(screen.getByLabelText("Field slug")).toBeInTheDocument();
+  });
+
+  it("adds a required field reference", async () => {
+    const user = userEvent.setup();
+    render(<TemplateEditorForm slug="acme" template={{ ...TEMPLATE, requiredContextFields: [] }} />);
+
+    await user.type(screen.getByLabelText("Field slug"), "email");
+    await user.click(screen.getByRole("button", { name: "Add" }));
+
+    expect(screen.getByText("project.email")).toBeInTheDocument();
+  });
+
+  it("removes a required field reference", async () => {
+    const user = userEvent.setup();
+    render(<TemplateEditorForm slug="acme" template={{ ...TEMPLATE, requiredContextFields: [{ entity: "project", field: "name" }] }} />);
+
+    expect(screen.getByText("project.name")).toBeInTheDocument();
+    await user.click(screen.getByLabelText("Remove project.name"));
+    expect(screen.queryByText("project.name")).not.toBeInTheDocument();
   });
 });

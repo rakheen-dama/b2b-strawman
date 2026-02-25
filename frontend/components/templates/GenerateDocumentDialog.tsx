@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Download, Save } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Download, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,6 +14,7 @@ import {
   previewTemplateAction,
   generateDocumentAction,
 } from "@/app/(app)/org/[slug]/settings/templates/actions";
+import type { TemplateValidationResult } from "@/lib/types";
 
 interface GenerateDocumentDialogProps {
   templateId: string;
@@ -39,12 +40,14 @@ export function GenerateDocumentDialog({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [validationResult, setValidationResult] = useState<TemplateValidationResult | null>(null);
 
   useEffect(() => {
     if (!open) {
       setHtml(null);
       setError(null);
       setSuccessMessage(null);
+      setValidationResult(null);
       return;
     }
 
@@ -57,6 +60,9 @@ export function GenerateDocumentDialog({
         const result = await previewTemplateAction(templateId, entityId);
         if (result.success && result.html) {
           setHtml(result.html);
+          if (result.validationResult) {
+            setValidationResult(result.validationResult);
+          }
         } else {
           setError(result.error ?? "Failed to generate preview.");
         }
@@ -70,13 +76,15 @@ export function GenerateDocumentDialog({
     loadPreview();
   }, [open, templateId, entityId]);
 
+  const hasWarnings = Boolean(validationResult && !validationResult.allPresent);
+
   async function handleDownload() {
     setIsDownloading(true);
     setError(null);
     setSuccessMessage(null);
 
     try {
-      const result = await generateDocumentAction(templateId, entityId, false);
+      const result = await generateDocumentAction(templateId, entityId, false, hasWarnings);
       if (result.success && result.pdfBase64) {
         // Convert base64 to blob and trigger download
         const byteCharacters = atob(result.pdfBase64);
@@ -110,7 +118,7 @@ export function GenerateDocumentDialog({
     setSuccessMessage(null);
 
     try {
-      const result = await generateDocumentAction(templateId, entityId, true);
+      const result = await generateDocumentAction(templateId, entityId, true, hasWarnings);
       if (result.success) {
         setSuccessMessage("Document saved successfully");
         onSaved?.();
@@ -157,6 +165,28 @@ export function GenerateDocumentDialog({
             </div>
           )}
 
+          {validationResult && !validationResult.allPresent && (
+            <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-900 dark:bg-yellow-950/50">
+              <p className="mb-2 text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                Required field warnings
+              </p>
+              <ul className="space-y-1">
+                {validationResult.fields.map((f, idx) => (
+                  <li key={idx} className="flex items-center gap-2 text-sm">
+                    {f.present ? (
+                      <CheckCircle2 className="size-4 shrink-0 text-green-600" />
+                    ) : (
+                      <AlertTriangle className="size-4 shrink-0 text-yellow-600" />
+                    )}
+                    <span className={f.present ? "text-slate-700 dark:text-slate-300" : "text-yellow-800 dark:text-yellow-200"}>
+                      {f.entity}.{f.field}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {error && <p className="text-sm text-destructive">{error}</p>}
           {successMessage && (
             <p className="text-sm text-green-600 dark:text-green-400">
@@ -172,15 +202,15 @@ export function GenerateDocumentDialog({
             disabled={isActionInProgress || isLoadingPreview}
           >
             <Download className="mr-1.5 size-4" />
-            {isDownloading ? "Downloading..." : "Download PDF"}
+            {isDownloading ? "Downloading..." : hasWarnings ? "Download anyway" : "Download PDF"}
           </Button>
           <Button
-            variant="accent"
+            variant={hasWarnings ? "destructive" : "accent"}
             onClick={handleSave}
             disabled={isActionInProgress || isLoadingPreview}
           >
             <Save className="mr-1.5 size-4" />
-            {isSaving ? "Saving..." : "Save to Documents"}
+            {isSaving ? "Saving..." : hasWarnings ? "Save anyway" : "Save to Documents"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -10,4 +10,11 @@ public record CreateFieldGroupRequest(
     @NotBlank @Size(max = 100) String name,
     @Size(max = 100) String slug,
     String description,
-    int sortOrder) {}
+    int sortOrder,
+    Boolean autoApply) {
+
+  /** Returns autoApply with null-safe default of false. */
+  public boolean autoApplyOrDefault() {
+    return autoApply != null && autoApply;
+  }
+}

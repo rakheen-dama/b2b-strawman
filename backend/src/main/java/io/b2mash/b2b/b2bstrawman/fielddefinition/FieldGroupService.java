@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.CreateFieldGroupRequest;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldGroupResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.UpdateFieldGroupRequest;
+import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -26,16 +27,19 @@ public class FieldGroupService {
   private final FieldDefinitionRepository fieldDefinitionRepository;
   private final FieldGroupMemberRepository fieldGroupMemberRepository;
   private final AuditService auditService;
+  private final EntityManager entityManager;
 
   public FieldGroupService(
       FieldGroupRepository fieldGroupRepository,
       FieldDefinitionRepository fieldDefinitionRepository,
       FieldGroupMemberRepository fieldGroupMemberRepository,
-      AuditService auditService) {
+      AuditService auditService,
+      EntityManager entityManager) {
     this.fieldGroupRepository = fieldGroupRepository;
     this.fieldDefinitionRepository = fieldDefinitionRepository;
     this.fieldGroupMemberRepository = fieldGroupMemberRepository;
     this.auditService = auditService;
+    this.entityManager = entityManager;
   }
 
   @Transactional(readOnly = true)
@@ -65,6 +69,7 @@ public class FieldGroupService {
     var fg = new FieldGroup(request.entityType(), request.name(), finalSlug);
     fg.setDescription(request.description());
     fg.setSortOrder(request.sortOrder());
+    fg.setAutoApply(request.autoApplyOrDefault());
 
     try {
       fg = fieldGroupRepository.save(fg);
@@ -102,6 +107,7 @@ public class FieldGroupService {
             .orElseThrow(() -> new ResourceNotFoundException("FieldGroup", id));
 
     fg.updateMetadata(request.name(), request.description(), request.sortOrder());
+    fg.setAutoApply(request.autoApplyOrDefault());
 
     fg = fieldGroupRepository.save(fg);
 
@@ -239,6 +245,78 @@ public class FieldGroupService {
         .orElseThrow(() -> new ResourceNotFoundException("FieldGroup", groupId));
 
     return fieldGroupMemberRepository.findByFieldGroupIdOrderBySortOrder(groupId);
+  }
+
+  // --- Auto-apply methods ---
+
+  /** Toggles the autoApply flag on a field group. When toggling to true, retroactively applies. */
+  @Transactional
+  public FieldGroupResponse toggleAutoApply(UUID groupId, boolean autoApply) {
+    var group =
+        fieldGroupRepository
+            .findById(groupId)
+            .orElseThrow(() -> new ResourceNotFoundException("FieldGroup", groupId));
+
+    boolean wasAutoApply = group.isAutoApply();
+    group.setAutoApply(autoApply);
+    group = fieldGroupRepository.save(group);
+
+    // Retroactive apply: only when toggling from false to true
+    if (!wasAutoApply && autoApply) {
+      retroactiveApply(group);
+    }
+
+    log.info("Toggled autoApply on field group: id={}, autoApply={}", groupId, autoApply);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("field_group.auto_apply_toggled")
+            .entityType("field_group")
+            .entityId(group.getId())
+            .details(Map.of("auto_apply", String.valueOf(autoApply)))
+            .build());
+
+    return FieldGroupResponse.from(group);
+  }
+
+  private void retroactiveApply(FieldGroup group) {
+    String tableName = entityTableName(group.getEntityType());
+    String groupIdJson = "[\"" + group.getId().toString() + "\"]";
+
+    entityManager
+        .createNativeQuery(
+            "UPDATE "
+                + tableName
+                + " SET applied_field_groups = applied_field_groups || CAST(:groupJson AS jsonb)"
+                + " WHERE NOT applied_field_groups @> CAST(:groupJson AS jsonb)")
+        .setParameter("groupJson", groupIdJson)
+        .executeUpdate();
+
+    // Also retroactively apply dependency groups (for 161B — safe to include now, no-op if
+    // dependsOn is null)
+    if (group.getDependsOn() != null) {
+      for (UUID depId : group.getDependsOn()) {
+        String depIdJson = "[\"" + depId.toString() + "\"]";
+        entityManager
+            .createNativeQuery(
+                "UPDATE "
+                    + tableName
+                    + " SET applied_field_groups = applied_field_groups || CAST(:depJson AS jsonb)"
+                    + " WHERE applied_field_groups @> CAST(:groupJson AS jsonb)"
+                    + " AND NOT applied_field_groups @> CAST(:depJson AS jsonb)")
+            .setParameter("groupJson", groupIdJson)
+            .setParameter("depJson", depIdJson)
+            .executeUpdate();
+      }
+    }
+  }
+
+  private String entityTableName(EntityType entityType) {
+    return switch (entityType) {
+      case CUSTOMER -> "customers";
+      case PROJECT -> "projects";
+      case TASK -> "tasks";
+    };
   }
 
   private String resolveUniqueSlug(EntityType entityType, String baseSlug) {

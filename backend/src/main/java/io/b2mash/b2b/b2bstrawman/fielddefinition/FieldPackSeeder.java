@@ -128,6 +128,7 @@ public class FieldPackSeeder {
     var group = new FieldGroup(entityType, pack.group().name(), pack.group().slug());
     group.setDescription(pack.group().description());
     group.setPackId(pack.packId());
+    group.setAutoApply(pack.group().autoApplyOrDefault());
     group = fieldGroupRepository.save(group);
 
     // Create each field definition and link to the group

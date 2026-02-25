@@ -17,4 +17,6 @@ public interface FieldGroupRepository extends JpaRepository<FieldGroup, UUID> {
   @Query("SELECT fg FROM FieldGroup fg WHERE fg.entityType = :entityType AND fg.slug = :slug")
   Optional<FieldGroup> findByEntityTypeAndSlug(
       @Param("entityType") EntityType entityType, @Param("slug") String slug);
+
+  List<FieldGroup> findByEntityTypeAndAutoApplyTrueAndActiveTrue(EntityType entityType);
 }

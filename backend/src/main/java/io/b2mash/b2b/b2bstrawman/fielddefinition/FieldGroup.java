@@ -9,7 +9,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "field_groups")
@@ -41,6 +44,13 @@ public class FieldGroup {
   @Column(name = "active", nullable = false)
   private boolean active;
 
+  @Column(name = "auto_apply", nullable = false)
+  private boolean autoApply;
+
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "depends_on", columnDefinition = "jsonb")
+  private List<UUID> dependsOn;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -55,6 +65,7 @@ public class FieldGroup {
     this.slug = slug;
     this.sortOrder = 0;
     this.active = true;
+    this.autoApply = false;
     this.createdAt = Instant.now();
     this.updatedAt = Instant.now();
   }
@@ -115,6 +126,14 @@ public class FieldGroup {
     return updatedAt;
   }
 
+  public boolean isAutoApply() {
+    return autoApply;
+  }
+
+  public List<UUID> getDependsOn() {
+    return dependsOn;
+  }
+
   // --- Setters for mutable fields ---
 
   public void setDescription(String description) {
@@ -127,5 +146,14 @@ public class FieldGroup {
 
   public void setPackId(String packId) {
     this.packId = packId;
+  }
+
+  public void setAutoApply(boolean autoApply) {
+    this.autoApply = autoApply;
+    this.updatedAt = Instant.now();
+  }
+
+  public void setDependsOn(List<UUID> dependsOn) {
+    this.dependsOn = dependsOn;
   }
 }

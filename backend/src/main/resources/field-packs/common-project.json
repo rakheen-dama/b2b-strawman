@@ -5,7 +5,8 @@
   "group": {
     "slug": "project_info",
     "name": "Project Info",
-    "description": "Common project metadata fields"
+    "description": "Common project metadata fields",
+    "autoApply": true
   },
   "fields": [
     {

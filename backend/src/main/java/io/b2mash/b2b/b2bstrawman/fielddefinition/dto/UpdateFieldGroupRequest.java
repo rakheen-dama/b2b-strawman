@@ -10,7 +10,7 @@ public record UpdateFieldGroupRequest(
     String description,
     int sortOrder,
     Boolean autoApply,
-    List<UUID> dependsOn) {
+    @Size(max = 10) List<UUID> dependsOn) {
 
   /** Returns autoApply with null-safe default of false. */
   public boolean autoApplyOrDefault() {

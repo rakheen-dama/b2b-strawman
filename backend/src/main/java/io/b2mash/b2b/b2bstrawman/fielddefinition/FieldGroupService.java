@@ -428,17 +428,33 @@ public class FieldGroupService {
    */
   public List<UUID> resolveDependencies(List<UUID> appliedFieldGroups) {
     var resolved = new LinkedHashSet<>(appliedFieldGroups);
+
+    // Batch-fetch all applied groups in a single query
+    var appliedGroups = fieldGroupRepository.findAllById(appliedFieldGroups);
+    var groupMap = new java.util.HashMap<UUID, FieldGroup>();
+    for (var g : appliedGroups) {
+      groupMap.put(g.getId(), g);
+    }
+
+    // Collect all dependency IDs that need resolving
+    var depIds = new LinkedHashSet<UUID>();
     for (UUID groupId : appliedFieldGroups) {
-      var group = fieldGroupRepository.findById(groupId);
-      if (group.isPresent() && group.get().getDependsOn() != null) {
-        for (UUID depId : group.get().getDependsOn()) {
-          var depGroup = fieldGroupRepository.findById(depId);
-          if (depGroup.isPresent() && depGroup.get().isActive()) {
-            resolved.add(depId);
-          }
+      var group = groupMap.get(groupId);
+      if (group != null && group.getDependsOn() != null) {
+        depIds.addAll(group.getDependsOn());
+      }
+    }
+
+    // Batch-fetch all dependency groups and resolve from in-memory map
+    if (!depIds.isEmpty()) {
+      var depGroups = fieldGroupRepository.findAllById(depIds);
+      for (var depGroup : depGroups) {
+        if (depGroup.isActive()) {
+          resolved.add(depGroup.getId());
         }
       }
     }
+
     return new ArrayList<>(resolved);
   }
 

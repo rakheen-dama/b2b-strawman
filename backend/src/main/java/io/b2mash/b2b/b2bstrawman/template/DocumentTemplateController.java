@@ -113,7 +113,7 @@ public class DocumentTemplateController {
 
   @PostMapping("/{id}/preview")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
-  public ResponseEntity<PreviewResponse> previewTemplate(
+  public ResponseEntity<PdfRenderingService.PreviewResponse> previewTemplate(
       @PathVariable UUID id, @Valid @RequestBody PreviewRequest request) {
     UUID memberId = RequestScopes.requireMemberId();
     return ResponseEntity.ok(
@@ -159,6 +159,8 @@ public class DocumentTemplateController {
   // --- DTOs ---
 
   public record PreviewRequest(@NotNull UUID entityId) {}
+
+  // PreviewResponse lives in PdfRenderingService to keep the dependency direction correct.
 
   public record GenerateDocumentRequest(
       @NotNull UUID entityId, boolean saveToDocuments, boolean acknowledgeWarnings) {}
@@ -255,7 +257,4 @@ public class DocumentTemplateController {
           dt.getUpdatedAt());
     }
   }
-
-  public record PreviewResponse(
-      String html, TemplateValidationService.TemplateValidationResult validationResult) {}
 }

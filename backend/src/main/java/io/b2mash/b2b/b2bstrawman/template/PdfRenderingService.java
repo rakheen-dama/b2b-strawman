@@ -122,8 +122,7 @@ public class PdfRenderingService {
    * PreviewResponse containing both the HTML and the validation result.
    */
   @Transactional(readOnly = true)
-  public DocumentTemplateController.PreviewResponse previewWithValidation(
-      UUID templateId, UUID entityId, UUID memberId) {
+  public PreviewResponse previewWithValidation(UUID templateId, UUID entityId, UUID memberId) {
     var template =
         documentTemplateRepository
             .findById(templateId)
@@ -142,8 +141,13 @@ public class PdfRenderingService {
     String renderedBody = renderThymeleaf(template.getContent(), contextMap);
     String html = wrapHtml(renderedBody, mergedCss);
 
-    return new DocumentTemplateController.PreviewResponse(html, validationResult);
+    return new PreviewResponse(html, validationResult);
   }
+
+  /** DTO returned by {@link #previewWithValidation}. Lives in the service layer to avoid a */
+  // upward dependency from service → controller.
+  public record PreviewResponse(
+      String html, TemplateValidationService.TemplateValidationResult validationResult) {}
 
   /**
    * Builds context for a template without rendering. Used by GeneratedDocumentService to validate

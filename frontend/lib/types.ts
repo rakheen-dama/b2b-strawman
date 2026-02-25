@@ -849,6 +849,8 @@ export interface FieldGroupResponse {
   packId: string | null;
   sortOrder: number;
   active: boolean;
+  autoApply: boolean;
+  dependsOn: string[] | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -860,6 +862,7 @@ export interface CreateFieldGroupRequest {
   description?: string;
   sortOrder: number;
   fieldDefinitionIds: string[];
+  autoApply?: boolean;
 }
 
 export interface UpdateFieldGroupRequest {
@@ -868,6 +871,7 @@ export interface UpdateFieldGroupRequest {
   description?: string;
   sortOrder: number;
   fieldDefinitionIds: string[];
+  autoApply?: boolean;
 }
 
 export interface FieldGroupMemberResponse {

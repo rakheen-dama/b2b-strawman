@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMemberRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupService;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
@@ -43,6 +44,7 @@ public class ProjectService {
   private final FieldGroupRepository fieldGroupRepository;
   private final FieldGroupMemberRepository fieldGroupMemberRepository;
   private final FieldDefinitionRepository fieldDefinitionRepository;
+  private final FieldGroupService fieldGroupService;
 
   public ProjectService(
       ProjectRepository repository,
@@ -53,7 +55,8 @@ public class ProjectService {
       CustomFieldValidator customFieldValidator,
       FieldGroupRepository fieldGroupRepository,
       FieldGroupMemberRepository fieldGroupMemberRepository,
-      FieldDefinitionRepository fieldDefinitionRepository) {
+      FieldDefinitionRepository fieldDefinitionRepository,
+      FieldGroupService fieldGroupService) {
     this.repository = repository;
     this.projectMemberRepository = projectMemberRepository;
     this.projectAccessService = projectAccessService;
@@ -63,6 +66,7 @@ public class ProjectService {
     this.fieldGroupRepository = fieldGroupRepository;
     this.fieldGroupMemberRepository = fieldGroupMemberRepository;
     this.fieldDefinitionRepository = fieldDefinitionRepository;
+    this.fieldGroupService = fieldGroupService;
   }
 
   @Transactional(readOnly = true)
@@ -100,10 +104,26 @@ public class ProjectService {
             customFields != null ? customFields : new HashMap<>(),
             appliedFieldGroups);
 
-    var project = repository.save(new Project(name, description, createdBy));
+    var project = new Project(name, description, createdBy);
     project.setCustomFields(validatedFields);
     if (appliedFieldGroups != null) {
       project.setAppliedFieldGroups(appliedFieldGroups);
+    }
+
+    // Auto-apply field groups before save so audit events capture final state
+    var autoApplyIds = fieldGroupService.resolveAutoApplyGroupIds(EntityType.PROJECT);
+    if (!autoApplyIds.isEmpty()) {
+      var merged =
+          new ArrayList<>(
+              project.getAppliedFieldGroups() != null
+                  ? project.getAppliedFieldGroups()
+                  : List.of());
+      for (UUID id : autoApplyIds) {
+        if (!merged.contains(id)) {
+          merged.add(id);
+        }
+      }
+      project.setAppliedFieldGroups(merged);
     }
     project = repository.save(project);
 

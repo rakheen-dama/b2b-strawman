@@ -9,6 +9,8 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.CreateFieldGroupRequest;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldGroupResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.UpdateFieldGroupRequest;
 import jakarta.persistence.EntityManager;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -326,6 +328,32 @@ public class FieldGroupService {
       case PROJECT -> "projects";
       case TASK -> "tasks";
     };
+  }
+
+  /**
+   * Resolves all group IDs that should be auto-applied to a new entity of the given type. Includes
+   * direct auto-apply groups plus one level of dependsOn dependencies.
+   */
+  public List<UUID> resolveAutoApplyGroupIds(EntityType entityType) {
+    var autoGroups = fieldGroupRepository.findByEntityTypeAndAutoApplyTrueAndActiveTrue(entityType);
+    var groupIds = new LinkedHashSet<>(autoGroups.stream().map(FieldGroup::getId).toList());
+    // Resolve one-level dependencies — only include existing, active groups
+    for (var group : autoGroups) {
+      if (group.getDependsOn() != null) {
+        for (UUID depId : group.getDependsOn()) {
+          var depGroup = fieldGroupRepository.findById(depId);
+          if (depGroup.isPresent() && depGroup.get().isActive()) {
+            groupIds.add(depId);
+          } else {
+            log.warn(
+                "Skipping invalid/inactive dependency group {} for auto-apply group {}",
+                depId,
+                group.getId());
+          }
+        }
+      }
+    }
+    return new ArrayList<>(groupIds);
   }
 
   private String resolveUniqueSlug(EntityType entityType, String baseSlug) {

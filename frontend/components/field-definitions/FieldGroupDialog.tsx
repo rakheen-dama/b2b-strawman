@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -79,6 +80,7 @@ export function FieldGroupDialog({
   const [selectedFieldIds, setSelectedFieldIds] = useState<string[]>(
     initialFieldIds ?? [],
   );
+  const [autoApply, setAutoApply] = useState(group?.autoApply ?? false);
 
   // Filter available fields by entityType
   const filteredFields = availableFields.filter(
@@ -98,6 +100,7 @@ export function FieldGroupDialog({
     setDescription("");
     setSortOrder(0);
     setSelectedFieldIds([]);
+    setAutoApply(false);
     setError(null);
   }
 
@@ -108,6 +111,7 @@ export function FieldGroupDialog({
     setDescription(g.description ?? "");
     setSortOrder(g.sortOrder);
     setSelectedFieldIds(initialFieldIds ?? []);
+    setAutoApply(g.autoApply ?? false);
     setError(null);
   }
 
@@ -151,6 +155,7 @@ export function FieldGroupDialog({
           description: description.trim() || undefined,
           sortOrder,
           fieldDefinitionIds: selectedFieldIds,
+          autoApply,
         });
 
         if (result.success) {
@@ -166,6 +171,7 @@ export function FieldGroupDialog({
           description: description.trim() || undefined,
           sortOrder,
           fieldDefinitionIds: selectedFieldIds,
+          autoApply,
         });
 
         if (result.success) {
@@ -277,6 +283,24 @@ export function FieldGroupDialog({
               onChange={(e) => setSortOrder(parseInt(e.target.value, 10) || 0)}
               min={0}
             />
+          </div>
+
+          {/* Auto-apply */}
+          <div className="flex items-start gap-3">
+            <Checkbox
+              id="fg-auto-apply"
+              checked={autoApply}
+              onCheckedChange={(v) => setAutoApply(!!v)}
+              className="mt-0.5"
+            />
+            <div className="space-y-0.5">
+              <Label htmlFor="fg-auto-apply" className="cursor-pointer font-medium">
+                Auto-apply to new entities
+              </Label>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                When enabled, this group is automatically applied when a new entity of this type is created.
+              </p>
+            </div>
           </div>
 
           {/* Field Selection */}

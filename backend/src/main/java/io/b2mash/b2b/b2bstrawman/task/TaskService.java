@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMemberRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupService;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
@@ -53,6 +54,7 @@ public class TaskService {
   private final FieldGroupMemberRepository fieldGroupMemberRepository;
   private final FieldDefinitionRepository fieldDefinitionRepository;
   private final CustomerProjectRepository customerProjectRepository;
+  private final FieldGroupService fieldGroupService;
 
   public TaskService(
       TaskRepository taskRepository,
@@ -65,7 +67,8 @@ public class TaskService {
       FieldGroupRepository fieldGroupRepository,
       FieldGroupMemberRepository fieldGroupMemberRepository,
       FieldDefinitionRepository fieldDefinitionRepository,
-      CustomerProjectRepository customerProjectRepository) {
+      CustomerProjectRepository customerProjectRepository,
+      FieldGroupService fieldGroupService) {
     this.taskRepository = taskRepository;
     this.projectAccessService = projectAccessService;
     this.projectMemberRepository = projectMemberRepository;
@@ -77,6 +80,7 @@ public class TaskService {
     this.fieldGroupMemberRepository = fieldGroupMemberRepository;
     this.fieldDefinitionRepository = fieldDefinitionRepository;
     this.customerProjectRepository = customerProjectRepository;
+    this.fieldGroupService = fieldGroupService;
   }
 
   @Transactional(readOnly = true)
@@ -169,6 +173,20 @@ public class TaskService {
     task.setCustomFields(validatedFields);
     if (appliedFieldGroups != null) {
       task.setAppliedFieldGroups(appliedFieldGroups);
+    }
+
+    // Auto-apply field groups before save so audit events capture final state
+    var autoApplyIds = fieldGroupService.resolveAutoApplyGroupIds(EntityType.TASK);
+    if (!autoApplyIds.isEmpty()) {
+      var merged =
+          new ArrayList<>(
+              task.getAppliedFieldGroups() != null ? task.getAppliedFieldGroups() : List.of());
+      for (UUID id : autoApplyIds) {
+        if (!merged.contains(id)) {
+          merged.add(id);
+        }
+      }
+      task.setAppliedFieldGroups(merged);
     }
     task = taskRepository.save(task);
 

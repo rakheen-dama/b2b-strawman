@@ -43,10 +43,17 @@ const FIELD_TYPES: { value: FieldType; label: string }[] = [
   { value: "PHONE", label: "Phone" },
 ];
 
+const CONDITION_OPERATORS: { value: string; label: string }[] = [
+  { value: "eq", label: "equals" },
+  { value: "neq", label: "does not equal" },
+  { value: "in", label: "is one of" },
+];
+
 interface FieldDefinitionDialogProps {
   slug: string;
   entityType?: EntityType;
   field?: FieldDefinitionResponse;
+  allFieldsForType?: FieldDefinitionResponse[];
   children: React.ReactNode;
 }
 
@@ -54,6 +61,7 @@ export function FieldDefinitionDialog({
   slug,
   entityType: initialEntityType,
   field,
+  allFieldsForType,
   children,
 }: FieldDefinitionDialogProps) {
   const isEditing = !!field;
@@ -101,6 +109,31 @@ export function FieldDefinitionDialog({
     Array<{ value: string; label: string }>
   >(field?.options ?? [{ value: "", label: "" }]);
 
+  // Visibility condition state
+  const [showConditionally, setShowConditionally] = useState(
+    !!field?.visibilityCondition,
+  );
+  const [conditionFieldSlug, setConditionFieldSlug] = useState(
+    field?.visibilityCondition?.dependsOnSlug ?? "",
+  );
+  const [conditionOperator, setConditionOperator] = useState(
+    field?.visibilityCondition?.operator ?? "eq",
+  );
+  const [conditionValue, setConditionValue] = useState<string>(
+    Array.isArray(field?.visibilityCondition?.value)
+      ? field.visibilityCondition.value.join(", ")
+      : (field?.visibilityCondition?.value as string) ?? "",
+  );
+
+  const availableControllingFields = (allFieldsForType ?? []).filter(
+    (f) => f.active && f.id !== field?.id,
+  );
+
+  const controllingField = availableControllingFields.find(
+    (f) => f.slug === conditionFieldSlug,
+  );
+  const isControllingDropdown = controllingField?.fieldType === "DROPDOWN";
+
   function resetForm() {
     setEntityType(initialEntityType ?? "PROJECT");
     setName("");
@@ -117,6 +150,10 @@ export function FieldDefinitionDialog({
     setMinDate("");
     setMaxDate("");
     setOptions([{ value: "", label: "" }]);
+    setShowConditionally(false);
+    setConditionFieldSlug("");
+    setConditionOperator("eq");
+    setConditionValue("");
     setError(null);
   }
 
@@ -138,6 +175,14 @@ export function FieldDefinitionDialog({
       setMaxDate((f.validation?.max as string) ?? "");
     }
     setOptions(f.options ?? [{ value: "", label: "" }]);
+    setShowConditionally(!!f.visibilityCondition);
+    setConditionFieldSlug(f.visibilityCondition?.dependsOnSlug ?? "");
+    setConditionOperator(f.visibilityCondition?.operator ?? "eq");
+    setConditionValue(
+      Array.isArray(f.visibilityCondition?.value)
+        ? f.visibilityCondition.value.join(", ")
+        : (f.visibilityCondition?.value as string) ?? "",
+    );
     setError(null);
   }
 
@@ -181,6 +226,63 @@ export function FieldDefinitionDialog({
     return filtered.length > 0 ? filtered : undefined;
   }
 
+  function buildVisibilityCondition() {
+    if (!showConditionally || !conditionFieldSlug) return undefined;
+    if (conditionOperator === "in") {
+      const values = conditionValue
+        .split(",")
+        .map((v) => v.trim())
+        .filter(Boolean);
+      if (values.length === 0) return undefined;
+      return {
+        dependsOnSlug: conditionFieldSlug,
+        operator: conditionOperator,
+        value: values,
+      };
+    }
+    if (!conditionValue.trim()) return undefined;
+    return {
+      dependsOnSlug: conditionFieldSlug,
+      operator: conditionOperator,
+      value: conditionValue.trim(),
+    };
+  }
+
+  function getConditionPreview(): string | null {
+    if (!showConditionally || !conditionFieldSlug || !conditionValue)
+      return null;
+    const ctrlField = availableControllingFields.find(
+      (f) => f.slug === conditionFieldSlug,
+    );
+    const fieldName = ctrlField?.name ?? conditionFieldSlug;
+    const operatorLabel =
+      CONDITION_OPERATORS.find((o) => o.value === conditionOperator)?.label ??
+      conditionOperator;
+
+    if (conditionOperator === "in") {
+      const values = conditionValue
+        .split(",")
+        .map((v) => v.trim())
+        .filter(Boolean);
+      return `Show this field when ${fieldName} ${operatorLabel} ${values.join(", ")}`;
+    }
+
+    let displayValue = conditionValue;
+    if (ctrlField?.fieldType === "DROPDOWN" && ctrlField.options) {
+      const opt = ctrlField.options.find((o) => o.value === conditionValue);
+      if (opt) displayValue = opt.label;
+    }
+
+    return `Show this field when ${fieldName} ${operatorLabel} ${displayValue}`;
+  }
+
+  function clearCondition() {
+    setShowConditionally(false);
+    setConditionFieldSlug("");
+    setConditionOperator("eq");
+    setConditionValue("");
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -211,6 +313,7 @@ export function FieldDefinitionDialog({
           validation: buildValidation(),
           options: buildOptions(),
           sortOrder,
+          visibilityCondition: buildVisibilityCondition() ?? null,
         });
 
         if (result.success) {
@@ -229,6 +332,7 @@ export function FieldDefinitionDialog({
           validation: buildValidation(),
           options: buildOptions(),
           sortOrder,
+          visibilityCondition: buildVisibilityCondition() ?? null,
         });
 
         if (result.success) {
@@ -262,6 +366,8 @@ export function FieldDefinitionDialog({
     updated[index] = { ...updated[index], [key]: val };
     setOptions(updated);
   }
+
+  const conditionPreview = getConditionPreview();
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -432,6 +538,144 @@ export function FieldDefinitionDialog({
               </Button>
             </div>
           )}
+
+          {/* Visibility Condition */}
+          <div className="space-y-3 rounded-md border border-slate-200 p-3 dark:border-slate-700">
+            <div className="flex items-center gap-2">
+              <input
+                id="fd-show-conditionally"
+                type="checkbox"
+                checked={showConditionally}
+                onChange={(e) => {
+                  setShowConditionally(e.target.checked);
+                  if (!e.target.checked) {
+                    setConditionFieldSlug("");
+                    setConditionOperator("eq");
+                    setConditionValue("");
+                  }
+                }}
+                className="size-4 rounded border-slate-300 text-slate-600 focus:ring-slate-500"
+              />
+              <Label
+                htmlFor="fd-show-conditionally"
+                className="text-sm font-medium text-slate-700 dark:text-slate-300"
+              >
+                Show conditionally
+              </Label>
+            </div>
+
+            {showConditionally && (
+              <div className="space-y-3">
+                {/* Controlling field selector */}
+                <div className="space-y-1">
+                  <Label htmlFor="fd-condition-field">
+                    Show this field when
+                  </Label>
+                  <select
+                    id="fd-condition-field"
+                    value={conditionFieldSlug}
+                    onChange={(e) => {
+                      setConditionFieldSlug(e.target.value);
+                      setConditionValue("");
+                    }}
+                    className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 dark:border-slate-700"
+                  >
+                    <option value="">Select a field...</option>
+                    {availableControllingFields.map((f) => (
+                      <option key={f.id} value={f.slug}>
+                        {f.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Operator */}
+                <div className="space-y-1">
+                  <Label htmlFor="fd-condition-operator">Condition</Label>
+                  <select
+                    id="fd-condition-operator"
+                    value={conditionOperator}
+                    onChange={(e) => setConditionOperator(e.target.value)}
+                    className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 dark:border-slate-700"
+                  >
+                    {CONDITION_OPERATORS.map((op) => (
+                      <option key={op.value} value={op.value}>
+                        {op.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Value input */}
+                <div className="space-y-1">
+                  <Label htmlFor="fd-condition-value">Value</Label>
+                  {isControllingDropdown &&
+                  conditionOperator !== "in" &&
+                  controllingField?.options ? (
+                    <select
+                      id="fd-condition-value"
+                      value={conditionValue}
+                      onChange={(e) => setConditionValue(e.target.value)}
+                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 dark:border-slate-700"
+                    >
+                      <option value="">Select a value...</option>
+                      {controllingField.options.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <>
+                      <Input
+                        id="fd-condition-value"
+                        value={conditionValue}
+                        onChange={(e) => setConditionValue(e.target.value)}
+                        placeholder={
+                          conditionOperator === "in"
+                            ? "Comma-separated values (e.g. val1, val2)"
+                            : "Enter value"
+                        }
+                      />
+                      {conditionOperator === "in" && conditionValue && (
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {conditionValue
+                            .split(",")
+                            .map((v) => v.trim())
+                            .filter(Boolean)
+                            .map((v, i) => (
+                              <span
+                                key={i}
+                                className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                              >
+                                {v}
+                              </span>
+                            ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+
+                {/* Preview */}
+                {conditionPreview && (
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    {conditionPreview}
+                  </p>
+                )}
+
+                {/* Clear button */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={clearCondition}
+                >
+                  Clear condition
+                </Button>
+              </div>
+            )}
+          </div>
 
           {/* Conditional: TEXT validation */}
           {fieldType === "TEXT" && (

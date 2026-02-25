@@ -831,6 +831,11 @@ export interface CreateFieldDefinitionRequest {
   options?: Array<{ value: string; label: string }>;
   validation?: Record<string, unknown>;
   sortOrder: number;
+  visibilityCondition?: {
+    dependsOnSlug: string;
+    operator: string;
+    value: string | string[];
+  } | null;
 }
 
 export interface UpdateFieldDefinitionRequest {
@@ -843,6 +848,11 @@ export interface UpdateFieldDefinitionRequest {
   options?: Array<{ value: string; label: string }>;
   validation?: Record<string, unknown>;
   sortOrder: number;
+  visibilityCondition?: {
+    dependsOnSlug: string;
+    operator: string;
+    value: string | string[];
+  } | null;
 }
 
 export interface FieldGroupResponse {

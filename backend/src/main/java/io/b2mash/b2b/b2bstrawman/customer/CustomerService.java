@@ -125,9 +125,8 @@ public class CustomerService {
     if (appliedFieldGroups != null) {
       customer.setAppliedFieldGroups(appliedFieldGroups);
     }
-    customer = repository.save(customer);
 
-    // Auto-apply field groups
+    // Auto-apply field groups before save so audit events capture final state
     var autoApplyIds = fieldGroupService.resolveAutoApplyGroupIds(EntityType.CUSTOMER);
     if (!autoApplyIds.isEmpty()) {
       var merged =
@@ -141,8 +140,8 @@ public class CustomerService {
         }
       }
       customer.setAppliedFieldGroups(merged);
-      customer = repository.save(customer);
     }
+    customer = repository.save(customer);
 
     log.info("Created customer {} with email {}", customer.getId(), email);
 

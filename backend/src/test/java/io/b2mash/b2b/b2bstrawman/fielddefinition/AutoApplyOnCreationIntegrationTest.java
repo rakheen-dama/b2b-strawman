@@ -53,6 +53,7 @@ class AutoApplyOnCreationIntegrationTest {
   @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
+  @Autowired private FieldGroupRepository fieldGroupRepository;
 
   private String tenantSchema;
   private UUID memberIdOwner;
@@ -256,8 +257,18 @@ class AutoApplyOnCreationIntegrationTest {
 
   @Test
   void entity_with_no_auto_apply_groups_has_empty_list() throws Exception {
-    // Create a customer when auto-apply groups may exist from other tests in this class
-    // This test validates the code path works correctly
+    // Disable auto-apply on all CUSTOMER groups in this tenant so we test the no-auto-apply path
+    runInTenant(
+        () -> {
+          var customerGroups =
+              fieldGroupRepository.findByEntityTypeAndAutoApplyTrueAndActiveTrue(
+                  EntityType.CUSTOMER);
+          for (var g : customerGroups) {
+            g.setAutoApply(false);
+            fieldGroupRepository.save(g);
+          }
+        });
+
     var createCustomerResult =
         mockMvc
             .perform(
@@ -278,8 +289,28 @@ class AutoApplyOnCreationIntegrationTest {
         JsonPath.read(createCustomerResult.getResponse().getContentAsString(), "$.id");
     UUID customerUuid = UUID.fromString(customerId);
 
-    // Verify the customer was created successfully
-    assertThat(customerUuid).isNotNull();
+    // Verify customer has no auto-applied field groups
+    runInTenant(
+        () -> {
+          Customer customer = customerRepository.findById(customerUuid).orElseThrow();
+          assertThat(
+                  customer.getAppliedFieldGroups() != null
+                      ? customer.getAppliedFieldGroups()
+                      : List.of())
+              .isEmpty();
+        });
+
+    // Re-enable auto-apply on CUSTOMER groups for other tests
+    runInTenant(
+        () -> {
+          var customerGroups =
+              fieldGroupRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
+                  EntityType.CUSTOMER);
+          for (var g : customerGroups) {
+            g.setAutoApply(true);
+            fieldGroupRepository.save(g);
+          }
+        });
   }
 
   // --- JWT Helpers ---

@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -286,12 +287,11 @@ export function FieldGroupDialog({
 
           {/* Auto-apply */}
           <div className="flex items-start gap-3">
-            <input
+            <Checkbox
               id="fg-auto-apply"
-              type="checkbox"
               checked={autoApply}
-              onChange={(e) => setAutoApply(e.target.checked)}
-              className="mt-0.5 size-4 rounded border-slate-300 accent-teal-600"
+              onCheckedChange={(v) => setAutoApply(!!v)}
+              className="mt-0.5"
             />
             <div className="space-y-0.5">
               <Label htmlFor="fg-auto-apply" className="cursor-pointer font-medium">

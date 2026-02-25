@@ -104,14 +104,13 @@ public class ProjectService {
             customFields != null ? customFields : new HashMap<>(),
             appliedFieldGroups);
 
-    var project = repository.save(new Project(name, description, createdBy));
+    var project = new Project(name, description, createdBy);
     project.setCustomFields(validatedFields);
     if (appliedFieldGroups != null) {
       project.setAppliedFieldGroups(appliedFieldGroups);
     }
-    project = repository.save(project);
 
-    // Auto-apply field groups
+    // Auto-apply field groups before save so audit events capture final state
     var autoApplyIds = fieldGroupService.resolveAutoApplyGroupIds(EntityType.PROJECT);
     if (!autoApplyIds.isEmpty()) {
       var merged =
@@ -125,8 +124,8 @@ public class ProjectService {
         }
       }
       project.setAppliedFieldGroups(merged);
-      project = repository.save(project);
     }
+    project = repository.save(project);
 
     var lead = new ProjectMember(project.getId(), createdBy, Roles.PROJECT_LEAD, null);
     projectMemberRepository.save(lead);

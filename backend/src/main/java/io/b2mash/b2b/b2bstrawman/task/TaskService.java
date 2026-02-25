@@ -174,9 +174,8 @@ public class TaskService {
     if (appliedFieldGroups != null) {
       task.setAppliedFieldGroups(appliedFieldGroups);
     }
-    task = taskRepository.save(task);
 
-    // Auto-apply field groups
+    // Auto-apply field groups before save so audit events capture final state
     var autoApplyIds = fieldGroupService.resolveAutoApplyGroupIds(EntityType.TASK);
     if (!autoApplyIds.isEmpty()) {
       var merged =
@@ -188,8 +187,8 @@ public class TaskService {
         }
       }
       task.setAppliedFieldGroups(merged);
-      task = taskRepository.save(task);
     }
+    task = taskRepository.save(task);
 
     // Pre-assign at creation (admin/owner only; silently ignore for regular members)
     boolean isAdminOrOwner = "admin".equals(orgRole) || "owner".equals(orgRole);

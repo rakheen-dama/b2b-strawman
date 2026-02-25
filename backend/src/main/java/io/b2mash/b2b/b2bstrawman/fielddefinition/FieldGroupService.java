@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldGroupResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.UpdateFieldGroupRequest;
 import jakarta.persistence.EntityManager;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -335,18 +336,24 @@ public class FieldGroupService {
    */
   public List<UUID> resolveAutoApplyGroupIds(EntityType entityType) {
     var autoGroups = fieldGroupRepository.findByEntityTypeAndAutoApplyTrueAndActiveTrue(entityType);
-    var groupIds = new ArrayList<>(autoGroups.stream().map(FieldGroup::getId).toList());
-    // Resolve one-level dependencies
+    var groupIds = new LinkedHashSet<>(autoGroups.stream().map(FieldGroup::getId).toList());
+    // Resolve one-level dependencies — only include existing, active groups
     for (var group : autoGroups) {
       if (group.getDependsOn() != null) {
         for (UUID depId : group.getDependsOn()) {
-          if (!groupIds.contains(depId)) {
+          var depGroup = fieldGroupRepository.findById(depId);
+          if (depGroup.isPresent() && depGroup.get().isActive()) {
             groupIds.add(depId);
+          } else {
+            log.warn(
+                "Skipping invalid/inactive dependency group {} for auto-apply group {}",
+                depId,
+                group.getId());
           }
         }
       }
     }
-    return groupIds;
+    return new ArrayList<>(groupIds);
   }
 
   private String resolveUniqueSlug(EntityType entityType, String baseSlug) {

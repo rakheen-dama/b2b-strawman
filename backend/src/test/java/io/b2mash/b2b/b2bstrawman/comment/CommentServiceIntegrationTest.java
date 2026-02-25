@@ -482,6 +482,92 @@ class CommentServiceIntegrationTest {
         .andExpect(jsonPath("$.length()").value(org.hamcrest.Matchers.greaterThanOrEqualTo(1)));
   }
 
+  // --- Task 6: PROJECT entity type for SHARED comments ---
+
+  @Test
+  void createComment_projectType_sharedVisibility_succeeds() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/projects/" + projectId + "/comments")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "entityType": "PROJECT",
+                      "entityId": "%s",
+                      "body": "Project-level shared comment",
+                      "visibility": "SHARED"
+                    }
+                    """
+                        .formatted(projectId)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.entityType").value("PROJECT"))
+        .andExpect(jsonPath("$.entityId").value(projectId))
+        .andExpect(jsonPath("$.visibility").value("SHARED"))
+        .andExpect(jsonPath("$.body").value("Project-level shared comment"));
+  }
+
+  @Test
+  void createComment_projectType_internalVisibility_rejected() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/projects/" + projectId + "/comments")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "entityType": "PROJECT",
+                      "entityId": "%s",
+                      "body": "Should fail with INTERNAL",
+                      "visibility": "INTERNAL"
+                    }
+                    """
+                        .formatted(projectId)))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void createComment_projectType_defaultVisibility_rejected() throws Exception {
+    // No visibility specified defaults to INTERNAL, which should be rejected for PROJECT
+    mockMvc
+        .perform(
+            post("/api/projects/" + projectId + "/comments")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "entityType": "PROJECT",
+                      "entityId": "%s",
+                      "body": "Should fail with default visibility"
+                    }
+                    """
+                        .formatted(projectId)))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void createComment_projectType_entityIdMismatch_rejected() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/projects/" + projectId + "/comments")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "entityType": "PROJECT",
+                      "entityId": "%s",
+                      "body": "Should fail with mismatched entityId",
+                      "visibility": "SHARED"
+                    }
+                    """
+                        .formatted(taskId)))
+        .andExpect(status().isBadRequest());
+  }
+
   // --- Helpers ---
 
   private String extractIdFromLocation(MvcResult result) {

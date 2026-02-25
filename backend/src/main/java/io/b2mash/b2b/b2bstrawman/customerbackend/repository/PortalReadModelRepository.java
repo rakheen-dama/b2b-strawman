@@ -374,6 +374,18 @@ public class PortalReadModelRepository {
         .list();
   }
 
+  public boolean portalCommentExists(UUID commentId, String orgId) {
+    return jdbc.sql(
+                """
+            SELECT COUNT(*) FROM portal.portal_comments
+            WHERE id = ? AND org_id = ?
+            """)
+            .params(commentId, orgId)
+            .query(Integer.class)
+            .single()
+        > 0;
+  }
+
   public List<PortalCommentView> findCommentsByProject(UUID portalProjectId, String orgId) {
     return jdbc.sql(
             """

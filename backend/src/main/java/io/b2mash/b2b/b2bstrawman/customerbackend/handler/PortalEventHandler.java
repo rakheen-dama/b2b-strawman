@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.customerbackend.handler;
 
+import io.b2mash.b2b.b2bstrawman.comment.CommentRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerProjectLinkedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerProjectUnlinkedEvent;
@@ -15,6 +16,9 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectUpdatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.TimeEntryAggregatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
+import io.b2mash.b2b.b2bstrawman.event.CommentCreatedEvent;
+import io.b2mash.b2b.b2bstrawman.event.CommentDeletedEvent;
+import io.b2mash.b2b.b2bstrawman.event.CommentVisibilityChangedEvent;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -53,6 +57,7 @@ public class PortalEventHandler {
   private final CustomerProjectRepository customerProjectRepository;
   private final InvoiceRepository invoiceRepository;
   private final InvoiceLineRepository invoiceLineRepository;
+  private final CommentRepository commentRepository;
 
   public PortalEventHandler(
       PortalReadModelRepository readModelRepo,
@@ -60,13 +65,15 @@ public class PortalEventHandler {
       DocumentRepository documentRepository,
       CustomerProjectRepository customerProjectRepository,
       InvoiceRepository invoiceRepository,
-      InvoiceLineRepository invoiceLineRepository) {
+      InvoiceLineRepository invoiceLineRepository,
+      CommentRepository commentRepository) {
     this.readModelRepo = readModelRepo;
     this.projectRepository = projectRepository;
     this.documentRepository = documentRepository;
     this.customerProjectRepository = customerProjectRepository;
     this.invoiceRepository = invoiceRepository;
     this.invoiceLineRepository = invoiceLineRepository;
+    this.commentRepository = commentRepository;
   }
 
   // ── Customer-project events ────────────────────────────────────────
@@ -434,6 +441,100 @@ public class PortalEventHandler {
             readModelRepo.deletePortalTask(event.getTaskId(), event.getOrgId());
           } catch (Exception e) {
             log.warn("Failed to project PortalTaskDeletedEvent: taskId={}", event.getTaskId(), e);
+          }
+        });
+  }
+
+  // ── Comment events ─────────────────────────────────────────────────
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onCommentCreated(CommentCreatedEvent event) {
+    handleInTenantScope(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            if (!"SHARED".equals(event.visibility())) {
+              return;
+            }
+            var projectId = event.projectId();
+            var customerIds = readModelRepo.findCustomerIdsByProjectId(projectId, event.orgId());
+            var authorName = event.actorName() != null ? event.actorName() : "Unknown";
+            var body = (String) event.details().get("body");
+            for (var customerId : customerIds) {
+              readModelRepo.upsertPortalComment(
+                  event.entityId(), event.orgId(), projectId, authorName, body, event.occurredAt());
+              readModelRepo.incrementCommentCount(projectId, customerId);
+            }
+          } catch (Exception e) {
+            log.warn("Failed to project CommentCreatedEvent: commentId={}", event.entityId(), e);
+          }
+        });
+  }
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onCommentVisibilityChanged(CommentVisibilityChangedEvent event) {
+    handleInTenantScope(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            if ("SHARED".equals(event.newVisibility())) {
+              // INTERNAL -> SHARED: project the comment
+              var commentOpt = commentRepository.findById(event.entityId());
+              if (commentOpt.isEmpty()) {
+                log.warn(
+                    "Comment not found for visibility change to SHARED: commentId={}",
+                    event.entityId());
+                return;
+              }
+              var comment = commentOpt.get();
+              var projectId = comment.getProjectId();
+              var customerIds = readModelRepo.findCustomerIdsByProjectId(projectId, event.orgId());
+              var authorName = event.actorName() != null ? event.actorName() : "Unknown";
+              for (var customerId : customerIds) {
+                readModelRepo.upsertPortalComment(
+                    comment.getId(),
+                    event.orgId(),
+                    projectId,
+                    authorName,
+                    comment.getBody(),
+                    comment.getCreatedAt());
+                readModelRepo.incrementCommentCount(projectId, customerId);
+              }
+            } else if ("SHARED".equals(event.oldVisibility())) {
+              // SHARED -> INTERNAL: remove the comment projection
+              var projectId = event.projectId();
+              var customerIds = readModelRepo.findCustomerIdsByProjectId(projectId, event.orgId());
+              readModelRepo.deletePortalComment(event.entityId(), event.orgId());
+              for (var customerId : customerIds) {
+                readModelRepo.decrementCommentCount(projectId, customerId);
+              }
+            }
+          } catch (Exception e) {
+            log.warn(
+                "Failed to project CommentVisibilityChangedEvent: commentId={}",
+                event.entityId(),
+                e);
+          }
+        });
+  }
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onCommentDeleted(CommentDeletedEvent event) {
+    handleInTenantScope(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            var projectId = event.projectId();
+            var customerIds = readModelRepo.findCustomerIdsByProjectId(projectId, event.orgId());
+            readModelRepo.deletePortalComment(event.entityId(), event.orgId());
+            for (var customerId : customerIds) {
+              readModelRepo.decrementCommentCount(projectId, customerId);
+            }
+          } catch (Exception e) {
+            log.warn("Failed to project CommentDeletedEvent: commentId={}", event.entityId(), e);
           }
         });
   }

@@ -22,7 +22,7 @@ Phase 23 hardens the custom fields system from "data entry convenience" to "data
 | 161 | Auto-Apply Field Groups & V38 Migration | Backend | -- | L | 161A, 161B | **Done** (PRs #333, #334) |
 | 162 | Field Group Dependencies | Backend + Frontend | 161 | S | 162A | **Done** (PR #335) |
 | 163 | Conditional Field Visibility | Backend + Frontend | 161 | M | 163A, 163B, 163C | **Done** (PRs #336, #337, #338) |
-| 164 | Invoice Custom Fields & Task Pack | Backend + Frontend | 161 | M | 164A, 164B, 164C | |
+| 164 | Invoice Custom Fields & Task Pack | Backend + Frontend | 161 | M | 164A, 164B, 164C | **Done** (PRs #339, #340, #341) |
 | 165 | Template Required Fields & Generation Validation | Backend + Frontend | 161, 164A | L | 165A, 165B, 165C | |
 | 166 | Rate Warnings & Bug Fixes | Backend + Frontend | -- | M | 166A, 166B | |
 
@@ -86,7 +86,7 @@ Phase 23 hardens the custom fields system from "data entry convenience" to "data
 |-------|------|-------|---------|
 | 3a (parallel) | 163 | 163B | Conditional visibility frontend -- `CustomFieldSection` `isFieldVisible()`, reactive show/hide, `validateField` skips hidden | **Done** (PR #337) |
 | 3b (parallel) | 164 | 164B | Invoice custom fields frontend -- invoice detail page `CustomFieldSection` + `FieldGroupSelector`, settings INVOICE tab | **Done** (PR #340) |
-| 3c (parallel) | 164 | 164C | Task field pack -- `common-task.json`, `FieldPackSeeder` `autoApply` processing |
+| 3c (parallel) | 164 | 164C | Task field pack -- `common-task.json`, `FieldPackSeeder` `autoApply` processing | **Done** (PR #341) |
 | 3d (parallel) | 165 | 165B | Template required fields frontend -- template editor field selector, generation dialog validation display |
 
 ### Stage 4: Final integration
@@ -335,7 +335,7 @@ Stage 4: [163C] // [165C]                                (parallel, after Stage 
 |-------|-------|---------|--------|
 | **164A** | 164.1--164.8 | Backend: `EntityType.INVOICE`, `Invoice` entity columns (`customFields`, `appliedFieldGroups`), `PUT /api/invoices/{id}/custom-fields` and `PUT /api/invoices/{id}/field-groups` endpoints, `InvoiceService.create()` auto-apply, `InvoiceContextBuilder` extension, invoice GET response extension, integration tests. ~5 modified backend files, ~1 test file. | **Done** (PR #339) |
 | **164B** | 164.9--164.13 | Frontend: Invoice detail page adds `CustomFieldSection` and `FieldGroupSelector`, settings page adds INVOICE tab for field/group management, type updates, frontend tests. ~4 modified frontend files. | **Done** (PR #340) |
-| **164C** | 164.14--164.17 | Backend: `common-task.json` field pack (Task Info group with priority, category, estimated_hours), `FieldPackSeeder` processes `autoApply`, integration test. ~2 new files, ~1 modified file. | |
+| **164C** | 164.14--164.17 | Backend: `common-task.json` field pack (Task Info group with priority, category, estimated_hours), `FieldPackSeeder` processes `autoApply`, integration test. ~2 new files, ~1 modified file. | **Done** (PR #341) |
 
 ### Tasks
 

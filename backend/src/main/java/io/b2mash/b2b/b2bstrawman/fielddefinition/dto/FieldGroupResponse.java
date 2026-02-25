@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.fielddefinition.dto;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroup;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 public record FieldGroupResponse(
@@ -14,6 +15,8 @@ public record FieldGroupResponse(
     String packId,
     int sortOrder,
     boolean active,
+    boolean autoApply,
+    List<UUID> dependsOn,
     Instant createdAt,
     Instant updatedAt) {
 
@@ -27,6 +30,8 @@ public record FieldGroupResponse(
         fg.getPackId(),
         fg.getSortOrder(),
         fg.isActive(),
+        fg.isAutoApply(),
+        fg.getDependsOn(),
         fg.getCreatedAt(),
         fg.getUpdatedAt());
   }

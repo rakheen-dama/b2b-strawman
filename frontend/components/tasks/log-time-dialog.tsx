@@ -312,9 +312,16 @@ export function LogTimeDialog({
                   )}
                 </div>
               ) : rateChecked ? (
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  No billing rate configured
-                </p>
+                <div
+                  className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-800 dark:bg-amber-900/20"
+                  data-testid="rate-warning-banner"
+                >
+                  <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                    No rate card found for this combination. This time entry
+                    will have no billable rate. Set up rates in Project Settings
+                    &gt; Rates.
+                  </p>
+                </div>
               ) : null}
             </div>
           )}

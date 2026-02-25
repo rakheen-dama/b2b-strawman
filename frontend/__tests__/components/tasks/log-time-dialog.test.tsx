@@ -4,9 +4,11 @@ import userEvent from "@testing-library/user-event";
 import { LogTimeDialog } from "@/components/tasks/log-time-dialog";
 
 const mockCreateTimeEntry = vi.fn();
+const mockResolveRate = vi.fn();
 
 vi.mock("@/app/(app)/org/[slug]/projects/[id]/time-entry-actions", () => ({
   createTimeEntry: (...args: unknown[]) => mockCreateTimeEntry(...args),
+  resolveRate: (...args: unknown[]) => mockResolveRate(...args),
 }));
 
 describe("LogTimeDialog", () => {
@@ -117,5 +119,50 @@ describe("LogTimeDialog", () => {
     await waitFor(() => {
       expect(screen.queryByText("Log Time", { selector: "h2" })).not.toBeInTheDocument();
     });
+  });
+
+  it("shows rate warning banner when billable and no rate found", async () => {
+    mockResolveRate.mockResolvedValue(null);
+    const user = userEvent.setup();
+
+    render(
+      <LogTimeDialog slug="acme" projectId="p1" taskId="t1" memberId="m1">
+        <button>Open Rate Warning Dialog</button>
+      </LogTimeDialog>,
+    );
+
+    await user.click(screen.getByText("Open Rate Warning Dialog"));
+
+    // Wait for rate resolution (billable is true by default, memberId is provided)
+    await waitFor(() => {
+      expect(screen.getByTestId("rate-warning-banner")).toBeInTheDocument();
+    });
+
+    expect(
+      screen.getByText(/No rate card found for this combination/),
+    ).toBeInTheDocument();
+  });
+
+  it("hides rate warning banner when rate exists", async () => {
+    mockResolveRate.mockResolvedValue({
+      hourlyRate: 150,
+      currency: "USD",
+      source: "MEMBER_DEFAULT",
+    });
+    const user = userEvent.setup();
+
+    render(
+      <LogTimeDialog slug="acme" projectId="p1" taskId="t1" memberId="m1">
+        <button>Open Rate Exists Dialog</button>
+      </LogTimeDialog>,
+    );
+
+    await user.click(screen.getByText("Open Rate Exists Dialog"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("rate-preview")).toBeInTheDocument();
+    });
+
+    expect(screen.queryByTestId("rate-warning-banner")).not.toBeInTheDocument();
   });
 });

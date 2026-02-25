@@ -228,7 +228,7 @@ class RetainerConsumptionListenerTest {
                           "Initial work",
                           memberId,
                           "owner");
-                  entryRef.set(entry.getId());
+                  entryRef.set(entry.entry().getId());
                 }));
 
     // Update to 180 min = 3 hours
@@ -267,7 +267,7 @@ class RetainerConsumptionListenerTest {
                           "Entry to delete",
                           memberId,
                           "owner");
-                  entryRef.set(entry.getId());
+                  entryRef.set(entry.entry().getId());
                 }));
 
     // Verify consumption = 2h after create

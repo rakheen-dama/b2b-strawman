@@ -51,7 +51,7 @@ public class TimeEntryController {
     UUID memberId = RequestScopes.requireMemberId();
     String orgRole = RequestScopes.getOrgRole();
 
-    var entry =
+    var result =
         timeEntryService.createTimeEntry(
             taskId,
             request.date(),
@@ -62,10 +62,10 @@ public class TimeEntryController {
             memberId,
             orgRole);
 
-    var names = resolveNames(List.of(entry));
-    var invoiceNumbers = resolveInvoiceNumbers(List.of(entry));
-    return ResponseEntity.created(URI.create("/api/time-entries/" + entry.getId()))
-        .body(TimeEntryResponse.from(entry, names, invoiceNumbers));
+    var names = resolveNames(List.of(result.entry()));
+    var invoiceNumbers = resolveInvoiceNumbers(List.of(result.entry()));
+    return ResponseEntity.created(URI.create("/api/time-entries/" + result.entry().getId()))
+        .body(TimeEntryResponse.from(result.entry(), names, invoiceNumbers, result.rateWarning()));
   }
 
   @GetMapping("/api/tasks/{taskId}/time-entries")
@@ -206,10 +206,19 @@ public class TimeEntryController {
       UUID invoiceId,
       String invoiceNumber,
       Instant createdAt,
-      Instant updatedAt) {
+      Instant updatedAt,
+      String rateWarning) {
 
     public static TimeEntryResponse from(
         TimeEntry entry, Map<UUID, String> memberNames, Map<UUID, String> invoiceNumbers) {
+      return from(entry, memberNames, invoiceNumbers, null);
+    }
+
+    public static TimeEntryResponse from(
+        TimeEntry entry,
+        Map<UUID, String> memberNames,
+        Map<UUID, String> invoiceNumbers,
+        String rateWarning) {
       return new TimeEntryResponse(
           entry.getId(),
           entry.getTaskId(),
@@ -229,7 +238,8 @@ public class TimeEntryController {
           entry.getInvoiceId(),
           entry.getInvoiceId() != null ? invoiceNumbers.get(entry.getInvoiceId()) : null,
           entry.getCreatedAt(),
-          entry.getUpdatedAt());
+          entry.getUpdatedAt(),
+          rateWarning);
     }
   }
 }

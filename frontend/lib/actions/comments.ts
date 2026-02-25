@@ -13,6 +13,7 @@ export interface Comment {
   authorAvatarUrl: string | null;
   body: string;
   visibility: "INTERNAL" | "SHARED";
+  source: "INTERNAL" | "PORTAL";
   parentId: string | null;
   createdAt: string;
   updatedAt: string;
@@ -31,6 +32,43 @@ export async function fetchComments(
   return api.get<Comment[]>(
     `/api/projects/${projectId}/comments?entityType=${encodeURIComponent(entityType)}&entityId=${encodeURIComponent(entityId)}`
   );
+}
+
+export async function fetchProjectComments(
+  projectId: string
+): Promise<Comment[]> {
+  const response = await api.get<{ content: Comment[] }>(
+    `/api/projects/${projectId}/comments?entityType=PROJECT&size=50`
+  );
+  return response?.content ?? [];
+}
+
+export async function createProjectComment(
+  orgSlug: string,
+  projectId: string,
+  body: string
+): Promise<ActionResult> {
+  if (!body.trim()) {
+    return { success: false, error: "Comment cannot be empty." };
+  }
+
+  try {
+    await api.post(`/api/projects/${projectId}/comments`, {
+      entityType: "PROJECT",
+      entityId: projectId,
+      body: body.trim(),
+      visibility: "SHARED",
+    });
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${orgSlug}/projects/${projectId}`);
+
+  return { success: true };
 }
 
 export async function createComment(

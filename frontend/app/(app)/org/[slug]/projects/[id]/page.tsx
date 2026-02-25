@@ -21,6 +21,7 @@ import { FieldGroupSelector } from "@/components/field-definitions/FieldGroupSel
 import { TagInput } from "@/components/tags/TagInput";
 import { GenerateDocumentDropdown } from "@/components/templates/GenerateDocumentDropdown";
 import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocumentsList";
+import { ProjectCommentsSection } from "@/components/projects/project-comments-section";
 import {
   fetchProjectSetupStatus,
   fetchProjectUnbilledSummary,
@@ -558,6 +559,11 @@ export default async function ProjectDetailPage({
             slug={slug}
             isAdmin={isAdmin}
           />
+        }
+        customerCommentsPanel={
+          customers && customers.length > 0 ? (
+            <ProjectCommentsSection projectId={id} orgSlug={slug} />
+          ) : undefined
         }
         activityPanel={
           <ActivityFeed projectId={id} orgSlug={slug} />

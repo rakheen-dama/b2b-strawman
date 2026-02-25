@@ -153,40 +153,6 @@ export function InvoiceGenerationDialog({
     });
   }
 
-  function handleValidateAndCreate() {
-    if (selectedEntryIds.size === 0) return;
-    setError(null);
-    setIsValidating(true);
-
-    startTransition(async () => {
-      try {
-        // Run validation first
-        const valResult = await validateInvoiceGeneration(
-          customerId,
-          Array.from(selectedEntryIds),
-        );
-        if (valResult.success && valResult.checks) {
-          setValidationChecks(valResult.checks);
-        }
-        // Proceed with creation regardless of warnings
-        const result = await createInvoiceDraft(slug, customerId, {
-          customerId,
-          currency,
-          timeEntryIds: Array.from(selectedEntryIds),
-        });
-        if (result.success) {
-          setOpen(false);
-        } else {
-          setError(result.error ?? "Failed to create invoice draft.");
-        }
-      } catch {
-        setError("An unexpected error occurred.");
-      } finally {
-        setIsValidating(false);
-      }
-    });
-  }
-
   function handleRunValidation() {
     if (selectedEntryIds.size === 0) return;
     setError(null);
@@ -424,7 +390,7 @@ export function InvoiceGenerationDialog({
                   disabled={isPending || selectedEntryIds.size === 0}
                 >
                   {isPending ? "Creating..." : validationChecks.some((c) => !c.passed)
-                    ? `Create Draft (${validationChecks.filter((c) => !c.passed).length} warnings)`
+                    ? `Create Draft (${validationChecks.filter((c) => !c.passed).length} issues)`
                     : "Create Draft"}
                 </Button>
               )}

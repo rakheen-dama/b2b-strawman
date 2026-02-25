@@ -59,11 +59,6 @@ export async function validateInvoiceGeneration(
   timeEntryIds: string[],
   templateId?: string,
 ): Promise<ValidationResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
-    return { success: false, error: "Only admins and owners can validate invoices." };
-  }
-
   try {
     const checks = await api.post<ValidationCheck[]>(
       "/api/invoices/validate-generation",

@@ -35,12 +35,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class InvoiceController {
 
   private final InvoiceService invoiceService;
-  private final InvoiceValidationService invoiceValidationService;
 
-  public InvoiceController(
-      InvoiceService invoiceService, InvoiceValidationService invoiceValidationService) {
+  public InvoiceController(InvoiceService invoiceService) {
     this.invoiceService = invoiceService;
-    this.invoiceValidationService = invoiceValidationService;
   }
 
   @PostMapping
@@ -137,7 +134,7 @@ public class InvoiceController {
   public ResponseEntity<List<ValidationCheck>> validateGeneration(
       @Valid @RequestBody ValidateGenerationRequest request) {
     return ResponseEntity.ok(
-        invoiceValidationService.validateInvoiceGeneration(
+        invoiceService.validateInvoiceGeneration(
             request.customerId(), request.timeEntryIds(), request.templateId()));
   }
 
@@ -154,8 +151,7 @@ public class InvoiceController {
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<InvoiceResponse> sendInvoice(
       @PathVariable UUID id, @RequestBody(required = false) SendInvoiceRequest request) {
-    boolean overrideWarnings = request != null && request.overrideWarnings();
-    return ResponseEntity.ok(invoiceService.send(id, overrideWarnings));
+    return ResponseEntity.ok(invoiceService.send(id, request));
   }
 
   @PostMapping("/{id}/payment")

@@ -141,8 +141,8 @@ describe("Invoice Generation Validation", () => {
       screen.getByText("2 time entries without billing rates"),
     ).toBeInTheDocument();
 
-    // After validation, button should say "Create Draft (1 warnings)"
-    expect(screen.getByText("Create Draft (1 warnings)")).toBeInTheDocument();
+    // After validation, button should say "Create Draft (1 issues)"
+    expect(screen.getByText("Create Draft (1 issues)")).toBeInTheDocument();
   });
 
   it("shows_override_dialog_for_admin", async () => {

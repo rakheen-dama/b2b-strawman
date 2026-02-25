@@ -27,6 +27,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.dto.CreateInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.CurrencyTotal;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.InvoiceLineResponse;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.InvoiceResponse;
+import io.b2mash.b2b.b2bstrawman.invoice.dto.SendInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledProjectGroup;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledTimeEntry;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledTimeResponse;
@@ -133,6 +134,12 @@ public class InvoiceService {
     this.fieldGroupMemberRepository = fieldGroupMemberRepository;
     this.fieldDefinitionRepository = fieldDefinitionRepository;
     this.invoiceValidationService = invoiceValidationService;
+  }
+
+  @Transactional(readOnly = true)
+  public List<InvoiceValidationService.ValidationCheck> validateInvoiceGeneration(
+      UUID customerId, List<UUID> timeEntryIds, UUID templateId) {
+    return invoiceValidationService.validateInvoiceGeneration(customerId, timeEntryIds, templateId);
   }
 
   @Transactional
@@ -798,24 +805,17 @@ public class InvoiceService {
   }
 
   @Transactional
-  public InvoiceResponse send(UUID invoiceId, boolean overrideWarnings) {
+  public InvoiceResponse send(UUID invoiceId, SendInvoiceRequest request) {
+    boolean overrideWarnings = request != null && request.overrideWarnings();
     var invoice =
         invoiceRepository
             .findById(invoiceId)
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
 
-    // Validate before sending
-    var validationChecks = invoiceValidationService.validateInvoiceSend(invoiceId);
-    if (invoiceValidationService.hasCriticalFailures(validationChecks)) {
-      String role = RequestScopes.getOrgRole();
-      if ("member".equals(role) || role == null) {
-        throw new InvalidStateException(
-            "Invoice validation failed",
-            "Invoice has critical validation failures that must be resolved before sending");
-      }
-      if (!overrideWarnings) {
-        throw new InvoiceValidationFailedException(validationChecks);
-      }
+    // Validate before sending — @PreAuthorize on the controller already blocks members
+    var validationChecks = invoiceValidationService.validateInvoiceSend(invoice);
+    if (invoiceValidationService.hasCriticalFailures(validationChecks) && !overrideWarnings) {
+      throw new InvoiceValidationFailedException(validationChecks);
     }
 
     try {

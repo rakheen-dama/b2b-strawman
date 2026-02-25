@@ -23,6 +23,7 @@ public record FieldDefinitionResponse(
     String packId,
     String packFieldKey,
     boolean active,
+    Map<String, Object> visibilityCondition,
     Instant createdAt,
     Instant updatedAt) {
 
@@ -42,6 +43,7 @@ public record FieldDefinitionResponse(
         fd.getPackId(),
         fd.getPackFieldKey(),
         fd.isActive(),
+        fd.getVisibilityCondition(),
         fd.getCreatedAt(),
         fd.getUpdatedAt());
   }

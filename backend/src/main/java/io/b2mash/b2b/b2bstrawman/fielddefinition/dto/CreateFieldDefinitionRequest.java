@@ -18,4 +18,5 @@ public record CreateFieldDefinitionRequest(
     Map<String, Object> defaultValue,
     List<Map<String, String>> options,
     Map<String, Object> validation,
-    int sortOrder) {}
+    int sortOrder,
+    Map<String, Object> visibilityCondition) {}

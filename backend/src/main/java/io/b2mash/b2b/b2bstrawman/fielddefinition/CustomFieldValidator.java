@@ -77,6 +77,12 @@ public class CustomFieldValidator {
         continue;
       }
 
+      // Skip all validation for hidden fields (conditional visibility)
+      if (!isFieldVisible(definition, input, slugToDefinition)) {
+        validated.put(slug, value);
+        continue;
+      }
+
       // 3. Type-check and validate
       if (value == null) {
         validated.put(slug, null);
@@ -291,10 +297,17 @@ public class CustomFieldValidator {
     // Load active definitions
     var activeDefinitions =
         fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(entityType);
+    var slugToDefinition =
+        activeDefinitions.stream()
+            .collect(Collectors.toMap(FieldDefinition::getSlug, fd -> fd, (a, b) -> a));
 
     var errors = new ArrayList<Map<String, String>>();
     for (var def : activeDefinitions) {
       if (def.isRequired() && fieldDefIdsInGroups.contains(def.getId())) {
+        // Skip required check for hidden fields
+        if (!isFieldVisible(def, validated, slugToDefinition)) {
+          continue;
+        }
         Object value = validated.get(def.getSlug());
         if (value == null) {
           errors.add(Map.of("field", def.getSlug(), "message", "Required field is missing"));
@@ -305,6 +318,64 @@ public class CustomFieldValidator {
     if (!errors.isEmpty()) {
       throw new InvalidStateException("Custom field validation failed", errors.toString());
     }
+  }
+
+  /**
+   * Evaluates whether a field should be visible based on its visibility condition.
+   *
+   * <p>Rules:
+   *
+   * <ul>
+   *   <li>No condition (null) = always visible
+   *   <li>Controlling field not found in active definitions = visible (safe default)
+   *   <li>Controlling field value is null = hidden
+   *   <li>Unknown operator = visible (safe default)
+   *   <li>Operators: eq, neq, in
+   * </ul>
+   */
+  @SuppressWarnings("unchecked")
+  private boolean isFieldVisible(
+      FieldDefinition definition,
+      Map<String, Object> allValues,
+      Map<String, FieldDefinition> slugToDefinition) {
+    var condition = definition.getVisibilityCondition();
+    if (condition == null) {
+      return true;
+    }
+
+    var dependsOnSlug = condition.get("dependsOnSlug");
+    if (!(dependsOnSlug instanceof String controllingSlug)) {
+      return true;
+    }
+
+    // If the controlling field is not an active field definition, show the dependent field
+    if (!slugToDefinition.containsKey(controllingSlug)) {
+      return true;
+    }
+
+    Object actualValue = allValues.get(controllingSlug);
+    if (actualValue == null) {
+      return false;
+    }
+
+    var operator = condition.get("operator");
+    if (!(operator instanceof String op)) {
+      return true;
+    }
+
+    var expectedValue = condition.get("value");
+
+    return switch (op) {
+      case "eq" -> actualValue.equals(expectedValue);
+      case "neq" -> !actualValue.equals(expectedValue);
+      case "in" -> {
+        if (expectedValue instanceof List<?> list) {
+          yield list.contains(actualValue);
+        }
+        yield true;
+      }
+      default -> true;
+    };
   }
 
   private int toInt(Object value) {

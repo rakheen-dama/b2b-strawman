@@ -78,7 +78,7 @@ Phase 23 hardens the custom fields system from "data entry convenience" to "data
 | 2a (parallel) | 162 | 162A | Field group dependencies -- backend validation, dependency resolution in group application, frontend dependency selector in edit dialog | **Done** (PR #335) |
 | 2b (parallel) | 163 | 163A | Conditional visibility backend -- `FieldDefinition.visibilityCondition`, `CustomFieldValidator` visibility evaluation, condition validation at save time | **Done** (PR #336) |
 | 2c (parallel) | 164 | 164A | Invoice custom fields backend -- `EntityType.INVOICE`, `Invoice` entity columns, custom field + field group endpoints, `InvoiceContextBuilder` extension, auto-apply integration | **Done** (PR #339) |
-| 2d (parallel) | 165 | 165A | Template required fields backend -- `DocumentTemplate.requiredContextFields`, `TemplateValidationService`, preview/generate endpoint extensions |
+| 2d (parallel) | 165 | 165A | Template required fields backend -- `DocumentTemplate.requiredContextFields`, `TemplateValidationService`, preview/generate endpoint extensions | **Done** (PR #342) |
 
 ### Stage 3: Frontend integration (after respective Stage 2 backend slices)
 
@@ -413,7 +413,7 @@ Stage 4: [163C] // [165C]                                (parallel, after Stage 
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **165A** | 165.1--165.8 | Backend: `DocumentTemplate.requiredContextFields` field, `TemplateValidationService` (validates required fields against context), preview/generate endpoint extensions with `validationResult`/`warnings`, updated template create/update endpoints, integration tests. ~4 modified backend files, ~1 new file, ~1 test file. | |
+| **165A** | 165.1--165.8 | Backend: `DocumentTemplate.requiredContextFields` field, `TemplateValidationService` (validates required fields against context), preview/generate endpoint extensions with `validationResult`/`warnings`, updated template create/update endpoints, integration tests. ~4 modified backend files, ~1 new file, ~1 test file. | **Done** (PR #342) |
 | **165B** | 165.9--165.14 | Frontend: Template editor required fields selector (entity type + slug picker), generation dialog validation display (pass/warn indicators, "Generate anyway"), frontend tests. ~3 modified frontend files, ~1 test file. | |
 | **165C** | 165.15--165.22 | Backend + Frontend: `InvoiceValidationService` with full checklist (customer fields, org branding, time entry rates, template fields), `POST /api/invoices/validate-generation` endpoint, invoice generation dialog checklist display, invoice send validation with ADMIN/OWNER override, integration tests, frontend tests. ~4 modified backend files, ~1 new backend file, ~3 modified frontend files. | |
 

@@ -342,7 +342,7 @@ Additionally, navigating directly to `/login` without `?orgId=...` shows the for
 3. In `PortalAuthController.java` `isDevProfile()`, add `"e2e"` to the profile check: `"local".equals(profile) || "test".equals(profile) || "dev".equals(profile) || "e2e".equals(profile)`.
 4. Optionally: when `orgId` is missing from the login page URL, show an informational message like "You need an invitation link from your service provider to access this portal" instead of showing the form.
 
-**Impact**: The portal login flow is untestable without email integration. Developers and testers cannot exercise the magic link exchange flow in local or e2e environments. **Status: Fixed** — all three issues resolved in this session.
+**Impact**: The portal login flow is untestable without email integration. Developers and testers cannot exercise the magic link exchange flow in local or e2e environments. **Status: Fixed** — all three issues resolved. Regression tests added in PR #347.
 
 ---
 
@@ -378,7 +378,7 @@ The `PortalCommentService.java` has `authorName` available when creating the aud
 5. Update `ActivityMessageFormatterTest.java`: change the "unknown actor falls back to UUID" test to expect "Unknown", and add a new test for portal user actor name resolution from details.
 6. Note: existing portal comment audit events (created before the fix) will show "Unknown" since they lack `actor_name` in details. New portal comments will show the customer's name.
 
-**Impact**: The main app dashboard is completely broken (white screen crash) for any org where a portal customer has posted a comment. Since the crash is in React render, the entire dashboard page fails — not just the activity widget. **Status: Fixed** — all four files updated in this session.
+**Impact**: The main app dashboard is completely broken (white screen crash) for any org where a portal customer has posted a comment. Since the crash is in React render, the entire dashboard page fails — not just the activity widget. **Status: Fixed** — all four files updated. Additionally hardened in PR #347: `DatabaseAuditService.enrichActorName()` now denormalizes `actor_name` into every audit event at write time, preventing this class of bug from recurring. Regression tests added.
 
 ---
 
@@ -473,7 +473,7 @@ This requires a product decision — pick one approach:
 - Add a `source` field to the `Comment` entity to distinguish internal vs portal comments.
 - Consider adding `entity_type` and `entity_id` columns to `portal.portal_comments` if task-level portal comments are needed in the future.
 
-**Impact**: The comment feature appears to work on both sides (no errors), but is a one-way dead end in both directions. Staff and customers cannot communicate through comments despite this being a core portal collaboration feature. The two halves of the comment system were built independently (Phase 6.5 for comments, Phase 7 for portal backend, Phase 22 for portal frontend) and never connected.
+**Impact**: The comment feature appears to work on both sides (no errors), but is a one-way dead end in both directions. Staff and customers cannot communicate through comments despite this being a core portal collaboration feature. The two halves of the comment system were built independently (Phase 6.5 for comments, Phase 7 for portal backend, Phase 22 for portal frontend) and never connected. **Status: Fixed** — PR #347. Main app → Portal: added `CommentCreatedEvent`, `CommentVisibilityChangedEvent`, and `CommentDeletedEvent` handlers to `PortalEventHandler`. Portal → Main app: added `source` column (INTERNAL/PORTAL), project-level comment query, and "Customer Comments" tab on the project detail page. Design doc: `docs/plans/2026-02-25-portal-integration-gaps-design.md`.
 
 ---
 

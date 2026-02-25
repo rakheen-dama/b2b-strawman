@@ -863,6 +863,7 @@ export interface CreateFieldGroupRequest {
   sortOrder: number;
   fieldDefinitionIds: string[];
   autoApply?: boolean;
+  dependsOn?: string[];
 }
 
 export interface UpdateFieldGroupRequest {
@@ -872,6 +873,7 @@ export interface UpdateFieldGroupRequest {
   sortOrder: number;
   fieldDefinitionIds: string[];
   autoApply?: boolean;
+  dependsOn?: string[];
 }
 
 export interface FieldGroupMemberResponse {

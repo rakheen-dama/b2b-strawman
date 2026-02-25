@@ -53,6 +53,7 @@ interface FieldGroupDialogProps {
   group?: FieldGroupResponse;
   availableFields: FieldDefinitionResponse[];
   initialFieldIds?: string[];
+  allGroups?: FieldGroupResponse[];
   children: React.ReactNode;
 }
 
@@ -62,6 +63,7 @@ export function FieldGroupDialog({
   group,
   availableFields,
   initialFieldIds,
+  allGroups = [],
   children,
 }: FieldGroupDialogProps) {
   const isEditing = !!group;
@@ -81,6 +83,13 @@ export function FieldGroupDialog({
     initialFieldIds ?? [],
   );
   const [autoApply, setAutoApply] = useState(group?.autoApply ?? false);
+  const [dependsOn, setDependsOn] = useState<string[]>(group?.dependsOn ?? []);
+  const [depsPopoverOpen, setDepsPopoverOpen] = useState(false);
+
+  // Filter available dependency groups: same entityType, active, exclude self
+  const availableDeps = allGroups.filter(
+    (g) => g.active && g.id !== group?.id,
+  );
 
   // Filter available fields by entityType
   const filteredFields = availableFields.filter(
@@ -101,6 +110,7 @@ export function FieldGroupDialog({
     setSortOrder(0);
     setSelectedFieldIds([]);
     setAutoApply(false);
+    setDependsOn([]);
     setError(null);
   }
 
@@ -112,6 +122,7 @@ export function FieldGroupDialog({
     setSortOrder(g.sortOrder);
     setSelectedFieldIds(initialFieldIds ?? []);
     setAutoApply(g.autoApply ?? false);
+    setDependsOn(g.dependsOn ?? []);
     setError(null);
   }
 
@@ -136,6 +147,18 @@ export function FieldGroupDialog({
     setSelectedFieldIds((prev) => prev.filter((id) => id !== fieldId));
   }
 
+  function toggleDep(depId: string) {
+    setDependsOn((prev) =>
+      prev.includes(depId)
+        ? prev.filter((id) => id !== depId)
+        : [...prev, depId],
+    );
+  }
+
+  function removeDep(depId: string) {
+    setDependsOn((prev) => prev.filter((id) => id !== depId));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -156,6 +179,7 @@ export function FieldGroupDialog({
           sortOrder,
           fieldDefinitionIds: selectedFieldIds,
           autoApply,
+          dependsOn: dependsOn.length > 0 ? dependsOn : undefined,
         });
 
         if (result.success) {
@@ -172,6 +196,7 @@ export function FieldGroupDialog({
           sortOrder,
           fieldDefinitionIds: selectedFieldIds,
           autoApply,
+          dependsOn: dependsOn.length > 0 ? dependsOn : undefined,
         });
 
         if (result.success) {
@@ -302,6 +327,87 @@ export function FieldGroupDialog({
               </p>
             </div>
           </div>
+
+          {/* Dependencies */}
+          {availableDeps.length > 0 && (
+            <div className="space-y-2">
+              <Label>Dependencies</Label>
+              <Popover open={depsPopoverOpen} onOpenChange={setDepsPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={depsPopoverOpen}
+                    className="w-full justify-between font-normal"
+                  >
+                    {dependsOn.length > 0
+                      ? `${dependsOn.length} dependenc${dependsOn.length > 1 ? "ies" : "y"} selected`
+                      : "Select dependencies..."}
+                    <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Search groups..." />
+                    <CommandList>
+                      <CommandEmpty>No groups found.</CommandEmpty>
+                      <CommandGroup>
+                        {availableDeps.map((dep) => (
+                          <CommandItem
+                            key={dep.id}
+                            value={`${dep.name} ${dep.slug}`}
+                            onSelect={() => toggleDep(dep.id)}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 size-4",
+                                dependsOn.includes(dep.id)
+                                  ? "opacity-100"
+                                  : "opacity-0",
+                              )}
+                            />
+                            <span className="flex-1">{dep.name}</span>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+
+              {/* Selected deps as badges */}
+              {dependsOn.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {dependsOn.map((depId) => {
+                    const dep = allGroups.find((g) => g.id === depId);
+                    if (!dep) return null;
+                    return (
+                      <Badge
+                        key={depId}
+                        variant="secondary"
+                        className="gap-1"
+                      >
+                        {dep.name}
+                        <button
+                          type="button"
+                          onClick={() => removeDep(depId)}
+                          className="ml-0.5 rounded-full hover:bg-slate-300 dark:hover:bg-slate-600"
+                        >
+                          <X className="size-3" />
+                        </button>
+                      </Badge>
+                    );
+                  })}
+                </div>
+              )}
+
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                When this group is applied, dependency groups are automatically
+                co-applied.
+              </p>
+            </div>
+          )}
 
           {/* Field Selection */}
           <div className="space-y-2">

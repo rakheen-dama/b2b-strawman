@@ -78,6 +78,12 @@ portal:
 integration:
   encryption-key: dGhpcy1pcy1hLTMyLWJ5dGUtbG9jYWwtZGV2LWtleSE=
 
+cors:
+  allowed-origins:
+    - http://localhost:3000
+    - http://localhost:3001
+    - http://localhost:3002
+
 logging:
   level:
     org.hibernate.SQL: INFO

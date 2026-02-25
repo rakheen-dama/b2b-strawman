@@ -12,6 +12,12 @@ internal:
 integration:
   encryption-key: "+kW8MHOTHhm4Cq+FCJG3Gk1rsJ6s87v0gdC7oZYYo4o="
 
+cors:
+  allowed-origins:
+    - http://localhost:3000
+    - http://localhost:3001
+    - http://localhost:3002
+
 portal:
   jwt:
     secret: e2e-test-portal-secret-must-be-at-least-32-bytes-long

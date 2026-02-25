@@ -5,9 +5,13 @@ import io.b2mash.b2b.b2bstrawman.member.MemberFilter;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantFilter;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantLoggingFilter;
 import io.b2mash.b2b.b2bstrawman.portal.CustomerAuthFilter;
+import java.util.List;
+import org.springframework.boot.context.properties.bind.Bindable;
+import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -15,6 +19,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -28,6 +35,7 @@ public class SecurityConfig {
   private final TenantLoggingFilter tenantLoggingFilter;
   private final CustomerAuthFilter customerAuthFilter;
   private final AuditAuthenticationEntryPoint auditAuthEntryPoint;
+  private final Environment environment;
 
   public SecurityConfig(
       ClerkJwtAuthenticationConverter jwtAuthConverter,
@@ -36,7 +44,8 @@ public class SecurityConfig {
       MemberFilter memberFilter,
       TenantLoggingFilter tenantLoggingFilter,
       CustomerAuthFilter customerAuthFilter,
-      AuditAuthenticationEntryPoint auditAuthEntryPoint) {
+      AuditAuthenticationEntryPoint auditAuthEntryPoint,
+      Environment environment) {
     this.jwtAuthConverter = jwtAuthConverter;
     this.apiKeyAuthFilter = apiKeyAuthFilter;
     this.tenantFilter = tenantFilter;
@@ -44,6 +53,7 @@ public class SecurityConfig {
     this.tenantLoggingFilter = tenantLoggingFilter;
     this.customerAuthFilter = customerAuthFilter;
     this.auditAuthEntryPoint = auditAuthEntryPoint;
+    this.environment = environment;
   }
 
   /**
@@ -56,6 +66,7 @@ public class SecurityConfig {
   @Order(1)
   public SecurityFilterChain portalFilterChain(HttpSecurity http) throws Exception {
     http.securityMatcher("/portal/**")
+        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .csrf(csrf -> csrf.disable())
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -80,7 +91,8 @@ public class SecurityConfig {
   @Bean
   @Order(2)
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http.csrf(csrf -> csrf.disable())
+    http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        .csrf(csrf -> csrf.disable())
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
@@ -104,5 +116,26 @@ public class SecurityConfig {
         .addFilterAfter(tenantLoggingFilter, MemberFilter.class);
 
     return http.build();
+  }
+
+  @Bean
+  CorsConfigurationSource corsConfigurationSource() {
+    List<String> origins =
+        Binder.get(environment)
+            .bind("cors.allowed-origins", Bindable.listOf(String.class))
+            .orElse(List.of());
+
+    var config = new CorsConfiguration();
+    if (!origins.isEmpty()) {
+      config.setAllowedOrigins(origins);
+    }
+    config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+    config.setAllowedHeaders(List.of("*"));
+    config.setAllowCredentials(true);
+    config.setMaxAge(3600L);
+
+    var source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", config);
+    return source;
   }
 }

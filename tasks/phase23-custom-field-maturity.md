@@ -76,7 +76,7 @@ Phase 23 hardens the custom fields system from "data entry convenience" to "data
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
 | 2a (parallel) | 162 | 162A | Field group dependencies -- backend validation, dependency resolution in group application, frontend dependency selector in edit dialog | **Done** (PR #335) |
-| 2b (parallel) | 163 | 163A | Conditional visibility backend -- `FieldDefinition.visibilityCondition`, `CustomFieldValidator` visibility evaluation, condition validation at save time |
+| 2b (parallel) | 163 | 163A | Conditional visibility backend -- `FieldDefinition.visibilityCondition`, `CustomFieldValidator` visibility evaluation, condition validation at save time | **Done** (PR #336) |
 | 2c (parallel) | 164 | 164A | Invoice custom fields backend -- `EntityType.INVOICE`, `Invoice` entity columns, custom field + field group endpoints, `InvoiceContextBuilder` extension, auto-apply integration |
 | 2d (parallel) | 165 | 165A | Template required fields backend -- `DocumentTemplate.requiredContextFields`, `TemplateValidationService`, preview/generate endpoint extensions |
 
@@ -260,7 +260,7 @@ Stage 4: [163C] // [165C]                                (parallel, after Stage 
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **163A** | 163.1--163.6 | Backend: `FieldDefinition.visibilityCondition` field, `CustomFieldValidator.isFieldVisible()`, condition validation at save time (same entityType, no self-ref), updated POST/PUT field definition endpoints, integration tests. ~4 modified backend files. | |
+| **163A** | 163.1--163.6 | Backend: `FieldDefinition.visibilityCondition` field, `CustomFieldValidator.isFieldVisible()`, condition validation at save time (same entityType, no self-ref), updated POST/PUT field definition endpoints, integration tests. ~4 modified backend files. | **Done** (PR #336) |
 | **163B** | 163.7--163.11 | Frontend: `CustomFieldSection` `isFieldVisible()`, reactive show/hide, `validateField` skips hidden fields, frontend unit tests. ~2 modified frontend files, ~1 test file. | |
 | **163C** | 163.12--163.16 | Frontend: Visibility condition editor UI in field definition dialog -- controlling field selector, operator selector, value input, preview, clear button, frontend tests. ~2 modified frontend files, ~1 test file. | |
 

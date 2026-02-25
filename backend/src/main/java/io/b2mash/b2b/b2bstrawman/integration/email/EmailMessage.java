@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.integration.email;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Provider-agnostic email payload. Contains the recipient, subject, body (HTML and plain text), and
@@ -13,6 +14,12 @@ public record EmailMessage(
     String plainTextBody,
     String replyTo,
     Map<String, String> metadata) {
+
+  /** Compact constructor — validates required fields. */
+  public EmailMessage {
+    Objects.requireNonNull(to, "to");
+    Objects.requireNonNull(subject, "subject");
+  }
 
   /**
    * Factory method that builds an EmailMessage with tracking metadata pre-populated.
@@ -36,6 +43,9 @@ public record EmailMessage(
       String referenceType,
       String referenceId,
       String tenantSchema) {
+    Objects.requireNonNull(referenceType, "referenceType");
+    Objects.requireNonNull(referenceId, "referenceId");
+    Objects.requireNonNull(tenantSchema, "tenantSchema");
     return new EmailMessage(
         to,
         subject,

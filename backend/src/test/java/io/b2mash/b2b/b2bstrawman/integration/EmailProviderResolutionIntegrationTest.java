@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -93,11 +94,9 @@ class EmailProviderResolutionIntegrationTest {
     ScopedValue.where(RequestScopes.TENANT_ID, "tenant_test_schema")
         .run(
             () -> {
-              try {
-                registry.resolve(IntegrationDomain.AI, Object.class);
-              } catch (IllegalStateException e) {
-                assertThat(e.getMessage()).contains("No noop adapter registered for domain AI");
-              }
+              assertThatThrownBy(() -> registry.resolve(IntegrationDomain.AI, Object.class))
+                  .isInstanceOf(IllegalStateException.class)
+                  .hasMessageContaining("No noop adapter registered for domain AI");
             });
   }
 

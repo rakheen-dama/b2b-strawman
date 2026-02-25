@@ -194,8 +194,10 @@ class ProjectServiceAuditTest {
 
               assertThat(page.getTotalElements()).isEqualTo(1);
               var event = page.getContent().getFirst();
-              // No fields changed, so details should be null
-              assertThat(event.getDetails()).isNull();
+              // No domain fields changed — only actor_name enrichment present
+              assertThat(event.getDetails()).isNotNull();
+              assertThat(event.getDetails()).containsKey("actor_name");
+              assertThat(event.getDetails()).hasSize(1);
             });
   }
 

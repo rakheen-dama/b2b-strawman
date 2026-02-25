@@ -268,7 +268,8 @@ class TimeEntryServiceAuditTest {
               // Details now always includes project_id even when no fields changed
               assertThat(event.getDetails()).isNotNull();
               assertThat(event.getDetails()).containsKey("project_id");
-              assertThat(event.getDetails()).hasSize(1);
+              assertThat(event.getDetails()).containsKey("actor_name");
+              assertThat(event.getDetails()).hasSize(2);
             });
   }
 

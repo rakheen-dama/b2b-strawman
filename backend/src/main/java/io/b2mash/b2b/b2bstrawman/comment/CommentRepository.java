@@ -26,6 +26,16 @@ public interface CommentRepository extends JpaRepository<Comment, UUID> {
       @Param("projectId") UUID projectId,
       Pageable pageable);
 
+  /** Find project-level comments (portal + staff replies) for the Customer Comments section. */
+  @Query(
+      """
+      SELECT c FROM Comment c
+      WHERE c.entityType = 'PROJECT'
+        AND c.projectId = :projectId
+      ORDER BY c.createdAt ASC
+      """)
+  Page<Comment> findProjectLevelComments(@Param("projectId") UUID projectId, Pageable pageable);
+
   /** Find all distinct commenter member IDs on an entity (for notification fan-out). */
   @Query(
       """

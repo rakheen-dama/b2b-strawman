@@ -317,4 +317,66 @@ class PortalAuthIntegrationTest {
       }
     }
   }
+
+  /**
+   * Regression tests for BUG-009: Magic link URL must use /auth/exchange?token= path (not
+   * /portal/login?token=). Also verifies that the "test" profile is recognized by isDevProfile(),
+   * so the magicLink field is non-null in the response.
+   */
+  @Nested
+  class MagicLinkUrlRegressionTests {
+
+    @Test
+    void magicLinkUrlContainsAuthExchangePath() throws Exception {
+      var result =
+          mockMvc
+              .perform(
+                  post("/portal/auth/request-link")
+                      .contentType(MediaType.APPLICATION_JSON)
+                      .content(
+                          """
+                          {"email": "portal-genverify@test.com", "orgId": "%s"}
+                          """
+                              .formatted(ORG_ID)))
+              .andExpect(status().isOk())
+              .andReturn();
+
+      String body = result.getResponse().getContentAsString();
+      String magicLink = JsonPath.read(body, "$.magicLink");
+
+      // BUG-009 fix: URL must use /auth/exchange?token= (not /portal/login?token=)
+      assertThat(magicLink).isNotNull();
+      assertThat(magicLink).startsWith("/auth/exchange?token=");
+      assertThat(magicLink).contains("orgId=" + ORG_ID);
+      assertThat(magicLink).doesNotContain("/portal/login");
+    }
+
+    @Test
+    void magicLinkIsNonNullInTestProfile() throws Exception {
+      // The test profile is active (@ActiveProfiles("test")), so isDevProfile() should return true
+      // and the magicLink field should be populated (not null).
+      var result =
+          mockMvc
+              .perform(
+                  post("/portal/auth/request-link")
+                      .contentType(MediaType.APPLICATION_JSON)
+                      .content(
+                          """
+                          {"email": "portal-genverify@test.com", "orgId": "%s"}
+                          """
+                              .formatted(ORG_ID)))
+              .andExpect(status().isOk())
+              .andReturn();
+
+      String body = result.getResponse().getContentAsString();
+      String magicLink = JsonPath.read(body, "$.magicLink");
+
+      // Verifies isDevProfile() returns true for "test" profile (and by extension "e2e", "local",
+      // "dev")
+      assertThat(magicLink)
+          .as("magicLink should be non-null in test profile (isDevProfile() == true)")
+          .isNotNull()
+          .isNotBlank();
+    }
+  }
 }

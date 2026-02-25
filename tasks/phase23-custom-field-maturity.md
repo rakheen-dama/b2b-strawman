@@ -24,7 +24,7 @@ Phase 23 hardens the custom fields system from "data entry convenience" to "data
 | 163 | Conditional Field Visibility | Backend + Frontend | 161 | M | 163A, 163B, 163C | **Done** (PRs #336, #337, #338) |
 | 164 | Invoice Custom Fields & Task Pack | Backend + Frontend | 161 | M | 164A, 164B, 164C | **Done** (PRs #339, #340, #341) |
 | 165 | Template Required Fields & Generation Validation | Backend + Frontend | 161, 164A | L | 165A, 165B, 165C | **Done** (PRs #342, #343, #344) |
-| 166 | Rate Warnings & Bug Fixes | Backend + Frontend | -- | M | 166A, 166B | |
+| 166 | Rate Warnings & Bug Fixes | Backend + Frontend | -- | M | 166A, 166B | **Done** (PRs #345, #346) |
 
 ---
 
@@ -62,7 +62,7 @@ Phase 23 hardens the custom fields system from "data entry convenience" to "data
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
 | 0a (parallel) | 166 | 166A | Billable time rate warnings -- backend response DTO + LogTimeDialog warning banner | **Done** (PR #345) |
-| 0b (parallel) | 166 | 166B | Bug fixes -- DATE validation, CURRENCY blankness, field type immutability |
+| 0b (parallel) | 166 | 166B | Bug fixes -- DATE validation, CURRENCY blankness, field type immutability | **Done** (PR #346) |
 
 ### Stage 1: Foundation
 
@@ -502,7 +502,7 @@ Stage 4: [163C] // [165C]                                (parallel, after Stage 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **166A** | 166.1--166.6 | Rate warnings: `TimeEntryService` response DTO extended with `rateWarning`, `LogTimeDialog` warning banner, invoice generation dialog null-rate list, backend integration test, frontend test. ~3 modified backend files, ~2 modified frontend files. | **Done** (PR #345) |
-| **166B** | 166.7--166.14 | Bug fixes: DATE min/max in backend `CustomFieldValidator.validateDate()` + frontend `validateField`, CURRENCY blankness in `CustomerReadinessService` + `ProjectSetupStatusService`, field type immutability in `FieldDefinitionService.update()`, integration tests, frontend test. ~4 modified backend files, ~1 modified frontend file, ~1 test file. | |
+| **166B** | 166.7--166.14 | Bug fixes: DATE min/max in backend `CustomFieldValidator.validateDate()` + frontend `validateField`, CURRENCY blankness in `CustomerReadinessService` + `ProjectSetupStatusService`, field type immutability in `FieldDefinitionService.update()`, integration tests, frontend test. ~4 modified backend files, ~1 modified frontend file, ~1 test file. | **Done** (PR #346) |
 
 ### Tasks
 

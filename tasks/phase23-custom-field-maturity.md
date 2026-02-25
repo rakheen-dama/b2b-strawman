@@ -19,7 +19,7 @@ Phase 23 hardens the custom fields system from "data entry convenience" to "data
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 161 | Auto-Apply Field Groups & V38 Migration | Backend | -- | L | 161A, 161B | |
+| 161 | Auto-Apply Field Groups & V38 Migration | Backend | -- | L | 161A, 161B | 161A **Done** (PR #333) |
 | 162 | Field Group Dependencies | Backend + Frontend | 161 | S | 162A | |
 | 163 | Conditional Field Visibility | Backend + Frontend | 161 | M | 163A, 163B, 163C | |
 | 164 | Invoice Custom Fields & Task Pack | Backend + Frontend | 161 | M | 164A, 164B, 164C | |
@@ -68,7 +68,7 @@ Phase 23 hardens the custom fields system from "data entry convenience" to "data
 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
-| 1a | 161 | 161A | V38 migration (all DDL), FieldGroup entity updates (`autoApply`, `dependsOn`), `FieldGroupRepository` query, `FieldGroupService` toggle/retroactive apply, `PATCH` endpoint, pack seeder update, pack JSON updates. Backend only. |
+| 1a | 161 | 161A | V38 migration (all DDL), FieldGroup entity updates (`autoApply`, `dependsOn`), `FieldGroupRepository` query, `FieldGroupService` toggle/retroactive apply, `PATCH` endpoint, pack seeder update, pack JSON updates. Backend only. | **Done** (PR #333) |
 | 1b | 161 | 161B | Auto-apply integration into entity creation services (`CustomerService`, `ProjectService`, `TaskService`), settings UI auto-apply toggle on field group dialog. Backend + Frontend. |
 
 ### Stage 2: Parallel feature tracks (after Stage 1)
@@ -126,7 +126,7 @@ Stage 4: [163C] // [165C]                                (parallel, after Stage 
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **161A** | 161.1--161.9 | V38 migration (8 DDL statements) + `FieldGroup` entity updates (`autoApply`, `dependsOn` fields) + `FieldGroupRepository` query method + `FieldGroupService.toggleAutoApply()` with retroactive apply + `PATCH /api/field-groups/{id}/auto-apply` endpoint + updated POST/PUT field group endpoints + `FieldPackSeeder` autoApply support + pack JSON updates + integration tests. ~6 new/modified backend files, ~2 resource files. Backend only. | |
+| **161A** | 161.1--161.9 | V38 migration (8 DDL statements) + `FieldGroup` entity updates (`autoApply`, `dependsOn` fields) + `FieldGroupRepository` query method + `FieldGroupService.toggleAutoApply()` with retroactive apply + `PATCH /api/field-groups/{id}/auto-apply` endpoint + updated POST/PUT field group endpoints + `FieldPackSeeder` autoApply support + pack JSON updates + integration tests. ~6 new/modified backend files, ~2 resource files. Backend only. | **Done** (PR #333) |
 | **161B** | 161.10--161.15 | Auto-apply integration into `CustomerService.create()`, `ProjectService.create()`, `TaskService.create()` + `FieldGroupService.resolveAutoApplyGroupIds()` + settings UI auto-apply toggle on field group create/edit dialog + frontend type updates + integration tests for auto-apply on creation. ~3 modified backend files, ~3 modified frontend files. | |
 
 ### Tasks

@@ -61,7 +61,7 @@ Phase 23 hardens the custom fields system from "data entry convenience" to "data
 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
-| 0a (parallel) | 166 | 166A | Billable time rate warnings -- backend response DTO + LogTimeDialog warning banner |
+| 0a (parallel) | 166 | 166A | Billable time rate warnings -- backend response DTO + LogTimeDialog warning banner | **Done** (PR #345) |
 | 0b (parallel) | 166 | 166B | Bug fixes -- DATE validation, CURRENCY blankness, field type immutability |
 
 ### Stage 1: Foundation
@@ -501,7 +501,7 @@ Stage 4: [163C] // [165C]                                (parallel, after Stage 
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **166A** | 166.1--166.6 | Rate warnings: `TimeEntryService` response DTO extended with `rateWarning`, `LogTimeDialog` warning banner, invoice generation dialog null-rate list, backend integration test, frontend test. ~3 modified backend files, ~2 modified frontend files. | |
+| **166A** | 166.1--166.6 | Rate warnings: `TimeEntryService` response DTO extended with `rateWarning`, `LogTimeDialog` warning banner, invoice generation dialog null-rate list, backend integration test, frontend test. ~3 modified backend files, ~2 modified frontend files. | **Done** (PR #345) |
 | **166B** | 166.7--166.14 | Bug fixes: DATE min/max in backend `CustomFieldValidator.validateDate()` + frontend `validateField`, CURRENCY blankness in `CustomerReadinessService` + `ProjectSetupStatusService`, field type immutability in `FieldDefinitionService.update()`, integration tests, frontend test. ~4 modified backend files, ~1 modified frontend file, ~1 test file. | |
 
 ### Tasks

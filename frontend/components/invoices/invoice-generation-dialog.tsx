@@ -303,6 +303,45 @@ export function InvoiceGenerationDialog({
               Back
             </Button>
 
+            {/* Null rate warning */}
+            {(() => {
+              const nullRateEntries = unbilledData.projects.flatMap((p) =>
+                p.entries
+                  .filter(
+                    (e) =>
+                      e.billingRateSnapshot == null ||
+                      e.billingRateSnapshot === 0,
+                  )
+                  .map((e) => ({ ...e, projectName: p.projectName })),
+              );
+              if (nullRateEntries.length === 0) return null;
+              return (
+                <div
+                  className="rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20"
+                  data-testid="null-rate-warning"
+                >
+                  <p className="mb-1.5 text-sm font-medium text-amber-800 dark:text-amber-200">
+                    {nullRateEntries.length} time{" "}
+                    {nullRateEntries.length === 1
+                      ? "entry has"
+                      : "entries have"}{" "}
+                    no rate card
+                  </p>
+                  <ul className="space-y-0.5">
+                    {nullRateEntries.map((e) => (
+                      <li
+                        key={e.id}
+                        className="text-xs text-amber-700 dark:text-amber-300"
+                      >
+                        {e.memberName}, {formatDuration(e.durationMinutes)} on{" "}
+                        {formatDate(e.date)} ({e.projectName} / {e.taskTitle})
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })()}
+
             {unbilledData.projects.length === 0 ? (
               <p className="py-8 text-center text-sm text-slate-500">
                 No unbilled time entries found for this period.

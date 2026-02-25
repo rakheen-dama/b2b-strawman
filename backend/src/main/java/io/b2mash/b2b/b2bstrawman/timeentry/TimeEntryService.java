@@ -78,7 +78,7 @@ public class TimeEntryService {
   }
 
   @Transactional
-  public TimeEntry createTimeEntry(
+  public CreateTimeEntryResult createTimeEntry(
       UUID taskId,
       LocalDate date,
       int durationMinutes,
@@ -122,6 +122,13 @@ public class TimeEntryService {
     var billingRate = billingRateService.resolveRate(memberId, task.getProjectId(), date);
     billingRate.ifPresent(r -> entry.snapshotBillingRate(r.hourlyRate(), r.currency()));
 
+    // Determine rate warning for billable entries without a billing rate
+    String rateWarning = null;
+    if (billable && billingRate.isEmpty()) {
+      rateWarning =
+          "No rate card found. This time entry will generate a zero-amount invoice line item.";
+    }
+
     // Snapshot cost rate
     var costRate = costRateService.resolveCostRate(memberId, date);
     costRate.ifPresent(r -> entry.snapshotCostRate(r.hourlyCost(), r.currency()));
@@ -159,7 +166,7 @@ public class TimeEntryService {
 
     publishTimeEntryChangedEvent(saved.getId(), task.getProjectId(), "CREATED");
 
-    return saved;
+    return new CreateTimeEntryResult(saved, rateWarning);
   }
 
   @Transactional(readOnly = true)
@@ -543,6 +550,8 @@ public class TimeEntryService {
 
     return new ReSnapshotResult(processed, updated, skipped);
   }
+
+  public record CreateTimeEntryResult(TimeEntry entry, String rateWarning) {}
 
   public record ReSnapshotResult(int entriesProcessed, int entriesUpdated, int entriesSkipped) {}
 

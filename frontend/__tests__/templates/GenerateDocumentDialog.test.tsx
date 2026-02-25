@@ -80,6 +80,7 @@ describe("GenerateDocumentDialog", () => {
         "tpl-1",
         "proj-1",
         false,
+        false,
       );
     });
   });
@@ -113,6 +114,7 @@ describe("GenerateDocumentDialog", () => {
         "tpl-1",
         "proj-1",
         true,
+        false,
       );
     });
 
@@ -135,6 +137,47 @@ describe("GenerateDocumentDialog", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Template not found")).toBeInTheDocument();
+    });
+  });
+
+  it("shows validation warnings when fields are missing", async () => {
+    mockPreviewTemplate.mockResolvedValue({
+      success: true,
+      html: "<h1>Preview</h1>",
+      validationResult: {
+        allPresent: false,
+        fields: [
+          { entity: "project", field: "name", present: true, reason: null },
+          { entity: "project", field: "missing_field", present: false, reason: "Field not populated" },
+        ],
+      },
+    });
+
+    render(<GenerateDocumentDialog {...baseProps} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Required field warnings")).toBeInTheDocument();
+      expect(screen.getByText("project.missing_field")).toBeInTheDocument();
+    });
+  });
+
+  it("shows generate anyway buttons when warnings exist", async () => {
+    mockPreviewTemplate.mockResolvedValue({
+      success: true,
+      html: "<h1>Preview</h1>",
+      validationResult: {
+        allPresent: false,
+        fields: [
+          { entity: "project", field: "missing_field", present: false, reason: "Field not populated" },
+        ],
+      },
+    });
+
+    render(<GenerateDocumentDialog {...baseProps} />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /Download anyway/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Save anyway/i })).toBeInTheDocument();
     });
   });
 });

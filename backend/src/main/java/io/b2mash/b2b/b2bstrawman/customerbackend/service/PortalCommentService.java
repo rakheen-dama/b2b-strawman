@@ -79,7 +79,9 @@ public class PortalCommentService {
                     "visibility",
                     "SHARED",
                     "source",
-                    "PORTAL"))
+                    "PORTAL",
+                    "actor_name",
+                    authorName))
             .build());
 
     // Publish domain event for notifications

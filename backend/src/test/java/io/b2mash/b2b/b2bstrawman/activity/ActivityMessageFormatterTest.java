@@ -215,7 +215,7 @@ class ActivityMessageFormatterTest {
   }
 
   @Test
-  void unknownActorIdFallsBackToUuidString() {
+  void unknownActorIdFallsBackToUnknown() {
     UUID unknownId = UUID.randomUUID();
     var record =
         new AuditEventRecord(
@@ -230,6 +230,25 @@ class ActivityMessageFormatterTest {
             Map.of("title", "Some task"));
     var event = new AuditEvent(record);
     var item = formatter.format(event, Map.of());
-    assertThat(item.actorName()).isEqualTo(unknownId.toString());
+    assertThat(item.actorName()).isEqualTo("Unknown");
+  }
+
+  @Test
+  void portalUserActorNameResolvedFromDetails() {
+    UUID portalUserId = UUID.randomUUID();
+    var record =
+        new AuditEventRecord(
+            "comment.created",
+            "comment",
+            ENTITY_ID,
+            portalUserId,
+            "PORTAL_USER",
+            "PORTAL",
+            null,
+            null,
+            Map.of("actor_name", "Jane Customer", "body", "Hello"));
+    var event = new AuditEvent(record);
+    var item = formatter.format(event, Map.of());
+    assertThat(item.actorName()).isEqualTo("Jane Customer");
   }
 }

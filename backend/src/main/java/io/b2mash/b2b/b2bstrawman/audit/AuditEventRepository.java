@@ -108,7 +108,7 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
           """
       SELECT ae.id AS eventId, ae.event_type AS eventType,
              ae.entity_type AS entityType,
-             m.name AS actorName,
+             COALESCE(m.name, ae.details->>'actor_name', 'Unknown') AS actorName,
              (ae.details->>'project_id')::uuid AS projectId,
              p.name AS projectName,
              ae.occurred_at AS occurredAt
@@ -132,7 +132,7 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
           """
       SELECT ae.id AS eventId, ae.event_type AS eventType,
              ae.entity_type AS entityType,
-             m.name AS actorName,
+             COALESCE(m.name, ae.details->>'actor_name', 'Unknown') AS actorName,
              (ae.details->>'project_id')::uuid AS projectId,
              p.name AS projectName,
              ae.occurred_at AS occurredAt

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 public class ActivityMessageFormatter {
 
   public ActivityItem format(AuditEvent event, Map<UUID, Member> actorMap) {
-    String actorName = resolveActorName(event.getActorId(), actorMap);
+    String actorName = resolveActorName(event.getActorId(), actorMap, event.getDetails());
     String actorAvatarUrl = resolveActorAvatarUrl(event.getActorId(), actorMap);
     Map<String, Object> details = event.getDetails() != null ? event.getDetails() : Map.of();
 
@@ -162,12 +162,20 @@ public class ActivityMessageFormatter {
     return "unknown";
   }
 
-  private String resolveActorName(UUID actorId, Map<UUID, Member> actorMap) {
+  private String resolveActorName(
+      UUID actorId, Map<UUID, Member> actorMap, Map<String, Object> details) {
     if (actorId == null) {
       return "System";
     }
     Member member = actorMap.get(actorId);
-    return member != null ? member.getName() : actorId.toString();
+    if (member != null) {
+      return member.getName();
+    }
+    // Fallback for non-member actors (e.g. portal customers)
+    if (details != null && details.get("actor_name") instanceof String name) {
+      return name;
+    }
+    return "Unknown";
   }
 
   private String resolveActorAvatarUrl(UUID actorId, Map<UUID, Member> actorMap) {

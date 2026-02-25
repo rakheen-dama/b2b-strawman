@@ -314,7 +314,168 @@ The `RetainerDetailActions` component (line 210) checks `currentPeriod && (...)`
 
 ---
 
-<!-- TEMPLATE — copy this for new bugs:
+## BUG-009: Portal magic link not testable — dev link not displayed, wrong URL format, e2e profile excluded
+
+**Severity**: medium
+**Area**: Both — Portal authentication (dev/test flow)
+**Found in**: Manual testing — portal login at localhost:3002
+
+**Description**: When testing the customer portal magic link flow, three issues compound to make it untestable:
+1. The portal login page sends `{ email, orgId }` to the backend and receives `{ message, magicLink }`, but **ignores the `magicLink` field** — always showing "Check your email" with no way to retrieve the link (email isn't integrated yet).
+2. The backend generates the dev magic link URL as `/portal/login?token=...&orgId=...` — but the portal login page doesn't read a `token` query param. The correct exchange page is at `/auth/exchange?token=...&orgId=...`.
+3. The `isDevProfile()` gate in `PortalAuthController` only checks for `local`, `test`, `dev` profiles — but the e2e mock-auth stack uses the `e2e` profile, so `magicLink` is always `null` in the e2e environment.
+
+Additionally, navigating directly to `/login` without `?orgId=...` shows the form but silently fails on submit (backend rejects `@NotBlank orgId`). This is by design (invite-only portal per ADR-079), but there's no user-facing error explaining why.
+
+**Root Cause**:
+- `portal/app/login/page.tsx` lines 66-82: reads API response but never checks for `magicLink` field
+- `backend/.../portal/PortalAuthController.java` line 107: generates `/portal/login?token=...` instead of `/auth/exchange?token=...`
+- `backend/.../portal/PortalAuthController.java` line 197: `isDevProfile()` doesn't include `"e2e"` profile
+
+**Affected Files**:
+- `portal/app/login/page.tsx` — display `magicLink` from response in dev mode
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/portal/PortalAuthController.java` — fix URL format, add `e2e` to profile check
+
+**Fix Guidance**:
+1. In `portal/app/login/page.tsx`, after `response.json()`, check for `data.magicLink`. If present, store it in state and display it on the success screen in a dev-mode amber callout box with a clickable link.
+2. In `PortalAuthController.java` line 107, change the magic link URL from `/portal/login?token=...&orgId=...` to `/auth/exchange?token=...&orgId=...` (matches the portal's actual exchange page route).
+3. In `PortalAuthController.java` `isDevProfile()`, add `"e2e"` to the profile check: `"local".equals(profile) || "test".equals(profile) || "dev".equals(profile) || "e2e".equals(profile)`.
+4. Optionally: when `orgId` is missing from the login page URL, show an informational message like "You need an invitation link from your service provider to access this portal" instead of showing the form.
+
+**Impact**: The portal login flow is untestable without email integration. Developers and testers cannot exercise the magic link exchange flow in local or e2e environments. **Status: Fixed** — all three issues resolved in this session.
+
+---
+
+## BUG-010: Dashboard crashes on portal customer comments — null actorName in activity widget
+
+**Severity**: critical
+**Area**: Both — Dashboard activity feed + portal comment audit events
+**Found in**: Manual testing — adding a comment from portal, then viewing main app dashboard
+
+**Description**: After a customer posts a comment via the portal (localhost:3002), the main app dashboard (localhost:3000/3001) crashes with `TypeError: null is not an object (evaluating 'name.split')` in the `RecentActivityWidget`. The `getInitials()` function receives `null` for the actor's name.
+
+**Root Cause**: The audit event infrastructure assumes all actors are internal members. Two separate resolution paths both fail for portal actors:
+
+1. **Dashboard queries** (`AuditEventRepository.java` lines 105-151): Both `findCrossProjectActivity()` and `findCrossProjectActivityForMember()` use `LEFT JOIN members m ON ae.actor_id = m.id` to resolve `m.name AS actorName`. Portal comments set `actorId` to the **customer UUID** (not a member UUID), so the join returns `NULL`.
+
+2. **Activity feed** (`ActivityMessageFormatter.java` line 165-171): `resolveActorName()` looks up `actorMap.get(actorId)` where `actorMap` is built from `memberRepository.findAllById()`. Portal customer UUIDs aren't in the members table, so the lookup returns `null`, and the fallback was `actorId.toString()` (a raw UUID, not a name).
+
+3. **Frontend** (`recent-activity-widget.tsx` line 43): `getInitials(name: string)` calls `name.split(" ")` without null-guarding, crashing when `actorName` is `null`.
+
+The `PortalCommentService.java` has `authorName` available when creating the audit event but doesn't store it — only `actorId` and `actorType("PORTAL_USER")` are persisted.
+
+**Affected Files**:
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/customerbackend/service/PortalCommentService.java` — store `actor_name` in audit event details JSONB
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/audit/AuditEventRepository.java` — update both cross-project queries to COALESCE with `details->>'actor_name'`
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/activity/ActivityMessageFormatter.java` — fallback to `details.actor_name` for non-member actors
+- `frontend/components/dashboard/recent-activity-widget.tsx` — null-guard `getInitials()`
+
+**Fix Guidance**:
+1. In `PortalCommentService.java`, add `"actor_name", authorName` to the `Map.of(...)` passed to `.details()` in the audit event builder. This embeds the customer's display name in the JSONB details.
+2. In `AuditEventRepository.java`, change both queries from `m.name AS actorName` to `COALESCE(m.name, ae.details->>'actor_name', 'Unknown') AS actorName`. This falls through: member name → details actor_name → "Unknown".
+3. In `ActivityMessageFormatter.java`, update `resolveActorName()` to accept the event's `details` map. If the member lookup fails, check `details.get("actor_name")` before falling back to "Unknown".
+4. In `recent-activity-widget.tsx`, add a null guard to `getInitials()`: `if (!name) return "?"`.
+5. Update `ActivityMessageFormatterTest.java`: change the "unknown actor falls back to UUID" test to expect "Unknown", and add a new test for portal user actor name resolution from details.
+6. Note: existing portal comment audit events (created before the fix) will show "Unknown" since they lack `actor_name` in details. New portal comments will show the customer's name.
+
+**Impact**: The main app dashboard is completely broken (white screen crash) for any org where a portal customer has posted a comment. Since the crash is in React render, the entire dashboard page fails — not just the activity widget. **Status: Fixed** — all four files updated in this session.
+
+---
+
+## BUG-011: Comments don't flow between main app and customer portal in either direction
+
+**Severity**: high
+**Area**: Both — Comment sync between main app and portal read model
+**Found in**: Manual testing — adding comments from portal and main app
+
+**Description**: Two broken comment flows:
+
+1. **Main app → Portal**: When a staff member creates a comment with `SHARED` visibility on a task or document, it does NOT appear on the customer portal. The customer sees no comments from the org.
+2. **Portal → Main app**: When a portal customer posts a comment on a project, it does NOT appear in the main app's task/document comment section. Staff see no customer comments.
+
+Comments are silently lost in both directions — no errors, no warnings. Both sides think they posted successfully, but the other side never sees it.
+
+**Root Cause**: Two separate architectural gaps:
+
+### Gap A: Main app → Portal (no event handler)
+
+The `PortalEventHandler` (`customerbackend/handler/PortalEventHandler.java`) handles events for documents, tasks, time entries, invoices, customer-project links, and project updates — but has **NO handler for `CommentCreatedEvent`**. When `CommentService.createComment()` publishes a `CommentCreatedEvent` with `visibility = "SHARED"`, no listener picks it up to sync to the portal read model.
+
+The portal reads comments from `portal.portal_comments` (a separate schema/table managed by `PortalReadModelRepository`). Without a handler to call `readModelRepo.upsertPortalComment()`, SHARED comments from the main app never reach the portal.
+
+Relevant code:
+- `CommentService.java` lines 112-126: publishes `CommentCreatedEvent` with visibility, entityType, entityId
+- `PortalEventHandler.java`: handles 10+ event types but NO comment events
+- `PortalReadModelRepository.java` lines 98-117: `upsertPortalComment()` method exists but is only called from `PortalCommentService` (portal-originated comments)
+
+### Gap B: Portal → Main app (entityType mismatch)
+
+Portal comments are created with `entityType = "PROJECT"` and `entityId = projectId` (`PortalCommentService.java` line 52):
+```java
+var comment = new Comment("PROJECT", projectId, projectId, authorId, content, "SHARED");
+```
+
+But the main app queries comments by specific entity — `entityType = "TASK"` + `entityId = taskId`, or `entityType = "DOCUMENT"` + `entityId = docId` (`CommentRepository.java` lines 15-27):
+```sql
+SELECT c FROM Comment c
+WHERE c.entityType = :entityType AND c.entityId = :entityId AND c.projectId = :projectId
+```
+
+Portal comments with `entityType = "PROJECT"` never match task-level or document-level queries. The main app has no concept of "project-level comments" in its UI — comments are always attached to tasks or documents.
+
+Additionally, `CommentService.createComment()` (line 71-73) explicitly rejects non-TASK/DOCUMENT entity types:
+```java
+if (!"TASK".equals(entityType) && !"DOCUMENT".equals(entityType)) {
+    throw new InvalidStateException("entityType must be TASK or DOCUMENT");
+}
+```
+
+**Affected Files**:
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/customerbackend/handler/PortalEventHandler.java` — add `onCommentCreated()` handler
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/customerbackend/service/PortalCommentService.java` — reconsider entityType for portal comments
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/comment/CommentRepository.java` — may need a project-level comment query
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/comment/CommentService.java` — may need to accept "PROJECT" entityType or add separate method
+- `frontend/components/projects/` — may need a project-level comments section to show portal customer comments
+
+**Fix Guidance**:
+
+**Part A — Main app SHARED comments → Portal:**
+1. In `PortalEventHandler`, add a new `@TransactionalEventListener` for `CommentCreatedEvent`:
+   - Check if `event.getVisibility()` is `"SHARED"` — if not, return early.
+   - Resolve the author's display name from `memberId` (use the `actorName` field already on the event).
+   - Look up linked customers for the project via `readModelRepo.findCustomerIdsByProjectId()`.
+   - If any customers are linked, call `readModelRepo.upsertPortalComment()` with the comment's ID, orgId, projectId, authorName, body, and createdAt.
+2. Also handle comment visibility changes: if a comment's visibility changes FROM `SHARED`, delete it from `portal.portal_comments`. If it changes TO `SHARED`, insert it.
+3. Handle comment deletion: if a SHARED comment is deleted, remove it from the portal read model.
+
+**Part B — Portal comments → Main app (design decision needed):**
+
+This requires a product decision — pick one approach:
+
+**Option 1 (Recommended): Project-level comment thread on main app**
+- Keep portal comments as `entityType = "PROJECT"` (they're project-level discussions, not task-specific).
+- Add a `findByProjectIdAndEntityType` query to `CommentRepository`.
+- Add a "Customer Comments" section to the project detail page in the main app frontend that queries `entityType = "PROJECT"`.
+- Add a `source` field to the `Comment` entity (`INTERNAL` / `PORTAL`) to style portal comments differently (e.g., with a "Customer" badge).
+
+**Option 2: Attach portal comments to specific tasks**
+- Change the portal UI to let customers comment on specific tasks (not just the project).
+- Modify `PortalCommentService` to accept `entityType = "TASK"` and `entityId = taskId`.
+- Portal comments would then appear alongside staff comments on the task detail page.
+- Requires the portal to expose task-level comment UI.
+
+**Option 3: Dual-write with project-level display**
+- Keep portal comments dual-written to both tenant `comments` table and portal read model (as they already are).
+- Add a `source` column to the `comments` table to distinguish origin.
+- Show project-level comments in a dedicated tab/section on the project detail page in the main app.
+
+**Regardless of option chosen:**
+- Add a `source` field to the `Comment` entity to distinguish internal vs portal comments.
+- Consider adding `entity_type` and `entity_id` columns to `portal.portal_comments` if task-level portal comments are needed in the future.
+
+**Impact**: The comment feature appears to work on both sides (no errors), but is a one-way dead end in both directions. Staff and customers cannot communicate through comments despite this being a core portal collaboration feature. The two halves of the comment system were built independently (Phase 6.5 for comments, Phase 7 for portal backend, Phase 22 for portal frontend) and never connected.
+
+---
 
 ## BUG-NNN: [Short description]
 

@@ -104,7 +104,7 @@ public class PortalAuthController {
                 // In dev/test profiles, include the magic link URL for testing
                 String magicLink = null;
                 if (isDevProfile()) {
-                  magicLink = "/portal/login?token=" + rawToken + "&orgId=" + request.orgId();
+                  magicLink = "/auth/exchange?token=" + rawToken + "&orgId=" + request.orgId();
                 }
 
                 return ResponseEntity.ok(new MagicLinkResponse(GENERIC_MESSAGE, magicLink));
@@ -194,7 +194,10 @@ public class PortalAuthController {
 
   private boolean isDevProfile() {
     for (String profile : environment.getActiveProfiles()) {
-      if ("local".equals(profile) || "test".equals(profile) || "dev".equals(profile)) {
+      if ("local".equals(profile)
+          || "test".equals(profile)
+          || "dev".equals(profile)
+          || "e2e".equals(profile)) {
         return true;
       }
     }

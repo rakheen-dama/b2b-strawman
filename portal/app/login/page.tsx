@@ -24,6 +24,7 @@ function LoginForm() {
   const [brandingLoading, setBrandingLoading] = useState(!!orgId);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [magicLink, setMagicLink] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -79,6 +80,10 @@ function LoginForm() {
           return;
         }
 
+        const data = await response.json();
+        if (data.magicLink) {
+          setMagicLink(data.magicLink);
+        }
         setSuccess(true);
       } catch {
         setError("Network error. Please check your connection and try again.");
@@ -115,6 +120,17 @@ function LoginForm() {
                 We sent a link to <span className="font-medium">{email}</span>.
               </p>
             </div>
+            {magicLink && (
+              <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
+                <p className="text-xs font-medium text-amber-800">Dev mode — click to sign in:</p>
+                <a
+                  href={magicLink}
+                  className="mt-1 block text-sm font-medium text-amber-700 underline break-all"
+                >
+                  {magicLink}
+                </a>
+              </div>
+            )}
           </CardContent>
         </Card>
       </main>

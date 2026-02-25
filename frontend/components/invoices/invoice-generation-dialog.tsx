@@ -16,14 +16,16 @@ import { Label } from "@/components/ui/label";
 import {
   fetchUnbilledTime,
   createInvoiceDraft,
+  validateInvoiceGeneration,
 } from "@/app/(app)/org/[slug]/customers/[id]/invoice-actions";
 import { formatCurrency, formatDuration, formatDate } from "@/lib/format";
 import type {
   UnbilledTimeResponse,
   UnbilledProjectGroup,
   UnbilledTimeEntry,
+  ValidationCheck,
 } from "@/lib/types";
-import { Plus, ArrowLeft } from "lucide-react";
+import { Plus, ArrowLeft, CheckCircle2, AlertTriangle } from "lucide-react";
 
 /** Wraps formatCurrency in a try-catch to handle invalid currency codes gracefully. */
 function safeFormatCurrency(amount: number, curr: string): string {
@@ -61,6 +63,10 @@ export function InvoiceGenerationDialog({
   const [unbilledData, setUnbilledData] = useState<UnbilledTimeResponse | null>(null);
   const [selectedEntryIds, setSelectedEntryIds] = useState<Set<string>>(new Set());
 
+  // Validation state
+  const [validationChecks, setValidationChecks] = useState<ValidationCheck[] | null>(null);
+  const [isValidating, setIsValidating] = useState(false);
+
   function resetState() {
     setStep(1);
     setError(null);
@@ -69,6 +75,8 @@ export function InvoiceGenerationDialog({
     setCurrency(defaultCurrency);
     setUnbilledData(null);
     setSelectedEntryIds(new Set());
+    setValidationChecks(null);
+    setIsValidating(false);
   }
 
   function handleOpenChange(newOpen: boolean) {
@@ -142,6 +150,30 @@ export function InvoiceGenerationDialog({
         }
       }
       return next;
+    });
+  }
+
+  function handleRunValidation() {
+    if (selectedEntryIds.size === 0) return;
+    setError(null);
+    setIsValidating(true);
+
+    startTransition(async () => {
+      try {
+        const result = await validateInvoiceGeneration(
+          customerId,
+          Array.from(selectedEntryIds),
+        );
+        if (result.success && result.checks) {
+          setValidationChecks(result.checks);
+        } else {
+          setError(result.error ?? "Failed to validate.");
+        }
+      } catch {
+        setError("Failed to run validation.");
+      } finally {
+        setIsValidating(false);
+      }
     });
   }
 
@@ -300,6 +332,38 @@ export function InvoiceGenerationDialog({
               </span>
             </div>
 
+            {/* Validation Checklist */}
+            {validationChecks && validationChecks.length > 0 && (
+              <div
+                data-testid="validation-checklist"
+                className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900/50"
+              >
+                <p className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Pre-generation checks
+                </p>
+                <ul className="space-y-1">
+                  {validationChecks.map((check, idx) => (
+                    <li key={idx} className="flex items-center gap-2 text-sm">
+                      {check.passed ? (
+                        <CheckCircle2 className="size-4 shrink-0 text-green-600" />
+                      ) : (
+                        <AlertTriangle className="size-4 shrink-0 text-yellow-600" />
+                      )}
+                      <span
+                        className={
+                          check.passed
+                            ? "text-slate-700 dark:text-slate-300"
+                            : "text-yellow-800 dark:text-yellow-200"
+                        }
+                      >
+                        {check.message}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {error && <p className="text-sm text-destructive">{error}</p>}
 
             <DialogFooter>
@@ -311,13 +375,25 @@ export function InvoiceGenerationDialog({
               >
                 Cancel
               </Button>
-              <Button
-                type="button"
-                onClick={handleCreateDraft}
-                disabled={isPending || selectedEntryIds.size === 0}
-              >
-                {isPending ? "Creating..." : "Create Draft"}
-              </Button>
+              {!validationChecks ? (
+                <Button
+                  type="button"
+                  onClick={handleRunValidation}
+                  disabled={isPending || isValidating || selectedEntryIds.size === 0}
+                >
+                  {isValidating ? "Validating..." : "Validate & Create Draft"}
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  onClick={handleCreateDraft}
+                  disabled={isPending || selectedEntryIds.size === 0}
+                >
+                  {isPending ? "Creating..." : validationChecks.some((c) => !c.passed)
+                    ? `Create Draft (${validationChecks.filter((c) => !c.passed).length} issues)`
+                    : "Create Draft"}
+                </Button>
+              )}
             </DialogFooter>
           </div>
         )}

@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.event.InvoicePaidEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoiceSentEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoiceVoidedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.InvoiceValidationFailedException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldValidator;
@@ -26,6 +27,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.dto.CreateInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.CurrencyTotal;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.InvoiceLineResponse;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.InvoiceResponse;
+import io.b2mash.b2b.b2bstrawman.invoice.dto.SendInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledProjectGroup;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledTimeEntry;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledTimeResponse;
@@ -85,6 +87,7 @@ public class InvoiceService {
   private final FieldGroupRepository fieldGroupRepository;
   private final FieldGroupMemberRepository fieldGroupMemberRepository;
   private final FieldDefinitionRepository fieldDefinitionRepository;
+  private final InvoiceValidationService invoiceValidationService;
 
   public InvoiceService(
       InvoiceRepository invoiceRepository,
@@ -107,7 +110,8 @@ public class InvoiceService {
       FieldGroupService fieldGroupService,
       FieldGroupRepository fieldGroupRepository,
       FieldGroupMemberRepository fieldGroupMemberRepository,
-      FieldDefinitionRepository fieldDefinitionRepository) {
+      FieldDefinitionRepository fieldDefinitionRepository,
+      InvoiceValidationService invoiceValidationService) {
     this.invoiceRepository = invoiceRepository;
     this.lineRepository = lineRepository;
     this.customerRepository = customerRepository;
@@ -129,6 +133,13 @@ public class InvoiceService {
     this.fieldGroupRepository = fieldGroupRepository;
     this.fieldGroupMemberRepository = fieldGroupMemberRepository;
     this.fieldDefinitionRepository = fieldDefinitionRepository;
+    this.invoiceValidationService = invoiceValidationService;
+  }
+
+  @Transactional(readOnly = true)
+  public List<InvoiceValidationService.ValidationCheck> validateInvoiceGeneration(
+      UUID customerId, List<UUID> timeEntryIds, UUID templateId) {
+    return invoiceValidationService.validateInvoiceGeneration(customerId, timeEntryIds, templateId);
   }
 
   @Transactional
@@ -794,11 +805,18 @@ public class InvoiceService {
   }
 
   @Transactional
-  public InvoiceResponse send(UUID invoiceId) {
+  public InvoiceResponse send(UUID invoiceId, SendInvoiceRequest request) {
+    boolean overrideWarnings = request != null && request.overrideWarnings();
     var invoice =
         invoiceRepository
             .findById(invoiceId)
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+
+    // Validate before sending — @PreAuthorize on the controller already blocks members
+    var validationChecks = invoiceValidationService.validateInvoiceSend(invoice);
+    if (invoiceValidationService.hasCriticalFailures(validationChecks) && !overrideWarnings) {
+      throw new InvoiceValidationFailedException(validationChecks);
+    }
 
     try {
       invoice.markSent();

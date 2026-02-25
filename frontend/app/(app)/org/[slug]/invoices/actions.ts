@@ -9,6 +9,7 @@ import type {
   AddLineItemRequest,
   UpdateLineItemRequest,
   RecordPaymentRequest,
+  ValidationCheck,
 } from "@/lib/types";
 
 interface ActionResult {
@@ -20,6 +21,8 @@ interface InvoiceActionResult {
   success: boolean;
   error?: string;
   invoice?: InvoiceResponse;
+  canOverride?: boolean;
+  validationChecks?: ValidationCheck[];
 }
 
 function revalidateInvoicePaths(
@@ -154,6 +157,7 @@ export async function sendInvoice(
   slug: string,
   invoiceId: string,
   customerId: string,
+  overrideWarnings?: boolean,
 ): Promise<InvoiceActionResult> {
   const { orgRole } = await getAuthContext();
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
@@ -161,13 +165,24 @@ export async function sendInvoice(
   }
 
   try {
+    const body = overrideWarnings ? { overrideWarnings: true } : undefined;
     const invoice = await api.post<InvoiceResponse>(
       `/api/invoices/${invoiceId}/send`,
+      body,
     );
     revalidateInvoicePaths(slug, invoiceId, customerId);
     return { success: true, invoice };
   } catch (error) {
     if (error instanceof ApiError) {
+      // Check for 422 with canOverride flag
+      if (error.status === 422 && error.detail?.canOverride) {
+        return {
+          success: false,
+          error: error.message,
+          canOverride: true,
+          validationChecks: error.detail.validationChecks as ValidationCheck[] | undefined,
+        };
+      }
       return { success: false, error: error.message };
     }
     return { success: false, error: "Failed to send invoice." };

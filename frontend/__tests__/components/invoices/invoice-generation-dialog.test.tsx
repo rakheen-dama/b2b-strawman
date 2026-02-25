@@ -6,10 +6,13 @@ import type { UnbilledTimeResponse } from "@/lib/types";
 
 const mockFetchUnbilledTime = vi.fn();
 const mockCreateInvoiceDraft = vi.fn();
+const mockValidateInvoiceGeneration = vi.fn();
 
 vi.mock("@/app/(app)/org/[slug]/customers/[id]/invoice-actions", () => ({
   fetchUnbilledTime: (...args: unknown[]) => mockFetchUnbilledTime(...args),
   createInvoiceDraft: (...args: unknown[]) => mockCreateInvoiceDraft(...args),
+  validateInvoiceGeneration: (...args: unknown[]) =>
+    mockValidateInvoiceGeneration(...args),
 }));
 
 const sampleUnbilledData: UnbilledTimeResponse = {
@@ -69,6 +72,15 @@ const sampleUnbilledData: UnbilledTimeResponse = {
 describe("InvoiceGenerationDialog", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default: validation passes with no warnings
+    mockValidateInvoiceGeneration.mockResolvedValue({
+      success: true,
+      checks: [
+        { name: "customer_required_fields", severity: "WARNING", passed: true, message: "All customer required fields are filled" },
+        { name: "org_name", severity: "WARNING", passed: true, message: "Organization name is set" },
+        { name: "time_entry_rates", severity: "WARNING", passed: true, message: "All time entries have billing rates" },
+      ],
+    });
   });
 
   afterEach(() => {
@@ -215,6 +227,13 @@ describe("InvoiceGenerationDialog", () => {
       expect(screen.getByText("Select Time Entries")).toBeInTheDocument();
     });
 
+    // First click "Validate & Create Draft" to run validation
+    await user.click(screen.getByRole("button", { name: "Validate & Create Draft" }));
+
+    // After validation, click "Create Draft" to actually create
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Create Draft" })).toBeInTheDocument();
+    });
     await user.click(screen.getByRole("button", { name: "Create Draft" }));
 
     await waitFor(() => {

@@ -193,7 +193,7 @@
 | 162 | Field Group Dependencies | Backend + Frontend | 161 | S | 162A | **Done** (PR #335) |
 | 163 | Conditional Field Visibility | Backend + Frontend | 161 | M | 163A, 163B, 163C | **Done** (PRs #336, #337, #338) |
 | 164 | Invoice Custom Fields & Task Pack | Backend + Frontend | 161 | M | 164A, 164B, 164C | **Done** (PRs #339, #340, #341) |
-| 165 | Template Required Fields & Generation Validation | Backend + Frontend | 161, 164A | L | 165A, 165B, 165C | 165A **Done** (PR #342), 165B **Done** (PR #343) |
+| 165 | Template Required Fields & Generation Validation | Backend + Frontend | 161, 164A | L | 165A, 165B, 165C | **Done** (PRs #342, #343, #344) |
 | 166 | Rate Warnings & Bug Fixes | Backend + Frontend | -- | M | 166A, 166B | |
 
 ---

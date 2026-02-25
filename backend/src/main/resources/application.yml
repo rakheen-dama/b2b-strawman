@@ -24,6 +24,14 @@ spring:
         query:
           in_clause_parameter_padding: true
           plan_cache_max_size: 2048
+  mail:
+    host: ${SMTP_HOST:}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
   jmx:
     enabled: false
   threads:
@@ -44,6 +52,9 @@ management:
   endpoint:
     health:
       show-details: when-authorized
+  health:
+    mail:
+      enabled: false
 
 logging:
   level:
@@ -58,6 +69,19 @@ integration:
 
 payment:
   provider: mock
+
+docteams:
+  email:
+    sender-address: ${EMAIL_SENDER_ADDRESS:noreply@docteams.app}
+    unsubscribe-secret: ${EMAIL_UNSUBSCRIBE_SECRET:}
+    rate-limit:
+      smtp: 50
+      byoak: 200
+      platform-aggregate: 2000
+    sendgrid:
+      webhook-verification-key: ${SENDGRID_WEBHOOK_VERIFICATION_KEY:}
+  app:
+    base-url: ${APP_BASE_URL:http://localhost:3000}
 
 audit:
   retention:

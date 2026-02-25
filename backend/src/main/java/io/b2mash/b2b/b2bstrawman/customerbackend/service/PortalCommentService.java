@@ -49,7 +49,8 @@ public class PortalCommentService {
   public Comment createPortalComment(
       UUID projectId, UUID authorId, String authorName, String content, String orgId) {
     // Create and save comment
-    var comment = new Comment("PROJECT", projectId, projectId, authorId, content, "SHARED");
+    var comment =
+        new Comment("PROJECT", projectId, projectId, authorId, content, "SHARED", "PORTAL");
     comment = commentRepository.save(comment);
     log.info("Created portal comment {} on project {}", comment.getId(), projectId);
 

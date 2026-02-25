@@ -2,13 +2,16 @@ package io.b2mash.b2b.b2bstrawman.invoice;
 
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceValidationService.ValidationCheck;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.AddLineItemRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.CreateInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.InvoiceResponse;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.RecordPaymentRequest;
+import io.b2mash.b2b.b2bstrawman.invoice.dto.SendInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UpdateCustomFieldsRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UpdateInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UpdateLineItemRequest;
+import io.b2mash.b2b.b2bstrawman.invoice.dto.ValidateGenerationRequest;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -32,9 +35,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class InvoiceController {
 
   private final InvoiceService invoiceService;
+  private final InvoiceValidationService invoiceValidationService;
 
-  public InvoiceController(InvoiceService invoiceService) {
+  public InvoiceController(
+      InvoiceService invoiceService, InvoiceValidationService invoiceValidationService) {
     this.invoiceService = invoiceService;
+    this.invoiceValidationService = invoiceValidationService;
   }
 
   @PostMapping
@@ -124,6 +130,17 @@ public class InvoiceController {
     return ResponseEntity.noContent().build();
   }
 
+  // --- Validation ---
+
+  @PostMapping("/validate-generation")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<List<ValidationCheck>> validateGeneration(
+      @Valid @RequestBody ValidateGenerationRequest request) {
+    return ResponseEntity.ok(
+        invoiceValidationService.validateInvoiceGeneration(
+            request.customerId(), request.timeEntryIds(), request.templateId()));
+  }
+
   // --- Lifecycle transitions ---
 
   @PostMapping("/{id}/approve")
@@ -135,8 +152,10 @@ public class InvoiceController {
 
   @PostMapping("/{id}/send")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
-  public ResponseEntity<InvoiceResponse> sendInvoice(@PathVariable UUID id) {
-    return ResponseEntity.ok(invoiceService.send(id));
+  public ResponseEntity<InvoiceResponse> sendInvoice(
+      @PathVariable UUID id, @RequestBody(required = false) SendInvoiceRequest request) {
+    boolean overrideWarnings = request != null && request.overrideWarnings();
+    return ResponseEntity.ok(invoiceService.send(id, overrideWarnings));
   }
 
   @PostMapping("/{id}/payment")

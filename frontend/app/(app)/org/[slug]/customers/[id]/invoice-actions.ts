@@ -7,6 +7,7 @@ import type {
   UnbilledTimeResponse,
   InvoiceResponse,
   CreateInvoiceDraftRequest,
+  ValidationCheck,
 } from "@/lib/types";
 
 interface CreateDraftResult {
@@ -44,6 +45,36 @@ export async function fetchUnbilledTime(
       return { success: false, error: error.message };
     }
     return { success: false, error: "Failed to fetch unbilled time." };
+  }
+}
+
+interface ValidationResult {
+  success: boolean;
+  error?: string;
+  checks?: ValidationCheck[];
+}
+
+export async function validateInvoiceGeneration(
+  customerId: string,
+  timeEntryIds: string[],
+  templateId?: string,
+): Promise<ValidationResult> {
+  const { orgRole } = await getAuthContext();
+  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+    return { success: false, error: "Only admins and owners can validate invoices." };
+  }
+
+  try {
+    const checks = await api.post<ValidationCheck[]>(
+      "/api/invoices/validate-generation",
+      { customerId, timeEntryIds, templateId: templateId ?? null },
+    );
+    return { success: true, checks };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to validate invoice generation." };
   }
 }
 

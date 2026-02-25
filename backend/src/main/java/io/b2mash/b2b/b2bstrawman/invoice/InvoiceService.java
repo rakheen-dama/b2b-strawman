@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.event.InvoicePaidEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoiceSentEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoiceVoidedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.InvoiceValidationFailedException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldValidator;
@@ -85,6 +86,7 @@ public class InvoiceService {
   private final FieldGroupRepository fieldGroupRepository;
   private final FieldGroupMemberRepository fieldGroupMemberRepository;
   private final FieldDefinitionRepository fieldDefinitionRepository;
+  private final InvoiceValidationService invoiceValidationService;
 
   public InvoiceService(
       InvoiceRepository invoiceRepository,
@@ -107,7 +109,8 @@ public class InvoiceService {
       FieldGroupService fieldGroupService,
       FieldGroupRepository fieldGroupRepository,
       FieldGroupMemberRepository fieldGroupMemberRepository,
-      FieldDefinitionRepository fieldDefinitionRepository) {
+      FieldDefinitionRepository fieldDefinitionRepository,
+      InvoiceValidationService invoiceValidationService) {
     this.invoiceRepository = invoiceRepository;
     this.lineRepository = lineRepository;
     this.customerRepository = customerRepository;
@@ -129,6 +132,7 @@ public class InvoiceService {
     this.fieldGroupRepository = fieldGroupRepository;
     this.fieldGroupMemberRepository = fieldGroupMemberRepository;
     this.fieldDefinitionRepository = fieldDefinitionRepository;
+    this.invoiceValidationService = invoiceValidationService;
   }
 
   @Transactional
@@ -794,11 +798,25 @@ public class InvoiceService {
   }
 
   @Transactional
-  public InvoiceResponse send(UUID invoiceId) {
+  public InvoiceResponse send(UUID invoiceId, boolean overrideWarnings) {
     var invoice =
         invoiceRepository
             .findById(invoiceId)
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+
+    // Validate before sending
+    var validationChecks = invoiceValidationService.validateInvoiceSend(invoiceId);
+    if (invoiceValidationService.hasCriticalFailures(validationChecks)) {
+      String role = RequestScopes.getOrgRole();
+      if ("member".equals(role) || role == null) {
+        throw new InvalidStateException(
+            "Invoice validation failed",
+            "Invoice has critical validation failures that must be resolved before sending");
+      }
+      if (!overrideWarnings) {
+        throw new InvoiceValidationFailedException(validationChecks);
+      }
+    }
 
     try {
       invoice.markSent();

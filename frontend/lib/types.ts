@@ -1280,6 +1280,17 @@ export interface RetainerSummaryResponse {
   periodEnd: string | null;
 }
 
+// ---- Invoice Validation ----
+
+export type ValidationSeverity = "INFO" | "WARNING" | "CRITICAL";
+
+export interface ValidationCheck {
+  name: string;
+  severity: ValidationSeverity;
+  passed: boolean;
+  message: string;
+}
+
 // ---- Error (RFC 9457 ProblemDetail) ----
 
 export interface ProblemDetail {

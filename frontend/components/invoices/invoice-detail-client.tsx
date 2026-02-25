@@ -12,6 +12,7 @@ import type {
   InvoiceLineResponse,
   AddLineItemRequest,
   UpdateLineItemRequest,
+  ValidationCheck,
 } from "@/lib/types";
 import {
   updateInvoice,
@@ -64,6 +65,10 @@ export function InvoiceDetailClient({
   // Payment reference state
   const [paymentRef, setPaymentRef] = useState("");
   const [showPaymentForm, setShowPaymentForm] = useState(false);
+
+  // Send validation override state
+  const [showSendOverride, setShowSendOverride] = useState(false);
+  const [sendValidationChecks, setSendValidationChecks] = useState<ValidationCheck[]>([]);
 
   const isDraft = invoice.status === "DRAFT";
   const isApproved = invoice.status === "APPROVED";
@@ -129,6 +134,28 @@ export function InvoiceDetailClient({
       const result = await sendInvoice(slug, invoice.id, invoice.customerId);
       if (result.success && result.invoice) {
         setInvoice(result.invoice);
+      } else if (result.canOverride && result.validationChecks) {
+        setSendValidationChecks(result.validationChecks);
+        setShowSendOverride(true);
+      } else {
+        handleError(result);
+      }
+    });
+  }
+
+  function handleSendWithOverride() {
+    setError(null);
+    setShowSendOverride(false);
+    startTransition(async () => {
+      const result = await sendInvoice(
+        slug,
+        invoice.id,
+        invoice.customerId,
+        true,
+      );
+      if (result.success && result.invoice) {
+        setInvoice(result.invoice);
+        setSendValidationChecks([]);
       } else {
         handleError(result);
       }
@@ -267,6 +294,55 @@ export function InvoiceDetailClient({
       {error && (
         <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
           {error}
+        </div>
+      )}
+
+      {/* Send Validation Override Dialog */}
+      {showSendOverride && sendValidationChecks.length > 0 && (
+        <div
+          data-testid="send-override-dialog"
+          className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-900 dark:bg-yellow-950/50"
+        >
+          <h3 className="mb-2 font-medium text-yellow-800 dark:text-yellow-200">
+            Validation issues found
+          </h3>
+          <p className="mb-3 text-sm text-yellow-700 dark:text-yellow-300">
+            The following issues were found. As an admin/owner, you can override
+            and send anyway.
+          </p>
+          <ul className="mb-4 space-y-1">
+            {sendValidationChecks.map((check, idx) => (
+              <li key={idx} className="flex items-center gap-2 text-sm">
+                <span
+                  className={
+                    check.passed
+                      ? "text-green-700 dark:text-green-300"
+                      : "text-yellow-800 dark:text-yellow-200"
+                  }
+                >
+                  {check.passed ? "\u2713" : "\u2717"} {check.message}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <div className="flex gap-2">
+            <Button
+              variant="accent"
+              size="sm"
+              onClick={handleSendWithOverride}
+              disabled={isPending}
+            >
+              Send Anyway
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowSendOverride(false)}
+              disabled={isPending}
+            >
+              Cancel
+            </Button>
+          </div>
         </div>
       )}
 

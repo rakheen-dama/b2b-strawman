@@ -54,8 +54,9 @@ public class IntegrationRegistry {
   }
 
   /**
-   * Resolve the active adapter for the current tenant and domain. Returns the NoOp adapter if no
-   * integration is configured or enabled.
+   * Resolve the active adapter for the current tenant and domain. Returns the default adapter (as
+   * defined by {@link IntegrationDomain#getDefaultSlug()}) if no integration is configured or
+   * enabled.
    */
   @SuppressWarnings("unchecked")
   public <T> T resolve(IntegrationDomain domain, Class<T> portInterface) {
@@ -79,22 +80,24 @@ public class IntegrationRegistry {
     var slugMap = adapterMap.getOrDefault(domain, Map.of());
 
     if (entry == OrgIntegrationCacheEntry.EMPTY || !entry.enabled()) {
-      // Return NoOp adapter (slug = "noop")
-      var noop = slugMap.get("noop");
-      if (noop == null) {
-        throw new IllegalStateException("No noop adapter registered for domain " + domain);
+      // Return default adapter for this domain
+      var defaultAdapter = slugMap.get(domain.getDefaultSlug());
+      if (defaultAdapter == null) {
+        throw new IllegalStateException(
+            "No " + domain.getDefaultSlug() + " adapter registered for domain " + domain);
       }
-      return (T) noop;
+      return (T) defaultAdapter;
     }
 
     var adapter = slugMap.get(entry.providerSlug());
     if (adapter == null) {
-      // Configured slug has no registered adapter -- fall back to NoOp
-      var noop = slugMap.get("noop");
-      if (noop == null) {
-        throw new IllegalStateException("No noop adapter registered for domain " + domain);
+      // Configured slug has no registered adapter -- fall back to default
+      var defaultAdapter = slugMap.get(domain.getDefaultSlug());
+      if (defaultAdapter == null) {
+        throw new IllegalStateException(
+            "No " + domain.getDefaultSlug() + " adapter registered for domain " + domain);
       }
-      return (T) noop;
+      return (T) defaultAdapter;
     }
 
     if (!portInterface.isInstance(adapter)) {

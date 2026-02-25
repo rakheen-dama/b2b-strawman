@@ -23,8 +23,8 @@ public class IntegrationGuardService {
    */
   @Transactional(readOnly = true)
   public void requireEnabled(IntegrationDomain domain) {
-    if (domain == IntegrationDomain.PAYMENT) {
-      return; // Always available
+    if (domain == IntegrationDomain.PAYMENT || domain == IntegrationDomain.EMAIL) {
+      return; // Always available — core infrastructure, not feature-gated
     }
 
     var settings = orgSettingsRepository.findForCurrentTenant();
@@ -37,6 +37,7 @@ public class IntegrationGuardService {
                       case ACCOUNTING -> s.isAccountingEnabled();
                       case AI -> s.isAiEnabled();
                       case DOCUMENT_SIGNING -> s.isDocumentSigningEnabled();
+                      case EMAIL -> true; // unreachable due to early return
                       case PAYMENT -> true; // unreachable due to early return
                     })
             .orElse(false); // No settings row = all flags disabled

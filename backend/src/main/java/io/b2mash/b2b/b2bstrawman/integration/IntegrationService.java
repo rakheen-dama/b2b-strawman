@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingProvider;
 import io.b2mash.b2b.b2bstrawman.integration.ai.AiProvider;
+import io.b2mash.b2b.b2bstrawman.integration.email.EmailProvider;
 import io.b2mash.b2b.b2bstrawman.integration.secret.SecretStore;
 import io.b2mash.b2b.b2bstrawman.integration.signing.DocumentSigningProvider;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -162,6 +163,7 @@ public class IntegrationService {
           case AI -> integrationRegistry.resolve(domain, AiProvider.class).testConnection();
           case DOCUMENT_SIGNING ->
               integrationRegistry.resolve(domain, DocumentSigningProvider.class).testConnection();
+          case EMAIL -> integrationRegistry.resolve(domain, EmailProvider.class).testConnection();
           case PAYMENT ->
               throw new InvalidStateException(
                   "Unsupported operation",

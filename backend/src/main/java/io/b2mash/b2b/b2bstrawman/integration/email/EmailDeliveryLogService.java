@@ -40,6 +40,26 @@ public class EmailDeliveryLogService {
   }
 
   @Transactional
+  public EmailDeliveryLog recordRateLimited(
+      String referenceType,
+      UUID referenceId,
+      String templateName,
+      String recipientEmail,
+      String providerSlug) {
+    var log =
+        new EmailDeliveryLog(
+            recipientEmail,
+            templateName,
+            referenceType,
+            referenceId,
+            EmailDeliveryStatus.RATE_LIMITED,
+            null,
+            providerSlug,
+            "Rate limit exceeded");
+    return repository.save(log);
+  }
+
+  @Transactional
   public void updateStatus(
       String providerMessageId, EmailDeliveryStatus newStatus, String errorMessage) {
     repository

@@ -810,6 +810,11 @@ export interface FieldDefinitionResponse {
   sortOrder: number;
   packId: string | null;
   packFieldKey: string | null;
+  visibilityCondition: {
+    dependsOnSlug: string;
+    operator: string;
+    value: string | string[];
+  } | null;
   active: boolean;
   createdAt: string;
   updatedAt: string;

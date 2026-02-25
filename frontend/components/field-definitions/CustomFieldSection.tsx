@@ -166,6 +166,31 @@ function validateField(
   return null;
 }
 
+function isFieldVisible(
+  field: FieldDefinitionResponse,
+  currentValues: Record<string, unknown>,
+): boolean {
+  const condition = field.visibilityCondition;
+  if (!condition) return true;
+
+  const actualValue = currentValues[condition.dependsOnSlug];
+  if (actualValue === null || actualValue === undefined) return false;
+
+  switch (condition.operator) {
+    case "eq":
+      return String(actualValue) === String(condition.value);
+    case "neq":
+      return String(actualValue) !== String(condition.value);
+    case "in":
+      return (
+        Array.isArray(condition.value) &&
+        condition.value.some((v) => String(actualValue) === String(v))
+      );
+    default:
+      return true;
+  }
+}
+
 function formatDisplayValue(
   field: FieldDefinitionResponse,
   value: unknown,
@@ -439,6 +464,8 @@ export function CustomFieldSection({
     const newErrors: Record<string, string> = {};
     for (const [, fields] of fieldsByGroup) {
       for (const { definition } of fields) {
+        // Skip validation for hidden fields
+        if (!isFieldVisible(definition, values)) continue;
         const error = validateField(definition, values[definition.slug]);
         if (error) {
           newErrors[definition.slug] = error;
@@ -504,7 +531,9 @@ export function CustomFieldSection({
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 sm:grid-cols-2">
-                {fields.map(({ definition }) => (
+                {fields
+                  .filter(({ definition }) => isFieldVisible(definition, values))
+                  .map(({ definition }) => (
                   <div key={definition.slug} className="space-y-1.5">
                     <Label htmlFor={`cf-${definition.slug}`} className="text-sm">
                       {definition.name}

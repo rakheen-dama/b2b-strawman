@@ -65,6 +65,10 @@ public class FieldDefinition {
   @Column(name = "pack_field_key", length = 100)
   private String packFieldKey;
 
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "visibility_condition", columnDefinition = "jsonb")
+  private Map<String, Object> visibilityCondition;
+
   @Column(name = "active", nullable = false)
   private boolean active;
 
@@ -221,5 +225,13 @@ public class FieldDefinition {
 
   public void setPackFieldKey(String packFieldKey) {
     this.packFieldKey = packFieldKey;
+  }
+
+  public Map<String, Object> getVisibilityCondition() {
+    return visibilityCondition;
+  }
+
+  public void setVisibilityCondition(Map<String, Object> visibilityCondition) {
+    this.visibilityCondition = visibilityCondition;
   }
 }

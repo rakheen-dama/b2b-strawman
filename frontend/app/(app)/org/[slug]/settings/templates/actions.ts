@@ -168,7 +168,7 @@ export async function previewTemplateAction(
 ): Promise<{ success: boolean; html?: string; validationResult?: import("@/lib/types").TemplateValidationResult; error?: string }> {
   try {
     const result = await previewTemplate(id, entityId);
-    return { success: true, html: result.html, validationResult: result.validationResult };
+    return { success: true, html: result.html, validationResult: result.validationResult ?? undefined };
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };

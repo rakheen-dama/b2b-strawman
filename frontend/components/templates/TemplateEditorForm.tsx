@@ -131,9 +131,9 @@ export function TemplateEditorForm({ slug, template, readOnly }: TemplateEditorF
             />
           </div>
 
-          {!readOnly && (
-            <div className="space-y-3">
-              <Label>Required Context Fields</Label>
+          <div className="space-y-3">
+            <Label>Required Context Fields</Label>
+            {!readOnly && (
               <div className="flex items-end gap-2">
                 <div className="space-y-1">
                   <span className="text-xs text-slate-500">Entity</span>
@@ -164,12 +164,14 @@ export function TemplateEditorForm({ slug, template, readOnly }: TemplateEditorF
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    if (!newField.trim()) return;
+                    const trimmed = newField.trim();
+                    if (!trimmed) return;
+                    if (!/^[a-z][a-z0-9_]*$/i.test(trimmed)) return;
                     const exists = requiredFields.some(
-                      (f) => f.entity === newEntity && f.field === newField.trim(),
+                      (f) => f.entity === newEntity && f.field === trimmed,
                     );
                     if (!exists) {
-                      setRequiredFields((prev) => [...prev, { entity: newEntity, field: newField.trim() }]);
+                      setRequiredFields((prev) => [...prev, { entity: newEntity, field: trimmed }]);
                     }
                     setNewField("");
                   }}
@@ -178,16 +180,18 @@ export function TemplateEditorForm({ slug, template, readOnly }: TemplateEditorF
                   Add
                 </Button>
               </div>
-              {requiredFields.length > 0 && (
-                <ul className="space-y-1">
-                  {requiredFields.map((rf, idx) => (
-                    <li
-                      key={`${rf.entity}-${rf.field}-${idx}`}
-                      className="flex items-center justify-between rounded border border-slate-200 px-3 py-1.5 text-sm dark:border-slate-800"
-                    >
-                      <code className="text-xs text-teal-600 dark:text-teal-400">
-                        {rf.entity}.{rf.field}
-                      </code>
+            )}
+            {requiredFields.length > 0 && (
+              <ul className="space-y-1">
+                {requiredFields.map((rf, idx) => (
+                  <li
+                    key={`${rf.entity}-${rf.field}-${idx}`}
+                    className="flex items-center justify-between rounded border border-slate-200 px-3 py-1.5 text-sm dark:border-slate-800"
+                  >
+                    <code className="text-xs text-teal-600 dark:text-teal-400">
+                      {rf.entity}.{rf.field}
+                    </code>
+                    {!readOnly && (
                       <button
                         type="button"
                         onClick={() => setRequiredFields((prev) => prev.filter((_, i) => i !== idx))}
@@ -196,12 +200,12 @@ export function TemplateEditorForm({ slug, template, readOnly }: TemplateEditorF
                       >
                         <X className="size-3.5" />
                       </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
 
         <div className="space-y-4">

@@ -76,7 +76,7 @@ export function GenerateDocumentDialog({
     loadPreview();
   }, [open, templateId, entityId]);
 
-  const hasWarnings = validationResult && !validationResult.allPresent;
+  const hasWarnings = Boolean(validationResult && !validationResult.allPresent);
 
   async function handleDownload() {
     setIsDownloading(true);
@@ -84,7 +84,7 @@ export function GenerateDocumentDialog({
     setSuccessMessage(null);
 
     try {
-      const result = await generateDocumentAction(templateId, entityId, false, hasWarnings ? true : false);
+      const result = await generateDocumentAction(templateId, entityId, false, hasWarnings);
       if (result.success && result.pdfBase64) {
         // Convert base64 to blob and trigger download
         const byteCharacters = atob(result.pdfBase64);
@@ -118,7 +118,7 @@ export function GenerateDocumentDialog({
     setSuccessMessage(null);
 
     try {
-      const result = await generateDocumentAction(templateId, entityId, true, hasWarnings ? true : false);
+      const result = await generateDocumentAction(templateId, entityId, true, hasWarnings);
       if (result.success) {
         setSuccessMessage("Document saved successfully");
         onSaved?.();

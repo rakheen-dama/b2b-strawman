@@ -511,7 +511,7 @@ export interface TemplateValidationResult {
 
 export interface PreviewResponse {
   html: string;
-  validationResult: TemplateValidationResult;
+  validationResult?: TemplateValidationResult | null;
 }
 
 // ---- BillingRate (from BillingRateController.java) ----

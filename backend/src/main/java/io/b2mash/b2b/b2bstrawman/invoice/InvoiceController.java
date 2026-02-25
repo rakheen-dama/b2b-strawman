@@ -1,9 +1,12 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
+import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.AddLineItemRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.CreateInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.InvoiceResponse;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.RecordPaymentRequest;
+import io.b2mash.b2b.b2bstrawman.invoice.dto.UpdateCustomFieldsRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UpdateInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UpdateLineItemRequest;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -77,6 +80,22 @@ public class InvoiceController {
       @RequestParam(required = false) InvoiceStatus status,
       @RequestParam(required = false) UUID projectId) {
     return ResponseEntity.ok(invoiceService.findAll(customerId, status, projectId));
+  }
+
+  // --- Custom fields ---
+
+  @PutMapping("/{id}/custom-fields")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<InvoiceResponse> updateCustomFields(
+      @PathVariable UUID id, @Valid @RequestBody UpdateCustomFieldsRequest request) {
+    return ResponseEntity.ok(invoiceService.updateCustomFields(id, request.customFields()));
+  }
+
+  @PutMapping("/{id}/field-groups")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<List<FieldDefinitionResponse>> setFieldGroups(
+      @PathVariable UUID id, @Valid @RequestBody SetFieldGroupsRequest request) {
+    return ResponseEntity.ok(invoiceService.setFieldGroups(id, request.appliedFieldGroups()));
   }
 
   // --- Line item CRUD ---

@@ -62,6 +62,8 @@ public class InvoiceContextBuilder implements TemplateContextBuilder {
     invoiceMap.put("total", invoice.getTotal());
     invoiceMap.put("currency", invoice.getCurrency());
     invoiceMap.put("notes", invoice.getNotes());
+    invoiceMap.put(
+        "customFields", invoice.getCustomFields() != null ? invoice.getCustomFields() : Map.of());
     context.put("invoice", invoiceMap);
 
     // lines[]

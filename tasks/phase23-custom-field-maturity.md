@@ -77,7 +77,7 @@ Phase 23 hardens the custom fields system from "data entry convenience" to "data
 |-------|------|-------|---------|
 | 2a (parallel) | 162 | 162A | Field group dependencies -- backend validation, dependency resolution in group application, frontend dependency selector in edit dialog | **Done** (PR #335) |
 | 2b (parallel) | 163 | 163A | Conditional visibility backend -- `FieldDefinition.visibilityCondition`, `CustomFieldValidator` visibility evaluation, condition validation at save time | **Done** (PR #336) |
-| 2c (parallel) | 164 | 164A | Invoice custom fields backend -- `EntityType.INVOICE`, `Invoice` entity columns, custom field + field group endpoints, `InvoiceContextBuilder` extension, auto-apply integration |
+| 2c (parallel) | 164 | 164A | Invoice custom fields backend -- `EntityType.INVOICE`, `Invoice` entity columns, custom field + field group endpoints, `InvoiceContextBuilder` extension, auto-apply integration | **Done** (PR #339) |
 | 2d (parallel) | 165 | 165A | Template required fields backend -- `DocumentTemplate.requiredContextFields`, `TemplateValidationService`, preview/generate endpoint extensions |
 
 ### Stage 3: Frontend integration (after respective Stage 2 backend slices)
@@ -333,7 +333,7 @@ Stage 4: [163C] // [165C]                                (parallel, after Stage 
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **164A** | 164.1--164.8 | Backend: `EntityType.INVOICE`, `Invoice` entity columns (`customFields`, `appliedFieldGroups`), `PUT /api/invoices/{id}/custom-fields` and `PUT /api/invoices/{id}/field-groups` endpoints, `InvoiceService.create()` auto-apply, `InvoiceContextBuilder` extension, invoice GET response extension, integration tests. ~5 modified backend files, ~1 test file. | |
+| **164A** | 164.1--164.8 | Backend: `EntityType.INVOICE`, `Invoice` entity columns (`customFields`, `appliedFieldGroups`), `PUT /api/invoices/{id}/custom-fields` and `PUT /api/invoices/{id}/field-groups` endpoints, `InvoiceService.create()` auto-apply, `InvoiceContextBuilder` extension, invoice GET response extension, integration tests. ~5 modified backend files, ~1 test file. | **Done** (PR #339) |
 | **164B** | 164.9--164.13 | Frontend: Invoice detail page adds `CustomFieldSection` and `FieldGroupSelector`, settings page adds INVOICE tab for field/group management, type updates, frontend tests. ~4 modified frontend files. | |
 | **164C** | 164.14--164.17 | Backend: `common-task.json` field pack (Task Info group with priority, category, estimated_hours), `FieldPackSeeder` processes `autoApply`, integration test. ~2 new files, ~1 modified file. | |
 

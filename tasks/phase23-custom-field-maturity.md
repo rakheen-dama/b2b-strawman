@@ -87,7 +87,7 @@ Phase 23 hardens the custom fields system from "data entry convenience" to "data
 | 3a (parallel) | 163 | 163B | Conditional visibility frontend -- `CustomFieldSection` `isFieldVisible()`, reactive show/hide, `validateField` skips hidden | **Done** (PR #337) |
 | 3b (parallel) | 164 | 164B | Invoice custom fields frontend -- invoice detail page `CustomFieldSection` + `FieldGroupSelector`, settings INVOICE tab | **Done** (PR #340) |
 | 3c (parallel) | 164 | 164C | Task field pack -- `common-task.json`, `FieldPackSeeder` `autoApply` processing | **Done** (PR #341) |
-| 3d (parallel) | 165 | 165B | Template required fields frontend -- template editor field selector, generation dialog validation display |
+| 3d (parallel) | 165 | 165B | Template required fields frontend -- template editor field selector, generation dialog validation display | **Done** (PR #343) |
 
 ### Stage 4: Final integration
 
@@ -414,7 +414,7 @@ Stage 4: [163C] // [165C]                                (parallel, after Stage 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **165A** | 165.1--165.8 | Backend: `DocumentTemplate.requiredContextFields` field, `TemplateValidationService` (validates required fields against context), preview/generate endpoint extensions with `validationResult`/`warnings`, updated template create/update endpoints, integration tests. ~4 modified backend files, ~1 new file, ~1 test file. | **Done** (PR #342) |
-| **165B** | 165.9--165.14 | Frontend: Template editor required fields selector (entity type + slug picker), generation dialog validation display (pass/warn indicators, "Generate anyway"), frontend tests. ~3 modified frontend files, ~1 test file. | |
+| **165B** | 165.9--165.14 | Frontend: Template editor required fields selector (entity type + slug picker), generation dialog validation display (pass/warn indicators, "Generate anyway"), frontend tests. ~3 modified frontend files, ~1 test file. | **Done** (PR #343) |
 | **165C** | 165.15--165.22 | Backend + Frontend: `InvoiceValidationService` with full checklist (customer fields, org branding, time entry rates, template fields), `POST /api/invoices/validate-generation` endpoint, invoice generation dialog checklist display, invoice send validation with ADMIN/OWNER override, integration tests, frontend tests. ~4 modified backend files, ~1 new backend file, ~3 modified frontend files. | |
 
 ### Tasks

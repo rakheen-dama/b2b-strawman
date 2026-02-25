@@ -107,7 +107,9 @@ public class FieldGroupService {
             .orElseThrow(() -> new ResourceNotFoundException("FieldGroup", id));
 
     fg.updateMetadata(request.name(), request.description(), request.sortOrder());
-    fg.setAutoApply(request.autoApplyOrDefault());
+    if (request.autoApply() != null) {
+      fg.setAutoApply(request.autoApply());
+    }
 
     fg = fieldGroupRepository.save(fg);
 
@@ -293,9 +295,15 @@ public class FieldGroupService {
         .executeUpdate();
 
     // Also retroactively apply dependency groups (for 161B — safe to include now, no-op if
-    // dependsOn is null)
+    // dependsOn is null). Validate each dependency exists and is active before applying.
     if (group.getDependsOn() != null) {
       for (UUID depId : group.getDependsOn()) {
+        var depGroup = fieldGroupRepository.findById(depId);
+        if (depGroup.isEmpty() || !depGroup.get().isActive()) {
+          log.warn(
+              "Skipping invalid/inactive dependency group {} for group {}", depId, group.getId());
+          continue;
+        }
         String depIdJson = "[\"" + depId.toString() + "\"]";
         entityManager
             .createNativeQuery(
@@ -311,6 +319,7 @@ public class FieldGroupService {
     }
   }
 
+  // Safe: closed enum switch with default throw — no SQL injection risk from user input.
   private String entityTableName(EntityType entityType) {
     return switch (entityType) {
       case CUSTOMER -> "customers";

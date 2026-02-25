@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldGroupResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.ReorderFieldsRequest;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.UpdateFieldGroupRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
@@ -67,12 +68,12 @@ public class FieldGroupController {
   @PatchMapping("/{id}/auto-apply")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<FieldGroupResponse> toggleAutoApply(
-      @PathVariable UUID id, @RequestBody ToggleAutoApplyRequest request) {
+      @PathVariable UUID id, @Valid @RequestBody ToggleAutoApplyRequest request) {
     return ResponseEntity.ok(fieldGroupService.toggleAutoApply(id, request.autoApply()));
   }
 
   /** Request record for toggling auto-apply on a field group. */
-  public record ToggleAutoApplyRequest(boolean autoApply) {}
+  public record ToggleAutoApplyRequest(@NotNull Boolean autoApply) {}
 
   // --- Membership endpoints ---
 

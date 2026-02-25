@@ -155,5 +155,6 @@ public class FieldGroup {
 
   public void setDependsOn(List<UUID> dependsOn) {
     this.dependsOn = dependsOn;
+    this.updatedAt = Instant.now();
   }
 }

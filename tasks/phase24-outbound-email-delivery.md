@@ -23,7 +23,7 @@ The design introduces a **two-tier email architecture**: every org gets working 
 |------|------|-------|------|--------|--------|--------|
 | 167 | EmailProvider Port + SMTP Adapter | Backend | -- | M | 167A, 167B | **Done** (PRs #348, #349) |
 | 168 | Email Template Rendering | Backend | -- | M | 168A, 168B | **Done** (PRs #350, #351) |
-| 169 | EmailNotificationChannel + Delivery Log + Migration | Backend | 167, 168 | L | 169A, 169B | |
+| 169 | EmailNotificationChannel + Delivery Log + Migration | Backend | 167, 168 | L | 169A, 169B | **Done** (PRs #352, #353) |
 | 170 | Invoice Delivery + Portal Magic Link Email | Backend | 169 | M | 170A, 170B | |
 | 171 | SendGrid BYOAK + Bounce Webhooks | Backend | 169 | M | 171A, 171B | |
 | 172 | Unsubscribe + Admin Endpoints | Backend | 169 | M | 172A, 172B | |
@@ -78,7 +78,7 @@ The design introduces a **two-tier email architecture**: every org gets working 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
 | 1a | 169 | 169A | V41 migration + EmailDeliveryLog entity + repository + EmailDeliveryLogService + EmailRateLimiter | **Done** (PR #352) |
-| 1b | 169 | 169B | EmailNotificationChannel production wiring (replace stub) + notification type-to-template mapping + integration tests |
+| 1b | 169 | 169B | EmailNotificationChannel production wiring (replace stub) + notification type-to-template mapping + integration tests | **Done** (PR #353) |
 
 ### Stage 2: Parallel feature tracks (after Stage 1)
 
@@ -284,7 +284,7 @@ Stage 4: [173A] --> [173B]                               (sequential, after 172B
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **169A** | 169.1–169.8 | V41 migration + `EmailDeliveryLog` entity + `EmailDeliveryLogRepository` + `EmailDeliveryLogService` + `EmailRateLimiter` (Caffeine-based) + integration tests. ~6 new files. Backend only. | **Done** (PR #352) |
-| **169B** | 169.9–169.14 | Replace `EmailNotificationChannel` stub with production implementation + notification type-to-template mapping + rate limiter integration + end-to-end tests. ~1 modified file, ~1 new test file. Backend only. | |
+| **169B** | 169.9–169.14 | Replace `EmailNotificationChannel` stub with production implementation + notification type-to-template mapping + rate limiter integration + end-to-end tests. ~1 modified file, ~1 new test file. Backend only. | **Done** (PR #353) |
 
 ### Tasks
 

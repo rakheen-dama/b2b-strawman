@@ -191,7 +191,7 @@
 | **Phase 23 — Custom Field Maturity & Data Integrity** | | | | | | See [tasks/phase23-custom-field-maturity.md](tasks/phase23-custom-field-maturity.md) |
 | 161 | Auto-Apply Field Groups & V38 Migration | Backend | -- | L | 161A, 161B | **Done** (PRs #333, #334) |
 | 162 | Field Group Dependencies | Backend + Frontend | 161 | S | 162A | **Done** (PR #335) |
-| 163 | Conditional Field Visibility | Backend + Frontend | 161 | M | 163A, 163B, 163C | 163A **Done** (PR #336) |
+| 163 | Conditional Field Visibility | Backend + Frontend | 161 | M | 163A, 163B, 163C | 163A **Done** (PR #336), 163B **Done** (PR #337) |
 | 164 | Invoice Custom Fields & Task Pack | Backend + Frontend | 161 | M | 164A, 164B, 164C | |
 | 165 | Template Required Fields & Generation Validation | Backend + Frontend | 161, 164A | L | 165A, 165B, 165C | |
 | 166 | Rate Warnings & Bug Fixes | Backend + Frontend | -- | M | 166A, 166B | |

@@ -84,7 +84,7 @@ Phase 23 hardens the custom fields system from "data entry convenience" to "data
 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
-| 3a (parallel) | 163 | 163B | Conditional visibility frontend -- `CustomFieldSection` `isFieldVisible()`, reactive show/hide, `validateField` skips hidden |
+| 3a (parallel) | 163 | 163B | Conditional visibility frontend -- `CustomFieldSection` `isFieldVisible()`, reactive show/hide, `validateField` skips hidden | **Done** (PR #337) |
 | 3b (parallel) | 164 | 164B | Invoice custom fields frontend -- invoice detail page `CustomFieldSection` + `FieldGroupSelector`, settings INVOICE tab |
 | 3c (parallel) | 164 | 164C | Task field pack -- `common-task.json`, `FieldPackSeeder` `autoApply` processing |
 | 3d (parallel) | 165 | 165B | Template required fields frontend -- template editor field selector, generation dialog validation display |
@@ -261,7 +261,7 @@ Stage 4: [163C] // [165C]                                (parallel, after Stage 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **163A** | 163.1--163.6 | Backend: `FieldDefinition.visibilityCondition` field, `CustomFieldValidator.isFieldVisible()`, condition validation at save time (same entityType, no self-ref), updated POST/PUT field definition endpoints, integration tests. ~4 modified backend files. | **Done** (PR #336) |
-| **163B** | 163.7--163.11 | Frontend: `CustomFieldSection` `isFieldVisible()`, reactive show/hide, `validateField` skips hidden fields, frontend unit tests. ~2 modified frontend files, ~1 test file. | |
+| **163B** | 163.7--163.11 | Frontend: `CustomFieldSection` `isFieldVisible()`, reactive show/hide, `validateField` skips hidden fields, frontend unit tests. ~2 modified frontend files, ~1 test file. | **Done** (PR #337) |
 | **163C** | 163.12--163.16 | Frontend: Visibility condition editor UI in field definition dialog -- controlling field selector, operator selector, value input, preview, clear button, frontend tests. ~2 modified frontend files, ~1 test file. | |
 
 ### Tasks

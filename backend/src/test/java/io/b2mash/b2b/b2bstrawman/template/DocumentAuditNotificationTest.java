@@ -178,7 +178,7 @@ class DocumentAuditNotificationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"entityId": "%s", "saveToDocuments": false}
+                    {"entityId": "%s", "saveToDocuments": false, "acknowledgeWarnings": false}
                     """
                         .formatted(testProjectId)))
         .andExpect(status().isOk());

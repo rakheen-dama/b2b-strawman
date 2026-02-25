@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.jayway.jsonpath.JsonPath;
@@ -109,10 +110,11 @@ class TemplatePreviewControllerTest {
                         """
                             .formatted(testProjectId)))
             .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
             .andReturn();
 
-    String html = result.getResponse().getContentAsString();
+    String body = result.getResponse().getContentAsString();
+    String html = JsonPath.read(body, "$.html");
     assertThat(html).contains("Preview Test Project");
     assertThat(html).contains("<!DOCTYPE html>");
     assertThat(html).contains("<style>");
@@ -134,22 +136,21 @@ class TemplatePreviewControllerTest {
   }
 
   @Test
-  void previewReturnsCSPSandboxHeader() throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/api/templates/" + testTemplateId + "/preview")
-                    .with(ownerJwt())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"entityId": "%s"}
-                        """
-                            .formatted(testProjectId)))
-            .andExpect(status().isOk())
-            .andReturn();
-
-    assertThat(result.getResponse().getHeader("Content-Security-Policy")).isEqualTo("sandbox");
+  void previewReturnsValidationResult() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/templates/" + testTemplateId + "/preview")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"entityId": "%s"}
+                    """
+                        .formatted(testProjectId)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.html").exists())
+        .andExpect(jsonPath("$.validationResult").exists())
+        .andExpect(jsonPath("$.validationResult.allPresent").value(true));
   }
 
   @Test

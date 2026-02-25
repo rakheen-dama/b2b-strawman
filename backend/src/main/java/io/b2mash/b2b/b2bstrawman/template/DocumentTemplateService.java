@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class DocumentTemplateService {
 
   private static final Logger log = LoggerFactory.getLogger(DocumentTemplateService.class);
+  private static final Set<String> VALID_ENTITY_KEYS =
+      Set.of("customer", "project", "invoice", "task", "org");
 
   private final DocumentTemplateRepository documentTemplateRepository;
   private final AuditService auditService;
@@ -81,6 +84,10 @@ public class DocumentTemplateService {
         new DocumentTemplate(entityType, request.name(), finalSlug, category, request.content());
     dt.setDescription(request.description());
     dt.setCss(request.css());
+    if (request.requiredContextFields() != null) {
+      validateRequiredContextFieldEntries(request.requiredContextFields());
+      dt.setRequiredContextFields(request.requiredContextFields());
+    }
 
     try {
       dt = documentTemplateRepository.save(dt);
@@ -136,6 +143,11 @@ public class DocumentTemplateService {
         && !java.util.Objects.equals(request.sortOrder(), dt.getSortOrder())) {
       changedFields.add("sortOrder");
     }
+    if (request.requiredContextFields() != null
+        && !java.util.Objects.equals(
+            request.requiredContextFields(), dt.getRequiredContextFields())) {
+      changedFields.add("requiredContextFields");
+    }
 
     dt.updateContent(
         request.name() != null ? request.name() : dt.getName(),
@@ -146,6 +158,12 @@ public class DocumentTemplateService {
     if (request.sortOrder() != null) {
       dt.setSortOrder(request.sortOrder());
     }
+
+    // requiredContextFields: allow null to clear, non-null to set (with validation)
+    if (request.requiredContextFields() != null) {
+      validateRequiredContextFieldEntries(request.requiredContextFields());
+    }
+    dt.setRequiredContextFields(request.requiredContextFields());
 
     dt = documentTemplateRepository.save(dt);
 
@@ -295,6 +313,22 @@ public class DocumentTemplateService {
             .entityId(cloneId)
             .details(Map.of("source_template_id", clone.getSourceTemplateId().toString()))
             .build());
+  }
+
+  private void validateRequiredContextFieldEntries(List<Map<String, String>> entries) {
+    for (var entry : entries) {
+      String entity = entry.get("entity");
+      if (entity == null || !VALID_ENTITY_KEYS.contains(entity)) {
+        throw new InvalidStateException(
+            "Invalid required context field",
+            "Invalid entity value '" + entity + "'. Must be one of: " + VALID_ENTITY_KEYS);
+      }
+      String field = entry.get("field");
+      if (field == null || field.isBlank()) {
+        throw new InvalidStateException(
+            "Invalid required context field", "Field name must not be blank");
+      }
+    }
   }
 
   /**

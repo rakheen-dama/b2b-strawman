@@ -37,14 +37,17 @@ public class PdfRenderingService {
 
   private final DocumentTemplateRepository documentTemplateRepository;
   private final List<TemplateContextBuilder> contextBuilders;
+  private final TemplateValidationService templateValidationService;
   private final TemplateEngine stringTemplateEngine;
   private final String defaultCss;
 
   public PdfRenderingService(
       DocumentTemplateRepository documentTemplateRepository,
-      List<TemplateContextBuilder> contextBuilders) {
+      List<TemplateContextBuilder> contextBuilders,
+      TemplateValidationService templateValidationService) {
     this.documentTemplateRepository = documentTemplateRepository;
     this.contextBuilders = contextBuilders;
+    this.templateValidationService = templateValidationService;
     this.stringTemplateEngine = createStringTemplateEngine();
     this.defaultCss = loadDefaultCss();
   }
@@ -112,6 +115,52 @@ public class PdfRenderingService {
 
     String renderedBody = renderThymeleaf(template.getContent(), contextMap);
     return wrapHtml(renderedBody, mergedCss);
+  }
+
+  /**
+   * Renders HTML preview AND validates required context fields in a single pass. Returns a
+   * PreviewResponse containing both the HTML and the validation result.
+   */
+  @Transactional(readOnly = true)
+  public PreviewResponse previewWithValidation(UUID templateId, UUID entityId, UUID memberId) {
+    var template =
+        documentTemplateRepository
+            .findById(templateId)
+            .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", templateId));
+
+    var builder = findBuilder(template.getPrimaryEntityType());
+    var contextMap = builder.buildContext(entityId, memberId);
+
+    // Validate required fields
+    var validationResult =
+        templateValidationService.validateRequiredFields(
+            template.getRequiredContextFields(), contextMap);
+
+    String customCss = template.getCss() != null ? template.getCss() : "";
+    String mergedCss = defaultCss + "\n" + customCss;
+    String renderedBody = renderThymeleaf(template.getContent(), contextMap);
+    String html = wrapHtml(renderedBody, mergedCss);
+
+    return new PreviewResponse(html, validationResult);
+  }
+
+  /** DTO returned by {@link #previewWithValidation}. Lives in the service layer to avoid a */
+  // upward dependency from service → controller.
+  public record PreviewResponse(
+      String html, TemplateValidationService.TemplateValidationResult validationResult) {}
+
+  /**
+   * Builds context for a template without rendering. Used by GeneratedDocumentService to validate
+   * required fields before rendering.
+   */
+  @Transactional(readOnly = true)
+  public Map<String, Object> buildContext(UUID templateId, UUID entityId, UUID memberId) {
+    var template =
+        documentTemplateRepository
+            .findById(templateId)
+            .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", templateId));
+    var builder = findBuilder(template.getPrimaryEntityType());
+    return builder.buildContext(entityId, memberId);
   }
 
   private TemplateContextBuilder findBuilder(TemplateEntityType entityType) {

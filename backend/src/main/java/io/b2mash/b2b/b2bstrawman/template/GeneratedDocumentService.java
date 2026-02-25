@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.event.DocumentGeneratedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.exception.ValidationWarningException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -31,6 +32,7 @@ public class GeneratedDocumentService {
   private final MemberNameResolver memberNameResolver;
   private final PdfRenderingService pdfRenderingService;
   private final DocumentTemplateService documentTemplateService;
+  private final TemplateValidationService templateValidationService;
   private final StorageService storageService;
   private final DocumentRepository documentRepository;
   private final AuditService auditService;
@@ -42,6 +44,7 @@ public class GeneratedDocumentService {
       MemberNameResolver memberNameResolver,
       PdfRenderingService pdfRenderingService,
       DocumentTemplateService documentTemplateService,
+      TemplateValidationService templateValidationService,
       StorageService storageService,
       DocumentRepository documentRepository,
       AuditService auditService,
@@ -51,6 +54,7 @@ public class GeneratedDocumentService {
     this.memberNameResolver = memberNameResolver;
     this.pdfRenderingService = pdfRenderingService;
     this.documentTemplateService = documentTemplateService;
+    this.templateValidationService = templateValidationService;
     this.storageService = storageService;
     this.documentRepository = documentRepository;
     this.auditService = auditService;
@@ -66,7 +70,26 @@ public class GeneratedDocumentService {
    */
   @Transactional
   public GenerationResult generateDocument(
-      UUID templateId, UUID entityId, boolean saveToDocuments, UUID memberId) {
+      UUID templateId,
+      UUID entityId,
+      boolean saveToDocuments,
+      boolean acknowledgeWarnings,
+      UUID memberId) {
+    // 0. Validate required fields before generation
+    var template =
+        documentTemplateRepository
+            .findById(templateId)
+            .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", templateId));
+
+    var contextMap = pdfRenderingService.buildContext(templateId, entityId, memberId);
+    var validationResult =
+        templateValidationService.validateRequiredFields(
+            template.getRequiredContextFields(), contextMap);
+
+    if (!validationResult.allPresent() && !acknowledgeWarnings) {
+      throw new ValidationWarningException(validationResult);
+    }
+
     // 1. Generate PDF
     var pdfResult = pdfRenderingService.generatePdf(templateId, entityId, memberId);
 
@@ -92,6 +115,19 @@ public class GeneratedDocumentService {
             pdfResult.pdfBytes().length,
             memberId,
             contextSnapshot);
+
+    // 5b. Store warnings if validation had missing fields
+    if (!validationResult.allPresent()) {
+      var warnings =
+          validationResult.fields().stream()
+              .filter(f -> !f.present())
+              .map(
+                  f ->
+                      Map.<String, Object>of(
+                          "entity", f.entity(), "field", f.field(), "reason", f.reason()))
+              .toList();
+      generatedDoc.setWarnings(warnings);
+    }
 
     // 6. Optionally save to Documents and link
     if (saveToDocuments) {

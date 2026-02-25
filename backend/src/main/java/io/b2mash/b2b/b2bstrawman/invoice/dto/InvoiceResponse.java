@@ -67,6 +67,6 @@ public record InvoiceResponse(
         invoice.getUpdatedAt(),
         lines,
         invoice.getCustomFields() != null ? invoice.getCustomFields() : Map.of(),
-        invoice.getAppliedFieldGroups());
+        invoice.getAppliedFieldGroups() != null ? invoice.getAppliedFieldGroups() : List.of());
   }
 }

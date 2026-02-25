@@ -1070,6 +1070,17 @@ public class InvoiceService {
 
     log.info("Updated custom fields on invoice {}", invoiceId);
 
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("invoice.custom_fields_updated")
+            .entityType("invoice")
+            .entityId(invoice.getId())
+            .details(
+                Map.of(
+                    "invoice_number",
+                    invoice.getInvoiceNumber() != null ? invoice.getInvoiceNumber() : ""))
+            .build());
+
     return buildResponse(invoice);
   }
 
@@ -1103,6 +1114,19 @@ public class InvoiceService {
 
     invoice.setAppliedFieldGroups(appliedFieldGroups);
     invoiceRepository.save(invoice);
+
+    log.info("Updated field groups on invoice {}", invoiceId);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("invoice.field_groups_updated")
+            .entityType("invoice")
+            .entityId(invoice.getId())
+            .details(
+                Map.of(
+                    "invoice_number",
+                    invoice.getInvoiceNumber() != null ? invoice.getInvoiceNumber() : ""))
+            .build());
 
     // Collect field definition IDs from applied groups
     var fieldDefIds = new ArrayList<UUID>();

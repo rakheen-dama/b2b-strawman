@@ -1,0 +1,14 @@
+<div xmlns:th="http://www.thymeleaf.org">
+  <h2 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 600; color: #111827;">Test Email</h2>
+  <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.6; color: #374151;">
+    Hi <span th:text="${recipientName != null ? recipientName : 'there'}">there</span>,
+  </p>
+  <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.6; color: #374151;">
+    This is a test email from <span th:text="${orgName != null ? orgName : 'DocTeams'}">DocTeams</span>.
+    If you received this, your email integration is working correctly.
+  </p>
+  <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #374151;">
+    Best,<br/>
+    <span th:text="${orgName != null ? orgName : 'DocTeams'}">DocTeams</span>
+  </p>
+</div>

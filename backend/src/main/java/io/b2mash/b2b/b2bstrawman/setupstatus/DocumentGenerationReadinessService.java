@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.setupstatus;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplateContextBuilder;
 import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
+import io.b2mash.b2b.b2bstrawman.template.TemplateValidationService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,12 +30,15 @@ public class DocumentGenerationReadinessService {
 
   private final DocumentTemplateRepository documentTemplateRepository;
   private final List<TemplateContextBuilder> contextBuilders;
+  private final TemplateValidationService templateValidationService;
 
   public DocumentGenerationReadinessService(
       DocumentTemplateRepository documentTemplateRepository,
-      List<TemplateContextBuilder> contextBuilders) {
+      List<TemplateContextBuilder> contextBuilders,
+      TemplateValidationService templateValidationService) {
     this.documentTemplateRepository = documentTemplateRepository;
     this.contextBuilders = contextBuilders;
+    this.templateValidationService = templateValidationService;
   }
 
   @Transactional(readOnly = true)
@@ -95,12 +99,23 @@ public class DocumentGenerationReadinessService {
           .toList();
     }
 
-    var missingFields = getMissingFields(context, entityType);
+    var structuralMissing = getMissingFields(context, entityType);
     return templates.stream()
         .map(
-            t ->
-                new TemplateReadiness(
-                    t.getId(), t.getName(), t.getSlug(), missingFields.isEmpty(), missingFields))
+            t -> {
+              var missing = new ArrayList<>(structuralMissing);
+              // Check template-specific required fields
+              if (t.getRequiredContextFields() != null && !t.getRequiredContextFields().isEmpty()) {
+                var validationResult =
+                    templateValidationService.validateRequiredFields(
+                        t.getRequiredContextFields(), context);
+                validationResult.fields().stream()
+                    .filter(f -> !f.present())
+                    .forEach(f -> missing.add(f.entity() + "." + f.field()));
+              }
+              return new TemplateReadiness(
+                  t.getId(), t.getName(), t.getSlug(), missing.isEmpty(), missing);
+            })
         .toList();
   }
 

@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -112,14 +113,11 @@ public class DocumentTemplateController {
 
   @PostMapping("/{id}/preview")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
-  public ResponseEntity<String> previewTemplate(
+  public ResponseEntity<PreviewResponse> previewTemplate(
       @PathVariable UUID id, @Valid @RequestBody PreviewRequest request) {
     UUID memberId = RequestScopes.requireMemberId();
-    String html = pdfRenderingService.previewHtml(id, request.entityId(), memberId);
-    return ResponseEntity.ok()
-        .contentType(MediaType.TEXT_HTML)
-        .header("Content-Security-Policy", "sandbox")
-        .body(html);
+    return ResponseEntity.ok(
+        pdfRenderingService.previewWithValidation(id, request.entityId(), memberId));
   }
 
   @PostMapping("/{id}/generate")
@@ -130,7 +128,11 @@ public class DocumentTemplateController {
 
     var result =
         generatedDocumentService.generateDocument(
-            id, request.entityId(), request.saveToDocuments(), memberId);
+            id,
+            request.entityId(),
+            request.saveToDocuments(),
+            request.acknowledgeWarnings(),
+            memberId);
 
     var generatedDoc = result.generatedDocument();
     var pdfResult = result.pdfResult();
@@ -158,7 +160,8 @@ public class DocumentTemplateController {
 
   public record PreviewRequest(@NotNull UUID entityId) {}
 
-  public record GenerateDocumentRequest(@NotNull UUID entityId, boolean saveToDocuments) {}
+  public record GenerateDocumentRequest(
+      @NotNull UUID entityId, boolean saveToDocuments, boolean acknowledgeWarnings) {}
 
   public record GenerateDocumentResponse(
       UUID id, String fileName, long fileSize, UUID documentId, Instant generatedAt) {}
@@ -170,14 +173,16 @@ public class DocumentTemplateController {
       @NotNull TemplateEntityType primaryEntityType,
       @NotBlank String content,
       String css,
-      String slug) {}
+      String slug,
+      List<Map<String, String>> requiredContextFields) {}
 
   public record UpdateTemplateRequest(
       @NotBlank String name,
       String description,
       @NotBlank String content,
       String css,
-      Integer sortOrder) {}
+      Integer sortOrder,
+      List<Map<String, String>> requiredContextFields) {}
 
   public record TemplateListResponse(
       UUID id,
@@ -225,6 +230,7 @@ public class DocumentTemplateController {
       String packTemplateKey,
       boolean active,
       int sortOrder,
+      List<Map<String, String>> requiredContextFields,
       Instant createdAt,
       Instant updatedAt) {
 
@@ -244,8 +250,12 @@ public class DocumentTemplateController {
           dt.getPackTemplateKey(),
           dt.isActive(),
           dt.getSortOrder(),
+          dt.getRequiredContextFields(),
           dt.getCreatedAt(),
           dt.getUpdatedAt());
     }
   }
+
+  public record PreviewResponse(
+      String html, TemplateValidationService.TemplateValidationResult validationResult) {}
 }

@@ -10,8 +10,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "document_templates")
@@ -70,6 +74,10 @@ public class DocumentTemplate {
 
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
+
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "required_context_fields", columnDefinition = "jsonb")
+  private List<Map<String, String>> requiredContextFields;
 
   protected DocumentTemplate() {}
 
@@ -232,5 +240,13 @@ public class DocumentTemplate {
 
   public void setSource(TemplateSource source) {
     this.source = source;
+  }
+
+  public List<Map<String, String>> getRequiredContextFields() {
+    return requiredContextFields;
+  }
+
+  public void setRequiredContextFields(List<Map<String, String>> requiredContextFields) {
+    this.requiredContextFields = requiredContextFields;
   }
 }

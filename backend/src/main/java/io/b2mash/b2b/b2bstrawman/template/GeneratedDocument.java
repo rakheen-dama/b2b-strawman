@@ -9,6 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -50,6 +51,10 @@ public class GeneratedDocument {
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "context_snapshot", columnDefinition = "jsonb")
   private Map<String, Object> contextSnapshot;
+
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "warnings", columnDefinition = "jsonb")
+  private List<Map<String, Object>> warnings;
 
   @Column(name = "generated_at", nullable = false, updatable = false)
   private Instant generatedAt;
@@ -122,6 +127,14 @@ public class GeneratedDocument {
 
   public void setContextSnapshot(Map<String, Object> contextSnapshot) {
     this.contextSnapshot = contextSnapshot;
+  }
+
+  public List<Map<String, Object>> getWarnings() {
+    return warnings;
+  }
+
+  public void setWarnings(List<Map<String, Object>> warnings) {
+    this.warnings = warnings;
   }
 
   public Instant getGeneratedAt() {

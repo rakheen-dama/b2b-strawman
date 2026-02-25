@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplateCategory;
 import io.b2mash.b2b.b2bstrawman.template.TemplateContextBuilder;
 import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
+import io.b2mash.b2b.b2bstrawman.template.TemplateValidationService;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +50,9 @@ class DocumentGenerationReadinessServiceTest {
 
     service =
         new DocumentGenerationReadinessService(
-            documentTemplateRepository, List.of(projectBuilder, customerBuilder, invoiceBuilder));
+            documentTemplateRepository,
+            List.of(projectBuilder, customerBuilder, invoiceBuilder),
+            new TemplateValidationService());
   }
 
   @Test
@@ -152,7 +155,8 @@ class DocumentGenerationReadinessServiceTest {
   void checkReadiness_noMatchingBuilder_returnsTemplatesAsNotReady() {
     // Create a service with no builders
     var serviceNoBuilders =
-        new DocumentGenerationReadinessService(documentTemplateRepository, List.of());
+        new DocumentGenerationReadinessService(
+            documentTemplateRepository, List.of(), new TemplateValidationService());
 
     var template = createProjectTemplate("Engagement Letter", "engagement-letter");
     when(documentTemplateRepository.findByPrimaryEntityTypeAndActiveTrueOrderBySortOrder(

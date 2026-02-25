@@ -103,7 +103,7 @@ class DocumentGenerationIntegrationTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {"entityId": "%s", "saveToDocuments": false}
+                        {"entityId": "%s", "saveToDocuments": false, "acknowledgeWarnings": false}
                         """
                             .formatted(testProjectId)))
             .andExpect(status().isOk())
@@ -132,7 +132,7 @@ class DocumentGenerationIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"entityId": "%s", "saveToDocuments": true}
+                    {"entityId": "%s", "saveToDocuments": true, "acknowledgeWarnings": false}
                     """
                         .formatted(testProjectId)))
         .andExpect(status().isCreated())
@@ -152,7 +152,7 @@ class DocumentGenerationIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"entityId": "%s", "saveToDocuments": false}
+                    {"entityId": "%s", "saveToDocuments": false, "acknowledgeWarnings": false}
                     """
                         .formatted(testProjectId)))
         .andExpect(status().isOk());
@@ -181,7 +181,7 @@ class DocumentGenerationIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"entityId": "%s", "saveToDocuments": false}
+                    {"entityId": "%s", "saveToDocuments": false, "acknowledgeWarnings": false}
                     """
                         .formatted(testProjectId)))
         .andExpect(status().isOk());
@@ -212,7 +212,7 @@ class DocumentGenerationIntegrationTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {"entityId": "%s", "saveToDocuments": false}
+                        {"entityId": "%s", "saveToDocuments": false, "acknowledgeWarnings": false}
                         """
                             .formatted(testProjectId)))
             .andExpect(status().isOk())
@@ -233,7 +233,7 @@ class DocumentGenerationIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"entityId": "%s", "saveToDocuments": false}
+                    {"entityId": "%s", "saveToDocuments": false, "acknowledgeWarnings": false}
                     """
                         .formatted(testProjectId)))
         .andExpect(status().isUnauthorized());
@@ -248,7 +248,7 @@ class DocumentGenerationIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"entityId": "%s", "saveToDocuments": false}
+                    {"entityId": "%s", "saveToDocuments": false, "acknowledgeWarnings": false}
                     """
                         .formatted(testProjectId)))
         .andExpect(status().isNotFound());

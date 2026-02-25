@@ -21,7 +21,7 @@ Phase 23 hardens the custom fields system from "data entry convenience" to "data
 |------|------|-------|------|--------|--------|--------|
 | 161 | Auto-Apply Field Groups & V38 Migration | Backend | -- | L | 161A, 161B | **Done** (PRs #333, #334) |
 | 162 | Field Group Dependencies | Backend + Frontend | 161 | S | 162A | **Done** (PR #335) |
-| 163 | Conditional Field Visibility | Backend + Frontend | 161 | M | 163A, 163B, 163C | |
+| 163 | Conditional Field Visibility | Backend + Frontend | 161 | M | 163A, 163B, 163C | **Done** (PRs #336, #337, #338) |
 | 164 | Invoice Custom Fields & Task Pack | Backend + Frontend | 161 | M | 164A, 164B, 164C | |
 | 165 | Template Required Fields & Generation Validation | Backend + Frontend | 161, 164A | L | 165A, 165B, 165C | |
 | 166 | Rate Warnings & Bug Fixes | Backend + Frontend | -- | M | 166A, 166B | |
@@ -93,7 +93,7 @@ Phase 23 hardens the custom fields system from "data entry convenience" to "data
 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
-| 4a | 163 | 163C | Visibility condition editor UI in field definition dialog |
+| 4a | 163 | 163C | Visibility condition editor UI in field definition dialog | **Done** (PR #338) |
 | 4b | 165 | 165C | Invoice generation validation checklist + invoice send validation with override |
 
 ### Timeline
@@ -262,7 +262,7 @@ Stage 4: [163C] // [165C]                                (parallel, after Stage 
 |-------|-------|---------|--------|
 | **163A** | 163.1--163.6 | Backend: `FieldDefinition.visibilityCondition` field, `CustomFieldValidator.isFieldVisible()`, condition validation at save time (same entityType, no self-ref), updated POST/PUT field definition endpoints, integration tests. ~4 modified backend files. | **Done** (PR #336) |
 | **163B** | 163.7--163.11 | Frontend: `CustomFieldSection` `isFieldVisible()`, reactive show/hide, `validateField` skips hidden fields, frontend unit tests. ~2 modified frontend files, ~1 test file. | **Done** (PR #337) |
-| **163C** | 163.12--163.16 | Frontend: Visibility condition editor UI in field definition dialog -- controlling field selector, operator selector, value input, preview, clear button, frontend tests. ~2 modified frontend files, ~1 test file. | |
+| **163C** | 163.12--163.16 | Frontend: Visibility condition editor UI in field definition dialog -- controlling field selector, operator selector, value input, preview, clear button, frontend tests. ~2 modified frontend files, ~1 test file. | **Done** (PR #338) |
 
 ### Tasks
 

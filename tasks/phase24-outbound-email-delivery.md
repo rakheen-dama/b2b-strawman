@@ -86,7 +86,7 @@ The design introduces a **two-tier email architecture**: every org gets working 
 |-------|------|-------|---------|
 | 2a (parallel) | 170 | 170A | InvoiceEmailService + @TransactionalEventListener on InvoiceSentEvent + PDF attachment | **Done** (PR #354) |
 | 2b (parallel) | 170 | 170B | PortalEmailService + MagicLinkService integration + magic link template wiring | **Done** (PR #355) |
-| 2c (parallel) | 171 | 171A | SendGridEmailProvider adapter + sendgrid-java dependency + @ConditionalOnClass |
+| 2c (parallel) | 171 | 171A | SendGridEmailProvider adapter + sendgrid-java dependency + @ConditionalOnClass | **Done** (PR #356) |
 | 2d (parallel) | 172 | 172A | UnsubscribeService (HMAC tokens) + UnsubscribeController + confirmation HTML page |
 
 ### Stage 3: Webhook + Admin (after respective Stage 2 slices)
@@ -420,7 +420,7 @@ Stage 4: [173A] --> [173B]                               (sequential, after 172B
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **171A** | 171.1–171.6 | `SendGridEmailProvider` adapter + `sendgrid-java` dependency + `@ConditionalOnClass` + `unique_args` metadata + unit tests. ~2 new files, ~1 modified file. Backend only. | |
+| **171A** | 171.1–171.6 | `SendGridEmailProvider` adapter + `sendgrid-java` dependency + `@ConditionalOnClass` + `unique_args` metadata + unit tests. ~2 new files, ~1 modified file. Backend only. | **Done** (PR #356) |
 | **171B** | 171.7–171.13 | `EmailWebhookController` + signature verification + tenant context from `unique_args` + delivery log updates + bounce notifications + audit events + integration tests. ~2 new files, ~1 modified file. Backend only. | |
 
 ### Tasks

@@ -218,6 +218,13 @@
 | 184 | Invoice Preview, PDF + Portal Tax Display | Backend + Portal | 183 | M | 184A, 184B | |
 | 185 | Tax Settings + Rate Management Frontend | Frontend | 181 | M | 185A, 185B | |
 | 186 | Invoice Editor Tax UI | Frontend | 183, 185 | M | 186A | |
+| **Phase 27 — Document Clauses** | | | | | | See [tasks/phase27-document-clauses.md](tasks/phase27-document-clauses.md) |
+| 187 | Clause Entity Foundation + Migration | Backend | -- | M | 187A, 187B | |
+| 188 | Template-Clause Association API | Backend | 187 | M | 188A | |
+| 189 | Generation Pipeline Extension | Backend | 187, 188 | L | 189A, 189B | |
+| 190 | Clause Pack Seeder | Backend | 187, 188 | M | 190A | |
+| 191 | Clause Library Frontend | Frontend | 187 | M | 191A, 191B | |
+| 192 | Template Clauses Tab + Generation Dialog Frontend | Frontend | 188, 189, 191 | L | 192A, 192B | |
 
 ---
 

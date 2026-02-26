@@ -13,8 +13,10 @@ import {
   ClipboardCheck,
   ShieldAlert,
   LayoutTemplate,
+  Mail,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { getAuthContext } from "@/lib/auth";
 import type { LucideIcon } from "lucide-react";
 
 interface SettingsCard {
@@ -23,6 +25,7 @@ interface SettingsCard {
   description: string;
   href: string | null;
   comingSoon: boolean;
+  adminOnly?: boolean;
 }
 
 const settingsCards: SettingsCard[] = [
@@ -90,6 +93,14 @@ const settingsCards: SettingsCard[] = [
     comingSoon: false,
   },
   {
+    icon: Mail,
+    title: "Email",
+    description: "View email delivery logs, stats, and rate limits",
+    href: "email",
+    comingSoon: false,
+    adminOnly: true,
+  },
+  {
     icon: Building2,
     title: "Organization",
     description: "Update org name, logo, and details",
@@ -118,13 +129,19 @@ export default async function SettingsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const { orgRole } = await getAuthContext();
+  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+
+  const visibleCards = settingsCards.filter(
+    (card) => !card.adminOnly || isAdmin
+  );
 
   return (
     <div className="space-y-8">
       <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Settings</h1>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        {settingsCards.map((card) => {
+        {visibleCards.map((card) => {
           const Icon = card.icon;
           const content = (
             <div

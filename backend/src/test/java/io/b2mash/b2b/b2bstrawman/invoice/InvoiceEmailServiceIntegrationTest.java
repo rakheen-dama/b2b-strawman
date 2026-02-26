@@ -117,7 +117,8 @@ class InvoiceEmailServiceIntegrationTest {
                               "123 Test St",
                               "Invoice Email Test Org",
                               memberId);
-                      invoice.recalculateTotals(new BigDecimal("1000.00"));
+                      invoice.recalculateTotals(
+                          new BigDecimal("1000.00"), false, BigDecimal.ZERO, false);
                       invoice.approve("INV-2026-0001", memberId);
                       invoice.markSent();
                       savedInvoice = invoiceRepository.save(invoice);
@@ -222,7 +223,8 @@ class InvoiceEmailServiceIntegrationTest {
                               "456 Test St",
                               "Rate Limit Test Org",
                               rlMemberId);
-                      invoice.recalculateTotals(new BigDecimal("500.00"));
+                      invoice.recalculateTotals(
+                          new BigDecimal("500.00"), false, BigDecimal.ZERO, false);
                       invoice.approve("INV-RL-0001", rlMemberId);
                       invoice.markSent();
                       rlInvoice[0] = invoiceRepository.save(invoice);

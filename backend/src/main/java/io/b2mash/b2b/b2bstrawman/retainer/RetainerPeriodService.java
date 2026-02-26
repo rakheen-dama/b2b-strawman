@@ -18,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.PeriodReadyToCloseView;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import io.b2mash.b2b.b2bstrawman.tax.TaxCalculationService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -49,6 +50,7 @@ public class RetainerPeriodService {
   private final AuditService auditService;
   private final NotificationService notificationService;
   private final NotificationRepository notificationRepository;
+  private final TaxCalculationService taxCalculationService;
 
   public RetainerPeriodService(
       RetainerAgreementRepository agreementRepository,
@@ -62,7 +64,8 @@ public class RetainerPeriodService {
       MemberRepository memberRepository,
       AuditService auditService,
       NotificationService notificationService,
-      NotificationRepository notificationRepository) {
+      NotificationRepository notificationRepository,
+      TaxCalculationService taxCalculationService) {
     this.agreementRepository = agreementRepository;
     this.periodRepository = periodRepository;
     this.invoiceRepository = invoiceRepository;
@@ -75,6 +78,7 @@ public class RetainerPeriodService {
     this.auditService = auditService;
     this.notificationService = notificationService;
     this.notificationRepository = notificationRepository;
+    this.taxCalculationService = taxCalculationService;
   }
 
   public record PeriodCloseResult(
@@ -391,7 +395,14 @@ public class RetainerPeriodService {
     var lines = invoiceLineRepository.findByInvoiceIdOrderBySortOrder(invoice.getId());
     BigDecimal subtotal =
         lines.stream().map(InvoiceLine::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
-    invoice.recalculateTotals(subtotal);
+    boolean taxInclusive =
+        orgSettingsRepository.findForCurrentTenant().map(s -> s.isTaxInclusive()).orElse(false);
+    boolean hasPerLineTax = taxCalculationService.hasPerLineTax(lines);
+    BigDecimal perLineTaxSum =
+        lines.stream()
+            .map(line -> line.getTaxAmount() != null ? line.getTaxAmount() : BigDecimal.ZERO)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    invoice.recalculateTotals(subtotal, hasPerLineTax, perLineTaxSum, taxInclusive);
   }
 
   @Transactional(readOnly = true)

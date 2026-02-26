@@ -72,6 +72,9 @@ public class OrgSettings {
   @Column(name = "document_signing_enabled", nullable = false)
   private boolean documentSigningEnabled;
 
+  @Column(name = "tax_inclusive", nullable = false)
+  private boolean taxInclusive;
+
   protected OrgSettings() {}
 
   public OrgSettings(String defaultCurrency) {
@@ -81,6 +84,7 @@ public class OrgSettings {
     this.accountingEnabled = false;
     this.aiEnabled = false;
     this.documentSigningEnabled = false;
+    this.taxInclusive = false;
   }
 
   public void updateCurrency(String currency) {
@@ -239,6 +243,10 @@ public class OrgSettings {
 
   public boolean isDocumentSigningEnabled() {
     return documentSigningEnabled;
+  }
+
+  public boolean isTaxInclusive() {
+    return taxInclusive;
   }
 
   /** Updates all three integration domain flags and the timestamp. */

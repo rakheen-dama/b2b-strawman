@@ -407,6 +407,47 @@ class PayFastPaymentGatewayTest {
     assertThat(result.eventType()).isNull();
   }
 
+  @Test
+  void handleWebhook_missing_forwarded_for_header_returns_unverified() {
+    var params = new LinkedHashMap<String, String>();
+    params.put("pf_payment_id", "1234567");
+    params.put("payment_status", "COMPLETE");
+    params.put("custom_str1", "tenant_abc123");
+    params.put("custom_str2", "invoice-uuid-123");
+    params.put("signature", "some_sig");
+
+    var payload = buildFormPayload(params);
+
+    // Empty headers map — no X-Forwarded-For at all
+    var result = gateway.handleWebhook(payload, Map.of());
+
+    assertThat(result.verified()).isFalse();
+    assertThat(result.eventType()).isNull();
+  }
+
+  @Test
+  void handleWebhook_lowercase_forwarded_for_header_works() {
+    setupMerchantSecrets();
+    mockServerConfirmation("VALID");
+
+    var params = new LinkedHashMap<String, String>();
+    params.put("pf_payment_id", "1234567");
+    params.put("payment_status", "COMPLETE");
+    params.put("custom_str1", "tenant_abc123");
+    params.put("custom_str2", "invoice-uuid-123");
+
+    var signature = gateway.generateVerificationSignature(params, "test_passphrase");
+    params.put("signature", signature);
+
+    var payload = buildFormPayload(params);
+
+    // Lowercase header key as Spring may deliver
+    var result = gateway.handleWebhook(payload, Map.of("x-forwarded-for", PAYFAST_IP));
+
+    assertThat(result.verified()).isTrue();
+    assertThat(result.status()).isEqualTo(PaymentStatus.COMPLETED);
+  }
+
   // --- Helpers ---
 
   private void setupMerchantSecrets() {

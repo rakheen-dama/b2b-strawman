@@ -116,7 +116,7 @@ public class PayFastPaymentGateway implements PaymentGateway {
       }
 
       // Step 1: IP validation
-      var sourceIp = headers.get("X-Forwarded-For");
+      var sourceIp = getHeaderCaseInsensitive(headers, "X-Forwarded-For");
       if (!isPayFastIp(sourceIp)) {
         log.warn("PayFast ITN: request from non-PayFast IP: {}", sourceIp);
         return new WebhookResult(false, null, null, null, null, Map.of());
@@ -201,7 +201,8 @@ public class PayFastPaymentGateway implements PaymentGateway {
       long ipLong = ipToLong(ip);
       return ipLong >= PAYFAST_IP_RANGE_START && ipLong <= PAYFAST_IP_RANGE_END;
     } catch (Exception e) {
-      log.warn("PayFast ITN: invalid IP address '{}'", ip);
+      String safeIp = ip.replaceAll("[\\r\\n\\t]", "").substring(0, Math.min(ip.length(), 45));
+      log.warn("PayFast ITN: invalid IP address '{}'", safeIp);
       return false;
     }
   }
@@ -232,6 +233,17 @@ public class PayFastPaymentGateway implements PaymentGateway {
     }
   }
 
+  private static String getHeaderCaseInsensitive(Map<String, String> headers, String name) {
+    String value = headers.get(name);
+    if (value != null) return value;
+    for (Map.Entry<String, String> entry : headers.entrySet()) {
+      if (entry.getKey().equalsIgnoreCase(name)) {
+        return entry.getValue();
+      }
+    }
+    return null;
+  }
+
   private static long ipToLong(String ip) {
     var parts = ip.split("\\.");
     if (parts.length != 4) {
@@ -239,7 +251,11 @@ public class PayFastPaymentGateway implements PaymentGateway {
     }
     long result = 0;
     for (String part : parts) {
-      result = (result << 8) + Integer.parseInt(part);
+      int octet = Integer.parseInt(part);
+      if (octet < 0 || octet > 255) {
+        throw new IllegalArgumentException("Invalid IPv4 octet: " + part);
+      }
+      result = (result << 8) + octet;
     }
     return result;
   }

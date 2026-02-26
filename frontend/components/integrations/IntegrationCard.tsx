@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Calculator, Sparkles, PenTool, CreditCard, KeyRound } from "lucide-react";
+import { Calculator, Sparkles, PenTool, CreditCard, KeyRound, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +35,7 @@ const DOMAIN_ICONS: Record<
   ACCOUNTING: Calculator,
   AI: Sparkles,
   DOCUMENT_SIGNING: PenTool,
+  EMAIL: Mail,
   PAYMENT: CreditCard,
 };
 

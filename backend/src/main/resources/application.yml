@@ -79,6 +79,7 @@ docteams:
       webhook-verification-key: ${SENDGRID_WEBHOOK_VERIFICATION_KEY:}
   app:
     base-url: ${APP_BASE_URL:http://localhost:3000}
+    portal-base-url: ${PORTAL_BASE_URL:http://localhost:3002}
   stripe:
     webhook-url: ${STRIPE_WEBHOOK_URL:}
   payfast:

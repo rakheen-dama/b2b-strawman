@@ -94,6 +94,7 @@ public class InvoiceService {
   private final FieldDefinitionRepository fieldDefinitionRepository;
   private final InvoiceValidationService invoiceValidationService;
   private final PaymentEventRepository paymentEventRepository;
+  private final PaymentLinkService paymentLinkService;
 
   public InvoiceService(
       InvoiceRepository invoiceRepository,
@@ -118,7 +119,8 @@ public class InvoiceService {
       FieldGroupMemberRepository fieldGroupMemberRepository,
       FieldDefinitionRepository fieldDefinitionRepository,
       InvoiceValidationService invoiceValidationService,
-      PaymentEventRepository paymentEventRepository) {
+      PaymentEventRepository paymentEventRepository,
+      PaymentLinkService paymentLinkService) {
     this.invoiceRepository = invoiceRepository;
     this.lineRepository = lineRepository;
     this.customerRepository = customerRepository;
@@ -142,6 +144,7 @@ public class InvoiceService {
     this.fieldDefinitionRepository = fieldDefinitionRepository;
     this.invoiceValidationService = invoiceValidationService;
     this.paymentEventRepository = paymentEventRepository;
+    this.paymentLinkService = paymentLinkService;
   }
 
   @Transactional(readOnly = true)
@@ -846,6 +849,9 @@ public class InvoiceService {
     invoice = invoiceRepository.save(invoice);
     log.info("Marked invoice {} as sent", invoiceId);
 
+    // Generate payment link via PSP adapter (no-op if no PSP configured)
+    paymentLinkService.generatePaymentLink(invoice);
+
     UUID actorId = RequestScopes.MEMBER_ID.isBound() ? RequestScopes.MEMBER_ID.get() : null;
     auditService.log(
         AuditEventBuilder.builder()
@@ -907,6 +913,11 @@ public class InvoiceService {
     if (invoice.getStatus() != InvoiceStatus.SENT) {
       throw new ResourceConflictException(
           "Invalid status transition", "Only sent invoices can be paid");
+    }
+
+    // Cancel any active payment session before recording manual payment
+    if (invoice.getPaymentSessionId() != null) {
+      paymentLinkService.cancelActiveSession(invoice);
     }
 
     // Call payment gateway via integration registry
@@ -1006,6 +1017,23 @@ public class InvoiceService {
             invoice.getNotes(),
             orgIdForEvent,
             tenantIdForEvent));
+
+    return buildResponse(invoice);
+  }
+
+  @Transactional
+  public InvoiceResponse refreshPaymentLink(UUID invoiceId) {
+    var invoice =
+        invoiceRepository
+            .findById(invoiceId)
+            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+
+    if (invoice.getStatus() != InvoiceStatus.SENT) {
+      throw new ResourceConflictException(
+          "Invalid status", "Only sent invoices can have their payment link refreshed");
+    }
+
+    paymentLinkService.refreshPaymentLink(invoice);
 
     return buildResponse(invoice);
   }

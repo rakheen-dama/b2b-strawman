@@ -123,9 +123,16 @@ public class SendGridEmailProvider implements EmailProvider {
 
     // Copy metadata to SendGrid custom_args for webhook tenant identification (ADR-096).
     // Required keys: tenantSchema, referenceType, referenceId (from EmailMessage.withTracking).
+    // Copy tracking metadata to custom_args, but exclude List-Unsubscribe MIME headers
+    // which are only relevant for SMTP providers and would pollute SendGrid custom_args.
     Map<String, String> metadata = message.metadata();
     if (metadata != null) {
-      metadata.forEach(personalization::addCustomArg);
+      metadata.forEach(
+          (key, value) -> {
+            if (!key.startsWith("List-Unsubscribe")) {
+              personalization.addCustomArg(key, value);
+            }
+          });
     }
 
     Mail mail = new Mail();

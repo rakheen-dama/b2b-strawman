@@ -117,5 +117,18 @@ public class SmtpEmailProvider implements EmailProvider {
     if (message.replyTo() != null) {
       helper.setReplyTo(message.replyTo());
     }
+
+    // Set List-Unsubscribe headers from message metadata (RFC 8058)
+    if (message.metadata() != null) {
+      MimeMessage mimeMessage = helper.getMimeMessage();
+      String listUnsubscribe = message.metadata().get("List-Unsubscribe");
+      if (listUnsubscribe != null) {
+        mimeMessage.setHeader("List-Unsubscribe", listUnsubscribe);
+      }
+      String listUnsubscribePost = message.metadata().get("List-Unsubscribe-Post");
+      if (listUnsubscribePost != null) {
+        mimeMessage.setHeader("List-Unsubscribe-Post", listUnsubscribePost);
+      }
+    }
   }
 }

@@ -211,6 +211,13 @@
 | 178 | Payment Link Generation + Webhook Reconciliation | Backend | 174, 175 | L | 178A, 178B | |
 | 179 | Portal Payment Flow + Read-Model Extension | Both | 178 | M | 179A, 179B | |
 | 180 | Integration Settings UI + Invoice Payment UX | Frontend | 178 | M | 180A, 180B | |
+| **Phase 26 — Invoice Tax Handling** | | | | | | See [tasks/phase26-invoice-tax-handling.md](tasks/phase26-invoice-tax-handling.md) |
+| 181 | TaxRate Entity Foundation + Migration | Backend | — | M | 181A, 181B | |
+| 182 | Tax Calculation Engine + InvoiceLine Extension | Backend | 181 | M | 182A, 182B | |
+| 183 | Tax Application in Invoice Flows | Backend | 182 | L | 183A, 183B | |
+| 184 | Invoice Preview, PDF + Portal Tax Display | Backend + Portal | 183 | M | 184A, 184B | |
+| 185 | Tax Settings + Rate Management Frontend | Frontend | 181 | M | 185A, 185B | |
+| 186 | Invoice Editor Tax UI | Frontend | 183, 185 | M | 186A | |
 
 ---
 

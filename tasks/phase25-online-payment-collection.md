@@ -82,7 +82,7 @@ Phase 25 wires up real online payment collection for the DocTeams platform. Tena
 |-------|------|-------|---------|--------|
 | 1a (parallel) | 175 | 175A | V42 migration + `PaymentEvent` entity + `PaymentEventStatus` enum + `PaymentEventRepository` + repository tests | **Done** (PR #364) |
 | 1b (parallel) | 176 | 176A | `StripePaymentGateway` session creation + webhook handling + `stripe-java` Maven dependency | **Done** (PR #366) |
-| 1c (parallel) | 177 | 177A | `PayFastPaymentGateway` session creation + ITN webhook handling + signature generation | |
+| 1c (parallel) | 177 | 177A | `PayFastPaymentGateway` session creation + ITN webhook handling + signature generation | **Done** (PR #368) |
 
 ### Stage 2: Invoice extension + adapter completion (parallel tracks)
 
@@ -365,7 +365,7 @@ Stage 5: [179B] // [180B]                                           (parallel, a
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **177A** | 177.1--177.7 | `PayFastPaymentGateway` with `createCheckoutSession()` (redirect URL construction + MD5 signature) + `handleWebhook()` (ITN parsing + signature verification). ~2 new files. Backend only. | |
+| **177A** | 177.1--177.7 | `PayFastPaymentGateway` with `createCheckoutSession()` (redirect URL construction + MD5 signature) + `handleWebhook()` (ITN parsing + signature verification). ~2 new files. Backend only. | **Done** (PR #368) |
 | **177B** | 177.8--177.14 | ITN IP validation + server confirmation via `RestClient` + `queryPaymentStatus()` + `testConnection()` + `recordManualPayment()` + sandbox toggle + comprehensive tests. ~1 modified file, ~1 test file. Backend only. | |
 
 ### Tasks

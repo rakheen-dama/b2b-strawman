@@ -21,8 +21,8 @@ public interface TaxRateRepository extends JpaRepository<TaxRate, UUID> {
 
   /** Counts draft invoice lines that reference this tax rate (used for deactivation guard). */
   @Query(
-      "SELECT COUNT(il) FROM InvoiceLine il JOIN Invoice i ON il.invoiceId = i.id"
-          + " WHERE il.taxRateId = :taxRateId AND i.status ="
-          + " io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus.DRAFT")
+      "SELECT COUNT(il) FROM InvoiceLine il WHERE il.taxRateId = :taxRateId"
+          + " AND il.invoiceId IN (SELECT i.id FROM Invoice i WHERE i.status ="
+          + " io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus.DRAFT)")
   long countDraftInvoiceLinesByTaxRateId(@Param("taxRateId") UUID taxRateId);
 }

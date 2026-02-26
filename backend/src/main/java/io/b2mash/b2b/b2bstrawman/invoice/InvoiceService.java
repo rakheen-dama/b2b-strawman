@@ -687,6 +687,9 @@ public class InvoiceService {
       applyTaxToLine(line, request.taxRateId());
     } else if (Boolean.TRUE.equals(request.clearTaxRate())) {
       line.clearTaxRate();
+    } else if (line.getTaxRateId() != null) {
+      // Recalculate tax for existing rate when amount changed
+      applyTaxToLine(line, line.getTaxRateId());
     }
     lineRepository.save(line);
 

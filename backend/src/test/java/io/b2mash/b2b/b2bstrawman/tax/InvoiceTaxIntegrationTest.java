@@ -532,6 +532,59 @@ class InvoiceTaxIntegrationTest {
   }
 
   @Test
+  void updateLineItem_recalculatesTaxWhenAmountChanges() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var rate = new TaxRate("VAT 15%", new BigDecimal("15.00"), true, false, 0);
+                  taxRateRepository.save(rate);
+
+                  var invoice = createDraftInvoice();
+                  var addResponse =
+                      invoiceService.addLineItem(
+                          invoice.getId(),
+                          new AddLineItemRequest(
+                              projectId,
+                              "Taxable service",
+                              BigDecimal.ONE,
+                              new BigDecimal("100.00"),
+                              0,
+                              null));
+
+                  var lineId = addResponse.lines().getFirst().id();
+                  // Initial: amount = 1 * 100 = 100; tax = 100 * 15 / 100 = 15
+                  assertThat(addResponse.lines().getFirst().taxAmount())
+                      .isEqualByComparingTo(new BigDecimal("15.00"));
+
+                  // Update quantity to 2 without changing tax rate
+                  var updateResponse =
+                      invoiceService.updateLineItem(
+                          invoice.getId(),
+                          lineId,
+                          new UpdateLineItemRequest(
+                              "Taxable service",
+                              new BigDecimal("2"),
+                              new BigDecimal("100.00"),
+                              0,
+                              null,
+                              null));
+
+                  var line = updateResponse.lines().getFirst();
+                  // After: amount = 2 * 100 = 200; tax = 200 * 15 / 100 = 30
+                  assertThat(line.taxAmount()).isEqualByComparingTo(new BigDecimal("30.00"));
+                  assertThat(line.taxRateId()).isEqualTo(rate.getId());
+                  assertThat(line.taxRateName()).isEqualTo("VAT 15%");
+                  // Invoice totals should reflect updated tax
+                  assertThat(updateResponse.subtotal())
+                      .isEqualByComparingTo(new BigDecimal("200.00"));
+                  assertThat(updateResponse.taxAmount())
+                      .isEqualByComparingTo(new BigDecimal("30.00"));
+                  assertThat(updateResponse.total()).isEqualByComparingTo(new BigDecimal("230.00"));
+                }));
+  }
+
+  @Test
   void invoiceResponse_includesTaxBreakdown() {
     runInTenant(
         () ->

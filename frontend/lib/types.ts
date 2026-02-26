@@ -399,7 +399,7 @@ export interface UpdateOrgSettingsRequest {
 
 // ---- Integrations (from IntegrationController.java) ----
 
-export type IntegrationDomain = "ACCOUNTING" | "AI" | "DOCUMENT_SIGNING" | "PAYMENT";
+export type IntegrationDomain = "ACCOUNTING" | "AI" | "DOCUMENT_SIGNING" | "EMAIL" | "PAYMENT";
 
 export interface OrgIntegration {
   domain: IntegrationDomain;

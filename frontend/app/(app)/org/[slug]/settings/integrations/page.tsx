@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { listIntegrations, listProviders } from "@/lib/api/integrations";
 import { IntegrationCard } from "@/components/integrations/IntegrationCard";
+import { EmailIntegrationCard } from "@/components/integrations/EmailIntegrationCard";
 import type { IntegrationDomain, OrgIntegration } from "@/lib/types";
 
 const DOMAIN_CONFIG: {
@@ -23,6 +24,11 @@ const DOMAIN_CONFIG: {
     domain: "DOCUMENT_SIGNING",
     label: "Document Signing",
     description: "Enable electronic signatures on documents",
+  },
+  {
+    domain: "EMAIL",
+    label: "Email Delivery",
+    description: "Platform email delivery with optional BYOAK configuration",
   },
   {
     domain: "PAYMENT",
@@ -74,6 +80,10 @@ export default async function IntegrationsSettingsPage({
           const integration =
             integrations.find((i) => i.domain === config.domain) ?? null;
           const domainProviders = providers[config.domain] ?? [];
+
+          if (config.domain === "EMAIL") {
+            return <EmailIntegrationCard key={config.domain} slug={slug} />;
+          }
 
           return (
             <IntegrationCard

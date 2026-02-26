@@ -15,6 +15,11 @@ vi.mock("@/app/(app)/org/[slug]/settings/integrations/actions", () => ({
   testConnectionAction: vi.fn().mockResolvedValue({ success: true }),
 }));
 
+vi.mock("@/lib/actions/email", () => ({
+  getEmailStats: vi.fn().mockResolvedValue({ success: true, data: { sent24h: 0, bounced7d: 0, failed7d: 0, rateLimited7d: 0, currentHourUsage: 0, hourlyLimit: 100, providerSlug: null } }),
+  sendTestEmail: vi.fn().mockResolvedValue({ success: true }),
+}));
+
 describe("IntegrationsSettingsPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -32,7 +37,7 @@ describe("IntegrationsSettingsPage", () => {
     expect(screen.getByText("Integrations")).toBeInTheDocument();
   });
 
-  it("renders 4 domain cards", async () => {
+  it("renders 5 domain cards", async () => {
     const page = await IntegrationsSettingsPage({
       params: Promise.resolve({ slug: "acme" }),
     });
@@ -40,6 +45,7 @@ describe("IntegrationsSettingsPage", () => {
     expect(screen.getByText("Accounting")).toBeInTheDocument();
     expect(screen.getByText("AI Assistant")).toBeInTheDocument();
     expect(screen.getByText("Document Signing")).toBeInTheDocument();
+    expect(screen.getByText("Email Delivery")).toBeInTheDocument();
     expect(screen.getByText("Payment Gateway")).toBeInTheDocument();
   });
 

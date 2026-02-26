@@ -104,7 +104,7 @@ Phase 25 wires up real online payment collection for the DocTeams platform. Tena
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 4a (parallel) | 179 | 179A | Portal backend: `payment-status` endpoint + `PortalInvoiceView` extension + V9 global migration + invoice sync handler update | **Done** (PR #372) |
-| 4b (parallel) | 180 | 180A | Stripe + PayFast configuration fields on PAYMENT integration card + test connection | |
+| 4b (parallel) | 180 | 180A | Stripe + PayFast configuration fields on PAYMENT integration card + test connection | **Done** (PR #374) |
 
 ### Stage 5: Frontend completion (parallel tracks)
 
@@ -578,7 +578,7 @@ Stage 5: [179B] // [180B]                                           (parallel, a
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **180A** | 180.1--180.7 | PAYMENT integration card: Stripe config fields (API key, webhook secret, webhook URL) + PayFast config fields (merchant ID/key, passphrase, sandbox, ITN URL) + provider selector dropdown + test connection + frontend tests. ~3 modified files, ~1 new component file. Frontend only. | |
+| **180A** | 180.1--180.7 | PAYMENT integration card: Stripe config fields (API key, webhook secret, webhook URL) + PayFast config fields (merchant ID/key, passphrase, sandbox, ITN URL) + provider selector dropdown + test connection + frontend tests. ~3 modified files, ~1 new component file. Frontend only. | **Done** (PR #374) |
 | **180B** | 180.8--180.15 | Invoice detail: payment link section (copy link, regenerate button) + payment event history table + invoice list payment indicator + email template "Pay Now" conditional button + API client extension + frontend tests. ~3 modified files, ~1 new component, ~1 modified template. Frontend + Backend template. | |
 
 ### Tasks

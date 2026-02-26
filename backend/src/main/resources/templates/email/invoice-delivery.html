@@ -37,8 +37,8 @@
   <div th:if="${paymentUrl}" style="text-align: center; margin: 24px 0 8px 0;">
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
       <tr>
-        <td align="center" style="border-radius: 6px; background-color: #2563EB;">
-          <a th:href="${paymentUrl}" style="display: inline-block; padding: 14px 32px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 6px; background-color: #2563EB;">
+        <td align="center" style="border-radius: 6px; background-color: #2563EB;" th:style="'border-radius: 6px; background-color: ' + (${brandColor != null ? brandColor : '#2563EB'}) + ';'">
+          <a th:href="${paymentUrl}" style="display: inline-block; padding: 14px 32px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 6px; background-color: #2563EB;" th:style="'display: inline-block; padding: 14px 32px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 6px; background-color: ' + (${brandColor != null ? brandColor : '#2563EB'}) + ';'">
             Pay Now
           </a>
         </td>

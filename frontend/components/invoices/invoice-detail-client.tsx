@@ -97,7 +97,7 @@ export function InvoiceDetailClient({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Clipboard API may not be available
+      setError("Failed to copy link");
     }
   }
 

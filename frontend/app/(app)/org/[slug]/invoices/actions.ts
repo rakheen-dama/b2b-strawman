@@ -10,7 +10,6 @@ import type {
   UpdateLineItemRequest,
   RecordPaymentRequest,
   ValidationCheck,
-  PaymentEvent,
 } from "@/lib/types";
 
 interface ActionResult {
@@ -352,26 +351,3 @@ export async function refreshPaymentLink(
   }
 }
 
-export async function getPaymentEvents(
-  invoiceId: string,
-): Promise<{ success: boolean; error?: string; events?: PaymentEvent[] }> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
-    return {
-      success: false,
-      error: "Only admins and owners can view payment events.",
-    };
-  }
-
-  try {
-    const events = await api.get<PaymentEvent[]>(
-      `/api/invoices/${invoiceId}/payment-events`,
-    );
-    return { success: true, events };
-  } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "Failed to fetch payment events." };
-  }
-}

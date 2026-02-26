@@ -148,16 +148,14 @@ public class Invoice {
   }
 
   public void recalculateTotals(
-      BigDecimal computedSubtotal, List<InvoiceLine> lines, boolean taxInclusive) {
+      BigDecimal computedSubtotal,
+      boolean hasPerLineTax,
+      BigDecimal perLineTaxSum,
+      boolean taxInclusive) {
     this.subtotal = computedSubtotal;
 
-    boolean hasPerLineTax = lines.stream().anyMatch(line -> line.getTaxRateId() != null);
-
     if (hasPerLineTax) {
-      this.taxAmount =
-          lines.stream()
-              .map(line -> line.getTaxAmount() != null ? line.getTaxAmount() : BigDecimal.ZERO)
-              .reduce(BigDecimal.ZERO, BigDecimal::add);
+      this.taxAmount = perLineTaxSum;
     }
     // else: taxAmount stays as manually set value (backward compatibility)
 

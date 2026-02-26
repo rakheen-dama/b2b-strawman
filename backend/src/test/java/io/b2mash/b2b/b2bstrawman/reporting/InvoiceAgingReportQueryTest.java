@@ -17,7 +17,6 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -148,7 +147,8 @@ class InvoiceAgingReportQueryTest {
                               memberId);
                       draftInvoice.updateDraft(
                           LocalDate.of(2025, 2, 1), null, null, BigDecimal.ZERO);
-                      draftInvoice.recalculateTotals(new BigDecimal("500.00"), List.of(), false);
+                      draftInvoice.recalculateTotals(
+                          new BigDecimal("500.00"), false, BigDecimal.ZERO, false);
                       invoiceRepository.save(draftInvoice);
 
                       // Invoice 7: PAID status (should be excluded)
@@ -336,7 +336,7 @@ class InvoiceAgingReportQueryTest {
       BigDecimal subtotal) {
     var invoice = new Invoice(customerId, "ZAR", customerName, null, null, "Test Org", memberId);
     invoice.updateDraft(dueDate, null, null, BigDecimal.ZERO);
-    invoice.recalculateTotals(subtotal, List.of(), false);
+    invoice.recalculateTotals(subtotal, false, BigDecimal.ZERO, false);
     invoice.approve(invoiceNumber, memberId);
     invoice.markSent();
     return invoiceRepository.save(invoice);

@@ -44,6 +44,7 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.tax.TaxCalculationService;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
@@ -97,6 +98,7 @@ public class InvoiceService {
   private final PaymentEventRepository paymentEventRepository;
   private final PaymentLinkService paymentLinkService;
   private final OrgSettingsRepository orgSettingsRepository;
+  private final TaxCalculationService taxCalculationService;
 
   public InvoiceService(
       InvoiceRepository invoiceRepository,
@@ -123,7 +125,8 @@ public class InvoiceService {
       InvoiceValidationService invoiceValidationService,
       PaymentEventRepository paymentEventRepository,
       PaymentLinkService paymentLinkService,
-      OrgSettingsRepository orgSettingsRepository) {
+      OrgSettingsRepository orgSettingsRepository,
+      TaxCalculationService taxCalculationService) {
     this.invoiceRepository = invoiceRepository;
     this.lineRepository = lineRepository;
     this.customerRepository = customerRepository;
@@ -149,6 +152,7 @@ public class InvoiceService {
     this.paymentEventRepository = paymentEventRepository;
     this.paymentLinkService = paymentLinkService;
     this.orgSettingsRepository = orgSettingsRepository;
+    this.taxCalculationService = taxCalculationService;
   }
 
   @Transactional(readOnly = true)
@@ -1411,7 +1415,12 @@ public class InvoiceService {
         lines.stream().map(InvoiceLine::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
     boolean taxInclusive =
         orgSettingsRepository.findForCurrentTenant().map(s -> s.isTaxInclusive()).orElse(false);
-    invoice.recalculateTotals(subtotal, lines, taxInclusive);
+    boolean hasPerLineTax = taxCalculationService.hasPerLineTax(lines);
+    BigDecimal perLineTaxSum =
+        lines.stream()
+            .map(line -> line.getTaxAmount() != null ? line.getTaxAmount() : BigDecimal.ZERO)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    invoice.recalculateTotals(subtotal, hasPerLineTax, perLineTaxSum, taxInclusive);
   }
 
   /** Batch-fetch project names for a list of invoice lines (single query instead of N+1). */

@@ -46,7 +46,7 @@ public class TaxCalculationService {
    * Returns true if any line in the list has a non-null taxRateId, indicating per-line tax has been
    * applied.
    */
-  public static boolean hasPerLineTax(List<InvoiceLine> lines) {
+  public boolean hasPerLineTax(List<InvoiceLine> lines) {
     return lines.stream().anyMatch(line -> line.getTaxRateId() != null);
   }
 
@@ -62,14 +62,16 @@ public class TaxCalculationService {
       return List.of();
     }
 
+    record TaxGroupKey(String name, BigDecimal percent) {}
+
     // Group by rateName + ratePercent, excluding exempt lines
-    Map<String, BigDecimal[]> groups = new LinkedHashMap<>();
+    Map<TaxGroupKey, BigDecimal[]> groups = new LinkedHashMap<>();
 
     for (InvoiceLine line : lines) {
       if (line.getTaxRateId() == null || line.isTaxExempt()) {
         continue;
       }
-      String key = line.getTaxRateName() + "|" + line.getTaxRatePercent().toPlainString();
+      TaxGroupKey key = new TaxGroupKey(line.getTaxRateName(), line.getTaxRatePercent());
       groups.computeIfAbsent(key, k -> new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO});
       BigDecimal[] totals = groups.get(key);
       totals[0] = totals[0].add(line.getAmount());
@@ -79,10 +81,12 @@ public class TaxCalculationService {
 
     List<TaxBreakdownEntry> result = new ArrayList<>();
     for (var entry : groups.entrySet()) {
-      String[] parts = entry.getKey().split("\\|", 2);
       result.add(
           new TaxBreakdownEntry(
-              parts[0], new BigDecimal(parts[1]), entry.getValue()[0], entry.getValue()[1]));
+              entry.getKey().name(),
+              entry.getKey().percent(),
+              entry.getValue()[0],
+              entry.getValue()[1]));
     }
     return result;
   }

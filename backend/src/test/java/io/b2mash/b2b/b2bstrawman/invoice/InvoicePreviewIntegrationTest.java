@@ -183,7 +183,7 @@ class InvoicePreviewIntegrationTest {
 
                       // Recalculate totals
                       BigDecimal subtotal = line1.getAmount().add(line2.getAmount());
-                      invoice.recalculateTotals(subtotal, List.of(), false);
+                      invoice.recalculateTotals(subtotal, false, BigDecimal.ZERO, false);
                       invoiceRepository.save(invoice);
                     }));
 

@@ -111,13 +111,13 @@ class TaxCalculationServiceTest {
 
   @Test
   void hasPerLineTax_returns_false_for_empty_list() {
-    assertThat(TaxCalculationService.hasPerLineTax(List.of())).isFalse();
+    assertThat(service.hasPerLineTax(List.of())).isFalse();
   }
 
   @Test
   void hasPerLineTax_returns_false_when_no_tax_rate_ids() {
     var line = createTestLine(new BigDecimal("1000.00"));
-    assertThat(TaxCalculationService.hasPerLineTax(List.of(line))).isFalse();
+    assertThat(service.hasPerLineTax(List.of(line))).isFalse();
   }
 
   @Test
@@ -131,7 +131,7 @@ class TaxCalculationServiceTest {
         new BigDecimal("150.00"),
         false);
     var untaxedLine = createTestLine(new BigDecimal("500.00"));
-    assertThat(TaxCalculationService.hasPerLineTax(List.of(taxedLine, untaxedLine))).isTrue();
+    assertThat(service.hasPerLineTax(List.of(taxedLine, untaxedLine))).isTrue();
   }
 
   // --- Tax breakdown tests ---

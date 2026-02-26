@@ -22,6 +22,17 @@ class InvoiceRecalculationTest {
     return new InvoiceLine(invoiceId, null, null, "Line item", quantity, unitPrice, sortOrder);
   }
 
+  /** Computes hasPerLineTax and perLineTaxSum, then delegates to Invoice.recalculateTotals. */
+  private void recalculate(
+      Invoice invoice, BigDecimal subtotal, List<InvoiceLine> lines, boolean taxInclusive) {
+    boolean hasPerLineTax = lines.stream().anyMatch(line -> line.getTaxRateId() != null);
+    BigDecimal perLineTaxSum =
+        lines.stream()
+            .map(line -> line.getTaxAmount() != null ? line.getTaxAmount() : BigDecimal.ZERO)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    invoice.recalculateTotals(subtotal, hasPerLineTax, perLineTaxSum, taxInclusive);
+  }
+
   @Test
   void no_per_line_tax_preserves_manual_taxAmount() {
     var invoice = createInvoice();
@@ -33,7 +44,7 @@ class InvoiceRecalculationTest {
     var lines = List.of(line1, line2);
 
     // No lines have taxRateId set — manual taxAmount should be preserved
-    invoice.recalculateTotals(new BigDecimal("1000.00"), lines, false);
+    recalculate(invoice, new BigDecimal("1000.00"), lines, false);
 
     assertThat(invoice.getSubtotal()).isEqualByComparingTo(new BigDecimal("1000.00"));
     assertThat(invoice.getTaxAmount()).isEqualByComparingTo(new BigDecimal("150.00"));
@@ -51,7 +62,7 @@ class InvoiceRecalculationTest {
     setLineTaxFields(
         line2, UUID.randomUUID(), "VAT", new BigDecimal("15.00"), new BigDecimal("75.00"), false);
 
-    invoice.recalculateTotals(new BigDecimal("1500.00"), List.of(line1, line2), false);
+    recalculate(invoice, new BigDecimal("1500.00"), List.of(line1, line2), false);
 
     assertThat(invoice.getTaxAmount()).isEqualByComparingTo(new BigDecimal("225.00"));
   }
@@ -63,7 +74,7 @@ class InvoiceRecalculationTest {
     setLineTaxFields(
         line, UUID.randomUUID(), "VAT", new BigDecimal("15.00"), new BigDecimal("150.00"), false);
 
-    invoice.recalculateTotals(new BigDecimal("1000.00"), List.of(line), false);
+    recalculate(invoice, new BigDecimal("1000.00"), List.of(line), false);
 
     assertThat(invoice.getSubtotal()).isEqualByComparingTo(new BigDecimal("1000.00"));
     assertThat(invoice.getTaxAmount()).isEqualByComparingTo(new BigDecimal("150.00"));
@@ -77,7 +88,7 @@ class InvoiceRecalculationTest {
     setLineTaxFields(
         line, UUID.randomUUID(), "VAT", new BigDecimal("15.00"), new BigDecimal("150.00"), false);
 
-    invoice.recalculateTotals(new BigDecimal("1150.00"), List.of(line), true);
+    recalculate(invoice, new BigDecimal("1150.00"), List.of(line), true);
 
     assertThat(invoice.getSubtotal()).isEqualByComparingTo(new BigDecimal("1150.00"));
     assertThat(invoice.getTaxAmount()).isEqualByComparingTo(new BigDecimal("150.00"));
@@ -99,7 +110,7 @@ class InvoiceRecalculationTest {
     var untaxedLine = createLine(invoice.getId(), BigDecimal.ONE, new BigDecimal("200.00"), 1);
     // untaxedLine has no taxRateId — taxAmount is null
 
-    invoice.recalculateTotals(new BigDecimal("1200.00"), List.of(taxedLine, untaxedLine), false);
+    recalculate(invoice, new BigDecimal("1200.00"), List.of(taxedLine, untaxedLine), false);
 
     // hasPerLineTax is true because at least one line has taxRateId
     // taxAmount sums all line taxAmounts (null treated as zero)
@@ -116,7 +127,7 @@ class InvoiceRecalculationTest {
     var line2 = createLine(invoice.getId(), BigDecimal.ONE, new BigDecimal("300.00"), 1);
     setLineTaxFields(line2, UUID.randomUUID(), "Exempt", BigDecimal.ZERO, BigDecimal.ZERO, true);
 
-    invoice.recalculateTotals(new BigDecimal("800.00"), List.of(line1, line2), false);
+    recalculate(invoice, new BigDecimal("800.00"), List.of(line1, line2), false);
 
     // hasPerLineTax is true (taxRateId is set), but all taxAmounts are zero
     assertThat(invoice.getTaxAmount()).isEqualByComparingTo(BigDecimal.ZERO);

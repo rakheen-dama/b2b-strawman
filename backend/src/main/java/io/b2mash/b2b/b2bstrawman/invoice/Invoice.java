@@ -99,6 +99,15 @@ public class Invoice {
   @Column(name = "applied_field_groups", columnDefinition = "jsonb")
   private List<UUID> appliedFieldGroups = new ArrayList<>();
 
+  @Column(name = "payment_session_id", length = 255)
+  private String paymentSessionId;
+
+  @Column(name = "payment_url", length = 1024)
+  private String paymentUrl;
+
+  @Column(name = "payment_destination", nullable = false, length = 50)
+  private String paymentDestination;
+
   protected Invoice() {}
 
   public Invoice(
@@ -120,6 +129,7 @@ public class Invoice {
     this.customerAddress = customerAddress;
     this.orgName = orgName;
     this.createdBy = createdBy;
+    this.paymentDestination = "OPERATING";
     this.createdAt = Instant.now();
     this.updatedAt = Instant.now();
   }
@@ -287,6 +297,33 @@ public class Invoice {
 
   public void setAppliedFieldGroups(List<UUID> appliedFieldGroups) {
     this.appliedFieldGroups = appliedFieldGroups;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getPaymentSessionId() {
+    return paymentSessionId;
+  }
+
+  public void setPaymentSessionId(String paymentSessionId) {
+    this.paymentSessionId = paymentSessionId;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getPaymentUrl() {
+    return paymentUrl;
+  }
+
+  public void setPaymentUrl(String paymentUrl) {
+    this.paymentUrl = paymentUrl;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getPaymentDestination() {
+    return paymentDestination;
+  }
+
+  public void setPaymentDestination(String paymentDestination) {
+    this.paymentDestination = paymentDestination;
     this.updatedAt = Instant.now();
   }
 }

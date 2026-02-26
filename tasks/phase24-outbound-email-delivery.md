@@ -27,7 +27,7 @@ The design introduces a **two-tier email architecture**: every org gets working 
 | 170 | Invoice Delivery + Portal Magic Link Email | Backend | 169 | M | 170A, 170B | **Done** (PRs #354, #355) |
 | 171 | SendGrid BYOAK + Bounce Webhooks | Backend | 169 | M | 171A, 171B | **Done** (PRs #356, #357) |
 | 172 | Unsubscribe + Admin Endpoints | Backend | 169 | M | 172A, 172B | **Done** (PRs #358, #359) |
-| 173 | Frontend — Email Toggle + Integration Card + Delivery Log | Frontend | 172 | M | 173A, 173B | |
+| 173 | Frontend — Email Toggle + Integration Card + Delivery Log | Frontend | 172 | M | 173A, 173B | **Done** (PRs #360, #361) |
 
 ---
 
@@ -101,7 +101,7 @@ The design introduces a **two-tier email architecture**: every org gets working 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
 | 4a | 173 | 173A | Notification preferences email toggle + EmailIntegrationCard + server actions + API types | **Done** (PR #360) |
-| 4b | 173 | 173B | Email settings page + DeliveryLogTable + delivery stats + rate limit display |
+| 4b | 173 | 173B | Email settings page + DeliveryLogTable + delivery stats + rate limit display | **Done** (PR #361) |
 
 ### Timeline
 
@@ -554,7 +554,7 @@ Stage 4: [173A] --> [173B]                               (sequential, after 172B
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **173A** | 173.1–173.8 | Notification preferences email toggle + `EmailIntegrationCard` + server actions + API types. ~4 modified files, ~3 new files. Frontend only. | **Done** (PR #360) |
-| **173B** | 173.9–173.14 | Email settings page + `DeliveryLogTable` + stats + rate limit display. ~4 new files, ~1 modified file. Frontend only. | |
+| **173B** | 173.9–173.14 | Email settings page + `DeliveryLogTable` + stats + rate limit display. ~4 new files, ~1 modified file. Frontend only. | **Done** (PR #361) |
 
 ### Tasks
 

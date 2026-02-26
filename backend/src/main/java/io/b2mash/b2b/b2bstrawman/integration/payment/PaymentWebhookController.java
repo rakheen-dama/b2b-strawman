@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.integration.payment;
 
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -28,11 +29,15 @@ public class PaymentWebhookController {
 
   private final PaymentWebhookService paymentWebhookService;
   private final ObjectMapper objectMapper;
+  private final OrgSchemaMappingRepository orgSchemaMappingRepository;
 
   public PaymentWebhookController(
-      PaymentWebhookService paymentWebhookService, ObjectMapper objectMapper) {
+      PaymentWebhookService paymentWebhookService,
+      ObjectMapper objectMapper,
+      OrgSchemaMappingRepository orgSchemaMappingRepository) {
     this.paymentWebhookService = paymentWebhookService;
     this.objectMapper = objectMapper;
+    this.orgSchemaMappingRepository = orgSchemaMappingRepository;
   }
 
   @PostMapping("/{provider}")
@@ -54,9 +59,24 @@ public class PaymentWebhookController {
       return ResponseEntity.ok().build();
     }
 
+    // Resolve orgId from tenant schema so downstream events (InvoicePaidEvent,
+    // InvoiceSyncEvent) have the orgId for portal sync and notification routing.
+    String orgId =
+        orgSchemaMappingRepository
+            .findBySchemaName(tenantSchema)
+            .map(m -> m.getClerkOrgId())
+            .orElse(null);
+
+    if (orgId == null) {
+      log.warn("No org mapping found for tenant schema {} — orgId will be null", tenantSchema);
+    }
+
     try {
-      ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-          .run(() -> paymentWebhookService.processWebhook(sanitizedProvider, payload, headers));
+      var carrier = ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema);
+      if (orgId != null) {
+        carrier = carrier.where(RequestScopes.ORG_ID, orgId);
+      }
+      carrier.run(() -> paymentWebhookService.processWebhook(sanitizedProvider, payload, headers));
     } catch (Exception e) {
       log.error("Error processing {} webhook", sanitizedProvider, e);
     }

@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.notification.channel;
 
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationRegistry;
 import io.b2mash.b2b.b2bstrawman.integration.email.EmailDeliveryLogService;
@@ -92,7 +93,7 @@ public class EmailNotificationChannel implements NotificationChannel {
       }
 
       // 3. Generate unsubscribe URL
-      String tenantSchema = RequestScopes.TENANT_ID.get();
+      String tenantSchema = RequestScopes.requireTenantId();
       String unsubscribeUrl = generateUnsubscribeUrl(notification, tenantSchema);
 
       // 4. Build context
@@ -192,7 +193,7 @@ public class EmailNotificationChannel implements NotificationChannel {
           unsubscribeService.generateToken(
               notification.getRecipientMemberId(), notification.getType(), tenantSchema);
       return appBaseUrl + "/api/email/unsubscribe?token=" + token;
-    } catch (Exception e) {
+    } catch (InvalidStateException e) {
       log.warn("Failed to generate unsubscribe URL for notification {}", notification.getId(), e);
       return null;
     }

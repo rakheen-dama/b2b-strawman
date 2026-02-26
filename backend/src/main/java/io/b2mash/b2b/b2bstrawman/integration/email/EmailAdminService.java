@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service encapsulating admin email business logic: delivery log listing, stats aggregation, and
@@ -58,6 +59,7 @@ public class EmailAdminService {
    * Returns paginated delivery log entries, optionally filtered by status and date range. Defaults
    * to the last 30 days if no date range is provided.
    */
+  @Transactional(readOnly = true)
   public Page<EmailDeliveryLogResponse> getDeliveryLog(
       EmailDeliveryStatus status, Instant from, Instant to, Pageable pageable) {
     Instant effectiveFrom = from != null ? from : Instant.now().minus(30, ChronoUnit.DAYS);
@@ -71,6 +73,7 @@ public class EmailAdminService {
    * Returns aggregated delivery statistics including current hour rate-limit usage from the
    * in-memory rate limiter.
    */
+  @Transactional(readOnly = true)
   public EmailDeliveryStats getStats() {
     EmailProvider provider =
         integrationRegistry.resolve(IntegrationDomain.EMAIL, EmailProvider.class);
@@ -83,6 +86,7 @@ public class EmailAdminService {
    * Sends a test email to the current user, records the delivery, and publishes an audit event.
    * Returns the delivery log entry as the response.
    */
+  @Transactional
   public EmailDeliveryLogResponse sendTestEmail() {
     var memberId = RequestScopes.requireMemberId();
     var member =

@@ -20,7 +20,7 @@ Phase 26 adds structured tax handling to the DocTeams invoicing system. The exis
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 181 | TaxRate Entity Foundation + Migration | Backend | — | M | 181A, 181B | **Done** (PRs #376, #377) |
-| 182 | Tax Calculation Engine + InvoiceLine Extension | Backend | 181 | M | 182A, 182B | |
+| 182 | Tax Calculation Engine + InvoiceLine Extension | Backend | 181 | M | 182A, 182B | **Done** (PRs #378, #379) |
 | 183 | Tax Application in Invoice Flows | Backend | 182 | L | 183A, 183B | |
 | 184 | Invoice Preview, PDF + Portal Tax Display | Backend + Portal | 183 | M | 184A, 184B | |
 | 185 | Tax Settings + Rate Management Frontend | Frontend | 181 | M | 185A, 185B | |
@@ -86,7 +86,7 @@ Phase 26 adds structured tax handling to the DocTeams invoicing system. The exis
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 2a (parallel) | 182 | 182B | `Invoice.recalculateTotals()` update (per-line tax sum + tax-inclusive total) + tax breakdown assembly utility + integration tests. ~2 modified files, ~1 new test file. Backend only. | |
+| 2a (parallel) | 182 | 182B | `Invoice.recalculateTotals()` update (per-line tax sum + tax-inclusive total) + tax breakdown assembly utility + integration tests. ~2 modified files, ~1 new test file. Backend only. | **Done** (PR #379) |
 | 2b (parallel) | 185 | 185B | Tax rate management table on settings page + Add/Edit/Deactivate dialogs + default badge + deactivation error handling + frontend tests. ~3 new frontend files, ~1 modified frontend file. | |
 
 ### Stage 3: Invoice flows (sequential)
@@ -215,7 +215,7 @@ Stage 5: [184B]                                                     (after 184A)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **182A** | 182.1--182.7 | `TaxCalculationService` with `calculateLineTax()` (exclusive + inclusive + exempt + zero-rated) + `InvoiceLine` extension (5 tax fields + `applyTaxRate()` + `refreshTaxSnapshot()` methods) + `TaxBreakdownEntry` record + unit tests for calculation service. ~3 new files, ~1 modified file. Backend only. | **Done** (PR #378) |
-| **182B** | 182.8--182.13 | `Invoice.recalculateTotals()` update (per-line tax sum, tax-inclusive total per ADR-102) + tax breakdown assembly utility in `TaxCalculationService` + integration tests for recalculation. ~2 modified files, ~1 new test file. Backend only. | |
+| **182B** | 182.8--182.13 | `Invoice.recalculateTotals()` update (per-line tax sum, tax-inclusive total per ADR-102) + tax breakdown assembly utility in `TaxCalculationService` + integration tests for recalculation. ~2 modified files, ~1 new test file. Backend only. | **Done** (PR #379) |
 
 ### Tasks
 

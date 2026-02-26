@@ -207,7 +207,7 @@
 | 174 | PaymentGateway Port + NoOp Adapter + InvoiceService Migration | Backend | -- | M | 174A, 174B | **Done** (PRs #362, #363) |
 | 175 | PaymentEvent Entity + Migration + Invoice Extension | Backend | 174 | M | 175A, 175B | **Done** (PRs #364, #365) |
 | 176 | Stripe Adapter | Backend | 174 | M | 176A, 176B | **Done** (PRs #366, #367) |
-| 177 | PayFast Adapter | Backend | 174 | M | 177A, 177B | 177A **Done** (PR #368) |
+| 177 | PayFast Adapter | Backend | 174 | M | 177A, 177B | **Done** (PRs #368, #369) |
 | 178 | Payment Link Generation + Webhook Reconciliation | Backend | 174, 175 | L | 178A, 178B | |
 | 179 | Portal Payment Flow + Read-Model Extension | Both | 178 | M | 179A, 179B | |
 | 180 | Integration Settings UI + Invoice Payment UX | Frontend | 178 | M | 180A, 180B | |

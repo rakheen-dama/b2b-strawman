@@ -22,7 +22,7 @@ Phase 25 wires up real online payment collection for the DocTeams platform. Tena
 | 174 | PaymentGateway Port + NoOp Adapter + InvoiceService Migration | Backend | -- | M | 174A, 174B | **Done** |
 | 175 | PaymentEvent Entity + Migration + Invoice Extension | Backend | 174 | M | 175A, 175B | **Done** |
 | 176 | Stripe Adapter | Backend | 174 | M | 176A, 176B | **Done** |
-| 177 | PayFast Adapter | Backend | 174 | M | 177A, 177B | |
+| 177 | PayFast Adapter | Backend | 174 | M | 177A, 177B | **Done** |
 | 178 | Payment Link Generation + Webhook Reconciliation | Backend | 174, 175 | L | 178A, 178B | |
 | 179 | Portal Payment Flow + Read-Model Extension | Both | 178 | M | 179A, 179B | |
 | 180 | Integration Settings UI + Invoice Payment UX | Frontend | 178 | M | 180A, 180B | |
@@ -90,7 +90,7 @@ Phase 25 wires up real online payment collection for the DocTeams platform. Tena
 |-------|------|-------|---------|--------|
 | 2a (parallel) | 175 | 175B | Invoice entity extension (3 columns) + `GET /api/invoices/{id}/payment-events` endpoint + manual payment writes PaymentEvent | **Done** (PR #365) |
 | 2b (parallel) | 176 | 176B | Stripe status query + connection test + session expiry + comprehensive tests | **Done** (PR #367) |
-| 2c (parallel) | 177 | 177B | PayFast IP validation + server confirmation + connection test + comprehensive tests | |
+| 2c (parallel) | 177 | 177B | PayFast IP validation + server confirmation + connection test + comprehensive tests | **Done** (PR #369) |
 
 ### Stage 3: Orchestration (sequential)
 
@@ -366,7 +366,7 @@ Stage 5: [179B] // [180B]                                           (parallel, a
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **177A** | 177.1--177.7 | `PayFastPaymentGateway` with `createCheckoutSession()` (redirect URL construction + MD5 signature) + `handleWebhook()` (ITN parsing + signature verification). ~2 new files. Backend only. | **Done** (PR #368) |
-| **177B** | 177.8--177.14 | ITN IP validation + server confirmation via `RestClient` + `queryPaymentStatus()` + `testConnection()` + `recordManualPayment()` + sandbox toggle + comprehensive tests. ~1 modified file, ~1 test file. Backend only. | |
+| **177B** | 177.8--177.14 | ITN IP validation + server confirmation via `RestClient` + `queryPaymentStatus()` + `testConnection()` + `recordManualPayment()` + sandbox toggle + comprehensive tests. ~1 modified file, ~1 test file. Backend only. | **Done** (PR #369) |
 
 ### Tasks
 

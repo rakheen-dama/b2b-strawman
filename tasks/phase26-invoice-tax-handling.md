@@ -93,7 +93,7 @@ Phase 26 adds structured tax handling to the DocTeams invoicing system. The exis
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 3a | 183 | 183A | Wire tax into `InvoiceService.addLineItem()`/`updateLineItem()` + `generateFromUnbilledTime()` + reject manual `taxAmount` when per-line active (422) + extend DTOs (`AddLineItemRequest`, `UpdateLineItemRequest`, `InvoiceLineResponse`, `InvoiceResponse`) + integration tests. ~4 modified files, ~0-1 new files. Backend only. | |
+| 3a | 183 | 183A | Wire tax into `InvoiceService.addLineItem()`/`updateLineItem()` + `generateFromUnbilledTime()` + reject manual `taxAmount` when per-line active (422) + extend DTOs (`AddLineItemRequest`, `UpdateLineItemRequest`, `InvoiceLineResponse`, `InvoiceResponse`) + integration tests. ~4 modified files, ~0-1 new files. Backend only. | **Done** (PR #380) |
 | 3b | 183 | 183B | Wire tax into `RetainerPeriodService.closePeriod()` + `TaxRateService.updateTaxRate()` batch recalculation of DRAFT lines + backward compatibility tests + integration tests. ~3 modified files. Backend only. | |
 
 ### Stage 4: Display layers (parallel tracks)
@@ -282,7 +282,7 @@ Stage 5: [184B]                                                     (after 184A)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **183A** | 183.1--183.9 | Wire tax into `InvoiceService.addLineItem()` / `updateLineItem()` (accept `taxRateId`, snapshot, calculate, auto-default) + `generateFromUnbilledTime()` (apply default rate to generated lines) + reject manual `taxAmount` on `updateDraft()` when per-line tax active (422) + extend DTOs + extend `InvoiceResponse` with tax breakdown + integration tests. ~5 modified files. Backend only. | |
+| **183A** | 183.1--183.9 | Wire tax into `InvoiceService.addLineItem()` / `updateLineItem()` (accept `taxRateId`, snapshot, calculate, auto-default) + `generateFromUnbilledTime()` (apply default rate to generated lines) + reject manual `taxAmount` on `updateDraft()` when per-line tax active (422) + extend DTOs + extend `InvoiceResponse` with tax breakdown + integration tests. ~5 modified files. Backend only. | **Done** (PR #380) |
 | **183B** | 183.10--183.16 | Wire tax into `RetainerPeriodService.closePeriod()` (apply default rate to retainer invoice lines) + `TaxRateService.updateTaxRate()` batch recalculation of DRAFT lines (ADR-103) + backward compatibility tests + integration tests. ~3 modified files. Backend only. | |
 
 ### Tasks

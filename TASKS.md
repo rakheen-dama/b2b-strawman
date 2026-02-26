@@ -206,7 +206,7 @@
 | **Phase 25 — Online Payment Collection** | | | | | | See [tasks/phase25-online-payment-collection.md](tasks/phase25-online-payment-collection.md) |
 | 174 | PaymentGateway Port + NoOp Adapter + InvoiceService Migration | Backend | -- | M | 174A, 174B | **Done** (PRs #362, #363) |
 | 175 | PaymentEvent Entity + Migration + Invoice Extension | Backend | 174 | M | 175A, 175B | **Done** (PRs #364, #365) |
-| 176 | Stripe Adapter | Backend | 174 | M | 176A, 176B | 176A **Done** (PR #366) |
+| 176 | Stripe Adapter | Backend | 174 | M | 176A, 176B | **Done** (PRs #366, #367) |
 | 177 | PayFast Adapter | Backend | 174 | M | 177A, 177B | |
 | 178 | Payment Link Generation + Webhook Reconciliation | Backend | 174, 175 | L | 178A, 178B | |
 | 179 | Portal Payment Flow + Read-Model Extension | Both | 178 | M | 179A, 179B | |

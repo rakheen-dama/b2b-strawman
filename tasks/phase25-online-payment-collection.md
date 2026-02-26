@@ -21,7 +21,7 @@ Phase 25 wires up real online payment collection for the DocTeams platform. Tena
 |------|------|-------|------|--------|--------|--------|
 | 174 | PaymentGateway Port + NoOp Adapter + InvoiceService Migration | Backend | -- | M | 174A, 174B | **Done** |
 | 175 | PaymentEvent Entity + Migration + Invoice Extension | Backend | 174 | M | 175A, 175B | **Done** |
-| 176 | Stripe Adapter | Backend | 174 | M | 176A, 176B | |
+| 176 | Stripe Adapter | Backend | 174 | M | 176A, 176B | **Done** |
 | 177 | PayFast Adapter | Backend | 174 | M | 177A, 177B | |
 | 178 | Payment Link Generation + Webhook Reconciliation | Backend | 174, 175 | L | 178A, 178B | |
 | 179 | Portal Payment Flow + Read-Model Extension | Both | 178 | M | 179A, 179B | |
@@ -89,7 +89,7 @@ Phase 25 wires up real online payment collection for the DocTeams platform. Tena
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 2a (parallel) | 175 | 175B | Invoice entity extension (3 columns) + `GET /api/invoices/{id}/payment-events` endpoint + manual payment writes PaymentEvent | **Done** (PR #365) |
-| 2b (parallel) | 176 | 176B | Stripe status query + connection test + session expiry + comprehensive tests | |
+| 2b (parallel) | 176 | 176B | Stripe status query + connection test + session expiry + comprehensive tests | **Done** (PR #367) |
 | 2c (parallel) | 177 | 177B | PayFast IP validation + server confirmation + connection test + comprehensive tests | |
 
 ### Stage 3: Orchestration (sequential)
@@ -302,7 +302,7 @@ Stage 5: [179B] // [180B]                                           (parallel, a
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **176A** | 176.1--176.7 | `StripePaymentGateway` with `createCheckoutSession()` + `handleWebhook()` + `stripe-java` Maven dependency + `resolveApiKey()` via SecretStore + unit tests with mocked Stripe SDK. ~2 new files, ~1 modified file. Backend only. | **Done** (PR #366) |
-| **176B** | 176.8--176.13 | `queryPaymentStatus()` + `testConnection()` + `expireSession()` + `recordManualPayment()` + currency conversion helper + comprehensive tests. ~1 modified file, ~1 new test file. Backend only. | |
+| **176B** | 176.8--176.13 | `queryPaymentStatus()` + `testConnection()` + `expireSession()` + `recordManualPayment()` + currency conversion helper + comprehensive tests. ~1 modified file, ~1 new test file. Backend only. | **Done** (PR #367) |
 
 ### Tasks
 

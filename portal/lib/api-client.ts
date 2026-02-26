@@ -67,6 +67,18 @@ export async function portalPost<T>(path: string, body: unknown): Promise<T> {
 }
 
 /**
+ * Fetches the current payment status for an invoice.
+ * Used by the payment success page to poll for confirmation.
+ */
+export async function getPaymentStatus(
+  invoiceId: string
+): Promise<import("@/lib/types").PaymentStatusResponse> {
+  return portalGet<import("@/lib/types").PaymentStatusResponse>(
+    `/portal/invoices/${invoiceId}/payment-status`
+  );
+}
+
+/**
  * Unauthenticated fetch for public endpoints (branding, auth).
  * Does NOT inject JWT. Does NOT redirect on 401.
  */

@@ -144,7 +144,9 @@ public class NotificationService {
           "RETAINER_PERIOD_CLOSED",
           "RETAINER_APPROACHING_CAPACITY",
           "RETAINER_FULLY_CONSUMED",
-          "RETAINER_TERMINATED");
+          "RETAINER_TERMINATED",
+          "PAYMENT_FAILED",
+          "PAYMENT_LINK_EXPIRED");
 
   // --- Preference methods ---
 

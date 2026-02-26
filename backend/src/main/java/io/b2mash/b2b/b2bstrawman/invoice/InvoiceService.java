@@ -1021,6 +1021,104 @@ public class InvoiceService {
     return buildResponse(invoice);
   }
 
+  /**
+   * Records a payment from a webhook. When {@code fromWebhook} is true, skips the gateway call
+   * since the payment is already confirmed by the PSP.
+   */
+  @Transactional
+  public InvoiceResponse recordPayment(
+      UUID invoiceId, String paymentReference, boolean fromWebhook) {
+    if (!fromWebhook) {
+      return recordPayment(invoiceId, paymentReference);
+    }
+
+    // Webhook path — payment already confirmed by PSP, skip gateway call
+    var invoice =
+        invoiceRepository
+            .findById(invoiceId)
+            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+
+    // Idempotent: if already PAID, return silently
+    if (invoice.getStatus() == InvoiceStatus.PAID) {
+      return buildResponse(invoice);
+    }
+
+    if (invoice.getStatus() != InvoiceStatus.SENT) {
+      throw new ResourceConflictException(
+          "Invalid status transition", "Only sent invoices can be paid");
+    }
+
+    invoice.recordPayment(paymentReference);
+    invoice = invoiceRepository.save(invoice);
+
+    log.info(
+        "Recorded webhook payment for invoice {} with reference {}", invoiceId, paymentReference);
+
+    // Publish events and audit — same as manual path
+    UUID actorId = RequestScopes.MEMBER_ID.isBound() ? RequestScopes.MEMBER_ID.get() : null;
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("invoice.paid")
+            .entityType("invoice")
+            .entityId(invoice.getId())
+            .actorType("SYSTEM")
+            .source("WEBHOOK")
+            .details(
+                Map.of(
+                    "invoice_number",
+                    invoice.getInvoiceNumber(),
+                    "payment_reference",
+                    paymentReference != null ? paymentReference : "",
+                    "total",
+                    invoice.getTotal().toString(),
+                    "paid_at",
+                    invoice.getPaidAt().toString()))
+            .build());
+
+    String tenantIdForEvent = RequestScopes.getTenantIdOrNull();
+    String orgIdForEvent = RequestScopes.getOrgIdOrNull();
+    eventPublisher.publishEvent(
+        new InvoicePaidEvent(
+            "invoice.paid",
+            "invoice",
+            invoice.getId(),
+            null,
+            actorId,
+            resolveActorName(actorId),
+            tenantIdForEvent,
+            orgIdForEvent,
+            Instant.now(),
+            Map.of(
+                "invoice_number",
+                invoice.getInvoiceNumber(),
+                "customer_name",
+                invoice.getCustomerName(),
+                "payment_reference",
+                paymentReference != null ? paymentReference : ""),
+            invoice.getCreatedBy(),
+            invoice.getInvoiceNumber(),
+            invoice.getCustomerName(),
+            paymentReference));
+
+    eventPublisher.publishEvent(
+        new InvoiceSyncEvent(
+            invoice.getId(),
+            invoice.getCustomerId(),
+            invoice.getInvoiceNumber(),
+            "PAID",
+            invoice.getIssueDate(),
+            invoice.getDueDate(),
+            invoice.getSubtotal(),
+            invoice.getTaxAmount(),
+            invoice.getTotal(),
+            invoice.getCurrency(),
+            invoice.getNotes(),
+            orgIdForEvent,
+            tenantIdForEvent));
+
+    return buildResponse(invoice);
+  }
+
   @Transactional
   public InvoiceResponse refreshPaymentLink(UUID invoiceId) {
     var invoice =

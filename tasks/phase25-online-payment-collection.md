@@ -80,7 +80,7 @@ Phase 25 wires up real online payment collection for the DocTeams platform. Tena
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 1a (parallel) | 175 | 175A | V42 migration + `PaymentEvent` entity + `PaymentEventStatus` enum + `PaymentEventRepository` + repository tests | |
+| 1a (parallel) | 175 | 175A | V42 migration + `PaymentEvent` entity + `PaymentEventStatus` enum + `PaymentEventRepository` + repository tests | **Done** (PR #364) |
 | 1b (parallel) | 176 | 176A | `StripePaymentGateway` session creation + webhook handling + `stripe-java` Maven dependency | |
 | 1c (parallel) | 177 | 177A | `PayFastPaymentGateway` session creation + ITN webhook handling + signature generation | |
 
@@ -228,7 +228,7 @@ Stage 5: [179B] // [180B]                                           (parallel, a
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **175A** | 175.1--175.7 | V42 migration (`payment_events` table + invoice columns) + `PaymentEvent` entity + `PaymentEventStatus` enum + `PaymentEventRepository` + repository integration tests. ~5 new files, ~1 migration file. Backend only. | |
+| **175A** | 175.1--175.7 | V42 migration (`payment_events` table + invoice columns) + `PaymentEvent` entity + `PaymentEventStatus` enum + `PaymentEventRepository` + repository integration tests. ~5 new files, ~1 migration file. Backend only. | **Done** (PR #364) |
 | **175B** | 175.8--175.14 | Invoice entity extension (3 fields + getters/setters) + `PaymentEventResponse` DTO + `GET /api/invoices/{id}/payment-events` endpoint + `InvoiceService.recordPayment()` writes manual PaymentEvent + integration tests. ~2 new files, ~3 modified files. Backend only. | |
 
 ### Tasks

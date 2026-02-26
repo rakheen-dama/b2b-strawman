@@ -13,4 +13,9 @@ public record WebhookResult(
     String sessionId,
     String paymentReference,
     PaymentStatus status,
-    Map<String, String> metadata) {}
+    Map<String, String> metadata) {
+
+  public WebhookResult {
+    metadata = (metadata == null) ? Map.of() : Map.copyOf(metadata);
+  }
+}

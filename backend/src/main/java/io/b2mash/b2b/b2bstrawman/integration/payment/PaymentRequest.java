@@ -4,9 +4,8 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 /**
- * Value object for recording a manual payment via {@link
- * PaymentGateway#recordManualPayment(PaymentRequest)}. Relocated from {@code invoice/} package per
- * ADR-098.
+ * Value object for recording a manual (out-of-band) payment against an invoice via {@link
+ * PaymentGateway#recordManualPayment(PaymentRequest)}.
  */
 public record PaymentRequest(
     UUID invoiceId, BigDecimal amount, String currency, String description) {}

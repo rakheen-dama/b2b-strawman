@@ -118,6 +118,12 @@ public class IntegrationRegistry {
    * webhook controllers that need to route to a specific adapter before the tenant context is
    * established.
    *
+   * <p><strong>Security:</strong> The {@code slug} parameter must be validated and allowlisted by
+   * the caller before invoking this method. Never pass a slug value sourced directly from an HTTP
+   * request header or body without prior validation — the {@link IllegalArgumentException} thrown
+   * for unknown slugs must not propagate verbatim to HTTP responses, as it may leak internal
+   * adapter registration details.
+   *
    * @throws IllegalArgumentException if no adapters are registered for the domain, or if no adapter
    *     is registered for the given slug.
    * @throws IllegalStateException if the found adapter does not implement the port interface.

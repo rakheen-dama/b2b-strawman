@@ -17,4 +17,9 @@ public record CheckoutRequest(
     String customerName,
     String successUrl,
     String cancelUrl,
-    Map<String, String> metadata) {}
+    Map<String, String> metadata) {
+
+  public CheckoutRequest {
+    metadata = (metadata == null) ? Map.of() : Map.copyOf(metadata);
+  }
+}

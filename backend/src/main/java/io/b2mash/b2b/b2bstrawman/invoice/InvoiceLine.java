@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
+import io.b2mash.b2b.b2bstrawman.tax.TaxRate;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -46,6 +47,23 @@ public class InvoiceLine {
   @Column(name = "sort_order", nullable = false)
   private int sortOrder;
 
+  // --- Tax fields (denormalized snapshots from TaxRate) ---
+
+  @Column(name = "tax_rate_id")
+  private UUID taxRateId;
+
+  @Column(name = "tax_rate_name", length = 100)
+  private String taxRateName;
+
+  @Column(name = "tax_rate_percent", precision = 5, scale = 2)
+  private BigDecimal taxRatePercent;
+
+  @Column(name = "tax_amount", precision = 14, scale = 2)
+  private BigDecimal taxAmount;
+
+  @Column(name = "tax_exempt", nullable = false)
+  private boolean taxExempt;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -87,6 +105,45 @@ public class InvoiceLine {
     this.unitPrice = unitPrice;
     this.sortOrder = sortOrder;
     recalculateAmount();
+  }
+
+  /**
+   * Applies a tax rate to this line, snapshotting the rate's fields and storing the calculated tax
+   * amount.
+   *
+   * @param taxRate the tax rate to apply
+   * @param calculatedTaxAmount the pre-calculated tax amount for this line
+   */
+  public void applyTaxRate(TaxRate taxRate, BigDecimal calculatedTaxAmount) {
+    this.taxRateId = taxRate.getId();
+    this.taxRateName = taxRate.getName();
+    this.taxRatePercent = taxRate.getRate();
+    this.taxExempt = taxRate.isExempt();
+    this.taxAmount = calculatedTaxAmount;
+    this.updatedAt = Instant.now();
+  }
+
+  /**
+   * Re-copies the tax rate's name, percentage, and exempt flag without changing the tax amount.
+   * Used when a tax rate is updated and lines need their snapshots refreshed.
+   *
+   * @param taxRate the tax rate to refresh from
+   */
+  public void refreshTaxSnapshot(TaxRate taxRate) {
+    this.taxRateName = taxRate.getName();
+    this.taxRatePercent = taxRate.getRate();
+    this.taxExempt = taxRate.isExempt();
+    this.updatedAt = Instant.now();
+  }
+
+  /** Clears all tax fields, resetting this line to a no-tax state. */
+  public void clearTaxRate() {
+    this.taxRateId = null;
+    this.taxRateName = null;
+    this.taxRatePercent = null;
+    this.taxAmount = null;
+    this.taxExempt = false;
+    this.updatedAt = Instant.now();
   }
 
   // --- Getters ---
@@ -133,6 +190,26 @@ public class InvoiceLine {
 
   public int getSortOrder() {
     return sortOrder;
+  }
+
+  public UUID getTaxRateId() {
+    return taxRateId;
+  }
+
+  public String getTaxRateName() {
+    return taxRateName;
+  }
+
+  public BigDecimal getTaxRatePercent() {
+    return taxRatePercent;
+  }
+
+  public BigDecimal getTaxAmount() {
+    return taxAmount;
+  }
+
+  public boolean isTaxExempt() {
+    return taxExempt;
   }
 
   public Instant getCreatedAt() {

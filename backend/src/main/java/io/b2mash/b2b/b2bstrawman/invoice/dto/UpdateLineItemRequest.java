@@ -5,9 +5,11 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
+import java.util.UUID;
 
 public record UpdateLineItemRequest(
     @NotBlank String description,
     @NotNull @Positive BigDecimal quantity,
     @NotNull @PositiveOrZero BigDecimal unitPrice,
-    @PositiveOrZero int sortOrder) {}
+    @PositiveOrZero int sortOrder,
+    UUID taxRateId) {}

@@ -12,4 +12,5 @@ public record AddLineItemRequest(
     @NotBlank String description,
     @NotNull @Positive BigDecimal quantity,
     @NotNull @PositiveOrZero BigDecimal unitPrice,
-    @PositiveOrZero int sortOrder) {}
+    @PositiveOrZero int sortOrder,
+    UUID taxRateId) {}

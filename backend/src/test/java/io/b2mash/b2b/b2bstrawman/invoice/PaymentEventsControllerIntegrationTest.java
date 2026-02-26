@@ -246,7 +246,7 @@ class PaymentEventsControllerIntegrationTest {
         .andExpect(jsonPath("$[0].paymentReference").value("PAY-TEST-001"))
         .andExpect(jsonPath("$[0].paymentDestination").value("OPERATING"))
         .andExpect(jsonPath("$[0].currency").value("ZAR"))
-        .andExpect(jsonPath("$[0].amount").value(1000.00));
+        .andExpect(jsonPath("$[0].amount").value(1150.00));
   }
 
   @Test
@@ -280,7 +280,7 @@ class PaymentEventsControllerIntegrationTest {
         .andExpect(jsonPath("$", hasSize(1)))
         .andExpect(jsonPath("$[0].providerSlug").value("manual"))
         .andExpect(jsonPath("$[0].status").value("COMPLETED"))
-        .andExpect(jsonPath("$[0].amount").value(1000.00))
+        .andExpect(jsonPath("$[0].amount").value(1150.00))
         .andExpect(jsonPath("$[0].currency").value("ZAR"))
         .andExpect(jsonPath("$[0].paymentDestination").value("OPERATING"))
         .andExpect(jsonPath("$[0].sessionId").isEmpty())

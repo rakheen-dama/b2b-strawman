@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/invoices/status-badge";
 import { InvoiceLineTable } from "@/components/invoices/invoice-line-table";
-import { Eye } from "lucide-react";
+import { Eye, Copy, Check, RefreshCw } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/format";
 import type {
   InvoiceResponse,
@@ -13,6 +13,7 @@ import type {
   AddLineItemRequest,
   UpdateLineItemRequest,
   ValidationCheck,
+  PaymentEvent,
 } from "@/lib/types";
 import {
   updateInvoice,
@@ -24,18 +25,22 @@ import {
   addLineItem,
   updateLineItem,
   deleteLineItem,
+  refreshPaymentLink,
 } from "@/app/(app)/org/[slug]/invoices/actions";
+import { PaymentEventHistory } from "@/components/invoices/PaymentEventHistory";
 
 interface InvoiceDetailClientProps {
   invoice: InvoiceResponse;
   slug: string;
   isAdmin: boolean;
+  paymentEvents?: PaymentEvent[];
 }
 
 export function InvoiceDetailClient({
   invoice: initialInvoice,
   slug,
   isAdmin,
+  paymentEvents,
 }: InvoiceDetailClientProps) {
   const router = useRouter();
   const [invoice, setInvoice] = useState(initialInvoice);
@@ -66,6 +71,9 @@ export function InvoiceDetailClient({
   const [paymentRef, setPaymentRef] = useState("");
   const [showPaymentForm, setShowPaymentForm] = useState(false);
 
+  // Copy link state
+  const [copied, setCopied] = useState(false);
+
   // Send validation override state
   const [showSendOverride, setShowSendOverride] = useState(false);
   const [sendValidationChecks, setSendValidationChecks] = useState<ValidationCheck[]>([]);
@@ -80,6 +88,33 @@ export function InvoiceDetailClient({
     if (!result.success) {
       setError(result.error ?? "An error occurred.");
     }
+  }
+
+  async function handleCopyPaymentLink() {
+    if (!invoice.paymentUrl) return;
+    try {
+      await navigator.clipboard.writeText(invoice.paymentUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard API may not be available
+    }
+  }
+
+  function handleRegenerateLink() {
+    setError(null);
+    startTransition(async () => {
+      const result = await refreshPaymentLink(
+        slug,
+        invoice.id,
+        invoice.customerId,
+      );
+      if (result.success && result.invoice) {
+        setInvoice(result.invoice);
+      } else {
+        handleError(result);
+      }
+    });
   }
 
   function handleSaveDraft() {
@@ -492,6 +527,53 @@ export function InvoiceDetailClient({
             )}
           </div>
         </div>
+      )}
+
+      {/* Payment Link Section (SENT + paymentUrl non-null) */}
+      {isSent && invoice.paymentUrl && (
+        <div className="rounded-lg border border-teal-200 bg-teal-50 p-4 dark:border-teal-800 dark:bg-teal-950/50">
+          <h3 className="mb-2 font-medium text-teal-800 dark:text-teal-200">
+            Online Payment Link
+          </h3>
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={invoice.paymentUrl}
+              readOnly
+              className="flex-1 rounded-md border border-teal-200 bg-white px-3 py-2 text-sm text-slate-700 dark:border-teal-800 dark:bg-slate-950 dark:text-slate-300"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCopyPaymentLink}
+              className="shrink-0"
+            >
+              {copied ? (
+                <Check className="size-4" />
+              ) : (
+                <Copy className="size-4" />
+              )}
+              <span className="ml-1.5">{copied ? "Copied" : "Copy Link"}</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRegenerateLink}
+              disabled={isPending}
+              className="shrink-0"
+            >
+              <RefreshCw
+                className={`size-4 ${isPending ? "animate-spin" : ""}`}
+              />
+              <span className="ml-1.5">Regenerate</span>
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Payment Event History */}
+      {(isSent || isPaid) && (
+        <PaymentEventHistory events={paymentEvents ?? []} />
       )}
 
       {/* Void indicator */}

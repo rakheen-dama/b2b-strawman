@@ -36,6 +36,7 @@ vi.mock("@/app/(app)/org/[slug]/invoices/actions", () => ({
   addLineItem: vi.fn().mockResolvedValue({ success: true }),
   updateLineItem: vi.fn().mockResolvedValue({ success: true }),
   deleteLineItem: vi.fn().mockResolvedValue({ success: true }),
+  refreshPaymentLink: vi.fn().mockResolvedValue({ success: true }),
 }));
 
 import { InvoiceGenerationDialog } from "@/components/invoices/invoice-generation-dialog";
@@ -190,6 +191,9 @@ describe("Invoice Generation Validation", () => {
       createdAt: "2026-02-20T10:00:00Z",
       updatedAt: "2026-02-20T10:00:00Z",
       lines: [],
+      paymentSessionId: null,
+      paymentUrl: null,
+      paymentDestination: null,
     };
 
     render(

@@ -35,6 +35,9 @@ const sampleInvoices: InvoiceResponse[] = [
     createdAt: "2026-01-05T00:00:00Z",
     updatedAt: "2026-01-20T00:00:00Z",
     lines: [],
+    paymentSessionId: null,
+    paymentUrl: null,
+    paymentDestination: null,
   },
   {
     id: "inv-2",
@@ -60,6 +63,9 @@ const sampleInvoices: InvoiceResponse[] = [
     createdAt: "2026-01-15T00:00:00Z",
     updatedAt: "2026-01-15T00:00:00Z",
     lines: [],
+    paymentSessionId: null,
+    paymentUrl: null,
+    paymentDestination: null,
   },
 ];
 

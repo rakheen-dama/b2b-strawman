@@ -4,7 +4,7 @@ import type { InvoiceResponse, InvoiceStatus } from "@/lib/types";
 import { StatusBadge } from "@/components/invoices/status-badge";
 import { EmptyState } from "@/components/empty-state";
 import { formatCurrency, formatDate } from "@/lib/format";
-import { Receipt } from "lucide-react";
+import { Receipt, CreditCard } from "lucide-react";
 import Link from "next/link";
 
 function computeSummary(invoices: InvoiceResponse[]) {
@@ -229,7 +229,17 @@ export default async function InvoicesPage({
                     {invoice.customerName}
                   </td>
                   <td className="px-4 py-3">
-                    <StatusBadge status={invoice.status} />
+                    <div className="flex items-center gap-2">
+                      <StatusBadge status={invoice.status} />
+                      {invoice.paymentUrl && (
+                        <span
+                          title="Online payment enabled"
+                          className="text-teal-600 dark:text-teal-400"
+                        >
+                          <CreditCard className="size-3.5" />
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="hidden px-4 py-3 text-sm text-slate-600 sm:table-cell dark:text-slate-400">
                     {invoice.issueDate

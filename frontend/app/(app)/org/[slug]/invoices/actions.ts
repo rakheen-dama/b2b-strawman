@@ -10,6 +10,7 @@ import type {
   UpdateLineItemRequest,
   RecordPaymentRequest,
   ValidationCheck,
+  PaymentEvent,
 } from "@/lib/types";
 
 interface ActionResult {
@@ -321,5 +322,56 @@ export async function deleteLineItem(
       return { success: false, error: error.message };
     }
     return { success: false, error: "Failed to delete line item." };
+  }
+}
+
+export async function refreshPaymentLink(
+  slug: string,
+  invoiceId: string,
+  customerId: string,
+): Promise<InvoiceActionResult> {
+  const { orgRole } = await getAuthContext();
+  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+    return {
+      success: false,
+      error: "Only admins and owners can regenerate payment links.",
+    };
+  }
+
+  try {
+    const invoice = await api.post<InvoiceResponse>(
+      `/api/invoices/${invoiceId}/refresh-payment-link`,
+    );
+    revalidateInvoicePaths(slug, invoiceId, customerId);
+    return { success: true, invoice };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to regenerate payment link." };
+  }
+}
+
+export async function getPaymentEvents(
+  invoiceId: string,
+): Promise<{ success: boolean; error?: string; events?: PaymentEvent[] }> {
+  const { orgRole } = await getAuthContext();
+  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+    return {
+      success: false,
+      error: "Only admins and owners can view payment events.",
+    };
+  }
+
+  try {
+    const events = await api.get<PaymentEvent[]>(
+      `/api/invoices/${invoiceId}/payment-events`,
+    );
+    return { success: true, events };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to fetch payment events." };
   }
 }

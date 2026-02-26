@@ -208,7 +208,7 @@
 | 175 | PaymentEvent Entity + Migration + Invoice Extension | Backend | 174 | M | 175A, 175B | **Done** (PRs #364, #365) |
 | 176 | Stripe Adapter | Backend | 174 | M | 176A, 176B | **Done** (PRs #366, #367) |
 | 177 | PayFast Adapter | Backend | 174 | M | 177A, 177B | **Done** (PRs #368, #369) |
-| 178 | Payment Link Generation + Webhook Reconciliation | Backend | 174, 175 | L | 178A, 178B | 178A **Done** (PR #370) |
+| 178 | Payment Link Generation + Webhook Reconciliation | Backend | 174, 175 | L | 178A, 178B | **Done** (PRs #370, #371) |
 | 179 | Portal Payment Flow + Read-Model Extension | Both | 178 | M | 179A, 179B | |
 | 180 | Integration Settings UI + Invoice Payment UX | Frontend | 178 | M | 180A, 180B | |
 | **Phase 26 — Invoice Tax Handling** | | | | | | See [tasks/phase26-invoice-tax-handling.md](tasks/phase26-invoice-tax-handling.md) |

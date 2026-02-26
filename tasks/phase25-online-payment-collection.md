@@ -23,7 +23,7 @@ Phase 25 wires up real online payment collection for the DocTeams platform. Tena
 | 175 | PaymentEvent Entity + Migration + Invoice Extension | Backend | 174 | M | 175A, 175B | **Done** |
 | 176 | Stripe Adapter | Backend | 174 | M | 176A, 176B | **Done** |
 | 177 | PayFast Adapter | Backend | 174 | M | 177A, 177B | **Done** |
-| 178 | Payment Link Generation + Webhook Reconciliation | Backend | 174, 175 | L | 178A, 178B | |
+| 178 | Payment Link Generation + Webhook Reconciliation | Backend | 174, 175 | L | 178A, 178B | **Done** |
 | 179 | Portal Payment Flow + Read-Model Extension | Both | 178 | M | 179A, 179B | |
 | 180 | Integration Settings UI + Invoice Payment UX | Frontend | 178 | M | 180A, 180B | |
 
@@ -97,7 +97,7 @@ Phase 25 wires up real online payment collection for the DocTeams platform. Tena
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 3a | 178 | 178A | `PaymentLinkService` + `PaymentWebhookController` + `POST /api/invoices/{id}/refresh-payment-link` + SecurityConfig webhook permit | **Done** (PR #370) |
-| 3b | 178 | 178B | `PaymentReconciliationService` + `InvoiceService.send()` trigger + session cancellation on manual payment + audit events + notifications | |
+| 3b | 178 | 178B | `PaymentReconciliationService` + `InvoiceService.send()` trigger + session cancellation on manual payment + audit events + notifications | **Done** (PR #371) |
 
 ### Stage 4: Frontend (parallel tracks)
 
@@ -428,7 +428,7 @@ Stage 5: [179B] // [180B]                                           (parallel, a
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **178A** | 178.1--178.8 | `PaymentLinkService` (generate + refresh + cancel) + `PaymentWebhookController` + `POST /api/invoices/{id}/refresh-payment-link` + SecurityConfig webhook permit + `IntegrationRegistry.resolveBySlug()` wiring + integration tests. ~4 new files, ~2 modified files. Backend only. | **Done** (PR #370) |
-| **178B** | 178.9--178.16 | `PaymentReconciliationService` + `InvoiceService.send()` trigger + session cancellation on manual payment + audit events (7 types) + notifications (3 types) + idempotency + end-to-end integration tests. ~2 new files, ~2 modified files. Backend only. | |
+| **178B** | 178.9--178.16 | `PaymentReconciliationService` + `InvoiceService.send()` trigger + session cancellation on manual payment + audit events (7 types) + notifications (3 types) + idempotency + end-to-end integration tests. ~2 new files, ~2 modified files. Backend only. | **Done** (PR #371) |
 
 ### Tasks
 

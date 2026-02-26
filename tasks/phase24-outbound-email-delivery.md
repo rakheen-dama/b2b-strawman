@@ -87,7 +87,7 @@ The design introduces a **two-tier email architecture**: every org gets working 
 | 2a (parallel) | 170 | 170A | InvoiceEmailService + @TransactionalEventListener on InvoiceSentEvent + PDF attachment | **Done** (PR #354) |
 | 2b (parallel) | 170 | 170B | PortalEmailService + MagicLinkService integration + magic link template wiring | **Done** (PR #355) |
 | 2c (parallel) | 171 | 171A | SendGridEmailProvider adapter + sendgrid-java dependency + @ConditionalOnClass | **Done** (PR #356) |
-| 2d (parallel) | 172 | 172A | UnsubscribeService (HMAC tokens) + UnsubscribeController + confirmation HTML page |
+| 2d (parallel) | 172 | 172A | UnsubscribeService (HMAC tokens) + UnsubscribeController + confirmation HTML page | **Done** (PR #358) |
 
 ### Stage 3: Webhook + Admin (after respective Stage 2 slices)
 
@@ -484,7 +484,7 @@ Stage 4: [173A] --> [173B]                               (sequential, after 172B
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **172A** | 172.1–172.7 | `UnsubscribeService` (HMAC tokens) + `UnsubscribeController` + HTML confirmation page + integration tests. ~3 new files, ~1 modified file. Backend only. | |
+| **172A** | 172.1–172.7 | `UnsubscribeService` (HMAC tokens) + `UnsubscribeController` + HTML confirmation page + integration tests. ~3 new files, ~1 modified file. Backend only. | **Done** (PR #358) |
 | **172B** | 172.8–172.14 | `EmailAdminController` (delivery-log, stats, test endpoints) + `List-Unsubscribe` headers + audit event for test email + integration tests. ~2 new files, ~2 modified files. Backend only. | |
 
 ### Tasks

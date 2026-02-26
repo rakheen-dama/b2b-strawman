@@ -157,7 +157,7 @@ class PayFastPaymentGatewayTest {
     params.put("custom_str1", "tenant_abc123");
     params.put("custom_str2", "invoice-uuid-123");
 
-    var signature = gateway.generateSignature(params, "test_passphrase");
+    var signature = gateway.generateVerificationSignature(params, "test_passphrase");
     params.put("signature", signature);
 
     var payload = buildFormPayload(params);
@@ -165,6 +165,7 @@ class PayFastPaymentGatewayTest {
     var result = gateway.handleWebhook(payload, Map.of());
 
     assertThat(result.verified()).isTrue();
+    assertThat(result.sessionId()).isEqualTo("1234567");
     assertThat(result.paymentReference()).isEqualTo("1234567");
     assertThat(result.status()).isEqualTo(PaymentStatus.COMPLETED);
     assertThat(result.metadata()).containsEntry("tenantSchema", "tenant_abc123");
@@ -200,7 +201,7 @@ class PayFastPaymentGatewayTest {
     params.put("custom_str1", "tenant_abc123");
     params.put("custom_str2", "invoice-uuid-123");
 
-    var signature = gateway.generateSignature(params, "test_passphrase");
+    var signature = gateway.generateVerificationSignature(params, "test_passphrase");
     params.put("signature", signature);
 
     var payload = buildFormPayload(params);
@@ -226,12 +227,61 @@ class PayFastPaymentGatewayTest {
 
   @Test
   void testConnection_returns_advisory_message() {
+    setupMerchantSecrets();
+
     var result = gateway.testConnection();
 
     assertThat(result.success()).isTrue();
     assertThat(result.providerName()).isEqualTo("payfast");
     assertThat(result.errorMessage())
         .isEqualTo("Configuration saved. Send a test payment to verify.");
+  }
+
+  @Test
+  void testConnection_fails_when_config_missing() {
+    // secretStore returns null for all keys
+    var result = gateway.testConnection();
+
+    assertThat(result.success()).isFalse();
+    assertThat(result.providerName()).isEqualTo("payfast");
+    assertThat(result.errorMessage()).contains("merchant_id");
+  }
+
+  @Test
+  void createCheckoutSession_fails_when_tenantSchema_missing() {
+    setupMerchantSecrets();
+    var request =
+        new CheckoutRequest(
+            UUID.randomUUID(),
+            "INV-003",
+            new BigDecimal("500.00"),
+            "ZAR",
+            "customer@example.com",
+            "Test Customer",
+            "https://example.com/success",
+            "https://example.com/cancel",
+            Map.of()); // no tenantSchema
+
+    var result = gateway.createCheckoutSession(request);
+
+    assertThat(result.success()).isFalse();
+    assertThat(result.errorMessage()).contains("tenantSchema");
+  }
+
+  @Test
+  void handleWebhook_empty_payload_returns_unverified() {
+    var result = gateway.handleWebhook("", Map.of());
+
+    assertThat(result.verified()).isFalse();
+    assertThat(result.eventType()).isNull();
+  }
+
+  @Test
+  void handleWebhook_null_payload_returns_unverified() {
+    var result = gateway.handleWebhook(null, Map.of());
+
+    assertThat(result.verified()).isFalse();
+    assertThat(result.eventType()).isNull();
   }
 
   // --- Helpers ---

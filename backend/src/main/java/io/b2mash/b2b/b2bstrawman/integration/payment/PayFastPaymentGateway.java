@@ -12,7 +12,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -55,9 +54,10 @@ public class PayFastPaymentGateway implements PaymentGateway {
   public CreateSessionResult createCheckoutSession(CheckoutRequest request) {
     try {
       var config = resolveConfig();
-      var tenantSchema =
-          Objects.requireNonNull(
-              request.metadata().get("tenantSchema"), "tenantSchema required in metadata");
+      var tenantSchema = request.metadata().get("tenantSchema");
+      if (tenantSchema == null || tenantSchema.isBlank()) {
+        throw new IllegalStateException("tenantSchema required in metadata");
+      }
 
       var data = new LinkedHashMap<String, String>();
       data.put("merchant_id", config.merchantId());
@@ -88,7 +88,7 @@ public class PayFastPaymentGateway implements PaymentGateway {
       var localSessionId = UUID.randomUUID().toString();
 
       return CreateSessionResult.success(localSessionId, redirectUrl);
-    } catch (Exception e) {
+    } catch (IllegalStateException e) {
       log.error("PayFast session creation failed: {}", e.getMessage(), e);
       return CreateSessionResult.failure(e.getMessage());
     }
@@ -98,13 +98,17 @@ public class PayFastPaymentGateway implements PaymentGateway {
   public WebhookResult handleWebhook(String payload, Map<String, String> headers) {
     try {
       var params = parseFormData(payload);
+      if (params.isEmpty()) {
+        log.warn("PayFast ITN: empty or null payload");
+        return new WebhookResult(false, null, null, null, null, Map.of());
+      }
 
-      // Step 2: Verify signature (177A scope)
+      // Verify signature using raw decoded values (no URL re-encoding)
       var config = resolveConfig();
       var paramsWithoutSig = new LinkedHashMap<>(params);
       paramsWithoutSig.remove("signature");
 
-      var expectedSignature = generateSignature(paramsWithoutSig, config.passphrase());
+      var expectedSignature = generateVerificationSignature(paramsWithoutSig, config.passphrase());
       if (!expectedSignature.equals(params.get("signature"))) {
         log.warn("PayFast ITN signature verification failed");
         return new WebhookResult(false, null, null, null, null, Map.of());
@@ -114,7 +118,7 @@ public class PayFastPaymentGateway implements PaymentGateway {
       return new WebhookResult(
           true,
           "payment." + status.name().toLowerCase(),
-          params.get("custom_str2"),
+          params.get("pf_payment_id"),
           params.get("pf_payment_id"),
           status,
           Map.of(
@@ -148,13 +152,19 @@ public class PayFastPaymentGateway implements PaymentGateway {
 
   @Override
   public ConnectionTestResult testConnection() {
-    return new ConnectionTestResult(
-        true, "payfast", "Configuration saved. Send a test payment to verify.");
+    try {
+      resolveConfig();
+      return new ConnectionTestResult(
+          true, "payfast", "Configuration saved. Send a test payment to verify.");
+    } catch (IllegalStateException e) {
+      return new ConnectionTestResult(false, "payfast", e.getMessage());
+    }
   }
 
   /**
-   * Generates a PayFast MD5 signature. Parameters are URL-encoded, sorted alphabetically by key,
-   * joined with {@code &}, passphrase appended (if non-empty), then MD5 hashed.
+   * Generates a PayFast MD5 signature for outbound requests. Parameters are URL-encoded, sorted
+   * alphabetically by key, joined with {@code &}, passphrase appended (if non-empty), then MD5
+   * hashed.
    *
    * <p>Package-private for testing.
    */
@@ -173,9 +183,34 @@ public class PayFastPaymentGateway implements PaymentGateway {
       paramString += "&passphrase=" + URLEncoder.encode(passphrase.trim(), StandardCharsets.UTF_8);
     }
 
+    return md5Hash(paramString);
+  }
+
+  /**
+   * Generates a PayFast MD5 signature for ITN (webhook) verification. Uses raw decoded param values
+   * without URL re-encoding, sorted alphabetically by key. PayFast ITN docs specify using the raw
+   * values as-is.
+   *
+   * <p>Package-private for testing.
+   */
+  String generateVerificationSignature(Map<String, String> params, String passphrase) {
+    var sorted = new TreeMap<>(params);
+    var paramString =
+        sorted.entrySet().stream()
+            .map(e -> e.getKey() + "=" + e.getValue().trim())
+            .collect(Collectors.joining("&"));
+
+    if (passphrase != null && !passphrase.isEmpty()) {
+      paramString += "&passphrase=" + passphrase.trim();
+    }
+
+    return md5Hash(paramString);
+  }
+
+  private String md5Hash(String input) {
     try {
       var md = MessageDigest.getInstance("MD5");
-      var digest = md.digest(paramString.getBytes(StandardCharsets.UTF_8));
+      var digest = md.digest(input.getBytes(StandardCharsets.UTF_8));
       var sb = new StringBuilder();
       for (byte b : digest) {
         sb.append(String.format("%02x", b));
@@ -220,10 +255,21 @@ public class PayFastPaymentGateway implements PaymentGateway {
   }
 
   private PayFastConfig resolveConfig() {
-    return new PayFastConfig(
-        secretStore.retrieve("payment:payfast:merchant_id"),
-        secretStore.retrieve("payment:payfast:merchant_key"),
-        secretStore.retrieve("payment:payfast:passphrase"));
+    var merchantId = secretStore.retrieve("payment:payfast:merchant_id");
+    var merchantKey = secretStore.retrieve("payment:payfast:merchant_key");
+    var passphrase = secretStore.retrieve("payment:payfast:passphrase");
+
+    if (merchantId == null || merchantId.isBlank()) {
+      throw new IllegalStateException("PayFast merchant_id not configured");
+    }
+    if (merchantKey == null || merchantKey.isBlank()) {
+      throw new IllegalStateException("PayFast merchant_key not configured");
+    }
+    if (passphrase == null || passphrase.isBlank()) {
+      throw new IllegalStateException("PayFast passphrase not configured");
+    }
+
+    return new PayFastConfig(merchantId, merchantKey, passphrase);
   }
 
   private record PayFastConfig(String merchantId, String merchantKey, String passphrase) {}

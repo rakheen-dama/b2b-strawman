@@ -1,0 +1,222 @@
+package io.b2mash.b2b.b2bstrawman.tax;
+
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
+import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.tax.dto.CreateTaxRateRequest;
+import io.b2mash.b2b.b2bstrawman.tax.dto.TaxRateResponse;
+import io.b2mash.b2b.b2bstrawman.tax.dto.UpdateTaxRateRequest;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class TaxRateService {
+
+  private static final Logger log = LoggerFactory.getLogger(TaxRateService.class);
+
+  private final TaxRateRepository taxRateRepository;
+  private final AuditService auditService;
+
+  public TaxRateService(TaxRateRepository taxRateRepository, AuditService auditService) {
+    this.taxRateRepository = taxRateRepository;
+    this.auditService = auditService;
+  }
+
+  @Transactional
+  public TaxRateResponse createTaxRate(CreateTaxRateRequest request) {
+    validateNameUnique(request.name(), null);
+    validateExemptZeroConstraint(request.isExempt(), request.rate());
+
+    boolean defaultChanged = false;
+    if (request.isDefault()) {
+      defaultChanged = clearExistingDefault(null);
+    }
+
+    var taxRate =
+        new TaxRate(
+            request.name(),
+            request.rate(),
+            request.isDefault(),
+            request.isExempt(),
+            request.sortOrder());
+    taxRate = taxRateRepository.save(taxRate);
+
+    log.info("Created tax rate {} name={}", taxRate.getId(), taxRate.getName());
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("tax_rate.created")
+            .entityType("tax_rate")
+            .entityId(taxRate.getId())
+            .details(
+                Map.of(
+                    "name", taxRate.getName(),
+                    "rate", taxRate.getRate().toString(),
+                    "is_default", String.valueOf(taxRate.isDefault()),
+                    "is_exempt", String.valueOf(taxRate.isExempt())))
+            .build());
+
+    if (defaultChanged) {
+      final UUID finalId = taxRate.getId();
+      auditService.log(
+          AuditEventBuilder.builder()
+              .eventType("tax_rate.default_changed")
+              .entityType("tax_rate")
+              .entityId(finalId)
+              .details(Map.of("new_default_id", finalId.toString()))
+              .build());
+    }
+
+    return TaxRateResponse.from(taxRate);
+  }
+
+  @Transactional
+  public TaxRateResponse updateTaxRate(UUID id, UpdateTaxRateRequest request) {
+    var taxRate =
+        taxRateRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("TaxRate", id));
+
+    validateNameUnique(request.name(), id);
+    validateExemptZeroConstraint(request.isExempt(), request.rate());
+
+    boolean wasDefault = taxRate.isDefault();
+    if (request.isDefault() && !wasDefault) {
+      clearExistingDefault(id);
+    }
+
+    taxRate.update(
+        request.name(),
+        request.rate(),
+        request.isDefault(),
+        request.isExempt(),
+        request.sortOrder(),
+        request.active());
+    taxRate = taxRateRepository.save(taxRate);
+
+    log.info("Updated tax rate {} name={}", taxRate.getId(), taxRate.getName());
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("tax_rate.updated")
+            .entityType("tax_rate")
+            .entityId(taxRate.getId())
+            .details(
+                Map.of(
+                    "name", taxRate.getName(),
+                    "rate", taxRate.getRate().toString(),
+                    "is_default", String.valueOf(taxRate.isDefault()),
+                    "is_exempt", String.valueOf(taxRate.isExempt()),
+                    "active", String.valueOf(taxRate.isActive())))
+            .build());
+
+    if (request.isDefault() && !wasDefault) {
+      final UUID finalId = taxRate.getId();
+      auditService.log(
+          AuditEventBuilder.builder()
+              .eventType("tax_rate.default_changed")
+              .entityType("tax_rate")
+              .entityId(finalId)
+              .details(Map.of("new_default_id", finalId.toString()))
+              .build());
+    }
+
+    return TaxRateResponse.from(taxRate);
+  }
+
+  @Transactional
+  public void deactivateTaxRate(UUID id) {
+    var taxRate =
+        taxRateRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("TaxRate", id));
+
+    long draftLineCount = taxRateRepository.countDraftInvoiceLinesByTaxRateId(id);
+    if (draftLineCount > 0) {
+      throw new InvalidStateException(
+          "Cannot deactivate tax rate",
+          "Tax rate is referenced by " + draftLineCount + " draft invoice line(s)");
+    }
+
+    taxRate.deactivate();
+    taxRateRepository.save(taxRate);
+
+    log.info("Deactivated tax rate {} name={}", taxRate.getId(), taxRate.getName());
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("tax_rate.deactivated")
+            .entityType("tax_rate")
+            .entityId(taxRate.getId())
+            .details(Map.of("name", taxRate.getName()))
+            .build());
+  }
+
+  @Transactional(readOnly = true)
+  public List<TaxRateResponse> listTaxRates(boolean includeInactive) {
+    var rates =
+        includeInactive
+            ? taxRateRepository.findAllByOrderBySortOrder()
+            : taxRateRepository.findByActiveOrderBySortOrder(true);
+    return rates.stream().map(TaxRateResponse::from).toList();
+  }
+
+  @Transactional(readOnly = true)
+  public Optional<TaxRateResponse> getDefaultTaxRate() {
+    return taxRateRepository.findByIsDefaultTrue().map(TaxRateResponse::from);
+  }
+
+  // --- Private helpers ---
+
+  /** Validates name uniqueness. Pass null excludeId on create; pass the rate's own ID on update. */
+  private void validateNameUnique(String name, UUID excludeId) {
+    boolean conflict =
+        excludeId == null
+            ? taxRateRepository.existsByName(name)
+            : taxRateRepository.existsByNameAndIdNot(name, excludeId);
+    if (conflict) {
+      throw new ResourceConflictException(
+          "Tax rate name already exists", "A tax rate with name '" + name + "' already exists");
+    }
+  }
+
+  /** Validates that exempt rates have a rate of exactly 0.00. */
+  private void validateExemptZeroConstraint(boolean isExempt, BigDecimal rate) {
+    if (isExempt && rate.compareTo(BigDecimal.ZERO) != 0) {
+      throw new InvalidStateException(
+          "Invalid tax rate", "Exempt tax rates must have a rate of 0.00");
+    }
+  }
+
+  /**
+   * Clears the existing default tax rate (if any). Returns true if a default was cleared. Skips
+   * clearing if the existing default is the same rate as excludeId (update case).
+   */
+  private boolean clearExistingDefault(UUID excludeId) {
+    return taxRateRepository
+        .findByIsDefaultTrue()
+        .filter(existing -> !existing.getId().equals(excludeId))
+        .map(
+            existing -> {
+              existing.update(
+                  existing.getName(),
+                  existing.getRate(),
+                  false, // clear isDefault
+                  existing.isExempt(),
+                  existing.getSortOrder(),
+                  existing.isActive());
+              taxRateRepository.saveAndFlush(existing);
+              return true;
+            })
+        .orElse(false);
+  }
+}

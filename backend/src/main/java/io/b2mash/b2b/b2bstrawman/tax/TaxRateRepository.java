@@ -16,4 +16,9 @@ public interface TaxRateRepository extends JpaRepository<TaxRate, UUID> {
   boolean existsByName(String name);
 
   boolean existsByNameAndIdNot(String name, UUID id);
+
+  // Stub guard: returns 0 until InvoiceLine.tax_rate_id column is added in a later epic
+  default long countDraftInvoiceLinesByTaxRateId(UUID taxRateId) {
+    return 0L;
+  }
 }

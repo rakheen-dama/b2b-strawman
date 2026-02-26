@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.integration.email;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -65,6 +66,11 @@ public class EmailDeliveryLogService {
     repository
         .findByProviderMessageId(providerMessageId)
         .ifPresent(log -> log.updateDeliveryStatus(newStatus, errorMessage));
+  }
+
+  @Transactional(readOnly = true)
+  public Optional<EmailDeliveryLog> findByProviderMessageId(String providerMessageId) {
+    return repository.findByProviderMessageId(providerMessageId);
   }
 
   @Transactional(readOnly = true)

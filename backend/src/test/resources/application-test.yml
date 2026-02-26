@@ -37,3 +37,8 @@ aws:
 # Integration encryption (Base64-encoded 256-bit key for AES-256-GCM)
 integration:
   encryption-key: dGVzdC1lbmNyeXB0aW9uLWtleS1tdXN0LWJlLTMyYiE=
+
+docteams:
+  email:
+    sendgrid:
+      webhook-verification-key: ""

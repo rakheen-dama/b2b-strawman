@@ -99,6 +99,8 @@ public class SecurityConfig {
             auth ->
                 auth.requestMatchers("/actuator/**")
                     .permitAll()
+                    .requestMatchers("/api/webhooks/email/**")
+                    .permitAll()
                     .requestMatchers("/internal/**")
                     .authenticated()
                     .requestMatchers("/api/**")

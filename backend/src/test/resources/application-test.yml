@@ -37,3 +37,6 @@ aws:
 # Integration encryption (Base64-encoded 256-bit key for AES-256-GCM)
 integration:
   encryption-key: dGVzdC1lbmNyeXB0aW9uLWtleS1tdXN0LWJlLTMyYiE=
+
+# Webhook verification key intentionally NOT set here — fail-closed by default.
+# Tests that need webhook access use @DynamicPropertySource to inject a test ECDSA key.

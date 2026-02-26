@@ -100,7 +100,7 @@ The design introduces a **two-tier email architecture**: every org gets working 
 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
-| 4a | 173 | 173A | Notification preferences email toggle + EmailIntegrationCard + server actions + API types |
+| 4a | 173 | 173A | Notification preferences email toggle + EmailIntegrationCard + server actions + API types | **Done** (PR #360) |
 | 4b | 173 | 173B | Email settings page + DeliveryLogTable + delivery stats + rate limit display |
 
 ### Timeline
@@ -553,7 +553,7 @@ Stage 4: [173A] --> [173B]                               (sequential, after 172B
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **173A** | 173.1–173.8 | Notification preferences email toggle + `EmailIntegrationCard` + server actions + API types. ~4 modified files, ~3 new files. Frontend only. | |
+| **173A** | 173.1–173.8 | Notification preferences email toggle + `EmailIntegrationCard` + server actions + API types. ~4 modified files, ~3 new files. Frontend only. | **Done** (PR #360) |
 | **173B** | 173.9–173.14 | Email settings page + `DeliveryLogTable` + stats + rate limit display. ~4 new files, ~1 modified file. Frontend only. | |
 
 ### Tasks

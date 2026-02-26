@@ -202,7 +202,7 @@
 | 170 | Invoice Delivery + Portal Magic Link Email | Backend | 169 | M | 170A, 170B | **Done** (PRs #354, #355) |
 | 171 | SendGrid BYOAK + Bounce Webhooks | Backend | 169 | M | 171A, 171B | **Done** (PRs #356, #357) |
 | 172 | Unsubscribe + Admin Endpoints | Backend | 169 | M | 172A, 172B | **Done** (PRs #358, #359) |
-| 173 | Frontend — Email Toggle + Integration Card + Delivery Log | Frontend | 172 | M | 173A, 173B | |
+| 173 | Frontend — Email Toggle + Integration Card + Delivery Log | Frontend | 172 | M | 173A, 173B | 173A **Done** (PR #360) |
 | **Phase 25 — Online Payment Collection** | | | | | | See [tasks/phase25-online-payment-collection.md](tasks/phase25-online-payment-collection.md) |
 | 174 | PaymentGateway Port + NoOp Adapter + InvoiceService Migration | Backend | -- | M | 174A, 174B | |
 | 175 | PaymentEvent Entity + Migration + Invoice Extension | Backend | 174 | M | 175A, 175B | |

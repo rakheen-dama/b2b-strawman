@@ -4,10 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
+import com.stripe.model.Balance;
 import com.stripe.model.Event;
 import com.stripe.model.EventDataObjectDeserializer;
 import com.stripe.model.checkout.Session;
@@ -312,6 +314,155 @@ class StripePaymentGatewayTest {
       assertThat(result.verified()).isFalse();
       assertThat(result.eventType()).isEqualTo("payment_intent.succeeded");
     }
+  }
+
+  // --- queryPaymentStatus tests ---
+
+  @Test
+  void queryPaymentStatus_complete_returns_COMPLETED() {
+    when(secretStore.retrieve("payment:stripe:api_key")).thenReturn("sk_test_123");
+
+    try (MockedStatic<Session> sessionMock = mockStatic(Session.class)) {
+      var mockSession = mock(Session.class);
+      when(mockSession.getStatus()).thenReturn("complete");
+      sessionMock
+          .when(() -> Session.retrieve(any(String.class), any(RequestOptions.class)))
+          .thenReturn(mockSession);
+
+      var result = gateway.queryPaymentStatus("cs_test_abc");
+
+      assertThat(result).isEqualTo(PaymentStatus.COMPLETED);
+    }
+  }
+
+  @Test
+  void queryPaymentStatus_expired_returns_EXPIRED() {
+    when(secretStore.retrieve("payment:stripe:api_key")).thenReturn("sk_test_123");
+
+    try (MockedStatic<Session> sessionMock = mockStatic(Session.class)) {
+      var mockSession = mock(Session.class);
+      when(mockSession.getStatus()).thenReturn("expired");
+      sessionMock
+          .when(() -> Session.retrieve(any(String.class), any(RequestOptions.class)))
+          .thenReturn(mockSession);
+
+      var result = gateway.queryPaymentStatus("cs_test_abc");
+
+      assertThat(result).isEqualTo(PaymentStatus.EXPIRED);
+    }
+  }
+
+  @Test
+  void queryPaymentStatus_open_returns_PENDING() {
+    when(secretStore.retrieve("payment:stripe:api_key")).thenReturn("sk_test_123");
+
+    try (MockedStatic<Session> sessionMock = mockStatic(Session.class)) {
+      var mockSession = mock(Session.class);
+      when(mockSession.getStatus()).thenReturn("open");
+      sessionMock
+          .when(() -> Session.retrieve(any(String.class), any(RequestOptions.class)))
+          .thenReturn(mockSession);
+
+      var result = gateway.queryPaymentStatus("cs_test_abc");
+
+      assertThat(result).isEqualTo(PaymentStatus.PENDING);
+    }
+  }
+
+  @Test
+  void queryPaymentStatus_stripeException_returns_FAILED() {
+    when(secretStore.retrieve("payment:stripe:api_key")).thenReturn("sk_test_123");
+
+    try (MockedStatic<Session> sessionMock = mockStatic(Session.class)) {
+      sessionMock
+          .when(() -> Session.retrieve(any(String.class), any(RequestOptions.class)))
+          .thenThrow(new StripeException("Not found", null, null, 404) {});
+
+      var result = gateway.queryPaymentStatus("cs_test_invalid");
+
+      assertThat(result).isEqualTo(PaymentStatus.FAILED);
+    }
+  }
+
+  // --- testConnection tests ---
+
+  @Test
+  void testConnection_success() {
+    when(secretStore.retrieve("payment:stripe:api_key")).thenReturn("sk_test_123");
+
+    try (MockedStatic<Balance> balanceMock = mockStatic(Balance.class)) {
+      var mockBalance = mock(Balance.class);
+      balanceMock.when(() -> Balance.retrieve(any(RequestOptions.class))).thenReturn(mockBalance);
+
+      var result = gateway.testConnection();
+
+      assertThat(result.success()).isTrue();
+      assertThat(result.providerName()).isEqualTo("stripe");
+      assertThat(result.errorMessage()).isNull();
+    }
+  }
+
+  @Test
+  void testConnection_failure() {
+    when(secretStore.retrieve("payment:stripe:api_key")).thenReturn("sk_test_123");
+
+    try (MockedStatic<Balance> balanceMock = mockStatic(Balance.class)) {
+      balanceMock
+          .when(() -> Balance.retrieve(any(RequestOptions.class)))
+          .thenThrow(new StripeException("Invalid API Key", null, null, 401) {});
+
+      var result = gateway.testConnection();
+
+      assertThat(result.success()).isFalse();
+      assertThat(result.providerName()).isEqualTo("stripe");
+      assertThat(result.errorMessage()).contains("Invalid API Key");
+    }
+  }
+
+  // --- expireSession tests ---
+
+  @Test
+  void expireSession_calls_stripe() throws StripeException {
+    when(secretStore.retrieve("payment:stripe:api_key")).thenReturn("sk_test_123");
+
+    try (MockedStatic<Session> sessionMock = mockStatic(Session.class)) {
+      var mockSession = mock(Session.class);
+      sessionMock
+          .when(() -> Session.retrieve(any(String.class), any(RequestOptions.class)))
+          .thenReturn(mockSession);
+
+      gateway.expireSession("cs_test_abc");
+
+      verify(mockSession).expire(any(RequestOptions.class));
+    }
+  }
+
+  @Test
+  void expireSession_swallows_exception() {
+    when(secretStore.retrieve("payment:stripe:api_key")).thenReturn("sk_test_123");
+
+    try (MockedStatic<Session> sessionMock = mockStatic(Session.class)) {
+      sessionMock
+          .when(() -> Session.retrieve(any(String.class), any(RequestOptions.class)))
+          .thenThrow(new StripeException("Session not found", null, null, 404) {});
+
+      // Should NOT throw
+      gateway.expireSession("cs_test_invalid");
+    }
+  }
+
+  // --- recordManualPayment tests ---
+
+  @Test
+  void recordManualPayment_returns_success() {
+    var request =
+        new PaymentRequest(UUID.randomUUID(), new BigDecimal("500.00"), "ZAR", "Test payment");
+
+    var result = gateway.recordManualPayment(request);
+
+    assertThat(result.success()).isTrue();
+    assertThat(result.paymentReference()).startsWith("MANUAL-");
+    assertThat(result.errorMessage()).isNull();
   }
 
   // --- Helpers ---

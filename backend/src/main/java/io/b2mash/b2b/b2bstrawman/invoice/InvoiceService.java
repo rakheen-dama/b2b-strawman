@@ -22,6 +22,10 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMemberRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupService;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
+import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
+import io.b2mash.b2b.b2bstrawman.integration.IntegrationRegistry;
+import io.b2mash.b2b.b2bstrawman.integration.payment.PaymentGateway;
+import io.b2mash.b2b.b2bstrawman.integration.payment.PaymentRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.AddLineItemRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.CreateInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.CurrencyTotal;
@@ -76,7 +80,7 @@ public class InvoiceService {
   private final TaskRepository taskRepository;
   private final MemberNameResolver memberNameResolver;
   private final InvoiceNumberService invoiceNumberService;
-  private final PaymentProvider paymentProvider;
+  private final IntegrationRegistry integrationRegistry;
   private final EntityManager entityManager;
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
@@ -100,7 +104,7 @@ public class InvoiceService {
       TaskRepository taskRepository,
       MemberNameResolver memberNameResolver,
       InvoiceNumberService invoiceNumberService,
-      PaymentProvider paymentProvider,
+      IntegrationRegistry integrationRegistry,
       EntityManager entityManager,
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
@@ -122,7 +126,7 @@ public class InvoiceService {
     this.taskRepository = taskRepository;
     this.memberNameResolver = memberNameResolver;
     this.invoiceNumberService = invoiceNumberService;
-    this.paymentProvider = paymentProvider;
+    this.integrationRegistry = integrationRegistry;
     this.entityManager = entityManager;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
@@ -890,14 +894,15 @@ public class InvoiceService {
           "Invalid status transition", "Only sent invoices can be paid");
     }
 
-    // Call payment provider
+    // Call payment gateway via integration registry
+    var gateway = resolvePaymentGateway();
     var paymentRequest =
         new PaymentRequest(
             invoiceId,
             invoice.getTotal(),
             invoice.getCurrency(),
             "Payment for invoice " + invoice.getInvoiceNumber());
-    var paymentResult = paymentProvider.recordPayment(paymentRequest);
+    var paymentResult = gateway.recordManualPayment(paymentRequest);
 
     if (!paymentResult.success()) {
       throw new InvalidStateException("Payment failed", paymentResult.errorMessage());
@@ -1286,5 +1291,9 @@ public class InvoiceService {
     }
 
     return taskTitle + " -- " + timeEntry.getDate() + " -- " + memberName;
+  }
+
+  private PaymentGateway resolvePaymentGateway() {
+    return integrationRegistry.resolve(IntegrationDomain.PAYMENT, PaymentGateway.class);
   }
 }

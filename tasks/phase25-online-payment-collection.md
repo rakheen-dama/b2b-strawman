@@ -19,7 +19,7 @@ Phase 25 wires up real online payment collection for the DocTeams platform. Tena
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 174 | PaymentGateway Port + NoOp Adapter + InvoiceService Migration | Backend | -- | M | 174A, 174B | |
+| 174 | PaymentGateway Port + NoOp Adapter + InvoiceService Migration | Backend | -- | M | 174A, 174B | **Done** |
 | 175 | PaymentEvent Entity + Migration + Invoice Extension | Backend | 174 | M | 175A, 175B | |
 | 176 | Stripe Adapter | Backend | 174 | M | 176A, 176B | |
 | 177 | PayFast Adapter | Backend | 174 | M | 177A, 177B | |
@@ -74,7 +74,7 @@ Phase 25 wires up real online payment collection for the DocTeams platform. Tena
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 0a | 174 | 174A | `PaymentGateway` port interface + 6 value objects + `PaymentStatus` enum + `IntegrationRegistry.resolveBySlug()` | **Done** (PR #362) |
-| 0b | 174 | 174B | `NoOpPaymentGateway` + delete `PaymentProvider`/`MockPaymentProvider` + migrate `InvoiceService` to registry resolution + `IntegrationService.testConnection(PAYMENT)` | |
+| 0b | 174 | 174B | `NoOpPaymentGateway` + delete `PaymentProvider`/`MockPaymentProvider` + migrate `InvoiceService` to registry resolution + `IntegrationService.testConnection(PAYMENT)` | **Done** (PR #363) |
 
 ### Stage 1: Entity + Adapters (parallel tracks)
 
@@ -145,7 +145,7 @@ Stage 5: [179B] // [180B]                                           (parallel, a
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **174A** | 174.1--174.7 | `PaymentGateway` port interface + `CheckoutRequest`, `CreateSessionResult`, `WebhookResult`, `PaymentStatus` enum + relocate `PaymentRequest`/`PaymentResult` to `integration/payment/` + `IntegrationRegistry.resolveBySlug()` method + unit tests. ~8 new files, ~1 modified file. Backend only. | **Done** (PR #362) |
-| **174B** | 174.8--174.15 | `NoOpPaymentGateway` adapter + delete `PaymentProvider`/`MockPaymentProvider` + migrate `InvoiceService` to registry resolution + `IntegrationService.testConnection(PAYMENT)` update + fix all broken tests. ~1 new file, ~5 modified files, ~3 deleted files. Backend only. | |
+| **174B** | 174.8--174.15 | `NoOpPaymentGateway` adapter + delete `PaymentProvider`/`MockPaymentProvider` + migrate `InvoiceService` to registry resolution + `IntegrationService.testConnection(PAYMENT)` update + fix all broken tests. ~1 new file, ~5 modified files, ~3 deleted files. Backend only. | **Done** (PR #363) |
 
 ### Tasks
 

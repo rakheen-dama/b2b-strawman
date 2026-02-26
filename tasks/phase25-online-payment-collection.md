@@ -81,7 +81,7 @@ Phase 25 wires up real online payment collection for the DocTeams platform. Tena
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 1a (parallel) | 175 | 175A | V42 migration + `PaymentEvent` entity + `PaymentEventStatus` enum + `PaymentEventRepository` + repository tests | **Done** (PR #364) |
-| 1b (parallel) | 176 | 176A | `StripePaymentGateway` session creation + webhook handling + `stripe-java` Maven dependency | |
+| 1b (parallel) | 176 | 176A | `StripePaymentGateway` session creation + webhook handling + `stripe-java` Maven dependency | **Done** (PR #366) |
 | 1c (parallel) | 177 | 177A | `PayFastPaymentGateway` session creation + ITN webhook handling + signature generation | |
 
 ### Stage 2: Invoice extension + adapter completion (parallel tracks)
@@ -301,7 +301,7 @@ Stage 5: [179B] // [180B]                                           (parallel, a
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **176A** | 176.1--176.7 | `StripePaymentGateway` with `createCheckoutSession()` + `handleWebhook()` + `stripe-java` Maven dependency + `resolveApiKey()` via SecretStore + unit tests with mocked Stripe SDK. ~2 new files, ~1 modified file. Backend only. | |
+| **176A** | 176.1--176.7 | `StripePaymentGateway` with `createCheckoutSession()` + `handleWebhook()` + `stripe-java` Maven dependency + `resolveApiKey()` via SecretStore + unit tests with mocked Stripe SDK. ~2 new files, ~1 modified file. Backend only. | **Done** (PR #366) |
 | **176B** | 176.8--176.13 | `queryPaymentStatus()` + `testConnection()` + `expireSession()` + `recordManualPayment()` + currency conversion helper + comprehensive tests. ~1 modified file, ~1 new test file. Backend only. | |
 
 ### Tasks

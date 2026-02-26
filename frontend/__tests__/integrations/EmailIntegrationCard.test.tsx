@@ -34,12 +34,12 @@ describe("EmailIntegrationCard", () => {
       },
     });
 
-    render(<EmailIntegrationCard slug="test-org" />);
+    render(<EmailIntegrationCard />);
 
     expect(screen.getByText("Email Delivery")).toBeInTheDocument();
     // Two "Active" badges: one in header, one in platform email info row
     const badges = screen.getAllByText("Active");
-    expect(badges.length).toBeGreaterThanOrEqual(1);
+    expect(badges).toHaveLength(2);
   });
 
   it("shows stats when loaded", async () => {
@@ -56,7 +56,7 @@ describe("EmailIntegrationCard", () => {
       },
     });
 
-    render(<EmailIntegrationCard slug="test-org" />);
+    render(<EmailIntegrationCard />);
 
     await waitFor(() => {
       expect(screen.getByText("42")).toBeInTheDocument();
@@ -82,7 +82,7 @@ describe("EmailIntegrationCard", () => {
       },
     });
 
-    render(<EmailIntegrationCard slug="test-org" />);
+    render(<EmailIntegrationCard />);
 
     await waitFor(() => {
       expect(screen.getByText("Provider: sendgrid")).toBeInTheDocument();
@@ -104,7 +104,7 @@ describe("EmailIntegrationCard", () => {
     });
     mockSendTestEmail.mockResolvedValue({ success: true });
 
-    render(<EmailIntegrationCard slug="test-org" />);
+    render(<EmailIntegrationCard />);
 
     const user = userEvent.setup();
 

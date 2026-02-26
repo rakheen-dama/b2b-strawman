@@ -82,7 +82,7 @@ export default async function IntegrationsSettingsPage({
           const domainProviders = providers[config.domain] ?? [];
 
           if (config.domain === "EMAIL") {
-            return <EmailIntegrationCard key={config.domain} slug={slug} />;
+            return <EmailIntegrationCard key={config.domain} />;
           }
 
           return (

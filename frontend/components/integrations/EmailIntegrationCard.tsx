@@ -14,20 +14,14 @@ import {
 import { getEmailStats, sendTestEmail } from "@/lib/actions/email";
 import type { EmailDeliveryStats } from "@/lib/api/email";
 
-interface EmailIntegrationCardProps {
-  slug: string;
-}
-
-export function EmailIntegrationCard({ slug }: EmailIntegrationCardProps) {
+export function EmailIntegrationCard() {
   const [stats, setStats] = useState<EmailDeliveryStats | null>(null);
   const [isLoadingStats, setIsLoadingStats] = useState(true);
   const [isSendingTest, setIsSendingTest] = useState(false);
+  const [testCooldown, setTestCooldown] = useState(false);
   const [testResult, setTestResult] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Suppress unused variable warning — slug reserved for future BYOAK config
-  void slug;
 
   useEffect(() => {
     async function loadStats() {
@@ -50,6 +44,8 @@ export function EmailIntegrationCard({ slug }: EmailIntegrationCardProps) {
     const result = await sendTestEmail();
     if (result.success) {
       setTestResult("Test email sent successfully.");
+      setTestCooldown(true);
+      setTimeout(() => setTestCooldown(false), 10_000);
     } else {
       setError(result.error ?? "Failed to send test email.");
     }
@@ -134,7 +130,7 @@ export function EmailIntegrationCard({ slug }: EmailIntegrationCardProps) {
             variant="outline"
             size="sm"
             onClick={handleSendTest}
-            disabled={isSendingTest}
+            disabled={isSendingTest || testCooldown}
           >
             <Send className="mr-1.5 size-4" />
             {isSendingTest ? "Sending..." : "Send Test Email"}

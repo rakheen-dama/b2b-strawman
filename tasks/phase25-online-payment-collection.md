@@ -103,7 +103,7 @@ Phase 25 wires up real online payment collection for the DocTeams platform. Tena
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 4a (parallel) | 179 | 179A | Portal backend: `payment-status` endpoint + `PortalInvoiceView` extension + V9 global migration + invoice sync handler update | |
+| 4a (parallel) | 179 | 179A | Portal backend: `payment-status` endpoint + `PortalInvoiceView` extension + V9 global migration + invoice sync handler update | **Done** (PR #372) |
 | 4b (parallel) | 180 | 180A | Stripe + PayFast configuration fields on PAYMENT integration card + test connection | |
 
 ### Stage 5: Frontend completion (parallel tracks)
@@ -504,7 +504,7 @@ Stage 5: [179B] // [180B]                                           (parallel, a
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **179A** | 179.1--179.7 | Portal backend: V9 global migration (payment fields on portal read-model) + `PortalInvoiceView` extension + `GET /api/portal/invoices/{id}/payment-status` endpoint + invoice sync handler update + integration tests. ~1 new migration, ~3 modified files, ~1 new test file. Backend only. | |
+| **179A** | 179.1--179.7 | Portal backend: V9 global migration (payment fields on portal read-model) + `PortalInvoiceView` extension + `GET /api/portal/invoices/{id}/payment-status` endpoint + invoice sync handler update + integration tests. ~1 new migration, ~3 modified files, ~1 new test file. Backend only. | **Done** (PR #372) |
 | **179B** | 179.8--179.14 | Portal frontend: "Pay Now" button on invoice detail + payment-success page with status polling + payment-cancelled page + API client extension + frontend tests. ~3 new files, ~2 modified files. Portal frontend only. | |
 
 ### Tasks

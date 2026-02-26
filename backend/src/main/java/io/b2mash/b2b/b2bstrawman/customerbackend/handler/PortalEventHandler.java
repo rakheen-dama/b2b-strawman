@@ -25,6 +25,7 @@ import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import java.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -356,7 +357,9 @@ public class PortalEventHandler {
                     event.getTaxAmount(),
                     event.getTotal(),
                     event.getCurrency(),
-                    event.getNotes());
+                    event.getNotes(),
+                    event.getPaymentUrl(),
+                    event.getPaymentSessionId());
 
                 // Remove stale line items before re-upserting (handles line item changes)
                 readModelRepo.deletePortalInvoiceLinesByInvoice(event.getInvoiceId());
@@ -376,8 +379,8 @@ public class PortalEventHandler {
                 }
               }
               case "PAID" ->
-                  readModelRepo.updatePortalInvoiceStatus(
-                      event.getInvoiceId(), event.getOrgId(), "PAID");
+                  readModelRepo.updatePortalInvoiceStatusAndPaidAt(
+                      event.getInvoiceId(), event.getOrgId(), "PAID", Instant.now());
               case "VOID" ->
                   readModelRepo.deletePortalInvoice(event.getInvoiceId(), event.getOrgId());
               default -> log.warn("Unknown InvoiceSyncEvent status: {}", event.getStatus());

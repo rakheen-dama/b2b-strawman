@@ -151,7 +151,9 @@ class PortalInvoiceControllerIntegrationTest {
         new BigDecimal("150.00"),
         new BigDecimal("1150.00"),
         "ZAR",
-        "Test invoice");
+        "Test invoice",
+        null,
+        null);
     readModelRepo.upsertPortalInvoiceLine(
         UUID.randomUUID(),
         invoiceWithLines,
@@ -181,6 +183,8 @@ class PortalInvoiceControllerIntegrationTest {
         BigDecimal.ZERO,
         new BigDecimal("500.00"),
         "ZAR",
+        null,
+        null,
         null);
 
     readModelRepo.upsertPortalInvoice(
@@ -195,6 +199,8 @@ class PortalInvoiceControllerIntegrationTest {
         BigDecimal.ZERO,
         new BigDecimal("200.00"),
         "ZAR",
+        null,
+        null,
         null);
 
     readModelRepo.upsertPortalInvoice(
@@ -209,6 +215,8 @@ class PortalInvoiceControllerIntegrationTest {
         BigDecimal.ZERO,
         new BigDecimal("999.00"),
         "ZAR",
+        null,
+        null,
         null);
 
     // Seed GeneratedDocument for invoiceWithPdf (in tenant schema)

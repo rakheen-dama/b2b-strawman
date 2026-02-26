@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.customerbackend.handler;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -419,6 +420,8 @@ class PortalEventHandlerTest {
             new BigDecimal("1150.00"),
             "ZAR",
             "Test notes",
+            null,
+            null,
             ORG_ID,
             TENANT_ID);
 
@@ -449,7 +452,9 @@ class PortalEventHandlerTest {
             new BigDecimal("150.00"),
             new BigDecimal("1150.00"),
             "ZAR",
-            "Test notes");
+            "Test notes",
+            null,
+            null);
     verify(readModelRepo).deletePortalInvoiceLinesByInvoice(invoiceId);
     verify(readModelRepo)
         .upsertPortalInvoiceLine(
@@ -490,15 +495,19 @@ class PortalEventHandlerTest {
             new BigDecimal("500.00"),
             "ZAR",
             null,
+            null,
+            null,
             ORG_ID,
             TENANT_ID);
 
     handler.onInvoiceSynced(event);
 
-    verify(readModelRepo).updatePortalInvoiceStatus(invoiceId, ORG_ID, "PAID");
+    verify(readModelRepo)
+        .updatePortalInvoiceStatusAndPaidAt(eq(invoiceId), eq(ORG_ID), eq("PAID"), any());
     verify(readModelRepo, never())
         .upsertPortalInvoice(
-            any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any());
+            any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
+            any(), any());
   }
 
   // ── 14. InvoiceSynced VOID -> deletes invoice ──────────────────────
@@ -520,6 +529,8 @@ class PortalEventHandlerTest {
             new BigDecimal("200.00"),
             "ZAR",
             null,
+            null,
+            null,
             ORG_ID,
             TENANT_ID);
 
@@ -528,7 +539,8 @@ class PortalEventHandlerTest {
     verify(readModelRepo).deletePortalInvoice(invoiceId, ORG_ID);
     verify(readModelRepo, never())
         .upsertPortalInvoice(
-            any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any());
+            any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
+            any(), any());
   }
 
   // ── Helper methods ─────────────────────────────────────────────────

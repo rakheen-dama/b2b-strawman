@@ -896,6 +896,8 @@ public class InvoiceService {
             invoice.getTotal(),
             invoice.getCurrency(),
             invoice.getNotes(),
+            invoice.getPaymentUrl(),
+            invoice.getPaymentSessionId(),
             orgIdForEvent,
             tenantIdForEvent));
 
@@ -1015,6 +1017,8 @@ public class InvoiceService {
             invoice.getTotal(),
             invoice.getCurrency(),
             invoice.getNotes(),
+            invoice.getPaymentUrl(),
+            invoice.getPaymentSessionId(),
             orgIdForEvent,
             tenantIdForEvent));
 
@@ -1118,6 +1122,8 @@ public class InvoiceService {
             invoice.getTotal(),
             invoice.getCurrency(),
             invoice.getNotes(),
+            invoice.getPaymentUrl(),
+            invoice.getPaymentSessionId(),
             orgIdForEvent,
             tenantIdForEvent));
 
@@ -1224,6 +1230,8 @@ public class InvoiceService {
             invoice.getTotal(),
             invoice.getCurrency(),
             invoice.getNotes(),
+            invoice.getPaymentUrl(),
+            invoice.getPaymentSessionId(),
             orgIdForEvent,
             tenantIdForEvent));
 

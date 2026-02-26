@@ -18,4 +18,7 @@ public record PortalInvoiceView(
     BigDecimal total,
     String currency,
     String notes,
+    String paymentUrl,
+    String paymentSessionId,
+    Instant paidAt,
     Instant syncedAt) {}

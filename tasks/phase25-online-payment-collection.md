@@ -25,7 +25,7 @@ Phase 25 wires up real online payment collection for the DocTeams platform. Tena
 | 177 | PayFast Adapter | Backend | 174 | M | 177A, 177B | **Done** |
 | 178 | Payment Link Generation + Webhook Reconciliation | Backend | 174, 175 | L | 178A, 178B | **Done** |
 | 179 | Portal Payment Flow + Read-Model Extension | Both | 178 | M | 179A, 179B | **Done** |
-| 180 | Integration Settings UI + Invoice Payment UX | Frontend | 178 | M | 180A, 180B | |
+| 180 | Integration Settings UI + Invoice Payment UX | Frontend | 178 | M | 180A, 180B | **Done** |
 
 ---
 
@@ -111,7 +111,7 @@ Phase 25 wires up real online payment collection for the DocTeams platform. Tena
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 5a (parallel) | 179 | 179B | Portal: "Pay Now" button + payment-success page + payment-cancelled page + status polling | **Done** (PR #373) |
-| 5b (parallel) | 180 | 180B | Invoice detail: payment link section + copy link + regenerate button + payment event history + invoice list indicator + email template "Pay Now" button | |
+| 5b (parallel) | 180 | 180B | Invoice detail: payment link section + copy link + regenerate button + payment event history + invoice list indicator + email template "Pay Now" button | **Done** (PR #375) |
 
 ### Timeline
 
@@ -579,7 +579,7 @@ Stage 5: [179B] // [180B]                                           (parallel, a
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **180A** | 180.1--180.7 | PAYMENT integration card: Stripe config fields (API key, webhook secret, webhook URL) + PayFast config fields (merchant ID/key, passphrase, sandbox, ITN URL) + provider selector dropdown + test connection + frontend tests. ~3 modified files, ~1 new component file. Frontend only. | **Done** (PR #374) |
-| **180B** | 180.8--180.15 | Invoice detail: payment link section (copy link, regenerate button) + payment event history table + invoice list payment indicator + email template "Pay Now" conditional button + API client extension + frontend tests. ~3 modified files, ~1 new component, ~1 modified template. Frontend + Backend template. | |
+| **180B** | 180.8--180.15 | Invoice detail: payment link section (copy link, regenerate button) + payment event history table + invoice list payment indicator + email template "Pay Now" conditional button + API client extension + frontend tests. ~3 modified files, ~1 new component, ~1 modified template. Frontend + Backend template. | **Done** (PR #375) |
 
 ### Tasks
 

@@ -20,7 +20,7 @@ Phase 25 wires up real online payment collection for the DocTeams platform. Tena
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 174 | PaymentGateway Port + NoOp Adapter + InvoiceService Migration | Backend | -- | M | 174A, 174B | **Done** |
-| 175 | PaymentEvent Entity + Migration + Invoice Extension | Backend | 174 | M | 175A, 175B | |
+| 175 | PaymentEvent Entity + Migration + Invoice Extension | Backend | 174 | M | 175A, 175B | **Done** |
 | 176 | Stripe Adapter | Backend | 174 | M | 176A, 176B | |
 | 177 | PayFast Adapter | Backend | 174 | M | 177A, 177B | |
 | 178 | Payment Link Generation + Webhook Reconciliation | Backend | 174, 175 | L | 178A, 178B | |
@@ -88,7 +88,7 @@ Phase 25 wires up real online payment collection for the DocTeams platform. Tena
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 2a (parallel) | 175 | 175B | Invoice entity extension (3 columns) + `GET /api/invoices/{id}/payment-events` endpoint + manual payment writes PaymentEvent | |
+| 2a (parallel) | 175 | 175B | Invoice entity extension (3 columns) + `GET /api/invoices/{id}/payment-events` endpoint + manual payment writes PaymentEvent | **Done** (PR #365) |
 | 2b (parallel) | 176 | 176B | Stripe status query + connection test + session expiry + comprehensive tests | |
 | 2c (parallel) | 177 | 177B | PayFast IP validation + server confirmation + connection test + comprehensive tests | |
 
@@ -229,7 +229,7 @@ Stage 5: [179B] // [180B]                                           (parallel, a
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **175A** | 175.1--175.7 | V42 migration (`payment_events` table + invoice columns) + `PaymentEvent` entity + `PaymentEventStatus` enum + `PaymentEventRepository` + repository integration tests. ~5 new files, ~1 migration file. Backend only. | **Done** (PR #364) |
-| **175B** | 175.8--175.14 | Invoice entity extension (3 fields + getters/setters) + `PaymentEventResponse` DTO + `GET /api/invoices/{id}/payment-events` endpoint + `InvoiceService.recordPayment()` writes manual PaymentEvent + integration tests. ~2 new files, ~3 modified files. Backend only. | |
+| **175B** | 175.8--175.14 | Invoice entity extension (3 fields + getters/setters) + `PaymentEventResponse` DTO + `GET /api/invoices/{id}/payment-events` endpoint + `InvoiceService.recordPayment()` writes manual PaymentEvent + integration tests. ~2 new files, ~3 modified files. Backend only. | **Done** (PR #365) |
 
 ### Tasks
 

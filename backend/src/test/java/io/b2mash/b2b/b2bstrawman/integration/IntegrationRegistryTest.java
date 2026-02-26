@@ -261,4 +261,46 @@ class IntegrationRegistryTest {
           .hasMessageContaining("tenant-scoped context");
     }
   }
+
+  @Nested
+  class ResolveBySlugTests {
+
+    @Test
+    void resolveBySlug_returnsCorrectAdapter() {
+      var noopAdapter = new TestNoOpAccountingAdapter();
+      var repo = mock(OrgIntegrationRepository.class);
+      var registry = buildRegistry(Map.of("noopAccounting", noopAdapter), repo);
+
+      var result =
+          registry.resolveBySlug(IntegrationDomain.ACCOUNTING, "noop", AccountingProvider.class);
+
+      assertThat(result).isSameAs(noopAdapter);
+    }
+
+    @Test
+    void resolveBySlug_throwsForUnknownSlug() {
+      var noopAdapter = new TestNoOpAccountingAdapter();
+      var repo = mock(OrgIntegrationRepository.class);
+      var registry = buildRegistry(Map.of("noopAccounting", noopAdapter), repo);
+
+      assertThatThrownBy(
+              () ->
+                  registry.resolveBySlug(
+                      IntegrationDomain.ACCOUNTING, "xero", AccountingProvider.class))
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessageContaining("xero");
+    }
+
+    @Test
+    void resolveBySlug_throwsForUnknownDomain() {
+      var repo = mock(OrgIntegrationRepository.class);
+      // Empty registry — no adapters at all
+      var registry = buildRegistry(Map.of(), repo);
+
+      assertThatThrownBy(
+              () -> registry.resolveBySlug(IntegrationDomain.AI, "noop", AccountingProvider.class))
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessageContaining("AI");
+    }
+  }
 }

@@ -38,5 +38,9 @@ aws:
 integration:
   encryption-key: dGVzdC1lbmNyeXB0aW9uLWtleS1tdXN0LWJlLTMyYiE=
 
+docteams:
+  email:
+    unsubscribe-secret: test-unsubscribe-secret-for-integration-tests
+
 # Webhook verification key intentionally NOT set here — fail-closed by default.
 # Tests that need webhook access use @DynamicPropertySource to inject a test ECDSA key.

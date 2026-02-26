@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.customerbackend.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -241,8 +242,8 @@ class PortalPaymentStatusIntegrationTest {
   void paymentUrl_synced_to_portal_read_model() throws Exception {
     // Verify the invoice with payment URL was properly stored
     var invoice = readModelRepo.findInvoiceById(invoiceWithPaymentUrl, ORG_ID);
-    assert invoice.isPresent();
-    assert "https://pay.example.com/session/abc123".equals(invoice.get().paymentUrl());
-    assert "sess_abc123".equals(invoice.get().paymentSessionId());
+    assertThat(invoice).isPresent();
+    assertThat(invoice.get().paymentUrl()).isEqualTo("https://pay.example.com/session/abc123");
+    assertThat(invoice.get().paymentSessionId()).isEqualTo("sess_abc123");
   }
 }

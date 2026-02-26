@@ -493,17 +493,6 @@ public class PortalReadModelRepository {
         .update();
   }
 
-  public void updatePortalInvoiceStatus(UUID id, String orgId, String status) {
-    jdbc.sql(
-            """
-            UPDATE portal.portal_invoices
-            SET status = ?, synced_at = now()
-            WHERE id = ? AND org_id = ?
-            """)
-        .params(status, id, orgId)
-        .update();
-  }
-
   public void updatePortalInvoiceStatusAndPaidAt(
       UUID id, String orgId, String status, Instant paidAt) {
     jdbc.sql(

@@ -15,4 +15,10 @@ public interface InvoiceLineRepository extends JpaRepository<InvoiceLine, UUID> 
   /** Finds a line item by time entry ID for double-billing prevention checks. */
   @Query("SELECT il FROM InvoiceLine il WHERE il.timeEntryId = :timeEntryId")
   Optional<InvoiceLine> findByTimeEntryId(@Param("timeEntryId") UUID timeEntryId);
+
+  /** Checks whether any line on the invoice has a per-line tax rate applied. */
+  @Query(
+      "SELECT CASE WHEN COUNT(il) > 0 THEN true ELSE false END FROM InvoiceLine il"
+          + " WHERE il.invoiceId = :invoiceId AND il.taxRateId IS NOT NULL")
+  boolean existsByInvoiceIdAndTaxRateIdIsNotNull(@Param("invoiceId") UUID invoiceId);
 }

@@ -45,6 +45,9 @@ import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.tax.TaxCalculationService;
+import io.b2mash.b2b.b2bstrawman.tax.TaxRate;
+import io.b2mash.b2b.b2bstrawman.tax.TaxRateRepository;
+import io.b2mash.b2b.b2bstrawman.tax.dto.TaxBreakdownEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
@@ -99,6 +102,7 @@ public class InvoiceService {
   private final PaymentLinkService paymentLinkService;
   private final OrgSettingsRepository orgSettingsRepository;
   private final TaxCalculationService taxCalculationService;
+  private final TaxRateRepository taxRateRepository;
 
   public InvoiceService(
       InvoiceRepository invoiceRepository,
@@ -126,7 +130,8 @@ public class InvoiceService {
       PaymentEventRepository paymentEventRepository,
       PaymentLinkService paymentLinkService,
       OrgSettingsRepository orgSettingsRepository,
-      TaxCalculationService taxCalculationService) {
+      TaxCalculationService taxCalculationService,
+      TaxRateRepository taxRateRepository) {
     this.invoiceRepository = invoiceRepository;
     this.lineRepository = lineRepository;
     this.customerRepository = customerRepository;
@@ -153,6 +158,7 @@ public class InvoiceService {
     this.paymentLinkService = paymentLinkService;
     this.orgSettingsRepository = orgSettingsRepository;
     this.taxCalculationService = taxCalculationService;
+    this.taxRateRepository = taxRateRepository;
   }
 
   @Transactional(readOnly = true)
@@ -291,6 +297,9 @@ public class InvoiceService {
         timeEntry.setInvoiceId(invoice.getId());
       }
       timeEntryRepository.saveAll(linkedTimeEntries);
+
+      // Apply default tax rate to all generated lines
+      applyDefaultTaxToLines(invoice.getId());
     }
 
     // Auto-apply field groups before save so audit events capture final state
@@ -478,6 +487,15 @@ public class InvoiceService {
             .findById(invoiceId)
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
 
+    // Reject manual taxAmount when per-line tax is active
+    if (request.taxAmount() != null
+        && lineRepository.existsByInvoiceIdAndTaxRateIdIsNotNull(invoiceId)) {
+      throw new InvalidStateException(
+          "Tax amount cannot be manually set",
+          "Tax amount cannot be manually set when invoice lines have tax rates applied."
+              + " Edit individual line tax rates instead.");
+    }
+
     try {
       invoice.updateDraft(
           request.dueDate(), request.notes(), request.paymentTerms(), request.taxAmount());
@@ -608,6 +626,9 @@ public class InvoiceService {
             request.quantity(),
             request.unitPrice(),
             request.sortOrder());
+    line = lineRepository.save(line);
+
+    applyTaxToLine(line, request.taxRateId());
     lineRepository.save(line);
 
     recalculateInvoiceTotals(invoice);
@@ -657,6 +678,19 @@ public class InvoiceService {
 
     line.update(
         request.description(), request.quantity(), request.unitPrice(), request.sortOrder());
+
+    // Handle tax rate update:
+    // - taxRateId non-null → apply that specific rate
+    // - clearTaxRate true → explicitly clear tax
+    // - both null/false → leave tax unchanged
+    if (request.taxRateId() != null) {
+      applyTaxToLine(line, request.taxRateId());
+    } else if (Boolean.TRUE.equals(request.clearTaxRate())) {
+      line.clearTaxRate();
+    } else if (line.getTaxRateId() != null) {
+      // Recalculate tax for existing rate when amount changed
+      applyTaxToLine(line, line.getTaxRateId());
+    }
     lineRepository.save(line);
 
     recalculateInvoiceTotals(invoice);
@@ -1409,6 +1443,48 @@ public class InvoiceService {
     return memberNameResolver.resolveName(memberId);
   }
 
+  /**
+   * Applies a tax rate to a line item. If taxRateId is non-null, loads and validates that rate. If
+   * taxRateId is null, auto-applies the org default tax rate (if one exists).
+   */
+  private void applyTaxToLine(InvoiceLine line, UUID taxRateId) {
+    TaxRate taxRate;
+    if (taxRateId != null) {
+      taxRate =
+          taxRateRepository
+              .findById(taxRateId)
+              .filter(TaxRate::isActive)
+              .orElseThrow(() -> new ResourceNotFoundException("TaxRate", taxRateId));
+    } else {
+      // Auto-apply default tax rate
+      var defaultRate = taxRateRepository.findByIsDefaultTrue();
+      if (defaultRate.isEmpty()) {
+        return; // No default rate configured, leave line without tax
+      }
+      taxRate = defaultRate.get();
+    }
+
+    boolean taxInclusive =
+        orgSettingsRepository.findForCurrentTenant().map(s -> s.isTaxInclusive()).orElse(false);
+    BigDecimal calculatedTax =
+        taxCalculationService.calculateLineTax(
+            line.getAmount(), taxRate.getRate(), taxInclusive, taxRate.isExempt());
+    line.applyTaxRate(taxRate, calculatedTax);
+  }
+
+  /**
+   * Applies the org default tax rate to all lines of an invoice. Used during invoice generation
+   * from time entries. Delegates to {@link #applyTaxToLine(InvoiceLine, UUID)} with null taxRateId
+   * to trigger default rate lookup.
+   */
+  private void applyDefaultTaxToLines(UUID invoiceId) {
+    var lines = lineRepository.findByInvoiceIdOrderBySortOrder(invoiceId);
+    for (InvoiceLine line : lines) {
+      applyTaxToLine(line, null);
+    }
+    lineRepository.saveAll(lines);
+  }
+
   private void recalculateInvoiceTotals(Invoice invoice) {
     var lines = lineRepository.findByInvoiceIdOrderBySortOrder(invoice.getId());
     BigDecimal subtotal =
@@ -1448,8 +1524,14 @@ public class InvoiceService {
                         line.getProjectId() != null ? projectNames.get(line.getProjectId()) : null))
             .toList();
 
+    List<TaxBreakdownEntry> taxBreakdown = taxCalculationService.buildTaxBreakdown(lines);
+    boolean hasPerLineTax = taxCalculationService.hasPerLineTax(lines);
+    boolean taxInclusive =
+        orgSettingsRepository.findForCurrentTenant().map(s -> s.isTaxInclusive()).orElse(false);
+
     var memberNames = resolveMemberNames(invoice);
-    return InvoiceResponse.from(invoice, lineResponses, memberNames);
+    return InvoiceResponse.from(
+        invoice, lineResponses, memberNames, taxBreakdown, taxInclusive, hasPerLineTax);
   }
 
   private Map<UUID, String> resolveMemberNames(Invoice invoice) {

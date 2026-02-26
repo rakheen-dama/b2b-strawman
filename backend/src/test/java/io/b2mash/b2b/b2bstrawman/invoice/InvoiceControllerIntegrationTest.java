@@ -271,15 +271,13 @@ class InvoiceControllerIntegrationTest {
                     {
                       "dueDate": "2025-03-15",
                       "notes": "Updated notes",
-                      "paymentTerms": "Net 45",
-                      "taxAmount": 500.00
+                      "paymentTerms": "Net 45"
                     }
                     """))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.notes").value("Updated notes"))
         .andExpect(jsonPath("$.paymentTerms").value("Net 45"))
-        .andExpect(jsonPath("$.dueDate").value("2025-03-15"))
-        .andExpect(jsonPath("$.taxAmount").value(500.0));
+        .andExpect(jsonPath("$.dueDate").value("2025-03-15"));
   }
 
   @Test

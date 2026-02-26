@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface TaxRateRepository extends JpaRepository<TaxRate, UUID> {
 
@@ -17,10 +19,10 @@ public interface TaxRateRepository extends JpaRepository<TaxRate, UUID> {
 
   boolean existsByNameAndIdNot(String name, UUID id);
 
-  // TODO(epic-182A): Replace stub with real JPQL join query when InvoiceLine.taxRateId field is
-  // added
-  // Stub guard: returns 0 until InvoiceLine.tax_rate_id column is added in a later epic
-  default long countDraftInvoiceLinesByTaxRateId(UUID taxRateId) {
-    return 0L;
-  }
+  /** Counts draft invoice lines that reference this tax rate (used for deactivation guard). */
+  @Query(
+      "SELECT COUNT(il) FROM InvoiceLine il WHERE il.taxRateId = :taxRateId"
+          + " AND il.invoiceId IN (SELECT i.id FROM Invoice i WHERE i.status ="
+          + " io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus.DRAFT)")
+  long countDraftInvoiceLinesByTaxRateId(@Param("taxRateId") UUID taxRateId);
 }

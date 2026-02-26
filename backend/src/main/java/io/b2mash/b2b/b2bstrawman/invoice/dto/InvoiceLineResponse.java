@@ -13,7 +13,12 @@ public record InvoiceLineResponse(
     BigDecimal quantity,
     BigDecimal unitPrice,
     BigDecimal amount,
-    int sortOrder) {
+    int sortOrder,
+    UUID taxRateId,
+    String taxRateName,
+    BigDecimal taxRatePercent,
+    BigDecimal taxAmount,
+    boolean taxExempt) {
 
   public static InvoiceLineResponse from(InvoiceLine line, String projectName) {
     return new InvoiceLineResponse(
@@ -25,6 +30,11 @@ public record InvoiceLineResponse(
         line.getQuantity(),
         line.getUnitPrice(),
         line.getAmount(),
-        line.getSortOrder());
+        line.getSortOrder(),
+        line.getTaxRateId(),
+        line.getTaxRateName(),
+        line.getTaxRatePercent(),
+        line.getTaxAmount(),
+        line.isTaxExempt());
   }
 }

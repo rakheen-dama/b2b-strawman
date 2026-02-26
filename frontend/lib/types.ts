@@ -746,8 +746,32 @@ export interface InvoiceResponse {
   createdAt: string;
   updatedAt: string;
   lines: InvoiceLineResponse[];
+  paymentSessionId: string | null;
+  paymentUrl: string | null;
+  paymentDestination: string | null;
   customFields?: Record<string, unknown>;
   appliedFieldGroups?: string[];
+}
+
+export type PaymentEventStatus =
+  | "CREATED"
+  | "PENDING"
+  | "COMPLETED"
+  | "FAILED"
+  | "EXPIRED"
+  | "CANCELLED";
+
+export interface PaymentEvent {
+  id: string;
+  providerSlug: string;
+  sessionId: string | null;
+  paymentReference: string | null;
+  status: PaymentEventStatus;
+  amount: number;
+  currency: string;
+  paymentDestination: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CreateInvoiceDraftRequest {

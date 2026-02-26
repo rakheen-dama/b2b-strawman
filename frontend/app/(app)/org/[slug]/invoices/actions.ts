@@ -323,3 +323,31 @@ export async function deleteLineItem(
     return { success: false, error: "Failed to delete line item." };
   }
 }
+
+export async function refreshPaymentLink(
+  slug: string,
+  invoiceId: string,
+  customerId: string,
+): Promise<InvoiceActionResult> {
+  const { orgRole } = await getAuthContext();
+  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+    return {
+      success: false,
+      error: "Only admins and owners can regenerate payment links.",
+    };
+  }
+
+  try {
+    const invoice = await api.post<InvoiceResponse>(
+      `/api/invoices/${invoiceId}/refresh-payment-link`,
+    );
+    revalidateInvoicePaths(slug, invoiceId, customerId);
+    return { success: true, invoice };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to regenerate payment link." };
+  }
+}
+

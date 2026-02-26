@@ -13,6 +13,7 @@ import type {
   FieldDefinitionResponse,
   FieldGroupResponse,
   FieldGroupMemberResponse,
+  PaymentEvent,
 } from "@/lib/types";
 import { InvoiceDetailClient } from "@/components/invoices/invoice-detail-client";
 import { GenerateDocumentDropdown } from "@/components/templates/GenerateDocumentDropdown";
@@ -59,6 +60,18 @@ export default async function InvoiceDetailPage({
     invoiceTemplates = await getTemplates(undefined, "INVOICE");
   } catch {
     // Non-fatal: hide generate button if template fetch fails
+  }
+
+  // Payment events (only for SENT/PAID invoices)
+  let paymentEvents: PaymentEvent[] = [];
+  if (invoice!.status === "SENT" || invoice!.status === "PAID") {
+    try {
+      paymentEvents = await api.get<PaymentEvent[]>(
+        `/api/invoices/${id}/payment-events`,
+      );
+    } catch {
+      // Non-fatal: payment events section won't render data
+    }
   }
 
   // Custom field definitions and groups for the Custom Fields section
@@ -113,6 +126,7 @@ export default async function InvoiceDetailPage({
         invoice={invoice!}
         slug={slug}
         isAdmin={isAdmin}
+        paymentEvents={paymentEvents}
       />
 
       {/* Custom Fields */}

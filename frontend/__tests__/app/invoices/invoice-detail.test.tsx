@@ -20,6 +20,8 @@ const mockAddLineItem = vi.fn().mockResolvedValue({ success: true, invoice: null
 const mockUpdateLineItem = vi.fn().mockResolvedValue({ success: true, invoice: null });
 const mockDeleteLineItem = vi.fn().mockResolvedValue({ success: true });
 
+const mockRefreshPaymentLink = vi.fn().mockResolvedValue({ success: true, invoice: null });
+
 vi.mock("@/app/(app)/org/[slug]/invoices/actions", () => ({
   approveInvoice: (...args: unknown[]) => mockApproveInvoice(...args),
   deleteInvoice: (...args: unknown[]) => mockDeleteInvoice(...args),
@@ -30,6 +32,7 @@ vi.mock("@/app/(app)/org/[slug]/invoices/actions", () => ({
   addLineItem: (...args: unknown[]) => mockAddLineItem(...args),
   updateLineItem: (...args: unknown[]) => mockUpdateLineItem(...args),
   deleteLineItem: (...args: unknown[]) => mockDeleteLineItem(...args),
+  refreshPaymentLink: (...args: unknown[]) => mockRefreshPaymentLink(...args),
 }));
 
 function makeDraftInvoice(overrides?: Partial<InvoiceResponse>): InvoiceResponse {
@@ -69,6 +72,9 @@ function makeDraftInvoice(overrides?: Partial<InvoiceResponse>): InvoiceResponse
         sortOrder: 0,
       },
     ],
+    paymentSessionId: null,
+    paymentUrl: null,
+    paymentDestination: null,
     ...overrides,
   };
 }

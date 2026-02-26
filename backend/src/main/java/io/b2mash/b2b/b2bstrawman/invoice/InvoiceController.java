@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceValidationService.ValidationChec
 import io.b2mash.b2b.b2bstrawman.invoice.dto.AddLineItemRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.CreateInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.InvoiceResponse;
+import io.b2mash.b2b.b2bstrawman.invoice.dto.PaymentEventResponse;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.RecordPaymentRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.SendInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UpdateCustomFieldsRequest;
@@ -160,6 +161,12 @@ public class InvoiceController {
       @PathVariable UUID id, @RequestBody(required = false) RecordPaymentRequest request) {
     String paymentReference = request != null ? request.paymentReference() : null;
     return ResponseEntity.ok(invoiceService.recordPayment(id, paymentReference));
+  }
+
+  @GetMapping("/{id}/payment-events")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<List<PaymentEventResponse>> getPaymentEvents(@PathVariable UUID id) {
+    return ResponseEntity.ok(invoiceService.getPaymentEvents(id));
   }
 
   @PostMapping("/{id}/void")

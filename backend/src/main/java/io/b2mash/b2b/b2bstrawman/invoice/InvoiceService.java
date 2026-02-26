@@ -31,6 +31,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.dto.CreateInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.CurrencyTotal;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.InvoiceLineResponse;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.InvoiceResponse;
+import io.b2mash.b2b.b2bstrawman.invoice.dto.PaymentEventResponse;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.SendInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledProjectGroup;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledTimeEntry;
@@ -92,6 +93,7 @@ public class InvoiceService {
   private final FieldGroupMemberRepository fieldGroupMemberRepository;
   private final FieldDefinitionRepository fieldDefinitionRepository;
   private final InvoiceValidationService invoiceValidationService;
+  private final PaymentEventRepository paymentEventRepository;
 
   public InvoiceService(
       InvoiceRepository invoiceRepository,
@@ -115,7 +117,8 @@ public class InvoiceService {
       FieldGroupRepository fieldGroupRepository,
       FieldGroupMemberRepository fieldGroupMemberRepository,
       FieldDefinitionRepository fieldDefinitionRepository,
-      InvoiceValidationService invoiceValidationService) {
+      InvoiceValidationService invoiceValidationService,
+      PaymentEventRepository paymentEventRepository) {
     this.invoiceRepository = invoiceRepository;
     this.lineRepository = lineRepository;
     this.customerRepository = customerRepository;
@@ -138,6 +141,7 @@ public class InvoiceService {
     this.fieldGroupMemberRepository = fieldGroupMemberRepository;
     this.fieldDefinitionRepository = fieldDefinitionRepository;
     this.invoiceValidationService = invoiceValidationService;
+    this.paymentEventRepository = paymentEventRepository;
   }
 
   @Transactional(readOnly = true)
@@ -545,6 +549,17 @@ public class InvoiceService {
   }
 
   @Transactional(readOnly = true)
+  public List<PaymentEventResponse> getPaymentEvents(UUID invoiceId) {
+    invoiceRepository
+        .findById(invoiceId)
+        .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+
+    return paymentEventRepository.findByInvoiceIdOrderByCreatedAtDesc(invoiceId).stream()
+        .map(PaymentEventResponse::from)
+        .toList();
+  }
+
+  @Transactional(readOnly = true)
   public List<InvoiceResponse> findAll(UUID customerId, InvoiceStatus status, UUID projectId) {
     List<Invoice> invoices;
 
@@ -915,6 +930,22 @@ public class InvoiceService {
     invoice.recordPayment(effectiveReference);
 
     invoice = invoiceRepository.save(invoice);
+
+    // Write manual payment event
+    var manualEvent =
+        new PaymentEvent(
+            invoiceId,
+            "manual",
+            null,
+            PaymentEventStatus.COMPLETED,
+            invoice.getTotal(),
+            invoice.getCurrency(),
+            invoice.getPaymentDestination());
+    if (effectiveReference != null) {
+      manualEvent.setPaymentReference(effectiveReference);
+    }
+    paymentEventRepository.save(manualEvent);
+
     log.info("Recorded payment for invoice {} with reference {}", invoiceId, effectiveReference);
 
     UUID actorId = RequestScopes.MEMBER_ID.isBound() ? RequestScopes.MEMBER_ID.get() : null;

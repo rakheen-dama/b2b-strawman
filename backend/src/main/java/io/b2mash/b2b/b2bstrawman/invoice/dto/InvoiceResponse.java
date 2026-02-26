@@ -36,7 +36,10 @@ public record InvoiceResponse(
     Instant updatedAt,
     List<InvoiceLineResponse> lines,
     Map<String, Object> customFields,
-    List<UUID> appliedFieldGroups) {
+    List<UUID> appliedFieldGroups,
+    String paymentSessionId,
+    String paymentUrl,
+    String paymentDestination) {
 
   public static InvoiceResponse from(
       Invoice invoice, List<InvoiceLineResponse> lines, Map<UUID, String> memberNames) {
@@ -67,6 +70,9 @@ public record InvoiceResponse(
         invoice.getUpdatedAt(),
         lines,
         invoice.getCustomFields() != null ? invoice.getCustomFields() : Map.of(),
-        invoice.getAppliedFieldGroups() != null ? invoice.getAppliedFieldGroups() : List.of());
+        invoice.getAppliedFieldGroups() != null ? invoice.getAppliedFieldGroups() : List.of(),
+        invoice.getPaymentSessionId(),
+        invoice.getPaymentUrl(),
+        invoice.getPaymentDestination());
   }
 }

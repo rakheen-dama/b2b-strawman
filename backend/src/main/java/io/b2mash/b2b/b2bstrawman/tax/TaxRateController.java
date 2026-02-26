@@ -29,6 +29,8 @@ public class TaxRateController {
     this.taxRateService = taxRateService;
   }
 
+  // All authenticated users (including members) can see inactive rates — needed for displaying
+  // historical tax rate data on existing invoices and line items.
   @GetMapping
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<TaxRateResponse>> listTaxRates(

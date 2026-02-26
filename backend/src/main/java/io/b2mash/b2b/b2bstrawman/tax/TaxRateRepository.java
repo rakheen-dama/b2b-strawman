@@ -17,6 +17,8 @@ public interface TaxRateRepository extends JpaRepository<TaxRate, UUID> {
 
   boolean existsByNameAndIdNot(String name, UUID id);
 
+  // TODO(epic-182A): Replace stub with real JPQL join query when InvoiceLine.taxRateId field is
+  // added
   // Stub guard: returns 0 until InvoiceLine.tax_rate_id column is added in a later epic
   default long countDraftInvoiceLinesByTaxRateId(UUID taxRateId) {
     return 0L;

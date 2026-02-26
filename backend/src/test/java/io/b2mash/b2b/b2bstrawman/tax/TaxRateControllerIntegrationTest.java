@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.tax;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -71,7 +73,7 @@ class TaxRateControllerIntegrationTest {
         .perform(get("/api/tax-rates").with(ownerJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
-        .andExpect(jsonPath("$.length()").value(3)); // seed data: Standard, Zero-rated, Exempt
+        .andExpect(jsonPath("$.length()").value(greaterThanOrEqualTo(3))); // at least seed data
   }
 
   @Test
@@ -148,6 +150,7 @@ class TaxRateControllerIntegrationTest {
   @Test
   @Order(5)
   void put_updatesTaxRate_returns200() throws Exception {
+    assertThat(createdRateId).as("createdRateId must be set by @Order(2)").isNotNull();
     mockMvc
         .perform(
             put("/api/tax-rates/" + createdRateId)

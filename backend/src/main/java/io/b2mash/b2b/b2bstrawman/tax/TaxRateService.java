@@ -36,9 +36,9 @@ public class TaxRateService {
     validateNameUnique(request.name(), null);
     validateExemptZeroConstraint(request.isExempt(), request.rate());
 
-    boolean defaultChanged = false;
+    Optional<UUID> clearedDefaultId = Optional.empty();
     if (request.isDefault()) {
-      defaultChanged = clearExistingDefault(null);
+      clearedDefaultId = clearExistingDefault(null);
     }
 
     var taxRate =
@@ -65,14 +65,17 @@ public class TaxRateService {
                     "is_exempt", String.valueOf(taxRate.isExempt())))
             .build());
 
-    if (defaultChanged) {
+    if (clearedDefaultId.isPresent()) {
       final UUID finalId = taxRate.getId();
       auditService.log(
           AuditEventBuilder.builder()
               .eventType("tax_rate.default_changed")
               .entityType("tax_rate")
               .entityId(finalId)
-              .details(Map.of("new_default_id", finalId.toString()))
+              .details(
+                  Map.of(
+                      "new_default_id", finalId.toString(),
+                      "old_default_id", clearedDefaultId.get().toString()))
               .build());
     }
 
@@ -90,8 +93,9 @@ public class TaxRateService {
     validateExemptZeroConstraint(request.isExempt(), request.rate());
 
     boolean wasDefault = taxRate.isDefault();
+    Optional<UUID> clearedDefaultId = Optional.empty();
     if (request.isDefault() && !wasDefault) {
-      clearExistingDefault(id);
+      clearedDefaultId = clearExistingDefault(id);
     }
 
     taxRate.update(
@@ -119,14 +123,17 @@ public class TaxRateService {
                     "active", String.valueOf(taxRate.isActive())))
             .build());
 
-    if (request.isDefault() && !wasDefault) {
+    if (clearedDefaultId.isPresent()) {
       final UUID finalId = taxRate.getId();
       auditService.log(
           AuditEventBuilder.builder()
               .eventType("tax_rate.default_changed")
               .entityType("tax_rate")
               .entityId(finalId)
-              .details(Map.of("new_default_id", finalId.toString()))
+              .details(
+                  Map.of(
+                      "new_default_id", finalId.toString(),
+                      "old_default_id", clearedDefaultId.get().toString()))
               .build());
     }
 
@@ -170,6 +177,10 @@ public class TaxRateService {
     return rates.stream().map(TaxRateResponse::from).toList();
   }
 
+  /**
+   * Returns the default tax rate if one is configured. Optional.empty() means "no default
+   * configured" — distinct from "not found".
+   */
   @Transactional(readOnly = true)
   public Optional<TaxRateResponse> getDefaultTaxRate() {
     return taxRateRepository.findByIsDefaultTrue().map(TaxRateResponse::from);
@@ -198,15 +209,17 @@ public class TaxRateService {
   }
 
   /**
-   * Clears the existing default tax rate (if any). Returns true if a default was cleared. Skips
-   * clearing if the existing default is the same rate as excludeId (update case).
+   * Clears the existing default tax rate (if any). Returns the cleared rate's ID if a default was
+   * cleared, or empty if no default existed. Skips clearing if the existing default is the same
+   * rate as excludeId (update case).
    */
-  private boolean clearExistingDefault(UUID excludeId) {
+  private Optional<UUID> clearExistingDefault(UUID excludeId) {
     return taxRateRepository
         .findByIsDefaultTrue()
         .filter(existing -> !existing.getId().equals(excludeId))
         .map(
             existing -> {
+              UUID clearedId = existing.getId();
               existing.update(
                   existing.getName(),
                   existing.getRate(),
@@ -215,8 +228,7 @@ public class TaxRateService {
                   existing.getSortOrder(),
                   existing.isActive());
               taxRateRepository.saveAndFlush(existing);
-              return true;
-            })
-        .orElse(false);
+              return clearedId;
+            });
   }
 }

@@ -1024,6 +1024,11 @@ public class InvoiceService {
   /**
    * Records a payment from a webhook. When {@code fromWebhook} is true, skips the gateway call
    * since the payment is already confirmed by the PSP.
+   *
+   * <p>When {@code fromWebhook} is true, this method does NOT write a {@link PaymentEvent} or
+   * cancel active payment sessions. The caller ({@link PaymentReconciliationService}) is
+   * responsible for writing the COMPLETED/FAILED/EXPIRED {@code PaymentEvent} with the correct
+   * provider details and session ID.
    */
   @Transactional
   public InvoiceResponse recordPayment(

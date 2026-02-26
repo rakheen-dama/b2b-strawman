@@ -59,11 +59,25 @@ public class PaymentReconciliationService {
       return;
     }
 
+    // Verify that a PaymentEvent with matching sessionId exists for this invoice,
+    // preventing crafted webhooks from marking arbitrary invoices as paid.
+    if (result.sessionId() != null
+        && !paymentEventRepository.existsBySessionIdAndStatus(
+            result.sessionId(), PaymentEventStatus.CREATED)
+        && !paymentEventRepository.existsBySessionIdAndStatus(
+            result.sessionId(), PaymentEventStatus.PENDING)) {
+      log.warn(
+          "No CREATED/PENDING PaymentEvent found for sessionId={} on invoice {} — ignoring webhook",
+          result.sessionId(),
+          invoiceId);
+      return;
+    }
+
     switch (result.status()) {
       case COMPLETED -> handlePaymentCompleted(invoice, result, providerSlug);
       case FAILED -> handlePaymentFailed(invoice, result, providerSlug);
       case EXPIRED -> handlePaymentExpired(invoice, result, providerSlug);
-      default -> log.info("Unhandled payment status: {}", result.status());
+      default -> log.warn("Unhandled payment status: {}", result.status());
     }
   }
 

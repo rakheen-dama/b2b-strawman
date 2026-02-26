@@ -117,6 +117,7 @@ class PaymentReconciliationServiceIntegrationTest {
             () ->
                 transactionTemplate.executeWithoutResult(
                     tx -> {
+                      seedCreatedPaymentEvent(invoiceId, "sess_1");
                       var result =
                           buildWebhookResult(
                               invoiceId, PaymentStatus.COMPLETED, "pay_ref_1", "sess_1");
@@ -138,6 +139,7 @@ class PaymentReconciliationServiceIntegrationTest {
             () ->
                 transactionTemplate.executeWithoutResult(
                     tx -> {
+                      seedCreatedPaymentEvent(invoiceId, "sess_2");
                       // First call — marks as PAID
                       var result =
                           buildWebhookResult(
@@ -163,6 +165,7 @@ class PaymentReconciliationServiceIntegrationTest {
             () ->
                 transactionTemplate.executeWithoutResult(
                     tx -> {
+                      seedCreatedPaymentEvent(invoiceId, "sess_fail");
                       var result =
                           buildWebhookResult(invoiceId, PaymentStatus.FAILED, null, "sess_fail");
                       reconciliationService.processWebhookResult(result, "test-provider");
@@ -186,6 +189,7 @@ class PaymentReconciliationServiceIntegrationTest {
             () ->
                 transactionTemplate.executeWithoutResult(
                     tx -> {
+                      seedCreatedPaymentEvent(invoiceId, "sess_exp");
                       var result =
                           buildWebhookResult(invoiceId, PaymentStatus.EXPIRED, null, "sess_exp");
                       reconciliationService.processWebhookResult(result, "test-provider");
@@ -304,6 +308,7 @@ class PaymentReconciliationServiceIntegrationTest {
             () ->
                 transactionTemplate.executeWithoutResult(
                     tx -> {
+                      seedCreatedPaymentEvent(invoiceId, "sess_audit");
                       var result =
                           buildWebhookResult(
                               invoiceId, PaymentStatus.COMPLETED, "pay_ref_audit", "sess_audit");
@@ -323,6 +328,24 @@ class PaymentReconciliationServiceIntegrationTest {
   }
 
   // --- Helpers ---
+
+  /**
+   * Seeds a CREATED PaymentEvent for the given invoice+session so the session-to-invoice
+   * verification in processWebhookResult passes. This simulates what PaymentLinkService does when a
+   * checkout session is first created.
+   */
+  private void seedCreatedPaymentEvent(String invoiceId, String sessionId) {
+    var event =
+        new PaymentEvent(
+            UUID.fromString(invoiceId),
+            "test-provider",
+            sessionId,
+            PaymentEventStatus.CREATED,
+            java.math.BigDecimal.valueOf(1500),
+            "ZAR",
+            "OPERATING");
+    paymentEventRepository.save(event);
+  }
 
   private WebhookResult buildWebhookResult(
       String invoiceId, PaymentStatus status, String paymentReference, String sessionId) {

@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Service
 public class UnsubscribeService {
@@ -25,18 +26,21 @@ public class UnsubscribeService {
 
   private final String unsubscribeSecret;
   private final NotificationPreferenceRepository notificationPreferenceRepository;
+  private final TransactionTemplate transactionTemplate;
 
   public UnsubscribeService(
       @Value("${docteams.email.unsubscribe-secret:}") String unsubscribeSecret,
-      NotificationPreferenceRepository notificationPreferenceRepository) {
+      NotificationPreferenceRepository notificationPreferenceRepository,
+      TransactionTemplate transactionTemplate) {
     this.unsubscribeSecret = unsubscribeSecret;
     this.notificationPreferenceRepository = notificationPreferenceRepository;
+    this.transactionTemplate = transactionTemplate;
   }
 
   public String generateToken(UUID memberId, String notificationType, String tenantSchema) {
     validateSecretConfigured();
     var encoder = Base64.getUrlEncoder().withoutPadding();
-    String payloadStr = memberId.toString() + ":" + notificationType + ":" + tenantSchema;
+    String payloadStr = memberId.toString() + "|" + notificationType + "|" + tenantSchema;
     byte[] payloadBytes = payloadStr.getBytes(StandardCharsets.UTF_8);
     byte[] hmac = computeHmac(payloadBytes);
     return encoder.encodeToString(payloadBytes) + ":" + encoder.encodeToString(hmac);
@@ -69,7 +73,7 @@ public class UnsubscribeService {
     }
 
     String payloadStr = new String(payloadBytes, StandardCharsets.UTF_8);
-    String[] parts = payloadStr.split(":", 3);
+    String[] parts = payloadStr.split("\\|", 3);
     if (parts.length != 3) {
       throw new InvalidStateException("Invalid Token", "Malformed unsubscribe token payload");
     }
@@ -92,18 +96,23 @@ public class UnsubscribeService {
 
     ScopedValue.where(RequestScopes.TENANT_ID, payload.tenantSchema())
         .run(
-            () -> {
-              var pref =
-                  notificationPreferenceRepository
-                      .findByMemberIdAndNotificationType(
-                          payload.memberId(), payload.notificationType())
-                      .orElseGet(
-                          () ->
-                              new NotificationPreference(
-                                  payload.memberId(), payload.notificationType(), true, false));
-              pref.setEmailEnabled(false);
-              notificationPreferenceRepository.save(pref);
-            });
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    status -> {
+                      var pref =
+                          notificationPreferenceRepository
+                              .findByMemberIdAndNotificationType(
+                                  payload.memberId(), payload.notificationType())
+                              .orElseGet(
+                                  () ->
+                                      new NotificationPreference(
+                                          payload.memberId(),
+                                          payload.notificationType(),
+                                          true,
+                                          false));
+                      pref.setEmailEnabled(false);
+                      notificationPreferenceRepository.save(pref);
+                    }));
 
     log.info(
         "Unsubscribed member {} from {} emails in {}",
@@ -121,7 +130,8 @@ public class UnsubscribeService {
           new SecretKeySpec(unsubscribeSecret.getBytes(StandardCharsets.UTF_8), HMAC_ALGORITHM));
       return mac.doFinal(data);
     } catch (Exception e) {
-      throw new InvalidStateException("HMAC Error", "Failed to compute HMAC: " + e.getMessage());
+      log.error("HMAC computation failed", e);
+      throw new InvalidStateException("HMAC Error", "Failed to compute HMAC");
     }
   }
 

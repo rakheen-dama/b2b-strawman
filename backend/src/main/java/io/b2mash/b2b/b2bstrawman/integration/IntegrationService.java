@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingProvider;
 import io.b2mash.b2b.b2bstrawman.integration.ai.AiProvider;
 import io.b2mash.b2b.b2bstrawman.integration.email.EmailProvider;
+import io.b2mash.b2b.b2bstrawman.integration.payment.PaymentGateway;
 import io.b2mash.b2b.b2bstrawman.integration.secret.SecretStore;
 import io.b2mash.b2b.b2bstrawman.integration.signing.DocumentSigningProvider;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -165,9 +166,7 @@ public class IntegrationService {
               integrationRegistry.resolve(domain, DocumentSigningProvider.class).testConnection();
           case EMAIL -> integrationRegistry.resolve(domain, EmailProvider.class).testConnection();
           case PAYMENT ->
-              throw new InvalidStateException(
-                  "Unsupported operation",
-                  "Connection testing is not supported for the PAYMENT domain");
+              integrationRegistry.resolve(domain, PaymentGateway.class).testConnection();
         };
 
     var integration = orgIntegrationRepository.findByDomain(domain);

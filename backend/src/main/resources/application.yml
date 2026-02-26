@@ -67,9 +67,6 @@ logging:
 integration:
   encryption-key: ${INTEGRATION_ENCRYPTION_KEY:}
 
-payment:
-  provider: mock
-
 docteams:
   email:
     sender-address: ${EMAIL_SENDER_ADDRESS:noreply@docteams.app}

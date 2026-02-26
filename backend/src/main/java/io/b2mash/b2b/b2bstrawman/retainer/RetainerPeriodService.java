@@ -391,7 +391,9 @@ public class RetainerPeriodService {
     var lines = invoiceLineRepository.findByInvoiceIdOrderBySortOrder(invoice.getId());
     BigDecimal subtotal =
         lines.stream().map(InvoiceLine::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
-    invoice.recalculateTotals(subtotal);
+    boolean taxInclusive =
+        orgSettingsRepository.findForCurrentTenant().map(s -> s.isTaxInclusive()).orElse(false);
+    invoice.recalculateTotals(subtotal, lines, taxInclusive);
   }
 
   @Transactional(readOnly = true)

@@ -147,9 +147,25 @@ public class Invoice {
     this.updatedAt = Instant.now();
   }
 
-  public void recalculateTotals(BigDecimal subtotal) {
-    this.subtotal = subtotal;
-    this.total = this.subtotal.add(this.taxAmount);
+  public void recalculateTotals(
+      BigDecimal computedSubtotal, List<InvoiceLine> lines, boolean taxInclusive) {
+    this.subtotal = computedSubtotal;
+
+    boolean hasPerLineTax = lines.stream().anyMatch(line -> line.getTaxRateId() != null);
+
+    if (hasPerLineTax) {
+      this.taxAmount =
+          lines.stream()
+              .map(line -> line.getTaxAmount() != null ? line.getTaxAmount() : BigDecimal.ZERO)
+              .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+    // else: taxAmount stays as manually set value (backward compatibility)
+
+    if (taxInclusive && hasPerLineTax) {
+      this.total = this.subtotal;
+    } else {
+      this.total = this.subtotal.add(this.taxAmount);
+    }
     this.updatedAt = Instant.now();
   }
 

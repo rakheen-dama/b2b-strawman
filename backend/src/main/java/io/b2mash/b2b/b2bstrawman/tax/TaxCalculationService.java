@@ -1,7 +1,13 @@
 package io.b2mash.b2b.b2bstrawman.tax;
 
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
+import io.b2mash.b2b.b2bstrawman.tax.dto.TaxBreakdownEntry;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import org.springframework.stereotype.Service;
 
 /** Stateless service for calculating tax amounts on invoice lines. */
@@ -34,5 +40,50 @@ public class TaxCalculationService {
       // Calculate tax on top of ex-tax amount
       return amount.multiply(ratePercent).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
     }
+  }
+
+  /**
+   * Returns true if any line in the list has a non-null taxRateId, indicating per-line tax has been
+   * applied.
+   */
+  public static boolean hasPerLineTax(List<InvoiceLine> lines) {
+    return lines.stream().anyMatch(line -> line.getTaxRateId() != null);
+  }
+
+  /**
+   * Builds a tax breakdown grouped by rate name + rate percent. Excludes exempt lines. Returns an
+   * empty list if no per-line tax is present.
+   *
+   * @param lines the invoice lines to group
+   * @return list of TaxBreakdownEntry, one per distinct rate
+   */
+  public List<TaxBreakdownEntry> buildTaxBreakdown(List<InvoiceLine> lines) {
+    if (!hasPerLineTax(lines)) {
+      return List.of();
+    }
+
+    // Group by rateName + ratePercent, excluding exempt lines
+    Map<String, BigDecimal[]> groups = new LinkedHashMap<>();
+
+    for (InvoiceLine line : lines) {
+      if (line.getTaxRateId() == null || line.isTaxExempt()) {
+        continue;
+      }
+      String key = line.getTaxRateName() + "|" + line.getTaxRatePercent().toPlainString();
+      groups.computeIfAbsent(key, k -> new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO});
+      BigDecimal[] totals = groups.get(key);
+      totals[0] = totals[0].add(line.getAmount());
+      totals[1] =
+          totals[1].add(line.getTaxAmount() != null ? line.getTaxAmount() : BigDecimal.ZERO);
+    }
+
+    List<TaxBreakdownEntry> result = new ArrayList<>();
+    for (var entry : groups.entrySet()) {
+      String[] parts = entry.getKey().split("\\|", 2);
+      result.add(
+          new TaxBreakdownEntry(
+              parts[0], new BigDecimal(parts[1]), entry.getValue()[0], entry.getValue()[1]));
+    }
+    return result;
   }
 }

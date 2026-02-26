@@ -79,7 +79,7 @@ Phase 26 adds structured tax handling to the DocTeams invoicing system. The exis
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 1a (parallel) | 182 | 182A | `TaxCalculationService` + `InvoiceLine` tax field extension (5 fields + `applyTaxRate()` method) + `TaxBreakdownEntry` record + unit tests for calculation. ~3 new files, ~1 modified file. Backend only. | |
+| 1a (parallel) | 182 | 182A | `TaxCalculationService` + `InvoiceLine` tax field extension (5 fields + `applyTaxRate()` method) + `TaxBreakdownEntry` record + unit tests for calculation. ~3 new files, ~1 modified file. Backend only. | **Done** (PR #378) |
 | 1b (parallel) | 185 | 185A | `OrgSettings` tax fields (4 fields + update method) + settings API extension + audit event + frontend "Tax Settings" card (registration, label, inclusive toggle) + tests. ~1 modified backend file, ~3 new/modified frontend files. | |
 
 ### Stage 2: Calculation integration + Rate management UI (parallel tracks)
@@ -214,7 +214,7 @@ Stage 5: [184B]                                                     (after 184A)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **182A** | 182.1--182.7 | `TaxCalculationService` with `calculateLineTax()` (exclusive + inclusive + exempt + zero-rated) + `InvoiceLine` extension (5 tax fields + `applyTaxRate()` + `refreshTaxSnapshot()` methods) + `TaxBreakdownEntry` record + unit tests for calculation service. ~3 new files, ~1 modified file. Backend only. | |
+| **182A** | 182.1--182.7 | `TaxCalculationService` with `calculateLineTax()` (exclusive + inclusive + exempt + zero-rated) + `InvoiceLine` extension (5 tax fields + `applyTaxRate()` + `refreshTaxSnapshot()` methods) + `TaxBreakdownEntry` record + unit tests for calculation service. ~3 new files, ~1 modified file. Backend only. | **Done** (PR #378) |
 | **182B** | 182.8--182.13 | `Invoice.recalculateTotals()` update (per-line tax sum, tax-inclusive total per ADR-102) + tax breakdown assembly utility in `TaxCalculationService` + integration tests for recalculation. ~2 modified files, ~1 new test file. Backend only. | |
 
 ### Tasks

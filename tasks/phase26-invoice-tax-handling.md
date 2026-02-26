@@ -19,7 +19,7 @@ Phase 26 adds structured tax handling to the DocTeams invoicing system. The exis
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 181 | TaxRate Entity Foundation + Migration | Backend | — | M | 181A, 181B | |
+| 181 | TaxRate Entity Foundation + Migration | Backend | — | M | 181A, 181B | **Done** (PRs #376, #377) |
 | 182 | Tax Calculation Engine + InvoiceLine Extension | Backend | 181 | M | 182A, 182B | |
 | 183 | Tax Application in Invoice Flows | Backend | 182 | L | 183A, 183B | |
 | 184 | Invoice Preview, PDF + Portal Tax Display | Backend + Portal | 183 | M | 184A, 184B | |
@@ -73,7 +73,7 @@ Phase 26 adds structured tax handling to the DocTeams invoicing system. The exis
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 0a | 181 | 181A | V43 migration (`tax_rates` table + `org_settings` columns + `invoice_lines` columns + seed data) + `TaxRate` entity + `TaxRateRepository` + repository integration tests. ~6 new files, ~1 migration file. Backend only. | **Done** (PR #376) |
-| 0b | 181 | 181B | `TaxRateService` (CRUD + single-default + deactivation guard) + `TaxRateController` + DTOs + audit events + RBAC + integration tests. ~6 new files, ~1 modified file. Backend only. | |
+| 0b | 181 | 181B | `TaxRateService` (CRUD + single-default + deactivation guard) + `TaxRateController` + DTOs + audit events + RBAC + integration tests. ~6 new files, ~1 modified file. Backend only. | **Done** (PR #377) |
 
 ### Stage 1: Calculation Engine + Settings (parallel tracks)
 
@@ -141,7 +141,7 @@ Stage 5: [184B]                                                     (after 184A)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **181A** | 181.1--181.7 | V43 migration (`tax_rates` table + `org_settings` tax columns + `invoice_lines` tax columns + seed data + indexes) + `TaxRate` entity + `TaxRateRepository` with custom queries + repository integration tests. ~5 new files, ~1 migration file. Backend only. | **Done** (PR #376) |
-| **181B** | 181.8--181.16 | `TaxRateService` (create, update, deactivate, list, getDefault with single-default enforcement + deactivation guard) + DTOs (`CreateTaxRateRequest`, `UpdateTaxRateRequest`, `TaxRateResponse`) + `TaxRateController` at `/api/tax-rates` with RBAC + audit events + integration tests. ~7 new files, ~0-1 modified files. Backend only. | |
+| **181B** | 181.8--181.16 | `TaxRateService` (create, update, deactivate, list, getDefault with single-default enforcement + deactivation guard) + DTOs (`CreateTaxRateRequest`, `UpdateTaxRateRequest`, `TaxRateResponse`) + `TaxRateController` at `/api/tax-rates` with RBAC + audit events + integration tests. ~7 new files, ~0-1 modified files. Backend only. | **Done** (PR #377) |
 
 ### Tasks
 

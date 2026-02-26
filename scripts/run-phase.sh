@@ -7,14 +7,30 @@
 # **Done** markers that /epic_v2 writes to the task file after merging.
 #
 # Usage:
-#   ./scripts/run-phase.sh <phase-number> [starting-slice] [--dry-run]
+#   ./scripts/run-phase.sh <phase-number> [starting-slice] [--dry-run] [--no-caffeinate]
 #
 # Examples:
 #   ./scripts/run-phase.sh 10              # Run all remaining slices
 #   ./scripts/run-phase.sh 10 84A          # Start from slice 84A
 #   ./scripts/run-phase.sh 10 --dry-run    # Preview slice order, no execution
+#   ./scripts/run-phase.sh 10 --no-caffeinate  # Skip sleep prevention
+#
+# By default, uses `caffeinate -i` on macOS to prevent idle sleep during execution.
+# This ensures long-running phases aren't suspended when the laptop lid closes or
+# the machine goes idle. Use --no-caffeinate to disable this behavior.
 #
 set -euo pipefail
+
+# ─── Sleep prevention (macOS) ────────────────────────────────────────────────
+#
+# Re-exec under caffeinate if available and not already caffeinated.
+# caffeinate -i prevents idle sleep; -s prevents sleep on AC power (lid close).
+# The process tree inherits the assertion, so all child claude processes are covered.
+
+if [[ -z "${CAFFEINATED:-}" && "$*" != *"--no-caffeinate"* ]] && command -v caffeinate &>/dev/null; then
+  export CAFFEINATED=1
+  exec caffeinate -is "$0" "$@"
+fi
 
 # ─── Arguments ────────────────────────────────────────────────────────────────
 
@@ -25,6 +41,7 @@ DRY_RUN=false
 for arg in "${@:2}"; do
   case "$arg" in
     --dry-run) DRY_RUN=true ;;
+    --no-caffeinate) ;; # handled above before arg parsing
     *) START_SLICE="$arg" ;;
   esac
 done

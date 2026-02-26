@@ -204,7 +204,7 @@
 | 172 | Unsubscribe + Admin Endpoints | Backend | 169 | M | 172A, 172B | **Done** (PRs #358, #359) |
 | 173 | Frontend — Email Toggle + Integration Card + Delivery Log | Frontend | 172 | M | 173A, 173B | **Done** (PRs #360, #361) |
 | **Phase 25 — Online Payment Collection** | | | | | | See [tasks/phase25-online-payment-collection.md](tasks/phase25-online-payment-collection.md) |
-| 174 | PaymentGateway Port + NoOp Adapter + InvoiceService Migration | Backend | -- | M | 174A, 174B | |
+| 174 | PaymentGateway Port + NoOp Adapter + InvoiceService Migration | Backend | -- | M | 174A, 174B | 174A **Done** (PR #362) |
 | 175 | PaymentEvent Entity + Migration + Invoice Extension | Backend | 174 | M | 175A, 175B | |
 | 176 | Stripe Adapter | Backend | 174 | M | 176A, 176B | |
 | 177 | PayFast Adapter | Backend | 174 | M | 177A, 177B | |

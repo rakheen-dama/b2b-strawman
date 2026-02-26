@@ -113,6 +113,44 @@ public class IntegrationRegistry {
     return (T) adapter;
   }
 
+  /**
+   * Resolves an adapter by domain and slug directly, bypassing tenant config lookup. Used by
+   * webhook controllers that need to route to a specific adapter before the tenant context is
+   * established.
+   *
+   * <p><strong>Security:</strong> The {@code slug} parameter must be validated and allowlisted by
+   * the caller before invoking this method. Never pass a slug value sourced directly from an HTTP
+   * request header or body without prior validation — the {@link IllegalArgumentException} thrown
+   * for unknown slugs must not propagate verbatim to HTTP responses, as it may leak internal
+   * adapter registration details.
+   *
+   * @throws IllegalArgumentException if no adapters are registered for the domain, or if no adapter
+   *     is registered for the given slug.
+   * @throws IllegalStateException if the found adapter does not implement the port interface.
+   */
+  @SuppressWarnings("unchecked")
+  public <T> T resolveBySlug(IntegrationDomain domain, String slug, Class<T> portInterface) {
+    var slugMap = adapterMap.get(domain);
+    if (slugMap == null || slugMap.isEmpty()) {
+      throw new IllegalArgumentException("No adapters registered for domain " + domain);
+    }
+    var adapter = slugMap.get(slug);
+    if (adapter == null) {
+      throw new IllegalArgumentException(
+          "No adapter registered for domain=" + domain + ", slug=" + slug);
+    }
+    if (!portInterface.isInstance(adapter)) {
+      throw new IllegalStateException(
+          "Adapter "
+              + adapter.getClass().getName()
+              + " does not implement "
+              + portInterface.getName()
+              + " for domain "
+              + domain);
+    }
+    return (T) adapter;
+  }
+
   /** Lists available provider slugs for a given domain. */
   public List<String> availableProviders(IntegrationDomain domain) {
     return List.copyOf(adapterMap.getOrDefault(domain, Map.of()).keySet());

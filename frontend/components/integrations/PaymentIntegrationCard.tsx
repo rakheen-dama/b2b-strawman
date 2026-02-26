@@ -108,15 +108,30 @@ export function PaymentIntegrationCard({
   }
 
   async function handleProviderChange(value: string) {
-    if (value === "none") return;
     setIsTogglingProvider(true);
     setError(null);
     try {
-      const result = await upsertIntegrationAction(slug, "PAYMENT", {
-        providerSlug: value,
-      });
-      if (!result.success) {
-        setError(result.error ?? "Failed to update provider.");
+      if (value === "none") {
+        // Disconnect: clear provider, config, and key
+        const result = await upsertIntegrationAction(slug, "PAYMENT", {
+          providerSlug: "",
+          configJson: "{}",
+        });
+        if (!result.success) {
+          setError(result.error ?? "Failed to disconnect provider.");
+          return;
+        }
+        // Also remove any stored API key
+        if (hasKey) {
+          await deleteApiKeyAction(slug, "PAYMENT");
+        }
+      } else {
+        const result = await upsertIntegrationAction(slug, "PAYMENT", {
+          providerSlug: value,
+        });
+        if (!result.success) {
+          setError(result.error ?? "Failed to update provider.");
+        }
       }
     } catch {
       setError("An unexpected error occurred.");
@@ -201,10 +216,12 @@ export function PaymentIntegrationCard({
     }
   }
 
-  const webhookUrl =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/api/webhooks/payment/${provider}`
-      : "";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BACKEND_URL ??
+    (typeof window !== "undefined" ? window.location.origin : "");
+  const webhookUrl = baseUrl
+    ? `${baseUrl}/api/webhooks/payment/${provider}`
+    : "";
 
   return (
     <Card>
@@ -300,7 +317,7 @@ export function PaymentIntegrationCard({
               </div>
             </div>
 
-            {/* Webhook Signing Secret (configJson) */}
+            {/* TODO: Move webhookSigningSecret to SecretStore when backend supports named keys per domain */}
             <div className="space-y-2">
               <label
                 htmlFor="stripe-webhook-secret"
@@ -379,9 +396,10 @@ export function PaymentIntegrationCard({
               >
                 Merchant Key
               </label>
+              {/* TODO: Move merchantKey to SecretStore when backend supports named keys per domain */}
               <Input
                 id="payfast-merchant-key"
-                type="text"
+                type="password"
                 value={merchantKey}
                 onChange={(e) => setMerchantKey(e.target.value)}
                 placeholder="Enter your Merchant Key"

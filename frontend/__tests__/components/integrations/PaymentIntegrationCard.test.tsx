@@ -114,4 +114,36 @@ describe("PaymentIntegrationCard", () => {
     );
     expect(screen.getByText("Test Connection")).toBeInTheDocument();
   });
+
+  it("renders PayFast merchant key as password input", () => {
+    const integration: OrgIntegration = {
+      domain: "PAYMENT",
+      providerSlug: "payfast",
+      enabled: false,
+      keySuffix: null,
+      configJson: JSON.stringify({ merchantId: "", merchantKey: "", sandbox: false }),
+      updatedAt: "2026-01-01T00:00:00Z",
+    };
+    render(
+      <PaymentIntegrationCard {...defaultProps} integration={integration} />,
+    );
+    const merchantKeyInput = screen.getByPlaceholderText("Enter your Merchant Key");
+    expect(merchantKeyInput).toHaveAttribute("type", "password");
+  });
+
+  it("renders Stripe webhook signing secret as password input", () => {
+    const integration: OrgIntegration = {
+      domain: "PAYMENT",
+      providerSlug: "stripe",
+      enabled: false,
+      keySuffix: null,
+      configJson: null,
+      updatedAt: "2026-01-01T00:00:00Z",
+    };
+    render(
+      <PaymentIntegrationCard {...defaultProps} integration={integration} />,
+    );
+    const webhookInput = screen.getByPlaceholderText("whsec_...");
+    expect(webhookInput).toHaveAttribute("type", "password");
+  });
 });

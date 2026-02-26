@@ -26,7 +26,7 @@ The design introduces a **two-tier email architecture**: every org gets working 
 | 169 | EmailNotificationChannel + Delivery Log + Migration | Backend | 167, 168 | L | 169A, 169B | **Done** (PRs #352, #353) |
 | 170 | Invoice Delivery + Portal Magic Link Email | Backend | 169 | M | 170A, 170B | **Done** (PRs #354, #355) |
 | 171 | SendGrid BYOAK + Bounce Webhooks | Backend | 169 | M | 171A, 171B | **Done** (PRs #356, #357) |
-| 172 | Unsubscribe + Admin Endpoints | Backend | 169 | M | 172A, 172B | |
+| 172 | Unsubscribe + Admin Endpoints | Backend | 169 | M | 172A, 172B | **Done** (PRs #358, #359) |
 | 173 | Frontend — Email Toggle + Integration Card + Delivery Log | Frontend | 172 | M | 173A, 173B | |
 
 ---
@@ -94,7 +94,7 @@ The design introduces a **two-tier email architecture**: every org gets working 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
 | 3a (parallel) | 171 | 171B | EmailWebhookController + signature verification + delivery log updates + bounce notifications + audit events | **Done** (PR #357) |
-| 3b (parallel) | 172 | 172B | EmailAdminController (delivery-log, stats, test endpoints) + List-Unsubscribe headers in notification emails |
+| 3b (parallel) | 172 | 172B | EmailAdminController (delivery-log, stats, test endpoints) + List-Unsubscribe headers in notification emails | **Done** (PR #359) |
 
 ### Stage 4: Frontend
 
@@ -485,7 +485,7 @@ Stage 4: [173A] --> [173B]                               (sequential, after 172B
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **172A** | 172.1–172.7 | `UnsubscribeService` (HMAC tokens) + `UnsubscribeController` + HTML confirmation page + integration tests. ~3 new files, ~1 modified file. Backend only. | **Done** (PR #358) |
-| **172B** | 172.8–172.14 | `EmailAdminController` (delivery-log, stats, test endpoints) + `List-Unsubscribe` headers + audit event for test email + integration tests. ~2 new files, ~2 modified files. Backend only. | |
+| **172B** | 172.8–172.14 | `EmailAdminController` (delivery-log, stats, test endpoints) + `List-Unsubscribe` headers + audit event for test email + integration tests. ~2 new files, ~2 modified files. Backend only. | **Done** (PR #359) |
 
 ### Tasks
 

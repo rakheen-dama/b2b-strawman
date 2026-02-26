@@ -626,7 +626,7 @@ public class InvoiceService {
             request.quantity(),
             request.unitPrice(),
             request.sortOrder());
-    lineRepository.save(line);
+    line = lineRepository.save(line);
 
     applyTaxToLine(line, request.taxRateId());
     lineRepository.save(line);
@@ -679,10 +679,13 @@ public class InvoiceService {
     line.update(
         request.description(), request.quantity(), request.unitPrice(), request.sortOrder());
 
-    // Handle tax rate update: non-null = change/set tax rate, null = clear tax
+    // Handle tax rate update:
+    // - taxRateId non-null → apply that specific rate
+    // - clearTaxRate true → explicitly clear tax
+    // - both null/false → leave tax unchanged
     if (request.taxRateId() != null) {
       applyTaxToLine(line, request.taxRateId());
-    } else {
+    } else if (Boolean.TRUE.equals(request.clearTaxRate())) {
       line.clearTaxRate();
     }
     lineRepository.save(line);
@@ -1468,24 +1471,13 @@ public class InvoiceService {
 
   /**
    * Applies the org default tax rate to all lines of an invoice. Used during invoice generation
-   * from time entries.
+   * from time entries. Delegates to {@link #applyTaxToLine(InvoiceLine, UUID)} with null taxRateId
+   * to trigger default rate lookup.
    */
   private void applyDefaultTaxToLines(UUID invoiceId) {
-    var defaultRate = taxRateRepository.findByIsDefaultTrue();
-    if (defaultRate.isEmpty()) {
-      return; // No default rate configured
-    }
-
-    TaxRate taxRate = defaultRate.get();
-    boolean taxInclusive =
-        orgSettingsRepository.findForCurrentTenant().map(s -> s.isTaxInclusive()).orElse(false);
-
     var lines = lineRepository.findByInvoiceIdOrderBySortOrder(invoiceId);
     for (InvoiceLine line : lines) {
-      BigDecimal calculatedTax =
-          taxCalculationService.calculateLineTax(
-              line.getAmount(), taxRate.getRate(), taxInclusive, taxRate.isExempt());
-      line.applyTaxRate(taxRate, calculatedTax);
+      applyTaxToLine(line, null);
     }
     lineRepository.saveAll(lines);
   }

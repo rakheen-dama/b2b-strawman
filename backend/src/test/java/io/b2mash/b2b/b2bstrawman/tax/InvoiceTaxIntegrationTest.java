@@ -319,7 +319,8 @@ class InvoiceTaxIntegrationTest {
                               BigDecimal.ONE,
                               new BigDecimal("100.00"),
                               0,
-                              rate2.getId()));
+                              rate2.getId(),
+                              null));
 
                   var line = updateResponse.lines().getFirst();
                   assertThat(line.taxRateId()).isEqualTo(rate2.getId());
@@ -359,7 +360,7 @@ class InvoiceTaxIntegrationTest {
                           invoice.getId(),
                           lineId,
                           new UpdateLineItemRequest(
-                              "Service", BigDecimal.ONE, new BigDecimal("100.00"), 0, null));
+                              "Service", BigDecimal.ONE, new BigDecimal("100.00"), 0, null, true));
 
                   var line = updateResponse.lines().getFirst();
                   assertThat(line.taxRateId()).isNull();

@@ -3,6 +3,7 @@ import { ChevronLeft } from "lucide-react";
 import { listIntegrations, listProviders } from "@/lib/api/integrations";
 import { IntegrationCard } from "@/components/integrations/IntegrationCard";
 import { EmailIntegrationCard } from "@/components/integrations/EmailIntegrationCard";
+import { PaymentIntegrationCard } from "@/components/integrations/PaymentIntegrationCard";
 import type { IntegrationDomain, OrgIntegration } from "@/lib/types";
 
 const DOMAIN_CONFIG: {
@@ -83,6 +84,17 @@ export default async function IntegrationsSettingsPage({
 
           if (config.domain === "EMAIL") {
             return <EmailIntegrationCard key={config.domain} />;
+          }
+
+          if (config.domain === "PAYMENT") {
+            return (
+              <PaymentIntegrationCard
+                key={config.domain}
+                integration={integration}
+                providers={domainProviders}
+                slug={slug}
+              />
+            );
           }
 
           return (

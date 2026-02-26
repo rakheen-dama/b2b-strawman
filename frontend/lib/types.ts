@@ -429,6 +429,18 @@ export interface ToggleIntegrationRequest {
   enabled: boolean;
 }
 
+// ---- Payment Provider Configs (parsed from OrgIntegration.configJson) ----
+
+export interface StripePaymentConfig {
+  webhookSigningSecret?: string;
+}
+
+export interface PayFastPaymentConfig {
+  merchantId?: string;
+  merchantKey?: string;
+  sandbox?: boolean;
+}
+
 // ---- Document Templates (from DocumentTemplateController.java) ----
 
 export type TemplateCategory =

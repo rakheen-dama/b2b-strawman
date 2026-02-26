@@ -43,12 +43,14 @@ public class NoOpPaymentGateway implements PaymentGateway {
 
   @Override
   public WebhookResult handleWebhook(String payload, Map<String, String> headers) {
-    throw new UnsupportedOperationException("NoOp adapter does not support webhooks");
+    log.debug("NoOp payment: webhook ignored (no PSP configured)");
+    return new WebhookResult(false, null, null, null, null, Map.of());
   }
 
   @Override
   public PaymentStatus queryPaymentStatus(String sessionId) {
-    throw new UnsupportedOperationException("NoOp adapter does not support payment status queries");
+    log.debug("NoOp payment: status query ignored (no PSP configured), returning PENDING");
+    return PaymentStatus.PENDING;
   }
 
   @Override

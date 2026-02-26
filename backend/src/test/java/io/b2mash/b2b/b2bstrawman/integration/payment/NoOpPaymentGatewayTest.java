@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.integration.payment;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -51,17 +50,22 @@ class NoOpPaymentGatewayTest {
   }
 
   @Test
-  void handleWebhook_throws_unsupported_operation() {
-    assertThatThrownBy(() -> gateway.handleWebhook("{}", Map.of()))
-        .isInstanceOf(UnsupportedOperationException.class)
-        .hasMessageContaining("webhooks");
+  void handleWebhook_returns_unverified_result() {
+    var result = gateway.handleWebhook("{}", Map.of());
+
+    assertThat(result.verified()).isFalse();
+    assertThat(result.eventType()).isNull();
+    assertThat(result.sessionId()).isNull();
+    assertThat(result.paymentReference()).isNull();
+    assertThat(result.status()).isNull();
+    assertThat(result.metadata()).isEmpty();
   }
 
   @Test
-  void queryPaymentStatus_throws_unsupported_operation() {
-    assertThatThrownBy(() -> gateway.queryPaymentStatus("session-123"))
-        .isInstanceOf(UnsupportedOperationException.class)
-        .hasMessageContaining("payment status");
+  void queryPaymentStatus_returns_pending() {
+    var result = gateway.queryPaymentStatus("session-123");
+
+    assertThat(result).isEqualTo(PaymentStatus.PENDING);
   }
 
   @Test

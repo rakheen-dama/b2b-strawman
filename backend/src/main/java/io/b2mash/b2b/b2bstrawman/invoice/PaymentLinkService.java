@@ -105,12 +105,17 @@ public class PaymentLinkService {
 
   @Transactional
   public void refreshPaymentLink(Invoice invoice) {
-    cancelActiveSession(invoice);
+    cancelActiveSessionInternal(invoice);
     generatePaymentLink(invoice);
   }
 
   @Transactional
   public void cancelActiveSession(Invoice invoice) {
+    cancelActiveSessionInternal(invoice);
+    invoiceRepository.save(invoice);
+  }
+
+  private void cancelActiveSessionInternal(Invoice invoice) {
     if (invoice.getPaymentSessionId() == null) {
       return;
     }
@@ -130,13 +135,14 @@ public class PaymentLinkService {
 
     invoice.setPaymentSessionId(null);
     invoice.setPaymentUrl(null);
-    invoiceRepository.save(invoice);
 
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("payment.session.cancelled")
             .entityType("invoice")
             .entityId(invoice.getId())
+            .actorType("SYSTEM")
+            .source("SYSTEM")
             .details(Map.of("action", "session_cancelled"))
             .build());
 

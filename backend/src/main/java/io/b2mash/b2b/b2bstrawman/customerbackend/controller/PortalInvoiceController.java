@@ -86,6 +86,15 @@ public class PortalInvoiceController {
             lines));
   }
 
+  /** Returns the current payment status for an invoice (used by payment success page to poll). */
+  @GetMapping("/{id}/payment-status")
+  public ResponseEntity<PaymentStatusResponse> getPaymentStatus(@PathVariable UUID id) {
+    UUID customerId = RequestScopes.requireCustomerId();
+    String orgId = RequestScopes.requireOrgId();
+    var status = portalReadModelService.getPaymentStatus(id, customerId, orgId);
+    return ResponseEntity.ok(status);
+  }
+
   /** Returns a presigned download URL for the most recent PDF generated for this invoice. */
   @GetMapping("/{id}/download")
   public ResponseEntity<PortalDownloadResponse> downloadInvoice(@PathVariable UUID id) {

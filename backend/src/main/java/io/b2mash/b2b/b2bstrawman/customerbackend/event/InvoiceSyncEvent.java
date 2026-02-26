@@ -20,6 +20,8 @@ public final class InvoiceSyncEvent extends PortalDomainEvent {
   private final BigDecimal total;
   private final String currency;
   private final String notes;
+  private final String paymentUrl;
+  private final String paymentSessionId;
 
   public InvoiceSyncEvent(
       UUID invoiceId,
@@ -33,6 +35,8 @@ public final class InvoiceSyncEvent extends PortalDomainEvent {
       BigDecimal total,
       String currency,
       String notes,
+      String paymentUrl,
+      String paymentSessionId,
       String orgId,
       String tenantId) {
     super(orgId, tenantId);
@@ -47,6 +51,8 @@ public final class InvoiceSyncEvent extends PortalDomainEvent {
     this.total = total;
     this.currency = currency;
     this.notes = notes;
+    this.paymentUrl = paymentUrl;
+    this.paymentSessionId = paymentSessionId;
   }
 
   public UUID getInvoiceId() {
@@ -91,5 +97,13 @@ public final class InvoiceSyncEvent extends PortalDomainEvent {
 
   public String getNotes() {
     return notes;
+  }
+
+  public String getPaymentUrl() {
+    return paymentUrl;
+  }
+
+  public String getPaymentSessionId() {
+    return paymentSessionId;
   }
 }

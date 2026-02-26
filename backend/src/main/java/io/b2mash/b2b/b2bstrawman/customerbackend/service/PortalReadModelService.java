@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.customerbackend.service;
 
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.customerbackend.controller.PaymentStatusResponse;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalCommentView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalInvoiceLineView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalInvoiceView;
@@ -157,6 +158,21 @@ public class PortalReadModelService {
     var presigned =
         storageService.generateDownloadUrl(docs.getFirst().getS3Key(), Duration.ofHours(1));
     return presigned.url();
+  }
+
+  /** Returns the payment status for a portal invoice. Verifies customer ownership. */
+  public PaymentStatusResponse getPaymentStatus(UUID invoiceId, UUID customerId, String orgId) {
+    var invoice =
+        readModelRepository
+            .findInvoiceById(invoiceId, orgId)
+            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+
+    if (!invoice.customerId().equals(customerId)) {
+      throw new ResourceNotFoundException("Invoice", invoiceId);
+    }
+
+    return new PaymentStatusResponse(
+        invoice.status(), invoice.paidAt() != null ? invoice.paidAt().toString() : null);
   }
 
   public record InvoiceDetail(PortalInvoiceView invoice, List<PortalInvoiceLineView> lines) {}

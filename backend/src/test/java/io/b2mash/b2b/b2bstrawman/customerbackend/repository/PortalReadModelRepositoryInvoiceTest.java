@@ -41,7 +41,9 @@ class PortalReadModelRepositoryInvoiceTest {
         new BigDecimal("150.00"),
         new BigDecimal("1150.00"),
         "ZAR",
-        "Original notes");
+        "Original notes",
+        null,
+        null);
 
     var before = repository.findInvoiceById(invoiceId, ORG_ID);
     assertThat(before).isPresent();
@@ -62,7 +64,9 @@ class PortalReadModelRepositoryInvoiceTest {
         new BigDecimal("150.00"),
         new BigDecimal("1150.00"),
         "ZAR",
-        "Updated notes");
+        "Updated notes",
+        null,
+        null);
 
     var after = repository.findInvoiceById(invoiceId, ORG_ID);
     assertThat(after).isPresent();
@@ -89,6 +93,8 @@ class PortalReadModelRepositoryInvoiceTest {
         BigDecimal.ZERO,
         new BigDecimal("500.00"),
         "ZAR",
+        null,
+        null,
         null);
 
     // Insert two lines
@@ -143,6 +149,8 @@ class PortalReadModelRepositoryInvoiceTest {
         BigDecimal.ZERO,
         new BigDecimal("100.00"),
         "ZAR",
+        null,
+        null,
         null);
 
     // Insert invoice for otherCustomerId
@@ -158,6 +166,8 @@ class PortalReadModelRepositoryInvoiceTest {
         BigDecimal.ZERO,
         new BigDecimal("200.00"),
         "ZAR",
+        null,
+        null,
         null);
 
     // Query for customerId — should only return invoiceA

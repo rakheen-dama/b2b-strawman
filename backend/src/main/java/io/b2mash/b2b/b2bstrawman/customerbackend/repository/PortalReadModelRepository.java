@@ -427,13 +427,16 @@ public class PortalReadModelRepository {
       BigDecimal taxAmount,
       BigDecimal total,
       String currency,
-      String notes) {
+      String notes,
+      String paymentUrl,
+      String paymentSessionId) {
     jdbc.sql(
             """
             INSERT INTO portal.portal_invoices
                 (id, org_id, customer_id, invoice_number, status, issue_date, due_date,
-                 subtotal, tax_amount, total, currency, notes, synced_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now())
+                 subtotal, tax_amount, total, currency, notes,
+                 payment_url, payment_session_id, synced_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now())
             ON CONFLICT (id)
             DO UPDATE SET status = EXCLUDED.status,
                           invoice_number = EXCLUDED.invoice_number,
@@ -443,6 +446,8 @@ public class PortalReadModelRepository {
                           tax_amount = EXCLUDED.tax_amount,
                           total = EXCLUDED.total,
                           notes = EXCLUDED.notes,
+                          payment_url = EXCLUDED.payment_url,
+                          payment_session_id = EXCLUDED.payment_session_id,
                           synced_at = now()
             """)
         .params(
@@ -457,7 +462,9 @@ public class PortalReadModelRepository {
             taxAmount,
             total,
             currency,
-            notes)
+            notes,
+            paymentUrl,
+            paymentSessionId)
         .update();
   }
 
@@ -497,6 +504,18 @@ public class PortalReadModelRepository {
         .update();
   }
 
+  public void updatePortalInvoiceStatusAndPaidAt(
+      UUID id, String orgId, String status, Instant paidAt) {
+    jdbc.sql(
+            """
+            UPDATE portal.portal_invoices
+            SET status = ?, paid_at = ?, synced_at = now()
+            WHERE id = ? AND org_id = ?
+            """)
+        .params(status, toTimestamp(paidAt), id, orgId)
+        .update();
+  }
+
   public void deletePortalInvoice(UUID id, String orgId) {
     jdbc.sql(
             """
@@ -531,7 +550,8 @@ public class PortalReadModelRepository {
     return jdbc.sql(
             """
             SELECT id, org_id, customer_id, invoice_number, status, issue_date, due_date,
-                   subtotal, tax_amount, total, currency, notes, synced_at
+                   subtotal, tax_amount, total, currency, notes,
+                   payment_url, payment_session_id, paid_at, synced_at
             FROM portal.portal_invoices
             WHERE org_id = ? AND customer_id = ?
             ORDER BY issue_date DESC
@@ -545,7 +565,8 @@ public class PortalReadModelRepository {
     return jdbc.sql(
             """
             SELECT id, org_id, customer_id, invoice_number, status, issue_date, due_date,
-                   subtotal, tax_amount, total, currency, notes, synced_at
+                   subtotal, tax_amount, total, currency, notes,
+                   payment_url, payment_session_id, paid_at, synced_at
             FROM portal.portal_invoices
             WHERE id = ? AND org_id = ?
             """)

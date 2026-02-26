@@ -75,7 +75,7 @@ class TaxRateRepositoryIntegrationTest {
                       var inactive =
                           new TaxRate("Inactive Rate", new BigDecimal("5.00"), false, false, 99);
                       inactive.deactivate();
-                      taxRateRepository.save(inactive);
+                      var inactiveRate = taxRateRepository.save(inactive);
 
                       var activeRates = taxRateRepository.findByActiveOrderBySortOrder(true);
                       assertThat(activeRates).isNotEmpty();
@@ -83,6 +83,9 @@ class TaxRateRepositoryIntegrationTest {
                           .allMatch(TaxRate::isActive)
                           .extracting(TaxRate::getSortOrder)
                           .isSorted();
+                      assertThat(activeRates)
+                          .extracting(TaxRate::getId)
+                          .doesNotContain(inactiveRate.getId());
                     }));
   }
 
@@ -94,10 +97,17 @@ class TaxRateRepositoryIntegrationTest {
             () ->
                 transactionTemplate.executeWithoutResult(
                     tx -> {
+                      var inactive =
+                          new TaxRate(
+                              "Inactive For All Test", new BigDecimal("7.00"), false, false, 50);
+                      inactive.deactivate();
+                      taxRateRepository.save(inactive);
+
                       var all = taxRateRepository.findAllByOrderBySortOrder();
                       // Should include both active and inactive rates
-                      assertThat(all).hasSizeGreaterThanOrEqualTo(3); // at least the 3 seed rates
+                      assertThat(all).hasSizeGreaterThanOrEqualTo(4); // 3 seed rates + 1 inactive
                       assertThat(all).extracting(TaxRate::getSortOrder).isSorted();
+                      assertThat(all).anyMatch(r -> !r.isActive());
                     }));
   }
 

@@ -23,6 +23,7 @@ CREATE TABLE tax_rates (
 );
 
 CREATE INDEX idx_tax_rates_active_sort ON tax_rates (active, sort_order);
+CREATE UNIQUE INDEX idx_tax_rates_single_default ON tax_rates ((1)) WHERE is_default = true;
 
 -- 3. InvoiceLine tax fields
 ALTER TABLE invoice_lines ADD COLUMN tax_rate_id UUID REFERENCES tax_rates(id);

@@ -184,6 +184,60 @@ describe("PaymentSuccessPage", () => {
       ).toBeInTheDocument();
     });
   });
+
+  it("shows payment confirmed when status is PAID", async () => {
+    mockGetPaymentStatus.mockResolvedValue({
+      status: "PAID",
+      paidAt: "2026-02-26T12:00:00Z",
+    });
+
+    render(<PaymentSuccessPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Payment confirmed")).toBeInTheDocument();
+    });
+
+    expect(screen.getByText("Payment received — thank you!")).toBeInTheDocument();
+    expect(
+      screen.queryByText("Payment is being processed..."),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Payment is still being processed"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows timeout message when polling exceeds duration", async () => {
+    // Return SENT forever — never resolve to PAID
+    mockGetPaymentStatus.mockImplementation(
+      () => new Promise((resolve) => {
+        setTimeout(() => resolve({ status: "SENT", paidAt: null }), 10);
+      }),
+    );
+
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+
+    try {
+      render(<PaymentSuccessPage />);
+
+      // Let initial poll resolve
+      await vi.advanceTimersByTimeAsync(50);
+
+      // Advance past MAX_DURATION (30s) in chunks to let intervals fire
+      for (let i = 0; i < 11; i++) {
+        await vi.advanceTimersByTimeAsync(3100);
+      }
+
+      expect(
+        screen.getByText("Payment is still being processed"),
+      ).toBeInTheDocument();
+
+      expect(
+        screen.queryByText("Payment is being processed..."),
+      ).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });
 
 describe("PaymentCancelledPage", () => {

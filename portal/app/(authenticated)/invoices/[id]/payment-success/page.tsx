@@ -24,7 +24,7 @@ export default function PaymentSuccessPage() {
 
       <div className="mx-auto max-w-lg text-center">
         {/* Polling state */}
-        {isPolling && (
+        {isPolling && !isTimeout && (
           <div className="space-y-4">
             <div className="flex justify-center">
               <Clock className="size-12 text-teal-600 animate-pulse" />
@@ -58,8 +58,8 @@ export default function PaymentSuccessPage() {
           </div>
         )}
 
-        {/* Timeout state */}
-        {isTimeout && (
+        {/* Timeout state — only if not yet confirmed PAID */}
+        {isTimeout && status !== "PAID" && (
           <div className="space-y-4">
             <div className="flex justify-center">
               <AlertTriangle className="size-12 text-amber-500" />

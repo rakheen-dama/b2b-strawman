@@ -18,17 +18,31 @@ export function usePaymentStatus(invoiceId: string): UsePaymentStatusReturn {
 
   useEffect(() => {
     let cancelled = false;
+    const timer = { id: undefined as ReturnType<typeof setInterval> | undefined };
     const startTime = Date.now();
     const POLL_INTERVAL = 3000; // 3 seconds
     const MAX_DURATION = 30000; // 30 seconds
+
+    function stopPolling() {
+      if (timer.id !== undefined) {
+        clearInterval(timer.id);
+        timer.id = undefined;
+      }
+    }
 
     async function poll() {
       if (cancelled) return;
 
       if (Date.now() - startTime >= MAX_DURATION) {
         setIsPolling(false);
-        setIsTimeout(true);
-        clearInterval(intervalId);
+        // Only timeout if we haven't already confirmed PAID
+        setStatus((currentStatus) => {
+          if (currentStatus !== "PAID") {
+            setIsTimeout(true);
+          }
+          return currentStatus;
+        });
+        stopPolling();
         return;
       }
 
@@ -41,20 +55,21 @@ export function usePaymentStatus(invoiceId: string): UsePaymentStatusReturn {
 
         if (data.status === "PAID") {
           setIsPolling(false);
-          clearInterval(intervalId);
+          setIsTimeout(false);
+          stopPolling();
         }
       } catch {
         // Silently continue polling on error
       }
     }
 
-    // Initial poll immediately
+    // Initial poll immediately, then start interval
     poll();
-    const intervalId = setInterval(poll, POLL_INTERVAL);
+    timer.id = setInterval(poll, POLL_INTERVAL);
 
     return () => {
       cancelled = true;
-      clearInterval(intervalId);
+      stopPolling();
     };
   }, [invoiceId]);
 

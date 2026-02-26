@@ -10,10 +10,11 @@ import com.stripe.param.checkout.SessionCreateParams;
 import io.b2mash.b2b.b2bstrawman.integration.ConnectionTestResult;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationAdapter;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
-import io.b2mash.b2b.b2bstrawman.integration.OrgIntegrationRepository;
 import io.b2mash.b2b.b2bstrawman.integration.secret.SecretStore;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -40,12 +41,9 @@ public class StripePaymentGateway implements PaymentGateway {
           "XAF", "XOF", "XPF");
 
   private final SecretStore secretStore;
-  private final OrgIntegrationRepository orgIntegrationRepository;
 
-  public StripePaymentGateway(
-      SecretStore secretStore, OrgIntegrationRepository orgIntegrationRepository) {
+  public StripePaymentGateway(SecretStore secretStore) {
     this.secretStore = secretStore;
-    this.orgIntegrationRepository = orgIntegrationRepository;
   }
 
   @Override
@@ -56,17 +54,21 @@ public class StripePaymentGateway implements PaymentGateway {
   @Override
   public CreateSessionResult createCheckoutSession(CheckoutRequest request) {
     try {
+      var tenantSchema =
+          Objects.requireNonNull(
+              request.metadata().get("tenantSchema"), "tenantSchema required in metadata");
       var apiKey = resolveApiKey();
       var requestOptions = RequestOptions.builder().setApiKey(apiKey).build();
 
+      var separator = request.successUrl().contains("?") ? "&" : "?";
       var params =
           SessionCreateParams.builder()
               .setMode(SessionCreateParams.Mode.PAYMENT)
               .setClientReferenceId(request.invoiceId().toString())
               .setCustomerEmail(request.customerEmail())
-              .setSuccessUrl(request.successUrl() + "?session_id={CHECKOUT_SESSION_ID}")
+              .setSuccessUrl(request.successUrl() + separator + "session_id={CHECKOUT_SESSION_ID}")
               .setCancelUrl(request.cancelUrl())
-              .putMetadata("tenantSchema", request.metadata().get("tenantSchema"))
+              .putMetadata("tenantSchema", tenantSchema)
               .putMetadata("invoiceId", request.invoiceId().toString())
               .addLineItem(
                   SessionCreateParams.LineItem.builder()
@@ -94,7 +96,7 @@ public class StripePaymentGateway implements PaymentGateway {
   @Override
   public WebhookResult handleWebhook(String payload, Map<String, String> headers) {
     try {
-      var signature = headers.get("Stripe-Signature");
+      var signature = resolveSignatureHeader(headers);
       if (signature == null) {
         log.warn("Stripe webhook missing Stripe-Signature header");
         return new WebhookResult(false, null, null, null, null, Map.of());
@@ -160,7 +162,7 @@ public class StripePaymentGateway implements PaymentGateway {
       };
     } catch (StripeException e) {
       log.error("Stripe status query failed for session {}: {}", sessionId, e.getMessage());
-      return PaymentStatus.PENDING;
+      return PaymentStatus.FAILED;
     }
   }
 
@@ -206,9 +208,34 @@ public class StripePaymentGateway implements PaymentGateway {
    */
   long toSmallestUnit(BigDecimal amount, String currency) {
     if (ZERO_DECIMAL_CURRENCIES.contains(currency.toUpperCase())) {
-      return amount.longValue();
+      return amount.setScale(0, RoundingMode.HALF_UP).longValueExact();
     }
-    return amount.multiply(BigDecimal.valueOf(100)).longValue();
+    return amount
+        .multiply(BigDecimal.valueOf(100))
+        .setScale(0, RoundingMode.HALF_UP)
+        .longValueExact();
+  }
+
+  /**
+   * Resolves the Stripe-Signature header case-insensitively. Stripe sends {@code Stripe-Signature},
+   * but proxies or frameworks may normalize to lowercase.
+   */
+  private static String resolveSignatureHeader(Map<String, String> headers) {
+    var value = headers.get("Stripe-Signature");
+    if (value != null) {
+      return value;
+    }
+    value = headers.get("stripe-signature");
+    if (value != null) {
+      return value;
+    }
+    // Fall back to case-insensitive scan
+    for (var entry : headers.entrySet()) {
+      if ("stripe-signature".equalsIgnoreCase(entry.getKey())) {
+        return entry.getValue();
+      }
+    }
+    return null;
   }
 
   private String resolveApiKey() {

@@ -14,7 +14,6 @@ import com.stripe.model.checkout.Session;
 import com.stripe.net.RequestOptions;
 import com.stripe.net.Webhook;
 import com.stripe.param.checkout.SessionCreateParams;
-import io.b2mash.b2b.b2bstrawman.integration.OrgIntegrationRepository;
 import io.b2mash.b2b.b2bstrawman.integration.secret.SecretStore;
 import java.math.BigDecimal;
 import java.util.Map;
@@ -23,6 +22,8 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -31,13 +32,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class StripePaymentGatewayTest {
 
   @Mock private SecretStore secretStore;
-  @Mock private OrgIntegrationRepository orgIntegrationRepository;
+
+  @Captor private ArgumentCaptor<SessionCreateParams> paramsCaptor;
+  @Captor private ArgumentCaptor<RequestOptions> optionsCaptor;
 
   private StripePaymentGateway gateway;
 
   @BeforeEach
   void setUp() {
-    gateway = new StripePaymentGateway(secretStore, orgIntegrationRepository);
+    gateway = new StripePaymentGateway(secretStore);
   }
 
   // --- Session creation tests ---
@@ -52,7 +55,7 @@ class StripePaymentGatewayTest {
       when(mockSession.getId()).thenReturn("cs_test_abc");
       when(mockSession.getUrl()).thenReturn("https://checkout.stripe.com/pay/cs_test_abc");
       sessionMock
-          .when(() -> Session.create(any(SessionCreateParams.class), any(RequestOptions.class)))
+          .when(() -> Session.create(paramsCaptor.capture(), optionsCaptor.capture()))
           .thenReturn(mockSession);
 
       var result = gateway.createCheckoutSession(request);
@@ -62,6 +65,21 @@ class StripePaymentGatewayTest {
       assertThat(result.sessionId()).isEqualTo("cs_test_abc");
       assertThat(result.redirectUrl()).isEqualTo("https://checkout.stripe.com/pay/cs_test_abc");
       assertThat(result.errorMessage()).isNull();
+
+      // Verify captured session params
+      var params = paramsCaptor.getValue();
+      assertThat(params.getMode()).isEqualTo(SessionCreateParams.Mode.PAYMENT);
+      assertThat(params.getClientReferenceId()).isEqualTo(request.invoiceId().toString());
+      assertThat(params.getCustomerEmail()).isEqualTo("customer@example.com");
+      assertThat(params.getSuccessUrl()).contains("session_id={CHECKOUT_SESSION_ID}");
+      assertThat(params.getCancelUrl()).isEqualTo("https://example.com/cancel");
+      assertThat(params.getMetadata()).containsEntry("tenantSchema", "tenant_abc123");
+      assertThat(params.getMetadata()).containsEntry("invoiceId", request.invoiceId().toString());
+
+      var lineItem = params.getLineItems().get(0);
+      assertThat(lineItem.getQuantity()).isEqualTo(1L);
+      assertThat(lineItem.getPriceData().getCurrency()).isEqualTo("zar");
+      assertThat(lineItem.getPriceData().getUnitAmount()).isEqualTo(150000L);
     }
   }
 
@@ -164,6 +182,19 @@ class StripePaymentGatewayTest {
     assertThat(gateway.toSmallestUnit(new BigDecimal("1000"), "JPY")).isEqualTo(1000L);
   }
 
+  @Test
+  void toSmallestUnit_rounds_half_up_for_fractional_cents() {
+    // 150.505 * 100 = 15050.5 → rounds to 15051
+    assertThat(gateway.toSmallestUnit(new BigDecimal("150.505"), "ZAR")).isEqualTo(15051L);
+    // 150.504 * 100 = 15050.4 → rounds to 15050
+    assertThat(gateway.toSmallestUnit(new BigDecimal("150.504"), "ZAR")).isEqualTo(15050L);
+  }
+
+  @Test
+  void toSmallestUnit_JPY_rounds_half_up() {
+    assertThat(gateway.toSmallestUnit(new BigDecimal("1000.5"), "JPY")).isEqualTo(1001L);
+  }
+
   // --- Webhook handling tests ---
 
   @Test
@@ -241,6 +272,26 @@ class StripePaymentGatewayTest {
 
       assertThat(result.verified()).isFalse();
       assertThat(result.eventType()).isNull();
+    }
+  }
+
+  @Test
+  void handleWebhook_resolves_lowercase_signature_header() {
+    when(secretStore.retrieve("payment:stripe:webhook_secret")).thenReturn("whsec_test");
+
+    try (MockedStatic<Webhook> webhookMock = mockStatic(Webhook.class)) {
+      var event = mock(Event.class);
+      when(event.getType()).thenReturn("payment_intent.succeeded");
+
+      webhookMock
+          .when(() -> Webhook.constructEvent("payload", "sig_lower", "whsec_test"))
+          .thenReturn(event);
+
+      // Use lowercase header key — should still be resolved
+      var result = gateway.handleWebhook("payload", Map.of("stripe-signature", "sig_lower"));
+
+      // Event is unhandled type, but signature was resolved (not a missing-header response)
+      assertThat(result.eventType()).isEqualTo("payment_intent.succeeded");
     }
   }
 

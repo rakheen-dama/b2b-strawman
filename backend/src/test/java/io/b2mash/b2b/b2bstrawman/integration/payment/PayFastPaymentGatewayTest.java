@@ -1,6 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.integration.payment;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.integration.secret.SecretStore;
@@ -18,11 +20,18 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.client.RestClient;
 
 @ExtendWith(MockitoExtension.class)
 class PayFastPaymentGatewayTest {
 
+  private static final String PAYFAST_IP = "197.97.145.150";
+
   @Mock private SecretStore secretStore;
+  @Mock private RestClient restClient;
+  @Mock private RestClient.RequestBodyUriSpec requestBodyUriSpec;
+  @Mock private RestClient.RequestBodySpec requestBodySpec;
+  @Mock private RestClient.ResponseSpec responseSpec;
 
   private PayFastPaymentGateway gateway;
 
@@ -31,6 +40,7 @@ class PayFastPaymentGatewayTest {
     gateway = new PayFastPaymentGateway(secretStore);
     setField(gateway, "sandbox", true);
     setField(gateway, "appBaseUrl", "http://localhost:8080");
+    setField(gateway, "restClient", restClient);
   }
 
   private static void setField(Object target, String fieldName, Object value) throws Exception {
@@ -52,9 +62,6 @@ class PayFastPaymentGatewayTest {
     var passphrase = "jt7NOE43FZPn";
     var signature = gateway.generateSignature(params, passphrase);
 
-    // Compute expected: alphabetical order -> amount, item_name, merchant_id, merchant_key
-    // URL-encoded:
-    // amount=100.00&item_name=Test+Item&merchant_id=10000100&merchant_key=46f0cd694581a&passphrase=jt7NOE43FZPn
     var expected =
         md5(
             "amount=100.00&item_name=Test+Item&merchant_id=10000100&merchant_key=46f0cd694581a&passphrase=jt7NOE43FZPn");
@@ -70,7 +77,6 @@ class PayFastPaymentGatewayTest {
 
     var signature = gateway.generateSignature(params, "secret");
 
-    // Params sorted: email_address, item_name
     var expected =
         md5(
             "email_address="
@@ -92,7 +98,6 @@ class PayFastPaymentGatewayTest {
 
     var signature = gateway.generateSignature(params, "pass");
 
-    // Should be sorted: a_field, m_field, z_field
     var expected = md5("a_field=first&m_field=middle&z_field=last&passphrase=pass");
 
     assertThat(signature).isEqualTo(expected);
@@ -120,7 +125,6 @@ class PayFastPaymentGatewayTest {
     var result = gateway.createCheckoutSession(request);
 
     assertThat(result.success()).isTrue();
-    // Default sandbox=true (set by @Value default)
     assertThat(result.redirectUrl()).startsWith("https://sandbox.payfast.co.za/eng/process?");
   }
 
@@ -145,11 +149,62 @@ class PayFastPaymentGatewayTest {
     assertThat(result.redirectUrl()).contains("amount=1500.00");
   }
 
+  // --- IP validation tests ---
+
+  @Test
+  void isPayFastIp_valid_ip_in_range() {
+    // Test all 16 IPs in the 197.97.145.144/28 range
+    for (int i = 144; i <= 159; i++) {
+      assertThat(gateway.isPayFastIp("197.97.145." + i))
+          .as("IP 197.97.145.%d should be valid", i)
+          .isTrue();
+    }
+  }
+
+  @Test
+  void isPayFastIp_invalid_ip_outside_range() {
+    assertThat(gateway.isPayFastIp("197.97.145.143")).isFalse();
+    assertThat(gateway.isPayFastIp("197.97.145.160")).isFalse();
+    assertThat(gateway.isPayFastIp("10.0.0.1")).isFalse();
+  }
+
+  @Test
+  void isPayFastIp_extracts_first_from_forwarded_for() {
+    // X-Forwarded-For with valid PayFast IP as first entry
+    assertThat(gateway.isPayFastIp("197.97.145.150, 10.0.0.1")).isTrue();
+    // X-Forwarded-For with non-PayFast IP as first entry
+    assertThat(gateway.isPayFastIp("10.0.0.1, 197.97.145.150")).isFalse();
+  }
+
+  @Test
+  void isPayFastIp_null_or_blank_returns_false() {
+    assertThat(gateway.isPayFastIp(null)).isFalse();
+    assertThat(gateway.isPayFastIp("")).isFalse();
+    assertThat(gateway.isPayFastIp("   ")).isFalse();
+  }
+
+  // --- Server confirmation tests ---
+
+  @Test
+  void confirmWithPayFast_valid_response() {
+    mockServerConfirmation("VALID");
+
+    assertThat(gateway.confirmWithPayFast("some=payload")).isTrue();
+  }
+
+  @Test
+  void confirmWithPayFast_invalid_response() {
+    mockServerConfirmation("INVALID");
+
+    assertThat(gateway.confirmWithPayFast("some=payload")).isFalse();
+  }
+
   // --- Webhook handling tests ---
 
   @Test
   void handleWebhook_valid_signature_returns_verified() {
     setupMerchantSecrets();
+    mockServerConfirmation("VALID");
 
     var params = new LinkedHashMap<String, String>();
     params.put("pf_payment_id", "1234567");
@@ -162,7 +217,7 @@ class PayFastPaymentGatewayTest {
 
     var payload = buildFormPayload(params);
 
-    var result = gateway.handleWebhook(payload, Map.of());
+    var result = gateway.handleWebhook(payload, Map.of("X-Forwarded-For", PAYFAST_IP));
 
     assertThat(result.verified()).isTrue();
     assertThat(result.sessionId()).isEqualTo("1234567");
@@ -185,7 +240,7 @@ class PayFastPaymentGatewayTest {
 
     var payload = buildFormPayload(params);
 
-    var result = gateway.handleWebhook(payload, Map.of());
+    var result = gateway.handleWebhook(payload, Map.of("X-Forwarded-For", PAYFAST_IP));
 
     assertThat(result.verified()).isFalse();
     assertThat(result.eventType()).isNull();
@@ -194,6 +249,7 @@ class PayFastPaymentGatewayTest {
   @Test
   void handleWebhook_maps_COMPLETE_to_COMPLETED() {
     setupMerchantSecrets();
+    mockServerConfirmation("VALID");
 
     var params = new LinkedHashMap<String, String>();
     params.put("pf_payment_id", "1234567");
@@ -206,11 +262,79 @@ class PayFastPaymentGatewayTest {
 
     var payload = buildFormPayload(params);
 
-    var result = gateway.handleWebhook(payload, Map.of());
+    var result = gateway.handleWebhook(payload, Map.of("X-Forwarded-For", PAYFAST_IP));
 
     assertThat(result.verified()).isTrue();
     assertThat(result.status()).isEqualTo(PaymentStatus.COMPLETED);
     assertThat(result.eventType()).isEqualTo("payment.completed");
+  }
+
+  @Test
+  void handleWebhook_rejects_non_payfast_ip() {
+    var params = new LinkedHashMap<String, String>();
+    params.put("pf_payment_id", "1234567");
+    params.put("payment_status", "COMPLETE");
+    params.put("custom_str1", "tenant_abc123");
+    params.put("custom_str2", "invoice-uuid-123");
+
+    var signature = gateway.generateVerificationSignature(params, "test_passphrase");
+    params.put("signature", signature);
+
+    var payload = buildFormPayload(params);
+
+    // Non-PayFast IP
+    var result = gateway.handleWebhook(payload, Map.of("X-Forwarded-For", "10.0.0.1"));
+
+    assertThat(result.verified()).isFalse();
+    assertThat(result.eventType()).isNull();
+  }
+
+  @Test
+  void handleWebhook_rejects_failed_server_confirmation() {
+    setupMerchantSecrets();
+    mockServerConfirmation("INVALID");
+
+    var params = new LinkedHashMap<String, String>();
+    params.put("pf_payment_id", "1234567");
+    params.put("payment_status", "COMPLETE");
+    params.put("custom_str1", "tenant_abc123");
+    params.put("custom_str2", "invoice-uuid-123");
+
+    var signature = gateway.generateVerificationSignature(params, "test_passphrase");
+    params.put("signature", signature);
+
+    var payload = buildFormPayload(params);
+
+    var result = gateway.handleWebhook(payload, Map.of("X-Forwarded-For", PAYFAST_IP));
+
+    assertThat(result.verified()).isFalse();
+    assertThat(result.eventType()).isNull();
+  }
+
+  @Test
+  void handleWebhook_full_valid_flow() {
+    setupMerchantSecrets();
+    mockServerConfirmation("VALID");
+
+    var params = new LinkedHashMap<String, String>();
+    params.put("pf_payment_id", "9999999");
+    params.put("payment_status", "COMPLETE");
+    params.put("custom_str1", "tenant_xyz");
+    params.put("custom_str2", "invoice-456");
+
+    var signature = gateway.generateVerificationSignature(params, "test_passphrase");
+    params.put("signature", signature);
+
+    var payload = buildFormPayload(params);
+
+    var result = gateway.handleWebhook(payload, Map.of("X-Forwarded-For", PAYFAST_IP));
+
+    assertThat(result.verified()).isTrue();
+    assertThat(result.sessionId()).isEqualTo("9999999");
+    assertThat(result.paymentReference()).isEqualTo("9999999");
+    assertThat(result.status()).isEqualTo(PaymentStatus.COMPLETED);
+    assertThat(result.metadata()).containsEntry("tenantSchema", "tenant_xyz");
+    assertThat(result.metadata()).containsEntry("invoiceId", "invoice-456");
   }
 
   @Test
@@ -239,7 +363,6 @@ class PayFastPaymentGatewayTest {
 
   @Test
   void testConnection_fails_when_config_missing() {
-    // secretStore returns null for all keys
     var result = gateway.testConnection();
 
     assertThat(result.success()).isFalse();
@@ -260,7 +383,7 @@ class PayFastPaymentGatewayTest {
             "Test Customer",
             "https://example.com/success",
             "https://example.com/cancel",
-            Map.of()); // no tenantSchema
+            Map.of());
 
     var result = gateway.createCheckoutSession(request);
 
@@ -284,12 +407,62 @@ class PayFastPaymentGatewayTest {
     assertThat(result.eventType()).isNull();
   }
 
+  @Test
+  void handleWebhook_missing_forwarded_for_header_returns_unverified() {
+    var params = new LinkedHashMap<String, String>();
+    params.put("pf_payment_id", "1234567");
+    params.put("payment_status", "COMPLETE");
+    params.put("custom_str1", "tenant_abc123");
+    params.put("custom_str2", "invoice-uuid-123");
+    params.put("signature", "some_sig");
+
+    var payload = buildFormPayload(params);
+
+    // Empty headers map — no X-Forwarded-For at all
+    var result = gateway.handleWebhook(payload, Map.of());
+
+    assertThat(result.verified()).isFalse();
+    assertThat(result.eventType()).isNull();
+  }
+
+  @Test
+  void handleWebhook_lowercase_forwarded_for_header_works() {
+    setupMerchantSecrets();
+    mockServerConfirmation("VALID");
+
+    var params = new LinkedHashMap<String, String>();
+    params.put("pf_payment_id", "1234567");
+    params.put("payment_status", "COMPLETE");
+    params.put("custom_str1", "tenant_abc123");
+    params.put("custom_str2", "invoice-uuid-123");
+
+    var signature = gateway.generateVerificationSignature(params, "test_passphrase");
+    params.put("signature", signature);
+
+    var payload = buildFormPayload(params);
+
+    // Lowercase header key as Spring may deliver
+    var result = gateway.handleWebhook(payload, Map.of("x-forwarded-for", PAYFAST_IP));
+
+    assertThat(result.verified()).isTrue();
+    assertThat(result.status()).isEqualTo(PaymentStatus.COMPLETED);
+  }
+
   // --- Helpers ---
 
   private void setupMerchantSecrets() {
     when(secretStore.retrieve("payment:payfast:merchant_id")).thenReturn("10000100");
     when(secretStore.retrieve("payment:payfast:merchant_key")).thenReturn("46f0cd694581a");
     when(secretStore.retrieve("payment:payfast:passphrase")).thenReturn("test_passphrase");
+  }
+
+  private void mockServerConfirmation(String response) {
+    when(restClient.post()).thenReturn(requestBodyUriSpec);
+    when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
+    when(requestBodySpec.contentType(any())).thenReturn(requestBodySpec);
+    when(requestBodySpec.body(anyString())).thenReturn(requestBodySpec);
+    when(requestBodySpec.retrieve()).thenReturn(responseSpec);
+    when(responseSpec.body(String.class)).thenReturn(response);
   }
 
   private CheckoutRequest buildCheckoutRequest() {

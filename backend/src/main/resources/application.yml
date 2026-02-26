@@ -81,6 +81,8 @@ docteams:
     base-url: ${APP_BASE_URL:http://localhost:3000}
   stripe:
     webhook-url: ${STRIPE_WEBHOOK_URL:}
+  payfast:
+    sandbox: true
 
 audit:
   retention:

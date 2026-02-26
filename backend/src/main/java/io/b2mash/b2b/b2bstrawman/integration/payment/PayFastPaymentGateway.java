@@ -18,7 +18,9 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
 
 /**
  * PayFast payment gateway adapter. Uses MD5 signature generation and redirect-based checkout (no
@@ -32,8 +34,17 @@ public class PayFastPaymentGateway implements PaymentGateway {
 
   private static final String SANDBOX_URL = "https://sandbox.payfast.co.za/eng/process";
   private static final String PRODUCTION_URL = "https://www.payfast.co.za/eng/process";
+  private static final String SANDBOX_VALIDATE_URL =
+      "https://sandbox.payfast.co.za/eng/query/validate";
+  private static final String PRODUCTION_VALIDATE_URL =
+      "https://www.payfast.co.za/eng/query/validate";
+
+  // PayFast ITN source IP range: 197.97.145.144/28 (16 addresses)
+  private static final long PAYFAST_IP_RANGE_START = ipToLong("197.97.145.144");
+  private static final long PAYFAST_IP_RANGE_END = ipToLong("197.97.145.159");
 
   private final SecretStore secretStore;
+  private final RestClient restClient;
 
   @Value("${docteams.payfast.sandbox:true}")
   private boolean sandbox;
@@ -43,6 +54,7 @@ public class PayFastPaymentGateway implements PaymentGateway {
 
   public PayFastPaymentGateway(SecretStore secretStore) {
     this.secretStore = secretStore;
+    this.restClient = RestClient.create();
   }
 
   @Override
@@ -103,7 +115,14 @@ public class PayFastPaymentGateway implements PaymentGateway {
         return new WebhookResult(false, null, null, null, null, Map.of());
       }
 
-      // Verify signature using raw decoded values (no URL re-encoding)
+      // Step 1: IP validation
+      var sourceIp = getHeaderCaseInsensitive(headers, "X-Forwarded-For");
+      if (!isPayFastIp(sourceIp)) {
+        log.warn("PayFast ITN: request from non-PayFast IP: {}", sourceIp);
+        return new WebhookResult(false, null, null, null, null, Map.of());
+      }
+
+      // Step 2: Signature verification using raw decoded values (no URL re-encoding)
       var config = resolveConfig();
       var paramsWithoutSig = new LinkedHashMap<>(params);
       paramsWithoutSig.remove("signature");
@@ -111,6 +130,12 @@ public class PayFastPaymentGateway implements PaymentGateway {
       var expectedSignature = generateVerificationSignature(paramsWithoutSig, config.passphrase());
       if (!expectedSignature.equals(params.get("signature"))) {
         log.warn("PayFast ITN signature verification failed");
+        return new WebhookResult(false, null, null, null, null, Map.of());
+      }
+
+      // Step 3: Server confirmation
+      if (!confirmWithPayFast(payload)) {
+        log.warn("PayFast ITN server confirmation failed");
         return new WebhookResult(false, null, null, null, null, Map.of());
       }
 
@@ -159,6 +184,80 @@ public class PayFastPaymentGateway implements PaymentGateway {
     } catch (IllegalStateException e) {
       return new ConnectionTestResult(false, "payfast", e.getMessage());
     }
+  }
+
+  /**
+   * Checks if the given source IP (from X-Forwarded-For header) is in PayFast's ITN IP range
+   * (197.97.145.144/28). Extracts the first IP from a comma-separated X-Forwarded-For value.
+   * Package-private for testing.
+   */
+  boolean isPayFastIp(String sourceIp) {
+    if (sourceIp == null || sourceIp.isBlank()) {
+      return false;
+    }
+    // X-Forwarded-For may contain multiple IPs: "client, proxy1, proxy2"
+    var ip = sourceIp.split(",")[0].trim();
+    try {
+      long ipLong = ipToLong(ip);
+      return ipLong >= PAYFAST_IP_RANGE_START && ipLong <= PAYFAST_IP_RANGE_END;
+    } catch (Exception e) {
+      String safeIp = ip.replaceAll("[\\r\\n\\t]", "").substring(0, Math.min(ip.length(), 45));
+      log.warn("PayFast ITN: invalid IP address '{}'", safeIp);
+      return false;
+    }
+  }
+
+  /**
+   * Confirms the ITN with PayFast by POSTing the payload to their validation endpoint. Returns true
+   * if response is "VALID". Package-private for testing.
+   */
+  boolean confirmWithPayFast(String payload) {
+    try {
+      var validateUrl = sandbox ? SANDBOX_VALIDATE_URL : PRODUCTION_VALIDATE_URL;
+      var response =
+          restClient
+              .post()
+              .uri(validateUrl)
+              .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+              .body(payload)
+              .retrieve()
+              .body(String.class);
+      var valid = "VALID".equals(response);
+      if (!valid) {
+        log.warn("PayFast ITN server confirmation failed, response: {}", response);
+      }
+      return valid;
+    } catch (Exception e) {
+      log.error("PayFast ITN server confirmation request failed: {}", e.getMessage(), e);
+      return false;
+    }
+  }
+
+  private static String getHeaderCaseInsensitive(Map<String, String> headers, String name) {
+    String value = headers.get(name);
+    if (value != null) return value;
+    for (Map.Entry<String, String> entry : headers.entrySet()) {
+      if (entry.getKey().equalsIgnoreCase(name)) {
+        return entry.getValue();
+      }
+    }
+    return null;
+  }
+
+  private static long ipToLong(String ip) {
+    var parts = ip.split("\\.");
+    if (parts.length != 4) {
+      throw new IllegalArgumentException("Invalid IPv4 address: " + ip);
+    }
+    long result = 0;
+    for (String part : parts) {
+      int octet = Integer.parseInt(part);
+      if (octet < 0 || octet > 255) {
+        throw new IllegalArgumentException("Invalid IPv4 octet: " + part);
+      }
+      result = (result << 8) + octet;
+    }
+    return result;
   }
 
   /**

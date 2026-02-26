@@ -25,7 +25,7 @@ The design introduces a **two-tier email architecture**: every org gets working 
 | 168 | Email Template Rendering | Backend | -- | M | 168A, 168B | **Done** (PRs #350, #351) |
 | 169 | EmailNotificationChannel + Delivery Log + Migration | Backend | 167, 168 | L | 169A, 169B | **Done** (PRs #352, #353) |
 | 170 | Invoice Delivery + Portal Magic Link Email | Backend | 169 | M | 170A, 170B | **Done** (PRs #354, #355) |
-| 171 | SendGrid BYOAK + Bounce Webhooks | Backend | 169 | M | 171A, 171B | |
+| 171 | SendGrid BYOAK + Bounce Webhooks | Backend | 169 | M | 171A, 171B | **Done** (PRs #356, #357) |
 | 172 | Unsubscribe + Admin Endpoints | Backend | 169 | M | 172A, 172B | |
 | 173 | Frontend — Email Toggle + Integration Card + Delivery Log | Frontend | 172 | M | 173A, 173B | |
 
@@ -93,7 +93,7 @@ The design introduces a **two-tier email architecture**: every org gets working 
 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
-| 3a (parallel) | 171 | 171B | EmailWebhookController + signature verification + delivery log updates + bounce notifications + audit events |
+| 3a (parallel) | 171 | 171B | EmailWebhookController + signature verification + delivery log updates + bounce notifications + audit events | **Done** (PR #357) |
 | 3b (parallel) | 172 | 172B | EmailAdminController (delivery-log, stats, test endpoints) + List-Unsubscribe headers in notification emails |
 
 ### Stage 4: Frontend
@@ -421,7 +421,7 @@ Stage 4: [173A] --> [173B]                               (sequential, after 172B
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **171A** | 171.1–171.6 | `SendGridEmailProvider` adapter + `sendgrid-java` dependency + `@ConditionalOnClass` + `unique_args` metadata + unit tests. ~2 new files, ~1 modified file. Backend only. | **Done** (PR #356) |
-| **171B** | 171.7–171.13 | `EmailWebhookController` + signature verification + tenant context from `unique_args` + delivery log updates + bounce notifications + audit events + integration tests. ~2 new files, ~1 modified file. Backend only. | |
+| **171B** | 171.7–171.13 | `EmailWebhookController` + signature verification + tenant context from `unique_args` + delivery log updates + bounce notifications + audit events + integration tests. ~2 new files, ~1 modified file. Backend only. | **Done** (PR #357) |
 
 ### Tasks
 

@@ -12,6 +12,7 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -82,13 +83,14 @@ public class PaymentEvent {
       BigDecimal amount,
       String currency,
       String paymentDestination) {
-    this.invoiceId = invoiceId;
-    this.providerSlug = providerSlug;
+    this.invoiceId = Objects.requireNonNull(invoiceId, "invoiceId must not be null");
+    this.providerSlug = Objects.requireNonNull(providerSlug, "providerSlug must not be null");
     this.sessionId = sessionId;
-    this.status = status;
-    this.amount = amount;
-    this.currency = currency;
-    this.paymentDestination = paymentDestination;
+    this.status = Objects.requireNonNull(status, "status must not be null");
+    this.amount = Objects.requireNonNull(amount, "amount must not be null");
+    this.currency = Objects.requireNonNull(currency, "currency must not be null");
+    this.paymentDestination =
+        Objects.requireNonNull(paymentDestination, "paymentDestination must not be null");
   }
 
   @PrePersist

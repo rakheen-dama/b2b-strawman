@@ -131,6 +131,12 @@ class PaymentEventRepositoryIntegrationTest {
                               "OPERATING");
                       paymentEventRepository.saveAndFlush(event1);
 
+                      try {
+                        Thread.sleep(10);
+                      } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                      }
+
                       var event2 =
                           new PaymentEvent(
                               invoiceId,

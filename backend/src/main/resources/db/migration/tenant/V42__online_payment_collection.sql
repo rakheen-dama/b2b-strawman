@@ -6,7 +6,8 @@
 ALTER TABLE invoices
     ADD COLUMN payment_session_id VARCHAR(255),
     ADD COLUMN payment_url VARCHAR(1024),
-    ADD COLUMN payment_destination VARCHAR(50) NOT NULL DEFAULT 'OPERATING';
+    ADD COLUMN payment_destination VARCHAR(50) NOT NULL DEFAULT 'OPERATING',
+    ADD CONSTRAINT chk_invoices_payment_destination CHECK (payment_destination IN ('OPERATING', 'TRUST'));
 
 -- 2. Create payment_events table
 CREATE TABLE payment_events (
@@ -20,6 +21,7 @@ CREATE TABLE payment_events (
     currency VARCHAR(3) NOT NULL,
     payment_destination VARCHAR(50) NOT NULL DEFAULT 'OPERATING',
     provider_payload JSONB,
+    CONSTRAINT chk_payment_events_payment_destination CHECK (payment_destination IN ('OPERATING', 'TRUST')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );

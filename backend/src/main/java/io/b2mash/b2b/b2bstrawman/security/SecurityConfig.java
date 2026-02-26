@@ -101,6 +101,8 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers("/api/webhooks/email/**")
                     .permitAll()
+                    .requestMatchers("/api/webhooks/payment/**")
+                    .permitAll()
                     .requestMatchers("/api/email/unsubscribe")
                     .permitAll()
                     .requestMatchers("/internal/**")

@@ -169,6 +169,12 @@ public class InvoiceController {
     return ResponseEntity.ok(invoiceService.getPaymentEvents(id));
   }
 
+  @PostMapping("/{id}/refresh-payment-link")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<InvoiceResponse> refreshPaymentLink(@PathVariable UUID id) {
+    return ResponseEntity.ok(invoiceService.refreshPaymentLink(id));
+  }
+
   @PostMapping("/{id}/void")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<InvoiceResponse> voidInvoice(@PathVariable UUID id) {

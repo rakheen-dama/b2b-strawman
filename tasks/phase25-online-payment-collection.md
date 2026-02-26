@@ -24,7 +24,7 @@ Phase 25 wires up real online payment collection for the DocTeams platform. Tena
 | 176 | Stripe Adapter | Backend | 174 | M | 176A, 176B | **Done** |
 | 177 | PayFast Adapter | Backend | 174 | M | 177A, 177B | **Done** |
 | 178 | Payment Link Generation + Webhook Reconciliation | Backend | 174, 175 | L | 178A, 178B | **Done** |
-| 179 | Portal Payment Flow + Read-Model Extension | Both | 178 | M | 179A, 179B | |
+| 179 | Portal Payment Flow + Read-Model Extension | Both | 178 | M | 179A, 179B | **Done** |
 | 180 | Integration Settings UI + Invoice Payment UX | Frontend | 178 | M | 180A, 180B | |
 
 ---
@@ -110,7 +110,7 @@ Phase 25 wires up real online payment collection for the DocTeams platform. Tena
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 5a (parallel) | 179 | 179B | Portal: "Pay Now" button + payment-success page + payment-cancelled page + status polling | |
+| 5a (parallel) | 179 | 179B | Portal: "Pay Now" button + payment-success page + payment-cancelled page + status polling | **Done** (PR #373) |
 | 5b (parallel) | 180 | 180B | Invoice detail: payment link section + copy link + regenerate button + payment event history + invoice list indicator + email template "Pay Now" button | |
 
 ### Timeline
@@ -505,7 +505,7 @@ Stage 5: [179B] // [180B]                                           (parallel, a
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **179A** | 179.1--179.7 | Portal backend: V9 global migration (payment fields on portal read-model) + `PortalInvoiceView` extension + `GET /api/portal/invoices/{id}/payment-status` endpoint + invoice sync handler update + integration tests. ~1 new migration, ~3 modified files, ~1 new test file. Backend only. | **Done** (PR #372) |
-| **179B** | 179.8--179.14 | Portal frontend: "Pay Now" button on invoice detail + payment-success page with status polling + payment-cancelled page + API client extension + frontend tests. ~3 new files, ~2 modified files. Portal frontend only. | |
+| **179B** | 179.8--179.14 | Portal frontend: "Pay Now" button on invoice detail + payment-success page with status polling + payment-cancelled page + API client extension + frontend tests. ~3 new files, ~2 modified files. Portal frontend only. | **Done** (PR #373) |
 
 ### Tasks
 

@@ -12,7 +12,15 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import java.nio.charset.StandardCharsets;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.Security;
+import java.security.Signature;
+import java.security.spec.ECGenParameterSpec;
+import java.util.Base64;
 import java.util.UUID;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -22,6 +30,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
@@ -33,6 +43,31 @@ class EmailWebhookControllerIntegrationTest {
 
   private static final String ORG_ID = "org_webhook_test";
   private static final String WEBHOOK_URL = "/api/webhooks/email/sendgrid";
+
+  // ECDSA keypair for webhook signature verification in tests
+  private static KeyPair ecKeyPair;
+  private static String publicKeyBase64;
+
+  static {
+    try {
+      // Register BouncyCastle provider — required by SendGrid EventWebhook for ECDSA verification
+      if (Security.getProvider("BC") == null) {
+        Security.addProvider(new BouncyCastleProvider());
+      }
+      KeyPairGenerator keyGen = KeyPairGenerator.getInstance("EC", "BC");
+      keyGen.initialize(new ECGenParameterSpec("P-256"));
+      ecKeyPair = keyGen.generateKeyPair();
+      // SendGrid expects X.509/DER-encoded public key, base64-encoded
+      publicKeyBase64 = Base64.getEncoder().encodeToString(ecKeyPair.getPublic().getEncoded());
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to generate ECDSA keypair for tests", e);
+    }
+  }
+
+  @DynamicPropertySource
+  static void setWebhookVerificationKey(DynamicPropertyRegistry registry) {
+    registry.add("docteams.email.sendgrid.webhook-verification-key", () -> publicKeyBase64);
+  }
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
@@ -70,7 +105,11 @@ class EmailWebhookControllerIntegrationTest {
     String payload = buildEventPayload("bounce", msgId, "550 No such user", "NOTIFICATION");
 
     mockMvc
-        .perform(post(WEBHOOK_URL).contentType(MediaType.APPLICATION_JSON).content(payload))
+        .perform(
+            post(WEBHOOK_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload)
+                .headers(signatureHeaders(payload)))
         .andExpect(status().isOk());
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -91,7 +130,11 @@ class EmailWebhookControllerIntegrationTest {
     String payload = buildEventPayload("delivered", msgId, null, "NOTIFICATION");
 
     mockMvc
-        .perform(post(WEBHOOK_URL).contentType(MediaType.APPLICATION_JSON).content(payload))
+        .perform(
+            post(WEBHOOK_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload)
+                .headers(signatureHeaders(payload)))
         .andExpect(status().isOk());
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -111,7 +154,11 @@ class EmailWebhookControllerIntegrationTest {
     String payload = buildEventPayload("dropped", msgId, "Bounced Address", "NOTIFICATION");
 
     mockMvc
-        .perform(post(WEBHOOK_URL).contentType(MediaType.APPLICATION_JSON).content(payload))
+        .perform(
+            post(WEBHOOK_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload)
+                .headers(signatureHeaders(payload)))
         .andExpect(status().isOk());
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -136,7 +183,41 @@ class EmailWebhookControllerIntegrationTest {
             .formatted(msgId, UUID.randomUUID());
 
     mockMvc
-        .perform(post(WEBHOOK_URL).contentType(MediaType.APPLICATION_JSON).content(payload))
+        .perform(
+            post(WEBHOOK_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload)
+                .headers(signatureHeaders(payload)))
+        .andExpect(status().isOk());
+
+    // Delivery log should NOT be updated (still SENT)
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .run(
+            () -> {
+              var log = deliveryLogRepository.findByProviderMessageId(msgId);
+              assertThat(log).isPresent();
+              assertThat(log.get().getStatus()).isEqualTo(EmailDeliveryStatus.SENT);
+            });
+  }
+
+  @Test
+  void invalid_tenant_schema_format_skips_event() throws Exception {
+    var msgId = "bad-tenant-msg-" + UUID.randomUUID();
+    createDeliveryLog("NOTIFICATION", msgId);
+
+    // Event payload with invalid tenantSchema format (SQL injection attempt)
+    String payload =
+        """
+        [{"event":"bounce","sg_message_id":"%s","email":"user@example.com","reason":"bad","unique_args":{"tenantSchema":"public; DROP TABLE members","referenceType":"NOTIFICATION","referenceId":"%s"}}]
+        """
+            .formatted(msgId, UUID.randomUUID());
+
+    mockMvc
+        .perform(
+            post(WEBHOOK_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload)
+                .headers(signatureHeaders(payload)))
         .andExpect(status().isOk());
 
     // Delivery log should NOT be updated (still SENT)
@@ -157,7 +238,11 @@ class EmailWebhookControllerIntegrationTest {
     String payload = buildEventPayload("bounce", msgId, "mailbox full", "INVOICE");
 
     mockMvc
-        .perform(post(WEBHOOK_URL).contentType(MediaType.APPLICATION_JSON).content(payload))
+        .perform(
+            post(WEBHOOK_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload)
+                .headers(signatureHeaders(payload)))
         .andExpect(status().isOk());
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -181,7 +266,11 @@ class EmailWebhookControllerIntegrationTest {
     String payload = buildEventPayload("bounce", msgId, "unknown user", "NOTIFICATION");
 
     mockMvc
-        .perform(post(WEBHOOK_URL).contentType(MediaType.APPLICATION_JSON).content(payload))
+        .perform(
+            post(WEBHOOK_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload)
+                .headers(signatureHeaders(payload)))
         .andExpect(status().isOk());
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -210,7 +299,11 @@ class EmailWebhookControllerIntegrationTest {
             .formatted(msgId, tenantSchema, UUID.randomUUID());
 
     mockMvc
-        .perform(post(WEBHOOK_URL).contentType(MediaType.APPLICATION_JSON).content(payload))
+        .perform(
+            post(WEBHOOK_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload)
+                .headers(signatureHeaders(payload)))
         .andExpect(status().isOk());
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -231,6 +324,50 @@ class EmailWebhookControllerIntegrationTest {
                 .content("[]"))
         .andExpect(status().isBadRequest());
   }
+
+  // --- Signature verification tests ---
+
+  @Test
+  void missing_signature_headers_returns_401() throws Exception {
+    String payload =
+        buildEventPayload("delivered", "msg-" + UUID.randomUUID(), null, "NOTIFICATION");
+
+    // No signature or timestamp headers
+    mockMvc
+        .perform(post(WEBHOOK_URL).contentType(MediaType.APPLICATION_JSON).content(payload))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void missing_timestamp_header_returns_401() throws Exception {
+    String payload =
+        buildEventPayload("delivered", "msg-" + UUID.randomUUID(), null, "NOTIFICATION");
+
+    mockMvc
+        .perform(
+            post(WEBHOOK_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload)
+                .header("X-Twilio-Email-Event-Webhook-Signature", "invalid-sig"))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void invalid_signature_returns_401() throws Exception {
+    String payload =
+        buildEventPayload("delivered", "msg-" + UUID.randomUUID(), null, "NOTIFICATION");
+
+    mockMvc
+        .perform(
+            post(WEBHOOK_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload)
+                .header("X-Twilio-Email-Event-Webhook-Signature", "bm90LWEtdmFsaWQtc2lnbmF0dXJl")
+                .header("X-Twilio-Email-Event-Webhook-Timestamp", "1234567890"))
+        .andExpect(status().isUnauthorized());
+  }
+
+  // --- Helper methods ---
 
   private void createDeliveryLog(String referenceType, String providerMessageId) {
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -256,5 +393,36 @@ class EmailWebhookControllerIntegrationTest {
         """
         .formatted(
             eventType, sgMessageId, reasonField, tenantSchema, referenceType, UUID.randomUUID());
+  }
+
+  /**
+   * Generates valid ECDSA signature headers for the given payload. Mimics SendGrid's webhook
+   * signing: the signed data is {@code timestamp_bytes + payload_bytes} (concatenation of raw
+   * bytes, not string concatenation). Uses BC provider to match SendGrid's EventWebhook.
+   */
+  private org.springframework.http.HttpHeaders signatureHeaders(String payload) {
+    try {
+      String timestamp = String.valueOf(System.currentTimeMillis() / 1000);
+
+      // SendGrid EventWebhook.VerifySignature concatenates timestamp bytes + payload bytes
+      byte[] timestampBytes = timestamp.getBytes(StandardCharsets.UTF_8);
+      byte[] payloadBytes = payload.getBytes(StandardCharsets.UTF_8);
+      byte[] signedData = new byte[timestampBytes.length + payloadBytes.length];
+      System.arraycopy(timestampBytes, 0, signedData, 0, timestampBytes.length);
+      System.arraycopy(payloadBytes, 0, signedData, timestampBytes.length, payloadBytes.length);
+
+      Signature signer = Signature.getInstance("SHA256withECDSA", "BC");
+      signer.initSign(ecKeyPair.getPrivate());
+      signer.update(signedData);
+      byte[] signatureBytes = signer.sign();
+      String signatureBase64 = Base64.getEncoder().encodeToString(signatureBytes);
+
+      var headers = new org.springframework.http.HttpHeaders();
+      headers.set("X-Twilio-Email-Event-Webhook-Signature", signatureBase64);
+      headers.set("X-Twilio-Email-Event-Webhook-Timestamp", timestamp);
+      return headers;
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to generate test webhook signature", e);
+    }
   }
 }

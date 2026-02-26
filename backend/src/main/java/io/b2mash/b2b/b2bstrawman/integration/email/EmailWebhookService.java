@@ -8,12 +8,11 @@ import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import java.security.interfaces.ECPublicKey;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
@@ -22,6 +21,12 @@ import tools.jackson.databind.ObjectMapper;
 public class EmailWebhookService {
 
   private static final Logger log = LoggerFactory.getLogger(EmailWebhookService.class);
+
+  /** Validates tenant schema format: tenant_ followed by exactly 12 hex characters. */
+  private static final Pattern TENANT_SCHEMA_PATTERN = Pattern.compile("^tenant_[0-9a-f]{12}$");
+
+  /** Maximum length for the provider path variable to prevent log injection. */
+  private static final int MAX_PROVIDER_LENGTH = 32;
 
   private static final Map<String, EmailDeliveryStatus> EVENT_TYPE_MAP =
       Map.of(
@@ -50,9 +55,10 @@ public class EmailWebhookService {
   }
 
   public void processWebhook(String provider, String payload, String signature, String timestamp) {
-    if (!"sendgrid".equals(provider)) {
-      log.warn("Unsupported webhook provider: {}", provider);
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported provider");
+    String sanitizedProvider = sanitizeProvider(provider);
+    if (!"sendgrid".equals(sanitizedProvider)) {
+      log.warn("Unsupported webhook provider: {}", sanitizedProvider);
+      throw new WebhookPayloadException("Unsupported provider");
     }
 
     verifySignature(payload, signature, timestamp);
@@ -64,14 +70,17 @@ public class EmailWebhookService {
   }
 
   private void verifySignature(String payload, String signature, String timestamp) {
+    // Fail-closed: reject all requests when verification key is not configured
     if (webhookVerificationKey == null || webhookVerificationKey.isBlank()) {
-      log.debug("Webhook verification key not configured, skipping signature verification");
-      return;
+      log.warn(
+          "Webhook verification key not configured — rejecting request. "
+              + "Set docteams.email.sendgrid.webhook-verification-key to enable webhook processing.");
+      throw new WebhookAuthenticationException("Webhook verification key not configured");
     }
 
     if (signature == null || timestamp == null) {
       log.warn("Missing webhook signature or timestamp headers");
-      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid webhook signature");
+      throw new WebhookAuthenticationException("Invalid webhook signature");
     }
 
     try {
@@ -80,13 +89,13 @@ public class EmailWebhookService {
       boolean isValid = ew.VerifySignature(ecPublicKey, payload, signature, timestamp);
       if (!isValid) {
         log.warn("Invalid webhook signature");
-        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid webhook signature");
+        throw new WebhookAuthenticationException("Invalid webhook signature");
       }
-    } catch (ResponseStatusException e) {
+    } catch (WebhookAuthenticationException e) {
       throw e;
     } catch (Exception e) {
       log.error("Webhook signature verification failed: {}", e.getMessage());
-      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid webhook signature");
+      throw new WebhookAuthenticationException("Invalid webhook signature", e);
     }
   }
 
@@ -95,10 +104,15 @@ public class EmailWebhookService {
       return objectMapper.readValue(payload, new TypeReference<>() {});
     } catch (JacksonException e) {
       log.error("Failed to parse webhook payload: {}", e.getMessage());
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid payload");
+      throw new WebhookPayloadException("Invalid payload");
     }
   }
 
+  /**
+   * Processes a single webhook event. Each operation (status update, audit, notification) is
+   * intentionally NOT wrapped in a single transaction — webhook events are idempotent, and partial
+   * success is preferable to full rollback (e.g., status update succeeds but audit fails).
+   */
   @SuppressWarnings("unchecked")
   private void processEvent(Map<String, Object> event) {
     String eventType = (String) event.get("event");
@@ -117,6 +131,12 @@ public class EmailWebhookService {
     String tenantSchema = (String) uniqueArgs.get("tenantSchema");
     if (tenantSchema == null || tenantSchema.isBlank()) {
       log.warn("Webhook event missing tenantSchema in unique_args, skipping");
+      return;
+    }
+
+    // Validate tenant schema format to prevent cross-tenant manipulation
+    if (!TENANT_SCHEMA_PATTERN.matcher(tenantSchema).matches()) {
+      log.warn("Webhook event has invalid tenantSchema format, skipping: {}", tenantSchema);
       return;
     }
 
@@ -139,43 +159,41 @@ public class EmailWebhookService {
             () -> {
               deliveryLogService.updateStatus(providerMessageId, newStatus, reason);
 
+              // Fetch delivery log once for audit + notification (avoids redundant DB query)
+              EmailDeliveryLog deliveryLog = null;
               if (newStatus == EmailDeliveryStatus.BOUNCED
                   || newStatus == EmailDeliveryStatus.FAILED) {
-                publishAuditEvent(
-                    newStatus, providerMessageId, recipientEmail, reason, tenantSchema);
+                deliveryLog =
+                    deliveryLogService.findByProviderMessageId(providerMessageId).orElse(null);
+                publishAuditEvent(newStatus, deliveryLog, recipientEmail, reason, tenantSchema);
               }
 
               if (newStatus == EmailDeliveryStatus.BOUNCED) {
-                notifyAdminsIfInvoiceBounce(
-                    providerMessageId, recipientEmail, reason, tenantSchema);
+                notifyAdminsIfInvoiceBounce(deliveryLog, recipientEmail, reason);
               }
             });
   }
 
   private void publishAuditEvent(
       EmailDeliveryStatus status,
-      String providerMessageId,
+      EmailDeliveryLog deliveryLog,
       String recipientEmail,
       String reason,
       String tenantSchema) {
     try {
-      var deliveryLog = deliveryLogService.findByProviderMessageId(providerMessageId).orElse(null);
       if (deliveryLog == null) {
-        log.debug(
-            "No delivery log found for providerMessageId={} in schema={}, skipping audit",
-            providerMessageId,
-            tenantSchema);
+        log.debug("No delivery log found in schema={}, skipping audit", tenantSchema);
         return;
       }
 
-      String eventType =
+      String auditEventType =
           status == EmailDeliveryStatus.BOUNCED
               ? "email.delivery.bounced"
               : "email.delivery.failed";
 
       var record =
           AuditEventBuilder.builder()
-              .eventType(eventType)
+              .eventType(auditEventType)
               .entityType("email_delivery_log")
               .entityId(deliveryLog.getId())
               .actorType("SYSTEM")
@@ -184,19 +202,21 @@ public class EmailWebhookService {
                   Map.of(
                       "recipientEmail", recipientEmail != null ? recipientEmail : "",
                       "bounceReason", reason != null ? reason : "",
-                      "providerMessageId", providerMessageId))
+                      "providerMessageId", deliveryLog.getProviderMessageId()))
               .build();
 
       auditService.log(record);
     } catch (Exception e) {
-      log.error("Failed to publish audit event for {}: {}", providerMessageId, e.getMessage());
+      log.error(
+          "Failed to publish audit event for {}: {}",
+          deliveryLog != null ? deliveryLog.getProviderMessageId() : "unknown",
+          e.getMessage());
     }
   }
 
   private void notifyAdminsIfInvoiceBounce(
-      String providerMessageId, String recipientEmail, String reason, String tenantSchema) {
+      EmailDeliveryLog deliveryLog, String recipientEmail, String reason) {
     try {
-      var deliveryLog = deliveryLogService.findByProviderMessageId(providerMessageId).orElse(null);
       if (deliveryLog == null || !"INVOICE".equals(deliveryLog.getReferenceType())) {
         return;
       }
@@ -215,8 +235,19 @@ public class EmailWebhookService {
     } catch (Exception e) {
       log.error(
           "Failed to send admin notification for bounced invoice {}: {}",
-          providerMessageId,
+          deliveryLog != null ? deliveryLog.getProviderMessageId() : "unknown",
           e.getMessage());
     }
+  }
+
+  /** Truncates and sanitizes the provider value for safe logging. */
+  private static String sanitizeProvider(String provider) {
+    if (provider == null) {
+      return "null";
+    }
+    String sanitized = provider.replaceAll("[^a-zA-Z0-9_-]", "");
+    return sanitized.length() > MAX_PROVIDER_LENGTH
+        ? sanitized.substring(0, MAX_PROVIDER_LENGTH)
+        : sanitized;
   }
 }

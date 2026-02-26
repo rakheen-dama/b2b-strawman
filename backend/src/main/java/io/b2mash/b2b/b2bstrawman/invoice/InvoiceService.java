@@ -940,9 +940,7 @@ public class InvoiceService {
             PaymentEventStatus.COMPLETED,
             invoice.getTotal(),
             invoice.getCurrency(),
-            invoice.getPaymentDestination() != null
-                ? invoice.getPaymentDestination()
-                : "OPERATING");
+            invoice.getPaymentDestination());
     if (effectiveReference != null) {
       manualEvent.setPaymentReference(effectiveReference);
     }

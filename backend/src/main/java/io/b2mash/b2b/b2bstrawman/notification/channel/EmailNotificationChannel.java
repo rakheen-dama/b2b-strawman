@@ -6,15 +6,18 @@ import io.b2mash.b2b.b2bstrawman.integration.email.EmailDeliveryLogService;
 import io.b2mash.b2b.b2bstrawman.integration.email.EmailMessage;
 import io.b2mash.b2b.b2bstrawman.integration.email.EmailProvider;
 import io.b2mash.b2b.b2bstrawman.integration.email.EmailRateLimiter;
+import io.b2mash.b2b.b2bstrawman.integration.email.UnsubscribeService;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.Notification;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailContextBuilder;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailTemplateRenderer;
+import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -33,6 +36,8 @@ public class EmailNotificationChannel implements NotificationChannel {
   private final EmailDeliveryLogService deliveryLogService;
   private final EmailRateLimiter emailRateLimiter;
   private final MemberRepository memberRepository;
+  private final UnsubscribeService unsubscribeService;
+  private final String appBaseUrl;
 
   public EmailNotificationChannel(
       IntegrationRegistry integrationRegistry,
@@ -40,13 +45,17 @@ public class EmailNotificationChannel implements NotificationChannel {
       EmailContextBuilder emailContextBuilder,
       EmailDeliveryLogService deliveryLogService,
       EmailRateLimiter emailRateLimiter,
-      MemberRepository memberRepository) {
+      MemberRepository memberRepository,
+      UnsubscribeService unsubscribeService,
+      @Value("${docteams.app.base-url:http://localhost:3000}") String appBaseUrl) {
     this.integrationRegistry = integrationRegistry;
     this.emailTemplateRenderer = emailTemplateRenderer;
     this.emailContextBuilder = emailContextBuilder;
     this.deliveryLogService = deliveryLogService;
     this.emailRateLimiter = emailRateLimiter;
     this.memberRepository = memberRepository;
+    this.unsubscribeService = unsubscribeService;
+    this.appBaseUrl = appBaseUrl;
   }
 
   @Override
@@ -82,19 +91,23 @@ public class EmailNotificationChannel implements NotificationChannel {
         return;
       }
 
-      // 3. Build context
+      // 3. Generate unsubscribe URL
+      String tenantSchema = RequestScopes.TENANT_ID.get();
+      String unsubscribeUrl = generateUnsubscribeUrl(notification, tenantSchema);
+
+      // 4. Build context
       String recipientName =
           memberRepository
               .findById(notification.getRecipientMemberId())
               .map(Member::getName)
               .orElse(null);
-      Map<String, Object> context = buildNotificationContext(notification, recipientName);
+      Map<String, Object> context =
+          buildNotificationContext(notification, recipientName, unsubscribeUrl);
 
-      // 4. Render
+      // 5. Render
       var rendered = emailTemplateRenderer.render(templateName, context);
 
-      // 5. Check rate limit
-      String tenantSchema = RequestScopes.TENANT_ID.get();
+      // 6. Check rate limit
       if (!emailRateLimiter.tryAcquire(tenantSchema, provider.providerId())) {
         log.warn(
             "Rate limit exceeded for tenant={}, provider={}, skipping email to={}",
@@ -110,22 +123,33 @@ public class EmailNotificationChannel implements NotificationChannel {
         return;
       }
 
-      // 6. Construct message with tracking metadata
+      // 7. Construct message with tracking metadata and List-Unsubscribe headers
+      var metadata =
+          new HashMap<>(
+              Map.of(
+                  "referenceType",
+                  "NOTIFICATION",
+                  "referenceId",
+                  notification.getId().toString(),
+                  "tenantSchema",
+                  tenantSchema));
+      if (unsubscribeUrl != null) {
+        metadata.put("List-Unsubscribe", "<" + unsubscribeUrl + ">");
+        metadata.put("List-Unsubscribe-Post", "List-Unsubscribe=One-Click");
+      }
       var message =
-          EmailMessage.withTracking(
+          new EmailMessage(
               recipientEmail,
               rendered.subject(),
               rendered.htmlBody(),
               rendered.plainTextBody(),
               null,
-              "NOTIFICATION",
-              notification.getId().toString(),
-              tenantSchema);
+              metadata);
 
-      // 7. Send
+      // 8. Send
       var result = provider.sendEmail(message);
 
-      // 8. Record delivery
+      // 9. Record delivery
       deliveryLogService.record(
           "NOTIFICATION",
           notification.getId(),
@@ -162,6 +186,18 @@ public class EmailNotificationChannel implements NotificationChannel {
     return true;
   }
 
+  private String generateUnsubscribeUrl(Notification notification, String tenantSchema) {
+    try {
+      String token =
+          unsubscribeService.generateToken(
+              notification.getRecipientMemberId(), notification.getType(), tenantSchema);
+      return appBaseUrl + "/api/email/unsubscribe?token=" + token;
+    } catch (Exception e) {
+      log.warn("Failed to generate unsubscribe URL for notification {}", notification.getId(), e);
+      return null;
+    }
+  }
+
   private String resolveTemplateName(String notificationType) {
     return switch (notificationType) {
       case "TASK_ASSIGNED", "TASK_CLAIMED", "TASK_UPDATED" -> "notification-task";
@@ -187,9 +223,9 @@ public class EmailNotificationChannel implements NotificationChannel {
   }
 
   private Map<String, Object> buildNotificationContext(
-      Notification notification, String recipientName) {
-    // TODO(Epic 172): Wire unsubscribe URL (currently null)
-    Map<String, Object> context = emailContextBuilder.buildBaseContext(recipientName, null);
+      Notification notification, String recipientName, String unsubscribeUrl) {
+    Map<String, Object> context =
+        emailContextBuilder.buildBaseContext(recipientName, unsubscribeUrl);
 
     context.put("subject", notification.getTitle());
     context.put("notificationTitle", notification.getTitle());

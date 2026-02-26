@@ -13,6 +13,7 @@ import {
   ClipboardCheck,
   ShieldAlert,
   LayoutTemplate,
+  Mail,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { LucideIcon } from "lucide-react";
@@ -87,6 +88,13 @@ const settingsCards: SettingsCard[] = [
     title: "Project Templates",
     description: "Create and manage reusable project blueprints",
     href: "project-templates",
+    comingSoon: false,
+  },
+  {
+    icon: Mail,
+    title: "Email",
+    description: "View email delivery logs, stats, and rate limits",
+    href: "email",
     comingSoon: false,
   },
   {

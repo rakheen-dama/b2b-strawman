@@ -1,4 +1,5 @@
 import { getJwt, clearAuth } from "@/lib/auth";
+import type { PaymentStatusResponse } from "@/lib/types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_PORTAL_API_URL ?? "http://localhost:8080";
 
@@ -64,6 +65,18 @@ export async function portalPost<T>(path: string, body: unknown): Promise<T> {
     throw new Error(`API error: ${response.status} ${respBody}`);
   }
   return response.json() as Promise<T>;
+}
+
+/**
+ * Fetches the current payment status for an invoice.
+ * Used by the payment success page to poll for confirmation.
+ */
+export async function getPaymentStatus(
+  invoiceId: string
+): Promise<PaymentStatusResponse> {
+  return portalGet<PaymentStatusResponse>(
+    `/portal/invoices/${invoiceId}/payment-status`
+  );
 }
 
 /**

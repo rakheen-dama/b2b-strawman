@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft, CheckCircle, CreditCard, Download } from "lucide-react";
 import { portalGet } from "@/lib/api-client";
-import { formatCurrency, formatDate } from "@/lib/format";
+import { formatDate } from "@/lib/format";
+import { useBranding } from "@/hooks/use-branding";
 import { InvoiceStatusBadge } from "@/components/invoice-status-badge";
 import { InvoiceLineTable } from "@/components/invoice-line-table";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -25,6 +26,7 @@ function PageSkeleton() {
 export default function InvoiceDetailPage() {
   const params = useParams();
   const invoiceId = Array.isArray(params.id) ? params.id[0] : (params.id ?? "");
+  const { orgName } = useBranding();
 
   const [invoice, setInvoice] = useState<PortalInvoiceDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -124,6 +126,41 @@ export default function InvoiceDetailPage() {
           Download PDF
         </button>
       </div>
+
+      {/* Payment Action */}
+      {invoice.status === "PAID" && (
+        <div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-4">
+          <CheckCircle className="size-5 text-green-600" />
+          <p className="text-sm font-medium text-green-700">
+            This invoice has been paid
+          </p>
+        </div>
+      )}
+      {invoice.status === "SENT" && invoice.paymentUrl && (
+        <div className="flex items-center gap-4 rounded-lg border border-teal-200 bg-teal-50 p-4">
+          <CreditCard className="size-5 text-teal-600" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-slate-700">
+              Ready to pay? Complete your payment securely online.
+            </p>
+          </div>
+          <a
+            href={invoice.paymentUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700"
+          >
+            Pay Now
+          </a>
+        </div>
+      )}
+      {invoice.status === "SENT" && !invoice.paymentUrl && (
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+          <p className="text-sm text-slate-600">
+            Contact {orgName} to arrange payment
+          </p>
+        </div>
+      )}
 
       {/* Line Items */}
       <section>

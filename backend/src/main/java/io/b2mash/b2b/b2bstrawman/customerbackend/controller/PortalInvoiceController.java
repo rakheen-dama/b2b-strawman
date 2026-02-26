@@ -83,6 +83,7 @@ public class PortalInvoiceController {
             invoice.total(),
             invoice.currency(),
             invoice.notes(),
+            invoice.paymentUrl(),
             lines));
   }
 
@@ -126,6 +127,7 @@ public class PortalInvoiceController {
       BigDecimal total,
       String currency,
       String notes,
+      String paymentUrl,
       List<PortalInvoiceLineResponse> lines) {}
 
   public record PortalInvoiceLineResponse(

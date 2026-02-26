@@ -100,6 +100,7 @@ export interface PortalInvoiceDetail {
   total: number;
   currency: string;
   notes: string | null;
+  paymentUrl: string | null;
   lines: PortalInvoiceLine[];
 }
 
@@ -114,6 +115,13 @@ export interface PortalInvoiceLine {
 
 export interface PortalDownload {
   downloadUrl: string;
+}
+
+// === Payment ===
+
+export interface PaymentStatusResponse {
+  status: string;
+  paidAt: string | null;
 }
 
 // === Summary ===

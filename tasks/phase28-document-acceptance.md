@@ -24,7 +24,7 @@ Phase 28 adds a **document acceptance workflow** to the DocTeams platform. Firms
 | 195 | Certificate Generation + Portal Read-Model Sync | Backend | 194 | M | 195A, 195B | **Done** (PRs #401, #402) |
 | 196 | Firm-Facing REST API + Audit + Notifications | Backend | 194, 195 | M | 196A, 196B | **Done** (PRs #403, #404) |
 | 197 | Portal Acceptance Controller + Expiry Processor | Backend | 194, 195 | M | 197A | **Done** (PR #405) |
-| 198 | Frontend -- Send for Acceptance + Status Tracking | Frontend | 196 | M | 198A, 198B | |
+| 198 | Frontend -- Send for Acceptance + Status Tracking | Frontend | 196 | M | 198A, 198B | **Done** (PRs #406, #407) |
 | 199 | Portal -- Acceptance Page + Pending List | Portal | 197 | M | 199A, 199B | |
 | 200 | Frontend -- OrgSettings Acceptance Config | Frontend | 196 | S | 200A | |
 
@@ -132,7 +132,7 @@ Phase 28 adds a **document acceptance workflow** to the DocTeams platform. Firms
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 6a (parallel) | 198 | 198B | `AcceptanceDetailPanel.tsx` (expandable panel: recipient info, status timeline, remind/revoke actions, certificate download) + integration into generated document detail views + `GenerateDocumentDialog.tsx` post-generation "Send for Acceptance" button + frontend tests. ~2 new files, ~2 modified files. Frontend only. | |
+| 6a (parallel) | 198 | 198B | `AcceptanceDetailPanel.tsx` (expandable panel: recipient info, status timeline, remind/revoke actions, certificate download) + integration into generated document detail views + `GenerateDocumentDialog.tsx` post-generation "Send for Acceptance" button + frontend tests. ~2 new files, ~2 modified files. Frontend only. | **Done** (PR #407) |
 | 6b (parallel) | 199 | 199B | "Pending Acceptances" section on portal dashboard or documents page (list of documents awaiting acceptance with direct links to acceptance page) + portal API call to read-model endpoint + portal frontend tests. ~1 new file, ~1 modified file. Portal only. | |
 
 ### Timeline
@@ -502,7 +502,7 @@ Stage 6: [198B] // [199B]                                           (parallel, a
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **198A** | 198.1--198.6 | `acceptance-actions.ts` server actions + `SendForAcceptanceDialog.tsx` (recipient picker from portal contacts, expiry override, send action) + `AcceptanceStatusBadge.tsx` (colored badge per status) + integration into `GeneratedDocumentsList.tsx` (action menu item + status badge per row) + frontend tests. ~4 new files, ~1 modified. Frontend only. | **Done** (PR #406) |
-| **198B** | 198.7--198.11 | `AcceptanceDetailPanel.tsx` (expandable panel: recipient info, status timeline with timestamps, remind/revoke action buttons, certificate download link) + integration into generated document detail views + `GenerateDocumentDialog.tsx` post-generation "Send for Acceptance" button + frontend tests. ~2 new files, ~2 modified. Frontend only. | |
+| **198B** | 198.7--198.11 | `AcceptanceDetailPanel.tsx` (expandable panel: recipient info, status timeline with timestamps, remind/revoke action buttons, certificate download link) + integration into generated document detail views + `GenerateDocumentDialog.tsx` post-generation "Send for Acceptance" button + frontend tests. ~2 new files, ~2 modified. Frontend only. | **Done** (PR #407) |
 
 ### Tasks
 

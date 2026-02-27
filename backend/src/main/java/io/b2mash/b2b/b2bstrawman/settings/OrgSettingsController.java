@@ -104,6 +104,22 @@ public class OrgSettingsController {
             request.dormancyThresholdDays(), request.dataRequestDeadlineDays(), memberId, orgRole));
   }
 
+  @PatchMapping("/tax")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<SettingsResponse> updateTaxSettings(
+      @Valid @RequestBody UpdateTaxSettingsRequest request) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+    return ResponseEntity.ok(
+        orgSettingsService.updateTaxSettings(
+            request.taxRegistrationNumber(),
+            request.taxRegistrationLabel(),
+            request.taxLabel(),
+            request.taxInclusive(),
+            memberId,
+            orgRole));
+  }
+
   // --- DTOs ---
 
   public record SettingsResponse(
@@ -116,7 +132,11 @@ public class OrgSettingsController {
       List<Map<String, Object>> compliancePackStatus,
       boolean accountingEnabled,
       boolean aiEnabled,
-      boolean documentSigningEnabled) {}
+      boolean documentSigningEnabled,
+      String taxRegistrationNumber,
+      String taxRegistrationLabel,
+      String taxLabel,
+      boolean taxInclusive) {}
 
   public record UpdateSettingsRequest(
       @NotBlank(message = "defaultCurrency is required")
@@ -133,4 +153,12 @@ public class OrgSettingsController {
       @Positive(message = "dormancyThresholdDays must be positive") Integer dormancyThresholdDays,
       @Positive(message = "dataRequestDeadlineDays must be positive")
           Integer dataRequestDeadlineDays) {}
+
+  public record UpdateTaxSettingsRequest(
+      @Size(max = 50, message = "taxRegistrationNumber must be at most 50 characters")
+          String taxRegistrationNumber,
+      @Size(max = 30, message = "taxRegistrationLabel must be at most 30 characters")
+          String taxRegistrationLabel,
+      @Size(max = 20, message = "taxLabel must be at most 20 characters") String taxLabel,
+      boolean taxInclusive) {}
 }

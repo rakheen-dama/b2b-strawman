@@ -14,6 +14,7 @@ import {
   ShieldAlert,
   LayoutTemplate,
   Mail,
+  Receipt,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getAuthContext } from "@/lib/auth";
@@ -48,6 +49,13 @@ const settingsCards: SettingsCard[] = [
     title: "Rates & Currency",
     description: "Manage billing rates, cost rates, and default currency",
     href: "rates",
+    comingSoon: false,
+  },
+  {
+    icon: Receipt,
+    title: "Tax",
+    description: "Configure tax registration, labels, and inclusive pricing",
+    href: "tax",
     comingSoon: false,
   },
   {

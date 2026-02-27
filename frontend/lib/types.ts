@@ -403,6 +403,37 @@ export interface UpdateTaxSettingsRequest {
   taxInclusive: boolean;
 }
 
+// ---- Tax Rates (from TaxRateController.java) ----
+
+export interface TaxRateResponse {
+  id: string;
+  name: string;
+  rate: number;
+  isDefault: boolean;
+  isExempt: boolean;
+  active: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateTaxRateRequest {
+  name: string;
+  rate: number;
+  isDefault: boolean;
+  isExempt: boolean;
+  sortOrder: number;
+}
+
+export interface UpdateTaxRateRequest {
+  name: string;
+  rate: number;
+  isDefault: boolean;
+  isExempt: boolean;
+  active: boolean;
+  sortOrder: number;
+}
+
 export interface UpdateOrgSettingsRequest {
   defaultCurrency: string;
   brandColor?: string;

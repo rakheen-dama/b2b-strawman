@@ -14,12 +14,17 @@ vi.mock("@/lib/auth", () => ({
 
 vi.mock("@/lib/api", () => ({
   api: {
-    get: vi.fn().mockResolvedValue({
-      defaultCurrency: "USD",
-      taxRegistrationNumber: "VAT-123",
-      taxRegistrationLabel: "VAT Number",
-      taxLabel: "VAT",
-      taxInclusive: true,
+    get: vi.fn().mockImplementation((url: string) => {
+      if (url.includes("/api/tax-rates")) {
+        return Promise.resolve([]);
+      }
+      return Promise.resolve({
+        defaultCurrency: "USD",
+        taxRegistrationNumber: "VAT-123",
+        taxRegistrationLabel: "VAT Number",
+        taxLabel: "VAT",
+        taxInclusive: true,
+      });
     }),
   },
   ApiError: class ApiError extends Error {

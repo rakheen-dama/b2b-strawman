@@ -23,7 +23,7 @@ Phase 26 adds structured tax handling to the DocTeams invoicing system. The exis
 | 182 | Tax Calculation Engine + InvoiceLine Extension | Backend | 181 | M | 182A, 182B | **Done** (PRs #378, #379) |
 | 183 | Tax Application in Invoice Flows | Backend | 182 | L | 183A, 183B | **Done** (PRs #380, #381) |
 | 184 | Invoice Preview, PDF + Portal Tax Display | Backend + Portal | 183 | M | 184A, 184B | **Done** (PRs #382, #383) |
-| 185 | Tax Settings + Rate Management Frontend | Frontend | 181 | M | 185A, 185B | |
+| 185 | Tax Settings + Rate Management Frontend | Frontend | 181 | M | 185A, 185B | **Done** (PRs #384, #385) |
 | 186 | Invoice Editor Tax UI | Frontend | 183, 185 | M | 186A | |
 
 ---
@@ -87,7 +87,7 @@ Phase 26 adds structured tax handling to the DocTeams invoicing system. The exis
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 2a (parallel) | 182 | 182B | `Invoice.recalculateTotals()` update (per-line tax sum + tax-inclusive total) + tax breakdown assembly utility + integration tests. ~2 modified files, ~1 new test file. Backend only. | **Done** (PR #379) |
-| 2b (parallel) | 185 | 185B | Tax rate management table on settings page + Add/Edit/Deactivate dialogs + default badge + deactivation error handling + frontend tests. ~3 new frontend files, ~1 modified frontend file. | |
+| 2b (parallel) | 185 | 185B | Tax rate management table on settings page + Add/Edit/Deactivate dialogs + default badge + deactivation error handling + frontend tests. ~3 new frontend files, ~1 modified frontend file. | **Done** (PR #385) |
 
 ### Stage 3: Invoice flows (sequential)
 
@@ -426,7 +426,7 @@ Stage 5: [184B]                                                     (after 184A)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **185A** | 185.1--185.7 | Extend `OrgSettings.java` with 4 tax fields + update settings API (accept + return tax fields) + audit event `org_settings.tax_configured` + frontend "Tax Settings" card (registration number, label, inclusive toggle) + backend test + frontend test. ~1 modified backend file, ~2 modified frontend files, ~1 new frontend file. Backend + Frontend. | **Done** (PR #384) |
-| **185B** | 185.8--185.14 | Tax rate management table on settings page (or `settings/tax/page.tsx`) + Add Tax Rate dialog + Edit dialog + Deactivate action + default badge + deactivation error toast + frontend API actions + frontend tests. ~3 new frontend files, ~1 modified frontend file. Frontend only. | |
+| **185B** | 185.8--185.14 | Tax rate management table on settings page (or `settings/tax/page.tsx`) + Add Tax Rate dialog + Edit dialog + Deactivate action + default badge + deactivation error toast + frontend API actions + frontend tests. ~3 new frontend files, ~1 modified frontend file. Frontend only. | **Done** (PR #385) |
 
 ### Tasks
 

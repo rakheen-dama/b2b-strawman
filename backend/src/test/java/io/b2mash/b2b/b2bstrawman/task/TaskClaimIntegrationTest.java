@@ -135,7 +135,23 @@ class TaskClaimIntegrationTest {
   void shouldReturn400WhenClaimingDoneTask() throws Exception {
     var taskId = createTask("Done Task");
 
-    // Update task to DONE status via PUT
+    // First transition to IN_PROGRESS (OPEN -> IN_PROGRESS is valid)
+    mockMvc
+        .perform(
+            put("/api/tasks/" + taskId)
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "title": "Done Task",
+                      "priority": "MEDIUM",
+                      "status": "IN_PROGRESS"
+                    }
+                    """))
+        .andExpect(status().isOk());
+
+    // Then transition to DONE (IN_PROGRESS -> DONE is valid)
     mockMvc
         .perform(
             put("/api/tasks/" + taskId)

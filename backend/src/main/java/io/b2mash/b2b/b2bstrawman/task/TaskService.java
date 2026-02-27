@@ -94,12 +94,16 @@ public class TaskService {
       String assigneeFilter) {
     projectAccessService.requireViewAccess(projectId, memberId, orgRole);
 
+    TaskStatus taskStatus = status != null ? parseStatus(status) : null;
+    TaskPriority taskPriority = priority != null ? parsePriority(priority) : null;
+
     // Handle special "unassigned" filter
     if ("unassigned".equals(assigneeFilter)) {
-      return taskRepository.findByProjectIdUnassigned(projectId, status, priority);
+      return taskRepository.findByProjectIdUnassigned(projectId, taskStatus, taskPriority);
     }
 
-    return taskRepository.findByProjectIdWithFilters(projectId, status, assigneeId, priority);
+    return taskRepository.findByProjectIdWithFilters(
+        projectId, taskStatus, assigneeId, taskPriority);
   }
 
   @Transactional(readOnly = true)
@@ -297,16 +301,20 @@ public class TaskService {
       task.setAppliedFieldGroups(appliedFieldGroups);
     }
 
+    // Convert string inputs to enums
+    TaskPriority taskPriority = parsePriority(priority);
+    TaskStatus taskStatus = parseStatus(status);
+
     // Capture old values before mutation
     String oldTitle = task.getTitle();
     String oldDescription = task.getDescription();
-    String oldStatus = task.getStatus();
-    String oldPriority = task.getPriority();
+    TaskStatus oldStatus = task.getStatus();
+    TaskPriority oldPriority = task.getPriority();
     UUID oldAssigneeId = task.getAssigneeId();
     LocalDate oldDueDate = task.getDueDate();
     String oldType = task.getType();
 
-    task.update(title, description, priority, status, type, dueDate, assigneeId);
+    task.update(title, description, taskPriority, taskStatus, type, dueDate, assigneeId, memberId);
     task = taskRepository.save(task);
 
     // Build delta map -- only include changed fields
@@ -323,17 +331,11 @@ public class TaskService {
               "from", oldDescription != null ? oldDescription : "",
               "to", description != null ? description : ""));
     }
-    if (!Objects.equals(oldStatus, status)) {
-      details.put(
-          "status",
-          Map.of("from", oldStatus != null ? oldStatus : "", "to", status != null ? status : ""));
+    if (oldStatus != taskStatus) {
+      details.put("status", Map.of("from", oldStatus.name(), "to", taskStatus.name()));
     }
-    if (!Objects.equals(oldPriority, priority)) {
-      details.put(
-          "priority",
-          Map.of(
-              "from", oldPriority != null ? oldPriority : "",
-              "to", priority != null ? priority : ""));
+    if (oldPriority != taskPriority) {
+      details.put("priority", Map.of("from", oldPriority.name(), "to", taskPriority.name()));
     }
     if (!Objects.equals(oldAssigneeId, assigneeId)) {
       details.put(
@@ -366,7 +368,7 @@ public class TaskService {
 
     // Event publication for notification fan-out
     boolean assigneeChanged = !Objects.equals(oldAssigneeId, assigneeId);
-    boolean statusChanged = !Objects.equals(oldStatus, status);
+    boolean statusChanged = oldStatus != taskStatus;
     String tenantId = RequestScopes.requireTenantId();
     String orgId = RequestScopes.requireOrgId();
 
@@ -387,7 +389,7 @@ public class TaskService {
               assigneeId,
               task.getTitle()));
     }
-    if (statusChanged && status != null) {
+    if (statusChanged) {
       String actorName = resolveActorName(memberId);
       eventPublisher.publishEvent(
           new TaskStatusChangedEvent(
@@ -404,11 +406,11 @@ public class TaskService {
                   "title",
                   task.getTitle(),
                   "old_status",
-                  oldStatus != null ? oldStatus : "",
+                  oldStatus.name(),
                   "new_status",
-                  status),
-              oldStatus != null ? oldStatus : "",
-              status,
+                  taskStatus.name()),
+              oldStatus.name(),
+              taskStatus.name(),
               task.getAssigneeId(),
               task.getTitle()));
     }
@@ -518,18 +520,18 @@ public class TaskService {
       throw new ResourceNotFoundException("Task", taskId);
     }
 
-    if (!"OPEN".equals(task.getStatus())) {
-      throw new InvalidStateException(
-          "Cannot claim task",
-          "Task can only be claimed when status is OPEN. Current status: " + task.getStatus());
-    }
-
     if (task.getAssigneeId() != null) {
       throw new InvalidStateException(
           "Cannot claim task", "Task is already assigned to another member");
     }
 
-    task.claim(memberId);
+    try {
+      task.claim(memberId);
+    } catch (InvalidStateException e) {
+      throw new InvalidStateException(
+          "Cannot claim task",
+          "Task can only be claimed when status is OPEN. Current status: " + task.getStatus());
+    }
     task = taskRepository.save(task);
     log.info("Task {} claimed by member {}", taskId, memberId);
 
@@ -632,7 +634,7 @@ public class TaskService {
               task.getId(),
               task.getProjectId(),
               task.getTitle(),
-              task.getStatus(),
+              task.getStatus().name(),
               assigneeName,
               0,
               orgId,
@@ -655,5 +657,23 @@ public class TaskService {
 
   private String resolveActorName(UUID memberId) {
     return memberNameResolver.resolveName(memberId);
+  }
+
+  private static TaskStatus parseStatus(String status) {
+    try {
+      return TaskStatus.valueOf(status);
+    } catch (IllegalArgumentException e) {
+      throw new InvalidStateException(
+          "Invalid task status", "Invalid task status: '" + status + "'");
+    }
+  }
+
+  private static TaskPriority parsePriority(String priority) {
+    try {
+      return TaskPriority.valueOf(priority);
+    } catch (IllegalArgumentException e) {
+      throw new InvalidStateException(
+          "Invalid task priority", "Invalid task priority: '" + priority + "'");
+    }
   }
 }

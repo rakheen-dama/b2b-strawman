@@ -88,8 +88,8 @@ public class MyWorkController {
           task.getProjectId(),
           projectNames.getOrDefault(task.getProjectId(), null),
           task.getTitle(),
-          task.getStatus(),
-          task.getPriority(),
+          task.getStatus().name(),
+          task.getPriority().name(),
           task.getDueDate(),
           taskDurations.getOrDefault(task.getId(), 0L));
     }

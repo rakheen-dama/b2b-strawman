@@ -106,8 +106,8 @@ export interface ProjectHealthMetrics {
 export interface TaskSummaryResponse {
   todo: number;
   inProgress: number;
-  inReview: number;
   done: number;
+  cancelled: number;
   total: number;
   overdueCount: number;
 }

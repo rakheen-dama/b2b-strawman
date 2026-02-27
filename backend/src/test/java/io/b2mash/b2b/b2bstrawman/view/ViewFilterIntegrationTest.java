@@ -21,7 +21,9 @@ import io.b2mash.b2b.b2bstrawman.tag.EntityTagRepository;
 import io.b2mash.b2b.b2bstrawman.tag.Tag;
 import io.b2mash.b2b.b2bstrawman.tag.TagRepository;
 import io.b2mash.b2b.b2bstrawman.task.Task;
+import io.b2mash.b2b.b2bstrawman.task.TaskPriority;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.task.TaskStatus;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -152,7 +154,24 @@ class ViewFilterIntegrationTest {
 
                   var t2 =
                       new Task(projectActiveId, "Done Task", null, null, null, null, memberIdOwner);
-                  t2.update("Done Task", null, "MEDIUM", "DONE", null, null, null);
+                  t2.update(
+                      "Done Task",
+                      null,
+                      TaskPriority.MEDIUM,
+                      TaskStatus.IN_PROGRESS,
+                      null,
+                      null,
+                      null,
+                      memberIdOwner);
+                  t2.update(
+                      "Done Task",
+                      null,
+                      TaskPriority.MEDIUM,
+                      TaskStatus.DONE,
+                      null,
+                      null,
+                      null,
+                      memberIdOwner);
                   t2 = taskRepository.saveAndFlush(t2);
                   taskDoneId = t2.getId();
                 }));

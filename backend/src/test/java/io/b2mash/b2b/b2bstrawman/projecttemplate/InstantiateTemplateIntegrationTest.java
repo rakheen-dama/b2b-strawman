@@ -22,6 +22,7 @@ import io.b2mash.b2b.b2bstrawman.tag.EntityTagRepository;
 import io.b2mash.b2b.b2bstrawman.tag.Tag;
 import io.b2mash.b2b.b2bstrawman.tag.TagRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.task.TaskStatus;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -309,7 +310,7 @@ class InstantiateTemplateIntegrationTest {
                   assertThat(tasks).hasSize(1);
                   assertThat(tasks.get(0).getAssigneeId()).isEqualTo(leadMemberId);
                   assertThat(tasks.get(0).getStatus())
-                      .isEqualTo("OPEN"); // stays OPEN, not IN_PROGRESS
+                      .isEqualTo(TaskStatus.OPEN); // stays OPEN, not IN_PROGRESS
                 }));
   }
 

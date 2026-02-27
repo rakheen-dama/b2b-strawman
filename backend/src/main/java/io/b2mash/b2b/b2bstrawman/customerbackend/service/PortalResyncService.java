@@ -162,7 +162,7 @@ public class PortalResyncService {
                       orgId,
                       project.getId(),
                       task.getTitle(),
-                      task.getStatus(),
+                      task.getStatus().name(),
                       assigneeName,
                       0);
                   taskCount++;

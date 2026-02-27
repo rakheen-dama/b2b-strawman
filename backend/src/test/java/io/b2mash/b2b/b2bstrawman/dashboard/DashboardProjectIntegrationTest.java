@@ -184,6 +184,17 @@ class DashboardProjectIntegrationTest {
                   "Done Task",
                   null,
                   "LOW",
+                  "IN_PROGRESS",
+                  "TASK",
+                  null,
+                  null,
+                  memberIdOwner,
+                  "owner");
+              taskService.updateTask(
+                  doneTask.getId(),
+                  "Done Task",
+                  null,
+                  "LOW",
                   "DONE",
                   "TASK",
                   null,
@@ -222,6 +233,17 @@ class DashboardProjectIntegrationTest {
                   "Done 1",
                   null,
                   "MEDIUM",
+                  "IN_PROGRESS",
+                  "TASK",
+                  null,
+                  null,
+                  memberIdOwner,
+                  "owner");
+              taskService.updateTask(
+                  done1.getId(),
+                  "Done 1",
+                  null,
+                  "MEDIUM",
                   "DONE",
                   "TASK",
                   null,
@@ -239,6 +261,17 @@ class DashboardProjectIntegrationTest {
                       null,
                       memberIdOwner,
                       "owner");
+              taskService.updateTask(
+                  done2.getId(),
+                  "Done 2",
+                  null,
+                  "MEDIUM",
+                  "IN_PROGRESS",
+                  "TASK",
+                  null,
+                  null,
+                  memberIdOwner,
+                  "owner");
               taskService.updateTask(
                   done2.getId(),
                   "Done 2",
@@ -297,6 +330,17 @@ class DashboardProjectIntegrationTest {
                       LocalDate.now().plusDays(30),
                       memberIdOwner,
                       "owner");
+              taskService.updateTask(
+                  notOverdue.getId(),
+                  "Not Overdue",
+                  null,
+                  "LOW",
+                  "IN_PROGRESS",
+                  "TASK",
+                  null,
+                  null,
+                  memberIdOwner,
+                  "owner");
               taskService.updateTask(
                   notOverdue.getId(),
                   "Not Overdue",
@@ -365,8 +409,8 @@ class DashboardProjectIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.todo").value(3)) // 2 OPEN + 1 overdue (still OPEN)
         .andExpect(jsonPath("$.inProgress").value(2))
-        .andExpect(jsonPath("$.inReview").value(0))
         .andExpect(jsonPath("$.done").value(1))
+        .andExpect(jsonPath("$.cancelled").value(0))
         .andExpect(jsonPath("$.total").value(6));
   }
 

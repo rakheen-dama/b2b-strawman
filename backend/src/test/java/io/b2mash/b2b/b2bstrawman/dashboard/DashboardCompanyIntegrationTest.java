@@ -143,6 +143,17 @@ class DashboardCompanyIntegrationTest {
         "Task A3 Done",
         null,
         "LOW",
+        "IN_PROGRESS",
+        "TASK",
+        null,
+        null,
+        adminMemberId,
+        "admin");
+    taskService.updateTask(
+        taskA3.getId(),
+        "Task A3 Done",
+        null,
+        "LOW",
         "DONE",
         "TASK",
         null,

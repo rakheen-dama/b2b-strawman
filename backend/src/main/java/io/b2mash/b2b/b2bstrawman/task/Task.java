@@ -1,7 +1,10 @@
 package io.b2mash.b2b.b2bstrawman.task;
 
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -33,11 +36,13 @@ public class Task {
   @Column(name = "description", columnDefinition = "TEXT")
   private String description;
 
+  @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false, length = 20)
-  private String status;
+  private TaskStatus status;
 
+  @Enumerated(EnumType.STRING)
   @Column(name = "priority", nullable = false, length = 20)
-  private String priority;
+  private TaskPriority priority;
 
   @Column(name = "type", length = 100)
   private String type;
@@ -61,6 +66,18 @@ public class Task {
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
 
+  @Column(name = "completed_at")
+  private Instant completedAt;
+
+  @Column(name = "completed_by")
+  private UUID completedBy;
+
+  @Column(name = "cancelled_at")
+  private Instant cancelledAt;
+
+  @Column(name = "cancelled_by")
+  private UUID cancelledBy;
+
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "custom_fields", columnDefinition = "jsonb")
   private Map<String, Object> customFields = new HashMap<>();
@@ -82,8 +99,8 @@ public class Task {
     this.projectId = projectId;
     this.title = title;
     this.description = description;
-    this.status = "OPEN";
-    this.priority = priority != null ? priority : "MEDIUM";
+    this.status = TaskStatus.OPEN;
+    this.priority = priority != null ? TaskPriority.valueOf(priority) : TaskPriority.MEDIUM;
     this.type = type;
     this.dueDate = dueDate;
     this.createdBy = createdBy;
@@ -91,37 +108,126 @@ public class Task {
     this.updatedAt = Instant.now();
   }
 
+  /**
+   * Updates task fields. If the status changes, validates the transition and manages lifecycle
+   * timestamps accordingly. The actorId is recorded as completedBy or cancelledBy when
+   * transitioning to terminal states.
+   */
   public void update(
       String title,
       String description,
-      String priority,
-      String status,
+      TaskPriority priority,
+      TaskStatus newStatus,
       String type,
       LocalDate dueDate,
-      UUID assigneeId) {
+      UUID assigneeId,
+      UUID actorId) {
     this.title = title;
     this.description = description;
     this.priority = priority;
-    this.status = status;
     this.type = type;
     this.dueDate = dueDate;
     this.assigneeId = assigneeId;
+
+    // Handle status transition with lifecycle timestamp bookkeeping
+    if (newStatus != this.status) {
+      requireTransition(newStatus, "update status");
+
+      // Manage lifecycle timestamps based on the target status
+      switch (newStatus) {
+        case DONE -> {
+          this.completedAt = Instant.now();
+          this.completedBy = actorId;
+          this.cancelledAt = null;
+          this.cancelledBy = null;
+        }
+        case CANCELLED -> {
+          this.cancelledAt = Instant.now();
+          this.cancelledBy = actorId;
+          this.completedAt = null;
+          this.completedBy = null;
+        }
+        case OPEN, IN_PROGRESS -> {
+          this.completedAt = null;
+          this.completedBy = null;
+          this.cancelledAt = null;
+          this.cancelledBy = null;
+        }
+      }
+      this.status = newStatus;
+    }
+
     this.updatedAt = Instant.now();
   }
 
-  /** Claims this task for the given member. Sets status to IN_PROGRESS and assigns the member. */
+  // --- Lifecycle transition methods ---
+
+  /**
+   * Claims this task for the given member. Validates that the task is OPEN before transitioning to
+   * IN_PROGRESS.
+   */
   public void claim(UUID memberId) {
+    requireTransition(TaskStatus.IN_PROGRESS, "claim");
     this.assigneeId = memberId;
-    this.status = "IN_PROGRESS";
+    this.status = TaskStatus.IN_PROGRESS;
     this.updatedAt = Instant.now();
   }
 
-  /** Releases this task. Clears assignee and resets status to OPEN. */
+  /** Releases this task. Validates that the task is IN_PROGRESS before transitioning to OPEN. */
   public void release() {
+    requireTransition(TaskStatus.OPEN, "release");
     this.assigneeId = null;
-    this.status = "OPEN";
+    this.status = TaskStatus.OPEN;
     this.updatedAt = Instant.now();
   }
+
+  /**
+   * Completes this task. Sets status to DONE and records completion timestamp and actor. Only valid
+   * from IN_PROGRESS.
+   */
+  public void complete(UUID memberId) {
+    requireTransition(TaskStatus.DONE, "complete");
+    this.status = TaskStatus.DONE;
+    this.completedAt = Instant.now();
+    this.completedBy = memberId;
+    this.updatedAt = Instant.now();
+  }
+
+  /**
+   * Cancels this task. Sets status to CANCELLED and records cancellation timestamp and actor. Valid
+   * from OPEN or IN_PROGRESS.
+   */
+  public void cancel(UUID cancelledBy) {
+    requireTransition(TaskStatus.CANCELLED, "cancel");
+    this.status = TaskStatus.CANCELLED;
+    this.cancelledAt = Instant.now();
+    this.cancelledBy = cancelledBy;
+    this.updatedAt = Instant.now();
+  }
+
+  /**
+   * Reopens this task from a terminal state (DONE or CANCELLED). Clears all lifecycle timestamps.
+   */
+  public void reopen() {
+    requireTransition(TaskStatus.OPEN, "reopen");
+    this.status = TaskStatus.OPEN;
+    this.completedAt = null;
+    this.completedBy = null;
+    this.cancelledAt = null;
+    this.cancelledBy = null;
+    this.updatedAt = Instant.now();
+  }
+
+  // --- Private helpers ---
+
+  private void requireTransition(TaskStatus target, String action) {
+    if (!this.status.canTransitionTo(target)) {
+      throw new InvalidStateException(
+          "Invalid task state", "Cannot " + action + " task in status " + this.status);
+    }
+  }
+
+  // --- Getters ---
 
   public UUID getId() {
     return id;
@@ -139,11 +245,11 @@ public class Task {
     return description;
   }
 
-  public String getStatus() {
+  public TaskStatus getStatus() {
     return status;
   }
 
-  public String getPriority() {
+  public TaskPriority getPriority() {
     return priority;
   }
 
@@ -173,6 +279,22 @@ public class Task {
 
   public Instant getUpdatedAt() {
     return updatedAt;
+  }
+
+  public Instant getCompletedAt() {
+    return completedAt;
+  }
+
+  public UUID getCompletedBy() {
+    return completedBy;
+  }
+
+  public Instant getCancelledAt() {
+    return cancelledAt;
+  }
+
+  public UUID getCancelledBy() {
+    return cancelledBy;
   }
 
   public Map<String, Object> getCustomFields() {

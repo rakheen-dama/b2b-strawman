@@ -8,8 +8,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.tax.TaxRateRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
 import java.time.LocalDate;
 import java.util.List;
@@ -45,6 +48,11 @@ class RetainerPeriodControllerTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
+  @Autowired private TaxRateRepository taxRateRepository;
+  @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
+
+  @Autowired
+  private org.springframework.transaction.support.TransactionTemplate transactionTemplate;
 
   private String pastRetainerId;
   private String futureRetainerId;
@@ -92,6 +100,12 @@ class RetainerPeriodControllerTest {
             "HOUR_BANK",
             pastStart,
             "\"allocatedHours\": 40.00, \"periodFee\": 5000.00");
+
+    // Remove seeded tax rates so retainer tests don't get unexpected tax application
+    var tenantSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .run(() -> transactionTemplate.executeWithoutResult(tx -> taxRateRepository.deleteAll()));
   }
 
   private String createCustomer(String name, String email) throws Exception {

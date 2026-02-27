@@ -21,4 +21,13 @@ public interface InvoiceLineRepository extends JpaRepository<InvoiceLine, UUID> 
       "SELECT CASE WHEN COUNT(il) > 0 THEN true ELSE false END FROM InvoiceLine il"
           + " WHERE il.invoiceId = :invoiceId AND il.taxRateId IS NOT NULL")
   boolean existsByInvoiceIdAndTaxRateIdIsNotNull(@Param("invoiceId") UUID invoiceId);
+
+  /**
+   * Finds all invoice lines referencing a tax rate where the parent invoice has the given status.
+   */
+  @Query(
+      "SELECT il FROM InvoiceLine il WHERE il.taxRateId = :taxRateId"
+          + " AND il.invoiceId IN (SELECT i.id FROM Invoice i WHERE i.status = :status)")
+  List<InvoiceLine> findByTaxRateIdAndInvoice_Status(
+      @Param("taxRateId") UUID taxRateId, @Param("status") InvoiceStatus status);
 }

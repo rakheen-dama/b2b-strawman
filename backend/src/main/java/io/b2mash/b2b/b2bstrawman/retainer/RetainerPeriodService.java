@@ -19,6 +19,7 @@ import io.b2mash.b2b.b2bstrawman.retainer.dto.PeriodReadyToCloseView;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.tax.TaxCalculationService;
+import io.b2mash.b2b.b2bstrawman.tax.TaxRateRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -51,6 +52,7 @@ public class RetainerPeriodService {
   private final NotificationService notificationService;
   private final NotificationRepository notificationRepository;
   private final TaxCalculationService taxCalculationService;
+  private final TaxRateRepository taxRateRepository;
 
   public RetainerPeriodService(
       RetainerAgreementRepository agreementRepository,
@@ -65,7 +67,8 @@ public class RetainerPeriodService {
       AuditService auditService,
       NotificationService notificationService,
       NotificationRepository notificationRepository,
-      TaxCalculationService taxCalculationService) {
+      TaxCalculationService taxCalculationService,
+      TaxRateRepository taxRateRepository) {
     this.agreementRepository = agreementRepository;
     this.periodRepository = periodRepository;
     this.invoiceRepository = invoiceRepository;
@@ -79,6 +82,7 @@ public class RetainerPeriodService {
     this.notificationService = notificationService;
     this.notificationRepository = notificationRepository;
     this.taxCalculationService = taxCalculationService;
+    this.taxRateRepository = taxRateRepository;
   }
 
   public record PeriodCloseResult(
@@ -235,6 +239,9 @@ public class RetainerPeriodService {
       invoiceLineRepository.save(overageLine);
     }
 
+    // Apply default tax rate to generated lines (if configured)
+    applyDefaultTaxToRetainerLines(invoice.getId());
+
     // Recalculate invoice totals
     recalculateInvoiceTotals(invoice);
     invoice = invoiceRepository.save(invoice);
@@ -389,6 +396,25 @@ public class RetainerPeriodService {
     }
 
     return null;
+  }
+
+  private void applyDefaultTaxToRetainerLines(UUID invoiceId) {
+    var defaultRate = taxRateRepository.findByIsDefaultTrue();
+    if (defaultRate.isEmpty()) {
+      return; // No default rate configured, leave lines without tax
+    }
+    var taxRate = defaultRate.get();
+    boolean taxInclusive =
+        orgSettingsRepository.findForCurrentTenant().map(OrgSettings::isTaxInclusive).orElse(false);
+
+    var lines = invoiceLineRepository.findByInvoiceIdOrderBySortOrder(invoiceId);
+    for (InvoiceLine line : lines) {
+      BigDecimal calculatedTax =
+          taxCalculationService.calculateLineTax(
+              line.getAmount(), taxRate.getRate(), taxInclusive, taxRate.isExempt());
+      line.applyTaxRate(taxRate, calculatedTax);
+    }
+    invoiceLineRepository.saveAll(lines);
   }
 
   private void recalculateInvoiceTotals(Invoice invoice) {

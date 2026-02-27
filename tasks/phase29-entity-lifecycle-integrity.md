@@ -25,7 +25,7 @@ This is a **structural hardening phase**, not a feature phase. No new pages are 
 | 201 | Task Lifecycle Foundation -- Migration, Enums & Entity | Backend | -- | M | 201A, 201B | **Done** (PRs #411, #412) |
 | 202 | Task Lifecycle Service + Transition Endpoints | Backend | 201 | L | 202A, 202B | **Done** (PRs #413, #415) |
 | 203 | Project Lifecycle Foundation -- Migration, Enums & Entity | Backend | -- | M | 203A, 203B | **Done** (PRs #416, #417) |
-| 204 | Project Lifecycle Service + Transition Endpoints | Backend | 203, 201 | L | 204A, 204B | |
+| 204 | Project Lifecycle Service + Transition Endpoints | Backend | 203, 201 | L | 204A, 204B | **Done** (PRs #418, #419) |
 | 205 | Project-Customer Link + Due Date | Backend | 203 | M | 205A, 205B | |
 | 206 | Delete Protection & Cross-Entity Guards | Backend | 201, 203, 205 | M | 206A, 206B | |
 | 207 | Task Lifecycle Frontend | Frontend | 202 | M | 207A, 207B | |
@@ -115,7 +115,7 @@ This is a **structural hardening phase**, not a feature phase. No new pages are 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 3a (parallel) | 202 | 202B | Task lifecycle controller endpoints (`PATCH .../complete`, `.../cancel`, `.../reopen`) + `TaskController` response DTO update (add `completedAt`, `completedBy`, `cancelledAt`) + update `listTasks` status filter to support comma-separated enum values + integration tests (~12 tests). ~1 modified file, ~1 new test file. Backend only. | **Done** (PR #415) |
-| 3b (parallel) | 204 | 204B | Project lifecycle controller endpoints (`PATCH .../complete`, `.../archive`, `.../reopen`) + `ProjectController` response DTO update (add `status`, `customerId`, `dueDate`, `completedAt`, `completedBy`, `archivedAt`) + update `listProjects` status filter + integration tests (~14 tests). ~1 modified file, ~1 new test file. Backend only. | |
+| 3b (parallel) | 204 | 204B | Project lifecycle controller endpoints (`PATCH .../complete`, `.../archive`, `.../reopen`) + `ProjectController` response DTO update (add `status`, `customerId`, `dueDate`, `completedAt`, `completedBy`, `archivedAt`) + update `listProjects` status filter + integration tests (~14 tests). ~1 modified file, ~1 new test file. Backend only. | **Done** (PR #419) |
 | 3c (parallel) | 205 | 205B | `CustomerLifecycleGuard` extension: add `CREATE_PROJECT` action blocking for OFFBOARDING/OFFBOARDED customers + `ProjectCustomerController` update for customer-project list + customer delete protection check (count linked projects) + integration tests (~8 tests). ~2 modified files, ~1 new test file. Backend only. | |
 
 ### Stage 4: Delete Protection
@@ -364,7 +364,7 @@ Stage 6: [207B] // [208B]                                        (parallel, afte
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **204A** | 204.1--204.7 | `ProjectService` lifecycle methods: `completeProject()` (guardrails: all tasks DONE/CANCELLED + unbilled time acknowledgment), `archiveProject()`, `reopenProject()` + 3 domain event records + audit events + notification to project members. ~1 modified file, ~3 new event files. Backend only. | **Done** (PR #418) |
-| **204B** | 204.8--204.14 | `ProjectController` transition endpoints: `PATCH .../complete` (body: `{ acknowledgeUnbilledTime: boolean }`), `.../archive`, `.../reopen` + update `ProjectController` response DTO (add status, customerId, dueDate, completedAt, completedBy, archivedAt) + update `listProjects` status filter + controller integration tests (~14 tests). ~1 modified file, ~1 new test file. Backend only. | |
+| **204B** | 204.8--204.14 | `ProjectController` transition endpoints: `PATCH .../complete` (body: `{ acknowledgeUnbilledTime: boolean }`), `.../archive`, `.../reopen` + update `ProjectController` response DTO (add status, customerId, dueDate, completedAt, completedBy, archivedAt) + update `listProjects` status filter + controller integration tests (~14 tests). ~1 modified file, ~1 new test file. Backend only. | **Done** (PR #419) |
 
 ### Tasks
 

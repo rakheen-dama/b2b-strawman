@@ -163,9 +163,11 @@ export interface PortalProfile {
 
 // === Acceptance ===
 
+export type AcceptanceStatus = "PENDING" | "ACCEPTED" | "EXPIRED" | "REVOKED";
+
 export interface AcceptancePageData {
   requestId: string;
-  status: string;
+  status: AcceptanceStatus;
   documentTitle: string;
   documentFileName: string;
   expiresAt: string;
@@ -177,7 +179,7 @@ export interface AcceptancePageData {
 }
 
 export interface AcceptanceResponse {
-  status: string;
+  status: AcceptanceStatus;
   acceptedAt: string;
   acceptorName: string;
 }

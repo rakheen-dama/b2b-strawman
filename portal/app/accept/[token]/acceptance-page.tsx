@@ -25,7 +25,7 @@ import {
   getAcceptancePdfUrl,
   submitAcceptance,
 } from "@/lib/api/acceptance";
-import type { AcceptancePageData } from "@/lib/types";
+import type { AcceptancePageData, AcceptanceStatus } from "@/lib/types";
 
 interface AcceptancePageProps {
   token: string;
@@ -77,8 +77,14 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
           setPageState("EXPIRED");
         } else if (data.status === "REVOKED") {
           setPageState("REVOKED");
-        } else {
+        } else if (data.status === "PENDING") {
           setPageState("PENDING");
+        } else {
+          // Unknown status from backend — treat as error rather than showing the form
+          setError(
+            "Unable to process this acceptance request. Please contact the sender.",
+          );
+          setPageState("ERROR");
         }
       } catch (err) {
         if (!cancelled) {

@@ -176,6 +176,57 @@ describe("AcceptancePage", () => {
     expect(screen.queryByLabelText("Full name")).not.toBeInTheDocument();
   });
 
+  it("shows error when page data fails to load", async () => {
+    mockGetAcceptancePageData.mockRejectedValue(
+      new Error("Failed to load acceptance data. Please try again."),
+    );
+
+    render(<AcceptancePage token="test-token" />);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "Failed to load acceptance data. Please try again.",
+        ),
+      ).toBeInTheDocument();
+    });
+
+    // Form and PDF should not be visible
+    expect(screen.queryByLabelText("Full name")).not.toBeInTheDocument();
+    expect(screen.queryByTitle("Document PDF")).not.toBeInTheDocument();
+  });
+
+  it("shows error and stays on form when submission fails", async () => {
+    const user = userEvent.setup();
+    mockGetAcceptancePageData.mockResolvedValue(mockPendingPageData);
+    mockSubmitAcceptance.mockRejectedValue(
+      new Error("Failed to submit acceptance. Please try again."),
+    );
+
+    render(<AcceptancePage token="test-token" />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Full name")).toBeInTheDocument();
+    });
+
+    await user.type(screen.getByLabelText("Full name"), "Jane Doe");
+    await user.click(screen.getByRole("button", { name: "I Accept" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "Failed to submit acceptance. Please try again.",
+        ),
+      ).toBeInTheDocument();
+    });
+
+    // Form should still be visible (state reverted to PENDING)
+    expect(screen.getByLabelText("Full name")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "I Accept" }),
+    ).toBeInTheDocument();
+  });
+
   it("renders org branding", async () => {
     mockGetAcceptancePageData.mockResolvedValue(mockPendingPageData);
 

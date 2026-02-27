@@ -167,7 +167,7 @@ Stage 6: [198B] // [199B]                                           (parallel, a
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **193A** | 193.1--193.5 | V45 tenant migration (`acceptance_requests` table with all columns, indexes, partial unique constraint + `org_settings.acceptance_expiry_days` column) + V11 global migration (`portal_acceptance_requests` table + indexes) + `AcceptanceStatus` enum + `AcceptanceRequest` entity with lifecycle methods (markSent, markViewed, markAccepted, markRevoked, markExpired). ~6 new files. Backend only. | |
+| **193A** | 193.1--193.5 | V45 tenant migration (`acceptance_requests` table with all columns, indexes, partial unique constraint + `org_settings.acceptance_expiry_days` column) + V11 global migration (`portal_acceptance_requests` table + indexes) + `AcceptanceStatus` enum + `AcceptanceRequest` entity with lifecycle methods (markSent, markViewed, markAccepted, markRevoked, markExpired). ~6 new files. Backend only. | **Done** (PR #397) |
 | **193B** | 193.6--193.10 | `AcceptanceRequestRepository` with custom finders (findByRequestToken, findByGeneratedDocumentId, findByCustomerIdAndStatusIn, findByStatusAndExpiresAtBefore, findByGeneratedDocumentIdAndPortalContactIdAndStatusIn) + entity unit tests + repository integration tests. ~3 new files. Backend only. | |
 
 ### Tasks

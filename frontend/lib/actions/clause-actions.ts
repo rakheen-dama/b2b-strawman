@@ -40,6 +40,12 @@ export interface ActionResult {
   error?: string;
 }
 
+export interface PreviewActionResult {
+  success: boolean;
+  html?: string;
+  error?: string;
+}
+
 export async function getClauses(
   includeInactive?: boolean,
   category?: string,
@@ -182,6 +188,26 @@ export async function cloneClause(
           error: "A clone of this clause already exists.",
         };
       }
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+}
+
+export async function previewClause(
+  slug: string,
+  clauseId: string,
+  entityId: string,
+  entityType: string,
+): Promise<PreviewActionResult> {
+  try {
+    const html = await api.post<string>(`/api/clauses/${clauseId}/preview`, {
+      entityId,
+      entityType,
+    });
+    return { success: true, html };
+  } catch (error) {
+    if (error instanceof ApiError) {
       return { success: false, error: error.message };
     }
     return { success: false, error: "An unexpected error occurred." };

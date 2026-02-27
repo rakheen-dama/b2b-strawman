@@ -3,7 +3,8 @@ import { ChevronLeft } from "lucide-react";
 import { getAuthContext } from "@/lib/auth";
 import { api } from "@/lib/api";
 import { TaxSettingsForm } from "@/components/settings/TaxSettingsForm";
-import type { OrgSettings } from "@/lib/types";
+import { TaxRateTable } from "@/app/(app)/org/[slug]/settings/tax/tax-rate-table";
+import type { OrgSettings, TaxRateResponse } from "@/lib/types";
 
 export default async function TaxSettingsPage({
   params,
@@ -38,6 +39,10 @@ export default async function TaxSettingsPage({
     .catch(() => null);
   if (settingsResult) settings = settingsResult;
 
+  const taxRates = await api
+    .get<TaxRateResponse[]>("/api/tax-rates?includeInactive=true")
+    .catch(() => [] as TaxRateResponse[]);
+
   return (
     <div className="space-y-8">
       <Link
@@ -61,6 +66,7 @@ export default async function TaxSettingsPage({
         taxLabel={settings.taxLabel ?? "Tax"}
         taxInclusive={settings.taxInclusive ?? false}
       />
+      <TaxRateTable slug={slug} taxRates={taxRates} />
     </div>
   );
 }

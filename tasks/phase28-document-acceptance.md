@@ -232,7 +232,7 @@ Stage 6: [198B] // [199B]                                           (parallel, a
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **194A** | 194.1--194.7 | `AcceptanceService` with core methods (createAndSend, markViewed, accept, revoke, remind, getByToken, getByDocument, getByCustomer) + `AcceptanceSubmission` record + token generation (SecureRandom + URL-safe Base64) + customer resolution logic + 3 Thymeleaf email templates (acceptance-request.html, acceptance-reminder.html, acceptance-confirmation.html) + email sending integration. ~5 new files, ~3 template files. Backend only. | **Done** (PR #399) |
-| **194B** | 194.8--194.14 | 5 domain event records in `acceptance/event/` (AcceptanceRequestSentEvent, ViewedEvent, AcceptedEvent, RevokedEvent, ExpiredEvent) implementing `DomainEvent` + event publishing in AcceptanceService via `ApplicationEventPublisher` + service integration tests. ~7 new files, ~1 modified file. Backend only. | |
+| **194B** | 194.8--194.14 | 5 domain event records in `acceptance/event/` (AcceptanceRequestSentEvent, ViewedEvent, AcceptedEvent, RevokedEvent, ExpiredEvent) implementing `DomainEvent` + event publishing in AcceptanceService via `ApplicationEventPublisher` + service integration tests. ~7 new files, ~1 modified file. Backend only. | **Done** (PR #400) |
 
 ### Tasks
 

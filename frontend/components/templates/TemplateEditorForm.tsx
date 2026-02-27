@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { TemplateVariableReference } from "@/components/templates/TemplateVariableReference";
 import { TemplatePreviewDialog } from "@/components/templates/TemplatePreviewDialog";
+import { TemplateClausesTab } from "@/components/templates/template-clauses-tab";
 import { updateTemplateAction } from "@/app/(app)/org/[slug]/settings/templates/actions";
 import type { TemplateDetailResponse } from "@/lib/types";
 
@@ -81,131 +83,152 @@ export function TemplateEditorForm({ slug, template, readOnly }: TemplateEditorF
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
-          <div className="space-y-2">
-            <Label htmlFor="template-name">Name</Label>
-            <Input
-              id="template-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Template name"
-              disabled={readOnly}
-            />
-          </div>
+        <div className="lg:col-span-2">
+          <Tabs defaultValue="content">
+            <TabsList>
+              <TabsTrigger value="content">Content</TabsTrigger>
+              <TabsTrigger value="clauses">Clauses</TabsTrigger>
+            </TabsList>
 
-          <div className="space-y-2">
-            <Label htmlFor="template-description">Description</Label>
-            <Textarea
-              id="template-description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Brief description of this template"
-              rows={2}
-              disabled={readOnly}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="template-content">Content (HTML)</Label>
-            <Textarea
-              id="template-content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="<html>...</html>"
-              rows={20}
-              className="font-mono text-sm"
-              disabled={readOnly}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="template-css">Custom CSS</Label>
-            <Textarea
-              id="template-css"
-              value={css}
-              onChange={(e) => setCss(e.target.value)}
-              placeholder="/* Custom styles */"
-              rows={10}
-              className="font-mono text-sm"
-              disabled={readOnly}
-            />
-          </div>
-
-          <div className="space-y-3">
-            <Label>Required Context Fields</Label>
-            {!readOnly && (
-              <div className="flex items-end gap-2">
-                <div className="space-y-1">
-                  <span className="text-xs text-slate-500">Entity</span>
-                  <select
-                    value={newEntity}
-                    onChange={(e) => setNewEntity(e.target.value)}
-                    className="flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
-                    aria-label="Entity type"
-                  >
-                    <option value="customer">customer</option>
-                    <option value="project">project</option>
-                    <option value="task">task</option>
-                    <option value="invoice">invoice</option>
-                    <option value="org">org</option>
-                  </select>
-                </div>
-                <div className="flex-1 space-y-1">
-                  <span className="text-xs text-slate-500">Field slug</span>
+            <TabsContent value="content">
+              <div className="space-y-6 pt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="template-name">Name</Label>
                   <Input
-                    value={newField}
-                    onChange={(e) => setNewField(e.target.value)}
-                    placeholder="e.g. name"
-                    aria-label="Field slug"
+                    id="template-name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Template name"
+                    disabled={readOnly}
                   />
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const trimmed = newField.trim();
-                    if (!trimmed) return;
-                    if (!/^[a-z][a-z0-9_]*$/i.test(trimmed)) return;
-                    const exists = requiredFields.some(
-                      (f) => f.entity === newEntity && f.field === trimmed,
-                    );
-                    if (!exists) {
-                      setRequiredFields((prev) => [...prev, { entity: newEntity, field: trimmed }]);
-                    }
-                    setNewField("");
-                  }}
-                  disabled={!newField.trim()}
-                >
-                  Add
-                </Button>
-              </div>
-            )}
-            {requiredFields.length > 0 && (
-              <ul className="space-y-1">
-                {requiredFields.map((rf, idx) => (
-                  <li
-                    key={`${rf.entity}-${rf.field}-${idx}`}
-                    className="flex items-center justify-between rounded border border-slate-200 px-3 py-1.5 text-sm dark:border-slate-800"
-                  >
-                    <code className="text-xs text-teal-600 dark:text-teal-400">
-                      {rf.entity}.{rf.field}
-                    </code>
-                    {!readOnly && (
-                      <button
+
+                <div className="space-y-2">
+                  <Label htmlFor="template-description">Description</Label>
+                  <Textarea
+                    id="template-description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Brief description of this template"
+                    rows={2}
+                    disabled={readOnly}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="template-content">Content (HTML)</Label>
+                  <Textarea
+                    id="template-content"
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    placeholder="<html>...</html>"
+                    rows={20}
+                    className="font-mono text-sm"
+                    disabled={readOnly}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="template-css">Custom CSS</Label>
+                  <Textarea
+                    id="template-css"
+                    value={css}
+                    onChange={(e) => setCss(e.target.value)}
+                    placeholder="/* Custom styles */"
+                    rows={10}
+                    className="font-mono text-sm"
+                    disabled={readOnly}
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <Label>Required Context Fields</Label>
+                  {!readOnly && (
+                    <div className="flex items-end gap-2">
+                      <div className="space-y-1">
+                        <span className="text-xs text-slate-500">Entity</span>
+                        <select
+                          value={newEntity}
+                          onChange={(e) => setNewEntity(e.target.value)}
+                          className="flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
+                          aria-label="Entity type"
+                        >
+                          <option value="customer">customer</option>
+                          <option value="project">project</option>
+                          <option value="task">task</option>
+                          <option value="invoice">invoice</option>
+                          <option value="org">org</option>
+                        </select>
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        <span className="text-xs text-slate-500">Field slug</span>
+                        <Input
+                          value={newField}
+                          onChange={(e) => setNewField(e.target.value)}
+                          placeholder="e.g. name"
+                          aria-label="Field slug"
+                        />
+                      </div>
+                      <Button
                         type="button"
-                        onClick={() => setRequiredFields((prev) => prev.filter((_, i) => i !== idx))}
-                        className="text-slate-400 hover:text-red-600 dark:hover:text-red-400"
-                        aria-label={`Remove ${rf.entity}.${rf.field}`}
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const trimmed = newField.trim();
+                          if (!trimmed) return;
+                          if (!/^[a-z][a-z0-9_]*$/i.test(trimmed)) return;
+                          const exists = requiredFields.some(
+                            (f) => f.entity === newEntity && f.field === trimmed,
+                          );
+                          if (!exists) {
+                            setRequiredFields((prev) => [...prev, { entity: newEntity, field: trimmed }]);
+                          }
+                          setNewField("");
+                        }}
+                        disabled={!newField.trim()}
                       >
-                        <X className="size-3.5" />
-                      </button>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+                        Add
+                      </Button>
+                    </div>
+                  )}
+                  {requiredFields.length > 0 && (
+                    <ul className="space-y-1">
+                      {requiredFields.map((rf, idx) => (
+                        <li
+                          key={`${rf.entity}-${rf.field}-${idx}`}
+                          className="flex items-center justify-between rounded border border-slate-200 px-3 py-1.5 text-sm dark:border-slate-800"
+                        >
+                          <code className="text-xs text-teal-600 dark:text-teal-400">
+                            {rf.entity}.{rf.field}
+                          </code>
+                          {!readOnly && (
+                            <button
+                              type="button"
+                              onClick={() => setRequiredFields((prev) => prev.filter((_, i) => i !== idx))}
+                              className="text-slate-400 hover:text-red-600 dark:hover:text-red-400"
+                              aria-label={`Remove ${rf.entity}.${rf.field}`}
+                            >
+                              <X className="size-3.5" />
+                            </button>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="clauses">
+              <div className="pt-4">
+                <TemplateClausesTab
+                  templateId={template.id}
+                  slug={slug}
+                  readOnly={readOnly}
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
 
         <div className="space-y-4">

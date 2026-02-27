@@ -18,6 +18,18 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
+vi.mock("@/lib/actions/template-clause-actions", () => ({
+  getTemplateClauses: vi.fn().mockResolvedValue([]),
+  setTemplateClauses: vi.fn().mockResolvedValue({ success: true }),
+  addClauseToTemplate: vi.fn().mockResolvedValue({ success: true }),
+  removeClauseFromTemplate: vi.fn().mockResolvedValue({ success: true }),
+}));
+
+vi.mock("@/lib/actions/clause-actions", () => ({
+  getClauses: vi.fn().mockResolvedValue([]),
+  getClauseCategories: vi.fn().mockResolvedValue([]),
+}));
+
 const TEMPLATE: TemplateDetailResponse = {
   id: "tpl-1",
   name: "Engagement Letter",

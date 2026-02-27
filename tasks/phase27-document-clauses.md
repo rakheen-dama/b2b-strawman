@@ -100,7 +100,7 @@ Phase 27 adds a **clause library** to the DocTeams document generation system. C
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 4a | 192 | 192A | `template-clause-actions.ts` server actions + `template-clauses-tab.tsx` (ordered clause list with required toggle, reorder up/down, remove button, save) + `clause-picker-dialog.tsx` (browse library grouped by category, multi-select, confirm) + template editor integration (add "Clauses" tab alongside existing tabs) + frontend tests. ~4 new files, ~1 modified file. Frontend only. | |
+| 4a | 192 | 192A | `template-clause-actions.ts` server actions + `template-clauses-tab.tsx` (ordered clause list with required toggle, reorder up/down, remove button, save) + `clause-picker-dialog.tsx` (browse library grouped by category, multi-select, confirm) + template editor integration (add "Clauses" tab alongside existing tabs) + frontend tests. ~4 new files, ~1 modified file. Frontend only. | **Done** (PR #392) |
 
 ### Stage 5: Generation Dialog Clause Step Frontend
 

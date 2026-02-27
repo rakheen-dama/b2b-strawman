@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
+import io.b2mash.b2b.b2bstrawman.provisioning.Organization;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocument;
@@ -27,6 +28,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -194,5 +196,55 @@ class AcceptanceCertificateServiceTest {
                           return null;
                         }))
         .isInstanceOf(ResourceNotFoundException.class);
+  }
+
+  @Test
+  void generateCertificate_passes_org_name_to_template_context() {
+    byte[] fakePdfBytes = "%PDF-fake".getBytes(StandardCharsets.UTF_8);
+    byte[] fakeCertPdf = "%PDF-cert".getBytes(StandardCharsets.UTF_8);
+    String tenantSchema = "tenant_abc123";
+
+    when(generatedDocumentRepository.findById(docId)).thenReturn(Optional.of(genDoc));
+    when(storageService.download(genDoc.getS3Key())).thenReturn(fakePdfBytes);
+    when(portalContactRepository.findById(contactId)).thenReturn(Optional.of(contact));
+    when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.empty());
+
+    Organization org = new Organization("org_test123", "Acme Legal LLP");
+    when(organizationRepository.findByClerkOrgId("org_test123")).thenReturn(Optional.of(org));
+
+    ArgumentCaptor<IContext> contextCaptor = ArgumentCaptor.forClass(IContext.class);
+    when(templateEngine.process(eq("certificates/certificate-of-acceptance"), any(IContext.class)))
+        .thenReturn("<html><body>Certificate</body></html>");
+    when(pdfRenderingService.htmlToPdf(anyString())).thenReturn(fakeCertPdf);
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, "org_test123")
+        .run(() -> certificateService.generateCertificate(request, tenantSchema));
+
+    verify(templateEngine)
+        .process(eq("certificates/certificate-of-acceptance"), contextCaptor.capture());
+    IContext capturedContext = contextCaptor.getValue();
+    assertThat(capturedContext.getVariable("orgName")).isEqualTo("Acme Legal LLP");
+  }
+
+  @Test
+  void generateCertificate_propagates_s3_download_failure() {
+    String tenantSchema = "tenant_abc123";
+
+    when(generatedDocumentRepository.findById(docId)).thenReturn(Optional.of(genDoc));
+    when(storageService.download(genDoc.getS3Key()))
+        .thenThrow(new RuntimeException("S3 download failed: connection timeout"));
+
+    assertThatThrownBy(
+            () ->
+                ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+                    .where(RequestScopes.ORG_ID, "org_test123")
+                    .call(
+                        () -> {
+                          certificateService.generateCertificate(request, tenantSchema);
+                          return null;
+                        }))
+        .isInstanceOf(RuntimeException.class)
+        .hasMessageContaining("S3 download failed");
   }
 }

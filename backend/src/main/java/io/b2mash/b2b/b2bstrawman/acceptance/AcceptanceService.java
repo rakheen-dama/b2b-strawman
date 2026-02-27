@@ -326,15 +326,16 @@ public class AcceptanceService {
     request = acceptanceRequestRepository.save(request);
 
     // Generate Certificate of Acceptance (synchronous, non-fatal on failure)
-    String tenantSchema = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    String tenantSchema = RequestScopes.getTenantIdOrNull();
     if (tenantSchema != null) {
       try {
         certificateService.generateCertificate(request, tenantSchema);
         request = acceptanceRequestRepository.save(request);
       } catch (Exception e) {
-        log.error(
-            "Certificate generation failed for request={} — acceptance still recorded",
+        log.warn(
+            "Certificate generation failed for acceptance request {} (document {}), continuing without certificate",
             request.getId(),
+            request.getGeneratedDocumentId(),
             e);
       }
     } else {

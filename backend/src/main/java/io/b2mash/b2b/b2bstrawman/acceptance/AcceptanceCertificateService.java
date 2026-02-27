@@ -186,10 +186,13 @@ public class AcceptanceCertificateService {
     if (text == null || text.isBlank()) {
       return "document";
     }
-    return text.toLowerCase()
-        .replaceAll("[\\s]+", "-")
-        .replaceAll("[^a-z0-9-]", "")
-        .replaceAll("-+", "-")
-        .replaceAll("^-|-$", "");
+    String result =
+        text.toLowerCase()
+            .replaceAll("[\\s]+", "-")
+            .replaceAll("[^a-z0-9-]", "")
+            .replaceAll("-+", "-")
+            .replaceAll("^-|-$", "");
+    if (result.isEmpty()) return "document";
+    return result;
   }
 }

@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.event.InvoiceSentEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoiceVoidedEvent;
 import io.b2mash.b2b.b2bstrawman.event.MemberAddedToProjectEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskAssignedEvent;
+import io.b2mash.b2b.b2bstrawman.event.TaskCancelledEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskClaimedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -128,6 +129,7 @@ public class NotificationService {
       List.of(
           "TASK_ASSIGNED",
           "TASK_CLAIMED",
+          "TASK_CANCELLED",
           "TASK_UPDATED",
           "COMMENT_ADDED",
           "DOCUMENT_SHARED",
@@ -320,6 +322,30 @@ public class NotificationService {
       }
     }
     return created;
+  }
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public List<Notification> handleTaskCancelled(TaskCancelledEvent event) {
+    if (event.assigneeId() == null) {
+      return List.of();
+    }
+    // Only notify assignee if someone else cancelled the task
+    if (event.assigneeId().equals(event.cancelledBy())) {
+      return List.of();
+    }
+
+    var title = "Your task \"%s\" was cancelled".formatted(event.taskTitle());
+
+    var notification =
+        createIfEnabled(
+            event.assigneeId(),
+            "TASK_CANCELLED",
+            title,
+            null,
+            "TASK",
+            event.entityId(),
+            event.projectId());
+    return notification != null ? List.of(notification) : List.of();
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)

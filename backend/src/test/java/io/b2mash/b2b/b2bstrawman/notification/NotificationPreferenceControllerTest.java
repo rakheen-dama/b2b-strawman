@@ -69,15 +69,16 @@ class NotificationPreferenceControllerTest {
     mockMvc
         .perform(get("/api/notifications/preferences").with(ownerJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.preferences", hasSize(23)))
+        .andExpect(jsonPath("$.preferences", hasSize(24)))
         .andExpect(jsonPath("$.preferences[0].notificationType").value("TASK_ASSIGNED"))
         .andExpect(jsonPath("$.preferences[0].inAppEnabled").value(true))
         .andExpect(jsonPath("$.preferences[0].emailEnabled").value(false))
         .andExpect(jsonPath("$.preferences[1].notificationType").value("TASK_CLAIMED"))
-        .andExpect(jsonPath("$.preferences[2].notificationType").value("TASK_UPDATED"))
-        .andExpect(jsonPath("$.preferences[3].notificationType").value("COMMENT_ADDED"))
-        .andExpect(jsonPath("$.preferences[4].notificationType").value("DOCUMENT_SHARED"))
-        .andExpect(jsonPath("$.preferences[5].notificationType").value("MEMBER_INVITED"));
+        .andExpect(jsonPath("$.preferences[2].notificationType").value("TASK_CANCELLED"))
+        .andExpect(jsonPath("$.preferences[3].notificationType").value("TASK_UPDATED"))
+        .andExpect(jsonPath("$.preferences[4].notificationType").value("COMMENT_ADDED"))
+        .andExpect(jsonPath("$.preferences[5].notificationType").value("DOCUMENT_SHARED"))
+        .andExpect(jsonPath("$.preferences[6].notificationType").value("MEMBER_INVITED"));
   }
 
   // --- PUT single type and verify ---
@@ -99,7 +100,7 @@ class NotificationPreferenceControllerTest {
                     }
                     """))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.preferences", hasSize(23)))
+        .andExpect(jsonPath("$.preferences", hasSize(24)))
         .andExpect(jsonPath("$.preferences[0].notificationType").value("TASK_ASSIGNED"))
         .andExpect(jsonPath("$.preferences[0].inAppEnabled").value(false))
         .andExpect(jsonPath("$.preferences[0].emailEnabled").value(false));
@@ -133,12 +134,12 @@ class NotificationPreferenceControllerTest {
                     }
                     """))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.preferences[3].notificationType").value("COMMENT_ADDED"))
-        .andExpect(jsonPath("$.preferences[3].inAppEnabled").value(false))
-        .andExpect(jsonPath("$.preferences[3].emailEnabled").value(true))
-        .andExpect(jsonPath("$.preferences[4].notificationType").value("DOCUMENT_SHARED"))
+        .andExpect(jsonPath("$.preferences[4].notificationType").value("COMMENT_ADDED"))
         .andExpect(jsonPath("$.preferences[4].inAppEnabled").value(false))
-        .andExpect(jsonPath("$.preferences[4].emailEnabled").value(true));
+        .andExpect(jsonPath("$.preferences[4].emailEnabled").value(true))
+        .andExpect(jsonPath("$.preferences[5].notificationType").value("DOCUMENT_SHARED"))
+        .andExpect(jsonPath("$.preferences[5].inAppEnabled").value(false))
+        .andExpect(jsonPath("$.preferences[5].emailEnabled").value(true));
   }
 
   // --- Defaults preserved for types not in PUT ---
@@ -199,9 +200,9 @@ class NotificationPreferenceControllerTest {
                     }
                     """))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.preferences[5].notificationType").value("MEMBER_INVITED"))
-        .andExpect(jsonPath("$.preferences[5].inAppEnabled").value(true))
-        .andExpect(jsonPath("$.preferences[5].emailEnabled").value(true));
+        .andExpect(jsonPath("$.preferences[6].notificationType").value("MEMBER_INVITED"))
+        .andExpect(jsonPath("$.preferences[6].inAppEnabled").value(true))
+        .andExpect(jsonPath("$.preferences[6].emailEnabled").value(true));
   }
 
   // --- Idempotent update (second PUT overwrites first) ---
@@ -240,17 +241,17 @@ class NotificationPreferenceControllerTest {
                     }
                     """))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.preferences[2].notificationType").value("TASK_UPDATED"))
-        .andExpect(jsonPath("$.preferences[2].inAppEnabled").value(true))
-        .andExpect(jsonPath("$.preferences[2].emailEnabled").value(false));
+        .andExpect(jsonPath("$.preferences[3].notificationType").value("TASK_UPDATED"))
+        .andExpect(jsonPath("$.preferences[3].inAppEnabled").value(true))
+        .andExpect(jsonPath("$.preferences[3].emailEnabled").value(false));
 
     // Verify via GET
     mockMvc
         .perform(get("/api/notifications/preferences").with(ownerJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.preferences[2].notificationType").value("TASK_UPDATED"))
-        .andExpect(jsonPath("$.preferences[2].inAppEnabled").value(true))
-        .andExpect(jsonPath("$.preferences[2].emailEnabled").value(false));
+        .andExpect(jsonPath("$.preferences[3].notificationType").value("TASK_UPDATED"))
+        .andExpect(jsonPath("$.preferences[3].inAppEnabled").value(true))
+        .andExpect(jsonPath("$.preferences[3].emailEnabled").value(false));
   }
 
   // --- Self-scoping isolation: member sees own defaults, not owner's changes ---
@@ -262,13 +263,13 @@ class NotificationPreferenceControllerTest {
     mockMvc
         .perform(get("/api/notifications/preferences").with(memberJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.preferences", hasSize(23)))
+        .andExpect(jsonPath("$.preferences", hasSize(24)))
         .andExpect(jsonPath("$.preferences[0].notificationType").value("TASK_ASSIGNED"))
         .andExpect(jsonPath("$.preferences[0].inAppEnabled").value(true))
         .andExpect(jsonPath("$.preferences[0].emailEnabled").value(false))
-        .andExpect(jsonPath("$.preferences[3].notificationType").value("COMMENT_ADDED"))
-        .andExpect(jsonPath("$.preferences[3].inAppEnabled").value(true))
-        .andExpect(jsonPath("$.preferences[3].emailEnabled").value(false));
+        .andExpect(jsonPath("$.preferences[4].notificationType").value("COMMENT_ADDED"))
+        .andExpect(jsonPath("$.preferences[4].inAppEnabled").value(true))
+        .andExpect(jsonPath("$.preferences[4].emailEnabled").value(false));
   }
 
   // --- Helpers ---

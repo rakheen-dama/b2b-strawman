@@ -7,7 +7,10 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.event.PortalTaskCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.PortalTaskDeletedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.PortalTaskUpdatedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskAssignedEvent;
+import io.b2mash.b2b.b2bstrawman.event.TaskCancelledEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskClaimedEvent;
+import io.b2mash.b2b.b2bstrawman.event.TaskCompletedEvent;
+import io.b2mash.b2b.b2bstrawman.event.TaskReopenedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
@@ -611,6 +614,177 @@ public class TaskService {
             .build());
 
     // Publish portal task updated event if project is customer-linked
+    publishPortalTaskEventIfLinked(task, PortalTaskUpdatedEvent::new);
+
+    return task;
+  }
+
+  @Transactional
+  public Task completeTask(UUID taskId, UUID memberId, String orgRole) {
+    var task =
+        taskRepository
+            .findById(taskId)
+            .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
+
+    projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
+
+    // Only assignee or admin/owner can complete
+    boolean isAssignee = memberId.equals(task.getAssigneeId());
+    boolean isAdminOrOwner = "admin".equals(orgRole) || "owner".equals(orgRole);
+    if (!isAssignee && !isAdminOrOwner) {
+      throw new ForbiddenException(
+          "Cannot complete task", "Only the assignee or an admin/owner can complete this task");
+    }
+
+    task.complete(memberId);
+    task = taskRepository.save(task);
+    log.info("Task {} completed by member {}", taskId, memberId);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("task.completed")
+            .entityType("task")
+            .entityId(task.getId())
+            .details(
+                Map.of(
+                    "title", task.getTitle(),
+                    "project_id", task.getProjectId().toString(),
+                    "completed_by", memberId.toString()))
+            .build());
+
+    String actorName = resolveActorName(memberId);
+    String tenantId = RequestScopes.requireTenantId();
+    String orgId = RequestScopes.requireOrgId();
+    eventPublisher.publishEvent(
+        new TaskCompletedEvent(
+            "task.completed",
+            "task",
+            task.getId(),
+            task.getProjectId(),
+            memberId,
+            actorName,
+            tenantId,
+            orgId,
+            Instant.now(),
+            Map.of("title", task.getTitle()),
+            memberId,
+            task.getTitle()));
+
+    publishPortalTaskEventIfLinked(task, PortalTaskUpdatedEvent::new);
+
+    return task;
+  }
+
+  @Transactional
+  public Task cancelTask(UUID taskId, UUID memberId, String orgRole) {
+    var task =
+        taskRepository
+            .findById(taskId)
+            .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
+
+    projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
+
+    // Only admin/owner can cancel
+    boolean isAdminOrOwner = "admin".equals(orgRole) || "owner".equals(orgRole);
+    if (!isAdminOrOwner) {
+      throw new ForbiddenException("Cannot cancel task", "Only an admin or owner can cancel tasks");
+    }
+
+    task.cancel(memberId);
+    task = taskRepository.save(task);
+    log.info("Task {} cancelled by member {}", taskId, memberId);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("task.cancelled")
+            .entityType("task")
+            .entityId(task.getId())
+            .details(
+                Map.of(
+                    "title", task.getTitle(),
+                    "project_id", task.getProjectId().toString(),
+                    "cancelled_by", memberId.toString()))
+            .build());
+
+    String actorName = resolveActorName(memberId);
+    String tenantId = RequestScopes.requireTenantId();
+    String orgId = RequestScopes.requireOrgId();
+    eventPublisher.publishEvent(
+        new TaskCancelledEvent(
+            "task.cancelled",
+            "task",
+            task.getId(),
+            task.getProjectId(),
+            memberId,
+            actorName,
+            tenantId,
+            orgId,
+            Instant.now(),
+            Map.of("title", task.getTitle()),
+            memberId,
+            task.getAssigneeId(),
+            task.getTitle()));
+
+    publishPortalTaskEventIfLinked(task, PortalTaskUpdatedEvent::new);
+
+    return task;
+  }
+
+  @Transactional
+  public Task reopenTask(UUID taskId, UUID memberId, String orgRole) {
+    var task =
+        taskRepository
+            .findById(taskId)
+            .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
+
+    projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
+
+    // Admin/owner or original assignee can reopen
+    boolean isAdminOrOwner = "admin".equals(orgRole) || "owner".equals(orgRole);
+    boolean isAssignee = memberId.equals(task.getAssigneeId());
+    if (!isAdminOrOwner && !isAssignee) {
+      throw new ForbiddenException(
+          "Cannot reopen task", "Only an admin/owner or the assignee can reopen this task");
+    }
+
+    String previousStatus = task.getStatus().name();
+
+    task.reopen();
+    task = taskRepository.save(task);
+    log.info("Task {} reopened by member {}", taskId, memberId);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("task.reopened")
+            .entityType("task")
+            .entityId(task.getId())
+            .details(
+                Map.of(
+                    "title", task.getTitle(),
+                    "project_id", task.getProjectId().toString(),
+                    "reopened_by", memberId.toString(),
+                    "previous_status", previousStatus))
+            .build());
+
+    String actorName = resolveActorName(memberId);
+    String tenantId = RequestScopes.requireTenantId();
+    String orgId = RequestScopes.requireOrgId();
+    eventPublisher.publishEvent(
+        new TaskReopenedEvent(
+            "task.reopened",
+            "task",
+            task.getId(),
+            task.getProjectId(),
+            memberId,
+            actorName,
+            tenantId,
+            orgId,
+            Instant.now(),
+            Map.of("title", task.getTitle()),
+            memberId,
+            task.getTitle(),
+            previousStatus));
+
     publishPortalTaskEventIfLinked(task, PortalTaskUpdatedEvent::new);
 
     return task;

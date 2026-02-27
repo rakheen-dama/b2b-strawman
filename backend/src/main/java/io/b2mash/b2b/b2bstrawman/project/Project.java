@@ -102,8 +102,16 @@ public class Project {
     return customerId;
   }
 
+  public void setCustomerId(UUID customerId) {
+    this.customerId = customerId;
+  }
+
   public LocalDate getDueDate() {
     return dueDate;
+  }
+
+  public void setDueDate(LocalDate dueDate) {
+    this.dueDate = dueDate;
   }
 
   public UUID getCreatedBy() {

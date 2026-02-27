@@ -76,6 +76,7 @@ public class ProjectController {
       @RequestParam(required = false) UUID view,
       @RequestParam(required = false) String status,
       @RequestParam(required = false) LocalDate dueBefore,
+      @RequestParam(required = false) UUID customerId,
       @RequestParam(required = false) Map<String, String> allParams) {
 
     UUID memberId = RequestScopes.requireMemberId();
@@ -136,6 +137,14 @@ public class ProjectController {
                   pwr ->
                       pwr.project().getDueDate() != null
                           && pwr.project().getDueDate().isBefore(dueBefore))
+              .toList();
+    }
+
+    // Apply customerId filter
+    if (customerId != null) {
+      projectsWithRoles =
+          projectsWithRoles.stream()
+              .filter(pwr -> customerId.equals(pwr.project().getCustomerId()))
               .toList();
     }
 
@@ -204,7 +213,9 @@ public class ProjectController {
             request.description(),
             createdBy,
             request.customFields(),
-            request.appliedFieldGroups());
+            request.appliedFieldGroups(),
+            request.customerId(),
+            request.dueDate());
     var memberNames = resolveNames(List.of(project));
     return ResponseEntity.created(URI.create("/api/projects/" + project.getId()))
         .body(ProjectResponse.from(project, Roles.PROJECT_LEAD, memberNames));
@@ -224,7 +235,9 @@ public class ProjectController {
             memberId,
             orgRole,
             request.customFields(),
-            request.appliedFieldGroups());
+            request.appliedFieldGroups(),
+            request.customerId(),
+            request.dueDate());
     var tags = entityTagService.getEntityTags("PROJECT", id);
     var memberNames = resolveNames(List.of(pwr.project()));
     return ResponseEntity.ok(
@@ -365,6 +378,8 @@ public class ProjectController {
           @Size(max = 255, message = "name must be at most 255 characters")
           String name,
       @Size(max = 2000, message = "description must be at most 2000 characters") String description,
+      UUID customerId,
+      LocalDate dueDate,
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups) {}
 
@@ -373,6 +388,8 @@ public class ProjectController {
           @Size(max = 255, message = "name must be at most 255 characters")
           String name,
       @Size(max = 2000, message = "description must be at most 2000 characters") String description,
+      UUID customerId,
+      LocalDate dueDate,
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups) {}
 

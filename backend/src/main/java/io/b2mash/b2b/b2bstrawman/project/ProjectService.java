@@ -2,6 +2,9 @@ package io.b2mash.b2b.b2bstrawman.project;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleGuard;
+import io.b2mash.b2b.b2bstrawman.compliance.LifecycleAction;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectUpdatedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectArchivedEvent;
@@ -27,6 +30,7 @@ import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskStatus;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -58,6 +62,8 @@ public class ProjectService {
   private final TaskRepository taskRepository;
   private final TimeEntryRepository timeEntryRepository;
   private final MemberNameResolver memberNameResolver;
+  private final CustomerRepository customerRepository;
+  private final CustomerLifecycleGuard customerLifecycleGuard;
 
   public ProjectService(
       ProjectRepository repository,
@@ -72,7 +78,9 @@ public class ProjectService {
       FieldGroupService fieldGroupService,
       TaskRepository taskRepository,
       TimeEntryRepository timeEntryRepository,
-      MemberNameResolver memberNameResolver) {
+      MemberNameResolver memberNameResolver,
+      CustomerRepository customerRepository,
+      CustomerLifecycleGuard customerLifecycleGuard) {
     this.repository = repository;
     this.projectMemberRepository = projectMemberRepository;
     this.projectAccessService = projectAccessService;
@@ -86,6 +94,8 @@ public class ProjectService {
     this.taskRepository = taskRepository;
     this.timeEntryRepository = timeEntryRepository;
     this.memberNameResolver = memberNameResolver;
+    this.customerRepository = customerRepository;
+    this.customerLifecycleGuard = customerLifecycleGuard;
   }
 
   @Transactional(readOnly = true)
@@ -106,7 +116,7 @@ public class ProjectService {
 
   @Transactional
   public Project createProject(String name, String description, UUID createdBy) {
-    return createProject(name, description, createdBy, null, null);
+    return createProject(name, description, createdBy, null, null, null, null);
   }
 
   @Transactional
@@ -116,6 +126,28 @@ public class ProjectService {
       UUID createdBy,
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups) {
+    return createProject(
+        name, description, createdBy, customFields, appliedFieldGroups, null, null);
+  }
+
+  @Transactional
+  public Project createProject(
+      String name,
+      String description,
+      UUID createdBy,
+      Map<String, Object> customFields,
+      List<UUID> appliedFieldGroups,
+      UUID customerId,
+      LocalDate dueDate) {
+    // Validate customer link
+    if (customerId != null) {
+      var customer =
+          customerRepository
+              .findById(customerId)
+              .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+      customerLifecycleGuard.requireActionPermitted(customer, LifecycleAction.CREATE_PROJECT);
+    }
+
     // Validate custom fields
     Map<String, Object> validatedFields =
         customFieldValidator.validate(
@@ -127,6 +159,12 @@ public class ProjectService {
     project.setCustomFields(validatedFields);
     if (appliedFieldGroups != null) {
       project.setAppliedFieldGroups(appliedFieldGroups);
+    }
+    if (customerId != null) {
+      project.setCustomerId(customerId);
+    }
+    if (dueDate != null) {
+      project.setDueDate(dueDate);
     }
 
     // Auto-apply field groups before save so audit events capture final state
@@ -150,12 +188,21 @@ public class ProjectService {
     projectMemberRepository.save(lead);
     log.info("Created project {} with lead member {}", project.getId(), createdBy);
 
+    var auditDetails = new LinkedHashMap<String, Object>();
+    auditDetails.put("name", project.getName());
+    if (customerId != null) {
+      auditDetails.put("customerId", customerId.toString());
+    }
+    if (dueDate != null) {
+      auditDetails.put("dueDate", dueDate.toString());
+    }
+
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("project.created")
             .entityType("project")
             .entityId(project.getId())
-            .details(Map.of("name", project.getName()))
+            .details(auditDetails)
             .build());
 
     String tenantId = RequestScopes.getTenantIdOrNull();
@@ -170,7 +217,7 @@ public class ProjectService {
   @Transactional
   public ProjectWithRole updateProject(
       UUID id, String name, String description, UUID memberId, String orgRole) {
-    return updateProject(id, name, description, memberId, orgRole, null, null);
+    return updateProject(id, name, description, memberId, orgRole, null, null, null, null);
   }
 
   @Transactional
@@ -182,13 +229,37 @@ public class ProjectService {
       String orgRole,
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups) {
+    return updateProject(
+        id, name, description, memberId, orgRole, customFields, appliedFieldGroups, null, null);
+  }
+
+  @Transactional
+  public ProjectWithRole updateProject(
+      UUID id,
+      String name,
+      String description,
+      UUID memberId,
+      String orgRole,
+      Map<String, Object> customFields,
+      List<UUID> appliedFieldGroups,
+      UUID customerId,
+      LocalDate dueDate) {
     var project =
         repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
     var access = projectAccessService.requireEditAccess(id, memberId, orgRole);
 
+    // Validate customer link if provided
+    if (customerId != null) {
+      customerRepository
+          .findById(customerId)
+          .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+    }
+
     // Capture old values before mutation
     String oldName = project.getName();
     String oldDescription = project.getDescription();
+    UUID oldCustomerId = project.getCustomerId();
+    LocalDate oldDueDate = project.getDueDate();
 
     // Validate and set custom fields
     if (customFields != null) {
@@ -204,6 +275,9 @@ public class ProjectService {
     }
 
     project.update(name, description, null, null);
+    // Set customerId and dueDate explicitly via setters (allows unlinking via null)
+    project.setCustomerId(customerId);
+    project.setDueDate(dueDate);
     project = repository.save(project);
 
     // Build delta map -- only include changed fields
@@ -217,6 +291,20 @@ public class ProjectService {
           Map.of(
               "from", oldDescription != null ? oldDescription : "",
               "to", description != null ? description : ""));
+    }
+    if (!Objects.equals(oldCustomerId, customerId)) {
+      details.put(
+          "customerId",
+          Map.of(
+              "from", oldCustomerId != null ? oldCustomerId.toString() : "",
+              "to", customerId != null ? customerId.toString() : ""));
+    }
+    if (!Objects.equals(oldDueDate, dueDate)) {
+      details.put(
+          "dueDate",
+          Map.of(
+              "from", oldDueDate != null ? oldDueDate.toString() : "",
+              "to", dueDate != null ? dueDate.toString() : ""));
     }
 
     auditService.log(
@@ -234,6 +322,14 @@ public class ProjectService {
             project.getId(), project.getName(), project.getDescription(), null, orgId, tenantId));
 
     return new ProjectWithRole(project, access.projectRole());
+  }
+
+  @Transactional(readOnly = true)
+  public List<Project> listProjectsByCustomer(UUID customerId) {
+    customerRepository
+        .findById(customerId)
+        .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+    return repository.findByCustomerId(customerId);
   }
 
   @Transactional

@@ -12,6 +12,7 @@ import {
   FileText,
   ScrollText,
   ClipboardCheck,
+  FileCheck2,
   ShieldAlert,
   LayoutTemplate,
   Mail,
@@ -92,6 +93,13 @@ const settingsCards: SettingsCard[] = [
     title: "Checklists",
     description: "Manage checklist templates for customer onboarding",
     href: "checklists",
+    comingSoon: false,
+  },
+  {
+    icon: FileCheck2,
+    title: "Document Acceptance",
+    description: "Configure default expiry period for document acceptance requests",
+    href: "acceptance",
     comingSoon: false,
   },
   {

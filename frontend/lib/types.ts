@@ -394,6 +394,8 @@ export interface OrgSettings {
   taxRegistrationLabel?: string;
   taxLabel?: string;
   taxInclusive?: boolean;
+  // acceptance fields
+  acceptanceExpiryDays?: number;
 }
 
 export interface UpdateTaxSettingsRequest {

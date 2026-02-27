@@ -239,7 +239,7 @@
 | 202 | Task Lifecycle Service + Transition Endpoints | Backend | 201 | L | 202A, 202B | **Done** (PRs #413, #415) |
 | 203 | Project Lifecycle Foundation — Migration, Enums & Entity | Backend | -- | M | 203A, 203B | **Done** (PRs #416, #417) |
 | 204 | Project Lifecycle Service + Transition Endpoints | Backend | 203, 201 | L | 204A, 204B | **Done** (PRs #418, #419) |
-| 205 | Project-Customer Link + Due Date | Backend | 203 | M | 205A, 205B | |
+| 205 | Project-Customer Link + Due Date | Backend | 203 | M | 205A, 205B | 205A **Done** (PR #420) |
 | 206 | Delete Protection & Cross-Entity Guards | Backend | 201, 203, 205 | M | 206A, 206B | |
 | 207 | Task Lifecycle Frontend | Frontend | 202 | M | 207A, 207B | |
 | 208 | Project Lifecycle Frontend | Frontend | 204, 205 | L | 208A, 208B | |

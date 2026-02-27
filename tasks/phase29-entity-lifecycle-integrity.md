@@ -108,7 +108,7 @@ This is a **structural hardening phase**, not a feature phase. No new pages are 
 |-------|------|-------|---------|--------|
 | 2a (parallel) | 202 | 202A | `TaskService` lifecycle methods (`completeTask`, `cancelTask`, `reopenTask`) + transition validation + audit events + domain events + notification for cancelled-by-other. ~1 modified file, ~2 new event files. Backend only. | **Done** (PR #413) |
 | 2b (parallel) | 204 | 204A | `ProjectService` lifecycle methods (`completeProject`, `archiveProject`, `reopenProject`) + completion guardrails (task check, unbilled time check) + audit events + domain events + notification to project members. ~1 modified file, ~2 new event files. Backend only. | **Done** (PR #418) |
-| 2c (parallel) | 205 | 205A | `ProjectService` extension: `customerId` and `dueDate` in create/update + customer validation (exists + not OFFBOARDED) + `ProjectRepository` filter-by-status and filter-by-customer queries + `GET /api/customers/{id}/projects` convenience query. ~2 modified files. Backend only. | |
+| 2c (parallel) | 205 | 205A | `ProjectService` extension: `customerId` and `dueDate` in create/update + customer validation (exists + not OFFBOARDED) + `ProjectRepository` filter-by-status and filter-by-customer queries + `GET /api/customers/{id}/projects` convenience query. ~2 modified files. Backend only. | **Done** (PR #420) |
 
 ### Stage 3: Controllers + Integration Tests (parallel tracks)
 
@@ -436,7 +436,7 @@ Stage 6: [207B] // [208B]                                        (parallel, afte
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **205A** | 205.1--205.5 | `ProjectService` extension: accept `customerId` and `dueDate` in create/update flows + customer validation (exists + lifecycle check) + update create/update request DTOs + `ProjectRepository.findByCustomerId()` + convenience endpoint `GET /api/customers/{id}/projects`. ~3 modified files. Backend only. | |
+| **205A** | 205.1--205.5 | `ProjectService` extension: accept `customerId` and `dueDate` in create/update flows + customer validation (exists + lifecycle check) + update create/update request DTOs + `ProjectRepository.findByCustomerId()` + convenience endpoint `GET /api/customers/{id}/projects`. ~3 modified files. Backend only. | **Done** (PR #420) |
 | **205B** | 205.6--205.10 | `CustomerLifecycleGuard` extension: add `CREATE_PROJECT` action blocking for OFFBOARDING/OFFBOARDED customers + customer delete protection (block delete if linked projects exist) + integration tests (~8 tests). ~3 modified files, ~1 new test file. Backend only. | |
 
 ### Tasks

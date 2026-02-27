@@ -105,8 +105,8 @@ class ClauseGenerationIntegrationTest {
                   // Create clauses
                   var clause1 =
                       new Clause(
-                          "Confidentiality",
-                          "confidentiality",
+                          "Test Confidentiality",
+                          "test-gen-confidentiality",
                           "<p>The parties agree to keep information confidential.</p>",
                           "General");
                   clause1 = clauseRepository.save(clause1);

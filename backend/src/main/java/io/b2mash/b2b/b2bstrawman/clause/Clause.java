@@ -108,6 +108,34 @@ public class Clause {
   }
 
   /**
+   * Creates a system clause (read-only, seeded by a pack).
+   *
+   * @param title the clause title
+   * @param slug the URL-friendly slug
+   * @param body the clause body (may contain Thymeleaf expressions)
+   * @param category the clause category
+   * @param description optional description
+   * @param packId the originating pack ID
+   * @param sortOrder display ordering
+   * @return a new unpersisted Clause with source=SYSTEM
+   */
+  public static Clause createSystemClause(
+      String title,
+      String slug,
+      String body,
+      String category,
+      String description,
+      String packId,
+      int sortOrder) {
+    var clause = new Clause(title, slug, body, category);
+    clause.source = ClauseSource.SYSTEM;
+    clause.description = description;
+    clause.packId = packId;
+    clause.sortOrder = sortOrder;
+    return clause;
+  }
+
+  /**
    * Creates a cloned copy of the given source clause with a new slug.
    *
    * @param source the clause to clone from

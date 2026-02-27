@@ -63,6 +63,10 @@ public class OrgSettings {
   @Column(name = "report_pack_status", columnDefinition = "jsonb")
   private List<Map<String, Object>> reportPackStatus;
 
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "clause_pack_status", columnDefinition = "jsonb")
+  private List<Map<String, Object>> clausePackStatus;
+
   @Column(name = "accounting_enabled", nullable = false)
   private boolean accountingEnabled;
 
@@ -239,6 +243,27 @@ public class OrgSettings {
     entry.put("version", version);
     entry.put("appliedAt", Instant.now().toString());
     this.reportPackStatus.add(entry);
+    this.updatedAt = Instant.now();
+  }
+
+  public List<Map<String, Object>> getClausePackStatus() {
+    return clausePackStatus;
+  }
+
+  public void setClausePackStatus(List<Map<String, Object>> status) {
+    this.clausePackStatus = status;
+  }
+
+  /** Records a clause pack application in the status list. */
+  public void recordClausePackApplication(String packId, int version) {
+    if (this.clausePackStatus == null) {
+      this.clausePackStatus = new ArrayList<>();
+    }
+    var entry = new HashMap<String, Object>();
+    entry.put("packId", packId);
+    entry.put("version", version);
+    entry.put("appliedAt", Instant.now().toString());
+    this.clausePackStatus.add(entry);
     this.updatedAt = Instant.now();
   }
 

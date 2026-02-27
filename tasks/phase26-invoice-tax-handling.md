@@ -22,7 +22,7 @@ Phase 26 adds structured tax handling to the DocTeams invoicing system. The exis
 | 181 | TaxRate Entity Foundation + Migration | Backend | — | M | 181A, 181B | **Done** (PRs #376, #377) |
 | 182 | Tax Calculation Engine + InvoiceLine Extension | Backend | 181 | M | 182A, 182B | **Done** (PRs #378, #379) |
 | 183 | Tax Application in Invoice Flows | Backend | 182 | L | 183A, 183B | **Done** (PRs #380, #381) |
-| 184 | Invoice Preview, PDF + Portal Tax Display | Backend + Portal | 183 | M | 184A, 184B | |
+| 184 | Invoice Preview, PDF + Portal Tax Display | Backend + Portal | 183 | M | 184A, 184B | 184A **Done** (PR #382) |
 | 185 | Tax Settings + Rate Management Frontend | Frontend | 181 | M | 185A, 185B | |
 | 186 | Invoice Editor Tax UI | Frontend | 183, 185 | M | 186A | |
 
@@ -100,7 +100,7 @@ Phase 26 adds structured tax handling to the DocTeams invoicing system. The exis
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 4a (parallel) | 184 | 184A | `invoice-preview.html` template update (tax column, breakdown section, registration number, inclusive note) + `InvoiceService.renderPreview()` context assembly + integration tests. ~2 modified files. Backend only. | |
+| 4a (parallel) | 184 | 184A | `invoice-preview.html` template update (tax column, breakdown section, registration number, inclusive note) + `InvoiceService.renderPreview()` context assembly + integration tests. ~2 modified files. Backend only. | **Done** (PR #382) |
 | 4b (parallel) | 186 | 186A | Tax rate dropdown on invoice line add/edit + per-line tax display + tax breakdown in totals (replaces manual input) + tax-inclusive indicator + TypeScript types + frontend tests. ~5 modified frontend files, ~1 new frontend file. | |
 
 ### Stage 5: Portal (sequential, after 184A)
@@ -358,7 +358,7 @@ Stage 5: [184B]                                                     (after 184A)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **184A** | 184.1--184.7 | Update `invoice-preview.html` Thymeleaf template (tax column on line items, tax breakdown section, registration number in header, tax-inclusive note) + update preview context assembly in `InvoiceService.renderPreview()` + integration tests for HTML output. ~2 modified files. Backend only. | |
+| **184A** | 184.1--184.7 | Update `invoice-preview.html` Thymeleaf template (tax column on line items, tax breakdown section, registration number in header, tax-inclusive note) + update preview context assembly in `InvoiceService.renderPreview()` + integration tests for HTML output. ~2 modified files. Backend only. | **Done** (PR #382) |
 | **184B** | 184.8--184.14 | Extend `InvoiceSyncEvent` with tax breakdown fields + extend `PortalInvoiceView` + update `PortalEventHandler` mapping + portal invoice detail tax breakdown display + portal `invoice-line-table` tax column + tests. ~4 modified backend files, ~2 modified portal files. Backend + Portal. | |
 
 ### Tasks

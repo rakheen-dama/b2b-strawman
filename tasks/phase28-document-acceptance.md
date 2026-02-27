@@ -97,7 +97,7 @@ Phase 28 adds a **document acceptance workflow** to the DocTeams platform. Firms
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 1a | 194 | 194A | `AcceptanceService` core methods (createAndSend, markViewed, accept, revoke, remind) + `AcceptanceSubmission` record + token generation utility + email template rendering calls + 3 email templates (acceptance-request.html, acceptance-reminder.html, acceptance-confirmation.html). ~5 new files, ~3 template files. Backend only. | |
+| 1a | 194 | 194A | `AcceptanceService` core methods (createAndSend, markViewed, accept, revoke, remind) + `AcceptanceSubmission` record + token generation utility + email template rendering calls + 3 email templates (acceptance-request.html, acceptance-reminder.html, acceptance-confirmation.html). ~5 new files, ~3 template files. Backend only. | **Done** (PR #399) |
 | 1b | 194 | 194B | 5 domain event records (Sent, Viewed, Accepted, Revoked, Expired) in `acceptance/event/` + event publishing in AcceptanceService + `OrgSettings` extension (acceptanceExpiryDays field + getter/setter) + service integration tests. ~7 new files, ~2 modified files. Backend only. | |
 
 ### Stage 2: Certificate + Portal Read-Model (parallel tracks)
@@ -231,7 +231,7 @@ Stage 6: [198B] // [199B]                                           (parallel, a
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **194A** | 194.1--194.7 | `AcceptanceService` with core methods (createAndSend, markViewed, accept, revoke, remind, getByToken, getByDocument, getByCustomer) + `AcceptanceSubmission` record + token generation (SecureRandom + URL-safe Base64) + customer resolution logic + 3 Thymeleaf email templates (acceptance-request.html, acceptance-reminder.html, acceptance-confirmation.html) + email sending integration. ~5 new files, ~3 template files. Backend only. | |
+| **194A** | 194.1--194.7 | `AcceptanceService` with core methods (createAndSend, markViewed, accept, revoke, remind, getByToken, getByDocument, getByCustomer) + `AcceptanceSubmission` record + token generation (SecureRandom + URL-safe Base64) + customer resolution logic + 3 Thymeleaf email templates (acceptance-request.html, acceptance-reminder.html, acceptance-confirmation.html) + email sending integration. ~5 new files, ~3 template files. Backend only. | **Done** (PR #399) |
 | **194B** | 194.8--194.14 | 5 domain event records in `acceptance/event/` (AcceptanceRequestSentEvent, ViewedEvent, AcceptedEvent, RevokedEvent, ExpiredEvent) implementing `DomainEvent` + event publishing in AcceptanceService via `ApplicationEventPublisher` + service integration tests. ~7 new files, ~1 modified file. Backend only. | |
 
 ### Tasks

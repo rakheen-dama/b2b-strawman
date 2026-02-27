@@ -745,6 +745,20 @@ public class PortalReadModelRepository {
         .list();
   }
 
+  public Optional<PortalAcceptanceView> findByRequestToken(String token) {
+    return jdbc.sql(
+            """
+            SELECT id, portal_contact_id, generated_document_id, document_title,
+                   document_file_name, status, request_token, sent_at, expires_at,
+                   org_name, org_logo, created_at
+            FROM portal.portal_acceptance_requests
+            WHERE request_token = ?
+            """)
+        .params(token)
+        .query(PortalAcceptanceView.class)
+        .optional();
+  }
+
   public List<PortalAcceptanceView> findPendingAcceptancesByContactId(UUID contactId) {
     return jdbc.sql(
             """

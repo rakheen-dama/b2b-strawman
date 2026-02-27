@@ -105,6 +105,8 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers("/api/email/unsubscribe")
                     .permitAll()
+                    .requestMatchers("/api/portal/acceptance/**")
+                    .permitAll()
                     .requestMatchers("/internal/**")
                     .authenticated()
                     .requestMatchers("/api/**")

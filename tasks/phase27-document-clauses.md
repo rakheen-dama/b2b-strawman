@@ -22,7 +22,7 @@ Phase 27 adds a **clause library** to the DocTeams document generation system. C
 | 187 | Clause Entity Foundation + Migration | Backend | -- | M | 187A, 187B | **Done** (PRs #387, #388) |
 | 188 | Template-Clause Association API | Backend | 187 | M | 188A | **Done** (PR #389) |
 | 189 | Generation Pipeline Extension | Backend | 187, 188 | L | 189A, 189B | **Done** (PRs #393, #394) |
-| 190 | Clause Pack Seeder | Backend | 187, 188 | M | 190A | |
+| 190 | Clause Pack Seeder | Backend | 187, 188 | M | 190A | **Done** (PR #395) |
 | 191 | Clause Library Frontend | Frontend | 187 | M | 191A, 191B | **Done** (PRs #390, #391) |
 | 192 | Template Clauses Tab + Generation Dialog Frontend | Frontend | 188, 189, 191 | L | 192A, 192B | |
 
@@ -94,7 +94,7 @@ Phase 27 adds a **clause library** to the DocTeams document generation system. C
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 3a (parallel) | 189 | 189B | Extend `GenerateDocumentRequest` and `PreviewRequest` with optional `clauses` field + clause resolution logic (fallback to template defaults, required clause validation 422) + snapshot recording in `GeneratedDocumentService` + `document.generated_with_clauses` audit event + backward compatibility tests (templates without clauses) + integration tests. ~3 modified files, ~0-1 new test files. Backend only. | **Done** (PR #394) |
-| 3b (parallel) | 190 | 190A | `ClausePackSeeder` + `ClausePackDefinition` record + `clause-packs/standard-clauses/pack.json` (~12 clause bodies) + default template-clause associations for engagement letter and SOW templates + `OrgSettings.clausePackStatus` field + `recordClausePackApplication()` method + provisioning hook (`@DependsOn` or call ordering after `TemplatePackSeeder`) + integration tests (pack loading, idempotency, SYSTEM source, association creation). ~4 new files, ~2 modified files. Backend only. | |
+| 3b (parallel) | 190 | 190A | `ClausePackSeeder` + `ClausePackDefinition` record + `clause-packs/standard-clauses/pack.json` (~12 clause bodies) + default template-clause associations for engagement letter and SOW templates + `OrgSettings.clausePackStatus` field + `recordClausePackApplication()` method + provisioning hook (`@DependsOn` or call ordering after `TemplatePackSeeder`) + integration tests (pack loading, idempotency, SYSTEM source, association creation). ~4 new files, ~2 modified files. Backend only. | **Done** (PR #395) |
 
 ### Stage 4: Template Clauses Tab Frontend
 
@@ -348,7 +348,7 @@ Stage 5: [192B]                                                     (after 189B 
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **190A** | 190.1--190.8 | `ClausePackSeeder` (follows `TemplatePackSeeder` pattern) + `ClausePackDefinition` record + `clause-packs/standard-clauses/pack.json` (~12 clause definitions with HTML bodies using Thymeleaf variables) + default template-clause associations for engagement letter and SOW templates + `OrgSettings.clausePackStatus` field + `recordClausePackApplication()` method + provisioning hook + integration tests (pack loading, idempotency, SYSTEM source, association creation, OrgSettings tracking). ~4 new files, ~2 modified files. Backend only. | |
+| **190A** | 190.1--190.8 | `ClausePackSeeder` (follows `TemplatePackSeeder` pattern) + `ClausePackDefinition` record + `clause-packs/standard-clauses/pack.json` (~12 clause definitions with HTML bodies using Thymeleaf variables) + default template-clause associations for engagement letter and SOW templates + `OrgSettings.clausePackStatus` field + `recordClausePackApplication()` method + provisioning hook + integration tests (pack loading, idempotency, SYSTEM source, association creation, OrgSettings tracking). ~4 new files, ~2 modified files. Backend only. | **Done** (PR #395) |
 
 ### Tasks
 

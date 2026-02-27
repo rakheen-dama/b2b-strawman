@@ -74,7 +74,6 @@ export function AddTaxRateDialog({ slug, children }: AddTaxRateDialogProps) {
         rate: rateNum,
         isDefault,
         isExempt,
-        sortOrder: 0,
       });
 
       if (result.success) {
@@ -126,6 +125,7 @@ export function AddTaxRateDialog({ slug, children }: AddTaxRateDialogProps) {
                 max="99.99"
                 step="0.01"
                 required
+                disabled={isExempt}
               />
             </div>
 
@@ -147,7 +147,12 @@ export function AddTaxRateDialog({ slug, children }: AddTaxRateDialogProps) {
               <Switch
                 id="tax-rate-exempt"
                 checked={isExempt}
-                onCheckedChange={setIsExempt}
+                onCheckedChange={(checked) => {
+                  setIsExempt(checked);
+                  if (checked) {
+                    setRate("0");
+                  }
+                }}
               />
               <Label htmlFor="tax-rate-exempt">Tax exempt (0% rate)</Label>
             </div>

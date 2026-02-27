@@ -80,8 +80,6 @@ export function EditTaxRateDialog({
         rate: rateNum,
         isDefault,
         isExempt,
-        active: taxRate.active,
-        sortOrder: taxRate.sortOrder,
       });
 
       if (result.success) {
@@ -133,6 +131,7 @@ export function EditTaxRateDialog({
                 max="99.99"
                 step="0.01"
                 required
+                disabled={isExempt}
               />
             </div>
 
@@ -156,7 +155,12 @@ export function EditTaxRateDialog({
               <Switch
                 id="edit-tax-rate-exempt"
                 checked={isExempt}
-                onCheckedChange={setIsExempt}
+                onCheckedChange={(checked) => {
+                  setIsExempt(checked);
+                  if (checked) {
+                    setRate("0");
+                  }
+                }}
               />
               <Label htmlFor="edit-tax-rate-exempt">
                 Tax exempt (0% rate)

@@ -47,16 +47,6 @@ interface CreateTaxRateActionResult {
   taxRate?: TaxRateResponse;
 }
 
-export async function getTaxRates(): Promise<TaxRateResponse[]> {
-  try {
-    return await api.get<TaxRateResponse[]>(
-      "/api/tax-rates?includeInactive=true",
-    );
-  } catch {
-    return [];
-  }
-}
-
 export async function createTaxRate(
   slug: string,
   req: CreateTaxRateRequest,

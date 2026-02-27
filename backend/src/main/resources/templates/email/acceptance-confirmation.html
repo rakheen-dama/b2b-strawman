@@ -1,0 +1,29 @@
+<div xmlns:th="http://www.thymeleaf.org">
+  <h2 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 600; color: #111827;">Document Accepted</h2>
+  <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.6; color: #374151;">
+    Hi <span th:text="${contactName != null ? contactName : 'there'}">there</span>,
+  </p>
+  <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.6; color: #374151;">
+    This confirms that you have successfully accepted the following document:
+  </p>
+  <!-- Document callout box -->
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin: 16px 0;">
+    <tr>
+      <td style="padding: 16px; background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px;">
+        <p style="margin: 0; font-size: 14px; font-weight: 600; color: #111827;">
+          <span th:text="${documentFileName}">document.pdf</span>
+        </p>
+        <p style="margin: 8px 0 0 0; font-size: 13px; color: #6b7280;">
+          Accepted on <span th:text="${acceptedAtFormatted}">1 January 2026</span>
+        </p>
+      </td>
+    </tr>
+  </table>
+  <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.6; color: #374151;">
+    A record of your acceptance has been saved. No further action is required.
+  </p>
+  <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #374151;">
+    Best,<br/>
+    <span th:text="${orgName != null ? orgName : 'DocTeams'}">DocTeams</span>
+  </p>
+</div>

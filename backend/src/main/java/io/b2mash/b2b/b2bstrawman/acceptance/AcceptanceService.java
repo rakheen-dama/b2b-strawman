@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.acceptance;
 
+import io.b2mash.b2b.b2bstrawman.acceptance.dto.AcceptanceRequestResponse;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestAcceptedEvent;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestExpiredEvent;
@@ -71,7 +72,6 @@ public class AcceptanceService {
   private final MemberNameResolver memberNameResolver;
   private final AcceptanceCertificateService certificateService;
 
-  @SuppressWarnings("unused")
   private final StorageService storageService;
 
   private final String portalBaseUrl;
@@ -500,6 +500,92 @@ public class AcceptanceService {
             AcceptanceStatus.ACCEPTED,
             AcceptanceStatus.EXPIRED,
             AcceptanceStatus.REVOKED));
+  }
+
+  // --- Controller facade methods (return DTOs) ---
+
+  /** Returns a single acceptance request as a response DTO. */
+  @Transactional(readOnly = true)
+  public AcceptanceRequestResponse getDetail(UUID requestId) {
+    AcceptanceRequest request =
+        acceptanceRequestRepository
+            .findById(requestId)
+            .orElseThrow(() -> new ResourceNotFoundException("AcceptanceRequest", requestId));
+    return enrichResponse(request);
+  }
+
+  /** Lists acceptance requests for a generated document, returning DTOs. */
+  @Transactional(readOnly = true)
+  public List<AcceptanceRequestResponse> listByDocument(UUID generatedDocumentId) {
+    return acceptanceRequestRepository
+        .findByGeneratedDocumentIdOrderByCreatedAtDesc(generatedDocumentId)
+        .stream()
+        .map(this::enrichResponse)
+        .toList();
+  }
+
+  /** Lists acceptance requests for a customer, returning DTOs. */
+  @Transactional(readOnly = true)
+  public List<AcceptanceRequestResponse> listByCustomer(UUID customerId) {
+    return acceptanceRequestRepository
+        .findByCustomerIdAndStatusInOrderByCreatedAtDesc(
+            customerId,
+            List.of(
+                AcceptanceStatus.PENDING,
+                AcceptanceStatus.SENT,
+                AcceptanceStatus.VIEWED,
+                AcceptanceStatus.ACCEPTED,
+                AcceptanceStatus.EXPIRED,
+                AcceptanceStatus.REVOKED))
+        .stream()
+        .map(this::enrichResponse)
+        .toList();
+  }
+
+  /** Creates and sends an acceptance request, returning a response DTO. */
+  @Transactional
+  public AcceptanceRequestResponse createAndSendResponse(
+      UUID generatedDocumentId, UUID portalContactId, Integer expiryDays) {
+    AcceptanceRequest request = createAndSend(generatedDocumentId, portalContactId, expiryDays);
+    return enrichResponse(request);
+  }
+
+  /** Sends a reminder for an acceptance request, returning a response DTO. */
+  @Transactional
+  public AcceptanceRequestResponse remindResponse(UUID requestId) {
+    AcceptanceRequest request = remind(requestId);
+    return enrichResponse(request);
+  }
+
+  /** Revokes an acceptance request, returning a response DTO. */
+  @Transactional
+  public AcceptanceRequestResponse revokeResponse(UUID requestId) {
+    AcceptanceRequest request = revoke(requestId);
+    return enrichResponse(request);
+  }
+
+  /** Downloads certificate PDF bytes. Throws 404 if no certificate exists. */
+  @Transactional(readOnly = true)
+  public CertificateDownload downloadCertificate(UUID requestId) {
+    AcceptanceRequest request =
+        acceptanceRequestRepository
+            .findById(requestId)
+            .orElseThrow(() -> new ResourceNotFoundException("AcceptanceRequest", requestId));
+    if (request.getCertificateS3Key() == null) {
+      throw new ResourceNotFoundException("Certificate", requestId);
+    }
+    byte[] bytes = storageService.download(request.getCertificateS3Key());
+    return new CertificateDownload(bytes, request.getCertificateFileName());
+  }
+
+  public record CertificateDownload(byte[] bytes, String fileName) {}
+
+  private AcceptanceRequestResponse enrichResponse(AcceptanceRequest request) {
+    PortalContact contact =
+        portalContactRepository.findById(request.getPortalContactId()).orElse(null);
+    GeneratedDocument doc =
+        generatedDocumentRepository.findById(request.getGeneratedDocumentId()).orElse(null);
+    return AcceptanceRequestResponse.from(request, contact, doc);
   }
 
   // --- Private helpers ---

@@ -1,13 +1,15 @@
 package io.b2mash.b2b.b2bstrawman.customerbackend.event;
 
-import io.b2mash.b2b.b2bstrawman.tax.dto.TaxBreakdownEntry;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 
 /**
  * Published when an invoice transitions to SENT, PAID, or VOID to sync to the portal read-model.
+ *
+ * <p>Tax data is grouped into a {@link TaxContext} record. Only SENT events carry a non-null
+ * TaxContext; PAID and VOID events pass {@code null} since the handler only uses status for those
+ * transitions.
  */
 public final class InvoiceSyncEvent extends PortalDomainEvent {
 
@@ -24,12 +26,7 @@ public final class InvoiceSyncEvent extends PortalDomainEvent {
   private final String notes;
   private final String paymentUrl;
   private final String paymentSessionId;
-  private final List<TaxBreakdownEntry> taxBreakdown;
-  private final String taxRegistrationNumber;
-  private final String taxRegistrationLabel;
-  private final String taxLabel;
-  private final boolean taxInclusive;
-  private final boolean hasPerLineTax;
+  private final TaxContext taxContext;
 
   public InvoiceSyncEvent(
       UUID invoiceId,
@@ -47,12 +44,7 @@ public final class InvoiceSyncEvent extends PortalDomainEvent {
       String paymentSessionId,
       String orgId,
       String tenantId,
-      List<TaxBreakdownEntry> taxBreakdown,
-      String taxRegistrationNumber,
-      String taxRegistrationLabel,
-      String taxLabel,
-      boolean taxInclusive,
-      boolean hasPerLineTax) {
+      TaxContext taxContext) {
     super(orgId, tenantId);
     this.invoiceId = invoiceId;
     this.customerId = customerId;
@@ -67,12 +59,7 @@ public final class InvoiceSyncEvent extends PortalDomainEvent {
     this.notes = notes;
     this.paymentUrl = paymentUrl;
     this.paymentSessionId = paymentSessionId;
-    this.taxBreakdown = taxBreakdown;
-    this.taxRegistrationNumber = taxRegistrationNumber;
-    this.taxRegistrationLabel = taxRegistrationLabel;
-    this.taxLabel = taxLabel;
-    this.taxInclusive = taxInclusive;
-    this.hasPerLineTax = hasPerLineTax;
+    this.taxContext = taxContext;
   }
 
   public UUID getInvoiceId() {
@@ -127,27 +114,7 @@ public final class InvoiceSyncEvent extends PortalDomainEvent {
     return paymentSessionId;
   }
 
-  public List<TaxBreakdownEntry> getTaxBreakdown() {
-    return taxBreakdown;
-  }
-
-  public String getTaxRegistrationNumber() {
-    return taxRegistrationNumber;
-  }
-
-  public String getTaxRegistrationLabel() {
-    return taxRegistrationLabel;
-  }
-
-  public String getTaxLabel() {
-    return taxLabel;
-  }
-
-  public boolean isTaxInclusive() {
-    return taxInclusive;
-  }
-
-  public boolean isHasPerLineTax() {
-    return hasPerLineTax;
+  public TaxContext getTaxContext() {
+    return taxContext;
   }
 }

@@ -1,7 +1,7 @@
 -- Add tax breakdown and configuration fields to portal invoice read-model
 
 ALTER TABLE portal.portal_invoices
-    ADD COLUMN IF NOT EXISTS tax_breakdown_json TEXT,
+    ADD COLUMN IF NOT EXISTS tax_breakdown_json JSONB,
     ADD COLUMN IF NOT EXISTS tax_registration_number VARCHAR(50),
     ADD COLUMN IF NOT EXISTS tax_registration_label VARCHAR(30),
     ADD COLUMN IF NOT EXISTS tax_label VARCHAR(20),

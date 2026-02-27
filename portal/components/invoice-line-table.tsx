@@ -91,8 +91,8 @@ export function InvoiceLineTable({
             </td>
           </tr>
           {hasPerLineTax && taxBreakdown && taxBreakdown.length > 0 ? (
-            taxBreakdown.map((entry, i) => (
-              <tr key={i}>
+            taxBreakdown.map((entry) => (
+              <tr key={entry.rateName}>
                 <td
                   colSpan={colCount - 1}
                   className="px-4 py-2 text-right text-slate-600"

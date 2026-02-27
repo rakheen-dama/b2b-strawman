@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.customerbackend.service;
 
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.controller.PaymentStatusResponse;
+import io.b2mash.b2b.b2bstrawman.customerbackend.controller.PortalInvoiceController.TaxBreakdownDto;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalCommentView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalInvoiceLineView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalInvoiceView;
@@ -18,8 +19,12 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Service layer for portal read-model queries. Provides project detail, comments, summary, and
@@ -28,23 +33,28 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class PortalReadModelService {
 
+  private static final Logger log = LoggerFactory.getLogger(PortalReadModelService.class);
+
   private final PortalReadModelRepository readModelRepository;
   private final PortalContactRepository portalContactRepository;
   private final CustomerRepository customerRepository;
   private final GeneratedDocumentRepository generatedDocumentRepository;
   private final StorageService storageService;
+  private final ObjectMapper objectMapper;
 
   public PortalReadModelService(
       PortalReadModelRepository readModelRepository,
       PortalContactRepository portalContactRepository,
       CustomerRepository customerRepository,
       GeneratedDocumentRepository generatedDocumentRepository,
-      StorageService storageService) {
+      StorageService storageService,
+      ObjectMapper objectMapper) {
     this.readModelRepository = readModelRepository;
     this.portalContactRepository = portalContactRepository;
     this.customerRepository = customerRepository;
     this.generatedDocumentRepository = generatedDocumentRepository;
     this.storageService = storageService;
+    this.objectMapper = objectMapper;
   }
 
   /** Returns the portal project detail for the given project, customer, and org. */
@@ -139,7 +149,8 @@ public class PortalReadModelService {
     }
 
     var lines = readModelRepository.findInvoiceLinesByInvoice(invoiceId);
-    return new InvoiceDetail(invoice, lines);
+    var taxBreakdown = parseTaxBreakdownJson(invoice.taxBreakdownJson());
+    return new InvoiceDetail(invoice, lines, taxBreakdown);
   }
 
   /** Returns a presigned download URL for the most recent PDF generated for this invoice. */
@@ -175,5 +186,23 @@ public class PortalReadModelService {
         invoice.status(), invoice.paidAt() != null ? invoice.paidAt().toString() : null);
   }
 
-  public record InvoiceDetail(PortalInvoiceView invoice, List<PortalInvoiceLineView> lines) {}
+  public record InvoiceDetail(
+      PortalInvoiceView invoice,
+      List<PortalInvoiceLineView> lines,
+      List<TaxBreakdownDto> taxBreakdown) {}
+
+  /** Deserializes the tax breakdown JSON string from the read-model into a typed list. */
+  List<TaxBreakdownDto> parseTaxBreakdownJson(String json) {
+    if (json == null || json.isBlank()) {
+      return null;
+    }
+    try {
+      return objectMapper.readValue(
+          json,
+          objectMapper.getTypeFactory().constructCollectionType(List.class, TaxBreakdownDto.class));
+    } catch (JacksonException e) {
+      log.warn("Failed to parse tax breakdown JSON", e);
+      return null;
+    }
+  }
 }

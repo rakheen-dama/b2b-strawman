@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.event.PortalTaskCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.PortalTaskDeletedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.PortalTaskUpdatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectUpdatedEvent;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.TaxContext;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.TimeEntryAggregatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
@@ -349,16 +350,30 @@ public class PortalEventHandler {
           try {
             switch (event.getStatus()) {
               case "SENT" -> {
-                // Serialize tax breakdown to JSON
+                // Serialize tax breakdown to JSON from TaxContext
+                TaxContext tax = event.getTaxContext();
                 String taxBreakdownJson = null;
-                if (event.getTaxBreakdown() != null && !event.getTaxBreakdown().isEmpty()) {
-                  try {
-                    taxBreakdownJson = objectMapper.writeValueAsString(event.getTaxBreakdown());
-                  } catch (JacksonException e) {
-                    log.warn(
-                        "Failed to serialize tax breakdown for invoice {}",
-                        event.getInvoiceId(),
-                        e);
+                String taxRegNumber = null;
+                String taxRegLabel = null;
+                String taxLabel = null;
+                boolean taxInclusive = false;
+                boolean hasPerLineTax = false;
+
+                if (tax != null) {
+                  taxRegNumber = tax.taxRegistrationNumber();
+                  taxRegLabel = tax.taxRegistrationLabel();
+                  taxLabel = tax.taxLabel();
+                  taxInclusive = tax.taxInclusive();
+                  hasPerLineTax = tax.hasPerLineTax();
+                  if (tax.taxBreakdown() != null && !tax.taxBreakdown().isEmpty()) {
+                    try {
+                      taxBreakdownJson = objectMapper.writeValueAsString(tax.taxBreakdown());
+                    } catch (JacksonException e) {
+                      log.warn(
+                          "Failed to serialize tax breakdown for invoice {}",
+                          event.getInvoiceId(),
+                          e);
+                    }
                   }
                 }
 
@@ -379,11 +394,11 @@ public class PortalEventHandler {
                     event.getPaymentUrl(),
                     event.getPaymentSessionId(),
                     taxBreakdownJson,
-                    event.getTaxRegistrationNumber(),
-                    event.getTaxRegistrationLabel(),
-                    event.getTaxLabel(),
-                    event.isTaxInclusive(),
-                    event.isHasPerLineTax());
+                    taxRegNumber,
+                    taxRegLabel,
+                    taxLabel,
+                    taxInclusive,
+                    hasPerLineTax);
 
                 // Remove stale line items before re-upserting (handles line item changes)
                 readModelRepo.deletePortalInvoiceLinesByInvoice(event.getInvoiceId());

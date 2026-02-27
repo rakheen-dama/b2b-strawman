@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.compliance.LifecycleAction;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.InvoiceSyncEvent;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.TaxContext;
 import io.b2mash.b2b.b2bstrawman.event.InvoiceApprovedEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoicePaidEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoiceSentEvent;
@@ -927,9 +928,17 @@ public class InvoiceService {
 
     // Load tax data for portal sync event
     var sentLines = lineRepository.findByInvoiceIdOrderBySortOrder(invoice.getId());
-    var sentOrgSettings = orgSettingsRepository.findForCurrentTenant();
+    var settings = orgSettingsRepository.findForCurrentTenant().orElse(null);
     var sentTaxBreakdown = taxCalculationService.buildTaxBreakdown(sentLines);
     var sentHasPerLineTax = taxCalculationService.hasPerLineTax(sentLines);
+    var taxContext =
+        new TaxContext(
+            sentTaxBreakdown,
+            settings != null ? settings.getTaxRegistrationNumber() : null,
+            settings != null ? settings.getTaxRegistrationLabel() : null,
+            settings != null ? settings.getTaxLabel() : null,
+            settings != null && settings.isTaxInclusive(),
+            sentHasPerLineTax);
 
     eventPublisher.publishEvent(
         new InvoiceSyncEvent(
@@ -948,12 +957,7 @@ public class InvoiceService {
             invoice.getPaymentSessionId(),
             orgIdForEvent,
             tenantIdForEvent,
-            sentTaxBreakdown,
-            sentOrgSettings.map(s -> s.getTaxRegistrationNumber()).orElse(null),
-            sentOrgSettings.map(s -> s.getTaxRegistrationLabel()).orElse(null),
-            sentOrgSettings.map(s -> s.getTaxLabel()).orElse(null),
-            sentOrgSettings.map(s -> s.isTaxInclusive()).orElse(false),
-            sentHasPerLineTax));
+            taxContext));
 
     return buildResponse(invoice);
   }
@@ -1075,12 +1079,7 @@ public class InvoiceService {
             invoice.getPaymentSessionId(),
             orgIdForEvent,
             tenantIdForEvent,
-            List.of(),
-            null,
-            null,
-            null,
-            false,
-            false));
+            null));
 
     return buildResponse(invoice);
   }
@@ -1186,12 +1185,7 @@ public class InvoiceService {
             invoice.getPaymentSessionId(),
             orgIdForEvent,
             tenantIdForEvent,
-            List.of(),
-            null,
-            null,
-            null,
-            false,
-            false));
+            null));
 
     return buildResponse(invoice);
   }
@@ -1300,12 +1294,7 @@ public class InvoiceService {
             invoice.getPaymentSessionId(),
             orgIdForEvent,
             tenantIdForEvent,
-            List.of(),
-            null,
-            null,
-            null,
-            false,
-            false));
+            null));
 
     return buildResponse(invoice);
   }

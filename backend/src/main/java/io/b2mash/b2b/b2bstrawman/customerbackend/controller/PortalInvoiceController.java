@@ -6,15 +6,11 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.ObjectMapper;
 
 /**
  * Portal invoice endpoints. Provides read-only access to invoices for the authenticated customer.
@@ -24,15 +20,10 @@ import tools.jackson.databind.ObjectMapper;
 @RequestMapping("/portal/invoices")
 public class PortalInvoiceController {
 
-  private static final Logger log = LoggerFactory.getLogger(PortalInvoiceController.class);
-
   private final PortalReadModelService portalReadModelService;
-  private final ObjectMapper objectMapper;
 
-  public PortalInvoiceController(
-      PortalReadModelService portalReadModelService, ObjectMapper objectMapper) {
+  public PortalInvoiceController(PortalReadModelService portalReadModelService) {
     this.portalReadModelService = portalReadModelService;
-    this.objectMapper = objectMapper;
   }
 
   /** Lists all invoices for the authenticated customer. */
@@ -85,21 +76,6 @@ public class PortalInvoiceController {
 
     var invoice = detail.invoice();
 
-    // Deserialize tax breakdown JSON
-    List<TaxBreakdownDto> taxBreakdown = null;
-    if (invoice.taxBreakdownJson() != null) {
-      try {
-        taxBreakdown =
-            objectMapper.readValue(
-                invoice.taxBreakdownJson(),
-                objectMapper
-                    .getTypeFactory()
-                    .constructCollectionType(List.class, TaxBreakdownDto.class));
-      } catch (JacksonException e) {
-        log.warn("Failed to parse tax breakdown JSON for invoice {}", id, e);
-      }
-    }
-
     return ResponseEntity.ok(
         new PortalInvoiceDetailResponse(
             invoice.id(),
@@ -114,7 +90,7 @@ public class PortalInvoiceController {
             invoice.notes(),
             invoice.paymentUrl(),
             lines,
-            taxBreakdown,
+            detail.taxBreakdown(),
             invoice.taxRegistrationNumber(),
             invoice.taxRegistrationLabel(),
             invoice.taxLabel(),

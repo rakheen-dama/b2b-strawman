@@ -444,7 +444,7 @@ public class PortalReadModelRepository {
                  payment_url, payment_session_id,
                  tax_breakdown_json, tax_registration_number, tax_registration_label,
                  tax_label, tax_inclusive, has_per_line_tax, synced_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now())
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?, ?, ?, ?, ?, now())
             ON CONFLICT (id)
             DO UPDATE SET status = EXCLUDED.status,
                           invoice_number = EXCLUDED.invoice_number,

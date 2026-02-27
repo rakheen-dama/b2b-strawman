@@ -18,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentDeletedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentVisibilityChangedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.InvoiceSyncEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectUpdatedEvent;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.TaxContext;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.TimeEntryAggregatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalDocumentView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
@@ -425,12 +426,7 @@ class PortalEventHandlerTest {
             null,
             ORG_ID,
             TENANT_ID,
-            List.of(),
-            null,
-            null,
-            null,
-            false,
-            false);
+            new TaxContext(List.of(), null, null, null, false, false));
 
     var line1 =
         new InvoiceLine(
@@ -520,12 +516,7 @@ class PortalEventHandlerTest {
             null,
             ORG_ID,
             TENANT_ID,
-            List.of(),
-            null,
-            null,
-            null,
-            false,
-            false);
+            null);
 
     handler.onInvoiceSynced(event);
 
@@ -578,12 +569,7 @@ class PortalEventHandlerTest {
             null,
             ORG_ID,
             TENANT_ID,
-            List.of(),
-            null,
-            null,
-            null,
-            false,
-            false);
+            null);
 
     handler.onInvoiceSynced(event);
 

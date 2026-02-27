@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.acceptance.dto.AcceptanceRequestResponse;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
+import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestAcceptedEvent;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestExpiredEvent;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestRevokedEvent;
@@ -20,11 +21,13 @@ import io.b2mash.b2b.b2bstrawman.integration.email.EmailRateLimiter;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailContextBuilder;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailTemplateRenderer;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
+import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocument;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentRepository;
@@ -43,6 +46,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /** Core service for the document acceptance workflow. */
 @Service
@@ -76,6 +80,10 @@ public class AcceptanceService {
   private final AuditService auditService;
 
   private final StorageService storageService;
+  private final OrgSchemaMappingRepository orgSchemaMappingRepository;
+  private final OrganizationRepository organizationRepository;
+  private final PortalReadModelRepository portalReadModelRepository;
+  private final TransactionTemplate transactionTemplate;
 
   private final String portalBaseUrl;
   private final SecureRandom secureRandom;
@@ -97,6 +105,10 @@ public class AcceptanceService {
       AcceptanceCertificateService certificateService,
       AuditService auditService,
       StorageService storageService,
+      OrgSchemaMappingRepository orgSchemaMappingRepository,
+      OrganizationRepository organizationRepository,
+      PortalReadModelRepository portalReadModelRepository,
+      TransactionTemplate transactionTemplate,
       @Value("${docteams.portal.base-url:http://localhost:3001}") String portalBaseUrl) {
     this.acceptanceRequestRepository = acceptanceRequestRepository;
     this.generatedDocumentRepository = generatedDocumentRepository;
@@ -114,6 +126,10 @@ public class AcceptanceService {
     this.certificateService = certificateService;
     this.auditService = auditService;
     this.storageService = storageService;
+    this.orgSchemaMappingRepository = orgSchemaMappingRepository;
+    this.organizationRepository = organizationRepository;
+    this.portalReadModelRepository = portalReadModelRepository;
+    this.transactionTemplate = transactionTemplate;
     this.portalBaseUrl = portalBaseUrl;
     this.secureRandom = new SecureRandom();
   }
@@ -706,6 +722,233 @@ public class AcceptanceService {
   }
 
   public record CertificateDownload(byte[] bytes, String fileName) {}
+
+  // --- Portal-facing DTOs and methods ---
+
+  /** Response DTO for the portal acceptance page data. */
+  public record PortalPageData(
+      UUID requestId,
+      String status,
+      String documentTitle,
+      String documentFileName,
+      Instant expiresAt,
+      String orgName,
+      String orgLogo,
+      String brandColor,
+      Instant acceptedAt,
+      String acceptorName) {}
+
+  /** Response DTO for the portal acceptance accept action. */
+  public record PortalAcceptResponse(String status, Instant acceptedAt, String acceptorName) {}
+
+  /** Context record for resolving a token to its tenant schema. */
+  public record TenantAcceptanceContext(
+      AcceptanceRequest request, String tenantSchema, String orgId) {}
+
+  /**
+   * Resolves an acceptance request token to its tenant context by scanning schemas. The schema scan
+   * is always the authoritative source; the portal read-model is not relied upon for resolution.
+   */
+  public TenantAcceptanceContext resolveByToken(String token) {
+    // Schema scan — iterate all tenant schemas to find the token
+    var mappings = orgSchemaMappingRepository.findAll();
+    for (var mapping : mappings) {
+      try {
+        AcceptanceRequest found =
+            ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
+                .call(
+                    () ->
+                        transactionTemplate.execute(
+                            status ->
+                                acceptanceRequestRepository
+                                    .findByRequestToken(token)
+                                    .orElse(null)));
+        if (found != null) {
+          return new TenantAcceptanceContext(
+              found, mapping.getSchemaName(), mapping.getClerkOrgId());
+        }
+      } catch (RuntimeException e) {
+        // Infrastructure error (connection failure, schema misconfiguration, etc.)
+        log.warn(
+            "Error scanning schema {} for token: {}", mapping.getSchemaName(), e.getMessage(), e);
+      }
+    }
+    throw new ResourceNotFoundException("AcceptanceRequest", "token");
+  }
+
+  /**
+   * Gets the portal acceptance page data for a given token. Marks active requests as viewed (side
+   * effect). Terminal states (EXPIRED, REVOKED, ACCEPTED) are returned without side effects.
+   */
+  public PortalPageData getPageData(String token, String ipAddress) {
+    var ctx = resolveByToken(token);
+    AcceptanceRequest currentRequest = ctx.request();
+
+    // All scoped operations use consistent bindings (TENANT_ID + ORG_ID)
+    // Only mark viewed for active requests (SENT/VIEWED); skip for terminal states
+    if (currentRequest.isActive() && !currentRequest.isExpired()) {
+      try {
+        currentRequest =
+            ScopedValue.where(RequestScopes.TENANT_ID, ctx.tenantSchema())
+                .where(RequestScopes.ORG_ID, ctx.orgId())
+                .call(() -> transactionTemplate.execute(status -> markViewed(token, ipAddress)));
+      } catch (InvalidStateException e) {
+        log.debug("Could not mark viewed: {}", e.getMessage());
+        // Proceed with current state — still return page data
+      }
+    }
+
+    // Capture as effectively final for lambda use
+    final AcceptanceRequest request = currentRequest;
+
+    // Get branding info from portal read-model
+    var portalView = portalReadModelRepository.findByRequestToken(token).orElse(null);
+    String orgName = portalView != null ? portalView.orgName() : null;
+    String orgLogo = portalView != null ? portalView.orgLogo() : null;
+    String brandColor = null;
+
+    // Try to get brand color from org settings
+    try {
+      brandColor =
+          ScopedValue.where(RequestScopes.TENANT_ID, ctx.tenantSchema())
+              .where(RequestScopes.ORG_ID, ctx.orgId())
+              .call(
+                  () ->
+                      transactionTemplate.execute(
+                          status ->
+                              orgSettingsRepository
+                                  .findForCurrentTenant()
+                                  .map(s -> s.getBrandColor())
+                                  .orElse(null)));
+    } catch (ResourceNotFoundException e) {
+      log.debug("No org settings found for brand color: {}", e.getMessage());
+    } catch (RuntimeException e) {
+      log.warn("Failed to get brand color for tenant {}: {}", ctx.tenantSchema(), e.getMessage());
+    }
+
+    // Get document filename from tenant schema
+    String documentFileName = null;
+    String documentTitle = null;
+    try {
+      GeneratedDocument doc =
+          ScopedValue.where(RequestScopes.TENANT_ID, ctx.tenantSchema())
+              .where(RequestScopes.ORG_ID, ctx.orgId())
+              .call(
+                  () ->
+                      transactionTemplate.execute(
+                          status ->
+                              generatedDocumentRepository
+                                  .findById(request.getGeneratedDocumentId())
+                                  .orElse(null)));
+      if (doc != null) {
+        documentFileName = doc.getFileName();
+        documentTitle = doc.getFileName();
+      }
+    } catch (ResourceNotFoundException e) {
+      log.debug("Document not found for request {}: {}", request.getId(), e.getMessage());
+    } catch (RuntimeException e) {
+      log.warn("Failed to get document info for request {}: {}", request.getId(), e.getMessage());
+    }
+
+    // Fall back to portal view data if tenant lookup failed
+    if (documentTitle == null && portalView != null) {
+      documentTitle = portalView.documentTitle();
+      documentFileName = portalView.documentFileName();
+    }
+
+    return new PortalPageData(
+        request.getId(),
+        request.getStatus().name(),
+        documentTitle,
+        documentFileName,
+        request.getExpiresAt(),
+        orgName,
+        orgLogo,
+        brandColor,
+        request.getAcceptedAt(),
+        request.getAcceptorName());
+  }
+
+  /**
+   * Streams the PDF document bytes for a portal acceptance token.
+   *
+   * @return the PDF bytes and filename
+   */
+  public CertificateDownload streamPdf(String token) {
+    var ctx = resolveByToken(token);
+
+    // Look up the generated document in the tenant context
+    GeneratedDocument doc =
+        ScopedValue.where(RequestScopes.TENANT_ID, ctx.tenantSchema())
+            .call(
+                () ->
+                    transactionTemplate.execute(
+                        status ->
+                            generatedDocumentRepository
+                                .findById(ctx.request().getGeneratedDocumentId())
+                                .orElseThrow(
+                                    () ->
+                                        new ResourceNotFoundException(
+                                            "GeneratedDocument",
+                                            ctx.request().getGeneratedDocumentId()))));
+
+    byte[] bytes = storageService.download(doc.getS3Key());
+    return new CertificateDownload(bytes, doc.getFileName());
+  }
+
+  /**
+   * Accepts a document from the portal. Resolves the tenant context from the token. Idempotent for
+   * already-accepted requests.
+   *
+   * @return the acceptance response DTO
+   */
+  public PortalAcceptResponse acceptFromPortal(
+      String token, AcceptanceSubmission submission, String ipAddress, String userAgent) {
+    var ctx = resolveByToken(token);
+
+    // Idempotency check + accept inside one transactional block to avoid TOCTOU race
+    AcceptanceRequest request =
+        ScopedValue.where(RequestScopes.TENANT_ID, ctx.tenantSchema())
+            .where(RequestScopes.ORG_ID, ctx.orgId())
+            .call(
+                () ->
+                    transactionTemplate.execute(
+                        status -> {
+                          AcceptanceRequest current = findByTokenOrThrow(token);
+                          // Idempotent: if already accepted, return current state
+                          if (current.getStatus() == AcceptanceStatus.ACCEPTED) {
+                            return current;
+                          }
+                          // InvalidStateException from accept() will propagate naturally
+                          return accept(token, submission, ipAddress, userAgent);
+                        }));
+
+    return new PortalAcceptResponse(
+        request.getStatus().name(), request.getAcceptedAt(), request.getAcceptorName());
+  }
+
+  /**
+   * Processes expired acceptance requests for the current tenant. Package-visible for the
+   * processor.
+   */
+  int processExpiredForTenant() {
+    Integer result =
+        transactionTemplate.execute(
+            status -> {
+              var expired =
+                  acceptanceRequestRepository.findByStatusInAndExpiresAtBefore(
+                      List.of(
+                          AcceptanceStatus.PENDING, AcceptanceStatus.SENT, AcceptanceStatus.VIEWED),
+                      Instant.now());
+              for (var request : expired) {
+                request.markExpired();
+                acceptanceRequestRepository.save(request);
+                publishExpiredEvent(request);
+              }
+              return expired.size();
+            });
+    return result != null ? result : 0;
+  }
 
   private AcceptanceRequestResponse enrichResponse(AcceptanceRequest request) {
     PortalContact contact =

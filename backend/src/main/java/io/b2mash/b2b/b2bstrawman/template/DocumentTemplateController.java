@@ -117,7 +117,8 @@ public class DocumentTemplateController {
       @PathVariable UUID id, @Valid @RequestBody PreviewRequest request) {
     UUID memberId = RequestScopes.requireMemberId();
     return ResponseEntity.ok(
-        pdfRenderingService.previewWithValidation(id, request.entityId(), memberId));
+        generatedDocumentService.previewDocument(
+            id, request.entityId(), request.clauses(), memberId));
   }
 
   @PostMapping("/{id}/generate")
@@ -132,6 +133,7 @@ public class DocumentTemplateController {
             request.entityId(),
             request.saveToDocuments(),
             request.acknowledgeWarnings(),
+            request.clauses(),
             memberId);
 
     var generatedDoc = result.generatedDocument();
@@ -158,12 +160,18 @@ public class DocumentTemplateController {
 
   // --- DTOs ---
 
-  public record PreviewRequest(@NotNull UUID entityId) {}
+  /** Clause selection from the client, specifying a clause ID and its desired sort order. */
+  public record ClauseSelection(@NotNull UUID clauseId, int sortOrder) {}
+
+  public record PreviewRequest(@NotNull UUID entityId, @Valid List<ClauseSelection> clauses) {}
 
   // PreviewResponse lives in PdfRenderingService to keep the dependency direction correct.
 
   public record GenerateDocumentRequest(
-      @NotNull UUID entityId, boolean saveToDocuments, boolean acknowledgeWarnings) {}
+      @NotNull UUID entityId,
+      boolean saveToDocuments,
+      boolean acknowledgeWarnings,
+      @Valid List<ClauseSelection> clauses) {}
 
   public record GenerateDocumentResponse(
       UUID id, String fileName, long fileSize, UUID documentId, Instant generatedAt) {}

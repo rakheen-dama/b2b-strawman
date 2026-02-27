@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.template;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.clause.Clause;
+import io.b2mash.b2b.b2bstrawman.clause.ClauseResolver;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.event.DocumentGeneratedEvent;
@@ -10,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ValidationWarningException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.ClauseSelection;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.TemplateDetailResponse;
 import java.time.Instant;
 import java.util.HashMap;
@@ -37,6 +40,7 @@ public class GeneratedDocumentService {
   private final DocumentRepository documentRepository;
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
+  private final ClauseResolver clauseResolver;
 
   public GeneratedDocumentService(
       GeneratedDocumentRepository generatedDocumentRepository,
@@ -48,7 +52,8 @@ public class GeneratedDocumentService {
       StorageService storageService,
       DocumentRepository documentRepository,
       AuditService auditService,
-      ApplicationEventPublisher eventPublisher) {
+      ApplicationEventPublisher eventPublisher,
+      ClauseResolver clauseResolver) {
     this.generatedDocumentRepository = generatedDocumentRepository;
     this.documentTemplateRepository = documentTemplateRepository;
     this.memberNameResolver = memberNameResolver;
@@ -59,6 +64,7 @@ public class GeneratedDocumentService {
     this.documentRepository = documentRepository;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
+    this.clauseResolver = clauseResolver;
   }
 
   /**
@@ -74,6 +80,7 @@ public class GeneratedDocumentService {
       UUID entityId,
       boolean saveToDocuments,
       boolean acknowledgeWarnings,
+      List<ClauseSelection> clauseSelections,
       UUID memberId) {
     // 0. Validate required fields before generation
     var template =
@@ -90,8 +97,12 @@ public class GeneratedDocumentService {
       throw new ValidationWarningException(validationResult);
     }
 
-    // 1. Generate PDF
-    var pdfResult = pdfRenderingService.generatePdf(templateId, entityId, memberId);
+    // 0b. Resolve clauses
+    var resolvedClauses = clauseResolver.resolveClauses(templateId, clauseSelections);
+
+    // 1. Generate PDF (clause-aware)
+    var pdfResult =
+        pdfRenderingService.generatePdf(templateId, entityId, memberId, resolvedClauses);
 
     // 2. Load template metadata
     var templateDetail = documentTemplateService.getById(templateId);
@@ -127,6 +138,11 @@ public class GeneratedDocumentService {
                           "entity", f.entity(), "field", f.field(), "reason", f.reason()))
               .toList();
       generatedDoc.setWarnings(warnings);
+    }
+
+    // 5c. Store clause snapshots
+    if (!resolvedClauses.isEmpty()) {
+      generatedDoc.setClauseSnapshots(buildClauseSnapshots(resolvedClauses));
     }
 
     // 6. Optionally save to Documents and link
@@ -173,7 +189,35 @@ public class GeneratedDocumentService {
             .details(auditDetails)
             .build());
 
+    // 8b. Supplementary audit event when clauses are included
+    if (!resolvedClauses.isEmpty()) {
+      var clauseAuditDetails = new HashMap<String, Object>();
+      clauseAuditDetails.put("template_name", templateDetail.name());
+      clauseAuditDetails.put(
+          "clause_slugs", resolvedClauses.stream().map(Clause::getSlug).toList());
+      clauseAuditDetails.put("clause_count", resolvedClauses.size());
+      auditService.log(
+          AuditEventBuilder.builder()
+              .eventType("document.generated_with_clauses")
+              .entityType("generated_document")
+              .entityId(generatedDoc.getId())
+              .details(clauseAuditDetails)
+              .build());
+    }
+
     return new GenerationResult(generatedDoc, pdfResult);
+  }
+
+  /**
+   * Previews a document with optional clause resolution. Resolves clauses via ClauseResolver before
+   * delegating to PdfRenderingService.
+   */
+  @Transactional(readOnly = true)
+  public PdfRenderingService.PreviewResponse previewDocument(
+      UUID templateId, UUID entityId, List<ClauseSelection> clauseSelections, UUID memberId) {
+    var resolvedClauses = clauseResolver.resolveClauses(templateId, clauseSelections);
+    return pdfRenderingService.previewWithValidation(
+        templateId, entityId, memberId, resolvedClauses);
   }
 
   @Transactional(readOnly = true)
@@ -203,6 +247,20 @@ public class GeneratedDocumentService {
   }
 
   // --- Private helpers ---
+
+  private List<Map<String, Object>> buildClauseSnapshots(List<Clause> resolvedClauses) {
+    var snapshots = new java.util.ArrayList<Map<String, Object>>();
+    for (int i = 0; i < resolvedClauses.size(); i++) {
+      var clause = resolvedClauses.get(i);
+      var snapshot = new HashMap<String, Object>();
+      snapshot.put("clauseId", clause.getId().toString());
+      snapshot.put("slug", clause.getSlug());
+      snapshot.put("title", clause.getTitle());
+      snapshot.put("sortOrder", i);
+      snapshots.add(snapshot);
+    }
+    return snapshots;
+  }
 
   private GeneratedDocument createRecord(
       UUID templateId,

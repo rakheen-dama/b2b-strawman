@@ -235,7 +235,7 @@
 | 199 | Portal — Acceptance Page + Pending List | Portal | 197 | M | 199A, 199B | **Done** (PRs #408, #409) |
 | 200 | Frontend — OrgSettings Acceptance Config | Frontend | 196 | S | 200A | **Done** (PR #410) |
 | **Phase 29 — Entity Lifecycle & Relationship Integrity** | | | | | | See [tasks/phase29-entity-lifecycle-integrity.md](tasks/phase29-entity-lifecycle-integrity.md) |
-| 201 | Task Lifecycle Foundation — Migration, Enums & Entity | Backend | -- | M | 201A, 201B | |
+| 201 | Task Lifecycle Foundation — Migration, Enums & Entity | Backend | -- | M | 201A, 201B | 201A **Done** (PR #411) |
 | 202 | Task Lifecycle Service + Transition Endpoints | Backend | 201 | L | 202A, 202B | |
 | 203 | Project Lifecycle Foundation — Migration, Enums & Entity | Backend | -- | M | 203A, 203B | |
 | 204 | Project Lifecycle Service + Transition Endpoints | Backend | 203, 201 | L | 204A, 204B | |

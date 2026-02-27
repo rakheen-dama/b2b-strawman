@@ -137,8 +137,8 @@ public class Project {
   public void update(String name, String description, UUID customerId, LocalDate dueDate) {
     this.name = name;
     this.description = description;
-    this.customerId = customerId;
-    this.dueDate = dueDate;
+    this.customerId = customerId != null ? customerId : this.customerId;
+    this.dueDate = dueDate != null ? dueDate : this.dueDate;
     this.updatedAt = Instant.now();
   }
 
@@ -151,11 +151,12 @@ public class Project {
     this.updatedAt = Instant.now();
   }
 
-  /** Archives this project. Records archivedAt. Valid from ACTIVE or COMPLETED. */
-  public void archive() {
+  /** Archives this project. Records archivedAt and archivedBy. Valid from ACTIVE or COMPLETED. */
+  public void archive(UUID memberId) {
     requireTransition(ProjectStatus.ARCHIVED, "archive");
     this.status = ProjectStatus.ARCHIVED;
     this.archivedAt = Instant.now();
+    this.archivedBy = memberId;
     this.updatedAt = Instant.now();
   }
 

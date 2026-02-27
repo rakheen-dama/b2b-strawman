@@ -64,8 +64,8 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
       @Param("status") ProjectStatus status, @Param("dueDate") LocalDate dueDate);
 
   /** Counts projects with ACTIVE status in the current tenant schema. */
-  @Query("SELECT COUNT(p) FROM Project p WHERE p.status = 'ACTIVE'")
-  long countActiveProjects();
+  @Query("SELECT COUNT(p) FROM Project p WHERE p.status = :status")
+  long countActiveProjects(@Param("status") ProjectStatus status);
 
   /**
    * JPQL-based batch find by IDs. JPQL queries run against the current tenant schema (search_path

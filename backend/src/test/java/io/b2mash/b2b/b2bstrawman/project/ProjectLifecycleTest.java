@@ -37,7 +37,7 @@ class ProjectLifecycleTest {
   @Test
   void complete_from_archived_throws() {
     var project = buildProject();
-    project.archive();
+    project.archive(MEMBER_ID);
 
     assertThatThrownBy(() -> project.complete(MEMBER_ID)).isInstanceOf(InvalidStateException.class);
   }
@@ -45,17 +45,18 @@ class ProjectLifecycleTest {
   @Test
   void archive_from_active_transitions_to_archived() {
     var project = buildProject();
-    project.archive();
+    project.archive(MEMBER_ID);
 
     assertThat(project.getStatus()).isEqualTo(ProjectStatus.ARCHIVED);
     assertThat(project.getArchivedAt()).isNotNull();
+    assertThat(project.getArchivedBy()).isEqualTo(MEMBER_ID);
   }
 
   @Test
   void archive_from_completed_transitions_to_archived() {
     var project = buildProject();
     project.complete(MEMBER_ID);
-    project.archive();
+    project.archive(MEMBER_ID);
 
     assertThat(project.getStatus()).isEqualTo(ProjectStatus.ARCHIVED);
     assertThat(project.getArchivedAt()).isNotNull();
@@ -64,9 +65,9 @@ class ProjectLifecycleTest {
   @Test
   void archive_from_archived_throws() {
     var project = buildProject();
-    project.archive();
+    project.archive(MEMBER_ID);
 
-    assertThatThrownBy(() -> project.archive()).isInstanceOf(InvalidStateException.class);
+    assertThatThrownBy(() -> project.archive(MEMBER_ID)).isInstanceOf(InvalidStateException.class);
   }
 
   @Test
@@ -88,7 +89,7 @@ class ProjectLifecycleTest {
   void reopen_from_archived_clears_timestamps() {
     var project = buildProject();
     project.complete(MEMBER_ID);
-    project.archive();
+    project.archive(MEMBER_ID);
 
     project.reopen();
 
@@ -104,7 +105,7 @@ class ProjectLifecycleTest {
     var project = buildProject();
     assertThat(project.isReadOnly()).isFalse();
 
-    project.archive();
+    project.archive(MEMBER_ID);
     assertThat(project.isReadOnly()).isTrue();
   }
 }

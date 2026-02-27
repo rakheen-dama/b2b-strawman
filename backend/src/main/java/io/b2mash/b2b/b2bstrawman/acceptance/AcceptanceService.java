@@ -19,7 +19,6 @@ import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocument;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentRepository;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -95,11 +94,7 @@ public class AcceptanceService {
     this.emailRateLimiter = emailRateLimiter;
     this.storageService = storageService;
     this.portalBaseUrl = portalBaseUrl;
-    try {
-      this.secureRandom = SecureRandom.getInstanceStrong();
-    } catch (NoSuchAlgorithmException e) {
-      throw new IllegalStateException("No strong SecureRandom available", e);
-    }
+    this.secureRandom = new SecureRandom();
   }
 
   /**
@@ -256,6 +251,12 @@ public class AcceptanceService {
         portalContactRepository.findById(request.getPortalContactId()).orElse(null);
     if (doc != null && contact != null) {
       sendConfirmationEmail(request, contact, doc);
+    } else {
+      log.warn(
+          "Skipping confirmation email for request={}: doc={}, contact={} (null indicates data integrity issue)",
+          request.getId(),
+          doc != null ? doc.getId() : "null",
+          contact != null ? contact.getId() : "null");
     }
 
     log.info("Acceptance request {} accepted by '{}'", request.getId(), submission.name());
@@ -318,6 +319,12 @@ public class AcceptanceService {
         portalContactRepository.findById(request.getPortalContactId()).orElse(null);
     if (doc != null && contact != null) {
       sendAcceptanceEmail(request, contact, doc, TEMPLATE_REMINDER);
+    } else {
+      log.warn(
+          "Skipping reminder email for request={}: doc={}, contact={} (null indicates data integrity issue)",
+          request.getId(),
+          doc != null ? doc.getId() : "null",
+          contact != null ? contact.getId() : "null");
     }
 
     request.recordReminder();

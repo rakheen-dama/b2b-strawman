@@ -19,6 +19,10 @@ vi.mock("@/lib/actions/template-clause-actions", () => ({
   getTemplateClauses: (...args: unknown[]) => mockGetTemplateClauses(...args),
 }));
 
+vi.mock("@/components/acceptance/SendForAcceptanceDialog", () => ({
+  SendForAcceptanceDialog: () => null,
+}));
+
 describe("GenerateDocumentDialog", () => {
   const baseProps = {
     templateId: "tpl-1",
@@ -170,6 +174,50 @@ describe("GenerateDocumentDialog", () => {
     await waitFor(() => {
       expect(screen.getByText("Required field warnings")).toBeInTheDocument();
       expect(screen.getByText("project.missing_field")).toBeInTheDocument();
+    });
+  });
+
+  it("shows Send for Acceptance button after save when customerId is provided and isAdmin", async () => {
+    mockGenerateDocument.mockResolvedValue({
+      success: true,
+      data: {
+        id: "gen-1",
+        fileName: "engagement-letter.pdf",
+        fileSize: 1024,
+        documentId: "doc-1",
+        generatedAt: "2026-01-15T00:00:00Z",
+      },
+    });
+
+    const user = userEvent.setup();
+    render(
+      <GenerateDocumentDialog
+        {...baseProps}
+        customerId="cust-1"
+        isAdmin
+      />,
+    );
+
+    // Wait for preview to load
+    await waitFor(() => {
+      expect(screen.getByTitle("Document Preview")).toBeInTheDocument();
+    });
+
+    await user.click(
+      screen.getByRole("button", { name: /Save to Documents/i }),
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Document saved successfully"),
+      ).toBeInTheDocument();
+    });
+
+    // "Send for Acceptance" button should appear
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: /Send for Acceptance/i }),
+      ).toBeInTheDocument();
     });
   });
 

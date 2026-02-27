@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { Download, Send, Trash2 } from "lucide-react";
+import React, { useCallback, useEffect, useState } from "react";
+import { ChevronDown, ChevronRight, Download, Send, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -32,6 +32,7 @@ import { getAcceptanceRequests } from "@/lib/actions/acceptance-actions";
 import type { AcceptanceRequestResponse } from "@/lib/actions/acceptance-actions";
 import { AcceptanceStatusBadge } from "@/components/acceptance/AcceptanceStatusBadge";
 import { SendForAcceptanceDialog } from "@/components/acceptance/SendForAcceptanceDialog";
+import { AcceptanceDetailPanel } from "@/components/acceptance/AcceptanceDetailPanel";
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -68,6 +69,7 @@ export function GeneratedDocumentsList({
   >({});
   const [sendDialogDocId, setSendDialogDocId] = useState<string | null>(null);
   const [sendDialogOpen, setSendDialogOpen] = useState(false);
+  const [expandedDocId, setExpandedDocId] = useState<string | null>(null);
 
   const showAcceptanceColumn = isAdmin && !!customerId;
 
@@ -219,92 +221,127 @@ export function GeneratedDocumentsList({
         <TableBody>
           {documents.map((doc) => {
             const acceptanceRequest = acceptanceMap[doc.id];
+            const isExpanded = expandedDocId === doc.id;
+            const columnCount = 5 + (showAcceptanceColumn ? 1 : 0);
             return (
-              <TableRow key={doc.id}>
-                <TableCell className="font-medium">{doc.templateName}</TableCell>
-                <TableCell>{doc.generatedByName}</TableCell>
-                <TableCell>{formatDate(doc.generatedAt)}</TableCell>
-                <TableCell>{formatFileSize(doc.fileSize)}</TableCell>
-                {showAcceptanceColumn && (
+              <React.Fragment key={doc.id}>
+                <TableRow>
+                  <TableCell className="font-medium">{doc.templateName}</TableCell>
+                  <TableCell>{doc.generatedByName}</TableCell>
+                  <TableCell>{formatDate(doc.generatedAt)}</TableCell>
+                  <TableCell>{formatFileSize(doc.fileSize)}</TableCell>
+                  {showAcceptanceColumn && (
+                    <TableCell>
+                      {acceptanceRequest ? (
+                        <button
+                          type="button"
+                          className="inline-flex cursor-pointer items-center gap-1"
+                          onClick={() =>
+                            setExpandedDocId(isExpanded ? null : doc.id)
+                          }
+                          aria-label={
+                            isExpanded
+                              ? "Collapse acceptance details"
+                              : "Expand acceptance details"
+                          }
+                        >
+                          <AcceptanceStatusBadge
+                            status={acceptanceRequest.status}
+                          />
+                          {isExpanded ? (
+                            <ChevronDown className="size-3.5 text-slate-400" />
+                          ) : (
+                            <ChevronRight className="size-3.5 text-slate-400" />
+                          )}
+                        </button>
+                      ) : null}
+                    </TableCell>
+                  )}
                   <TableCell>
-                    {acceptanceRequest ? (
-                      <AcceptanceStatusBadge status={acceptanceRequest.status} />
-                    ) : null}
-                  </TableCell>
-                )}
-                <TableCell>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-8"
-                      onClick={() => handleDownload(doc)}
-                      title="Download"
-                    >
-                      <Download className="size-4" />
-                    </Button>
-                    {isAdmin && customerId && (
+                    <div className="flex items-center gap-1">
                       <Button
                         variant="ghost"
                         size="icon"
                         className="size-8"
-                        onClick={() => {
-                          setSendDialogDocId(doc.id);
-                          setSendDialogOpen(true);
-                        }}
-                        title="Send for Acceptance"
+                        onClick={() => handleDownload(doc)}
+                        title="Download"
                       >
-                        <Send className="size-4" />
+                        <Download className="size-4" />
                       </Button>
-                    )}
-                    {isAdmin && (
-                      <AlertDialog
-                        open={deleteDialogOpen && deleteTargetId === doc.id}
-                        onOpenChange={(open) => {
-                          setDeleteDialogOpen(open);
-                          if (!open) setDeleteTargetId(null);
-                        }}
-                      >
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="size-8 text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300"
-                            onClick={() => {
-                              setDeleteTargetId(doc.id);
-                              setDeleteDialogOpen(true);
-                            }}
-                            title="Delete"
-                          >
-                            <Trash2 className="size-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Generated Document</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete this generated document? This
-                              action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel disabled={!!deletingId}>
-                              Cancel
-                            </AlertDialogCancel>
+                      {isAdmin && customerId && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-8"
+                          onClick={() => {
+                            setSendDialogDocId(doc.id);
+                            setSendDialogOpen(true);
+                          }}
+                          title="Send for Acceptance"
+                        >
+                          <Send className="size-4" />
+                        </Button>
+                      )}
+                      {isAdmin && (
+                        <AlertDialog
+                          open={deleteDialogOpen && deleteTargetId === doc.id}
+                          onOpenChange={(open) => {
+                            setDeleteDialogOpen(open);
+                            if (!open) setDeleteTargetId(null);
+                          }}
+                        >
+                          <AlertDialogTrigger asChild>
                             <Button
-                              variant="destructive"
-                              onClick={handleDelete}
-                              disabled={!!deletingId}
+                              variant="ghost"
+                              size="icon"
+                              className="size-8 text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300"
+                              onClick={() => {
+                                setDeleteTargetId(doc.id);
+                                setDeleteDialogOpen(true);
+                              }}
+                              title="Delete"
                             >
-                              {deletingId ? "Deleting..." : "Delete"}
+                              <Trash2 className="size-4" />
                             </Button>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Generated Document</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete this generated document? This
+                                action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel disabled={!!deletingId}>
+                                Cancel
+                              </AlertDialogCancel>
+                              <Button
+                                variant="destructive"
+                                onClick={handleDelete}
+                                disabled={!!deletingId}
+                              >
+                                {deletingId ? "Deleting..." : "Delete"}
+                              </Button>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+                {isExpanded && acceptanceRequest && (
+                  <TableRow>
+                    <TableCell colSpan={columnCount} className="bg-slate-50/50 dark:bg-slate-900/30 p-4">
+                      <AcceptanceDetailPanel
+                        request={acceptanceRequest}
+                        isAdmin={isAdmin}
+                        onUpdated={fetchAcceptanceStatuses}
+                      />
+                    </TableCell>
+                  </TableRow>
+                )}
+              </React.Fragment>
             );
           })}
         </TableBody>

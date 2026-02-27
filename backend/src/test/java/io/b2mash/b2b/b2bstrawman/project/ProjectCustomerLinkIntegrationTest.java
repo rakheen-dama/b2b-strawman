@@ -43,6 +43,7 @@ class ProjectCustomerLinkIntegrationTest {
 
   private String activeCustomerId;
   private String prospectCustomerId;
+  private String offboardedCustomerId;
 
   @BeforeAll
   void provisionTenantAndMembers() throws Exception {
@@ -56,6 +57,10 @@ class ProjectCustomerLinkIntegrationTest {
 
     // Create a PROSPECT customer (default lifecycle status)
     prospectCustomerId = createCustomer("Prospect Customer", "pcl_prospect@test.com");
+
+    // Create an OFFBOARDED customer (ACTIVE -> OFFBOARDING -> OFFBOARDED)
+    offboardedCustomerId =
+        createCustomerAndOffboard("Offboarded Customer", "pcl_offboard@test.com");
   }
 
   // --- 205.1: Create project with customerId and dueDate ---
@@ -125,6 +130,22 @@ class ProjectCustomerLinkIntegrationTest {
         .andExpect(status().isBadRequest());
   }
 
+  @Test
+  void shouldRejectCreateProjectWithOffboardedCustomer() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/projects")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"name": "Offboarded Link", "description": "Offboarded customer",
+                     "customerId": "%s"}
+                    """
+                        .formatted(offboardedCustomerId)))
+        .andExpect(status().isBadRequest());
+  }
+
   // --- 205.2: Update project with customerId and dueDate ---
 
   @Test
@@ -148,11 +169,11 @@ class ProjectCustomerLinkIntegrationTest {
   }
 
   @Test
-  void shouldUnlinkCustomerFromProject() throws Exception {
+  void shouldKeepCustomerLinkWhenOmittedFromUpdate() throws Exception {
     // Create project with customer
-    String projectId = createProjectWithCustomer("Unlink Test", activeCustomerId);
+    String projectId = createProjectWithCustomer("Keep Link Test", activeCustomerId);
 
-    // Update without customerId (unlink)
+    // Update without customerId — null means no change, customer link is preserved
     mockMvc
         .perform(
             put("/api/projects/" + projectId)
@@ -160,10 +181,10 @@ class ProjectCustomerLinkIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"name": "Unlink Test", "description": "Unlinked"}
+                    {"name": "Keep Link Test", "description": "Still linked"}
                     """))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.customerId").isEmpty());
+        .andExpect(jsonPath("$.customerId").value(activeCustomerId));
   }
 
   @Test
@@ -183,6 +204,42 @@ class ProjectCustomerLinkIntegrationTest {
         .andExpect(status().isNotFound());
   }
 
+  @Test
+  void shouldRejectUpdateProjectWithProspectCustomer() throws Exception {
+    String projectId = createProject("Update Prospect Link");
+
+    mockMvc
+        .perform(
+            put("/api/projects/" + projectId)
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"name": "Update Prospect Link", "description": "Prospect customer",
+                     "customerId": "%s"}
+                    """
+                        .formatted(prospectCustomerId)))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void shouldRejectUpdateProjectWithOffboardedCustomer() throws Exception {
+    String projectId = createProject("Update Offboarded Link");
+
+    mockMvc
+        .perform(
+            put("/api/projects/" + projectId)
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"name": "Update Offboarded Link", "description": "Offboarded customer",
+                     "customerId": "%s"}
+                    """
+                        .formatted(offboardedCustomerId)))
+        .andExpect(status().isBadRequest());
+  }
+
   // --- 205.5: Filter projects by customerId ---
 
   @Test
@@ -191,15 +248,27 @@ class ProjectCustomerLinkIntegrationTest {
     createProjectWithCustomer("Filtered Linked", activeCustomerId);
     createProject("Filtered Standalone");
 
-    mockMvc
-        .perform(
-            get("/api/projects")
-                .with(ownerJwt())
-                .param("status", "ALL")
-                .param("customerId", activeCustomerId))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$").isArray())
-        .andExpect(jsonPath("$[?(@.customerId == '%s')]".formatted(activeCustomerId)).exists());
+    var result =
+        mockMvc
+            .perform(
+                get("/api/projects")
+                    .with(ownerJwt())
+                    .param("status", "ALL")
+                    .param("customerId", activeCustomerId))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").isArray())
+            .andReturn();
+
+    // Verify all returned projects have the matching customerId
+    String json = result.getResponse().getContentAsString();
+    List<String> customerIds = JsonPath.read(json, "$[*].customerId");
+    org.assertj.core.api.Assertions.assertThat(customerIds).isNotEmpty();
+    org.assertj.core.api.Assertions.assertThat(customerIds)
+        .allMatch(cid -> activeCustomerId.equals(cid));
+
+    // Verify standalone projects without customer link are excluded
+    List<String> names = JsonPath.read(json, "$[*].name");
+    org.assertj.core.api.Assertions.assertThat(names).doesNotContain("Filtered Standalone");
   }
 
   // --- 205.3: DTO fields present in response ---
@@ -272,6 +341,30 @@ class ProjectCustomerLinkIntegrationTest {
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
+  }
+
+  private String createCustomerAndOffboard(String name, String email) throws Exception {
+    String custId = createCustomerAndActivate(name, email);
+
+    // Transition ACTIVE -> OFFBOARDING
+    mockMvc
+        .perform(
+            post("/api/customers/" + custId + "/transition")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"targetStatus\": \"OFFBOARDING\"}"))
+        .andExpect(status().isOk());
+
+    // Transition OFFBOARDING -> OFFBOARDED
+    mockMvc
+        .perform(
+            post("/api/customers/" + custId + "/transition")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"targetStatus\": \"OFFBOARDED\"}"))
+        .andExpect(status().isOk());
+
+    return custId;
   }
 
   private String createCustomerAndActivate(String name, String email) throws Exception {

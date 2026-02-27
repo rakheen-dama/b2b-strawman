@@ -250,9 +250,11 @@ public class ProjectService {
 
     // Validate customer link if provided
     if (customerId != null) {
-      customerRepository
-          .findById(customerId)
-          .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+      var customer =
+          customerRepository
+              .findById(customerId)
+              .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+      customerLifecycleGuard.requireActionPermitted(customer, LifecycleAction.CREATE_PROJECT);
     }
 
     // Capture old values before mutation
@@ -274,13 +276,13 @@ public class ProjectService {
       project.setAppliedFieldGroups(appliedFieldGroups);
     }
 
-    project.update(name, description, null, null);
-    // Set customerId and dueDate explicitly via setters (allows unlinking via null)
-    project.setCustomerId(customerId);
-    project.setDueDate(dueDate);
+    // Use Project.update() which applies null-means-no-change convention
+    project.update(name, description, customerId, dueDate);
     project = repository.save(project);
 
-    // Build delta map -- only include changed fields
+    // Build delta map -- only include changed fields (use actual values from entity)
+    UUID newCustomerId = project.getCustomerId();
+    LocalDate newDueDate = project.getDueDate();
     var details = new LinkedHashMap<String, Object>();
     if (!Objects.equals(oldName, name)) {
       details.put("name", Map.of("from", oldName, "to", name));
@@ -292,19 +294,19 @@ public class ProjectService {
               "from", oldDescription != null ? oldDescription : "",
               "to", description != null ? description : ""));
     }
-    if (!Objects.equals(oldCustomerId, customerId)) {
+    if (!Objects.equals(oldCustomerId, newCustomerId)) {
       details.put(
           "customerId",
           Map.of(
               "from", oldCustomerId != null ? oldCustomerId.toString() : "",
-              "to", customerId != null ? customerId.toString() : ""));
+              "to", newCustomerId != null ? newCustomerId.toString() : ""));
     }
-    if (!Objects.equals(oldDueDate, dueDate)) {
+    if (!Objects.equals(oldDueDate, newDueDate)) {
       details.put(
           "dueDate",
           Map.of(
               "from", oldDueDate != null ? oldDueDate.toString() : "",
-              "to", dueDate != null ? dueDate.toString() : ""));
+              "to", newDueDate != null ? newDueDate.toString() : ""));
     }
 
     auditService.log(
@@ -322,14 +324,6 @@ public class ProjectService {
             project.getId(), project.getName(), project.getDescription(), null, orgId, tenantId));
 
     return new ProjectWithRole(project, access.projectRole());
-  }
-
-  @Transactional(readOnly = true)
-  public List<Project> listProjectsByCustomer(UUID customerId) {
-    customerRepository
-        .findById(customerId)
-        .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
-    return repository.findByCustomerId(customerId);
   }
 
   @Transactional

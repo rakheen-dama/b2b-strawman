@@ -99,6 +99,10 @@ public class ProjectController {
               view, "PROJECT", "projects", Project.class, accessibleIds, Project::getId);
 
       if (filtered != null) {
+        // Apply customerId filter to view-based results
+        if (customerId != null) {
+          filtered = filtered.stream().filter(p -> customerId.equals(p.getCustomerId())).toList();
+        }
         var projectIds = filtered.stream().map(Project::getId).toList();
         var tagsByEntityId = entityTagService.getEntityTagsBatch("PROJECT", projectIds);
         var memberNames = resolveNames(filtered);

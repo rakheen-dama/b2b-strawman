@@ -106,7 +106,7 @@ This is a **structural hardening phase**, not a feature phase. No new pages are 
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 2a (parallel) | 202 | 202A | `TaskService` lifecycle methods (`completeTask`, `cancelTask`, `reopenTask`) + transition validation + audit events + domain events + notification for cancelled-by-other. ~1 modified file, ~2 new event files. Backend only. | |
+| 2a (parallel) | 202 | 202A | `TaskService` lifecycle methods (`completeTask`, `cancelTask`, `reopenTask`) + transition validation + audit events + domain events + notification for cancelled-by-other. ~1 modified file, ~2 new event files. Backend only. | **Done** (PR #413) |
 | 2b (parallel) | 204 | 204A | `ProjectService` lifecycle methods (`completeProject`, `archiveProject`, `reopenProject`) + completion guardrails (task check, unbilled time check) + audit events + domain events + notification to project members. ~1 modified file, ~2 new event files. Backend only. | |
 | 2c (parallel) | 205 | 205A | `ProjectService` extension: `customerId` and `dueDate` in create/update + customer validation (exists + not OFFBOARDED) + `ProjectRepository` filter-by-status and filter-by-customer queries + `GET /api/customers/{id}/projects` convenience query. ~2 modified files. Backend only. | |
 
@@ -237,7 +237,7 @@ Stage 6: [207B] // [208B]                                        (parallel, afte
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **202A** | 202.1--202.7 | `TaskService` lifecycle methods: `completeTask()` (validates IN_PROGRESS, sets completedAt/completedBy), `cancelTask()` (validates OPEN/IN_PROGRESS, permission check: assignee or ADMIN+), `reopenTask()` (validates DONE/CANCELLED, clears fields) + 3 domain event records (`TaskCompletedEvent`, `TaskCancelledEvent`, `TaskReopenedEvent`) + audit events + notification on cancel-by-other. ~1 modified file, ~3 new event files. Backend only. | |
+| **202A** | 202.1--202.7 | `TaskService` lifecycle methods: `completeTask()` (validates IN_PROGRESS, sets completedAt/completedBy), `cancelTask()` (validates OPEN/IN_PROGRESS, permission check: assignee or ADMIN+), `reopenTask()` (validates DONE/CANCELLED, clears fields) + 3 domain event records (`TaskCompletedEvent`, `TaskCancelledEvent`, `TaskReopenedEvent`) + audit events + notification on cancel-by-other. ~1 modified file, ~3 new event files. Backend only. | **Done** (PR #413) |
 | **202B** | 202.8--202.13 | `TaskController` transition endpoints: `PATCH /api/projects/{projectId}/tasks/{taskId}/complete`, `.../cancel`, `.../reopen` + update `TaskResponse` DTO (add `completedAt`, `completedBy`, `cancelledAt` fields) + update `listTasks` to support comma-separated status filter (default: `OPEN,IN_PROGRESS`) + controller integration tests (~12 tests). ~1 modified file, ~1 new test file. Backend only. | |
 
 ### Tasks

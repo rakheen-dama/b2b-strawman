@@ -236,7 +236,7 @@
 | 200 | Frontend — OrgSettings Acceptance Config | Frontend | 196 | S | 200A | **Done** (PR #410) |
 | **Phase 29 — Entity Lifecycle & Relationship Integrity** | | | | | | See [tasks/phase29-entity-lifecycle-integrity.md](tasks/phase29-entity-lifecycle-integrity.md) |
 | 201 | Task Lifecycle Foundation — Migration, Enums & Entity | Backend | -- | M | 201A, 201B | **Done** (PRs #411, #412) |
-| 202 | Task Lifecycle Service + Transition Endpoints | Backend | 201 | L | 202A, 202B | |
+| 202 | Task Lifecycle Service + Transition Endpoints | Backend | 201 | L | 202A, 202B | 202A **Done** (PR #413) |
 | 203 | Project Lifecycle Foundation — Migration, Enums & Entity | Backend | -- | M | 203A, 203B | |
 | 204 | Project Lifecycle Service + Transition Endpoints | Backend | 203, 201 | L | 204A, 204B | |
 | 205 | Project-Customer Link + Due Date | Backend | 203 | M | 205A, 205B | |

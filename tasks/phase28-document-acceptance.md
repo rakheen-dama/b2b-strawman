@@ -22,7 +22,7 @@ Phase 28 adds a **document acceptance workflow** to the DocTeams platform. Firms
 | 193 | AcceptanceRequest Entity Foundation + Migration | Backend | -- | M | 193A, 193B | **Done** (PRs #397, #398) |
 | 194 | AcceptanceService Core Workflow + Email | Backend | 193 | L | 194A, 194B | **Done** (PRs #399, #400) |
 | 195 | Certificate Generation + Portal Read-Model Sync | Backend | 194 | M | 195A, 195B | **Done** (PRs #401, #402) |
-| 196 | Firm-Facing REST API + Audit + Notifications | Backend | 194, 195 | M | 196A, 196B | |
+| 196 | Firm-Facing REST API + Audit + Notifications | Backend | 194, 195 | M | 196A, 196B | **Done** (PRs #403, #404) |
 | 197 | Portal Acceptance Controller + Expiry Processor | Backend | 194, 195 | M | 197A | |
 | 198 | Frontend -- Send for Acceptance + Status Tracking | Frontend | 196 | M | 198A, 198B | |
 | 199 | Portal -- Acceptance Page + Pending List | Portal | 197 | M | 199A, 199B | |
@@ -118,7 +118,7 @@ Phase 28 adds a **document acceptance workflow** to the DocTeams platform. Firms
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 4a | 196 | 196B | Audit event recording for all state transitions (acceptance.created, .sent, .viewed, .accepted, .reminded, .revoked, .expired, .certificate_generated) wired into AcceptanceService + `NotificationEventHandler` extension for `AcceptanceRequestAcceptedEvent` (in-app notification to sender) + OrgSettings controller extension (acceptance config endpoint) + integration tests. ~0-1 new files, ~4 modified files. Backend only. | |
+| 4a | 196 | 196B | Audit event recording for all state transitions (acceptance.created, .sent, .viewed, .accepted, .reminded, .revoked, .expired, .certificate_generated) wired into AcceptanceService + `NotificationEventHandler` extension for `AcceptanceRequestAcceptedEvent` (in-app notification to sender) + OrgSettings controller extension (acceptance config endpoint) + integration tests. ~0-1 new files, ~4 modified files. Backend only. | **Done** (PR #404) |
 
 ### Stage 5: Frontend (parallel tracks)
 
@@ -380,7 +380,7 @@ Stage 6: [198B] // [199B]                                           (parallel, a
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **196A** | 196.1--196.6 | `AcceptanceController` at `/api/acceptance-requests` (POST create, GET list by document/customer, GET detail, POST remind, POST revoke, GET certificate download) + response DTOs (`AcceptanceRequestResponse`, `CreateAcceptanceRequest`) + `@PreAuthorize` RBAC annotations + controller integration tests. ~4 new files, ~1 test file. Backend only. | **Done** (PR #403) |
-| **196B** | 196.7--196.12 | Audit event recording wired into AcceptanceService for all 8 event types (acceptance.created, .sent, .viewed, .accepted, .reminded, .revoked, .expired, .certificate_generated) + `NotificationEventHandler` extension for in-app acceptance notification + OrgSettings controller/service extension (acceptance config endpoint) + audit + notification integration tests. ~0-1 new files, ~5 modified files, ~1 test file. Backend only. | |
+| **196B** | 196.7--196.12 | Audit event recording wired into AcceptanceService for all 8 event types (acceptance.created, .sent, .viewed, .accepted, .reminded, .revoked, .expired, .certificate_generated) + `NotificationEventHandler` extension for in-app acceptance notification + OrgSettings controller/service extension (acceptance config endpoint) + audit + notification integration tests. ~0-1 new files, ~5 modified files, ~1 test file. Backend only. | **Done** (PR #404) |
 
 ### Tasks
 

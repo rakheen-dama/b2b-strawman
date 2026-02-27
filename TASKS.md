@@ -229,7 +229,7 @@
 | 193 | AcceptanceRequest Entity Foundation + Migration | Backend | -- | M | 193A, 193B | **Done** (PRs #397, #398) |
 | 194 | AcceptanceService Core Workflow + Email | Backend | 193 | L | 194A, 194B | **Done** (PRs #399, #400) |
 | 195 | Certificate Generation + Portal Read-Model Sync | Backend | 194 | M | 195A, 195B | **Done** (PRs #401, #402) |
-| 196 | Firm-Facing REST API + Audit + Notifications | Backend | 194, 195 | M | 196A, 196B | 196A **Done** (PR #403) |
+| 196 | Firm-Facing REST API + Audit + Notifications | Backend | 194, 195 | M | 196A, 196B | **Done** (PRs #403, #404) |
 | 197 | Portal Acceptance Controller + Expiry Processor | Backend | 194, 195 | M | 197A | |
 | 198 | Frontend — Send for Acceptance + Status Tracking | Frontend | 196 | M | 198A, 198B | |
 | 199 | Portal — Acceptance Page + Pending List | Portal | 197 | M | 199A, 199B | |

@@ -28,6 +28,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.tax.TaxRateRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryService;
 import java.math.BigDecimal;
@@ -70,6 +71,7 @@ class RetainerPeriodServiceTest {
   @Autowired private CustomerProjectRepository customerProjectRepository;
   @Autowired private TaskRepository taskRepository;
   @Autowired private TimeEntryService timeEntryService;
+  @Autowired private TaxRateRepository taxRateRepository;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
@@ -89,6 +91,10 @@ class RetainerPeriodServiceTest {
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+
+    // Remove seeded tax rates so retainer tests don't get unexpected tax application
+    runInTenant(
+        () -> transactionTemplate.executeWithoutResult(tx -> taxRateRepository.deleteAll()));
   }
 
   private void runInTenant(Runnable action) {

@@ -5,13 +5,21 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.tax.dto.CreateTaxRateRequest;
 import io.b2mash.b2b.b2bstrawman.tax.dto.TaxRateResponse;
 import io.b2mash.b2b.b2bstrawman.tax.dto.UpdateTaxRateRequest;
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,10 +33,24 @@ public class TaxRateService {
 
   private final TaxRateRepository taxRateRepository;
   private final AuditService auditService;
+  private final InvoiceLineRepository invoiceLineRepository;
+  private final InvoiceRepository invoiceRepository;
+  private final TaxCalculationService taxCalculationService;
+  private final OrgSettingsRepository orgSettingsRepository;
 
-  public TaxRateService(TaxRateRepository taxRateRepository, AuditService auditService) {
+  public TaxRateService(
+      TaxRateRepository taxRateRepository,
+      AuditService auditService,
+      InvoiceLineRepository invoiceLineRepository,
+      InvoiceRepository invoiceRepository,
+      TaxCalculationService taxCalculationService,
+      OrgSettingsRepository orgSettingsRepository) {
     this.taxRateRepository = taxRateRepository;
     this.auditService = auditService;
+    this.invoiceLineRepository = invoiceLineRepository;
+    this.invoiceRepository = invoiceRepository;
+    this.taxCalculationService = taxCalculationService;
+    this.orgSettingsRepository = orgSettingsRepository;
   }
 
   @Transactional
@@ -92,6 +114,11 @@ public class TaxRateService {
     validateNameUnique(request.name(), id);
     validateExemptZeroConstraint(request.isExempt(), request.rate());
 
+    // Capture old values BEFORE update (needed for change detection)
+    String oldName = taxRate.getName();
+    BigDecimal oldRate = taxRate.getRate();
+    boolean oldExempt = taxRate.isExempt();
+
     boolean wasDefault = taxRate.isDefault();
     Optional<UUID> clearedDefaultId = Optional.empty();
     if (request.isDefault() && !wasDefault) {
@@ -106,6 +133,15 @@ public class TaxRateService {
         request.sortOrder(),
         request.active());
     taxRate = taxRateRepository.save(taxRate);
+
+    // Batch recalculate DRAFT lines if rate/name/exempt changed
+    boolean rateChanged = oldRate.compareTo(request.rate()) != 0;
+    boolean nameChanged = !oldName.equals(request.name());
+    boolean exemptChanged = oldExempt != request.isExempt();
+
+    if (rateChanged || nameChanged || exemptChanged) {
+      batchRecalculateDraftLines(taxRate);
+    }
 
     log.info("Updated tax rate {} name={}", taxRate.getId(), taxRate.getName());
 
@@ -206,6 +242,56 @@ public class TaxRateService {
       throw new InvalidStateException(
           "Invalid tax rate", "Exempt tax rates must have a rate of 0.00");
     }
+  }
+
+  /**
+   * Batch recalculates all DRAFT invoice lines referencing the given tax rate. Updates tax
+   * snapshots, recalculates tax amounts, and recalculates parent invoice totals.
+   */
+  private void batchRecalculateDraftLines(TaxRate taxRate) {
+    var affectedLines =
+        invoiceLineRepository.findByTaxRateIdAndInvoice_Status(
+            taxRate.getId(), InvoiceStatus.DRAFT);
+
+    if (affectedLines.isEmpty()) {
+      return;
+    }
+
+    boolean taxInclusive =
+        orgSettingsRepository.findForCurrentTenant().map(OrgSettings::isTaxInclusive).orElse(false);
+
+    Set<UUID> affectedInvoiceIds = new HashSet<>();
+    for (InvoiceLine line : affectedLines) {
+      BigDecimal newTaxAmount =
+          taxCalculationService.calculateLineTax(
+              line.getAmount(), taxRate.getRate(), taxInclusive, taxRate.isExempt());
+      line.applyTaxRate(taxRate, newTaxAmount);
+      affectedInvoiceIds.add(line.getInvoiceId());
+    }
+    invoiceLineRepository.saveAll(affectedLines);
+
+    // Recalculate totals on each affected invoice
+    for (UUID invoiceId : affectedInvoiceIds) {
+      var invoice = invoiceRepository.findById(invoiceId).orElse(null);
+      if (invoice != null) {
+        var allLines = invoiceLineRepository.findByInvoiceIdOrderBySortOrder(invoiceId);
+        BigDecimal subtotal =
+            allLines.stream().map(InvoiceLine::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+        boolean hasPerLineTax = taxCalculationService.hasPerLineTax(allLines);
+        BigDecimal perLineTaxSum =
+            allLines.stream()
+                .map(l -> l.getTaxAmount() != null ? l.getTaxAmount() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        invoice.recalculateTotals(subtotal, hasPerLineTax, perLineTaxSum, taxInclusive);
+        invoiceRepository.save(invoice);
+      }
+    }
+
+    log.info(
+        "Batch recalculated {} DRAFT lines across {} invoices for tax rate {}",
+        affectedLines.size(),
+        affectedInvoiceIds.size(),
+        taxRate.getId());
   }
 
   /**

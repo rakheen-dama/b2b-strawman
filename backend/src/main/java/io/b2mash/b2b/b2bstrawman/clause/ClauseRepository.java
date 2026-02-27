@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 /** Repository for {@link Clause} entities. */
 public interface ClauseRepository extends JpaRepository<Clause, UUID> {
@@ -21,4 +22,9 @@ public interface ClauseRepository extends JpaRepository<Clause, UUID> {
 
   @Query("SELECT DISTINCT c.category FROM Clause c WHERE c.active = true ORDER BY c.category")
   List<String> findDistinctActiveCategories();
+
+  @Query(
+      value = "SELECT COUNT(*) FROM template_clauses WHERE clause_id = :clauseId",
+      nativeQuery = true)
+  long countTemplateClauseReferences(@Param("clauseId") UUID clauseId);
 }

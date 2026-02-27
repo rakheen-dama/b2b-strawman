@@ -228,12 +228,21 @@
 | **Phase 28 — Document Acceptance (Lightweight E-Signing)** | | | | | | See [tasks/phase28-document-acceptance.md](tasks/phase28-document-acceptance.md) |
 | 193 | AcceptanceRequest Entity Foundation + Migration | Backend | -- | M | 193A, 193B | **Done** (PRs #397, #398) |
 | 194 | AcceptanceService Core Workflow + Email | Backend | 193 | L | 194A, 194B | **Done** (PRs #399, #400) |
-| 195 | Certificate Generation + Portal Read-Model Sync | Backend | 194 | M | 195A, 195B | 195A **Done** (PR #401) |
+| 195 | Certificate Generation + Portal Read-Model Sync | Backend | 194 | M | 195A, 195B | **Done** (PRs #401, #402) |
 | 196 | Firm-Facing REST API + Audit + Notifications | Backend | 194, 195 | M | 196A, 196B | |
 | 197 | Portal Acceptance Controller + Expiry Processor | Backend | 194, 195 | M | 197A | |
 | 198 | Frontend — Send for Acceptance + Status Tracking | Frontend | 196 | M | 198A, 198B | |
 | 199 | Portal — Acceptance Page + Pending List | Portal | 197 | M | 199A, 199B | |
 | 200 | Frontend — OrgSettings Acceptance Config | Frontend | 196 | S | 200A | |
+| **Phase 29 — Entity Lifecycle & Relationship Integrity** | | | | | | See [tasks/phase29-entity-lifecycle-integrity.md](tasks/phase29-entity-lifecycle-integrity.md) |
+| 201 | Task Lifecycle Foundation — Migration, Enums & Entity | Backend | -- | M | 201A, 201B | |
+| 202 | Task Lifecycle Service + Transition Endpoints | Backend | 201 | L | 202A, 202B | |
+| 203 | Project Lifecycle Foundation — Migration, Enums & Entity | Backend | -- | M | 203A, 203B | |
+| 204 | Project Lifecycle Service + Transition Endpoints | Backend | 203, 201 | L | 204A, 204B | |
+| 205 | Project-Customer Link + Due Date | Backend | 203 | M | 205A, 205B | |
+| 206 | Delete Protection & Cross-Entity Guards | Backend | 201, 203, 205 | M | 206A, 206B | |
+| 207 | Task Lifecycle Frontend | Frontend | 202 | M | 207A, 207B | |
+| 208 | Project Lifecycle Frontend | Frontend | 204, 205 | L | 208A, 208B | |
 
 ---
 

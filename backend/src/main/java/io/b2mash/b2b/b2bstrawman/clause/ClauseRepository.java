@@ -20,6 +20,8 @@ public interface ClauseRepository extends JpaRepository<Clause, UUID> {
 
   List<Clause> findAllByOrderByCategoryAscSortOrderAsc();
 
+  List<Clause> findByCategoryOrderByCategoryAscSortOrderAsc(String category);
+
   @Query("SELECT DISTINCT c.category FROM Clause c WHERE c.active = true ORDER BY c.category")
   List<String> findDistinctActiveCategories();
 

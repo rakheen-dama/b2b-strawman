@@ -204,9 +204,7 @@ public class ClauseService {
     if (category != null && !category.isBlank()) {
       clauses =
           includeInactive
-              ? clauseRepository.findAllByOrderByCategoryAscSortOrderAsc().stream()
-                  .filter(c -> c.getCategory().equals(category))
-                  .toList()
+              ? clauseRepository.findByCategoryOrderByCategoryAscSortOrderAsc(category)
               : clauseRepository.findByCategoryAndActiveTrueOrderBySortOrderAsc(category);
     } else {
       clauses =
@@ -247,7 +245,7 @@ public class ClauseService {
                     new InvalidStateException(
                         "Unsupported entity type", "No context builder for " + entityType));
 
-    var memberId = RequestScopes.MEMBER_ID.isBound() ? RequestScopes.MEMBER_ID.get() : null;
+    var memberId = RequestScopes.MEMBER_ID.get();
     var contextMap = builder.buildContext(entityId, memberId);
     return pdfRenderingService.renderThymeleaf(clause.getBody(), contextMap);
   }

@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
@@ -25,6 +26,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
@@ -44,6 +46,8 @@ class ClauseControllerIntegrationTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
+  @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
+  @Autowired private JdbcTemplate jdbcTemplate;
 
   private String createdClauseId;
 
@@ -198,7 +202,7 @@ class ClauseControllerIntegrationTest {
   @Test
   @Order(11)
   void put_updateSystemClause_returns400() throws Exception {
-    // Create a clause and mark as SYSTEM via sync member workaround
+    // Create a clause via the API
     var result =
         mockMvc
             .perform(
@@ -213,10 +217,23 @@ class ClauseControllerIntegrationTest {
             .andReturn();
     var sysClauseId = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
 
-    // Mark as SYSTEM via direct SQL is not possible from MockMvc.
-    // Instead, test the scenario via the service test (ClauseServiceTest).
-    // This test verifies the controller passes through the 400 from the service.
-    // For now, just verify a normal update works (covered by Order 6).
+    // Mark as SYSTEM via direct SQL in the tenant schema
+    var schema = orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+    jdbcTemplate.update(
+        "UPDATE \"%s\".clauses SET source = 'SYSTEM' WHERE id = ?::uuid".formatted(schema),
+        sysClauseId);
+
+    // Verify PUT returns 400 for SYSTEM clause
+    mockMvc
+        .perform(
+            put("/api/clauses/" + sysClauseId)
+                .with(adminJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                {"title":"Should Fail","description":null,"body":"<p>Nope</p>","category":"general"}
+                """))
+        .andExpect(status().isBadRequest());
   }
 
   @Test

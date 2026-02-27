@@ -160,3 +160,26 @@ export interface PortalProfile {
   displayName: string;
   role: string; // PRIMARY, BILLING, GENERAL
 }
+
+// === Acceptance ===
+
+export type AcceptanceStatus = "PENDING" | "ACCEPTED" | "EXPIRED" | "REVOKED";
+
+export interface AcceptancePageData {
+  requestId: string;
+  status: AcceptanceStatus;
+  documentTitle: string;
+  documentFileName: string;
+  expiresAt: string;
+  orgName: string;
+  orgLogo: string | null;
+  brandColor: string | null;
+  acceptedAt: string | null;
+  acceptorName: string | null;
+}
+
+export interface AcceptanceResponse {
+  status: AcceptanceStatus;
+  acceptedAt: string;
+  acceptorName: string;
+}

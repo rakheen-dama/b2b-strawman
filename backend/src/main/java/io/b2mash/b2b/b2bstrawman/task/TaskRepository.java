@@ -21,9 +21,9 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
       """)
   List<Task> findByProjectIdWithFilters(
       @Param("projectId") UUID projectId,
-      @Param("status") String status,
+      @Param("status") TaskStatus status,
       @Param("assigneeId") UUID assigneeId,
-      @Param("priority") String priority);
+      @Param("priority") TaskPriority priority);
 
   @Query(
       """
@@ -35,8 +35,8 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
       """)
   List<Task> findByProjectIdUnassigned(
       @Param("projectId") UUID projectId,
-      @Param("status") String status,
-      @Param("priority") String priority);
+      @Param("status") TaskStatus status,
+      @Param("priority") TaskPriority priority);
 
   // --- Cross-project queries for My Work (Epic 48A) ---
 
@@ -80,7 +80,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
   /** Counts tasks in a project matching a specific status. */
   @Query("SELECT COUNT(t) FROM Task t WHERE t.projectId = :projectId AND t.status = :status")
   long countByProjectIdAndStatus(
-      @Param("projectId") UUID projectId, @Param("status") String status);
+      @Param("projectId") UUID projectId, @Param("status") TaskStatus status);
 
   /** Counts non-DONE tasks in a project that are past their due date. */
   @Query(
@@ -93,15 +93,15 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
 
   /**
    * Single aggregation query returning all task summary counts for a project. Returns Object[] with
-   * positions: [0]=todo, [1]=inProgress, [2]=inReview, [3]=done, [4]=total, [5]=overdueCount.
+   * positions: [0]=todo, [1]=inProgress, [2]=done, [3]=cancelled, [4]=total, [5]=overdueCount.
    */
   @Query(
       """
       SELECT
           COALESCE(SUM(CASE WHEN t.status = 'OPEN' THEN 1 ELSE 0 END), 0),
           COALESCE(SUM(CASE WHEN t.status = 'IN_PROGRESS' THEN 1 ELSE 0 END), 0),
-          COALESCE(SUM(CASE WHEN t.status = 'IN_REVIEW' THEN 1 ELSE 0 END), 0),
           COALESCE(SUM(CASE WHEN t.status = 'DONE' THEN 1 ELSE 0 END), 0),
+          COALESCE(SUM(CASE WHEN t.status = 'CANCELLED' THEN 1 ELSE 0 END), 0),
           COUNT(t),
           COALESCE(SUM(CASE WHEN t.status <> 'DONE' AND t.dueDate < :today THEN 1 ELSE 0 END), 0)
       FROM Task t

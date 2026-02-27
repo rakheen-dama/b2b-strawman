@@ -28,6 +28,7 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectWithRole;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.task.TaskStatus;
 import io.b2mash.b2b.b2bstrawman.timeentry.MemberTimeSummaryProjection;
 import io.b2mash.b2b.b2bstrawman.timeentry.MyWorkProjectTimeSummaryProjection;
 import io.b2mash.b2b.b2bstrawman.timeentry.TeamWorkloadProjection;
@@ -323,9 +324,10 @@ public class DashboardService {
 
     // Task counts
     long totalTasks = taskRepository.countByProjectId(projectId);
-    long doneTasks = taskRepository.countByProjectIdAndStatus(projectId, "DONE");
-    long inProgressTasks = taskRepository.countByProjectIdAndStatus(projectId, "IN_PROGRESS");
-    long todoTasks = taskRepository.countByProjectIdAndStatus(projectId, "OPEN");
+    long doneTasks = taskRepository.countByProjectIdAndStatus(projectId, TaskStatus.DONE);
+    long inProgressTasks =
+        taskRepository.countByProjectIdAndStatus(projectId, TaskStatus.IN_PROGRESS);
+    long todoTasks = taskRepository.countByProjectIdAndStatus(projectId, TaskStatus.OPEN);
     long overdueTasks = taskRepository.countOverdueByProjectId(projectId, today);
 
     double completionPercent = totalTasks > 0 ? (double) doneTasks / totalTasks * 100 : 0;
@@ -590,7 +592,7 @@ public class DashboardService {
               UUID projectId = project.getId();
 
               long totalTasks = taskRepository.countByProjectId(projectId);
-              long doneTasks = taskRepository.countByProjectIdAndStatus(projectId, "DONE");
+              long doneTasks = taskRepository.countByProjectIdAndStatus(projectId, TaskStatus.DONE);
               long overdueTasks = taskRepository.countOverdueByProjectId(projectId, today);
               double completionPercent = totalTasks > 0 ? (double) doneTasks / totalTasks * 100 : 0;
 

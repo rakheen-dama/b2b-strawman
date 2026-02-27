@@ -184,6 +184,15 @@ class ClauseRenderingIntegrationTest {
   }
 
   @Test
+  void renderFragment_withDangerousContent_throwsSecurityException() {
+    String ssti = "<p>${#ctx.getBean('dataSource')}</p>";
+    var context = Map.<String, Object>of("name", "Test");
+
+    assertThatThrownBy(() -> pdfRenderingService.renderFragment(ssti, context))
+        .isInstanceOf(TemplateSecurityException.class);
+  }
+
+  @Test
   void generatePdf_clauseWithDangerousContent_throwsSecurityException() {
     runInTenant(
         () -> {

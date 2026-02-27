@@ -222,13 +222,17 @@ public class PdfRenderingService {
    * @return the rendered HTML fragment (without html/body wrapper)
    */
   public String renderFragment(String templateContent, Map<String, Object> context) {
+    TemplateSecurityValidator.validate(templateContent);
     String wrapped = "<html><body>" + templateContent + "</body></html>";
     String rendered = renderThymeleaf(wrapped, context);
     // Strip the wrapper to return just the fragment content
-    int bodyStart = rendered.indexOf("<body>");
+    int bodyStart = rendered.indexOf("<body");
+    if (bodyStart >= 0) {
+      bodyStart = rendered.indexOf(">", bodyStart) + 1;
+    }
     int bodyEnd = rendered.indexOf("</body>");
     if (bodyStart >= 0 && bodyEnd > bodyStart) {
-      return rendered.substring(bodyStart + "<body>".length(), bodyEnd).trim();
+      return rendered.substring(bodyStart, bodyEnd).trim();
     }
     return rendered;
   }

@@ -23,7 +23,7 @@ Phase 27 adds a **clause library** to the DocTeams document generation system. C
 | 188 | Template-Clause Association API | Backend | 187 | M | 188A | **Done** (PR #389) |
 | 189 | Generation Pipeline Extension | Backend | 187, 188 | L | 189A, 189B | |
 | 190 | Clause Pack Seeder | Backend | 187, 188 | M | 190A | |
-| 191 | Clause Library Frontend | Frontend | 187 | M | 191A, 191B | 191A **Done** (PR #390) |
+| 191 | Clause Library Frontend | Frontend | 187 | M | 191A, 191B | **Done** (PRs #390, #391) |
 | 192 | Template Clauses Tab + Generation Dialog Frontend | Frontend | 188, 189, 191 | L | 192A, 192B | |
 
 ---
@@ -87,7 +87,7 @@ Phase 27 adds a **clause library** to the DocTeams document generation system. C
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 2a (parallel) | 189 | 189A | `ClauseAssembler` utility (clause body concatenation + div wrapping) + extend `PdfRenderingService` (inject `clauses`/`clauseCount` into context, add `renderFragment()` public method for clause preview, template fallback for missing `${clauses}` placeholder) + extend `GeneratedDocument` entity with `clauseSnapshots` JSONB field + integration tests for assembly + rendering. ~2 new files, ~2 modified files. Backend only. | |
-| 2b (parallel) | 191 | 191B | `clause-form-dialog.tsx` (create/edit with title, category combobox, description, body textarea, preview button) + `clause-preview-panel.tsx` (rendered HTML display) + clone action + deactivate action + frontend tests for clause management. ~3 new files, ~1 modified file. Frontend only. | |
+| 2b (parallel) | 191 | 191B | `clause-form-dialog.tsx` (create/edit with title, category combobox, description, body textarea, preview button) + `clause-preview-panel.tsx` (rendered HTML display) + clone action + deactivate action + frontend tests for clause management. ~3 new files, ~1 modified file. Frontend only. | **Done** (PR #391) |
 
 ### Stage 3: Generation Extension + Pack Seeder (parallel tracks)
 
@@ -406,7 +406,7 @@ Stage 5: [192B]                                                     (after 189B 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **191A** | 191.1--191.6 | `clause-actions.ts` server actions (getClauses, getClause, createClause, updateClause, deleteClause, deactivateClause, cloneClause, getClauseCategories) + `settings/clauses/page.tsx` server component + `clauses-content.tsx` client component (grouped list by category, search, category filter dropdown, source badges, action buttons) + sidebar navigation update. ~4 new files, ~1 modified file. Frontend only. | **Done** (PR #390) |
-| **191B** | 191.7--191.12 | `clause-form-dialog.tsx` (create/edit dialog with title, category combobox, description textarea, body textarea with monospace font, preview button) + `clause-preview-panel.tsx` (rendered HTML display in sandboxed iframe) + `previewClause` server action + clone confirmation + deactivate confirmation + frontend tests. ~3 new files, ~2 modified files. Frontend only. | |
+| **191B** | 191.7--191.12 | `clause-form-dialog.tsx` (create/edit dialog with title, category combobox, description textarea, body textarea with monospace font, preview button) + `clause-preview-panel.tsx` (rendered HTML display in sandboxed iframe) + `previewClause` server action + clone confirmation + deactivate confirmation + frontend tests. ~3 new files, ~2 modified files. Frontend only. | **Done** (PR #391) |
 
 ### Tasks
 

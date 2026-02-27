@@ -652,7 +652,7 @@ public class PortalEventHandler {
                     event.requestId(),
                     event.portalContactId(),
                     event.generatedDocumentId(),
-                    event.documentFileName(),
+                    event.documentFileName().replaceFirst("\\.[^.]+$", ""),
                     event.documentFileName(),
                     "SENT",
                     requestToken,

@@ -4,11 +4,15 @@ import userEvent from "@testing-library/user-event";
 import { ClausesContent } from "@/components/clauses/clauses-content";
 import type { Clause } from "@/lib/actions/clause-actions";
 
+const mockCreateClause = vi.fn();
+const mockUpdateClause = vi.fn();
 const mockCloneClause = vi.fn();
 const mockDeactivateClause = vi.fn();
 const mockDeleteClause = vi.fn();
 
 vi.mock("@/lib/actions/clause-actions", () => ({
+  createClause: (...args: unknown[]) => mockCreateClause(...args),
+  updateClause: (...args: unknown[]) => mockUpdateClause(...args),
   cloneClause: (...args: unknown[]) => mockCloneClause(...args),
   deactivateClause: (...args: unknown[]) => mockDeactivateClause(...args),
   deleteClause: (...args: unknown[]) => mockDeleteClause(...args),
@@ -68,6 +72,8 @@ const ALL_CATEGORIES = ["Confidentiality", "Legal"];
 describe("ClausesContent", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockCreateClause.mockResolvedValue({ success: true });
+    mockUpdateClause.mockResolvedValue({ success: true });
     mockCloneClause.mockResolvedValue({ success: true });
     mockDeactivateClause.mockResolvedValue({ success: true });
     mockDeleteClause.mockResolvedValue({ success: true });
@@ -221,7 +227,7 @@ describe("ClausesContent", () => {
     expect(screen.getByText("Cloned")).toBeInTheDocument();
   });
 
-  it("shows success message after clone", async () => {
+  it("shows success message after clone confirmation", async () => {
     const user = userEvent.setup();
     mockCloneClause.mockResolvedValue({ success: true });
 
@@ -236,8 +242,20 @@ describe("ClausesContent", () => {
 
     await user.click(screen.getByTitle("Clone clause"));
 
+    // Confirmation dialog should appear
     await waitFor(() => {
-      expect(screen.getByText("Clause cloned.")).toBeInTheDocument();
+      expect(
+        screen.getByText("Clone this clause to create an editable copy?"),
+      ).toBeInTheDocument();
+    });
+
+    // Confirm the clone
+    await user.click(screen.getByRole("button", { name: "Clone" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('Clause "Standard NDA" cloned successfully.'),
+      ).toBeInTheDocument();
     });
   });
 
@@ -258,6 +276,18 @@ describe("ClausesContent", () => {
     );
 
     await user.click(screen.getByTitle("Delete clause"));
+
+    // Confirmation dialog should appear
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "Are you sure you want to delete this clause? This action cannot be undone.",
+        ),
+      ).toBeInTheDocument();
+    });
+
+    // Confirm the delete
+    await user.click(screen.getByRole("button", { name: "Delete" }));
 
     await waitFor(() => {
       expect(

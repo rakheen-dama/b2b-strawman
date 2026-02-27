@@ -22,6 +22,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { ClauseFormDialog } from "@/components/clauses/clause-form-dialog";
+import {
   cloneClause,
   deactivateClause,
   deleteClause,
@@ -144,10 +154,12 @@ export function ClausesContent({
           </Select>
         </div>
         {canManage && (
-          <Button size="sm" disabled>
-            <Plus className="mr-1 size-4" />
-            New Clause
-          </Button>
+          <ClauseFormDialog slug={slug} categories={categories}>
+            <Button size="sm">
+              <Plus className="mr-1 size-4" />
+              New Clause
+            </Button>
+          </ClauseFormDialog>
         )}
       </div>
 
@@ -183,6 +195,7 @@ export function ClausesContent({
                       key={clause.id}
                       clause={clause}
                       slug={slug}
+                      categories={categories}
                       canManage={canManage}
                       onError={(msg) => {
                         clearMessages();
@@ -207,100 +220,194 @@ export function ClausesContent({
 interface ClauseRowProps {
   clause: Clause;
   slug: string;
+  categories: string[];
   canManage: boolean;
   onError: (message: string) => void;
   onSuccess: (message: string) => void;
 }
 
-function ClauseRow({ clause, slug, canManage, onError, onSuccess }: ClauseRowProps) {
+function ClauseRow({ clause, slug, categories, canManage, onError, onSuccess }: ClauseRowProps) {
   const sourceBadge = SOURCE_BADGE[clause.source];
 
-  async function handleClone() {
-    const result = await cloneClause(slug, clause.id);
-    if (result.success) {
-      onSuccess("Clause cloned.");
-    } else {
-      onError(result.error ?? "Failed to clone clause.");
+  const [cloneDialogOpen, setCloneDialogOpen] = useState(false);
+  const [deactivateDialogOpen, setDeactivateDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isPending, setIsPending] = useState(false);
+
+  async function handleCloneConfirm() {
+    setIsPending(true);
+    try {
+      const result = await cloneClause(slug, clause.id);
+      if (result.success) {
+        onSuccess(`Clause "${clause.title}" cloned successfully.`);
+      } else {
+        onError(result.error ?? "Failed to clone clause.");
+      }
+    } catch {
+      onError("An unexpected error occurred.");
+    } finally {
+      setIsPending(false);
+      setCloneDialogOpen(false);
     }
   }
 
-  async function handleDeactivate() {
-    const result = await deactivateClause(slug, clause.id);
-    if (result.success) {
-      onSuccess("Clause deactivated.");
-    } else {
-      onError(result.error ?? "Failed to deactivate clause.");
+  async function handleDeactivateConfirm() {
+    setIsPending(true);
+    try {
+      const result = await deactivateClause(slug, clause.id);
+      if (result.success) {
+        onSuccess("Clause deactivated.");
+      } else {
+        onError(result.error ?? "Failed to deactivate clause.");
+      }
+    } catch {
+      onError("An unexpected error occurred.");
+    } finally {
+      setIsPending(false);
+      setDeactivateDialogOpen(false);
     }
   }
 
-  async function handleDelete() {
-    const result = await deleteClause(slug, clause.id);
-    if (result.success) {
-      onSuccess("Clause deleted.");
-    } else {
-      onError(result.error ?? "Failed to delete clause.");
+  async function handleDeleteConfirm() {
+    setIsPending(true);
+    try {
+      const result = await deleteClause(slug, clause.id);
+      if (result.success) {
+        onSuccess("Clause deleted.");
+      } else {
+        onError(result.error ?? "Failed to delete clause.");
+      }
+    } catch {
+      onError("An unexpected error occurred.");
+    } finally {
+      setIsPending(false);
+      setDeleteDialogOpen(false);
     }
   }
 
   return (
-    <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <p className="font-medium text-slate-950 dark:text-slate-50">
-            {clause.title}
-          </p>
-          <Badge variant={sourceBadge.variant}>{sourceBadge.label}</Badge>
-          {clause.active ? (
-            <Badge variant="success">Active</Badge>
-          ) : (
-            <Badge variant="neutral">Inactive</Badge>
+    <>
+      <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <p className="font-medium text-slate-950 dark:text-slate-50">
+              {clause.title}
+            </p>
+            <Badge variant={sourceBadge.variant}>{sourceBadge.label}</Badge>
+            {clause.active ? (
+              <Badge variant="success">Active</Badge>
+            ) : (
+              <Badge variant="neutral">Inactive</Badge>
+            )}
+          </div>
+          {clause.description && (
+            <p className="mt-1 truncate text-sm text-slate-500 dark:text-slate-400">
+              {clause.description}
+            </p>
           )}
         </div>
-        {clause.description && (
-          <p className="mt-1 truncate text-sm text-slate-500 dark:text-slate-400">
-            {clause.description}
-          </p>
-        )}
-      </div>
 
-      {canManage && (
-        <div className="ml-4 flex items-center gap-1">
-          {clause.source === "SYSTEM" ? (
-            <Button
-              size="sm"
-              variant="ghost"
-              title="Clone clause"
-              onClick={handleClone}
-            >
-              <Copy className="size-4" />
-            </Button>
-          ) : (
-            <>
-              <Button size="sm" variant="ghost" title="Edit clause" disabled>
-                <Pencil className="size-4" />
-              </Button>
-              {clause.active && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  title="Deactivate clause"
-                  onClick={handleDeactivate}
-                >
-                  <Ban className="size-4" />
-                </Button>
-              )}
+        {canManage && (
+          <div className="ml-4 flex items-center gap-1">
+            {clause.source === "SYSTEM" ? (
               <Button
                 size="sm"
                 variant="ghost"
-                title="Delete clause"
-                onClick={handleDelete}
+                title="Clone clause"
+                onClick={() => setCloneDialogOpen(true)}
               >
-                <Trash2 className="size-4" />
+                <Copy className="size-4" />
               </Button>
-            </>
-          )}
-        </div>
-      )}
-    </div>
+            ) : (
+              <>
+                <ClauseFormDialog slug={slug} clause={clause} categories={categories}>
+                  <Button size="sm" variant="ghost" title="Edit clause">
+                    <Pencil className="size-4" />
+                  </Button>
+                </ClauseFormDialog>
+                {clause.active && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    title="Deactivate clause"
+                    onClick={() => setDeactivateDialogOpen(true)}
+                  >
+                    <Ban className="size-4" />
+                  </Button>
+                )}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  title="Delete clause"
+                  onClick={() => setDeleteDialogOpen(true)}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Clone Confirmation Dialog */}
+      <AlertDialog open={cloneDialogOpen} onOpenChange={setCloneDialogOpen}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clone Clause</AlertDialogTitle>
+            <AlertDialogDescription>
+              Clone this clause to create an editable copy?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel variant="plain" disabled={isPending}>
+              Cancel
+            </AlertDialogCancel>
+            <Button onClick={handleCloneConfirm} disabled={isPending}>
+              {isPending ? "Cloning..." : "Clone"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Deactivate Confirmation Dialog */}
+      <AlertDialog open={deactivateDialogOpen} onOpenChange={setDeactivateDialogOpen}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Deactivate Clause</AlertDialogTitle>
+            <AlertDialogDescription>
+              This clause will be hidden from the clause picker but preserved on existing templates.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel variant="plain" disabled={isPending}>
+              Cancel
+            </AlertDialogCancel>
+            <Button onClick={handleDeactivateConfirm} disabled={isPending}>
+              {isPending ? "Deactivating..." : "Deactivate"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Clause</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this clause? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel variant="plain" disabled={isPending}>
+              Cancel
+            </AlertDialogCancel>
+            <Button variant="destructive" onClick={handleDeleteConfirm} disabled={isPending}>
+              {isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.task.TaskStatus;
 import io.b2mash.b2b.b2bstrawman.timeentry.MyWorkMemberTimeSummaryProjection;
 import io.b2mash.b2b.b2bstrawman.timeentry.MyWorkProjectTimeSummaryProjection;
 import io.b2mash.b2b.b2bstrawman.timeentry.TaskDurationProjection;
@@ -62,10 +63,11 @@ public class MyWorkService {
       unassigned = taskRepository.findUnassignedInMemberProjects(memberId);
     }
 
-    // Apply optional status filter
+    // Apply optional status filter (convert String to TaskStatus for enum comparison)
     if (status != null) {
-      assigned = assigned.stream().filter(t -> status.equals(t.getStatus())).toList();
-      unassigned = unassigned.stream().filter(t -> status.equals(t.getStatus())).toList();
+      TaskStatus taskStatus = TaskStatus.valueOf(status);
+      assigned = assigned.stream().filter(t -> taskStatus == t.getStatus()).toList();
+      unassigned = unassigned.stream().filter(t -> taskStatus == t.getStatus()).toList();
     }
 
     // Apply optional projectId filter

@@ -80,12 +80,41 @@ class TaskLifecycleTest {
   }
 
   @Test
-  void cancel_transitions_to_cancelled() {
+  void cancel_from_open_transitions_to_cancelled() {
     var task = buildTask();
-    task.cancel();
+    task.cancel(MEMBER_ID);
 
     assertThat(task.getStatus()).isEqualTo(TaskStatus.CANCELLED);
     assertThat(task.getCancelledAt()).isNotNull();
+    assertThat(task.getCancelledBy()).isEqualTo(MEMBER_ID);
+  }
+
+  @Test
+  void cancel_from_in_progress_transitions_to_cancelled() {
+    var task = buildTask();
+    task.claim(MEMBER_ID);
+    task.cancel(OTHER_MEMBER_ID);
+
+    assertThat(task.getStatus()).isEqualTo(TaskStatus.CANCELLED);
+    assertThat(task.getCancelledAt()).isNotNull();
+    assertThat(task.getCancelledBy()).isEqualTo(OTHER_MEMBER_ID);
+  }
+
+  @Test
+  void complete_from_cancelled_throws() {
+    var task = buildTask();
+    task.cancel(MEMBER_ID);
+
+    assertThatThrownBy(() -> task.complete(MEMBER_ID)).isInstanceOf(InvalidStateException.class);
+  }
+
+  @Test
+  void complete_from_done_throws() {
+    var task = buildTask();
+    task.claim(MEMBER_ID);
+    task.complete(MEMBER_ID);
+
+    assertThatThrownBy(() -> task.complete(MEMBER_ID)).isInstanceOf(InvalidStateException.class);
   }
 
   @Test
@@ -109,7 +138,7 @@ class TaskLifecycleTest {
   @Test
   void reopen_from_cancelled_clears_timestamps() {
     var task = buildTask();
-    task.cancel();
+    task.cancel(MEMBER_ID);
 
     assertThat(task.getCancelledAt()).isNotNull();
 

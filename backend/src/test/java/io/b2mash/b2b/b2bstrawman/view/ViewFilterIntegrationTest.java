@@ -161,9 +161,17 @@ class ViewFilterIntegrationTest {
                       TaskStatus.IN_PROGRESS,
                       null,
                       null,
-                      null);
+                      null,
+                      memberIdOwner);
                   t2.update(
-                      "Done Task", null, TaskPriority.MEDIUM, TaskStatus.DONE, null, null, null);
+                      "Done Task",
+                      null,
+                      TaskPriority.MEDIUM,
+                      TaskStatus.DONE,
+                      null,
+                      null,
+                      null,
+                      memberIdOwner);
                   t2 = taskRepository.saveAndFlush(t2);
                   taskDoneId = t2.getId();
                 }));

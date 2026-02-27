@@ -94,8 +94,8 @@ public class TaskService {
       String assigneeFilter) {
     projectAccessService.requireViewAccess(projectId, memberId, orgRole);
 
-    TaskStatus taskStatus = status != null ? TaskStatus.valueOf(status) : null;
-    TaskPriority taskPriority = priority != null ? TaskPriority.valueOf(priority) : null;
+    TaskStatus taskStatus = status != null ? parseStatus(status) : null;
+    TaskPriority taskPriority = priority != null ? parsePriority(priority) : null;
 
     // Handle special "unassigned" filter
     if ("unassigned".equals(assigneeFilter)) {
@@ -302,8 +302,8 @@ public class TaskService {
     }
 
     // Convert string inputs to enums
-    TaskPriority taskPriority = TaskPriority.valueOf(priority);
-    TaskStatus taskStatus = TaskStatus.valueOf(status);
+    TaskPriority taskPriority = parsePriority(priority);
+    TaskStatus taskStatus = parseStatus(status);
 
     // Capture old values before mutation
     String oldTitle = task.getTitle();
@@ -314,7 +314,7 @@ public class TaskService {
     LocalDate oldDueDate = task.getDueDate();
     String oldType = task.getType();
 
-    task.update(title, description, taskPriority, taskStatus, type, dueDate, assigneeId);
+    task.update(title, description, taskPriority, taskStatus, type, dueDate, assigneeId, memberId);
     task = taskRepository.save(task);
 
     // Build delta map -- only include changed fields
@@ -520,18 +520,18 @@ public class TaskService {
       throw new ResourceNotFoundException("Task", taskId);
     }
 
-    if (task.getStatus() != TaskStatus.OPEN) {
-      throw new InvalidStateException(
-          "Cannot claim task",
-          "Task can only be claimed when status is OPEN. Current status: " + task.getStatus());
-    }
-
     if (task.getAssigneeId() != null) {
       throw new InvalidStateException(
           "Cannot claim task", "Task is already assigned to another member");
     }
 
-    task.claim(memberId);
+    try {
+      task.claim(memberId);
+    } catch (InvalidStateException e) {
+      throw new InvalidStateException(
+          "Cannot claim task",
+          "Task can only be claimed when status is OPEN. Current status: " + task.getStatus());
+    }
     task = taskRepository.save(task);
     log.info("Task {} claimed by member {}", taskId, memberId);
 
@@ -657,5 +657,23 @@ public class TaskService {
 
   private String resolveActorName(UUID memberId) {
     return memberNameResolver.resolveName(memberId);
+  }
+
+  private static TaskStatus parseStatus(String status) {
+    try {
+      return TaskStatus.valueOf(status);
+    } catch (IllegalArgumentException e) {
+      throw new InvalidStateException(
+          "Invalid task status", "Invalid task status: '" + status + "'");
+    }
+  }
+
+  private static TaskPriority parsePriority(String priority) {
+    try {
+      return TaskPriority.valueOf(priority);
+    } catch (IllegalArgumentException e) {
+      throw new InvalidStateException(
+          "Invalid task priority", "Invalid task priority: '" + priority + "'");
+    }
   }
 }

@@ -82,13 +82,14 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
   long countByProjectIdAndStatus(
       @Param("projectId") UUID projectId, @Param("status") TaskStatus status);
 
-  /** Counts non-DONE tasks in a project that are past their due date. */
+  /** Counts active (non-terminal) tasks in a project that are past their due date. */
   @Query(
-      "SELECT COUNT(t) FROM Task t WHERE t.projectId = :projectId AND t.status <> 'DONE' AND t.dueDate < :today")
+      "SELECT COUNT(t) FROM Task t WHERE t.projectId = :projectId AND t.status NOT IN ('DONE', 'CANCELLED') AND t.dueDate < :today")
   long countOverdueByProjectId(@Param("projectId") UUID projectId, @Param("today") LocalDate today);
 
-  /** Counts all non-DONE tasks across the org that are past their due date. */
-  @Query("SELECT COUNT(t) FROM Task t WHERE t.status <> 'DONE' AND t.dueDate < :today")
+  /** Counts all active (non-terminal) tasks across the org that are past their due date. */
+  @Query(
+      "SELECT COUNT(t) FROM Task t WHERE t.status NOT IN ('DONE', 'CANCELLED') AND t.dueDate < :today")
   long countOrgOverdue(@Param("today") LocalDate today);
 
   /**
@@ -103,7 +104,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
           COALESCE(SUM(CASE WHEN t.status = 'DONE' THEN 1 ELSE 0 END), 0),
           COALESCE(SUM(CASE WHEN t.status = 'CANCELLED' THEN 1 ELSE 0 END), 0),
           COUNT(t),
-          COALESCE(SUM(CASE WHEN t.status <> 'DONE' AND t.dueDate < :today THEN 1 ELSE 0 END), 0)
+          COALESCE(SUM(CASE WHEN t.status NOT IN ('DONE', 'CANCELLED') AND t.dueDate < :today THEN 1 ELSE 0 END), 0)
       FROM Task t
       WHERE t.projectId = :projectId
       """)
@@ -120,15 +121,17 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
       """
       SELECT t FROM Task t
       WHERE t.assigneeId = :memberId
-        AND t.status <> 'DONE'
+        AND t.status NOT IN ('DONE', 'CANCELLED')
         AND t.dueDate >= :today
       ORDER BY t.dueDate ASC
       """)
   List<Task> findUpcomingByAssignee(
       @Param("memberId") UUID memberId, @Param("today") LocalDate today);
 
-  /** Counts non-DONE tasks assigned to a specific member that are past their due date. */
+  /**
+   * Counts active (non-terminal) tasks assigned to a specific member that are past their due date.
+   */
   @Query(
-      "SELECT COUNT(t) FROM Task t WHERE t.assigneeId = :memberId AND t.status <> 'DONE' AND t.dueDate < :today")
+      "SELECT COUNT(t) FROM Task t WHERE t.assigneeId = :memberId AND t.status NOT IN ('DONE', 'CANCELLED') AND t.dueDate < :today")
   long countOverdueByAssignee(@Param("memberId") UUID memberId, @Param("today") LocalDate today);
 }

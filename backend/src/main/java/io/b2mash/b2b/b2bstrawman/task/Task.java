@@ -110,7 +110,8 @@ public class Task {
 
   /**
    * Updates task fields. If the status changes, validates the transition and manages lifecycle
-   * timestamps accordingly.
+   * timestamps accordingly. The actorId is recorded as completedBy or cancelledBy when
+   * transitioning to terminal states.
    */
   public void update(
       String title,
@@ -119,7 +120,8 @@ public class Task {
       TaskStatus newStatus,
       String type,
       LocalDate dueDate,
-      UUID assigneeId) {
+      UUID assigneeId,
+      UUID actorId) {
     this.title = title;
     this.description = description;
     this.priority = priority;
@@ -135,11 +137,13 @@ public class Task {
       switch (newStatus) {
         case DONE -> {
           this.completedAt = Instant.now();
+          this.completedBy = actorId;
           this.cancelledAt = null;
           this.cancelledBy = null;
         }
         case CANCELLED -> {
           this.cancelledAt = Instant.now();
+          this.cancelledBy = actorId;
           this.completedAt = null;
           this.completedBy = null;
         }
@@ -190,13 +194,14 @@ public class Task {
   }
 
   /**
-   * Cancels this task. Sets status to CANCELLED and records cancellation timestamp. Valid from OPEN
-   * or IN_PROGRESS.
+   * Cancels this task. Sets status to CANCELLED and records cancellation timestamp and actor. Valid
+   * from OPEN or IN_PROGRESS.
    */
-  public void cancel() {
+  public void cancel(UUID cancelledBy) {
     requireTransition(TaskStatus.CANCELLED, "cancel");
     this.status = TaskStatus.CANCELLED;
     this.cancelledAt = Instant.now();
+    this.cancelledBy = cancelledBy;
     this.updatedAt = Instant.now();
   }
 

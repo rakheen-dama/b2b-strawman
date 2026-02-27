@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.notification;
 
+import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestAcceptedEvent;
 import io.b2mash.b2b.b2bstrawman.event.BudgetThresholdEvent;
 import io.b2mash.b2b.b2bstrawman.event.CommentCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.event.DocumentGeneratedEvent;
@@ -303,6 +304,24 @@ public class NotificationEventHandler {
             log.warn(
                 "Failed to create notifications for schedule.completed schedule={}",
                 event.scheduleId(),
+                e);
+          }
+        });
+  }
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onAcceptanceRequestAccepted(AcceptanceRequestAcceptedEvent event) {
+    handleInTenantScope(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            var notifications = notificationService.handleAcceptanceRequestAccepted(event);
+            dispatchAll(notifications);
+          } catch (Exception e) {
+            log.warn(
+                "Failed to create notifications for acceptance_request.accepted event={}",
+                event.entityId(),
                 e);
           }
         });

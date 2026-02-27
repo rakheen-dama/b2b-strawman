@@ -3,6 +3,8 @@ package io.b2mash.b2b.b2bstrawman.settings;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
@@ -120,6 +122,17 @@ public class OrgSettingsController {
             orgRole));
   }
 
+  @PatchMapping("/acceptance")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<SettingsResponse> updateAcceptanceSettings(
+      @Valid @RequestBody UpdateAcceptanceSettingsRequest request) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+    return ResponseEntity.ok(
+        orgSettingsService.updateAcceptanceSettings(
+            request.acceptanceExpiryDays(), memberId, orgRole));
+  }
+
   // --- DTOs ---
 
   public record SettingsResponse(
@@ -136,7 +149,8 @@ public class OrgSettingsController {
       String taxRegistrationNumber,
       String taxRegistrationLabel,
       String taxLabel,
-      boolean taxInclusive) {}
+      boolean taxInclusive,
+      Integer acceptanceExpiryDays) {}
 
   public record UpdateSettingsRequest(
       @NotBlank(message = "defaultCurrency is required")
@@ -153,6 +167,11 @@ public class OrgSettingsController {
       @Positive(message = "dormancyThresholdDays must be positive") Integer dormancyThresholdDays,
       @Positive(message = "dataRequestDeadlineDays must be positive")
           Integer dataRequestDeadlineDays) {}
+
+  public record UpdateAcceptanceSettingsRequest(
+      @Min(value = 1, message = "acceptanceExpiryDays must be at least 1")
+          @Max(value = 365, message = "acceptanceExpiryDays must be at most 365")
+          Integer acceptanceExpiryDays) {}
 
   public record UpdateTaxSettingsRequest(
       @Size(max = 50, message = "taxRegistrationNumber must be at most 50 characters")

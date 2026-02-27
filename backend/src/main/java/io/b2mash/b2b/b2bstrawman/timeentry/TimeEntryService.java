@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -48,6 +49,7 @@ public class TimeEntryService {
   private final CustomerLifecycleGuard customerLifecycleGuard;
   private final CustomerProjectRepository customerProjectRepository;
   private final CustomerRepository customerRepository;
+  private final ProjectRepository projectRepository;
   private final ApplicationEventPublisher applicationEventPublisher;
 
   public TimeEntryService(
@@ -62,6 +64,7 @@ public class TimeEntryService {
       CustomerLifecycleGuard customerLifecycleGuard,
       CustomerProjectRepository customerProjectRepository,
       CustomerRepository customerRepository,
+      ProjectRepository projectRepository,
       ApplicationEventPublisher applicationEventPublisher) {
     this.timeEntryRepository = timeEntryRepository;
     this.taskRepository = taskRepository;
@@ -74,6 +77,7 @@ public class TimeEntryService {
     this.customerLifecycleGuard = customerLifecycleGuard;
     this.customerProjectRepository = customerProjectRepository;
     this.customerRepository = customerRepository;
+    this.projectRepository = projectRepository;
     this.applicationEventPublisher = applicationEventPublisher;
   }
 
@@ -93,6 +97,16 @@ public class TimeEntryService {
             .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
 
     projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
+
+    // Check project is not archived
+    var project =
+        projectRepository
+            .findById(task.getProjectId())
+            .orElseThrow(() -> new ResourceNotFoundException("Project", task.getProjectId()));
+    if (project.isReadOnly()) {
+      throw new InvalidStateException(
+          "Project is archived", "Cannot create new time entries on an archived project");
+    }
 
     // Check lifecycle guard if project is linked to a customer
     customerProjectRepository

@@ -37,7 +37,10 @@ public sealed interface DomainEvent
         AcceptanceRequestViewedEvent,
         AcceptanceRequestAcceptedEvent,
         AcceptanceRequestRevokedEvent,
-        AcceptanceRequestExpiredEvent {
+        AcceptanceRequestExpiredEvent,
+        ProjectCompletedEvent,
+        ProjectArchivedEvent,
+        ProjectReopenedEvent {
 
   String eventType();
 

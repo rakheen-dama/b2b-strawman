@@ -370,4 +370,25 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
       """)
   BudgetAmountProjection budgetAmountConsumed(
       @Param("projectId") UUID projectId, @Param("budgetCurrency") String budgetCurrency);
+
+  // --- Project lifecycle guardrail queries (Epic 204A) ---
+
+  /**
+   * Counts unbilled time entries and total unbilled hours for a project. Unbilled = billable AND
+   * invoice_id IS NULL.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+      SELECT
+        COUNT(te.id) AS entryCount,
+        COALESCE(SUM(te.duration_minutes), 0) / 60.0 AS totalHours
+      FROM time_entries te
+      JOIN tasks t ON te.task_id = t.id
+      WHERE t.project_id = :projectId
+        AND te.billable = true
+        AND te.invoice_id IS NULL
+      """)
+  UnbilledTimeSummaryProjection countUnbilledByProjectId(@Param("projectId") UUID projectId);
 }

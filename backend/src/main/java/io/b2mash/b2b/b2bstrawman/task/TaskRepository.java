@@ -134,4 +134,16 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
   @Query(
       "SELECT COUNT(t) FROM Task t WHERE t.assigneeId = :memberId AND t.status NOT IN ('DONE', 'CANCELLED') AND t.dueDate < :today")
   long countOverdueByAssignee(@Param("memberId") UUID memberId, @Param("today") LocalDate today);
+
+  // --- Project lifecycle guardrail queries (Epic 204A) ---
+
+  /**
+   * Counts tasks in a project that are NOT in any of the excluded statuses. Used by project
+   * completion guardrail to check for open tasks.
+   */
+  @Query(
+      "SELECT COUNT(t) FROM Task t WHERE t.projectId = :projectId AND t.status NOT IN :excludedStatuses")
+  long countByProjectIdAndStatusNotIn(
+      @Param("projectId") UUID projectId,
+      @Param("excludedStatuses") List<TaskStatus> excludedStatuses);
 }

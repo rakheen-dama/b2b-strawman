@@ -26,7 +26,7 @@ Phase 28 adds a **document acceptance workflow** to the DocTeams platform. Firms
 | 197 | Portal Acceptance Controller + Expiry Processor | Backend | 194, 195 | M | 197A | **Done** (PR #405) |
 | 198 | Frontend -- Send for Acceptance + Status Tracking | Frontend | 196 | M | 198A, 198B | **Done** (PRs #406, #407) |
 | 199 | Portal -- Acceptance Page + Pending List | Portal | 197 | M | 199A, 199B | **Done** (PRs #408, #409) |
-| 200 | Frontend -- OrgSettings Acceptance Config | Frontend | 196 | S | 200A | |
+| 200 | Frontend -- OrgSettings Acceptance Config | Frontend | 196 | S | 200A | **Done** (PR #410) |
 
 ---
 
@@ -126,7 +126,7 @@ Phase 28 adds a **document acceptance workflow** to the DocTeams platform. Firms
 |-------|------|-------|---------|--------|
 | 5a (parallel) | 198 | 198A | `acceptance-actions.ts` server actions + `SendForAcceptanceDialog.tsx` (recipient picker, expiry override, send) + `AcceptanceStatusBadge.tsx` + integration into `GeneratedDocumentsList.tsx` (action menu item + status badge) + frontend tests. ~4 new files, ~1 modified file. Frontend only. | **Done** (PR #406) |
 | 5b (parallel) | 199 | 199A | Portal acceptance page at `portal/app/(public)/accept/[token]/page.tsx` (PDF viewer via iframe, acceptance form with typed name, post-acceptance confirmation, expired/revoked states) + portal acceptance API calls + portal frontend tests. ~3 new files. Portal only. | **Done** (PR #408) |
-| 5c (parallel) | 200 | 200A | Add "Document Acceptance" section to OrgSettings page (acceptance expiry days input: number field, min 1, max 365, default 30) + settings action update + frontend test. ~0-1 new files, ~2 modified files. Frontend only. | |
+| 5c (parallel) | 200 | 200A | Add "Document Acceptance" section to OrgSettings page (acceptance expiry days input: number field, min 1, max 365, default 30) + settings action update + frontend test. ~0-1 new files, ~2 modified files. Frontend only. | **Done** (PR #410) |
 
 ### Stage 6: Detail Panel + Portal List
 
@@ -631,7 +631,7 @@ Stage 6: [198B] // [199B]                                           (parallel, a
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **200A** | 200.1--200.3 | Add "Document Acceptance" section to existing org settings page with acceptance expiry days input (number field, min 1, max 365, default 30) + server action update + frontend test. ~0-1 new files, ~2 modified. Frontend only. | |
+| **200A** | 200.1--200.3 | Add "Document Acceptance" section to existing org settings page with acceptance expiry days input (number field, min 1, max 365, default 30) + server action update + frontend test. ~0-1 new files, ~2 modified. Frontend only. | **Done** (PR #410) |
 
 ### Tasks
 

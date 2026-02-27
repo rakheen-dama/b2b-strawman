@@ -6,7 +6,7 @@ import { portalGet } from "@/lib/api-client";
 import { useBranding } from "@/hooks/use-branding";
 import { ProjectCard } from "@/components/project-card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PendingAcceptancesList } from "@/components/PendingAcceptancesList";
+import { PendingAcceptancesList } from "@/components/pending-acceptances-list";
 import type { PortalProject } from "@/lib/types";
 
 function ProjectSkeleton() {

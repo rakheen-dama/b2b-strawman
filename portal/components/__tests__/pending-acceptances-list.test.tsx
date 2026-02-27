@@ -57,7 +57,7 @@ vi.mock("@/hooks/use-branding", () => ({
   }),
 }));
 
-import { PendingAcceptancesList } from "@/components/PendingAcceptancesList";
+import { PendingAcceptancesList } from "@/components/pending-acceptances-list";
 
 describe("PendingAcceptancesList", () => {
   beforeEach(() => {
@@ -111,6 +111,28 @@ describe("PendingAcceptancesList", () => {
     await waitFor(() => {
       // Component should render nothing when empty
       expect(container.innerHTML).toBe("");
+    });
+  });
+
+  it("renders error message when fetch fails", async () => {
+    mockPortalGet.mockRejectedValue(new Error("Network error"));
+
+    render(<PendingAcceptancesList />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Network error")).toBeInTheDocument();
+    });
+  });
+
+  it("renders fallback error message for non-Error rejection", async () => {
+    mockPortalGet.mockRejectedValue("unknown failure");
+
+    render(<PendingAcceptancesList />);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Failed to load pending acceptances"),
+      ).toBeInTheDocument();
     });
   });
 

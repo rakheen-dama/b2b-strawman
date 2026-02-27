@@ -75,6 +75,15 @@ public class OrgSettings {
   @Column(name = "tax_inclusive", nullable = false)
   private boolean taxInclusive;
 
+  @Column(name = "tax_registration_number", length = 50)
+  private String taxRegistrationNumber;
+
+  @Column(name = "tax_registration_label", length = 30)
+  private String taxRegistrationLabel;
+
+  @Column(name = "tax_label", length = 20)
+  private String taxLabel;
+
   protected OrgSettings() {}
 
   public OrgSettings(String defaultCurrency) {
@@ -247,6 +256,38 @@ public class OrgSettings {
 
   public boolean isTaxInclusive() {
     return taxInclusive;
+  }
+
+  public void setTaxInclusive(boolean taxInclusive) {
+    this.taxInclusive = taxInclusive;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getTaxRegistrationNumber() {
+    return taxRegistrationNumber;
+  }
+
+  public void setTaxRegistrationNumber(String taxRegistrationNumber) {
+    this.taxRegistrationNumber = taxRegistrationNumber;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getTaxRegistrationLabel() {
+    return taxRegistrationLabel;
+  }
+
+  public void setTaxRegistrationLabel(String taxRegistrationLabel) {
+    this.taxRegistrationLabel = taxRegistrationLabel;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getTaxLabel() {
+    return taxLabel;
+  }
+
+  public void setTaxLabel(String taxLabel) {
+    this.taxLabel = taxLabel;
+    this.updatedAt = Instant.now();
   }
 
   /** Updates all three integration domain flags and the timestamp. */

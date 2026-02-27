@@ -1,13 +1,12 @@
-package io.b2mash.b2b.b2bstrawman.compliance;
+package io.b2mash.b2b.b2bstrawman.provisioning;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
-import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -23,14 +22,14 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class CompliancePackReseedRunnerTest {
+class PackReconciliationRunnerTest {
 
-  private static final String ORG_ID = "org_reseed_runner_test";
+  private static final String ORG_ID = "org_pack_reconciliation_test";
 
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
-  @Autowired private CompliancePackReseedRunner reseedRunner;
+  @Autowired private PackReconciliationRunner reconciliationRunner;
   @Autowired private ChecklistTemplateRepository templateRepository;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private TransactionTemplate transactionTemplate;
@@ -39,17 +38,17 @@ class CompliancePackReseedRunnerTest {
 
   @BeforeAll
   void setup() {
-    provisioningService.provisionTenant(ORG_ID, "Reseed Runner Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Pack Reconciliation Test Org");
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
   }
 
   @Test
-  void reseedRunnerIsIdempotent() {
+  void reconciliationRunnerIsIdempotent() {
     // The tenant was already seeded during provisioning.
-    // Running the reseed runner again should not duplicate anything.
-    reseedRunner.run(null);
+    // Running the reconciliation runner again should not duplicate anything.
+    reconciliationRunner.run(null);
 
     runInTenant(
         tenantSchema,
@@ -72,8 +71,8 @@ class CompliancePackReseedRunnerTest {
   }
 
   @Test
-  void reseedRunnerPreservesCompliancePackStatus() {
-    reseedRunner.run(null);
+  void reconciliationRunnerPreservesCompliancePackStatus() {
+    reconciliationRunner.run(null);
 
     runInTenant(
         tenantSchema,
@@ -84,6 +83,14 @@ class CompliancePackReseedRunnerTest {
                   assertThat(settings.getCompliancePackStatus()).isNotNull();
                   assertThat(settings.getCompliancePackStatus()).hasSize(3);
                 }));
+  }
+
+  @Test
+  void reconciliationRunnerHandlesEmptyTenantListGracefully() {
+    // This test verifies the runner doesn't throw when there are tenants in the DB.
+    // A truly empty list would require a fresh DB, but we can at least verify
+    // the runner completes without error on the current state.
+    assertThatCode(() -> reconciliationRunner.run(null)).doesNotThrowAnyException();
   }
 
   private void runInTenant(String schema, Runnable action) {

@@ -93,7 +93,7 @@ This is a **structural hardening phase**, not a feature phase. No new pages are 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 0a (parallel) | 201 | 201A | V47 tenant migration part 1: task lifecycle columns (`completed_at`, `completed_by`, `cancelled_at`) + CHECK constraints on `status` and `priority` columns + `TaskStatus` enum + `TaskPriority` enum. ~4 new files. Backend only. | **Done** (PR #411) |
-| 0b (parallel) | 203 | 203A | V47 tenant migration part 2: project lifecycle columns (`status`, `customer_id`, `due_date`, `completed_at`, `completed_by`, `archived_at`) + CHECK constraint on `status` + `ProjectStatus` enum. ~3 new files. Backend only. | |
+| 0b (parallel) | 203 | 203A | V47 tenant migration part 2: project lifecycle columns (`status`, `customer_id`, `due_date`, `completed_at`, `completed_by`, `archived_at`) + CHECK constraint on `status` + `ProjectStatus` enum. ~3 new files. Backend only. | **Done** (PR #416) |
 
 ### Stage 1: Entity Refactoring (parallel tracks)
 
@@ -305,7 +305,7 @@ Stage 6: [207B] // [208B]                                        (parallel, afte
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **203A** | 203.1--203.3 | V47 tenant migration (project columns): add `status`, `customer_id`, `due_date`, `completed_at`, `completed_by`, `archived_at` to `projects` table + CHECK constraint on `status` + `ProjectStatus` enum with `allowedTransitions()`. ~2 new files, ~1 modified migration file. Backend only. | |
+| **203A** | 203.1--203.3 | V47 tenant migration (project columns): add `status`, `customer_id`, `due_date`, `completed_at`, `completed_by`, `archived_at` to `projects` table + CHECK constraint on `status` + `ProjectStatus` enum with `allowedTransitions()`. ~2 new files, ~1 modified migration file. Backend only. | **Done** (PR #416) |
 | **203B** | 203.4--203.8 | Refactor `Project` entity: add new fields + lifecycle transition methods (`complete()`, `archive()`, `reopen()`) + update constructor and `update()` + add `ProjectRepository` query methods for status/customer filtering + entity unit tests. ~2 modified files, ~1 new test file. Backend only. | |
 
 ### Tasks

@@ -1,6 +1,11 @@
 package io.b2mash.b2b.b2bstrawman.acceptance;
 
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
+import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestAcceptedEvent;
+import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestExpiredEvent;
+import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestRevokedEvent;
+import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestSentEvent;
+import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestViewedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
@@ -11,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.integration.email.EmailProvider;
 import io.b2mash.b2b.b2bstrawman.integration.email.EmailRateLimiter;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
+import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailContextBuilder;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailTemplateRenderer;
@@ -31,6 +37,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,6 +67,8 @@ public class AcceptanceService {
   private final IntegrationRegistry integrationRegistry;
   private final EmailDeliveryLogService deliveryLogService;
   private final EmailRateLimiter emailRateLimiter;
+  private final ApplicationEventPublisher eventPublisher;
+  private final MemberNameResolver memberNameResolver;
 
   @SuppressWarnings("unused")
   private final StorageService storageService;
@@ -79,6 +88,8 @@ public class AcceptanceService {
       IntegrationRegistry integrationRegistry,
       EmailDeliveryLogService deliveryLogService,
       EmailRateLimiter emailRateLimiter,
+      ApplicationEventPublisher eventPublisher,
+      MemberNameResolver memberNameResolver,
       StorageService storageService,
       @Value("${docteams.portal.base-url:http://localhost:3001}") String portalBaseUrl) {
     this.acceptanceRequestRepository = acceptanceRequestRepository;
@@ -92,6 +103,8 @@ public class AcceptanceService {
     this.integrationRegistry = integrationRegistry;
     this.deliveryLogService = deliveryLogService;
     this.emailRateLimiter = emailRateLimiter;
+    this.eventPublisher = eventPublisher;
+    this.memberNameResolver = memberNameResolver;
     this.storageService = storageService;
     this.portalBaseUrl = portalBaseUrl;
     this.secureRandom = new SecureRandom();
@@ -140,6 +153,9 @@ public class AcceptanceService {
             existing -> {
               existing.markRevoked(RequestScopes.requireMemberId());
               acceptanceRequestRepository.save(existing);
+              // Flush to ensure the revoked status is persisted before inserting the new request,
+              // which is required by the partial unique index on active requests
+              acceptanceRequestRepository.flush();
               log.info(
                   "Auto-revoked existing acceptance request {} for doc={} contact={}",
                   existing.getId(),
@@ -172,6 +188,35 @@ public class AcceptanceService {
     request.markSent();
     request = acceptanceRequestRepository.save(request);
 
+    // Publish domain event
+    UUID memberId = RequestScopes.requireMemberId();
+    String actorName = memberNameResolver.resolveName(memberId);
+    eventPublisher.publishEvent(
+        new AcceptanceRequestSentEvent(
+            "acceptance_request.sent",
+            "acceptance_request",
+            request.getId(),
+            null,
+            memberId,
+            actorName,
+            RequestScopes.getTenantIdOrNull(),
+            RequestScopes.getOrgIdOrNull(),
+            Instant.now(),
+            Map.of(
+                "document_file_name", doc.getFileName(),
+                "contact_name", contact.getDisplayName(),
+                "contact_email", contact.getEmail() != null ? contact.getEmail() : ""),
+            request.getId(),
+            generatedDocumentId,
+            portalContactId,
+            customerId,
+            doc.getFileName(),
+            doc.getFileName(),
+            request.getRequestToken(),
+            request.getExpiresAt(),
+            contact.getDisplayName(),
+            contact.getEmail()));
+
     log.info(
         "Created and sent acceptance request {} for doc={} contact={}",
         request.getId(),
@@ -195,6 +240,7 @@ public class AcceptanceService {
     if (request.isActive() && request.isExpired()) {
       request.markExpired();
       acceptanceRequestRepository.save(request);
+      publishExpiredEvent(request);
       throw new InvalidStateException(
           "Acceptance request has expired",
           "This acceptance request expired on " + EMAIL_DATE_FORMAT.format(request.getExpiresAt()));
@@ -203,9 +249,24 @@ public class AcceptanceService {
     return switch (request.getStatus()) {
       case SENT -> {
         request.markViewed(Instant.now());
-        yield acceptanceRequestRepository.save(request);
+        request = acceptanceRequestRepository.save(request);
+        eventPublisher.publishEvent(
+            new AcceptanceRequestViewedEvent(
+                "acceptance_request.viewed",
+                "acceptance_request",
+                request.getId(),
+                null,
+                null,
+                "Portal Contact",
+                RequestScopes.getTenantIdOrNull(),
+                RequestScopes.getOrgIdOrNull(),
+                Instant.now(),
+                Map.of("ip_address", ipAddress != null ? ipAddress : ""),
+                request.getId(),
+                ipAddress));
+        yield request;
       }
-      case VIEWED, ACCEPTED -> request; // idempotent
+      case VIEWED, ACCEPTED -> request; // idempotent — no event
       case EXPIRED, REVOKED ->
           throw new InvalidStateException(
               "Acceptance request is no longer active",
@@ -235,6 +296,7 @@ public class AcceptanceService {
     if (request.isActive() && request.isExpired()) {
       request.markExpired();
       acceptanceRequestRepository.save(request);
+      publishExpiredEvent(request);
       throw new InvalidStateException(
           "Acceptance request has expired",
           "This acceptance request expired on " + EMAIL_DATE_FORMAT.format(request.getExpiresAt()));
@@ -259,6 +321,25 @@ public class AcceptanceService {
           contact != null ? contact.getId() : "null");
     }
 
+    // Publish domain event
+    String docFileName = doc != null ? doc.getFileName() : "";
+    eventPublisher.publishEvent(
+        new AcceptanceRequestAcceptedEvent(
+            "acceptance_request.accepted",
+            "acceptance_request",
+            request.getId(),
+            null,
+            null,
+            submission.name(),
+            RequestScopes.getTenantIdOrNull(),
+            RequestScopes.getOrgIdOrNull(),
+            Instant.now(),
+            Map.of("acceptor_name", submission.name(), "document_file_name", docFileName),
+            request.getId(),
+            request.getSentByMemberId(),
+            docFileName,
+            submission.name()));
+
     log.info("Acceptance request {} accepted by '{}'", request.getId(), submission.name());
     return request;
   }
@@ -276,8 +357,25 @@ public class AcceptanceService {
             .findById(requestId)
             .orElseThrow(() -> new ResourceNotFoundException("AcceptanceRequest", requestId));
 
-    request.markRevoked(RequestScopes.requireMemberId());
+    UUID memberId = RequestScopes.requireMemberId();
+    request.markRevoked(memberId);
     request = acceptanceRequestRepository.save(request);
+
+    // Publish domain event
+    String actorName = memberNameResolver.resolveName(memberId);
+    eventPublisher.publishEvent(
+        new AcceptanceRequestRevokedEvent(
+            "acceptance_request.revoked",
+            "acceptance_request",
+            request.getId(),
+            null,
+            memberId,
+            actorName,
+            RequestScopes.getTenantIdOrNull(),
+            RequestScopes.getOrgIdOrNull(),
+            Instant.now(),
+            Map.of(),
+            request.getId()));
 
     log.info("Acceptance request {} revoked", requestId);
     return request;
@@ -307,6 +405,7 @@ public class AcceptanceService {
     if (request.isExpired()) {
       request.markExpired();
       acceptanceRequestRepository.save(request);
+      publishExpiredEvent(request);
       throw new InvalidStateException(
           "Acceptance request has expired",
           "This acceptance request expired on " + EMAIL_DATE_FORMAT.format(request.getExpiresAt()));
@@ -367,6 +466,22 @@ public class AcceptanceService {
   }
 
   // --- Private helpers ---
+
+  private void publishExpiredEvent(AcceptanceRequest request) {
+    eventPublisher.publishEvent(
+        new AcceptanceRequestExpiredEvent(
+            "acceptance_request.expired",
+            "acceptance_request",
+            request.getId(),
+            null,
+            null,
+            "System",
+            RequestScopes.getTenantIdOrNull(),
+            RequestScopes.getOrgIdOrNull(),
+            Instant.now(),
+            Map.of(),
+            request.getId()));
+  }
 
   private String generateToken() {
     byte[] tokenBytes = new byte[TOKEN_BYTES];

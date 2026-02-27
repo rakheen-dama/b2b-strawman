@@ -29,7 +29,12 @@ public sealed interface DomainEvent
         InvoicePaidEvent,
         InvoiceVoidedEvent,
         DocumentGeneratedEvent,
-        TimeEntryChangedEvent {
+        TimeEntryChangedEvent,
+        AcceptanceRequestSentEvent,
+        AcceptanceRequestViewedEvent,
+        AcceptanceRequestAcceptedEvent,
+        AcceptanceRequestRevokedEvent,
+        AcceptanceRequestExpiredEvent {
 
   String eventType();
 

@@ -389,6 +389,18 @@ export interface OrgSettings {
   accountingEnabled?: boolean;
   aiEnabled?: boolean;
   documentSigningEnabled?: boolean;
+  // tax fields
+  taxRegistrationNumber?: string;
+  taxRegistrationLabel?: string;
+  taxLabel?: string;
+  taxInclusive?: boolean;
+}
+
+export interface UpdateTaxSettingsRequest {
+  taxRegistrationNumber?: string;
+  taxRegistrationLabel?: string;
+  taxLabel?: string;
+  taxInclusive: boolean;
 }
 
 export interface UpdateOrgSettingsRequest {

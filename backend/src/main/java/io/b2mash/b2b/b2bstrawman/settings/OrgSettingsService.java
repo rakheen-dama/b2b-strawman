@@ -57,7 +57,20 @@ public class OrgSettingsService {
         .map(this::toSettingsResponse)
         .orElse(
             new SettingsResponse(
-                DEFAULT_CURRENCY, null, null, null, null, null, null, false, false, false));
+                DEFAULT_CURRENCY,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                false,
+                false,
+                false,
+                null,
+                null,
+                null,
+                false));
   }
 
   /** Updates settings including branding fields. */
@@ -200,7 +213,7 @@ public class OrgSettingsService {
     return toSettingsResponse(settings);
   }
 
-  /** Maps an OrgSettings entity to a SettingsResponse DTO including compliance fields. */
+  /** Maps an OrgSettings entity to a SettingsResponse DTO including compliance and tax fields. */
   private SettingsResponse toSettingsResponse(OrgSettings settings) {
     String logoUrl = generateLogoUrl(settings.getLogoS3Key());
     return new SettingsResponse(
@@ -213,7 +226,11 @@ public class OrgSettingsService {
         settings.getCompliancePackStatus(),
         settings.isAccountingEnabled(),
         settings.isAiEnabled(),
-        settings.isDocumentSigningEnabled());
+        settings.isDocumentSigningEnabled(),
+        settings.getTaxRegistrationNumber(),
+        settings.getTaxRegistrationLabel(),
+        settings.getTaxLabel(),
+        settings.isTaxInclusive());
   }
 
   /**
@@ -274,6 +291,51 @@ public class OrgSettingsService {
                     dormancyThresholdDays != null ? dormancyThresholdDays : "",
                     "data_request_deadline_days",
                     dataRequestDeadlineDays != null ? dataRequestDeadlineDays : ""))
+            .build());
+
+    return toSettingsResponse(settings);
+  }
+
+  /** Updates tax configuration settings. */
+  @Transactional
+  public SettingsResponse updateTaxSettings(
+      String taxRegistrationNumber,
+      String taxRegistrationLabel,
+      String taxLabel,
+      boolean taxInclusive,
+      UUID memberId,
+      String orgRole) {
+    requireAdminOrOwner(orgRole);
+
+    var settings =
+        orgSettingsRepository
+            .findForCurrentTenant()
+            .orElseGet(
+                () -> {
+                  var s = new OrgSettings(DEFAULT_CURRENCY);
+                  return orgSettingsRepository.save(s);
+                });
+
+    settings.updateTaxSettings(taxRegistrationNumber, taxRegistrationLabel, taxLabel, taxInclusive);
+    settings = orgSettingsRepository.save(settings);
+
+    log.info("Updated tax settings: taxLabel={}, taxInclusive={}", taxLabel, taxInclusive);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("org_settings.tax_configured")
+            .entityType("org_settings")
+            .entityId(settings.getId())
+            .details(
+                Map.of(
+                    "tax_registration_number",
+                    taxRegistrationNumber != null ? taxRegistrationNumber : "",
+                    "tax_registration_label",
+                    taxRegistrationLabel != null ? taxRegistrationLabel : "",
+                    "tax_label",
+                    taxLabel != null ? taxLabel : "",
+                    "tax_inclusive",
+                    taxInclusive))
             .build());
 
     return toSettingsResponse(settings);

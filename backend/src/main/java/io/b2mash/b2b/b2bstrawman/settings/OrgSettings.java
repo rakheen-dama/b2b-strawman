@@ -290,6 +290,19 @@ public class OrgSettings {
     this.updatedAt = Instant.now();
   }
 
+  /** Updates all four tax configuration fields and the timestamp. */
+  public void updateTaxSettings(
+      String taxRegistrationNumber,
+      String taxRegistrationLabel,
+      String taxLabel,
+      boolean taxInclusive) {
+    this.taxRegistrationNumber = taxRegistrationNumber;
+    this.taxRegistrationLabel = taxRegistrationLabel;
+    this.taxLabel = taxLabel;
+    this.taxInclusive = taxInclusive;
+    this.updatedAt = Instant.now();
+  }
+
   /** Updates all three integration domain flags and the timestamp. */
   public void updateIntegrationFlags(boolean accounting, boolean ai, boolean documentSigning) {
     this.accountingEnabled = accounting;

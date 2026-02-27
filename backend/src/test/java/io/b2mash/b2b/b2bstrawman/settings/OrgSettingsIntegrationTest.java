@@ -330,6 +330,100 @@ class OrgSettingsIntegrationTest {
         .andExpect(jsonPath("$.documentSigningEnabled").value(false));
   }
 
+  @Test
+  @Order(10)
+  void patchTaxSettings_savesTaxFields() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/tax")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "taxRegistrationNumber": "VAT-123456789",
+                      "taxRegistrationLabel": "VAT Number",
+                      "taxLabel": "VAT",
+                      "taxInclusive": true
+                    }
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.taxRegistrationNumber").value("VAT-123456789"))
+        .andExpect(jsonPath("$.taxRegistrationLabel").value("VAT Number"))
+        .andExpect(jsonPath("$.taxLabel").value("VAT"))
+        .andExpect(jsonPath("$.taxInclusive").value(true));
+  }
+
+  @Test
+  @Order(11)
+  void getSettings_returnsTaxFields() throws Exception {
+    mockMvc
+        .perform(get("/api/settings").with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.taxRegistrationNumber").value("VAT-123456789"))
+        .andExpect(jsonPath("$.taxRegistrationLabel").value("VAT Number"))
+        .andExpect(jsonPath("$.taxLabel").value("VAT"))
+        .andExpect(jsonPath("$.taxInclusive").value(true));
+  }
+
+  @Test
+  @Order(12)
+  void patchTaxSettings_validatesMaxLengths() throws Exception {
+    // taxRegistrationNumber max 50
+    mockMvc
+        .perform(
+            patch("/api/settings/tax")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "taxRegistrationNumber": "%s",
+                      "taxRegistrationLabel": "Label",
+                      "taxLabel": "Tax",
+                      "taxInclusive": false
+                    }
+                    """
+                        .formatted("A".repeat(51))))
+        .andExpect(status().isBadRequest());
+
+    // taxRegistrationLabel max 30
+    mockMvc
+        .perform(
+            patch("/api/settings/tax")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "taxRegistrationNumber": "VAT-123",
+                      "taxRegistrationLabel": "%s",
+                      "taxLabel": "Tax",
+                      "taxInclusive": false
+                    }
+                    """
+                        .formatted("B".repeat(31))))
+        .andExpect(status().isBadRequest());
+
+    // taxLabel max 20
+    mockMvc
+        .perform(
+            patch("/api/settings/tax")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "taxRegistrationNumber": "VAT-123",
+                      "taxRegistrationLabel": "Label",
+                      "taxLabel": "%s",
+                      "taxInclusive": false
+                    }
+                    """
+                        .formatted("C".repeat(21))))
+        .andExpect(status().isBadRequest());
+  }
+
   // --- Helpers ---
 
   private String syncMember(

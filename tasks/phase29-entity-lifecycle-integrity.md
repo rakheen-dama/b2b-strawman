@@ -23,7 +23,7 @@ This is a **structural hardening phase**, not a feature phase. No new pages are 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 201 | Task Lifecycle Foundation -- Migration, Enums & Entity | Backend | -- | M | 201A, 201B | **Done** (PRs #411, #412) |
-| 202 | Task Lifecycle Service + Transition Endpoints | Backend | 201 | L | 202A, 202B | |
+| 202 | Task Lifecycle Service + Transition Endpoints | Backend | 201 | L | 202A, 202B | **Done** (PRs #413, #415) |
 | 203 | Project Lifecycle Foundation -- Migration, Enums & Entity | Backend | -- | M | 203A, 203B | |
 | 204 | Project Lifecycle Service + Transition Endpoints | Backend | 203, 201 | L | 204A, 204B | |
 | 205 | Project-Customer Link + Due Date | Backend | 203 | M | 205A, 205B | |
@@ -114,7 +114,7 @@ This is a **structural hardening phase**, not a feature phase. No new pages are 
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 3a (parallel) | 202 | 202B | Task lifecycle controller endpoints (`PATCH .../complete`, `.../cancel`, `.../reopen`) + `TaskController` response DTO update (add `completedAt`, `completedBy`, `cancelledAt`) + update `listTasks` status filter to support comma-separated enum values + integration tests (~12 tests). ~1 modified file, ~1 new test file. Backend only. | |
+| 3a (parallel) | 202 | 202B | Task lifecycle controller endpoints (`PATCH .../complete`, `.../cancel`, `.../reopen`) + `TaskController` response DTO update (add `completedAt`, `completedBy`, `cancelledAt`) + update `listTasks` status filter to support comma-separated enum values + integration tests (~12 tests). ~1 modified file, ~1 new test file. Backend only. | **Done** (PR #415) |
 | 3b (parallel) | 204 | 204B | Project lifecycle controller endpoints (`PATCH .../complete`, `.../archive`, `.../reopen`) + `ProjectController` response DTO update (add `status`, `customerId`, `dueDate`, `completedAt`, `completedBy`, `archivedAt`) + update `listProjects` status filter + integration tests (~14 tests). ~1 modified file, ~1 new test file. Backend only. | |
 | 3c (parallel) | 205 | 205B | `CustomerLifecycleGuard` extension: add `CREATE_PROJECT` action blocking for OFFBOARDING/OFFBOARDED customers + `ProjectCustomerController` update for customer-project list + customer delete protection check (count linked projects) + integration tests (~8 tests). ~2 modified files, ~1 new test file. Backend only. | |
 
@@ -238,7 +238,7 @@ Stage 6: [207B] // [208B]                                        (parallel, afte
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **202A** | 202.1--202.7 | `TaskService` lifecycle methods: `completeTask()` (validates IN_PROGRESS, sets completedAt/completedBy), `cancelTask()` (validates OPEN/IN_PROGRESS, permission check: assignee or ADMIN+), `reopenTask()` (validates DONE/CANCELLED, clears fields) + 3 domain event records (`TaskCompletedEvent`, `TaskCancelledEvent`, `TaskReopenedEvent`) + audit events + notification on cancel-by-other. ~1 modified file, ~3 new event files. Backend only. | **Done** (PR #413) |
-| **202B** | 202.8--202.13 | `TaskController` transition endpoints: `PATCH /api/projects/{projectId}/tasks/{taskId}/complete`, `.../cancel`, `.../reopen` + update `TaskResponse` DTO (add `completedAt`, `completedBy`, `cancelledAt` fields) + update `listTasks` to support comma-separated status filter (default: `OPEN,IN_PROGRESS`) + controller integration tests (~12 tests). ~1 modified file, ~1 new test file. Backend only. | |
+| **202B** | 202.8--202.13 | `TaskController` transition endpoints: `PATCH /api/projects/{projectId}/tasks/{taskId}/complete`, `.../cancel`, `.../reopen` + update `TaskResponse` DTO (add `completedAt`, `completedBy`, `cancelledAt` fields) + update `listTasks` to support comma-separated status filter (default: `OPEN,IN_PROGRESS`) + controller integration tests (~12 tests). ~1 modified file, ~1 new test file. Backend only. | **Done** (PR #415) |
 
 ### Tasks
 

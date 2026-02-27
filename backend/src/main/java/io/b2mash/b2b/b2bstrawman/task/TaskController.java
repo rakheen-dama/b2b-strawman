@@ -27,6 +27,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -225,6 +226,42 @@ public class TaskController {
     return ResponseEntity.ok(TaskResponse.from(task, names, tags));
   }
 
+  @PatchMapping("/api/tasks/{id}/complete")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<TaskResponse> completeTask(@PathVariable UUID id) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+
+    var task = taskService.completeTask(id, memberId, orgRole);
+    var names = resolveNames(List.of(task));
+    var tags = entityTagService.getEntityTags("TASK", id);
+    return ResponseEntity.ok(TaskResponse.from(task, names, tags));
+  }
+
+  @PatchMapping("/api/tasks/{id}/cancel")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<TaskResponse> cancelTask(@PathVariable UUID id) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+
+    var task = taskService.cancelTask(id, memberId, orgRole);
+    var names = resolveNames(List.of(task));
+    var tags = entityTagService.getEntityTags("TASK", id);
+    return ResponseEntity.ok(TaskResponse.from(task, names, tags));
+  }
+
+  @PatchMapping("/api/tasks/{id}/reopen")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<TaskResponse> reopenTask(@PathVariable UUID id) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+
+    var task = taskService.reopenTask(id, memberId, orgRole);
+    var names = resolveNames(List.of(task));
+    var tags = entityTagService.getEntityTags("TASK", id);
+    return ResponseEntity.ok(TaskResponse.from(task, names, tags));
+  }
+
   @PutMapping("/api/tasks/{id}/field-groups")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<FieldDefinitionResponse>> setFieldGroups(
@@ -265,7 +302,7 @@ public class TaskController {
   private Map<UUID, String> resolveNames(List<Task> tasks) {
     var ids =
         tasks.stream()
-            .flatMap(t -> Stream.of(t.getAssigneeId(), t.getCreatedBy()))
+            .flatMap(t -> Stream.of(t.getAssigneeId(), t.getCreatedBy(), t.getCompletedBy()))
             .filter(Objects::nonNull)
             .distinct()
             .toList();
@@ -334,6 +371,10 @@ public class TaskController {
       int version,
       Instant createdAt,
       Instant updatedAt,
+      Instant completedAt,
+      UUID completedBy,
+      String completedByName,
+      Instant cancelledAt,
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups,
       List<TagResponse> tags) {
@@ -356,6 +397,10 @@ public class TaskController {
           task.getVersion(),
           task.getCreatedAt(),
           task.getUpdatedAt(),
+          task.getCompletedAt(),
+          task.getCompletedBy(),
+          task.getCompletedBy() != null ? memberNames.get(task.getCompletedBy()) : null,
+          task.getCancelledAt(),
           task.getCustomFields(),
           task.getAppliedFieldGroups(),
           tags);

@@ -19,7 +19,7 @@ Phase 27 adds a **clause library** to the DocTeams document generation system. C
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 187 | Clause Entity Foundation + Migration | Backend | -- | M | 187A, 187B | |
+| 187 | Clause Entity Foundation + Migration | Backend | -- | M | 187A, 187B | **Done** (PRs #387, #388) |
 | 188 | Template-Clause Association API | Backend | 187 | M | 188A | |
 | 189 | Generation Pipeline Extension | Backend | 187, 188 | L | 189A, 189B | |
 | 190 | Clause Pack Seeder | Backend | 187, 188 | M | 190A | |
@@ -73,7 +73,7 @@ Phase 27 adds a **clause library** to the DocTeams document generation system. C
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 0a | 187 | 187A | V44 migration (complete DDL: `clauses` table, `template_clauses` table, `generated_documents.clause_snapshots` column, `org_settings.clause_pack_status` column, indexes) + `Clause` entity + `ClauseSource` enum + `ClauseRepository` with custom queries + entity unit tests + repository integration tests. ~6 new files, ~1 migration file. Backend only. | **Done** (PR #387) |
-| 0b | 187 | 187B | `ClauseService` (create, update, delete with reference guard, deactivate, clone, list, getById, preview) + DTOs (`CreateClauseRequest`, `UpdateClauseRequest`, `ClauseResponse`) + `ClauseController` at `/api/clauses` with RBAC + audit events + integration tests. ~7 new files, ~0-1 modified files. Backend only. | |
+| 0b | 187 | 187B | `ClauseService` (create, update, delete with reference guard, deactivate, clone, list, getById, preview) + DTOs (`CreateClauseRequest`, `UpdateClauseRequest`, `ClauseResponse`) + `ClauseController` at `/api/clauses` with RBAC + audit events + integration tests. ~7 new files, ~0-1 modified files. Backend only. | **Done** (PR #388) |
 
 ### Stage 1: Associations + Frontend Library (parallel tracks)
 
@@ -140,7 +140,7 @@ Stage 5: [192B]                                                     (after 189B 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **187A** | 187.1--187.7 | V44 migration (complete DDL: `clauses` table, `template_clauses` table, `clause_snapshots` on `generated_documents`, `clause_pack_status` on `org_settings`, all indexes and constraints) + `Clause` entity + `ClauseSource` enum + `ClauseRepository` with custom queries + entity unit tests + repository integration tests. ~6 new files, ~1 migration file. Backend only. | **Done** (PR #387) |
-| **187B** | 187.8--187.16 | `ClauseService` (create, update, delete with reference guard, deactivate, clone, list, getById, preview via `PdfRenderingService`) + DTOs (`CreateClauseRequest`, `UpdateClauseRequest`, `ClauseResponse`) + `ClauseController` at `/api/clauses` with RBAC + audit events + service tests + controller integration tests. ~7 new files, ~0-1 modified files. Backend only. | |
+| **187B** | 187.8--187.16 | `ClauseService` (create, update, delete with reference guard, deactivate, clone, list, getById, preview via `PdfRenderingService`) + DTOs (`CreateClauseRequest`, `UpdateClauseRequest`, `ClauseResponse`) + `ClauseController` at `/api/clauses` with RBAC + audit events + service tests + controller integration tests. ~7 new files, ~0-1 modified files. Backend only. | **Done** (PR #388) |
 
 ### Tasks
 

@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.provisioning;
 
 import io.b2mash.b2b.b2bstrawman.billing.SubscriptionService;
+import io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder;
 import io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldPackSeeder;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
@@ -28,6 +29,7 @@ public class TenantProvisioningService {
   private final SubscriptionService subscriptionService;
   private final FieldPackSeeder fieldPackSeeder;
   private final TemplatePackSeeder templatePackSeeder;
+  private final ClausePackSeeder clausePackSeeder;
   private final CompliancePackSeeder compliancePackSeeder;
   private final StandardReportPackSeeder standardReportPackSeeder;
 
@@ -38,6 +40,7 @@ public class TenantProvisioningService {
       SubscriptionService subscriptionService,
       FieldPackSeeder fieldPackSeeder,
       TemplatePackSeeder templatePackSeeder,
+      ClausePackSeeder clausePackSeeder,
       CompliancePackSeeder compliancePackSeeder,
       StandardReportPackSeeder standardReportPackSeeder) {
     this.organizationRepository = organizationRepository;
@@ -46,6 +49,7 @@ public class TenantProvisioningService {
     this.subscriptionService = subscriptionService;
     this.fieldPackSeeder = fieldPackSeeder;
     this.templatePackSeeder = templatePackSeeder;
+    this.clausePackSeeder = clausePackSeeder;
     this.compliancePackSeeder = compliancePackSeeder;
     this.standardReportPackSeeder = standardReportPackSeeder;
   }
@@ -84,6 +88,7 @@ public class TenantProvisioningService {
       runTenantMigrations(schemaName);
       fieldPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
       templatePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+      clausePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
       compliancePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
       standardReportPackSeeder.seedForTenant(schemaName, clerkOrgId);
       createMapping(clerkOrgId, schemaName);

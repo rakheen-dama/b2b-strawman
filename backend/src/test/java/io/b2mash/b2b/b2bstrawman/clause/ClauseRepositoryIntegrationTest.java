@@ -48,8 +48,8 @@ class ClauseRepositoryIntegrationTest {
                     tx -> {
                       var clause =
                           new Clause(
-                              "Confidentiality",
-                              "confidentiality",
+                              "Test Confidentiality",
+                              "test-confidentiality",
                               "The parties agree to keep all information confidential.",
                               "General");
                       var saved = clauseRepository.save(clause);
@@ -57,8 +57,8 @@ class ClauseRepositoryIntegrationTest {
 
                       var found = clauseRepository.findById(saved.getId());
                       assertThat(found).isPresent();
-                      assertThat(found.get().getTitle()).isEqualTo("Confidentiality");
-                      assertThat(found.get().getSlug()).isEqualTo("confidentiality");
+                      assertThat(found.get().getTitle()).isEqualTo("Test Confidentiality");
+                      assertThat(found.get().getSlug()).isEqualTo("test-confidentiality");
                       assertThat(found.get().getBody())
                           .isEqualTo("The parties agree to keep all information confidential.");
                       assertThat(found.get().getCategory()).isEqualTo("General");
@@ -107,14 +107,14 @@ class ClauseRepositoryIntegrationTest {
                     tx -> {
                       clauseRepository.save(
                           new Clause(
-                              "Payment Terms",
-                              "payment-terms",
+                              "Test Payment Terms",
+                              "test-payment-terms",
                               "Payment is due within 30 days.",
                               "Financial"));
 
-                      var found = clauseRepository.findBySlug("payment-terms");
+                      var found = clauseRepository.findBySlug("test-payment-terms");
                       assertThat(found).isPresent();
-                      assertThat(found.get().getTitle()).isEqualTo("Payment Terms");
+                      assertThat(found.get().getTitle()).isEqualTo("Test Payment Terms");
                     }));
   }
 
@@ -135,7 +135,8 @@ class ClauseRepositoryIntegrationTest {
                       clauseRepository.save(
                           new Clause("Warranty", "warranty", "The provider warrants...", "Legal"));
                       clauseRepository.save(
-                          new Clause("Scope", "scope-of-work", "The scope includes...", "Project"));
+                          new Clause(
+                              "Scope", "test-scope-of-work", "The scope includes...", "Project"));
 
                       var legalClauses =
                           clauseRepository.findByCategoryAndActiveTrueOrderBySortOrderAsc("Legal");

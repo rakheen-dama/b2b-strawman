@@ -28,4 +28,10 @@ public interface DocumentTemplateRepository extends JpaRepository<DocumentTempla
 
   @Query("SELECT dt FROM DocumentTemplate dt WHERE dt.packTemplateKey = :packTemplateKey")
   List<DocumentTemplate> findByPackTemplateKey(@Param("packTemplateKey") String packTemplateKey);
+
+  @Query(
+      "SELECT dt FROM DocumentTemplate dt WHERE dt.packId = :packId"
+          + " AND dt.packTemplateKey = :packTemplateKey")
+  Optional<DocumentTemplate> findByPackIdAndPackTemplateKey(
+      @Param("packId") String packId, @Param("packTemplateKey") String packTemplateKey);
 }

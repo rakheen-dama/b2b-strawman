@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.billing.SubscriptionService;
+import io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder;
 import io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldPackSeeder;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
@@ -38,6 +39,7 @@ class TenantProvisioningServiceTest {
   @Mock private SubscriptionService subscriptionService;
   @Mock private FieldPackSeeder fieldPackSeeder;
   @Mock private TemplatePackSeeder templatePackSeeder;
+  @Mock private ClausePackSeeder clausePackSeeder;
   @Mock private CompliancePackSeeder compliancePackSeeder;
   @Mock private StandardReportPackSeeder standardReportPackSeeder;
 
@@ -55,6 +57,7 @@ class TenantProvisioningServiceTest {
                 subscriptionService,
                 fieldPackSeeder,
                 templatePackSeeder,
+                clausePackSeeder,
                 compliancePackSeeder,
                 standardReportPackSeeder));
   }

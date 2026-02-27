@@ -1,0 +1,130 @@
+{
+  "packId": "standard-clauses",
+  "version": 1,
+  "name": "Standard Clauses",
+  "description": "Standard legal and commercial clauses for professional services",
+  "clauses": [
+    {
+      "title": "Payment Terms",
+      "slug": "payment-terms",
+      "category": "Commercial",
+      "description": "Standard 30-day payment terms",
+      "body": "<p>All invoices issued by <strong th:text=\"${org.name}\">Firm</strong> to <strong th:text=\"${customer.name}\">Client</strong> are payable within thirty (30) days of the invoice date. Late payments shall incur interest at a rate of 2% per month on the outstanding balance.</p><p>Payment shall be made by electronic funds transfer to the bank account details provided on the invoice, unless otherwise agreed in writing.</p>",
+      "sortOrder": 1
+    },
+    {
+      "title": "Fee Schedule",
+      "slug": "fee-schedule",
+      "category": "Commercial",
+      "description": "Professional fees and billing arrangements",
+      "body": "<p><span th:text=\"${org.name}\">Firm</span> shall charge <span th:text=\"${customer.name}\">Client</span> for professional services rendered at the rates agreed upon in the engagement schedule. Fees are exclusive of Value Added Tax (VAT), which shall be charged at the prevailing rate where applicable.</p><p>Any disbursements or third-party costs incurred on behalf of the client will be invoiced at cost, plus a reasonable administration fee where applicable.</p>",
+      "sortOrder": 2
+    },
+    {
+      "title": "Engagement Acceptance",
+      "slug": "engagement-acceptance",
+      "category": "Engagement",
+      "description": "Client acceptance of engagement terms",
+      "body": "<p>By signing this document, <strong th:text=\"${customer.name}\">Client</strong> acknowledges and accepts the terms and conditions set out herein for the engagement with <strong th:text=\"${org.name}\">Firm</strong>.</p><p>This engagement shall commence on the date of signature and continue until completion of the agreed scope of work, unless terminated earlier in accordance with the termination provisions of this agreement.</p>",
+      "sortOrder": 3
+    },
+    {
+      "title": "Scope of Work",
+      "slug": "scope-of-work",
+      "category": "Engagement",
+      "description": "Description of services to be provided",
+      "body": "<p><span th:text=\"${org.name}\">Firm</span> shall provide the professional services described in the engagement schedule to <span th:text=\"${customer.name}\">Client</span>. Any work falling outside the agreed scope of work shall require prior written approval and may be subject to additional fees.</p><p>The scope of work may be amended from time to time by mutual written agreement between the parties.</p>",
+      "sortOrder": 4
+    },
+    {
+      "title": "Client Responsibilities",
+      "slug": "client-responsibilities",
+      "category": "Engagement",
+      "description": "Obligations and duties of the client",
+      "body": "<p><span th:text=\"${customer.name}\">Client</span> shall provide <span th:text=\"${org.name}\">Firm</span> with all information, documentation, and access reasonably required for the performance of the agreed services, in a timely manner.</p><p>The client acknowledges that delays in providing requested information may impact service delivery timelines and that <span th:text=\"${org.name}\">Firm</span> shall not be liable for any resulting delays.</p>",
+      "sortOrder": 5
+    },
+    {
+      "title": "Limitation of Liability",
+      "slug": "limitation-of-liability",
+      "category": "Legal",
+      "description": "Caps and exclusions on liability",
+      "body": "<p>The total aggregate liability of <strong th:text=\"${org.name}\">Firm</strong> to <strong th:text=\"${customer.name}\">Client</strong> in respect of all claims arising out of or in connection with this engagement shall not exceed the total fees paid by the client for the specific engagement giving rise to the claim.</p><p>Neither party shall be liable to the other for any indirect, consequential, or special damages, including but not limited to loss of profit, loss of data, or loss of business opportunity.</p>",
+      "sortOrder": 6
+    },
+    {
+      "title": "Professional Indemnity",
+      "slug": "professional-indemnity",
+      "category": "Legal",
+      "description": "Professional indemnity insurance disclosure",
+      "body": "<p><span th:text=\"${org.name}\">Firm</span> maintains professional indemnity insurance in an amount appropriate to the nature and scale of services provided. Details of coverage are available upon written request from <span th:text=\"${customer.name}\">Client</span>.</p><p>This insurance covers claims arising from professional negligence, errors, or omissions in the provision of services under this engagement.</p>",
+      "sortOrder": 7
+    },
+    {
+      "title": "Confidentiality",
+      "slug": "confidentiality",
+      "category": "Legal",
+      "description": "Mutual confidentiality obligations",
+      "body": "<p>Both <span th:text=\"${org.name}\">Firm</span> and <span th:text=\"${customer.name}\">Client</span> agree to maintain the confidentiality of all proprietary and sensitive information disclosed during the course of this engagement.</p><p>Confidential information shall not be disclosed to any third party without the prior written consent of the disclosing party, except where required by law, regulation, or professional obligation. This obligation shall survive the termination of this engagement.</p>",
+      "sortOrder": 8
+    },
+    {
+      "title": "Termination",
+      "slug": "termination",
+      "category": "Legal",
+      "description": "Terms for ending the engagement",
+      "body": "<p>Either party may terminate this engagement by providing thirty (30) days written notice to the other party. <span th:text=\"${org.name}\">Firm</span> shall be entitled to payment for all services rendered and expenses incurred up to the effective date of termination.</p><p>Upon termination, <span th:text=\"${org.name}\">Firm</span> shall deliver all completed work product to <span th:text=\"${customer.name}\">Client</span> and return any client-owned documents and materials within a reasonable period.</p>",
+      "sortOrder": 9
+    },
+    {
+      "title": "Force Majeure",
+      "slug": "force-majeure",
+      "category": "Legal",
+      "description": "Provisions for events beyond control",
+      "body": "<p>Neither <span th:text=\"${org.name}\">Firm</span> nor <span th:text=\"${customer.name}\">Client</span> shall be liable for any failure or delay in performing their obligations under this engagement where such failure or delay results from circumstances beyond the reasonable control of that party.</p><p>Such circumstances include, but are not limited to, natural disasters, acts of government, pandemic, civil unrest, power failures, or failures of telecommunications infrastructure.</p>",
+      "sortOrder": 10
+    },
+    {
+      "title": "Dispute Resolution",
+      "slug": "dispute-resolution",
+      "category": "Legal",
+      "description": "Process for resolving disagreements",
+      "body": "<p>In the event of any dispute arising out of or in connection with this engagement, <span th:text=\"${org.name}\">Firm</span> and <span th:text=\"${customer.name}\">Client</span> agree to first attempt resolution through good-faith negotiation between senior representatives of each party.</p><p>If the dispute cannot be resolved through negotiation within thirty (30) days, either party may refer the matter to mediation. The costs of mediation shall be shared equally between the parties.</p>",
+      "sortOrder": 11
+    },
+    {
+      "title": "Document Retention",
+      "slug": "document-retention",
+      "category": "Compliance",
+      "description": "Records retention and disposal policy",
+      "body": "<p><span th:text=\"${org.name}\">Firm</span> shall retain all engagement records and working papers for a period of five (5) years from the date of completion of the engagement, unless a longer retention period is required by law or professional standards.</p><p>After the retention period, <span th:text=\"${org.name}\">Firm</span> may destroy records in accordance with its standard document disposal procedures. <span th:text=\"${customer.name}\">Client</span> will be given reasonable notice before disposal of records where practicable.</p>",
+      "sortOrder": 12
+    }
+  ],
+  "templateAssociations": [
+    {
+      "templatePackId": "common",
+      "templateKey": "engagement-letter",
+      "clauseSlugs": [
+        "payment-terms",
+        "fee-schedule",
+        "engagement-acceptance",
+        "scope-of-work",
+        "client-responsibilities",
+        "limitation-of-liability",
+        "professional-indemnity",
+        "confidentiality",
+        "termination",
+        "force-majeure",
+        "dispute-resolution",
+        "document-retention"
+      ],
+      "requiredSlugs": [
+        "payment-terms",
+        "scope-of-work",
+        "confidentiality",
+        "termination"
+      ]
+    }
+  ]
+}

@@ -107,7 +107,7 @@ This is a **structural hardening phase**, not a feature phase. No new pages are 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 2a (parallel) | 202 | 202A | `TaskService` lifecycle methods (`completeTask`, `cancelTask`, `reopenTask`) + transition validation + audit events + domain events + notification for cancelled-by-other. ~1 modified file, ~2 new event files. Backend only. | **Done** (PR #413) |
-| 2b (parallel) | 204 | 204A | `ProjectService` lifecycle methods (`completeProject`, `archiveProject`, `reopenProject`) + completion guardrails (task check, unbilled time check) + audit events + domain events + notification to project members. ~1 modified file, ~2 new event files. Backend only. | |
+| 2b (parallel) | 204 | 204A | `ProjectService` lifecycle methods (`completeProject`, `archiveProject`, `reopenProject`) + completion guardrails (task check, unbilled time check) + audit events + domain events + notification to project members. ~1 modified file, ~2 new event files. Backend only. | **Done** (PR #418) |
 | 2c (parallel) | 205 | 205A | `ProjectService` extension: `customerId` and `dueDate` in create/update + customer validation (exists + not OFFBOARDED) + `ProjectRepository` filter-by-status and filter-by-customer queries + `GET /api/customers/{id}/projects` convenience query. ~2 modified files. Backend only. | |
 
 ### Stage 3: Controllers + Integration Tests (parallel tracks)
@@ -363,7 +363,7 @@ Stage 6: [207B] // [208B]                                        (parallel, afte
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **204A** | 204.1--204.7 | `ProjectService` lifecycle methods: `completeProject()` (guardrails: all tasks DONE/CANCELLED + unbilled time acknowledgment), `archiveProject()`, `reopenProject()` + 3 domain event records + audit events + notification to project members. ~1 modified file, ~3 new event files. Backend only. | |
+| **204A** | 204.1--204.7 | `ProjectService` lifecycle methods: `completeProject()` (guardrails: all tasks DONE/CANCELLED + unbilled time acknowledgment), `archiveProject()`, `reopenProject()` + 3 domain event records + audit events + notification to project members. ~1 modified file, ~3 new event files. Backend only. | **Done** (PR #418) |
 | **204B** | 204.8--204.14 | `ProjectController` transition endpoints: `PATCH .../complete` (body: `{ acknowledgeUnbilledTime: boolean }`), `.../archive`, `.../reopen` + update `ProjectController` response DTO (add status, customerId, dueDate, completedAt, completedBy, archivedAt) + update `listProjects` status filter + controller integration tests (~14 tests). ~1 modified file, ~1 new test file. Backend only. | |
 
 ### Tasks

@@ -14,14 +14,14 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
   @Query(
       """
       SELECT t FROM Task t WHERE t.projectId = :projectId
-        AND (:status IS NULL OR t.status = :status)
+        AND t.status IN :statuses
         AND (:assigneeId IS NULL OR t.assigneeId = :assigneeId)
         AND (:priority IS NULL OR t.priority = :priority)
       ORDER BY t.createdAt DESC
       """)
   List<Task> findByProjectIdWithFilters(
       @Param("projectId") UUID projectId,
-      @Param("status") TaskStatus status,
+      @Param("statuses") List<TaskStatus> statuses,
       @Param("assigneeId") UUID assigneeId,
       @Param("priority") TaskPriority priority);
 
@@ -29,13 +29,13 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
       """
       SELECT t FROM Task t WHERE t.projectId = :projectId
         AND t.assigneeId IS NULL
-        AND (:status IS NULL OR t.status = :status)
+        AND t.status IN :statuses
         AND (:priority IS NULL OR t.priority = :priority)
       ORDER BY t.createdAt DESC
       """)
   List<Task> findByProjectIdUnassigned(
       @Param("projectId") UUID projectId,
-      @Param("status") TaskStatus status,
+      @Param("statuses") List<TaskStatus> statuses,
       @Param("priority") TaskPriority priority);
 
   // --- Cross-project queries for My Work (Epic 48A) ---

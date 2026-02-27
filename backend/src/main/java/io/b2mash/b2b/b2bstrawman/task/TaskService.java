@@ -86,6 +86,9 @@ public class TaskService {
     this.fieldGroupService = fieldGroupService;
   }
 
+  private static final List<TaskStatus> DEFAULT_STATUSES =
+      List.of(TaskStatus.OPEN, TaskStatus.IN_PROGRESS);
+
   @Transactional(readOnly = true)
   public List<Task> listTasks(
       UUID projectId,
@@ -97,16 +100,15 @@ public class TaskService {
       String assigneeFilter) {
     projectAccessService.requireViewAccess(projectId, memberId, orgRole);
 
-    TaskStatus taskStatus = status != null ? parseStatus(status) : null;
+    List<TaskStatus> statuses = status != null ? parseStatuses(status) : DEFAULT_STATUSES;
     TaskPriority taskPriority = priority != null ? parsePriority(priority) : null;
 
     // Handle special "unassigned" filter
     if ("unassigned".equals(assigneeFilter)) {
-      return taskRepository.findByProjectIdUnassigned(projectId, taskStatus, taskPriority);
+      return taskRepository.findByProjectIdUnassigned(projectId, statuses, taskPriority);
     }
 
-    return taskRepository.findByProjectIdWithFilters(
-        projectId, taskStatus, assigneeId, taskPriority);
+    return taskRepository.findByProjectIdWithFilters(projectId, statuses, assigneeId, taskPriority);
   }
 
   @Transactional(readOnly = true)
@@ -528,13 +530,7 @@ public class TaskService {
           "Cannot claim task", "Task is already assigned to another member");
     }
 
-    try {
-      task.claim(memberId);
-    } catch (InvalidStateException e) {
-      throw new InvalidStateException(
-          "Cannot claim task",
-          "Task can only be claimed when status is OPEN. Current status: " + task.getStatus());
-    }
+    task.claim(memberId);
     task = taskRepository.save(task);
     log.info("Task {} claimed by member {}", taskId, memberId);
 
@@ -831,6 +827,13 @@ public class TaskService {
 
   private String resolveActorName(UUID memberId) {
     return memberNameResolver.resolveName(memberId);
+  }
+
+  private static List<TaskStatus> parseStatuses(String statuses) {
+    return java.util.Arrays.stream(statuses.split(","))
+        .map(String::trim)
+        .map(TaskService::parseStatus)
+        .toList();
   }
 
   private static TaskStatus parseStatus(String status) {

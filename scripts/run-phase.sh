@@ -211,9 +211,10 @@ for i in "${!SLICES_TO_RUN[@]}"; do
   SLICE_DURATION=$(( SLICE_END - SLICE_START ))
   SLICE_MINUTES=$(( SLICE_DURATION / 60 ))
 
-  # Check if slice was actually marked Done in the task file
+  # Check if slice was marked Done in ANY table row in the task file
+  # (epic_v2 may mark Done in the implementation order table, the slice detail table, or both)
   SLICE_DONE=false
-  if grep -E "^\| \*\*${slice}\*\*" "$TASK_FILE" | grep -q '\*\*Done\*\*'; then
+  if grep -E "\*\*${slice}\*\*" "$TASK_FILE" | grep -q '\*\*Done\*\*'; then
     SLICE_DONE=true
   fi
 

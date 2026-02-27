@@ -69,6 +69,7 @@ public class AcceptanceService {
   private final EmailRateLimiter emailRateLimiter;
   private final ApplicationEventPublisher eventPublisher;
   private final MemberNameResolver memberNameResolver;
+  private final AcceptanceCertificateService certificateService;
 
   @SuppressWarnings("unused")
   private final StorageService storageService;
@@ -90,6 +91,7 @@ public class AcceptanceService {
       EmailRateLimiter emailRateLimiter,
       ApplicationEventPublisher eventPublisher,
       MemberNameResolver memberNameResolver,
+      AcceptanceCertificateService certificateService,
       StorageService storageService,
       @Value("${docteams.portal.base-url:http://localhost:3001}") String portalBaseUrl) {
     this.acceptanceRequestRepository = acceptanceRequestRepository;
@@ -105,6 +107,7 @@ public class AcceptanceService {
     this.emailRateLimiter = emailRateLimiter;
     this.eventPublisher = eventPublisher;
     this.memberNameResolver = memberNameResolver;
+    this.certificateService = certificateService;
     this.storageService = storageService;
     this.portalBaseUrl = portalBaseUrl;
     this.secureRandom = new SecureRandom();
@@ -321,6 +324,24 @@ public class AcceptanceService {
     // Must be SENT or VIEWED
     request.markAccepted(submission.name(), ipAddress, userAgent);
     request = acceptanceRequestRepository.save(request);
+
+    // Generate Certificate of Acceptance (synchronous, non-fatal on failure)
+    String tenantSchema = RequestScopes.getTenantIdOrNull();
+    if (tenantSchema != null) {
+      try {
+        certificateService.generateCertificate(request, tenantSchema);
+        request = acceptanceRequestRepository.save(request);
+      } catch (Exception e) {
+        log.warn(
+            "Certificate generation failed for acceptance request {} (document {}), continuing without certificate",
+            request.getId(),
+            request.getGeneratedDocumentId(),
+            e);
+      }
+    } else {
+      log.warn(
+          "Skipping certificate generation for request={} — no tenant context", request.getId());
+    }
 
     // Send confirmation email
     GeneratedDocument doc =

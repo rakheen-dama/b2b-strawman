@@ -34,4 +34,9 @@ describe("AcceptanceStatusBadge", () => {
     render(<AcceptanceStatusBadge status="REVOKED" />);
     expect(screen.getByText("Revoked")).toBeInTheDocument();
   });
+
+  it('renders "Pending" badge for PENDING status', () => {
+    render(<AcceptanceStatusBadge status="PENDING" />);
+    expect(screen.getByText("Pending")).toBeInTheDocument();
+  });
 });

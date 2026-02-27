@@ -103,7 +103,7 @@ export async function getAcceptanceRequests(opts: {
       `/api/acceptance-requests${query ? `?${query}` : ""}`,
     );
   } catch (error) {
-    console.error("Failed to fetch acceptance requests:", error);
+    console.warn("Failed to fetch acceptance requests (returning empty list):", error);
     return [];
   }
 }
@@ -175,15 +175,7 @@ export async function fetchPortalContacts(
     return contacts;
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) {
-      // Fallback endpoint
-      try {
-        return await api.get<PortalContactSummary[]>(
-          `/api/portal-contacts?customerId=${customerId}`,
-        );
-      } catch {
-        // Neither endpoint exists
-        return [];
-      }
+      return [];
     }
     console.error("Failed to fetch portal contacts:", error);
     return [];

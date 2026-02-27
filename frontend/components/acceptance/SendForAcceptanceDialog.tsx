@@ -83,6 +83,11 @@ export function SendForAcceptanceDialog({
     setSuccessMessage(null);
 
     const parsedExpiry = expiryDays ? parseInt(expiryDays, 10) : undefined;
+    if (parsedExpiry != null && (isNaN(parsedExpiry) || parsedExpiry < 1 || parsedExpiry > 365)) {
+      setError("Expiry days must be a number between 1 and 365.");
+      setIsSending(false);
+      return;
+    }
     const result = await sendForAcceptance(
       generatedDocumentId,
       selectedContactId,

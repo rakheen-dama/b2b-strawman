@@ -12,4 +12,8 @@ public record PortalInvoiceLineView(
     BigDecimal unitPrice,
     BigDecimal amount,
     int sortOrder,
-    Instant syncedAt) {}
+    Instant syncedAt,
+    String taxRateName,
+    BigDecimal taxRatePercent,
+    BigDecimal taxAmount,
+    boolean taxExempt) {}

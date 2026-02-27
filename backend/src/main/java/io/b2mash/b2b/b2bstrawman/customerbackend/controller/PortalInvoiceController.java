@@ -6,11 +6,15 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Portal invoice endpoints. Provides read-only access to invoices for the authenticated customer.
@@ -20,10 +24,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/portal/invoices")
 public class PortalInvoiceController {
 
-  private final PortalReadModelService portalReadModelService;
+  private static final Logger log = LoggerFactory.getLogger(PortalInvoiceController.class);
 
-  public PortalInvoiceController(PortalReadModelService portalReadModelService) {
+  private final PortalReadModelService portalReadModelService;
+  private final ObjectMapper objectMapper;
+
+  public PortalInvoiceController(
+      PortalReadModelService portalReadModelService, ObjectMapper objectMapper) {
     this.portalReadModelService = portalReadModelService;
+    this.objectMapper = objectMapper;
   }
 
   /** Lists all invoices for the authenticated customer. */
@@ -67,10 +76,30 @@ public class PortalInvoiceController {
                         l.quantity(),
                         l.unitPrice(),
                         l.amount(),
-                        l.sortOrder()))
+                        l.sortOrder(),
+                        l.taxRateName(),
+                        l.taxRatePercent(),
+                        l.taxAmount(),
+                        l.taxExempt()))
             .toList();
 
     var invoice = detail.invoice();
+
+    // Deserialize tax breakdown JSON
+    List<TaxBreakdownDto> taxBreakdown = null;
+    if (invoice.taxBreakdownJson() != null) {
+      try {
+        taxBreakdown =
+            objectMapper.readValue(
+                invoice.taxBreakdownJson(),
+                objectMapper
+                    .getTypeFactory()
+                    .constructCollectionType(List.class, TaxBreakdownDto.class));
+      } catch (JacksonException e) {
+        log.warn("Failed to parse tax breakdown JSON for invoice {}", id, e);
+      }
+    }
+
     return ResponseEntity.ok(
         new PortalInvoiceDetailResponse(
             invoice.id(),
@@ -84,7 +113,13 @@ public class PortalInvoiceController {
             invoice.currency(),
             invoice.notes(),
             invoice.paymentUrl(),
-            lines));
+            lines,
+            taxBreakdown,
+            invoice.taxRegistrationNumber(),
+            invoice.taxRegistrationLabel(),
+            invoice.taxLabel(),
+            invoice.taxInclusive(),
+            invoice.hasPerLineTax()));
   }
 
   /** Returns the current payment status for an invoice (used by payment success page to poll). */
@@ -128,7 +163,13 @@ public class PortalInvoiceController {
       String currency,
       String notes,
       String paymentUrl,
-      List<PortalInvoiceLineResponse> lines) {}
+      List<PortalInvoiceLineResponse> lines,
+      List<TaxBreakdownDto> taxBreakdown,
+      String taxRegistrationNumber,
+      String taxRegistrationLabel,
+      String taxLabel,
+      boolean taxInclusive,
+      boolean hasPerLineTax) {}
 
   public record PortalInvoiceLineResponse(
       UUID id,
@@ -136,7 +177,14 @@ public class PortalInvoiceController {
       BigDecimal quantity,
       BigDecimal unitPrice,
       BigDecimal amount,
-      int sortOrder) {}
+      int sortOrder,
+      String taxRateName,
+      BigDecimal taxRatePercent,
+      BigDecimal taxAmount,
+      boolean taxExempt) {}
+
+  public record TaxBreakdownDto(
+      String rateName, BigDecimal ratePercent, BigDecimal taxableAmount, BigDecimal taxAmount) {}
 
   public record PortalDownloadResponse(String downloadUrl) {}
 }

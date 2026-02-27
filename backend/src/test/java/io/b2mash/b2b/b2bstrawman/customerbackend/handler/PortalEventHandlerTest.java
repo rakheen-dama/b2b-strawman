@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.customerbackend.handler;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -423,7 +424,13 @@ class PortalEventHandlerTest {
             null,
             null,
             ORG_ID,
-            TENANT_ID);
+            TENANT_ID,
+            List.of(),
+            null,
+            null,
+            null,
+            false,
+            false);
 
     var line1 =
         new InvoiceLine(
@@ -454,7 +461,13 @@ class PortalEventHandlerTest {
             "ZAR",
             "Test notes",
             null,
-            null);
+            null,
+            null,
+            null,
+            null,
+            null,
+            false,
+            false);
     verify(readModelRepo).deletePortalInvoiceLinesByInvoice(invoiceId);
     verify(readModelRepo)
         .upsertPortalInvoiceLine(
@@ -464,7 +477,11 @@ class PortalEventHandlerTest {
             new BigDecimal("10"),
             new BigDecimal("100.00"),
             line1.getAmount(),
-            0);
+            0,
+            null,
+            null,
+            null,
+            false);
     verify(readModelRepo)
         .upsertPortalInvoiceLine(
             lineId2,
@@ -473,7 +490,11 @@ class PortalEventHandlerTest {
             new BigDecimal("5"),
             new BigDecimal("50.00"),
             line2.getAmount(),
-            1);
+            1,
+            null,
+            null,
+            null,
+            false);
   }
 
   // ── 13. InvoiceSynced PAID -> updates status only ──────────────────
@@ -498,7 +519,13 @@ class PortalEventHandlerTest {
             null,
             null,
             ORG_ID,
-            TENANT_ID);
+            TENANT_ID,
+            List.of(),
+            null,
+            null,
+            null,
+            false,
+            false);
 
     handler.onInvoiceSynced(event);
 
@@ -506,8 +533,26 @@ class PortalEventHandlerTest {
         .updatePortalInvoiceStatusAndPaidAt(eq(invoiceId), eq(ORG_ID), eq("PAID"), any());
     verify(readModelRepo, never())
         .upsertPortalInvoice(
-            any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
-            any(), any());
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            anyBoolean(),
+            anyBoolean());
   }
 
   // ── 14. InvoiceSynced VOID -> deletes invoice ──────────────────────
@@ -532,15 +577,39 @@ class PortalEventHandlerTest {
             null,
             null,
             ORG_ID,
-            TENANT_ID);
+            TENANT_ID,
+            List.of(),
+            null,
+            null,
+            null,
+            false,
+            false);
 
     handler.onInvoiceSynced(event);
 
     verify(readModelRepo).deletePortalInvoice(invoiceId, ORG_ID);
     verify(readModelRepo, never())
         .upsertPortalInvoice(
-            any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
-            any(), any());
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            anyBoolean(),
+            anyBoolean());
   }
 
   // ── Helper methods ─────────────────────────────────────────────────

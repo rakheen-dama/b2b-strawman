@@ -925,6 +925,12 @@ public class InvoiceService {
             invoice.getInvoiceNumber(),
             invoice.getCustomerName()));
 
+    // Load tax data for portal sync event
+    var sentLines = lineRepository.findByInvoiceIdOrderBySortOrder(invoice.getId());
+    var sentOrgSettings = orgSettingsRepository.findForCurrentTenant();
+    var sentTaxBreakdown = taxCalculationService.buildTaxBreakdown(sentLines);
+    var sentHasPerLineTax = taxCalculationService.hasPerLineTax(sentLines);
+
     eventPublisher.publishEvent(
         new InvoiceSyncEvent(
             invoice.getId(),
@@ -941,7 +947,13 @@ public class InvoiceService {
             invoice.getPaymentUrl(),
             invoice.getPaymentSessionId(),
             orgIdForEvent,
-            tenantIdForEvent));
+            tenantIdForEvent,
+            sentTaxBreakdown,
+            sentOrgSettings.map(s -> s.getTaxRegistrationNumber()).orElse(null),
+            sentOrgSettings.map(s -> s.getTaxRegistrationLabel()).orElse(null),
+            sentOrgSettings.map(s -> s.getTaxLabel()).orElse(null),
+            sentOrgSettings.map(s -> s.isTaxInclusive()).orElse(false),
+            sentHasPerLineTax));
 
     return buildResponse(invoice);
   }
@@ -1062,7 +1074,13 @@ public class InvoiceService {
             invoice.getPaymentUrl(),
             invoice.getPaymentSessionId(),
             orgIdForEvent,
-            tenantIdForEvent));
+            tenantIdForEvent,
+            List.of(),
+            null,
+            null,
+            null,
+            false,
+            false));
 
     return buildResponse(invoice);
   }
@@ -1167,7 +1185,13 @@ public class InvoiceService {
             invoice.getPaymentUrl(),
             invoice.getPaymentSessionId(),
             orgIdForEvent,
-            tenantIdForEvent));
+            tenantIdForEvent,
+            List.of(),
+            null,
+            null,
+            null,
+            false,
+            false));
 
     return buildResponse(invoice);
   }
@@ -1275,7 +1299,13 @@ public class InvoiceService {
             invoice.getPaymentUrl(),
             invoice.getPaymentSessionId(),
             orgIdForEvent,
-            tenantIdForEvent));
+            tenantIdForEvent,
+            List.of(),
+            null,
+            null,
+            null,
+            false,
+            false));
 
     return buildResponse(invoice);
   }

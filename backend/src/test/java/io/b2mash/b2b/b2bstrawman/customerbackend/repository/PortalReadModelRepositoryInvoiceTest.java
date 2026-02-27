@@ -43,7 +43,13 @@ class PortalReadModelRepositoryInvoiceTest {
         "ZAR",
         "Original notes",
         null,
-        null);
+        null,
+        null,
+        null,
+        null,
+        null,
+        false,
+        false);
 
     var before = repository.findInvoiceById(invoiceId, ORG_ID);
     assertThat(before).isPresent();
@@ -66,7 +72,13 @@ class PortalReadModelRepositoryInvoiceTest {
         "ZAR",
         "Updated notes",
         null,
-        null);
+        null,
+        null,
+        null,
+        null,
+        null,
+        false,
+        false);
 
     var after = repository.findInvoiceById(invoiceId, ORG_ID);
     assertThat(after).isPresent();
@@ -95,7 +107,13 @@ class PortalReadModelRepositoryInvoiceTest {
         "ZAR",
         null,
         null,
-        null);
+        null,
+        null,
+        null,
+        null,
+        null,
+        false,
+        false);
 
     // Insert two lines
     repository.upsertPortalInvoiceLine(
@@ -105,7 +123,11 @@ class PortalReadModelRepositoryInvoiceTest {
         new BigDecimal("2.0000"),
         new BigDecimal("100.00"),
         new BigDecimal("200.00"),
-        0);
+        0,
+        null,
+        null,
+        null,
+        false);
     repository.upsertPortalInvoiceLine(
         lineId2,
         invoiceId,
@@ -113,7 +135,11 @@ class PortalReadModelRepositoryInvoiceTest {
         new BigDecimal("3.0000"),
         new BigDecimal("100.00"),
         new BigDecimal("300.00"),
-        1);
+        1,
+        null,
+        null,
+        null,
+        false);
 
     // Verify lines exist
     var lines = repository.findInvoiceLinesByInvoice(invoiceId);
@@ -151,7 +177,13 @@ class PortalReadModelRepositoryInvoiceTest {
         "ZAR",
         null,
         null,
-        null);
+        null,
+        null,
+        null,
+        null,
+        null,
+        false,
+        false);
 
     // Insert invoice for otherCustomerId
     repository.upsertPortalInvoice(
@@ -168,7 +200,13 @@ class PortalReadModelRepositoryInvoiceTest {
         "ZAR",
         null,
         null,
-        null);
+        null,
+        null,
+        null,
+        null,
+        null,
+        false,
+        false);
 
     // Query for customerId — should only return invoiceA
     var customerInvoices = repository.findInvoicesByCustomer(ORG_ID, customerId);

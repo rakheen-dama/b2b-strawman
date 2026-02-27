@@ -160,3 +160,24 @@ export interface PortalProfile {
   displayName: string;
   role: string; // PRIMARY, BILLING, GENERAL
 }
+
+// === Acceptance ===
+
+export interface AcceptancePageData {
+  requestId: string;
+  status: string;
+  documentTitle: string;
+  documentFileName: string;
+  expiresAt: string;
+  orgName: string;
+  orgLogo: string | null;
+  brandColor: string | null;
+  acceptedAt: string | null;
+  acceptorName: string | null;
+}
+
+export interface AcceptanceResponse {
+  status: string;
+  acceptedAt: string;
+  acceptorName: string;
+}

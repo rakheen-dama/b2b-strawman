@@ -44,7 +44,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -747,34 +746,31 @@ public class AcceptanceService {
       AcceptanceRequest request, String tenantSchema, String orgId) {}
 
   /**
-   * Resolves an acceptance request token to its tenant context by iterating schemas. The portal
-   * read-model is checked first (O(1)), falling back to a schema scan if needed.
+   * Resolves an acceptance request token to its tenant context by scanning schemas. The schema scan
+   * is always the authoritative source; the portal read-model is not relied upon for resolution.
    */
   public TenantAcceptanceContext resolveByToken(String token) {
-    // Try portal read-model first to get the record ID
-    var portalView = portalReadModelRepository.findByRequestToken(token);
-    if (portalView.isPresent()) {
-      // We have the record from the global portal schema, but we still need the tenant schema.
-      // Iterate org mappings and check each schema for this token.
-      var mappings = orgSchemaMappingRepository.findAll();
-      for (var mapping : mappings) {
-        try {
-          AcceptanceRequest found =
-              ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
-                  .call(
-                      () ->
-                          transactionTemplate.execute(
-                              status ->
-                                  acceptanceRequestRepository
-                                      .findByRequestToken(token)
-                                      .orElse(null)));
-          if (found != null) {
-            return new TenantAcceptanceContext(
-                found, mapping.getSchemaName(), mapping.getClerkOrgId());
-          }
-        } catch (Exception e) {
-          log.debug("Token not found in schema {}: {}", mapping.getSchemaName(), e.getMessage());
+    // Schema scan — iterate all tenant schemas to find the token
+    var mappings = orgSchemaMappingRepository.findAll();
+    for (var mapping : mappings) {
+      try {
+        AcceptanceRequest found =
+            ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
+                .call(
+                    () ->
+                        transactionTemplate.execute(
+                            status ->
+                                acceptanceRequestRepository
+                                    .findByRequestToken(token)
+                                    .orElse(null)));
+        if (found != null) {
+          return new TenantAcceptanceContext(
+              found, mapping.getSchemaName(), mapping.getClerkOrgId());
         }
+      } catch (RuntimeException e) {
+        // Infrastructure error (connection failure, schema misconfiguration, etc.)
+        log.warn(
+            "Error scanning schema {} for token: {}", mapping.getSchemaName(), e.getMessage(), e);
       }
     }
     throw new ResourceNotFoundException("AcceptanceRequest", "token");
@@ -788,6 +784,7 @@ public class AcceptanceService {
     var ctx = resolveByToken(token);
     AcceptanceRequest currentRequest = ctx.request();
 
+    // All scoped operations use consistent bindings (TENANT_ID + ORG_ID)
     // Only mark viewed for active requests (SENT/VIEWED); skip for terminal states
     if (currentRequest.isActive() && !currentRequest.isExpired()) {
       try {
@@ -814,6 +811,7 @@ public class AcceptanceService {
     try {
       brandColor =
           ScopedValue.where(RequestScopes.TENANT_ID, ctx.tenantSchema())
+              .where(RequestScopes.ORG_ID, ctx.orgId())
               .call(
                   () ->
                       transactionTemplate.execute(
@@ -822,8 +820,10 @@ public class AcceptanceService {
                                   .findForCurrentTenant()
                                   .map(s -> s.getBrandColor())
                                   .orElse(null)));
-    } catch (Exception e) {
-      log.debug("Failed to get brand color: {}", e.getMessage());
+    } catch (ResourceNotFoundException e) {
+      log.debug("No org settings found for brand color: {}", e.getMessage());
+    } catch (RuntimeException e) {
+      log.warn("Failed to get brand color for tenant {}: {}", ctx.tenantSchema(), e.getMessage());
     }
 
     // Get document filename from tenant schema
@@ -832,6 +832,7 @@ public class AcceptanceService {
     try {
       GeneratedDocument doc =
           ScopedValue.where(RequestScopes.TENANT_ID, ctx.tenantSchema())
+              .where(RequestScopes.ORG_ID, ctx.orgId())
               .call(
                   () ->
                       transactionTemplate.execute(
@@ -843,8 +844,10 @@ public class AcceptanceService {
         documentFileName = doc.getFileName();
         documentTitle = doc.getFileName();
       }
-    } catch (Exception e) {
-      log.debug("Failed to get document info: {}", e.getMessage());
+    } catch (ResourceNotFoundException e) {
+      log.debug("Document not found for request {}: {}", request.getId(), e.getMessage());
+    } catch (RuntimeException e) {
+      log.warn("Failed to get document info for request {}: {}", request.getId(), e.getMessage());
     }
 
     // Fall back to portal view data if tenant lookup failed
@@ -902,55 +905,33 @@ public class AcceptanceService {
   public PortalAcceptResponse acceptFromPortal(
       String token, AcceptanceSubmission submission, String ipAddress, String userAgent) {
     var ctx = resolveByToken(token);
-    AcceptanceRequest request = ctx.request();
 
-    // Idempotent: if already accepted, return current state
-    if (request.getStatus() == AcceptanceStatus.ACCEPTED) {
-      return new PortalAcceptResponse(
-          request.getStatus().name(), request.getAcceptedAt(), request.getAcceptorName());
-    }
-
-    // InvalidStateException from accept() will propagate naturally (400 for expired/revoked)
-    request =
+    // Idempotency check + accept inside one transactional block to avoid TOCTOU race
+    AcceptanceRequest request =
         ScopedValue.where(RequestScopes.TENANT_ID, ctx.tenantSchema())
             .where(RequestScopes.ORG_ID, ctx.orgId())
             .call(
                 () ->
                     transactionTemplate.execute(
-                        status -> accept(token, submission, ipAddress, userAgent)));
+                        status -> {
+                          AcceptanceRequest current = findByTokenOrThrow(token);
+                          // Idempotent: if already accepted, return current state
+                          if (current.getStatus() == AcceptanceStatus.ACCEPTED) {
+                            return current;
+                          }
+                          // InvalidStateException from accept() will propagate naturally
+                          return accept(token, submission, ipAddress, userAgent);
+                        }));
 
     return new PortalAcceptResponse(
         request.getStatus().name(), request.getAcceptedAt(), request.getAcceptorName());
   }
 
-  /** Scheduled task to expire overdue acceptance requests across all tenant schemas. */
-  @Scheduled(fixedDelay = 3600000)
-  public void processExpired() {
-    log.info("Acceptance expiry processor started");
-    var mappings = orgSchemaMappingRepository.findAll();
-    int totalExpired = 0;
-
-    for (var mapping : mappings) {
-      try {
-        int expired =
-            ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
-                .where(RequestScopes.ORG_ID, mapping.getClerkOrgId())
-                .call(this::processExpiredForTenant);
-        totalExpired += expired;
-      } catch (Exception e) {
-        log.error("Expiry processor failed for schema {}", mapping.getSchemaName(), e);
-      }
-    }
-
-    if (totalExpired > 0) {
-      log.info(
-          "Expiry processor completed: {} requests expired across {} tenants",
-          totalExpired,
-          mappings.size());
-    }
-  }
-
-  private int processExpiredForTenant() {
+  /**
+   * Processes expired acceptance requests for the current tenant. Package-visible for the
+   * processor.
+   */
+  int processExpiredForTenant() {
     Integer result =
         transactionTemplate.execute(
             status -> {

@@ -54,7 +54,7 @@ class PortalAcceptanceControllerIntegrationTest {
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private JdbcTemplate jdbcTemplate;
   @Autowired private StorageService storageService;
-  @Autowired private AcceptanceService acceptanceService;
+  @Autowired private AcceptanceExpiryProcessor acceptanceExpiryProcessor;
   @Autowired private AcceptanceRequestRepository acceptanceRequestRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
@@ -334,7 +334,11 @@ class PortalAcceptanceControllerIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(header().string("Content-Type", "application/pdf"))
         .andExpect(
-            header().string("Content-Disposition", "inline; filename=\"engagement-letter.pdf\""));
+            result -> {
+              String contentDisposition = result.getResponse().getHeader("Content-Disposition");
+              assertThat(contentDisposition).startsWith("inline;");
+              assertThat(contentDisposition).contains("engagement-letter.pdf");
+            });
   }
 
   @Test
@@ -442,7 +446,7 @@ class PortalAcceptanceControllerIntegrationTest {
         ownerMemberId);
 
     // Run the expiry processor
-    acceptanceService.processExpired();
+    acceptanceExpiryProcessor.processExpired();
 
     // Verify it was transitioned to EXPIRED
     String newStatus =
@@ -482,7 +486,7 @@ class PortalAcceptanceControllerIntegrationTest {
         ownerMemberId);
 
     // Run the expiry processor
-    acceptanceService.processExpired();
+    acceptanceExpiryProcessor.processExpired();
 
     // Verify ACCEPTED was not changed
     String status =

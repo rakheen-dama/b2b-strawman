@@ -2,8 +2,11 @@ package io.b2mash.b2b.b2bstrawman.acceptance;
 
 import io.b2mash.b2b.b2bstrawman.acceptance.AcceptanceService.PortalAcceptResponse;
 import io.b2mash.b2b.b2bstrawman.acceptance.AcceptanceService.PortalPageData;
+import io.b2mash.b2b.b2bstrawman.security.ClientIpResolver;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import java.nio.charset.StandardCharsets;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,15 +31,20 @@ public class PortalAcceptanceController {
   @GetMapping("/{token}")
   public ResponseEntity<PortalPageData> getPageData(
       @PathVariable String token, HttpServletRequest request) {
-    return ResponseEntity.ok(acceptanceService.getPageData(token, extractClientIp(request)));
+    return ResponseEntity.ok(
+        acceptanceService.getPageData(token, ClientIpResolver.resolve(request)));
   }
 
   @GetMapping("/{token}/pdf")
   public ResponseEntity<byte[]> streamPdf(@PathVariable String token) {
     var download = acceptanceService.streamPdf(token);
+    ContentDisposition disposition =
+        ContentDisposition.inline()
+            .filename(sanitizeFilename(download.fileName()), StandardCharsets.UTF_8)
+            .build();
     return ResponseEntity.ok()
         .contentType(MediaType.APPLICATION_PDF)
-        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + download.fileName() + "\"")
+        .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
         .body(download.bytes());
   }
 
@@ -45,21 +53,18 @@ public class PortalAcceptanceController {
       @PathVariable String token,
       @Valid @RequestBody AcceptanceSubmission submission,
       HttpServletRequest request) {
-    String ipAddress = extractClientIp(request);
+    String ipAddress = ClientIpResolver.resolve(request);
     String userAgent = request.getHeader("User-Agent");
     return ResponseEntity.ok(
         acceptanceService.acceptFromPortal(token, submission, ipAddress, userAgent));
   }
 
-  private String extractClientIp(HttpServletRequest request) {
-    String xForwardedFor = request.getHeader("X-Forwarded-For");
-    if (xForwardedFor != null && !xForwardedFor.isBlank()) {
-      return xForwardedFor.split(",")[0].trim();
+  /** Strips characters that could be used for header injection or path traversal. */
+  private static String sanitizeFilename(String fileName) {
+    if (fileName == null || fileName.isBlank()) {
+      return "document.pdf";
     }
-    String xRealIp = request.getHeader("X-Real-IP");
-    if (xRealIp != null && !xRealIp.isBlank()) {
-      return xRealIp.trim();
-    }
-    return request.getRemoteAddr();
+    // Remove path separators, control characters, and header-injection characters
+    return fileName.replaceAll("[\\\\/:*?\"<>|\\r\\n]", "_");
   }
 }

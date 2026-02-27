@@ -89,6 +89,13 @@ export interface PortalInvoice {
   currency: string;
 }
 
+export interface TaxBreakdownEntry {
+  rateName: string;
+  ratePercent: number;
+  taxableAmount: number;
+  taxAmount: number;
+}
+
 export interface PortalInvoiceDetail {
   id: string;
   invoiceNumber: string;
@@ -102,6 +109,12 @@ export interface PortalInvoiceDetail {
   notes: string | null;
   paymentUrl: string | null;
   lines: PortalInvoiceLine[];
+  taxBreakdown: TaxBreakdownEntry[] | null;
+  taxRegistrationNumber: string | null;
+  taxRegistrationLabel: string | null;
+  taxLabel: string | null;
+  taxInclusive: boolean;
+  hasPerLineTax: boolean;
 }
 
 export interface PortalInvoiceLine {
@@ -111,6 +124,10 @@ export interface PortalInvoiceLine {
   unitPrice: number;
   amount: number;
   sortOrder: number;
+  taxRateName: string | null;
+  taxRatePercent: number | null;
+  taxAmount: number | null;
+  taxExempt: boolean;
 }
 
 export interface PortalDownload {

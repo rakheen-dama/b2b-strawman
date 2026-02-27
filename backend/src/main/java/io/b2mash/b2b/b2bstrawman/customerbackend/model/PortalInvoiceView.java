@@ -21,4 +21,10 @@ public record PortalInvoiceView(
     String paymentUrl,
     String paymentSessionId,
     Instant paidAt,
-    Instant syncedAt) {}
+    Instant syncedAt,
+    String taxBreakdownJson,
+    String taxRegistrationNumber,
+    String taxRegistrationLabel,
+    String taxLabel,
+    boolean taxInclusive,
+    boolean hasPerLineTax) {}

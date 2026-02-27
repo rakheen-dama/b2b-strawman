@@ -140,7 +140,13 @@ class PortalPaymentStatusIntegrationTest {
         "ZAR",
         "Unpaid invoice",
         null,
-        null);
+        null,
+        null,
+        null,
+        null,
+        null,
+        false,
+        false);
 
     paidInvoiceId = UUID.randomUUID();
     readModelRepo.upsertPortalInvoice(
@@ -157,7 +163,13 @@ class PortalPaymentStatusIntegrationTest {
         "ZAR",
         null,
         null,
-        null);
+        null,
+        null,
+        null,
+        null,
+        null,
+        false,
+        false);
     // Set paid_at for the paid invoice
     readModelRepo.updatePortalInvoiceStatusAndPaidAt(paidInvoiceId, ORG_ID, "PAID", Instant.now());
 
@@ -176,7 +188,13 @@ class PortalPaymentStatusIntegrationTest {
         "ZAR",
         null,
         null,
-        null);
+        null,
+        null,
+        null,
+        null,
+        null,
+        false,
+        false);
 
     // Invoice with payment URL (tests sync handler propagation)
     invoiceWithPaymentUrl = UUID.randomUUID();
@@ -194,7 +212,13 @@ class PortalPaymentStatusIntegrationTest {
         "ZAR",
         null,
         "https://pay.example.com/session/abc123",
-        "sess_abc123");
+        "sess_abc123",
+        null,
+        null,
+        null,
+        null,
+        false,
+        false);
   }
 
   @Test

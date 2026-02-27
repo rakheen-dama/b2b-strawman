@@ -6,6 +6,10 @@ import java.util.UUID;
 
 /**
  * Published when an invoice transitions to SENT, PAID, or VOID to sync to the portal read-model.
+ *
+ * <p>Tax data is grouped into a {@link TaxContext} record. Only SENT events carry a non-null
+ * TaxContext; PAID and VOID events pass {@code null} since the handler only uses status for those
+ * transitions.
  */
 public final class InvoiceSyncEvent extends PortalDomainEvent {
 
@@ -22,6 +26,7 @@ public final class InvoiceSyncEvent extends PortalDomainEvent {
   private final String notes;
   private final String paymentUrl;
   private final String paymentSessionId;
+  private final TaxContext taxContext;
 
   public InvoiceSyncEvent(
       UUID invoiceId,
@@ -38,7 +43,8 @@ public final class InvoiceSyncEvent extends PortalDomainEvent {
       String paymentUrl,
       String paymentSessionId,
       String orgId,
-      String tenantId) {
+      String tenantId,
+      TaxContext taxContext) {
     super(orgId, tenantId);
     this.invoiceId = invoiceId;
     this.customerId = customerId;
@@ -53,6 +59,7 @@ public final class InvoiceSyncEvent extends PortalDomainEvent {
     this.notes = notes;
     this.paymentUrl = paymentUrl;
     this.paymentSessionId = paymentSessionId;
+    this.taxContext = taxContext;
   }
 
   public UUID getInvoiceId() {
@@ -105,5 +112,9 @@ public final class InvoiceSyncEvent extends PortalDomainEvent {
 
   public String getPaymentSessionId() {
     return paymentSessionId;
+  }
+
+  public TaxContext getTaxContext() {
+    return taxContext;
   }
 }

@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.customerbackend.controller;
 
 import io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalReadModelService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.tax.dto.TaxBreakdownEntry;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -67,10 +68,15 @@ public class PortalInvoiceController {
                         l.quantity(),
                         l.unitPrice(),
                         l.amount(),
-                        l.sortOrder()))
+                        l.sortOrder(),
+                        l.taxRateName(),
+                        l.taxRatePercent(),
+                        l.taxAmount(),
+                        l.taxExempt()))
             .toList();
 
     var invoice = detail.invoice();
+
     return ResponseEntity.ok(
         new PortalInvoiceDetailResponse(
             invoice.id(),
@@ -84,7 +90,13 @@ public class PortalInvoiceController {
             invoice.currency(),
             invoice.notes(),
             invoice.paymentUrl(),
-            lines));
+            lines,
+            detail.taxBreakdown(),
+            invoice.taxRegistrationNumber(),
+            invoice.taxRegistrationLabel(),
+            invoice.taxLabel(),
+            invoice.taxInclusive(),
+            invoice.hasPerLineTax()));
   }
 
   /** Returns the current payment status for an invoice (used by payment success page to poll). */
@@ -128,7 +140,13 @@ public class PortalInvoiceController {
       String currency,
       String notes,
       String paymentUrl,
-      List<PortalInvoiceLineResponse> lines) {}
+      List<PortalInvoiceLineResponse> lines,
+      List<TaxBreakdownEntry> taxBreakdown,
+      String taxRegistrationNumber,
+      String taxRegistrationLabel,
+      String taxLabel,
+      boolean taxInclusive,
+      boolean hasPerLineTax) {}
 
   public record PortalInvoiceLineResponse(
       UUID id,
@@ -136,7 +154,11 @@ public class PortalInvoiceController {
       BigDecimal quantity,
       BigDecimal unitPrice,
       BigDecimal amount,
-      int sortOrder) {}
+      int sortOrder,
+      String taxRateName,
+      BigDecimal taxRatePercent,
+      BigDecimal taxAmount,
+      boolean taxExempt) {}
 
   public record PortalDownloadResponse(String downloadUrl) {}
 }

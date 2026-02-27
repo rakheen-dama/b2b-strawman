@@ -162,6 +162,16 @@ export default function InvoiceDetailPage() {
         </div>
       )}
 
+      {/* Tax Registration */}
+      {invoice.taxRegistrationNumber && (
+        <div className="text-sm text-slate-600">
+          <span className="font-medium">
+            {invoice.taxRegistrationLabel || "Tax Registration"}:
+          </span>{" "}
+          {invoice.taxRegistrationNumber}
+        </div>
+      )}
+
       {/* Line Items */}
       <section>
         <h2 className="font-display mb-4 text-lg font-semibold text-slate-900">
@@ -173,6 +183,10 @@ export default function InvoiceDetailPage() {
           subtotal={invoice.subtotal}
           taxAmount={invoice.taxAmount}
           total={invoice.total}
+          hasPerLineTax={invoice.hasPerLineTax}
+          taxBreakdown={invoice.taxBreakdown}
+          taxLabel={invoice.taxLabel}
+          taxInclusive={invoice.taxInclusive}
         />
       </section>
 

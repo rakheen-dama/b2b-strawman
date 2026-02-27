@@ -75,6 +75,7 @@ const mockInvoiceDetail = {
   total: 1150.0,
   currency: "ZAR",
   notes: "Payment due within 30 days",
+  paymentUrl: null,
   lines: [
     {
       id: "line-1",
@@ -83,8 +84,61 @@ const mockInvoiceDetail = {
       unitPrice: 200.0,
       amount: 1000.0,
       sortOrder: 1,
+      taxRateName: null,
+      taxRatePercent: null,
+      taxAmount: null,
+      taxExempt: false,
     },
   ],
+  taxBreakdown: null,
+  taxRegistrationNumber: null,
+  taxRegistrationLabel: null,
+  taxLabel: null,
+  taxInclusive: false,
+  hasPerLineTax: false,
+};
+
+const mockInvoiceWithTax = {
+  ...mockInvoiceDetail,
+  id: "inv-tax",
+  invoiceNumber: "INV-TAX-001",
+  subtotal: 10000.0,
+  taxAmount: 1500.0,
+  total: 11500.0,
+  hasPerLineTax: true,
+  taxLabel: "VAT",
+  taxInclusive: false,
+  taxRegistrationNumber: "4200000000",
+  taxRegistrationLabel: "VAT Number",
+  taxBreakdown: [
+    {
+      rateName: "VAT",
+      ratePercent: 15.0,
+      taxableAmount: 10000.0,
+      taxAmount: 1500.0,
+    },
+  ],
+  lines: [
+    {
+      id: "line-tax-1",
+      description: "Development work",
+      quantity: 10,
+      unitPrice: 1000.0,
+      amount: 10000.0,
+      sortOrder: 0,
+      taxRateName: "VAT",
+      taxRatePercent: 15.0,
+      taxAmount: 1500.0,
+      taxExempt: false,
+    },
+  ],
+};
+
+const mockInvoiceWithTaxInclusive = {
+  ...mockInvoiceWithTax,
+  id: "inv-tax-inc",
+  invoiceNumber: "INV-TAX-INC",
+  taxInclusive: true,
 };
 
 describe("InvoiceDetailPage", () => {
@@ -184,5 +238,70 @@ describe("InvoiceDetailPage", () => {
     });
 
     expect(screen.queryByText("Notes")).not.toBeInTheDocument();
+  });
+
+  // ── Tax breakdown display tests ──────────────────────────────────────
+
+  it("renders tax breakdown when hasPerLineTax is true", async () => {
+    mockPortalGet.mockResolvedValue(mockInvoiceWithTax);
+
+    render(<InvoiceDetailPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("INV-TAX-001")).toBeInTheDocument();
+    });
+
+    // Tax column header should be visible
+    expect(screen.getByText("VAT")).toBeInTheDocument();
+    // Tax breakdown row in footer
+    expect(screen.getByText("VAT (15%)")).toBeInTheDocument();
+    // Tax registration number
+    expect(screen.getByText("4200000000")).toBeInTheDocument();
+    expect(screen.getByText(/VAT Number/)).toBeInTheDocument();
+    // Per-line tax display
+    expect(screen.getByText("VAT 15%")).toBeInTheDocument();
+  });
+
+  it("shows legacy flat Tax row for invoices without per-line tax", async () => {
+    mockPortalGet.mockResolvedValue(mockInvoiceDetail);
+
+    render(<InvoiceDetailPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("INV-001")).toBeInTheDocument();
+    });
+
+    // Should show flat "Tax" row, not breakdown
+    expect(screen.getByText("Tax")).toBeInTheDocument();
+    // Tax column header should NOT be present (no extra column)
+    const headers = screen.getAllByRole("columnheader");
+    expect(headers).toHaveLength(4); // Description, Quantity, Rate, Amount
+  });
+
+  it("shows tax-inclusive note when taxInclusive and hasPerLineTax", async () => {
+    mockPortalGet.mockResolvedValue(mockInvoiceWithTaxInclusive);
+
+    render(<InvoiceDetailPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("INV-TAX-INC")).toBeInTheDocument();
+    });
+
+    expect(
+      screen.getByText(/All amounts include VAT/),
+    ).toBeInTheDocument();
+  });
+
+  it("shows 5 column headers when hasPerLineTax is true", async () => {
+    mockPortalGet.mockResolvedValue(mockInvoiceWithTax);
+
+    render(<InvoiceDetailPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("INV-TAX-001")).toBeInTheDocument();
+    });
+
+    const headers = screen.getAllByRole("columnheader");
+    expect(headers).toHaveLength(5); // Description, Quantity, Rate, Tax, Amount
   });
 });

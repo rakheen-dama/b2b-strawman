@@ -429,14 +429,22 @@ public class PortalReadModelRepository {
       String currency,
       String notes,
       String paymentUrl,
-      String paymentSessionId) {
+      String paymentSessionId,
+      String taxBreakdownJson,
+      String taxRegistrationNumber,
+      String taxRegistrationLabel,
+      String taxLabel,
+      boolean taxInclusive,
+      boolean hasPerLineTax) {
     jdbc.sql(
             """
             INSERT INTO portal.portal_invoices
                 (id, org_id, customer_id, invoice_number, status, issue_date, due_date,
                  subtotal, tax_amount, total, currency, notes,
-                 payment_url, payment_session_id, synced_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now())
+                 payment_url, payment_session_id,
+                 tax_breakdown_json, tax_registration_number, tax_registration_label,
+                 tax_label, tax_inclusive, has_per_line_tax, synced_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?, ?, ?, ?, ?, now())
             ON CONFLICT (id)
             DO UPDATE SET status = EXCLUDED.status,
                           invoice_number = EXCLUDED.invoice_number,
@@ -448,6 +456,12 @@ public class PortalReadModelRepository {
                           notes = EXCLUDED.notes,
                           payment_url = EXCLUDED.payment_url,
                           payment_session_id = EXCLUDED.payment_session_id,
+                          tax_breakdown_json = EXCLUDED.tax_breakdown_json,
+                          tax_registration_number = EXCLUDED.tax_registration_number,
+                          tax_registration_label = EXCLUDED.tax_registration_label,
+                          tax_label = EXCLUDED.tax_label,
+                          tax_inclusive = EXCLUDED.tax_inclusive,
+                          has_per_line_tax = EXCLUDED.has_per_line_tax,
                           synced_at = now()
             """)
         .params(
@@ -464,7 +478,13 @@ public class PortalReadModelRepository {
             currency,
             notes,
             paymentUrl,
-            paymentSessionId)
+            paymentSessionId,
+            taxBreakdownJson,
+            taxRegistrationNumber,
+            taxRegistrationLabel,
+            taxLabel,
+            taxInclusive,
+            hasPerLineTax)
         .update();
   }
 
@@ -475,21 +495,41 @@ public class PortalReadModelRepository {
       BigDecimal quantity,
       BigDecimal unitPrice,
       BigDecimal amount,
-      int sortOrder) {
+      int sortOrder,
+      String taxRateName,
+      BigDecimal taxRatePercent,
+      BigDecimal taxAmount,
+      boolean taxExempt) {
     jdbc.sql(
             """
             INSERT INTO portal.portal_invoice_lines
-                (id, portal_invoice_id, description, quantity, unit_price, amount, sort_order, synced_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, now())
+                (id, portal_invoice_id, description, quantity, unit_price, amount, sort_order,
+                 tax_rate_name, tax_rate_percent, tax_amount, tax_exempt, synced_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now())
             ON CONFLICT (id)
             DO UPDATE SET description = EXCLUDED.description,
                           quantity = EXCLUDED.quantity,
                           unit_price = EXCLUDED.unit_price,
                           amount = EXCLUDED.amount,
                           sort_order = EXCLUDED.sort_order,
+                          tax_rate_name = EXCLUDED.tax_rate_name,
+                          tax_rate_percent = EXCLUDED.tax_rate_percent,
+                          tax_amount = EXCLUDED.tax_amount,
+                          tax_exempt = EXCLUDED.tax_exempt,
                           synced_at = now()
             """)
-        .params(id, portalInvoiceId, description, quantity, unitPrice, amount, sortOrder)
+        .params(
+            id,
+            portalInvoiceId,
+            description,
+            quantity,
+            unitPrice,
+            amount,
+            sortOrder,
+            taxRateName,
+            taxRatePercent,
+            taxAmount,
+            taxExempt)
         .update();
   }
 
@@ -540,7 +580,9 @@ public class PortalReadModelRepository {
             """
             SELECT id, org_id, customer_id, invoice_number, status, issue_date, due_date,
                    subtotal, tax_amount, total, currency, notes,
-                   payment_url, payment_session_id, paid_at, synced_at
+                   payment_url, payment_session_id, paid_at, synced_at,
+                   tax_breakdown_json, tax_registration_number, tax_registration_label,
+                   tax_label, tax_inclusive, has_per_line_tax
             FROM portal.portal_invoices
             WHERE org_id = ? AND customer_id = ?
             ORDER BY issue_date DESC
@@ -555,7 +597,9 @@ public class PortalReadModelRepository {
             """
             SELECT id, org_id, customer_id, invoice_number, status, issue_date, due_date,
                    subtotal, tax_amount, total, currency, notes,
-                   payment_url, payment_session_id, paid_at, synced_at
+                   payment_url, payment_session_id, paid_at, synced_at,
+                   tax_breakdown_json, tax_registration_number, tax_registration_label,
+                   tax_label, tax_inclusive, has_per_line_tax
             FROM portal.portal_invoices
             WHERE id = ? AND org_id = ?
             """)
@@ -568,7 +612,8 @@ public class PortalReadModelRepository {
     return jdbc.sql(
             """
             SELECT id, portal_invoice_id, description, quantity, unit_price, amount,
-                   sort_order, synced_at
+                   sort_order, synced_at,
+                   tax_rate_name, tax_rate_percent, tax_amount, tax_exempt
             FROM portal.portal_invoice_lines
             WHERE portal_invoice_id = ?
             ORDER BY sort_order

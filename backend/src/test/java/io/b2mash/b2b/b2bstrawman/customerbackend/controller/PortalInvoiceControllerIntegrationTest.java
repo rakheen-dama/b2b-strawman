@@ -153,7 +153,13 @@ class PortalInvoiceControllerIntegrationTest {
         "ZAR",
         "Test invoice",
         null,
-        null);
+        null,
+        null,
+        null,
+        null,
+        null,
+        false,
+        false);
     readModelRepo.upsertPortalInvoiceLine(
         UUID.randomUUID(),
         invoiceWithLines,
@@ -161,7 +167,11 @@ class PortalInvoiceControllerIntegrationTest {
         new BigDecimal("10.0000"),
         new BigDecimal("100.00"),
         new BigDecimal("1000.00"),
-        0);
+        0,
+        null,
+        null,
+        null,
+        false);
     readModelRepo.upsertPortalInvoiceLine(
         UUID.randomUUID(),
         invoiceWithLines,
@@ -169,7 +179,11 @@ class PortalInvoiceControllerIntegrationTest {
         new BigDecimal("1.0000"),
         new BigDecimal("150.00"),
         new BigDecimal("150.00"),
-        1);
+        1,
+        null,
+        null,
+        null,
+        false);
 
     readModelRepo.upsertPortalInvoice(
         invoiceWithPdf,
@@ -185,7 +199,13 @@ class PortalInvoiceControllerIntegrationTest {
         "ZAR",
         null,
         null,
-        null);
+        null,
+        null,
+        null,
+        null,
+        null,
+        false,
+        false);
 
     readModelRepo.upsertPortalInvoice(
         invoiceNoPdf,
@@ -201,7 +221,13 @@ class PortalInvoiceControllerIntegrationTest {
         "ZAR",
         null,
         null,
-        null);
+        null,
+        null,
+        null,
+        null,
+        null,
+        false,
+        false);
 
     readModelRepo.upsertPortalInvoice(
         otherCustomerInvoiceId,
@@ -217,7 +243,13 @@ class PortalInvoiceControllerIntegrationTest {
         "ZAR",
         null,
         null,
-        null);
+        null,
+        null,
+        null,
+        null,
+        null,
+        false,
+        false);
 
     // Seed GeneratedDocument for invoiceWithPdf (in tenant schema)
     // Must create a DocumentTemplate first to satisfy FK constraint

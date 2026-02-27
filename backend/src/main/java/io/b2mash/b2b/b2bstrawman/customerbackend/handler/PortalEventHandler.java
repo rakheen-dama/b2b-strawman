@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.event.PortalTaskCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.PortalTaskDeletedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.PortalTaskUpdatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectUpdatedEvent;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.TaxContext;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.TimeEntryAggregatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
@@ -31,6 +32,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Listens to {@link io.b2mash.b2b.b2bstrawman.customerbackend.event.PortalDomainEvent} subclasses
@@ -62,6 +65,7 @@ public class PortalEventHandler {
   private final InvoiceLineRepository invoiceLineRepository;
   private final CommentRepository commentRepository;
   private final MemberRepository memberRepository;
+  private final ObjectMapper objectMapper;
 
   public PortalEventHandler(
       PortalReadModelRepository readModelRepo,
@@ -71,7 +75,8 @@ public class PortalEventHandler {
       InvoiceRepository invoiceRepository,
       InvoiceLineRepository invoiceLineRepository,
       CommentRepository commentRepository,
-      MemberRepository memberRepository) {
+      MemberRepository memberRepository,
+      ObjectMapper objectMapper) {
     this.readModelRepo = readModelRepo;
     this.projectRepository = projectRepository;
     this.documentRepository = documentRepository;
@@ -80,6 +85,7 @@ public class PortalEventHandler {
     this.invoiceLineRepository = invoiceLineRepository;
     this.commentRepository = commentRepository;
     this.memberRepository = memberRepository;
+    this.objectMapper = objectMapper;
   }
 
   // ── Customer-project events ────────────────────────────────────────
@@ -344,6 +350,33 @@ public class PortalEventHandler {
           try {
             switch (event.getStatus()) {
               case "SENT" -> {
+                // Serialize tax breakdown to JSON from TaxContext
+                TaxContext tax = event.getTaxContext();
+                String taxBreakdownJson = null;
+                String taxRegNumber = null;
+                String taxRegLabel = null;
+                String taxLabel = null;
+                boolean taxInclusive = false;
+                boolean hasPerLineTax = false;
+
+                if (tax != null) {
+                  taxRegNumber = tax.taxRegistrationNumber();
+                  taxRegLabel = tax.taxRegistrationLabel();
+                  taxLabel = tax.taxLabel();
+                  taxInclusive = tax.taxInclusive();
+                  hasPerLineTax = tax.hasPerLineTax();
+                  if (tax.taxBreakdown() != null && !tax.taxBreakdown().isEmpty()) {
+                    try {
+                      taxBreakdownJson = objectMapper.writeValueAsString(tax.taxBreakdown());
+                    } catch (JacksonException e) {
+                      log.warn(
+                          "Failed to serialize tax breakdown for invoice {}",
+                          event.getInvoiceId(),
+                          e);
+                    }
+                  }
+                }
+
                 // Upsert the invoice row
                 readModelRepo.upsertPortalInvoice(
                     event.getInvoiceId(),
@@ -359,7 +392,13 @@ public class PortalEventHandler {
                     event.getCurrency(),
                     event.getNotes(),
                     event.getPaymentUrl(),
-                    event.getPaymentSessionId());
+                    event.getPaymentSessionId(),
+                    taxBreakdownJson,
+                    taxRegNumber,
+                    taxRegLabel,
+                    taxLabel,
+                    taxInclusive,
+                    hasPerLineTax);
 
                 // Remove stale line items before re-upserting (handles line item changes)
                 readModelRepo.deletePortalInvoiceLinesByInvoice(event.getInvoiceId());
@@ -375,7 +414,11 @@ public class PortalEventHandler {
                       line.getQuantity(),
                       line.getUnitPrice(),
                       line.getAmount(),
-                      line.getSortOrder());
+                      line.getSortOrder(),
+                      line.getTaxRateName(),
+                      line.getTaxRatePercent(),
+                      line.getTaxAmount(),
+                      line.isTaxExempt());
                 }
               }
               case "PAID" ->

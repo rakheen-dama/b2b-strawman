@@ -22,7 +22,7 @@ This is a **structural hardening phase**, not a feature phase. No new pages are 
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 201 | Task Lifecycle Foundation -- Migration, Enums & Entity | Backend | -- | M | 201A, 201B | |
+| 201 | Task Lifecycle Foundation -- Migration, Enums & Entity | Backend | -- | M | 201A, 201B | **Done** (PRs #411, #412) |
 | 202 | Task Lifecycle Service + Transition Endpoints | Backend | 201 | L | 202A, 202B | |
 | 203 | Project Lifecycle Foundation -- Migration, Enums & Entity | Backend | -- | M | 203A, 203B | |
 | 204 | Project Lifecycle Service + Transition Endpoints | Backend | 203, 201 | L | 204A, 204B | |
@@ -99,7 +99,7 @@ This is a **structural hardening phase**, not a feature phase. No new pages are 
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 1a (parallel) | 201 | 201B | Refactor `Task` entity: change `status`/`priority` from String to enum, add lifecycle fields + transition methods (`complete()`, `cancel()`, `reopen()`) + update constructor/update method + refactor `TaskRepository` queries from String to enum + entity unit tests. ~2 modified files, ~1 new test file. Backend only. | |
+| 1a (parallel) | 201 | 201B | Refactor `Task` entity: change `status`/`priority` from String to enum, add lifecycle fields + transition methods (`complete()`, `cancel()`, `reopen()`) + update constructor/update method + refactor `TaskRepository` queries from String to enum + entity unit tests. ~2 modified files, ~1 new test file. Backend only. | **Done** (PR #412) |
 | 1b (parallel) | 203 | 203B | Refactor `Project` entity: add `status`, `customerId`, `dueDate`, lifecycle fields + transition methods (`complete()`, `archive()`, `reopen()`) + update constructor/update method + add `ProjectRepository` query methods + entity unit tests. ~2 modified files, ~1 new test file. Backend only. | |
 
 ### Stage 2: Service Layer (parallel tracks, with one dependency)
@@ -174,7 +174,7 @@ Stage 6: [207B] // [208B]                                        (parallel, afte
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **201A** | 201.1--201.4 | V47 tenant migration: add `completed_at`, `completed_by`, `cancelled_at` columns to `tasks` table + CHECK constraints on `status` and `priority` columns + `TaskStatus` enum with `allowedTransitions()` method + `TaskPriority` enum. ~4 new files, ~1 modified migration file. Backend only. | **Done** (PR #411) |
-| **201B** | 201.5--201.10 | Refactor `Task` entity: change `status` from `String` to `TaskStatus`, `priority` from `String` to `TaskPriority`, add lifecycle fields (`completedAt`, `completedBy`, `cancelledAt`) + lifecycle transition methods (`complete()`, `cancel()`, `reopen()`) + update constructor and `update()` method + refactor `TaskRepository` queries from string literals to enum parameters + entity unit tests. ~2 modified files, ~1 new test file. Backend only. | |
+| **201B** | 201.5--201.10 | Refactor `Task` entity: change `status` from `String` to `TaskStatus`, `priority` from `String` to `TaskPriority`, add lifecycle fields (`completedAt`, `completedBy`, `cancelledAt`) + lifecycle transition methods (`complete()`, `cancel()`, `reopen()`) + update constructor and `update()` method + refactor `TaskRepository` queries from string literals to enum parameters + entity unit tests. ~2 modified files, ~1 new test file. Backend only. | **Done** (PR #412) |
 
 ### Tasks
 

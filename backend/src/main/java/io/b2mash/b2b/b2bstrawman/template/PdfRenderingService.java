@@ -1,6 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+import io.b2mash.b2b.b2bstrawman.clause.Clause;
+import io.b2mash.b2b.b2bstrawman.clause.ClauseAssembler;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -8,6 +10,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -38,22 +41,25 @@ public class PdfRenderingService {
   private final DocumentTemplateRepository documentTemplateRepository;
   private final List<TemplateContextBuilder> contextBuilders;
   private final TemplateValidationService templateValidationService;
+  private final ClauseAssembler clauseAssembler;
   private final TemplateEngine stringTemplateEngine;
   private final String defaultCss;
 
   public PdfRenderingService(
       DocumentTemplateRepository documentTemplateRepository,
       List<TemplateContextBuilder> contextBuilders,
-      TemplateValidationService templateValidationService) {
+      TemplateValidationService templateValidationService,
+      ClauseAssembler clauseAssembler) {
     this.documentTemplateRepository = documentTemplateRepository;
     this.contextBuilders = contextBuilders;
     this.templateValidationService = templateValidationService;
+    this.clauseAssembler = clauseAssembler;
     this.stringTemplateEngine = createStringTemplateEngine();
     this.defaultCss = loadDefaultCss();
   }
 
   /**
-   * Generates a PDF from the given template and entity.
+   * Generates a PDF from the given template and entity (no clauses).
    *
    * @param templateId the document template to render
    * @param entityId the entity to populate the template with
@@ -62,35 +68,47 @@ public class PdfRenderingService {
    */
   @Transactional(readOnly = true)
   public PdfResult generatePdf(UUID templateId, UUID entityId, UUID memberId) {
-    // 1. Load template
+    return generatePdf(templateId, entityId, memberId, List.of());
+  }
+
+  /**
+   * Generates a PDF with optional clause content injected into the template context.
+   *
+   * @param templateId the document template to render
+   * @param entityId the entity to populate the template with
+   * @param memberId the member triggering the generation
+   * @param resolvedClauses the clauses to inject, or empty list for none
+   * @return PdfResult containing PDF bytes, filename, and HTML preview
+   */
+  @Transactional(readOnly = true)
+  public PdfResult generatePdf(
+      UUID templateId, UUID entityId, UUID memberId, List<Clause> resolvedClauses) {
     var template =
         documentTemplateRepository
             .findById(templateId)
             .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", templateId));
 
-    // 2. Build context using the appropriate builder
     var builder = findBuilder(template.getPrimaryEntityType());
-    var contextMap = builder.buildContext(entityId, memberId);
+    var contextMap = new HashMap<>(builder.buildContext(entityId, memberId));
 
-    // 3. Merge CSS (default + custom)
+    // Inject clause context
+    String templateContent =
+        injectClauseContext(resolvedClauses, contextMap, template.getContent());
+
     String customCss = template.getCss() != null ? template.getCss() : "";
     String mergedCss = defaultCss + "\n" + customCss;
 
-    // 4. Render HTML via Thymeleaf
-    String renderedBody = renderThymeleaf(template.getContent(), contextMap);
+    String renderedBody = renderThymeleaf(templateContent, contextMap);
     String fullHtml = wrapHtml(renderedBody, mergedCss);
-
-    // 5. Convert HTML to PDF
     byte[] pdfBytes = htmlToPdf(fullHtml);
-
-    // 6. Generate filename
     String fileName =
         generateFilename(template.getSlug(), template.getPrimaryEntityType(), contextMap);
 
     log.info(
-        "Generated PDF: template={}, entity={}, size={}bytes",
+        "Generated PDF: template={}, entity={}, clauses={}, size={}bytes",
         template.getSlug(),
         entityId,
+        resolvedClauses != null ? resolvedClauses.size() : 0,
         pdfBytes.length);
 
     return new PdfResult(pdfBytes, fileName, fullHtml);
@@ -102,18 +120,36 @@ public class PdfRenderingService {
    */
   @Transactional(readOnly = true)
   public String previewHtml(UUID templateId, UUID entityId, UUID memberId) {
+    return previewHtml(templateId, entityId, memberId, List.of());
+  }
+
+  /**
+   * Renders only the HTML preview with optional clause content injected.
+   *
+   * @param templateId the document template to render
+   * @param entityId the entity to populate the template with
+   * @param memberId the member triggering the generation
+   * @param resolvedClauses the clauses to inject, or empty list for none
+   * @return the rendered HTML string
+   */
+  @Transactional(readOnly = true)
+  public String previewHtml(
+      UUID templateId, UUID entityId, UUID memberId, List<Clause> resolvedClauses) {
     var template =
         documentTemplateRepository
             .findById(templateId)
             .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", templateId));
 
     var builder = findBuilder(template.getPrimaryEntityType());
-    var contextMap = builder.buildContext(entityId, memberId);
+    var contextMap = new HashMap<>(builder.buildContext(entityId, memberId));
+
+    String templateContent =
+        injectClauseContext(resolvedClauses, contextMap, template.getContent());
 
     String customCss = template.getCss() != null ? template.getCss() : "";
     String mergedCss = defaultCss + "\n" + customCss;
 
-    String renderedBody = renderThymeleaf(template.getContent(), contextMap);
+    String renderedBody = renderThymeleaf(templateContent, contextMap);
     return wrapHtml(renderedBody, mergedCss);
   }
 
@@ -123,29 +159,42 @@ public class PdfRenderingService {
    */
   @Transactional(readOnly = true)
   public PreviewResponse previewWithValidation(UUID templateId, UUID entityId, UUID memberId) {
+    return previewWithValidation(templateId, entityId, memberId, List.of());
+  }
+
+  /**
+   * Renders HTML preview with optional clauses AND validates required context fields in a single
+   * pass.
+   */
+  @Transactional(readOnly = true)
+  public PreviewResponse previewWithValidation(
+      UUID templateId, UUID entityId, UUID memberId, List<Clause> resolvedClauses) {
     var template =
         documentTemplateRepository
             .findById(templateId)
             .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", templateId));
 
     var builder = findBuilder(template.getPrimaryEntityType());
-    var contextMap = builder.buildContext(entityId, memberId);
+    var contextMap = new HashMap<>(builder.buildContext(entityId, memberId));
 
     // Validate required fields
     var validationResult =
         templateValidationService.validateRequiredFields(
             template.getRequiredContextFields(), contextMap);
 
+    String templateContent =
+        injectClauseContext(resolvedClauses, contextMap, template.getContent());
+
     String customCss = template.getCss() != null ? template.getCss() : "";
     String mergedCss = defaultCss + "\n" + customCss;
-    String renderedBody = renderThymeleaf(template.getContent(), contextMap);
+    String renderedBody = renderThymeleaf(templateContent, contextMap);
     String html = wrapHtml(renderedBody, mergedCss);
 
     return new PreviewResponse(html, validationResult);
   }
 
   /** DTO returned by {@link #previewWithValidation}. Lives in the service layer to avoid a */
-  // upward dependency from service → controller.
+  // upward dependency from service -> controller.
   public record PreviewResponse(
       String html, TemplateValidationService.TemplateValidationResult validationResult) {}
 
@@ -161,6 +210,27 @@ public class PdfRenderingService {
             .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", templateId));
     var builder = findBuilder(template.getPrimaryEntityType());
     return builder.buildContext(entityId, memberId);
+  }
+
+  /**
+   * Renders a Thymeleaf fragment (e.g., a single clause body) with the given context. The fragment
+   * is wrapped in a minimal HTML shell for Thymeleaf processing, then the wrapper is stripped from
+   * the output, returning only the rendered content.
+   *
+   * @param templateContent the Thymeleaf fragment content (not a full HTML document)
+   * @param context the template variable context
+   * @return the rendered HTML fragment (without html/body wrapper)
+   */
+  public String renderFragment(String templateContent, Map<String, Object> context) {
+    String wrapped = "<html><body>" + templateContent + "</body></html>";
+    String rendered = renderThymeleaf(wrapped, context);
+    // Strip the wrapper to return just the fragment content
+    int bodyStart = rendered.indexOf("<body>");
+    int bodyEnd = rendered.indexOf("</body>");
+    if (bodyStart >= 0 && bodyEnd > bodyStart) {
+      return rendered.substring(bodyStart + "<body>".length(), bodyEnd).trim();
+    }
+    return rendered;
   }
 
   private TemplateContextBuilder findBuilder(TemplateEntityType entityType) {
@@ -207,6 +277,39 @@ public class PdfRenderingService {
     } catch (IOException e) {
       throw new PdfGenerationException("Failed to generate PDF from rendered HTML", e);
     }
+  }
+
+  /**
+   * Validates clause bodies, assembles clause HTML, injects into context, and handles template
+   * fallback for missing ${clauses} placeholder.
+   */
+  private String injectClauseContext(
+      List<Clause> resolvedClauses, Map<String, Object> contextMap, String templateContent) {
+    if (resolvedClauses == null || resolvedClauses.isEmpty()) {
+      contextMap.put("clauses", "");
+      contextMap.put("clauseCount", 0);
+      return templateContent;
+    }
+
+    // Defense in depth: validate each clause body
+    for (var clause : resolvedClauses) {
+      TemplateSecurityValidator.validate(clause.getBody());
+    }
+
+    String clauseHtml = clauseAssembler.assembleClauseBlock(resolvedClauses);
+    contextMap.put("clauses", clauseHtml);
+    contextMap.put("clauseCount", resolvedClauses.size());
+
+    // Fallback: if template doesn't have ${clauses} placeholder, append section
+    if (!clauseHtml.isEmpty() && !templateContent.contains("${clauses}")) {
+      templateContent =
+          templateContent
+              + "\n<div class=\"clauses-section\">\n"
+              + "<hr/>\n<h2>Terms and Conditions</h2>\n"
+              + "<div th:utext=\"${clauses}\"></div>\n</div>";
+    }
+
+    return templateContent;
   }
 
   String generateFilename(

@@ -221,7 +221,7 @@
 | **Phase 27 — Document Clauses** | | | | | | See [tasks/phase27-document-clauses.md](tasks/phase27-document-clauses.md) |
 | 187 | Clause Entity Foundation + Migration | Backend | -- | M | 187A, 187B | **Done** (PRs #387, #388) |
 | 188 | Template-Clause Association API | Backend | 187 | M | 188A | **Done** (PR #389) |
-| 189 | Generation Pipeline Extension | Backend | 187, 188 | L | 189A, 189B | 189A **Done** (PR #393) |
+| 189 | Generation Pipeline Extension | Backend | 187, 188 | L | 189A, 189B | **Done** (PRs #393, #394) |
 | 190 | Clause Pack Seeder | Backend | 187, 188 | M | 190A | |
 | 191 | Clause Library Frontend | Frontend | 187 | M | 191A, 191B | **Done** (PRs #390, #391) |
 | 192 | Template Clauses Tab + Generation Dialog Frontend | Frontend | 188, 189, 191 | L | 192A, 192B | 192A **Done** (PR #392) |

@@ -165,6 +165,23 @@ export async function getAcceptanceDetail(
   }
 }
 
+export async function downloadCertificate(
+  id: string,
+): Promise<{ success: boolean; pdfBase64?: string; error?: string }> {
+  try {
+    const { downloadCertificateBlob } = await import("@/lib/api");
+    const blob = await downloadCertificateBlob(id);
+    const arrayBuffer = await blob.arrayBuffer();
+    const base64 = Buffer.from(arrayBuffer).toString("base64");
+    return { success: true, pdfBase64: base64 };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to download certificate." };
+  }
+}
+
 export async function fetchPortalContacts(
   customerId: string,
 ): Promise<PortalContactSummary[]> {

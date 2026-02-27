@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertTriangle, ArrowLeft, CheckCircle2, Download, Save } from "lucide-react";
+import { AlertTriangle, ArrowLeft, CheckCircle2, Download, Save, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,6 +19,7 @@ import type { TemplateClauseDetail } from "@/lib/actions/template-clause-actions
 import { GenerationClauseStep } from "@/components/templates/generation-clause-step";
 import type { SelectedClause } from "@/components/templates/generation-clause-step";
 import type { TemplateValidationResult } from "@/lib/types";
+import { SendForAcceptanceDialog } from "@/components/acceptance/SendForAcceptanceDialog";
 
 interface GenerateDocumentDialogProps {
   templateId: string;
@@ -28,6 +29,8 @@ interface GenerateDocumentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSaved?: () => void;
+  customerId?: string;
+  isAdmin?: boolean;
 }
 
 type DialogStep = "clauses" | "preview";
@@ -39,6 +42,8 @@ export function GenerateDocumentDialog({
   open,
   onOpenChange,
   onSaved,
+  customerId,
+  isAdmin = false,
 }: GenerateDocumentDialogProps) {
   const [html, setHtml] = useState<string | null>(null);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
@@ -48,6 +53,8 @@ export function GenerateDocumentDialog({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [validationResult, setValidationResult] =
     useState<TemplateValidationResult | null>(null);
+  const [savedDocumentId, setSavedDocumentId] = useState<string | null>(null);
+  const [acceptanceDialogOpen, setAcceptanceDialogOpen] = useState(false);
 
   // Multi-step state
   const [hasClauses, setHasClauses] = useState<boolean | null>(null);
@@ -67,6 +74,8 @@ export function GenerateDocumentDialog({
       setTemplateClauseList([]);
       setStep("preview");
       setSelectedClauses([]);
+      setSavedDocumentId(null);
+      setAcceptanceDialogOpen(false);
       return;
     }
 
@@ -213,10 +222,17 @@ export function GenerateDocumentDialog({
         onSaved?.();
         // Notify any GeneratedDocumentsList instances to refresh
         window.dispatchEvent(new Event("generated-documents-refresh"));
-        // Close after a brief moment so the user sees the success message
-        setTimeout(() => {
-          onOpenChange(false);
-        }, 800);
+
+        const canSendForAcceptance = isAdmin && !!customerId && result.data?.id;
+        if (canSendForAcceptance) {
+          // Store saved document ID so user can send for acceptance
+          setSavedDocumentId(result.data!.id);
+        } else {
+          // Close after a brief moment so the user sees the success message
+          setTimeout(() => {
+            onOpenChange(false);
+          }, 800);
+        }
       } else {
         setError(result.error ?? "Failed to save document.");
       }
@@ -321,48 +337,84 @@ export function GenerateDocumentDialog({
                   {successMessage}
                 </p>
               )}
+              {savedDocumentId && customerId && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="accent"
+                    size="sm"
+                    onClick={() => setAcceptanceDialogOpen(true)}
+                  >
+                    <Send className="mr-1.5 size-4" />
+                    Send for Acceptance
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onOpenChange(false)}
+                  >
+                    Close
+                  </Button>
+                </div>
+              )}
             </div>
 
-            <DialogFooter>
-              {hasClauses && (
+            {!savedDocumentId && (
+              <DialogFooter>
+                {hasClauses && (
+                  <Button
+                    variant="ghost"
+                    onClick={handleBackToClauses}
+                    disabled={isActionInProgress}
+                    className="mr-auto"
+                  >
+                    <ArrowLeft className="mr-1.5 size-4" />
+                    Back
+                  </Button>
+                )}
                 <Button
-                  variant="ghost"
-                  onClick={handleBackToClauses}
-                  disabled={isActionInProgress}
-                  className="mr-auto"
+                  variant="outline"
+                  onClick={handleDownload}
+                  disabled={isActionInProgress || isLoadingPreview}
                 >
-                  <ArrowLeft className="mr-1.5 size-4" />
-                  Back
+                  <Download className="mr-1.5 size-4" />
+                  {isDownloading
+                    ? "Downloading..."
+                    : hasWarnings
+                      ? "Download anyway"
+                      : "Download PDF"}
                 </Button>
-              )}
-              <Button
-                variant="outline"
-                onClick={handleDownload}
-                disabled={isActionInProgress || isLoadingPreview}
-              >
-                <Download className="mr-1.5 size-4" />
-                {isDownloading
-                  ? "Downloading..."
-                  : hasWarnings
-                    ? "Download anyway"
-                    : "Download PDF"}
-              </Button>
-              <Button
-                variant={hasWarnings ? "destructive" : "accent"}
-                onClick={handleSave}
-                disabled={isActionInProgress || isLoadingPreview}
-              >
-                <Save className="mr-1.5 size-4" />
-                {isSaving
-                  ? "Saving..."
-                  : hasWarnings
-                    ? "Save anyway"
-                    : "Save to Documents"}
-              </Button>
-            </DialogFooter>
+                <Button
+                  variant={hasWarnings ? "destructive" : "accent"}
+                  onClick={handleSave}
+                  disabled={isActionInProgress || isLoadingPreview}
+                >
+                  <Save className="mr-1.5 size-4" />
+                  {isSaving
+                    ? "Saving..."
+                    : hasWarnings
+                      ? "Save anyway"
+                      : "Save to Documents"}
+                </Button>
+              </DialogFooter>
+            )}
           </>
         )}
       </DialogContent>
+
+      {savedDocumentId && customerId && (
+        <SendForAcceptanceDialog
+          generatedDocumentId={savedDocumentId}
+          customerId={customerId}
+          documentName={templateName}
+          open={acceptanceDialogOpen}
+          onOpenChange={(open) => {
+            setAcceptanceDialogOpen(open);
+            if (!open) {
+              onOpenChange(false);
+            }
+          }}
+        />
+      )}
     </Dialog>
   );
 }

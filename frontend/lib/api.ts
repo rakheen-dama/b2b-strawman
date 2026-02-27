@@ -542,3 +542,36 @@ export async function downloadGeneratedDocument(id: string): Promise<Blob> {
 
   return response.blob();
 }
+
+export async function downloadCertificateBlob(id: string): Promise<Blob> {
+  let token: string;
+  try {
+    token = await getAuthToken();
+  } catch {
+    redirect("/sign-in");
+  }
+
+  const response = await fetch(
+    `${BACKEND_URL}/api/acceptance-requests/${id}/certificate`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      redirect: "follow",
+    },
+  );
+
+  if (!response.ok) {
+    let message = response.statusText;
+    try {
+      const detail = await response.json();
+      message = detail?.detail || detail?.title || message;
+    } catch {
+      // ignore
+    }
+    throw new ApiError(response.status, message);
+  }
+
+  return response.blob();
+}

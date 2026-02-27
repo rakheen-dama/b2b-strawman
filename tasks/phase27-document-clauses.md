@@ -24,7 +24,7 @@ Phase 27 adds a **clause library** to the DocTeams document generation system. C
 | 189 | Generation Pipeline Extension | Backend | 187, 188 | L | 189A, 189B | **Done** (PRs #393, #394) |
 | 190 | Clause Pack Seeder | Backend | 187, 188 | M | 190A | **Done** (PR #395) |
 | 191 | Clause Library Frontend | Frontend | 187 | M | 191A, 191B | **Done** (PRs #390, #391) |
-| 192 | Template Clauses Tab + Generation Dialog Frontend | Frontend | 188, 189, 191 | L | 192A, 192B | |
+| 192 | Template Clauses Tab + Generation Dialog Frontend | Frontend | 188, 189, 191 | L | 192A, 192B | **Done** (PRs #392, #396) |
 
 ---
 
@@ -106,7 +106,7 @@ Phase 27 adds a **clause library** to the DocTeams document generation system. C
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 5a | 192 | 192B | `generation-clause-step.tsx` (checklist with required/optional, browse library button, reorder, "Next: Preview" button) + extend `GenerateDocumentDialog.tsx` (multi-step: clause selection -> preview -> generate, skip clause step when template has no associations) + extend `generateDocumentAction` and `previewTemplateAction` with clause support + frontend tests (clause step shown/hidden, required enforcement, preview with clauses, backward compat). ~2 new files, ~3 modified files. Frontend only. | |
+| 5a | 192 | 192B | `generation-clause-step.tsx` (checklist with required/optional, browse library button, reorder, "Next: Preview" button) + extend `GenerateDocumentDialog.tsx` (multi-step: clause selection -> preview -> generate, skip clause step when template has no associations) + extend `generateDocumentAction` and `previewTemplateAction` with clause support + frontend tests (clause step shown/hidden, required enforcement, preview with clauses, backward compat). ~2 new files, ~3 modified files. Frontend only. | **Done** (PR #396) |
 
 ### Timeline
 
@@ -479,7 +479,7 @@ Stage 5: [192B]                                                     (after 189B 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **192A** | 192.1--192.7 | `template-clause-actions.ts` server actions + `template-clauses-tab.tsx` (ordered clause list with required toggle, reorder, remove, save) + `clause-picker-dialog.tsx` (browse library grouped by category, multi-select, confirm) + template editor integration (add "Clauses" tab) + frontend tests. ~4 new files, ~1 modified file. Frontend only. | |
-| **192B** | 192.8--192.14 | `generation-clause-step.tsx` (checklist with required/optional, browse library, reorder, next button) + extend `GenerateDocumentDialog.tsx` (multi-step: clause selection -> preview -> generate, skip when no associations) + extend `generateDocumentAction` and `previewTemplateAction` with clause support + frontend tests. ~2 new files, ~3 modified files. Frontend only. | |
+| **192B** | 192.8--192.14 | `generation-clause-step.tsx` (checklist with required/optional, browse library, reorder, next button) + extend `GenerateDocumentDialog.tsx` (multi-step: clause selection -> preview -> generate, skip when no associations) + extend `generateDocumentAction` and `previewTemplateAction` with clause support + frontend tests. ~2 new files, ~3 modified files. Frontend only. | **Done** (PR #396) |
 
 ### Tasks
 

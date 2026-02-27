@@ -20,6 +20,28 @@ vi.mock("@/lib/format", () => ({
   formatDate: (d: string) => new Date(d).toLocaleDateString("en-US"),
 }));
 
+// Mock server-only (imported transitively via acceptance-actions -> api)
+vi.mock("server-only", () => ({}));
+
+const mockGetAcceptanceRequests = vi.fn();
+
+vi.mock("@/lib/actions/acceptance-actions", () => ({
+  getAcceptanceRequests: (...args: unknown[]) =>
+    mockGetAcceptanceRequests(...args),
+}));
+
+vi.mock("@/components/acceptance/AcceptanceStatusBadge", () => ({
+  AcceptanceStatusBadge: ({ status }: { status: string }) => (
+    <span data-testid="acceptance-badge">{status}</span>
+  ),
+}));
+
+vi.mock("@/components/acceptance/SendForAcceptanceDialog", () => ({
+  SendForAcceptanceDialog: () => (
+    <div data-testid="send-acceptance-dialog" />
+  ),
+}));
+
 const SAMPLE_DOCS = [
   {
     id: "gen-1",
@@ -301,6 +323,70 @@ describe("GeneratedDocumentsList", () => {
 
     await waitFor(() => {
       expect(mockFetchGeneratedDocuments).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  it('shows "Send for Acceptance" action button for admin users when customerId provided', async () => {
+    mockFetchGeneratedDocuments.mockResolvedValue({
+      success: true,
+      data: [SAMPLE_DOCS[0]],
+    });
+    mockGetAcceptanceRequests.mockResolvedValue([]);
+
+    render(
+      <GeneratedDocumentsList
+        entityType="CUSTOMER"
+        entityId="proj-1"
+        slug="acme"
+        isAdmin={true}
+        customerId="cust-1"
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Engagement Letter")).toBeInTheDocument();
+    });
+
+    expect(screen.getByTitle("Send for Acceptance")).toBeInTheDocument();
+  });
+
+  it("shows AcceptanceStatusBadge for documents with acceptance requests", async () => {
+    mockFetchGeneratedDocuments.mockResolvedValue({
+      success: true,
+      data: [SAMPLE_DOCS[0]],
+    });
+    mockGetAcceptanceRequests.mockResolvedValue([
+      {
+        id: "req-1",
+        generatedDocumentId: "gen-1",
+        portalContactId: "contact-1",
+        customerId: "cust-1",
+        status: "SENT",
+        sentAt: "2026-01-15T10:00:00Z",
+        createdAt: "2026-01-15T10:00:00Z",
+        updatedAt: "2026-01-15T10:00:00Z",
+        contact: { id: "contact-1", displayName: "Jane", email: "jane@test.com" },
+        document: { id: "gen-1", fileName: "test.pdf" },
+      },
+    ]);
+
+    render(
+      <GeneratedDocumentsList
+        entityType="CUSTOMER"
+        entityId="proj-1"
+        slug="acme"
+        isAdmin={true}
+        customerId="cust-1"
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Engagement Letter")).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("acceptance-badge")).toBeInTheDocument();
+      expect(screen.getByText("SENT")).toBeInTheDocument();
     });
   });
 });

@@ -446,7 +446,7 @@ Stage 6: [198B] // [199B]                                           (parallel, a
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **197A** | 197.1--197.8 | `PortalAcceptanceController` at `/api/portal/acceptance/{token}` (GET page data + markViewed, GET pdf stream, POST accept with IP/UA extraction) + security config exemption for token-based auth + `@Scheduled` expiry processor in AcceptanceService + portal list endpoint for pending acceptances + controller + expiry integration tests. ~2 new files, ~2 modified, ~1 test. Backend only. | |
+| **197A** | 197.1--197.8 | `PortalAcceptanceController` at `/api/portal/acceptance/{token}` (GET page data + markViewed, GET pdf stream, POST accept with IP/UA extraction) + security config exemption for token-based auth + `@Scheduled` expiry processor in AcceptanceService + portal list endpoint for pending acceptances + controller + expiry integration tests. ~2 new files, ~2 modified, ~1 test. Backend only. | **Done** (PR #405) |
 
 ### Tasks
 

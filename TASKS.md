@@ -223,7 +223,7 @@
 | 188 | Template-Clause Association API | Backend | 187 | M | 188A | **Done** (PR #389) |
 | 189 | Generation Pipeline Extension | Backend | 187, 188 | L | 189A, 189B | |
 | 190 | Clause Pack Seeder | Backend | 187, 188 | M | 190A | |
-| 191 | Clause Library Frontend | Frontend | 187 | M | 191A, 191B | |
+| 191 | Clause Library Frontend | Frontend | 187 | M | 191A, 191B | 191A **Done** (PR #390) |
 | 192 | Template Clauses Tab + Generation Dialog Frontend | Frontend | 188, 189, 191 | L | 192A, 192B | |
 
 ---

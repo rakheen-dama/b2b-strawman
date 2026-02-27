@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Certificate of Acceptance</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 20mm 20mm 20mm 20mm;
+    }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 11pt;
+      color: #1a1a1a;
+      margin: 0;
+      padding: 0;
+    }
+    .header {
+      background-color: #1a5276;
+      color: white;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+    }
+    .header-logo {
+      max-height: 50px;
+      max-width: 120px;
+      margin-right: 16px;
+    }
+    .header-title h1 {
+      margin: 0;
+      font-size: 16pt;
+      font-weight: bold;
+      color: white;
+    }
+    .header-title p {
+      margin: 4px 0 0 0;
+      font-size: 10pt;
+      color: rgba(255,255,255,0.85);
+    }
+    .section {
+      padding: 16px 24px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .section:last-of-type {
+      border-bottom: none;
+    }
+    .section-title {
+      font-size: 10pt;
+      font-weight: bold;
+      text-transform: uppercase;
+      color: #555;
+      margin: 0 0 10px 0;
+      letter-spacing: 0.5px;
+    }
+    .field-row {
+      display: flex;
+      margin-bottom: 8px;
+    }
+    .field-label {
+      width: 130px;
+      font-size: 10pt;
+      color: #666;
+      flex-shrink: 0;
+    }
+    .field-value {
+      font-size: 10pt;
+      color: #1a1a1a;
+      word-break: break-all;
+    }
+    .acceptance-statement {
+      background-color: #f0f7ff;
+      border-left: 4px solid #1a5276;
+      padding: 12px 16px;
+      margin: 10px 0;
+      font-style: italic;
+      font-size: 11pt;
+      color: #1a1a1a;
+    }
+    .hash-value {
+      font-family: "Courier New", monospace;
+      font-size: 8.5pt;
+      background-color: #f5f5f5;
+      padding: 6px 10px;
+      border: 1px solid #ddd;
+      word-break: break-all;
+      display: block;
+      margin-top: 4px;
+    }
+    .footer {
+      background-color: #f9f9f9;
+      border-top: 1px solid #ddd;
+      padding: 14px 24px;
+      font-size: 9pt;
+      color: #777;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header with branding -->
+  <div class="header" th:style="'background-color: ' + (${brandColor} != null ? ${brandColor} : '#1a5276')">
+    <img th:if="${orgLogo != null}" th:src="${orgLogo}" class="header-logo" alt="Logo"/>
+    <div class="header-title">
+      <h1>CERTIFICATE OF ACCEPTANCE</h1>
+      <p th:text="${orgName != null ? orgName : 'DocTeams'}">Organization Name</p>
+    </div>
+  </div>
+
+  <!-- Document Information -->
+  <div class="section">
+    <p class="section-title">Document Information</p>
+    <div class="field-row">
+      <span class="field-label">Document:</span>
+      <span class="field-value" th:text="${documentTitle != null ? documentTitle : 'N/A'}">document.pdf</span>
+    </div>
+    <div class="field-row">
+      <span class="field-label">Organization:</span>
+      <span class="field-value" th:text="${orgName != null ? orgName : 'DocTeams'}">Organization Name</span>
+    </div>
+  </div>
+
+  <!-- Recipient Information -->
+  <div class="section">
+    <p class="section-title">Recipient</p>
+    <div class="field-row">
+      <span class="field-label">Name:</span>
+      <span class="field-value" th:text="${recipientName != null ? recipientName : 'N/A'}">Recipient Name</span>
+    </div>
+    <div class="field-row">
+      <span class="field-label">Email:</span>
+      <span class="field-value" th:text="${recipientEmail != null ? recipientEmail : 'N/A'}">recipient@example.com</span>
+    </div>
+  </div>
+
+  <!-- Acceptance Record -->
+  <div class="section">
+    <p class="section-title">Acceptance Record</p>
+    <div class="acceptance-statement">
+      "I, <span th:text="${acceptorName != null ? acceptorName : 'the signatory'}">Acceptor Name</span>, accept this document."
+    </div>
+    <div class="field-row" style="margin-top: 12px;">
+      <span class="field-label">Accepted at:</span>
+      <span class="field-value" th:text="${acceptedAt != null ? acceptedAt.toString() : 'N/A'}">2026-02-27T14:05:00Z</span>
+    </div>
+    <div class="field-row">
+      <span class="field-label">IP Address:</span>
+      <span class="field-value" th:text="${ipAddress != null ? ipAddress : 'N/A'}">203.0.113.42</span>
+    </div>
+    <div class="field-row">
+      <span class="field-label">User Agent:</span>
+      <span class="field-value" th:text="${userAgent != null ? userAgent : 'N/A'}">Mozilla/5.0 ...</span>
+    </div>
+  </div>
+
+  <!-- Document Integrity -->
+  <div class="section">
+    <p class="section-title">Document Integrity</p>
+    <div class="field-row">
+      <span class="field-label">SHA-256 Hash:</span>
+      <div>
+        <code class="hash-value" th:text="${documentHash != null ? documentHash : 'N/A'}">abc123...</code>
+      </div>
+    </div>
+    <div class="field-row" style="margin-top: 8px;">
+      <span class="field-label">Request ID:</span>
+      <span class="field-value" th:text="${requestId != null ? requestId.toString() : 'N/A'}">uuid</span>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    This certificate was automatically generated by
+    <span th:text="${orgName != null ? orgName : 'DocTeams'}">Organization</span>
+    via DocTeams. It serves as a record of electronic acceptance.
+    <br/>
+    Generated: <span th:text="${generatedAt != null ? generatedAt.toString() : 'N/A'}">2026-02-27T14:05:01Z</span>
+  </div>
+
+</body>
+</html>

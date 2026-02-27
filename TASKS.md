@@ -232,7 +232,7 @@
 | 196 | Firm-Facing REST API + Audit + Notifications | Backend | 194, 195 | M | 196A, 196B | **Done** (PRs #403, #404) |
 | 197 | Portal Acceptance Controller + Expiry Processor | Backend | 194, 195 | M | 197A | **Done** (PR #405) |
 | 198 | Frontend — Send for Acceptance + Status Tracking | Frontend | 196 | M | 198A, 198B | **Done** (PRs #406, #407) |
-| 199 | Portal — Acceptance Page + Pending List | Portal | 197 | M | 199A, 199B | |
+| 199 | Portal — Acceptance Page + Pending List | Portal | 197 | M | 199A, 199B | 199A **Done** (PR #408) |
 | 200 | Frontend — OrgSettings Acceptance Config | Frontend | 196 | S | 200A | |
 | **Phase 29 — Entity Lifecycle & Relationship Integrity** | | | | | | See [tasks/phase29-entity-lifecycle-integrity.md](tasks/phase29-entity-lifecycle-integrity.md) |
 | 201 | Task Lifecycle Foundation — Migration, Enums & Entity | Backend | -- | M | 201A, 201B | |

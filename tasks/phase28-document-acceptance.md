@@ -125,7 +125,7 @@ Phase 28 adds a **document acceptance workflow** to the DocTeams platform. Firms
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 5a (parallel) | 198 | 198A | `acceptance-actions.ts` server actions + `SendForAcceptanceDialog.tsx` (recipient picker, expiry override, send) + `AcceptanceStatusBadge.tsx` + integration into `GeneratedDocumentsList.tsx` (action menu item + status badge) + frontend tests. ~4 new files, ~1 modified file. Frontend only. | **Done** (PR #406) |
-| 5b (parallel) | 199 | 199A | Portal acceptance page at `portal/app/(public)/accept/[token]/page.tsx` (PDF viewer via iframe, acceptance form with typed name, post-acceptance confirmation, expired/revoked states) + portal acceptance API calls + portal frontend tests. ~3 new files. Portal only. | |
+| 5b (parallel) | 199 | 199A | Portal acceptance page at `portal/app/(public)/accept/[token]/page.tsx` (PDF viewer via iframe, acceptance form with typed name, post-acceptance confirmation, expired/revoked states) + portal acceptance API calls + portal frontend tests. ~3 new files. Portal only. | **Done** (PR #408) |
 | 5c (parallel) | 200 | 200A | Add "Document Acceptance" section to OrgSettings page (acceptance expiry days input: number field, min 1, max 365, default 30) + settings action update + frontend test. ~0-1 new files, ~2 modified files. Frontend only. | |
 
 ### Stage 6: Detail Panel + Portal List
@@ -569,7 +569,7 @@ Stage 6: [198B] // [199B]                                           (parallel, a
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **199A** | 199.1--199.6 | Portal acceptance page at `/accept/[token]` (PDF viewer via iframe, acceptance form with typed name, post-acceptance confirmation state, expired/revoked error states, org branding) + portal acceptance API calls + portal frontend tests. ~3 new files. Portal only. | |
+| **199A** | 199.1--199.6 | Portal acceptance page at `/accept/[token]` (PDF viewer via iframe, acceptance form with typed name, post-acceptance confirmation state, expired/revoked error states, org branding) + portal acceptance API calls + portal frontend tests. ~3 new files. Portal only. | **Done** (PR #408) |
 | **199B** | 199.7--199.10 | "Pending Acceptances" section on portal dashboard or projects page (list of documents awaiting acceptance, status badges, direct links to acceptance page) + portal read-model API call + portal frontend tests. ~1 new file, ~1 modified. Portal only. | |
 
 ### Tasks

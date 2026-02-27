@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.clause.dto.TemplateClauseDetail;
 import io.b2mash.b2b.b2bstrawman.clause.dto.TemplateClauseRequest;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
@@ -64,6 +65,10 @@ public class TemplateClauseService {
             tc -> {
               var clause = clauseMap.get(tc.getClauseId());
               if (clause == null) {
+                log.warn(
+                    "Template {} references clause {} which no longer exists — skipping",
+                    templateId,
+                    tc.getClauseId());
                 return null;
               }
               return toDetail(tc, clause);
@@ -91,12 +96,14 @@ public class TemplateClauseService {
     if (clauses.size() != clauseIds.size()) {
       var foundIds = clauses.stream().map(Clause::getId).collect(Collectors.toSet());
       var missing = clauseIds.stream().filter(id -> !foundIds.contains(id)).toList();
-      throw new IllegalArgumentException("Clause(s) not found: " + missing);
+      throw ResourceNotFoundException.withDetail(
+          "Clause(s) not found", "Clause(s) not found: " + missing);
     }
 
     var inactiveClauses = clauses.stream().filter(c -> !c.isActive()).map(Clause::getId).toList();
     if (!inactiveClauses.isEmpty()) {
-      throw new IllegalArgumentException("Clause(s) are inactive: " + inactiveClauses);
+      throw new InvalidStateException(
+          "Clause(s) are inactive", "Clause(s) are inactive: " + inactiveClauses);
     }
 
     // Delete existing associations and insert new ones
@@ -145,6 +152,11 @@ public class TemplateClauseService {
         clauseRepository
             .findById(clauseId)
             .orElseThrow(() -> new ResourceNotFoundException("Clause", clauseId));
+
+    if (!clause.isActive()) {
+      throw new InvalidStateException(
+          "Clause is inactive", "Clause " + clauseId + " is inactive and cannot be added");
+    }
 
     if (templateClauseRepository.existsByTemplateIdAndClauseId(templateId, clauseId)) {
       throw new ResourceConflictException(

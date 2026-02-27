@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.clause.dto.TemplateClauseRequest;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
@@ -49,6 +50,7 @@ class TemplateClauseServiceTest {
   private UUID clause1Id;
   private UUID clause2Id;
   private UUID clause3Id;
+  private UUID inactiveClauseId;
 
   @BeforeAll
   void setup() {
@@ -85,6 +87,16 @@ class TemplateClauseServiceTest {
                   "Clause Three", "clause-three", "<p>Body of clause three here</p>", "payment");
           c3 = clauseRepository.save(c3);
           clause3Id = c3.getId();
+
+          var inactive =
+              new Clause(
+                  "Inactive Clause",
+                  "inactive-clause",
+                  "<p>Body of inactive clause</p>",
+                  "general");
+          inactive.deactivate();
+          inactive = clauseRepository.save(inactive);
+          inactiveClauseId = inactive.getId();
         });
   }
 
@@ -143,7 +155,26 @@ class TemplateClauseServiceTest {
     var requests = List.of(new TemplateClauseRequest(fakeClauseId, 0, true));
     assertThatThrownBy(
             () -> runInTenant(() -> templateClauseService.setTemplateClauses(templateId, requests)))
-        .isInstanceOf(IllegalArgumentException.class);
+        .isInstanceOf(ResourceNotFoundException.class);
+  }
+
+  @Test
+  void setTemplateClauses_throwsForInactiveClause() {
+    var requests = List.of(new TemplateClauseRequest(inactiveClauseId, 0, true));
+    assertThatThrownBy(
+            () -> runInTenant(() -> templateClauseService.setTemplateClauses(templateId, requests)))
+        .isInstanceOf(InvalidStateException.class);
+  }
+
+  @Test
+  void addClauseToTemplate_throwsForInactiveClause() {
+    assertThatThrownBy(
+            () ->
+                runInTenant(
+                    () ->
+                        templateClauseService.addClauseToTemplate(
+                            templateId, inactiveClauseId, false)))
+        .isInstanceOf(InvalidStateException.class);
   }
 
   @Test

@@ -104,7 +104,7 @@ Phase 28 adds a **document acceptance workflow** to the DocTeams platform. Firms
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 2a (parallel) | 195 | 195A | `AcceptanceCertificateService` (SHA-256 hash computation, Thymeleaf certificate rendering, S3 upload) + certificate template (`certificates/certificate-of-acceptance.html`) + integration with AcceptanceService.accept() + certificate generation tests. ~2 new files, ~1 template file, ~1 modified file. Backend only. | |
+| 2a (parallel) | 195 | 195A | `AcceptanceCertificateService` (SHA-256 hash computation, Thymeleaf certificate rendering, S3 upload) + certificate template (`certificates/certificate-of-acceptance.html`) + integration with AcceptanceService.accept() + certificate generation tests. ~2 new files, ~1 template file, ~1 modified file. Backend only. | **Done** (PR #401) |
 | 2b (parallel) | 195 | 195B | `PortalAcceptanceView` read-model entity + `PortalReadModelRepository` extension (acceptance CRUD methods) + `PortalEventHandler` extension (handlers for acceptance domain events) + portal read-model sync integration tests. ~1 new file, ~2 modified files, ~1 test file. Backend only. | |
 
 ### Stage 3: Controllers (parallel tracks)
@@ -310,7 +310,7 @@ Stage 6: [198B] // [199B]                                           (parallel, a
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **195A** | 195.1--195.5 | `AcceptanceCertificateService` (SHA-256 computation, Thymeleaf context assembly, PDF rendering via PdfRenderingService, S3 upload) + certificate template (`certificates/certificate-of-acceptance.html`) + integration with `AcceptanceService.accept()` + certificate generation tests. ~2 new files, ~1 template, ~1 modified, ~1 test. Backend only. | |
+| **195A** | 195.1--195.5 | `AcceptanceCertificateService` (SHA-256 computation, Thymeleaf context assembly, PDF rendering via PdfRenderingService, S3 upload) + certificate template (`certificates/certificate-of-acceptance.html`) + integration with `AcceptanceService.accept()` + certificate generation tests. ~2 new files, ~1 template, ~1 modified, ~1 test. Backend only. | **Done** (PR #401) |
 | **195B** | 195.6--195.10 | `PortalAcceptanceView` read-model entity + `PortalReadModelRepository` extension (save/update acceptance) + `PortalEventHandler` extension (handlers for Sent, Accepted, Revoked, Expired events) + portal read-model sync integration tests. ~1 new file, ~2 modified, ~1 test. Backend only. | |
 
 ### Tasks

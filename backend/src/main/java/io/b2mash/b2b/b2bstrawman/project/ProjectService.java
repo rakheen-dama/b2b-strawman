@@ -4,6 +4,11 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectUpdatedEvent;
+import io.b2mash.b2b.b2bstrawman.event.ProjectArchivedEvent;
+import io.b2mash.b2b.b2bstrawman.event.ProjectCompletedEvent;
+import io.b2mash.b2b.b2bstrawman.event.ProjectReopenedEvent;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldValidator;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
@@ -12,11 +17,16 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMemberRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupService;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
+import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
+import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.task.TaskStatus;
+import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -45,6 +55,9 @@ public class ProjectService {
   private final FieldGroupMemberRepository fieldGroupMemberRepository;
   private final FieldDefinitionRepository fieldDefinitionRepository;
   private final FieldGroupService fieldGroupService;
+  private final TaskRepository taskRepository;
+  private final TimeEntryRepository timeEntryRepository;
+  private final MemberNameResolver memberNameResolver;
 
   public ProjectService(
       ProjectRepository repository,
@@ -56,7 +69,10 @@ public class ProjectService {
       FieldGroupRepository fieldGroupRepository,
       FieldGroupMemberRepository fieldGroupMemberRepository,
       FieldDefinitionRepository fieldDefinitionRepository,
-      FieldGroupService fieldGroupService) {
+      FieldGroupService fieldGroupService,
+      TaskRepository taskRepository,
+      TimeEntryRepository timeEntryRepository,
+      MemberNameResolver memberNameResolver) {
     this.repository = repository;
     this.projectMemberRepository = projectMemberRepository;
     this.projectAccessService = projectAccessService;
@@ -67,6 +83,9 @@ public class ProjectService {
     this.fieldGroupMemberRepository = fieldGroupMemberRepository;
     this.fieldDefinitionRepository = fieldDefinitionRepository;
     this.fieldGroupService = fieldGroupService;
+    this.taskRepository = taskRepository;
+    this.timeEntryRepository = timeEntryRepository;
+    this.memberNameResolver = memberNameResolver;
   }
 
   @Transactional(readOnly = true)
@@ -274,5 +293,176 @@ public class ProjectService {
             .entityId(project.getId())
             .details(Map.of("name", project.getName()))
             .build());
+  }
+
+  // --- Project lifecycle methods (Epic 204A) ---
+
+  @Transactional
+  public Project completeProject(
+      UUID projectId, boolean acknowledgeUnbilledTime, UUID memberId, String orgRole) {
+    var project =
+        repository
+            .findById(projectId)
+            .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+
+    projectAccessService.requireEditAccess(projectId, memberId, orgRole);
+
+    // Guardrail 1: open tasks
+    long openTaskCount =
+        taskRepository.countByProjectIdAndStatusNotIn(
+            projectId, List.of(TaskStatus.DONE, TaskStatus.CANCELLED));
+    if (openTaskCount > 0) {
+      throw new InvalidStateException(
+          "Cannot complete project",
+          "Project has %d open task(s). Complete or cancel all tasks before completing the project."
+              .formatted(openTaskCount));
+    }
+
+    // Guardrail 2: unbilled time
+    var unbilledSummary = timeEntryRepository.countUnbilledByProjectId(projectId);
+    long unbilledCount = unbilledSummary.getEntryCount();
+    double unbilledHours = unbilledSummary.getTotalHours();
+    if (unbilledCount > 0 && !acknowledgeUnbilledTime) {
+      throw new ResourceConflictException(
+          "Unbilled time entries",
+          "Project has %d unbilled time entry/entries (%.1f hours). Acknowledge to proceed."
+              .formatted(unbilledCount, unbilledHours));
+    }
+
+    project.complete(memberId);
+    project = repository.save(project);
+    log.info("Project {} completed by member {}", projectId, memberId);
+
+    var auditDetails = new LinkedHashMap<String, Object>();
+    auditDetails.put("name", project.getName());
+    auditDetails.put("completed_by", memberId.toString());
+    if (unbilledCount > 0 && acknowledgeUnbilledTime) {
+      auditDetails.put("unbilled_time_waived", true);
+      auditDetails.put("unbilled_entry_count", unbilledCount);
+      auditDetails.put("unbilled_hours", unbilledHours);
+    }
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("project.completed")
+            .entityType("project")
+            .entityId(project.getId())
+            .details(auditDetails)
+            .build());
+
+    String actorName = memberNameResolver.resolveName(memberId);
+    String tenantId = RequestScopes.requireTenantId();
+    String orgId = RequestScopes.requireOrgId();
+    eventPublisher.publishEvent(
+        new ProjectCompletedEvent(
+            "project.completed",
+            "project",
+            project.getId(),
+            project.getId(),
+            memberId,
+            actorName,
+            tenantId,
+            orgId,
+            Instant.now(),
+            Map.of("name", project.getName()),
+            memberId,
+            project.getName(),
+            unbilledCount > 0 && acknowledgeUnbilledTime));
+
+    return project;
+  }
+
+  @Transactional
+  public Project archiveProject(UUID projectId, UUID memberId, String orgRole) {
+    var project =
+        repository
+            .findById(projectId)
+            .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+
+    projectAccessService.requireEditAccess(projectId, memberId, orgRole);
+
+    project.archive(memberId);
+    project = repository.save(project);
+    log.info("Project {} archived by member {}", projectId, memberId);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("project.archived")
+            .entityType("project")
+            .entityId(project.getId())
+            .details(
+                Map.of(
+                    "name", project.getName(),
+                    "archived_by", memberId.toString()))
+            .build());
+
+    String actorName = memberNameResolver.resolveName(memberId);
+    String tenantId = RequestScopes.requireTenantId();
+    String orgId = RequestScopes.requireOrgId();
+    eventPublisher.publishEvent(
+        new ProjectArchivedEvent(
+            "project.archived",
+            "project",
+            project.getId(),
+            project.getId(),
+            memberId,
+            actorName,
+            tenantId,
+            orgId,
+            Instant.now(),
+            Map.of("name", project.getName()),
+            memberId,
+            project.getName()));
+
+    return project;
+  }
+
+  @Transactional
+  public Project reopenProject(UUID projectId, UUID memberId, String orgRole) {
+    var project =
+        repository
+            .findById(projectId)
+            .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+
+    projectAccessService.requireEditAccess(projectId, memberId, orgRole);
+
+    String previousStatus = project.getStatus().name();
+
+    project.reopen();
+    project = repository.save(project);
+    log.info("Project {} reopened by member {}", projectId, memberId);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("project.reopened")
+            .entityType("project")
+            .entityId(project.getId())
+            .details(
+                Map.of(
+                    "name", project.getName(),
+                    "reopened_by", memberId.toString(),
+                    "previous_status", previousStatus))
+            .build());
+
+    String actorName = memberNameResolver.resolveName(memberId);
+    String tenantId = RequestScopes.requireTenantId();
+    String orgId = RequestScopes.requireOrgId();
+    eventPublisher.publishEvent(
+        new ProjectReopenedEvent(
+            "project.reopened",
+            "project",
+            project.getId(),
+            project.getId(),
+            memberId,
+            actorName,
+            tenantId,
+            orgId,
+            Instant.now(),
+            Map.of("name", project.getName()),
+            memberId,
+            project.getName(),
+            previousStatus));
+
+    return project;
   }
 }

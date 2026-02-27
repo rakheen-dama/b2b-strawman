@@ -12,6 +12,8 @@ import io.b2mash.b2b.b2bstrawman.event.InvoicePaidEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoiceSentEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoiceVoidedEvent;
 import io.b2mash.b2b.b2bstrawman.event.MemberAddedToProjectEvent;
+import io.b2mash.b2b.b2bstrawman.event.ProjectArchivedEvent;
+import io.b2mash.b2b.b2bstrawman.event.ProjectCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskAssignedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskCancelledEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskClaimedEvent;
@@ -150,7 +152,9 @@ public class NotificationService {
           "RETAINER_TERMINATED",
           "PAYMENT_FAILED",
           "PAYMENT_LINK_EXPIRED",
-          "ACCEPTANCE_COMPLETED");
+          "ACCEPTANCE_COMPLETED",
+          "PROJECT_COMPLETED",
+          "PROJECT_ARCHIVED");
 
   // --- Preference methods ---
 
@@ -683,6 +687,60 @@ public class NotificationService {
             event.requestId(),
             null);
     return notification != null ? List.of(notification) : List.of();
+  }
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public List<Notification> handleProjectCompleted(ProjectCompletedEvent event) {
+    var members = projectMemberRepository.findByProjectId(event.projectId());
+
+    var title = "%s completed project \"%s\"".formatted(event.actorName(), event.projectName());
+
+    var created = new ArrayList<Notification>();
+    for (var member : members) {
+      if (member.getMemberId().equals(event.actorMemberId())) {
+        continue;
+      }
+      var notification =
+          createIfEnabled(
+              member.getMemberId(),
+              "PROJECT_COMPLETED",
+              title,
+              null,
+              "PROJECT",
+              event.entityId(),
+              event.projectId());
+      if (notification != null) {
+        created.add(notification);
+      }
+    }
+    return created;
+  }
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public List<Notification> handleProjectArchived(ProjectArchivedEvent event) {
+    var members = projectMemberRepository.findByProjectId(event.projectId());
+
+    var title = "%s archived project \"%s\"".formatted(event.actorName(), event.projectName());
+
+    var created = new ArrayList<Notification>();
+    for (var member : members) {
+      if (member.getMemberId().equals(event.actorMemberId())) {
+        continue;
+      }
+      var notification =
+          createIfEnabled(
+              member.getMemberId(),
+              "PROJECT_ARCHIVED",
+              title,
+              null,
+              "PROJECT",
+              event.entityId(),
+              event.projectId());
+      if (notification != null) {
+        created.add(notification);
+      }
+    }
+    return created;
   }
 
   // --- Admin/owner fan-out helper (used by retainer services) ---

@@ -4,6 +4,9 @@ import userEvent from "@testing-library/user-event";
 import { GenerateDocumentDropdown } from "@/components/templates/GenerateDocumentDropdown";
 import type { TemplateListResponse } from "@/lib/types";
 
+// Mock server-only (imported transitively via template-clause-actions -> api)
+vi.mock("server-only", () => ({}));
+
 const mockPreviewTemplate = vi.fn();
 const mockGenerateDocument = vi.fn();
 
@@ -16,6 +19,10 @@ vi.mock("next/navigation", () => ({
 vi.mock("@/app/(app)/org/[slug]/settings/templates/actions", () => ({
   previewTemplateAction: (...args: unknown[]) => mockPreviewTemplate(...args),
   generateDocumentAction: (...args: unknown[]) => mockGenerateDocument(...args),
+}));
+
+vi.mock("@/lib/actions/template-clause-actions", () => ({
+  getTemplateClauses: vi.fn().mockResolvedValue([]),
 }));
 
 const TEMPLATES: TemplateListResponse[] = [
@@ -120,7 +127,7 @@ describe("GenerateDocumentDropdown", () => {
 
     // Preview should be called with correct args
     await waitFor(() => {
-      expect(mockPreviewTemplate).toHaveBeenCalledWith("tpl-1", "proj-1");
+      expect(mockPreviewTemplate).toHaveBeenCalledWith("tpl-1", "proj-1", undefined);
     });
   });
 });

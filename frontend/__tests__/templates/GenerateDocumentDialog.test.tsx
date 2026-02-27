@@ -3,12 +3,20 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { GenerateDocumentDialog } from "@/components/templates/GenerateDocumentDialog";
 
+// Mock server-only (imported transitively via template-clause-actions -> api)
+vi.mock("server-only", () => ({}));
+
 const mockPreviewTemplate = vi.fn();
 const mockGenerateDocument = vi.fn();
+const mockGetTemplateClauses = vi.fn();
 
 vi.mock("@/app/(app)/org/[slug]/settings/templates/actions", () => ({
   previewTemplateAction: (...args: unknown[]) => mockPreviewTemplate(...args),
   generateDocumentAction: (...args: unknown[]) => mockGenerateDocument(...args),
+}));
+
+vi.mock("@/lib/actions/template-clause-actions", () => ({
+  getTemplateClauses: (...args: unknown[]) => mockGetTemplateClauses(...args),
 }));
 
 describe("GenerateDocumentDialog", () => {
@@ -24,6 +32,8 @@ describe("GenerateDocumentDialog", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // No clause associations -- backward-compatible flow
+    mockGetTemplateClauses.mockResolvedValue([]);
     mockPreviewTemplate.mockResolvedValue({
       success: true,
       html: "<h1>Preview Content</h1>",
@@ -46,7 +56,7 @@ describe("GenerateDocumentDialog", () => {
     render(<GenerateDocumentDialog {...baseProps} />);
 
     await waitFor(() => {
-      expect(mockPreviewTemplate).toHaveBeenCalledWith("tpl-1", "proj-1");
+      expect(mockPreviewTemplate).toHaveBeenCalledWith("tpl-1", "proj-1", undefined);
     });
 
     await waitFor(() => {
@@ -81,6 +91,7 @@ describe("GenerateDocumentDialog", () => {
         "proj-1",
         false,
         false,
+        undefined,
       );
     });
   });
@@ -115,6 +126,7 @@ describe("GenerateDocumentDialog", () => {
         "proj-1",
         true,
         false,
+        undefined,
       );
     });
 

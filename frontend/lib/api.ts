@@ -377,6 +377,7 @@ export async function resetTemplate(id: string): Promise<void> {
 export async function previewTemplate(
   id: string,
   entityId: string,
+  clauses?: Array<{ clauseId: string; sortOrder: number }>,
 ): Promise<PreviewResponse> {
   let token: string;
   try {
@@ -391,7 +392,7 @@ export async function previewTemplate(
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ entityId }),
+    body: JSON.stringify({ entityId, ...(clauses?.length ? { clauses } : {}) }),
   });
 
   if (!response.ok) {
@@ -457,6 +458,7 @@ export async function generateDocument(
   entityId: string,
   saveToDocuments: boolean,
   acknowledgeWarnings: boolean = false,
+  clauses?: Array<{ clauseId: string; sortOrder: number }>,
 ): Promise<GenerateDocumentResponse | Blob> {
   let token: string;
   try {
@@ -473,7 +475,7 @@ export async function generateDocument(
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ entityId, saveToDocuments, acknowledgeWarnings }),
+      body: JSON.stringify({ entityId, saveToDocuments, acknowledgeWarnings, ...(clauses?.length ? { clauses } : {}) }),
     },
   );
 

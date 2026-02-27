@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.customerbackend.handler;
 
+import io.b2mash.b2b.b2bstrawman.acceptance.AcceptanceRequestRepository;
 import io.b2mash.b2b.b2bstrawman.comment.CommentRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerProjectLinkedEvent;
@@ -15,8 +16,13 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.event.PortalTaskUpdatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectUpdatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.TaxContext;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.TimeEntryAggregatedEvent;
+import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalAcceptanceView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
+import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestAcceptedEvent;
+import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestExpiredEvent;
+import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestRevokedEvent;
+import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestSentEvent;
 import io.b2mash.b2b.b2bstrawman.event.CommentCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.event.CommentDeletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.CommentVisibilityChangedEvent;
@@ -26,6 +32,8 @@ import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +74,9 @@ public class PortalEventHandler {
   private final CommentRepository commentRepository;
   private final MemberRepository memberRepository;
   private final ObjectMapper objectMapper;
+  private final OrganizationRepository organizationRepository;
+  private final OrgSettingsRepository orgSettingsRepository;
+  private final AcceptanceRequestRepository acceptanceRequestRepository;
 
   public PortalEventHandler(
       PortalReadModelRepository readModelRepo,
@@ -76,7 +87,10 @@ public class PortalEventHandler {
       InvoiceLineRepository invoiceLineRepository,
       CommentRepository commentRepository,
       MemberRepository memberRepository,
-      ObjectMapper objectMapper) {
+      ObjectMapper objectMapper,
+      OrganizationRepository organizationRepository,
+      OrgSettingsRepository orgSettingsRepository,
+      AcceptanceRequestRepository acceptanceRequestRepository) {
     this.readModelRepo = readModelRepo;
     this.projectRepository = projectRepository;
     this.documentRepository = documentRepository;
@@ -86,6 +100,9 @@ public class PortalEventHandler {
     this.commentRepository = commentRepository;
     this.memberRepository = memberRepository;
     this.objectMapper = objectMapper;
+    this.organizationRepository = organizationRepository;
+    this.orgSettingsRepository = orgSettingsRepository;
+    this.acceptanceRequestRepository = acceptanceRequestRepository;
   }
 
   // ── Customer-project events ────────────────────────────────────────
@@ -596,6 +613,109 @@ public class PortalEventHandler {
             }
           } catch (Exception e) {
             log.warn("Failed to project CommentDeletedEvent: commentId={}", event.entityId(), e);
+          }
+        });
+  }
+
+  // ── Acceptance request events ──────────────────────────────────────
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onAcceptanceRequestSent(AcceptanceRequestSentEvent event) {
+    handleInTenantScope(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            // Resolve org name from Organization entity (public schema)
+            String orgName =
+                organizationRepository
+                    .findByClerkOrgId(event.orgId())
+                    .map(org -> org.getName())
+                    .orElse(event.orgId());
+
+            // Resolve org logo from OrgSettings (tenant-scoped)
+            String orgLogo =
+                orgSettingsRepository
+                    .findForCurrentTenant()
+                    .map(settings -> settings.getLogoS3Key())
+                    .orElse(null);
+
+            // Load request token from the entity (not on the event)
+            String requestToken =
+                acceptanceRequestRepository
+                    .findById(event.requestId())
+                    .map(req -> req.getRequestToken())
+                    .orElse("");
+
+            var view =
+                new PortalAcceptanceView(
+                    event.requestId(),
+                    event.portalContactId(),
+                    event.generatedDocumentId(),
+                    event.documentFileName(),
+                    event.documentFileName(),
+                    "SENT",
+                    requestToken,
+                    event.occurredAt(),
+                    event.expiresAt(),
+                    orgName,
+                    orgLogo,
+                    null);
+            readModelRepo.saveAcceptanceRequest(view);
+          } catch (Exception e) {
+            log.warn(
+                "Failed to project AcceptanceRequestSentEvent: requestId={}", event.requestId(), e);
+          }
+        });
+  }
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onAcceptanceRequestAccepted(AcceptanceRequestAcceptedEvent event) {
+    handleInTenantScope(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            readModelRepo.updateAcceptanceRequestStatus(event.requestId(), "ACCEPTED");
+          } catch (Exception e) {
+            log.warn(
+                "Failed to project AcceptanceRequestAcceptedEvent: requestId={}",
+                event.requestId(),
+                e);
+          }
+        });
+  }
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onAcceptanceRequestRevoked(AcceptanceRequestRevokedEvent event) {
+    handleInTenantScope(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            readModelRepo.updateAcceptanceRequestStatus(event.requestId(), "REVOKED");
+          } catch (Exception e) {
+            log.warn(
+                "Failed to project AcceptanceRequestRevokedEvent: requestId={}",
+                event.requestId(),
+                e);
+          }
+        });
+  }
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onAcceptanceRequestExpired(AcceptanceRequestExpiredEvent event) {
+    handleInTenantScope(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            readModelRepo.updateAcceptanceRequestStatus(event.requestId(), "EXPIRED");
+          } catch (Exception e) {
+            log.warn(
+                "Failed to project AcceptanceRequestExpiredEvent: requestId={}",
+                event.requestId(),
+                e);
           }
         });
   }

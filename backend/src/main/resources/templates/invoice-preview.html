@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title th:text="'Invoice ' + (${invoice.invoiceNumber} != null ? ${invoice.invoiceNumber} : 'DRAFT')">Invoice Preview</title>
     <style>
-        /* Reset & Base */
+        /* Reset and Base */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -163,6 +163,23 @@
             color: #0f172a;
         }
 
+        /* Tax */
+        .tax-registration {
+            font-size: 0.875rem;
+            color: #475569;
+            margin-top: 4px;
+        }
+        .tax-col {
+            text-align: right;
+            width: 15%;
+        }
+        .tax-note {
+            font-style: italic;
+            font-size: 0.8125rem;
+            color: #64748b;
+            text-align: right;
+        }
+
         /* Footer */
         .footer {
             border-top: 1px solid #e2e8f0;
@@ -212,6 +229,10 @@
 <div class="header">
     <div class="header-left">
         <h1 th:text="${invoice.orgName}">Organization Name</h1>
+        <div th:if="${taxRegistrationNumber != null}" class="tax-registration">
+            <span th:text="${taxRegistrationLabel}">Tax Number</span>:
+            <span th:text="${taxRegistrationNumber}">4012345678</span>
+        </div>
     </div>
     <div class="header-right">
         <div class="invoice-number"
@@ -247,10 +268,11 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 50%;">Description</th>
+                    <th th:style="${hasPerLineTax} ? 'width: 40%;' : 'width: 50%;'">Description</th>
                     <th class="num" style="width: 15%;">Qty</th>
                     <th class="num" style="width: 15%;">Rate</th>
-                    <th class="num" style="width: 20%;">Amount</th>
+                    <th class="num" th:style="${hasPerLineTax} ? 'width: 15%;' : 'width: 20%;'">Amount</th>
+                    <th th:if="${hasPerLineTax}" class="num tax-col" th:text="${taxLabel}">Tax</th>
                 </tr>
             </thead>
             <tbody>
@@ -259,6 +281,11 @@
                     <td class="num" th:text="${#numbers.formatDecimal(line.quantity, 1, 4)}">2.0000</td>
                     <td class="num" th:text="${#numbers.formatDecimal(line.unitPrice, 1, 2)}">1800.00</td>
                     <td class="num" th:text="${#numbers.formatDecimal(line.amount, 1, 2)}">3600.00</td>
+                    <td th:if="${hasPerLineTax}" class="num tax-col">
+                        <span th:if="${line.taxExempt}">Exempt</span>
+                        <span th:unless="${line.taxExempt}"
+                              th:text="${line.taxRateName != null} ? ${line.taxRateName + ' ' + line.taxRatePercent + '%'} : ''">VAT 15%</span>
+                    </td>
                 </tr>
             </tbody>
         </table>
@@ -276,9 +303,21 @@
             <td class="label">Subtotal</td>
             <td class="value" th:text="${#numbers.formatDecimal(invoice.subtotal, 1, 2)}">0.00</td>
         </tr>
-        <tr>
+        <!-- Legacy: single tax row (no per-line tax) -->
+        <tr th:if="${!hasPerLineTax}">
             <td class="label">Tax</td>
             <td class="value" th:text="${#numbers.formatDecimal(invoice.taxAmount, 1, 2)}">0.00</td>
+        </tr>
+        <!-- Per-line tax: breakdown by rate -->
+        <tr th:each="breakdownEntry : ${taxBreakdown}">
+            <td class="label" th:text="${breakdownEntry.rateName + ' (' + breakdownEntry.ratePercent + '%)'}">VAT (15%)</td>
+            <td class="value" th:text="${#numbers.formatDecimal(breakdownEntry.taxAmount, 1, 2)}">2250.00</td>
+        </tr>
+        <!-- Tax-inclusive note -->
+        <tr th:if="${taxInclusive && hasPerLineTax}">
+            <td colspan="2" class="tax-note">
+                All amounts include <span th:text="${taxLabel}">Tax</span>
+            </td>
         </tr>
         <tr>
             <td class="label" th:text="'Total (' + ${invoice.currency} + ')'">Total (ZAR)</td>

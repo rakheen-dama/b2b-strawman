@@ -1428,10 +1428,29 @@ public class InvoiceService {
       groupSubtotals.put(entry.getKey(), subtotal);
     }
 
+    // Tax context variables
+    boolean hasPerLineTax = taxCalculationService.hasPerLineTax(lines);
+    var taxBreakdown = taxCalculationService.buildTaxBreakdown(lines);
+
+    // Load org settings for tax display config
+    var orgSettings = orgSettingsRepository.findForCurrentTenant().orElse(null);
+    String taxRegistrationNumber =
+        orgSettings != null ? orgSettings.getTaxRegistrationNumber() : null;
+    String taxRegistrationLabel =
+        orgSettings != null ? orgSettings.getTaxRegistrationLabel() : "Tax Number";
+    String taxLabel = orgSettings != null ? orgSettings.getTaxLabel() : "Tax";
+    boolean taxInclusive = orgSettings != null && orgSettings.isTaxInclusive();
+
     Context ctx = new Context();
     ctx.setVariable("invoice", invoice);
     ctx.setVariable("groupedLines", groupedLines);
     ctx.setVariable("groupSubtotals", groupSubtotals);
+    ctx.setVariable("hasPerLineTax", hasPerLineTax);
+    ctx.setVariable("taxBreakdown", taxBreakdown);
+    ctx.setVariable("taxRegistrationNumber", taxRegistrationNumber);
+    ctx.setVariable("taxRegistrationLabel", taxRegistrationLabel);
+    ctx.setVariable("taxLabel", taxLabel);
+    ctx.setVariable("taxInclusive", taxInclusive);
 
     return templateEngine.process("invoice-preview", ctx);
   }

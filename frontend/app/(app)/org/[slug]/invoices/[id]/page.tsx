@@ -9,6 +9,7 @@ import {
 } from "@/lib/api";
 import type {
   InvoiceResponse,
+  TaxRateResponse,
   TemplateListResponse,
   FieldDefinitionResponse,
   FieldGroupResponse,
@@ -74,6 +75,11 @@ export default async function InvoiceDetailPage({
     }
   }
 
+  // Tax rates for the line item tax dropdown
+  const taxRates = await api
+    .get<TaxRateResponse[]>("/api/tax-rates")
+    .catch(() => [] as TaxRateResponse[]);
+
   // Custom field definitions and groups for the Custom Fields section
   let invoiceFieldDefs: FieldDefinitionResponse[] = [];
   let invoiceFieldGroups: FieldGroupResponse[] = [];
@@ -127,6 +133,7 @@ export default async function InvoiceDetailPage({
         slug={slug}
         isAdmin={isAdmin}
         paymentEvents={paymentEvents}
+        taxRates={taxRates}
       />
 
       {/* Custom Fields */}

@@ -761,6 +761,18 @@ export interface InvoiceLineResponse {
   unitPrice: number;
   amount: number;
   sortOrder: number;
+  taxRateId: string | null;
+  taxRateName: string | null;
+  taxRatePercent: number | null;
+  taxAmount: number | null;
+  taxExempt: boolean;
+}
+
+export interface TaxBreakdownEntry {
+  taxRateName: string;
+  taxRatePercent: number;
+  taxableAmount: number;
+  taxAmount: number;
 }
 
 export interface InvoiceResponse {
@@ -794,6 +806,12 @@ export interface InvoiceResponse {
   paymentDestination: string | null;
   customFields?: Record<string, unknown>;
   appliedFieldGroups?: string[];
+  taxBreakdown: TaxBreakdownEntry[];
+  taxInclusive: boolean;
+  taxRegistrationNumber: string | null;
+  taxRegistrationLabel: string | null;
+  taxLabel: string | null;
+  hasPerLineTax: boolean;
 }
 
 export type PaymentEventStatus =
@@ -839,6 +857,7 @@ export interface AddLineItemRequest {
   quantity: number;
   unitPrice: number;
   sortOrder?: number;
+  taxRateId?: string;
 }
 
 export interface UpdateLineItemRequest {
@@ -846,6 +865,7 @@ export interface UpdateLineItemRequest {
   quantity: number;
   unitPrice: number;
   sortOrder?: number;
+  taxRateId?: string;
 }
 
 export interface RecordPaymentRequest {

@@ -9,6 +9,7 @@ interface InvoiceLineTableProps {
   lines: InvoiceLineResponse[];
   currency: string;
   editable: boolean;
+  hasPerLineTax?: boolean;
   onAddLine?: () => void;
   onEditLine?: (line: InvoiceLineResponse) => void;
   onDeleteLine?: (lineId: string) => void;
@@ -18,6 +19,7 @@ export function InvoiceLineTable({
   lines,
   currency,
   editable,
+  hasPerLineTax = false,
   onAddLine,
   onEditLine,
   onDeleteLine,
@@ -60,6 +62,11 @@ export function InvoiceLineTable({
                 <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   Amount
                 </th>
+                {hasPerLineTax && (
+                  <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                    Tax
+                  </th>
+                )}
                 {editable && (
                   <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
                     Actions
@@ -88,6 +95,23 @@ export function InvoiceLineTable({
                   <td className="px-4 py-3 text-right text-sm font-medium text-slate-900 dark:text-slate-100">
                     {formatCurrency(line.amount, currency)}
                   </td>
+                  {hasPerLineTax && (
+                    <td className="px-4 py-3 text-right text-sm text-slate-600 dark:text-slate-400">
+                      {line.taxExempt ? (
+                        <span className="text-slate-500 dark:text-slate-400">
+                          Exempt
+                        </span>
+                      ) : line.taxRateName && line.taxAmount != null ? (
+                        <span>
+                          {line.taxRateName} ({line.taxRatePercent}%)
+                          {" "}
+                          {formatCurrency(line.taxAmount, currency)}
+                        </span>
+                      ) : (
+                        "\u2014"
+                      )}
+                    </td>
+                  )}
                   {editable && (
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">

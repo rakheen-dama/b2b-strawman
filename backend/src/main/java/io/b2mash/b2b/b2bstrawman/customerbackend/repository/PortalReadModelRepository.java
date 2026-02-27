@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.customerbackend.repository;
 
+import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalAcceptanceView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalCommentView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalDocumentView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalInvoiceLineView;
@@ -689,6 +690,73 @@ public class PortalReadModelRepository {
             """)
         .params(portalProjectId, orgId)
         .query(PortalTaskView.class)
+        .list();
+  }
+
+  // ── Acceptance request methods ──────────────────────────────────────
+
+  public void saveAcceptanceRequest(PortalAcceptanceView view) {
+    jdbc.sql(
+            """
+            INSERT INTO portal.portal_acceptance_requests
+                (id, portal_contact_id, generated_document_id, document_title,
+                 document_file_name, status, request_token, sent_at, expires_at,
+                 org_name, org_logo)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """)
+        .params(
+            view.id(),
+            view.portalContactId(),
+            view.generatedDocumentId(),
+            view.documentTitle(),
+            view.documentFileName(),
+            view.status(),
+            view.requestToken(),
+            toTimestamp(view.sentAt()),
+            toTimestamp(view.expiresAt()),
+            view.orgName(),
+            view.orgLogo())
+        .update();
+  }
+
+  public void updateAcceptanceRequestStatus(UUID id, String status) {
+    jdbc.sql(
+            """
+            UPDATE portal.portal_acceptance_requests
+            SET status = ?
+            WHERE id = ?
+            """)
+        .params(status, id)
+        .update();
+  }
+
+  public List<PortalAcceptanceView> findAcceptanceRequestsByContactId(UUID contactId) {
+    return jdbc.sql(
+            """
+            SELECT id, portal_contact_id, generated_document_id, document_title,
+                   document_file_name, status, request_token, sent_at, expires_at,
+                   org_name, org_logo, created_at
+            FROM portal.portal_acceptance_requests
+            WHERE portal_contact_id = ?
+            ORDER BY created_at DESC
+            """)
+        .params(contactId)
+        .query(PortalAcceptanceView.class)
+        .list();
+  }
+
+  public List<PortalAcceptanceView> findPendingAcceptancesByContactId(UUID contactId) {
+    return jdbc.sql(
+            """
+            SELECT id, portal_contact_id, generated_document_id, document_title,
+                   document_file_name, status, request_token, sent_at, expires_at,
+                   org_name, org_logo, created_at
+            FROM portal.portal_acceptance_requests
+            WHERE portal_contact_id = ? AND status IN ('SENT', 'VIEWED')
+            ORDER BY created_at DESC
+            """)
+        .params(contactId)
+        .query(PortalAcceptanceView.class)
         .list();
   }
 }

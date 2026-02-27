@@ -25,7 +25,7 @@ Phase 28 adds a **document acceptance workflow** to the DocTeams platform. Firms
 | 196 | Firm-Facing REST API + Audit + Notifications | Backend | 194, 195 | M | 196A, 196B | **Done** (PRs #403, #404) |
 | 197 | Portal Acceptance Controller + Expiry Processor | Backend | 194, 195 | M | 197A | **Done** (PR #405) |
 | 198 | Frontend -- Send for Acceptance + Status Tracking | Frontend | 196 | M | 198A, 198B | **Done** (PRs #406, #407) |
-| 199 | Portal -- Acceptance Page + Pending List | Portal | 197 | M | 199A, 199B | |
+| 199 | Portal -- Acceptance Page + Pending List | Portal | 197 | M | 199A, 199B | **Done** (PRs #408, #409) |
 | 200 | Frontend -- OrgSettings Acceptance Config | Frontend | 196 | S | 200A | |
 
 ---
@@ -133,7 +133,7 @@ Phase 28 adds a **document acceptance workflow** to the DocTeams platform. Firms
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 6a (parallel) | 198 | 198B | `AcceptanceDetailPanel.tsx` (expandable panel: recipient info, status timeline, remind/revoke actions, certificate download) + integration into generated document detail views + `GenerateDocumentDialog.tsx` post-generation "Send for Acceptance" button + frontend tests. ~2 new files, ~2 modified files. Frontend only. | **Done** (PR #407) |
-| 6b (parallel) | 199 | 199B | "Pending Acceptances" section on portal dashboard or documents page (list of documents awaiting acceptance with direct links to acceptance page) + portal API call to read-model endpoint + portal frontend tests. ~1 new file, ~1 modified file. Portal only. | |
+| 6b (parallel) | 199 | 199B | "Pending Acceptances" section on portal dashboard or documents page (list of documents awaiting acceptance with direct links to acceptance page) + portal API call to read-model endpoint + portal frontend tests. ~1 new file, ~1 modified file. Portal only. | **Done** (PR #409) |
 
 ### Timeline
 
@@ -570,7 +570,7 @@ Stage 6: [198B] // [199B]                                           (parallel, a
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **199A** | 199.1--199.6 | Portal acceptance page at `/accept/[token]` (PDF viewer via iframe, acceptance form with typed name, post-acceptance confirmation state, expired/revoked error states, org branding) + portal acceptance API calls + portal frontend tests. ~3 new files. Portal only. | **Done** (PR #408) |
-| **199B** | 199.7--199.10 | "Pending Acceptances" section on portal dashboard or projects page (list of documents awaiting acceptance, status badges, direct links to acceptance page) + portal read-model API call + portal frontend tests. ~1 new file, ~1 modified. Portal only. | |
+| **199B** | 199.7--199.10 | "Pending Acceptances" section on portal dashboard or projects page (list of documents awaiting acceptance, status badges, direct links to acceptance page) + portal read-model API call + portal frontend tests. ~1 new file, ~1 modified. Portal only. | **Done** (PR #409) |
 
 ### Tasks
 

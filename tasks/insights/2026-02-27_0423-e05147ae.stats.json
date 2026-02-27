@@ -1,0 +1,1 @@
+{"session_id":"e05147ae-f481-4b70-a8a4-ce70d5003287","started_at":"2026-02-26T21:10:22.000Z","ended_at":"2026-02-27T02:37:49.000Z","total_tool_calls":56,"error_count":0,"error_rate_pct":0,"tool_counts":[{"tool":"Bash","count":42},{"tool":"Skill","count":1}],"error_details":[],"bash_failures":[],"agent_spawns":[],"files_modified":[],"agent_token_usage":[],"build_stats":{}}

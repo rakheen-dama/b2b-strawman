@@ -126,24 +126,28 @@ export function TemplateClausesTab({
     setError(null);
     setSuccessMsg(null);
 
-    const configs: TemplateClauseConfig[] = clauses.map((c, idx) => ({
-      clauseId: c.clauseId,
-      sortOrder: idx,
-      required: c.required,
-    }));
+    try {
+      const configs: TemplateClauseConfig[] = clauses.map((c, idx) => ({
+        clauseId: c.clauseId,
+        sortOrder: idx,
+        required: c.required,
+      }));
 
-    const result = await setTemplateClauses(templateId, configs, slug);
+      const result = await setTemplateClauses(templateId, configs, slug);
 
-    if (result.success) {
-      setSuccessMsg("Clauses saved successfully.");
-      setTimeout(() => setSuccessMsg(null), 3000);
-      // Reload to get fresh data
-      await loadClauses();
-    } else {
-      setError(result.error ?? "Failed to save clauses.");
+      if (result.success) {
+        setSuccessMsg("Clauses saved successfully.");
+        setTimeout(() => setSuccessMsg(null), 3000);
+        // Reload to get fresh data
+        await loadClauses();
+      } else {
+        setError(result.error ?? "Failed to save clauses.");
+      }
+    } catch {
+      setError("An unexpected error occurred while saving.");
+    } finally {
+      setIsSaving(false);
     }
-
-    setIsSaving(false);
   }
 
   if (isLoading) {

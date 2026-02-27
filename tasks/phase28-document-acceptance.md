@@ -111,7 +111,7 @@ Phase 28 adds a **document acceptance workflow** to the DocTeams platform. Firms
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 3a (parallel) | 196 | 196A | `AcceptanceController` at `/api/acceptance-requests` (POST create, GET list by document/customer, GET detail, POST remind, POST revoke, GET certificate download) + response DTOs (`AcceptanceRequestResponse`, `CreateAcceptanceRequest`) + RBAC annotations + controller integration tests. ~4 new files. Backend only. | |
+| 3a (parallel) | 196 | 196A | `AcceptanceController` at `/api/acceptance-requests` (POST create, GET list by document/customer, GET detail, POST remind, POST revoke, GET certificate download) + response DTOs (`AcceptanceRequestResponse`, `CreateAcceptanceRequest`) + RBAC annotations + controller integration tests. ~4 new files. Backend only. | **Done** (PR #403) |
 | 3b (parallel) | 197 | 197A | `PortalAcceptanceController` at `/api/portal/acceptance/{token}` (GET page data, GET pdf stream, POST accept) + IP/UA extraction + token-based auth filter exemption + `@Scheduled` expiry processor in `AcceptanceService.processExpired()` + controller integration tests. ~2 new files, ~2 modified files. Backend only. | |
 
 ### Stage 4: Audit + Notifications
@@ -379,7 +379,7 @@ Stage 6: [198B] // [199B]                                           (parallel, a
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **196A** | 196.1--196.6 | `AcceptanceController` at `/api/acceptance-requests` (POST create, GET list by document/customer, GET detail, POST remind, POST revoke, GET certificate download) + response DTOs (`AcceptanceRequestResponse`, `CreateAcceptanceRequest`) + `@PreAuthorize` RBAC annotations + controller integration tests. ~4 new files, ~1 test file. Backend only. | |
+| **196A** | 196.1--196.6 | `AcceptanceController` at `/api/acceptance-requests` (POST create, GET list by document/customer, GET detail, POST remind, POST revoke, GET certificate download) + response DTOs (`AcceptanceRequestResponse`, `CreateAcceptanceRequest`) + `@PreAuthorize` RBAC annotations + controller integration tests. ~4 new files, ~1 test file. Backend only. | **Done** (PR #403) |
 | **196B** | 196.7--196.12 | Audit event recording wired into AcceptanceService for all 8 event types (acceptance.created, .sent, .viewed, .accepted, .reminded, .revoked, .expired, .certificate_generated) + `NotificationEventHandler` extension for in-app acceptance notification + OrgSettings controller/service extension (acceptance config endpoint) + audit + notification integration tests. ~0-1 new files, ~5 modified files, ~1 test file. Backend only. | |
 
 ### Tasks

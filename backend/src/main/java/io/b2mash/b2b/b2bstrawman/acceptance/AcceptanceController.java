@@ -45,13 +45,7 @@ public class AcceptanceController {
   public ResponseEntity<List<AcceptanceRequestResponse>> list(
       @RequestParam(required = false) UUID documentId,
       @RequestParam(required = false) UUID customerId) {
-    if (documentId != null) {
-      return ResponseEntity.ok(acceptanceService.listByDocument(documentId));
-    }
-    if (customerId != null) {
-      return ResponseEntity.ok(acceptanceService.listByCustomer(customerId));
-    }
-    return ResponseEntity.ok(List.of());
+    return ResponseEntity.ok(acceptanceService.list(documentId, customerId));
   }
 
   @GetMapping("/{id}")

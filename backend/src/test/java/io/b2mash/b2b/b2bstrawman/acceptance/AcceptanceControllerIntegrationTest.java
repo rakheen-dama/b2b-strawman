@@ -309,6 +309,30 @@ class AcceptanceControllerIntegrationTest {
                     "attachment; filename=\"certificate-of-acceptance.pdf\""));
   }
 
+  @Test
+  @Order(12)
+  void get_detail_returns404_forDifferentTenant() throws Exception {
+    // Provision a second, completely separate tenant
+    String otherOrgId = "org_acceptance_other_tenant";
+    provisioningService.provisionTenant(otherOrgId, "Other Tenant Org");
+    planSyncService.syncPlan(otherOrgId, "pro-plan");
+
+    syncMember(otherOrgId, "user_other_owner", "other_owner@test.com", "Other Owner", "owner");
+
+    // Authenticate as the other tenant's owner and try to access the first tenant's request
+    JwtRequestPostProcessor otherTenantJwt =
+        jwt()
+            .jwt(
+                j ->
+                    j.subject("user_other_owner")
+                        .claim("o", Map.of("id", otherOrgId, "rol", "owner")))
+            .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
+
+    mockMvc
+        .perform(get("/api/acceptance-requests/" + createdRequestId).with(otherTenantJwt))
+        .andExpect(status().isNotFound());
+  }
+
   // --- Helper: sync member ---
   private String syncMember(
       String orgId, String clerkUserId, String email, String name, String orgRole)

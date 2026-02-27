@@ -514,6 +514,24 @@ public class AcceptanceService {
     return enrichResponse(request);
   }
 
+  /**
+   * Lists acceptance requests, dispatching by optional filter parameters.
+   *
+   * @param documentId if non-null, filters by generated document
+   * @param customerId if non-null (and documentId is null), filters by customer
+   * @return matching acceptance requests, or an empty list if no filter is provided
+   */
+  @Transactional(readOnly = true)
+  public List<AcceptanceRequestResponse> list(UUID documentId, UUID customerId) {
+    if (documentId != null) {
+      return listByDocument(documentId);
+    }
+    if (customerId != null) {
+      return listByCustomer(customerId);
+    }
+    return List.of();
+  }
+
   /** Lists acceptance requests for a generated document, returning DTOs. */
   @Transactional(readOnly = true)
   public List<AcceptanceRequestResponse> listByDocument(UUID generatedDocumentId) {

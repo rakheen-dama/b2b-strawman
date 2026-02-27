@@ -24,7 +24,7 @@ This is a **structural hardening phase**, not a feature phase. No new pages are 
 |------|------|-------|------|--------|--------|--------|
 | 201 | Task Lifecycle Foundation -- Migration, Enums & Entity | Backend | -- | M | 201A, 201B | **Done** (PRs #411, #412) |
 | 202 | Task Lifecycle Service + Transition Endpoints | Backend | 201 | L | 202A, 202B | **Done** (PRs #413, #415) |
-| 203 | Project Lifecycle Foundation -- Migration, Enums & Entity | Backend | -- | M | 203A, 203B | |
+| 203 | Project Lifecycle Foundation -- Migration, Enums & Entity | Backend | -- | M | 203A, 203B | **Done** (PRs #416, #417) |
 | 204 | Project Lifecycle Service + Transition Endpoints | Backend | 203, 201 | L | 204A, 204B | |
 | 205 | Project-Customer Link + Due Date | Backend | 203 | M | 205A, 205B | |
 | 206 | Delete Protection & Cross-Entity Guards | Backend | 201, 203, 205 | M | 206A, 206B | |
@@ -100,7 +100,7 @@ This is a **structural hardening phase**, not a feature phase. No new pages are 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 1a (parallel) | 201 | 201B | Refactor `Task` entity: change `status`/`priority` from String to enum, add lifecycle fields + transition methods (`complete()`, `cancel()`, `reopen()`) + update constructor/update method + refactor `TaskRepository` queries from String to enum + entity unit tests. ~2 modified files, ~1 new test file. Backend only. | **Done** (PR #412) |
-| 1b (parallel) | 203 | 203B | Refactor `Project` entity: add `status`, `customerId`, `dueDate`, lifecycle fields + transition methods (`complete()`, `archive()`, `reopen()`) + update constructor/update method + add `ProjectRepository` query methods + entity unit tests. ~2 modified files, ~1 new test file. Backend only. | |
+| 1b (parallel) | 203 | 203B | Refactor `Project` entity: add `status`, `customerId`, `dueDate`, lifecycle fields + transition methods (`complete()`, `archive()`, `reopen()`) + update constructor/update method + add `ProjectRepository` query methods + entity unit tests. ~2 modified files, ~1 new test file. Backend only. | **Done** (PR #417) |
 
 ### Stage 2: Service Layer (parallel tracks, with one dependency)
 
@@ -306,7 +306,7 @@ Stage 6: [207B] // [208B]                                        (parallel, afte
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **203A** | 203.1--203.3 | V47 tenant migration (project columns): add `status`, `customer_id`, `due_date`, `completed_at`, `completed_by`, `archived_at` to `projects` table + CHECK constraint on `status` + `ProjectStatus` enum with `allowedTransitions()`. ~2 new files, ~1 modified migration file. Backend only. | **Done** (PR #416) |
-| **203B** | 203.4--203.8 | Refactor `Project` entity: add new fields + lifecycle transition methods (`complete()`, `archive()`, `reopen()`) + update constructor and `update()` + add `ProjectRepository` query methods for status/customer filtering + entity unit tests. ~2 modified files, ~1 new test file. Backend only. | |
+| **203B** | 203.4--203.8 | Refactor `Project` entity: add new fields + lifecycle transition methods (`complete()`, `archive()`, `reopen()`) + update constructor and `update()` + add `ProjectRepository` query methods for status/customer filtering + entity unit tests. ~2 modified files, ~1 new test file. Backend only. | **Done** (PR #417) |
 
 ### Tasks
 

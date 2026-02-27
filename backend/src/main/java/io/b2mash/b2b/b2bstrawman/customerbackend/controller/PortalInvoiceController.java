@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.customerbackend.controller;
 
 import io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalReadModelService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.tax.dto.TaxBreakdownEntry;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -140,7 +141,7 @@ public class PortalInvoiceController {
       String notes,
       String paymentUrl,
       List<PortalInvoiceLineResponse> lines,
-      List<TaxBreakdownDto> taxBreakdown,
+      List<TaxBreakdownEntry> taxBreakdown,
       String taxRegistrationNumber,
       String taxRegistrationLabel,
       String taxLabel,
@@ -158,9 +159,6 @@ public class PortalInvoiceController {
       BigDecimal taxRatePercent,
       BigDecimal taxAmount,
       boolean taxExempt) {}
-
-  public record TaxBreakdownDto(
-      String rateName, BigDecimal ratePercent, BigDecimal taxableAmount, BigDecimal taxAmount) {}
 
   public record PortalDownloadResponse(String downloadUrl) {}
 }

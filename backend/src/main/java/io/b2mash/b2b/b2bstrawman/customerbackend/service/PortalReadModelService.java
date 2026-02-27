@@ -2,7 +2,6 @@ package io.b2mash.b2b.b2bstrawman.customerbackend.service;
 
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.controller.PaymentStatusResponse;
-import io.b2mash.b2b.b2bstrawman.customerbackend.controller.PortalInvoiceController.TaxBreakdownDto;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalCommentView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalInvoiceLineView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalInvoiceView;
@@ -13,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepos
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
+import io.b2mash.b2b.b2bstrawman.tax.dto.TaxBreakdownEntry;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
 import java.time.Duration;
@@ -189,17 +189,19 @@ public class PortalReadModelService {
   public record InvoiceDetail(
       PortalInvoiceView invoice,
       List<PortalInvoiceLineView> lines,
-      List<TaxBreakdownDto> taxBreakdown) {}
+      List<TaxBreakdownEntry> taxBreakdown) {}
 
   /** Deserializes the tax breakdown JSON string from the read-model into a typed list. */
-  List<TaxBreakdownDto> parseTaxBreakdownJson(String json) {
+  List<TaxBreakdownEntry> parseTaxBreakdownJson(String json) {
     if (json == null || json.isBlank()) {
       return null;
     }
     try {
       return objectMapper.readValue(
           json,
-          objectMapper.getTypeFactory().constructCollectionType(List.class, TaxBreakdownDto.class));
+          objectMapper
+              .getTypeFactory()
+              .constructCollectionType(List.class, TaxBreakdownEntry.class));
     } catch (JacksonException e) {
       log.warn("Failed to parse tax breakdown JSON", e);
       return null;

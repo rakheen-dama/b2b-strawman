@@ -6,6 +6,7 @@ import { portalGet } from "@/lib/api-client";
 import { useBranding } from "@/hooks/use-branding";
 import { ProjectCard } from "@/components/project-card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PendingAcceptancesList } from "@/components/PendingAcceptancesList";
 import type { PortalProject } from "@/lib/types";
 
 function ProjectSkeleton() {
@@ -59,6 +60,8 @@ export default function ProjectsPage() {
 
   return (
     <div>
+      <PendingAcceptancesList />
+
       <h1 className="font-display mb-6 text-2xl font-semibold text-slate-900">
         Your Projects
       </h1>

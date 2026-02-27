@@ -56,6 +56,10 @@ public class GeneratedDocument {
   @Column(name = "warnings", columnDefinition = "jsonb")
   private List<Map<String, Object>> warnings;
 
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "clause_snapshots", columnDefinition = "jsonb")
+  private List<Map<String, Object>> clauseSnapshots;
+
   @Column(name = "generated_at", nullable = false, updatable = false)
   private Instant generatedAt;
 
@@ -135,6 +139,14 @@ public class GeneratedDocument {
 
   public void setWarnings(List<Map<String, Object>> warnings) {
     this.warnings = warnings;
+  }
+
+  public List<Map<String, Object>> getClauseSnapshots() {
+    return clauseSnapshots;
+  }
+
+  public void setClauseSnapshots(List<Map<String, Object>> clauseSnapshots) {
+    this.clauseSnapshots = clauseSnapshots;
   }
 
   public Instant getGeneratedAt() {

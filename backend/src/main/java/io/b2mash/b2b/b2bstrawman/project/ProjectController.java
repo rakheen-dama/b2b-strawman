@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.project;
 
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
 import io.b2mash.b2b.b2bstrawman.member.Member;
@@ -21,16 +22,20 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -69,6 +74,8 @@ public class ProjectController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<ProjectResponse>> listProjects(
       @RequestParam(required = false) UUID view,
+      @RequestParam(required = false) String status,
+      @RequestParam(required = false) LocalDate dueBefore,
       @RequestParam(required = false) Map<String, String> allParams) {
 
     UUID memberId = RequestScopes.requireMemberId();
@@ -111,6 +118,26 @@ public class ProjectController {
 
     // --- Fallback: existing in-memory filtering ---
     var projectsWithRoles = projectService.listProjects(memberId, orgRole);
+
+    // Apply status filter (default: ACTIVE only)
+    List<ProjectStatus> statusFilter = parseProjectStatuses(status);
+    if (statusFilter != null) {
+      projectsWithRoles =
+          projectsWithRoles.stream()
+              .filter(pwr -> statusFilter.contains(pwr.project().getStatus()))
+              .toList();
+    }
+
+    // Apply dueBefore filter
+    if (dueBefore != null) {
+      projectsWithRoles =
+          projectsWithRoles.stream()
+              .filter(
+                  pwr ->
+                      pwr.project().getDueDate() != null
+                          && pwr.project().getDueDate().isBefore(dueBefore))
+              .toList();
+    }
 
     // Batch-load tags for all projects (2 queries instead of 2N)
     var projectIds = projectsWithRoles.stream().map(pwr -> pwr.project().getId()).toList();
@@ -211,6 +238,41 @@ public class ProjectController {
     return ResponseEntity.noContent().build();
   }
 
+  @PatchMapping("/{id}/complete")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<ProjectResponse> completeProject(
+      @PathVariable UUID id, @RequestBody(required = false) CompleteProjectRequest request) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+    boolean ack = request != null && Boolean.TRUE.equals(request.acknowledgeUnbilledTime());
+    var project = projectService.completeProject(id, ack, memberId, orgRole);
+    var memberNames = resolveNames(List.of(project));
+    var tags = entityTagService.getEntityTags("PROJECT", id);
+    return ResponseEntity.ok(ProjectResponse.from(project, null, tags, memberNames));
+  }
+
+  @PatchMapping("/{id}/archive")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<ProjectResponse> archiveProject(@PathVariable UUID id) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+    var project = projectService.archiveProject(id, memberId, orgRole);
+    var memberNames = resolveNames(List.of(project));
+    var tags = entityTagService.getEntityTags("PROJECT", id);
+    return ResponseEntity.ok(ProjectResponse.from(project, null, tags, memberNames));
+  }
+
+  @PatchMapping("/{id}/reopen")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<ProjectResponse> reopenProject(@PathVariable UUID id) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+    var project = projectService.reopenProject(id, memberId, orgRole);
+    var memberNames = resolveNames(List.of(project));
+    var tags = entityTagService.getEntityTags("PROJECT", id);
+    return ResponseEntity.ok(ProjectResponse.from(project, null, tags, memberNames));
+  }
+
   @PutMapping("/{id}/field-groups")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<FieldDefinitionResponse>> setFieldGroups(
@@ -259,13 +321,44 @@ public class ProjectController {
 
   private Map<UUID, String> resolveNames(List<Project> projects) {
     var ids =
-        projects.stream().map(Project::getCreatedBy).filter(Objects::nonNull).distinct().toList();
+        projects.stream()
+            .flatMap(p -> Stream.of(p.getCreatedBy(), p.getCompletedBy()))
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
     if (ids.isEmpty()) return Map.of();
     return memberRepository.findAllById(ids).stream()
         .collect(
             Collectors.toMap(
                 Member::getId, m -> m.getName() != null ? m.getName() : "", (a, b) -> a));
   }
+
+  private static List<ProjectStatus> parseProjectStatuses(String status) {
+    if (status == null || status.isBlank()) {
+      return List.of(ProjectStatus.ACTIVE); // Default: show only ACTIVE
+    }
+    if ("ALL".equalsIgnoreCase(status)) {
+      return null; // null = no filter
+    }
+    return Arrays.stream(status.split(","))
+        .map(String::trim)
+        .map(
+            s -> {
+              try {
+                return ProjectStatus.valueOf(s.toUpperCase());
+              } catch (IllegalArgumentException e) {
+                throw new InvalidStateException(
+                    "Invalid project status",
+                    "Invalid project status: '"
+                        + s
+                        + "'. Valid values: "
+                        + Arrays.toString(ProjectStatus.values()));
+              }
+            })
+        .toList();
+  }
+
+  public record CompleteProjectRequest(Boolean acknowledgeUnbilledTime) {}
 
   public record CreateProjectRequest(
       @NotBlank(message = "name is required")
@@ -287,10 +380,17 @@ public class ProjectController {
       UUID id,
       String name,
       String description,
+      String status,
+      UUID customerId,
+      LocalDate dueDate,
       UUID createdBy,
       String createdByName,
       Instant createdAt,
       Instant updatedAt,
+      Instant completedAt,
+      UUID completedBy,
+      String completedByName,
+      Instant archivedAt,
       String projectRole,
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups,
@@ -305,10 +405,17 @@ public class ProjectController {
           project.getId(),
           project.getName(),
           project.getDescription(),
+          project.getStatus().name(),
+          project.getCustomerId(),
+          project.getDueDate(),
           project.getCreatedBy(),
           project.getCreatedBy() != null ? memberNames.get(project.getCreatedBy()) : null,
           project.getCreatedAt(),
           project.getUpdatedAt(),
+          project.getCompletedAt(),
+          project.getCompletedBy(),
+          project.getCompletedBy() != null ? memberNames.get(project.getCompletedBy()) : null,
+          project.getArchivedAt(),
           null,
           project.getCustomFields(),
           project.getAppliedFieldGroups(),
@@ -321,10 +428,17 @@ public class ProjectController {
           project.getId(),
           project.getName(),
           project.getDescription(),
+          project.getStatus().name(),
+          project.getCustomerId(),
+          project.getDueDate(),
           project.getCreatedBy(),
           project.getCreatedBy() != null ? memberNames.get(project.getCreatedBy()) : null,
           project.getCreatedAt(),
           project.getUpdatedAt(),
+          project.getCompletedAt(),
+          project.getCompletedBy(),
+          project.getCompletedBy() != null ? memberNames.get(project.getCompletedBy()) : null,
+          project.getArchivedAt(),
           projectRole,
           project.getCustomFields(),
           project.getAppliedFieldGroups(),
@@ -340,10 +454,17 @@ public class ProjectController {
           project.getId(),
           project.getName(),
           project.getDescription(),
+          project.getStatus().name(),
+          project.getCustomerId(),
+          project.getDueDate(),
           project.getCreatedBy(),
           project.getCreatedBy() != null ? memberNames.get(project.getCreatedBy()) : null,
           project.getCreatedAt(),
           project.getUpdatedAt(),
+          project.getCompletedAt(),
+          project.getCompletedBy(),
+          project.getCompletedBy() != null ? memberNames.get(project.getCompletedBy()) : null,
+          project.getArchivedAt(),
           projectRole,
           project.getCustomFields(),
           project.getAppliedFieldGroups(),

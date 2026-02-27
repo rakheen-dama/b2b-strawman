@@ -24,6 +24,7 @@ import io.b2mash.b2b.b2bstrawman.dashboard.dto.TrendPoint;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.UpcomingDeadline;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.UtilizationSummary;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import io.b2mash.b2b.b2bstrawman.project.ProjectStatus;
 import io.b2mash.b2b.b2bstrawman.project.ProjectWithRole;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.task.Task;
@@ -514,7 +515,7 @@ public class DashboardService {
   // --- Private: org-level computation ---
 
   private KpiValues computeKpiValues(LocalDate from, LocalDate to) {
-    long activeCount = projectRepository.countActiveProjects();
+    long activeCount = projectRepository.countActiveProjects(ProjectStatus.ACTIVE);
 
     var hoursSummary = timeEntryRepository.findOrgHoursSummary(from, to);
     double totalHours = hoursSummary.getTotalMinutes() / 60.0;

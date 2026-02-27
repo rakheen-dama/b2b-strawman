@@ -22,7 +22,7 @@ Phase 26 adds structured tax handling to the DocTeams invoicing system. The exis
 | 181 | TaxRate Entity Foundation + Migration | Backend | — | M | 181A, 181B | **Done** (PRs #376, #377) |
 | 182 | Tax Calculation Engine + InvoiceLine Extension | Backend | 181 | M | 182A, 182B | **Done** (PRs #378, #379) |
 | 183 | Tax Application in Invoice Flows | Backend | 182 | L | 183A, 183B | **Done** (PRs #380, #381) |
-| 184 | Invoice Preview, PDF + Portal Tax Display | Backend + Portal | 183 | M | 184A, 184B | 184A **Done** (PR #382) |
+| 184 | Invoice Preview, PDF + Portal Tax Display | Backend + Portal | 183 | M | 184A, 184B | **Done** (PRs #382, #383) |
 | 185 | Tax Settings + Rate Management Frontend | Frontend | 181 | M | 185A, 185B | |
 | 186 | Invoice Editor Tax UI | Frontend | 183, 185 | M | 186A | |
 
@@ -107,7 +107,7 @@ Phase 26 adds structured tax handling to the DocTeams invoicing system. The exis
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 5a | 184 | 184B | `InvoiceSyncEvent` tax fields + `PortalInvoiceView` extension + `PortalEventHandler` mapping + portal invoice detail tax breakdown display + tests. ~4 modified backend files, ~2 modified portal files. | |
+| 5a | 184 | 184B | `InvoiceSyncEvent` tax fields + `PortalInvoiceView` extension + `PortalEventHandler` mapping + portal invoice detail tax breakdown display + tests. ~4 modified backend files, ~2 modified portal files. | **Done** (PR #383) |
 
 ### Timeline
 
@@ -359,7 +359,7 @@ Stage 5: [184B]                                                     (after 184A)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **184A** | 184.1--184.7 | Update `invoice-preview.html` Thymeleaf template (tax column on line items, tax breakdown section, registration number in header, tax-inclusive note) + update preview context assembly in `InvoiceService.renderPreview()` + integration tests for HTML output. ~2 modified files. Backend only. | **Done** (PR #382) |
-| **184B** | 184.8--184.14 | Extend `InvoiceSyncEvent` with tax breakdown fields + extend `PortalInvoiceView` + update `PortalEventHandler` mapping + portal invoice detail tax breakdown display + portal `invoice-line-table` tax column + tests. ~4 modified backend files, ~2 modified portal files. Backend + Portal. | |
+| **184B** | 184.8--184.14 | Extend `InvoiceSyncEvent` with tax breakdown fields + extend `PortalInvoiceView` + update `PortalEventHandler` mapping + portal invoice detail tax breakdown display + portal `invoice-line-table` tax column + tests. ~4 modified backend files, ~2 modified portal files. Backend + Portal. | **Done** (PR #383) |
 
 ### Tasks
 

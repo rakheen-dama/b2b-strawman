@@ -191,6 +191,13 @@ public class PortalReadModelService {
       List<PortalInvoiceLineView> lines,
       List<TaxBreakdownEntry> taxBreakdown) {}
 
+  /** Returns pending acceptance requests for the given portal contact. */
+  @Transactional(readOnly = true)
+  public List<io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalAcceptanceView>
+      findPendingAcceptances(UUID portalContactId) {
+    return readModelRepository.findPendingAcceptancesByContactId(portalContactId);
+  }
+
   /** Deserializes the tax breakdown JSON string from the read-model into a typed list. */
   List<TaxBreakdownEntry> parseTaxBreakdownJson(String json) {
     if (json == null || json.isBlank()) {

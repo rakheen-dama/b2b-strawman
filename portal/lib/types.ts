@@ -183,3 +183,14 @@ export interface AcceptanceResponse {
   acceptedAt: string;
   acceptorName: string;
 }
+
+// === Pending Acceptances ===
+
+export interface PortalPendingAcceptance {
+  id: string;
+  documentTitle: string;
+  requestToken: string;
+  sentAt: string; // ISO 8601
+  expiresAt: string; // ISO 8601
+  status: string;
+}

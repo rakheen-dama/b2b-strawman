@@ -112,7 +112,13 @@ describe("ProjectsPage", () => {
   });
 
   it("shows error state on fetch failure", async () => {
-    mockPortalGet.mockRejectedValue(new Error("Network error"));
+    mockPortalGet.mockImplementation((path: string) => {
+      if (path === "/portal/projects") {
+        return Promise.reject(new Error("Network error"));
+      }
+      // PendingAcceptancesList also calls portalGet — return empty to keep it quiet
+      return Promise.resolve([]);
+    });
 
     render(<ProjectsPage />);
 

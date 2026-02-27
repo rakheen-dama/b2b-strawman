@@ -7,6 +7,13 @@ import { StatusBadge } from "@/components/invoices/status-badge";
 import { InvoiceLineTable } from "@/components/invoices/invoice-line-table";
 import { Eye, Copy, Check, RefreshCw } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/format";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type {
   InvoiceResponse,
   InvoiceLineResponse,
@@ -14,6 +21,7 @@ import type {
   UpdateLineItemRequest,
   ValidationCheck,
   PaymentEvent,
+  TaxRateResponse,
 } from "@/lib/types";
 import {
   updateInvoice,
@@ -34,6 +42,7 @@ interface InvoiceDetailClientProps {
   slug: string;
   isAdmin: boolean;
   paymentEvents?: PaymentEvent[];
+  taxRates?: TaxRateResponse[];
 }
 
 export function InvoiceDetailClient({
@@ -41,6 +50,7 @@ export function InvoiceDetailClient({
   slug,
   isAdmin,
   paymentEvents,
+  taxRates = [],
 }: InvoiceDetailClientProps) {
   const router = useRouter();
   const [invoice, setInvoice] = useState(initialInvoice);
@@ -53,11 +63,17 @@ export function InvoiceDetailClient({
   const [paymentTerms, setPaymentTerms] = useState(invoice.paymentTerms ?? "");
   const [taxAmount, setTaxAmount] = useState(String(invoice.taxAmount ?? 0));
 
+  // Default tax rate for new lines
+  const defaultTaxRate = taxRates.find((r) => r.isDefault && r.active);
+
   // Add line dialog state
   const [showAddLine, setShowAddLine] = useState(false);
   const [newLineDesc, setNewLineDesc] = useState("");
   const [newLineQty, setNewLineQty] = useState("1");
   const [newLineRate, setNewLineRate] = useState("0");
+  const [newLineTaxRateId, setNewLineTaxRateId] = useState(
+    defaultTaxRate?.id ?? "none",
+  );
 
   // Edit line dialog state
   const [editingLine, setEditingLine] = useState<InvoiceLineResponse | null>(
@@ -66,6 +82,7 @@ export function InvoiceDetailClient({
   const [editLineDesc, setEditLineDesc] = useState("");
   const [editLineQty, setEditLineQty] = useState("");
   const [editLineRate, setEditLineRate] = useState("");
+  const [editLineTaxRateId, setEditLineTaxRateId] = useState("none");
 
   // Payment reference state
   const [paymentRef, setPaymentRef] = useState("");
@@ -124,7 +141,7 @@ export function InvoiceDetailClient({
         dueDate: dueDate || undefined,
         notes: notes || undefined,
         paymentTerms: paymentTerms || undefined,
-        taxAmount: parseFloat(taxAmount) || 0,
+        taxAmount: invoice.hasPerLineTax ? undefined : (parseFloat(taxAmount) || 0),
       });
       if (result.success && result.invoice) {
         setInvoice(result.invoice);
@@ -239,6 +256,7 @@ export function InvoiceDetailClient({
     setNewLineDesc("");
     setNewLineQty("1");
     setNewLineRate("0");
+    setNewLineTaxRateId(defaultTaxRate?.id ?? "none");
   }
 
   function submitAddLine() {
@@ -249,6 +267,8 @@ export function InvoiceDetailClient({
         description: newLineDesc.trim(),
         quantity: parseFloat(newLineQty) || 1,
         unitPrice: parseFloat(newLineRate) || 0,
+        taxRateId:
+          newLineTaxRateId !== "none" ? newLineTaxRateId : null,
       };
       const result = await addLineItem(
         slug,
@@ -270,6 +290,7 @@ export function InvoiceDetailClient({
     setEditLineDesc(line.description);
     setEditLineQty(String(line.quantity));
     setEditLineRate(String(line.unitPrice));
+    setEditLineTaxRateId(line.taxRateId ?? "none");
   }
 
   function submitEditLine() {
@@ -280,6 +301,8 @@ export function InvoiceDetailClient({
         description: editLineDesc.trim(),
         quantity: parseFloat(editLineQty) || 1,
         unitPrice: parseFloat(editLineRate) || 0,
+        taxRateId:
+          editLineTaxRateId !== "none" ? editLineTaxRateId : null,
       };
       const result = await updateLineItem(
         slug,
@@ -604,20 +627,22 @@ export function InvoiceDetailClient({
                 className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
               />
             </div>
-            <div>
-              <label htmlFor="invoice-tax-amount" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                Tax Amount
-              </label>
-              <input
-                id="invoice-tax-amount"
-                type="number"
-                value={taxAmount}
-                onChange={(e) => setTaxAmount(e.target.value)}
-                min="0"
-                step="0.01"
-                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-              />
-            </div>
+            {!invoice.hasPerLineTax && (
+              <div>
+                <label htmlFor="invoice-tax-amount" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Tax Amount
+                </label>
+                <input
+                  id="invoice-tax-amount"
+                  type="number"
+                  value={taxAmount}
+                  onChange={(e) => setTaxAmount(e.target.value)}
+                  min="0"
+                  step="0.01"
+                  className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                />
+              </div>
+            )}
             <div>
               <label htmlFor="invoice-payment-terms" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
                 Payment Terms
@@ -705,6 +730,7 @@ export function InvoiceDetailClient({
         lines={invoice.lines}
         currency={invoice.currency}
         editable={isDraft && isAdmin}
+        hasPerLineTax={invoice.hasPerLineTax}
         onAddLine={handleAddLine}
         onEditLine={handleEditLine}
         onDeleteLine={handleDeleteLine}
@@ -755,6 +781,31 @@ export function InvoiceDetailClient({
                 className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
               />
             </div>
+            {taxRates.length > 0 && (
+              <div>
+                <label className="mb-1 block text-sm text-slate-600 dark:text-slate-400">
+                  Tax Rate
+                </label>
+                <Select
+                  value={newLineTaxRateId}
+                  onValueChange={setNewLineTaxRateId}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select tax rate" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    {taxRates
+                      .filter((r) => r.active)
+                      .map((rate) => (
+                        <SelectItem key={rate.id} value={rate.id}>
+                          {rate.name} ({rate.rate}%)
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="flex items-end gap-2">
               <Button
                 variant="accent"
@@ -821,6 +872,31 @@ export function InvoiceDetailClient({
                 className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
               />
             </div>
+            {taxRates.length > 0 && (
+              <div>
+                <label className="mb-1 block text-sm text-slate-600 dark:text-slate-400">
+                  Tax Rate
+                </label>
+                <Select
+                  value={editLineTaxRateId}
+                  onValueChange={setEditLineTaxRateId}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select tax rate" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    {taxRates
+                      .filter((r) => r.active)
+                      .map((rate) => (
+                        <SelectItem key={rate.id} value={rate.id}>
+                          {rate.name} ({rate.rate}%)
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="flex items-end gap-2">
               <Button
                 variant="accent"
@@ -850,10 +926,38 @@ export function InvoiceDetailClient({
             <span>Subtotal</span>
             <span>{formatCurrency(invoice.subtotal, invoice.currency)}</span>
           </div>
-          <div className="flex justify-between text-sm text-slate-600 dark:text-slate-400">
-            <span>Tax</span>
-            <span>{formatCurrency(invoice.taxAmount, invoice.currency)}</span>
-          </div>
+
+          {/* Tax Breakdown (when hasPerLineTax) */}
+          {invoice.hasPerLineTax && invoice.taxBreakdown?.length > 0 ? (
+            invoice.taxBreakdown.map((entry, idx) => (
+              <div
+                key={idx}
+                className="flex justify-between text-sm text-slate-600 dark:text-slate-400"
+              >
+                <span>
+                  {entry.taxRateName} ({entry.taxRatePercent}%)
+                </span>
+                <span>
+                  {formatCurrency(entry.taxAmount, invoice.currency)}
+                </span>
+              </div>
+            ))
+          ) : (
+            <div className="flex justify-between text-sm text-slate-600 dark:text-slate-400">
+              <span>Tax</span>
+              <span>
+                {formatCurrency(invoice.taxAmount, invoice.currency)}
+              </span>
+            </div>
+          )}
+
+          {/* Tax-inclusive indicator */}
+          {invoice.taxInclusive && invoice.taxLabel && (
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Prices include {invoice.taxLabel}
+            </p>
+          )}
+
           <div className="flex justify-between border-t border-slate-200 pt-2 font-semibold text-slate-900 dark:border-slate-800 dark:text-slate-100">
             <span>Total</span>
             <span>{formatCurrency(invoice.total, invoice.currency)}</span>

@@ -80,6 +80,8 @@ export function EditTaxRateDialog({
         rate: rateNum,
         isDefault,
         isExempt,
+        active: taxRate.active,
+        sortOrder: taxRate.sortOrder,
       });
 
       if (result.success) {

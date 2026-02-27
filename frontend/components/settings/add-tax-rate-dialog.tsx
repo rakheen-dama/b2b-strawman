@@ -74,6 +74,7 @@ export function AddTaxRateDialog({ slug, children }: AddTaxRateDialogProps) {
         rate: rateNum,
         isDefault,
         isExempt,
+        sortOrder: 0,
       });
 
       if (result.success) {

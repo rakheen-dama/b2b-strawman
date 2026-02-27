@@ -184,7 +184,7 @@ public class ProjectService {
       project.setAppliedFieldGroups(appliedFieldGroups);
     }
 
-    project.update(name, description);
+    project.update(name, description, null, null);
     project = repository.save(project);
 
     // Build delta map -- only include changed fields

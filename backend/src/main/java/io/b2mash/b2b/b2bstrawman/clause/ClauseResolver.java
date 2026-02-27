@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.clause;
 
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.MissingRequiredClausesException;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.ClauseSelection;
 import java.util.Comparator;
 import java.util.List;
@@ -10,10 +11,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ProblemDetail;
 import org.springframework.stereotype.Component;
-import org.springframework.web.ErrorResponseException;
 
 /**
  * Resolves clause selections into full Clause entities for document generation. Handles three
@@ -70,7 +68,17 @@ public class ClauseResolver {
             .collect(Collectors.toMap(Clause::getId, Function.identity()));
 
     return associations.stream()
-        .map(tc -> clauseMap.get(tc.getClauseId()))
+        .map(
+            tc -> {
+              Clause clause = clauseMap.get(tc.getClauseId());
+              if (clause == null) {
+                log.warn(
+                    "Template {} references clause {} which no longer exists — skipping",
+                    templateId,
+                    tc.getClauseId());
+              }
+              return clause;
+            })
         .filter(c -> c != null)
         .toList();
   }
@@ -91,11 +99,7 @@ public class ClauseResolver {
         requiredClauseIds.stream().filter(id -> !selectedClauseIds.contains(id)).toList();
 
     if (!missingRequired.isEmpty()) {
-      var problem =
-          ProblemDetail.forStatusAndDetail(
-              HttpStatus.UNPROCESSABLE_ENTITY, "Required clause(s) missing: " + missingRequired);
-      problem.setTitle("Missing required clauses");
-      throw new ErrorResponseException(HttpStatus.UNPROCESSABLE_ENTITY, problem, null);
+      throw new MissingRequiredClausesException(missingRequired);
     }
 
     // Validate all clause IDs exist

@@ -161,9 +161,9 @@ public class DocumentTemplateController {
   // --- DTOs ---
 
   /** Clause selection from the client, specifying a clause ID and its desired sort order. */
-  public record ClauseSelection(UUID clauseId, int sortOrder) {}
+  public record ClauseSelection(@NotNull UUID clauseId, int sortOrder) {}
 
-  public record PreviewRequest(@NotNull UUID entityId, List<ClauseSelection> clauses) {}
+  public record PreviewRequest(@NotNull UUID entityId, @Valid List<ClauseSelection> clauses) {}
 
   // PreviewResponse lives in PdfRenderingService to keep the dependency direction correct.
 
@@ -171,7 +171,7 @@ public class DocumentTemplateController {
       @NotNull UUID entityId,
       boolean saveToDocuments,
       boolean acknowledgeWarnings,
-      List<ClauseSelection> clauses) {}
+      @Valid List<ClauseSelection> clauses) {}
 
   public record GenerateDocumentResponse(
       UUID id, String fileName, long fileSize, UUID documentId, Instant generatedAt) {}

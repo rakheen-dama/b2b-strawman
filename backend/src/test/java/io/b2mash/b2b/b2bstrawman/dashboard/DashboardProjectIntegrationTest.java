@@ -105,7 +105,7 @@ class DashboardProjectIntegrationTest {
               // Add member to this project
               projectMemberService.addMember(projectWithTasks, memberIdMember, memberIdOwner);
 
-              // Create tasks: 2 OPEN, 1 IN_PROGRESS, 1 IN_REVIEW, 1 DONE, 1 overdue
+              // Create tasks: 2 OPEN, 2 IN_PROGRESS, 1 DONE, 1 overdue
               taskService.createTask(
                   projectWithTasks,
                   "Open Task 1",
@@ -147,10 +147,10 @@ class DashboardProjectIntegrationTest {
                   memberIdOwner,
                   "owner");
 
-              var irTask =
+              var ipTask2 =
                   taskService.createTask(
                       projectWithTasks,
-                      "In Review Task",
+                      "In Progress Task 2",
                       null,
                       "MEDIUM",
                       "TASK",
@@ -158,11 +158,11 @@ class DashboardProjectIntegrationTest {
                       memberIdOwner,
                       "owner");
               taskService.updateTask(
-                  irTask.getId(),
-                  "In Review Task",
+                  ipTask2.getId(),
+                  "In Progress Task 2",
                   null,
                   "MEDIUM",
-                  "IN_REVIEW",
+                  "IN_PROGRESS",
                   "TASK",
                   null,
                   null,
@@ -364,8 +364,8 @@ class DashboardProjectIntegrationTest {
         .perform(get("/api/projects/{projectId}/task-summary", projectWithTasks).with(ownerJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.todo").value(3)) // 2 OPEN + 1 overdue (still OPEN)
-        .andExpect(jsonPath("$.inProgress").value(1))
-        .andExpect(jsonPath("$.inReview").value(1))
+        .andExpect(jsonPath("$.inProgress").value(2))
+        .andExpect(jsonPath("$.inReview").value(0))
         .andExpect(jsonPath("$.done").value(1))
         .andExpect(jsonPath("$.total").value(6));
   }

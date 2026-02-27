@@ -356,7 +356,7 @@ class TaskServiceAuditTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"title": "Keep Title", "priority": "CRITICAL", "status": "OPEN"}
+                    {"title": "Keep Title", "priority": "URGENT", "status": "OPEN"}
                     """))
         .andExpect(status().isOk());
 

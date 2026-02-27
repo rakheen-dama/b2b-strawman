@@ -23,7 +23,7 @@ Phase 28 adds a **document acceptance workflow** to the DocTeams platform. Firms
 | 194 | AcceptanceService Core Workflow + Email | Backend | 193 | L | 194A, 194B | **Done** (PRs #399, #400) |
 | 195 | Certificate Generation + Portal Read-Model Sync | Backend | 194 | M | 195A, 195B | **Done** (PRs #401, #402) |
 | 196 | Firm-Facing REST API + Audit + Notifications | Backend | 194, 195 | M | 196A, 196B | **Done** (PRs #403, #404) |
-| 197 | Portal Acceptance Controller + Expiry Processor | Backend | 194, 195 | M | 197A | |
+| 197 | Portal Acceptance Controller + Expiry Processor | Backend | 194, 195 | M | 197A | **Done** (PR #405) |
 | 198 | Frontend -- Send for Acceptance + Status Tracking | Frontend | 196 | M | 198A, 198B | |
 | 199 | Portal -- Acceptance Page + Pending List | Portal | 197 | M | 199A, 199B | |
 | 200 | Frontend -- OrgSettings Acceptance Config | Frontend | 196 | S | 200A | |
@@ -112,7 +112,7 @@ Phase 28 adds a **document acceptance workflow** to the DocTeams platform. Firms
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 3a (parallel) | 196 | 196A | `AcceptanceController` at `/api/acceptance-requests` (POST create, GET list by document/customer, GET detail, POST remind, POST revoke, GET certificate download) + response DTOs (`AcceptanceRequestResponse`, `CreateAcceptanceRequest`) + RBAC annotations + controller integration tests. ~4 new files. Backend only. | **Done** (PR #403) |
-| 3b (parallel) | 197 | 197A | `PortalAcceptanceController` at `/api/portal/acceptance/{token}` (GET page data, GET pdf stream, POST accept) + IP/UA extraction + token-based auth filter exemption + `@Scheduled` expiry processor in `AcceptanceService.processExpired()` + controller integration tests. ~2 new files, ~2 modified files. Backend only. | |
+| 3b (parallel) | 197 | 197A | `PortalAcceptanceController` at `/api/portal/acceptance/{token}` (GET page data, GET pdf stream, POST accept) + IP/UA extraction + token-based auth filter exemption + `@Scheduled` expiry processor in `AcceptanceService.processExpired()` + controller integration tests. ~2 new files, ~2 modified files. Backend only. | **Done** (PR #405) |
 
 ### Stage 4: Audit + Notifications
 

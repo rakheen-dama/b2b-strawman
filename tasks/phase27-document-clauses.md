@@ -86,7 +86,7 @@ Phase 27 adds a **clause library** to the DocTeams document generation system. C
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 2a (parallel) | 189 | 189A | `ClauseAssembler` utility (clause body concatenation + div wrapping) + extend `PdfRenderingService` (inject `clauses`/`clauseCount` into context, add `renderFragment()` public method for clause preview, template fallback for missing `${clauses}` placeholder) + extend `GeneratedDocument` entity with `clauseSnapshots` JSONB field + integration tests for assembly + rendering. ~2 new files, ~2 modified files. Backend only. | |
+| 2a (parallel) | 189 | 189A | `ClauseAssembler` utility (clause body concatenation + div wrapping) + extend `PdfRenderingService` (inject `clauses`/`clauseCount` into context, add `renderFragment()` public method for clause preview, template fallback for missing `${clauses}` placeholder) + extend `GeneratedDocument` entity with `clauseSnapshots` JSONB field + integration tests for assembly + rendering. ~2 new files, ~2 modified files. Backend only. | **Done** (PR #393) |
 | 2b (parallel) | 191 | 191B | `clause-form-dialog.tsx` (create/edit with title, category combobox, description, body textarea, preview button) + `clause-preview-panel.tsx` (rendered HTML display) + clone action + deactivate action + frontend tests for clause management. ~3 new files, ~1 modified file. Frontend only. | **Done** (PR #391) |
 
 ### Stage 3: Generation Extension + Pack Seeder (parallel tracks)
@@ -275,7 +275,7 @@ Stage 5: [192B]                                                     (after 189B 
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **189A** | 189.1--189.7 | `ClauseAssembler` utility (clause body concatenation with div wrapping) + extend `PdfRenderingService` (inject `clauses`/`clauseCount` into context, add public `renderFragment()` method, template fallback for missing `${clauses}`) + extend `GeneratedDocument` entity with `clauseSnapshots` JSONB field + unit tests for assembler + integration tests for rendering with clauses. ~2 new files, ~2 modified files. Backend only. | |
+| **189A** | 189.1--189.7 | `ClauseAssembler` utility (clause body concatenation with div wrapping) + extend `PdfRenderingService` (inject `clauses`/`clauseCount` into context, add public `renderFragment()` method, template fallback for missing `${clauses}`) + extend `GeneratedDocument` entity with `clauseSnapshots` JSONB field + unit tests for assembler + integration tests for rendering with clauses. ~2 new files, ~2 modified files. Backend only. | **Done** (PR #393) |
 | **189B** | 189.8--189.14 | Extend `GenerateDocumentRequest` and `PreviewRequest` with optional `clauses` field + clause resolution logic (fallback to template defaults, required clause validation 422) in `GeneratedDocumentService` + snapshot recording + `document.generated_with_clauses` audit event + backward compatibility tests + integration tests. ~0-1 new files, ~3 modified files. Backend only. | |
 
 ### Tasks

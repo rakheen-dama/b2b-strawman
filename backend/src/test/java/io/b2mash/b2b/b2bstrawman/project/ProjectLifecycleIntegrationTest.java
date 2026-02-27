@@ -254,6 +254,35 @@ class ProjectLifecycleIntegrationTest {
   }
 
   @Test
+  void shouldListProjectsWithStatusAll() throws Exception {
+    String activeProjectId = createProject("Active ALL Filter");
+    String archivedProjectId = createProject("Archived ALL Filter");
+    String completedProjectId = createProject("Completed ALL Filter");
+
+    mockMvc
+        .perform(patch("/api/projects/" + archivedProjectId + "/archive").with(ownerJwt()))
+        .andExpect(status().isOk());
+    mockMvc
+        .perform(patch("/api/projects/" + completedProjectId + "/complete").with(ownerJwt()))
+        .andExpect(status().isOk());
+
+    // status=ALL should return projects in all statuses
+    mockMvc
+        .perform(get("/api/projects").with(ownerJwt()).param("status", "ALL"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[?(@.id == '%s')]", activeProjectId).exists())
+        .andExpect(jsonPath("$[?(@.id == '%s')]", archivedProjectId).exists())
+        .andExpect(jsonPath("$[?(@.id == '%s')]", completedProjectId).exists());
+  }
+
+  @Test
+  void shouldRejectInvalidStatusParameter() throws Exception {
+    mockMvc
+        .perform(get("/api/projects").with(ownerJwt()).param("status", "BOGUS"))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
   void shouldRejectCreateTaskOnArchivedProject() throws Exception {
     String projectId = createProject("Archived No Task");
 

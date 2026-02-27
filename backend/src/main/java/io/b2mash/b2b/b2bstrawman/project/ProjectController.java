@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.project;
 
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
 import io.b2mash.b2b.b2bstrawman.member.Member;
@@ -339,7 +340,22 @@ public class ProjectController {
     if ("ALL".equalsIgnoreCase(status)) {
       return null; // null = no filter
     }
-    return Arrays.stream(status.split(",")).map(String::trim).map(ProjectStatus::valueOf).toList();
+    return Arrays.stream(status.split(","))
+        .map(String::trim)
+        .map(
+            s -> {
+              try {
+                return ProjectStatus.valueOf(s.toUpperCase());
+              } catch (IllegalArgumentException e) {
+                throw new InvalidStateException(
+                    "Invalid project status",
+                    "Invalid project status: '"
+                        + s
+                        + "'. Valid values: "
+                        + Arrays.toString(ProjectStatus.values()));
+              }
+            })
+        .toList();
   }
 
   public record CompleteProjectRequest(Boolean acknowledgeUnbilledTime) {}

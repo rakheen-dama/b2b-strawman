@@ -18,6 +18,8 @@ interface GenerateDocumentDropdownProps {
   entityId: string;
   entityType: TemplateEntityType;
   onDocumentSaved?: () => void;
+  customerId?: string;
+  isAdmin?: boolean;
 }
 
 export function GenerateDocumentDropdown({
@@ -25,6 +27,8 @@ export function GenerateDocumentDropdown({
   entityId,
   entityType,
   onDocumentSaved,
+  customerId,
+  isAdmin,
 }: GenerateDocumentDropdownProps) {
   const searchParams = useSearchParams();
   const [selectedTemplate, setSelectedTemplate] =
@@ -87,6 +91,8 @@ export function GenerateDocumentDropdown({
           open={dialogOpen}
           onOpenChange={setDialogOpen}
           onSaved={onDocumentSaved}
+          customerId={customerId}
+          isAdmin={isAdmin}
         />
       )}
     </>

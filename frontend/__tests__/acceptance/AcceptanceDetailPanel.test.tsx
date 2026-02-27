@@ -171,6 +171,37 @@ describe("AcceptanceDetailPanel", () => {
     dispatchSpy.mockRestore();
   });
 
+  it("hides Remind and Revoke buttons when isAdmin is false", () => {
+    render(
+      <AcceptanceDetailPanel request={makeRequest({ status: "SENT" })} />,
+    );
+
+    expect(
+      screen.queryByRole("button", { name: /Remind/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /Revoke/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("displays action error message when a server action fails", async () => {
+    mockRemindAcceptance.mockResolvedValue({
+      success: false,
+      error: "Rate limit exceeded",
+    });
+
+    const user = userEvent.setup();
+    render(
+      <AcceptanceDetailPanel request={makeRequest({ status: "SENT" })} isAdmin />,
+    );
+
+    await user.click(screen.getByRole("button", { name: /Remind/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Rate limit exceeded")).toBeInTheDocument();
+    });
+  });
+
   it("shows reminder history when reminders have been sent", () => {
     render(
       <AcceptanceDetailPanel

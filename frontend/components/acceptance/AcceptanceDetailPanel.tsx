@@ -8,10 +8,10 @@ import { AcceptanceStatusBadge } from "@/components/acceptance/AcceptanceStatusB
 import {
   remindAcceptance,
   revokeAcceptance,
+  downloadCertificate,
+  type AcceptanceRequestResponse,
 } from "@/lib/actions/acceptance-actions";
-import type { AcceptanceRequestResponse } from "@/lib/actions/acceptance-actions";
 import { formatDate } from "@/lib/format";
-import { downloadCertificate } from "@/lib/actions/acceptance-actions";
 
 // ---- Timeline Stage (adapted from DataRequestTimeline pattern) ----
 
@@ -102,54 +102,63 @@ export function AcceptanceDetailPanel({
   async function handleRemind() {
     setIsReminding(true);
     setActionError(null);
-    const result = await remindAcceptance(request.id);
-    if (result.success) {
-      window.dispatchEvent(new Event("acceptance-requests-refresh"));
-      onUpdated?.();
-    } else {
-      setActionError(result.error ?? "Failed to send reminder.");
+    try {
+      const result = await remindAcceptance(request.id);
+      if (result.success) {
+        window.dispatchEvent(new Event("acceptance-requests-refresh"));
+        onUpdated?.();
+      } else {
+        setActionError(result.error ?? "Failed to send reminder.");
+      }
+    } finally {
+      setIsReminding(false);
     }
-    setIsReminding(false);
   }
 
   async function handleRevoke() {
     setIsRevoking(true);
     setActionError(null);
-    const result = await revokeAcceptance(request.id);
-    if (result.success) {
-      window.dispatchEvent(new Event("acceptance-requests-refresh"));
-      onUpdated?.();
-    } else {
-      setActionError(result.error ?? "Failed to revoke request.");
+    try {
+      const result = await revokeAcceptance(request.id);
+      if (result.success) {
+        window.dispatchEvent(new Event("acceptance-requests-refresh"));
+        onUpdated?.();
+      } else {
+        setActionError(result.error ?? "Failed to revoke request.");
+      }
+    } finally {
+      setIsRevoking(false);
     }
-    setIsRevoking(false);
   }
 
   async function handleDownloadCertificate() {
     setIsDownloadingCert(true);
     setActionError(null);
-    const result = await downloadCertificate(request.id);
-    if (result.success && result.pdfBase64) {
-      const byteCharacters = atob(result.pdfBase64);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    try {
+      const result = await downloadCertificate(request.id);
+      if (result.success && result.pdfBase64) {
+        const byteCharacters = atob(result.pdfBase64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: "application/pdf" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download =
+          request.certificateFileName ?? `acceptance-certificate.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } else {
+        setActionError(result.error ?? "Failed to download certificate.");
       }
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: "application/pdf" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download =
-        request.certificateFileName ?? `acceptance-certificate.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } else {
-      setActionError(result.error ?? "Failed to download certificate.");
+    } finally {
+      setIsDownloadingCert(false);
     }
-    setIsDownloadingCert(false);
   }
 
   // Determine timeline stages

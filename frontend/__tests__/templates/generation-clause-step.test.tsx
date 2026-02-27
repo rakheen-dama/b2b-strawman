@@ -164,12 +164,12 @@ describe("GenerationClauseStep", () => {
 
     await user.click(screen.getByRole("button", { name: /Add Selected/i }));
 
-    // IP clause should now appear in the list
+    // After picker closes, the clause should be in the step list
     await waitFor(() => {
-      // After picker closes, the clause should be in the step list
-      const allText = screen.getAllByText("IP Assignment");
-      expect(allText.length).toBeGreaterThanOrEqual(1);
+      expect(screen.queryByText("Add Clauses")).not.toBeInTheDocument();
     });
+    expect(screen.getByText("IP Assignment")).toBeInTheDocument();
+    expect(screen.getByText("IP")).toBeInTheDocument();
   });
 
   it("next button passes selected clauses to parent", async () => {

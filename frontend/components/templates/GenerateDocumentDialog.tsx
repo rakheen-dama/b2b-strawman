@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { AlertTriangle, ArrowLeft, CheckCircle2, Download, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +15,7 @@ import {
   generateDocumentAction,
 } from "@/app/(app)/org/[slug]/settings/templates/actions";
 import { getTemplateClauses } from "@/lib/actions/template-clause-actions";
+import type { TemplateClauseDetail } from "@/lib/actions/template-clause-actions";
 import { GenerationClauseStep } from "@/components/templates/generation-clause-step";
 import type { SelectedClause } from "@/components/templates/generation-clause-step";
 import type { TemplateValidationResult } from "@/lib/types";
@@ -50,6 +51,7 @@ export function GenerateDocumentDialog({
 
   // Multi-step state
   const [hasClauses, setHasClauses] = useState<boolean | null>(null);
+  const [templateClauseList, setTemplateClauseList] = useState<TemplateClauseDetail[]>([]);
   const [isCheckingClauses, setIsCheckingClauses] = useState(false);
   const [step, setStep] = useState<DialogStep>("preview");
   const [selectedClauses, setSelectedClauses] = useState<SelectedClause[]>([]);
@@ -62,6 +64,7 @@ export function GenerateDocumentDialog({
       setSuccessMessage(null);
       setValidationResult(null);
       setHasClauses(null);
+      setTemplateClauseList([]);
       setStep("preview");
       setSelectedClauses([]);
       return;
@@ -73,6 +76,7 @@ export function GenerateDocumentDialog({
         const clauses = await getTemplateClauses(templateId);
         const hasAssociations = clauses.length > 0;
         setHasClauses(hasAssociations);
+        setTemplateClauseList(clauses);
         if (hasAssociations) {
           setStep("clauses");
         } else {
@@ -81,6 +85,7 @@ export function GenerateDocumentDialog({
       } catch {
         // If we can't check clauses, default to no-clause flow
         setHasClauses(false);
+        setTemplateClauseList([]);
         setStep("preview");
       } finally {
         setIsCheckingClauses(false);
@@ -90,16 +95,17 @@ export function GenerateDocumentDialog({
     checkClauses();
   }, [open, templateId]);
 
-  const clauseSelectionsForApi = useCallback(() => {
-    if (!hasClauses || selectedClauses.length === 0) return undefined;
-    return selectedClauses.map((c) => ({
+  function clauseSelectionsForApi(clauses?: SelectedClause[]) {
+    const list = clauses ?? selectedClauses;
+    if (!hasClauses || list.length === 0) return undefined;
+    return list.map((c) => ({
       clauseId: c.clauseId,
       sortOrder: c.sortOrder,
     }));
-  }, [hasClauses, selectedClauses]);
+  }
 
-  // Load preview when we're on the preview step
-  const loadPreview = useCallback(async () => {
+  // Load preview imperatively (called from handlers and effect)
+  async function loadPreview(clauseOverrides?: SelectedClause[]) {
     setIsLoadingPreview(true);
     setError(null);
     setHtml(null);
@@ -108,7 +114,7 @@ export function GenerateDocumentDialog({
       const result = await previewTemplateAction(
         templateId,
         entityId,
-        clauseSelectionsForApi(),
+        clauseSelectionsForApi(clauseOverrides),
       );
       if (result.success && result.html) {
         setHtml(result.html);
@@ -123,27 +129,14 @@ export function GenerateDocumentDialog({
     } finally {
       setIsLoadingPreview(false);
     }
-  }, [templateId, entityId, clauseSelectionsForApi]);
+  }
 
+  // Auto-load preview for no-clause flow only
   useEffect(() => {
-    if (!open || step !== "preview" || isCheckingClauses) return;
-    // Only load preview when on preview step and not still checking clauses
-    // For no-clause flow, load immediately. For clause flow, load after clause selection.
-    if (hasClauses === null) return;
-    if (hasClauses && selectedClauses.length === 0 && step === "preview") {
-      // No-clause flow OR initial load
-      // If hasClauses is true but selectedClauses is empty, we haven't gone through clause step yet
-      // This shouldn't happen because step would be "clauses" first
-      return;
-    }
+    if (!open || isCheckingClauses || hasClauses !== false || step !== "preview") return;
     loadPreview();
-  }, [open, step, isCheckingClauses, hasClauses, selectedClauses.length, loadPreview]);
-
-  // For no-clause flow, load preview when hasClauses is determined to be false
-  useEffect(() => {
-    if (!open || hasClauses !== false || step !== "preview") return;
-    loadPreview();
-  }, [open, hasClauses, step, loadPreview]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, isCheckingClauses, hasClauses, step]);
 
   const hasWarnings = Boolean(
     validationResult && !validationResult.allPresent,
@@ -152,6 +145,7 @@ export function GenerateDocumentDialog({
   function handleClauseNext(clauses: SelectedClause[]) {
     setSelectedClauses(clauses);
     setStep("preview");
+    loadPreview(clauses);
   }
 
   function handleBackToClauses() {
@@ -260,6 +254,7 @@ export function GenerateDocumentDialog({
         {!isCheckingClauses && step === "clauses" && (
           <GenerationClauseStep
             templateId={templateId}
+            preloadedClauses={templateClauseList}
             initialClauses={
               selectedClauses.length > 0 ? selectedClauses : undefined
             }

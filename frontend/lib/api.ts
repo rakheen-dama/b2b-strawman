@@ -392,7 +392,7 @@ export async function previewTemplate(
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ entityId, clauses: clauses ?? undefined }),
+    body: JSON.stringify({ entityId, ...(clauses?.length ? { clauses } : {}) }),
   });
 
   if (!response.ok) {
@@ -475,7 +475,7 @@ export async function generateDocument(
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ entityId, saveToDocuments, acknowledgeWarnings, clauses: clauses ?? undefined }),
+      body: JSON.stringify({ entityId, saveToDocuments, acknowledgeWarnings, ...(clauses?.length ? { clauses } : {}) }),
     },
   );
 

@@ -20,12 +20,14 @@ export interface SelectedClause {
 
 interface GenerationClauseStepProps {
   templateId: string;
+  preloadedClauses?: TemplateClauseDetail[];
   initialClauses?: SelectedClause[];
   onNext: (clauses: SelectedClause[]) => void;
 }
 
 export function GenerationClauseStep({
   templateId,
+  preloadedClauses,
   initialClauses,
   onNext,
 }: GenerationClauseStepProps) {
@@ -37,32 +39,35 @@ export function GenerationClauseStep({
   const [error, setError] = useState<string | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
 
+  const mapClauseData = useCallback((data: TemplateClauseDetail[]): SelectedClause[] => {
+    return [...data]
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map(
+        (tc, idx): SelectedClause => ({
+          clauseId: tc.clauseId,
+          title: tc.title,
+          category: tc.category,
+          description: tc.description,
+          required: tc.required,
+          sortOrder: idx,
+        }),
+      );
+  }, []);
+
   const loadClauses = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
       const data = await getTemplateClauses(templateId);
-      const mapped: SelectedClause[] = data
-        .sort((a: TemplateClauseDetail, b: TemplateClauseDetail) => a.sortOrder - b.sortOrder)
-        .map(
-          (tc: TemplateClauseDetail, idx: number): SelectedClause => ({
-            clauseId: tc.clauseId,
-            title: tc.title,
-            category: tc.category,
-            description: tc.description,
-            required: tc.required,
-            sortOrder: idx,
-          }),
-        );
+      const mapped = mapClauseData(data);
       setClauses(mapped);
-      // All clauses checked by default (required + optional)
       setCheckedIds(new Set(mapped.map((c) => c.clauseId)));
     } catch {
       setError("Failed to load template clauses.");
     } finally {
       setIsLoading(false);
     }
-  }, [templateId]);
+  }, [templateId, mapClauseData]);
 
   useEffect(() => {
     if (initialClauses) {
@@ -70,8 +75,16 @@ export function GenerationClauseStep({
       setCheckedIds(new Set(initialClauses.map((c) => c.clauseId)));
       return;
     }
+    // Use preloaded data from parent if available, otherwise fetch
+    if (preloadedClauses && preloadedClauses.length > 0) {
+      const mapped = mapClauseData(preloadedClauses);
+      setClauses(mapped);
+      setCheckedIds(new Set(mapped.map((c) => c.clauseId)));
+      setIsLoading(false);
+      return;
+    }
     loadClauses();
-  }, [loadClauses, initialClauses]);
+  }, [loadClauses, initialClauses, preloadedClauses, mapClauseData]);
 
   function toggleChecked(clauseId: string) {
     setCheckedIds((prev) => {

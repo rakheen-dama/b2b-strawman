@@ -226,7 +226,7 @@
 | 191 | Clause Library Frontend | Frontend | 187 | M | 191A, 191B | **Done** (PRs #390, #391) |
 | 192 | Template Clauses Tab + Generation Dialog Frontend | Frontend | 188, 189, 191 | L | 192A, 192B | **Done** (PRs #392, #396) |
 | **Phase 28 — Document Acceptance (Lightweight E-Signing)** | | | | | | See [tasks/phase28-document-acceptance.md](tasks/phase28-document-acceptance.md) |
-| 193 | AcceptanceRequest Entity Foundation + Migration | Backend | -- | M | 193A, 193B | |
+| 193 | AcceptanceRequest Entity Foundation + Migration | Backend | -- | M | 193A, 193B | **Done** (PRs #397, #398) |
 | 194 | AcceptanceService Core Workflow + Email | Backend | 193 | L | 194A, 194B | |
 | 195 | Certificate Generation + Portal Read-Model Sync | Backend | 194 | M | 195A, 195B | |
 | 196 | Firm-Facing REST API + Audit + Notifications | Backend | 194, 195 | M | 196A, 196B | |

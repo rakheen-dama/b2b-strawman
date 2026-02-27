@@ -256,6 +256,52 @@ describe("ClauseFormDialog and Confirmations", () => {
     });
   });
 
+  it("submit_creates_clause_with_correct_payload", async () => {
+    const user = userEvent.setup();
+    render(
+      <ClausesContent
+        slug="acme"
+        clauses={[CUSTOM_CLAUSE]}
+        categories={ALL_CATEGORIES}
+        canManage={true}
+      />,
+    );
+
+    // Open the New Clause dialog
+    await user.click(screen.getByText("New Clause"));
+
+    await waitFor(() => {
+      expect(screen.getByText("New Clause", { selector: "[data-slot='dialog-title']" })).toBeInTheDocument();
+    });
+
+    // Fill in title
+    await user.type(screen.getByLabelText(/Title/), "Payment Terms");
+
+    // Select a category from the combobox
+    await user.click(screen.getByRole("combobox"));
+    await waitFor(() => {
+      expect(screen.getByRole("option", { name: /Confidentiality/ })).toBeInTheDocument();
+    });
+    await user.click(screen.getByRole("option", { name: /Legal/ }));
+
+    // Fill in body
+    await user.type(screen.getByLabelText(/Body/), "<p>Net 30 days</p>");
+
+    // Submit
+    const submitButton = screen.getByRole("button", { name: "Create Clause" });
+    expect(submitButton).not.toBeDisabled();
+    await user.click(submitButton);
+
+    await waitFor(() => {
+      expect(mockCreateClause).toHaveBeenCalledWith("acme", {
+        title: "Payment Terms",
+        description: undefined,
+        body: "<p>Net 30 days</p>",
+        category: "Legal",
+      });
+    });
+  });
+
   it("delete_409_shows_error", async () => {
     const user = userEvent.setup();
     mockDeleteClause.mockResolvedValue({

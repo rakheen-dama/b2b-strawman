@@ -147,6 +147,7 @@ export function ClauseFormDialog({
               placeholder="e.g. Standard NDA Clause"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              maxLength={200}
               required
             />
           </div>
@@ -176,6 +177,7 @@ export function ClauseFormDialog({
                     placeholder="Search or type new category..."
                     value={category}
                     onValueChange={setCategory}
+                    maxLength={100}
                   />
                   <CommandList>
                     <CommandEmpty>
@@ -194,8 +196,8 @@ export function ClauseFormDialog({
                         <CommandItem
                           key={cat}
                           value={cat}
-                          onSelect={(value) => {
-                            setCategory(value);
+                          onSelect={() => {
+                            setCategory(cat);
                             setCategoryOpen(false);
                           }}
                         >
@@ -223,6 +225,7 @@ export function ClauseFormDialog({
               placeholder="Optional description of this clause"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              maxLength={500}
               className="min-h-16"
             />
           </div>

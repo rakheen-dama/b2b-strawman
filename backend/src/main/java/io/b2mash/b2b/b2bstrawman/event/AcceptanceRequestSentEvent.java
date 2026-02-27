@@ -23,9 +23,7 @@ public record AcceptanceRequestSentEvent(
     UUID generatedDocumentId,
     UUID portalContactId,
     UUID customerId,
-    String documentTitle,
     String documentFileName,
-    String requestToken,
     Instant expiresAt,
     String contactName,
     String contactEmail)

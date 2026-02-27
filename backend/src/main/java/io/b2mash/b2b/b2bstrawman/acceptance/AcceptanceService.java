@@ -151,11 +151,29 @@ public class AcceptanceService {
             List.of(AcceptanceStatus.PENDING, AcceptanceStatus.SENT, AcceptanceStatus.VIEWED))
         .ifPresent(
             existing -> {
-              existing.markRevoked(RequestScopes.requireMemberId());
+              UUID revokedBy = RequestScopes.requireMemberId();
+              existing.markRevoked(revokedBy);
               acceptanceRequestRepository.save(existing);
               // Flush to ensure the revoked status is persisted before inserting the new request,
               // which is required by the partial unique index on active requests
               acceptanceRequestRepository.flush();
+
+              // Publish revoked event for the auto-revoked request
+              String revokerName = memberNameResolver.resolveName(revokedBy);
+              eventPublisher.publishEvent(
+                  new AcceptanceRequestRevokedEvent(
+                      "acceptance_request.revoked",
+                      "acceptance_request",
+                      existing.getId(),
+                      null,
+                      revokedBy,
+                      revokerName,
+                      RequestScopes.getTenantIdOrNull(),
+                      RequestScopes.getOrgIdOrNull(),
+                      Instant.now(),
+                      Map.of(),
+                      existing.getId()));
+
               log.info(
                   "Auto-revoked existing acceptance request {} for doc={} contact={}",
                   existing.getId(),
@@ -211,8 +229,6 @@ public class AcceptanceService {
             portalContactId,
             customerId,
             doc.getFileName(),
-            doc.getFileName(),
-            request.getRequestToken(),
             request.getExpiresAt(),
             contact.getDisplayName(),
             contact.getEmail()));

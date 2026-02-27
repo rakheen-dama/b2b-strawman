@@ -145,6 +145,7 @@ class AcceptanceServiceIntegrationTest {
           assertThat(event.portalContactId()).isEqualTo(fixture.contactId);
           assertThat(event.customerId()).isEqualTo(customerId);
           assertThat(event.documentFileName()).isEqualTo("test-document.pdf");
+          assertThat(event.expiresAt()).isAfter(Instant.now());
           assertThat(event.contactName()).startsWith("Contact ");
           assertThat(event.actorMemberId()).isEqualTo(memberId);
           assertThat(event.actorName()).isEqualTo("Test User");
@@ -174,6 +175,21 @@ class AcceptanceServiceIntegrationTest {
 
           // Second should be SENT
           assertThat(second.getStatus()).isEqualTo(AcceptanceStatus.SENT);
+
+          // Auto-revoke should publish a RevokedEvent
+          var revokedEvents = events.stream(AcceptanceRequestRevokedEvent.class).toList();
+          assertThat(revokedEvents).hasSize(1);
+          assertThat(revokedEvents.getFirst().requestId()).isEqualTo(firstId);
+
+          // Only one non-terminal request should exist for this doc-contact pair
+          var activeRequests =
+              acceptanceRequestRepository.findByGeneratedDocumentIdAndPortalContactIdAndStatusIn(
+                  fixture.docId,
+                  fixture.contactId,
+                  java.util.List.of(
+                      AcceptanceStatus.PENDING, AcceptanceStatus.SENT, AcceptanceStatus.VIEWED));
+          assertThat(activeRequests).isPresent();
+          assertThat(activeRequests.get().getId()).isEqualTo(second.getId());
         });
   }
 

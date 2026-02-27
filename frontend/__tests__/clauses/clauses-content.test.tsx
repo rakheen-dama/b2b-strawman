@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ClausesContent } from "@/components/clauses/clauses-content";
 import type { Clause } from "@/lib/actions/clause-actions";
@@ -68,6 +68,9 @@ const ALL_CATEGORIES = ["Confidentiality", "Legal"];
 describe("ClausesContent", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockCloneClause.mockResolvedValue({ success: true });
+    mockDeactivateClause.mockResolvedValue({ success: true });
+    mockDeleteClause.mockResolvedValue({ success: true });
   });
 
   afterEach(() => {
@@ -126,12 +129,19 @@ describe("ClausesContent", () => {
       />,
     );
 
-    const categorySelect = screen.getByLabelText("Filter by category");
-    await user.selectOptions(categorySelect, "Legal");
+    // Click the Shadcn Select trigger
+    const selectTrigger = screen.getByLabelText("Filter by category");
+    await user.click(selectTrigger);
 
-    expect(screen.getByText("Custom Liability")).toBeInTheDocument();
-    expect(screen.queryByText("Standard NDA")).not.toBeInTheDocument();
-    expect(screen.queryByText("Cloned NDA")).not.toBeInTheDocument();
+    // Click the "Legal" option in the dropdown
+    const legalOption = await screen.findByRole("option", { name: "Legal" });
+    await user.click(legalOption);
+
+    await waitFor(() => {
+      expect(screen.getByText("Custom Liability")).toBeInTheDocument();
+      expect(screen.queryByText("Standard NDA")).not.toBeInTheDocument();
+      expect(screen.queryByText("Cloned NDA")).not.toBeInTheDocument();
+    });
   });
 
   it("system clause shows clone only", () => {
@@ -150,7 +160,7 @@ describe("ClausesContent", () => {
     expect(screen.queryByTitle("Delete clause")).not.toBeInTheDocument();
   });
 
-  it("custom clause shows edit deactivate and delete", () => {
+  it("active custom clause shows edit deactivate and delete", () => {
     render(
       <ClausesContent
         slug="acme"
@@ -164,6 +174,21 @@ describe("ClausesContent", () => {
     expect(screen.getByTitle("Deactivate clause")).toBeInTheDocument();
     expect(screen.getByTitle("Delete clause")).toBeInTheDocument();
     expect(screen.queryByTitle("Clone clause")).not.toBeInTheDocument();
+  });
+
+  it("inactive clause shows edit and delete but no deactivate", () => {
+    render(
+      <ClausesContent
+        slug="acme"
+        clauses={[CLONED_CLAUSE]}
+        categories={ALL_CATEGORIES}
+        canManage={true}
+      />,
+    );
+
+    expect(screen.getByTitle("Edit clause")).toBeInTheDocument();
+    expect(screen.getByTitle("Delete clause")).toBeInTheDocument();
+    expect(screen.queryByTitle("Deactivate clause")).not.toBeInTheDocument();
   });
 
   it("hides action buttons when canManage is false", () => {
@@ -194,5 +219,52 @@ describe("ClausesContent", () => {
     expect(screen.getByText("System")).toBeInTheDocument();
     expect(screen.getByText("Custom")).toBeInTheDocument();
     expect(screen.getByText("Cloned")).toBeInTheDocument();
+  });
+
+  it("shows success message after clone", async () => {
+    const user = userEvent.setup();
+    mockCloneClause.mockResolvedValue({ success: true });
+
+    render(
+      <ClausesContent
+        slug="acme"
+        clauses={[SYSTEM_CLAUSE]}
+        categories={ALL_CATEGORIES}
+        canManage={true}
+      />,
+    );
+
+    await user.click(screen.getByTitle("Clone clause"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Clause cloned.")).toBeInTheDocument();
+    });
+  });
+
+  it("shows error message when delete fails", async () => {
+    const user = userEvent.setup();
+    mockDeleteClause.mockResolvedValue({
+      success: false,
+      error: "This clause is referenced by templates and cannot be deleted.",
+    });
+
+    render(
+      <ClausesContent
+        slug="acme"
+        clauses={[CUSTOM_CLAUSE]}
+        categories={ALL_CATEGORIES}
+        canManage={true}
+      />,
+    );
+
+    await user.click(screen.getByTitle("Delete clause"));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "This clause is referenced by templates and cannot be deleted.",
+        ),
+      ).toBeInTheDocument();
+    });
   });
 });

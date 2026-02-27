@@ -44,15 +44,25 @@ export async function getClauses(
   includeInactive?: boolean,
   category?: string,
 ): Promise<Clause[]> {
-  const params = new URLSearchParams();
-  if (includeInactive) params.set("includeInactive", "true");
-  if (category) params.set("category", category);
-  const query = params.toString();
-  return api.get<Clause[]>(`/api/clauses${query ? `?${query}` : ""}`);
+  try {
+    const params = new URLSearchParams();
+    if (includeInactive) params.set("includeInactive", "true");
+    if (category) params.set("category", category);
+    const query = params.toString();
+    return await api.get<Clause[]>(`/api/clauses${query ? `?${query}` : ""}`);
+  } catch (error) {
+    console.error("Failed to fetch clauses:", error);
+    return [];
+  }
 }
 
-export async function getClause(id: string): Promise<Clause> {
-  return api.get<Clause>(`/api/clauses/${id}`);
+export async function getClause(id: string): Promise<Clause | null> {
+  try {
+    return await api.get<Clause>(`/api/clauses/${id}`);
+  } catch (error) {
+    console.error("Failed to fetch clause:", error);
+    return null;
+  }
 }
 
 export async function createClause(

@@ -1,10 +1,26 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { ChevronDown, ChevronRight, Plus, Copy, Pencil, Trash2, Ban, CheckCircle2, Search } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  Plus,
+  Copy,
+  Pencil,
+  Trash2,
+  Ban,
+  Search,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   cloneClause,
   deactivateClause,
@@ -32,17 +48,19 @@ export function ClausesContent({
   canManage,
 }: ClausesContentProps) {
   const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     () => new Set(categories),
   );
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const filteredClauses = useMemo(() => {
     return clauses.filter((c) => {
       const matchesSearch =
         !search || c.title.toLowerCase().includes(search.toLowerCase());
       const matchesCategory =
-        !selectedCategory || c.category === selectedCategory;
+        selectedCategory === "all" || c.category === selectedCategory;
       return matchesSearch && matchesCategory;
     });
   }, [clauses, search, selectedCategory]);
@@ -52,6 +70,10 @@ export function ClausesContent({
     for (const clause of filteredClauses) {
       if (!groups[clause.category]) groups[clause.category] = [];
       groups[clause.category].push(clause);
+    }
+    // Sort clauses within each group
+    for (const key of Object.keys(groups)) {
+      groups[key] = [...groups[key]].sort((a, b) => a.sortOrder - b.sortOrder);
     }
     return groups;
   }, [filteredClauses]);
@@ -73,8 +95,25 @@ export function ClausesContent({
     });
   }
 
+  function clearMessages() {
+    setError(null);
+    setSuccess(null);
+  }
+
   return (
     <div className="space-y-6">
+      {/* Feedback messages */}
+      {error && (
+        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200">
+          {error}
+        </div>
+      )}
+      {success && (
+        <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200">
+          {success}
+        </div>
+      )}
+
       {/* Toolbar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 items-center gap-3">
@@ -87,19 +126,22 @@ export function ClausesContent({
               className="pl-9"
             />
           </div>
-          <select
+          <Select
             value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
-            aria-label="Filter by category"
+            onValueChange={setSelectedCategory}
           >
-            <option value="">All Categories</option>
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger aria-label="Filter by category">
+              <SelectValue placeholder="All Categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {categories.map((cat) => (
+                <SelectItem key={cat} value={cat}>
+                  {cat}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         {canManage && (
           <Button size="sm" disabled>
@@ -136,16 +178,22 @@ export function ClausesContent({
               </button>
               {isExpanded && (
                 <div className="ml-6 space-y-2">
-                  {grouped[category]
-                    .sort((a, b) => a.sortOrder - b.sortOrder)
-                    .map((clause) => (
-                      <ClauseRow
-                        key={clause.id}
-                        clause={clause}
-                        slug={slug}
-                        canManage={canManage}
-                      />
-                    ))}
+                  {grouped[category].map((clause) => (
+                    <ClauseRow
+                      key={clause.id}
+                      clause={clause}
+                      slug={slug}
+                      canManage={canManage}
+                      onError={(msg) => {
+                        clearMessages();
+                        setError(msg);
+                      }}
+                      onSuccess={(msg) => {
+                        clearMessages();
+                        setSuccess(msg);
+                      }}
+                    />
+                  ))}
                 </div>
               )}
             </div>
@@ -160,21 +208,38 @@ interface ClauseRowProps {
   clause: Clause;
   slug: string;
   canManage: boolean;
+  onError: (message: string) => void;
+  onSuccess: (message: string) => void;
 }
 
-function ClauseRow({ clause, slug, canManage }: ClauseRowProps) {
+function ClauseRow({ clause, slug, canManage, onError, onSuccess }: ClauseRowProps) {
   const sourceBadge = SOURCE_BADGE[clause.source];
 
   async function handleClone() {
-    await cloneClause(slug, clause.id);
+    const result = await cloneClause(slug, clause.id);
+    if (result.success) {
+      onSuccess("Clause cloned.");
+    } else {
+      onError(result.error ?? "Failed to clone clause.");
+    }
   }
 
   async function handleDeactivate() {
-    await deactivateClause(slug, clause.id);
+    const result = await deactivateClause(slug, clause.id);
+    if (result.success) {
+      onSuccess("Clause deactivated.");
+    } else {
+      onError(result.error ?? "Failed to deactivate clause.");
+    }
   }
 
   async function handleDelete() {
-    await deleteClause(slug, clause.id);
+    const result = await deleteClause(slug, clause.id);
+    if (result.success) {
+      onSuccess("Clause deleted.");
+    } else {
+      onError(result.error ?? "Failed to delete clause.");
+    }
   }
 
   return (
@@ -214,18 +279,16 @@ function ClauseRow({ clause, slug, canManage }: ClauseRowProps) {
               <Button size="sm" variant="ghost" title="Edit clause" disabled>
                 <Pencil className="size-4" />
               </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                title={clause.active ? "Deactivate clause" : "Activate clause"}
-                onClick={handleDeactivate}
-              >
-                {clause.active ? (
+              {clause.active && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  title="Deactivate clause"
+                  onClick={handleDeactivate}
+                >
                   <Ban className="size-4" />
-                ) : (
-                  <CheckCircle2 className="size-4" />
-                )}
-              </Button>
+                </Button>
+              )}
               <Button
                 size="sm"
                 variant="ghost"

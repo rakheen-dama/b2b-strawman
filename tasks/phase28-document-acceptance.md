@@ -19,7 +19,7 @@ Phase 28 adds a **document acceptance workflow** to the DocTeams platform. Firms
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 193 | AcceptanceRequest Entity Foundation + Migration | Backend | -- | M | 193A, 193B | |
+| 193 | AcceptanceRequest Entity Foundation + Migration | Backend | -- | M | 193A, 193B | 193A Done |
 | 194 | AcceptanceService Core Workflow + Email | Backend | 193 | L | 194A, 194B | |
 | 195 | Certificate Generation + Portal Read-Model Sync | Backend | 194 | M | 195A, 195B | |
 | 196 | Firm-Facing REST API + Audit + Notifications | Backend | 194, 195 | M | 196A, 196B | |
@@ -90,7 +90,7 @@ Phase 28 adds a **document acceptance workflow** to the DocTeams platform. Firms
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 0a | 193 | 193A | V45 tenant migration (`acceptance_requests` table, `org_settings.acceptance_expiry_days` column, all indexes + partial unique constraint) + V11 global migration (`portal_acceptance_requests` table + indexes) + `AcceptanceStatus` enum + `AcceptanceRequest` entity. ~6 new files. Backend only. | |
+| 0a | 193 | 193A | V45 tenant migration (`acceptance_requests` table, `org_settings.acceptance_expiry_days` column, all indexes + partial unique constraint) + V11 global migration (`portal_acceptance_requests` table + indexes) + `AcceptanceStatus` enum + `AcceptanceRequest` entity. ~6 new files. Backend only. | **Done** (PR #397) |
 | 0b | 193 | 193B | `AcceptanceRequestRepository` with custom finders + entity unit tests + repository integration tests. ~3 new files, ~0-1 modified. Backend only. | |
 
 ### Stage 1: Service Core + Email Templates

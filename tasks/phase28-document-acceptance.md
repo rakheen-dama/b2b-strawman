@@ -124,7 +124,7 @@ Phase 28 adds a **document acceptance workflow** to the DocTeams platform. Firms
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 5a (parallel) | 198 | 198A | `acceptance-actions.ts` server actions + `SendForAcceptanceDialog.tsx` (recipient picker, expiry override, send) + `AcceptanceStatusBadge.tsx` + integration into `GeneratedDocumentsList.tsx` (action menu item + status badge) + frontend tests. ~4 new files, ~1 modified file. Frontend only. | |
+| 5a (parallel) | 198 | 198A | `acceptance-actions.ts` server actions + `SendForAcceptanceDialog.tsx` (recipient picker, expiry override, send) + `AcceptanceStatusBadge.tsx` + integration into `GeneratedDocumentsList.tsx` (action menu item + status badge) + frontend tests. ~4 new files, ~1 modified file. Frontend only. | **Done** (PR #406) |
 | 5b (parallel) | 199 | 199A | Portal acceptance page at `portal/app/(public)/accept/[token]/page.tsx` (PDF viewer via iframe, acceptance form with typed name, post-acceptance confirmation, expired/revoked states) + portal acceptance API calls + portal frontend tests. ~3 new files. Portal only. | |
 | 5c (parallel) | 200 | 200A | Add "Document Acceptance" section to OrgSettings page (acceptance expiry days input: number field, min 1, max 365, default 30) + settings action update + frontend test. ~0-1 new files, ~2 modified files. Frontend only. | |
 
@@ -501,7 +501,7 @@ Stage 6: [198B] // [199B]                                           (parallel, a
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **198A** | 198.1--198.6 | `acceptance-actions.ts` server actions + `SendForAcceptanceDialog.tsx` (recipient picker from portal contacts, expiry override, send action) + `AcceptanceStatusBadge.tsx` (colored badge per status) + integration into `GeneratedDocumentsList.tsx` (action menu item + status badge per row) + frontend tests. ~4 new files, ~1 modified. Frontend only. | |
+| **198A** | 198.1--198.6 | `acceptance-actions.ts` server actions + `SendForAcceptanceDialog.tsx` (recipient picker from portal contacts, expiry override, send action) + `AcceptanceStatusBadge.tsx` (colored badge per status) + integration into `GeneratedDocumentsList.tsx` (action menu item + status badge per row) + frontend tests. ~4 new files, ~1 modified. Frontend only. | **Done** (PR #406) |
 | **198B** | 198.7--198.11 | `AcceptanceDetailPanel.tsx` (expandable panel: recipient info, status timeline with timestamps, remind/revoke action buttons, certificate download link) + integration into generated document detail views + `GenerateDocumentDialog.tsx` post-generation "Send for Acceptance" button + frontend tests. ~2 new files, ~2 modified. Frontend only. | |
 
 ### Tasks

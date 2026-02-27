@@ -10,6 +10,7 @@ import {
   ListChecks,
   Tag,
   FileText,
+  ScrollText,
   ClipboardCheck,
   ShieldAlert,
   LayoutTemplate,
@@ -77,6 +78,13 @@ const settingsCards: SettingsCard[] = [
     title: "Templates",
     description: "Manage document templates and branding",
     href: "templates",
+    comingSoon: false,
+  },
+  {
+    icon: ScrollText,
+    title: "Clauses",
+    description: "Manage reusable clause library for document generation",
+    href: "clauses",
     comingSoon: false,
   },
   {

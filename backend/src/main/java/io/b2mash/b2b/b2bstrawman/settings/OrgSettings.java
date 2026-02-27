@@ -67,6 +67,9 @@ public class OrgSettings {
   @Column(name = "clause_pack_status", columnDefinition = "jsonb")
   private List<Map<String, Object>> clausePackStatus;
 
+  @Column(name = "acceptance_expiry_days")
+  private Integer acceptanceExpiryDays;
+
   @Column(name = "accounting_enabled", nullable = false)
   private boolean accountingEnabled;
 
@@ -265,6 +268,20 @@ public class OrgSettings {
     entry.put("appliedAt", Instant.now().toString());
     this.clausePackStatus.add(entry);
     this.updatedAt = Instant.now();
+  }
+
+  public Integer getAcceptanceExpiryDays() {
+    return acceptanceExpiryDays;
+  }
+
+  public void setAcceptanceExpiryDays(Integer acceptanceExpiryDays) {
+    this.acceptanceExpiryDays = acceptanceExpiryDays;
+    this.updatedAt = Instant.now();
+  }
+
+  /** Returns the configured acceptance expiry days, defaulting to 30 if not set. */
+  public int getEffectiveAcceptanceExpiryDays() {
+    return acceptanceExpiryDays != null ? acceptanceExpiryDays : 30;
   }
 
   public boolean isAccountingEnabled() {

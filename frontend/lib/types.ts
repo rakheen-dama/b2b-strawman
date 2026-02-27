@@ -857,7 +857,7 @@ export interface AddLineItemRequest {
   quantity: number;
   unitPrice: number;
   sortOrder?: number;
-  taxRateId?: string;
+  taxRateId?: string | null;
 }
 
 export interface UpdateLineItemRequest {
@@ -865,7 +865,7 @@ export interface UpdateLineItemRequest {
   quantity: number;
   unitPrice: number;
   sortOrder?: number;
-  taxRateId?: string;
+  taxRateId?: string | null;
 }
 
 export interface RecordPaymentRequest {

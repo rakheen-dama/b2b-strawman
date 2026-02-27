@@ -141,7 +141,7 @@ export function InvoiceDetailClient({
         dueDate: dueDate || undefined,
         notes: notes || undefined,
         paymentTerms: paymentTerms || undefined,
-        taxAmount: parseFloat(taxAmount) || 0,
+        taxAmount: invoice.hasPerLineTax ? undefined : (parseFloat(taxAmount) || 0),
       });
       if (result.success && result.invoice) {
         setInvoice(result.invoice);
@@ -268,7 +268,7 @@ export function InvoiceDetailClient({
         quantity: parseFloat(newLineQty) || 1,
         unitPrice: parseFloat(newLineRate) || 0,
         taxRateId:
-          newLineTaxRateId !== "none" ? newLineTaxRateId : undefined,
+          newLineTaxRateId !== "none" ? newLineTaxRateId : null,
       };
       const result = await addLineItem(
         slug,
@@ -302,7 +302,7 @@ export function InvoiceDetailClient({
         quantity: parseFloat(editLineQty) || 1,
         unitPrice: parseFloat(editLineRate) || 0,
         taxRateId:
-          editLineTaxRateId !== "none" ? editLineTaxRateId : undefined,
+          editLineTaxRateId !== "none" ? editLineTaxRateId : null,
       };
       const result = await updateLineItem(
         slug,

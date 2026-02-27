@@ -70,7 +70,8 @@ public class OrgSettingsService {
                 null,
                 null,
                 null,
-                false));
+                false,
+                null));
   }
 
   /** Updates settings including branding fields. */
@@ -230,7 +231,8 @@ public class OrgSettingsService {
         settings.getTaxRegistrationNumber(),
         settings.getTaxRegistrationLabel(),
         settings.getTaxLabel(),
-        settings.isTaxInclusive());
+        settings.isTaxInclusive(),
+        settings.getAcceptanceExpiryDays());
   }
 
   /**
@@ -336,6 +338,41 @@ public class OrgSettingsService {
                     taxLabel != null ? taxLabel : "",
                     "tax_inclusive",
                     taxInclusive))
+            .build());
+
+    return toSettingsResponse(settings);
+  }
+
+  /** Updates acceptance-related settings (expiry days). */
+  @Transactional
+  public SettingsResponse updateAcceptanceSettings(
+      Integer acceptanceExpiryDays, UUID memberId, String orgRole) {
+    requireAdminOrOwner(orgRole);
+
+    if (acceptanceExpiryDays == null) {
+      return getSettingsWithBranding();
+    }
+
+    var settings =
+        orgSettingsRepository
+            .findForCurrentTenant()
+            .orElseGet(
+                () -> {
+                  var newSettings = new OrgSettings(DEFAULT_CURRENCY);
+                  return orgSettingsRepository.save(newSettings);
+                });
+
+    settings.setAcceptanceExpiryDays(acceptanceExpiryDays);
+    settings = orgSettingsRepository.save(settings);
+
+    log.info("Updated acceptance settings: acceptanceExpiryDays={}", acceptanceExpiryDays);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("org_settings.acceptance_updated")
+            .entityType("org_settings")
+            .entityId(settings.getId())
+            .details(Map.of("acceptance_expiry_days", acceptanceExpiryDays))
             .build());
 
     return toSettingsResponse(settings);

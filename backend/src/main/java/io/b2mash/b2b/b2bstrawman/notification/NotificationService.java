@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.notification;
 
 import io.b2mash.b2b.b2bstrawman.comment.CommentRepository;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
+import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestAcceptedEvent;
 import io.b2mash.b2b.b2bstrawman.event.BudgetThresholdEvent;
 import io.b2mash.b2b.b2bstrawman.event.CommentCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.event.DocumentGeneratedEvent;
@@ -146,7 +147,8 @@ public class NotificationService {
           "RETAINER_FULLY_CONSUMED",
           "RETAINER_TERMINATED",
           "PAYMENT_FAILED",
-          "PAYMENT_LINK_EXPIRED");
+          "PAYMENT_LINK_EXPIRED",
+          "ACCEPTANCE_COMPLETED");
 
   // --- Preference methods ---
 
@@ -634,6 +636,27 @@ public class NotificationService {
       }
     }
     return created;
+  }
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public List<Notification> handleAcceptanceRequestAccepted(AcceptanceRequestAcceptedEvent event) {
+    if (event.sentByMemberId() == null) {
+      log.warn("No sentByMemberId for acceptance notification, requestId={}", event.requestId());
+      return List.of();
+    }
+
+    var title = "%s has accepted %s".formatted(event.contactName(), event.documentFileName());
+
+    var notification =
+        createIfEnabled(
+            event.sentByMemberId(),
+            "ACCEPTANCE_COMPLETED",
+            title,
+            null,
+            "ACCEPTANCE_REQUEST",
+            event.requestId(),
+            null);
+    return notification != null ? List.of(notification) : List.of();
   }
 
   // --- Admin/owner fan-out helper (used by retainer services) ---

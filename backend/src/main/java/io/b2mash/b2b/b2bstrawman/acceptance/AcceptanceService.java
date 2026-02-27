@@ -1,6 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.acceptance;
 
 import io.b2mash.b2b.b2bstrawman.acceptance.dto.AcceptanceRequestResponse;
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
+import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestAcceptedEvent;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestExpiredEvent;
@@ -71,6 +73,7 @@ public class AcceptanceService {
   private final ApplicationEventPublisher eventPublisher;
   private final MemberNameResolver memberNameResolver;
   private final AcceptanceCertificateService certificateService;
+  private final AuditService auditService;
 
   private final StorageService storageService;
 
@@ -92,6 +95,7 @@ public class AcceptanceService {
       ApplicationEventPublisher eventPublisher,
       MemberNameResolver memberNameResolver,
       AcceptanceCertificateService certificateService,
+      AuditService auditService,
       StorageService storageService,
       @Value("${docteams.portal.base-url:http://localhost:3001}") String portalBaseUrl) {
     this.acceptanceRequestRepository = acceptanceRequestRepository;
@@ -108,6 +112,7 @@ public class AcceptanceService {
     this.eventPublisher = eventPublisher;
     this.memberNameResolver = memberNameResolver;
     this.certificateService = certificateService;
+    this.auditService = auditService;
     this.storageService = storageService;
     this.portalBaseUrl = portalBaseUrl;
     this.secureRandom = new SecureRandom();
@@ -182,6 +187,15 @@ public class AcceptanceService {
                   existing.getId(),
                   generatedDocumentId,
                   portalContactId);
+
+              // Audit: acceptance.revoked (auto-revoke)
+              auditService.log(
+                  AuditEventBuilder.builder()
+                      .eventType("acceptance.revoked")
+                      .entityType("acceptance_request")
+                      .entityId(existing.getId())
+                      .details(Map.of("revoked_by", revokedBy.toString(), "reason", "auto_revoked"))
+                      .build());
             });
 
     // 5. Generate token
@@ -202,12 +216,41 @@ public class AcceptanceService {
             RequestScopes.requireMemberId());
     request = acceptanceRequestRepository.save(request);
 
+    // Audit: acceptance.created
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("acceptance.created")
+            .entityType("acceptance_request")
+            .entityId(request.getId())
+            .details(
+                Map.of(
+                    "generated_document_id", generatedDocumentId.toString(),
+                    "portal_contact_id", portalContactId.toString(),
+                    "customer_id", customerId.toString(),
+                    "document_file_name", doc.getFileName(),
+                    "contact_name", contact.getDisplayName()))
+            .build());
+
     // 9. Send email
     sendAcceptanceEmail(request, contact, doc, TEMPLATE_REQUEST);
 
     // 10-11. Transition to SENT and save
     request.markSent();
     request = acceptanceRequestRepository.save(request);
+
+    // Audit: acceptance.sent
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("acceptance.sent")
+            .entityType("acceptance_request")
+            .entityId(request.getId())
+            .details(
+                Map.of(
+                    "generated_document_id", generatedDocumentId.toString(),
+                    "contact_name", contact.getDisplayName(),
+                    "contact_email", contact.getEmail() != null ? contact.getEmail() : "",
+                    "document_file_name", doc.getFileName()))
+            .build());
 
     // Publish domain event
     UUID memberId = RequestScopes.requireMemberId();
@@ -269,6 +312,18 @@ public class AcceptanceService {
       case SENT -> {
         request.markViewed(Instant.now());
         request = acceptanceRequestRepository.save(request);
+
+        // Audit: acceptance.viewed
+        auditService.log(
+            AuditEventBuilder.builder()
+                .eventType("acceptance.viewed")
+                .entityType("acceptance_request")
+                .entityId(request.getId())
+                .actorType("PORTAL_CONTACT")
+                .source("PORTAL")
+                .details(Map.of("ip_address", ipAddress != null ? ipAddress : ""))
+                .build());
+
         eventPublisher.publishEvent(
             new AcceptanceRequestViewedEvent(
                 "acceptance_request.viewed",
@@ -325,12 +380,48 @@ public class AcceptanceService {
     request.markAccepted(submission.name(), ipAddress, userAgent);
     request = acceptanceRequestRepository.save(request);
 
+    // Audit: acceptance.accepted
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("acceptance.accepted")
+            .entityType("acceptance_request")
+            .entityId(request.getId())
+            .actorType("PORTAL_CONTACT")
+            .source("PORTAL")
+            .details(
+                Map.of(
+                    "acceptor_name",
+                    submission.name(),
+                    "ip_address",
+                    ipAddress != null ? ipAddress : ""))
+            .build());
+
     // Generate Certificate of Acceptance (synchronous, non-fatal on failure)
     String tenantSchema = RequestScopes.getTenantIdOrNull();
     if (tenantSchema != null) {
       try {
         certificateService.generateCertificate(request, tenantSchema);
         request = acceptanceRequestRepository.save(request);
+
+        // Audit: acceptance.certificate_generated
+        auditService.log(
+            AuditEventBuilder.builder()
+                .eventType("acceptance.certificate_generated")
+                .entityType("acceptance_request")
+                .entityId(request.getId())
+                .actorType("SYSTEM")
+                .source("INTERNAL")
+                .details(
+                    Map.of(
+                        "certificate_s3_key",
+                            request.getCertificateS3Key() != null
+                                ? request.getCertificateS3Key()
+                                : "",
+                        "certificate_file_name",
+                            request.getCertificateFileName() != null
+                                ? request.getCertificateFileName()
+                                : ""))
+                .build());
       } catch (Exception e) {
         log.warn(
             "Certificate generation failed for acceptance request {} (document {}), continuing without certificate",
@@ -397,6 +488,15 @@ public class AcceptanceService {
     UUID memberId = RequestScopes.requireMemberId();
     request.markRevoked(memberId);
     request = acceptanceRequestRepository.save(request);
+
+    // Audit: acceptance.revoked
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("acceptance.revoked")
+            .entityType("acceptance_request")
+            .entityId(request.getId())
+            .details(Map.of("revoked_by", memberId.toString()))
+            .build());
 
     // Publish domain event
     String actorName = memberNameResolver.resolveName(memberId);
@@ -465,6 +565,15 @@ public class AcceptanceService {
 
     request.recordReminder();
     request = acceptanceRequestRepository.save(request);
+
+    // Audit: acceptance.reminded
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("acceptance.reminded")
+            .entityType("acceptance_request")
+            .entityId(request.getId())
+            .details(Map.of("reminder_count", request.getReminderCount()))
+            .build());
 
     log.info(
         "Reminder sent for acceptance request {} (count={})",
@@ -609,6 +718,17 @@ public class AcceptanceService {
   // --- Private helpers ---
 
   private void publishExpiredEvent(AcceptanceRequest request) {
+    // Audit: acceptance.expired
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("acceptance.expired")
+            .entityType("acceptance_request")
+            .entityId(request.getId())
+            .actorType("SYSTEM")
+            .source("INTERNAL")
+            .details(Map.of("expired_at", request.getExpiresAt().toString()))
+            .build());
+
     eventPublisher.publishEvent(
         new AcceptanceRequestExpiredEvent(
             "acceptance_request.expired",

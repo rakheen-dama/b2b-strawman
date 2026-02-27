@@ -424,6 +424,73 @@ class OrgSettingsIntegrationTest {
         .andExpect(status().isBadRequest());
   }
 
+  @Test
+  @Order(13)
+  void patchAcceptanceSettings_updatesExpiryDays() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/acceptance")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"acceptanceExpiryDays": 60}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.acceptanceExpiryDays").value(60));
+  }
+
+  @Test
+  @Order(14)
+  void getSettings_returnsAcceptanceExpiryDays() throws Exception {
+    mockMvc
+        .perform(get("/api/settings").with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.acceptanceExpiryDays").value(60));
+  }
+
+  @Test
+  void patchAcceptanceSettings_rejectsZeroValue() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/acceptance")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"acceptanceExpiryDays": 0}
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void patchAcceptanceSettings_rejectsValueOver365() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/acceptance")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"acceptanceExpiryDays": 366}
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void patchAcceptanceSettings_memberGetsForbidden() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/acceptance")
+                .with(memberJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"acceptanceExpiryDays": 30}
+                    """))
+        .andExpect(status().isForbidden());
+  }
+
   // --- Helpers ---
 
   private String syncMember(

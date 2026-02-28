@@ -122,7 +122,7 @@ Phase 31 replaces the Thymeleaf-based document authoring system with a Tiptap/Pr
 |-------|------|-------|-----------|
 | 5a | Epic 214 | 214A | Template editor page rewrite (/settings/templates/[id]/edit). Unified layout with DocumentEditor (no tabs). Settings panel. actions.ts updates for JSON content. | **Done** (PR #439) |
 | 5b | Epic 214 | 214B | Template save with TemplateClause sync (frontend sends JSON, backend syncs). Variable picker integration (fetch from /api/templates/variables). New template page update. | **Done** (PR #440) |
-| 5a' | Epic 215 | 215A | Clause library page rewrite (/settings/clauses). Content expand/collapse for every clause. "Used in" indicator. Inline Tiptap JSON rendering. **Can parallel with 214.** |
+| 5a' | Epic 215 | 215A | Clause library page rewrite (/settings/clauses). Content expand/collapse for every clause. "Used in" indicator. Inline Tiptap JSON rendering. **Can parallel with 214.** | **Done** (PR #441) |
 | 5b' | Epic 215 | 215B | Clause editor sheet with DocumentEditor (clause scope). Create + edit flows. System clause read-only + "Clone to customize". |
 
 ### Stage 6: Generation & Preview (After Stage 5)
@@ -593,7 +593,7 @@ Stage 7:  [217A] ──► [217B]                                      ← clean
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **215A** | 215.1-215.6 | Clause library page rewrite: content expand/collapse for every clause (rendered Tiptap JSON), "Used in N templates" indicator, system clause visibility. Component tests (~4 tests). | |
+| **215A** | 215.1-215.6 | Clause library page rewrite: content expand/collapse for every clause (rendered Tiptap JSON), "Used in N templates" indicator, system clause visibility. Component tests (~4 tests). | **Done** (PR #441) |
 | **215B** | 215.7-215.11 | Clause editor sheet with DocumentEditor (clause scope). Create + edit flows. System clause read-only mode with "Clone to customize" action. Component tests (~4 tests). | |
 
 ### Tasks

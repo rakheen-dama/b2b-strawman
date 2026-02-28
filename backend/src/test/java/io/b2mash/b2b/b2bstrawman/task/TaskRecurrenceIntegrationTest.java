@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.task;
 
 import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -356,7 +357,31 @@ class TaskRecurrenceIntegrationTest {
                 .with(ownerJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
+        .andExpect(jsonPath("$.length()").value(greaterThan(0)))
         .andExpect(jsonPath("$[*].isRecurring", everyItem(is(true))));
+  }
+
+  @Test
+  void shouldFilterUnassignedRecurringTasks() throws Exception {
+    // Create a recurring task WITHOUT assignee (unassigned)
+    createRecurringTask("Unassigned recurring", "FREQ=WEEKLY;INTERVAL=1", "2026-07-15", null);
+
+    // Create a non-recurring task WITHOUT assignee
+    createTask("Unassigned non-recurring");
+
+    // Filter with recurring=true AND assigneeFilter=unassigned
+    mockMvc
+        .perform(
+            get("/api/projects/" + projectId + "/tasks")
+                .param("recurring", "true")
+                .param("assigneeFilter", "unassigned")
+                .param("status", "OPEN")
+                .with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray())
+        .andExpect(jsonPath("$.length()").value(greaterThan(0)))
+        .andExpect(jsonPath("$[*].isRecurring", everyItem(is(true))))
+        .andExpect(jsonPath("$[*].assigneeId", everyItem(is(org.hamcrest.Matchers.nullValue()))));
   }
 
   @Test

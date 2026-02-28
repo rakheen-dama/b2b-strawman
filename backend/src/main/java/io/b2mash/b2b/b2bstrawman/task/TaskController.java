@@ -103,6 +103,10 @@ public class TaskController {
           viewFilterHelper.applyViewFilterForProject(view, "TASK", "tasks", Task.class, projectId);
 
       if (filtered != null) {
+        // Post-filter for recurring tasks when view-based path is used
+        if (Boolean.TRUE.equals(recurring)) {
+          filtered = filtered.stream().filter(Task::isRecurring).toList();
+        }
         var names = resolveNames(filtered);
         var taskIds = filtered.stream().map(Task::getId).toList();
         var tagsByEntityId = entityTagService.getEntityTagsBatch("TASK", taskIds);

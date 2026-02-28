@@ -428,6 +428,95 @@ class TiptapRendererTest {
     assertThat(html).doesNotContain("<script>");
   }
 
+  @Test
+  void legacyHtml_strips_script_tags() {
+    var legacyNode = new HashMap<String, Object>();
+    legacyNode.put("type", "legacyHtml");
+    legacyNode.put(
+        "attrs",
+        Map.<String, Object>of("html", "<p>Safe</p><script>alert(1)</script><p>Also safe</p>"));
+
+    var doc = doc(legacyNode);
+
+    String html = render(doc);
+
+    assertThat(html).contains("<p>Safe</p>");
+    assertThat(html).contains("<p>Also safe</p>");
+    assertThat(html).doesNotContain("<script>");
+    assertThat(html).doesNotContain("alert(1)");
+  }
+
+  @Test
+  void heading_with_invalid_level_defaults_to_h1() {
+    var doc =
+        doc(
+            Map.<String, Object>of(
+                "type", "heading",
+                "attrs", Map.<String, Object>of("level", "not-a-number"),
+                "content", List.of(Map.<String, Object>of("type", "text", "text", "Title"))));
+
+    String html = render(doc);
+
+    assertThat(html).contains("<h1>Title</h1>");
+  }
+
+  @Test
+  void link_with_javascript_href_renders_empty_href() {
+    var markAttrs = new HashMap<String, Object>();
+    markAttrs.put("href", "javascript:alert(1)");
+    var mark = new HashMap<String, Object>();
+    mark.put("type", "link");
+    mark.put("attrs", markAttrs);
+
+    var textNode = new HashMap<String, Object>();
+    textNode.put("type", "text");
+    textNode.put("text", "Click here");
+    textNode.put("marks", List.of(mark));
+
+    var doc = doc(Map.<String, Object>of("type", "paragraph", "content", List.of(textNode)));
+
+    String html = render(doc);
+
+    assertThat(html).contains("<a href=\"\">Click here</a>");
+    assertThat(html).doesNotContain("javascript:");
+  }
+
+  @Test
+  void templateCss_injection_stripped() {
+    var doc =
+        Map.<String, Object>of(
+            "type",
+            "doc",
+            "content",
+            List.of(
+                Map.<String, Object>of(
+                    "type",
+                    "paragraph",
+                    "content",
+                    List.of(Map.<String, Object>of("type", "text", "text", "Hello")))));
+
+    String html =
+        renderer.render(
+            doc, Map.of(), Map.of(), "body{color:red}</style><script>alert(1)</script>");
+
+    assertThat(html).doesNotContain("</style><script>");
+    assertThat(html).contains("body{color:red}");
+  }
+
+  @Test
+  void clause_block_with_malformed_uuid_renders_comment() {
+    var clauseNode = new HashMap<String, Object>();
+    clauseNode.put("type", "clauseBlock");
+    clauseNode.put(
+        "attrs", Map.<String, Object>of("clauseId", "not-a-uuid", "slug", "some-clause"));
+
+    var doc = doc(clauseNode);
+
+    String html = renderer.render(doc, Map.of(), Map.of(), null);
+
+    assertThat(html).contains("<!-- invalid clauseId -->");
+  }
+
   // --- Test helpers ---
 
   private Map<String, Object> doc(Map<String, Object> childNode) {

@@ -6,6 +6,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Safelist;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,14 @@ import org.springframework.web.util.HtmlUtils;
 public class TiptapRenderer {
 
   private static final int MAX_CLAUSE_DEPTH = 10;
+
+  private static final Safelist LEGACY_HTML_SAFELIST =
+      new Safelist()
+          .addTags(
+              "p", "h1", "h2", "h3", "strong", "em", "u", "a", "ul", "ol", "li", "table", "thead",
+              "tbody", "tr", "td", "th", "hr", "br", "span", "div")
+          .addAttributes("a", "href")
+          .addProtocols("a", "href", "https", "http", "mailto");
 
   private final String defaultCss;
 
@@ -54,10 +64,12 @@ public class TiptapRenderer {
     var body = new StringBuilder();
     renderNode(document, context, clauses, body, 0);
 
+    String safeCss = templateCss != null ? templateCss.replaceAll("(?i)</style>", "") : "";
+
     return "<!DOCTYPE html>\n<html><head>\n<meta charset=\"UTF-8\">\n<style>"
         + defaultCss
         + "\n"
-        + (templateCss != null ? templateCss : "")
+        + safeCss
         + "</style>\n</head><body>\n"
         + body
         + "\n</body></html>";
@@ -77,7 +89,8 @@ public class TiptapRenderer {
     switch (type) {
       case "doc" -> renderChildren(node, context, clauses, sb, depth);
       case "heading" -> {
-        int level = ((Number) attrs.getOrDefault("level", 1)).intValue();
+        Object rawLevel = attrs.getOrDefault("level", 1);
+        int level = rawLevel instanceof Number n ? n.intValue() : 1;
         sb.append("<h").append(level).append(">");
         renderChildren(node, context, clauses, sb, depth);
         sb.append("</h").append(level).append(">");
@@ -95,16 +108,24 @@ public class TiptapRenderer {
       case "clauseBlock" -> {
         if (depth >= MAX_CLAUSE_DEPTH) {
           String slug = (String) attrs.getOrDefault("slug", "unknown");
-          sb.append("<!-- max clause depth reached: ").append(slug).append(" -->");
+          sb.append("<!-- max clause depth reached: ")
+              .append(HtmlUtils.htmlEscape(slug))
+              .append(" -->");
           return;
         }
         String clauseIdStr = (String) attrs.get("clauseId");
         String slug = (String) attrs.getOrDefault("slug", "unknown");
         if (clauseIdStr == null) {
-          sb.append("<!-- clause not found: ").append(slug).append(" -->");
+          sb.append("<!-- clause not found: ").append(HtmlUtils.htmlEscape(slug)).append(" -->");
           return;
         }
-        UUID clauseId = UUID.fromString(clauseIdStr);
+        UUID clauseId;
+        try {
+          clauseId = UUID.fromString(clauseIdStr);
+        } catch (IllegalArgumentException e) {
+          sb.append("<!-- invalid clauseId -->");
+          return;
+        }
         Clause clause = clauses.get(clauseId);
         Map<String, Object> bodyJson = clause != null ? clause.getBodyJson() : null;
         if (bodyJson != null) {
@@ -114,7 +135,7 @@ public class TiptapRenderer {
           renderNode(bodyJson, context, clauses, sb, depth + 1);
           sb.append("</div>");
         } else {
-          sb.append("<!-- clause not found: ").append(slug).append(" -->");
+          sb.append("<!-- clause not found: ").append(HtmlUtils.htmlEscape(slug)).append(" -->");
         }
       }
       case "loopTable" -> renderLoopTable(attrs, context, sb);
@@ -127,7 +148,8 @@ public class TiptapRenderer {
       case "tableHeader" -> renderTableCell("th", attrs, node, context, clauses, sb, depth);
       case "horizontalRule" -> sb.append("<hr>");
       case "hardBreak" -> sb.append("<br>");
-      case "legacyHtml" -> sb.append((String) attrs.getOrDefault("html", ""));
+      case "legacyHtml" ->
+          sb.append(Jsoup.clean((String) attrs.getOrDefault("html", ""), LEGACY_HTML_SAFELIST));
       default -> renderChildren(node, context, clauses, sb, depth);
     }
   }
@@ -175,7 +197,14 @@ public class TiptapRenderer {
           closeTags.insert(0, "</u>");
         }
         case "link" -> {
-          String href = HtmlUtils.htmlEscape((String) markAttrs.getOrDefault("href", ""));
+          String raw = (String) markAttrs.getOrDefault("href", "");
+          String href =
+              (raw.startsWith("https://")
+                      || raw.startsWith("http://")
+                      || raw.startsWith("mailto:")
+                      || raw.startsWith("#"))
+                  ? HtmlUtils.htmlEscape(raw)
+                  : "";
           openTags.append("<a href=\"").append(href).append("\">");
           closeTags.insert(0, "</a>");
         }

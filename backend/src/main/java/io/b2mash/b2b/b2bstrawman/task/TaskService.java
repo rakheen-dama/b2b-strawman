@@ -27,6 +27,7 @@ import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.project.ProjectLifecycleGuard;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.time.Instant;
@@ -63,6 +64,7 @@ public class TaskService {
   private final FieldGroupService fieldGroupService;
   private final ProjectRepository projectRepository;
   private final TimeEntryRepository timeEntryRepository;
+  private final ProjectLifecycleGuard projectLifecycleGuard;
 
   public TaskService(
       TaskRepository taskRepository,
@@ -78,7 +80,8 @@ public class TaskService {
       CustomerProjectRepository customerProjectRepository,
       FieldGroupService fieldGroupService,
       ProjectRepository projectRepository,
-      TimeEntryRepository timeEntryRepository) {
+      TimeEntryRepository timeEntryRepository,
+      ProjectLifecycleGuard projectLifecycleGuard) {
     this.taskRepository = taskRepository;
     this.projectAccessService = projectAccessService;
     this.projectMemberRepository = projectMemberRepository;
@@ -93,6 +96,7 @@ public class TaskService {
     this.fieldGroupService = fieldGroupService;
     this.projectRepository = projectRepository;
     this.timeEntryRepository = timeEntryRepository;
+    this.projectLifecycleGuard = projectLifecycleGuard;
   }
 
   private static final List<TaskStatus> DEFAULT_STATUSES =
@@ -181,14 +185,7 @@ public class TaskService {
     projectAccessService.requireViewAccess(projectId, createdBy, orgRole);
 
     // Check project is not archived
-    var project =
-        projectRepository
-            .findById(projectId)
-            .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
-    if (project.isReadOnly()) {
-      throw new InvalidStateException(
-          "Project is archived", "Cannot create new tasks on an archived project");
-    }
+    projectLifecycleGuard.requireNotReadOnly(projectId);
 
     // Validate custom fields
     Map<String, Object> validatedFields =

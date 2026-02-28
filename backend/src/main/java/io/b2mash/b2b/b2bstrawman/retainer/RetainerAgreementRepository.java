@@ -19,4 +19,7 @@ public interface RetainerAgreementRepository extends JpaRepository<RetainerAgree
   Optional<RetainerAgreement> findActiveOrPausedByCustomerId(@Param("customerId") UUID customerId);
 
   List<RetainerAgreement> findByCustomerIdAndStatus(UUID customerId, RetainerStatus status);
+
+  /** Counts retainer agreements for a customer. Used by customer archive protection guard. */
+  long countByCustomerId(UUID customerId);
 }

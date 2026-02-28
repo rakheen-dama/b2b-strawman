@@ -33,6 +33,10 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
       """)
   long countByProjectId(@Param("projectId") UUID projectId);
 
+  /** Counts invoices for a customer. Used by customer archive protection guard. */
+  @Query("SELECT COUNT(i) FROM Invoice i WHERE i.customerId = :customerId")
+  long countByCustomerId(@Param("customerId") UUID customerId);
+
   /**
    * JPQL-based batch lookup scoped to the current tenant schema (search_path isolation), unlike
    * JpaRepository.findAllById which uses EntityManager.find directly.

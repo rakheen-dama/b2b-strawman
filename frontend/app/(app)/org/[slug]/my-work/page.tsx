@@ -18,9 +18,11 @@ import type {
   FieldDefinitionResponse,
   FieldGroupResponse,
   FieldGroupMemberResponse,
+  ExpenseResponse,
 } from "@/lib/types";
 import { WeeklyTimeSummary } from "@/components/my-work/weekly-time-summary";
 import { TodayTimeEntries } from "@/components/my-work/today-time-entries";
+import { MyExpenses } from "@/components/my-work/my-expenses";
 import { PersonalKpis } from "@/components/my-work/personal-kpis";
 import { TimeBreakdown } from "@/components/my-work/time-breakdown";
 import { UpcomingDeadlines } from "@/components/my-work/upcoming-deadlines";
@@ -28,6 +30,7 @@ import { MyWorkHeader } from "./my-work-header";
 import { MyWorkTasksClient } from "./my-work-tasks-client";
 import { createMyWorkViewAction } from "./view-actions";
 import { fetchPersonalDashboard } from "@/lib/actions/dashboard";
+import { getMyExpenses } from "@/app/(app)/org/[slug]/projects/[id]/expense-actions";
 import { ApiError } from "@/lib/api";
 
 /**
@@ -115,6 +118,15 @@ export default async function MyWorkPage({
     );
   } catch {
     // Non-fatal: show empty today entries
+  }
+
+  // Fetch user's recent expenses
+  let myExpenses: ExpenseResponse[] = [];
+  try {
+    const expenseResult = await getMyExpenses({ size: 10 });
+    myExpenses = expenseResult.content;
+  } catch {
+    // Non-fatal
   }
 
   // Resolve current member ID and org members in a single fetch
@@ -234,6 +246,7 @@ export default async function MyWorkPage({
             initialFrom={from}
           />
           <TodayTimeEntries entries={todayEntries} />
+          <MyExpenses expenses={myExpenses} />
         </div>
       </div>
     </div>

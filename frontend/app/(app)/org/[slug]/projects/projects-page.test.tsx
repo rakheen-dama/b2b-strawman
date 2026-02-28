@@ -41,6 +41,11 @@ vi.mock("@/components/views/ViewSelectorClient", () => ({
   ViewSelectorClient: () => <div data-testid="view-selector-client" />,
 }));
 
+// Mock ProjectStatusFilter (client component with useSearchParams)
+vi.mock("@/components/projects/project-status-filter", () => ({
+  ProjectStatusFilter: () => <div data-testid="project-status-filter" />,
+}));
+
 // Mock view-actions
 vi.mock("./view-actions", () => ({
   createSavedViewAction: vi.fn(),
@@ -78,9 +83,17 @@ const makeProject = (overrides: Partial<Project> = {}): Project => ({
   id: "proj-1",
   name: "Test Project",
   description: "A test project",
+  status: "ACTIVE",
+  customerId: null,
+  dueDate: null,
   createdBy: "user-1",
+  createdByName: null,
   createdAt: "2026-01-15T10:00:00Z",
   updatedAt: "2026-01-15T10:00:00Z",
+  completedAt: null,
+  completedBy: null,
+  completedByName: null,
+  archivedAt: null,
   projectRole: null,
   ...overrides,
 });

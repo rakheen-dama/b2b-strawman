@@ -1,13 +1,22 @@
 // ---- Projects (from ProjectController.java) ----
 
+export type ProjectStatus = "ACTIVE" | "COMPLETED" | "ARCHIVED";
+
 export interface Project {
   id: string;
   name: string;
   description: string | null;
+  status: ProjectStatus;
+  customerId: string | null;
+  dueDate: string | null;
   createdBy: string;
   createdByName: string | null;
   createdAt: string;
   updatedAt: string;
+  completedAt: string | null;
+  completedBy: string | null;
+  completedByName: string | null;
+  archivedAt: string | null;
   projectRole: ProjectRole | null;
   customFields?: Record<string, unknown>;
   appliedFieldGroups?: string[];
@@ -17,11 +26,15 @@ export interface Project {
 export interface CreateProjectRequest {
   name: string;
   description?: string;
+  customerId?: string;
+  dueDate?: string;
 }
 
 export interface UpdateProjectRequest {
   name: string;
   description?: string;
+  customerId?: string | null;
+  dueDate?: string | null;
 }
 
 // ---- Documents (from DocumentController.java) ----

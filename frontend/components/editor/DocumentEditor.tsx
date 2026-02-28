@@ -11,6 +11,7 @@ import { VariableExtension } from "./extensions/variable";
 import { LoopTableExtension } from "./extensions/loopTable";
 import { ClauseBlockExtension } from "./extensions/clauseBlock";
 import { EditorToolbar } from "./EditorToolbar";
+import type { TemplateEntityType } from "@/lib/types";
 import "./editor.css";
 
 interface DocumentEditorProps {
@@ -18,6 +19,7 @@ interface DocumentEditorProps {
   onUpdate?: (json: Record<string, unknown>) => void;
   scope?: "template" | "clause";
   editable?: boolean;
+  entityType?: TemplateEntityType;
 }
 
 export function DocumentEditor({
@@ -25,6 +27,7 @@ export function DocumentEditor({
   onUpdate,
   scope = "template",
   editable = true,
+  entityType,
 }: DocumentEditorProps) {
   const placeholderText =
     scope === "clause" ? "Enter clause content..." : "Start typing...";
@@ -75,7 +78,7 @@ export function DocumentEditor({
 
   return (
     <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
-      {editable && <EditorToolbar editor={editor} />}
+      {editable && <EditorToolbar editor={editor} entityType={entityType} />}
       <div className="editor-content-wrapper p-6">
         <EditorContent editor={editor} />
       </div>

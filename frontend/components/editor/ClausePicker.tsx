@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ChevronDown, ChevronRight, FileText } from "lucide-react";
 import { getClauses, type Clause } from "@/lib/actions/clause-actions";
+import { extractTextFromBody } from "@/lib/tiptap-utils";
 
 interface ClausePickerProps {
   onSelect: (clause: {
@@ -105,9 +106,9 @@ export function ClausePicker({
     handleOpenChange(false);
   };
 
-  // Strip HTML for safe preview
+  // Extract text from Tiptap JSON for preview
   const previewText = selectedClause?.body
-    ? selectedClause.body.replace(/<[^>]*>/g, "").trim()
+    ? extractTextFromBody(selectedClause.body)
     : null;
 
   return (

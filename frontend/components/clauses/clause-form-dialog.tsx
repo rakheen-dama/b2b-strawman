@@ -31,6 +31,7 @@ import {
 import { ClausePreviewPanel } from "@/components/clauses/clause-preview-panel";
 import { createClause, updateClause } from "@/lib/actions/clause-actions";
 import type { Clause } from "@/lib/actions/clause-actions";
+import { extractTextFromBody } from "@/lib/tiptap-utils";
 import { cn } from "@/lib/utils";
 
 interface ClauseFormDialogProps {
@@ -58,12 +59,25 @@ export function ClauseFormDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
+  function wrapTextAsBody(text: string): Record<string, unknown> {
+    return {
+      type: "doc",
+      content: text
+        .split("\n")
+        .filter((line) => line.length > 0)
+        .map((line) => ({
+          type: "paragraph",
+          content: [{ type: "text", text: line }],
+        })),
+    };
+  }
+
   function resetForm() {
     if (isEditing && clause) {
       setTitle(clause.title);
       setCategory(clause.category);
       setDescription(clause.description ?? "");
-      setBody(clause.body);
+      setBody(extractTextFromBody(clause.body) ?? "");
     } else {
       setTitle("");
       setCategory("");
@@ -101,7 +115,7 @@ export function ClauseFormDialog({
       const data = {
         title: title.trim(),
         description: description.trim() || undefined,
-        body: body.trim(),
+        body: wrapTextAsBody(body.trim()),
         category: category.trim(),
       };
 

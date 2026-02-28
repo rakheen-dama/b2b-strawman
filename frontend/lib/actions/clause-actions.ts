@@ -10,13 +10,15 @@ export interface Clause {
   title: string;
   slug: string;
   description: string | null;
-  body: string;
+  body: Record<string, unknown>;
+  legacyBody: string | null;
   category: string;
   source: ClauseSource;
   sourceClauseId: string | null;
   packId: string | null;
   active: boolean;
   sortOrder: number;
+  templateUsageCount?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -24,14 +26,14 @@ export interface Clause {
 export interface CreateClauseData {
   title: string;
   description?: string;
-  body: string;
+  body: Record<string, unknown>;
   category: string;
 }
 
 export interface UpdateClauseData {
   title: string;
   description?: string;
-  body: string;
+  body: Record<string, unknown>;
   category: string;
 }
 

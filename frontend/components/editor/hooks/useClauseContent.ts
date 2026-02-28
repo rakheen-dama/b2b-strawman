@@ -4,18 +4,18 @@ import { useEffect, useState } from "react";
 import { getClause } from "@/lib/actions/clause-actions";
 
 interface ClauseContentState {
-  body: string | null;
+  body: Record<string, unknown> | null;
   title: string | null;
   isLoading: boolean;
 }
 
 interface ClauseContentResult {
-  body: string | null;
+  body: Record<string, unknown> | null;
   title: string | null;
   isLoading: boolean;
 }
 
-const clauseCache = new Map<string, { body: string; title: string }>();
+const clauseCache = new Map<string, { body: Record<string, unknown>; title: string }>();
 
 export function useClauseContent(clauseId: string): ClauseContentResult {
   const [state, setState] = useState<ClauseContentState>(() =>

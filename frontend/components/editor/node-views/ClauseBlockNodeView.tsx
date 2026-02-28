@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useClauseContent } from "../hooks/useClauseContent";
+import { extractTextFromBody } from "@/lib/tiptap-utils";
 
 export function ClauseBlockNodeView({ node, deleteNode }: NodeViewProps) {
   const [expanded, setExpanded] = useState(false);
@@ -27,9 +28,9 @@ export function ClauseBlockNodeView({ node, deleteNode }: NodeViewProps) {
 
   const { body, isLoading } = useClauseContent(clauseId);
 
-  // Strip HTML tags for safe text preview
+  // Extract text from Tiptap JSON for preview
   const textPreview = body
-    ? body.replace(/<[^>]*>/g, "").trim()
+    ? extractTextFromBody(body)
     : null;
 
   return (

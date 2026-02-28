@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.expense;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -43,8 +45,9 @@ public class Expense {
   @Column(name = "currency", nullable = false, length = 3)
   private String currency;
 
+  @Enumerated(EnumType.STRING)
   @Column(name = "category", nullable = false, length = 30)
-  private String category;
+  private ExpenseCategory category;
 
   @Column(name = "receipt_document_id")
   private UUID receiptDocumentId;
@@ -76,7 +79,7 @@ public class Expense {
       String description,
       BigDecimal amount,
       String currency,
-      String category) {
+      ExpenseCategory category) {
     this.projectId = projectId;
     this.memberId = memberId;
     this.date = date;
@@ -92,16 +95,16 @@ public class Expense {
   /**
    * Returns the billing status derived from the billable flag and invoice association.
    *
-   * @return "BILLED" if invoiced, "NON_BILLABLE" if not billable, "UNBILLED" otherwise
+   * @return BILLED if invoiced, NON_BILLABLE if not billable, UNBILLED otherwise
    */
-  public String getBillingStatus() {
+  public ExpenseBillingStatus getBillingStatus() {
     if (invoiceId != null) {
-      return "BILLED";
+      return ExpenseBillingStatus.BILLED;
     }
     if (!billable) {
-      return "NON_BILLABLE";
+      return ExpenseBillingStatus.NON_BILLABLE;
     }
-    return "UNBILLED";
+    return ExpenseBillingStatus.UNBILLED;
   }
 
   /**
@@ -150,7 +153,7 @@ public class Expense {
       String description,
       BigDecimal amount,
       String currency,
-      String category,
+      ExpenseCategory category,
       UUID taskId,
       UUID receiptDocumentId,
       BigDecimal markupPercent,
@@ -204,6 +207,40 @@ public class Expense {
     this.updatedAt = Instant.now();
   }
 
+  /**
+   * Marks this expense as billed by associating it with an invoice.
+   *
+   * @param invoiceId the invoice ID to associate (must not be null)
+   * @throws IllegalArgumentException if invoiceId is null
+   * @throws IllegalStateException if the expense is non-billable or already billed
+   */
+  public void markBilled(UUID invoiceId) {
+    if (invoiceId == null) {
+      throw new IllegalArgumentException("Invoice ID must not be null");
+    }
+    if (!billable) {
+      throw new IllegalStateException("Cannot bill a non-billable expense");
+    }
+    if (this.invoiceId != null) {
+      throw new IllegalStateException("Expense is already billed");
+    }
+    this.invoiceId = invoiceId;
+    this.updatedAt = Instant.now();
+  }
+
+  /**
+   * Removes the invoice association, returning this expense to unbilled status.
+   *
+   * @throws IllegalStateException if the expense is not currently billed
+   */
+  public void unbill() {
+    if (this.invoiceId == null) {
+      throw new IllegalStateException("Expense is not billed");
+    }
+    this.invoiceId = null;
+    this.updatedAt = Instant.now();
+  }
+
   // Getters
 
   public UUID getId() {
@@ -238,7 +275,7 @@ public class Expense {
     return currency;
   }
 
-  public String getCategory() {
+  public ExpenseCategory getCategory() {
     return category;
   }
 
@@ -271,10 +308,6 @@ public class Expense {
   }
 
   // Setters for fields managed externally
-
-  public void setInvoiceId(UUID invoiceId) {
-    this.invoiceId = invoiceId;
-  }
 
   public void setTaskId(UUID taskId) {
     this.taskId = taskId;

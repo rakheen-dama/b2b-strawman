@@ -29,7 +29,7 @@ public interface ExpenseRepository extends JpaRepository<Expense, UUID> {
       """)
   Page<Expense> findFiltered(
       @Param("projectId") UUID projectId,
-      @Param("category") String category,
+      @Param("category") ExpenseCategory category,
       @Param("fromDate") LocalDate fromDate,
       @Param("toDate") LocalDate toDate,
       @Param("memberId") UUID memberId,

@@ -18,7 +18,7 @@ class ExpenseTest {
         "Court filing fee",
         new BigDecimal("150.00"),
         "ZAR",
-        "FILING_FEE");
+        ExpenseCategory.FILING_FEE);
   }
 
   @Test
@@ -30,12 +30,14 @@ class ExpenseTest {
     assertThat(expense.getUpdatedAt()).isNotNull();
   }
 
-  @Test
-  void getBillingStatus_whenInvoiceIdSet_returnsBilled() {
-    Expense expense = createExpense();
-    expense.setInvoiceId(UUID.randomUUID());
+  // --- getBillingStatus tests ---
 
-    assertThat(expense.getBillingStatus()).isEqualTo("BILLED");
+  @Test
+  void getBillingStatus_whenBilled_returnsBilled() {
+    Expense expense = createExpense();
+    expense.markBilled(UUID.randomUUID());
+
+    assertThat(expense.getBillingStatus()).isEqualTo(ExpenseBillingStatus.BILLED);
   }
 
   @Test
@@ -43,15 +45,51 @@ class ExpenseTest {
     Expense expense = createExpense();
     expense.writeOff();
 
-    assertThat(expense.getBillingStatus()).isEqualTo("NON_BILLABLE");
+    assertThat(expense.getBillingStatus()).isEqualTo(ExpenseBillingStatus.NON_BILLABLE);
   }
 
   @Test
   void getBillingStatus_whenBillableAndNoInvoice_returnsUnbilled() {
     Expense expense = createExpense();
 
-    assertThat(expense.getBillingStatus()).isEqualTo("UNBILLED");
+    assertThat(expense.getBillingStatus()).isEqualTo(ExpenseBillingStatus.UNBILLED);
   }
+
+  // --- getBillableAmount (no-arg) tests ---
+
+  @Test
+  void getBillableAmount_withMarkupAndBillable_returnsAmountWithMarkup() {
+    Expense expense = createExpense();
+    expense.setMarkupPercent(new BigDecimal("10.00"));
+
+    BigDecimal result = expense.getBillableAmount();
+
+    // 150.00 * (1 + 10/100) = 150.00 * 1.10 = 165.00
+    assertThat(result).isEqualByComparingTo(new BigDecimal("165.00"));
+  }
+
+  @Test
+  void getBillableAmount_withoutMarkupAndBillable_returnsRawAmount() {
+    Expense expense = createExpense();
+    // markupPercent is null by default
+
+    BigDecimal result = expense.getBillableAmount();
+
+    assertThat(result).isEqualByComparingTo(new BigDecimal("150.00"));
+  }
+
+  @Test
+  void getBillableAmount_whenNonBillable_returnsZero() {
+    Expense expense = createExpense();
+    expense.setMarkupPercent(new BigDecimal("10.00"));
+    expense.writeOff();
+
+    BigDecimal result = expense.getBillableAmount();
+
+    assertThat(result).isEqualByComparingTo(BigDecimal.ZERO);
+  }
+
+  // --- computeBillableAmount (with org default) tests ---
 
   @Test
   void computeBillableAmount_usesPerExpenseMarkup() {
@@ -86,6 +124,8 @@ class ExpenseTest {
     assertThat(result).isEqualByComparingTo(BigDecimal.ZERO);
   }
 
+  // --- writeOff / restore tests ---
+
   @Test
   void writeOff_fromUnbilled_succeeds() {
     Expense expense = createExpense();
@@ -93,13 +133,13 @@ class ExpenseTest {
     expense.writeOff();
 
     assertThat(expense.isBillable()).isFalse();
-    assertThat(expense.getBillingStatus()).isEqualTo("NON_BILLABLE");
+    assertThat(expense.getBillingStatus()).isEqualTo(ExpenseBillingStatus.NON_BILLABLE);
   }
 
   @Test
   void writeOff_whenBilled_throws() {
     Expense expense = createExpense();
-    expense.setInvoiceId(UUID.randomUUID());
+    expense.markBilled(UUID.randomUUID());
 
     assertThatThrownBy(expense::writeOff)
         .isInstanceOf(IllegalStateException.class)
@@ -114,7 +154,7 @@ class ExpenseTest {
     expense.restore();
 
     assertThat(expense.isBillable()).isTrue();
-    assertThat(expense.getBillingStatus()).isEqualTo("UNBILLED");
+    assertThat(expense.getBillingStatus()).isEqualTo(ExpenseBillingStatus.UNBILLED);
   }
 
   @Test
@@ -126,10 +166,12 @@ class ExpenseTest {
         .hasMessageContaining("already billable");
   }
 
+  // --- update tests ---
+
   @Test
   void update_whenBilled_throws() {
     Expense expense = createExpense();
-    expense.setInvoiceId(UUID.randomUUID());
+    expense.markBilled(UUID.randomUUID());
 
     assertThatThrownBy(
             () ->
@@ -138,7 +180,7 @@ class ExpenseTest {
                     "Updated description",
                     new BigDecimal("200.00"),
                     "ZAR",
-                    "TRAVEL",
+                    ExpenseCategory.TRAVEL,
                     null,
                     null,
                     null,
@@ -146,5 +188,76 @@ class ExpenseTest {
                     null))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("billed");
+  }
+
+  // --- markBilled / unbill tests ---
+
+  @Test
+  void markBilled_fromUnbilled_succeeds() {
+    Expense expense = createExpense();
+    UUID invoiceId = UUID.randomUUID();
+
+    expense.markBilled(invoiceId);
+
+    assertThat(expense.getInvoiceId()).isEqualTo(invoiceId);
+    assertThat(expense.getBillingStatus()).isEqualTo(ExpenseBillingStatus.BILLED);
+  }
+
+  @Test
+  void markBilled_withNullInvoiceId_throws() {
+    Expense expense = createExpense();
+
+    assertThatThrownBy(() -> expense.markBilled(null))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Invoice ID must not be null");
+  }
+
+  @Test
+  void markBilled_whenAlreadyBilled_throws() {
+    Expense expense = createExpense();
+    expense.markBilled(UUID.randomUUID());
+
+    assertThatThrownBy(() -> expense.markBilled(UUID.randomUUID()))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("already billed");
+  }
+
+  @Test
+  void markBilled_whenNonBillable_throws() {
+    Expense expense = createExpense();
+    expense.writeOff();
+
+    assertThatThrownBy(() -> expense.markBilled(UUID.randomUUID()))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("non-billable");
+  }
+
+  @Test
+  void unbill_fromBilled_succeeds() {
+    Expense expense = createExpense();
+    expense.markBilled(UUID.randomUUID());
+
+    expense.unbill();
+
+    assertThat(expense.getInvoiceId()).isNull();
+    assertThat(expense.getBillingStatus()).isEqualTo(ExpenseBillingStatus.UNBILLED);
+  }
+
+  @Test
+  void unbill_whenNotBilled_throws() {
+    Expense expense = createExpense();
+
+    assertThatThrownBy(expense::unbill)
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("not billed");
+  }
+
+  // --- category enum test ---
+
+  @Test
+  void getCategory_returnsExpenseCategoryEnum() {
+    Expense expense = createExpense();
+
+    assertThat(expense.getCategory()).isEqualTo(ExpenseCategory.FILING_FEE);
   }
 }

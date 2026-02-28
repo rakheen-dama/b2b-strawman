@@ -252,7 +252,7 @@
 | 214 | Template Editor Rewrite | Frontend | 210B, 211, 213 | L | 214A, 214B | **Done** (PRs #439, #440) |
 | 215 | Clause Library & Editor Rewrite | Frontend | 213 | M | 215A, 215B | **Done** (PRs #441, #442) |
 | 216 | Generation Dialog & Preview | Frontend | 213, 214 | M | 216A, 216B | **Done** (PRs #443, #444) |
-| 217 | Backend Test Migration & Cleanup | Backend | 212 | M | 217A, 217B | |
+| 217 | Backend Test Migration & Cleanup | Backend | 212 | M | 217A, 217B | 217A **Done** (PR #445) |
 
 ---
 

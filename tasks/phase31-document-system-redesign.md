@@ -136,7 +136,7 @@ Phase 31 replaces the Thymeleaf-based document authoring system with a Tiptap/Pr
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 7a | Epic 217 | 217A | TestDocumentBuilder utility. Update all template/clause test helpers to produce Tiptap JSON. Visual regression tests for 3 platform templates. |
+| 7a | Epic 217 | 217A | TestDocumentBuilder utility. Update all template/clause test helpers to produce Tiptap JSON. Visual regression tests for 3 platform templates. | **Done** (PR #445) |
 | 7b | Epic 217 | 217B | Delete Thymeleaf classes (LenientStandardDialect, LenientOGNLEvaluator, TemplateSecurityValidator, ClauseAssembler). Delete .html pack files. Delete dead tests. Remove dead frontend components. |
 
 ### Timeline
@@ -714,7 +714,7 @@ Stage 7:  [217A] ──► [217B]                                      ← clean
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **217A** | 217.1-217.6 | Update remaining test helpers to produce Tiptap JSON. Visual regression tests for 3 platform templates (compare new pipeline HTML to reference output). Update acceptance workflow tests. (~10 tests updated, ~3 new tests). | |
+| **217A** | 217.1-217.6 | Update remaining test helpers to produce Tiptap JSON. Visual regression tests for 3 platform templates (compare new pipeline HTML to reference output). Update acceptance workflow tests. (~10 tests updated, ~3 new tests). | **Done** (PR #445) |
 | **217B** | 217.7-217.14 | Delete Thymeleaf backend classes (LenientStandardDialect, LenientOGNLEvaluator, TemplateSecurityValidator, ClauseAssembler). Delete dead PdfRenderingService methods. Delete .html template pack files. Delete dead frontend components. Delete dead tests. | |
 
 ### Tasks

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { AuthProvider } from "@/lib/auth/client/auth-provider";
 import { Toaster } from "sonner";
 import { Sora, IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
@@ -39,7 +40,7 @@ export default function RootLayout({
         <body
           className={`${sora.variable} ${plexSans.variable} ${jetbrainsMono.variable} antialiased`}
         >
-          {children}
+          <NuqsAdapter>{children}</NuqsAdapter>
           <Toaster position="bottom-right" />
         </body>
       </html>

@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { InvoiceList } from "@/components/invoices/invoice-list";
 import { CreateInvoiceDialog } from "@/components/invoices/create-invoice-dialog";
 import { createInvoiceDraftAction } from "./actions";
-import type { InvoiceStatus } from "@/lib/types";
+import type { InvoiceStatus, InvoiceResponse } from "@/lib/types";
 
 interface InvoicesPageProps {
   params: Promise<{ slug: string }>;
@@ -32,8 +32,11 @@ export default async function InvoicesPage({
   const { slug } = await params;
   const { status } = await searchParams;
 
-  let invoicesData;
-  let customers;
+  let invoicesData: { content: InvoiceResponse[]; page: { totalElements: number; totalPages: number; size: number; number: number } } = {
+    content: [],
+    page: { totalElements: 0, totalPages: 0, size: 20, number: 0 },
+  };
+  let customers: { id: string; name: string }[] = [];
   try {
     [invoicesData, customers] = await Promise.all([
       fetchInvoices({ size: 200 }),

@@ -34,4 +34,18 @@ public interface ExpenseRepository extends JpaRepository<Expense, UUID> {
       @Param("toDate") LocalDate toDate,
       @Param("memberId") UUID memberId,
       Pageable pageable);
+
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+      SELECT e.* FROM expenses e
+        JOIN projects p ON e.project_id = p.id
+        JOIN customer_projects cp ON cp.project_id = p.id
+      WHERE cp.customer_id = :customerId
+        AND e.billable = true
+        AND e.invoice_id IS NULL
+      ORDER BY e.date, e.created_at
+      """)
+  List<Expense> findUnbilledBillableByCustomerId(@Param("customerId") UUID customerId);
 }

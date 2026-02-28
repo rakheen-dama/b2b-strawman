@@ -70,8 +70,9 @@ public class ReportService {
 
     var revenueList = reportRepository.getProjectRevenue(projectId, from, to);
     var costList = reportRepository.getProjectCost(projectId, from, to);
+    var expenseList = reportRepository.getProjectExpenseProfitability(projectId, from, to);
 
-    var currencies = mergeToCurrencyBreakdowns(revenueList, costList);
+    var currencies = mergeToCurrencyBreakdowns(revenueList, costList, expenseList);
 
     log.debug("Project {} profitability: {} currency breakdown(s)", projectId, currencies.size());
 
@@ -94,8 +95,9 @@ public class ReportService {
 
     var revenueList = reportRepository.getCustomerRevenue(customerId, from, to);
     var costList = reportRepository.getCustomerCost(customerId, from, to);
+    var expenseList = reportRepository.getCustomerExpenseProfitability(customerId, from, to);
 
-    var currencies = mergeToCurrencyBreakdowns(revenueList, costList);
+    var currencies = mergeToCurrencyBreakdowns(revenueList, costList, expenseList);
 
     log.debug("Customer {} profitability: {} currency breakdown(s)", customerId, currencies.size());
 
@@ -276,11 +278,13 @@ public class ReportService {
   }
 
   /**
-   * Merges revenue and cost results by currency into CurrencyBreakdown records. Margin is only
-   * computed when both revenue and cost exist for the same currency.
+   * Merges revenue, cost, and expense results by currency into CurrencyBreakdown records. Margin is
+   * only computed when both revenue and cost exist for the same currency.
    */
   private List<CurrencyBreakdown> mergeToCurrencyBreakdowns(
-      List<RevenueCurrencyProjection> revenueList, List<CostCurrencyProjection> costList) {
+      List<RevenueCurrencyProjection> revenueList,
+      List<CostCurrencyProjection> costList,
+      List<ExpenseProfitabilityProjection> expenseList) {
     // Build a map of currency -> revenue data
     Map<String, RevenueCurrencyProjection> revenueMap = new LinkedHashMap<>();
     for (var r : revenueList) {
@@ -293,7 +297,13 @@ public class ReportService {
       costMap.put(c.getCurrency(), c);
     }
 
-    // Collect all unique currencies (revenue + cost)
+    // Build a map of currency -> expense data
+    Map<String, ExpenseProfitabilityProjection> expenseMap = new LinkedHashMap<>();
+    for (var e : expenseList) {
+      expenseMap.put(e.getCurrency(), e);
+    }
+
+    // Collect all unique currencies (revenue + cost + expense)
     Map<String, CurrencyBreakdown> result = new LinkedHashMap<>();
 
     // Process revenue currencies first
@@ -301,6 +311,7 @@ public class ReportService {
       String currency = entry.getKey();
       var revenue = entry.getValue();
       var cost = costMap.get(currency);
+      var expense = expenseMap.get(currency);
 
       BigDecimal costValue = cost != null ? cost.getCostValue() : null;
       BigDecimal billableValue = revenue.getBillableValue();
@@ -317,7 +328,9 @@ public class ReportService {
               billableValue,
               costValue,
               margin,
-              marginPercent));
+              marginPercent,
+              expense != null ? expense.getTotalExpenseCost() : BigDecimal.ZERO,
+              expense != null ? expense.getTotalExpenseRevenue() : BigDecimal.ZERO));
     }
 
     // Process cost-only currencies (no matching revenue)
@@ -327,6 +340,7 @@ public class ReportService {
         continue; // Already processed with revenue
       }
       var cost = entry.getValue();
+      var expense = expenseMap.get(currency);
       result.put(
           currency,
           new CurrencyBreakdown(
@@ -337,7 +351,31 @@ public class ReportService {
               null,
               cost.getCostValue(),
               null,
-              null));
+              null,
+              expense != null ? expense.getTotalExpenseCost() : BigDecimal.ZERO,
+              expense != null ? expense.getTotalExpenseRevenue() : BigDecimal.ZERO));
+    }
+
+    // Process expense-only currencies (no matching revenue or cost)
+    for (var entry : expenseMap.entrySet()) {
+      String currency = entry.getKey();
+      if (result.containsKey(currency)) {
+        continue; // Already processed
+      }
+      var expense = entry.getValue();
+      result.put(
+          currency,
+          new CurrencyBreakdown(
+              currency,
+              BigDecimal.ZERO,
+              BigDecimal.ZERO,
+              BigDecimal.ZERO,
+              null,
+              null,
+              null,
+              null,
+              expense.getTotalExpenseCost(),
+              expense.getTotalExpenseRevenue()));
     }
 
     return new ArrayList<>(result.values());

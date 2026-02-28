@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.invoice.dto;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -8,4 +9,6 @@ public record UnbilledTimeResponse(
     UUID customerId,
     String customerName,
     List<UnbilledProjectGroup> projects,
-    Map<String, CurrencyTotal> grandTotals) {}
+    Map<String, CurrencyTotal> grandTotals,
+    List<UnbilledExpenseEntry> unbilledExpenses,
+    Map<String, BigDecimal> unbilledExpenseTotals) {}

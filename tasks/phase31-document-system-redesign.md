@@ -113,7 +113,7 @@ Phase 31 replaces the Thymeleaf-based document authoring system with a Tiptap/Pr
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 4a | Epic 213 | 213A | Install Tiptap npm packages. Create DocumentEditor + EditorToolbar components (standard formatting only). Component tests. | **Done** (PR #436) |
-| 4b | Epic 213 | 213B | Variable extension + VariableNodeView + VariablePicker dialog. LoopTable extension + LoopTableNodeView + LoopTableConfig. Component tests. |
+| 4b | Epic 213 | 213B | Variable extension + VariableNodeView + VariablePicker dialog. LoopTable extension + LoopTableNodeView + LoopTableConfig. Component tests. | **Done** (PR #437) |
 | 4c | Epic 213 | 213C | ClauseBlock extension + ClauseBlockNodeView (card with title bar, read-only content, menu). ClausePicker dialog (master-detail). Component tests. |
 
 ### Stage 5: Frontend Page Rewrites (After Stage 3 + 4)
@@ -440,7 +440,7 @@ Stage 7:  [217A] ──► [217B]                                      ← clean
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **213A** | 213.1-213.7 | Install Tiptap npm packages. Create DocumentEditor component with EditorToolbar (standard formatting: bold, italic, underline, headings, lists, tables, horizontal rule, links). Component tests (~6 tests). | **Done** (PR #436) |
-| **213B** | 213.8-213.15 | Variable extension + VariableNodeView (styled chip). VariablePicker dialog (categorized list). LoopTable extension + LoopTableNodeView (placeholder table). LoopTableConfig popover. Component tests (~6 tests). | |
+| **213B** | 213.8-213.15 | Variable extension + VariableNodeView (styled chip). VariablePicker dialog (categorized list). LoopTable extension + LoopTableNodeView (placeholder table). LoopTableConfig popover. Component tests (~6 tests). | **Done** (PR #437) |
 | **213C** | 213.16-213.22 | ClauseBlock extension + ClauseBlockNodeView (card with title, read-only content, context menu). ClausePicker dialog (master-detail layout with content preview). Component tests (~6 tests). | |
 
 ### Tasks

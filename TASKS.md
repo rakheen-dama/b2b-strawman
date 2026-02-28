@@ -248,7 +248,7 @@
 | 210 | TiptapRenderer & Variable Endpoint | Backend | 209 | L | 210A, 210B | **Done** (PRs #430, #431) |
 | 211 | Entity Updates & Template-Clause Sync | Backend | 209 | M | 211A, 211B | **Done** (PRs #432, #433) |
 | 212 | Rendering Pipeline Switch & Legacy Import | Backend | 210, 211 | M | 212A, 212B | **Done** (PRs #434, #435) |
-| 213 | Tiptap Editor Foundation | Frontend | -- | L | 213A, 213B, 213C | 213A **Done** (PR #436) |
+| 213 | Tiptap Editor Foundation | Frontend | -- | L | 213A, 213B, 213C | 213A **Done** (PR #436), 213B **Done** (PR #437) |
 | 214 | Template Editor Rewrite | Frontend | 210B, 211, 213 | L | 214A, 214B | |
 | 215 | Clause Library & Editor Rewrite | Frontend | 213 | M | 215A, 215B | |
 | 216 | Generation Dialog & Preview | Frontend | 213, 214 | M | 216A, 216B | |

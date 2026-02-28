@@ -511,7 +511,9 @@ public class ProjectTemplateService {
             task.getType(),
             task.getDueDate(),
             assigneeId,
-            memberId);
+            memberId,
+            null,
+            null);
       }
       projectTaskRepository.save(task);
       for (var ti : templateItemsByTaskId.getOrDefault(tt.getId(), List.of())) {
@@ -622,7 +624,9 @@ public class ProjectTemplateService {
             task.getType(),
             task.getDueDate(),
             assigneeId,
-            actingMemberId);
+            actingMemberId,
+            null,
+            null);
       }
       projectTaskRepository.save(task);
       for (var ti : templateItemsByTaskId.getOrDefault(tt.getId(), List.of())) {

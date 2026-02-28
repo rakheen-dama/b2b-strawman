@@ -335,7 +335,17 @@ public class TaskService {
     LocalDate oldDueDate = task.getDueDate();
     String oldType = task.getType();
 
-    task.update(title, description, taskPriority, taskStatus, type, dueDate, assigneeId, memberId);
+    task.update(
+        title,
+        description,
+        taskPriority,
+        taskStatus,
+        type,
+        dueDate,
+        assigneeId,
+        memberId,
+        task.getRecurrenceRule(),
+        task.getRecurrenceEndDate());
     task = taskRepository.save(task);
 
     // Build delta map -- only include changed fields

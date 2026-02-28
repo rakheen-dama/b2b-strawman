@@ -86,6 +86,15 @@ public class Task {
   @Column(name = "applied_field_groups", columnDefinition = "jsonb")
   private List<UUID> appliedFieldGroups;
 
+  @Column(name = "recurrence_rule", length = 100)
+  private String recurrenceRule;
+
+  @Column(name = "recurrence_end_date")
+  private LocalDate recurrenceEndDate;
+
+  @Column(name = "parent_task_id")
+  private UUID parentTaskId;
+
   protected Task() {}
 
   public Task(
@@ -121,13 +130,17 @@ public class Task {
       String type,
       LocalDate dueDate,
       UUID assigneeId,
-      UUID actorId) {
+      UUID actorId,
+      String recurrenceRule,
+      LocalDate recurrenceEndDate) {
     this.title = title;
     this.description = description;
     this.priority = priority;
     this.type = type;
     this.dueDate = dueDate;
     this.assigneeId = assigneeId;
+    this.recurrenceRule = recurrenceRule;
+    this.recurrenceEndDate = recurrenceEndDate;
 
     // Handle status transition with lifecycle timestamp bookkeeping
     if (newStatus != this.status) {
@@ -216,6 +229,21 @@ public class Task {
     this.cancelledAt = null;
     this.cancelledBy = null;
     this.updatedAt = Instant.now();
+  }
+
+  // --- Recurrence helpers ---
+
+  /** Returns true if this task has a recurrence rule set. */
+  public boolean isRecurring() {
+    return recurrenceRule != null;
+  }
+
+  /**
+   * Returns the root task ID for lineage tracking. If this task has a parent, returns the parent
+   * task ID. Otherwise, returns this task's own ID (it is the root).
+   */
+  public UUID getRootTaskId() {
+    return parentTaskId != null ? parentTaskId : id;
   }
 
   // --- Private helpers ---
@@ -312,6 +340,33 @@ public class Task {
 
   public void setAppliedFieldGroups(List<UUID> appliedFieldGroups) {
     this.appliedFieldGroups = appliedFieldGroups;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getRecurrenceRule() {
+    return recurrenceRule;
+  }
+
+  public void setRecurrenceRule(String recurrenceRule) {
+    this.recurrenceRule = recurrenceRule;
+    this.updatedAt = Instant.now();
+  }
+
+  public LocalDate getRecurrenceEndDate() {
+    return recurrenceEndDate;
+  }
+
+  public void setRecurrenceEndDate(LocalDate recurrenceEndDate) {
+    this.recurrenceEndDate = recurrenceEndDate;
+    this.updatedAt = Instant.now();
+  }
+
+  public UUID getParentTaskId() {
+    return parentTaskId;
+  }
+
+  public void setParentTaskId(UUID parentTaskId) {
+    this.parentTaskId = parentTaskId;
     this.updatedAt = Instant.now();
   }
 }

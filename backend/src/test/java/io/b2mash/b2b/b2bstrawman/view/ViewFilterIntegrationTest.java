@@ -162,7 +162,9 @@ class ViewFilterIntegrationTest {
                       null,
                       null,
                       null,
-                      memberIdOwner);
+                      memberIdOwner,
+                      null,
+                      null);
                   t2.update(
                       "Done Task",
                       null,
@@ -171,7 +173,9 @@ class ViewFilterIntegrationTest {
                       null,
                       null,
                       null,
-                      memberIdOwner);
+                      memberIdOwner,
+                      null,
+                      null);
                   t2 = taskRepository.saveAndFlush(t2);
                   taskDoneId = t2.getId();
                 }));

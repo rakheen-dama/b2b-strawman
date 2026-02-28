@@ -14,11 +14,17 @@ import type {
 
 const mockFetchTask = vi.fn();
 const mockUpdateTask = vi.fn();
+const mockCompleteTask = vi.fn();
+const mockCancelTask = vi.fn();
+const mockReopenTask = vi.fn();
 const mockFetchTimeEntries = vi.fn();
 
 vi.mock("@/app/(app)/org/[slug]/projects/[id]/task-actions", () => ({
   fetchTask: (...args: unknown[]) => mockFetchTask(...args),
   updateTask: (...args: unknown[]) => mockUpdateTask(...args),
+  completeTask: (...args: unknown[]) => mockCompleteTask(...args),
+  cancelTask: (...args: unknown[]) => mockCancelTask(...args),
+  reopenTask: (...args: unknown[]) => mockReopenTask(...args),
 }));
 
 vi.mock("@/app/(app)/org/[slug]/projects/[id]/time-entry-actions", () => ({
@@ -161,6 +167,9 @@ describe("TaskDetailSheet", () => {
     mockFetchTimeEntries.mockResolvedValue([]);
     mockFetchTask.mockResolvedValue(makeTask());
     mockUpdateTask.mockResolvedValue({ success: true });
+    mockCompleteTask.mockResolvedValue({ success: true });
+    mockCancelTask.mockResolvedValue({ success: true });
+    mockReopenTask.mockResolvedValue({ success: true });
   });
 
   afterEach(() => {
@@ -410,5 +419,105 @@ describe("TaskDetailSheet", () => {
         expect.objectContaining({ sprint_number: "42" }),
       );
     });
+  });
+
+  // --- Lifecycle action tests (Epic 207B) ---
+
+  // Test 10: Mark Done button shown when IN_PROGRESS
+  it("shows Mark Done button when task is IN_PROGRESS", async () => {
+    mockFetchTask.mockResolvedValue(makeTask({ status: "IN_PROGRESS" }));
+
+    render(<TaskDetailSheet {...defaultProps} taskId="t1" />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Fix login bug" })).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole("button", { name: /Mark Done/ })).toBeInTheDocument();
+  });
+
+  // Test 11: Cancel button in overflow menu for IN_PROGRESS task (admin only)
+  it("shows Cancel Task in overflow menu for IN_PROGRESS task when admin", async () => {
+    const user = userEvent.setup();
+    mockFetchTask.mockResolvedValue(makeTask({ status: "IN_PROGRESS" }));
+
+    render(
+      <TaskDetailSheet {...defaultProps} taskId="t1" orgRole="org:admin" />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Fix login bug" })).toBeInTheDocument();
+    });
+
+    // Open the overflow menu — find the MoreHorizontal icon button by its SVG
+    const triggers = screen.getAllByRole("button");
+    const overflowTrigger = triggers.find(
+      (btn) => btn.querySelector("svg.lucide-ellipsis"),
+    );
+    expect(overflowTrigger).toBeDefined();
+    await user.click(overflowTrigger!);
+
+    await waitFor(() => {
+      expect(screen.getByRole("menuitem", { name: /Cancel Task/ })).toBeInTheDocument();
+    });
+  });
+
+  // Test 12: Reopen button shown for DONE task
+  it("shows Reopen button when task is DONE", async () => {
+    mockFetchTask.mockResolvedValue(
+      makeTask({
+        status: "DONE",
+        completedAt: "2026-02-15T10:00:00Z",
+        completedByName: "Alice",
+      }),
+    );
+
+    render(<TaskDetailSheet {...defaultProps} taskId="t1" />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Fix login bug" })).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole("button", { name: /Reopen/ })).toBeInTheDocument();
+    // Mark Done should NOT be present
+    expect(screen.queryByRole("button", { name: /Mark Done/ })).not.toBeInTheDocument();
+  });
+
+  // Test 13: Reopen button shown for CANCELLED task
+  it("shows Reopen button when task is CANCELLED", async () => {
+    mockFetchTask.mockResolvedValue(
+      makeTask({
+        status: "CANCELLED",
+        cancelledAt: "2026-02-20T14:00:00Z",
+      }),
+    );
+
+    render(<TaskDetailSheet {...defaultProps} taskId="t1" />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Fix login bug" })).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole("button", { name: /Reopen/ })).toBeInTheDocument();
+  });
+
+  // Test 14: Completion metadata displayed for DONE task
+  it("displays completion metadata when task is DONE", async () => {
+    mockFetchTask.mockResolvedValue(
+      makeTask({
+        status: "DONE",
+        completedAt: "2026-02-15T10:00:00Z",
+        completedByName: "Alice",
+      }),
+    );
+
+    render(<TaskDetailSheet {...defaultProps} taskId="t1" />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Fix login bug" })).toBeInTheDocument();
+    });
+
+    expect(screen.getByText(/Completed by Alice on/)).toBeInTheDocument();
+    expect(screen.getByText(/Feb 15, 2026/)).toBeInTheDocument();
   });
 });

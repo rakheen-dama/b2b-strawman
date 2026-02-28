@@ -8,16 +8,6 @@ import type { TemplateDetailResponse } from "@/lib/types";
 const mockUpdateTemplateAction = vi.fn();
 const mockCreateTemplateAction = vi.fn();
 
-vi.mock("@/lib/auth", () => ({
-  getAuthContext: vi.fn().mockResolvedValue({
-    userId: "user_1",
-    orgId: "org_1",
-    orgSlug: "acme",
-    orgRole: "org:owner",
-    memberId: "member_1",
-  }),
-}));
-
 vi.mock("@/lib/api", () => ({
   getTemplateDetail: vi.fn(),
   api: { get: vi.fn(), post: vi.fn(), put: vi.fn() },

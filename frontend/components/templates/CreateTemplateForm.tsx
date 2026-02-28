@@ -134,8 +134,9 @@ export function CreateTemplateForm({ slug }: CreateTemplateFormProps) {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Content</Label>
+          {/* Content: no htmlFor — editor uses contenteditable, not a native input */}
+          <div className="space-y-2" role="group" aria-labelledby="content-label">
+            <Label id="content-label">Content</Label>
             <DocumentEditor
               content={EMPTY_CONTENT}
               onUpdate={handleEditorUpdate}
@@ -166,6 +167,7 @@ export function CreateTemplateForm({ slug }: CreateTemplateFormProps) {
             >
               Cancel
             </Button>
+            {/* Only name is required — empty content is valid (user fills it in the editor page) */}
             <Button
               onClick={handleCreate}
               disabled={isCreating || !name.trim()}

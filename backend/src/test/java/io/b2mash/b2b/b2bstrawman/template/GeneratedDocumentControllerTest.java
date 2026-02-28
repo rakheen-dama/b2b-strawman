@@ -40,6 +40,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class GeneratedDocumentControllerTest {
 
+  private static final Map<String, Object> CONTENT = Map.of("type", "doc", "content", List.of());
+
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_gen_doc_ctrl_test";
 
@@ -99,7 +101,7 @@ class GeneratedDocumentControllerTest {
                           "GenDocCtrl Template",
                           "gendocctrl-template",
                           TemplateCategory.ENGAGEMENT_LETTER,
-                          "<h1 th:text=\"${project.name}\">Name</h1><p>Test</p>");
+                          CONTENT);
                   template = documentTemplateRepository.save(template);
                   testTemplateId = template.getId();
                 }));

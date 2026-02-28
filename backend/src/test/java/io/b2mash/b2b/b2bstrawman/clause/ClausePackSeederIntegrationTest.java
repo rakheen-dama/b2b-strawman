@@ -181,8 +181,8 @@ class ClausePackSeederIntegrationTest {
                   assertThat(clauses)
                       .allSatisfy(
                           clause -> {
-                            assertThat(clause.getBodyJson()).isNotNull();
-                            assertThat(clause.getBodyJson()).containsEntry("type", "doc");
+                            assertThat(clause.getBody()).isNotNull();
+                            assertThat(clause.getBody()).containsEntry("type", "doc");
                           });
                 }));
   }
@@ -195,7 +195,7 @@ class ClausePackSeederIntegrationTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var paymentTerms = clauseRepository.findBySlug("payment-terms").orElseThrow();
-                  Map<String, Object> bodyJson = paymentTerms.getBodyJson();
+                  Map<String, Object> bodyJson = paymentTerms.getBody();
                   assertThat(bodyJson).containsKey("content");
                   List<Map<String, Object>> content =
                       (List<Map<String, Object>>) bodyJson.get("content");

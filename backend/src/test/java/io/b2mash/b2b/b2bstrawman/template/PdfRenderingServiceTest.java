@@ -13,6 +13,8 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -32,6 +34,18 @@ import org.springframework.transaction.support.TransactionTemplate;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PdfRenderingServiceTest {
+
+  private static final Map<String, Object> CONTENT =
+      Map.of(
+          "type",
+          "doc",
+          "content",
+          List.of(
+              Map.of(
+                  "type",
+                  "paragraph",
+                  "content",
+                  List.of(Map.of("type", "variable", "attrs", Map.of("key", "project.name"))))));
 
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_pdf_render_test";
@@ -79,7 +93,7 @@ class PdfRenderingServiceTest {
                           "Test PDF Template",
                           "test-pdf-template",
                           TemplateCategory.ENGAGEMENT_LETTER,
-                          "<h1 th:text=\"${project.name}\">Project Name</h1><p th:text=\"${generatedAt}\">Date</p>");
+                          CONTENT);
                   template.setCss("h1 { color: blue; }");
                   template = documentTemplateRepository.save(template);
                   testTemplateId = template.getId();

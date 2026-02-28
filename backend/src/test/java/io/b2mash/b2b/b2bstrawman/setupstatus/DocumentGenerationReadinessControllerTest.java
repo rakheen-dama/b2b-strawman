@@ -51,6 +51,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class DocumentGenerationReadinessControllerTest {
 
+  private static final Map<String, Object> CONTENT = Map.of("type", "doc", "content", List.of());
+
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_doc_readiness_test";
 
@@ -102,7 +104,7 @@ class DocumentGenerationReadinessControllerTest {
                               "Engagement Letter",
                               "engagement-letter",
                               TemplateCategory.ENGAGEMENT_LETTER,
-                              "<p>Hello [[${project.name}]]</p>");
+                              CONTENT);
                       documentTemplateRepository.save(template);
 
                       // Project WITH linked customer

@@ -35,12 +35,12 @@ public class Clause {
   @Column(name = "description", length = 500)
   private String description;
 
-  @Column(name = "body", nullable = false, columnDefinition = "TEXT")
-  private String body;
-
   @JdbcTypeCode(SqlTypes.JSON)
-  @Column(name = "body_json", columnDefinition = "jsonb")
-  private Map<String, Object> bodyJson;
+  @Column(name = "body", nullable = false, columnDefinition = "jsonb")
+  private Map<String, Object> body;
+
+  @Column(name = "legacy_body", columnDefinition = "TEXT")
+  private String legacyBody;
 
   @Column(name = "category", nullable = false, length = 100)
   private String category;
@@ -75,10 +75,10 @@ public class Clause {
    *
    * @param title the clause title
    * @param slug the URL-friendly slug (must match ^[a-z][a-z0-9-]*$)
-   * @param body the clause body text
+   * @param body the clause body as Tiptap JSON
    * @param category the clause category
    */
-  public Clause(String title, String slug, String body, String category) {
+  public Clause(String title, String slug, Map<String, Object> body, String category) {
     this.title = Objects.requireNonNull(title, "title must not be null");
     this.slug = Objects.requireNonNull(slug, "slug must not be null");
     this.body = Objects.requireNonNull(body, "body must not be null");
@@ -101,7 +101,8 @@ public class Clause {
   }
 
   /** Updates the mutable fields of this clause. */
-  public void update(String title, String slug, String description, String body, String category) {
+  public void update(
+      String title, String slug, String description, Map<String, Object> body, String category) {
     this.title = Objects.requireNonNull(title, "title must not be null");
     this.slug = Objects.requireNonNull(slug, "slug must not be null");
     this.description = description;
@@ -119,7 +120,7 @@ public class Clause {
    *
    * @param title the clause title
    * @param slug the URL-friendly slug
-   * @param body the clause body (may contain Thymeleaf expressions)
+   * @param body the clause body as Tiptap JSON
    * @param category the clause category
    * @param description optional description
    * @param packId the originating pack ID
@@ -129,7 +130,7 @@ public class Clause {
   public static Clause createSystemClause(
       String title,
       String slug,
-      String body,
+      Map<String, Object> body,
       String category,
       String description,
       String packId,
@@ -176,16 +177,16 @@ public class Clause {
     return description;
   }
 
-  public String getBody() {
+  public Map<String, Object> getBody() {
     return body;
   }
 
-  public Map<String, Object> getBodyJson() {
-    return bodyJson;
+  public String getLegacyBody() {
+    return legacyBody;
   }
 
-  public void setBodyJson(Map<String, Object> bodyJson) {
-    this.bodyJson = bodyJson;
+  public void setLegacyBody(String legacyBody) {
+    this.legacyBody = legacyBody;
   }
 
   public String getCategory() {

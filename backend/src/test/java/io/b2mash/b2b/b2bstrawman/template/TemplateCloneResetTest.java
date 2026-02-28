@@ -39,6 +39,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class TemplateCloneResetTest {
 
+  private static final Map<String, Object> CONTENT = Map.of("type", "doc", "content", List.of());
+
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_clone_reset_test";
 
@@ -161,7 +163,7 @@ class TemplateCloneResetTest {
                               "Non-Clone Custom",
                               "non-clone-custom",
                               TemplateCategory.OTHER,
-                              "<p>Custom</p>");
+                              CONTENT);
                       custom = documentTemplateRepository.save(custom);
                       customIdHolder[0] = custom.getId().toString();
                     }));

@@ -38,6 +38,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TemplateValidationIntegrationTest {
 
+  private static final Map<String, Object> CONTENT = Map.of("type", "doc", "content", List.of());
+
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_template_validation_test";
 
@@ -84,7 +86,7 @@ class TemplateValidationIntegrationTest {
                           "Template With All Fields",
                           "template-with-all-fields",
                           TemplateCategory.ENGAGEMENT_LETTER,
-                          "<h1 th:text=\"${project.name}\">Name</h1>");
+                          CONTENT);
                   t1.setRequiredContextFields(
                       List.of(Map.of("entity", "project", "field", "name")));
                   t1 = documentTemplateRepository.save(t1);
@@ -97,7 +99,7 @@ class TemplateValidationIntegrationTest {
                           "Template With Missing Field",
                           "template-with-missing-field",
                           TemplateCategory.ENGAGEMENT_LETTER,
-                          "<h1>Test</h1>");
+                          CONTENT);
                   t2.setRequiredContextFields(
                       List.of(Map.of("entity", "project", "field", "nonexistent_field")));
                   t2 = documentTemplateRepository.save(t2);

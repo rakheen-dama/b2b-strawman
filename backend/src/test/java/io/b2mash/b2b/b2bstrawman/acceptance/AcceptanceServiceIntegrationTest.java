@@ -30,6 +30,8 @@ import io.b2mash.b2b.b2bstrawman.template.TemplateCategory;
 import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.BeforeAll;
@@ -50,6 +52,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 @RecordApplicationEvents
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AcceptanceServiceIntegrationTest {
+
+  private static final Map<String, Object> CONTENT = Map.of("type", "doc", "content", List.of());
 
   private static final String ORG_ID = "org_acceptance_svc_test";
   private static final String CLERK_USER_ID = "user_acceptance_svc_test";
@@ -104,7 +108,7 @@ class AcceptanceServiceIntegrationTest {
                               "Test Template",
                               "test-template",
                               TemplateCategory.ENGAGEMENT_LETTER,
-                              "<p>Test content</p>");
+                              CONTENT);
                       template = documentTemplateRepository.save(template);
                       templateId = template.getId();
                     }));

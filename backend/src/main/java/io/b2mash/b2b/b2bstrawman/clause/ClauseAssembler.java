@@ -23,10 +23,11 @@ public class ClauseAssembler {
     }
     var sb = new StringBuilder();
     for (var clause : clauses) {
+      String body = clause.getLegacyBody() != null ? clause.getLegacyBody() : "";
       sb.append("<div class=\"clause-block\" data-clause-slug=\"")
           .append(escapeHtmlAttribute(clause.getSlug()))
           .append("\">\n")
-          .append(clause.getBody())
+          .append(body)
           .append("\n</div>\n");
     }
     return sb.toString();

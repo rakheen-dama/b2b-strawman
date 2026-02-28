@@ -25,6 +25,8 @@ import io.b2mash.b2b.b2bstrawman.template.TemplateCategory;
 import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.BeforeAll;
@@ -45,6 +47,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class AcceptanceReadModelSyncIntegrationTest {
+
+  private static final Map<String, Object> CONTENT = Map.of("type", "doc", "content", List.of());
 
   private static final String ORG_ID = "org_acceptance_sync_test";
   private static final String CLERK_USER_ID = "user_acc_sync";
@@ -101,7 +105,7 @@ class AcceptanceReadModelSyncIntegrationTest {
                               "Sync Test Template",
                               "sync-test-template",
                               TemplateCategory.ENGAGEMENT_LETTER,
-                              "<p>Sync test content</p>");
+                              CONTENT);
                       template = documentTemplateRepository.save(template);
                       templateId = template.getId();
                     }));

@@ -27,6 +27,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class DocumentGenerationReadinessServiceTest {
 
+  private static final Map<String, Object> CONTENT = Map.of("type", "doc", "content", List.of());
+
   private static final UUID PROJECT_ID = UUID.randomUUID();
   private static final UUID INVOICE_ID = UUID.randomUUID();
 
@@ -178,7 +180,7 @@ class DocumentGenerationReadinessServiceTest {
             "Invoice Template",
             "invoice-template",
             TemplateCategory.OTHER,
-            "<html>invoice</html>");
+            CONTENT);
 
     when(documentTemplateRepository.findByPrimaryEntityTypeAndActiveTrueOrderBySortOrder(
             TemplateEntityType.INVOICE))
@@ -199,10 +201,6 @@ class DocumentGenerationReadinessServiceTest {
 
   private DocumentTemplate createProjectTemplate(String name, String slug) {
     return new DocumentTemplate(
-        TemplateEntityType.PROJECT,
-        name,
-        slug,
-        TemplateCategory.ENGAGEMENT_LETTER,
-        "<html></html>");
+        TemplateEntityType.PROJECT, name, slug, TemplateCategory.ENGAGEMENT_LETTER, CONTENT);
   }
 }

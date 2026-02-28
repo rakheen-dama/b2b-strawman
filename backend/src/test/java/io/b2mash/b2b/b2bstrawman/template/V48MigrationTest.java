@@ -25,6 +25,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+/**
+ * Verifies the final schema state after V48 + V49 migrations. V48 adds content_json/body_json JSONB
+ * columns alongside the original TEXT columns. V49 drops the old TEXT columns and renames the JSONB
+ * columns to content/body.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
@@ -55,21 +60,23 @@ class V48MigrationTest {
   }
 
   @Test
-  void migrationAddsJsonbAndLegacyColumns() throws Exception {
+  void contentColumnIsJsonbAfterSwap() throws Exception {
     try (Connection conn = dataSource.getConnection();
         Statement stmt = conn.createStatement()) {
-      // Verify content_json column exists on document_templates as JSONB
+      // After V49 swap: content column should be JSONB (renamed from content_json)
       ResultSet rs =
           stmt.executeQuery(
               "SELECT column_name, data_type FROM information_schema.columns "
                   + "WHERE table_schema = '"
                   + tenantSchema
                   + "' AND table_name = 'document_templates' "
-                  + "AND column_name = 'content_json'");
-      assertThat(rs.next()).as("content_json column should exist").isTrue();
-      assertThat(rs.getString("data_type")).isEqualTo("jsonb");
+                  + "AND column_name = 'content'");
+      assertThat(rs.next()).as("content column should exist").isTrue();
+      assertThat(rs.getString("data_type"))
+          .as("content column should be jsonb after V49 swap")
+          .isEqualTo("jsonb");
 
-      // Verify legacy_content column exists as TEXT
+      // legacy_content column should exist as TEXT
       rs =
           stmt.executeQuery(
               "SELECT column_name, data_type FROM information_schema.columns "
@@ -80,18 +87,20 @@ class V48MigrationTest {
       assertThat(rs.next()).as("legacy_content column should exist").isTrue();
       assertThat(rs.getString("data_type")).isEqualTo("text");
 
-      // Verify body_json column exists on clauses as JSONB
+      // body column on clauses should be JSONB (renamed from body_json)
       rs =
           stmt.executeQuery(
               "SELECT column_name, data_type FROM information_schema.columns "
                   + "WHERE table_schema = '"
                   + tenantSchema
                   + "' AND table_name = 'clauses' "
-                  + "AND column_name = 'body_json'");
-      assertThat(rs.next()).as("body_json column should exist").isTrue();
-      assertThat(rs.getString("data_type")).isEqualTo("jsonb");
+                  + "AND column_name = 'body'");
+      assertThat(rs.next()).as("body column should exist").isTrue();
+      assertThat(rs.getString("data_type"))
+          .as("body column should be jsonb after V49 swap")
+          .isEqualTo("jsonb");
 
-      // Verify legacy_body column exists as TEXT
+      // legacy_body column should exist as TEXT
       rs =
           stmt.executeQuery(
               "SELECT column_name, data_type FROM information_schema.columns "
@@ -105,63 +114,51 @@ class V48MigrationTest {
   }
 
   @Test
-  void platformTemplatesHaveContentJson() throws Exception {
+  void oldIntermediateColumnsDropped() throws Exception {
+    try (Connection conn = dataSource.getConnection();
+        Statement stmt = conn.createStatement()) {
+      // After V49: content_json should no longer exist (renamed to content)
+      ResultSet rs =
+          stmt.executeQuery(
+              "SELECT column_name FROM information_schema.columns "
+                  + "WHERE table_schema = '"
+                  + tenantSchema
+                  + "' AND table_name = 'document_templates' "
+                  + "AND column_name = 'content_json'");
+      assertThat(rs.next()).as("content_json should not exist after V49 swap").isFalse();
+
+      // After V49: body_json should no longer exist (renamed to body)
+      rs =
+          stmt.executeQuery(
+              "SELECT column_name FROM information_schema.columns "
+                  + "WHERE table_schema = '"
+                  + tenantSchema
+                  + "' AND table_name = 'clauses' "
+                  + "AND column_name = 'body_json'");
+      assertThat(rs.next()).as("body_json should not exist after V49 swap").isFalse();
+    }
+  }
+
+  @Test
+  void platformTemplatesHaveJsonbContent() throws Exception {
     try (Connection conn = dataSource.getConnection();
         Statement stmt = conn.createStatement()) {
       stmt.execute("SET search_path TO " + tenantSchema);
 
-      // PLATFORM templates seeded after V48 should have content_json populated
-      // by the TemplatePackSeeder (Tiptap JSON from .json content files).
-      // The content (TEXT) column also has the template content as a JSON string.
+      // PLATFORM templates seeded after V48+V49 should have content (JSONB) populated
       ResultSet rs =
           stmt.executeQuery(
-              "SELECT content_json, legacy_content, content FROM document_templates"
+              "SELECT content, legacy_content FROM document_templates"
                   + " WHERE source = 'PLATFORM'");
 
       boolean foundAny = false;
       while (rs.next()) {
         foundAny = true;
-        assertThat(rs.getObject("content_json"))
-            .as("PLATFORM template content_json should be populated by seeder")
-            .isNotNull();
-        // Original content column (TEXT) should have the template content from seeder
-        assertThat(rs.getString("content"))
-            .as("PLATFORM template content (TEXT) should be populated by seeder")
+        assertThat(rs.getObject("content"))
+            .as("PLATFORM template content (JSONB) should be populated by seeder")
             .isNotNull();
       }
       assertThat(foundAny).as("Should have at least one PLATFORM template").isTrue();
-    }
-  }
-
-  @Test
-  void originalTextColumnsStillExist() throws Exception {
-    try (Connection conn = dataSource.getConnection();
-        Statement stmt = conn.createStatement()) {
-      // Verify original content column still exists as TEXT (not swapped yet)
-      ResultSet rs =
-          stmt.executeQuery(
-              "SELECT column_name, data_type FROM information_schema.columns "
-                  + "WHERE table_schema = '"
-                  + tenantSchema
-                  + "' AND table_name = 'document_templates' "
-                  + "AND column_name = 'content'");
-      assertThat(rs.next()).as("content (TEXT) column should still exist").isTrue();
-      assertThat(rs.getString("data_type"))
-          .as("content column should still be TEXT")
-          .isEqualTo("text");
-
-      // Verify original body column still exists as TEXT
-      rs =
-          stmt.executeQuery(
-              "SELECT column_name, data_type FROM information_schema.columns "
-                  + "WHERE table_schema = '"
-                  + tenantSchema
-                  + "' AND table_name = 'clauses' "
-                  + "AND column_name = 'body'");
-      assertThat(rs.next()).as("body (TEXT) column should still exist").isTrue();
-      assertThat(rs.getString("data_type"))
-          .as("body column should still be TEXT")
-          .isEqualTo("text");
     }
   }
 

@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.clause.dto;
 import io.b2mash.b2b.b2bstrawman.clause.Clause;
 import io.b2mash.b2b.b2bstrawman.clause.ClauseSource;
 import java.time.Instant;
+import java.util.Map;
 import java.util.UUID;
 
 public record ClauseResponse(
@@ -10,7 +11,8 @@ public record ClauseResponse(
     String title,
     String slug,
     String description,
-    String body,
+    Map<String, Object> body,
+    String legacyBody,
     String category,
     ClauseSource source,
     UUID sourceClauseId,
@@ -27,6 +29,7 @@ public record ClauseResponse(
         clause.getSlug(),
         clause.getDescription(),
         clause.getBody(),
+        clause.getLegacyBody(),
         clause.getCategory(),
         clause.getSource(),
         clause.getSourceClauseId(),

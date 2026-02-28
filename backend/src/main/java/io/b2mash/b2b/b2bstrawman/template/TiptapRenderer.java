@@ -68,7 +68,7 @@ public class TiptapRenderer {
 
     String safeCss = templateCss != null ? templateCss.replaceAll("(?i)</style>", "") : "";
 
-    return "<!DOCTYPE html>\n<html><head>\n<meta charset=\"UTF-8\">\n<style>"
+    return "<!DOCTYPE html>\n<html><head>\n<meta charset=\"UTF-8\"/>\n<style>"
         + defaultCss
         + "\n"
         + safeCss
@@ -129,7 +129,7 @@ public class TiptapRenderer {
           return;
         }
         Clause clause = clauses.get(clauseId);
-        Map<String, Object> bodyJson = clause != null ? clause.getBodyJson() : null;
+        Map<String, Object> bodyJson = clause != null ? clause.getBody() : null;
         if (bodyJson != null) {
           sb.append("<div class=\"clause-block\" data-clause-slug=\"")
               .append(HtmlUtils.htmlEscape(slug))
@@ -148,8 +148,8 @@ public class TiptapRenderer {
       case "tableRow" -> wrapTag("tr", node, context, clauses, sb, depth);
       case "tableCell" -> renderTableCell("td", attrs, node, context, clauses, sb, depth);
       case "tableHeader" -> renderTableCell("th", attrs, node, context, clauses, sb, depth);
-      case "horizontalRule" -> sb.append("<hr>");
-      case "hardBreak" -> sb.append("<br>");
+      case "horizontalRule" -> sb.append("<hr/>");
+      case "hardBreak" -> sb.append("<br/>");
       case "legacyHtml" ->
           sb.append(Jsoup.clean((String) attrs.getOrDefault("html", ""), LEGACY_HTML_SAFELIST));
       default -> renderChildren(node, context, clauses, sb, depth);

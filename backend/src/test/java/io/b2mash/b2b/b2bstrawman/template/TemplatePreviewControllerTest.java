@@ -39,6 +39,18 @@ import org.springframework.transaction.support.TransactionTemplate;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TemplatePreviewControllerTest {
 
+  private static final Map<String, Object> CONTENT =
+      Map.of(
+          "type",
+          "doc",
+          "content",
+          List.of(
+              Map.of(
+                  "type",
+                  "paragraph",
+                  "content",
+                  List.of(Map.of("type", "variable", "attrs", Map.of("key", "project.name"))))));
+
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_preview_ctrl_test";
 
@@ -90,7 +102,7 @@ class TemplatePreviewControllerTest {
                               "Preview Template",
                               "preview-template",
                               TemplateCategory.ENGAGEMENT_LETTER,
-                              "<div class=\"header\"><h1 th:text=\"${project.name}\">Name</h1></div><p>Generated at: <span th:text=\"${generatedAt}\">now</span></p>");
+                              CONTENT);
                       template = documentTemplateRepository.save(template);
                       testTemplateId = template.getId();
                     }));

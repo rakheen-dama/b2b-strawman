@@ -12,6 +12,7 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
@@ -29,6 +30,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.ObjectMapper;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -45,6 +47,7 @@ class DocumentTemplateControllerTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
+  @Autowired private ObjectMapper objectMapper;
 
   private String memberIdOwner;
   private String memberIdOwnerB;
@@ -76,28 +79,30 @@ class DocumentTemplateControllerTest {
   @Test
   @Order(1)
   void shouldCreateTemplateWithSlug() throws Exception {
+    Map<String, Object> tiptapContent =
+        TestDocumentBuilder.doc().heading(1, "Dear").paragraph("We are pleased to...").build();
+
+    var requestBody = new LinkedHashMap<String, Object>();
+    requestBody.put("name", "Engagement Letter");
+    requestBody.put("category", "ENGAGEMENT_LETTER");
+    requestBody.put("primaryEntityType", "PROJECT");
+    requestBody.put("content", tiptapContent);
+    requestBody.put("description", "Standard engagement letter");
+
     var result =
         mockMvc
             .perform(
                 post("/api/templates")
                     .with(ownerJwt())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "name": "Engagement Letter",
-                          "category": "ENGAGEMENT_LETTER",
-                          "primaryEntityType": "PROJECT",
-                          "content": "<h1>Dear {{customer.name}}</h1><p>We are pleased to...</p>",
-                          "description": "Standard engagement letter"
-                        }
-                        """))
+                    .content(objectMapper.writeValueAsString(requestBody)))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.slug").value("engagement-letter"))
             .andExpect(jsonPath("$.category").value("ENGAGEMENT_LETTER"))
             .andExpect(jsonPath("$.primaryEntityType").value("PROJECT"))
             .andExpect(jsonPath("$.source").value("ORG_CUSTOM"))
             .andExpect(jsonPath("$.active").value(true))
+            .andExpect(jsonPath("$.content.type").value("doc"))
             .andReturn();
 
     createdTemplateId = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
@@ -106,20 +111,21 @@ class DocumentTemplateControllerTest {
   @Test
   @Order(2)
   void shouldCreateSecondTemplate() throws Exception {
+    Map<String, Object> tiptapContent =
+        TestDocumentBuilder.doc().heading(1, "Non-Disclosure Agreement").build();
+
+    var requestBody = new LinkedHashMap<String, Object>();
+    requestBody.put("name", "NDA Agreement");
+    requestBody.put("category", "NDA");
+    requestBody.put("primaryEntityType", "CUSTOMER");
+    requestBody.put("content", tiptapContent);
+
     mockMvc
         .perform(
             post("/api/templates")
                 .with(ownerJwt())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "name": "NDA Agreement",
-                      "category": "NDA",
-                      "primaryEntityType": "CUSTOMER",
-                      "content": "<h1>Non-Disclosure Agreement</h1>"
-                    }
-                    """))
+                .content(objectMapper.writeValueAsString(requestBody)))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.slug").value("nda-agreement"));
   }
@@ -157,22 +163,23 @@ class DocumentTemplateControllerTest {
   @Test
   @Order(6)
   void shouldUpdateTemplate() throws Exception {
+    Map<String, Object> updatedContent =
+        TestDocumentBuilder.doc().paragraph("Updated content").build();
+
+    var updateBody = new LinkedHashMap<String, Object>();
+    updateBody.put("name", "Updated Engagement Letter");
+    updateBody.put("content", updatedContent);
+    updateBody.put("description", "Updated description");
+
     mockMvc
         .perform(
             put("/api/templates/" + createdTemplateId)
                 .with(ownerJwt())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "name": "Updated Engagement Letter",
-                      "content": "<h1>Updated content</h1>",
-                      "description": "Updated description"
-                    }
-                    """))
+                .content(objectMapper.writeValueAsString(updateBody)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Updated Engagement Letter"))
-        .andExpect(jsonPath("$.content").value("<h1>Updated content</h1>"))
+        .andExpect(jsonPath("$.content.type").value("doc"))
         .andExpect(jsonPath("$.description").value("Updated description"));
   }
 
@@ -193,22 +200,22 @@ class DocumentTemplateControllerTest {
   @Test
   @Order(8)
   void listShouldExcludeContentAndCss() throws Exception {
-    // Create a template with content and css
+    Map<String, Object> tiptapContent =
+        TestDocumentBuilder.doc().heading(1, "Some content").build();
+
+    var requestBody = new LinkedHashMap<String, Object>();
+    requestBody.put("name", "Content Exclusion Test");
+    requestBody.put("category", "REPORT");
+    requestBody.put("primaryEntityType", "PROJECT");
+    requestBody.put("content", tiptapContent);
+    requestBody.put("css", "body { font-size: 14px; }");
+
     mockMvc
         .perform(
             post("/api/templates")
                 .with(ownerJwt())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "name": "Content Exclusion Test",
-                      "category": "REPORT",
-                      "primaryEntityType": "PROJECT",
-                      "content": "<h1>Some content</h1>",
-                      "css": "body { font-size: 14px; }"
-                    }
-                    """))
+                .content(objectMapper.writeValueAsString(requestBody)))
         .andExpect(status().isCreated());
 
     // List should NOT include content or css fields
@@ -222,20 +229,20 @@ class DocumentTemplateControllerTest {
   @Test
   @Order(9)
   void memberCannotCreateTemplate() throws Exception {
+    Map<String, Object> tiptapContent = TestDocumentBuilder.doc().paragraph("Should fail").build();
+
+    var requestBody = new LinkedHashMap<String, Object>();
+    requestBody.put("name", "Member Template");
+    requestBody.put("category", "OTHER");
+    requestBody.put("primaryEntityType", "PROJECT");
+    requestBody.put("content", tiptapContent);
+
     mockMvc
         .perform(
             post("/api/templates")
                 .with(memberJwt())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "name": "Member Template",
-                      "category": "OTHER",
-                      "primaryEntityType": "PROJECT",
-                      "content": "<p>Should fail</p>"
-                    }
-                    """))
+                .content(objectMapper.writeValueAsString(requestBody)))
         .andExpect(status().isForbidden());
   }
 
@@ -249,6 +256,48 @@ class DocumentTemplateControllerTest {
     mockMvc
         .perform(get("/api/templates/" + createdTemplateId).with(ownerJwtTenantB()))
         .andExpect(status().isNotFound());
+  }
+
+  // --- Round-trip test: POST Tiptap JSON, GET same structure back ---
+
+  @Test
+  @Order(11)
+  void shouldRoundTripTiptapJsonContent() throws Exception {
+    Map<String, Object> tiptapContent =
+        TestDocumentBuilder.doc()
+            .heading(1, "Engagement Letter")
+            .paragraph("Dear valued customer,")
+            .variable("customer.name")
+            .build();
+
+    var requestBody = new LinkedHashMap<String, Object>();
+    requestBody.put("name", "Round Trip Test");
+    requestBody.put("category", "ENGAGEMENT_LETTER");
+    requestBody.put("primaryEntityType", "PROJECT");
+    requestBody.put("content", tiptapContent);
+
+    var createResult =
+        mockMvc
+            .perform(
+                post("/api/templates")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(requestBody)))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.content.type").value("doc"))
+            .andExpect(jsonPath("$.content.content[0].type").value("heading"))
+            .andExpect(jsonPath("$.content.content[1].type").value("paragraph"))
+            .andReturn();
+
+    String templateId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
+
+    // GET by ID should return the same content structure
+    mockMvc
+        .perform(get("/api/templates/" + templateId).with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content.type").value("doc"))
+        .andExpect(jsonPath("$.content.content[0].type").value("heading"))
+        .andExpect(jsonPath("$.content.content[1].type").value("paragraph"));
   }
 
   // --- JWT Helpers ---

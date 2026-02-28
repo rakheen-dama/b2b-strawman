@@ -13,6 +13,8 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.template.TestDocumentBuilder;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
@@ -31,6 +33,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.ObjectMapper;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -48,6 +51,7 @@ class ClauseControllerIntegrationTest {
   @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private JdbcTemplate jdbcTemplate;
+  @Autowired private ObjectMapper objectMapper;
 
   private String createdClauseId;
 
@@ -72,21 +76,27 @@ class ClauseControllerIntegrationTest {
   @Test
   @Order(2)
   void post_createClause_returns201_asAdmin() throws Exception {
+    Map<String, Object> clauseBody = TestDocumentBuilder.doc().paragraph("Body").build();
+
+    var requestBody = new LinkedHashMap<String, Object>();
+    requestBody.put("title", "Ctrl Test Clause");
+    requestBody.put("description", "A test clause");
+    requestBody.put("body", clauseBody);
+    requestBody.put("category", "general");
+
     var result =
         mockMvc
             .perform(
                 post("/api/clauses")
                     .with(adminJwt())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                {"title":"Ctrl Test Clause","description":"A test clause","body":"<p>Body</p>","category":"general"}
-                """))
+                    .content(objectMapper.writeValueAsString(requestBody)))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.id").exists())
             .andExpect(jsonPath("$.title").value("Ctrl Test Clause"))
             .andExpect(jsonPath("$.slug").value("ctrl-test-clause"))
             .andExpect(jsonPath("$.source").value("CUSTOM"))
+            .andExpect(jsonPath("$.body.type").value("doc"))
             .andReturn();
     createdClauseId = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
   }
@@ -94,30 +104,39 @@ class ClauseControllerIntegrationTest {
   @Test
   @Order(3)
   void post_createClause_withMemberRole_returns403() throws Exception {
+    Map<String, Object> clauseBody = TestDocumentBuilder.doc().paragraph("Body").build();
+
+    var requestBody = new LinkedHashMap<String, Object>();
+    requestBody.put("title", "Member Clause");
+    requestBody.put("description", null);
+    requestBody.put("body", clauseBody);
+    requestBody.put("category", "general");
+
     mockMvc
         .perform(
             post("/api/clauses")
                 .with(memberJwt())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                {"title":"Member Clause","description":null,"body":"<p>Body</p>","category":"general"}
-                """))
+                .content(objectMapper.writeValueAsString(requestBody)))
         .andExpect(status().isForbidden());
   }
 
   @Test
   @Order(4)
   void post_createClause_withInvalidBody_returns400() throws Exception {
+    // Send null body to trigger @NotNull validation
+    var invalidBody = new LinkedHashMap<String, Object>();
+    invalidBody.put("title", "");
+    invalidBody.put("description", null);
+    invalidBody.put("body", null);
+    invalidBody.put("category", "");
+
     mockMvc
         .perform(
             post("/api/clauses")
                 .with(adminJwt())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                {"title":"","description":null,"body":"","category":""}
-                """))
+                .content(objectMapper.writeValueAsString(invalidBody)))
         .andExpect(status().isBadRequest());
   }
 
@@ -134,18 +153,24 @@ class ClauseControllerIntegrationTest {
   @Test
   @Order(6)
   void put_updateClause_returns200() throws Exception {
+    Map<String, Object> updatedBody = TestDocumentBuilder.doc().paragraph("Updated Body").build();
+
+    var requestBody = new LinkedHashMap<String, Object>();
+    requestBody.put("title", "Updated Clause");
+    requestBody.put("description", "Updated");
+    requestBody.put("body", updatedBody);
+    requestBody.put("category", "legal");
+
     mockMvc
         .perform(
             put("/api/clauses/" + createdClauseId)
                 .with(adminJwt())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                {"title":"Updated Clause","description":"Updated","body":"<p>Updated Body</p>","category":"legal"}
-                """))
+                .content(objectMapper.writeValueAsString(requestBody)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.title").value("Updated Clause"))
-        .andExpect(jsonPath("$.category").value("legal"));
+        .andExpect(jsonPath("$.category").value("legal"))
+        .andExpect(jsonPath("$.body.type").value("doc"));
   }
 
   @Test
@@ -179,17 +204,21 @@ class ClauseControllerIntegrationTest {
   @Test
   @Order(10)
   void delete_deleteClause_returns204() throws Exception {
-    // Create a fresh clause to delete (the original one might be referenced by clone)
+    Map<String, Object> clauseBody = TestDocumentBuilder.doc().paragraph("Delete").build();
+
+    var requestBody = new LinkedHashMap<String, Object>();
+    requestBody.put("title", "Delete Me Clause");
+    requestBody.put("description", null);
+    requestBody.put("body", clauseBody);
+    requestBody.put("category", "general");
+
     var result =
         mockMvc
             .perform(
                 post("/api/clauses")
                     .with(adminJwt())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                {"title":"Delete Me Clause","description":null,"body":"<p>Delete</p>","category":"general"}
-                """))
+                    .content(objectMapper.writeValueAsString(requestBody)))
             .andExpect(status().isCreated())
             .andReturn();
     var deleteId = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
@@ -202,17 +231,21 @@ class ClauseControllerIntegrationTest {
   @Test
   @Order(11)
   void put_updateSystemClause_returns400() throws Exception {
-    // Create a clause via the API
+    Map<String, Object> clauseBody = TestDocumentBuilder.doc().paragraph("System").build();
+
+    var requestBody = new LinkedHashMap<String, Object>();
+    requestBody.put("title", "System Ctrl Clause");
+    requestBody.put("description", null);
+    requestBody.put("body", clauseBody);
+    requestBody.put("category", "general");
+
     var result =
         mockMvc
             .perform(
                 post("/api/clauses")
                     .with(adminJwt())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                {"title":"System Ctrl Clause","description":null,"body":"<p>System</p>","category":"general"}
-                """))
+                    .content(objectMapper.writeValueAsString(requestBody)))
             .andExpect(status().isCreated())
             .andReturn();
     var sysClauseId = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
@@ -223,16 +256,20 @@ class ClauseControllerIntegrationTest {
         "UPDATE \"%s\".clauses SET source = 'SYSTEM' WHERE id = ?::uuid".formatted(schema),
         sysClauseId);
 
-    // Verify PUT returns 400 for SYSTEM clause
+    Map<String, Object> updateBody = TestDocumentBuilder.doc().paragraph("Nope").build();
+
+    var updateRequestBody = new LinkedHashMap<String, Object>();
+    updateRequestBody.put("title", "Should Fail");
+    updateRequestBody.put("description", null);
+    updateRequestBody.put("body", updateBody);
+    updateRequestBody.put("category", "general");
+
     mockMvc
         .perform(
             put("/api/clauses/" + sysClauseId)
                 .with(adminJwt())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                {"title":"Should Fail","description":null,"body":"<p>Nope</p>","category":"general"}
-                """))
+                .content(objectMapper.writeValueAsString(updateRequestBody)))
         .andExpect(status().isBadRequest());
   }
 
@@ -243,6 +280,47 @@ class ClauseControllerIntegrationTest {
         .perform(get("/api/clauses?category=legal").with(ownerJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray());
+  }
+
+  // --- Round-trip test: POST Tiptap JSON body, verify on GET ---
+
+  @Test
+  @Order(13)
+  void shouldRoundTripTiptapJsonBody() throws Exception {
+    Map<String, Object> clauseBody =
+        TestDocumentBuilder.doc()
+            .heading(1, "Payment Terms")
+            .paragraph("Net 30 days from invoice date.")
+            .build();
+
+    var requestBody = new LinkedHashMap<String, Object>();
+    requestBody.put("title", "Round Trip Clause");
+    requestBody.put("description", "Testing JSON round-trip");
+    requestBody.put("body", clauseBody);
+    requestBody.put("category", "billing");
+
+    var createResult =
+        mockMvc
+            .perform(
+                post("/api/clauses")
+                    .with(adminJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(requestBody)))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.body.type").value("doc"))
+            .andExpect(jsonPath("$.body.content[0].type").value("heading"))
+            .andExpect(jsonPath("$.body.content[1].type").value("paragraph"))
+            .andReturn();
+
+    String clauseId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
+
+    // GET by ID should return the same body structure
+    mockMvc
+        .perform(get("/api/clauses/" + clauseId).with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.body.type").value("doc"))
+        .andExpect(jsonPath("$.body.content[0].type").value("heading"))
+        .andExpect(jsonPath("$.body.content[1].type").value("paragraph"));
   }
 
   // --- Helper: sync member ---

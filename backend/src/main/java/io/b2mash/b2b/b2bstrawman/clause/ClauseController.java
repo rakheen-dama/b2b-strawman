@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.clause;
 
-import io.b2mash.b2b.b2bstrawman.clause.dto.ClausePreviewRequest;
 import io.b2mash.b2b.b2bstrawman.clause.dto.ClauseResponse;
 import io.b2mash.b2b.b2bstrawman.clause.dto.CreateClauseRequest;
 import io.b2mash.b2b.b2bstrawman.clause.dto.UpdateClauseRequest;
@@ -84,13 +83,5 @@ public class ClauseController {
   public ResponseEntity<ClauseResponse> cloneClause(@PathVariable UUID id) {
     var response = clauseService.cloneClause(id);
     return ResponseEntity.created(URI.create("/api/clauses/" + response.id())).body(response);
-  }
-
-  @PostMapping("/{id}/preview")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
-  public ResponseEntity<String> previewClause(
-      @PathVariable UUID id, @Valid @RequestBody ClausePreviewRequest request) {
-    return ResponseEntity.ok(
-        clauseService.previewClause(id, request.entityId(), request.entityType()));
   }
 }

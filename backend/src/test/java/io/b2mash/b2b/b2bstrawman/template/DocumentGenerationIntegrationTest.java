@@ -41,6 +41,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DocumentGenerationIntegrationTest {
 
+  private static final Map<String, Object> CONTENT = Map.of("type", "doc", "content", List.of());
+
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_doc_gen_test";
 
@@ -87,7 +89,7 @@ class DocumentGenerationIntegrationTest {
                           "Gen Template",
                           "gen-template",
                           TemplateCategory.ENGAGEMENT_LETTER,
-                          "<h1 th:text=\"${project.name}\">Name</h1><p>Test</p>");
+                          CONTENT);
                   template = documentTemplateRepository.save(template);
                   testTemplateId = template.getId();
                 }));

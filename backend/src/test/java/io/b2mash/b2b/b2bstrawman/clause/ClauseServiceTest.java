@@ -10,6 +10,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import org.junit.jupiter.api.BeforeAll;
@@ -29,6 +31,21 @@ import org.springframework.transaction.support.TransactionTemplate;
 class ClauseServiceTest {
 
   private static final String ORG_ID = "org_clause_svc_test";
+
+  private static final Map<String, Object> BODY =
+      Map.of("type", "doc", "content", List.of(Map.of("type", "paragraph")));
+
+  private static final Map<String, Object> UPDATED_BODY =
+      Map.of(
+          "type",
+          "doc",
+          "content",
+          List.of(
+              Map.of(
+                  "type",
+                  "paragraph",
+                  "content",
+                  List.of(Map.of("type", "text", "text", "Updated")))));
 
   @Autowired private ClauseService clauseService;
   @Autowired private ClauseRepository clauseRepository;
@@ -50,14 +67,14 @@ class ClauseServiceTest {
 
   @Test
   void createClause_savesAndReturnsResponse() {
-    var req = new CreateClauseRequest("Test Clause", "A test clause", "<p>Body</p>", "general");
+    var req = new CreateClauseRequest("Test Clause", "A test clause", BODY, "general");
     var response = runInTenant(() -> clauseService.createClause(req));
 
     assertThat(response.id()).isNotNull();
     assertThat(response.title()).isEqualTo("Test Clause");
     assertThat(response.slug()).isEqualTo("test-clause");
     assertThat(response.description()).isEqualTo("A test clause");
-    assertThat(response.body()).isEqualTo("<p>Body</p>");
+    assertThat(response.body()).containsEntry("type", "doc");
     assertThat(response.category()).isEqualTo("general");
     assertThat(response.source()).isEqualTo(ClauseSource.CUSTOM);
     assertThat(response.active()).isTrue();
@@ -65,35 +82,33 @@ class ClauseServiceTest {
 
   @Test
   void createClause_generatesUniqueSlug_whenDuplicate() {
-    var req1 = new CreateClauseRequest("Duplicate Slug", null, "<p>First</p>", "general");
+    var req1 = new CreateClauseRequest("Duplicate Slug", null, BODY, "general");
     var resp1 = runInTenant(() -> clauseService.createClause(req1));
     assertThat(resp1.slug()).isEqualTo("duplicate-slug");
 
-    var req2 = new CreateClauseRequest("Duplicate Slug", null, "<p>Second</p>", "general");
+    var req2 = new CreateClauseRequest("Duplicate Slug", null, BODY, "general");
     var resp2 = runInTenant(() -> clauseService.createClause(req2));
     assertThat(resp2.slug()).isEqualTo("duplicate-slug-2");
   }
 
   @Test
   void updateClause_updatesFieldsAndSlug() {
-    var createReq = new CreateClauseRequest("Update Me", null, "<p>Original</p>", "general");
+    var createReq = new CreateClauseRequest("Update Me", null, BODY, "general");
     var created = runInTenant(() -> clauseService.createClause(createReq));
 
-    var updateReq =
-        new UpdateClauseRequest("Updated Title", "Updated desc", "<p>Updated</p>", "legal");
+    var updateReq = new UpdateClauseRequest("Updated Title", "Updated desc", UPDATED_BODY, "legal");
     var updated = runInTenant(() -> clauseService.updateClause(created.id(), updateReq));
 
     assertThat(updated.title()).isEqualTo("Updated Title");
     assertThat(updated.slug()).isEqualTo("updated-title");
     assertThat(updated.description()).isEqualTo("Updated desc");
-    assertThat(updated.body()).isEqualTo("<p>Updated</p>");
+    assertThat(updated.body()).containsEntry("type", "doc");
     assertThat(updated.category()).isEqualTo("legal");
   }
 
   @Test
   void updateClause_blocksSystemSource() {
-    // Create a clause and manually set its source to SYSTEM via SQL
-    var createReq = new CreateClauseRequest("System Clause", null, "<p>System</p>", "general");
+    var createReq = new CreateClauseRequest("System Clause", null, BODY, "general");
     var created = runInTenant(() -> clauseService.createClause(createReq));
 
     // Update source to SYSTEM directly in DB
@@ -103,14 +118,14 @@ class ClauseServiceTest {
           return null;
         });
 
-    var updateReq = new UpdateClauseRequest("New Title", null, "<p>New</p>", "general");
+    var updateReq = new UpdateClauseRequest("New Title", null, BODY, "general");
     assertThatThrownBy(() -> runInTenant(() -> clauseService.updateClause(created.id(), updateReq)))
         .isInstanceOf(io.b2mash.b2b.b2bstrawman.exception.InvalidStateException.class);
   }
 
   @Test
   void deleteClause_removesClause() {
-    var createReq = new CreateClauseRequest("Delete Me", null, "<p>Delete</p>", "general");
+    var createReq = new CreateClauseRequest("Delete Me", null, BODY, "general");
     var created = runInTenant(() -> clauseService.createClause(createReq));
 
     runInTenantVoid(() -> clauseService.deleteClause(created.id()));
@@ -121,7 +136,7 @@ class ClauseServiceTest {
 
   @Test
   void deleteClause_throwsConflict_whenReferenced() {
-    var createReq = new CreateClauseRequest("Referenced Clause", null, "<p>Ref</p>", "general");
+    var createReq = new CreateClauseRequest("Referenced Clause", null, BODY, "general");
     var created = runInTenant(() -> clauseService.createClause(createReq));
 
     // Insert a document_template first (FK requires valid template_id), then reference the clause
@@ -130,7 +145,7 @@ class ClauseServiceTest {
           var templateId = UUID.randomUUID();
           jdbcTemplate.update(
               "INSERT INTO document_templates (id, name, slug, category, primary_entity_type, content, source, active, created_at, updated_at) "
-                  + "VALUES (?, 'Test Template', 'test-template-ref', 'PROPOSAL', 'PROJECT', '<p>content</p>', 'ORG_CUSTOM', true, now(), now())",
+                  + "VALUES (?, 'Test Template', 'test-template-ref', 'PROPOSAL', 'PROJECT', '{\"type\":\"doc\",\"content\":[]}'::jsonb, 'ORG_CUSTOM', true, now(), now())",
               templateId);
           jdbcTemplate.update(
               "INSERT INTO template_clauses (template_id, clause_id, sort_order) VALUES (?, ?, 0)",
@@ -145,7 +160,7 @@ class ClauseServiceTest {
 
   @Test
   void deactivateClause_setsInactive() {
-    var createReq = new CreateClauseRequest("Deactivate Me", null, "<p>Deactivate</p>", "general");
+    var createReq = new CreateClauseRequest("Deactivate Me", null, BODY, "general");
     var created = runInTenant(() -> clauseService.createClause(createReq));
     assertThat(created.active()).isTrue();
 
@@ -155,8 +170,7 @@ class ClauseServiceTest {
 
   @Test
   void cloneClause_createsClonedCopy() {
-    var createReq =
-        new CreateClauseRequest("Original Clause", "Original desc", "<p>Original</p>", "general");
+    var createReq = new CreateClauseRequest("Original Clause", "Original desc", BODY, "general");
     var original = runInTenant(() -> clauseService.createClause(createReq));
 
     var cloned = runInTenant(() -> clauseService.cloneClause(original.id()));
@@ -172,8 +186,8 @@ class ClauseServiceTest {
 
   @Test
   void listClauses_returnsActiveOnly_byDefault() {
-    var req1 = new CreateClauseRequest("List Active 1", null, "<p>A1</p>", "list-test");
-    var req2 = new CreateClauseRequest("List Active 2", null, "<p>A2</p>", "list-test");
+    var req1 = new CreateClauseRequest("List Active 1", null, BODY, "list-test");
+    var req2 = new CreateClauseRequest("List Active 2", null, BODY, "list-test");
     var created1 = runInTenant(() -> clauseService.createClause(req1));
     runInTenant(() -> clauseService.createClause(req2));
     runInTenant(() -> clauseService.deactivateClause(created1.id()));
@@ -186,8 +200,7 @@ class ClauseServiceTest {
 
   @Test
   void listClauses_filtersByCategory() {
-    var req =
-        new CreateClauseRequest("Category Filter", null, "<p>Cat</p>", "unique-category-test");
+    var req = new CreateClauseRequest("Category Filter", null, BODY, "unique-category-test");
     runInTenant(() -> clauseService.createClause(req));
 
     var result = runInTenant(() -> clauseService.listClauses(false, "unique-category-test"));
@@ -196,8 +209,8 @@ class ClauseServiceTest {
 
   @Test
   void listCategories_returnsDistinctActiveCategories() {
-    var req1 = new CreateClauseRequest("Cat A Clause", null, "<p>A</p>", "cat-a-unique");
-    var req2 = new CreateClauseRequest("Cat B Clause", null, "<p>B</p>", "cat-b-unique");
+    var req1 = new CreateClauseRequest("Cat A Clause", null, BODY, "cat-a-unique");
+    var req2 = new CreateClauseRequest("Cat B Clause", null, BODY, "cat-b-unique");
     runInTenant(() -> clauseService.createClause(req1));
     runInTenant(() -> clauseService.createClause(req2));
 

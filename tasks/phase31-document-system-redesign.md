@@ -96,7 +96,7 @@ Phase 31 replaces the Thymeleaf-based document authoring system with a Tiptap/Pr
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 2a | Epic 210 | 210A | TiptapRenderer service (JSON tree walker, ~250 LOC). Unit tests for all node types. Independent of entity changes. |
+| 2a | Epic 210 | 210A | TiptapRenderer service (JSON tree walker, ~250 LOC). Unit tests for all node types. Independent of entity changes. | **Done** (PR #430) |
 | 2b | Epic 210 | 210B | VariableMetadataRegistry + GET /api/templates/variables endpoint. Integration tests. Depends on 210A (same package). |
 | 2a' | Epic 211 | 211A | DocumentTemplate + Clause entity JSONB annotation changes. Controller DTO updates (content/body as Object). CRUD integration test updates. **Can run in parallel with 210A/210B.** |
 | 2b' | Epic 211 | 211B | TemplateClauseSync service (extract clauseBlock nodes, diff + flush). Integration tests. Depends on 211A (entity must accept JSONB). |
@@ -245,7 +245,7 @@ Stage 7:  [217A] ──► [217B]                                      ← clean
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **210A** | 210.1-210.6 | TiptapRenderer service (JSON tree walker, all node types, variable resolution, clause block recursion, loop table iteration, mark handling). Unit tests for every node type (~15 tests). | |
+| **210A** | 210.1-210.6 | TiptapRenderer service (JSON tree walker, all node types, variable resolution, clause block recursion, loop table iteration, mark handling). Unit tests for every node type (~15 tests). | **Done** (PR #430) |
 | **210B** | 210.7-210.11 | VariableMetadataRegistry (static configuration per entity type). Variable metadata controller endpoint. TestDocumentBuilder utility class. Integration tests (~6 tests). | |
 
 ### Tasks

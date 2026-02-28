@@ -73,4 +73,12 @@ public class TemplateClause {
   public Instant getCreatedAt() {
     return createdAt;
   }
+
+  public void setSortOrder(int sortOrder) {
+    this.sortOrder = sortOrder;
+  }
+
+  public void setRequired(boolean required) {
+    this.required = required;
+  }
 }

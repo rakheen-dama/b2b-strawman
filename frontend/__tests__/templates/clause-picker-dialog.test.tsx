@@ -181,12 +181,14 @@ describe("ClausePickerDialog", () => {
         title: "Standard NDA",
         category: "Confidentiality",
         description: "Non-disclosure agreement clause",
+        legacyBody: null,
       },
       {
         id: "c-2",
         title: "Liability Limitation",
         category: "Legal",
         description: "Limits liability exposure",
+        legacyBody: null,
       },
     ]);
     expect(mockOnOpenChange).toHaveBeenCalledWith(false);

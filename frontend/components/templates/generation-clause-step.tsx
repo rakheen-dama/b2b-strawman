@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { ArrowUp, ArrowDown, Plus, ArrowRight } from "lucide-react";
+import { ArrowUp, ArrowDown, Plus, ArrowRight, ChevronDown, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -25,6 +25,14 @@ interface GenerationClauseStepProps {
   onNext: (clauses: SelectedClause[]) => void;
 }
 
+function buildBodyPreviews(data: TemplateClauseDetail[]): Map<string, string | null> {
+  const map = new Map<string, string | null>();
+  for (const tc of data) {
+    map.set(tc.clauseId, tc.bodyPreview);
+  }
+  return map;
+}
+
 export function GenerationClauseStep({
   templateId,
   preloadedClauses,
@@ -35,6 +43,8 @@ export function GenerationClauseStep({
     initialClauses ?? [],
   );
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [clauseBodyPreviews, setClauseBodyPreviews] = useState<Map<string, string | null>>(new Map());
   const [isLoading, setIsLoading] = useState(!initialClauses);
   const [error, setError] = useState<string | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -62,6 +72,7 @@ export function GenerationClauseStep({
       const mapped = mapClauseData(data);
       setClauses(mapped);
       setCheckedIds(new Set(mapped.map((c) => c.clauseId)));
+      setClauseBodyPreviews(buildBodyPreviews(data));
     } catch {
       setError("Failed to load template clauses.");
     } finally {
@@ -71,15 +82,14 @@ export function GenerationClauseStep({
 
   useEffect(() => {
     if (initialClauses) {
-      // Restore checked state from initial clauses
       setCheckedIds(new Set(initialClauses.map((c) => c.clauseId)));
       return;
     }
-    // Use preloaded data from parent if available, otherwise fetch
     if (preloadedClauses && preloadedClauses.length > 0) {
       const mapped = mapClauseData(preloadedClauses);
       setClauses(mapped);
       setCheckedIds(new Set(mapped.map((c) => c.clauseId)));
+      setClauseBodyPreviews(buildBodyPreviews(preloadedClauses));
       setIsLoading(false);
       return;
     }
@@ -88,6 +98,18 @@ export function GenerationClauseStep({
 
   function toggleChecked(clauseId: string) {
     setCheckedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(clauseId)) {
+        next.delete(clauseId);
+      } else {
+        next.add(clauseId);
+      }
+      return next;
+    });
+  }
+
+  function toggleExpanded(clauseId: string) {
+    setExpandedIds((prev) => {
       const next = new Set(prev);
       if (next.has(clauseId)) {
         next.delete(clauseId);
@@ -122,6 +144,7 @@ export function GenerationClauseStep({
       title: string;
       category: string;
       description: string | null;
+      legacyBody: string | null;
     }>,
   ) {
     setClauses((prev) => {
@@ -138,11 +161,17 @@ export function GenerationClauseStep({
         }));
       return [...prev, ...additions];
     });
-    // Check newly added clauses
     setCheckedIds((prev) => {
       const next = new Set(prev);
       for (const nc of newClauses) {
         next.add(nc.id);
+      }
+      return next;
+    });
+    setClauseBodyPreviews((prev) => {
+      const next = new Map(prev);
+      for (const nc of newClauses) {
+        next.set(nc.id, nc.legacyBody ?? null);
       }
       return next;
     });
@@ -183,7 +212,7 @@ export function GenerationClauseStep({
           onClick={() => setPickerOpen(true)}
         >
           <Plus className="mr-1 size-3.5" />
-          Browse Library
+          Add from library
         </Button>
       </div>
 
@@ -197,65 +226,103 @@ export function GenerationClauseStep({
         <div className="max-h-[400px] space-y-2 overflow-y-auto">
           {clauses.map((clause, index) => {
             const isChecked = checkedIds.has(clause.clauseId);
+            const isExpanded = expandedIds.has(clause.clauseId);
             return (
               <div
                 key={clause.clauseId}
-                className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900"
+                className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
               >
-                <Checkbox
-                  checked={isChecked}
-                  disabled={clause.required}
-                  onCheckedChange={() => {
-                    if (!clause.required) toggleChecked(clause.clauseId);
-                  }}
-                  aria-label={`Select ${clause.title}`}
-                />
+                <div className="flex items-center gap-3 px-4 py-3">
+                  <Checkbox
+                    checked={isChecked}
+                    disabled={clause.required}
+                    onCheckedChange={() => {
+                      if (!clause.required) toggleChecked(clause.clauseId);
+                    }}
+                    aria-label={`Select ${clause.title}`}
+                  />
 
-                <div className="flex flex-col gap-0.5">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-6"
-                    onClick={() => moveClauseUp(index)}
-                    disabled={index === 0}
-                    type="button"
-                    title="Move up"
-                  >
-                    <ArrowUp className="size-3" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-6"
-                    onClick={() => moveClauseDown(index)}
-                    disabled={index === clauses.length - 1}
-                    type="button"
-                    title="Move down"
-                  >
-                    <ArrowDown className="size-3" />
-                  </Button>
-                </div>
+                  <div className="flex flex-col gap-0.5">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-6"
+                      onClick={() => moveClauseUp(index)}
+                      disabled={index === 0}
+                      type="button"
+                      title="Move up"
+                      aria-label={`Move ${clause.title} up`}
+                    >
+                      <ArrowUp className="size-3" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-6"
+                      onClick={() => moveClauseDown(index)}
+                      disabled={index === clauses.length - 1}
+                      type="button"
+                      title="Move down"
+                      aria-label={`Move ${clause.title} down`}
+                    >
+                      <ArrowDown className="size-3" />
+                    </Button>
+                  </div>
 
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-slate-950 dark:text-slate-50">
-                      {clause.title}
-                    </span>
-                    <Badge variant="secondary" className="text-xs">
-                      {clause.category}
-                    </Badge>
-                    {clause.required && (
-                      <Badge variant="outline" className="text-xs">
-                        Required
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-slate-950 dark:text-slate-50">
+                        {clause.title}
+                      </span>
+                      <Badge variant="secondary" className="text-xs">
+                        {clause.category}
                       </Badge>
+                      {clause.required && (
+                        <Badge variant="outline" className="text-xs">
+                          Required
+                        </Badge>
+                      )}
+                    </div>
+                    {clause.description && !isExpanded && (
+                      <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
+                        {clause.description}
+                      </p>
                     )}
                   </div>
-                  {clause.description && (
-                    <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
-                      {clause.description}
-                    </p>
-                  )}
+
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-6 shrink-0"
+                    onClick={() => toggleExpanded(clause.clauseId)}
+                    type="button"
+                    title={isExpanded ? "Collapse" : "Expand"}
+                    aria-label={isExpanded ? `Collapse ${clause.title}` : `Expand ${clause.title}`}
+                  >
+                    {isExpanded ? (
+                      <ChevronDown className="size-3" />
+                    ) : (
+                      <ChevronRight className="size-3" />
+                    )}
+                  </Button>
                 </div>
+
+                {isExpanded && (
+                  <div className="border-t border-slate-200 px-4 py-3 dark:border-slate-800">
+                    {clauseBodyPreviews.get(clause.clauseId) ? (
+                      <div
+                        className="prose prose-sm max-w-none text-slate-700 dark:text-slate-300"
+                        dangerouslySetInnerHTML={{
+                          __html: clauseBodyPreviews.get(clause.clauseId)!,
+                        }}
+                      />
+                    ) : (
+                      <p className="text-xs text-slate-400 dark:text-slate-500">
+                        No preview available.
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}

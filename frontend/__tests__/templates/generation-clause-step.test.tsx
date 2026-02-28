@@ -129,6 +129,7 @@ describe("GenerationClauseStep", () => {
         slug: "ip-assignment",
         description: "IP clause",
         body: "<p>IP</p>",
+        legacyBody: "<p>IP body</p>",
         category: "IP",
         source: "SYSTEM",
         sourceClauseId: null,
@@ -148,7 +149,7 @@ describe("GenerationClauseStep", () => {
       expect(screen.getByText("Standard NDA")).toBeInTheDocument();
     });
 
-    await user.click(screen.getByRole("button", { name: /Browse Library/i }));
+    await user.click(screen.getByRole("button", { name: /Add from library/i }));
 
     await waitFor(() => {
       expect(screen.getByText("Add Clauses")).toBeInTheDocument();
@@ -188,6 +189,50 @@ describe("GenerationClauseStep", () => {
       expect.objectContaining({ clauseId: "c-1", required: true, sortOrder: 0 }),
       expect.objectContaining({ clauseId: "c-2", required: false, sortOrder: 1 }),
     ]);
+  });
+
+  it("renders expand toggle buttons for each clause", async () => {
+    render(
+      <GenerationClauseStep templateId="tpl-1" onNext={mockOnNext} />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Standard NDA")).toBeInTheDocument();
+    });
+
+    expect(
+      screen.getByRole("button", { name: "Expand Standard NDA" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Expand Liability Limitation" }),
+    ).toBeInTheDocument();
+  });
+
+  it("expanding a clause shows its body preview", async () => {
+    const user = userEvent.setup();
+    render(
+      <GenerationClauseStep templateId="tpl-1" onNext={mockOnNext} />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Standard NDA")).toBeInTheDocument();
+    });
+
+    // Body preview not visible initially
+    expect(screen.queryByText("NDA body")).not.toBeInTheDocument();
+
+    // Click expand for first clause
+    await user.click(
+      screen.getByRole("button", { name: "Expand Standard NDA" }),
+    );
+
+    // Body preview now visible (HTML rendered, not raw tags)
+    expect(screen.getByText("NDA body")).toBeInTheDocument();
+
+    // Toggle label should change to Collapse
+    expect(
+      screen.getByRole("button", { name: "Collapse Standard NDA" }),
+    ).toBeInTheDocument();
   });
 
   it("unchecked optional clauses are excluded from next callback", async () => {

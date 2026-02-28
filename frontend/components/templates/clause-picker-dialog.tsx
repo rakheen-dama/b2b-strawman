@@ -26,6 +26,7 @@ interface ClausePickerDialogProps {
       title: string;
       category: string;
       description: string | null;
+      legacyBody: string | null;
     }>,
   ) => void;
 }
@@ -133,6 +134,7 @@ export function ClausePickerDialog({
         title: c.title,
         category: c.category,
         description: c.description,
+        legacyBody: c.legacyBody,
       }));
     onConfirm(selected);
     onOpenChange(false);

@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -90,6 +91,9 @@ public class OrgSettings {
 
   @Column(name = "tax_label", length = 20)
   private String taxLabel;
+
+  @Column(name = "default_expense_markup_percent", precision = 5, scale = 2)
+  private BigDecimal defaultExpenseMarkupPercent;
 
   protected OrgSettings() {}
 
@@ -329,6 +333,15 @@ public class OrgSettings {
 
   public void setTaxLabel(String taxLabel) {
     this.taxLabel = taxLabel;
+    this.updatedAt = Instant.now();
+  }
+
+  public BigDecimal getDefaultExpenseMarkupPercent() {
+    return defaultExpenseMarkupPercent;
+  }
+
+  public void setDefaultExpenseMarkupPercent(BigDecimal defaultExpenseMarkupPercent) {
+    this.defaultExpenseMarkupPercent = defaultExpenseMarkupPercent;
     this.updatedAt = Instant.now();
   }
 

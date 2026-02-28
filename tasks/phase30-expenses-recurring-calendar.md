@@ -23,7 +23,7 @@ Phase 30 closes the remaining revenue-capture and daily-work-organisation gaps i
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 218 | Expense Entity Foundation & Migration | Backend | -- | M | 218A, 218B | |
+| 218 | Expense Entity Foundation & Migration | Backend | -- | M | 218A, 218B | **Done** (PRs #447, #448) |
 | 219 | Expense Service, Controller & CRUD API | Backend | 218 | L | 219A, 219B | |
 | 220 | Expense Frontend — Project Expenses Tab | Frontend | 219 | M | 220A, 220B | |
 | 221 | Expense Billing Integration — InvoiceLine Extension & Invoice Pipeline | Backend | 218 | L | 221A, 221B | |
@@ -152,7 +152,7 @@ TRACK 4: CALENDAR VIEW
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 1a | 218 | 218B | Expense entity + ExpenseCategory enum + ExpenseRepository + entity unit tests. ~4 new files. Backend only. | |
+| 1a | 218 | 218B | Expense entity + ExpenseCategory enum + ExpenseRepository + entity unit tests. ~4 new files. Backend only. | **Done** (PR #448) |
 | 1b | 223 | 223B | Task entity extension (3 new fields) + RecurrenceRule value object (RRULE parser, next-date calculator) + unit tests. ~3 new files, ~1 modified file. Backend only. | |
 
 ### Stage 2: Service Layer (parallel tracks)
@@ -226,7 +226,7 @@ Stage 5: [220B] // [222A] // [229B]                              (parallel)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **218A** | 218.1–218.4 | V50 combined tenant migration: (1) CREATE TABLE expenses with all columns, constraints, and 4 indexes; (2) ALTER TABLE tasks ADD 3 recurrence columns + 1 index; (3) ALTER TABLE invoice_lines ADD expense_id + line_type columns + backfill UPDATE statements + CHECK constraint + 1 index; (4) ALTER TABLE org_settings ADD 5 columns (time reminder × 4 + markup). ~1 new migration file. Backend only. | **Done** (PR #447) |
-| **218B** | 218.5–218.10 | `Expense` entity (13 columns + 3 computed methods) + `ExpenseCategory` enum (8 values) + `ExpenseRepository` (4 query methods) + entity unit tests covering computed billing status and billable amount calculation. ~4 new files. Backend only. | |
+| **218B** | 218.5–218.10 | `Expense` entity (13 columns + 3 computed methods) + `ExpenseCategory` enum (8 values) + `ExpenseRepository` (4 query methods) + entity unit tests covering computed billing status and billable amount calculation. ~4 new files. Backend only. | **Done** (PR #448) |
 
 ### Tasks
 

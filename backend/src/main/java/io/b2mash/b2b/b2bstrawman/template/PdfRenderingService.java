@@ -225,7 +225,7 @@ public class PdfRenderingService {
    * {@code legacyContent} is set, otherwise renders JSONB content via {@link TiptapRenderer}.
    */
   private String renderTemplateToHtml(
-      DocumentTemplate template, HashMap<String, Object> contextMap, List<Clause> resolvedClauses) {
+      DocumentTemplate template, Map<String, Object> contextMap, List<Clause> resolvedClauses) {
     if (template.getLegacyContent() != null) {
       // Legacy Thymeleaf rendering path
       String templateContent =
@@ -236,7 +236,9 @@ public class PdfRenderingService {
       return wrapHtml(renderedBody, mergedCss);
     }
 
-    // New TiptapRenderer path for JSONB content
+    // Security: JSONB content path has no SSTI risk (no Thymeleaf expression evaluation).
+    // TiptapRenderer output-encodes all text via HtmlUtils.htmlEscape and sanitizes
+    // legacyHtml nodes via Jsoup safelist — safe by construction per ADR-121.
     Map<UUID, Clause> clauseMap = new LinkedHashMap<>();
     if (resolvedClauses != null) {
       for (var clause : resolvedClauses) {

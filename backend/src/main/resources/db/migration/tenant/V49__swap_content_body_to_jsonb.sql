@@ -18,7 +18,5 @@ ALTER TABLE document_templates RENAME COLUMN content_json TO content;
 ALTER TABLE clauses DROP COLUMN IF EXISTS body;
 ALTER TABLE clauses RENAME COLUMN body_json TO body;
 
--- NOTE: We cannot add a blanket NOT NULL constraint here because PLATFORM templates
--- and SYSTEM clauses will have NULL content/body until the pack seeders re-run.
--- The entity annotation uses nullable=false but Hibernate uses the Java-side validation,
--- not the database constraint for these rows.
+-- NOTE: The database does not enforce NOT NULL because PLATFORM templates may arrive
+-- with null content before the pack seeders re-run.

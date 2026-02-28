@@ -32,7 +32,9 @@ class ClauseAssemblerTest {
 
     assertThat(result).contains("class=\"clause-block\"");
     assertThat(result).contains("data-clause-slug=\"confidentiality\"");
-    // legacyBody is null for new clauses, so the body div will be empty
+    // legacyBody is null for new clauses — body content must be empty (not leaked/substituted)
+    assertThat(result).doesNotContain("null");
+    assertThat(result).containsPattern("data-clause-slug=\"confidentiality\">\\s*\n\\s*</div>");
   }
 
   @Test

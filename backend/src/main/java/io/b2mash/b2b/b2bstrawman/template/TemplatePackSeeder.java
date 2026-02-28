@@ -139,6 +139,10 @@ public class TemplatePackSeeder {
       if (templateDef.contentFile() != null && templateDef.contentFile().endsWith(".json")) {
         contentJson = loadTemplateContentAsJson(packJsonResource, templateDef.contentFile());
       }
+      if (contentJson == null) {
+        throw new IllegalStateException(
+            "Template definition has no JSON content file: " + templateDef.contentFile());
+      }
 
       var dt = new DocumentTemplate(entityType, templateDef.name(), slug, category, contentJson);
       dt.setDescription(templateDef.description());

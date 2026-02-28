@@ -28,6 +28,10 @@ public interface DocumentRepository extends JpaRepository<Document, UUID> {
   List<Document> findByScopeAndCustomerId(
       @Param("scope") String scope, @Param("customerId") UUID customerId);
 
+  /** Counts all documents for a project. Used by delete protection guard. */
+  @Query("SELECT COUNT(d) FROM Document d WHERE d.projectId = :projectId")
+  long countByProjectId(@Param("projectId") UUID projectId);
+
   @Query("SELECT d.id FROM Document d WHERE d.customerId IN :customerIds AND d.createdAt < :before")
   List<UUID> findIdsByCustomerIdInAndCreatedAtBefore(
       @Param("customerIds") List<UUID> customerIds, @Param("before") Instant before);

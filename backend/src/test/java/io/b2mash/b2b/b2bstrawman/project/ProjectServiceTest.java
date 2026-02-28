@@ -10,17 +10,25 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleGuard;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldValidator;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMemberRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupService;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
+import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccess;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
+import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -46,6 +54,13 @@ class ProjectServiceTest {
   @Mock private FieldGroupMemberRepository fieldGroupMemberRepository;
   @Mock private FieldDefinitionRepository fieldDefinitionRepository;
   @Mock private FieldGroupService fieldGroupService;
+  @Mock private TaskRepository taskRepository;
+  @Mock private TimeEntryRepository timeEntryRepository;
+  @Mock private MemberNameResolver memberNameResolver;
+  @Mock private CustomerRepository customerRepository;
+  @Mock private CustomerLifecycleGuard customerLifecycleGuard;
+  @Mock private DocumentRepository documentRepository;
+  @Mock private InvoiceRepository invoiceRepository;
   @InjectMocks private ProjectService service;
 
   @Test
@@ -181,10 +196,14 @@ class ProjectServiceTest {
   }
 
   @Test
-  void deleteProject_deletesWhenFound() {
+  void deleteProject_deletesWhenAllGuardsPass() {
     var id = UUID.randomUUID();
     var project = projectWithId(id, "ToDelete", null, MEMBER_ID);
     when(repository.findById(id)).thenReturn(Optional.of(project));
+    when(taskRepository.countByProjectId(id)).thenReturn(0L);
+    when(timeEntryRepository.countByProjectId(id)).thenReturn(0L);
+    when(invoiceRepository.countByProjectId(id)).thenReturn(0L);
+    when(documentRepository.countByProjectId(id)).thenReturn(0L);
 
     service.deleteProject(id);
 
@@ -198,6 +217,90 @@ class ProjectServiceTest {
 
     assertThatThrownBy(() -> service.deleteProject(id))
         .isInstanceOf(ResourceNotFoundException.class);
+    verify(repository, never()).delete(any());
+  }
+
+  @Test
+  void deleteProject_rejectsCompletedProject() {
+    var id = UUID.randomUUID();
+    var project = projectWithId(id, "Completed", null, MEMBER_ID);
+    setProjectStatus(project, ProjectStatus.COMPLETED);
+    when(repository.findById(id)).thenReturn(Optional.of(project));
+
+    assertThatThrownBy(() -> service.deleteProject(id))
+        .isInstanceOf(ResourceConflictException.class)
+        .hasMessageContaining("completed");
+    verify(repository, never()).delete(any());
+  }
+
+  @Test
+  void deleteProject_rejectsArchivedProject() {
+    var id = UUID.randomUUID();
+    var project = projectWithId(id, "Archived", null, MEMBER_ID);
+    setProjectStatus(project, ProjectStatus.ARCHIVED);
+    when(repository.findById(id)).thenReturn(Optional.of(project));
+
+    assertThatThrownBy(() -> service.deleteProject(id))
+        .isInstanceOf(ResourceConflictException.class)
+        .hasMessageContaining("archived");
+    verify(repository, never()).delete(any());
+  }
+
+  @Test
+  void deleteProject_rejectsWhenTasksExist() {
+    var id = UUID.randomUUID();
+    var project = projectWithId(id, "HasTasks", null, MEMBER_ID);
+    when(repository.findById(id)).thenReturn(Optional.of(project));
+    when(taskRepository.countByProjectId(id)).thenReturn(3L);
+
+    assertThatThrownBy(() -> service.deleteProject(id))
+        .isInstanceOf(ResourceConflictException.class)
+        .hasMessageContaining("3 task(s)");
+    verify(repository, never()).delete(any());
+  }
+
+  @Test
+  void deleteProject_rejectsWhenTimeEntriesExist() {
+    var id = UUID.randomUUID();
+    var project = projectWithId(id, "HasTime", null, MEMBER_ID);
+    when(repository.findById(id)).thenReturn(Optional.of(project));
+    when(taskRepository.countByProjectId(id)).thenReturn(0L);
+    when(timeEntryRepository.countByProjectId(id)).thenReturn(5L);
+
+    assertThatThrownBy(() -> service.deleteProject(id))
+        .isInstanceOf(ResourceConflictException.class)
+        .hasMessageContaining("5 time entry/entries");
+    verify(repository, never()).delete(any());
+  }
+
+  @Test
+  void deleteProject_rejectsWhenInvoicesExist() {
+    var id = UUID.randomUUID();
+    var project = projectWithId(id, "HasInvoices", null, MEMBER_ID);
+    when(repository.findById(id)).thenReturn(Optional.of(project));
+    when(taskRepository.countByProjectId(id)).thenReturn(0L);
+    when(timeEntryRepository.countByProjectId(id)).thenReturn(0L);
+    when(invoiceRepository.countByProjectId(id)).thenReturn(2L);
+
+    assertThatThrownBy(() -> service.deleteProject(id))
+        .isInstanceOf(ResourceConflictException.class)
+        .hasMessageContaining("2 invoice(s)");
+    verify(repository, never()).delete(any());
+  }
+
+  @Test
+  void deleteProject_rejectsWhenDocumentsExist() {
+    var id = UUID.randomUUID();
+    var project = projectWithId(id, "HasDocs", null, MEMBER_ID);
+    when(repository.findById(id)).thenReturn(Optional.of(project));
+    when(taskRepository.countByProjectId(id)).thenReturn(0L);
+    when(timeEntryRepository.countByProjectId(id)).thenReturn(0L);
+    when(invoiceRepository.countByProjectId(id)).thenReturn(0L);
+    when(documentRepository.countByProjectId(id)).thenReturn(4L);
+
+    assertThatThrownBy(() -> service.deleteProject(id))
+        .isInstanceOf(ResourceConflictException.class)
+        .hasMessageContaining("4 document(s)");
     verify(repository, never()).delete(any());
   }
 
@@ -216,5 +319,15 @@ class ProjectServiceTest {
       throw new RuntimeException("Failed to set project ID", e);
     }
     return project;
+  }
+
+  private static void setProjectStatus(Project project, ProjectStatus status) {
+    try {
+      var statusField = Project.class.getDeclaredField("status");
+      statusField.setAccessible(true);
+      statusField.set(project, status);
+    } catch (ReflectiveOperationException e) {
+      throw new RuntimeException("Failed to set project status", e);
+    }
   }
 }

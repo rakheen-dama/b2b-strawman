@@ -14,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.event.TaskReopenedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldValidator;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
@@ -27,6 +28,7 @@ import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -60,6 +62,7 @@ public class TaskService {
   private final CustomerProjectRepository customerProjectRepository;
   private final FieldGroupService fieldGroupService;
   private final ProjectRepository projectRepository;
+  private final TimeEntryRepository timeEntryRepository;
 
   public TaskService(
       TaskRepository taskRepository,
@@ -74,7 +77,8 @@ public class TaskService {
       FieldDefinitionRepository fieldDefinitionRepository,
       CustomerProjectRepository customerProjectRepository,
       FieldGroupService fieldGroupService,
-      ProjectRepository projectRepository) {
+      ProjectRepository projectRepository,
+      TimeEntryRepository timeEntryRepository) {
     this.taskRepository = taskRepository;
     this.projectAccessService = projectAccessService;
     this.projectMemberRepository = projectMemberRepository;
@@ -88,6 +92,7 @@ public class TaskService {
     this.customerProjectRepository = customerProjectRepository;
     this.fieldGroupService = fieldGroupService;
     this.projectRepository = projectRepository;
+    this.timeEntryRepository = timeEntryRepository;
   }
 
   private static final List<TaskStatus> DEFAULT_STATUSES =
@@ -503,6 +508,15 @@ public class TaskService {
     if (!access.canEdit()) {
       throw new ForbiddenException(
           "Cannot delete task", "You do not have permission to delete task " + taskId);
+    }
+
+    // Guard: time entries exist
+    long timeEntryCount = timeEntryRepository.countByTaskId(taskId);
+    if (timeEntryCount > 0) {
+      throw new ResourceConflictException(
+          "Cannot delete task",
+          "Task has %d time entry/entries. Cancel the task instead of deleting it."
+              .formatted(timeEntryCount));
     }
 
     taskRepository.delete(task);

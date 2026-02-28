@@ -176,12 +176,6 @@ class VariableMetadataEndpointTest {
 
   // --- JWT Helpers ---
 
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_vm_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
-  }
-
   private JwtRequestPostProcessor memberJwt() {
     return jwt()
         .jwt(j -> j.subject("user_vm_member").claim("o", Map.of("id", ORG_ID, "rol", "member")))

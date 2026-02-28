@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AlertTriangle, Check, Clock, ClipboardList, Hand, Plus, Undo2 } from "lucide-react";
+import { AlertTriangle, Check, Clock, ClipboardList, Hand, Plus, RotateCcw, Undo2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
@@ -21,7 +21,8 @@ import { formatDate } from "@/lib/format";
 import {
   claimTask,
   releaseTask,
-  updateTask,
+  completeTask,
+  reopenTask,
   fetchTasks,
 } from "@/app/(app)/org/[slug]/projects/[id]/task-actions";
 import { cn } from "@/lib/utils";
@@ -39,15 +40,17 @@ import type {
   CreateSavedViewRequest,
 } from "@/lib/types";
 
-// --- Filter types (40.7) ---
+// --- Multi-select filter types (207.2) ---
 
-type FilterKey = "all" | "OPEN" | "IN_PROGRESS" | "DONE" | "my";
+const ALL_STATUSES: TaskStatus[] = ["OPEN", "IN_PROGRESS", "DONE", "CANCELLED"];
+const DEFAULT_STATUSES: TaskStatus[] = ["OPEN", "IN_PROGRESS"];
 
-const FILTER_OPTIONS: { key: FilterKey; label: string }[] = [
+const FILTER_CHIPS: { key: TaskStatus | "all" | "my"; label: string }[] = [
   { key: "all", label: "All" },
   { key: "OPEN", label: "Open" },
   { key: "IN_PROGRESS", label: "In Progress" },
   { key: "DONE", label: "Done" },
+  { key: "CANCELLED", label: "Cancelled" },
   { key: "my", label: "My Tasks" },
 ];
 
@@ -99,7 +102,8 @@ export function TaskListPanel({
   const router = useRouter();
   const searchParams = useSearchParams();
   const selectedTaskId = searchParams.get("taskId");
-  const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
+  const [activeStatuses, setActiveStatuses] = useState<Set<TaskStatus>>(new Set(DEFAULT_STATUSES));
+  const [myTasksActive, setMyTasksActive] = useState(false);
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [isPending, startTransition] = useTransition();
   const [actionTaskId, setActionTaskId] = useState<string | null>(null);
@@ -124,25 +128,48 @@ export function TaskListPanel({
     router.push(`?${params.toString()}`, { scroll: false });
   }
 
-  // --- Filter handler (40.7) ---
+  // --- Multi-select filter handler (207.2) ---
 
-  function handleFilterChange(key: FilterKey) {
-    setActiveFilter(key);
+  function handleChipClick(key: TaskStatus | "all" | "my") {
     setError(null);
 
+    if (key === "all") {
+      setMyTasksActive(false);
+      setActiveStatuses(new Set(ALL_STATUSES));
+      fetchWithFilters(new Set(ALL_STATUSES), false);
+    } else if (key === "my") {
+      setMyTasksActive(true);
+      fetchWithFilters(activeStatuses, true);
+    } else {
+      setMyTasksActive(false);
+      const next = new Set(activeStatuses);
+      if (next.has(key)) {
+        // Don't allow deselecting the last status
+        if (next.size > 1) {
+          next.delete(key);
+        }
+      } else {
+        next.add(key);
+      }
+      setActiveStatuses(next);
+      fetchWithFilters(next, false);
+    }
+  }
+
+  function fetchWithFilters(statuses: Set<TaskStatus>, myTasks: boolean) {
     const currentViewId = searchParams.get("view");
 
     startTransition(async () => {
       try {
         const filters: { status?: string; assigneeId?: string; viewId?: string } = {};
-        if (key === "OPEN" || key === "IN_PROGRESS" || key === "DONE") {
-          filters.status = key;
-        } else if (key === "my") {
+        if (myTasks) {
           if (!currentMemberId) {
             setTasks([]);
             return;
           }
           filters.assigneeId = currentMemberId;
+        } else {
+          filters.status = Array.from(statuses).join(",");
         }
         if (currentViewId) {
           filters.viewId = currentViewId;
@@ -155,6 +182,32 @@ export function TaskListPanel({
     });
   }
 
+  function buildCurrentFilters(): { status?: string; assigneeId?: string; viewId?: string } {
+    const filters: { status?: string; assigneeId?: string; viewId?: string } = {};
+    if (myTasksActive && currentMemberId) {
+      filters.assigneeId = currentMemberId;
+    } else {
+      filters.status = Array.from(activeStatuses).join(",");
+    }
+    const currentViewId = searchParams.get("view");
+    if (currentViewId) {
+      filters.viewId = currentViewId;
+    }
+    return filters;
+  }
+
+  // --- Chip active state helpers ---
+
+  function isChipActive(key: TaskStatus | "all" | "my"): boolean {
+    if (key === "all") return activeStatuses.size === ALL_STATUSES.length && !myTasksActive;
+    if (key === "my") return myTasksActive;
+    return activeStatuses.has(key) && !myTasksActive;
+  }
+
+  // Check if we're in the initial "no filter applied" state for empty state display
+  const isDefaultFilter = !myTasksActive && activeStatuses.size === DEFAULT_STATUSES.length &&
+    DEFAULT_STATUSES.every(s => activeStatuses.has(s));
+
   // --- Claim handler (40.6 + 40.9) ---
 
   function handleClaim(taskId: string) {
@@ -165,11 +218,9 @@ export function TaskListPanel({
       try {
         const result = await claimTask(slug, taskId, projectId);
         if (!result.success) {
-          // 40.9: conflict toast + refresh
           setError(result.error ?? "Failed to claim task.");
           router.refresh();
         } else {
-          // Re-fetch to reflect new state
           const fetched = await fetchTasks(projectId, buildCurrentFilters());
           setTasks(fetched);
         }
@@ -205,25 +256,17 @@ export function TaskListPanel({
     });
   }
 
-  // --- Mark Done handler (40.6) ---
+  // --- Complete handler (207A) ---
 
-  function handleMarkDone(task: Task) {
+  function handleComplete(taskId: string) {
     setError(null);
-    setActionTaskId(task.id);
+    setActionTaskId(taskId);
 
     startTransition(async () => {
       try {
-        const result = await updateTask(slug, task.id, projectId, {
-          title: task.title,
-          description: task.description,
-          priority: task.priority,
-          status: "DONE",
-          type: task.type,
-          dueDate: task.dueDate,
-          assigneeId: task.assigneeId,
-        });
+        const result = await completeTask(slug, taskId, projectId);
         if (!result.success) {
-          setError(result.error ?? "Failed to mark task as done.");
+          setError(result.error ?? "Failed to complete task.");
           router.refresh();
         } else {
           const fetched = await fetchTasks(projectId, buildCurrentFilters());
@@ -237,22 +280,28 @@ export function TaskListPanel({
     });
   }
 
-  function buildCurrentFilters(): { status?: string; assigneeId?: string; viewId?: string } {
-    const filters: { status?: string; assigneeId?: string; viewId?: string } = {};
-    if (
-      activeFilter === "OPEN" ||
-      activeFilter === "IN_PROGRESS" ||
-      activeFilter === "DONE"
-    ) {
-      filters.status = activeFilter;
-    } else if (activeFilter === "my" && currentMemberId) {
-      filters.assigneeId = currentMemberId;
-    }
-    const currentViewId = searchParams.get("view");
-    if (currentViewId) {
-      filters.viewId = currentViewId;
-    }
-    return filters;
+  // --- Reopen handler (207A) ---
+
+  function handleReopen(taskId: string) {
+    setError(null);
+    setActionTaskId(taskId);
+
+    startTransition(async () => {
+      try {
+        const result = await reopenTask(slug, taskId, projectId);
+        if (!result.success) {
+          setError(result.error ?? "Failed to reopen task.");
+          router.refresh();
+        } else {
+          const fetched = await fetchTasks(projectId, buildCurrentFilters());
+          setTasks(fetched);
+        }
+      } catch {
+        setError("An unexpected error occurred.");
+      } finally {
+        setActionTaskId(null);
+      }
+    });
   }
 
   // --- Render ---
@@ -274,24 +323,24 @@ export function TaskListPanel({
     </div>
   );
 
-  // 40.7: Status filter bar
+  // 207.2: Multi-select status filter bar
   const filterBar = (
     <div className="flex flex-wrap gap-2" role="group" aria-label="Task filters">
-      {FILTER_OPTIONS.map((option) => (
+      {FILTER_CHIPS.map((chip) => (
         <button
-          key={option.key}
+          key={chip.key}
           type="button"
-          onClick={() => handleFilterChange(option.key)}
+          onClick={() => handleChipClick(chip.key)}
           disabled={isPending}
           className={cn(
             "rounded-full px-3 py-1 text-sm font-medium transition-colors",
-            activeFilter === option.key
+            isChipActive(chip.key)
               ? "bg-slate-900 text-slate-50 dark:bg-slate-100 dark:text-slate-900"
               : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700",
             isPending && "opacity-50",
           )}
         >
-          {option.label}
+          {chip.label}
         </button>
       ))}
     </div>
@@ -312,7 +361,7 @@ export function TaskListPanel({
     </Suspense>
   ) : null;
 
-  if (tasks.length === 0 && activeFilter === "all") {
+  if (tasks.length === 0 && isDefaultFilter) {
     return (
       <div className="space-y-4">
         {header}
@@ -373,6 +422,7 @@ export function TaskListPanel({
                 const statusBadge = STATUS_BADGE[task.status];
                 const overdue = isOverdue(task.dueDate, task.status);
                 const isActioning = actionTaskId === task.id && isPending;
+                const isTerminal = task.status === "DONE" || task.status === "CANCELLED";
 
                 // 40.6: Determine available actions
                 const canClaim =
@@ -396,6 +446,7 @@ export function TaskListPanel({
                         {priorityBadge.label}
                       </Badge>
                     </TableCell>
+                    {/* 207.4: Visual styling for terminal states */}
                     <TableCell>
                       <button
                         type="button"
@@ -404,7 +455,14 @@ export function TaskListPanel({
                         aria-label={`Open task detail for ${task.title}`}
                       >
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-medium text-slate-950 hover:text-teal-600 dark:text-slate-50">
+                          <p className={cn(
+                            "truncate text-sm font-medium hover:text-teal-600 dark:text-slate-50",
+                            task.status === "DONE"
+                              ? "line-through text-muted-foreground"
+                              : task.status === "CANCELLED"
+                                ? "text-muted-foreground"
+                                : "text-slate-950",
+                          )}>
                             {task.title}
                           </p>
                           {task.type && (
@@ -441,28 +499,29 @@ export function TaskListPanel({
                         {task.dueDate ? formatDate(task.dueDate) : "\u2014"}
                       </span>
                     </TableCell>
-                    {/* 40.6 + 45.5: Action buttons */}
+                    {/* 40.6 + 45.5 + 207A: Action buttons */}
                     <TableCell>
                       <div className="flex items-center gap-1.5">
-                        <LogTimeDialog
-                          slug={slug}
-                          projectId={projectId}
-                          taskId={task.id}
-                          memberId={currentMemberId}
-                          retainerSummary={retainerSummary}
-                        >
-                          <Button
-                            size="xs"
-                            variant="outline"
-                            onClick={(e) => {
-                              // Prevent row click when clicking Log Time button
-                              e.stopPropagation();
-                            }}
+                        {!isTerminal && (
+                          <LogTimeDialog
+                            slug={slug}
+                            projectId={projectId}
+                            taskId={task.id}
+                            memberId={currentMemberId}
+                            retainerSummary={retainerSummary}
                           >
-                            <Clock className="size-3" />
-                            Log Time
-                          </Button>
-                        </LogTimeDialog>
+                            <Button
+                              size="xs"
+                              variant="outline"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                              }}
+                            >
+                              <Clock className="size-3" />
+                              Log Time
+                            </Button>
+                          </LogTimeDialog>
+                        )}
                         {canClaim && (
                           <Button
                             size="xs"
@@ -492,11 +551,25 @@ export function TaskListPanel({
                             disabled={isActioning}
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleMarkDone(task);
+                              handleComplete(task.id);
                             }}
                           >
                             <Check className="size-3" />
                             Done
+                          </Button>
+                        )}
+                        {isTerminal && canManage && (
+                          <Button
+                            size="xs"
+                            variant="outline"
+                            disabled={isActioning}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleReopen(task.id);
+                            }}
+                          >
+                            <RotateCcw className="size-3" />
+                            Reopen
                           </Button>
                         )}
                       </div>

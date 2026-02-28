@@ -192,6 +192,10 @@ export interface Task {
   version: number;
   createdAt: string;
   updatedAt: string;
+  completedAt: string | null;
+  completedBy: string | null;
+  completedByName: string | null;
+  cancelledAt: string | null;
   customFields?: Record<string, unknown>;
   appliedFieldGroups?: string[];
   tags?: TagResponse[];

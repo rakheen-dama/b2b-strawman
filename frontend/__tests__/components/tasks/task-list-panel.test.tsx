@@ -11,6 +11,9 @@ const mockReleaseTask = vi.fn();
 const mockUpdateTask = vi.fn();
 const mockFetchTasks = vi.fn();
 const mockFetchTask = vi.fn();
+const mockCompleteTask = vi.fn();
+const mockCancelTask = vi.fn();
+const mockReopenTask = vi.fn();
 const mockRefresh = vi.fn();
 const mockPush = vi.fn();
 
@@ -20,6 +23,9 @@ vi.mock("@/app/(app)/org/[slug]/projects/[id]/task-actions", () => ({
   updateTask: (...args: unknown[]) => mockUpdateTask(...args),
   fetchTasks: (...args: unknown[]) => mockFetchTasks(...args),
   fetchTask: (...args: unknown[]) => mockFetchTask(...args),
+  completeTask: (...args: unknown[]) => mockCompleteTask(...args),
+  cancelTask: (...args: unknown[]) => mockCancelTask(...args),
+  reopenTask: (...args: unknown[]) => mockReopenTask(...args),
 }));
 
 const mockFetchTimeEntries = vi.fn();
@@ -73,6 +79,10 @@ function makeTask(overrides: Partial<Task> = {}): Task {
     version: 0,
     createdAt: "2024-06-01T00:00:00Z",
     updatedAt: "2024-06-01T00:00:00Z",
+    completedAt: null,
+    completedBy: null,
+    completedByName: null,
+    cancelledAt: null,
     ...overrides,
   };
 }
@@ -87,6 +97,7 @@ const inProgressOwn = makeTask({
   priority: "MEDIUM",
 });
 const doneTask = makeTask({ id: "t3", title: "Completed task", status: "DONE", priority: "LOW" });
+const cancelledTask = makeTask({ id: "t4", title: "Cancelled task", status: "CANCELLED", priority: "LOW", cancelledAt: "2024-06-02T00:00:00Z" });
 
 describe("TaskListPanel", () => {
   beforeEach(() => {
@@ -207,10 +218,8 @@ describe("TaskListPanel", () => {
     expect(within(table).queryByRole("button", { name: /^Done$/i })).not.toBeInTheDocument();
   });
 
-  // 40.10: Filter toggles
-  it("renders filter pills and changes active filter on click", async () => {
-    const user = userEvent.setup();
-
+  // 207.2: Multi-select filter renders all chips including Cancelled
+  it("renders multi-select filter chips including Cancelled", () => {
     render(
       <TaskListPanel
         tasks={[openUnassigned, inProgressOwn, doneTask]}
@@ -226,13 +235,150 @@ describe("TaskListPanel", () => {
     expect(within(filterGroup).getByText("Open")).toBeInTheDocument();
     expect(within(filterGroup).getByText("In Progress")).toBeInTheDocument();
     expect(within(filterGroup).getByText("Done")).toBeInTheDocument();
+    expect(within(filterGroup).getByText("Cancelled")).toBeInTheDocument();
     expect(within(filterGroup).getByText("My Tasks")).toBeInTheDocument();
+  });
 
-    await user.click(within(filterGroup).getByText("Open"));
+  // 207.2: Default filter shows Open + In Progress chips as active
+  it("defaults to Open and In Progress chips active", () => {
+    render(
+      <TaskListPanel
+        tasks={[openUnassigned, inProgressOwn]}
+        slug="acme"
+        projectId="p1"
+        canManage={true}
+        currentMemberId="current-member"
+      />,
+    );
+
+    const filterGroup = screen.getByRole("group", { name: /task filters/i });
+    const openChip = within(filterGroup).getByText("Open");
+    const inProgressChip = within(filterGroup).getByText("In Progress");
+    const doneChip = within(filterGroup).getByText("Done");
+    const cancelledChip = within(filterGroup).getByText("Cancelled");
+
+    // Active chips have dark background
+    expect(openChip.className).toContain("bg-slate-900");
+    expect(inProgressChip.className).toContain("bg-slate-900");
+    // Inactive chips have light background
+    expect(doneChip.className).toContain("bg-slate-100");
+    expect(cancelledChip.className).toContain("bg-slate-100");
+  });
+
+  // 207.2: Clicking "Done" chip adds it to active filters
+  it("clicking Done chip adds it to active filters and fetches with correct status", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <TaskListPanel
+        tasks={[openUnassigned, inProgressOwn]}
+        slug="acme"
+        projectId="p1"
+        canManage={true}
+        currentMemberId="current-member"
+      />,
+    );
+
+    const filterGroup = screen.getByRole("group", { name: /task filters/i });
+    await user.click(within(filterGroup).getByText("Done"));
 
     await waitFor(() => {
-      expect(mockFetchTasks).toHaveBeenCalledWith("p1", { status: "OPEN" });
+      expect(mockFetchTasks).toHaveBeenCalledWith("p1", { status: "OPEN,IN_PROGRESS,DONE" });
     });
+  });
+
+  // 207.2: "All" chip selects all statuses
+  it("clicking All chip selects all statuses", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <TaskListPanel
+        tasks={[openUnassigned, inProgressOwn]}
+        slug="acme"
+        projectId="p1"
+        canManage={true}
+        currentMemberId="current-member"
+      />,
+    );
+
+    const filterGroup = screen.getByRole("group", { name: /task filters/i });
+    await user.click(within(filterGroup).getByText("All"));
+
+    await waitFor(() => {
+      expect(mockFetchTasks).toHaveBeenCalledWith("p1", { status: "OPEN,IN_PROGRESS,DONE,CANCELLED" });
+    });
+  });
+
+  // 207.4: Done tasks render with strikethrough styling
+  it("renders Done tasks with strikethrough styling on title", () => {
+    const { container } = render(
+      <TaskListPanel
+        tasks={[doneTask]}
+        slug="acme"
+        projectId="p1"
+        canManage={true}
+        currentMemberId="current-member"
+      />,
+    );
+
+    const titleEl = container.querySelector("[class*='line-through']");
+    expect(titleEl).toBeInTheDocument();
+    expect(titleEl?.textContent).toBe("Completed task");
+  });
+
+  // 207.4: Cancelled tasks render with muted styling and neutral badge
+  it("renders Cancelled tasks with muted styling and neutral badge", () => {
+    const { container } = render(
+      <TaskListPanel
+        tasks={[cancelledTask]}
+        slug="acme"
+        projectId="p1"
+        canManage={true}
+        currentMemberId="current-member"
+      />,
+    );
+
+    // Title should have muted text (text-muted-foreground)
+    const titleEl = container.querySelector("[class*='text-muted-foreground']");
+    expect(titleEl).toBeInTheDocument();
+    expect(titleEl?.textContent).toBe("Cancelled task");
+
+    // Status badge should be neutral variant (use table scope to avoid matching filter chip)
+    const table = screen.getByRole("table");
+    const cancelledBadge = within(table).getByText("Cancelled");
+    expect(cancelledBadge).toHaveAttribute("data-variant", "neutral");
+  });
+
+  // 207A: Reopen button appears for DONE tasks when canManage
+  it("shows Reopen button for DONE tasks when user can manage", () => {
+    render(
+      <TaskListPanel
+        tasks={[doneTask]}
+        slug="acme"
+        projectId="p1"
+        canManage={true}
+        currentMemberId="current-member"
+      />,
+    );
+
+    const table = screen.getByRole("table");
+    expect(within(table).getByRole("button", { name: /Reopen/i })).toBeInTheDocument();
+  });
+
+  // 207A: Reopen button appears for CANCELLED tasks when canManage
+  it("shows Reopen button for CANCELLED tasks when user can manage", () => {
+    render(
+      <TaskListPanel
+        tasks={[cancelledTask]}
+        slug="acme"
+        projectId="p1"
+        canManage={true}
+        currentMemberId="current-member"
+      />,
+    );
+
+    const table = screen.getByRole("table");
+    expect(within(table).getByRole("button", { name: /Reopen/i })).toBeInTheDocument();
   });
 
   // 40.10: Priority badge variants (HIGH=destructive, MEDIUM=warning, LOW=neutral)

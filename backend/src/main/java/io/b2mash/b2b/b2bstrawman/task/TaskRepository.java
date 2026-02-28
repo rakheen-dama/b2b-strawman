@@ -38,6 +38,35 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
       @Param("statuses") List<TaskStatus> statuses,
       @Param("priority") TaskPriority priority);
 
+  @Query(
+      """
+      SELECT t FROM Task t WHERE t.projectId = :projectId
+        AND t.status IN :statuses
+        AND (:assigneeId IS NULL OR t.assigneeId = :assigneeId)
+        AND (:priority IS NULL OR t.priority = :priority)
+        AND t.recurrenceRule IS NOT NULL
+      ORDER BY t.createdAt DESC
+      """)
+  List<Task> findByProjectIdRecurringWithFilters(
+      @Param("projectId") UUID projectId,
+      @Param("statuses") List<TaskStatus> statuses,
+      @Param("assigneeId") UUID assigneeId,
+      @Param("priority") TaskPriority priority);
+
+  @Query(
+      """
+      SELECT t FROM Task t WHERE t.projectId = :projectId
+        AND t.assigneeId IS NULL
+        AND t.status IN :statuses
+        AND (:priority IS NULL OR t.priority = :priority)
+        AND t.recurrenceRule IS NOT NULL
+      ORDER BY t.createdAt DESC
+      """)
+  List<Task> findByProjectIdUnassignedRecurring(
+      @Param("projectId") UUID projectId,
+      @Param("statuses") List<TaskStatus> statuses,
+      @Param("priority") TaskPriority priority);
+
   // --- Cross-project queries for My Work (Epic 48A) ---
 
   /**

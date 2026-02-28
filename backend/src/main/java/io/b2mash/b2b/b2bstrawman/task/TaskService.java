@@ -112,6 +112,20 @@ public class TaskService {
       UUID assigneeId,
       String priority,
       String assigneeFilter) {
+    return listTasks(
+        projectId, memberId, orgRole, status, assigneeId, priority, assigneeFilter, null);
+  }
+
+  @Transactional(readOnly = true)
+  public List<Task> listTasks(
+      UUID projectId,
+      UUID memberId,
+      String orgRole,
+      String status,
+      UUID assigneeId,
+      String priority,
+      String assigneeFilter,
+      Boolean recurring) {
     projectAccessService.requireViewAccess(projectId, memberId, orgRole);
 
     List<TaskStatus> statuses = status != null ? parseStatuses(status) : DEFAULT_STATUSES;
@@ -119,9 +133,16 @@ public class TaskService {
 
     // Handle special "unassigned" filter
     if ("unassigned".equals(assigneeFilter)) {
+      if (Boolean.TRUE.equals(recurring)) {
+        return taskRepository.findByProjectIdUnassignedRecurring(projectId, statuses, taskPriority);
+      }
       return taskRepository.findByProjectIdUnassigned(projectId, statuses, taskPriority);
     }
 
+    if (Boolean.TRUE.equals(recurring)) {
+      return taskRepository.findByProjectIdRecurringWithFilters(
+          projectId, statuses, assigneeId, taskPriority);
+    }
     return taskRepository.findByProjectIdWithFilters(projectId, statuses, assigneeId, taskPriority);
   }
 

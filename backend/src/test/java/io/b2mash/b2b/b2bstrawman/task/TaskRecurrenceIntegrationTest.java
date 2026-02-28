@@ -1,5 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.task;
 
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -280,6 +284,118 @@ class TaskRecurrenceIntegrationTest {
         .andExpect(jsonPath("$.recurrenceEndDate").value("2026-12-31"))
         .andExpect(jsonPath("$.isRecurring").value(true))
         .andExpect(jsonPath("$.parentTaskId").doesNotExist());
+  }
+
+  @Test
+  void shouldUpdateTaskWithRecurrenceRule() throws Exception {
+    String taskId = createTask("Update recurrence test");
+
+    mockMvc
+        .perform(
+            put("/api/tasks/" + taskId)
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "title": "Update recurrence test",
+                      "priority": "MEDIUM",
+                      "status": "OPEN",
+                      "recurrenceRule": "FREQ=WEEKLY;INTERVAL=2",
+                      "recurrenceEndDate": "2026-12-31"
+                    }
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.recurrenceRule").value("FREQ=WEEKLY;INTERVAL=2"))
+        .andExpect(jsonPath("$.recurrenceEndDate").value("2026-12-31"))
+        .andExpect(jsonPath("$.isRecurring").value(true));
+  }
+
+  @Test
+  void shouldClearRecurrenceRuleOnUpdate() throws Exception {
+    // Create a recurring task
+    String taskId =
+        createRecurringTask("Clear recurrence test", "FREQ=DAILY;INTERVAL=1", "2026-06-01", null);
+
+    // Verify it's recurring
+    mockMvc
+        .perform(get("/api/tasks/" + taskId).with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.isRecurring").value(true));
+
+    // Update with blank recurrenceRule to clear it
+    mockMvc
+        .perform(
+            put("/api/tasks/" + taskId)
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "title": "Clear recurrence test",
+                      "priority": "MEDIUM",
+                      "status": "OPEN",
+                      "recurrenceRule": ""
+                    }
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.isRecurring").value(false));
+  }
+
+  @Test
+  void shouldFilterRecurringTasksOnly() throws Exception {
+    // Create one recurring and one non-recurring task
+    createRecurringTask("Recurring for filter", "FREQ=WEEKLY;INTERVAL=1", "2026-07-01", null);
+    createTask("Non-recurring for filter");
+
+    // Filter with recurring=true
+    mockMvc
+        .perform(
+            get("/api/projects/" + projectId + "/tasks")
+                .param("recurring", "true")
+                .param("status", "OPEN")
+                .with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray())
+        .andExpect(jsonPath("$.length()").value(greaterThan(0)))
+        .andExpect(jsonPath("$[*].isRecurring", everyItem(is(true))));
+  }
+
+  @Test
+  void shouldFilterUnassignedRecurringTasks() throws Exception {
+    // Create a recurring task WITHOUT assignee (unassigned)
+    createRecurringTask("Unassigned recurring", "FREQ=WEEKLY;INTERVAL=1", "2026-07-15", null);
+
+    // Create a non-recurring task WITHOUT assignee
+    createTask("Unassigned non-recurring");
+
+    // Filter with recurring=true AND assigneeFilter=unassigned
+    mockMvc
+        .perform(
+            get("/api/projects/" + projectId + "/tasks")
+                .param("recurring", "true")
+                .param("assigneeFilter", "unassigned")
+                .param("status", "OPEN")
+                .with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray())
+        .andExpect(jsonPath("$.length()").value(greaterThan(0)))
+        .andExpect(jsonPath("$[*].isRecurring", everyItem(is(true))))
+        .andExpect(jsonPath("$[*].assigneeId", everyItem(is(org.hamcrest.Matchers.nullValue()))));
+  }
+
+  @Test
+  void shouldIncludeRecurringTasksInUnfilteredList() throws Exception {
+    // Create a recurring task
+    createRecurringTask("Recurring in list", "FREQ=MONTHLY;INTERVAL=1", "2026-08-01", null);
+
+    // List without recurring filter — should include recurring tasks
+    mockMvc
+        .perform(
+            get("/api/projects/" + projectId + "/tasks").param("status", "OPEN").with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray())
+        .andExpect(jsonPath("$.length()").value(greaterThanOrEqualTo(1)));
   }
 
   // --- Helpers ---

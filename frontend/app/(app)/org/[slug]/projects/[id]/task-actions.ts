@@ -182,6 +182,13 @@ export async function cancelTask(
   taskId: string,
   projectId: string
 ): Promise<ActionResult> {
+  const { orgRole } = await getAuthContext();
+  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+
+  if (!isAdmin) {
+    return { success: false, error: "Only admins and owners can cancel tasks." };
+  }
+
   try {
     await api.patch<Task>(`/api/tasks/${taskId}/cancel`);
   } catch (error) {

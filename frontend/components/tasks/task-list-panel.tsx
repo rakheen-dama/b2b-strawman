@@ -104,14 +104,26 @@ export function TaskListPanel({
   const selectedTaskId = searchParams.get("taskId");
   const [activeStatuses, setActiveStatuses] = useState<Set<TaskStatus>>(new Set(DEFAULT_STATUSES));
   const [myTasksActive, setMyTasksActive] = useState(false);
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const [tasks, setTasks] = useState<Task[]>(
+    initialTasks.filter((t) => DEFAULT_STATUSES.includes(t.status))
+  );
   const [isPending, startTransition] = useTransition();
   const [actionTaskId, setActionTaskId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Sync state when parent Server Component re-renders with fresh data.
+  // Apply current filter so the displayed list stays consistent with active chips.
   useEffect(() => {
-    setTasks(initialTasks);
+    if (myTasksActive) {
+      setTasks(
+        currentMemberId
+          ? initialTasks.filter((t) => t.assigneeId === currentMemberId)
+          : []
+      );
+    } else {
+      setTasks(initialTasks.filter((t) => activeStatuses.has(t.status)));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-filter when initialTasks changes from server
   }, [initialTasks]);
 
   // --- URL state helpers ---
@@ -138,8 +150,9 @@ export function TaskListPanel({
       setActiveStatuses(new Set(ALL_STATUSES));
       fetchWithFilters(new Set(ALL_STATUSES), false);
     } else if (key === "my") {
-      setMyTasksActive(true);
-      fetchWithFilters(activeStatuses, true);
+      const next = !myTasksActive;
+      setMyTasksActive(next);
+      fetchWithFilters(activeStatuses, next);
     } else {
       setMyTasksActive(false);
       const next = new Set(activeStatuses);
@@ -332,6 +345,7 @@ export function TaskListPanel({
           type="button"
           onClick={() => handleChipClick(chip.key)}
           disabled={isPending}
+          aria-pressed={isChipActive(chip.key)}
           className={cn(
             "rounded-full px-3 py-1 text-sm font-medium transition-colors",
             isChipActive(chip.key)
@@ -456,12 +470,12 @@ export function TaskListPanel({
                       >
                         <div className="min-w-0">
                           <p className={cn(
-                            "truncate text-sm font-medium hover:text-teal-600 dark:text-slate-50",
+                            "truncate text-sm font-medium dark:text-slate-50",
                             task.status === "DONE"
                               ? "line-through text-muted-foreground"
                               : task.status === "CANCELLED"
                                 ? "text-muted-foreground"
-                                : "text-slate-950",
+                                : "text-slate-950 hover:text-teal-600",
                           )}>
                             {task.title}
                           </p>

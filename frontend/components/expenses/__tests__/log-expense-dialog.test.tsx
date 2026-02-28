@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { LogExpenseDialog } from "@/components/expenses/log-expense-dialog";
-import type { ExpenseResponse, ExpenseCategory, ExpenseBillingStatus } from "@/lib/types";
+import { CATEGORY_LABELS } from "@/components/expenses/expense-category-badge";
+import { makeExpense } from "./fixtures";
 
 // Mock server actions
 const mockCreateExpense = vi.fn();
@@ -18,31 +19,6 @@ vi.mock("@/app/(app)/org/[slug]/projects/[id]/actions", () => ({
   confirmUpload: vi.fn(),
   cancelUpload: vi.fn(),
 }));
-
-function makeExpense(overrides: Partial<ExpenseResponse> = {}): ExpenseResponse {
-  return {
-    id: "exp1",
-    projectId: "p1",
-    taskId: null,
-    memberId: "m1",
-    memberName: "Alice Johnson",
-    date: "2026-02-15",
-    description: "Court filing fee",
-    amount: 250.0,
-    currency: "ZAR",
-    category: "FILING_FEE" as ExpenseCategory,
-    receiptDocumentId: null,
-    billable: true,
-    billingStatus: "UNBILLED" as ExpenseBillingStatus,
-    invoiceId: null,
-    markupPercent: 10,
-    billableAmount: 275.0,
-    notes: "Test notes",
-    createdAt: "2026-02-15T10:00:00Z",
-    updatedAt: "2026-02-15T10:00:00Z",
-    ...overrides,
-  };
-}
 
 const defaultProps = {
   slug: "acme",
@@ -147,19 +123,11 @@ describe("LogExpenseDialog", () => {
 
     const categorySelect = screen.getByLabelText("Category");
     const options = categorySelect.querySelectorAll("option");
-    expect(options).toHaveLength(8);
+    const expectedLabels = Object.values(CATEGORY_LABELS);
+    expect(options).toHaveLength(expectedLabels.length);
 
     const categoryLabels = Array.from(options).map((opt) => opt.textContent);
-    expect(categoryLabels).toEqual([
-      "Filing Fee",
-      "Travel",
-      "Courier",
-      "Software",
-      "Subcontractor",
-      "Printing",
-      "Communication",
-      "Other",
-    ]);
+    expect(categoryLabels).toEqual(expectedLabels);
   });
 
   it("submit button text differs between create and edit modes", async () => {

@@ -30,7 +30,7 @@ import { MyWorkHeader } from "./my-work-header";
 import { MyWorkTasksClient } from "./my-work-tasks-client";
 import { createMyWorkViewAction } from "./view-actions";
 import { fetchPersonalDashboard } from "@/lib/actions/dashboard";
-import { getMyExpenses } from "@/app/(app)/org/[slug]/projects/[id]/expense-actions";
+import { getMyExpenses } from "@/lib/actions/expense-actions";
 import { ApiError } from "@/lib/api";
 
 /**

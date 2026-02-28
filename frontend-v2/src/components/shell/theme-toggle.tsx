@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, startTransition } from "react";
 import { Sun, Moon, Monitor } from "lucide-react";
 import {
   DropdownMenu,
@@ -72,9 +72,11 @@ export function ThemeToggle() {
   useEffect(() => {
     const stored = getStoredTheme();
     const initialTheme = stored || "system";
-    setTheme(initialTheme);
-    applyTheme(initialTheme);
-    setMounted(true);
+    startTransition(() => {
+      setTheme(initialTheme);
+      applyTheme(initialTheme);
+      setMounted(true);
+    });
   }, []);
 
   // Listen for system preference changes (in system mode)

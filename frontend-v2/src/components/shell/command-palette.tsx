@@ -90,9 +90,11 @@ export function CommandPalette() {
   // Load recents on open
   useEffect(() => {
     if (open) {
-      setRecentItems(getRecentItems());
-      setQuery("");
-      setResults([]);
+      startTransition(() => {
+        setRecentItems(getRecentItems());
+        setQuery("");
+        setResults([]);
+      });
     }
   }, [open]);
 

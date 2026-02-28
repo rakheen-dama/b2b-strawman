@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.project;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -44,6 +45,7 @@ class ProjectCustomerLinkIntegrationTest {
   private String activeCustomerId;
   private String prospectCustomerId;
   private String offboardedCustomerId;
+  private String offboardingCustomerId;
 
   @BeforeAll
   void provisionTenantAndMembers() throws Exception {
@@ -61,6 +63,11 @@ class ProjectCustomerLinkIntegrationTest {
     // Create an OFFBOARDED customer (ACTIVE -> OFFBOARDING -> OFFBOARDED)
     offboardedCustomerId =
         createCustomerAndOffboard("Offboarded Customer", "pcl_offboard@test.com");
+
+    // Create an OFFBOARDING customer (ACTIVE -> OFFBOARDING only)
+    offboardingCustomerId =
+        createCustomerAndTransitionToOffboarding(
+            "Offboarding Customer", "pcl_offboarding@test.com");
   }
 
   // --- 205.1: Create project with customerId and dueDate ---
@@ -290,6 +297,67 @@ class ProjectCustomerLinkIntegrationTest {
         .andExpect(jsonPath("$.customerId").isEmpty());
   }
 
+  // --- 205B: OFFBOARDING guard + archive protection ---
+
+  @Test
+  void shouldRejectCreateProjectWithOffboardingCustomer() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/projects")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"name": "Offboarding Link", "description": "Offboarding customer",
+                     "customerId": "%s"}
+                    """
+                        .formatted(offboardingCustomerId)))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void shouldRejectUpdateProjectWithOffboardingCustomer() throws Exception {
+    String projectId = createProject("Update Offboarding Link");
+
+    mockMvc
+        .perform(
+            put("/api/projects/" + projectId)
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"name": "Update Offboarding Link", "description": "Offboarding customer",
+                     "customerId": "%s"}
+                    """
+                        .formatted(offboardingCustomerId)))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void shouldBlockArchiveCustomerWithLinkedProjects() throws Exception {
+    // Create a fresh active customer and link a project to it
+    String custId =
+        createCustomerAndActivate("Archive Block Customer", "pcl_archive_block@test.com");
+    createProjectWithCustomer("Archive Block Project", custId);
+
+    // Attempt to archive (DELETE) the customer — should be blocked with 409
+    mockMvc
+        .perform(delete("/api/customers/" + custId).with(ownerJwt()))
+        .andExpect(status().isConflict())
+        .andExpect(
+            jsonPath("$.detail")
+                .value(org.hamcrest.Matchers.containsString("project(s) are linked")));
+  }
+
+  @Test
+  void shouldAllowArchiveCustomerWithNoLinkedProjects() throws Exception {
+    // Create a fresh active customer with no projects
+    String custId = createCustomerAndActivate("Archive OK Customer", "pcl_archive_ok@test.com");
+
+    // Archive should succeed
+    mockMvc.perform(delete("/api/customers/" + custId).with(ownerJwt())).andExpect(status().isOk());
+  }
+
   // --- Helpers ---
 
   private String createProject(String name) throws Exception {
@@ -381,6 +449,22 @@ class ProjectCustomerLinkIntegrationTest {
 
     // Complete all checklist items (auto-transitions ONBOARDING -> ACTIVE)
     TestChecklistHelper.completeChecklistItems(mockMvc, custId, ownerJwt());
+
+    return custId;
+  }
+
+  private String createCustomerAndTransitionToOffboarding(String name, String email)
+      throws Exception {
+    String custId = createCustomerAndActivate(name, email);
+
+    // Transition ACTIVE -> OFFBOARDING only (don't go to OFFBOARDED)
+    mockMvc
+        .perform(
+            post("/api/customers/" + custId + "/transition")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"targetStatus\": \"OFFBOARDING\"}"))
+        .andExpect(status().isOk());
 
     return custId;
   }

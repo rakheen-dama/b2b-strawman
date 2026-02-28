@@ -17,7 +17,9 @@ public class CustomerLifecycleGuard {
 
     switch (action) {
       case CREATE_PROJECT, CREATE_TASK, CREATE_TIME_ENTRY -> {
-        if (status == LifecycleStatus.PROSPECT || status == LifecycleStatus.OFFBOARDED) {
+        if (status == LifecycleStatus.PROSPECT
+            || status == LifecycleStatus.OFFBOARDING
+            || status == LifecycleStatus.OFFBOARDED) {
           throwBlocked(action, status);
         }
       }

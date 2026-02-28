@@ -304,9 +304,6 @@ public class InvoiceService {
         timeEntry.setInvoiceId(invoice.getId());
       }
       timeEntryRepository.saveAll(linkedTimeEntries);
-
-      // Apply default tax rate to all generated lines
-      applyDefaultTaxToLines(invoice.getId());
     }
 
     // Create line items from expenses
@@ -355,9 +352,18 @@ public class InvoiceService {
         line.setExpenseId(expense.getId());
         line.setLineType(InvoiceLineType.EXPENSE);
         lineRepository.save(line);
-      }
 
-      // Apply default tax rate to expense lines too
+        // Link expense to invoice to prevent double-billing (mirrors time entry pattern)
+        expense.markBilled(invoice.getId());
+        expenseRepository.save(expense);
+      }
+    }
+
+    // Apply default tax rate to all lines (time + expense) — called once after all lines created
+    boolean hasLines =
+        (timeEntryIds != null && !timeEntryIds.isEmpty())
+            || (expenseIds != null && !expenseIds.isEmpty());
+    if (hasLines) {
       applyDefaultTaxToLines(invoice.getId());
     }
 
@@ -928,16 +934,23 @@ public class InvoiceService {
       }
     }
 
-    // Stamp invoiceId on expenses linked via EXPENSE lines
+    // Re-confirm expense linkage (expenses are linked at draft time, but verify integrity)
     for (var line : lines) {
       if (line.getExpenseId() != null) {
-        expenseRepository
-            .findById(line.getExpenseId())
-            .ifPresent(
-                expense -> {
-                  expense.markBilled(invoiceId);
-                  expenseRepository.save(expense);
-                });
+        var expense =
+            expenseRepository
+                .findById(line.getExpenseId())
+                .orElseThrow(() -> new ResourceNotFoundException("Expense", line.getExpenseId()));
+        if (expense.getInvoiceId() != null && !expense.getInvoiceId().equals(invoiceId)) {
+          throw new ResourceConflictException(
+              "Expense already billed",
+              "Expense " + line.getExpenseId() + " is already linked to another invoice");
+        }
+        // Ensure linkage if not yet set (defensive — should already be set at draft time)
+        if (expense.getInvoiceId() == null) {
+          expense.markBilled(invoiceId);
+          expenseRepository.save(expense);
+        }
       }
     }
 
@@ -1362,7 +1375,10 @@ public class InvoiceService {
                     expenseRepository.save(expense);
                   } catch (IllegalStateException e) {
                     log.warn(
-                        "Could not unbill expense {}: {}", line.getExpenseId(), e.getMessage());
+                        "Could not unbill expense {} on invoice {}: {}",
+                        line.getExpenseId(),
+                        invoiceId,
+                        e.getMessage());
                   }
                 });
       }

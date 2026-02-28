@@ -4,8 +4,10 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -29,11 +31,15 @@ public class TemplateClauseSync {
   private static final Logger log = LoggerFactory.getLogger(TemplateClauseSync.class);
 
   private final TemplateClauseRepository templateClauseRepository;
+  private final ClauseRepository clauseRepository;
   private final AuditService auditService;
 
   public TemplateClauseSync(
-      TemplateClauseRepository templateClauseRepository, AuditService auditService) {
+      TemplateClauseRepository templateClauseRepository,
+      ClauseRepository clauseRepository,
+      AuditService auditService) {
     this.templateClauseRepository = templateClauseRepository;
+    this.clauseRepository = clauseRepository;
     this.auditService = auditService;
   }
 
@@ -59,7 +65,37 @@ public class TemplateClauseSync {
     }
 
     // 1. Extract clauseBlock refs from document
-    List<ClauseBlockRef> extracted = extractClauseBlocks(content);
+    List<ClauseBlockRef> rawExtracted = extractClauseBlocks(content);
+
+    // 1a. Deduplicate by clauseId (first-occurrence-wins)
+    Set<UUID> seenClauseIds = new LinkedHashSet<>();
+    List<ClauseBlockRef> deduplicated = new ArrayList<>();
+    for (ClauseBlockRef ref : rawExtracted) {
+      if (seenClauseIds.add(ref.clauseId())) {
+        deduplicated.add(ref);
+      } else {
+        log.warn(
+            "Skipping duplicate clauseBlock for clauseId {} in template {}",
+            ref.clauseId(),
+            templateId);
+      }
+    }
+
+    // 1b. Validate that referenced clauses exist (filter out dangling references)
+    Set<UUID> existingClauseIds =
+        new LinkedHashSet<>(
+            clauseRepository.findAllById(seenClauseIds).stream().map(Clause::getId).toList());
+    List<ClauseBlockRef> extracted = new ArrayList<>();
+    for (ClauseBlockRef ref : deduplicated) {
+      if (existingClauseIds.contains(ref.clauseId())) {
+        extracted.add(ref);
+      } else {
+        log.warn(
+            "Skipping clauseBlock with non-existent clauseId {} in template {}",
+            ref.clauseId(),
+            templateId);
+      }
+    }
 
     // 2. Load current rows
     List<TemplateClause> existing =
@@ -73,11 +109,11 @@ public class TemplateClauseSync {
     // 4. Diff: determine inserts, updates, deletes
     List<TemplateClause> toInsert = new ArrayList<>();
     List<TemplateClause> toUpdate = new ArrayList<>();
-    var extractedClauseIds = new java.util.LinkedHashSet<UUID>();
+    var extractedClauseIdSet = new LinkedHashSet<UUID>();
 
     for (int i = 0; i < extracted.size(); i++) {
       ClauseBlockRef ref = extracted.get(i);
-      extractedClauseIds.add(ref.clauseId());
+      extractedClauseIdSet.add(ref.clauseId());
 
       TemplateClause existingRow = existingByClauseId.get(ref.clauseId());
       if (existingRow == null) {
@@ -95,7 +131,7 @@ public class TemplateClauseSync {
 
     // Rows to delete: existing rows whose clauseId is not in extracted set
     List<TemplateClause> toDelete =
-        existing.stream().filter(tc -> !extractedClauseIds.contains(tc.getClauseId())).toList();
+        existing.stream().filter(tc -> !extractedClauseIdSet.contains(tc.getClauseId())).toList();
 
     // 5. Flush changes
     if (!toDelete.isEmpty()) {

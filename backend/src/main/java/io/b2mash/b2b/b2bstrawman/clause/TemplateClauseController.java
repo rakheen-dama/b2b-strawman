@@ -48,7 +48,7 @@ public class TemplateClauseController {
    * Deprecated: Clause associations are now synced from document JSON on template save. See
    * ADR-123. Changes made through this endpoint will be overwritten on next template save.
    */
-  @Deprecated
+  @Deprecated(forRemoval = true)
   @PostMapping
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<TemplateClauseDetail> addClauseToTemplate(
@@ -65,7 +65,7 @@ public class TemplateClauseController {
    * Deprecated: Clause associations are now synced from document JSON on template save. See
    * ADR-123. Changes made through this endpoint will be overwritten on next template save.
    */
-  @Deprecated
+  @Deprecated(forRemoval = true)
   @DeleteMapping("/{clauseId}")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> removeClauseFromTemplate(

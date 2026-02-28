@@ -175,8 +175,10 @@ public class DocumentTemplateService {
 
     dt = documentTemplateRepository.save(dt);
 
-    // Sync clause associations from document JSON (ADR-123)
-    templateClauseSync.syncClausesFromDocument(dt.getId(), dt.getContent());
+    // Sync clause associations from document JSON only when content changed (ADR-123)
+    if (request.content() != null) {
+      templateClauseSync.syncClausesFromDocument(dt.getId(), dt.getContent());
+    }
 
     log.info("Updated document template: id={}, name={}", dt.getId(), dt.getName());
 

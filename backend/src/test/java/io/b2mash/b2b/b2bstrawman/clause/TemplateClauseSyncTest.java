@@ -264,6 +264,59 @@ class TemplateClauseSyncTest {
         });
   }
 
+  @Test
+  void syncDeduplicatesDuplicateClauseBlocks() {
+    runInTenantVoid(
+        () -> {
+          templateClauseRepository.deleteAllByTemplateId(templateId);
+          templateClauseRepository.flush();
+
+          // Same clauseId appears twice (simulates copy-paste in editor)
+          var content =
+              doc()
+                  .clauseBlock(clause1Id, "scope-of-work", "Scope of Work", true)
+                  .clauseBlock(clause1Id, "scope-of-work", "Scope of Work", false)
+                  .clauseBlock(clause2Id, "payment-terms", "Payment Terms", false)
+                  .build();
+
+          templateClauseSync.syncClausesFromDocument(templateId, content);
+
+          var rows = templateClauseRepository.findByTemplateIdOrderBySortOrderAsc(templateId);
+          // Only 2 rows: clause1 (first occurrence wins) and clause2
+          assertThat(rows).hasSize(2);
+          assertThat(rows.get(0).getClauseId()).isEqualTo(clause1Id);
+          assertThat(rows.get(0).isRequired()).isTrue(); // first occurrence wins
+          assertThat(rows.get(1).getClauseId()).isEqualTo(clause2Id);
+        });
+  }
+
+  @Test
+  void syncSkipsNonExistentClauseIds() {
+    runInTenantVoid(
+        () -> {
+          templateClauseRepository.deleteAllByTemplateId(templateId);
+          templateClauseRepository.flush();
+
+          UUID nonExistentId = UUID.randomUUID();
+          var content =
+              doc()
+                  .clauseBlock(clause1Id, "scope-of-work", "Scope of Work", true)
+                  .clauseBlock(nonExistentId, "ghost-clause", "Ghost Clause", false)
+                  .clauseBlock(clause2Id, "payment-terms", "Payment Terms", false)
+                  .build();
+
+          templateClauseSync.syncClausesFromDocument(templateId, content);
+
+          var rows = templateClauseRepository.findByTemplateIdOrderBySortOrderAsc(templateId);
+          // Only 2 rows: the non-existent clause is skipped
+          assertThat(rows).hasSize(2);
+          assertThat(rows.get(0).getClauseId()).isEqualTo(clause1Id);
+          assertThat(rows.get(0).getSortOrder()).isEqualTo(0);
+          assertThat(rows.get(1).getClauseId()).isEqualTo(clause2Id);
+          assertThat(rows.get(1).getSortOrder()).isEqualTo(1);
+        });
+  }
+
   // --- runInTenant helpers ---
 
   private <T> T runInTenant(Callable<T> callable) {

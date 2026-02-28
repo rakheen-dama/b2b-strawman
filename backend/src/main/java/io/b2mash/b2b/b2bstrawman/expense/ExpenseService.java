@@ -254,18 +254,18 @@ public class ExpenseService {
       throw new InvalidStateException("Invalid markup", "Markup percent must be non-negative");
     }
 
-    // Call entity update method
+    // Call entity update method (null-coalesce optional fields to preserve existing values)
     expense.update(
         date != null ? date : expense.getDate(),
         description != null ? description : expense.getDescription(),
         amount != null ? amount : expense.getAmount(),
         currency != null ? currency : expense.getCurrency(),
         category != null ? category : expense.getCategory(),
-        taskId,
-        receiptDocumentId,
-        markupPercent,
+        taskId != null ? taskId : expense.getTaskId(),
+        receiptDocumentId != null ? receiptDocumentId : expense.getReceiptDocumentId(),
+        markupPercent != null ? markupPercent : expense.getMarkupPercent(),
         billable != null ? billable : expense.isBillable(),
-        notes);
+        notes != null ? notes : expense.getNotes());
 
     var saved = expenseRepository.save(expense);
     log.info("Updated expense {} by member {}", expenseId, memberId);

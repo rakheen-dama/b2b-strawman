@@ -302,6 +302,7 @@ export function TemplateEditorClient({
           onUpdate={handleEditorUpdate}
           scope="template"
           editable={!readOnly}
+          entityType={template.primaryEntityType}
         />
       </div>
     </div>

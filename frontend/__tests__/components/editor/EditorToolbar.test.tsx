@@ -1,6 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+
+// Mock VariablePicker and ClausePicker to avoid server-only import chain
+vi.mock("@/components/editor/VariablePicker", () => ({
+  VariablePicker: () => null,
+}));
+
+vi.mock("@/components/editor/ClausePicker", () => ({
+  ClausePicker: () => null,
+}));
+
 import { EditorToolbar } from "@/components/editor/EditorToolbar";
 
 function createMockEditor() {

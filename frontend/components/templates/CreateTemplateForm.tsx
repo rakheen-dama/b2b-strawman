@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { DocumentEditor } from "@/components/editor/DocumentEditor";
 import { createTemplateAction } from "@/app/(app)/org/[slug]/settings/templates/actions";
 import type { TemplateCategory, TemplateEntityType } from "@/lib/types";
 
@@ -23,6 +24,9 @@ const ENTITY_TYPES: { value: TemplateEntityType; label: string }[] = [
   { value: "INVOICE", label: "Invoice" },
 ];
 
+// Empty initial content for a new template
+const EMPTY_CONTENT: Record<string, unknown> = { type: "doc", content: [] };
+
 interface CreateTemplateFormProps {
   slug: string;
 }
@@ -33,13 +37,17 @@ export function CreateTemplateForm({ slug }: CreateTemplateFormProps) {
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState<TemplateCategory>("ENGAGEMENT_LETTER");
   const [entityType, setEntityType] = useState<TemplateEntityType>("PROJECT");
-  const [contentText, setContentText] = useState("");
+  const [editorContent, setEditorContent] = useState<Record<string, unknown>>(EMPTY_CONTENT);
   const [css, setCss] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const handleEditorUpdate = useCallback((json: Record<string, unknown>) => {
+    setEditorContent(json);
+  }, []);
+
   async function handleCreate() {
-    if (!name.trim() || !contentText.trim()) return;
+    if (!name.trim()) return;
 
     setIsCreating(true);
     setError(null);
@@ -50,15 +58,7 @@ export function CreateTemplateForm({ slug }: CreateTemplateFormProps) {
         description: description.trim() || undefined,
         category,
         primaryEntityType: entityType,
-        content: {
-          type: "doc",
-          content: [
-            {
-              type: "paragraph",
-              content: [{ type: "text", text: contentText }],
-            },
-          ],
-        },
+        content: editorContent,
         css: css.trim() || undefined,
       });
 
@@ -94,9 +94,7 @@ export function CreateTemplateForm({ slug }: CreateTemplateFormProps) {
               <select
                 id="new-template-category"
                 value={category}
-                onChange={(e) =>
-                  setCategory(e.target.value as TemplateCategory)
-                }
+                onChange={(e) => setCategory(e.target.value as TemplateCategory)}
                 className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
               >
                 {CATEGORIES.map((c) => (
@@ -114,9 +112,7 @@ export function CreateTemplateForm({ slug }: CreateTemplateFormProps) {
               <select
                 id="new-template-entity-type"
                 value={entityType}
-                onChange={(e) =>
-                  setEntityType(e.target.value as TemplateEntityType)
-                }
+                onChange={(e) => setEntityType(e.target.value as TemplateEntityType)}
                 className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
               >
                 {ENTITY_TYPES.map((t) => (
@@ -139,14 +135,13 @@ export function CreateTemplateForm({ slug }: CreateTemplateFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="new-template-content">Content</Label>
-            <Textarea
-              id="new-template-content"
-              value={contentText}
-              onChange={(e) => setContentText(e.target.value)}
-              placeholder="Start typing your template content..."
-              rows={20}
-              className="text-sm"
+            <Label>Content</Label>
+            <DocumentEditor
+              content={EMPTY_CONTENT}
+              onUpdate={handleEditorUpdate}
+              scope="template"
+              editable={true}
+              entityType={entityType}
             />
           </div>
 
@@ -173,7 +168,7 @@ export function CreateTemplateForm({ slug }: CreateTemplateFormProps) {
             </Button>
             <Button
               onClick={handleCreate}
-              disabled={isCreating || !name.trim() || !contentText.trim()}
+              disabled={isCreating || !name.trim()}
             >
               {isCreating ? "Creating..." : "Create Template"}
             </Button>
@@ -186,7 +181,7 @@ export function CreateTemplateForm({ slug }: CreateTemplateFormProps) {
               Template Variables
             </h3>
             <p className="text-sm text-slate-600 dark:text-slate-400">
-              Variables will be available in the editor after the template is created.
+              Use the toolbar to insert variables and clauses. Variables are resolved from the selected entity type.
             </p>
           </div>
         </div>

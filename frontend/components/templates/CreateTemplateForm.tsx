@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { TemplateVariableReference } from "@/components/templates/TemplateVariableReference";
 import { createTemplateAction } from "@/app/(app)/org/[slug]/settings/templates/actions";
 import type { TemplateCategory, TemplateEntityType } from "@/lib/types";
 
@@ -34,13 +33,13 @@ export function CreateTemplateForm({ slug }: CreateTemplateFormProps) {
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState<TemplateCategory>("ENGAGEMENT_LETTER");
   const [entityType, setEntityType] = useState<TemplateEntityType>("PROJECT");
-  const [content, setContent] = useState("");
+  const [contentText, setContentText] = useState("");
   const [css, setCss] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleCreate() {
-    if (!name.trim() || !content.trim()) return;
+    if (!name.trim() || !contentText.trim()) return;
 
     setIsCreating(true);
     setError(null);
@@ -51,7 +50,15 @@ export function CreateTemplateForm({ slug }: CreateTemplateFormProps) {
         description: description.trim() || undefined,
         category,
         primaryEntityType: entityType,
-        content,
+        content: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: contentText }],
+            },
+          ],
+        },
         css: css.trim() || undefined,
       });
 
@@ -132,14 +139,14 @@ export function CreateTemplateForm({ slug }: CreateTemplateFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="new-template-content">Content (HTML)</Label>
+            <Label htmlFor="new-template-content">Content</Label>
             <Textarea
               id="new-template-content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="<html>...</html>"
+              value={contentText}
+              onChange={(e) => setContentText(e.target.value)}
+              placeholder="Start typing your template content..."
               rows={20}
-              className="font-mono text-sm"
+              className="text-sm"
             />
           </div>
 
@@ -166,7 +173,7 @@ export function CreateTemplateForm({ slug }: CreateTemplateFormProps) {
             </Button>
             <Button
               onClick={handleCreate}
-              disabled={isCreating || !name.trim() || !content.trim()}
+              disabled={isCreating || !name.trim() || !contentText.trim()}
             >
               {isCreating ? "Creating..." : "Create Template"}
             </Button>
@@ -174,7 +181,14 @@ export function CreateTemplateForm({ slug }: CreateTemplateFormProps) {
         </div>
 
         <div>
-          <TemplateVariableReference entityType={entityType} />
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900">
+            <h3 className="mb-2 text-sm font-semibold text-slate-950 dark:text-slate-50">
+              Template Variables
+            </h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Variables will be available in the editor after the template is created.
+            </p>
+          </div>
         </div>
       </div>
     </div>

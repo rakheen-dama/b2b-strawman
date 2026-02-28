@@ -538,7 +538,8 @@ export interface TemplateDetailResponse {
   description: string;
   category: TemplateCategory;
   primaryEntityType: TemplateEntityType;
-  content: string;
+  content: Record<string, unknown>;
+  legacyContent: string | null;
   css: string | null;
   source: TemplateSource;
   sourceTemplateId: string | null;
@@ -556,7 +557,7 @@ export interface CreateTemplateRequest {
   description?: string;
   category: TemplateCategory;
   primaryEntityType: TemplateEntityType;
-  content: string;
+  content: Record<string, unknown>;
   css?: string;
   slug?: string;
   requiredContextFields?: Array<{ entity: string; field: string }>;
@@ -565,7 +566,7 @@ export interface CreateTemplateRequest {
 export interface UpdateTemplateRequest {
   name: string;
   description?: string;
-  content: string;
+  content: Record<string, unknown>;
   css?: string;
   sortOrder?: number;
   requiredContextFields?: Array<{ entity: string; field: string }> | null;

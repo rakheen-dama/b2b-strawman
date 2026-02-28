@@ -119,7 +119,8 @@ class TaskLifecycleIntegrationTest {
         .andExpect(jsonPath("$.status").value("DONE"))
         .andExpect(jsonPath("$.completedAt", notNullValue()))
         .andExpect(jsonPath("$.completedBy").value(memberIdMember))
-        .andExpect(jsonPath("$.completedByName").value("Lifecycle Member"));
+        .andExpect(jsonPath("$.completedByName").value("Lifecycle Member"))
+        .andExpect(jsonPath("$.nextInstance").doesNotExist());
   }
 
   @Test

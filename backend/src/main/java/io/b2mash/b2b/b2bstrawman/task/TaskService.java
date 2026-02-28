@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.event.TaskAssignedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskCancelledEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskClaimedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskCompletedEvent;
+import io.b2mash.b2b.b2bstrawman.event.TaskRecurrenceCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskReopenedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
@@ -181,11 +182,52 @@ public class TaskService {
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups,
       UUID assigneeId) {
+    return createTask(
+        projectId,
+        title,
+        description,
+        priority,
+        type,
+        dueDate,
+        createdBy,
+        orgRole,
+        customFields,
+        appliedFieldGroups,
+        assigneeId,
+        null,
+        null);
+  }
+
+  @Transactional
+  public Task createTask(
+      UUID projectId,
+      String title,
+      String description,
+      String priority,
+      String type,
+      LocalDate dueDate,
+      UUID createdBy,
+      String orgRole,
+      Map<String, Object> customFields,
+      List<UUID> appliedFieldGroups,
+      UUID assigneeId,
+      String recurrenceRule,
+      LocalDate recurrenceEndDate) {
     // Any project member can create tasks; view access is sufficient
     projectAccessService.requireViewAccess(projectId, createdBy, orgRole);
 
     // Check project is not archived
     projectLifecycleGuard.requireNotReadOnly(projectId);
+
+    // Validate recurrence rule format if provided
+    if (recurrenceRule != null && !recurrenceRule.isBlank()) {
+      try {
+        RecurrenceRule.parse(recurrenceRule);
+      } catch (IllegalArgumentException e) {
+        throw new InvalidStateException(
+            "Invalid recurrence rule", "Invalid recurrence rule format: " + e.getMessage());
+      }
+    }
 
     // Validate custom fields
     Map<String, Object> validatedFields =
@@ -198,6 +240,12 @@ public class TaskService {
     task.setCustomFields(validatedFields);
     if (appliedFieldGroups != null) {
       task.setAppliedFieldGroups(appliedFieldGroups);
+    }
+    if (recurrenceRule != null) {
+      task.setRecurrenceRule(recurrenceRule);
+    }
+    if (recurrenceEndDate != null) {
+      task.setRecurrenceEndDate(recurrenceEndDate);
     }
 
     // Auto-apply field groups before save so audit events capture final state
@@ -274,6 +322,8 @@ public class TaskService {
         memberId,
         orgRole,
         null,
+        null,
+        null,
         null);
   }
 
@@ -291,6 +341,39 @@ public class TaskService {
       String orgRole,
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups) {
+    return updateTask(
+        taskId,
+        title,
+        description,
+        priority,
+        status,
+        type,
+        dueDate,
+        assigneeId,
+        memberId,
+        orgRole,
+        customFields,
+        appliedFieldGroups,
+        null,
+        null);
+  }
+
+  @Transactional
+  public Task updateTask(
+      UUID taskId,
+      String title,
+      String description,
+      String priority,
+      String status,
+      String type,
+      LocalDate dueDate,
+      UUID assigneeId,
+      UUID memberId,
+      String orgRole,
+      Map<String, Object> customFields,
+      List<UUID> appliedFieldGroups,
+      String recurrenceRule,
+      LocalDate recurrenceEndDate) {
     var task =
         taskRepository
             .findById(taskId)
@@ -307,6 +390,27 @@ public class TaskService {
     if (assigneeId != null
         && !projectMemberRepository.existsByProjectIdAndMemberId(task.getProjectId(), assigneeId)) {
       throw new ResourceNotFoundException("ProjectMember", assigneeId);
+    }
+
+    // Validate recurrence rule format if provided; blank/empty = clear recurrence
+    String effectiveRecurrenceRule;
+    LocalDate effectiveRecurrenceEndDate;
+    if (recurrenceRule != null && recurrenceRule.isBlank()) {
+      // Blank string = explicit request to clear recurrence
+      effectiveRecurrenceRule = null;
+      effectiveRecurrenceEndDate = null;
+    } else {
+      effectiveRecurrenceRule = recurrenceRule != null ? recurrenceRule : task.getRecurrenceRule();
+      effectiveRecurrenceEndDate =
+          recurrenceEndDate != null ? recurrenceEndDate : task.getRecurrenceEndDate();
+      if (recurrenceRule != null) {
+        try {
+          RecurrenceRule.parse(recurrenceRule);
+        } catch (IllegalArgumentException e) {
+          throw new InvalidStateException(
+              "Invalid recurrence rule", "Invalid recurrence rule format: " + e.getMessage());
+        }
+      }
     }
 
     // Validate and set custom fields
@@ -344,8 +448,8 @@ public class TaskService {
         dueDate,
         assigneeId,
         memberId,
-        task.getRecurrenceRule(),
-        task.getRecurrenceEndDate());
+        effectiveRecurrenceRule,
+        effectiveRecurrenceEndDate);
     task = taskRepository.save(task);
 
     // Build delta map -- only include changed fields
@@ -650,8 +754,11 @@ public class TaskService {
     return task;
   }
 
+  /** Result of completing a task, optionally including the next recurring instance. */
+  public record CompleteTaskResult(Task completedTask, Task nextInstance) {}
+
   @Transactional
-  public Task completeTask(UUID taskId, UUID memberId, String orgRole) {
+  public CompleteTaskResult completeTask(UUID taskId, UUID memberId, String orgRole) {
     var task =
         taskRepository
             .findById(taskId)
@@ -703,7 +810,107 @@ public class TaskService {
 
     publishPortalTaskEventIfLinked(task, PortalTaskUpdatedEvent::new);
 
-    return task;
+    // --- Recurrence auto-creation ---
+    Task nextInstance = null;
+    if (task.isRecurring()) {
+      nextInstance = createRecurringNextInstance(task, memberId, actorName, tenantId, orgId);
+    }
+
+    return new CompleteTaskResult(task, nextInstance);
+  }
+
+  /**
+   * Creates the next recurring task instance when a recurring task is completed. Runs in the same
+   * transaction. Returns null if recurrence has expired.
+   */
+  private Task createRecurringNextInstance(
+      Task completedTask, UUID memberId, String actorName, String tenantId, String orgId) {
+    var rule = RecurrenceRule.parse(completedTask.getRecurrenceRule());
+    LocalDate nextDueDate = rule.calculateNextDueDate(completedTask.getDueDate());
+
+    // Check if recurrence has expired
+    if (completedTask.getRecurrenceEndDate() != null
+        && nextDueDate.isAfter(completedTask.getRecurrenceEndDate())) {
+      log.info(
+          "Recurrence expired for task {} — end date {} passed",
+          completedTask.getId(),
+          completedTask.getRecurrenceEndDate());
+      return null;
+    }
+
+    // Also check if end date itself has already passed (before calculating next)
+    if (completedTask.getRecurrenceEndDate() != null
+        && LocalDate.now().isAfter(completedTask.getRecurrenceEndDate())) {
+      log.info(
+          "Recurrence end date {} already passed for task {}",
+          completedTask.getRecurrenceEndDate(),
+          completedTask.getId());
+      return null;
+    }
+
+    // Create next instance
+    var nextTask =
+        new Task(
+            completedTask.getProjectId(),
+            completedTask.getTitle(),
+            completedTask.getDescription(),
+            completedTask.getPriority().name(),
+            completedTask.getType(),
+            nextDueDate,
+            memberId);
+    nextTask.setRecurrenceRule(completedTask.getRecurrenceRule());
+    nextTask.setRecurrenceEndDate(completedTask.getRecurrenceEndDate());
+    nextTask.setParentTaskId(completedTask.getRootTaskId());
+
+    // Copy assignee if present
+    if (completedTask.getAssigneeId() != null) {
+      nextTask.claim(completedTask.getAssigneeId());
+    }
+
+    nextTask = taskRepository.save(nextTask);
+    log.info(
+        "Created recurring task instance {} from completed task {}, due {}",
+        nextTask.getId(),
+        completedTask.getId(),
+        nextDueDate);
+
+    // Audit event for the new instance
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("task.recurrence_created")
+            .entityType("task")
+            .entityId(nextTask.getId())
+            .details(
+                Map.of(
+                    "title", nextTask.getTitle(),
+                    "project_id", nextTask.getProjectId().toString(),
+                    "parent_task_id", nextTask.getParentTaskId().toString(),
+                    "due_date", nextDueDate.toString(),
+                    "source_task_id", completedTask.getId().toString()))
+            .build());
+
+    // Publish event for notification fan-out
+    eventPublisher.publishEvent(
+        new TaskRecurrenceCreatedEvent(
+            "task.recurrence_created",
+            "task",
+            nextTask.getId(),
+            nextTask.getProjectId(),
+            memberId,
+            actorName,
+            tenantId,
+            orgId,
+            Instant.now(),
+            Map.of("title", nextTask.getTitle(), "due_date", nextDueDate.toString()),
+            nextTask.getAssigneeId(),
+            nextTask.getTitle(),
+            nextDueDate,
+            nextTask.getParentTaskId()));
+
+    // Publish portal event if project is customer-linked
+    publishPortalTaskEventIfLinked(nextTask, PortalTaskCreatedEvent::new);
+
+    return nextTask;
   }
 
   @Transactional
@@ -757,6 +964,9 @@ public class TaskService {
             task.getTitle()));
 
     publishPortalTaskEventIfLinked(task, PortalTaskUpdatedEvent::new);
+
+    // Recurrence note: no new instance is created on cancel. Recurrence stops silently.
+    // The user can reopen the task and complete it normally to resume recurrence.
 
     return task;
   }

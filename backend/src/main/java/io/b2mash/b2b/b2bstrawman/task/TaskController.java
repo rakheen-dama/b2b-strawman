@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.task;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
 import io.b2mash.b2b.b2bstrawman.member.Member;
@@ -73,7 +74,9 @@ public class TaskController {
             orgRole,
             request.customFields(),
             request.appliedFieldGroups(),
-            request.assigneeId());
+            request.assigneeId(),
+            request.recurrenceRule(),
+            request.recurrenceEndDate());
 
     var names = resolveNames(List.of(task));
     return ResponseEntity.created(URI.create("/api/tasks/" + task.getId()))
@@ -185,7 +188,9 @@ public class TaskController {
             memberId,
             orgRole,
             request.customFields(),
-            request.appliedFieldGroups());
+            request.appliedFieldGroups(),
+            request.recurrenceRule(),
+            request.recurrenceEndDate());
 
     var names = resolveNames(List.of(task));
     var tags = entityTagService.getEntityTags("TASK", id);
@@ -228,14 +233,12 @@ public class TaskController {
 
   @PatchMapping("/api/tasks/{id}/complete")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
-  public ResponseEntity<TaskResponse> completeTask(@PathVariable UUID id) {
+  public ResponseEntity<CompleteTaskResponse> completeTask(@PathVariable UUID id) {
     UUID memberId = RequestScopes.requireMemberId();
     String orgRole = RequestScopes.getOrgRole();
 
-    var task = taskService.completeTask(id, memberId, orgRole);
-    var names = resolveNames(List.of(task));
-    var tags = entityTagService.getEntityTags("TASK", id);
-    return ResponseEntity.ok(TaskResponse.from(task, names, tags));
+    var result = taskService.completeTask(id, memberId, orgRole);
+    return ResponseEntity.ok(buildCompleteTaskResponse(result, id));
   }
 
   @PatchMapping("/api/tasks/{id}/cancel")
@@ -296,6 +299,29 @@ public class TaskController {
   }
 
   /**
+   * Assembles a backward-compatible CompleteTaskResponse from a CompleteTaskResult. The completed
+   * task fields are unwrapped to the top level; nextInstance is an optional nested field.
+   */
+  private CompleteTaskResponse buildCompleteTaskResponse(
+      TaskService.CompleteTaskResult result, UUID completedTaskId) {
+    var tasksForNames =
+        result.nextInstance() != null
+            ? List.of(result.completedTask(), result.nextInstance())
+            : List.of(result.completedTask());
+    var names = resolveNames(tasksForNames);
+    var tags = entityTagService.getEntityTags("TASK", completedTaskId);
+
+    TaskResponse nextInstanceResponse = null;
+    if (result.nextInstance() != null) {
+      var nextTags = entityTagService.getEntityTags("TASK", result.nextInstance().getId());
+      nextInstanceResponse = TaskResponse.from(result.nextInstance(), names, nextTags);
+    }
+
+    return new CompleteTaskResponse(
+        TaskResponse.from(result.completedTask(), names, tags), nextInstanceResponse);
+  }
+
+  /**
    * Batch-loads member names for all assignee and createdBy IDs referenced by the given tasks.
    * Returns a map of member UUID to display name.
    */
@@ -336,7 +362,10 @@ public class TaskController {
       LocalDate dueDate,
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups,
-      UUID assigneeId) {}
+      UUID assigneeId,
+      @Size(max = 100, message = "recurrenceRule must be at most 100 characters")
+          String recurrenceRule,
+      LocalDate recurrenceEndDate) {}
 
   public record UpdateTaskRequest(
       @NotBlank(message = "title is required")
@@ -353,7 +382,18 @@ public class TaskController {
       LocalDate dueDate,
       UUID assigneeId,
       Map<String, Object> customFields,
-      List<UUID> appliedFieldGroups) {}
+      List<UUID> appliedFieldGroups,
+      @Size(max = 100, message = "recurrenceRule must be at most 100 characters")
+          String recurrenceRule,
+      LocalDate recurrenceEndDate) {}
+
+  /**
+   * Backward-compatible response for the complete endpoint. The completed task fields are unwrapped
+   * to the top level (so response.status, response.title, etc. still work). The optional
+   * nextInstance field is a nested TaskResponse for the next recurring instance.
+   */
+  public record CompleteTaskResponse(
+      @JsonUnwrapped TaskResponse completedTask, TaskResponse nextInstance) {}
 
   public record TaskResponse(
       UUID id,
@@ -377,7 +417,11 @@ public class TaskController {
       Instant cancelledAt,
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups,
-      List<TagResponse> tags) {
+      List<TagResponse> tags,
+      String recurrenceRule,
+      LocalDate recurrenceEndDate,
+      UUID parentTaskId,
+      boolean isRecurring) {
 
     public static TaskResponse from(
         Task task, Map<UUID, String> memberNames, List<TagResponse> tags) {
@@ -403,7 +447,11 @@ public class TaskController {
           task.getCancelledAt(),
           task.getCustomFields(),
           task.getAppliedFieldGroups(),
-          tags);
+          tags,
+          task.getRecurrenceRule(),
+          task.getRecurrenceEndDate(),
+          task.getParentTaskId(),
+          task.isRecurring());
     }
   }
 }

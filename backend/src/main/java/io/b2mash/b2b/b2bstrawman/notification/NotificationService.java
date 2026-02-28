@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.event.ProjectCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskAssignedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskCancelledEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskClaimedEvent;
+import io.b2mash.b2b.b2bstrawman.event.TaskRecurrenceCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
@@ -154,7 +155,8 @@ public class NotificationService {
           "PAYMENT_LINK_EXPIRED",
           "ACCEPTANCE_COMPLETED",
           "PROJECT_COMPLETED",
-          "PROJECT_ARCHIVED");
+          "PROJECT_ARCHIVED",
+          "TASK_RECURRENCE_CREATED");
 
   // --- Preference methods ---
 
@@ -344,6 +346,32 @@ public class NotificationService {
         createIfEnabled(
             event.assigneeId(),
             "TASK_CANCELLED",
+            title,
+            null,
+            "TASK",
+            event.entityId(),
+            event.projectId());
+    return notification != null ? List.of(notification) : List.of();
+  }
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public List<Notification> handleTaskRecurrenceCreated(TaskRecurrenceCreatedEvent event) {
+    if (event.assigneeMemberId() == null) {
+      return List.of();
+    }
+    // Do not notify the actor about their own recurring task creation
+    if (event.assigneeMemberId().equals(event.actorMemberId())) {
+      return List.of();
+    }
+
+    var title =
+        "Your recurring task \"%s\" has a new instance due %s"
+            .formatted(event.taskTitle(), event.nextDueDate());
+
+    var notification =
+        createIfEnabled(
+            event.assigneeMemberId(),
+            "TASK_RECURRENCE_CREATED",
             title,
             null,
             "TASK",

@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.event.ProjectCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskAssignedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskCancelledEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskClaimedEvent;
+import io.b2mash.b2b.b2bstrawman.event.TaskRecurrenceCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.channel.NotificationDispatcher;
@@ -132,6 +133,24 @@ public class NotificationEventHandler {
           } catch (Exception e) {
             log.warn(
                 "Failed to create notifications for task.cancelled event={}", event.entityId(), e);
+          }
+        });
+  }
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onTaskRecurrenceCreated(TaskRecurrenceCreatedEvent event) {
+    handleInTenantScope(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            var notifications = notificationService.handleTaskRecurrenceCreated(event);
+            dispatchAll(notifications);
+          } catch (Exception e) {
+            log.warn(
+                "Failed to create notifications for task.recurrence_created event={}",
+                event.entityId(),
+                e);
           }
         });
   }

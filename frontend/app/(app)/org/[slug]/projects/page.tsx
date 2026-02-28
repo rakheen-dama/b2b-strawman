@@ -58,7 +58,9 @@ export default async function ProjectsPage({
   }
 
   // Build query string with view and status filters
-  const statusParam = typeof resolvedSearchParams.status === "string" ? resolvedSearchParams.status : null;
+  const VALID_STATUSES = new Set(["ACTIVE", "COMPLETED", "ARCHIVED"]);
+  const rawStatus = typeof resolvedSearchParams.status === "string" ? resolvedSearchParams.status : null;
+  const statusParam = rawStatus && VALID_STATUSES.has(rawStatus) ? rawStatus : null;
   const queryParts: string[] = [];
   if (currentViewId) queryParts.push(`view=${currentViewId}`);
   if (statusParam) queryParts.push(`status=${statusParam}`);

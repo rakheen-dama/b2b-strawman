@@ -171,5 +171,5 @@ export async function reopenProject(
 }
 
 export async function fetchActiveCustomers(): Promise<Customer[]> {
-  return api.get<Customer[]>("/api/customers");
+  return api.get<Customer[]>("/api/customers?status=ACTIVE");
 }

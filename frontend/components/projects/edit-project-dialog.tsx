@@ -32,7 +32,7 @@ export function EditProjectDialog({ project, slug, children }: EditProjectDialog
   useEffect(() => {
     if (open) {
       fetchActiveCustomers()
-        .then((all) => setCustomers(all.filter((c) => c.status === "ACTIVE")))
+        .then((all) => setCustomers(all))
         .catch(() => setCustomers([]));
     }
   }, [open]);

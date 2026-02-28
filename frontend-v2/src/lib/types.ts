@@ -366,6 +366,7 @@ export interface PortalProject {
   name: string;
   description: string | null;
   documentCount: number;
+  createdAt: string;
 }
 
 export interface PortalDocument {

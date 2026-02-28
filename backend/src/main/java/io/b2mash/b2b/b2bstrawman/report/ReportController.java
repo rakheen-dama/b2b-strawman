@@ -84,7 +84,9 @@ public class ReportController {
       BigDecimal billableValue,
       BigDecimal costValue,
       BigDecimal margin,
-      BigDecimal marginPercent) {}
+      BigDecimal marginPercent,
+      BigDecimal totalExpenseCost,
+      BigDecimal totalExpenseRevenue) {}
 
   public record ProjectProfitabilityResponse(
       UUID projectId, String projectName, List<CurrencyBreakdown> currencies) {}

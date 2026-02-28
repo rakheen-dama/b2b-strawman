@@ -16,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.InvoiceValidationFailedException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.expense.ExpenseRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldValidator;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
@@ -34,6 +35,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.dto.InvoiceLineResponse;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.InvoiceResponse;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.PaymentEventResponse;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.SendInvoiceRequest;
+import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledExpenseEntry;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledProjectGroup;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledTimeEntry;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledTimeResponse;
@@ -104,6 +106,7 @@ public class InvoiceService {
   private final OrgSettingsRepository orgSettingsRepository;
   private final TaxCalculationService taxCalculationService;
   private final TaxRateRepository taxRateRepository;
+  private final ExpenseRepository expenseRepository;
 
   public InvoiceService(
       InvoiceRepository invoiceRepository,
@@ -132,7 +135,8 @@ public class InvoiceService {
       PaymentLinkService paymentLinkService,
       OrgSettingsRepository orgSettingsRepository,
       TaxCalculationService taxCalculationService,
-      TaxRateRepository taxRateRepository) {
+      TaxRateRepository taxRateRepository,
+      ExpenseRepository expenseRepository) {
     this.invoiceRepository = invoiceRepository;
     this.lineRepository = lineRepository;
     this.customerRepository = customerRepository;
@@ -160,6 +164,7 @@ public class InvoiceService {
     this.orgSettingsRepository = orgSettingsRepository;
     this.taxCalculationService = taxCalculationService;
     this.taxRateRepository = taxRateRepository;
+    this.expenseRepository = expenseRepository;
   }
 
   @Transactional(readOnly = true)
@@ -299,8 +304,66 @@ public class InvoiceService {
         timeEntry.setInvoiceId(invoice.getId());
       }
       timeEntryRepository.saveAll(linkedTimeEntries);
+    }
 
-      // Apply default tax rate to all generated lines
+    // Create line items from expenses
+    var expenseIds = request.expenseIds();
+    if (expenseIds != null && !expenseIds.isEmpty()) {
+      var orgSettings = orgSettingsRepository.findForCurrentTenant().orElse(null);
+      BigDecimal orgMarkup =
+          orgSettings != null ? orgSettings.getDefaultExpenseMarkupPercent() : null;
+      int expSortOrder = timeEntryIds != null && !timeEntryIds.isEmpty() ? timeEntryIds.size() : 0;
+
+      for (UUID expenseId : expenseIds) {
+        var expense =
+            expenseRepository
+                .findById(expenseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Expense", expenseId));
+
+        if (!expense.isBillable()) {
+          throw new InvalidStateException(
+              "Expense not billable", "Expense " + expenseId + " is not marked as billable");
+        }
+        if (expense.getInvoiceId() != null) {
+          throw new ResourceConflictException(
+              "Expense already invoiced",
+              "Expense " + expenseId + " is already linked to an invoice");
+        }
+        if (!customerProjectRepository.existsByCustomerIdAndProjectId(
+            request.customerId(), expense.getProjectId())) {
+          throw new InvalidStateException(
+              "Expense not linked to customer",
+              "Expense "
+                  + expenseId
+                  + " belongs to a project not linked to customer "
+                  + request.customerId());
+        }
+
+        BigDecimal billableAmount = expense.computeBillableAmount(orgMarkup);
+        var line =
+            new InvoiceLine(
+                invoice.getId(),
+                expense.getProjectId(),
+                null,
+                expense.getDescription() + " [" + expense.getCategory() + "]",
+                BigDecimal.ONE,
+                billableAmount,
+                expSortOrder++);
+        line.setExpenseId(expense.getId());
+        line.setLineType(InvoiceLineType.EXPENSE);
+        lineRepository.save(line);
+
+        // Link expense to invoice to prevent double-billing (mirrors time entry pattern)
+        expense.markBilled(invoice.getId());
+        expenseRepository.save(expense);
+      }
+    }
+
+    // Apply default tax rate to all lines (time + expense) — called once after all lines created
+    boolean hasLines =
+        (timeEntryIds != null && !timeEntryIds.isEmpty())
+            || (expenseIds != null && !expenseIds.isEmpty());
+    if (hasLines) {
       applyDefaultTaxToLines(invoice.getId());
     }
 
@@ -479,7 +542,47 @@ public class InvoiceService {
               grandAmounts.getOrDefault(curEntry.getKey(), BigDecimal.ZERO)));
     }
 
-    return new UnbilledTimeResponse(customerId, customer.getName(), projectGroups, grandTotals);
+    // Fetch unbilled billable expenses for this customer
+    var unbilledExpenses = expenseRepository.findUnbilledBillableByCustomerId(customerId);
+    var orgSettings = orgSettingsRepository.findForCurrentTenant().orElse(null);
+    BigDecimal orgMarkup =
+        orgSettings != null ? orgSettings.getDefaultExpenseMarkupPercent() : null;
+
+    // Build project name map for expenses (reuse from time entries where possible)
+    Map<UUID, String> expenseProjectNames = new LinkedHashMap<>();
+    for (var expense : unbilledExpenses) {
+      if (!expenseProjectNames.containsKey(expense.getProjectId())) {
+        projectRepository
+            .findById(expense.getProjectId())
+            .ifPresent(p -> expenseProjectNames.put(p.getId(), p.getName()));
+      }
+    }
+
+    List<UnbilledExpenseEntry> expenseEntries =
+        unbilledExpenses.stream()
+            .map(
+                e ->
+                    new UnbilledExpenseEntry(
+                        e.getId(),
+                        e.getProjectId(),
+                        expenseProjectNames.getOrDefault(e.getProjectId(), "Unknown"),
+                        e.getDate(),
+                        e.getDescription(),
+                        e.getAmount(),
+                        e.getCurrency(),
+                        e.getCategory().name(),
+                        e.getMarkupPercent(),
+                        e.computeBillableAmount(orgMarkup),
+                        e.getNotes()))
+            .toList();
+
+    Map<String, BigDecimal> expenseTotals = new LinkedHashMap<>();
+    for (var entry : expenseEntries) {
+      expenseTotals.merge(entry.currency(), entry.billableAmount(), BigDecimal::add);
+    }
+
+    return new UnbilledTimeResponse(
+        customerId, customer.getName(), projectGroups, grandTotals, expenseEntries, expenseTotals);
   }
 
   @Transactional
@@ -831,6 +934,26 @@ public class InvoiceService {
       }
     }
 
+    // Re-confirm expense linkage (expenses are linked at draft time, but verify integrity)
+    for (var line : lines) {
+      if (line.getExpenseId() != null) {
+        var expense =
+            expenseRepository
+                .findById(line.getExpenseId())
+                .orElseThrow(() -> new ResourceNotFoundException("Expense", line.getExpenseId()));
+        if (expense.getInvoiceId() != null && !expense.getInvoiceId().equals(invoiceId)) {
+          throw new ResourceConflictException(
+              "Expense already billed",
+              "Expense " + line.getExpenseId() + " is already linked to another invoice");
+        }
+        // Ensure linkage if not yet set (defensive — should already be set at draft time)
+        if (expense.getInvoiceId() == null) {
+          expense.markBilled(invoiceId);
+          expenseRepository.save(expense);
+        }
+      }
+    }
+
     log.info("Approved invoice {} with number {}", invoiceId, invoiceNumber);
 
     auditService.log(
@@ -847,7 +970,9 @@ public class InvoiceService {
                     "total",
                     invoice.getTotal().toString(),
                     "time_entry_count",
-                    String.valueOf(lines.stream().filter(l -> l.getTimeEntryId() != null).count())))
+                    String.valueOf(lines.stream().filter(l -> l.getTimeEntryId() != null).count()),
+                    "expense_count",
+                    String.valueOf(lines.stream().filter(l -> l.getExpenseId() != null).count())))
             .build());
 
     String tenantIdForEvent = RequestScopes.getTenantIdOrNull();
@@ -1238,6 +1363,27 @@ public class InvoiceService {
       }
     }
 
+    // Clear invoiceId on expenses to revert them to UNBILLED
+    for (var line : lines) {
+      if (line.getExpenseId() != null) {
+        expenseRepository
+            .findById(line.getExpenseId())
+            .ifPresent(
+                expense -> {
+                  try {
+                    expense.unbill();
+                    expenseRepository.save(expense);
+                  } catch (IllegalStateException e) {
+                    log.warn(
+                        "Could not unbill expense {} on invoice {}: {}",
+                        line.getExpenseId(),
+                        invoiceId,
+                        e.getMessage());
+                  }
+                });
+      }
+    }
+
     log.info("Voided invoice {}", invoiceId);
 
     UUID actorId = RequestScopes.MEMBER_ID.isBound() ? RequestScopes.MEMBER_ID.get() : null;
@@ -1253,7 +1399,9 @@ public class InvoiceService {
                     "total",
                     invoice.getTotal().toString(),
                     "reverted_time_entry_count",
-                    String.valueOf(lines.stream().filter(l -> l.getTimeEntryId() != null).count())))
+                    String.valueOf(lines.stream().filter(l -> l.getTimeEntryId() != null).count()),
+                    "reverted_expense_count",
+                    String.valueOf(lines.stream().filter(l -> l.getExpenseId() != null).count())))
             .build());
 
     String tenantIdForEvent = RequestScopes.getTenantIdOrNull();

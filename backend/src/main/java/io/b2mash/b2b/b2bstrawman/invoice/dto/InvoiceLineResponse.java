@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.invoice.dto;
 
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineType;
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -9,6 +10,8 @@ public record InvoiceLineResponse(
     UUID projectId,
     String projectName,
     UUID timeEntryId,
+    UUID expenseId,
+    InvoiceLineType lineType,
     String description,
     BigDecimal quantity,
     BigDecimal unitPrice,
@@ -26,6 +29,8 @@ public record InvoiceLineResponse(
         line.getProjectId(),
         projectName,
         line.getTimeEntryId(),
+        line.getExpenseId(),
+        line.getLineType(),
         line.getDescription(),
         line.getQuantity(),
         line.getUnitPrice(),

@@ -164,6 +164,77 @@ public class ReportRepository {
     return results.stream().map(this::toCostProjection).toList();
   }
 
+  // --- Expense profitability queries ---
+
+  /**
+   * Expense profitability aggregation for a project, grouped by currency. Returns total expense
+   * cost and billed expense revenue (cost * (1 + markup/100) for billed expenses).
+   */
+  public List<ExpenseProfitabilityProjection> getProjectExpenseProfitability(
+      UUID projectId, LocalDate from, LocalDate to) {
+    var query =
+        entityManager.createNativeQuery(
+            """
+            SELECT
+                e.currency,
+                COALESCE(SUM(e.amount), 0) AS totalExpenseCost,
+                COALESCE(SUM(
+                    CASE WHEN e.invoice_id IS NOT NULL
+                        THEN e.amount * (1 + COALESCE(e.markup_percent, 0) / 100)
+                        ELSE 0
+                    END
+                ), 0) AS totalExpenseRevenue
+            FROM expenses e
+            WHERE e.project_id = :projectId
+              AND (CAST(:fromDate AS DATE) IS NULL OR e.date >= CAST(:fromDate AS DATE))
+              AND (CAST(:toDate AS DATE) IS NULL OR e.date <= CAST(:toDate AS DATE))
+            GROUP BY e.currency
+            """,
+            Tuple.class);
+    query.setParameter("projectId", projectId);
+    query.setParameter("fromDate", from);
+    query.setParameter("toDate", to);
+
+    @SuppressWarnings("unchecked")
+    List<Tuple> results = query.getResultList();
+    return results.stream().map(this::toExpenseProfitabilityProjection).toList();
+  }
+
+  /**
+   * Expense profitability aggregation for a customer (across all linked projects), grouped by
+   * currency.
+   */
+  public List<ExpenseProfitabilityProjection> getCustomerExpenseProfitability(
+      UUID customerId, LocalDate from, LocalDate to) {
+    var query =
+        entityManager.createNativeQuery(
+            """
+            SELECT
+                e.currency,
+                COALESCE(SUM(e.amount), 0) AS totalExpenseCost,
+                COALESCE(SUM(
+                    CASE WHEN e.invoice_id IS NOT NULL
+                        THEN e.amount * (1 + COALESCE(e.markup_percent, 0) / 100)
+                        ELSE 0
+                    END
+                ), 0) AS totalExpenseRevenue
+            FROM expenses e
+              JOIN customer_projects cp ON cp.project_id = e.project_id
+            WHERE cp.customer_id = :customerId
+              AND (CAST(:fromDate AS DATE) IS NULL OR e.date >= CAST(:fromDate AS DATE))
+              AND (CAST(:toDate AS DATE) IS NULL OR e.date <= CAST(:toDate AS DATE))
+            GROUP BY e.currency
+            """,
+            Tuple.class);
+    query.setParameter("customerId", customerId);
+    query.setParameter("fromDate", from);
+    query.setParameter("toDate", to);
+
+    @SuppressWarnings("unchecked")
+    List<Tuple> results = query.getResultList();
+    return results.stream().map(this::toExpenseProfitabilityProjection).toList();
+  }
+
   // --- Utilization queries ---
 
   /**
@@ -546,6 +617,25 @@ public class ReportRepository {
       @Override
       public BigDecimal getCostValue() {
         return toBigDecimal(tuple.get("costValue"));
+      }
+    };
+  }
+
+  private ExpenseProfitabilityProjection toExpenseProfitabilityProjection(Tuple tuple) {
+    return new ExpenseProfitabilityProjection() {
+      @Override
+      public String getCurrency() {
+        return tuple.get("currency", String.class);
+      }
+
+      @Override
+      public BigDecimal getTotalExpenseCost() {
+        return toBigDecimal(tuple.get("totalExpenseCost"));
+      }
+
+      @Override
+      public BigDecimal getTotalExpenseRevenue() {
+        return toBigDecimal(tuple.get("totalExpenseRevenue"));
       }
     };
   }

@@ -144,7 +144,7 @@ TRACK 4: CALENDAR VIEW
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 0a (parallel) | 218 | 218A | V50 tenant migration: CREATE TABLE expenses + indexes + task recurrence columns + invoice_lines ALTER (expense_id, line_type) + org_settings ALTER (time reminder + markup columns). Single combined file. ~1 new migration file. Backend only. | |
+| 0a (parallel) | 218 | 218A | V50 tenant migration: CREATE TABLE expenses + indexes + task recurrence columns + invoice_lines ALTER (expense_id, line_type) + org_settings ALTER (time reminder + markup columns). Single combined file. ~1 new migration file. Backend only. | **Done** (PR #447) |
 | 0b (parallel) | 223 | 223A | Task recurrence columns are part of V50 (contributed by 218A builder, or appended here if running in parallel). If parallel: 223A creates its own section of V50. See migration strategy note. | |
 | 0c (parallel) | 226 | 226A | OrgSettings extension: entity + DTO + migration — can piggyback on V50 from 218A. Extend entity with 4 time reminder fields + 1 markup field. ~2 modified files, ~1 migration section. Backend only. | |
 
@@ -225,7 +225,7 @@ Stage 5: [220B] // [222A] // [229B]                              (parallel)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **218A** | 218.1–218.4 | V50 combined tenant migration: (1) CREATE TABLE expenses with all columns, constraints, and 4 indexes; (2) ALTER TABLE tasks ADD 3 recurrence columns + 1 index; (3) ALTER TABLE invoice_lines ADD expense_id + line_type columns + backfill UPDATE statements + CHECK constraint + 1 index; (4) ALTER TABLE org_settings ADD 5 columns (time reminder × 4 + markup). ~1 new migration file. Backend only. | |
+| **218A** | 218.1–218.4 | V50 combined tenant migration: (1) CREATE TABLE expenses with all columns, constraints, and 4 indexes; (2) ALTER TABLE tasks ADD 3 recurrence columns + 1 index; (3) ALTER TABLE invoice_lines ADD expense_id + line_type columns + backfill UPDATE statements + CHECK constraint + 1 index; (4) ALTER TABLE org_settings ADD 5 columns (time reminder × 4 + markup). ~1 new migration file. Backend only. | **Done** (PR #447) |
 | **218B** | 218.5–218.10 | `Expense` entity (13 columns + 3 computed methods) + `ExpenseCategory` enum (8 values) + `ExpenseRepository` (4 query methods) + entity unit tests covering computed billing status and billable amount calculation. ~4 new files. Backend only. | |
 
 ### Tasks

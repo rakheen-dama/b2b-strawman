@@ -160,7 +160,7 @@ TRACK 4: CALENDAR VIEW
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 2a (parallel) | 219 | 219A | ExpenseService: full CRUD, validation, billing status computation, write-off/restore, audit events, domain events. ~1 new file, ~1 new event file. Backend only. | **Done** (PR #449) |
-| 2b (parallel) | 221 | 221A | InvoiceLine entity extension (expenseId + lineType fields) + InvoiceLineType enum + InvoiceLineRepository update + backfill handling. ~3 modified/new files. Backend only. | |
+| 2b (parallel) | 221 | 221A | InvoiceLine entity extension (expenseId + lineType fields) + InvoiceLineType enum + InvoiceLineRepository update + backfill handling. ~3 modified/new files. Backend only. | **Done** (PR #453) |
 | 2c (parallel) | 224 | 224A | TaskService.completeTask() extension: recurrence check, next-date calculation, auto-create new Task in same transaction, audit event, notification. ~1 modified file, ~1 new event file. Backend only. | |
 | 2d (parallel) | 226 | 226B | TimeReminderScheduler: @Scheduled component, per-org processing, working day check, member time query, notification creation. ~1 new file. Backend only. | |
 
@@ -420,7 +420,7 @@ Stage 5: [220B] // [222A] // [229B]                              (parallel)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **221A** | 221.1–221.5 | `InvoiceLine` entity extension: add `expenseId` and `lineType` fields + `InvoiceLineType` enum + `InvoiceLineRepository` update + entity-level validation. ~3 new/modified files. Backend only. | |
+| **221A** | 221.1–221.5 | `InvoiceLine` entity extension: add `expenseId` and `lineType` fields + `InvoiceLineType` enum + `InvoiceLineRepository` update + entity-level validation. ~3 new/modified files. Backend only. | **Done** (PR #453) |
 | **221B** | 221.6–221.14 | `InvoiceService` extension: unbilled summary with expenses, generate invoice with EXPENSE-type lines, approve stamps expense invoiceIds, void clears expense invoiceIds + profitability query extension with expense cost/revenue + integration tests (~15 tests). ~2 modified files, ~1 new test file. Backend only. | |
 
 ### Tasks

@@ -92,6 +92,7 @@ public class TaskController {
       @RequestParam(required = false) UUID assigneeId,
       @RequestParam(required = false) String priority,
       @RequestParam(required = false) String assigneeFilter,
+      @RequestParam(required = false) Boolean recurring,
       @RequestParam(required = false) Map<String, String> allParams) {
     UUID memberId = RequestScopes.requireMemberId();
     String orgRole = RequestScopes.getOrgRole();
@@ -120,7 +121,7 @@ public class TaskController {
     // --- Fallback: existing in-memory filtering ---
     var taskEntities =
         taskService.listTasks(
-            projectId, memberId, orgRole, status, assigneeId, priority, assigneeFilter);
+            projectId, memberId, orgRole, status, assigneeId, priority, assigneeFilter, recurring);
     var names = resolveNames(taskEntities);
 
     // Batch-load tags for all tasks (2 queries instead of 2N)

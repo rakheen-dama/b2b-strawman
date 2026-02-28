@@ -26,7 +26,7 @@ This is a **structural hardening phase**, not a feature phase. No new pages are 
 | 202 | Task Lifecycle Service + Transition Endpoints | Backend | 201 | L | 202A, 202B | **Done** (PRs #413, #415) |
 | 203 | Project Lifecycle Foundation -- Migration, Enums & Entity | Backend | -- | M | 203A, 203B | **Done** (PRs #416, #417) |
 | 204 | Project Lifecycle Service + Transition Endpoints | Backend | 203, 201 | L | 204A, 204B | **Done** (PRs #418, #419) |
-| 205 | Project-Customer Link + Due Date | Backend | 203 | M | 205A, 205B | |
+| 205 | Project-Customer Link + Due Date | Backend | 203 | M | 205A, 205B | **Done** (PRs #420, #421) |
 | 206 | Delete Protection & Cross-Entity Guards | Backend | 201, 203, 205 | M | 206A, 206B | |
 | 207 | Task Lifecycle Frontend | Frontend | 202 | M | 207A, 207B | |
 | 208 | Project Lifecycle Frontend | Frontend | 204, 205 | L | 208A, 208B | |
@@ -116,7 +116,7 @@ This is a **structural hardening phase**, not a feature phase. No new pages are 
 |-------|------|-------|---------|--------|
 | 3a (parallel) | 202 | 202B | Task lifecycle controller endpoints (`PATCH .../complete`, `.../cancel`, `.../reopen`) + `TaskController` response DTO update (add `completedAt`, `completedBy`, `cancelledAt`) + update `listTasks` status filter to support comma-separated enum values + integration tests (~12 tests). ~1 modified file, ~1 new test file. Backend only. | **Done** (PR #415) |
 | 3b (parallel) | 204 | 204B | Project lifecycle controller endpoints (`PATCH .../complete`, `.../archive`, `.../reopen`) + `ProjectController` response DTO update (add `status`, `customerId`, `dueDate`, `completedAt`, `completedBy`, `archivedAt`) + update `listProjects` status filter + integration tests (~14 tests). ~1 modified file, ~1 new test file. Backend only. | **Done** (PR #419) |
-| 3c (parallel) | 205 | 205B | `CustomerLifecycleGuard` extension: add `CREATE_PROJECT` action blocking for OFFBOARDING/OFFBOARDED customers + `ProjectCustomerController` update for customer-project list + customer delete protection check (count linked projects) + integration tests (~8 tests). ~2 modified files, ~1 new test file. Backend only. | |
+| 3c (parallel) | 205 | 205B | `CustomerLifecycleGuard` extension: add `CREATE_PROJECT` action blocking for OFFBOARDING/OFFBOARDED customers + `ProjectCustomerController` update for customer-project list + customer delete protection check (count linked projects) + integration tests (~8 tests). ~2 modified files, ~1 new test file. Backend only. | **Done** (PR #421) |
 
 ### Stage 4: Delete Protection
 
@@ -437,7 +437,7 @@ Stage 6: [207B] // [208B]                                        (parallel, afte
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **205A** | 205.1--205.5 | `ProjectService` extension: accept `customerId` and `dueDate` in create/update flows + customer validation (exists + lifecycle check) + update create/update request DTOs + `ProjectRepository.findByCustomerId()` + convenience endpoint `GET /api/customers/{id}/projects`. ~3 modified files. Backend only. | **Done** (PR #420) |
-| **205B** | 205.6--205.10 | `CustomerLifecycleGuard` extension: add `CREATE_PROJECT` action blocking for OFFBOARDING/OFFBOARDED customers + customer delete protection (block delete if linked projects exist) + integration tests (~8 tests). ~3 modified files, ~1 new test file. Backend only. | |
+| **205B** | 205.6--205.10 | `CustomerLifecycleGuard` extension: add `CREATE_PROJECT` action blocking for OFFBOARDING/OFFBOARDED customers + customer delete protection (block delete if linked projects exist) + integration tests (~8 tests). ~3 modified files, ~1 new test file. Backend only. | **Done** (PR #421) |
 
 ### Tasks
 

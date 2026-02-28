@@ -38,7 +38,12 @@ import org.springframework.transaction.support.TransactionTemplate;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TemplateValidationIntegrationTest {
 
-  private static final Map<String, Object> CONTENT = Map.of("type", "doc", "content", List.of());
+  private static final Map<String, Object> CONTENT =
+      TestDocumentBuilder.doc()
+          .heading(1, "Validation Test")
+          .variable("project.name")
+          .paragraph("Template content for validation tests.")
+          .build();
 
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_template_validation_test";

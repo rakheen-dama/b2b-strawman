@@ -39,7 +39,11 @@ import org.springframework.transaction.support.TransactionTemplate;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DocumentAuditNotificationTest {
 
-  private static final Map<String, Object> CONTENT = Map.of("type", "doc", "content", List.of());
+  private static final Map<String, Object> CONTENT =
+      TestDocumentBuilder.doc()
+          .heading(1, "Audit Notification Test")
+          .paragraph("Template content for audit and notification tests.")
+          .build();
 
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_audit_notif_test";

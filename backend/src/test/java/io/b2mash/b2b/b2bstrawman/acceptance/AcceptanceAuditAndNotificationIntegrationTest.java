@@ -21,7 +21,7 @@ import io.b2mash.b2b.b2bstrawman.template.GeneratedDocument;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplateCategory;
 import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
-import java.util.List;
+import io.b2mash.b2b.b2bstrawman.template.TestDocumentBuilder;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -41,7 +41,11 @@ import org.springframework.transaction.support.TransactionTemplate;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AcceptanceAuditAndNotificationIntegrationTest {
 
-  private static final Map<String, Object> CONTENT = Map.of("type", "doc", "content", List.of());
+  private static final Map<String, Object> CONTENT =
+      TestDocumentBuilder.doc()
+          .heading(1, "Audit Test Template")
+          .paragraph("Template content for acceptance audit tests.")
+          .build();
 
   private static final String ORG_ID = "org_accept_audit_test";
   private static final String CLERK_USER_ID = "user_accept_audit_test";

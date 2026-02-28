@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AuthProvider } from "@/lib/auth/client/auth-provider";
+import { Toaster } from "sonner";
 import { Sora, IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -39,6 +40,7 @@ export default function RootLayout({
           className={`${sora.variable} ${plexSans.variable} ${jetbrainsMono.variable} antialiased`}
         >
           {children}
+          <Toaster position="bottom-right" />
         </body>
       </html>
     </AuthProvider>

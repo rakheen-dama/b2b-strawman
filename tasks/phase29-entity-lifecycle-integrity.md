@@ -130,7 +130,7 @@ This is a **structural hardening phase**, not a feature phase. No new pages are 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 5a (parallel) | 207 | 207A | Task list: status filter chips (All, Open, In Progress, Done, Cancelled) + default filter hiding Done/Cancelled + visual distinction (strikethrough/muted for Done, muted+badge for Cancelled) + task-actions.ts lifecycle server actions + frontend tests. ~3 modified files, ~1 new file. Frontend only. | **Done** (PR #424) |
-| 5b (parallel) | 208 | 208A | Project list: status filter (Active, Completed, Archived, All) + status badge + due date column with overdue warning + project creation/edit dialog: due date picker + customer dropdown + project-actions.ts lifecycle server actions + frontend tests. ~4 modified files, ~1 new file. Frontend only. | |
+| 5b (parallel) | 208 | 208A | Project list: status filter (Active, Completed, Archived, All) + status badge + due date column with overdue warning + project creation/edit dialog: due date picker + customer dropdown + project-actions.ts lifecycle server actions + frontend tests. ~4 modified files, ~1 new file. Frontend only. | **Done** (PR #426) |
 
 ### Stage 6: Frontend Detail Pages (parallel tracks)
 
@@ -616,7 +616,7 @@ Stage 6: [207B] // [208B]                                        (parallel, afte
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **208A** | 208.1--208.7 | Project list: status filter (Active, Completed, Archived, All) + status badge + due date column with overdue warning + project creation/edit dialog: due date picker + customer dropdown + lifecycle server actions (completeProject, archiveProject, reopenProject) + update project response type + frontend tests. ~5 modified files, ~1 new file. Frontend only. | |
+| **208A** | 208.1--208.7 | Project list: status filter (Active, Completed, Archived, All) + status badge + due date column with overdue warning + project creation/edit dialog: due date picker + customer dropdown + lifecycle server actions (completeProject, archiveProject, reopenProject) + update project response type + frontend tests. ~5 modified files, ~1 new file. Frontend only. | **Done** (PR #426) |
 | **208B** | 208.8--208.14 | Project detail header: status badge + due date + contextual action buttons + "Complete Project" dialog (error for open tasks, confirmation for unbilled time) + archived project read-only banner + customer display in project sidebar + customer detail "Projects" tab + frontend tests. ~5 modified files, ~1 new component. Frontend only. | |
 
 ### Tasks

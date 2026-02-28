@@ -29,16 +29,21 @@ const STATUS_MAP: Record<string, StatusVariant> = {
   PENDING: "slate",
   PROSPECT: "slate",
   TODO: "slate",
+  ORG: "slate",
+  INTERNAL: "slate",
 
   IN_PROGRESS: "blue",
   ONBOARDING: "blue",
   SENT: "blue",
+  PROJECT: "blue",
 
   ACTIVE: "emerald",
   COMPLETED: "emerald",
   PAID: "emerald",
   ON_TRACK: "emerald",
   DONE: "emerald",
+  UPLOADED: "emerald",
+  SHARED: "emerald",
 
   AT_RISK: "amber",
   OVERDUE: "amber",
@@ -51,6 +56,7 @@ const STATUS_MAP: Record<string, StatusVariant> = {
 
   ARCHIVED: "purple",
   OFFBOARDED: "purple",
+  CUSTOMER: "purple",
 };
 
 const statusBadgeVariants = cva(

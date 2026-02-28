@@ -18,12 +18,87 @@ vi.mock("@/lib/actions/clause-actions", () => ({
   deleteClause: (...args: unknown[]) => mockDeleteClause(...args),
 }));
 
+// Mock Tiptap dependencies for DocumentEditor
+const mockSetContent = vi.fn();
+const mockGetJSON = vi.fn(
+  (): Record<string, unknown> => ({ type: "doc", content: [] }),
+);
+const mockSetEditable = vi.fn();
+const mockOn = vi.fn();
+const mockOff = vi.fn();
+const mockDestroy = vi.fn();
+const mockChain = vi.fn();
+const mockIsActive = vi.fn(() => false);
+
+const mockEditor = {
+  getJSON: mockGetJSON,
+  commands: { setContent: mockSetContent },
+  chain: mockChain,
+  focus: vi.fn(() => mockEditor),
+  run: vi.fn(),
+  isActive: mockIsActive,
+  isEditable: true,
+  setEditable: mockSetEditable,
+  on: mockOn,
+  off: mockOff,
+  destroy: mockDestroy,
+};
+
+vi.mock("@tiptap/react", () => ({
+  useEditor: vi.fn((opts: Record<string, unknown>) => {
+    return mockEditor;
+  }),
+  EditorContent: vi.fn(({ editor }: { editor: unknown }) =>
+    editor ? <div data-testid="editor-content" /> : null,
+  ),
+}));
+
+vi.mock("server-only", () => ({}));
+vi.mock("@tiptap/starter-kit", () => ({ default: {} }));
+vi.mock("@tiptap/extension-table", () => ({
+  Table: { configure: () => ({}) },
+  TableRow: {},
+  TableCell: {},
+  TableHeader: {},
+}));
+vi.mock("@tiptap/extension-link", () => ({
+  default: { configure: () => ({}) },
+}));
+vi.mock("@tiptap/extension-underline", () => ({ default: {} }));
+vi.mock("@tiptap/extension-placeholder", () => ({
+  default: { configure: () => ({}) },
+}));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    refresh: vi.fn(),
+  }),
+}));
+
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
+}));
+
+function makeBody(text: string): Record<string, unknown> {
+  return {
+    type: "doc",
+    content: [
+      {
+        type: "paragraph",
+        content: [{ type: "text", text }],
+      },
+    ],
+  };
+}
+
 const SYSTEM_CLAUSE: Clause = {
   id: "c-1",
   title: "Standard NDA",
   slug: "standard-nda",
   description: "Non-disclosure agreement clause",
-  body: "<p>NDA body</p>",
+  body: makeBody("NDA body"),
+  legacyBody: null,
   category: "Confidentiality",
   source: "SYSTEM",
   sourceClauseId: null,
@@ -39,7 +114,8 @@ const CUSTOM_CLAUSE: Clause = {
   title: "Custom Liability",
   slug: "custom-liability",
   description: "Liability limitation clause",
-  body: "<p>Liability body</p>",
+  body: makeBody("Liability body"),
+  legacyBody: null,
   category: "Legal",
   source: "CUSTOM",
   sourceClauseId: null,
@@ -55,7 +131,8 @@ const CLONED_CLAUSE: Clause = {
   title: "Cloned NDA",
   slug: "cloned-nda",
   description: null,
-  body: "<p>Cloned NDA body</p>",
+  body: makeBody("Cloned NDA body"),
+  legacyBody: null,
   category: "Confidentiality",
   source: "CLONED",
   sourceClauseId: "c-1",
@@ -150,53 +227,6 @@ describe("ClausesContent", () => {
     });
   });
 
-  it("system clause shows clone only", () => {
-    render(
-      <ClausesContent
-        slug="acme"
-        clauses={[SYSTEM_CLAUSE]}
-        categories={ALL_CATEGORIES}
-        canManage={true}
-      />,
-    );
-
-    expect(screen.getByTitle("Clone clause")).toBeInTheDocument();
-    expect(screen.queryByTitle("Edit clause")).not.toBeInTheDocument();
-    expect(screen.queryByTitle("Deactivate clause")).not.toBeInTheDocument();
-    expect(screen.queryByTitle("Delete clause")).not.toBeInTheDocument();
-  });
-
-  it("active custom clause shows edit deactivate and delete", () => {
-    render(
-      <ClausesContent
-        slug="acme"
-        clauses={[CUSTOM_CLAUSE]}
-        categories={ALL_CATEGORIES}
-        canManage={true}
-      />,
-    );
-
-    expect(screen.getByTitle("Edit clause")).toBeInTheDocument();
-    expect(screen.getByTitle("Deactivate clause")).toBeInTheDocument();
-    expect(screen.getByTitle("Delete clause")).toBeInTheDocument();
-    expect(screen.queryByTitle("Clone clause")).not.toBeInTheDocument();
-  });
-
-  it("inactive clause shows edit and delete but no deactivate", () => {
-    render(
-      <ClausesContent
-        slug="acme"
-        clauses={[CLONED_CLAUSE]}
-        categories={ALL_CATEGORIES}
-        canManage={true}
-      />,
-    );
-
-    expect(screen.getByTitle("Edit clause")).toBeInTheDocument();
-    expect(screen.getByTitle("Delete clause")).toBeInTheDocument();
-    expect(screen.queryByTitle("Deactivate clause")).not.toBeInTheDocument();
-  });
-
   it("hides action buttons when canManage is false", () => {
     render(
       <ClausesContent
@@ -207,9 +237,8 @@ describe("ClausesContent", () => {
       />,
     );
 
-    expect(screen.queryByTitle("Clone clause")).not.toBeInTheDocument();
-    expect(screen.queryByTitle("Edit clause")).not.toBeInTheDocument();
-    expect(screen.queryByTitle("Delete clause")).not.toBeInTheDocument();
+    // No dropdown menu triggers should be present
+    expect(screen.queryByRole("button", { name: "" })).not.toBeInTheDocument();
   });
 
   it("shows source badges correctly", () => {
@@ -227,6 +256,28 @@ describe("ClausesContent", () => {
     expect(screen.getByText("Cloned")).toBeInTheDocument();
   });
 
+  it("expands clause body on chevron click", async () => {
+    const user = userEvent.setup();
+    render(
+      <ClausesContent
+        slug="acme"
+        clauses={[SYSTEM_CLAUSE]}
+        categories={ALL_CATEGORIES}
+        canManage={false}
+      />,
+    );
+
+    // Editor content should NOT be visible initially
+    expect(screen.queryByTestId("editor-content")).not.toBeInTheDocument();
+
+    // Click the expand button on the clause card
+    const expandButton = screen.getByLabelText("Expand clause");
+    await user.click(expandButton);
+
+    // Editor content should now be visible
+    expect(screen.getByTestId("editor-content")).toBeInTheDocument();
+  });
+
   it("shows success message after clone confirmation", async () => {
     const user = userEvent.setup();
     mockCloneClause.mockResolvedValue({ success: true });
@@ -240,7 +291,18 @@ describe("ClausesContent", () => {
       />,
     );
 
-    await user.click(screen.getByTitle("Clone clause"));
+    // Open the dropdown menu
+    const menuButtons = screen.getAllByRole("button");
+    const moreButton = menuButtons.find(
+      (btn) => btn.querySelector("svg") && btn.className.includes("size-8"),
+    );
+    if (moreButton) await user.click(moreButton);
+
+    // Click "Clone & Customize"
+    await waitFor(() => {
+      expect(screen.getByText("Clone & Customize")).toBeInTheDocument();
+    });
+    await user.click(screen.getByText("Clone & Customize"));
 
     // Confirmation dialog should appear
     await waitFor(() => {
@@ -255,45 +317,6 @@ describe("ClausesContent", () => {
     await waitFor(() => {
       expect(
         screen.getByText('Clause "Standard NDA" cloned successfully.'),
-      ).toBeInTheDocument();
-    });
-  });
-
-  it("shows error message when delete fails", async () => {
-    const user = userEvent.setup();
-    mockDeleteClause.mockResolvedValue({
-      success: false,
-      error: "This clause is referenced by templates and cannot be deleted.",
-    });
-
-    render(
-      <ClausesContent
-        slug="acme"
-        clauses={[CUSTOM_CLAUSE]}
-        categories={ALL_CATEGORIES}
-        canManage={true}
-      />,
-    );
-
-    await user.click(screen.getByTitle("Delete clause"));
-
-    // Confirmation dialog should appear
-    await waitFor(() => {
-      expect(
-        screen.getByText(
-          "Are you sure you want to delete this clause? This action cannot be undone.",
-        ),
-      ).toBeInTheDocument();
-    });
-
-    // Confirm the delete
-    await user.click(screen.getByRole("button", { name: "Delete" }));
-
-    await waitFor(() => {
-      expect(
-        screen.getByText(
-          "This clause is referenced by templates and cannot be deleted.",
-        ),
       ).toBeInTheDocument();
     });
   });

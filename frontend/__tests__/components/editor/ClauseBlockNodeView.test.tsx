@@ -27,7 +27,7 @@ vi.mock("motion/react", () => ({
 }));
 
 let mockClauseContent = {
-  body: "<p>Payment is due within 30 days of invoice.</p>",
+  body: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Payment is due within 30 days of invoice." }] }] },
   title: "Payment Terms",
   isLoading: false,
 };
@@ -59,7 +59,7 @@ describe("ClauseBlockNodeView", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockClauseContent = {
-      body: "<p>Payment is due within 30 days of invoice.</p>",
+      body: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Payment is due within 30 days of invoice." }] }] },
       title: "Payment Terms",
       isLoading: false,
     };
@@ -105,7 +105,7 @@ describe("ClauseBlockNodeView", () => {
 
     // Simulate loaded state
     mockClauseContent = {
-      body: "<p>Payment is due within 30 days of invoice.</p>",
+      body: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Payment is due within 30 days of invoice." }] }] },
       title: "Payment Terms",
       isLoading: false,
     };

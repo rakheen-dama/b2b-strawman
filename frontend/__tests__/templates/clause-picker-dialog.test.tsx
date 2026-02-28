@@ -10,12 +10,20 @@ vi.mock("@/lib/actions/clause-actions", () => ({
   getClauses: (...args: unknown[]) => mockGetClauses(...args),
 }));
 
+function makeBody(text: string): Record<string, unknown> {
+  return {
+    type: "doc",
+    content: [{ type: "paragraph", content: [{ type: "text", text }] }],
+  };
+}
+
 const NDA_CLAUSE: Clause = {
   id: "c-1",
   title: "Standard NDA",
   slug: "standard-nda",
   description: "Non-disclosure agreement clause",
-  body: "<p>NDA body</p>",
+  body: makeBody("NDA body"),
+  legacyBody: null,
   category: "Confidentiality",
   source: "SYSTEM",
   sourceClauseId: null,
@@ -31,7 +39,8 @@ const LIABILITY_CLAUSE: Clause = {
   title: "Liability Limitation",
   slug: "liability-limitation",
   description: "Limits liability exposure",
-  body: "<p>Liability body</p>",
+  body: makeBody("Liability body"),
+  legacyBody: null,
   category: "Legal",
   source: "CUSTOM",
   sourceClauseId: null,
@@ -47,7 +56,8 @@ const IP_CLAUSE: Clause = {
   title: "IP Assignment",
   slug: "ip-assignment",
   description: "Intellectual property assignment",
-  body: "<p>IP body</p>",
+  body: makeBody("IP body"),
+  legacyBody: null,
   category: "Confidentiality",
   source: "SYSTEM",
   sourceClauseId: null,

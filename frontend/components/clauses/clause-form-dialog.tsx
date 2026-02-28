@@ -58,12 +58,41 @@ export function ClauseFormDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
+  function extractTextFromBody(body: Record<string, unknown>): string {
+    const content = body?.content as Array<Record<string, unknown>> | undefined;
+    if (!content || !Array.isArray(content)) return "";
+    return content
+      .map((node) => {
+        const children = node.content as
+          | Array<Record<string, unknown>>
+          | undefined;
+        if (!children) return "";
+        return children
+          .map((child) => (child.text as string) ?? "")
+          .join("");
+      })
+      .join("\n");
+  }
+
+  function wrapTextAsBody(text: string): Record<string, unknown> {
+    return {
+      type: "doc",
+      content: text
+        .split("\n")
+        .filter((line) => line.length > 0)
+        .map((line) => ({
+          type: "paragraph",
+          content: [{ type: "text", text: line }],
+        })),
+    };
+  }
+
   function resetForm() {
     if (isEditing && clause) {
       setTitle(clause.title);
       setCategory(clause.category);
       setDescription(clause.description ?? "");
-      setBody(clause.body);
+      setBody(extractTextFromBody(clause.body));
     } else {
       setTitle("");
       setCategory("");
@@ -101,7 +130,7 @@ export function ClauseFormDialog({
       const data = {
         title: title.trim(),
         description: description.trim() || undefined,
-        body: body.trim(),
+        body: wrapTextAsBody(body.trim()),
         category: category.trim(),
       };
 

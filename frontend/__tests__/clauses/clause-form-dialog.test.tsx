@@ -18,12 +18,85 @@ vi.mock("@/lib/actions/clause-actions", () => ({
   deleteClause: (...args: unknown[]) => mockDeleteClause(...args),
 }));
 
+// Mock Tiptap dependencies for DocumentEditor
+const mockSetContent = vi.fn();
+const mockGetJSON = vi.fn(
+  (): Record<string, unknown> => ({ type: "doc", content: [] }),
+);
+const mockSetEditable = vi.fn();
+const mockOn = vi.fn();
+const mockOff = vi.fn();
+const mockDestroy = vi.fn();
+const mockChain = vi.fn();
+const mockIsActive = vi.fn(() => false);
+
+const mockEditor = {
+  getJSON: mockGetJSON,
+  commands: { setContent: mockSetContent },
+  chain: mockChain,
+  focus: vi.fn(() => mockEditor),
+  run: vi.fn(),
+  isActive: mockIsActive,
+  isEditable: true,
+  setEditable: mockSetEditable,
+  on: mockOn,
+  off: mockOff,
+  destroy: mockDestroy,
+};
+
+vi.mock("@tiptap/react", () => ({
+  useEditor: vi.fn(() => mockEditor),
+  EditorContent: vi.fn(({ editor }: { editor: unknown }) =>
+    editor ? <div data-testid="editor-content" /> : null,
+  ),
+}));
+
+vi.mock("server-only", () => ({}));
+vi.mock("@tiptap/starter-kit", () => ({ default: {} }));
+vi.mock("@tiptap/extension-table", () => ({
+  Table: { configure: () => ({}) },
+  TableRow: {},
+  TableCell: {},
+  TableHeader: {},
+}));
+vi.mock("@tiptap/extension-link", () => ({
+  default: { configure: () => ({}) },
+}));
+vi.mock("@tiptap/extension-underline", () => ({ default: {} }));
+vi.mock("@tiptap/extension-placeholder", () => ({
+  default: { configure: () => ({}) },
+}));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    refresh: vi.fn(),
+  }),
+}));
+
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
+}));
+
+function makeBody(text: string): Record<string, unknown> {
+  return {
+    type: "doc",
+    content: [
+      {
+        type: "paragraph",
+        content: [{ type: "text", text }],
+      },
+    ],
+  };
+}
+
 const SYSTEM_CLAUSE: Clause = {
   id: "c-1",
   title: "Standard NDA",
   slug: "standard-nda",
   description: "Non-disclosure agreement clause",
-  body: "<p>NDA body</p>",
+  body: makeBody("NDA body"),
+  legacyBody: null,
   category: "Confidentiality",
   source: "SYSTEM",
   sourceClauseId: null,
@@ -39,7 +112,8 @@ const CUSTOM_CLAUSE: Clause = {
   title: "Custom Liability",
   slug: "custom-liability",
   description: "Liability limitation clause",
-  body: "<p>Liability body</p>",
+  body: makeBody("Liability body"),
+  legacyBody: null,
   category: "Legal",
   source: "CUSTOM",
   sourceClauseId: null,
@@ -99,8 +173,17 @@ describe("ClauseFormDialog and Confirmations", () => {
       />,
     );
 
-    // Click the Edit button
-    await user.click(screen.getByTitle("Edit clause"));
+    // Open the dropdown menu and click Edit
+    const menuButtons = screen.getAllByRole("button");
+    const moreButton = menuButtons.find(
+      (btn) => btn.querySelector("svg") && btn.className.includes("size-8"),
+    );
+    if (moreButton) await user.click(moreButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("Edit")).toBeInTheDocument();
+    });
+    await user.click(screen.getByText("Edit"));
 
     // Dialog should open with pre-populated fields
     await waitFor(() => {
@@ -157,7 +240,6 @@ describe("ClauseFormDialog and Confirmations", () => {
     // Categories should appear in the dropdown
     await waitFor(() => {
       expect(screen.getByText("Confidentiality")).toBeInTheDocument();
-      // "Legal" already visible as category heading, so check for it within the combobox context
     });
   });
 
@@ -172,8 +254,17 @@ describe("ClauseFormDialog and Confirmations", () => {
       />,
     );
 
-    // Open edit dialog (which has body pre-populated)
-    await user.click(screen.getByTitle("Edit clause"));
+    // Open edit dialog via dropdown menu
+    const menuButtons = screen.getAllByRole("button");
+    const moreButton = menuButtons.find(
+      (btn) => btn.querySelector("svg") && btn.className.includes("size-8"),
+    );
+    if (moreButton) await user.click(moreButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("Edit")).toBeInTheDocument();
+    });
+    await user.click(screen.getByText("Edit"));
 
     await waitFor(() => {
       expect(screen.getByText("Edit Clause")).toBeInTheDocument();
@@ -200,8 +291,17 @@ describe("ClauseFormDialog and Confirmations", () => {
       />,
     );
 
-    // Click clone button
-    await user.click(screen.getByTitle("Clone clause"));
+    // Open the dropdown menu
+    const menuButtons = screen.getAllByRole("button");
+    const moreButton = menuButtons.find(
+      (btn) => btn.querySelector("svg") && btn.className.includes("size-8"),
+    );
+    if (moreButton) await user.click(moreButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("Clone & Customize")).toBeInTheDocument();
+    });
+    await user.click(screen.getByText("Clone & Customize"));
 
     // Confirmation dialog should appear
     await waitFor(() => {
@@ -236,8 +336,17 @@ describe("ClauseFormDialog and Confirmations", () => {
       />,
     );
 
-    // Click deactivate button
-    await user.click(screen.getByTitle("Deactivate clause"));
+    // Open the dropdown menu
+    const menuButtons = screen.getAllByRole("button");
+    const moreButton = menuButtons.find(
+      (btn) => btn.querySelector("svg") && btn.className.includes("size-8"),
+    );
+    if (moreButton) await user.click(moreButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("Deactivate")).toBeInTheDocument();
+    });
+    await user.click(screen.getByText("Deactivate"));
 
     // Confirmation dialog should appear
     await waitFor(() => {
@@ -285,7 +394,7 @@ describe("ClauseFormDialog and Confirmations", () => {
     await user.click(screen.getByRole("option", { name: /Legal/ }));
 
     // Fill in body
-    await user.type(screen.getByLabelText(/Body/), "<p>Net 30 days</p>");
+    await user.type(screen.getByLabelText(/Body/), "Net 30 days");
 
     // Submit
     const submitButton = screen.getByRole("button", { name: "Create Clause" });
@@ -296,54 +405,17 @@ describe("ClauseFormDialog and Confirmations", () => {
       expect(mockCreateClause).toHaveBeenCalledWith("acme", {
         title: "Payment Terms",
         description: undefined,
-        body: "<p>Net 30 days</p>",
+        body: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "Net 30 days" }],
+            },
+          ],
+        },
         category: "Legal",
       });
-    });
-  });
-
-  it("delete_409_shows_error", async () => {
-    const user = userEvent.setup();
-    mockDeleteClause.mockResolvedValue({
-      success: false,
-      error: "This clause is referenced by templates and cannot be deleted.",
-    });
-
-    render(
-      <ClausesContent
-        slug="acme"
-        clauses={[CUSTOM_CLAUSE]}
-        categories={ALL_CATEGORIES}
-        canManage={true}
-      />,
-    );
-
-    // Click delete button
-    await user.click(screen.getByTitle("Delete clause"));
-
-    // Confirmation dialog should appear
-    await waitFor(() => {
-      expect(
-        screen.getByText(
-          "Are you sure you want to delete this clause? This action cannot be undone.",
-        ),
-      ).toBeInTheDocument();
-    });
-
-    // Click Delete confirm button
-    await user.click(screen.getByRole("button", { name: "Delete" }));
-
-    await waitFor(() => {
-      expect(mockDeleteClause).toHaveBeenCalledWith("acme", "c-2");
-    });
-
-    // Error message should appear
-    await waitFor(() => {
-      expect(
-        screen.getByText(
-          "This clause is referenced by templates and cannot be deleted.",
-        ),
-      ).toBeInTheDocument();
     });
   });
 });

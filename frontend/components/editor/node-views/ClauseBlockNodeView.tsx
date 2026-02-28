@@ -19,6 +19,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useClauseContent } from "../hooks/useClauseContent";
 
+function extractTextFromBody(body: Record<string, unknown>): string | null {
+  const content = body?.content as Array<Record<string, unknown>> | undefined;
+  if (!content || !Array.isArray(content)) return null;
+  const text = content
+    .map((node) => {
+      const children = node.content as Array<Record<string, unknown>> | undefined;
+      if (!children) return "";
+      return children.map((child) => (child.text as string) ?? "").join("");
+    })
+    .join("\n")
+    .trim();
+  return text || null;
+}
+
 export function ClauseBlockNodeView({ node, deleteNode }: NodeViewProps) {
   const [expanded, setExpanded] = useState(false);
   const clauseId = (node.attrs.clauseId ?? "") as string;
@@ -27,9 +41,9 @@ export function ClauseBlockNodeView({ node, deleteNode }: NodeViewProps) {
 
   const { body, isLoading } = useClauseContent(clauseId);
 
-  // Strip HTML tags for safe text preview
+  // Extract text from Tiptap JSON for preview
   const textPreview = body
-    ? body.replace(/<[^>]*>/g, "").trim()
+    ? extractTextFromBody(body)
     : null;
 
   return (

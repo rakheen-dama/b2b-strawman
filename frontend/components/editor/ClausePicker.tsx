@@ -15,6 +15,20 @@ import { Separator } from "@/components/ui/separator";
 import { ChevronDown, ChevronRight, FileText } from "lucide-react";
 import { getClauses, type Clause } from "@/lib/actions/clause-actions";
 
+function extractTextFromTiptap(body: Record<string, unknown>): string | null {
+  const content = body?.content as Array<Record<string, unknown>> | undefined;
+  if (!content || !Array.isArray(content)) return null;
+  const text = content
+    .map((node) => {
+      const children = node.content as Array<Record<string, unknown>> | undefined;
+      if (!children) return "";
+      return children.map((child) => (child.text as string) ?? "").join("");
+    })
+    .join("\n")
+    .trim();
+  return text || null;
+}
+
 interface ClausePickerProps {
   onSelect: (clause: {
     id: string;
@@ -105,9 +119,9 @@ export function ClausePicker({
     handleOpenChange(false);
   };
 
-  // Strip HTML for safe preview
+  // Extract text from Tiptap JSON for preview
   const previewText = selectedClause?.body
-    ? selectedClause.body.replace(/<[^>]*>/g, "").trim()
+    ? extractTextFromTiptap(selectedClause.body)
     : null;
 
   return (

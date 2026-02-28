@@ -7,9 +7,11 @@ import {
   Plus,
   Copy,
   Pencil,
-  Trash2,
-  Ban,
+  Power,
   Search,
+  AlertTriangle,
+  MoreHorizontal,
+  FileText,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,19 +32,34 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { DocumentEditor } from "@/components/editor/DocumentEditor";
 import { ClauseFormDialog } from "@/components/clauses/clause-form-dialog";
 import {
   cloneClause,
   deactivateClause,
-  deleteClause,
 } from "@/lib/actions/clause-actions";
 import type { Clause, ClauseSource } from "@/lib/actions/clause-actions";
 
-const SOURCE_BADGE: Record<ClauseSource, { label: string; variant: "pro" | "lead" | "neutral" }> = {
+const SOURCE_BADGE: Record<
+  ClauseSource,
+  { label: string; variant: "pro" | "lead" | "neutral" }
+> = {
   SYSTEM: { label: "System", variant: "pro" },
   CLONED: { label: "Cloned", variant: "lead" },
   CUSTOM: { label: "Custom", variant: "neutral" },
 };
+
+function hasLegacyContent(body: Record<string, unknown>): boolean {
+  const content = body?.content as Array<Record<string, unknown>> | undefined;
+  if (!content || !Array.isArray(content)) return false;
+  return content.some((node) => node.type === "legacyHtml");
+}
 
 interface ClausesContentProps {
   slug: string;
@@ -61,6 +78,9 @@ export function ClausesContent({
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     () => new Set(categories),
+  );
+  const [expandedClauses, setExpandedClauses] = useState<Set<string>>(
+    () => new Set(),
   );
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -81,7 +101,6 @@ export function ClausesContent({
       if (!groups[clause.category]) groups[clause.category] = [];
       groups[clause.category].push(clause);
     }
-    // Sort clauses within each group
     for (const key of Object.keys(groups)) {
       groups[key] = [...groups[key]].sort((a, b) => a.sortOrder - b.sortOrder);
     }
@@ -105,6 +124,18 @@ export function ClausesContent({
     });
   }
 
+  function toggleClause(clauseId: string) {
+    setExpandedClauses((prev) => {
+      const next = new Set(prev);
+      if (next.has(clauseId)) {
+        next.delete(clauseId);
+      } else {
+        next.add(clauseId);
+      }
+      return next;
+    });
+  }
+
   function clearMessages() {
     setError(null);
     setSuccess(null);
@@ -112,7 +143,6 @@ export function ClausesContent({
 
   return (
     <div className="space-y-6">
-      {/* Feedback messages */}
       {error && (
         <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200">
           {error}
@@ -191,12 +221,14 @@ export function ClausesContent({
               {isExpanded && (
                 <div className="ml-6 space-y-2">
                   {grouped[category].map((clause) => (
-                    <ClauseRow
+                    <ClauseCard
                       key={clause.id}
                       clause={clause}
                       slug={slug}
                       categories={categories}
                       canManage={canManage}
+                      isExpanded={expandedClauses.has(clause.id)}
+                      onToggle={() => toggleClause(clause.id)}
                       onError={(msg) => {
                         clearMessages();
                         setError(msg);
@@ -217,21 +249,32 @@ export function ClausesContent({
   );
 }
 
-interface ClauseRowProps {
+interface ClauseCardProps {
   clause: Clause;
   slug: string;
   categories: string[];
   canManage: boolean;
+  isExpanded: boolean;
+  onToggle: () => void;
   onError: (message: string) => void;
   onSuccess: (message: string) => void;
 }
 
-function ClauseRow({ clause, slug, categories, canManage, onError, onSuccess }: ClauseRowProps) {
+function ClauseCard({
+  clause,
+  slug,
+  categories,
+  canManage,
+  isExpanded,
+  onToggle,
+  onError,
+  onSuccess,
+}: ClauseCardProps) {
   const sourceBadge = SOURCE_BADGE[clause.source];
+  const isLegacy = hasLegacyContent(clause.body);
 
   const [cloneDialogOpen, setCloneDialogOpen] = useState(false);
   const [deactivateDialogOpen, setDeactivateDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
 
   async function handleCloneConfirm() {
@@ -268,83 +311,90 @@ function ClauseRow({ clause, slug, categories, canManage, onError, onSuccess }: 
     }
   }
 
-  async function handleDeleteConfirm() {
-    setIsPending(true);
-    try {
-      const result = await deleteClause(slug, clause.id);
-      if (result.success) {
-        onSuccess("Clause deleted.");
-      } else {
-        onError(result.error ?? "Failed to delete clause.");
-      }
-    } catch {
-      onError("An unexpected error occurred.");
-    } finally {
-      setIsPending(false);
-      setDeleteDialogOpen(false);
-    }
-  }
-
   return (
     <>
-      <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <p className="font-medium text-slate-950 dark:text-slate-50">
-              {clause.title}
-            </p>
-            <Badge variant={sourceBadge.variant}>{sourceBadge.label}</Badge>
-            {clause.active ? (
-              <Badge variant="success">Active</Badge>
-            ) : (
-              <Badge variant="neutral">Inactive</Badge>
-            )}
+      <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+        {/* Card header */}
+        <div className="flex items-center justify-between p-4">
+          <div className="flex min-w-0 flex-1 items-start gap-3">
+            <button
+              type="button"
+              onClick={onToggle}
+              className="mt-0.5 shrink-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+              aria-label={isExpanded ? "Collapse clause" : "Expand clause"}
+            >
+              {isExpanded ? (
+                <ChevronDown className="size-4" />
+              ) : (
+                <ChevronRight className="size-4" />
+              )}
+            </button>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="font-medium text-slate-950 dark:text-slate-50">
+                  {clause.title}
+                </p>
+                <Badge variant={sourceBadge.variant}>{sourceBadge.label}</Badge>
+                {clause.active ? (
+                  <Badge variant="success">Active</Badge>
+                ) : (
+                  <Badge variant="neutral">Inactive</Badge>
+                )}
+                {isLegacy && (
+                  <Badge variant="warning">
+                    <AlertTriangle className="mr-1 size-3" />
+                    Migration needed
+                  </Badge>
+                )}
+                {clause.templateUsageCount != null && (
+                  <span className="inline-flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                    <FileText className="size-3" />
+                    Used in {clause.templateUsageCount}{" "}
+                    {clause.templateUsageCount === 1
+                      ? "template"
+                      : "templates"}
+                  </span>
+                )}
+              </div>
+              {clause.description && (
+                <p className="mt-1 truncate text-sm text-slate-500 dark:text-slate-400">
+                  {clause.description}
+                </p>
+              )}
+            </div>
           </div>
-          {clause.description && (
-            <p className="mt-1 truncate text-sm text-slate-500 dark:text-slate-400">
-              {clause.description}
-            </p>
+
+          {canManage && (
+            <ClauseActionsMenu
+              clause={clause}
+              slug={slug}
+              categories={categories}
+              isPending={isPending}
+              onClone={() => setCloneDialogOpen(true)}
+              onDeactivate={() => setDeactivateDialogOpen(true)}
+            />
           )}
         </div>
 
-        {canManage && (
-          <div className="ml-4 flex items-center gap-1">
-            {clause.source === "SYSTEM" ? (
-              <Button
-                size="sm"
-                variant="ghost"
-                title="Clone clause"
-                onClick={() => setCloneDialogOpen(true)}
-              >
-                <Copy className="size-4" />
-              </Button>
-            ) : (
-              <>
-                <ClauseFormDialog slug={slug} clause={clause} categories={categories}>
-                  <Button size="sm" variant="ghost" title="Edit clause">
-                    <Pencil className="size-4" />
-                  </Button>
-                </ClauseFormDialog>
-                {clause.active && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    title="Deactivate clause"
-                    onClick={() => setDeactivateDialogOpen(true)}
-                  >
-                    <Ban className="size-4" />
-                  </Button>
-                )}
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  title="Delete clause"
-                  onClick={() => setDeleteDialogOpen(true)}
-                >
-                  <Trash2 className="size-4" />
-                </Button>
-              </>
+        {/* Expanded body content */}
+        {isExpanded && (
+          <div className="border-t border-slate-200 px-4 pb-4 pt-3 dark:border-slate-800">
+            {isLegacy && (
+              <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="mt-0.5 size-4 text-amber-600 dark:text-amber-400" />
+                  <p className="text-sm text-amber-700 dark:text-amber-300">
+                    This clause contains legacy HTML content that needs
+                    migration to the new editor format.
+                  </p>
+                </div>
+              </div>
             )}
+            <DocumentEditor
+              content={clause.body}
+              scope="clause"
+              editable={false}
+            />
           </div>
         )}
       </div>
@@ -370,12 +420,16 @@ function ClauseRow({ clause, slug, categories, canManage, onError, onSuccess }: 
       </AlertDialog>
 
       {/* Deactivate Confirmation Dialog */}
-      <AlertDialog open={deactivateDialogOpen} onOpenChange={setDeactivateDialogOpen}>
+      <AlertDialog
+        open={deactivateDialogOpen}
+        onOpenChange={setDeactivateDialogOpen}
+      >
         <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle>Deactivate Clause</AlertDialogTitle>
             <AlertDialogDescription>
-              This clause will be hidden from the clause picker but preserved on existing templates.
+              This clause will be hidden from the clause picker but preserved on
+              existing templates.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -388,26 +442,76 @@ function ClauseRow({ clause, slug, categories, canManage, onError, onSuccess }: 
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="max-w-md">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Clause</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this clause? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel variant="plain" disabled={isPending}>
-              Cancel
-            </AlertDialogCancel>
-            <Button variant="destructive" onClick={handleDeleteConfirm} disabled={isPending}>
-              {isPending ? "Deleting..." : "Delete"}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
+  );
+}
+
+interface ClauseActionsMenuProps {
+  clause: Clause;
+  slug: string;
+  categories: string[];
+  isPending: boolean;
+  onClone: () => void;
+  onDeactivate: () => void;
+}
+
+function ClauseActionsMenu({
+  clause,
+  slug,
+  categories,
+  isPending,
+  onClone,
+  onDeactivate,
+}: ClauseActionsMenuProps) {
+  const isSystem = clause.source === "SYSTEM";
+
+  return (
+    <div className="ml-4 flex items-center gap-2">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="plain"
+            size="icon"
+            className="size-8"
+            disabled={isPending}
+          >
+            <MoreHorizontal className="size-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {isSystem ? (
+            <>
+              <DropdownMenuItem onClick={onClone} disabled={isPending}>
+                <Copy className="mr-2 size-4" />
+                Clone & Customize
+              </DropdownMenuItem>
+            </>
+          ) : (
+            <>
+              <ClauseFormDialog
+                slug={slug}
+                clause={clause}
+                categories={categories}
+              >
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                  <Pencil className="mr-2 size-4" />
+                  Edit
+                </DropdownMenuItem>
+              </ClauseFormDialog>
+              <DropdownMenuItem onClick={onClone} disabled={isPending}>
+                <Copy className="mr-2 size-4" />
+                Clone
+              </DropdownMenuItem>
+              {clause.active && (
+                <DropdownMenuItem onClick={onDeactivate} disabled={isPending}>
+                  <Power className="mr-2 size-4" />
+                  Deactivate
+                </DropdownMenuItem>
+              )}
+            </>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }

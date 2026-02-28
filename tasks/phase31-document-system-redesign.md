@@ -129,7 +129,7 @@ Phase 31 replaces the Thymeleaf-based document authoring system with a Tiptap/Pr
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 6a | Epic 216 | 216A | Generation dialog update: clause content expand, reorder, "Add from library" with ClausePicker. |
+| 6a | Epic 216 | 216A | Generation dialog update: clause content expand, reorder, "Add from library" with ClausePicker. | **Done** (PR #443) |
 | 6b | Epic 216 | 216B | Client-side preview: entity picker, client-side Tiptap JSON renderer, PreviewPanel component. |
 
 ### Stage 7: Test Migration & Cleanup (After Stage 3)
@@ -652,7 +652,7 @@ Stage 7:  [217A] ──► [217B]                                      ← clean
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **216A** | 216.1-216.5 | Generation dialog clause step update: content expand toggle, required badges, reorder via drag/up-down, "Add from library" button opens ClausePicker. Component tests (~4 tests). | |
+| **216A** | 216.1-216.5 | Generation dialog clause step update: content expand toggle, required badges, reorder via drag/up-down, "Add from library" button opens ClausePicker. Component tests (~4 tests). | **Done** (PR #443) |
 | **216B** | 216.6-216.11 | Client-side preview: entity picker, client-side Tiptap JSON renderer (TypeScript mirror of TiptapRenderer), PreviewPanel component with document-like styling. Component tests (~4 tests). | |
 
 ### Tasks

@@ -1,15 +1,24 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { FolderKanban, Plus, X } from "lucide-react";
+import { AlertTriangle, Calendar, FolderKanban, Plus, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { LinkProjectDialog } from "@/components/customers/link-project-dialog";
 import { unlinkProject } from "@/app/(app)/org/[slug]/customers/[id]/actions";
-import { formatDate } from "@/lib/format";
-import type { Project } from "@/lib/types";
+import { formatDate, formatLocalDate, isOverdue } from "@/lib/format";
+import type { Project, ProjectStatus } from "@/lib/types";
 import Link from "next/link";
+
+const STATUS_BADGE: Record<
+  ProjectStatus,
+  { label: string; variant: "success" | "warning" | "neutral" }
+> = {
+  ACTIVE: { label: "Active", variant: "success" },
+  COMPLETED: { label: "Completed", variant: "neutral" },
+  ARCHIVED: { label: "Archived", variant: "neutral" },
+};
 
 interface CustomerProjectsPanelProps {
   projects: Project[];
@@ -92,7 +101,13 @@ export function CustomerProjectsPanel({
                 Project
               </th>
               <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
+                Status
+              </th>
+              <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
                 Description
+              </th>
+              <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 md:table-cell dark:text-slate-400">
+                Due Date
               </th>
               <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 lg:table-cell dark:text-slate-400">
                 Created
@@ -119,10 +134,36 @@ export function CustomerProjectsPanel({
                       {project.name}
                     </Link>
                   </td>
+                  <td className="hidden px-4 py-3 sm:table-cell">
+                    <Badge variant={STATUS_BADGE[project.status].variant} data-testid="customer-project-status-badge">
+                      {STATUS_BADGE[project.status].label}
+                    </Badge>
+                  </td>
                   <td className="hidden px-4 py-3 text-sm text-slate-600 sm:table-cell dark:text-slate-400">
                     <span className="line-clamp-1">
                       {project.description || "\u2014"}
                     </span>
+                  </td>
+                  <td className="hidden px-4 py-3 text-sm md:table-cell">
+                    {project.dueDate ? (
+                      <span
+                        className={`inline-flex items-center gap-1 ${
+                          project.status === "ACTIVE" && isOverdue(project.dueDate)
+                            ? "font-medium text-red-600 dark:text-red-400"
+                            : "text-slate-500 dark:text-slate-400"
+                        }`}
+                        data-testid="customer-project-due-date"
+                      >
+                        {project.status === "ACTIVE" && isOverdue(project.dueDate) ? (
+                          <AlertTriangle className="size-3.5" />
+                        ) : (
+                          <Calendar className="size-3.5" />
+                        )}
+                        {formatLocalDate(project.dueDate)}
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 dark:text-slate-600">{"\u2014"}</span>
+                    )}
                   </td>
                   <td className="hidden px-4 py-3 text-sm text-slate-400 lg:table-cell dark:text-slate-600">
                     {formatDate(project.createdAt)}

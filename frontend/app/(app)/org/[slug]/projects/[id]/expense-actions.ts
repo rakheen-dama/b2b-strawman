@@ -201,16 +201,11 @@ export async function listExpenses(
   return api.get<PaginatedExpenseResponse>(url);
 }
 
+/** @deprecated Use `getMyExpenses` from `@/lib/actions/expense-actions` instead. */
 export async function getMyExpenses(params?: {
   page?: number;
   size?: number;
 }): Promise<PaginatedExpenseResponse> {
-  const searchParams = new URLSearchParams();
-  if (params?.page != null) searchParams.set("page", String(params.page));
-  if (params?.size != null) searchParams.set("size", String(params.size));
-  searchParams.set("sort", "date,desc");
-
-  const qs = searchParams.toString();
-  const url = `/api/expenses/mine${qs ? `?${qs}` : ""}`;
-  return api.get<PaginatedExpenseResponse>(url);
+  const { getMyExpenses: shared } = await import("@/lib/actions/expense-actions");
+  return shared(params);
 }

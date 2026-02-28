@@ -13,7 +13,7 @@ const CATEGORY_STYLES: Record<ExpenseCategory, string> = {
   OTHER: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
 };
 
-const CATEGORY_LABELS: Record<ExpenseCategory, string> = {
+export const CATEGORY_LABELS: Record<ExpenseCategory, string> = {
   FILING_FEE: "Filing Fee",
   TRAVEL: "Travel",
   COURIER: "Courier",

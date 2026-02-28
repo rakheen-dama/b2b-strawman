@@ -18,7 +18,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ExpenseCategoryBadge } from "@/components/expenses/expense-category-badge";
+import { ExpenseCategoryBadge, CATEGORY_LABELS } from "@/components/expenses/expense-category-badge";
 import { LogExpenseDialog } from "@/components/expenses/log-expense-dialog";
 import { formatCurrencySafe, formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -45,8 +45,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-const ELEVATED_ROLES = new Set(["org:admin", "org:owner"]);
-const ADMIN_ROLES = new Set(["org:admin", "org:owner"]);
+const ADMIN_OR_OWNER_ROLES = new Set(["org:admin", "org:owner"]);
 
 type BillingStatusFilter = "all" | "UNBILLED" | "BILLED" | "NON_BILLABLE";
 
@@ -70,17 +69,6 @@ const EXPENSE_CATEGORIES: ExpenseCategory[] = [
   "COMMUNICATION",
   "OTHER",
 ];
-
-const CATEGORY_LABELS: Record<ExpenseCategory, string> = {
-  FILING_FEE: "Filing Fee",
-  TRAVEL: "Travel",
-  COURIER: "Courier",
-  SOFTWARE: "Software",
-  SUBCONTRACTOR: "Subcontractor",
-  PRINTING: "Printing",
-  COMMUNICATION: "Communication",
-  OTHER: "Other",
-};
 
 interface ExpenseListProps {
   expenses: ExpenseResponse[];
@@ -124,8 +112,8 @@ export function ExpenseList({
   const [memberFilter, setMemberFilter] = useState<string>("all");
   const [isPending, startTransition] = useTransition();
 
-  const isElevated = orgRole ? ELEVATED_ROLES.has(orgRole) : false;
-  const isAdminOrOwner = orgRole ? ADMIN_ROLES.has(orgRole) : false;
+  const isElevated = orgRole ? ADMIN_OR_OWNER_ROLES.has(orgRole) : false;
+  const isAdminOrOwner = isElevated;
 
   // Apply client-side filters
   const filteredExpenses = expenses.filter((e) => {

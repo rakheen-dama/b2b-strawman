@@ -40,6 +40,12 @@ vi.mock("@tiptap/react", () => ({
   ),
 }));
 
+vi.mock("server-only", () => ({}));
+vi.mock("@/lib/actions/clause-actions", () => ({
+  getClause: vi.fn(() => Promise.resolve(null)),
+  getClauses: vi.fn(() => Promise.resolve([])),
+}));
+
 vi.mock("@tiptap/starter-kit", () => ({ default: {} }));
 vi.mock("@tiptap/extension-table", () => ({
   Table: { configure: () => ({}) },

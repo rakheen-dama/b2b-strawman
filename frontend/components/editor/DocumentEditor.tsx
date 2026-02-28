@@ -9,6 +9,7 @@ import UnderlineExtension from "@tiptap/extension-underline";
 import Placeholder from "@tiptap/extension-placeholder";
 import { VariableExtension } from "./extensions/variable";
 import { LoopTableExtension } from "./extensions/loopTable";
+import { ClauseBlockExtension } from "./extensions/clauseBlock";
 import { EditorToolbar } from "./EditorToolbar";
 import "./editor.css";
 
@@ -28,6 +29,11 @@ export function DocumentEditor({
   const placeholderText =
     scope === "clause" ? "Enter clause content..." : "Start typing...";
 
+  const customExtensions =
+    scope === "template"
+      ? [VariableExtension, LoopTableExtension, ClauseBlockExtension]
+      : [VariableExtension];
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -41,8 +47,7 @@ export function DocumentEditor({
       }),
       UnderlineExtension,
       Placeholder.configure({ placeholder: placeholderText }),
-      VariableExtension,
-      LoopTableExtension,
+      ...customExtensions,
     ],
     content: content ?? undefined,
     editable,

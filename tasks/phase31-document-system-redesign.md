@@ -12,7 +12,7 @@ Phase 31 replaces the Thymeleaf-based document authoring system with a Tiptap/Pr
 |------|------|-------|------|--------|--------|--------|
 | 209 | Database Migration & Pack Conversion | Backend | -- | L | 209A, 209B | **Done** (PRs #428, #429) |
 | 210 | TiptapRenderer & Variable Endpoint | Backend | 209 | L | 210A, 210B | **Done** (PRs #430, #431) |
-| 211 | Entity Updates & Template-Clause Sync | Backend | 209 | M | 211A, 211B | |
+| 211 | Entity Updates & Template-Clause Sync | Backend | 209 | M | 211A, 211B | **Done** (PRs #432, #433) |
 | 212 | Rendering Pipeline Switch & Legacy Import | Backend | 210, 211 | M | 212A, 212B | |
 | 213 | Tiptap Editor Foundation | Frontend | -- | L | 213A, 213B, 213C | |
 | 214 | Template Editor Rewrite | Frontend | 210B, 211, 213 | L | 214A, 214B | |
@@ -99,7 +99,7 @@ Phase 31 replaces the Thymeleaf-based document authoring system with a Tiptap/Pr
 | 2a | Epic 210 | 210A | TiptapRenderer service (JSON tree walker, ~250 LOC). Unit tests for all node types. Independent of entity changes. | **Done** (PR #430) |
 | 2b | Epic 210 | 210B | VariableMetadataRegistry + GET /api/templates/variables endpoint. Integration tests. Depends on 210A (same package). | **Done** (PR #431) |
 | 2a' | Epic 211 | 211A | DocumentTemplate + Clause entity JSONB annotation changes. Controller DTO updates (content/body as Object). CRUD integration test updates. **Can run in parallel with 210A/210B.** | **Done** (PR #432) |
-| 2b' | Epic 211 | 211B | TemplateClauseSync service (extract clauseBlock nodes, diff + flush). Integration tests. Depends on 211A (entity must accept JSONB). |
+| 2b' | Epic 211 | 211B | TemplateClauseSync service (extract clauseBlock nodes, diff + flush). Integration tests. Depends on 211A (entity must accept JSONB). | **Done** (PR #433) |
 
 ### Stage 3: Pipeline Integration (Sequential)
 
@@ -314,7 +314,7 @@ Stage 7:  [217A] ──► [217B]                                      ← clean
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **211A** | 211.1-211.7 | DocumentTemplate entity: change content from String/TEXT to Map/JSONB, add legacyContent. Clause entity: change body from String/TEXT to Map/JSONB, add legacyBody. Update all controller DTOs. Update existing CRUD integration tests (~8 updated tests, ~4 new tests). | **Done** (PR #432) |
-| **211B** | 211.8-211.12 | TemplateClauseSync service: extract clauseBlock nodes from document JSON, diff against template_clauses table, create/delete/update. Wire into DocumentTemplateService.update(). Integration tests (~6 tests). | |
+| **211B** | 211.8-211.12 | TemplateClauseSync service: extract clauseBlock nodes from document JSON, diff against template_clauses table, create/delete/update. Wire into DocumentTemplateService.update(). Integration tests (~6 tests). | **Done** (PR #433) |
 
 ### Tasks
 

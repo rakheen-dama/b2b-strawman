@@ -29,7 +29,7 @@ Phase 30 closes the remaining revenue-capture and daily-work-organisation gaps i
 | 221 | Expense Billing Integration — InvoiceLine Extension & Invoice Pipeline | Backend | 218 | L | 221A, 221B | **Done** (PRs #453, #454) |
 | 222 | Expense Billing Frontend — Unbilled Summary & Invoice Generation | Frontend | 221, 220 | M | 222A | **Done** (PR #455) |
 | 223 | Recurring Task Foundation — Migration & Entity | Backend | -- | M | 223A, 223B | **Done** (PRs #456, #457) |
-| 224 | Recurring Task Service & Controller | Backend | 223 | M | 224A, 224B | 224A **Done** (PR #458) |
+| 224 | Recurring Task Service & Controller | Backend | 223 | M | 224A, 224B | **Done** (PRs #458, #459) |
 | 225 | Recurring Task Frontend | Frontend | 224 | M | 225A | |
 | 226 | Time Reminder Scheduler & OrgSettings | Backend | -- | M | 226A, 226B | |
 | 227 | Time Reminder Frontend — Settings & Preferences | Frontend | 226 | S | 227A | |
@@ -170,7 +170,7 @@ TRACK 4: CALENDAR VIEW
 |-------|------|-------|---------|--------|
 | 3a (parallel) | 219 | 219B | ExpenseController: 7 endpoints + complete integration test suite (~20 tests). ~1 new controller file, ~1 new test file. Backend only. | **Done** (PR #450) |
 | 3b (parallel) | 221 | 221B | InvoiceService extension: unbilled summary + expenses, generate with EXPENSE lines, approve stamps expenses, void clears invoiceId on expenses + profitability query extension + tests (~15 tests). ~2 modified files, ~1 new test file. Backend only. | **Done** (PR #454) |
-| 3c (parallel) | 224 | 224B | TaskController: extend complete response with nextInstance, recurrence fields in create/update DTOs, ?recurring=true filter + integration tests (~15 tests). ~1 modified file, ~1 new test file. Backend only. | |
+| 3c (parallel) | 224 | 224B | TaskController: extend complete response with nextInstance, recurrence fields in create/update DTOs, ?recurring=true filter + integration tests (~15 tests). ~1 modified file, ~1 new test file. Backend only. | **Done** (PR #459) |
 | 3d (parallel) | 228 | 228A | CalendarService + CalendarController: GET /api/calendar, UNION ALL query, access control + tests (~5 tests). ~2 new files, ~1 new test file. Backend only. | |
 
 ### Stage 4: Frontend (parallel tracks)
@@ -594,7 +594,7 @@ Stage 5: [220B] // [222A] // [229B]                              (parallel)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **224A** | 224.1–224.7 | Extend `TaskService.completeTask()`: recurrence check after DONE transition, RRULE parse, next-date calculation, `recurrenceEndDate` check, new Task creation in same transaction, `task.recurrence_created` audit event, assignee notification. ~1 modified service file, ~1 new event file. Backend only. | **Done** (PR #458) |
-| **224B** | 224.8–224.13 | `TaskController` extensions: complete endpoint returns `CompleteTaskResponse { completedTask, nextInstance }`, create/update request DTOs gain `recurrenceRule`, `recurrenceEndDate` fields, `GET /tasks` gains `?recurring=true` filter, integration tests (~15 tests). ~1 modified controller file, ~1 new test file. Backend only. | |
+| **224B** | 224.8–224.13 | `TaskController` extensions: complete endpoint returns `CompleteTaskResponse { completedTask, nextInstance }`, create/update request DTOs gain `recurrenceRule`, `recurrenceEndDate` fields, `GET /tasks` gains `?recurring=true` filter, integration tests (~15 tests). ~1 modified controller file, ~1 new test file. Backend only. | **Done** (PR #459) |
 
 ### Tasks
 

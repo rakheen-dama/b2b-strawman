@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineType;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -223,6 +224,7 @@ public class RetainerPeriodService {
         new InvoiceLine(
             invoice.getId(), null, null, periodDesc, BigDecimal.ONE, agreement.getPeriodFee(), 0);
     baseLine.setRetainerPeriodId(period.getId());
+    baseLine.setLineType(InvoiceLineType.RETAINER);
     invoiceLineRepository.save(baseLine);
 
     // Line 2: Overage (HOUR_BANK with overage > 0)
@@ -236,6 +238,7 @@ public class RetainerPeriodService {
           new InvoiceLine(
               invoice.getId(), null, null, overageDesc, overageHours, resolvedRate.hourlyRate(), 1);
       overageLine.setRetainerPeriodId(period.getId());
+      overageLine.setLineType(InvoiceLineType.RETAINER);
       invoiceLineRepository.save(overageLine);
     }
 

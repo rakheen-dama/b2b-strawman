@@ -289,6 +289,7 @@ public class InvoiceService {
                 quantity,
                 unitPrice,
                 sortOrder++);
+        line.setLineType(InvoiceLineType.TIME);
         lineRepository.save(line);
         linkedTimeEntries.add(timeEntry);
       }
@@ -627,6 +628,7 @@ public class InvoiceService {
             request.quantity(),
             request.unitPrice(),
             request.sortOrder());
+    line.setLineType(InvoiceLineType.MANUAL);
     line = lineRepository.save(line);
 
     applyTaxToLine(line, request.taxRateId());

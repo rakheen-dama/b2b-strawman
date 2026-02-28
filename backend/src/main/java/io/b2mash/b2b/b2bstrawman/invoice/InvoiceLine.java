@@ -3,6 +3,8 @@ package io.b2mash.b2b.b2bstrawman.invoice;
 import io.b2mash.b2b.b2bstrawman.tax.TaxRate;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -31,6 +33,13 @@ public class InvoiceLine {
 
   @Column(name = "retainer_period_id")
   private UUID retainerPeriodId;
+
+  @Column(name = "expense_id")
+  private UUID expenseId;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "line_type", nullable = false, length = 20)
+  private InvoiceLineType lineType;
 
   @Column(name = "description", nullable = false, columnDefinition = "TEXT")
   private String description;
@@ -88,6 +97,7 @@ public class InvoiceLine {
     this.unitPrice = unitPrice;
     this.amount = quantity.multiply(unitPrice).setScale(2, RoundingMode.HALF_UP);
     this.sortOrder = sortOrder;
+    this.lineType = InvoiceLineType.TIME;
     this.createdAt = Instant.now();
     this.updatedAt = Instant.now();
   }
@@ -170,6 +180,22 @@ public class InvoiceLine {
 
   public void setRetainerPeriodId(UUID retainerPeriodId) {
     this.retainerPeriodId = retainerPeriodId;
+  }
+
+  public UUID getExpenseId() {
+    return expenseId;
+  }
+
+  public void setExpenseId(UUID expenseId) {
+    this.expenseId = expenseId;
+  }
+
+  public InvoiceLineType getLineType() {
+    return lineType;
+  }
+
+  public void setLineType(InvoiceLineType lineType) {
+    this.lineType = lineType;
   }
 
   public String getDescription() {

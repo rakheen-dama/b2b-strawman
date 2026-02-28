@@ -56,6 +56,49 @@ class CustomerLifecycleGuardTest {
     }
   }
 
+  @Test
+  void createProjectBlockedForOffboarding() {
+    var customer = createCustomerWithStatus(LifecycleStatus.OFFBOARDING);
+    assertThatThrownBy(() -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_PROJECT))
+        .isInstanceOf(InvalidStateException.class);
+  }
+
+  @Test
+  void createTaskBlockedForOffboarding() {
+    var customer = createCustomerWithStatus(LifecycleStatus.OFFBOARDING);
+    assertThatThrownBy(() -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_TASK))
+        .isInstanceOf(InvalidStateException.class);
+  }
+
+  @Test
+  void createTimeEntryBlockedForOffboarding() {
+    var customer = createCustomerWithStatus(LifecycleStatus.OFFBOARDING);
+    assertThatThrownBy(
+            () -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_TIME_ENTRY))
+        .isInstanceOf(InvalidStateException.class);
+  }
+
+  @Test
+  void createProjectAllowedForActive() {
+    var customer = createCustomerWithStatus(LifecycleStatus.ACTIVE);
+    assertThatCode(() -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_PROJECT))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void createProjectAllowedForOnboarding() {
+    var customer = createCustomerWithStatus(LifecycleStatus.ONBOARDING);
+    assertThatCode(() -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_PROJECT))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void createProjectAllowedForDormant() {
+    var customer = createCustomerWithStatus(LifecycleStatus.DORMANT);
+    assertThatCode(() -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_PROJECT))
+        .doesNotThrowAnyException();
+  }
+
   private Customer createCustomerWithStatus(LifecycleStatus status) {
     // Use the constructor that accepts explicit lifecycle status
     var customer =

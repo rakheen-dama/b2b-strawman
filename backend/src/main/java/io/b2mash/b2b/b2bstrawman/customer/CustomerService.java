@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupService;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,6 +43,8 @@ public class CustomerService {
   private final FieldGroupMemberRepository fieldGroupMemberRepository;
   private final FieldDefinitionRepository fieldDefinitionRepository;
   private final FieldGroupService fieldGroupService;
+  private final ProjectRepository projectRepository;
+  private final CustomerProjectRepository customerProjectRepository;
 
   public CustomerService(
       CustomerRepository repository,
@@ -51,7 +54,9 @@ public class CustomerService {
       FieldGroupRepository fieldGroupRepository,
       FieldGroupMemberRepository fieldGroupMemberRepository,
       FieldDefinitionRepository fieldDefinitionRepository,
-      FieldGroupService fieldGroupService) {
+      FieldGroupService fieldGroupService,
+      ProjectRepository projectRepository,
+      CustomerProjectRepository customerProjectRepository) {
     this.repository = repository;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
@@ -60,6 +65,8 @@ public class CustomerService {
     this.fieldGroupMemberRepository = fieldGroupMemberRepository;
     this.fieldDefinitionRepository = fieldDefinitionRepository;
     this.fieldGroupService = fieldGroupService;
+    this.projectRepository = projectRepository;
+    this.customerProjectRepository = customerProjectRepository;
   }
 
   @Transactional(readOnly = true)
@@ -301,6 +308,16 @@ public class CustomerService {
   public Customer archiveCustomer(UUID id) {
     var customer =
         repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Customer", id));
+
+    // Delete protection: block if customer has linked projects (direct FK or join table)
+    long directLinks = projectRepository.countByCustomerId(id);
+    boolean junctionLinks = customerProjectRepository.existsByCustomerId(id);
+    if (directLinks > 0 || junctionLinks) {
+      throw new ResourceConflictException(
+          "Cannot archive customer",
+          "Cannot archive customer with linked projects. Unlink all projects first.");
+    }
+
     customer.archive();
 
     // Align lifecycle: set to OFFBOARDED unless already in a terminal state

@@ -16,7 +16,7 @@ Phase 31 replaces the Thymeleaf-based document authoring system with a Tiptap/Pr
 | 212 | Rendering Pipeline Switch & Legacy Import | Backend | 210, 211 | M | 212A, 212B | **Done** (PRs #434, #435) |
 | 213 | Tiptap Editor Foundation | Frontend | -- | L | 213A, 213B, 213C | **Done** (PRs #436, #437, #438) |
 | 214 | Template Editor Rewrite | Frontend | 210B, 211, 213 | L | 214A, 214B | **Done** (PRs #439, #440) |
-| 215 | Clause Library & Editor Rewrite | Frontend | 213 | M | 215A, 215B | |
+| 215 | Clause Library & Editor Rewrite | Frontend | 213 | M | 215A, 215B | **Done** (PRs #441, #442) |
 | 216 | Generation Dialog & Preview | Frontend | 213, 214 | M | 216A, 216B | |
 | 217 | Backend Test Migration & Cleanup | Backend | 212 | M | 217A, 217B | |
 
@@ -123,7 +123,7 @@ Phase 31 replaces the Thymeleaf-based document authoring system with a Tiptap/Pr
 | 5a | Epic 214 | 214A | Template editor page rewrite (/settings/templates/[id]/edit). Unified layout with DocumentEditor (no tabs). Settings panel. actions.ts updates for JSON content. | **Done** (PR #439) |
 | 5b | Epic 214 | 214B | Template save with TemplateClause sync (frontend sends JSON, backend syncs). Variable picker integration (fetch from /api/templates/variables). New template page update. | **Done** (PR #440) |
 | 5a' | Epic 215 | 215A | Clause library page rewrite (/settings/clauses). Content expand/collapse for every clause. "Used in" indicator. Inline Tiptap JSON rendering. **Can parallel with 214.** | **Done** (PR #441) |
-| 5b' | Epic 215 | 215B | Clause editor sheet with DocumentEditor (clause scope). Create + edit flows. System clause read-only + "Clone to customize". |
+| 5b' | Epic 215 | 215B | Clause editor sheet with DocumentEditor (clause scope). Create + edit flows. System clause read-only + "Clone to customize". | **Done** (PR #442) |
 
 ### Stage 6: Generation & Preview (After Stage 5)
 
@@ -594,7 +594,7 @@ Stage 7:  [217A] ──► [217B]                                      ← clean
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **215A** | 215.1-215.6 | Clause library page rewrite: content expand/collapse for every clause (rendered Tiptap JSON), "Used in N templates" indicator, system clause visibility. Component tests (~4 tests). | **Done** (PR #441) |
-| **215B** | 215.7-215.11 | Clause editor sheet with DocumentEditor (clause scope). Create + edit flows. System clause read-only mode with "Clone to customize" action. Component tests (~4 tests). | |
+| **215B** | 215.7-215.11 | Clause editor sheet with DocumentEditor (clause scope). Create + edit flows. System clause read-only mode with "Clone to customize" action. Component tests (~4 tests). | **Done** (PR #442) |
 
 ### Tasks
 

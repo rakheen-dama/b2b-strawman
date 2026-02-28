@@ -259,7 +259,7 @@
 | 220 | Expense Frontend — Project Expenses Tab | Frontend | 219 | M | 220A, 220B | **Done** (PRs #451, #452) |
 | 221 | Expense Billing Integration — InvoiceLine Extension & Invoice Pipeline | Backend | 218 | L | 221A, 221B | **Done** (PRs #453, #454) |
 | 222 | Expense Billing Frontend — Unbilled Summary & Invoice Generation | Frontend | 221, 220 | M | 222A | **Done** (PR #455) |
-| 223 | Recurring Task Foundation — Migration & Entity | Backend | -- | M | 223A, 223B | |
+| 223 | Recurring Task Foundation — Migration & Entity | Backend | -- | M | 223A, 223B | 223A **Done** (PR #456) |
 | 224 | Recurring Task Service & Controller | Backend | 223 | M | 224A, 224B | |
 | 225 | Recurring Task Frontend | Frontend | 224 | M | 225A | |
 | 226 | Time Reminder Scheduler & OrgSettings | Backend | -- | M | 226A, 226B | |

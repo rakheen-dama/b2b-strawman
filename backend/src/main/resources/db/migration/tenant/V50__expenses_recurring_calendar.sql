@@ -33,14 +33,14 @@ CREATE TABLE expenses (
 );
 
 -- Indexes: project_id for project-scoped queries (most common access pattern)
-CREATE INDEX idx_expenses_project_id ON expenses(project_id);
+CREATE INDEX IF NOT EXISTS idx_expenses_project_id ON expenses(project_id);
 -- member_id for "my expenses" cross-project query
-CREATE INDEX idx_expenses_member_id ON expenses(member_id);
--- Composite index for unbilled expense queries (billing integration)
-CREATE INDEX idx_expenses_billable_invoice ON expenses(billable, invoice_id)
+CREATE INDEX IF NOT EXISTS idx_expenses_member_id ON expenses(member_id);
+-- Partial index for unbilled expense queries (billing integration)
+CREATE INDEX IF NOT EXISTS idx_expenses_billable_invoice ON expenses(project_id)
     WHERE billable = true AND invoice_id IS NULL;
 -- Date range queries within a project
-CREATE INDEX idx_expenses_project_date ON expenses(project_id, date);
+CREATE INDEX IF NOT EXISTS idx_expenses_project_date ON expenses(project_id, date);
 
 -- ============================================================
 -- 2. Task: recurrence fields

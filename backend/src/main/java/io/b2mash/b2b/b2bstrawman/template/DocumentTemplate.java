@@ -47,6 +47,10 @@ public class DocumentTemplate {
   @Column(name = "content", nullable = false, columnDefinition = "TEXT")
   private String content;
 
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "content_json", columnDefinition = "jsonb")
+  private Map<String, Object> contentJson;
+
   @Column(name = "css", columnDefinition = "TEXT")
   private String css;
 
@@ -174,6 +178,14 @@ public class DocumentTemplate {
 
   public String getContent() {
     return content;
+  }
+
+  public Map<String, Object> getContentJson() {
+    return contentJson;
+  }
+
+  public void setContentJson(Map<String, Object> contentJson) {
+    this.contentJson = contentJson;
   }
 
   public String getCss() {

@@ -11,7 +11,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
-import io.b2mash.b2b.b2bstrawman.template.PdfRenderingService;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -44,7 +44,6 @@ class ClausePackSeederIntegrationTest {
   @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
-  @Autowired private PdfRenderingService pdfRenderingService;
 
   private String tenantSchema;
 
@@ -170,22 +169,44 @@ class ClausePackSeederIntegrationTest {
   }
 
   @Test
-  void clause_body_renders_with_thymeleaf() {
+  void clause_bodyJson_has_doc_root_node() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var clauses =
+                      clauseRepository.findByPackIdAndSourceAndActiveTrue(
+                          "standard-clauses", ClauseSource.SYSTEM);
+                  assertThat(clauses).isNotEmpty();
+                  assertThat(clauses)
+                      .allSatisfy(
+                          clause -> {
+                            assertThat(clause.getBodyJson()).isNotNull();
+                            assertThat(clause.getBodyJson()).containsEntry("type", "doc");
+                          });
+                }));
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void clause_bodyJson_contains_variable_nodes() {
     runInTenant(
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var paymentTerms = clauseRepository.findBySlug("payment-terms").orElseThrow();
-                  var context =
-                      Map.<String, Object>of(
-                          "org", Map.of("name", "Acme Consulting"),
-                          "customer", Map.of("name", "Widget Corp"));
-                  String rendered =
-                      pdfRenderingService.renderFragment(paymentTerms.getBody(), context);
-                  assertThat(rendered).contains("Acme Consulting");
-                  assertThat(rendered).contains("Widget Corp");
-                  assertThat(rendered).doesNotContain("${org.name}");
-                  assertThat(rendered).doesNotContain("${customer.name}");
+                  Map<String, Object> bodyJson = paymentTerms.getBodyJson();
+                  assertThat(bodyJson).containsKey("content");
+                  List<Map<String, Object>> content =
+                      (List<Map<String, Object>>) bodyJson.get("content");
+                  assertThat(content).isNotEmpty();
+                  // First paragraph should contain variable nodes for org.name and customer.name
+                  Map<String, Object> firstParagraph = content.getFirst();
+                  assertThat(firstParagraph).containsEntry("type", "paragraph");
+                  List<Map<String, Object>> paragraphContent =
+                      (List<Map<String, Object>>) firstParagraph.get("content");
+                  assertThat(paragraphContent)
+                      .anyMatch(node -> "variable".equals(node.get("type")));
                 }));
   }
 

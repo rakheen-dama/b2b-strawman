@@ -13,7 +13,7 @@ public record ClausePackDefinition(
 
   /** A single clause definition within a clause pack. */
   public record ClauseDefinition(
-      String title, String slug, String category, String description, String body, int sortOrder) {}
+      String title, String slug, String category, String description, Object body, int sortOrder) {}
 
   /** Associates clauses from this pack with a template from another pack. */
   public record TemplateAssociation(

@@ -105,16 +105,14 @@ class V48MigrationTest {
   }
 
   @Test
-  void platformTemplatesHaveNullContentJson() throws Exception {
+  void platformTemplatesHaveContentJson() throws Exception {
     try (Connection conn = dataSource.getConnection();
         Statement stmt = conn.createStatement()) {
       stmt.execute("SET search_path TO " + tenantSchema);
 
-      // PLATFORM templates seeded after V48 should have NULL content_json
-      // (the JSONB column is not populated by the current seeder — that comes in a later epic).
-      // The content (TEXT) column has the template content from the pack seeder.
-      // legacy_content is NULL for freshly seeded templates (it only holds pre-V48 HTML
-      // for tenants that had templates before the migration ran).
+      // PLATFORM templates seeded after V48 should have content_json populated
+      // by the TemplatePackSeeder (Tiptap JSON from .json content files).
+      // The content (TEXT) column also has the template content as a JSON string.
       ResultSet rs =
           stmt.executeQuery(
               "SELECT content_json, legacy_content, content FROM document_templates"
@@ -124,8 +122,8 @@ class V48MigrationTest {
       while (rs.next()) {
         foundAny = true;
         assertThat(rs.getObject("content_json"))
-            .as("PLATFORM template content_json should be NULL")
-            .isNull();
+            .as("PLATFORM template content_json should be populated by seeder")
+            .isNotNull();
         // Original content column (TEXT) should have the template content from seeder
         assertThat(rs.getString("content"))
             .as("PLATFORM template content (TEXT) should be populated by seeder")

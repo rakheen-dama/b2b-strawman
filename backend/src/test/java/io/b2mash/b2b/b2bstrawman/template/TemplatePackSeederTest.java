@@ -11,6 +11,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -137,6 +139,53 @@ class TemplatePackSeederTest {
                   assertThat(settings.get().getTemplatePackStatus()).isNotNull();
                   assertThat(settings.get().getTemplatePackStatus())
                       .anyMatch(entry -> "common".equals(entry.get("packId")));
+                }));
+  }
+
+  @Test
+  void seededContentJsonHasDocRootNode() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var templates = documentTemplateRepository.findByActiveTrueOrderBySortOrder();
+                  var platformTemplates =
+                      templates.stream()
+                          .filter(t -> t.getSource() == TemplateSource.PLATFORM)
+                          .toList();
+                  assertThat(platformTemplates).isNotEmpty();
+                  assertThat(platformTemplates)
+                      .allSatisfy(
+                          t -> {
+                            assertThat(t.getContentJson()).isNotNull();
+                            assertThat(t.getContentJson()).containsEntry("type", "doc");
+                          });
+                }));
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void seededContentJsonHasContentArray() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var templates = documentTemplateRepository.findByActiveTrueOrderBySortOrder();
+                  var platformTemplates =
+                      templates.stream()
+                          .filter(t -> t.getSource() == TemplateSource.PLATFORM)
+                          .toList();
+                  assertThat(platformTemplates).isNotEmpty();
+                  assertThat(platformTemplates)
+                      .allSatisfy(
+                          t -> {
+                            Map<String, Object> json = t.getContentJson();
+                            assertThat(json).containsKey("content");
+                            assertThat(json.get("content")).isInstanceOf(List.class);
+                            List<Map<String, Object>> content =
+                                (List<Map<String, Object>>) json.get("content");
+                            assertThat(content).isNotEmpty();
+                          });
                 }));
   }
 

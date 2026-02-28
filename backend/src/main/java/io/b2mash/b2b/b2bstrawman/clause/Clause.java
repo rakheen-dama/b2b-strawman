@@ -11,8 +11,11 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 /** A reusable clause in the clause library that can be attached to document templates. */
 @Entity
@@ -34,6 +37,10 @@ public class Clause {
 
   @Column(name = "body", nullable = false, columnDefinition = "TEXT")
   private String body;
+
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "body_json", columnDefinition = "jsonb")
+  private Map<String, Object> bodyJson;
 
   @Column(name = "category", nullable = false, length = 100)
   private String category;
@@ -171,6 +178,14 @@ public class Clause {
 
   public String getBody() {
     return body;
+  }
+
+  public Map<String, Object> getBodyJson() {
+    return bodyJson;
+  }
+
+  public void setBodyJson(Map<String, Object> bodyJson) {
+    this.bodyJson = bodyJson;
   }
 
   public String getCategory() {

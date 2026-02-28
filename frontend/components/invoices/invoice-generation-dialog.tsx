@@ -19,10 +19,12 @@ import {
   validateInvoiceGeneration,
 } from "@/app/(app)/org/[slug]/customers/[id]/invoice-actions";
 import { formatCurrency, formatDuration, formatDate } from "@/lib/format";
+import { ExpenseCategoryBadge } from "@/components/expenses/expense-category-badge";
 import type {
   UnbilledTimeResponse,
   UnbilledProjectGroup,
   UnbilledTimeEntry,
+  UnbilledExpenseEntry,
   ValidationCheck,
 } from "@/lib/types";
 import { Plus, ArrowLeft, CheckCircle2, AlertTriangle } from "lucide-react";
@@ -62,6 +64,7 @@ export function InvoiceGenerationDialog({
   // Step 2 state
   const [unbilledData, setUnbilledData] = useState<UnbilledTimeResponse | null>(null);
   const [selectedEntryIds, setSelectedEntryIds] = useState<Set<string>>(new Set());
+  const [selectedExpenseIds, setSelectedExpenseIds] = useState<Set<string>>(new Set());
 
   // Validation state
   const [validationChecks, setValidationChecks] = useState<ValidationCheck[] | null>(null);
@@ -75,6 +78,7 @@ export function InvoiceGenerationDialog({
     setCurrency(defaultCurrency);
     setUnbilledData(null);
     setSelectedEntryIds(new Set());
+    setSelectedExpenseIds(new Set());
     setValidationChecks(null);
     setIsValidating(false);
   }
@@ -108,6 +112,14 @@ export function InvoiceGenerationDialog({
             }
           }
           setSelectedEntryIds(matchingIds);
+          // Auto-select expenses matching the selected currency
+          const matchingExpenseIds = new Set<string>();
+          for (const expense of result.data.unbilledExpenses) {
+            if (expense.currency === currency) {
+              matchingExpenseIds.add(expense.id);
+            }
+          }
+          setSelectedExpenseIds(matchingExpenseIds);
           setStep(2);
         } else {
           setError(result.error ?? "Failed to fetch unbilled time.");
@@ -153,6 +165,42 @@ export function InvoiceGenerationDialog({
     });
   }
 
+  function handleToggleExpense(expenseId: string) {
+    setSelectedExpenseIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(expenseId)) {
+        next.delete(expenseId);
+      } else {
+        next.add(expenseId);
+      }
+      return next;
+    });
+  }
+
+  function handleToggleAllExpenses() {
+    if (!unbilledData) return;
+    const selectableExpenses = unbilledData.unbilledExpenses.filter(
+      (e) => e.currency === currency,
+    );
+    const allSelected =
+      selectableExpenses.length > 0 &&
+      selectableExpenses.every((e) => selectedExpenseIds.has(e.id));
+
+    setSelectedExpenseIds((prev) => {
+      const next = new Set(prev);
+      if (allSelected) {
+        for (const expense of selectableExpenses) {
+          next.delete(expense.id);
+        }
+      } else {
+        for (const expense of selectableExpenses) {
+          next.add(expense.id);
+        }
+      }
+      return next;
+    });
+  }
+
   function handleRunValidation() {
     if (selectedEntryIds.size === 0) return;
     setError(null);
@@ -178,7 +226,7 @@ export function InvoiceGenerationDialog({
   }
 
   function handleCreateDraft() {
-    if (selectedEntryIds.size === 0) return;
+    if (selectedEntryIds.size === 0 && selectedExpenseIds.size === 0) return;
     setError(null);
 
     startTransition(async () => {
@@ -187,6 +235,10 @@ export function InvoiceGenerationDialog({
           customerId,
           currency,
           timeEntryIds: Array.from(selectedEntryIds),
+          expenseIds:
+            selectedExpenseIds.size > 0
+              ? Array.from(selectedExpenseIds)
+              : undefined,
         });
         if (result.success) {
           setOpen(false);
@@ -199,8 +251,8 @@ export function InvoiceGenerationDialog({
     });
   }
 
-  // Calculate running total of selected entries
-  const runningTotal = unbilledData
+  // Calculate running total of selected time entries + expenses
+  const timeTotal = unbilledData
     ? unbilledData.projects.reduce((sum, project) => {
         return (
           sum +
@@ -210,6 +262,14 @@ export function InvoiceGenerationDialog({
         );
       }, 0)
     : 0;
+  const expenseTotal = unbilledData
+    ? unbilledData.unbilledExpenses
+        .filter((e) => selectedExpenseIds.has(e.id))
+        .reduce((s, e) => s + e.billableAmount, 0)
+    : 0;
+  const runningTotal = timeTotal + expenseTotal;
+
+  const totalItemCount = selectedEntryIds.size + selectedExpenseIds.size;
 
   // Entries with no rate card configured (null/undefined rate — excludes $0.00 pro-bono rates)
   const nullRateEntries = unbilledData
@@ -231,12 +291,12 @@ export function InvoiceGenerationDialog({
       <DialogContent className={step === 2 ? "sm:max-w-2xl" : undefined}>
         <DialogHeader>
           <DialogTitle>
-            {step === 1 ? "Generate Invoice" : "Select Time Entries"}
+            {step === 1 ? "Generate Invoice" : "Select Unbilled Items"}
           </DialogTitle>
           <DialogDescription>
             {step === 1
-              ? `Create a new invoice for ${customerName} from unbilled time entries.`
-              : `${selectedEntryIds.size} entries selected for ${customerName}`}
+              ? `Create a new invoice for ${customerName} from unbilled time entries and expenses.`
+              : `${totalItemCount} items selected for ${customerName}`}
           </DialogDescription>
         </DialogHeader>
 
@@ -358,10 +418,21 @@ export function InvoiceGenerationDialog({
               </div>
             )}
 
+            {/* Expenses section */}
+            {unbilledData.unbilledExpenses.length > 0 && (
+              <ExpenseSelectionSection
+                expenses={unbilledData.unbilledExpenses}
+                currency={currency}
+                selectedExpenseIds={selectedExpenseIds}
+                onToggleExpense={handleToggleExpense}
+                onToggleAll={handleToggleAllExpenses}
+              />
+            )}
+
             {/* Running total */}
             <div className="flex items-center justify-between border-t border-slate-200 pt-3 dark:border-slate-800">
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                Total ({selectedEntryIds.size} entries)
+                Total ({totalItemCount} items)
               </span>
               <span className="text-lg font-semibold text-slate-950 dark:text-slate-50">
                 {safeFormatCurrency(runningTotal, currency)}
@@ -415,7 +486,7 @@ export function InvoiceGenerationDialog({
                 <Button
                   type="button"
                   onClick={handleRunValidation}
-                  disabled={isPending || isValidating || selectedEntryIds.size === 0}
+                  disabled={isPending || isValidating || totalItemCount === 0}
                 >
                   {isValidating ? "Validating..." : "Validate & Create Draft"}
                 </Button>
@@ -423,7 +494,7 @@ export function InvoiceGenerationDialog({
                 <Button
                   type="button"
                   onClick={handleCreateDraft}
-                  disabled={isPending || selectedEntryIds.size === 0}
+                  disabled={isPending || totalItemCount === 0}
                 >
                   {isPending ? "Creating..." : validationChecks.some((c) => !c.passed)
                     ? `Create Draft (${validationChecks.filter((c) => !c.passed).length} issues)`
@@ -487,6 +558,123 @@ function ProjectEntryGroup({
             onToggle={onToggleEntry}
           />
         ))}
+      </div>
+    </div>
+  );
+}
+
+// Sub-component for expense selection
+function ExpenseSelectionSection({
+  expenses,
+  currency,
+  selectedExpenseIds,
+  onToggleExpense,
+  onToggleAll,
+}: {
+  expenses: UnbilledExpenseEntry[];
+  currency: string;
+  selectedExpenseIds: Set<string>;
+  onToggleExpense: (id: string) => void;
+  onToggleAll: () => void;
+}) {
+  const selectableExpenses = expenses.filter((e) => e.currency === currency);
+  const allSelected =
+    selectableExpenses.length > 0 &&
+    selectableExpenses.every((e) => selectedExpenseIds.has(e.id));
+
+  // Group expenses by project
+  const expensesByProject: Record<
+    string,
+    { projectName: string; expenses: UnbilledExpenseEntry[] }
+  > = {};
+  for (const expense of expenses) {
+    if (!expensesByProject[expense.projectId]) {
+      expensesByProject[expense.projectId] = {
+        projectName: expense.projectName,
+        expenses: [],
+      };
+    }
+    expensesByProject[expense.projectId].expenses.push(expense);
+  }
+
+  return (
+    <div data-testid="expense-selection-section">
+      <div className="mb-2 flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+          Expenses
+        </h3>
+        <button
+          type="button"
+          onClick={onToggleAll}
+          className="text-xs text-teal-600 hover:text-teal-700 dark:text-teal-400"
+          disabled={selectableExpenses.length === 0}
+        >
+          {allSelected ? "Deselect All" : "Select All Expenses"}
+        </button>
+      </div>
+      <div className="max-h-60 space-y-3 overflow-y-auto">
+        {Object.entries(expensesByProject).map(
+          ([projectId, { projectName, expenses: projectExpenses }]) => (
+            <div
+              key={projectId}
+              className="rounded-lg border border-slate-200 dark:border-slate-800"
+            >
+              <div className="border-b border-slate-200 px-4 py-2 dark:border-slate-800">
+                <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                  {projectName}
+                </span>
+              </div>
+              <div className="divide-y divide-slate-100 dark:divide-slate-800/50">
+                {projectExpenses.map((expense) => {
+                  const currencyMismatch = expense.currency !== currency;
+                  return (
+                    <label
+                      key={expense.id}
+                      className={`flex items-center gap-3 px-4 py-2 text-sm ${
+                        currencyMismatch
+                          ? "cursor-not-allowed opacity-50"
+                          : "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/50"
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedExpenseIds.has(expense.id)}
+                        onChange={() => onToggleExpense(expense.id)}
+                        disabled={currencyMismatch}
+                        className="size-4 rounded accent-teal-600"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-slate-900 dark:text-slate-100">
+                            {expense.description}
+                          </span>
+                          <ExpenseCategoryBadge category={expense.category} />
+                          {currencyMismatch && (
+                            <span className="text-xs text-slate-400">
+                              ({expense.currency})
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs text-slate-500">
+                          {formatDate(expense.date)}
+                          {expense.markupPercent != null && (
+                            <> &middot; {expense.markupPercent}% markup</>
+                          )}
+                        </div>
+                      </div>
+                      <span className="shrink-0 text-right font-medium text-slate-700 dark:text-slate-300">
+                        {safeFormatCurrency(
+                          expense.billableAmount,
+                          expense.currency,
+                        )}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          ),
+        )}
       </div>
     </div>
   );

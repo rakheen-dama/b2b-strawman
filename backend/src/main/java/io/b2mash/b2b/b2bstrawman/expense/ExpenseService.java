@@ -205,6 +205,9 @@ public class ExpenseService {
       Boolean billable,
       String notes) {
 
+    // Validate project is ACTIVE
+    projectLifecycleGuard.requireActive(projectId);
+
     var expense =
         expenseRepository
             .findById(expenseId)
@@ -281,6 +284,9 @@ public class ExpenseService {
 
   @Transactional
   public void deleteExpense(UUID projectId, UUID expenseId, UUID memberId, String orgRole) {
+    // Validate project is ACTIVE
+    projectLifecycleGuard.requireActive(projectId);
+
     var expense =
         expenseRepository
             .findById(expenseId)
@@ -321,6 +327,9 @@ public class ExpenseService {
 
   @Transactional
   public Expense writeOffExpense(UUID projectId, UUID expenseId, UUID memberId, String orgRole) {
+    // Validate project is ACTIVE
+    projectLifecycleGuard.requireActive(projectId);
+
     var expense =
         expenseRepository
             .findById(expenseId)
@@ -361,6 +370,9 @@ public class ExpenseService {
 
   @Transactional
   public Expense restoreExpense(UUID projectId, UUID expenseId, UUID memberId, String orgRole) {
+    // Validate project is ACTIVE
+    projectLifecycleGuard.requireActive(projectId);
+
     var expense =
         expenseRepository
             .findById(expenseId)
@@ -402,6 +414,7 @@ public class ExpenseService {
    * Loads OrgSettings for the current tenant and returns the default expense markup percent.
    * Returns null if OrgSettings not found or no default set.
    */
+  @Transactional(readOnly = true)
   public BigDecimal getOrgDefaultMarkupPercent() {
     return orgSettingsRepository
         .findForCurrentTenant()

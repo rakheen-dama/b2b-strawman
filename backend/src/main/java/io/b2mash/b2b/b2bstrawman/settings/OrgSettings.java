@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.DecimalMin;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -92,6 +93,7 @@ public class OrgSettings {
   @Column(name = "tax_label", length = 20)
   private String taxLabel;
 
+  @DecimalMin(value = "0.00", message = "Default expense markup percent must be non-negative")
   @Column(name = "default_expense_markup_percent", precision = 5, scale = 2)
   private BigDecimal defaultExpenseMarkupPercent;
 

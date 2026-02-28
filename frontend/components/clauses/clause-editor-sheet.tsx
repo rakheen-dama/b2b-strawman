@@ -103,6 +103,11 @@ export function ClauseEditorSheet({
       setError("Category is required.");
       return;
     }
+    const bodyContent = (editorBody as { content?: unknown[] })?.content;
+    if (!bodyContent || bodyContent.length === 0) {
+      setError("Body content is required.");
+      return;
+    }
 
     setError(null);
     setIsSubmitting(true);
@@ -161,8 +166,13 @@ export function ClauseEditorSheet({
       ? "Edit Clause"
       : "New Clause";
 
+  const bodyContent = (editorBody as { content?: unknown[] })?.content;
+  const hasBody = Array.isArray(bodyContent) && bodyContent.length > 0;
   const canSubmit =
-    title.trim().length > 0 && category.trim().length > 0 && !isSystem;
+    title.trim().length > 0 &&
+    category.trim().length > 0 &&
+    hasBody &&
+    !isSystem;
 
   return (
     <Sheet
@@ -266,7 +276,7 @@ export function ClauseEditorSheet({
             <Label htmlFor="clause-editor-slug">Slug</Label>
             <Input
               id="clause-editor-slug"
-              value={generateSlug(title)}
+              value={isEditing && clause ? clause.slug : generateSlug(title)}
               readOnly
               disabled
               className="bg-slate-50 dark:bg-slate-900"

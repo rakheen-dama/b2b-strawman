@@ -36,6 +36,13 @@ const mockEditor = {
 vi.mock("@tiptap/react", () => ({
   useEditor: vi.fn((opts: Record<string, unknown>) => {
     capturedEditable = opts.editable as boolean;
+    // Simulate editor triggering onUpdate so parent state receives body content
+    const onUpdateCb = opts.onUpdate as
+      | ((p: { editor: typeof mockEditor }) => void)
+      | undefined;
+    if (onUpdateCb) {
+      setTimeout(() => onUpdateCb({ editor: mockEditor }), 0);
+    }
     return mockEditor;
   }),
   EditorContent: vi.fn(({ editor }: { editor: unknown }) =>

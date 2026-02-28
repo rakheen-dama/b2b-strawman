@@ -231,7 +231,6 @@ export function ClausesContent({
                       key={clause.id}
                       clause={clause}
                       slug={slug}
-                      categories={categories}
                       canManage={canManage}
                       isExpanded={expandedClauses.has(clause.id)}
                       onToggle={() => toggleClause(clause.id)}
@@ -281,7 +280,6 @@ export function ClausesContent({
 interface ClauseCardProps {
   clause: Clause;
   slug: string;
-  categories: string[];
   canManage: boolean;
   isExpanded: boolean;
   onToggle: () => void;
@@ -293,7 +291,6 @@ interface ClauseCardProps {
 function ClauseCard({
   clause,
   slug,
-  categories,
   canManage,
   isExpanded,
   onToggle,
@@ -398,8 +395,6 @@ function ClauseCard({
           {canManage && (
             <ClauseActionsMenu
               clause={clause}
-              slug={slug}
-              categories={categories}
               isPending={isPending}
               onEdit={() => onEdit(clause)}
               onClone={() => setCloneDialogOpen(true)}
@@ -480,8 +475,6 @@ function ClauseCard({
 
 interface ClauseActionsMenuProps {
   clause: Clause;
-  slug: string;
-  categories: string[];
   isPending: boolean;
   onEdit: () => void;
   onClone: () => void;

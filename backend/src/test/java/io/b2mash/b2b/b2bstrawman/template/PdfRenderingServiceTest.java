@@ -6,6 +6,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.clause.Clause;
+import io.b2mash.b2b.b2bstrawman.clause.ClauseRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
@@ -36,16 +38,11 @@ import org.springframework.transaction.support.TransactionTemplate;
 class PdfRenderingServiceTest {
 
   private static final Map<String, Object> CONTENT =
-      Map.of(
-          "type",
-          "doc",
-          "content",
-          List.of(
-              Map.of(
-                  "type",
-                  "paragraph",
-                  "content",
-                  List.of(Map.of("type", "variable", "attrs", Map.of("key", "project.name"))))));
+      TestDocumentBuilder.doc()
+          .heading(1, "Project Report")
+          .variable("project.name")
+          .paragraph("This is a test document.")
+          .build();
 
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_pdf_render_test";
@@ -54,6 +51,7 @@ class PdfRenderingServiceTest {
   @Autowired private PdfRenderingService pdfRenderingService;
   @Autowired private DocumentTemplateRepository documentTemplateRepository;
   @Autowired private ProjectRepository projectRepository;
+  @Autowired private ClauseRepository clauseRepository;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
@@ -63,6 +61,9 @@ class PdfRenderingServiceTest {
   private UUID memberIdOwner;
   private UUID testProjectId;
   private UUID testTemplateId;
+  private UUID clauseTemplateId;
+  private UUID testClauseId;
+  private UUID loopTableTemplateId;
 
   @BeforeAll
   void setup() throws Exception {
@@ -76,7 +77,7 @@ class PdfRenderingServiceTest {
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 
-    // Create test project and template within tenant
+    // Create test project, templates, and clauses within tenant
     runInTenant(
         () ->
             transactionTemplate.executeWithoutResult(
@@ -87,6 +88,7 @@ class PdfRenderingServiceTest {
                   project = projectRepository.save(project);
                   testProjectId = project.getId();
 
+                  // Template with variable nodes
                   var template =
                       new DocumentTemplate(
                           TemplateEntityType.PROJECT,
@@ -97,6 +99,51 @@ class PdfRenderingServiceTest {
                   template.setCss("h1 { color: blue; }");
                   template = documentTemplateRepository.save(template);
                   testTemplateId = template.getId();
+
+                  // Create a clause with Tiptap JSON body
+                  var clauseBody =
+                      TestDocumentBuilder.doc()
+                          .paragraph("This clause governs the engagement terms.")
+                          .build();
+                  var clause = new Clause("Test Clause", "test-clause", clauseBody, "general");
+                  clause = clauseRepository.save(clause);
+                  testClauseId = clause.getId();
+
+                  // Template with clauseBlock node
+                  var clauseContent =
+                      TestDocumentBuilder.doc()
+                          .heading(1, "Agreement")
+                          .clauseBlock(clause.getId(), "test-clause", "Test Clause", true)
+                          .build();
+                  var clauseTemplate =
+                      new DocumentTemplate(
+                          TemplateEntityType.PROJECT,
+                          "Clause Template",
+                          "clause-template",
+                          TemplateCategory.ENGAGEMENT_LETTER,
+                          clauseContent);
+                  clauseTemplate = documentTemplateRepository.save(clauseTemplate);
+                  clauseTemplateId = clauseTemplate.getId();
+
+                  // Template with loopTable node
+                  var loopContent =
+                      TestDocumentBuilder.doc()
+                          .heading(1, "Invoice Lines")
+                          .loopTable(
+                              "invoice.lines",
+                              List.of(
+                                  Map.of("header", "Description", "key", "description"),
+                                  Map.of("header", "Amount", "key", "amount")))
+                          .build();
+                  var loopTemplate =
+                      new DocumentTemplate(
+                          TemplateEntityType.PROJECT,
+                          "Loop Template",
+                          "loop-template",
+                          TemplateCategory.ENGAGEMENT_LETTER,
+                          loopContent);
+                  loopTemplate = documentTemplateRepository.save(loopTemplate);
+                  loopTableTemplateId = loopTemplate.getId();
                 }));
   }
 
@@ -167,69 +214,58 @@ class PdfRenderingServiceTest {
   }
 
   @Test
-  void renderThymeleafProcessesVariables() {
-    var context = java.util.Map.<String, Object>of("name", "Test Value", "count", 42);
-    String result =
-        pdfRenderingService.renderThymeleaf("<p th:text=\"${name}\">placeholder</p>", context);
-    assertThat(result).contains("Test Value");
-    assertThat(result).doesNotContain("placeholder");
+  void rendersVariableNodesInHtml() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var html =
+                      pdfRenderingService.previewHtml(testTemplateId, testProjectId, memberIdOwner);
+
+                  assertThat(html).contains("Rendering Test Project");
+                  assertThat(html).contains("<p>");
+                  assertThat(html).contains("<h1>");
+                  assertThat(html).contains("Project Report");
+                }));
   }
 
   @Test
-  void generatesPdfFromFullHtmlTemplate() {
-    // Simulate a real seeded template (full HTML document with map-based context)
-    String fullTemplate =
-        """
-        <!DOCTYPE html>
-        <html xmlns:th="http://www.thymeleaf.org">
-        <head><title>Test</title></head>
-        <body>
-          <div class="header">
-            <img th:if="${org.logoUrl}" th:src="${org.logoUrl}" alt="Logo" style="max-height: 60px;"/>
-            <h1 th:text="${org.name}">Org Name</h1>
-          </div>
-          <div class="content">
-            <h2>Engagement Letter</h2>
-            <p>Dear <span th:text="${customer.name}">Customer</span>,</p>
-            <p>Project: <span th:text="${project.name}">Project</span></p>
-          </div>
-        </body>
-        </html>
-        """;
+  void rendersClauseBlockNodesInHtml() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var clause = clauseRepository.findById(testClauseId).orElseThrow();
+                  var html =
+                      pdfRenderingService.previewHtml(
+                          clauseTemplateId, testProjectId, memberIdOwner, List.of(clause));
 
-    // Build context with LinkedHashMaps (same as real context builders)
-    var org = new java.util.LinkedHashMap<String, Object>();
-    org.put("name", "Test Org");
-    org.put("logoUrl", null);
-    org.put("documentFooterText", null);
+                  assertThat(html).contains("Agreement");
+                  assertThat(html).contains("clause-block");
+                  assertThat(html).contains("test-clause");
+                  assertThat(html).contains("This clause governs the engagement terms.");
+                }));
+  }
 
-    var project = new java.util.LinkedHashMap<String, Object>();
-    project.put("name", "Test Project");
+  @Test
+  void rendersLoopTableNodesInHtml() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  // The loopTable references invoice.lines which won't be in a PROJECT
+                  // context, so the table will render with headers but no rows.
+                  // This verifies the loopTable node type renders correctly.
+                  var html =
+                      pdfRenderingService.previewHtml(
+                          loopTableTemplateId, testProjectId, memberIdOwner);
 
-    var customer = new java.util.LinkedHashMap<String, Object>();
-    customer.put("name", "Test Customer");
-
-    var context = new java.util.HashMap<String, Object>();
-    context.put("org", org);
-    context.put("project", project);
-    context.put("customer", customer);
-    context.put("generatedAt", java.time.Instant.now().toString());
-
-    String rendered = pdfRenderingService.renderThymeleaf(fullTemplate, context);
-    String fullHtml = pdfRenderingService.wrapHtml(rendered, "h1 { color: blue; }");
-
-    // Verify no double-wrapping
-    assertThat(fullHtml.indexOf("<!DOCTYPE")).isEqualTo(fullHtml.lastIndexOf("<!DOCTYPE"));
-    assertThat(fullHtml).contains("Test Org");
-    assertThat(fullHtml).contains("Test Customer");
-    assertThat(fullHtml).contains("Test Project");
-    assertThat(fullHtml).doesNotContain("________");
-
-    // Verify PDF generation succeeds
-    byte[] pdf = pdfRenderingService.htmlToPdf(fullHtml);
-    assertThat(pdf).isNotEmpty();
-    assertThat(pdf[0]).isEqualTo((byte) '%');
-    assertThat(pdf[1]).isEqualTo((byte) 'P');
+                  assertThat(html).contains("<table>");
+                  assertThat(html).contains("<th>Description</th>");
+                  assertThat(html).contains("<th>Amount</th>");
+                  assertThat(html).contains("<thead>");
+                  assertThat(html).contains("<tbody>");
+                }));
   }
 
   // --- Helpers ---

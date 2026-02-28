@@ -1,13 +1,13 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.clause.Clause;
+import io.b2mash.b2b.b2bstrawman.clause.ClauseRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
@@ -15,7 +15,6 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -36,10 +35,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ClauseRenderingIntegrationTest {
 
-  private static final Map<String, Object> CONTENT = Map.of("type", "doc", "content", List.of());
-
-  private static final Map<String, Object> BODY = Map.of("type", "doc", "content", List.of());
-
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_clause_render_test";
 
@@ -47,6 +42,7 @@ class ClauseRenderingIntegrationTest {
   @Autowired private PdfRenderingService pdfRenderingService;
   @Autowired private DocumentTemplateRepository documentTemplateRepository;
   @Autowired private ProjectRepository projectRepository;
+  @Autowired private ClauseRepository clauseRepository;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
@@ -55,8 +51,10 @@ class ClauseRenderingIntegrationTest {
   private String tenantSchema;
   private UUID memberIdOwner;
   private UUID testProjectId;
-  private UUID templateWithPlaceholderId;
-  private UUID templateWithoutPlaceholderId;
+  private UUID templateWithClauseBlockId;
+  private UUID templateWithoutClauseBlockId;
+  private Clause confidentialityClause;
+  private Clause terminationClause;
 
   @BeforeAll
   void setup() throws Exception {
@@ -81,31 +79,60 @@ class ClauseRenderingIntegrationTest {
                   project = projectRepository.save(project);
                   testProjectId = project.getId();
 
-                  // Template WITH ${clauses} placeholder (uses legacy Thymeleaf path)
+                  // Create clauses with Tiptap JSON bodies
+                  var confBody =
+                      TestDocumentBuilder.doc()
+                          .paragraph("The parties agree to keep confidential")
+                          .build();
+                  confidentialityClause =
+                      clauseRepository.save(
+                          new Clause(
+                              "Confidentiality", "cri-confidentiality", confBody, "General"));
+
+                  var termBody =
+                      TestDocumentBuilder.doc().paragraph("Either party may terminate").build();
+                  terminationClause =
+                      clauseRepository.save(
+                          new Clause("Termination", "cri-termination", termBody, "Legal"));
+
+                  // Template with clauseBlock nodes referencing the clauses
+                  var contentWithClauses =
+                      TestDocumentBuilder.doc()
+                          .heading(1, "Agreement")
+                          .variable("project.name")
+                          .clauseBlock(
+                              confidentialityClause.getId(),
+                              "cri-confidentiality",
+                              "Confidentiality",
+                              true)
+                          .clauseBlock(
+                              terminationClause.getId(), "cri-termination", "Termination", false)
+                          .build();
                   var templateWith =
                       new DocumentTemplate(
                           TemplateEntityType.PROJECT,
                           "Template With Clauses",
                           "template-with-clauses",
                           TemplateCategory.ENGAGEMENT_LETTER,
-                          CONTENT);
-                  templateWith.setLegacyContent(
-                      "<h1 th:text=\"${project.name}\">Project</h1>\n"
-                          + "<div th:utext=\"${clauses}\"></div>");
+                          contentWithClauses);
                   templateWith = documentTemplateRepository.save(templateWith);
-                  templateWithPlaceholderId = templateWith.getId();
+                  templateWithClauseBlockId = templateWith.getId();
 
-                  // Template WITHOUT ${clauses} placeholder (uses legacy Thymeleaf path)
+                  // Template without clauseBlock nodes
+                  var contentWithout =
+                      TestDocumentBuilder.doc()
+                          .heading(1, "Simple Document")
+                          .variable("project.name")
+                          .build();
                   var templateWithout =
                       new DocumentTemplate(
                           TemplateEntityType.PROJECT,
                           "Template Without Clauses",
                           "template-without-clauses",
                           TemplateCategory.ENGAGEMENT_LETTER,
-                          CONTENT);
-                  templateWithout.setLegacyContent("<h1 th:text=\"${project.name}\">Project</h1>");
+                          contentWithout);
                   templateWithout = documentTemplateRepository.save(templateWithout);
-                  templateWithoutPlaceholderId = templateWithout.getId();
+                  templateWithoutClauseBlockId = templateWithout.getId();
                 }));
   }
 
@@ -115,13 +142,14 @@ class ClauseRenderingIntegrationTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  var clauses = buildTestClauses();
+                  var clauses = List.of(confidentialityClause, terminationClause);
                   var result =
                       pdfRenderingService.generatePdf(
-                          templateWithPlaceholderId, testProjectId, memberIdOwner, clauses);
+                          templateWithClauseBlockId, testProjectId, memberIdOwner, clauses);
 
                   assertThat(result.htmlPreview()).contains("clause-block");
-                  assertThat(result.htmlPreview()).contains("data-clause-slug=\"confidentiality\"");
+                  assertThat(result.htmlPreview())
+                      .contains("data-clause-slug=\"cri-confidentiality\"");
                   assertThat(result.htmlPreview())
                       .contains("The parties agree to keep confidential");
                   assertThat(result.pdfBytes()).isNotEmpty();
@@ -136,28 +164,12 @@ class ClauseRenderingIntegrationTest {
                 tx -> {
                   var result =
                       pdfRenderingService.generatePdf(
-                          templateWithPlaceholderId, testProjectId, memberIdOwner, List.of());
+                          templateWithClauseBlockId, testProjectId, memberIdOwner, List.of());
 
                   assertThat(result.htmlPreview()).contains("Clause Test Project");
-                  assertThat(result.htmlPreview()).doesNotContain("clause-block");
+                  // clauseBlock nodes render as comments when no clause found
+                  assertThat(result.htmlPreview()).doesNotContain("class=\"clause-block\"");
                   assertThat(result.pdfBytes()).isNotEmpty();
-                }));
-  }
-
-  @Test
-  void generatePdf_templateWithoutPlaceholder_appendsFallbackSection() {
-    runInTenant(
-        () ->
-            transactionTemplate.executeWithoutResult(
-                tx -> {
-                  var clauses = buildTestClauses();
-                  var result =
-                      pdfRenderingService.generatePdf(
-                          templateWithoutPlaceholderId, testProjectId, memberIdOwner, clauses);
-
-                  assertThat(result.htmlPreview()).contains("clauses-section");
-                  assertThat(result.htmlPreview()).contains("Terms and Conditions");
-                  assertThat(result.htmlPreview()).contains("clause-block");
                 }));
   }
 
@@ -167,66 +179,35 @@ class ClauseRenderingIntegrationTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  var clauses = buildTestClauses();
+                  var clauses = List.of(confidentialityClause, terminationClause);
                   String html =
                       pdfRenderingService.previewHtml(
-                          templateWithPlaceholderId, testProjectId, memberIdOwner, clauses);
+                          templateWithClauseBlockId, testProjectId, memberIdOwner, clauses);
 
-                  assertThat(html).contains("data-clause-slug=\"confidentiality\"");
+                  assertThat(html).contains("data-clause-slug=\"cri-confidentiality\"");
                   assertThat(html).contains("The parties agree to keep confidential");
+                  assertThat(html).contains("data-clause-slug=\"cri-termination\"");
+                  assertThat(html).contains("Either party may terminate");
                 }));
   }
 
   @Test
-  void renderFragment_processesThymeleafExpressions() {
-    String fragment = "<p th:text=\"${name}\">placeholder</p>";
-    var context = Map.<String, Object>of("name", "Test Value");
-
-    String result = pdfRenderingService.renderFragment(fragment, context);
-
-    assertThat(result).contains("Test Value");
-    assertThat(result).doesNotContain("placeholder");
-    // Should NOT contain html/body wrapper
-    assertThat(result).doesNotContain("<html>");
-    assertThat(result).doesNotContain("<body>");
-  }
-
-  @Test
-  void renderFragment_withDangerousContent_throwsSecurityException() {
-    String ssti = "<p>${#ctx.getBean('dataSource')}</p>";
-    var context = Map.<String, Object>of("name", "Test");
-
-    assertThatThrownBy(() -> pdfRenderingService.renderFragment(ssti, context))
-        .isInstanceOf(TemplateSecurityException.class);
-  }
-
-  @Test
-  void generatePdf_clauseWithDangerousLegacyBody_throwsSecurityException() {
+  void previewHtml_withoutClauseBlock_rendersNormally() {
     runInTenant(
-        () -> {
-          var dangerousClause = new Clause("Dangerous", "dangerous", BODY, "General");
-          dangerousClause.setLegacyBody("<p>${#ctx.getBean('dataSource')}</p>");
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  String html =
+                      pdfRenderingService.previewHtml(
+                          templateWithoutClauseBlockId, testProjectId, memberIdOwner);
 
-          assertThatThrownBy(
-                  () ->
-                      pdfRenderingService.generatePdf(
-                          templateWithPlaceholderId,
-                          testProjectId,
-                          memberIdOwner,
-                          List.of(dangerousClause)))
-              .isInstanceOf(TemplateSecurityException.class);
-        });
+                  assertThat(html).contains("Simple Document");
+                  assertThat(html).contains("Clause Test Project");
+                  assertThat(html).doesNotContain("clause-block");
+                }));
   }
 
   // --- Helpers ---
-
-  private List<Clause> buildTestClauses() {
-    var c1 = new Clause("Confidentiality", "confidentiality", BODY, "General");
-    c1.setLegacyBody("<p>The parties agree to keep confidential</p>");
-    var c2 = new Clause("Termination", "termination", BODY, "Legal");
-    c2.setLegacyBody("<p>Either party may terminate</p>");
-    return List.of(c1, c2);
-  }
 
   private void runInTenant(Runnable action) {
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)

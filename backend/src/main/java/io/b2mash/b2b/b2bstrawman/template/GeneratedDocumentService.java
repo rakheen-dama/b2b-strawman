@@ -256,6 +256,7 @@ public class GeneratedDocumentService {
       snapshot.put("clauseId", clause.getId().toString());
       snapshot.put("slug", clause.getSlug());
       snapshot.put("title", clause.getTitle());
+      snapshot.put("body", clause.getBody());
       snapshot.put("sortOrder", i);
       snapshots.add(snapshot);
     }

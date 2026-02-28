@@ -392,17 +392,24 @@ public class TaskService {
       throw new ResourceNotFoundException("ProjectMember", assigneeId);
     }
 
-    // Validate recurrence rule format if provided
-    String effectiveRecurrenceRule =
-        recurrenceRule != null ? recurrenceRule : task.getRecurrenceRule();
-    LocalDate effectiveRecurrenceEndDate =
-        recurrenceEndDate != null ? recurrenceEndDate : task.getRecurrenceEndDate();
-    if (recurrenceRule != null && !recurrenceRule.isBlank()) {
-      try {
-        RecurrenceRule.parse(recurrenceRule);
-      } catch (IllegalArgumentException e) {
-        throw new InvalidStateException(
-            "Invalid recurrence rule", "Invalid recurrence rule format: " + e.getMessage());
+    // Validate recurrence rule format if provided; blank/empty = clear recurrence
+    String effectiveRecurrenceRule;
+    LocalDate effectiveRecurrenceEndDate;
+    if (recurrenceRule != null && recurrenceRule.isBlank()) {
+      // Blank string = explicit request to clear recurrence
+      effectiveRecurrenceRule = null;
+      effectiveRecurrenceEndDate = null;
+    } else {
+      effectiveRecurrenceRule = recurrenceRule != null ? recurrenceRule : task.getRecurrenceRule();
+      effectiveRecurrenceEndDate =
+          recurrenceEndDate != null ? recurrenceEndDate : task.getRecurrenceEndDate();
+      if (recurrenceRule != null) {
+        try {
+          RecurrenceRule.parse(recurrenceRule);
+        } catch (IllegalArgumentException e) {
+          throw new InvalidStateException(
+              "Invalid recurrence rule", "Invalid recurrence rule format: " + e.getMessage());
+        }
       }
     }
 

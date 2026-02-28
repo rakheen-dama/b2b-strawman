@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.task;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
 import io.b2mash.b2b.b2bstrawman.member.Member;
@@ -17,7 +18,6 @@ import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -238,23 +238,7 @@ public class TaskController {
     String orgRole = RequestScopes.getOrgRole();
 
     var result = taskService.completeTask(id, memberId, orgRole);
-    var tasksForNames = new ArrayList<Task>();
-    tasksForNames.add(result.completedTask());
-    if (result.nextInstance() != null) {
-      tasksForNames.add(result.nextInstance());
-    }
-    var names = resolveNames(tasksForNames);
-    var tags = entityTagService.getEntityTags("TASK", id);
-
-    TaskResponse nextInstanceResponse = null;
-    if (result.nextInstance() != null) {
-      var nextTags = entityTagService.getEntityTags("TASK", result.nextInstance().getId());
-      nextInstanceResponse = TaskResponse.from(result.nextInstance(), names, nextTags);
-    }
-
-    return ResponseEntity.ok(
-        new CompleteTaskResponse(
-            TaskResponse.from(result.completedTask(), names, tags), nextInstanceResponse));
+    return ResponseEntity.ok(buildCompleteTaskResponse(result, id));
   }
 
   @PatchMapping("/api/tasks/{id}/cancel")
@@ -312,6 +296,29 @@ public class TaskController {
     taskService.getTask(id, memberId, orgRole);
     var tags = entityTagService.getEntityTags("TASK", id);
     return ResponseEntity.ok(tags);
+  }
+
+  /**
+   * Assembles a backward-compatible CompleteTaskResponse from a CompleteTaskResult. The completed
+   * task fields are unwrapped to the top level; nextInstance is an optional nested field.
+   */
+  private CompleteTaskResponse buildCompleteTaskResponse(
+      TaskService.CompleteTaskResult result, UUID completedTaskId) {
+    var tasksForNames =
+        result.nextInstance() != null
+            ? List.of(result.completedTask(), result.nextInstance())
+            : List.of(result.completedTask());
+    var names = resolveNames(tasksForNames);
+    var tags = entityTagService.getEntityTags("TASK", completedTaskId);
+
+    TaskResponse nextInstanceResponse = null;
+    if (result.nextInstance() != null) {
+      var nextTags = entityTagService.getEntityTags("TASK", result.nextInstance().getId());
+      nextInstanceResponse = TaskResponse.from(result.nextInstance(), names, nextTags);
+    }
+
+    return new CompleteTaskResponse(
+        TaskResponse.from(result.completedTask(), names, tags), nextInstanceResponse);
   }
 
   /**
@@ -380,7 +387,13 @@ public class TaskController {
           String recurrenceRule,
       LocalDate recurrenceEndDate) {}
 
-  public record CompleteTaskResponse(TaskResponse completedTask, TaskResponse nextInstance) {}
+  /**
+   * Backward-compatible response for the complete endpoint. The completed task fields are unwrapped
+   * to the top level (so response.status, response.title, etc. still work). The optional
+   * nextInstance field is a nested TaskResponse for the next recurring instance.
+   */
+  public record CompleteTaskResponse(
+      @JsonUnwrapped TaskResponse completedTask, TaskResponse nextInstance) {}
 
   public record TaskResponse(
       UUID id,

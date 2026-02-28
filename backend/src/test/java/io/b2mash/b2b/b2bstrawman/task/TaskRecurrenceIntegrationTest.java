@@ -99,8 +99,8 @@ class TaskRecurrenceIntegrationTest {
     mockMvc
         .perform(patch("/api/tasks/" + taskId + "/complete").with(memberJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.completedTask.status").value("DONE"))
-        .andExpect(jsonPath("$.completedTask.completedAt", notNullValue()))
+        .andExpect(jsonPath("$.status").value("DONE"))
+        .andExpect(jsonPath("$.completedAt", notNullValue()))
         .andExpect(jsonPath("$.nextInstance").exists())
         .andExpect(jsonPath("$.nextInstance.status").value("IN_PROGRESS"))
         .andExpect(jsonPath("$.nextInstance.dueDate").value("2026-03-08"))
@@ -125,7 +125,7 @@ class TaskRecurrenceIntegrationTest {
     mockMvc
         .perform(patch("/api/tasks/" + taskId + "/complete").with(memberJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.completedTask.status").value("DONE"))
+        .andExpect(jsonPath("$.status").value("DONE"))
         .andExpect(jsonPath("$.nextInstance").doesNotExist());
   }
 
@@ -145,7 +145,7 @@ class TaskRecurrenceIntegrationTest {
     mockMvc
         .perform(patch("/api/tasks/" + taskId + "/complete").with(memberJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.completedTask.status").value("DONE"))
+        .andExpect(jsonPath("$.status").value("DONE"))
         .andExpect(jsonPath("$.nextInstance").doesNotExist());
   }
 
@@ -162,7 +162,7 @@ class TaskRecurrenceIntegrationTest {
     mockMvc
         .perform(patch("/api/tasks/" + taskId + "/complete").with(memberJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.completedTask.status").value("DONE"))
+        .andExpect(jsonPath("$.status").value("DONE"))
         .andExpect(jsonPath("$.nextInstance").doesNotExist());
   }
 

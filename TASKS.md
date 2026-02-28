@@ -247,7 +247,7 @@
 | 209 | Database Migration & Pack Conversion | Backend | -- | L | 209A, 209B | **Done** (PRs #428, #429) |
 | 210 | TiptapRenderer & Variable Endpoint | Backend | 209 | L | 210A, 210B | **Done** (PRs #430, #431) |
 | 211 | Entity Updates & Template-Clause Sync | Backend | 209 | M | 211A, 211B | **Done** (PRs #432, #433) |
-| 212 | Rendering Pipeline Switch & Legacy Import | Backend | 210, 211 | M | 212A, 212B | |
+| 212 | Rendering Pipeline Switch & Legacy Import | Backend | 210, 211 | M | 212A, 212B | 212A **Done** (PR #434) |
 | 213 | Tiptap Editor Foundation | Frontend | -- | L | 213A, 213B, 213C | |
 | 214 | Template Editor Rewrite | Frontend | 210B, 211, 213 | L | 214A, 214B | |
 | 215 | Clause Library & Editor Rewrite | Frontend | 213 | M | 215A, 215B | |

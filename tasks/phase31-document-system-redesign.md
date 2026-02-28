@@ -105,7 +105,7 @@ Phase 31 replaces the Thymeleaf-based document authoring system with a Tiptap/Pr
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 3a | Epic 212 | 212A | Wire TiptapRenderer into PdfRenderingService. Replace renderThymeleaf() call chain. Update GeneratedDocumentService. Integration tests for full pipeline. |
+| 3a | Epic 212 | 212A | Wire TiptapRenderer into PdfRenderingService. Replace renderThymeleaf() call chain. Update GeneratedDocumentService. Integration tests for full pipeline. | **Done** (PR #434) |
 | 3b | Epic 212 | 212B | LegacyContentImporter service (Jsoup-based HTML-to-Tiptap converter, startup runner). Integration tests. |
 
 ### Stage 4: Frontend Editor Foundation (Parallel with Stage 1-3)
@@ -377,7 +377,7 @@ Stage 7:  [217A] ──► [217B]                                      ← clean
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **212A** | 212.1-212.5 | Replace PdfRenderingService.renderThymeleaf() with TiptapRenderer.render(). Update GeneratedDocumentService to pass JSONB content. Update preview endpoint. Integration tests for full pipeline (~6 tests). | |
+| **212A** | 212.1-212.5 | Replace PdfRenderingService.renderThymeleaf() with TiptapRenderer.render(). Update GeneratedDocumentService to pass JSONB content. Update preview endpoint. Integration tests for full pipeline (~6 tests). | **Done** (PR #434) |
 | **212B** | 212.6-212.10 | LegacyContentImporter service using Jsoup. Startup runner that converts simple legacyHtml nodes. Idempotent. Integration tests (~5 tests). | |
 
 ### Tasks

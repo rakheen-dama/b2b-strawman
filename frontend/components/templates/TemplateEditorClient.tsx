@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useTransition } from "react";
 // TODO(214B): Re-add requiredContextFields management UI in the settings panel.
 // The old TemplateEditorForm had UI for this; intentionally omitted in 214A.
 // The save handler preserves existing values so they are not lost.
@@ -10,6 +10,7 @@ import {
   ChevronDown,
   ChevronUp,
   AlertTriangle,
+  Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,7 +25,22 @@ import {
 } from "@/components/ui/select";
 import { DocumentEditor } from "@/components/editor/DocumentEditor";
 import { TemplatePreviewDialog } from "@/components/templates/TemplatePreviewDialog";
+import {
+  EntityPicker,
+  PreviewPanel,
+  renderTiptapToHtml,
+  buildPreviewContext,
+  extractClauseIds,
+} from "@/components/editor";
+import type { TiptapNode } from "@/components/editor";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { updateTemplateAction } from "@/app/(app)/org/[slug]/settings/templates/actions";
+import { getClause } from "@/lib/actions/clause-actions";
 import type {
   TemplateDetailResponse,
   TemplateCategory,
@@ -70,6 +86,10 @@ export function TemplateEditorClient({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [legacyExpanded, setLegacyExpanded] = useState(false);
+  const [entityPickerOpen, setEntityPickerOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState<string | null>(null);
+  const [previewLoading, startPreviewTransition] = useTransition();
 
   const handleEditorUpdate = useCallback(
     (json: Record<string, unknown>) => {
@@ -105,6 +125,27 @@ export function TemplateEditorClient({
     }
   }
 
+  function handleEntitySelect(entityId: string, entityData: Record<string, unknown>) {
+    startPreviewTransition(async () => {
+      const context = buildPreviewContext(template.primaryEntityType, entityData);
+      const doc = editorContent as unknown as TiptapNode;
+      const clauseIds = extractClauseIds(doc);
+
+      const clausesMap = new Map<string, TiptapNode>();
+      const clauseResults = await Promise.all(clauseIds.map((id) => getClause(id)));
+      for (let i = 0; i < clauseIds.length; i++) {
+        const clause = clauseResults[i];
+        if (clause?.body) {
+          clausesMap.set(clauseIds[i], clause.body as unknown as TiptapNode);
+        }
+      }
+
+      const html = renderTiptapToHtml(doc, context, clausesMap, css || undefined);
+      setPreviewHtml(html);
+      setPreviewOpen(true);
+    });
+  }
+
   const hasLegacyContent = template.legacyContent != null;
 
   return (
@@ -137,6 +178,16 @@ export function TemplateEditorClient({
             templateId={template.id}
             entityType={template.primaryEntityType}
           />
+          <Button
+            type="button"
+            variant="soft"
+            size="sm"
+            onClick={() => setEntityPickerOpen(true)}
+            disabled={previewLoading}
+          >
+            <Eye className="mr-1 size-4" />
+            {previewLoading ? "Loading..." : "Preview with data"}
+          </Button>
           {successMsg && (
             <span className="text-sm text-teal-600">{successMsg}</span>
           )}
@@ -305,6 +356,24 @@ export function TemplateEditorClient({
           entityType={template.primaryEntityType}
         />
       </div>
+
+      {/* Client-side preview entity picker */}
+      <EntityPicker
+        entityType={template.primaryEntityType}
+        open={entityPickerOpen}
+        onOpenChange={setEntityPickerOpen}
+        onSelect={handleEntitySelect}
+      />
+
+      {/* Client-side preview dialog */}
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Client-Side Preview</DialogTitle>
+          </DialogHeader>
+          {previewHtml && <PreviewPanel html={previewHtml} />}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

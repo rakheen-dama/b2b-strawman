@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Check, ChevronsUpDown, X, AlertTriangle, Copy } from "lucide-react";
+import { useState, useEffect, useTransition } from "react";
+import { Check, ChevronsUpDown, X, AlertTriangle, Copy, Eye } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -26,7 +26,20 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { DocumentEditor } from "@/components/editor/DocumentEditor";
+import {
+  EntityPicker,
+  PreviewPanel,
+  renderTiptapToHtml,
+  buildPreviewContext,
+} from "@/components/editor";
+import type { TiptapNode } from "@/components/editor";
 import {
   createClause,
   updateClause,
@@ -75,6 +88,10 @@ export function ClauseEditorSheet({
   });
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [entityPickerOpen, setEntityPickerOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState<string | null>(null);
+  const [previewLoading, startPreviewTransition] = useTransition();
 
   // Reset form when sheet opens or clause changes
   useEffect(() => {
@@ -158,6 +175,16 @@ export function ClauseEditorSheet({
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  function handlePreviewEntitySelect(_entityId: string, entityData: Record<string, unknown>) {
+    startPreviewTransition(() => {
+      const context = buildPreviewContext("PROJECT", entityData);
+      const doc = editorBody as unknown as TiptapNode;
+      const html = renderTiptapToHtml(doc, context, new Map());
+      setPreviewHtml(html);
+      setPreviewOpen(true);
+    });
   }
 
   const sheetTitle = isSystem
@@ -383,6 +410,17 @@ export function ClauseEditorSheet({
         {!isSystem && (
           <div className="border-t border-slate-200 px-6 py-4 dark:border-slate-800">
             <div className="flex items-center justify-end gap-3">
+              {isEditing && (
+                <Button
+                  variant="soft"
+                  size="sm"
+                  onClick={() => setEntityPickerOpen(true)}
+                  disabled={previewLoading}
+                >
+                  <Eye className="mr-1 size-4" />
+                  {previewLoading ? "Loading..." : "Preview"}
+                </Button>
+              )}
               <SheetClose asChild>
                 <Button variant="plain" disabled={isSubmitting}>
                   Cancel
@@ -404,6 +442,24 @@ export function ClauseEditorSheet({
           </div>
         )}
       </SheetContent>
+
+      {/* Client-side preview entity picker */}
+      <EntityPicker
+        entityType="PROJECT"
+        open={entityPickerOpen}
+        onOpenChange={setEntityPickerOpen}
+        onSelect={handlePreviewEntitySelect}
+      />
+
+      {/* Client-side preview dialog */}
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Clause Preview</DialogTitle>
+          </DialogHeader>
+          {previewHtml && <PreviewPanel html={previewHtml} />}
+        </DialogContent>
+      </Dialog>
     </Sheet>
   );
 }

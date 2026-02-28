@@ -9,3 +9,7 @@ export { ClauseBlockNodeView } from "./node-views/ClauseBlockNodeView";
 export { VariablePicker } from "./VariablePicker";
 export { LoopTableConfig } from "./LoopTableConfig";
 export { ClausePicker } from "./ClausePicker";
+export { renderTiptapToHtml, buildPreviewContext, extractClauseIds } from "./client-renderer";
+export type { TiptapNode } from "./client-renderer";
+export { PreviewPanel } from "./PreviewPanel";
+export { EntityPicker } from "./EntityPicker";

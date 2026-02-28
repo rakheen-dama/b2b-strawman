@@ -39,7 +39,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DocumentEditor } from "@/components/editor/DocumentEditor";
-import { ClauseFormDialog } from "@/components/clauses/clause-form-dialog";
+import { ClauseEditorSheet } from "@/components/clauses/clause-editor-sheet";
 import {
   cloneClause,
   deactivateClause,
@@ -84,6 +84,8 @@ export function ClausesContent({
   );
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [editorSheetOpen, setEditorSheetOpen] = useState(false);
+  const [editingClause, setEditingClause] = useState<Clause | null>(null);
 
   const filteredClauses = useMemo(() => {
     return clauses.filter((c) => {
@@ -184,12 +186,16 @@ export function ClausesContent({
           </Select>
         </div>
         {canManage && (
-          <ClauseFormDialog slug={slug} categories={categories}>
-            <Button size="sm">
-              <Plus className="mr-1 size-4" />
-              New Clause
-            </Button>
-          </ClauseFormDialog>
+          <Button
+            size="sm"
+            onClick={() => {
+              setEditingClause(null);
+              setEditorSheetOpen(true);
+            }}
+          >
+            <Plus className="mr-1 size-4" />
+            New Clause
+          </Button>
         )}
       </div>
 
@@ -229,6 +235,10 @@ export function ClausesContent({
                       canManage={canManage}
                       isExpanded={expandedClauses.has(clause.id)}
                       onToggle={() => toggleClause(clause.id)}
+                      onEdit={(c) => {
+                        setEditingClause(c);
+                        setEditorSheetOpen(true);
+                      }}
                       onError={(msg) => {
                         clearMessages();
                         setError(msg);
@@ -245,6 +255,25 @@ export function ClausesContent({
           );
         })
       )}
+
+      {/* Clause Editor Sheet */}
+      {canManage && (
+        <ClauseEditorSheet
+          open={editorSheetOpen}
+          onOpenChange={setEditorSheetOpen}
+          slug={slug}
+          clause={editingClause}
+          categories={categories}
+          onSuccess={(msg) => {
+            clearMessages();
+            setSuccess(msg);
+          }}
+          onError={(msg) => {
+            clearMessages();
+            setError(msg);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -256,6 +285,7 @@ interface ClauseCardProps {
   canManage: boolean;
   isExpanded: boolean;
   onToggle: () => void;
+  onEdit: (clause: Clause) => void;
   onError: (message: string) => void;
   onSuccess: (message: string) => void;
 }
@@ -267,6 +297,7 @@ function ClauseCard({
   canManage,
   isExpanded,
   onToggle,
+  onEdit,
   onError,
   onSuccess,
 }: ClauseCardProps) {
@@ -370,6 +401,7 @@ function ClauseCard({
               slug={slug}
               categories={categories}
               isPending={isPending}
+              onEdit={() => onEdit(clause)}
               onClone={() => setCloneDialogOpen(true)}
               onDeactivate={() => setDeactivateDialogOpen(true)}
             />
@@ -451,15 +483,15 @@ interface ClauseActionsMenuProps {
   slug: string;
   categories: string[];
   isPending: boolean;
+  onEdit: () => void;
   onClone: () => void;
   onDeactivate: () => void;
 }
 
 function ClauseActionsMenu({
   clause,
-  slug,
-  categories,
   isPending,
+  onEdit,
   onClone,
   onDeactivate,
 }: ClauseActionsMenuProps) {
@@ -482,6 +514,10 @@ function ClauseActionsMenu({
         <DropdownMenuContent align="end">
           {isSystem ? (
             <>
+              <DropdownMenuItem onClick={onEdit} disabled={isPending}>
+                <Pencil className="mr-2 size-4" />
+                View
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={onClone} disabled={isPending}>
                 <Copy className="mr-2 size-4" />
                 Clone & Customize
@@ -489,16 +525,10 @@ function ClauseActionsMenu({
             </>
           ) : (
             <>
-              <ClauseFormDialog
-                slug={slug}
-                clause={clause}
-                categories={categories}
-              >
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                  <Pencil className="mr-2 size-4" />
-                  Edit
-                </DropdownMenuItem>
-              </ClauseFormDialog>
+              <DropdownMenuItem onClick={onEdit} disabled={isPending}>
+                <Pencil className="mr-2 size-4" />
+                Edit
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={onClone} disabled={isPending}>
                 <Copy className="mr-2 size-4" />
                 Clone

@@ -87,7 +87,12 @@ export const NAV_ZONES: NavZone[] = [
     icon: Settings,
     label: "Admin",
     matchPrefixes: ["/settings", "/team", "/compliance", "/notifications"],
-    subNav: [],
+    subNav: [
+      { label: "Settings", href: (s) => `/org/${s}/settings` },
+      { label: "Team", href: (s) => `/org/${s}/team` },
+      { label: "Notifications", href: (s) => `/org/${s}/notifications` },
+      { label: "Compliance", href: (s) => `/org/${s}/compliance` },
+    ],
   },
 ];
 

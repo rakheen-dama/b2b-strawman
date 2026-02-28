@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useReducer, useTransition } from "react";
+import { useEffect, useReducer, useState, useTransition } from "react";
 import { Ban, Check, Circle, Loader2, MoreHorizontal, RotateCcw, X, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -287,10 +287,13 @@ export function TaskDetailSheet({
   const isTerminal = task?.status === "DONE" || task?.status === "CANCELLED";
   const canMarkDone = task?.status === "IN_PROGRESS" && (isOwnTask || canManage);
 
+  const [actionError, setActionError] = useState<string | null>(null);
+
   // Handle lifecycle actions — call server action then re-fetch task
   function handleLifecycleAction(action: (slug: string, taskId: string, projectId: string) => Promise<{ success: boolean; error?: string }>) {
     if (!task) return;
 
+    setActionError(null);
     startTransition(async () => {
       const result = await action(slug, task.id, effectiveProjectId);
       if (result.success) {
@@ -301,6 +304,8 @@ export function TaskDetailSheet({
         } catch {
           // Silently handle re-fetch failure — the action succeeded
         }
+      } else {
+        setActionError(result.error ?? "Action failed. Please try again.");
       }
     });
   }
@@ -405,7 +410,7 @@ export function TaskDetailSheet({
                         Mark Done
                       </Button>
                     )}
-                    {isTerminal && canManage && (
+                    {isTerminal && canChangeStatus && (
                       <Button
                         size="sm"
                         variant="outline"
@@ -434,6 +439,13 @@ export function TaskDetailSheet({
                       </DropdownMenu>
                     )}
                   </div>
+                )}
+
+                {/* Action error feedback */}
+                {actionError && (
+                  <p className="mt-2 text-xs text-red-600 dark:text-red-400" role="alert">
+                    {actionError}
+                  </p>
                 )}
 
                 {/* Completion / cancellation metadata */}

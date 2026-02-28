@@ -501,7 +501,84 @@ describe("TaskDetailSheet", () => {
     expect(screen.getByRole("button", { name: /Reopen/ })).toBeInTheDocument();
   });
 
-  // Test 14: Completion metadata displayed for DONE task
+  // Test 14: Non-admin non-assignee cannot see Reopen button on terminal task
+  it("hides Reopen button for non-admin member who is not the assignee on a DONE task", async () => {
+    mockFetchTask.mockResolvedValue(
+      makeTask({
+        status: "DONE",
+        assigneeId: "m1", // assigned to Alice, not to current-member
+        completedAt: "2026-02-15T10:00:00Z",
+        completedByName: "Alice",
+      }),
+    );
+
+    render(
+      <TaskDetailSheet
+        {...defaultProps}
+        taskId="t1"
+        canManage={false}
+        currentMemberId="different-member"
+        orgRole="org:member"
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Fix login bug" })).toBeInTheDocument();
+    });
+
+    // Reopen should NOT be visible — user is not admin, not owner, and not the assignee
+    expect(screen.queryByRole("button", { name: /Reopen/ })).not.toBeInTheDocument();
+  });
+
+  // Test 14b: Assignee (non-admin) CAN see Reopen button on terminal task
+  it("shows Reopen button for non-admin member who IS the assignee on a DONE task", async () => {
+    mockFetchTask.mockResolvedValue(
+      makeTask({
+        status: "DONE",
+        assigneeId: "current-member", // assigned to current user
+        completedAt: "2026-02-15T10:00:00Z",
+        completedByName: "Alice",
+      }),
+    );
+
+    render(
+      <TaskDetailSheet
+        {...defaultProps}
+        taskId="t1"
+        canManage={false}
+        currentMemberId="current-member"
+        orgRole="org:member"
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Fix login bug" })).toBeInTheDocument();
+    });
+
+    // Reopen SHOULD be visible — user is the assignee
+    expect(screen.getByRole("button", { name: /Reopen/ })).toBeInTheDocument();
+  });
+
+  // Test 14c: Error feedback shown when lifecycle action fails
+  it("displays error message when lifecycle action fails", async () => {
+    const user = userEvent.setup();
+    mockFetchTask.mockResolvedValue(makeTask({ status: "IN_PROGRESS" }));
+    mockCompleteTask.mockResolvedValue({ success: false, error: "Task already completed." });
+
+    render(<TaskDetailSheet {...defaultProps} taskId="t1" />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Fix login bug" })).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole("button", { name: /Mark Done/ }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toHaveTextContent("Task already completed.");
+    });
+  });
+
+  // Test 15: Completion metadata displayed for DONE task
   it("displays completion metadata when task is DONE", async () => {
     mockFetchTask.mockResolvedValue(
       makeTask({

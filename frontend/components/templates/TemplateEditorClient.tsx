@@ -132,10 +132,11 @@ export function TemplateEditorClient({
       const clauseIds = extractClauseIds(doc);
 
       const clausesMap = new Map<string, TiptapNode>();
-      for (const id of clauseIds) {
-        const clause = await getClause(id);
+      const clauseResults = await Promise.all(clauseIds.map((id) => getClause(id)));
+      for (let i = 0; i < clauseIds.length; i++) {
+        const clause = clauseResults[i];
         if (clause?.body) {
-          clausesMap.set(id, clause.body as unknown as TiptapNode);
+          clausesMap.set(clauseIds[i], clause.body as unknown as TiptapNode);
         }
       }
 

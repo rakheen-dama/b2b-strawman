@@ -246,7 +246,7 @@ function renderNode(
 
     case "heading": {
       const rawLevel = attrs.level ?? 1;
-      const level = typeof rawLevel === "number" ? rawLevel : 1;
+      const level = Math.max(1, Math.min(6, typeof rawLevel === "number" ? rawLevel : 1));
       return (
         "<h" + level + ">" + renderChildren(node, context, clauses, depth) + "</h" + level + ">"
       );

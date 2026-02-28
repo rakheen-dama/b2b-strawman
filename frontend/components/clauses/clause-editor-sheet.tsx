@@ -32,6 +32,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { DocumentEditor } from "@/components/editor/DocumentEditor";
 import {
   EntityPicker,
@@ -46,7 +53,14 @@ import {
   cloneClause,
 } from "@/lib/actions/clause-actions";
 import type { Clause } from "@/lib/actions/clause-actions";
+import type { TemplateEntityType } from "@/lib/types";
 import { cn } from "@/lib/utils";
+
+const PREVIEW_ENTITY_TYPES: { value: TemplateEntityType; label: string }[] = [
+  { value: "PROJECT", label: "Project" },
+  { value: "CUSTOMER", label: "Customer" },
+  { value: "INVOICE", label: "Invoice" },
+];
 
 function generateSlug(title: string): string {
   return title
@@ -88,6 +102,7 @@ export function ClauseEditorSheet({
   });
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [previewEntityType, setPreviewEntityType] = useState<TemplateEntityType>("PROJECT");
   const [entityPickerOpen, setEntityPickerOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
@@ -179,7 +194,7 @@ export function ClauseEditorSheet({
 
   function handlePreviewEntitySelect(_entityId: string, entityData: Record<string, unknown>) {
     startPreviewTransition(() => {
-      const context = buildPreviewContext("PROJECT", entityData);
+      const context = buildPreviewContext(previewEntityType, entityData);
       const doc = editorBody as unknown as TiptapNode;
       const html = renderTiptapToHtml(doc, context, new Map());
       setPreviewHtml(html);
@@ -411,15 +426,32 @@ export function ClauseEditorSheet({
           <div className="border-t border-slate-200 px-6 py-4 dark:border-slate-800">
             <div className="flex items-center justify-end gap-3">
               {isEditing && (
-                <Button
-                  variant="soft"
-                  size="sm"
-                  onClick={() => setEntityPickerOpen(true)}
-                  disabled={previewLoading}
-                >
-                  <Eye className="mr-1 size-4" />
-                  {previewLoading ? "Loading..." : "Preview"}
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={previewEntityType}
+                    onValueChange={(v) => setPreviewEntityType(v as TemplateEntityType)}
+                  >
+                    <SelectTrigger className="h-8 w-28" aria-label="Preview entity type">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PREVIEW_ENTITY_TYPES.map((t) => (
+                        <SelectItem key={t.value} value={t.value}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="soft"
+                    size="sm"
+                    onClick={() => setEntityPickerOpen(true)}
+                    disabled={previewLoading}
+                  >
+                    <Eye className="mr-1 size-4" />
+                    {previewLoading ? "Loading..." : "Preview"}
+                  </Button>
+                </div>
               )}
               <SheetClose asChild>
                 <Button variant="plain" disabled={isSubmitting}>
@@ -445,7 +477,7 @@ export function ClauseEditorSheet({
 
       {/* Client-side preview entity picker */}
       <EntityPicker
-        entityType="PROJECT"
+        entityType={previewEntityType}
         open={entityPickerOpen}
         onOpenChange={setEntityPickerOpen}
         onSelect={handlePreviewEntitySelect}

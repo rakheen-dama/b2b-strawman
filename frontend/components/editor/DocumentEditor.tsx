@@ -52,6 +52,7 @@ export function DocumentEditor({
       Placeholder.configure({ placeholder: placeholderText }),
       ...customExtensions,
     ],
+    immediatelyRender: false,
     content: content ?? undefined,
     editable,
     onUpdate: ({ editor: ed }) => {

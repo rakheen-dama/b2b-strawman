@@ -253,6 +253,19 @@
 | 215 | Clause Library & Editor Rewrite | Frontend | 213 | M | 215A, 215B | **Done** (PRs #441, #442) |
 | 216 | Generation Dialog & Preview | Frontend | 213, 214 | M | 216A, 216B | **Done** (PRs #443, #444) |
 | 217 | Backend Test Migration & Cleanup | Backend | 212 | M | 217A, 217B | **Done** (PRs #445, #446) |
+| **Phase 30 — Expenses, Recurring Tasks & Daily Work Completeness** | | | | | | See [tasks/phase30-expenses-recurring-calendar.md](tasks/phase30-expenses-recurring-calendar.md) |
+| 218 | Expense Entity Foundation & Migration | Backend | -- | M | 218A, 218B | |
+| 219 | Expense Service, Controller & CRUD API | Backend | 218 | L | 219A, 219B | |
+| 220 | Expense Frontend — Project Expenses Tab | Frontend | 219 | M | 220A, 220B | |
+| 221 | Expense Billing Integration — InvoiceLine Extension & Invoice Pipeline | Backend | 218 | L | 221A, 221B | |
+| 222 | Expense Billing Frontend — Unbilled Summary & Invoice Generation | Frontend | 221, 220 | M | 222A | |
+| 223 | Recurring Task Foundation — Migration & Entity | Backend | -- | M | 223A, 223B | |
+| 224 | Recurring Task Service & Controller | Backend | 223 | M | 224A, 224B | |
+| 225 | Recurring Task Frontend | Frontend | 224 | M | 225A | |
+| 226 | Time Reminder Scheduler & OrgSettings | Backend | -- | M | 226A, 226B | |
+| 227 | Time Reminder Frontend — Settings & Preferences | Frontend | 226 | S | 227A | |
+| 228 | Calendar View — Backend Endpoint | Backend | -- | M | 228A | |
+| 229 | Calendar View — Frontend Page | Frontend | 228 | M | 229A, 229B | |
 
 ---
 

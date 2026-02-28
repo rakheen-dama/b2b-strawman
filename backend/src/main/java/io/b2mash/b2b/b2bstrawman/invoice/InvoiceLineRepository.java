@@ -22,6 +22,17 @@ public interface InvoiceLineRepository extends JpaRepository<InvoiceLine, UUID> 
           + " WHERE il.invoiceId = :invoiceId AND il.taxRateId IS NOT NULL")
   boolean existsByInvoiceIdAndTaxRateIdIsNotNull(@Param("invoiceId") UUID invoiceId);
 
+  /** Finds all lines for an invoice filtered by line type. */
+  @Query(
+      "SELECT il FROM InvoiceLine il WHERE il.invoiceId = :invoiceId"
+          + " AND il.lineType = :lineType ORDER BY il.sortOrder")
+  List<InvoiceLine> findByInvoiceIdAndLineType(
+      @Param("invoiceId") UUID invoiceId, @Param("lineType") InvoiceLineType lineType);
+
+  /** Finds an invoice line by expense ID for double-billing prevention. */
+  @Query("SELECT il FROM InvoiceLine il WHERE il.expenseId = :expenseId")
+  Optional<InvoiceLine> findByExpenseId(@Param("expenseId") UUID expenseId);
+
   /**
    * Finds all invoice lines referencing a tax rate where the parent invoice has the given status.
    */

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useReducer, useTransition } from "react";
-import { Check, Circle, Loader2, X, XCircle } from "lucide-react";
+import { useEffect, useReducer, useState, useTransition } from "react";
+import { Ban, Check, Circle, Loader2, MoreHorizontal, RotateCcw, X, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +11,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Sheet,
   SheetContent,
@@ -33,6 +39,9 @@ import { CustomFieldSection } from "@/components/field-definitions/CustomFieldSe
 import {
   fetchTask,
   updateTask,
+  completeTask,
+  cancelTask,
+  reopenTask,
 } from "@/app/(app)/org/[slug]/projects/[id]/task-actions";
 import { fetchTimeEntries } from "@/app/(app)/org/[slug]/projects/[id]/time-entry-actions";
 import { formatDate } from "@/lib/format";
@@ -275,6 +284,31 @@ export function TaskDetailSheet({
 
   const isOwnTask = task?.assigneeId === currentMemberId;
   const canChangeStatus = canManage || isOwnTask;
+  const isTerminal = task?.status === "DONE" || task?.status === "CANCELLED";
+  const canMarkDone = task?.status === "IN_PROGRESS" && (isOwnTask || canManage);
+
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  // Handle lifecycle actions — call server action then re-fetch task
+  function handleLifecycleAction(action: (slug: string, taskId: string, projectId: string) => Promise<{ success: boolean; error?: string }>) {
+    if (!task) return;
+
+    setActionError(null);
+    startTransition(async () => {
+      const result = await action(slug, task.id, effectiveProjectId);
+      if (result.success) {
+        // Re-fetch to get updated metadata (completedAt, completedByName, etc.)
+        try {
+          const updated = await fetchTask(task.id);
+          dispatch({ type: "TASK_LOADED", task: updated });
+        } catch {
+          // Silently handle re-fetch failure — the action succeeded
+        }
+      } else {
+        setActionError(result.error ?? "Action failed. Please try again.");
+      }
+    });
+  }
 
   const isOpen = taskId !== null;
   const priorityBadge = task ? PRIORITY_BADGE[task.priority] : null;
@@ -362,6 +396,70 @@ export function TaskDetailSheet({
                     </span>
                   )}
                 </div>
+
+                {/* Lifecycle action buttons */}
+                {canChangeStatus && (
+                  <div className="mt-2 flex items-center gap-2">
+                    {canMarkDone && (
+                      <Button
+                        size="sm"
+                        variant="soft"
+                        onClick={() => handleLifecycleAction(completeTask)}
+                      >
+                        <Check className="mr-1 size-3" />
+                        Mark Done
+                      </Button>
+                    )}
+                    {isTerminal && canChangeStatus && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleLifecycleAction(reopenTask)}
+                      >
+                        <RotateCcw className="mr-1 size-3" />
+                        Reopen
+                      </Button>
+                    )}
+                    {!isTerminal && isAdmin && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="size-7">
+                            <MoreHorizontal className="size-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start">
+                          <DropdownMenuItem
+                            variant="destructive"
+                            onClick={() => handleLifecycleAction(cancelTask)}
+                          >
+                            <Ban className="mr-2 size-4" />
+                            Cancel Task
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
+                )}
+
+                {/* Action error feedback */}
+                {actionError && (
+                  <p className="mt-2 text-xs text-red-600 dark:text-red-400" role="alert">
+                    {actionError}
+                  </p>
+                )}
+
+                {/* Completion / cancellation metadata */}
+                {task.status === "DONE" && task.completedAt && (
+                  <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                    Completed{task.completedByName ? ` by ${task.completedByName}` : ""} on{" "}
+                    {formatDate(task.completedAt)}
+                  </p>
+                )}
+                {task.status === "CANCELLED" && task.cancelledAt && (
+                  <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                    Cancelled on {formatDate(task.cancelledAt)}
+                  </p>
+                )}
               </div>
               <SheetClose asChild>
                 <Button
@@ -388,7 +486,7 @@ export function TaskDetailSheet({
                       members={members}
                       currentAssigneeId={task.assigneeId}
                       onAssigneeChange={handleAssigneeChange}
-                      disabled={!canManage}
+                      disabled={!canManage || isTerminal}
                     />
                   </dd>
                 </div>

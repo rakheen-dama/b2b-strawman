@@ -7,6 +7,8 @@ import { Table, TableRow, TableCell, TableHeader } from "@tiptap/extension-table
 import LinkExtension from "@tiptap/extension-link";
 import UnderlineExtension from "@tiptap/extension-underline";
 import Placeholder from "@tiptap/extension-placeholder";
+import { VariableExtension } from "./extensions/variable";
+import { LoopTableExtension } from "./extensions/loopTable";
 import { EditorToolbar } from "./EditorToolbar";
 import "./editor.css";
 
@@ -39,6 +41,8 @@ export function DocumentEditor({
       }),
       UnderlineExtension,
       Placeholder.configure({ placeholder: placeholderText }),
+      VariableExtension,
+      LoopTableExtension,
     ],
     content: content ?? undefined,
     editable,

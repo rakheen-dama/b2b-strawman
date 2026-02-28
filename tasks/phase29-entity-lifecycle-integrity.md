@@ -29,7 +29,7 @@ This is a **structural hardening phase**, not a feature phase. No new pages are 
 | 205 | Project-Customer Link + Due Date | Backend | 203 | M | 205A, 205B | **Done** (PRs #420, #421) |
 | 206 | Delete Protection & Cross-Entity Guards | Backend | 201, 203, 205 | M | 206A, 206B | **Done** (PRs #422, #423) |
 | 207 | Task Lifecycle Frontend | Frontend | 202 | M | 207A, 207B | **Done** (PRs #424, #425) |
-| 208 | Project Lifecycle Frontend | Frontend | 204, 205 | L | 208A, 208B | |
+| 208 | Project Lifecycle Frontend | Frontend | 204, 205 | L | 208A, 208B | **Done** (PRs #426, #427) |
 
 ---
 
@@ -137,7 +137,7 @@ This is a **structural hardening phase**, not a feature phase. No new pages are 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 6a (parallel) | 207 | 207B | Task detail sheet: "Mark Done" button (primary when IN_PROGRESS), "Cancel" in overflow, "Reopen" for Done/Cancelled + `completedAt`/`completedBy` display + My Work page filter update (ensure DONE/CANCELLED excluded by default) + frontend tests. ~3 modified files. Frontend only. | **Done** (PR #425) |
-| 6b (parallel) | 208 | 208B | Project detail header: status badge + due date + contextual action buttons (Complete/Archive/Reopen per state) + "Complete Project" dialog with incomplete-task error and unbilled-time confirmation + archived project read-only banner + customer display in sidebar (link to customer detail) + customer "Projects" tab on customer detail page + frontend tests. ~4 modified files, ~1 new file. Frontend only. | |
+| 6b (parallel) | 208 | 208B | Project detail header: status badge + due date + contextual action buttons (Complete/Archive/Reopen per state) + "Complete Project" dialog with incomplete-task error and unbilled-time confirmation + archived project read-only banner + customer display in sidebar (link to customer detail) + customer "Projects" tab on customer detail page + frontend tests. ~4 modified files, ~1 new file. Frontend only. | **Done** (PR #427) |
 
 ### Timeline
 
@@ -617,7 +617,7 @@ Stage 6: [207B] // [208B]                                        (parallel, afte
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **208A** | 208.1--208.7 | Project list: status filter (Active, Completed, Archived, All) + status badge + due date column with overdue warning + project creation/edit dialog: due date picker + customer dropdown + lifecycle server actions (completeProject, archiveProject, reopenProject) + update project response type + frontend tests. ~5 modified files, ~1 new file. Frontend only. | **Done** (PR #426) |
-| **208B** | 208.8--208.14 | Project detail header: status badge + due date + contextual action buttons + "Complete Project" dialog (error for open tasks, confirmation for unbilled time) + archived project read-only banner + customer display in project sidebar + customer detail "Projects" tab + frontend tests. ~5 modified files, ~1 new component. Frontend only. | |
+| **208B** | 208.8--208.14 | Project detail header: status badge + due date + contextual action buttons + "Complete Project" dialog (error for open tasks, confirmation for unbilled time) + archived project read-only banner + customer display in project sidebar + customer detail "Projects" tab + frontend tests. ~5 modified files, ~1 new component. Frontend only. | **Done** (PR #427) |
 
 ### Tasks
 

@@ -345,8 +345,7 @@ class ProjectCustomerLinkIntegrationTest {
         .perform(delete("/api/customers/" + custId).with(ownerJwt()))
         .andExpect(status().isConflict())
         .andExpect(
-            jsonPath("$.detail")
-                .value(org.hamcrest.Matchers.containsString("project(s) are linked")));
+            jsonPath("$.detail").value(org.hamcrest.Matchers.containsString("linked projects")));
   }
 
   @Test

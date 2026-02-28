@@ -64,6 +64,21 @@ class CustomerLifecycleGuardTest {
   }
 
   @Test
+  void createTaskBlockedForOffboarding() {
+    var customer = createCustomerWithStatus(LifecycleStatus.OFFBOARDING);
+    assertThatThrownBy(() -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_TASK))
+        .isInstanceOf(InvalidStateException.class);
+  }
+
+  @Test
+  void createTimeEntryBlockedForOffboarding() {
+    var customer = createCustomerWithStatus(LifecycleStatus.OFFBOARDING);
+    assertThatThrownBy(
+            () -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_TIME_ENTRY))
+        .isInstanceOf(InvalidStateException.class);
+  }
+
+  @Test
   void createProjectAllowedForActive() {
     var customer = createCustomerWithStatus(LifecycleStatus.ACTIVE);
     assertThatCode(() -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_PROJECT))

@@ -44,6 +44,7 @@ public class CustomerService {
   private final FieldDefinitionRepository fieldDefinitionRepository;
   private final FieldGroupService fieldGroupService;
   private final ProjectRepository projectRepository;
+  private final CustomerProjectRepository customerProjectRepository;
 
   public CustomerService(
       CustomerRepository repository,
@@ -54,7 +55,8 @@ public class CustomerService {
       FieldGroupMemberRepository fieldGroupMemberRepository,
       FieldDefinitionRepository fieldDefinitionRepository,
       FieldGroupService fieldGroupService,
-      ProjectRepository projectRepository) {
+      ProjectRepository projectRepository,
+      CustomerProjectRepository customerProjectRepository) {
     this.repository = repository;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
@@ -64,6 +66,7 @@ public class CustomerService {
     this.fieldDefinitionRepository = fieldDefinitionRepository;
     this.fieldGroupService = fieldGroupService;
     this.projectRepository = projectRepository;
+    this.customerProjectRepository = customerProjectRepository;
   }
 
   @Transactional(readOnly = true)
@@ -306,14 +309,13 @@ public class CustomerService {
     var customer =
         repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Customer", id));
 
-    // Delete protection: block if customer has linked projects
-    long linkedProjectCount = projectRepository.countByCustomerId(id);
-    if (linkedProjectCount > 0) {
+    // Delete protection: block if customer has linked projects (direct FK or join table)
+    long directLinks = projectRepository.countByCustomerId(id);
+    boolean junctionLinks = customerProjectRepository.existsByCustomerId(id);
+    if (directLinks > 0 || junctionLinks) {
       throw new ResourceConflictException(
           "Cannot archive customer",
-          "Cannot archive customer. "
-              + linkedProjectCount
-              + " project(s) are linked. Use the offboarding lifecycle instead.");
+          "Cannot archive customer with linked projects. Unlink all projects first.");
     }
 
     customer.archive();

@@ -42,7 +42,8 @@ public sealed interface DomainEvent
         ProjectArchivedEvent,
         ProjectReopenedEvent,
         ExpenseCreatedEvent,
-        ExpenseDeletedEvent {
+        ExpenseDeletedEvent,
+        TaskRecurrenceCreatedEvent {
 
   String eventType();
 

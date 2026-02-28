@@ -116,10 +116,11 @@ class TaskLifecycleIntegrationTest {
     mockMvc
         .perform(patch("/api/tasks/" + taskId + "/complete").with(memberJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.status").value("DONE"))
-        .andExpect(jsonPath("$.completedAt", notNullValue()))
-        .andExpect(jsonPath("$.completedBy").value(memberIdMember))
-        .andExpect(jsonPath("$.completedByName").value("Lifecycle Member"));
+        .andExpect(jsonPath("$.completedTask.status").value("DONE"))
+        .andExpect(jsonPath("$.completedTask.completedAt", notNullValue()))
+        .andExpect(jsonPath("$.completedTask.completedBy").value(memberIdMember))
+        .andExpect(jsonPath("$.completedTask.completedByName").value("Lifecycle Member"))
+        .andExpect(jsonPath("$.nextInstance").doesNotExist());
   }
 
   @Test
@@ -135,9 +136,9 @@ class TaskLifecycleIntegrationTest {
     mockMvc
         .perform(patch("/api/tasks/" + taskId + "/complete").with(adminJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.status").value("DONE"))
-        .andExpect(jsonPath("$.completedAt", notNullValue()))
-        .andExpect(jsonPath("$.completedBy").value(memberIdAdmin));
+        .andExpect(jsonPath("$.completedTask.status").value("DONE"))
+        .andExpect(jsonPath("$.completedTask.completedAt", notNullValue()))
+        .andExpect(jsonPath("$.completedTask.completedBy").value(memberIdAdmin));
   }
 
   @Test
@@ -307,10 +308,10 @@ class TaskLifecycleIntegrationTest {
     mockMvc
         .perform(patch("/api/tasks/" + taskId + "/complete").with(memberJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.completedAt", notNullValue()))
-        .andExpect(jsonPath("$.completedBy").value(memberIdMember))
-        .andExpect(jsonPath("$.completedByName").value("Lifecycle Member"))
-        .andExpect(jsonPath("$.cancelledAt", nullValue()));
+        .andExpect(jsonPath("$.completedTask.completedAt", notNullValue()))
+        .andExpect(jsonPath("$.completedTask.completedBy").value(memberIdMember))
+        .andExpect(jsonPath("$.completedTask.completedByName").value("Lifecycle Member"))
+        .andExpect(jsonPath("$.completedTask.cancelledAt", nullValue()));
 
     // Verify GET also returns the fields
     mockMvc

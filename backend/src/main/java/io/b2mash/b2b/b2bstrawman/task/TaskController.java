@@ -17,6 +17,7 @@ import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -73,7 +74,9 @@ public class TaskController {
             orgRole,
             request.customFields(),
             request.appliedFieldGroups(),
-            request.assigneeId());
+            request.assigneeId(),
+            request.recurrenceRule(),
+            request.recurrenceEndDate());
 
     var names = resolveNames(List.of(task));
     return ResponseEntity.created(URI.create("/api/tasks/" + task.getId()))
@@ -185,7 +188,9 @@ public class TaskController {
             memberId,
             orgRole,
             request.customFields(),
-            request.appliedFieldGroups());
+            request.appliedFieldGroups(),
+            request.recurrenceRule(),
+            request.recurrenceEndDate());
 
     var names = resolveNames(List.of(task));
     var tags = entityTagService.getEntityTags("TASK", id);
@@ -228,14 +233,28 @@ public class TaskController {
 
   @PatchMapping("/api/tasks/{id}/complete")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
-  public ResponseEntity<TaskResponse> completeTask(@PathVariable UUID id) {
+  public ResponseEntity<CompleteTaskResponse> completeTask(@PathVariable UUID id) {
     UUID memberId = RequestScopes.requireMemberId();
     String orgRole = RequestScopes.getOrgRole();
 
-    var task = taskService.completeTask(id, memberId, orgRole);
-    var names = resolveNames(List.of(task));
+    var result = taskService.completeTask(id, memberId, orgRole);
+    var tasksForNames = new ArrayList<Task>();
+    tasksForNames.add(result.completedTask());
+    if (result.nextInstance() != null) {
+      tasksForNames.add(result.nextInstance());
+    }
+    var names = resolveNames(tasksForNames);
     var tags = entityTagService.getEntityTags("TASK", id);
-    return ResponseEntity.ok(TaskResponse.from(task, names, tags));
+
+    TaskResponse nextInstanceResponse = null;
+    if (result.nextInstance() != null) {
+      var nextTags = entityTagService.getEntityTags("TASK", result.nextInstance().getId());
+      nextInstanceResponse = TaskResponse.from(result.nextInstance(), names, nextTags);
+    }
+
+    return ResponseEntity.ok(
+        new CompleteTaskResponse(
+            TaskResponse.from(result.completedTask(), names, tags), nextInstanceResponse));
   }
 
   @PatchMapping("/api/tasks/{id}/cancel")
@@ -336,7 +355,10 @@ public class TaskController {
       LocalDate dueDate,
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups,
-      UUID assigneeId) {}
+      UUID assigneeId,
+      @Size(max = 100, message = "recurrenceRule must be at most 100 characters")
+          String recurrenceRule,
+      LocalDate recurrenceEndDate) {}
 
   public record UpdateTaskRequest(
       @NotBlank(message = "title is required")
@@ -353,7 +375,12 @@ public class TaskController {
       LocalDate dueDate,
       UUID assigneeId,
       Map<String, Object> customFields,
-      List<UUID> appliedFieldGroups) {}
+      List<UUID> appliedFieldGroups,
+      @Size(max = 100, message = "recurrenceRule must be at most 100 characters")
+          String recurrenceRule,
+      LocalDate recurrenceEndDate) {}
+
+  public record CompleteTaskResponse(TaskResponse completedTask, TaskResponse nextInstance) {}
 
   public record TaskResponse(
       UUID id,
@@ -377,7 +404,11 @@ public class TaskController {
       Instant cancelledAt,
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups,
-      List<TagResponse> tags) {
+      List<TagResponse> tags,
+      String recurrenceRule,
+      LocalDate recurrenceEndDate,
+      UUID parentTaskId,
+      boolean isRecurring) {
 
     public static TaskResponse from(
         Task task, Map<UUID, String> memberNames, List<TagResponse> tags) {
@@ -403,7 +434,11 @@ public class TaskController {
           task.getCancelledAt(),
           task.getCustomFields(),
           task.getAppliedFieldGroups(),
-          tags);
+          tags,
+          task.getRecurrenceRule(),
+          task.getRecurrenceEndDate(),
+          task.getParentTaskId(),
+          task.isRecurring());
     }
   }
 }

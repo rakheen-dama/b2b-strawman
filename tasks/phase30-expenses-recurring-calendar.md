@@ -29,7 +29,7 @@ Phase 30 closes the remaining revenue-capture and daily-work-organisation gaps i
 | 221 | Expense Billing Integration — InvoiceLine Extension & Invoice Pipeline | Backend | 218 | L | 221A, 221B | **Done** (PRs #453, #454) |
 | 222 | Expense Billing Frontend — Unbilled Summary & Invoice Generation | Frontend | 221, 220 | M | 222A | **Done** (PR #455) |
 | 223 | Recurring Task Foundation — Migration & Entity | Backend | -- | M | 223A, 223B | **Done** (PRs #456, #457) |
-| 224 | Recurring Task Service & Controller | Backend | 223 | M | 224A, 224B | |
+| 224 | Recurring Task Service & Controller | Backend | 223 | M | 224A, 224B | 224A **Done** (PR #458) |
 | 225 | Recurring Task Frontend | Frontend | 224 | M | 225A | |
 | 226 | Time Reminder Scheduler & OrgSettings | Backend | -- | M | 226A, 226B | |
 | 227 | Time Reminder Frontend — Settings & Preferences | Frontend | 226 | S | 227A | |
@@ -161,7 +161,7 @@ TRACK 4: CALENDAR VIEW
 |-------|------|-------|---------|--------|
 | 2a (parallel) | 219 | 219A | ExpenseService: full CRUD, validation, billing status computation, write-off/restore, audit events, domain events. ~1 new file, ~1 new event file. Backend only. | **Done** (PR #449) |
 | 2b (parallel) | 221 | 221A | InvoiceLine entity extension (expenseId + lineType fields) + InvoiceLineType enum + InvoiceLineRepository update + backfill handling. ~3 modified/new files. Backend only. | **Done** (PR #453) |
-| 2c (parallel) | 224 | 224A | TaskService.completeTask() extension: recurrence check, next-date calculation, auto-create new Task in same transaction, audit event, notification. ~1 modified file, ~1 new event file. Backend only. | |
+| 2c (parallel) | 224 | 224A | TaskService.completeTask() extension: recurrence check, next-date calculation, auto-create new Task in same transaction, audit event, notification. ~1 modified file, ~1 new event file. Backend only. | **Done** (PR #458) |
 | 2d (parallel) | 226 | 226B | TimeReminderScheduler: @Scheduled component, per-org processing, working day check, member time query, notification creation. ~1 new file. Backend only. | |
 
 ### Stage 3: Controllers + Integration Tests (parallel tracks)
@@ -593,7 +593,7 @@ Stage 5: [220B] // [222A] // [229B]                              (parallel)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **224A** | 224.1–224.7 | Extend `TaskService.completeTask()`: recurrence check after DONE transition, RRULE parse, next-date calculation, `recurrenceEndDate` check, new Task creation in same transaction, `task.recurrence_created` audit event, assignee notification. ~1 modified service file, ~1 new event file. Backend only. | |
+| **224A** | 224.1–224.7 | Extend `TaskService.completeTask()`: recurrence check after DONE transition, RRULE parse, next-date calculation, `recurrenceEndDate` check, new Task creation in same transaction, `task.recurrence_created` audit event, assignee notification. ~1 modified service file, ~1 new event file. Backend only. | **Done** (PR #458) |
 | **224B** | 224.8–224.13 | `TaskController` extensions: complete endpoint returns `CompleteTaskResponse { completedTask, nextInstance }`, create/update request DTOs gain `recurrenceRule`, `recurrenceEndDate` fields, `GET /tasks` gains `?recurring=true` filter, integration tests (~15 tests). ~1 modified controller file, ~1 new test file. Backend only. | |
 
 ### Tasks

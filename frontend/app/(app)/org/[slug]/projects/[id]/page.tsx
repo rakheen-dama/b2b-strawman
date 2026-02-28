@@ -1,6 +1,6 @@
 import { getAuthContext, getCurrentUserEmail } from "@/lib/auth";
 import { api, handleApiError, getFieldDefinitions, getFieldGroups, getGroupMembers, getTags, getTemplates, getViews } from "@/lib/api";
-import type { OrgMember, Project, ProjectStatus, Customer, Document, ProjectMember, ProjectRole, Task, ProjectTimeSummary, MemberTimeSummary, TaskTimeSummary, BillingRate, OrgSettings, BudgetStatusResponse, ProjectProfitabilityResponse, FieldDefinitionResponse, FieldGroupResponse, FieldGroupMemberResponse, TagResponse, TemplateListResponse, SavedViewResponse } from "@/lib/types";
+import type { OrgMember, Project, ProjectStatus, Customer, Document, ProjectMember, ProjectRole, Task, ProjectTimeSummary, MemberTimeSummary, TaskTimeSummary, BillingRate, OrgSettings, BudgetStatusResponse, ProjectProfitabilityResponse, FieldDefinitionResponse, FieldGroupResponse, FieldGroupMemberResponse, TagResponse, TemplateListResponse, SavedViewResponse, PaginatedExpenseResponse } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EditProjectDialog } from "@/components/projects/edit-project-dialog";
@@ -22,6 +22,8 @@ import { TagInput } from "@/components/tags/TagInput";
 import { GenerateDocumentDropdown } from "@/components/templates/GenerateDocumentDropdown";
 import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocumentsList";
 import { ProjectCommentsSection } from "@/components/projects/project-comments-section";
+import { ExpenseList } from "@/components/expenses/expense-list";
+import { LogExpenseDialog } from "@/components/expenses/log-expense-dialog";
 import {
   fetchProjectSetupStatus,
   fetchProjectUnbilledSummary,
@@ -39,7 +41,7 @@ import { ProjectLifecycleActions } from "@/components/projects/project-lifecycle
 import { ArchivedProjectBanner } from "@/components/projects/archived-project-banner";
 import { createSavedViewAction } from "./view-actions";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, AlertTriangle, Calendar, LayoutTemplate, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, AlertTriangle, Calendar, LayoutTemplate, Pencil, Receipt, Trash2 } from "lucide-react";
 import Link from "next/link";
 
 const ROLE_BADGE: Record<ProjectRole, { label: string; variant: "lead" | "member" }> = {
@@ -196,6 +198,19 @@ export default async function ProjectDetailPage({
     timeSummaryByMember = byMemberRes;
   } catch {
     // Non-fatal: show empty time summary if fetch fails
+  }
+
+  // Fetch expenses for the "Expenses" tab
+  let expenseData: PaginatedExpenseResponse = {
+    content: [],
+    page: { totalElements: 0, totalPages: 0, size: 20, number: 0 },
+  };
+  try {
+    expenseData = await api.get<PaginatedExpenseResponse>(
+      `/api/projects/${id}/expenses?sort=date,desc`,
+    );
+  } catch {
+    // Non-fatal: show empty expenses tab
   }
 
   // Billing rates + settings for the "Rates" tab (only fetched for users who can manage)
@@ -626,6 +641,31 @@ export default async function ProjectDetailPage({
               defaultCurrency={defaultCurrency}
             />
           ) : undefined
+        }
+        expensesPanel={
+          <div className="space-y-6">
+            <div className="flex items-center justify-end">
+              <LogExpenseDialog
+                slug={slug}
+                projectId={id}
+                tasks={tasks.map((t) => ({ id: t.id, title: t.title }))}
+              >
+                <Button size="sm">
+                  <Receipt className="mr-1.5 size-4" />
+                  Log Expense
+                </Button>
+              </LogExpenseDialog>
+            </div>
+            <ExpenseList
+              expenses={expenseData.content}
+              slug={slug}
+              projectId={id}
+              tasks={tasks.map((t) => ({ id: t.id, title: t.title }))}
+              members={members.map((m) => ({ id: m.memberId, name: m.name }))}
+              currentMemberId={currentMemberId}
+              orgRole={orgRole}
+            />
+          </div>
         }
         generatedPanel={
           <GeneratedDocumentsList

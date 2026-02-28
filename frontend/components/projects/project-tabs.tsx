@@ -17,11 +17,12 @@ interface ProjectTabsProps {
   ratesPanel?: ReactNode;
   budgetPanel?: ReactNode;
   financialsPanel?: ReactNode;
+  expensesPanel?: ReactNode;
   generatedPanel?: ReactNode;
   customerCommentsPanel?: ReactNode;
 }
 
-type TabId = "overview" | "documents" | "members" | "customers" | "tasks" | "time" | "budget" | "financials" | "activity" | "rates" | "generated" | "customer-comments";
+type TabId = "overview" | "documents" | "members" | "customers" | "tasks" | "time" | "expenses" | "budget" | "financials" | "activity" | "rates" | "generated" | "customer-comments";
 
 interface TabDef {
   id: TabId;
@@ -35,6 +36,7 @@ const baseTabs: TabDef[] = [
   { id: "customers", label: "Customers" },
   { id: "tasks", label: "Tasks" },
   { id: "time", label: "Time" },
+  { id: "expenses", label: "Expenses" },
   { id: "budget", label: "Budget" },
   { id: "financials", label: "Financials" },
   { id: "rates", label: "Rates" },
@@ -43,9 +45,9 @@ const baseTabs: TabDef[] = [
   { id: "activity", label: "Activity" },
 ];
 
-const validTabIds = new Set<string>(["overview", "documents", "members", "customers", "tasks", "time", "budget", "financials", "activity", "rates", "generated", "customer-comments"]);
+const validTabIds = new Set<string>(["overview", "documents", "members", "customers", "tasks", "time", "expenses", "budget", "financials", "activity", "rates", "generated", "customer-comments"]);
 
-export function ProjectTabs({ overviewPanel, documentsPanel, membersPanel, customersPanel, tasksPanel, timePanel, activityPanel, ratesPanel, budgetPanel, financialsPanel, generatedPanel, customerCommentsPanel }: ProjectTabsProps) {
+export function ProjectTabs({ overviewPanel, documentsPanel, membersPanel, customersPanel, tasksPanel, timePanel, activityPanel, ratesPanel, budgetPanel, financialsPanel, expensesPanel, generatedPanel, customerCommentsPanel }: ProjectTabsProps) {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
   const urlTab = tabParam && validTabIds.has(tabParam) ? (tabParam as TabId) : null;
@@ -58,10 +60,11 @@ export function ProjectTabs({ overviewPanel, documentsPanel, membersPanel, custo
     let filtered = baseTabs;
     if (!ratesPanel) filtered = filtered.filter((t) => t.id !== "rates");
     if (!financialsPanel) filtered = filtered.filter((t) => t.id !== "financials");
+    if (!expensesPanel) filtered = filtered.filter((t) => t.id !== "expenses");
     if (!generatedPanel) filtered = filtered.filter((t) => t.id !== "generated");
     if (!customerCommentsPanel) filtered = filtered.filter((t) => t.id !== "customer-comments");
     return filtered;
-  }, [ratesPanel, financialsPanel, generatedPanel, customerCommentsPanel]);
+  }, [ratesPanel, financialsPanel, expensesPanel, generatedPanel, customerCommentsPanel]);
 
   return (
     <TabsPrimitive.Root value={activeTab} onValueChange={(v) => setUserTab(v as TabId)}>
@@ -110,6 +113,11 @@ export function ProjectTabs({ overviewPanel, documentsPanel, membersPanel, custo
       <TabsPrimitive.Content value="time" className="pt-6 outline-none">
         {timePanel}
       </TabsPrimitive.Content>
+      {expensesPanel && (
+        <TabsPrimitive.Content value="expenses" className="pt-6 outline-none">
+          {expensesPanel}
+        </TabsPrimitive.Content>
+      )}
       <TabsPrimitive.Content value="budget" className="pt-6 outline-none">
         {budgetPanel}
       </TabsPrimitive.Content>

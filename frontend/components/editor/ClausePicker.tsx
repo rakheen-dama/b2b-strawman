@@ -14,20 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ChevronDown, ChevronRight, FileText } from "lucide-react";
 import { getClauses, type Clause } from "@/lib/actions/clause-actions";
-
-function extractTextFromTiptap(body: Record<string, unknown>): string | null {
-  const content = body?.content as Array<Record<string, unknown>> | undefined;
-  if (!content || !Array.isArray(content)) return null;
-  const text = content
-    .map((node) => {
-      const children = node.content as Array<Record<string, unknown>> | undefined;
-      if (!children) return "";
-      return children.map((child) => (child.text as string) ?? "").join("");
-    })
-    .join("\n")
-    .trim();
-  return text || null;
-}
+import { extractTextFromBody } from "@/lib/tiptap-utils";
 
 interface ClausePickerProps {
   onSelect: (clause: {
@@ -121,7 +108,7 @@ export function ClausePicker({
 
   // Extract text from Tiptap JSON for preview
   const previewText = selectedClause?.body
-    ? extractTextFromTiptap(selectedClause.body)
+    ? extractTextFromBody(selectedClause.body)
     : null;
 
   return (

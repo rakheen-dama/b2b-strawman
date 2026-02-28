@@ -193,6 +193,69 @@ describe("ClausesContent", () => {
     expect(screen.getByText("Custom")).toBeInTheDocument();
   });
 
+  it("hides actions menu when canManage is false", () => {
+    const clauses: Clause[] = [
+      makeClause({ id: "1", title: "Test Clause", category: "General" }),
+    ];
+
+    render(
+      <ClausesContent
+        slug="test-org"
+        clauses={clauses}
+        categories={["General"]}
+        canManage={false}
+      />,
+    );
+
+    expect(screen.queryByLabelText("Clause actions")).not.toBeInTheDocument();
+  });
+
+  it("shows 'Clone & Customize' but not 'Edit' or 'Deactivate' for system clauses", async () => {
+    const user = userEvent.setup();
+    const clauses: Clause[] = [
+      makeClause({ id: "1", title: "System Clause", source: "SYSTEM", category: "General", active: true }),
+    ];
+
+    render(
+      <ClausesContent
+        slug="test-org"
+        clauses={clauses}
+        categories={["General"]}
+        canManage={true}
+      />,
+    );
+
+    const trigger = screen.getByLabelText("Clause actions");
+    await user.click(trigger);
+
+    expect(screen.getByText("Clone & Customize")).toBeInTheDocument();
+    expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+    expect(screen.queryByText("Deactivate")).not.toBeInTheDocument();
+  });
+
+  it("shows 'Edit', 'Clone', and 'Deactivate' for active custom clauses", async () => {
+    const user = userEvent.setup();
+    const clauses: Clause[] = [
+      makeClause({ id: "1", title: "Custom Clause", source: "CUSTOM", category: "General", active: true }),
+    ];
+
+    render(
+      <ClausesContent
+        slug="test-org"
+        clauses={clauses}
+        categories={["General"]}
+        canManage={true}
+      />,
+    );
+
+    const trigger = screen.getByLabelText("Clause actions");
+    await user.click(trigger);
+
+    expect(screen.getByText("Edit")).toBeInTheDocument();
+    expect(screen.getByText("Clone")).toBeInTheDocument();
+    expect(screen.getByText("Deactivate")).toBeInTheDocument();
+  });
+
   it("shows 'Migration needed' badge for legacy content", () => {
     const legacyClause = makeClause({
       id: "legacy-1",

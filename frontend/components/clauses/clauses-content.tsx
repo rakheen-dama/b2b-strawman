@@ -474,6 +474,7 @@ function ClauseActionsMenu({
             size="icon"
             className="size-8"
             disabled={isPending}
+            aria-label="Clause actions"
           >
             <MoreHorizontal className="size-4" />
           </Button>

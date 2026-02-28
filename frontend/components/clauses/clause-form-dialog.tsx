@@ -31,6 +31,7 @@ import {
 import { ClausePreviewPanel } from "@/components/clauses/clause-preview-panel";
 import { createClause, updateClause } from "@/lib/actions/clause-actions";
 import type { Clause } from "@/lib/actions/clause-actions";
+import { extractTextFromBody } from "@/lib/tiptap-utils";
 import { cn } from "@/lib/utils";
 
 interface ClauseFormDialogProps {
@@ -58,22 +59,6 @@ export function ClauseFormDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
-  function extractTextFromBody(body: Record<string, unknown>): string {
-    const content = body?.content as Array<Record<string, unknown>> | undefined;
-    if (!content || !Array.isArray(content)) return "";
-    return content
-      .map((node) => {
-        const children = node.content as
-          | Array<Record<string, unknown>>
-          | undefined;
-        if (!children) return "";
-        return children
-          .map((child) => (child.text as string) ?? "")
-          .join("");
-      })
-      .join("\n");
-  }
-
   function wrapTextAsBody(text: string): Record<string, unknown> {
     return {
       type: "doc",
@@ -92,7 +77,7 @@ export function ClauseFormDialog({
       setTitle(clause.title);
       setCategory(clause.category);
       setDescription(clause.description ?? "");
-      setBody(extractTextFromBody(clause.body));
+      setBody(extractTextFromBody(clause.body) ?? "");
     } else {
       setTitle("");
       setCategory("");

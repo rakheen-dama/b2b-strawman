@@ -28,7 +28,7 @@ This is a **structural hardening phase**, not a feature phase. No new pages are 
 | 204 | Project Lifecycle Service + Transition Endpoints | Backend | 203, 201 | L | 204A, 204B | **Done** (PRs #418, #419) |
 | 205 | Project-Customer Link + Due Date | Backend | 203 | M | 205A, 205B | **Done** (PRs #420, #421) |
 | 206 | Delete Protection & Cross-Entity Guards | Backend | 201, 203, 205 | M | 206A, 206B | **Done** (PRs #422, #423) |
-| 207 | Task Lifecycle Frontend | Frontend | 202 | M | 207A, 207B | |
+| 207 | Task Lifecycle Frontend | Frontend | 202 | M | 207A, 207B | **Done** (PRs #424, #425) |
 | 208 | Project Lifecycle Frontend | Frontend | 204, 205 | L | 208A, 208B | |
 
 ---
@@ -136,7 +136,7 @@ This is a **structural hardening phase**, not a feature phase. No new pages are 
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 6a (parallel) | 207 | 207B | Task detail sheet: "Mark Done" button (primary when IN_PROGRESS), "Cancel" in overflow, "Reopen" for Done/Cancelled + `completedAt`/`completedBy` display + My Work page filter update (ensure DONE/CANCELLED excluded by default) + frontend tests. ~3 modified files. Frontend only. | |
+| 6a (parallel) | 207 | 207B | Task detail sheet: "Mark Done" button (primary when IN_PROGRESS), "Cancel" in overflow, "Reopen" for Done/Cancelled + `completedAt`/`completedBy` display + My Work page filter update (ensure DONE/CANCELLED excluded by default) + frontend tests. ~3 modified files. Frontend only. | **Done** (PR #425) |
 | 6b (parallel) | 208 | 208B | Project detail header: status badge + due date + contextual action buttons (Complete/Archive/Reopen per state) + "Complete Project" dialog with incomplete-task error and unbilled-time confirmation + archived project read-only banner + customer display in sidebar (link to customer detail) + customer "Projects" tab on customer detail page + frontend tests. ~4 modified files, ~1 new file. Frontend only. | |
 
 ### Timeline
@@ -558,7 +558,7 @@ Stage 6: [207B] // [208B]                                        (parallel, afte
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **207A** | 207.1--207.6 | Task list panel: status filter chips (All, Open, In Progress, Done, Cancelled) with default hiding Done/Cancelled + visual distinction for Done (strikethrough/muted) and Cancelled (muted+badge) + `task-actions.ts` lifecycle server actions (completeTask, cancelTask, reopenTask) + update task list API call with status param + frontend tests. ~3 modified files, ~1 new file. Frontend only. | **Done** (PR #424) |
-| **207B** | 207.7--207.11 | Task detail sheet: "Mark Done" primary action when IN_PROGRESS, "Cancel" in overflow menu, "Reopen" for Done/Cancelled + display `completedAt`/`completedBy` info + My Work page: ensure default filter excludes Done/Cancelled + frontend tests. ~3 modified files. Frontend only. | |
+| **207B** | 207.7--207.11 | Task detail sheet: "Mark Done" primary action when IN_PROGRESS, "Cancel" in overflow menu, "Reopen" for Done/Cancelled + display `completedAt`/`completedBy` info + My Work page: ensure default filter excludes Done/Cancelled + frontend tests. ~3 modified files. Frontend only. | **Done** (PR #425) |
 
 ### Tasks
 

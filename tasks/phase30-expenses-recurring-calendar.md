@@ -28,7 +28,7 @@ Phase 30 closes the remaining revenue-capture and daily-work-organisation gaps i
 | 220 | Expense Frontend — Project Expenses Tab | Frontend | 219 | M | 220A, 220B | **Done** (PRs #451, #452) |
 | 221 | Expense Billing Integration — InvoiceLine Extension & Invoice Pipeline | Backend | 218 | L | 221A, 221B | **Done** (PRs #453, #454) |
 | 222 | Expense Billing Frontend — Unbilled Summary & Invoice Generation | Frontend | 221, 220 | M | 222A | **Done** (PR #455) |
-| 223 | Recurring Task Foundation — Migration & Entity | Backend | -- | M | 223A, 223B | |
+| 223 | Recurring Task Foundation — Migration & Entity | Backend | -- | M | 223A, 223B | **Done** (PRs #456, #457) |
 | 224 | Recurring Task Service & Controller | Backend | 223 | M | 224A, 224B | |
 | 225 | Recurring Task Frontend | Frontend | 224 | M | 225A | |
 | 226 | Time Reminder Scheduler & OrgSettings | Backend | -- | M | 226A, 226B | |
@@ -153,7 +153,7 @@ TRACK 4: CALENDAR VIEW
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 1a | 218 | 218B | Expense entity + ExpenseCategory enum + ExpenseRepository + entity unit tests. ~4 new files. Backend only. | **Done** (PR #448) |
-| 1b | 223 | 223B | Task entity extension (3 new fields) + RecurrenceRule value object (RRULE parser, next-date calculator) + unit tests. ~3 new files, ~1 modified file. Backend only. | |
+| 1b | 223 | 223B | Task entity extension (3 new fields) + RecurrenceRule value object (RRULE parser, next-date calculator) + unit tests. ~3 new files, ~1 modified file. Backend only. | **Done** (PR #457) |
 
 ### Stage 2: Service Layer (parallel tracks)
 
@@ -538,7 +538,7 @@ Stage 5: [220B] // [222A] // [229B]                              (parallel)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **223A** | 223.1–223.2 | V50 migration section for task recurrence columns (if not already written by 218A) — 3 ALTER TABLE + 1 index. ~1 migration file (shared with Epic 218 or verified). Backend only. | **Done** (PR #456) |
-| **223B** | 223.3–223.9 | Task entity extension (3 new nullable fields, getters/setters, update() extension) + `RecurrenceRule` value object (RRULE parser, next-date calculator for DAILY/WEEKLY/MONTHLY/YEARLY) + unit tests for RecurrenceRule. ~3 new/modified files. Backend only. | |
+| **223B** | 223.3–223.9 | Task entity extension (3 new nullable fields, getters/setters, update() extension) + `RecurrenceRule` value object (RRULE parser, next-date calculator for DAILY/WEEKLY/MONTHLY/YEARLY) + unit tests for RecurrenceRule. ~3 new/modified files. Backend only. | **Done** (PR #457) |
 
 ### Tasks
 

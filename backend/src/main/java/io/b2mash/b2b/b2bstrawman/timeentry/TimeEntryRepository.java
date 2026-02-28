@@ -371,6 +371,24 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
   BudgetAmountProjection budgetAmountConsumed(
       @Param("projectId") UUID projectId, @Param("budgetCurrency") String budgetCurrency);
 
+  // --- Delete protection guard queries (Epic 206A) ---
+
+  /** Counts all time entries for tasks in a project. Used by delete protection guard. */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+      SELECT COUNT(te.id)
+      FROM time_entries te
+      JOIN tasks t ON te.task_id = t.id
+      WHERE t.project_id = :projectId
+      """)
+  long countByProjectId(@Param("projectId") UUID projectId);
+
+  /** Counts all time entries for a specific task. Used by delete protection guard. */
+  @Query("SELECT COUNT(te) FROM TimeEntry te WHERE te.taskId = :taskId")
+  long countByTaskId(@Param("taskId") UUID taskId);
+
   // --- Project lifecycle guardrail queries (Epic 204A) ---
 
   /**

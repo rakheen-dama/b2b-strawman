@@ -24,6 +24,15 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
       """)
   List<Invoice> findByProjectId(@Param("projectId") UUID projectId);
 
+  /** Counts invoices linked to a project via invoice lines. Used by delete protection guard. */
+  @Query(
+      """
+      SELECT COUNT(DISTINCT i) FROM Invoice i WHERE i.id IN (
+        SELECT DISTINCT il.invoiceId FROM InvoiceLine il WHERE il.projectId = :projectId
+      )
+      """)
+  long countByProjectId(@Param("projectId") UUID projectId);
+
   /**
    * JPQL-based batch lookup scoped to the current tenant schema (search_path isolation), unlike
    * JpaRepository.findAllById which uses EntityManager.find directly.

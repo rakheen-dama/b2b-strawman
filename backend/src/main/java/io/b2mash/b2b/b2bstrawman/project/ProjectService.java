@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.compliance.LifecycleAction;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectUpdatedEvent;
+import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.event.ProjectArchivedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectReopenedEvent;
@@ -20,6 +21,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMemberRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupService;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
@@ -64,6 +66,8 @@ public class ProjectService {
   private final MemberNameResolver memberNameResolver;
   private final CustomerRepository customerRepository;
   private final CustomerLifecycleGuard customerLifecycleGuard;
+  private final DocumentRepository documentRepository;
+  private final InvoiceRepository invoiceRepository;
 
   public ProjectService(
       ProjectRepository repository,
@@ -80,7 +84,9 @@ public class ProjectService {
       TimeEntryRepository timeEntryRepository,
       MemberNameResolver memberNameResolver,
       CustomerRepository customerRepository,
-      CustomerLifecycleGuard customerLifecycleGuard) {
+      CustomerLifecycleGuard customerLifecycleGuard,
+      DocumentRepository documentRepository,
+      InvoiceRepository invoiceRepository) {
     this.repository = repository;
     this.projectMemberRepository = projectMemberRepository;
     this.projectAccessService = projectAccessService;
@@ -96,6 +102,8 @@ public class ProjectService {
     this.memberNameResolver = memberNameResolver;
     this.customerRepository = customerRepository;
     this.customerLifecycleGuard = customerLifecycleGuard;
+    this.documentRepository = documentRepository;
+    this.invoiceRepository = invoiceRepository;
   }
 
   @Transactional(readOnly = true)
@@ -374,6 +382,51 @@ public class ProjectService {
   public void deleteProject(UUID id) {
     var project =
         repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
+
+    // Guard 1: Status check — only ACTIVE projects can be deleted
+    if (project.getStatus() != ProjectStatus.ACTIVE) {
+      throw new ResourceConflictException(
+          "Cannot delete project",
+          "Cannot delete a %s project. Reopen the project first."
+              .formatted(project.getStatus().name().toLowerCase()));
+    }
+
+    // Guard 2: Tasks
+    long taskCount = taskRepository.countByProjectId(id);
+    if (taskCount > 0) {
+      throw new ResourceConflictException(
+          "Cannot delete project",
+          "Project has %d task(s). Delete or cancel all tasks before deleting the project."
+              .formatted(taskCount));
+    }
+
+    // Guard 3: Time entries
+    long timeEntryCount = timeEntryRepository.countByProjectId(id);
+    if (timeEntryCount > 0) {
+      throw new ResourceConflictException(
+          "Cannot delete project",
+          "Project has %d time entry/entries. Remove all time entries before deleting the project."
+              .formatted(timeEntryCount));
+    }
+
+    // Guard 4: Invoices
+    long invoiceCount = invoiceRepository.countByProjectId(id);
+    if (invoiceCount > 0) {
+      throw new ResourceConflictException(
+          "Cannot delete project",
+          "Project has %d invoice(s). Void or delete all invoices before deleting the project."
+              .formatted(invoiceCount));
+    }
+
+    // Guard 5: Documents
+    long documentCount = documentRepository.countByProjectId(id);
+    if (documentCount > 0) {
+      throw new ResourceConflictException(
+          "Cannot delete project",
+          "Project has %d document(s). Delete all documents before deleting the project."
+              .formatted(documentCount));
+    }
+
     repository.delete(project);
 
     auditService.log(

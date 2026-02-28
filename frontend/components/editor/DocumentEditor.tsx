@@ -33,7 +33,10 @@ export function DocumentEditor({
       TableRow,
       TableCell,
       TableHeader,
-      LinkExtension.configure({ openOnClick: false }),
+      LinkExtension.configure({
+        openOnClick: false,
+        validate: (url: string) => /^https?:\/\//.test(url),
+      }),
       UnderlineExtension,
       Placeholder.configure({ placeholder: placeholderText }),
     ],

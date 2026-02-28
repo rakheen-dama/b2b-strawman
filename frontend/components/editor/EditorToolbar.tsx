@@ -158,8 +158,9 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
           if (editor.isActive("link")) {
             editor.chain().focus().unsetLink().run();
           } else {
+            // TODO(213B+): Replace window.prompt with a Popover/Dialog for link input
             const url = window.prompt("Enter URL:");
-            if (url) {
+            if (url && /^https?:\/\//.test(url)) {
               editor.chain().focus().setLink({ href: url }).run();
             }
           }

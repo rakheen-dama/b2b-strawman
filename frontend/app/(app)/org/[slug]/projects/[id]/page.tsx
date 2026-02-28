@@ -33,15 +33,27 @@ import type {
   TemplateReadiness,
 } from "@/lib/types";
 import type { SetupStep } from "@/components/setup/types";
-import { formatDate } from "@/lib/format";
+import { formatDate, formatLocalDate, isOverdue } from "@/lib/format";
 import { SaveAsTemplateDialog } from "@/components/templates/SaveAsTemplateDialog";
+import { ProjectLifecycleActions } from "@/components/projects/project-lifecycle-actions";
+import { ArchivedProjectBanner } from "@/components/projects/archived-project-banner";
 import { createSavedViewAction } from "./view-actions";
-import { ArrowLeft, LayoutTemplate, Pencil, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ArrowLeft, AlertTriangle, Calendar, LayoutTemplate, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 
 const ROLE_BADGE: Record<ProjectRole, { label: string; variant: "lead" | "member" }> = {
   lead: { label: "Lead", variant: "lead" },
   member: { label: "Member", variant: "member" },
+};
+
+const PROJECT_STATUS_BADGE: Record<
+  import("@/lib/types").ProjectStatus,
+  { label: string; variant: "success" | "warning" | "neutral" }
+> = {
+  ACTIVE: { label: "Active", variant: "success" },
+  COMPLETED: { label: "Completed", variant: "neutral" },
+  ARCHIVED: { label: "Archived", variant: "neutral" },
 };
 
 export default async function ProjectDetailPage({
@@ -351,7 +363,12 @@ export default async function ProjectDetailPage({
         </Link>
       </div>
 
-      {/* Project Header (33.6) */}
+      {/* Archived banner (208.11) */}
+      {project.status === "ARCHIVED" && (
+        <ArchivedProjectBanner slug={slug} projectId={id} />
+      )}
+
+      {/* Project Header (33.6 + 208.8/208.9/208.12) */}
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-3">
@@ -359,12 +376,50 @@ export default async function ProjectDetailPage({
               {project.name}
             </h1>
             {roleBadge && <Badge variant={roleBadge.variant}>{roleBadge.label}</Badge>}
+            <Badge variant={PROJECT_STATUS_BADGE[project.status].variant} data-testid="project-status-badge">
+              {PROJECT_STATUS_BADGE[project.status].label}
+            </Badge>
           </div>
           {project.description ? (
             <p className="mt-2 text-slate-600 dark:text-slate-400">{project.description}</p>
           ) : (
             <p className="mt-2 text-sm italic text-slate-400 dark:text-slate-600">
               No description
+            </p>
+          )}
+          {/* Due date with overdue warning (208.8) */}
+          {project.dueDate && (
+            <p
+              className={cn(
+                "mt-2 inline-flex items-center gap-1 text-sm",
+                project.status === "ACTIVE" && isOverdue(project.dueDate)
+                  ? "font-medium text-red-600 dark:text-red-400"
+                  : "text-slate-500 dark:text-slate-400",
+              )}
+              data-testid="project-due-date"
+            >
+              {project.status === "ACTIVE" && isOverdue(project.dueDate) ? (
+                <AlertTriangle className="size-3.5" />
+              ) : (
+                <Calendar className="size-3.5" />
+              )}
+              Due {formatLocalDate(project.dueDate)}
+            </p>
+          )}
+          {/* Customer display (208.12) */}
+          {customers.length > 0 ? (
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-400" data-testid="project-customer-link">
+              Customer:{" "}
+              <Link
+                href={`/org/${slug}/customers/${customers[0].id}`}
+                className="text-teal-600 hover:text-teal-700 hover:underline dark:text-teal-400 dark:hover:text-teal-300"
+              >
+                {customers[0].name}
+              </Link>
+            </p>
+          ) : (
+            <p className="mt-2 text-sm text-slate-400 dark:text-slate-600" data-testid="project-internal-label">
+              Internal Project
             </p>
           )}
           <p className="mt-3 text-sm text-slate-400 dark:text-slate-600">
@@ -375,8 +430,17 @@ export default async function ProjectDetailPage({
           </p>
         </div>
 
-        {(canEdit || isOwner || canManage) && (
+        {/* Action buttons: lifecycle + existing (hidden for ARCHIVED except lifecycle) */}
+        {project.status !== "ARCHIVED" && (canEdit || isOwner || canManage) && (
           <div className="flex shrink-0 gap-2">
+            {isAdmin && (
+              <ProjectLifecycleActions
+                slug={slug}
+                projectId={id}
+                projectName={project.name}
+                projectStatus={project.status}
+              />
+            )}
             {canManage && projectTemplates.length > 0 && (
               <GenerateDocumentDropdown
                 templates={projectTemplates}
@@ -413,6 +477,17 @@ export default async function ProjectDetailPage({
                 </Button>
               </DeleteProjectDialog>
             )}
+          </div>
+        )}
+        {/* For ARCHIVED, only show lifecycle actions (Restore) */}
+        {project.status === "ARCHIVED" && isAdmin && (
+          <div className="flex shrink-0 gap-2">
+            <ProjectLifecycleActions
+              slug={slug}
+              projectId={id}
+              projectName={project.name}
+              projectStatus={project.status}
+            />
           </div>
         )}
       </div>

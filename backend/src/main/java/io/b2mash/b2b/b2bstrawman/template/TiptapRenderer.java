@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Safelist;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -37,6 +38,7 @@ public class TiptapRenderer {
   private final String defaultCss;
 
   /** Production constructor — loads CSS from classpath resource. */
+  @Autowired
   public TiptapRenderer(@Value("classpath:templates/document-default.css") Resource cssResource)
       throws IOException {
     this(new String(cssResource.getInputStream().readAllBytes(), StandardCharsets.UTF_8));

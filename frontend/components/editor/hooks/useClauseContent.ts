@@ -28,18 +28,28 @@ export function useClauseContent(clauseId: string): ClauseContentResult {
 
     let cancelled = false;
 
-    getClause(clauseId).then((clause) => {
-      if (cancelled) return;
-      if (clause) {
-        clauseCache.set(clauseId, {
-          body: clause.body,
-          title: clause.title,
-        });
-        setState({ body: clause.body, title: clause.title, isLoading: false });
-      } else {
-        setState({ body: null, title: null, isLoading: false });
-      }
-    });
+    getClause(clauseId)
+      .then((clause) => {
+        if (cancelled) return;
+        if (clause) {
+          clauseCache.set(clauseId, {
+            body: clause.body,
+            title: clause.title,
+          });
+          setState({
+            body: clause.body,
+            title: clause.title,
+            isLoading: false,
+          });
+        } else {
+          setState({ body: null, title: null, isLoading: false });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setState({ body: null, title: null, isLoading: false });
+        }
+      });
 
     return () => {
       cancelled = true;

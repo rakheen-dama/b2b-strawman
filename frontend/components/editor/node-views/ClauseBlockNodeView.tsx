@@ -8,8 +8,6 @@ import {
   ChevronDown,
   ChevronRight,
   Trash2,
-  ArrowUp,
-  ArrowDown,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -64,14 +62,6 @@ export function ClauseBlockNodeView({ node, deleteNode }: NodeViewProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>
-                <ArrowUp className="mr-2 h-4 w-4" />
-                Move up
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <ArrowDown className="mr-2 h-4 w-4" />
-                Move down
-              </DropdownMenuItem>
               <DropdownMenuItem
                 className="text-red-600 dark:text-red-400"
                 onClick={() => deleteNode()}

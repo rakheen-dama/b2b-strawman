@@ -52,7 +52,9 @@ export function ClausePicker({
 
   useEffect(() => {
     if (open) {
-      getClauses().then(setClauses);
+      getClauses()
+        .then(setClauses)
+        .catch(() => setClauses([]));
     }
   }, [open]);
 

@@ -10,7 +10,7 @@ Phase 31 replaces the Thymeleaf-based document authoring system with a Tiptap/Pr
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 209 | Database Migration & Pack Conversion | Backend | -- | L | 209A, 209B | 209A Done (PR #428) |
+| 209 | Database Migration & Pack Conversion | Backend | -- | L | 209A, 209B | **Done** (PRs #428, #429) |
 | 210 | TiptapRenderer & Variable Endpoint | Backend | 209 | L | 210A, 210B | |
 | 211 | Entity Updates & Template-Clause Sync | Backend | 209 | M | 211A, 211B | |
 | 212 | Rendering Pipeline Switch & Legacy Import | Backend | 210, 211 | M | 212A, 212B | |
@@ -90,7 +90,7 @@ Phase 31 replaces the Thymeleaf-based document authoring system with a Tiptap/Pr
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 1a | Epic 209 | 209A | V48 Flyway migration (column additions, PL/pgSQL converter, column swap). Template pack JSON conversion (3 files). Pack.json update. Must run first -- changes column types. | **Done** (PR #428) |
-| 1b | Epic 209 | 209B | Clause pack JSON conversion (12 clauses). TemplatePackSeeder and ClausePackSeeder updates to read JSON. Must follow 209A (migration changes column types). |
+| 1b | Epic 209 | 209B | Clause pack JSON conversion (12 clauses). TemplatePackSeeder and ClausePackSeeder updates to read JSON. Must follow 209A (migration changes column types). | **Done** (PR #429) |
 
 ### Stage 2: Backend Core (Parallel Tracks)
 
@@ -173,7 +173,7 @@ Stage 7:  [217A] ──► [217B]                                      ← clean
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **209A** | 209.1-209.7 | V48 migration (add JSONB columns, PL/pgSQL converter, column swap, legacy backup). Convert 3 template pack HTML files to JSON equivalents. Update pack.json contentFile references. Migration verification tests (~6 tests). | **Done** (PR #428) |
-| **209B** | 209.8-209.13 | Convert 12 clause bodies in standard-clauses pack.json from HTML strings to Tiptap JSON objects. Update TemplatePackSeeder to read .json files and store JSONB. Update ClausePackSeeder to parse JSON body objects. Pack seeder integration tests (~6 tests). | |
+| **209B** | 209.8-209.13 | Convert 12 clause bodies in standard-clauses pack.json from HTML strings to Tiptap JSON objects. Update TemplatePackSeeder to read .json files and store JSONB. Update ClausePackSeeder to parse JSON body objects. Pack seeder integration tests (~6 tests). | **Done** (PR #429) |
 
 ### Tasks
 

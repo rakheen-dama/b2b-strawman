@@ -244,7 +244,7 @@
 | 207 | Task Lifecycle Frontend | Frontend | 202 | M | 207A, 207B | **Done** (PRs #424, #425) |
 | 208 | Project Lifecycle Frontend | Frontend | 204, 205 | L | 208A, 208B | **Done** (PRs #426, #427) |
 | **Phase 31 — Document System Redesign: Rich Editor & Unified UX** | | | | | | See [tasks/phase31-document-system-redesign.md](tasks/phase31-document-system-redesign.md) |
-| 209 | Database Migration & Pack Conversion | Backend | -- | L | 209A, 209B | |
+| 209 | Database Migration & Pack Conversion | Backend | -- | L | 209A, 209B | **Done** (PRs #428, #429) |
 | 210 | TiptapRenderer & Variable Endpoint | Backend | 209 | L | 210A, 210B | |
 | 211 | Entity Updates & Template-Clause Sync | Backend | 209 | M | 211A, 211B | |
 | 212 | Rendering Pipeline Switch & Legacy Import | Backend | 210, 211 | M | 212A, 212B | |

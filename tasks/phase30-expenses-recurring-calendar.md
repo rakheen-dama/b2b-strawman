@@ -159,7 +159,7 @@ TRACK 4: CALENDAR VIEW
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 2a (parallel) | 219 | 219A | ExpenseService: full CRUD, validation, billing status computation, write-off/restore, audit events, domain events. ~1 new file, ~1 new event file. Backend only. | |
+| 2a (parallel) | 219 | 219A | ExpenseService: full CRUD, validation, billing status computation, write-off/restore, audit events, domain events. ~1 new file, ~1 new event file. Backend only. | **Done** (PR #449) |
 | 2b (parallel) | 221 | 221A | InvoiceLine entity extension (expenseId + lineType fields) + InvoiceLineType enum + InvoiceLineRepository update + backfill handling. ~3 modified/new files. Backend only. | |
 | 2c (parallel) | 224 | 224A | TaskService.completeTask() extension: recurrence check, next-date calculation, auto-create new Task in same transaction, audit event, notification. ~1 modified file, ~1 new event file. Backend only. | |
 | 2d (parallel) | 226 | 226B | TimeReminderScheduler: @Scheduled component, per-org processing, working day check, member time query, notification creation. ~1 new file. Backend only. | |
@@ -283,7 +283,7 @@ Stage 5: [220B] // [222A] // [229B]                              (parallel)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **219A** | 219.1–219.7 | `ExpenseService`: createExpense, getExpense, listExpenses, updateExpense, deleteExpense, writeOffExpense, restoreExpense, getMyExpenses. All operations include project access validation, billing status guard, OrgSettings load for default markup, audit events, domain events. ~1 new service file, ~2 new event files. Backend only. | |
+| **219A** | 219.1–219.7 | `ExpenseService`: createExpense, getExpense, listExpenses, updateExpense, deleteExpense, writeOffExpense, restoreExpense, getMyExpenses. All operations include project access validation, billing status guard, OrgSettings load for default markup, audit events, domain events. ~1 new service file, ~2 new event files. Backend only. | **Done** (PR #449) |
 | **219B** | 219.8–219.15 | `ExpenseController`: 7 endpoints with `@PreAuthorize`, `ExpenseResponse` DTO, `CreateExpenseRequest`/`UpdateExpenseRequest` records, complete integration test suite (~20 tests). ~1 new controller file, ~1 new test file. Backend only. | |
 
 ### Tasks

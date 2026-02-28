@@ -212,6 +212,14 @@ export interface Task {
   customFields?: Record<string, unknown>;
   appliedFieldGroups?: string[];
   tags?: TagResponse[];
+  recurrenceRule: string | null;
+  recurrenceEndDate: string | null;
+  parentTaskId: string | null;
+  isRecurring: boolean;
+}
+
+export interface CompleteTaskResponse extends Task {
+  nextInstance: Task | null;
 }
 
 export interface CreateTaskRequest {
@@ -221,6 +229,8 @@ export interface CreateTaskRequest {
   type?: string;
   dueDate?: string;
   assigneeId?: string;
+  recurrenceRule?: string;
+  recurrenceEndDate?: string;
 }
 
 export interface UpdateTaskRequest {
@@ -231,6 +241,8 @@ export interface UpdateTaskRequest {
   type?: string;
   dueDate?: string;
   assigneeId?: string;
+  recurrenceRule?: string;
+  recurrenceEndDate?: string;
 }
 
 // ---- Task Items (from TaskItemController.java) ----

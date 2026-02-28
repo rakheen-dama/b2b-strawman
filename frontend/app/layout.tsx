@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AuthProvider } from "@/lib/auth/client/auth-provider";
 import { Sora, IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const sora = Sora({
@@ -37,6 +38,7 @@ export default function RootLayout({
       <html lang="en">
         <body className={`${sora.variable} ${plexSans.variable} ${jetbrainsMono.variable} antialiased`}>
           {children}
+          <Toaster position="bottom-right" />
         </body>
       </html>
     </AuthProvider>

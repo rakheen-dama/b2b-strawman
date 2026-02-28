@@ -27,9 +27,8 @@ import org.thymeleaf.templateresolver.StringTemplateResolver;
  * Orchestrates report rendering: builds Thymeleaf context from report definition and execution
  * result, renders HTML, and converts to PDF.
  *
- * <p>Uses its own Thymeleaf engine (without TemplateSecurityValidator) because report templates are
- * system-provided and trusted. They use Thymeleaf utility objects like {@code #numbers} and {@code
- * #dates} which the security validator blocks for user-submitted document templates.
+ * <p>Uses its own Thymeleaf engine because report templates are system-provided and trusted. They
+ * use Thymeleaf utility objects like {@code #numbers} and {@code #dates}.
  *
  * <p>Report templates are full HTML documents (not fragments like document templates), so no
  * wrapHtml() is needed.
@@ -263,9 +262,8 @@ public class ReportRenderingService {
   }
 
   /**
-   * Creates a dedicated Thymeleaf engine for report templates. Uses LenientStandardDialect (same as
-   * PdfRenderingService) but skips TemplateSecurityValidator since report templates are
-   * system-provided and trusted.
+   * Creates a dedicated Thymeleaf engine for report templates. Uses LenientStandardDialect. Report
+   * templates are system-provided and trusted.
    */
   private static TemplateEngine createReportTemplateEngine() {
     var engine = new TemplateEngine();

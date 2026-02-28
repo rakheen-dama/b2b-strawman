@@ -12,7 +12,7 @@ export default async function DocumentsPage({
 
   let documents: Document[] = [];
   try {
-    documents = await api.get<Document[]>("/api/documents");
+    documents = await api.get<Document[]>("/api/documents?scope=ORG");
   } catch (error) {
     handleApiError(error);
   }

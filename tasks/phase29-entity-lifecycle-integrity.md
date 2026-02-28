@@ -122,7 +122,7 @@ This is a **structural hardening phase**, not a feature phase. No new pages are 
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 4a | 206 | 206A | `ProjectService.deleteProject()` refactor: add child-count guards (tasks, time entries, invoices, documents) + reject delete for COMPLETED/ARCHIVED + `TaskService.deleteTask()` guard: block if time entries exist + 409 error responses with guidance messages. ~2 modified files. Backend only. | |
+| 4a | 206 | 206A | `ProjectService.deleteProject()` refactor: add child-count guards (tasks, time entries, invoices, documents) + reject delete for COMPLETED/ARCHIVED + `TaskService.deleteTask()` guard: block if time entries exist + 409 error responses with guidance messages. ~2 modified files. Backend only. | **Done** (PR #422) |
 | 4b | 206 | 206B | `CustomerService.deleteCustomer()` guard: block if linked projects/invoices/retainers exist + archive-guard for projects (no new tasks/time on archived projects via `ProjectLifecycleGuard`) + comprehensive integration tests (~10 tests). ~2 modified files, ~1 new file, ~1 new test file. Backend only. | |
 
 ### Stage 5: Frontend (parallel tracks)
@@ -496,7 +496,7 @@ Stage 6: [207B] // [208B]                                        (parallel, afte
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **206A** | 206.1--206.5 | `ProjectService.deleteProject()` refactor: child-count guards (tasks, time entries, invoices, documents) + reject delete for COMPLETED/ARCHIVED + `TaskService.deleteTask()` guard: block if time entries exist + 409 error responses with descriptive messages. ~2 modified files. Backend only. | |
+| **206A** | 206.1--206.5 | `ProjectService.deleteProject()` refactor: child-count guards (tasks, time entries, invoices, documents) + reject delete for COMPLETED/ARCHIVED + `TaskService.deleteTask()` guard: block if time entries exist + 409 error responses with descriptive messages. ~2 modified files. Backend only. | **Done** (PR #422) |
 | **206B** | 206.6--206.10 | `ProjectLifecycleGuard` service (reusable guard checking project status for child creation) + customer delete protection verification + comprehensive integration tests (~10 tests). ~1 new file, ~1 modified file, ~1 new test file. Backend only. | |
 
 ### Tasks

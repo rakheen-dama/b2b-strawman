@@ -9,6 +9,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.clause.Clause;
+import io.b2mash.b2b.b2bstrawman.clause.ClauseRepository;
+import io.b2mash.b2b.b2bstrawman.clause.TemplateClause;
+import io.b2mash.b2b.b2bstrawman.clause.TemplateClauseRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
@@ -41,7 +45,12 @@ import org.springframework.transaction.support.TransactionTemplate;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DocumentGenerationIntegrationTest {
 
-  private static final Map<String, Object> CONTENT = Map.of("type", "doc", "content", List.of());
+  private static final Map<String, Object> CONTENT =
+      TestDocumentBuilder.doc()
+          .heading(1, "Project Summary")
+          .variable("project.name")
+          .paragraph("Generated document for this project.")
+          .build();
 
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_doc_gen_test";
@@ -53,12 +62,16 @@ class DocumentGenerationIntegrationTest {
   @Autowired private DocumentTemplateRepository documentTemplateRepository;
   @Autowired private GeneratedDocumentRepository generatedDocumentRepository;
   @Autowired private ProjectRepository projectRepository;
+  @Autowired private ClauseRepository clauseRepository;
+  @Autowired private TemplateClauseRepository templateClauseRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
   private String tenantSchema;
   private String memberIdOwner;
   private UUID testProjectId;
   private UUID testTemplateId;
+  private UUID clauseTemplateId;
+  private UUID testClauseId;
 
   @BeforeAll
   void setup() throws Exception {
@@ -92,6 +105,38 @@ class DocumentGenerationIntegrationTest {
                           CONTENT);
                   template = documentTemplateRepository.save(template);
                   testTemplateId = template.getId();
+
+                  // Create clause with Tiptap JSON body for clause snapshot tests
+                  var clauseBody =
+                      TestDocumentBuilder.doc()
+                          .paragraph("This clause defines the engagement scope.")
+                          .build();
+                  var clause =
+                      new Clause("Engagement Scope", "engagement-scope", clauseBody, "General");
+                  clause = clauseRepository.save(clause);
+                  testClauseId = clause.getId();
+
+                  // Create template with clauseBlock referencing the clause
+                  var clauseContent =
+                      TestDocumentBuilder.doc()
+                          .heading(1, "Agreement")
+                          .variable("project.name")
+                          .clauseBlock(clause.getId(), "engagement-scope", "Engagement Scope", true)
+                          .build();
+                  var clauseTemplate =
+                      new DocumentTemplate(
+                          TemplateEntityType.PROJECT,
+                          "Clause Gen Template",
+                          "clause-gen-template",
+                          TemplateCategory.ENGAGEMENT_LETTER,
+                          clauseContent);
+                  clauseTemplate = documentTemplateRepository.save(clauseTemplate);
+                  clauseTemplateId = clauseTemplate.getId();
+
+                  // Create TemplateClause association
+                  var templateClause =
+                      new TemplateClause(clauseTemplate.getId(), clause.getId(), 0, true);
+                  templateClauseRepository.save(templateClause);
                 }));
   }
 
@@ -254,6 +299,64 @@ class DocumentGenerationIntegrationTest {
                     """
                         .formatted(testProjectId)))
         .andExpect(status().isNotFound());
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void shouldStoreClauseSnapshotsWithTiptapJsonBody() throws Exception {
+    // Generate with clause selections that include the test clause
+    mockMvc
+        .perform(
+            post("/api/templates/" + clauseTemplateId + "/generate")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "entityId": "%s",
+                      "saveToDocuments": false,
+                      "acknowledgeWarnings": false,
+                      "clauses": [{"clauseId": "%s", "sortOrder": 0}]
+                    }
+                    """
+                        .formatted(testProjectId, testClauseId)))
+        .andExpect(status().isOk());
+
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var docs =
+                      generatedDocumentRepository
+                          .findByPrimaryEntityTypeAndPrimaryEntityIdOrderByGeneratedAtDesc(
+                              TemplateEntityType.PROJECT, testProjectId);
+                  // Find the doc generated with clause template
+                  var clauseDoc =
+                      docs.stream()
+                          .filter(
+                              d ->
+                                  d.getClauseSnapshots() != null
+                                      && !d.getClauseSnapshots().isEmpty())
+                          .findFirst()
+                          .orElseThrow(
+                              () -> new AssertionError("No doc with clause snapshots found"));
+
+                  var snapshots = clauseDoc.getClauseSnapshots();
+                  assertThat(snapshots).hasSize(1);
+
+                  var snapshot = (Map<String, Object>) snapshots.getFirst();
+                  assertThat(snapshot).containsKey("clauseId");
+                  assertThat(snapshot).containsKey("slug");
+                  assertThat(snapshot).containsKey("title");
+                  assertThat(snapshot).containsKey("body");
+                  assertThat(snapshot).containsKey("sortOrder");
+
+                  // Verify body is a Tiptap JSON map
+                  assertThat(snapshot.get("body")).isInstanceOf(Map.class);
+                  var body = (Map<String, Object>) snapshot.get("body");
+                  assertThat(body).containsKey("type");
+                  assertThat(body.get("type")).isEqualTo("doc");
+                }));
   }
 
   // --- JWT Helpers ---

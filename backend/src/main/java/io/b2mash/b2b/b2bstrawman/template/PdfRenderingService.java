@@ -2,12 +2,9 @@ package io.b2mash.b2b.b2bstrawman.template;
 
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import io.b2mash.b2b.b2bstrawman.clause.Clause;
-import io.b2mash.b2b.b2bstrawman.clause.ClauseAssembler;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -17,49 +14,34 @@ import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.context.Context;
-import org.thymeleaf.templatemode.TemplateMode;
-import org.thymeleaf.templateresolver.StringTemplateResolver;
 
 /**
- * Orchestrates template rendering: loads template, builds context, merges CSS, renders HTML via
- * Thymeleaf, and converts to PDF via OpenHTMLToPDF.
+ * Orchestrates template rendering: loads template, builds context, renders HTML via TiptapRenderer,
+ * and converts to PDF via OpenHTMLToPDF.
  *
- * <p>Uses a dedicated Thymeleaf TemplateEngine with a StringTemplateResolver (separate from
- * Spring's autoconfigured engine which uses classpath resolvers) so that document template content
- * stored in the database can be rendered directly as Thymeleaf markup.
+ * <p>All rendering uses the TiptapRenderer JSON tree walker. Thymeleaf rendering has been removed.
  */
 @Service
 public class PdfRenderingService {
 
   private static final Logger log = LoggerFactory.getLogger(PdfRenderingService.class);
-  private static final String DEFAULT_CSS_PATH = "templates/document-default.css";
 
   private final DocumentTemplateRepository documentTemplateRepository;
   private final List<TemplateContextBuilder> contextBuilders;
   private final TemplateValidationService templateValidationService;
-  private final ClauseAssembler clauseAssembler;
   private final TiptapRenderer tiptapRenderer;
-  private final TemplateEngine stringTemplateEngine;
-  private final String defaultCss;
 
   public PdfRenderingService(
       DocumentTemplateRepository documentTemplateRepository,
       List<TemplateContextBuilder> contextBuilders,
       TemplateValidationService templateValidationService,
-      ClauseAssembler clauseAssembler,
       TiptapRenderer tiptapRenderer) {
     this.documentTemplateRepository = documentTemplateRepository;
     this.contextBuilders = contextBuilders;
     this.templateValidationService = templateValidationService;
-    this.clauseAssembler = clauseAssembler;
     this.tiptapRenderer = tiptapRenderer;
-    this.stringTemplateEngine = createStringTemplateEngine();
-    this.defaultCss = loadDefaultCss();
   }
 
   /**
@@ -195,50 +177,9 @@ public class PdfRenderingService {
     return builder.buildContext(entityId, memberId);
   }
 
-  /**
-   * Renders a Thymeleaf fragment (e.g., a single clause body) with the given context. The fragment
-   * is wrapped in a minimal HTML shell for Thymeleaf processing, then the wrapper is stripped from
-   * the output, returning only the rendered content.
-   *
-   * @param templateContent the Thymeleaf fragment content (not a full HTML document)
-   * @param context the template variable context
-   * @return the rendered HTML fragment (without html/body wrapper)
-   */
-  public String renderFragment(String templateContent, Map<String, Object> context) {
-    TemplateSecurityValidator.validate(templateContent);
-    String wrapped = "<html><body>" + templateContent + "</body></html>";
-    String rendered = renderThymeleaf(wrapped, context);
-    // Strip the wrapper to return just the fragment content
-    int bodyStart = rendered.indexOf("<body");
-    if (bodyStart >= 0) {
-      bodyStart = rendered.indexOf(">", bodyStart) + 1;
-    }
-    int bodyEnd = rendered.indexOf("</body>");
-    if (bodyStart >= 0 && bodyEnd > bodyStart) {
-      return rendered.substring(bodyStart, bodyEnd).trim();
-    }
-    return rendered;
-  }
-
-  /**
-   * Renders a template to a full HTML document string. Uses the legacy Thymeleaf pipeline when
-   * {@code legacyContent} is set, otherwise renders JSONB content via {@link TiptapRenderer}.
-   */
+  /** Renders a template to a full HTML document string via {@link TiptapRenderer}. */
   private String renderTemplateToHtml(
       DocumentTemplate template, Map<String, Object> contextMap, List<Clause> resolvedClauses) {
-    if (template.getLegacyContent() != null) {
-      // Legacy Thymeleaf rendering path
-      String templateContent =
-          injectClauseContext(resolvedClauses, contextMap, template.getLegacyContent());
-      String customCss = template.getCss() != null ? template.getCss() : "";
-      String mergedCss = defaultCss + "\n" + customCss;
-      String renderedBody = renderThymeleaf(templateContent, contextMap);
-      return wrapHtml(renderedBody, mergedCss);
-    }
-
-    // Security: JSONB content path has no SSTI risk (no Thymeleaf expression evaluation).
-    // TiptapRenderer output-encodes all text via HtmlUtils.htmlEscape and sanitizes
-    // legacyHtml nodes via Jsoup safelist — safe by construction per ADR-121.
     Map<UUID, Clause> clauseMap = new LinkedHashMap<>();
     if (resolvedClauses != null) {
       for (var clause : resolvedClauses) {
@@ -260,30 +201,6 @@ public class PdfRenderingService {
                     "No context builder registered for entity type: " + entityType));
   }
 
-  public String renderThymeleaf(String templateContent, Map<String, Object> contextMap) {
-    TemplateSecurityValidator.validate(templateContent);
-    var ctx = new Context();
-    contextMap.forEach(ctx::setVariable);
-    return stringTemplateEngine.process(templateContent, ctx);
-  }
-
-  String wrapHtml(String renderedHtml, String css) {
-    String styleBlock = "<style>\n" + css + "\n</style>\n";
-
-    // If the rendered output is already a full HTML document, inject CSS into the existing <head>
-    int headClose = renderedHtml.indexOf("</head>");
-    if (headClose >= 0) {
-      return renderedHtml.substring(0, headClose) + styleBlock + renderedHtml.substring(headClose);
-    }
-
-    // Otherwise, wrap the fragment in a full HTML document
-    return "<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\"UTF-8\"/>\n"
-        + styleBlock
-        + "</head>\n<body>\n"
-        + renderedHtml
-        + "\n</body>\n</html>";
-  }
-
   public byte[] htmlToPdf(String html) {
     try (var outputStream = new ByteArrayOutputStream()) {
       var builder = new PdfRendererBuilder();
@@ -294,41 +211,6 @@ public class PdfRenderingService {
     } catch (IOException e) {
       throw new PdfGenerationException("Failed to generate PDF from rendered HTML", e);
     }
-  }
-
-  /**
-   * Validates clause bodies, assembles clause HTML, injects into context, and handles template
-   * fallback for missing ${clauses} placeholder.
-   */
-  private String injectClauseContext(
-      List<Clause> resolvedClauses, Map<String, Object> contextMap, String templateContent) {
-    if (resolvedClauses == null || resolvedClauses.isEmpty()) {
-      contextMap.put("clauses", "");
-      contextMap.put("clauseCount", 0);
-      return templateContent;
-    }
-
-    // Defense in depth: validate each clause legacy body (used by old Thymeleaf pipeline)
-    for (var clause : resolvedClauses) {
-      if (clause.getLegacyBody() != null) {
-        TemplateSecurityValidator.validate(clause.getLegacyBody());
-      }
-    }
-
-    String clauseHtml = clauseAssembler.assembleClauseBlock(resolvedClauses);
-    contextMap.put("clauses", clauseHtml);
-    contextMap.put("clauseCount", resolvedClauses.size());
-
-    // Fallback: if template doesn't have ${clauses} placeholder, append section
-    if (!clauseHtml.isEmpty() && !templateContent.contains("${clauses}")) {
-      templateContent =
-          templateContent
-              + "\n<div class=\"clauses-section\">\n"
-              + "<hr/>\n<h2>Terms and Conditions</h2>\n"
-              + "<div th:utext=\"${clauses}\"></div>\n</div>";
-    }
-
-    return templateContent;
   }
 
   String generateFilename(
@@ -368,23 +250,5 @@ public class PdfRenderingService {
         .replaceAll("[^a-z0-9-]", "")
         .replaceAll("-+", "-")
         .replaceAll("^-|-$", "");
-  }
-
-  private static TemplateEngine createStringTemplateEngine() {
-    var engine = new TemplateEngine();
-    engine.setDialect(new LenientStandardDialect());
-    var resolver = new StringTemplateResolver();
-    resolver.setTemplateMode(TemplateMode.HTML);
-    engine.setTemplateResolver(resolver);
-    return engine;
-  }
-
-  private static String loadDefaultCss() {
-    try (InputStream is = new ClassPathResource(DEFAULT_CSS_PATH).getInputStream()) {
-      return new String(is.readAllBytes(), StandardCharsets.UTF_8);
-    } catch (IOException e) {
-      log.warn("Could not load default CSS from {}, using empty CSS", DEFAULT_CSS_PATH, e);
-      return "";
-    }
   }
 }

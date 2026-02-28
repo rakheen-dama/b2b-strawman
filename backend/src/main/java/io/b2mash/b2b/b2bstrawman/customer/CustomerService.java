@@ -14,8 +14,10 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMemberRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupService;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import io.b2mash.b2b.b2bstrawman.retainer.RetainerAgreementRepository;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,6 +47,8 @@ public class CustomerService {
   private final FieldGroupService fieldGroupService;
   private final ProjectRepository projectRepository;
   private final CustomerProjectRepository customerProjectRepository;
+  private final InvoiceRepository invoiceRepository;
+  private final RetainerAgreementRepository retainerAgreementRepository;
 
   public CustomerService(
       CustomerRepository repository,
@@ -56,7 +60,9 @@ public class CustomerService {
       FieldDefinitionRepository fieldDefinitionRepository,
       FieldGroupService fieldGroupService,
       ProjectRepository projectRepository,
-      CustomerProjectRepository customerProjectRepository) {
+      CustomerProjectRepository customerProjectRepository,
+      InvoiceRepository invoiceRepository,
+      RetainerAgreementRepository retainerAgreementRepository) {
     this.repository = repository;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
@@ -67,6 +73,8 @@ public class CustomerService {
     this.fieldGroupService = fieldGroupService;
     this.projectRepository = projectRepository;
     this.customerProjectRepository = customerProjectRepository;
+    this.invoiceRepository = invoiceRepository;
+    this.retainerAgreementRepository = retainerAgreementRepository;
   }
 
   @Transactional(readOnly = true)
@@ -316,6 +324,24 @@ public class CustomerService {
       throw new ResourceConflictException(
           "Cannot archive customer",
           "Cannot archive customer with linked projects. Unlink all projects first.");
+    }
+
+    // Delete protection: block if customer has invoices
+    long invoiceCount = invoiceRepository.countByCustomerId(id);
+    if (invoiceCount > 0) {
+      throw new ResourceConflictException(
+          "Cannot archive customer",
+          "Cannot archive customer with %d invoice(s). Void or delete all invoices first."
+              .formatted(invoiceCount));
+    }
+
+    // Delete protection: block if customer has retainer agreements
+    long retainerCount = retainerAgreementRepository.countByCustomerId(id);
+    if (retainerCount > 0) {
+      throw new ResourceConflictException(
+          "Cannot archive customer",
+          "Cannot archive customer with %d retainer agreement(s). Cancel or delete all retainers first."
+              .formatted(retainerCount));
     }
 
     customer.archive();

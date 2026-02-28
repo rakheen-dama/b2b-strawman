@@ -19,6 +19,7 @@ import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccess;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
+import io.b2mash.b2b.b2bstrawman.project.ProjectLifecycleGuard;
 import java.lang.reflect.Field;
 import java.time.Duration;
 import java.time.Instant;
@@ -43,6 +44,7 @@ class DocumentServiceTest {
   @Mock private AuditService auditService;
   @Mock private ApplicationEventPublisher eventPublisher;
   @Mock private MemberNameResolver memberNameResolver;
+  @Mock private ProjectLifecycleGuard projectLifecycleGuard;
   @InjectMocks private DocumentService service;
 
   private static final UUID PROJECT_ID = UUID.randomUUID();

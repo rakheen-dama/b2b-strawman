@@ -16,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.project.ProjectLifecycleGuard;
 import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
 import java.time.Duration;
 import java.time.Instant;
@@ -41,6 +42,7 @@ public class DocumentService {
   private final ApplicationEventPublisher eventPublisher;
   private final MemberNameResolver memberNameResolver;
   private final CustomerLifecycleGuard customerLifecycleGuard;
+  private final ProjectLifecycleGuard projectLifecycleGuard;
 
   public DocumentService(
       DocumentRepository documentRepository,
@@ -50,7 +52,8 @@ public class DocumentService {
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
       MemberNameResolver memberNameResolver,
-      CustomerLifecycleGuard customerLifecycleGuard) {
+      CustomerLifecycleGuard customerLifecycleGuard,
+      ProjectLifecycleGuard projectLifecycleGuard) {
     this.documentRepository = documentRepository;
     this.projectAccessService = projectAccessService;
     this.customerRepository = customerRepository;
@@ -59,6 +62,7 @@ public class DocumentService {
     this.eventPublisher = eventPublisher;
     this.memberNameResolver = memberNameResolver;
     this.customerLifecycleGuard = customerLifecycleGuard;
+    this.projectLifecycleGuard = projectLifecycleGuard;
   }
 
   /**
@@ -93,6 +97,7 @@ public class DocumentService {
       UUID memberId,
       String orgRole) {
     projectAccessService.requireViewAccess(projectId, memberId, orgRole);
+    projectLifecycleGuard.requireNotReadOnly(projectId);
 
     var document =
         documentRepository.save(new Document(projectId, fileName, contentType, size, memberId));

@@ -771,11 +771,15 @@ export interface CustomerProfitabilityResponse {
 
 export type InvoiceStatus = "DRAFT" | "APPROVED" | "SENT" | "PAID" | "VOID";
 
+export type InvoiceLineType = "TIME" | "EXPENSE" | "RETAINER" | "MANUAL";
+
 export interface InvoiceLineResponse {
   id: string;
   projectId: string | null;
   projectName: string | null;
   timeEntryId: string | null;
+  expenseId: string | null;
+  lineType: InvoiceLineType;
   description: string;
   quantity: number;
   unitPrice: number;
@@ -859,6 +863,7 @@ export interface CreateInvoiceDraftRequest {
   customerId: string;
   currency: string;
   timeEntryIds: string[];
+  expenseIds?: string[];
   dueDate?: string;
   notes?: string;
   paymentTerms?: string;
@@ -921,6 +926,22 @@ export interface UnbilledTimeResponse {
   customerName: string;
   projects: UnbilledProjectGroup[];
   grandTotals: Record<string, CurrencyTotal>;
+  unbilledExpenses: UnbilledExpenseEntry[];
+  unbilledExpenseTotals: Record<string, number>;
+}
+
+export interface UnbilledExpenseEntry {
+  id: string;
+  projectId: string;
+  projectName: string;
+  date: string;
+  description: string;
+  amount: number;
+  currency: string;
+  category: ExpenseCategory;
+  markupPercent: number | null;
+  billableAmount: number;
+  notes: string | null;
 }
 
 // ---- Custom Fields (from FieldDefinitionController, FieldGroupController) ----

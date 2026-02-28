@@ -97,6 +97,9 @@ describe("Invoice Generation Validation", () => {
           },
         ],
         totals: [{ currency: "ZAR", totalMinutes: 60, totalBillable: 1800 }],
+        grandTotals: { ZAR: { hours: 1, amount: 1800 } },
+        unbilledExpenses: [],
+        unbilledExpenseTotals: {},
       },
     });
 
@@ -122,7 +125,7 @@ describe("Invoice Generation Validation", () => {
 
     // Wait for step 2
     await waitFor(() => {
-      expect(screen.getByText("Select Time Entries")).toBeInTheDocument();
+      expect(screen.getByText("Select Unbilled Items")).toBeInTheDocument();
     });
 
     // Click validate

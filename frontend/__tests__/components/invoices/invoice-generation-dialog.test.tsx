@@ -67,6 +67,8 @@ const sampleUnbilledData: UnbilledTimeResponse = {
     USD: { hours: 3, amount: 300 },
     ZAR: { hours: 1.5, amount: 1200 },
   },
+  unbilledExpenses: [],
+  unbilledExpenseTotals: {},
 };
 
 describe("InvoiceGenerationDialog", () => {
@@ -134,7 +136,7 @@ describe("InvoiceGenerationDialog", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText("Select Time Entries")).toBeInTheDocument();
+      expect(screen.getByText("Select Unbilled Items")).toBeInTheDocument();
     });
 
     expect(screen.getByText("Project Alpha")).toBeInTheDocument();
@@ -161,7 +163,7 @@ describe("InvoiceGenerationDialog", () => {
     await user.click(screen.getByRole("button", { name: "Fetch Unbilled Time" }));
 
     await waitFor(() => {
-      expect(screen.getByText("Select Time Entries")).toBeInTheDocument();
+      expect(screen.getByText("Select Unbilled Items")).toBeInTheDocument();
     });
 
     // Check the ZAR entry shows currency mismatch indicator
@@ -196,11 +198,11 @@ describe("InvoiceGenerationDialog", () => {
     await user.click(screen.getByRole("button", { name: "Fetch Unbilled Time" }));
 
     await waitFor(() => {
-      expect(screen.getByText("Select Time Entries")).toBeInTheDocument();
+      expect(screen.getByText("Select Unbilled Items")).toBeInTheDocument();
     });
 
     // The running total should show the auto-selected USD entries (200 + 100 = 300)
-    expect(screen.getByText("2 entries selected for Acme Corp")).toBeInTheDocument();
+    expect(screen.getByText("2 items selected for Acme Corp")).toBeInTheDocument();
   });
 
   it("calls createInvoiceDraft on Create Draft click", async () => {
@@ -224,7 +226,7 @@ describe("InvoiceGenerationDialog", () => {
     await user.click(screen.getByRole("button", { name: "Fetch Unbilled Time" }));
 
     await waitFor(() => {
-      expect(screen.getByText("Select Time Entries")).toBeInTheDocument();
+      expect(screen.getByText("Select Unbilled Items")).toBeInTheDocument();
     });
 
     // First click "Validate & Create Draft" to run validation

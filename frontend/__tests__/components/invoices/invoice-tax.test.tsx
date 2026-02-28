@@ -38,6 +38,8 @@ function makeLine(
     projectId: "p1",
     projectName: "Project Alpha",
     timeEntryId: null,
+    expenseId: null,
+    lineType: "TIME",
     description: "Consulting work",
     quantity: 10,
     unitPrice: 100,

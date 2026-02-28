@@ -65,6 +65,8 @@ function makeDraftInvoice(overrides?: Partial<InvoiceResponse>): InvoiceResponse
         projectId: "p1",
         projectName: "Project Alpha",
         timeEntryId: "te-1",
+        expenseId: null,
+        lineType: "TIME",
         description: "Consulting work",
         quantity: 10,
         unitPrice: 100,

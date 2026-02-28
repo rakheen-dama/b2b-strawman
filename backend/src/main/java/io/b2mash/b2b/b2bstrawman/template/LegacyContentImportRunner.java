@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.clause.ClauseRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -53,7 +54,14 @@ public class LegacyContentImportRunner implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments args) {
-    Thread.startVirtualThread(this::runImport);
+    Thread.startVirtualThread(
+        () -> {
+          try {
+            runImport();
+          } catch (Exception e) {
+            log.error("Legacy content import failed", e);
+          }
+        });
   }
 
   /** Visible for testing -- runs the import synchronously. */
@@ -197,7 +205,7 @@ public class LegacyContentImportRunner implements ApplicationRunner {
   }
 
   private Map<String, Object> docNode(List<Map<String, Object>> content) {
-    var node = new java.util.LinkedHashMap<String, Object>();
+    var node = new LinkedHashMap<String, Object>();
     node.put("type", "doc");
     node.put("content", content);
     return node;

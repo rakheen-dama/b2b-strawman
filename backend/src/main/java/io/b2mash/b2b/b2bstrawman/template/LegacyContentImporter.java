@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.jsoup.Jsoup;
@@ -23,8 +24,8 @@ public class LegacyContentImporter {
   private static final Pattern THYMELEAF_VAR_PATTERN =
       Pattern.compile("\\$\\{([a-zA-Z][a-zA-Z0-9_.]*)}");
 
-  private static final java.util.Set<String> BLOCK_TAGS =
-      java.util.Set.of(
+  private static final Set<String> BLOCK_TAGS =
+      Set.of(
           "p", "h1", "h2", "h3", "h4", "h5", "h6", "ul", "ol", "li", "table", "thead", "tbody",
           "tr", "td", "th", "hr", "br");
 
@@ -138,13 +139,7 @@ public class LegacyContentImporter {
           result.addAll(createTextNodes(text, marks));
         }
       } else if (child instanceof Element el) {
-        String tag = el.tagName().toLowerCase();
-        if (BLOCK_TAGS.contains(tag)) {
-          // Block element inside inline context -- convert as block
-          result.addAll(convertElement(el, marks));
-        } else {
-          result.addAll(convertElement(el, marks));
-        }
+        result.addAll(convertElement(el, marks));
       }
     }
 

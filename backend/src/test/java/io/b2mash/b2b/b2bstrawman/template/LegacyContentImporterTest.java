@@ -82,6 +82,24 @@ class LegacyContentImporterTest {
 
   @Test
   @SuppressWarnings("unchecked")
+  void converts_nested_bold_italic_marks() {
+    var result = importer.convertHtml("<p><strong><em>bold italic</em></strong></p>");
+
+    var content = (List<Map<String, Object>>) result.get("content");
+    assertThat(content).hasSize(1);
+
+    var paraContent = (List<Map<String, Object>>) content.getFirst().get("content");
+    var textNode =
+        paraContent.stream()
+            .filter(n -> "bold italic".equals(n.get("text")))
+            .findFirst()
+            .orElseThrow();
+    var marks = (List<Map<String, Object>>) textNode.get("marks");
+    assertThat(marks).extracting(m -> m.get("type")).containsExactlyInAnyOrder("bold", "italic");
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
   void converts_link() {
     var result = importer.convertHtml("<p><a href=\"https://example.com\">click here</a></p>");
 

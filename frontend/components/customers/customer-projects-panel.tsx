@@ -11,6 +11,15 @@ import { formatDate, formatLocalDate, isOverdue } from "@/lib/format";
 import type { Project, ProjectStatus } from "@/lib/types";
 import Link from "next/link";
 
+const STATUS_BADGE: Record<
+  ProjectStatus,
+  { label: string; variant: "success" | "warning" | "neutral" }
+> = {
+  ACTIVE: { label: "Active", variant: "success" },
+  COMPLETED: { label: "Completed", variant: "neutral" },
+  ARCHIVED: { label: "Archived", variant: "neutral" },
+};
+
 interface CustomerProjectsPanelProps {
   projects: Project[];
   slug: string;
@@ -24,15 +33,6 @@ export function CustomerProjectsPanel({
   customerId,
   canManage,
 }: CustomerProjectsPanelProps) {
-  const STATUS_BADGE: Record<
-    ProjectStatus,
-    { label: string; variant: "success" | "warning" | "neutral" }
-  > = {
-    ACTIVE: { label: "Active", variant: "success" },
-    COMPLETED: { label: "Completed", variant: "neutral" },
-    ARCHIVED: { label: "Archived", variant: "neutral" },
-  };
-
   const [isPending, startTransition] = useTransition();
   const [unlinkingProjectId, setUnlinkingProjectId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);

@@ -1,6 +1,6 @@
 import { getAuthContext, getCurrentUserEmail } from "@/lib/auth";
 import { api, handleApiError, getFieldDefinitions, getFieldGroups, getGroupMembers, getTags, getTemplates, getViews } from "@/lib/api";
-import type { OrgMember, Project, Customer, Document, ProjectMember, ProjectRole, Task, ProjectTimeSummary, MemberTimeSummary, TaskTimeSummary, BillingRate, OrgSettings, BudgetStatusResponse, ProjectProfitabilityResponse, FieldDefinitionResponse, FieldGroupResponse, FieldGroupMemberResponse, TagResponse, TemplateListResponse, SavedViewResponse } from "@/lib/types";
+import type { OrgMember, Project, ProjectStatus, Customer, Document, ProjectMember, ProjectRole, Task, ProjectTimeSummary, MemberTimeSummary, TaskTimeSummary, BillingRate, OrgSettings, BudgetStatusResponse, ProjectProfitabilityResponse, FieldDefinitionResponse, FieldGroupResponse, FieldGroupMemberResponse, TagResponse, TemplateListResponse, SavedViewResponse } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EditProjectDialog } from "@/components/projects/edit-project-dialog";
@@ -48,7 +48,7 @@ const ROLE_BADGE: Record<ProjectRole, { label: string; variant: "lead" | "member
 };
 
 const PROJECT_STATUS_BADGE: Record<
-  import("@/lib/types").ProjectStatus,
+  ProjectStatus,
   { label: string; variant: "success" | "warning" | "neutral" }
 > = {
   ACTIVE: { label: "Active", variant: "success" },
@@ -365,7 +365,7 @@ export default async function ProjectDetailPage({
 
       {/* Archived banner (208.11) */}
       {project.status === "ARCHIVED" && (
-        <ArchivedProjectBanner slug={slug} projectId={id} />
+        <ArchivedProjectBanner slug={slug} projectId={id} canRestore={isAdmin} />
       )}
 
       {/* Project Header (33.6 + 208.8/208.9/208.12) */}

@@ -178,14 +178,38 @@ describe("ArchivedProjectBanner", () => {
     vi.clearAllMocks();
   });
 
-  it("renders archived banner with restore button", () => {
-    render(<ArchivedProjectBanner slug="test-org" projectId="proj-1" />);
+  it("renders archived banner with restore button when canRestore is true", () => {
+    render(<ArchivedProjectBanner slug="test-org" projectId="proj-1" canRestore />);
 
     expect(screen.getByTestId("archived-project-banner")).toBeInTheDocument();
     expect(
       screen.getByText("This project is archived. It is read-only."),
     ).toBeInTheDocument();
     expect(screen.getByText("Restore")).toBeInTheDocument();
+  });
+
+  it("hides restore button when canRestore is false (non-admin)", () => {
+    render(<ArchivedProjectBanner slug="test-org" projectId="proj-1" canRestore={false} />);
+
+    expect(screen.getByTestId("archived-project-banner")).toBeInTheDocument();
+    expect(
+      screen.getByText("This project is archived. It is read-only."),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Restore")).not.toBeInTheDocument();
+  });
+
+  it("shows error message when restore fails", async () => {
+    const user = userEvent.setup();
+    mockReopenProject.mockResolvedValueOnce({
+      success: false,
+      error: "Cannot restore project.",
+    });
+
+    render(<ArchivedProjectBanner slug="test-org" projectId="proj-1" canRestore />);
+
+    await user.click(screen.getByText("Restore"));
+
+    expect(await screen.findByText("Cannot restore project.")).toBeInTheDocument();
   });
 });
 

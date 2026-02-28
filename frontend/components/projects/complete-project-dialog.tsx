@@ -28,6 +28,7 @@ export function CompleteProjectDialog({
   projectName,
   children,
 }: CompleteProjectDialogProps) {
+  const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showUnbilledConfirm, setShowUnbilledConfirm] = useState(false);
@@ -40,9 +41,10 @@ export function CompleteProjectDialog({
       const result = await completeProject(
         slug,
         projectId,
-        acknowledgeUnbilledTime || undefined,
+        acknowledgeUnbilledTime ? true : undefined,
       );
       if (result.success) {
+        setOpen(false);
         setShowUnbilledConfirm(false);
       } else {
         const errorMsg = result.error ?? "Failed to complete project.";
@@ -62,8 +64,9 @@ export function CompleteProjectDialog({
     }
   }
 
-  function handleOpenChange(open: boolean) {
-    if (!open) {
+  function handleOpenChange(nextOpen: boolean) {
+    setOpen(nextOpen);
+    if (!nextOpen) {
       setError(null);
       setShowUnbilledConfirm(false);
       setIsSubmitting(false);
@@ -71,7 +74,7 @@ export function CompleteProjectDialog({
   }
 
   return (
-    <AlertDialog onOpenChange={handleOpenChange}>
+    <AlertDialog open={open} onOpenChange={handleOpenChange}>
       <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

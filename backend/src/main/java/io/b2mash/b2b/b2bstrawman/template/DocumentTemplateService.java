@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.template;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.clause.TemplateClauseSync;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -30,11 +31,15 @@ public class DocumentTemplateService {
 
   private final DocumentTemplateRepository documentTemplateRepository;
   private final AuditService auditService;
+  private final TemplateClauseSync templateClauseSync;
 
   public DocumentTemplateService(
-      DocumentTemplateRepository documentTemplateRepository, AuditService auditService) {
+      DocumentTemplateRepository documentTemplateRepository,
+      AuditService auditService,
+      TemplateClauseSync templateClauseSync) {
     this.documentTemplateRepository = documentTemplateRepository;
     this.auditService = auditService;
+    this.templateClauseSync = templateClauseSync;
   }
 
   @Transactional(readOnly = true)
@@ -169,6 +174,9 @@ public class DocumentTemplateService {
     dt.setRequiredContextFields(request.requiredContextFields());
 
     dt = documentTemplateRepository.save(dt);
+
+    // Sync clause associations from document JSON (ADR-123)
+    templateClauseSync.syncClausesFromDocument(dt.getId(), dt.getContent());
 
     log.info("Updated document template: id={}, name={}", dt.getId(), dt.getName());
 

@@ -17,9 +17,9 @@ describe("NAV_ZONES", () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it("admin zone has empty subNav", () => {
+  it("admin zone has subNav items", () => {
     const admin = NAV_ZONES.find((z) => z.id === "admin");
-    expect(admin?.subNav).toHaveLength(0);
+    expect(admin?.subNav).toHaveLength(4);
   });
 });
 

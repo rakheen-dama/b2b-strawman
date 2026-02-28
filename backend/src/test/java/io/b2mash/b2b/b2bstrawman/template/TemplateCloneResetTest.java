@@ -39,7 +39,11 @@ import org.springframework.transaction.support.TransactionTemplate;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class TemplateCloneResetTest {
 
-  private static final Map<String, Object> CONTENT = Map.of("type", "doc", "content", List.of());
+  private static final Map<String, Object> CONTENT =
+      TestDocumentBuilder.doc()
+          .heading(1, "Clone Reset Test")
+          .paragraph("Template content for clone and reset tests.")
+          .build();
 
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_clone_reset_test";

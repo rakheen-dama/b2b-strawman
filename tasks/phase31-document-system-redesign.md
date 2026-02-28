@@ -120,7 +120,7 @@ Phase 31 replaces the Thymeleaf-based document authoring system with a Tiptap/Pr
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 5a | Epic 214 | 214A | Template editor page rewrite (/settings/templates/[id]/edit). Unified layout with DocumentEditor (no tabs). Settings panel. actions.ts updates for JSON content. |
+| 5a | Epic 214 | 214A | Template editor page rewrite (/settings/templates/[id]/edit). Unified layout with DocumentEditor (no tabs). Settings panel. actions.ts updates for JSON content. | **Done** (PR #439) |
 | 5b | Epic 214 | 214B | Template save with TemplateClause sync (frontend sends JSON, backend syncs). Variable picker integration (fetch from /api/templates/variables). New template page update. |
 | 5a' | Epic 215 | 215A | Clause library page rewrite (/settings/clauses). Content expand/collapse for every clause. "Used in" indicator. Inline Tiptap JSON rendering. **Can parallel with 214.** |
 | 5b' | Epic 215 | 215B | Clause editor sheet with DocumentEditor (clause scope). Create + edit flows. System clause read-only + "Clone to customize". |
@@ -530,7 +530,7 @@ Stage 7:  [217A] ──► [217B]                                      ← clean
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **214A** | 214.1-214.6 | Template editor page rewrite: unified layout with DocumentEditor, settings panel (collapsible), remove tabs. Template creation page update. Actions.ts updates for JSON content. Component tests (~4 tests). | |
+| **214A** | 214.1-214.6 | Template editor page rewrite: unified layout with DocumentEditor, settings panel (collapsible), remove tabs. Template creation page update. Actions.ts updates for JSON content. Component tests (~4 tests). | **Done** (PR #439) |
 | **214B** | 214.7-214.11 | Variable picker integration (toolbar -> fetch from /api/templates/variables), clause picker integration (toolbar -> inserts clauseBlock), template save sends JSON content (backend syncs TemplateClause). New template page. Tests (~4 tests). | |
 
 ### Tasks

@@ -25,6 +25,14 @@ interface GenerationClauseStepProps {
   onNext: (clauses: SelectedClause[]) => void;
 }
 
+function buildBodyPreviews(data: TemplateClauseDetail[]): Map<string, string | null> {
+  const map = new Map<string, string | null>();
+  for (const tc of data) {
+    map.set(tc.clauseId, tc.bodyPreview);
+  }
+  return map;
+}
+
 export function GenerationClauseStep({
   templateId,
   preloadedClauses,
@@ -56,14 +64,6 @@ export function GenerationClauseStep({
       );
   }, []);
 
-  const buildBodyPreviews = useCallback((data: TemplateClauseDetail[]): Map<string, string | null> => {
-    const map = new Map<string, string | null>();
-    for (const tc of data) {
-      map.set(tc.clauseId, tc.bodyPreview);
-    }
-    return map;
-  }, []);
-
   const loadClauses = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -78,7 +78,7 @@ export function GenerationClauseStep({
     } finally {
       setIsLoading(false);
     }
-  }, [templateId, mapClauseData, buildBodyPreviews]);
+  }, [templateId, mapClauseData]);
 
   useEffect(() => {
     if (initialClauses) {
@@ -94,7 +94,7 @@ export function GenerationClauseStep({
       return;
     }
     loadClauses();
-  }, [loadClauses, initialClauses, preloadedClauses, mapClauseData, buildBodyPreviews]);
+  }, [loadClauses, initialClauses, preloadedClauses, mapClauseData]);
 
   function toggleChecked(clauseId: string) {
     setCheckedIds((prev) => {
@@ -144,6 +144,7 @@ export function GenerationClauseStep({
       title: string;
       category: string;
       description: string | null;
+      legacyBody: string | null;
     }>,
   ) {
     setClauses((prev) => {
@@ -164,6 +165,13 @@ export function GenerationClauseStep({
       const next = new Set(prev);
       for (const nc of newClauses) {
         next.add(nc.id);
+      }
+      return next;
+    });
+    setClauseBodyPreviews((prev) => {
+      const next = new Map(prev);
+      for (const nc of newClauses) {
+        next.set(nc.id, nc.legacyBody ?? null);
       }
       return next;
     });
@@ -243,6 +251,7 @@ export function GenerationClauseStep({
                       disabled={index === 0}
                       type="button"
                       title="Move up"
+                      aria-label={`Move ${clause.title} up`}
                     >
                       <ArrowUp className="size-3" />
                     </Button>
@@ -254,6 +263,7 @@ export function GenerationClauseStep({
                       disabled={index === clauses.length - 1}
                       type="button"
                       title="Move down"
+                      aria-label={`Move ${clause.title} down`}
                     >
                       <ArrowDown className="size-3" />
                     </Button>
@@ -300,9 +310,12 @@ export function GenerationClauseStep({
                 {isExpanded && (
                   <div className="border-t border-slate-200 px-4 py-3 dark:border-slate-800">
                     {clauseBodyPreviews.get(clause.clauseId) ? (
-                      <p className="whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300">
-                        {clauseBodyPreviews.get(clause.clauseId)}
-                      </p>
+                      <div
+                        className="prose prose-sm max-w-none text-slate-700 dark:text-slate-300"
+                        dangerouslySetInnerHTML={{
+                          __html: clauseBodyPreviews.get(clause.clauseId)!,
+                        }}
+                      />
                     ) : (
                       <p className="text-xs text-slate-400 dark:text-slate-500">
                         No preview available.

@@ -129,6 +129,7 @@ describe("GenerationClauseStep", () => {
         slug: "ip-assignment",
         description: "IP clause",
         body: "<p>IP</p>",
+        legacyBody: "<p>IP body</p>",
         category: "IP",
         source: "SYSTEM",
         sourceClauseId: null,
@@ -218,15 +219,15 @@ describe("GenerationClauseStep", () => {
     });
 
     // Body preview not visible initially
-    expect(screen.queryByText("<p>NDA body</p>")).not.toBeInTheDocument();
+    expect(screen.queryByText("NDA body")).not.toBeInTheDocument();
 
     // Click expand for first clause
     await user.click(
       screen.getByRole("button", { name: "Expand Standard NDA" }),
     );
 
-    // Body preview now visible
-    expect(screen.getByText("<p>NDA body</p>")).toBeInTheDocument();
+    // Body preview now visible (HTML rendered, not raw tags)
+    expect(screen.getByText("NDA body")).toBeInTheDocument();
 
     // Toggle label should change to Collapse
     expect(

@@ -9,7 +9,7 @@
       "name": "Standard Engagement Letter",
       "category": "ENGAGEMENT_LETTER",
       "primaryEntityType": "PROJECT",
-      "contentFile": "engagement-letter.html",
+      "contentFile": "engagement-letter.json",
       "cssFile": null,
       "description": "Client engagement letter template",
       "sortOrder": 1
@@ -19,7 +19,7 @@
       "name": "Project Summary Report",
       "category": "PROJECT_SUMMARY",
       "primaryEntityType": "PROJECT",
-      "contentFile": "project-summary.html",
+      "contentFile": "project-summary.json",
       "cssFile": null,
       "description": "Project summary report template",
       "sortOrder": 2
@@ -29,7 +29,7 @@
       "name": "Invoice Cover Letter",
       "category": "COVER_LETTER",
       "primaryEntityType": "INVOICE",
-      "contentFile": "invoice-cover-letter.html",
+      "contentFile": "invoice-cover-letter.json",
       "cssFile": null,
       "description": "Cover letter for invoices",
       "sortOrder": 3

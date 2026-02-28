@@ -131,15 +131,23 @@ public class ClausePackSeeder {
         continue;
       }
 
+      // Body is a JSON object (Map) from the pack file; serialize to string for TEXT column
+      String bodyString = serializeBody(clauseDef.body());
       var clause =
           Clause.createSystemClause(
               clauseDef.title(),
               clauseDef.slug(),
-              clauseDef.body(),
+              bodyString,
               clauseDef.category(),
               clauseDef.description(),
               pack.packId(),
               clauseDef.sortOrder());
+      // Store the structured JSON in the body_json JSONB column
+      if (clauseDef.body() instanceof Map<?, ?> bodyMap) {
+        @SuppressWarnings("unchecked")
+        var typedMap = (Map<String, Object>) bodyMap;
+        clause.setBodyJson(typedMap);
+      }
       clauseRepository.save(clause);
     }
 
@@ -194,6 +202,17 @@ public class ClausePackSeeder {
         templateClauseRepository.save(templateClause);
         sortOrder++;
       }
+    }
+  }
+
+  private String serializeBody(Object body) {
+    if (body instanceof String s) {
+      return s;
+    }
+    try {
+      return objectMapper.writeValueAsString(body);
+    } catch (Exception e) {
+      throw new IllegalStateException("Failed to serialize clause body to JSON string", e);
     }
   }
 

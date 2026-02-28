@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -126,15 +127,16 @@ public class TemplatePackSeeder {
       TemplateCategory category = TemplateCategory.valueOf(templateDef.category());
       TemplateEntityType entityType = TemplateEntityType.valueOf(templateDef.primaryEntityType());
 
-      String content = loadTemplateContent(packJsonResource, templateDef.contentFile());
+      String contentString =
+          loadTemplateContentAsString(packJsonResource, templateDef.contentFile());
       String css =
           templateDef.cssFile() != null
-              ? loadTemplateContent(packJsonResource, templateDef.cssFile())
+              ? loadTemplateContentAsString(packJsonResource, templateDef.cssFile())
               : null;
 
       String slug = DocumentTemplate.generateSlug(templateDef.name());
 
-      var dt = new DocumentTemplate(entityType, templateDef.name(), slug, category, content);
+      var dt = new DocumentTemplate(entityType, templateDef.name(), slug, category, contentString);
       dt.setDescription(templateDef.description());
       dt.setCss(css);
       dt.setSource(TemplateSource.PLATFORM);
@@ -142,17 +144,34 @@ public class TemplatePackSeeder {
       dt.setPackTemplateKey(templateDef.templateKey());
       dt.setSortOrder(templateDef.sortOrder());
 
+      // Parse JSON content files into structured JSONB for the content_json column
+      if (templateDef.contentFile() != null && templateDef.contentFile().endsWith(".json")) {
+        Map<String, Object> contentJson =
+            loadTemplateContentAsJson(packJsonResource, templateDef.contentFile());
+        dt.setContentJson(contentJson);
+      }
+
       documentTemplateRepository.save(dt);
     }
   }
 
-  private String loadTemplateContent(Resource packJsonResource, String filename) {
+  private String loadTemplateContentAsString(Resource packJsonResource, String filename) {
     try {
-      // Resolve sibling file relative to pack.json
       Resource contentResource = packJsonResource.createRelative(filename);
       return contentResource.getContentAsString(StandardCharsets.UTF_8);
     } catch (IOException e) {
       throw new IllegalStateException("Failed to load template content file: " + filename, e);
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private Map<String, Object> loadTemplateContentAsJson(
+      Resource packJsonResource, String filename) {
+    try {
+      Resource contentResource = packJsonResource.createRelative(filename);
+      return objectMapper.readValue(contentResource.getInputStream(), Map.class);
+    } catch (IOException e) {
+      throw new IllegalStateException("Failed to parse template content JSON file: " + filename, e);
     }
   }
 

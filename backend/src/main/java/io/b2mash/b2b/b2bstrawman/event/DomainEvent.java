@@ -40,7 +40,9 @@ public sealed interface DomainEvent
         AcceptanceRequestExpiredEvent,
         ProjectCompletedEvent,
         ProjectArchivedEvent,
-        ProjectReopenedEvent {
+        ProjectReopenedEvent,
+        ExpenseCreatedEvent,
+        ExpenseDeletedEvent {
 
   String eventType();
 

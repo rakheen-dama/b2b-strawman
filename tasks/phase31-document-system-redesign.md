@@ -14,7 +14,7 @@ Phase 31 replaces the Thymeleaf-based document authoring system with a Tiptap/Pr
 | 210 | TiptapRenderer & Variable Endpoint | Backend | 209 | L | 210A, 210B | **Done** (PRs #430, #431) |
 | 211 | Entity Updates & Template-Clause Sync | Backend | 209 | M | 211A, 211B | **Done** (PRs #432, #433) |
 | 212 | Rendering Pipeline Switch & Legacy Import | Backend | 210, 211 | M | 212A, 212B | **Done** (PRs #434, #435) |
-| 213 | Tiptap Editor Foundation | Frontend | -- | L | 213A, 213B, 213C | |
+| 213 | Tiptap Editor Foundation | Frontend | -- | L | 213A, 213B, 213C | **Done** (PRs #436, #437, #438) |
 | 214 | Template Editor Rewrite | Frontend | 210B, 211, 213 | L | 214A, 214B | |
 | 215 | Clause Library & Editor Rewrite | Frontend | 213 | M | 215A, 215B | |
 | 216 | Generation Dialog & Preview | Frontend | 213, 214 | M | 216A, 216B | |
@@ -114,7 +114,7 @@ Phase 31 replaces the Thymeleaf-based document authoring system with a Tiptap/Pr
 |-------|------|-------|-----------|
 | 4a | Epic 213 | 213A | Install Tiptap npm packages. Create DocumentEditor + EditorToolbar components (standard formatting only). Component tests. | **Done** (PR #436) |
 | 4b | Epic 213 | 213B | Variable extension + VariableNodeView + VariablePicker dialog. LoopTable extension + LoopTableNodeView + LoopTableConfig. Component tests. | **Done** (PR #437) |
-| 4c | Epic 213 | 213C | ClauseBlock extension + ClauseBlockNodeView (card with title bar, read-only content, menu). ClausePicker dialog (master-detail). Component tests. |
+| 4c | Epic 213 | 213C | ClauseBlock extension + ClauseBlockNodeView (card with title bar, read-only content, menu). ClausePicker dialog (master-detail). Component tests. | **Done** (PR #438) |
 
 ### Stage 5: Frontend Page Rewrites (After Stage 3 + 4)
 
@@ -441,7 +441,7 @@ Stage 7:  [217A] ──► [217B]                                      ← clean
 |-------|-------|---------|--------|
 | **213A** | 213.1-213.7 | Install Tiptap npm packages. Create DocumentEditor component with EditorToolbar (standard formatting: bold, italic, underline, headings, lists, tables, horizontal rule, links). Component tests (~6 tests). | **Done** (PR #436) |
 | **213B** | 213.8-213.15 | Variable extension + VariableNodeView (styled chip). VariablePicker dialog (categorized list). LoopTable extension + LoopTableNodeView (placeholder table). LoopTableConfig popover. Component tests (~6 tests). | **Done** (PR #437) |
-| **213C** | 213.16-213.22 | ClauseBlock extension + ClauseBlockNodeView (card with title, read-only content, context menu). ClausePicker dialog (master-detail layout with content preview). Component tests (~6 tests). | |
+| **213C** | 213.16-213.22 | ClauseBlock extension + ClauseBlockNodeView (card with title, read-only content, context menu). ClausePicker dialog (master-detail layout with content preview). Component tests (~6 tests). | **Done** (PR #438) |
 
 ### Tasks
 

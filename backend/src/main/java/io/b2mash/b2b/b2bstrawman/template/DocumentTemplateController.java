@@ -33,16 +33,19 @@ public class DocumentTemplateController {
   private final PdfRenderingService pdfRenderingService;
   private final GeneratedDocumentService generatedDocumentService;
   private final DocumentGenerationReadinessService documentGenerationReadinessService;
+  private final VariableMetadataRegistry variableMetadataRegistry;
 
   public DocumentTemplateController(
       DocumentTemplateService documentTemplateService,
       PdfRenderingService pdfRenderingService,
       GeneratedDocumentService generatedDocumentService,
-      DocumentGenerationReadinessService documentGenerationReadinessService) {
+      DocumentGenerationReadinessService documentGenerationReadinessService,
+      VariableMetadataRegistry variableMetadataRegistry) {
     this.documentTemplateService = documentTemplateService;
     this.pdfRenderingService = pdfRenderingService;
     this.generatedDocumentService = generatedDocumentService;
     this.documentGenerationReadinessService = documentGenerationReadinessService;
+    this.variableMetadataRegistry = variableMetadataRegistry;
   }
 
   @GetMapping
@@ -67,6 +70,13 @@ public class DocumentTemplateController {
       @RequestParam TemplateEntityType entityType, @RequestParam UUID entityId) {
     return ResponseEntity.ok(
         documentGenerationReadinessService.checkReadiness(entityType, entityId));
+  }
+
+  @GetMapping("/variables")
+  @PreAuthorize("isAuthenticated()")
+  public ResponseEntity<VariableMetadataRegistry.VariableMetadataResponse> getVariables(
+      @RequestParam TemplateEntityType entityType) {
+    return ResponseEntity.ok(variableMetadataRegistry.getVariables(entityType));
   }
 
   @GetMapping("/{id}")

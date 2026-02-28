@@ -158,3 +158,64 @@ export async function releaseTask(
 
   return { success: true };
 }
+
+export async function completeTask(
+  slug: string,
+  taskId: string,
+  projectId: string
+): Promise<ActionResult> {
+  try {
+    await api.patch<Task>(`/api/tasks/${taskId}/complete`);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  return { success: true };
+}
+
+export async function cancelTask(
+  slug: string,
+  taskId: string,
+  projectId: string
+): Promise<ActionResult> {
+  const { orgRole } = await getAuthContext();
+  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+
+  if (!isAdmin) {
+    return { success: false, error: "Only admins and owners can cancel tasks." };
+  }
+
+  try {
+    await api.patch<Task>(`/api/tasks/${taskId}/cancel`);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  return { success: true };
+}
+
+export async function reopenTask(
+  slug: string,
+  taskId: string,
+  projectId: string
+): Promise<ActionResult> {
+  try {
+    await api.patch<Task>(`/api/tasks/${taskId}/reopen`);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${slug}/projects/${projectId}`);
+  return { success: true };
+}

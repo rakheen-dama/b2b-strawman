@@ -67,6 +67,10 @@ function makeTask(overrides: Partial<Task> = {}): Task {
     version: 0,
     createdAt: "2024-06-01T00:00:00Z",
     updatedAt: "2024-06-01T00:00:00Z",
+    completedAt: null,
+    completedBy: null,
+    completedByName: null,
+    cancelledAt: null,
     ...overrides,
   };
 }
@@ -170,17 +174,15 @@ describe("TaskListPanel — ViewSelectorClient integration", () => {
       />,
     );
 
-    // Click the "Open" status filter
+    // Click the "Done" status filter to add it (default is Open+In Progress)
     const filterGroup = screen.getByRole("group", { name: /task filters/i });
-    const openButtons = filterGroup.querySelectorAll("button");
-    // "Open" is the second filter button (index 1)
-    const openButton = Array.from(openButtons).find((btn) => btn.textContent === "Open");
-    expect(openButton).toBeDefined();
-    await user.click(openButton!);
+    const doneButton = Array.from(filterGroup.querySelectorAll("button")).find((btn) => btn.textContent === "Done");
+    expect(doneButton).toBeDefined();
+    await user.click(doneButton!);
 
     await waitFor(() => {
       expect(mockFetchTasks).toHaveBeenCalledWith("p1", expect.objectContaining({
-        status: "OPEN",
+        status: "OPEN,IN_PROGRESS,DONE",
         viewId: "view-task-1",
       }));
     });

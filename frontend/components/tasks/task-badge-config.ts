@@ -13,10 +13,10 @@ export const PRIORITY_BADGE: Record<
 
 export const STATUS_BADGE: Record<
   TaskStatus,
-  { label: string; variant: "success" | "warning" | "neutral" | "destructive" }
+  { label: string; variant: "success" | "warning" | "neutral" }
 > = {
   OPEN: { label: "Open", variant: "neutral" },
   IN_PROGRESS: { label: "In Progress", variant: "warning" },
   DONE: { label: "Done", variant: "success" },
-  CANCELLED: { label: "Cancelled", variant: "destructive" },
+  CANCELLED: { label: "Cancelled", variant: "neutral" },
 };

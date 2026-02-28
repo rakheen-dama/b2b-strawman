@@ -27,7 +27,7 @@ Phase 30 closes the remaining revenue-capture and daily-work-organisation gaps i
 | 219 | Expense Service, Controller & CRUD API | Backend | 218 | L | 219A, 219B | **Done** (PRs #449, #450) |
 | 220 | Expense Frontend — Project Expenses Tab | Frontend | 219 | M | 220A, 220B | **Done** (PRs #451, #452) |
 | 221 | Expense Billing Integration — InvoiceLine Extension & Invoice Pipeline | Backend | 218 | L | 221A, 221B | **Done** (PRs #453, #454) |
-| 222 | Expense Billing Frontend — Unbilled Summary & Invoice Generation | Frontend | 221, 220 | M | 222A | |
+| 222 | Expense Billing Frontend — Unbilled Summary & Invoice Generation | Frontend | 221, 220 | M | 222A | **Done** (PR #455) |
 | 223 | Recurring Task Foundation — Migration & Entity | Backend | -- | M | 223A, 223B | |
 | 224 | Recurring Task Service & Controller | Backend | 223 | M | 224A, 224B | |
 | 225 | Recurring Task Frontend | Frontend | 224 | M | 225A | |
@@ -187,7 +187,7 @@ TRACK 4: CALENDAR VIEW
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 5a (parallel) | 220 | 220B | My Expenses section on My Work page, write-off UX, edit expense dialog + frontend tests (~10 tests). ~3 modified files. Frontend only. | **Done** (PR #452) |
-| 5b (parallel) | 222 | 222A | Expense Billing Frontend: unbilled-summary.tsx expense section, generate-invoice-dialog.tsx expense selection + tests (~7 tests). ~2 modified files. Frontend only. | |
+| 5b (parallel) | 222 | 222A | Expense Billing Frontend: unbilled-summary.tsx expense section, generate-invoice-dialog.tsx expense selection + tests (~7 tests). ~2 modified files. Frontend only. | **Done** (PR #455) |
 | 5c (parallel) | 229 | 229B | Calendar overdue section, filters (project/type/assignee), color coding + frontend tests (~7 tests). ~3 modified files. Frontend only. | |
 
 ### Timeline
@@ -485,7 +485,7 @@ Stage 5: [220B] // [222A] // [229B]                              (parallel)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **222A** | 222.1–222.8 | Extend `unbilled-summary.tsx` with expense section, extend `generate-invoice-dialog.tsx` with expense selection checkboxes, update invoice detail to show expense lines, add expense totals row + frontend tests (~7 tests). ~2 modified files, ~1 test file. Frontend only. | |
+| **222A** | 222.1–222.8 | Extend `unbilled-summary.tsx` with expense section, extend `generate-invoice-dialog.tsx` with expense selection checkboxes, update invoice detail to show expense lines, add expense totals row + frontend tests (~7 tests). ~2 modified files, ~1 test file. Frontend only. | **Done** (PR #455) |
 
 ### Tasks
 

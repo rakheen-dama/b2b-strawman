@@ -1,5 +1,3 @@
-"use client";
-
 import { formatCurrency, formatDate } from "@/lib/format";
 import { ExpenseCategoryBadge } from "@/components/expenses/expense-category-badge";
 import type {

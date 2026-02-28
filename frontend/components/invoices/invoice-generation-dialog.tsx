@@ -202,7 +202,7 @@ export function InvoiceGenerationDialog({
   }
 
   function handleRunValidation() {
-    if (selectedEntryIds.size === 0) return;
+    if (selectedEntryIds.size === 0 && selectedExpenseIds.size === 0) return;
     setError(null);
     setIsValidating(true);
 

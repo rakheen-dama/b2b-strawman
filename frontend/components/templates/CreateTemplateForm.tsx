@@ -144,9 +144,9 @@ export function CreateTemplateForm({ slug }: CreateTemplateFormProps) {
               id="new-template-content"
               value={contentText}
               onChange={(e) => setContentText(e.target.value)}
-              placeholder="<html>...</html>"
+              placeholder="Start typing your template content..."
               rows={20}
-              className="font-mono text-sm"
+              className="text-sm"
             />
           </div>
 

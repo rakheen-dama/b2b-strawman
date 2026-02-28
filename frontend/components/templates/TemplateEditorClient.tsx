@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useCallback } from "react";
+// TODO(214B): Re-add requiredContextFields management UI in the settings panel.
+// The old TemplateEditorForm had UI for this; intentionally omitted in 214A.
+// The save handler preserves existing values so they are not lost.
 import Link from "next/link";
 import {
   ChevronLeft,
@@ -55,10 +58,8 @@ export function TemplateEditorClient({
 }: TemplateEditorClientProps) {
   const [name, setName] = useState(template.name);
   const [description, setDescription] = useState(template.description ?? "");
-  const [category] = useState<TemplateCategory>(template.category);
-  const [entityType] = useState<TemplateEntityType>(
-    template.primaryEntityType,
-  );
+  const category = template.category;
+  const entityType = template.primaryEntityType;
   const [css, setCss] = useState(template.css ?? "");
   const [editorContent, setEditorContent] = useState<Record<string, unknown>>(
     template.content,
@@ -88,6 +89,7 @@ export function TemplateEditorClient({
         description: description || undefined,
         content: editorContent,
         css: css || undefined,
+        requiredContextFields: template.requiredContextFields,
       });
 
       if (result.success) {

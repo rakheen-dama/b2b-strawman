@@ -1,6 +1,7 @@
 "use server";
 
 import { api } from "@/lib/api";
+import type { TemplateEntityType } from "@/lib/types";
 
 export interface VariableInfo {
   key: string;
@@ -27,9 +28,9 @@ export interface VariableMetadataResponse {
 }
 
 export async function fetchVariableMetadata(
-  entityType: string,
+  entityType: TemplateEntityType,
 ): Promise<VariableMetadataResponse> {
   return api.get<VariableMetadataResponse>(
-    `/api/templates/variables?entityType=${entityType}`,
+    `/api/templates/variables?entityType=${encodeURIComponent(entityType)}`,
   );
 }

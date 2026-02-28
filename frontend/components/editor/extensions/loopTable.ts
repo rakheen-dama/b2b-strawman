@@ -25,7 +25,12 @@ export const LoopTableExtension = Node.create({
         default: [] as LoopTableColumn[],
         parseHTML: (element) => {
           const val = element.getAttribute("data-columns");
-          return val ? JSON.parse(val) : [];
+          if (!val) return [];
+          try {
+            return JSON.parse(val);
+          } catch {
+            return [];
+          }
         },
         renderHTML: (attributes) => ({
           "data-columns": JSON.stringify(attributes.columns),

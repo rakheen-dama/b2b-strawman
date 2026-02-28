@@ -60,7 +60,11 @@ function LoopTableConfigForm({
   };
 
   const handleApply = () => {
-    onUpdate({ dataSource, columns });
+    if (!dataSource.trim()) return;
+    const validColumns = columns.filter(
+      (col) => col.header.trim() && col.key.trim(),
+    );
+    onUpdate({ dataSource: dataSource.trim(), columns: validColumns });
   };
 
   return (

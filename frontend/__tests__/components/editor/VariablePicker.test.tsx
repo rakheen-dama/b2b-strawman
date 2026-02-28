@@ -24,10 +24,6 @@ const mockMetadata = {
   loopSources: [],
 };
 
-vi.mock("./actions", () => ({
-  fetchVariableMetadata: vi.fn(() => Promise.resolve(mockMetadata)),
-}));
-
 vi.mock("@/components/editor/actions", () => ({
   fetchVariableMetadata: vi.fn(() => Promise.resolve(mockMetadata)),
 }));

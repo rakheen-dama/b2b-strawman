@@ -41,7 +41,9 @@ export function VariablePicker({
 
   useEffect(() => {
     if (open) {
-      fetchVariableMetadata(entityType).then(setMetadata);
+      fetchVariableMetadata(entityType)
+        .then(setMetadata)
+        .catch(() => setMetadata(null));
     }
   }, [entityType, open]);
 

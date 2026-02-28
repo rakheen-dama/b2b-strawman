@@ -25,7 +25,7 @@ Phase 30 closes the remaining revenue-capture and daily-work-organisation gaps i
 |------|------|-------|------|--------|--------|--------|
 | 218 | Expense Entity Foundation & Migration | Backend | -- | M | 218A, 218B | **Done** (PRs #447, #448) |
 | 219 | Expense Service, Controller & CRUD API | Backend | 218 | L | 219A, 219B | **Done** (PRs #449, #450) |
-| 220 | Expense Frontend — Project Expenses Tab | Frontend | 219 | M | 220A, 220B | |
+| 220 | Expense Frontend — Project Expenses Tab | Frontend | 219 | M | 220A, 220B | 220A **Done** (PR #451) |
 | 221 | Expense Billing Integration — InvoiceLine Extension & Invoice Pipeline | Backend | 218 | L | 221A, 221B | |
 | 222 | Expense Billing Frontend — Unbilled Summary & Invoice Generation | Frontend | 221, 220 | M | 222A | |
 | 223 | Recurring Task Foundation — Migration & Entity | Backend | -- | M | 223A, 223B | |
@@ -177,7 +177,7 @@ TRACK 4: CALENDAR VIEW
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 4a (parallel) | 220 | 220A | Project Expenses tab: layout extension, expense-list.tsx, log-expense-dialog.tsx, expense-category-badge.tsx, expense-actions.ts. ~5 new/modified files. Frontend only. | |
+| 4a (parallel) | 220 | 220A | Project Expenses tab: layout extension, expense-list.tsx, log-expense-dialog.tsx, expense-category-badge.tsx, expense-actions.ts. ~5 new/modified files. Frontend only. | **Done** (PR #451) |
 | 4b (parallel) | 225 | 225A | Recurring Task Frontend: recurrence form section in task dialogs, badge in task list, recurrence info in task detail sheet, completion toast + tests. ~4 modified files. Frontend only. | |
 | 4c (parallel) | 227 | 227A | Time Reminders Frontend: settings section + notification preference toggle + tests. ~2 modified files. Frontend only. | |
 | 4d (parallel) | 229 | 229A | Calendar page shell: month-view component, list-view component, sidebar nav addition, calendar-actions.ts, basic routing. ~4 new files. Frontend only. | |
@@ -350,7 +350,7 @@ Stage 5: [220B] // [222A] // [229B]                              (parallel)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **220A** | 220.1–220.7 | Project Expenses tab infrastructure: "Expenses" tab added to project detail layout, `expense-actions.ts` server actions, `expense-category-badge.tsx`, `expense-list.tsx` (filterable table), `log-expense-dialog.tsx` (create form with all fields). ~5 new/modified files. Frontend only. | |
+| **220A** | 220.1–220.7 | Project Expenses tab infrastructure: "Expenses" tab added to project detail layout, `expense-actions.ts` server actions, `expense-category-badge.tsx`, `expense-list.tsx` (filterable table), `log-expense-dialog.tsx` (create form with all fields). ~5 new/modified files. Frontend only. | **Done** (PR #451) |
 | **220B** | 220.8–220.14 | Edit expense dialog, delete confirmation dialog, write-off action, "My Expenses" section on My Work page, frontend tests (~10 tests). ~3 new/modified files. Frontend only. | |
 
 ### Tasks

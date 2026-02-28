@@ -256,7 +256,7 @@
 | **Phase 30 — Expenses, Recurring Tasks & Daily Work Completeness** | | | | | | See [tasks/phase30-expenses-recurring-calendar.md](tasks/phase30-expenses-recurring-calendar.md) |
 | 218 | Expense Entity Foundation & Migration | Backend | -- | M | 218A, 218B | **Done** (PRs #447, #448) |
 | 219 | Expense Service, Controller & CRUD API | Backend | 218 | L | 219A, 219B | **Done** (PRs #449, #450) |
-| 220 | Expense Frontend — Project Expenses Tab | Frontend | 219 | M | 220A, 220B | |
+| 220 | Expense Frontend — Project Expenses Tab | Frontend | 219 | M | 220A, 220B | 220A **Done** (PR #451) |
 | 221 | Expense Billing Integration — InvoiceLine Extension & Invoice Pipeline | Backend | 218 | L | 221A, 221B | |
 | 222 | Expense Billing Frontend — Unbilled Summary & Invoice Generation | Frontend | 221, 220 | M | 222A | |
 | 223 | Recurring Task Foundation — Migration & Entity | Backend | -- | M | 223A, 223B | |

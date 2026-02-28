@@ -36,6 +36,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ClauseRenderingIntegrationTest {
 
+  private static final Map<String, Object> CONTENT = Map.of("type", "doc", "content", List.of());
+
+  private static final Map<String, Object> BODY = Map.of("type", "doc", "content", List.of());
+
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_clause_render_test";
 
@@ -77,25 +81,29 @@ class ClauseRenderingIntegrationTest {
                   project = projectRepository.save(project);
                   testProjectId = project.getId();
 
-                  // Template WITH ${clauses} placeholder
+                  // Template WITH ${clauses} placeholder (uses legacy Thymeleaf path)
                   var templateWith =
                       new DocumentTemplate(
                           TemplateEntityType.PROJECT,
                           "Template With Clauses",
                           "template-with-clauses",
                           TemplateCategory.ENGAGEMENT_LETTER,
-                          "<h1 th:text=\"${project.name}\">Name</h1>\n<div th:utext=\"${clauses}\"></div>");
+                          CONTENT);
+                  templateWith.setLegacyContent(
+                      "<h1 th:text=\"${project.name}\">Project</h1>\n"
+                          + "<div th:utext=\"${clauses}\"></div>");
                   templateWith = documentTemplateRepository.save(templateWith);
                   templateWithPlaceholderId = templateWith.getId();
 
-                  // Template WITHOUT ${clauses} placeholder
+                  // Template WITHOUT ${clauses} placeholder (uses legacy Thymeleaf path)
                   var templateWithout =
                       new DocumentTemplate(
                           TemplateEntityType.PROJECT,
                           "Template Without Clauses",
                           "template-without-clauses",
                           TemplateCategory.ENGAGEMENT_LETTER,
-                          "<h1 th:text=\"${project.name}\">Name</h1>");
+                          CONTENT);
+                  templateWithout.setLegacyContent("<h1 th:text=\"${project.name}\">Project</h1>");
                   templateWithout = documentTemplateRepository.save(templateWithout);
                   templateWithoutPlaceholderId = templateWithout.getId();
                 }));
@@ -193,12 +201,11 @@ class ClauseRenderingIntegrationTest {
   }
 
   @Test
-  void generatePdf_clauseWithDangerousContent_throwsSecurityException() {
+  void generatePdf_clauseWithDangerousLegacyBody_throwsSecurityException() {
     runInTenant(
         () -> {
-          var dangerousClause =
-              new Clause(
-                  "Dangerous", "dangerous", "<p>${#ctx.getBean('dataSource')}</p>", "General");
+          var dangerousClause = new Clause("Dangerous", "dangerous", BODY, "General");
+          dangerousClause.setLegacyBody("<p>${#ctx.getBean('dataSource')}</p>");
 
           assertThatThrownBy(
                   () ->
@@ -214,17 +221,11 @@ class ClauseRenderingIntegrationTest {
   // --- Helpers ---
 
   private List<Clause> buildTestClauses() {
-    return List.of(
-        new Clause(
-            "Confidentiality",
-            "confidentiality",
-            "<p>The parties agree to keep confidential all information.</p>",
-            "General"),
-        new Clause(
-            "Termination",
-            "termination",
-            "<p>Either party may terminate with 30 days notice.</p>",
-            "Legal"));
+    var c1 = new Clause("Confidentiality", "confidentiality", BODY, "General");
+    c1.setLegacyBody("<p>The parties agree to keep confidential</p>");
+    var c2 = new Clause("Termination", "termination", BODY, "Legal");
+    c2.setLegacyBody("<p>Either party may terminate</p>");
+    return List.of(c1, c2);
   }
 
   private void runInTenant(Runnable action) {

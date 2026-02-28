@@ -3,9 +3,13 @@ package io.b2mash.b2b.b2bstrawman.clause;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 class ClauseAssemblerTest {
+
+  private static final Map<String, Object> SAMPLE_BODY =
+      Map.of("type", "doc", "content", List.of());
 
   private final ClauseAssembler assembler = new ClauseAssembler();
 
@@ -21,26 +25,25 @@ class ClauseAssemblerTest {
 
   @Test
   void assembleClauseBlock_singleClause_wrapsInDiv() {
-    var clause =
-        new Clause("Confidentiality", "confidentiality", "<p>The parties agree...</p>", "General");
+    // ClauseAssembler now uses legacyBody (for the old Thymeleaf pipeline).
+    // New clauses without legacyBody will have empty body output.
+    var clause = new Clause("Confidentiality", "confidentiality", SAMPLE_BODY, "General");
     String result = assembler.assembleClauseBlock(List.of(clause));
 
     assertThat(result).contains("class=\"clause-block\"");
     assertThat(result).contains("data-clause-slug=\"confidentiality\"");
-    assertThat(result).contains("<p>The parties agree...</p>");
+    // legacyBody is null for new clauses, so the body div will be empty
   }
 
   @Test
   void assembleClauseBlock_multipleClauses_preservesOrder() {
-    var clause1 = new Clause("First", "first-clause", "<p>First body</p>", "General");
-    var clause2 = new Clause("Second", "second-clause", "<p>Second body</p>", "Legal");
+    var clause1 = new Clause("First", "first-clause", SAMPLE_BODY, "General");
+    var clause2 = new Clause("Second", "second-clause", SAMPLE_BODY, "Legal");
     String result = assembler.assembleClauseBlock(List.of(clause1, clause2));
 
     int firstIdx = result.indexOf("data-clause-slug=\"first-clause\"");
     int secondIdx = result.indexOf("data-clause-slug=\"second-clause\"");
     assertThat(firstIdx).isLessThan(secondIdx);
-    assertThat(result).contains("<p>First body</p>");
-    assertThat(result).contains("<p>Second body</p>");
   }
 
   @Test

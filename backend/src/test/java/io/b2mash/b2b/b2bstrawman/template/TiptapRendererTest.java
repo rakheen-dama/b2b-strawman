@@ -236,7 +236,7 @@ class TiptapRendererTest {
 
     String html = render(doc);
 
-    assertThat(html).contains("<hr>");
+    assertThat(html).contains("<hr/>");
   }
 
   @Test
@@ -254,14 +254,13 @@ class TiptapRendererTest {
 
     String html = render(doc);
 
-    assertThat(html).contains("<p>Line 1<br>Line 2</p>");
+    assertThat(html).contains("<p>Line 1<br/>Line 2</p>");
   }
 
   @Test
   void clause_block_renders_clause_body() {
     UUID clauseId = UUID.randomUUID();
-    var clause = new Clause("Payment Terms", "payment-terms", "legacy body", "billing");
-    clause.setBodyJson(
+    var clauseBody =
         Map.<String, Object>of(
             "type",
             "doc",
@@ -271,7 +270,8 @@ class TiptapRendererTest {
                     "type",
                     "paragraph",
                     "content",
-                    List.of(Map.<String, Object>of("type", "text", "text", "Net 30 days"))))));
+                    List.of(Map.<String, Object>of("type", "text", "text", "Net 30 days")))));
+    var clause = new Clause("Payment Terms", "payment-terms", clauseBody, "billing");
 
     var clauseNode = new HashMap<String, Object>();
     clauseNode.put("type", "clauseBlock");

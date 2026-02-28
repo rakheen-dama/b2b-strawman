@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -42,6 +43,7 @@ public class PdfRenderingService {
   private final List<TemplateContextBuilder> contextBuilders;
   private final TemplateValidationService templateValidationService;
   private final ClauseAssembler clauseAssembler;
+  private final TiptapRenderer tiptapRenderer;
   private final TemplateEngine stringTemplateEngine;
   private final String defaultCss;
 
@@ -49,11 +51,13 @@ public class PdfRenderingService {
       DocumentTemplateRepository documentTemplateRepository,
       List<TemplateContextBuilder> contextBuilders,
       TemplateValidationService templateValidationService,
-      ClauseAssembler clauseAssembler) {
+      ClauseAssembler clauseAssembler,
+      TiptapRenderer tiptapRenderer) {
     this.documentTemplateRepository = documentTemplateRepository;
     this.contextBuilders = contextBuilders;
     this.templateValidationService = templateValidationService;
     this.clauseAssembler = clauseAssembler;
+    this.tiptapRenderer = tiptapRenderer;
     this.stringTemplateEngine = createStringTemplateEngine();
     this.defaultCss = loadDefaultCss();
   }
@@ -91,15 +95,7 @@ public class PdfRenderingService {
     var builder = findBuilder(template.getPrimaryEntityType());
     var contextMap = new HashMap<>(builder.buildContext(entityId, memberId));
 
-    // Inject clause context
-    String templateContent =
-        injectClauseContext(resolvedClauses, contextMap, template.getContent());
-
-    String customCss = template.getCss() != null ? template.getCss() : "";
-    String mergedCss = defaultCss + "\n" + customCss;
-
-    String renderedBody = renderThymeleaf(templateContent, contextMap);
-    String fullHtml = wrapHtml(renderedBody, mergedCss);
+    String fullHtml = renderTemplateToHtml(template, contextMap, resolvedClauses);
     byte[] pdfBytes = htmlToPdf(fullHtml);
     String fileName =
         generateFilename(template.getSlug(), template.getPrimaryEntityType(), contextMap);
@@ -143,14 +139,7 @@ public class PdfRenderingService {
     var builder = findBuilder(template.getPrimaryEntityType());
     var contextMap = new HashMap<>(builder.buildContext(entityId, memberId));
 
-    String templateContent =
-        injectClauseContext(resolvedClauses, contextMap, template.getContent());
-
-    String customCss = template.getCss() != null ? template.getCss() : "";
-    String mergedCss = defaultCss + "\n" + customCss;
-
-    String renderedBody = renderThymeleaf(templateContent, contextMap);
-    return wrapHtml(renderedBody, mergedCss);
+    return renderTemplateToHtml(template, contextMap, resolvedClauses);
   }
 
   /**
@@ -182,13 +171,7 @@ public class PdfRenderingService {
         templateValidationService.validateRequiredFields(
             template.getRequiredContextFields(), contextMap);
 
-    String templateContent =
-        injectClauseContext(resolvedClauses, contextMap, template.getContent());
-
-    String customCss = template.getCss() != null ? template.getCss() : "";
-    String mergedCss = defaultCss + "\n" + customCss;
-    String renderedBody = renderThymeleaf(templateContent, contextMap);
-    String html = wrapHtml(renderedBody, mergedCss);
+    String html = renderTemplateToHtml(template, contextMap, resolvedClauses);
 
     return new PreviewResponse(html, validationResult);
   }
@@ -235,6 +218,34 @@ public class PdfRenderingService {
       return rendered.substring(bodyStart, bodyEnd).trim();
     }
     return rendered;
+  }
+
+  /**
+   * Renders a template to a full HTML document string. Uses the legacy Thymeleaf pipeline when
+   * {@code legacyContent} is set, otherwise renders JSONB content via {@link TiptapRenderer}.
+   */
+  private String renderTemplateToHtml(
+      DocumentTemplate template, HashMap<String, Object> contextMap, List<Clause> resolvedClauses) {
+    if (template.getLegacyContent() != null) {
+      // Legacy Thymeleaf rendering path
+      String templateContent =
+          injectClauseContext(resolvedClauses, contextMap, template.getLegacyContent());
+      String customCss = template.getCss() != null ? template.getCss() : "";
+      String mergedCss = defaultCss + "\n" + customCss;
+      String renderedBody = renderThymeleaf(templateContent, contextMap);
+      return wrapHtml(renderedBody, mergedCss);
+    }
+
+    // New TiptapRenderer path for JSONB content
+    Map<UUID, Clause> clauseMap = new LinkedHashMap<>();
+    if (resolvedClauses != null) {
+      for (var clause : resolvedClauses) {
+        clauseMap.put(clause.getId(), clause);
+      }
+    }
+    Map<String, Object> content =
+        template.getContent() != null ? template.getContent() : Map.of("type", "doc");
+    return tiptapRenderer.render(content, contextMap, clauseMap, template.getCss());
   }
 
   private TemplateContextBuilder findBuilder(TemplateEntityType entityType) {
@@ -295,9 +306,11 @@ public class PdfRenderingService {
       return templateContent;
     }
 
-    // Defense in depth: validate each clause body
+    // Defense in depth: validate each clause legacy body (used by old Thymeleaf pipeline)
     for (var clause : resolvedClauses) {
-      TemplateSecurityValidator.validate(clause.getBody());
+      if (clause.getLegacyBody() != null) {
+        TemplateSecurityValidator.validate(clause.getLegacyBody());
+      }
     }
 
     String clauseHtml = clauseAssembler.assembleClauseBlock(resolvedClauses);

@@ -39,6 +39,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DocumentAuditNotificationTest {
 
+  private static final Map<String, Object> CONTENT = Map.of("type", "doc", "content", List.of());
+
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_audit_notif_test";
 
@@ -83,7 +85,7 @@ class DocumentAuditNotificationTest {
                           "Audit Template",
                           "audit-template",
                           TemplateCategory.ENGAGEMENT_LETTER,
-                          "<h1 th:text=\"${project.name}\">Name</h1>");
+                          CONTENT);
                   template = documentTemplateRepository.save(template);
                   testTemplateId = template.getId();
                 }));
@@ -102,7 +104,7 @@ class DocumentAuditNotificationTest {
                       "name": "Audit Created Template",
                       "category": "REPORT",
                       "primaryEntityType": "PROJECT",
-                      "content": "<p>Test</p>"
+                      "content": {"type": "doc", "content": []}
                     }
                     """))
         .andExpect(status().isCreated());
@@ -140,7 +142,7 @@ class DocumentAuditNotificationTest {
                           "Clone Source Template",
                           "clone-source-audit",
                           TemplateCategory.PROPOSAL,
-                          "<p>Source</p>");
+                          CONTENT);
                   template.setSource(TemplateSource.PLATFORM);
                   template = documentTemplateRepository.save(template);
                   platformTemplateId[0] = template.getId();

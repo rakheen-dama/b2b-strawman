@@ -157,8 +157,8 @@ class TemplatePackSeederTest {
                   assertThat(platformTemplates)
                       .allSatisfy(
                           t -> {
-                            assertThat(t.getContentJson()).isNotNull();
-                            assertThat(t.getContentJson()).containsEntry("type", "doc");
+                            assertThat(t.getContent()).isNotNull();
+                            assertThat(t.getContent()).containsEntry("type", "doc");
                           });
                 }));
   }
@@ -179,7 +179,7 @@ class TemplatePackSeederTest {
                   assertThat(platformTemplates)
                       .allSatisfy(
                           t -> {
-                            Map<String, Object> json = t.getContentJson();
+                            Map<String, Object> json = t.getContent();
                             assertThat(json).containsKey("content");
                             assertThat(json.get("content")).isInstanceOf(List.class);
                             List<Map<String, Object>> content =

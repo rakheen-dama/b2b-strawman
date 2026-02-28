@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplateCategory;
 import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import org.junit.jupiter.api.BeforeAll;
@@ -33,6 +34,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TemplateClauseServiceTest {
+
+  private static final Map<String, Object> CONTENT = Map.of("type", "doc", "content", List.of());
+
+  private static final Map<String, Object> BODY = Map.of("type", "doc", "content", List.of());
 
   private static final String ORG_ID = "org_tc_svc_test";
 
@@ -68,32 +73,23 @@ class TemplateClauseServiceTest {
                   "TC Test Template",
                   "tc-test-template",
                   TemplateCategory.ENGAGEMENT_LETTER,
-                  "<p>Template content</p>");
+                  CONTENT);
           template = documentTemplateRepository.save(template);
           templateId = template.getId();
 
-          var c1 =
-              new Clause("Clause One", "clause-one", "<p>Body of clause one here</p>", "general");
+          var c1 = new Clause("Clause One", "clause-one", BODY, "general");
           c1 = clauseRepository.save(c1);
           clause1Id = c1.getId();
 
-          var c2 =
-              new Clause("Clause Two", "clause-two", "<p>Body of clause two here</p>", "general");
+          var c2 = new Clause("Clause Two", "clause-two", BODY, "general");
           c2 = clauseRepository.save(c2);
           clause2Id = c2.getId();
 
-          var c3 =
-              new Clause(
-                  "Clause Three", "clause-three", "<p>Body of clause three here</p>", "payment");
+          var c3 = new Clause("Clause Three", "clause-three", BODY, "payment");
           c3 = clauseRepository.save(c3);
           clause3Id = c3.getId();
 
-          var inactive =
-              new Clause(
-                  "Inactive Clause",
-                  "inactive-clause",
-                  "<p>Body of inactive clause</p>",
-                  "general");
+          var inactive = new Clause("Inactive Clause", "inactive-clause", BODY, "general");
           inactive.deactivate();
           inactive = clauseRepository.save(inactive);
           inactiveClauseId = inactive.getId();

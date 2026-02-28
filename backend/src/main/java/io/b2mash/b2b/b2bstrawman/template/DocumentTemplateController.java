@@ -191,7 +191,7 @@ public class DocumentTemplateController {
       String description,
       @NotNull TemplateCategory category,
       @NotNull TemplateEntityType primaryEntityType,
-      @NotBlank String content,
+      @NotNull Map<String, Object> content,
       String css,
       String slug,
       List<Map<String, String>> requiredContextFields) {}
@@ -199,7 +199,7 @@ public class DocumentTemplateController {
   public record UpdateTemplateRequest(
       @NotBlank String name,
       String description,
-      @NotBlank String content,
+      @NotNull Map<String, Object> content,
       String css,
       Integer sortOrder,
       List<Map<String, String>> requiredContextFields) {}
@@ -242,7 +242,8 @@ public class DocumentTemplateController {
       String description,
       String category,
       String primaryEntityType,
-      String content,
+      Map<String, Object> content,
+      String legacyContent,
       String css,
       String source,
       UUID sourceTemplateId,
@@ -263,6 +264,7 @@ public class DocumentTemplateController {
           dt.getCategory().name(),
           dt.getPrimaryEntityType().name(),
           dt.getContent(),
+          dt.getLegacyContent(),
           dt.getCss(),
           dt.getSource().name(),
           dt.getSourceTemplateId(),

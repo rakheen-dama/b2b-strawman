@@ -80,6 +80,7 @@ public class DocumentTemplateService {
     TemplateCategory category = request.category();
     TemplateEntityType entityType = request.primaryEntityType();
 
+    validateTiptapContent(request.content());
     var dt =
         new DocumentTemplate(entityType, request.name(), finalSlug, category, request.content());
     dt.setDescription(request.description());
@@ -124,6 +125,8 @@ public class DocumentTemplateService {
         documentTemplateRepository
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", id));
+
+    validateTiptapContent(request.content());
 
     // Track changed fields for audit
     var changedFields = new ArrayList<String>();
@@ -338,6 +341,17 @@ public class DocumentTemplateService {
    * guard; a DataIntegrityViolationException from save() is caught in create() and surfaced as a
    * 409 Conflict, which is acceptable behavior for concurrent same-name creation.
    */
+  private void validateTiptapContent(Map<String, Object> content) {
+    if (content == null) {
+      throw new InvalidStateException("Invalid content", "Content must not be null");
+    }
+    Object type = content.get("type");
+    if (!"doc".equals(type)) {
+      throw new InvalidStateException(
+          "Invalid content", "Content root node must have type 'doc', got: " + type);
+    }
+  }
+
   private String resolveUniqueSlug(String baseSlug) {
     String finalSlug = baseSlug;
     int suffix = 2;

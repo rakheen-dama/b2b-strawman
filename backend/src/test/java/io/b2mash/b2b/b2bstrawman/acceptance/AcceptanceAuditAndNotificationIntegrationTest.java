@@ -21,6 +21,8 @@ import io.b2mash.b2b.b2bstrawman.template.GeneratedDocument;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplateCategory;
 import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.BeforeAll;
@@ -38,6 +40,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AcceptanceAuditAndNotificationIntegrationTest {
+
+  private static final Map<String, Object> CONTENT = Map.of("type", "doc", "content", List.of());
 
   private static final String ORG_ID = "org_accept_audit_test";
   private static final String CLERK_USER_ID = "user_accept_audit_test";
@@ -91,7 +95,7 @@ class AcceptanceAuditAndNotificationIntegrationTest {
                               "Audit Test Template",
                               "audit-test-template",
                               TemplateCategory.ENGAGEMENT_LETTER,
-                              "<p>Audit test content</p>");
+                              CONTENT);
                       template = documentTemplateRepository.save(template);
                       templateId = template.getId();
                     }));

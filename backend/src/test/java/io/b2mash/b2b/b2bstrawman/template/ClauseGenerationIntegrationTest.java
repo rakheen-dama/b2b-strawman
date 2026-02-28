@@ -42,6 +42,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ClauseGenerationIntegrationTest {
 
+  private static final Map<String, Object> CONTENT = Map.of("type", "doc", "content", List.of());
+
+  private static final Map<String, Object> BODY = Map.of("type", "doc", "content", List.of());
+
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_clause_gen_test";
 
@@ -96,37 +100,23 @@ class ClauseGenerationIntegrationTest {
                           "Clause Gen Template",
                           "clause-gen-template",
                           TemplateCategory.ENGAGEMENT_LETTER,
-                          "<h1 th:text=\"${project.name}\">Name</h1>"
-                              + "<div th:utext=\"${clauseBlock}\"></div>"
-                              + "<p>Footer</p>");
+                          CONTENT);
                   template = documentTemplateRepository.save(template);
                   testTemplateId = template.getId();
 
                   // Create clauses
                   var clause1 =
                       new Clause(
-                          "Test Confidentiality",
-                          "test-gen-confidentiality",
-                          "<p>The parties agree to keep information confidential.</p>",
-                          "General");
+                          "Test Confidentiality", "test-gen-confidentiality", BODY, "General");
                   clause1 = clauseRepository.save(clause1);
                   clauseId1 = clause1.getId();
 
                   var clause2 =
-                      new Clause(
-                          "Liability Limitation",
-                          "liability-limitation",
-                          "<p>Liability is limited to the contract value.</p>",
-                          "Legal");
+                      new Clause("Liability Limitation", "liability-limitation", BODY, "Legal");
                   clause2 = clauseRepository.save(clause2);
                   clauseId2 = clause2.getId();
 
-                  var requiredClause =
-                      new Clause(
-                          "Governing Law",
-                          "governing-law",
-                          "<p>This agreement is governed by South African law.</p>",
-                          "Legal");
+                  var requiredClause = new Clause("Governing Law", "governing-law", BODY, "Legal");
                   requiredClause = clauseRepository.save(requiredClause);
                   requiredClauseId = requiredClause.getId();
 
@@ -198,7 +188,7 @@ class ClauseGenerationIntegrationTest {
                           "No Clause Template",
                           "no-clause-template",
                           TemplateCategory.ENGAGEMENT_LETTER,
-                          "<h1 th:text=\"${project.name}\">Name</h1><p>Simple</p>");
+                          CONTENT);
                   template = documentTemplateRepository.save(template);
                   noClauseTemplateId[0] = template.getId();
                 }));

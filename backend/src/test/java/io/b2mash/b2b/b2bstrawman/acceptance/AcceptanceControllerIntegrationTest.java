@@ -101,7 +101,7 @@ class AcceptanceControllerIntegrationTest {
     jdbcTemplate.update(
         """
         INSERT INTO "%s".document_templates (id, name, slug, category, primary_entity_type, content, source, active, created_at, updated_at)
-        VALUES (?::uuid, ?, ?, 'ENGAGEMENT_LETTER', 'CUSTOMER', '<p>Test</p>', 'ORG_CUSTOM', true, NOW(), NOW())
+        VALUES (?::uuid, ?, ?, 'ENGAGEMENT_LETTER', 'CUSTOMER', '{"type":"doc","content":[]}'::jsonb, 'ORG_CUSTOM', true, NOW(), NOW())
         """
             .formatted(schema),
         templateId.toString(),

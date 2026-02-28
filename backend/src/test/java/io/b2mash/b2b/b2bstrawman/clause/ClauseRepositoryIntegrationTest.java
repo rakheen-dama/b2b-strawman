@@ -7,6 +7,8 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -22,6 +24,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ClauseRepositoryIntegrationTest {
+
+  private static final Map<String, Object> BODY = Map.of("type", "doc", "content", List.of());
 
   private static final String ORG_ID = "org_clause_test";
 
@@ -48,10 +52,7 @@ class ClauseRepositoryIntegrationTest {
                     tx -> {
                       var clause =
                           new Clause(
-                              "Test Confidentiality",
-                              "test-confidentiality",
-                              "The parties agree to keep all information confidential.",
-                              "General");
+                              "Test Confidentiality", "test-confidentiality", BODY, "General");
                       var saved = clauseRepository.save(clause);
                       assertThat(saved.getId()).isNotNull();
 
@@ -59,8 +60,7 @@ class ClauseRepositoryIntegrationTest {
                       assertThat(found).isPresent();
                       assertThat(found.get().getTitle()).isEqualTo("Test Confidentiality");
                       assertThat(found.get().getSlug()).isEqualTo("test-confidentiality");
-                      assertThat(found.get().getBody())
-                          .isEqualTo("The parties agree to keep all information confidential.");
+                      assertThat(found.get().getBody()).isEqualTo(BODY);
                       assertThat(found.get().getCategory()).isEqualTo("General");
                       assertThat(found.get().getSource()).isEqualTo(ClauseSource.CUSTOM);
                       assertThat(found.get().isActive()).isTrue();
@@ -78,12 +78,11 @@ class ClauseRepositoryIntegrationTest {
             () ->
                 transactionTemplate.executeWithoutResult(
                     tx -> {
-                      var active1 = new Clause("Active One", "active-one", "Body one", "Billing");
+                      var active1 = new Clause("Active One", "active-one", BODY, "Billing");
                       clauseRepository.save(active1);
 
                       var inactive =
-                          new Clause(
-                              "Inactive Clause", "inactive-clause", "Body inactive", "Billing");
+                          new Clause("Inactive Clause", "inactive-clause", BODY, "Billing");
                       inactive.deactivate();
                       var inactiveClause = clauseRepository.save(inactive);
 
@@ -107,10 +106,7 @@ class ClauseRepositoryIntegrationTest {
                     tx -> {
                       clauseRepository.save(
                           new Clause(
-                              "Test Payment Terms",
-                              "test-payment-terms",
-                              "Payment is due within 30 days.",
-                              "Financial"));
+                              "Test Payment Terms", "test-payment-terms", BODY, "Financial"));
 
                       var found = clauseRepository.findBySlug("test-payment-terms");
                       assertThat(found).isPresent();
@@ -127,16 +123,10 @@ class ClauseRepositoryIntegrationTest {
                 transactionTemplate.executeWithoutResult(
                     tx -> {
                       clauseRepository.save(
-                          new Clause(
-                              "Liability Limit",
-                              "liability-limit",
-                              "Liability is limited to...",
-                              "Legal"));
+                          new Clause("Liability Limit", "liability-limit", BODY, "Legal"));
+                      clauseRepository.save(new Clause("Warranty", "warranty", BODY, "Legal"));
                       clauseRepository.save(
-                          new Clause("Warranty", "warranty", "The provider warrants...", "Legal"));
-                      clauseRepository.save(
-                          new Clause(
-                              "Scope", "test-scope-of-work", "The scope includes...", "Project"));
+                          new Clause("Scope", "test-scope-of-work", BODY, "Project"));
 
                       var legalClauses =
                           clauseRepository.findByCategoryAndActiveTrueOrderBySortOrderAsc("Legal");
@@ -154,11 +144,7 @@ class ClauseRepositoryIntegrationTest {
                 transactionTemplate.executeWithoutResult(
                     tx -> {
                       var inactive =
-                          new Clause(
-                              "Deactivated Clause",
-                              "deactivated-clause",
-                              "This clause is no longer active.",
-                              "Archive");
+                          new Clause("Deactivated Clause", "deactivated-clause", BODY, "Archive");
                       inactive.deactivate();
                       clauseRepository.save(inactive);
 
@@ -176,11 +162,11 @@ class ClauseRepositoryIntegrationTest {
             () ->
                 transactionTemplate.executeWithoutResult(
                     tx -> {
-                      clauseRepository.save(new Clause("Cat A1", "cat-a1", "Body", "CategoryA"));
-                      clauseRepository.save(new Clause("Cat A2", "cat-a2", "Body", "CategoryA"));
-                      clauseRepository.save(new Clause("Cat B1", "cat-b1", "Body", "CategoryB"));
+                      clauseRepository.save(new Clause("Cat A1", "cat-a1", BODY, "CategoryA"));
+                      clauseRepository.save(new Clause("Cat A2", "cat-a2", BODY, "CategoryA"));
+                      clauseRepository.save(new Clause("Cat B1", "cat-b1", BODY, "CategoryB"));
 
-                      var inactiveCatC = new Clause("Cat C1", "cat-c1", "Body", "CategoryC");
+                      var inactiveCatC = new Clause("Cat C1", "cat-c1", BODY, "CategoryC");
                       inactiveCatC.deactivate();
                       clauseRepository.save(inactiveCatC);
 
@@ -203,8 +189,7 @@ class ClauseRepositoryIntegrationTest {
                 transactionTemplate.executeWithoutResult(
                     tx ->
                         clauseRepository.save(
-                            new Clause(
-                                "Unique Slug Test", "unique-slug", "First clause", "Test"))));
+                            new Clause("Unique Slug Test", "unique-slug", BODY, "Test"))));
 
     // Second transaction: attempt duplicate slug — should fail
     assertThatThrownBy(
@@ -217,10 +202,7 @@ class ClauseRepositoryIntegrationTest {
                                 tx -> {
                                   clauseRepository.save(
                                       new Clause(
-                                          "Duplicate Slug Test",
-                                          "unique-slug",
-                                          "Second clause",
-                                          "Test"));
+                                          "Duplicate Slug Test", "unique-slug", BODY, "Test"));
                                   clauseRepository.flush();
                                 })))
         .isInstanceOf(DataIntegrityViolationException.class);

@@ -67,7 +67,7 @@ class TemplateClauseControllerIntegrationTest {
     jdbcTemplate.update(
         """
         INSERT INTO document_templates (id, primary_entity_type, name, slug, category, content, source, active, sort_order, created_at, updated_at)
-        VALUES (gen_random_uuid(), 'PROJECT', 'TC Ctrl Template', 'tc-ctrl-template', 'ENGAGEMENT_LETTER', '<p>content</p>', 'ORG_CUSTOM', true, 0, now(), now())
+        VALUES (gen_random_uuid(), 'PROJECT', 'TC Ctrl Template', 'tc-ctrl-template', 'ENGAGEMENT_LETTER', '{"type":"doc","content":[]}'::jsonb, 'ORG_CUSTOM', true, 0, now(), now())
         """);
     templateId =
         jdbcTemplate.queryForObject(
@@ -77,7 +77,7 @@ class TemplateClauseControllerIntegrationTest {
     jdbcTemplate.update(
         """
         INSERT INTO clauses (id, title, slug, body, category, source, active, sort_order, created_at, updated_at)
-        VALUES (gen_random_uuid(), 'TC Ctrl Clause 1', 'tc-ctrl-clause-1', '<p>Body one content here</p>', 'general', 'CUSTOM', true, 0, now(), now())
+        VALUES (gen_random_uuid(), 'TC Ctrl Clause 1', 'tc-ctrl-clause-1', '{"type":"doc","content":[]}'::jsonb, 'general', 'CUSTOM', true, 0, now(), now())
         """);
     clause1Id =
         jdbcTemplate.queryForObject(
@@ -86,7 +86,7 @@ class TemplateClauseControllerIntegrationTest {
     jdbcTemplate.update(
         """
         INSERT INTO clauses (id, title, slug, body, category, source, active, sort_order, created_at, updated_at)
-        VALUES (gen_random_uuid(), 'TC Ctrl Clause 2', 'tc-ctrl-clause-2', '<p>Body two content here</p>', 'payment', 'CUSTOM', true, 0, now(), now())
+        VALUES (gen_random_uuid(), 'TC Ctrl Clause 2', 'tc-ctrl-clause-2', '{"type":"doc","content":[]}'::jsonb, 'payment', 'CUSTOM', true, 0, now(), now())
         """);
     clause2Id =
         jdbcTemplate.queryForObject(
@@ -135,7 +135,7 @@ class TemplateClauseControllerIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(2))
         .andExpect(jsonPath("$[0].clauseId").value(clause1Id))
-        .andExpect(jsonPath("$[0].bodyPreview").exists())
+        .andExpect(jsonPath("$[0].title").value("TC Ctrl Clause 1"))
         .andExpect(jsonPath("$[0].active").value(true));
   }
 

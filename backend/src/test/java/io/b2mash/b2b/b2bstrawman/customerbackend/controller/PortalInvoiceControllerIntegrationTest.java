@@ -29,6 +29,8 @@ import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -48,6 +50,8 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PortalInvoiceControllerIntegrationTest {
+
+  private static final Map<String, Object> CONTENT = Map.of("type", "doc", "content", List.of());
 
   private static final String ORG_ID = "org_portal_invoice_test";
   private static final String API_KEY = "test-api-key";
@@ -262,7 +266,7 @@ class PortalInvoiceControllerIntegrationTest {
                       "Invoice Template",
                       "invoice-template",
                       TemplateCategory.COVER_LETTER,
-                      "<html>Invoice</html>");
+                      CONTENT);
               documentTemplateRepository.save(template);
 
               var doc =

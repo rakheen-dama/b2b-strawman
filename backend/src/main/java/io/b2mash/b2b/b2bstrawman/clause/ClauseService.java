@@ -8,12 +8,7 @@ import io.b2mash.b2b.b2bstrawman.clause.dto.UpdateClauseRequest;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplate;
-import io.b2mash.b2b.b2bstrawman.template.PdfRenderingService;
-import io.b2mash.b2b.b2bstrawman.template.TemplateContextBuilder;
-import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
-import io.b2mash.b2b.b2bstrawman.template.TemplateSecurityValidator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -30,23 +25,15 @@ public class ClauseService {
 
   private final ClauseRepository clauseRepository;
   private final AuditService auditService;
-  private final PdfRenderingService pdfRenderingService;
-  private final List<TemplateContextBuilder> contextBuilders;
 
-  public ClauseService(
-      ClauseRepository clauseRepository,
-      AuditService auditService,
-      PdfRenderingService pdfRenderingService,
-      List<TemplateContextBuilder> contextBuilders) {
+  public ClauseService(ClauseRepository clauseRepository, AuditService auditService) {
     this.clauseRepository = clauseRepository;
     this.auditService = auditService;
-    this.pdfRenderingService = pdfRenderingService;
-    this.contextBuilders = contextBuilders;
   }
 
   @Transactional
   public ClauseResponse createClause(CreateClauseRequest request) {
-    TemplateSecurityValidator.validate(request.body());
+    validateTiptapBody(request.body());
 
     String baseSlug = DocumentTemplate.generateSlug(request.title());
     String uniqueSlug = resolveUniqueSlug(baseSlug);
@@ -82,7 +69,7 @@ public class ClauseService {
           "System clauses cannot be edited. Clone this clause to customize it.");
     }
 
-    TemplateSecurityValidator.validate(request.body());
+    validateTiptapBody(request.body());
 
     String newSlug;
     if (!clause.getTitle().equals(request.title())) {
@@ -229,25 +216,15 @@ public class ClauseService {
     return ClauseResponse.from(clause);
   }
 
-  @Transactional(readOnly = true)
-  public String previewClause(UUID clauseId, UUID entityId, TemplateEntityType entityType) {
-    var clause =
-        clauseRepository
-            .findById(clauseId)
-            .orElseThrow(() -> new ResourceNotFoundException("Clause", clauseId));
-
-    var builder =
-        contextBuilders.stream()
-            .filter(b -> b.supports() == entityType)
-            .findFirst()
-            .orElseThrow(
-                () ->
-                    new InvalidStateException(
-                        "Unsupported entity type", "No context builder for " + entityType));
-
-    var memberId = RequestScopes.MEMBER_ID.get();
-    var contextMap = builder.buildContext(entityId, memberId);
-    return pdfRenderingService.renderThymeleaf(clause.getBody(), contextMap);
+  private void validateTiptapBody(Map<String, Object> body) {
+    if (body == null) {
+      throw new InvalidStateException("Invalid body", "Body must not be null");
+    }
+    Object type = body.get("type");
+    if (!"doc".equals(type)) {
+      throw new InvalidStateException(
+          "Invalid body", "Body root node must have type 'doc', got: " + type);
+    }
   }
 
   private String resolveUniqueSlug(String baseSlug) {

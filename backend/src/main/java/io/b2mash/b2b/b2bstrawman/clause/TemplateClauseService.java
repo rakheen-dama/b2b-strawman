@@ -212,10 +212,11 @@ public class TemplateClauseService {
   }
 
   private TemplateClauseDetail toDetail(TemplateClause tc, Clause clause) {
-    String bodyPreview =
-        clause.getBody() != null && clause.getBody().length() > 200
-            ? clause.getBody().substring(0, 200)
-            : clause.getBody();
+    // Body is now a Map (JSONB); use legacy body for preview, or serialize a summary
+    String bodyPreview = clause.getLegacyBody();
+    if (bodyPreview != null && bodyPreview.length() > 200) {
+      bodyPreview = bodyPreview.substring(0, 200);
+    }
 
     return new TemplateClauseDetail(
         tc.getId(),

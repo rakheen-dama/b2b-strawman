@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.ClauseSelection;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,6 +22,8 @@ class ClauseResolverTest {
   @Mock private TemplateClauseRepository templateClauseRepository;
   @Mock private ClauseRepository clauseRepository;
   @InjectMocks private ClauseResolver clauseResolver;
+
+  private static final Map<String, Object> BODY = Map.of("type", "doc", "content", List.of());
 
   private static final UUID TEMPLATE_ID = UUID.randomUUID();
 
@@ -136,7 +139,7 @@ class ClauseResolverTest {
   // --- Helper ---
 
   private static Clause createClauseWithId(UUID id, String title, String slug) {
-    var clause = new Clause(title, slug, "<p>" + title + "</p>", "General");
+    var clause = new Clause(title, slug, BODY, "General");
     try {
       var idField = Clause.class.getDeclaredField("id");
       idField.setAccessible(true);

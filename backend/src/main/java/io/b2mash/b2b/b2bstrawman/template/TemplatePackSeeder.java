@@ -127,8 +127,6 @@ public class TemplatePackSeeder {
       TemplateCategory category = TemplateCategory.valueOf(templateDef.category());
       TemplateEntityType entityType = TemplateEntityType.valueOf(templateDef.primaryEntityType());
 
-      String contentString =
-          loadTemplateContentAsString(packJsonResource, templateDef.contentFile());
       String css =
           templateDef.cssFile() != null
               ? loadTemplateContentAsString(packJsonResource, templateDef.cssFile())
@@ -136,20 +134,19 @@ public class TemplatePackSeeder {
 
       String slug = DocumentTemplate.generateSlug(templateDef.name());
 
-      var dt = new DocumentTemplate(entityType, templateDef.name(), slug, category, contentString);
+      // Load content as JSONB Map for the primary content field
+      Map<String, Object> contentJson = null;
+      if (templateDef.contentFile() != null && templateDef.contentFile().endsWith(".json")) {
+        contentJson = loadTemplateContentAsJson(packJsonResource, templateDef.contentFile());
+      }
+
+      var dt = new DocumentTemplate(entityType, templateDef.name(), slug, category, contentJson);
       dt.setDescription(templateDef.description());
       dt.setCss(css);
       dt.setSource(TemplateSource.PLATFORM);
       dt.setPackId(pack.packId());
       dt.setPackTemplateKey(templateDef.templateKey());
       dt.setSortOrder(templateDef.sortOrder());
-
-      // Parse JSON content files into structured JSONB for the content_json column
-      if (templateDef.contentFile() != null && templateDef.contentFile().endsWith(".json")) {
-        Map<String, Object> contentJson =
-            loadTemplateContentAsJson(packJsonResource, templateDef.contentFile());
-        dt.setContentJson(contentJson);
-      }
 
       documentTemplateRepository.save(dt);
     }

@@ -44,12 +44,12 @@ public class DocumentTemplate {
   @Column(name = "primary_entity_type", nullable = false, length = 20)
   private TemplateEntityType primaryEntityType;
 
-  @Column(name = "content", nullable = false, columnDefinition = "TEXT")
-  private String content;
-
   @JdbcTypeCode(SqlTypes.JSON)
-  @Column(name = "content_json", columnDefinition = "jsonb")
-  private Map<String, Object> contentJson;
+  @Column(name = "content", columnDefinition = "jsonb")
+  private Map<String, Object> content;
+
+  @Column(name = "legacy_content", columnDefinition = "TEXT")
+  private String legacyContent;
 
   @Column(name = "css", columnDefinition = "TEXT")
   private String css;
@@ -90,7 +90,7 @@ public class DocumentTemplate {
       String name,
       String slug,
       TemplateCategory category,
-      String content) {
+      Map<String, Object> content) {
     this.primaryEntityType = primaryEntityType;
     this.name = name;
     this.slug = slug;
@@ -137,7 +137,8 @@ public class DocumentTemplate {
     return slug;
   }
 
-  public void updateContent(String name, String description, String content, String css) {
+  public void updateContent(
+      String name, String description, Map<String, Object> content, String css) {
     this.name = name;
     this.description = description;
     this.content = content;
@@ -176,16 +177,12 @@ public class DocumentTemplate {
     return primaryEntityType;
   }
 
-  public String getContent() {
+  public Map<String, Object> getContent() {
     return content;
   }
 
-  public Map<String, Object> getContentJson() {
-    return contentJson;
-  }
-
-  public void setContentJson(Map<String, Object> contentJson) {
-    this.contentJson = contentJson;
+  public String getLegacyContent() {
+    return legacyContent;
   }
 
   public String getCss() {
@@ -252,6 +249,10 @@ public class DocumentTemplate {
 
   public void setSource(TemplateSource source) {
     this.source = source;
+  }
+
+  public void setLegacyContent(String legacyContent) {
+    this.legacyContent = legacyContent;
   }
 
   public List<Map<String, String>> getRequiredContextFields() {

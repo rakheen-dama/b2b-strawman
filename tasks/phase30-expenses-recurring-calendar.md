@@ -24,7 +24,7 @@ Phase 30 closes the remaining revenue-capture and daily-work-organisation gaps i
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 218 | Expense Entity Foundation & Migration | Backend | -- | M | 218A, 218B | **Done** (PRs #447, #448) |
-| 219 | Expense Service, Controller & CRUD API | Backend | 218 | L | 219A, 219B | |
+| 219 | Expense Service, Controller & CRUD API | Backend | 218 | L | 219A, 219B | **Done** (PRs #449, #450) |
 | 220 | Expense Frontend — Project Expenses Tab | Frontend | 219 | M | 220A, 220B | |
 | 221 | Expense Billing Integration — InvoiceLine Extension & Invoice Pipeline | Backend | 218 | L | 221A, 221B | |
 | 222 | Expense Billing Frontend — Unbilled Summary & Invoice Generation | Frontend | 221, 220 | M | 222A | |
@@ -168,7 +168,7 @@ TRACK 4: CALENDAR VIEW
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 3a (parallel) | 219 | 219B | ExpenseController: 7 endpoints + complete integration test suite (~20 tests). ~1 new controller file, ~1 new test file. Backend only. | |
+| 3a (parallel) | 219 | 219B | ExpenseController: 7 endpoints + complete integration test suite (~20 tests). ~1 new controller file, ~1 new test file. Backend only. | **Done** (PR #450) |
 | 3b (parallel) | 221 | 221B | InvoiceService extension: unbilled summary + expenses, generate with EXPENSE lines, approve stamps expenses, void clears invoiceId on expenses + profitability query extension + tests (~15 tests). ~2 modified files, ~1 new test file. Backend only. | |
 | 3c (parallel) | 224 | 224B | TaskController: extend complete response with nextInstance, recurrence fields in create/update DTOs, ?recurring=true filter + integration tests (~15 tests). ~1 modified file, ~1 new test file. Backend only. | |
 | 3d (parallel) | 228 | 228A | CalendarService + CalendarController: GET /api/calendar, UNION ALL query, access control + tests (~5 tests). ~2 new files, ~1 new test file. Backend only. | |
@@ -284,7 +284,7 @@ Stage 5: [220B] // [222A] // [229B]                              (parallel)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **219A** | 219.1–219.7 | `ExpenseService`: createExpense, getExpense, listExpenses, updateExpense, deleteExpense, writeOffExpense, restoreExpense, getMyExpenses. All operations include project access validation, billing status guard, OrgSettings load for default markup, audit events, domain events. ~1 new service file, ~2 new event files. Backend only. | **Done** (PR #449) |
-| **219B** | 219.8–219.15 | `ExpenseController`: 7 endpoints with `@PreAuthorize`, `ExpenseResponse` DTO, `CreateExpenseRequest`/`UpdateExpenseRequest` records, complete integration test suite (~20 tests). ~1 new controller file, ~1 new test file. Backend only. | |
+| **219B** | 219.8–219.15 | `ExpenseController`: 7 endpoints with `@PreAuthorize`, `ExpenseResponse` DTO, `CreateExpenseRequest`/`UpdateExpenseRequest` records, complete integration test suite (~20 tests). ~1 new controller file, ~1 new test file. Backend only. | **Done** (PR #450) |
 
 ### Tasks
 

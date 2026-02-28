@@ -319,6 +319,15 @@ export async function saveBrandingAction(
   }
 }
 
+// ---- Variable Metadata Action ----
+
+export async function fetchVariableMetadataAction(
+  entityType: import("@/lib/types").TemplateEntityType,
+): Promise<import("@/components/editor/actions").VariableMetadataResponse> {
+  const { fetchVariableMetadata } = await import("@/components/editor/actions");
+  return fetchVariableMetadata(entityType);
+}
+
 // ---- Entity Picker Actions ----
 
 export async function fetchProjectsForPicker(): Promise<Project[]> {

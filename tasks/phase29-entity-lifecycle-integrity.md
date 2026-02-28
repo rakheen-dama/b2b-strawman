@@ -129,7 +129,7 @@ This is a **structural hardening phase**, not a feature phase. No new pages are 
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 5a (parallel) | 207 | 207A | Task list: status filter chips (All, Open, In Progress, Done, Cancelled) + default filter hiding Done/Cancelled + visual distinction (strikethrough/muted for Done, muted+badge for Cancelled) + task-actions.ts lifecycle server actions + frontend tests. ~3 modified files, ~1 new file. Frontend only. | |
+| 5a (parallel) | 207 | 207A | Task list: status filter chips (All, Open, In Progress, Done, Cancelled) + default filter hiding Done/Cancelled + visual distinction (strikethrough/muted for Done, muted+badge for Cancelled) + task-actions.ts lifecycle server actions + frontend tests. ~3 modified files, ~1 new file. Frontend only. | **Done** (PR #424) |
 | 5b (parallel) | 208 | 208A | Project list: status filter (Active, Completed, Archived, All) + status badge + due date column with overdue warning + project creation/edit dialog: due date picker + customer dropdown + project-actions.ts lifecycle server actions + frontend tests. ~4 modified files, ~1 new file. Frontend only. | |
 
 ### Stage 6: Frontend Detail Pages (parallel tracks)
@@ -557,7 +557,7 @@ Stage 6: [207B] // [208B]                                        (parallel, afte
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **207A** | 207.1--207.6 | Task list panel: status filter chips (All, Open, In Progress, Done, Cancelled) with default hiding Done/Cancelled + visual distinction for Done (strikethrough/muted) and Cancelled (muted+badge) + `task-actions.ts` lifecycle server actions (completeTask, cancelTask, reopenTask) + update task list API call with status param + frontend tests. ~3 modified files, ~1 new file. Frontend only. | |
+| **207A** | 207.1--207.6 | Task list panel: status filter chips (All, Open, In Progress, Done, Cancelled) with default hiding Done/Cancelled + visual distinction for Done (strikethrough/muted) and Cancelled (muted+badge) + `task-actions.ts` lifecycle server actions (completeTask, cancelTask, reopenTask) + update task list API call with status param + frontend tests. ~3 modified files, ~1 new file. Frontend only. | **Done** (PR #424) |
 | **207B** | 207.7--207.11 | Task detail sheet: "Mark Done" primary action when IN_PROGRESS, "Cancel" in overflow menu, "Reopen" for Done/Cancelled + display `completedAt`/`completedBy` info + My Work page: ensure default filter excludes Done/Cancelled + frontend tests. ~3 modified files. Frontend only. | |
 
 ### Tasks

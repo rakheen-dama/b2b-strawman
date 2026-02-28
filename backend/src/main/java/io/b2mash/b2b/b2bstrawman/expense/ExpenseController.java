@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.time.Instant;
@@ -175,7 +176,9 @@ public class ExpenseController {
 
   public record CreateExpenseRequest(
       @NotNull(message = "date is required") LocalDate date,
-      @NotBlank(message = "description is required") String description,
+      @NotBlank(message = "description is required")
+          @Size(max = 500, message = "description must not exceed 500 characters")
+          String description,
       @NotNull(message = "amount is required") @Positive(message = "amount must be positive")
           BigDecimal amount,
       String currency,
@@ -184,19 +187,20 @@ public class ExpenseController {
       UUID receiptDocumentId,
       BigDecimal markupPercent,
       Boolean billable,
-      String notes) {}
+      @Size(max = 1000, message = "notes must not exceed 1000 characters") String notes) {}
 
   public record UpdateExpenseRequest(
       LocalDate date,
-      String description,
-      BigDecimal amount,
+      @Size(min = 1, max = 500, message = "description must be between 1 and 500 characters")
+          String description,
+      @Positive(message = "amount must be positive") BigDecimal amount,
       String currency,
       ExpenseCategory category,
       UUID taskId,
       UUID receiptDocumentId,
       BigDecimal markupPercent,
       Boolean billable,
-      String notes) {}
+      @Size(max = 1000, message = "notes must not exceed 1000 characters") String notes) {}
 
   public record ExpenseResponse(
       UUID id,

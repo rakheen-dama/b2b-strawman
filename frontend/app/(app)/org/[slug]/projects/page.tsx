@@ -7,16 +7,26 @@ import { getProjectTemplates } from "@/lib/api/templates";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
 import type { Project, ProjectRole, LightweightBudgetStatus, FieldDefinitionResponse, SavedViewResponse, TagResponse, OrgMember, Customer } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { BudgetStatusDot } from "@/components/projects/budget-status-dot";
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
 import { NewFromTemplateWrapper } from "@/components/templates/NewFromTemplateWrapper";
 import { CustomFieldBadges } from "@/components/field-definitions/CustomFieldBadges";
 import { ViewSelectorClient } from "@/components/views/ViewSelectorClient";
 import { createSavedViewAction } from "./view-actions";
-import { formatDate } from "@/lib/format";
-import { Clock, FileText, FolderOpen, Users } from "lucide-react";
+import { ProjectStatusFilter } from "@/components/projects/project-status-filter";
+import { formatDate, formatLocalDate, isOverdue } from "@/lib/format";
+import type { ProjectStatus } from "@/lib/types";
+import { AlertTriangle, Calendar, Clock, FileText, FolderOpen, Users } from "lucide-react";
 import Link from "next/link";
+
+const PROJECT_STATUS_BADGE: Record<
+  ProjectStatus,
+  { label: string; variant: "success" | "warning" | "neutral" }
+> = {
+  ACTIVE: { label: "Active", variant: "success" },
+  COMPLETED: { label: "Completed", variant: "neutral" },
+  ARCHIVED: { label: "Archived", variant: "neutral" },
+};
 
 const ROLE_BADGE: Record<ProjectRole, { label: string; variant: "lead" | "member" }> = {
   lead: { label: "Lead", variant: "lead" },
@@ -47,11 +57,16 @@ export default async function ProjectsPage({
     // Non-fatal: view selector won't show saved views
   }
 
-  // Build query string with view filters
-  let projectsEndpoint = "/api/projects";
-  if (currentViewId) {
-    projectsEndpoint = `/api/projects?view=${currentViewId}`;
-  }
+  // Build query string with view and status filters
+  const VALID_STATUSES = new Set(["ACTIVE", "COMPLETED", "ARCHIVED"]);
+  const rawStatus = typeof resolvedSearchParams.status === "string" ? resolvedSearchParams.status : null;
+  const statusParam = rawStatus && VALID_STATUSES.has(rawStatus) ? rawStatus : null;
+  const queryParts: string[] = [];
+  if (currentViewId) queryParts.push(`view=${currentViewId}`);
+  if (statusParam) queryParts.push(`status=${statusParam}`);
+  const projectsEndpoint = queryParts.length > 0
+    ? `/api/projects?${queryParts.join("&")}`
+    : "/api/projects";
 
   let projects: Project[] = [];
   try {
@@ -205,6 +220,11 @@ export default async function ProjectsPage({
         />
       </Suspense>
 
+      {/* Status Filter */}
+      <Suspense fallback={null}>
+        <ProjectStatusFilter slug={slug} />
+      </Suspense>
+
       {/* Projects Grid or Empty State */}
       {projects.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -249,6 +269,11 @@ export default async function ProjectsPage({
                     {budgetStatus?.overallStatus && (
                       <BudgetStatusDot status={budgetStatus.overallStatus} />
                     )}
+                    {project.status !== "ACTIVE" && (
+                      <Badge variant={PROJECT_STATUS_BADGE[project.status].variant} className="shrink-0" data-testid="project-status-badge">
+                        {PROJECT_STATUS_BADGE[project.status].label}
+                      </Badge>
+                    )}
                     {hasRetainer && (
                       <span
                         className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-2 py-0.5 text-xs font-medium text-teal-700 dark:bg-teal-900/30 dark:text-teal-400"
@@ -282,6 +307,23 @@ export default async function ProjectsPage({
                       <Users className="size-3.5" />
                       &mdash;
                     </span>
+                    {project.dueDate && (
+                      <span
+                        className={`inline-flex items-center gap-1 ${
+                          project.status === "ACTIVE" && isOverdue(project.dueDate)
+                            ? "font-medium text-red-600 dark:text-red-400"
+                            : ""
+                        }`}
+                        data-testid="project-due-date"
+                      >
+                        {project.status === "ACTIVE" && isOverdue(project.dueDate) ? (
+                          <AlertTriangle className="size-3.5" />
+                        ) : (
+                          <Calendar className="size-3.5" />
+                        )}
+                        {formatLocalDate(project.dueDate)}
+                      </span>
+                    )}
                     <span>{formatDate(project.createdAt)}</span>
                   </div>
 

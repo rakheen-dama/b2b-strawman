@@ -1,0 +1,65 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "heading",
+      "attrs": { "level": 1 },
+      "content": [
+        { "type": "variable", "attrs": { "key": "org.name" } }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [
+        { "type": "text", "text": "Engagement Letter" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "Dear " },
+        { "type": "variable", "attrs": { "key": "customer.name" } },
+        { "type": "text", "text": "," }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "We are pleased to confirm the following engagement for " },
+        { "type": "variable", "attrs": { "key": "project.name" } },
+        { "type": "text", "text": "." }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Project:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "project.name" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Status:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "project.status" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Description:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "project.description" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "variable", "attrs": { "key": "org.documentFooterText" } }
+      ]
+    }
+  ]
+}

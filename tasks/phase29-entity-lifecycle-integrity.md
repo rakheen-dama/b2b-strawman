@@ -27,7 +27,7 @@ This is a **structural hardening phase**, not a feature phase. No new pages are 
 | 203 | Project Lifecycle Foundation -- Migration, Enums & Entity | Backend | -- | M | 203A, 203B | **Done** (PRs #416, #417) |
 | 204 | Project Lifecycle Service + Transition Endpoints | Backend | 203, 201 | L | 204A, 204B | **Done** (PRs #418, #419) |
 | 205 | Project-Customer Link + Due Date | Backend | 203 | M | 205A, 205B | **Done** (PRs #420, #421) |
-| 206 | Delete Protection & Cross-Entity Guards | Backend | 201, 203, 205 | M | 206A, 206B | |
+| 206 | Delete Protection & Cross-Entity Guards | Backend | 201, 203, 205 | M | 206A, 206B | **Done** (PRs #422, #423) |
 | 207 | Task Lifecycle Frontend | Frontend | 202 | M | 207A, 207B | |
 | 208 | Project Lifecycle Frontend | Frontend | 204, 205 | L | 208A, 208B | |
 
@@ -123,7 +123,7 @@ This is a **structural hardening phase**, not a feature phase. No new pages are 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 4a | 206 | 206A | `ProjectService.deleteProject()` refactor: add child-count guards (tasks, time entries, invoices, documents) + reject delete for COMPLETED/ARCHIVED + `TaskService.deleteTask()` guard: block if time entries exist + 409 error responses with guidance messages. ~2 modified files. Backend only. | **Done** (PR #422) |
-| 4b | 206 | 206B | `CustomerService.deleteCustomer()` guard: block if linked projects/invoices/retainers exist + archive-guard for projects (no new tasks/time on archived projects via `ProjectLifecycleGuard`) + comprehensive integration tests (~10 tests). ~2 modified files, ~1 new file, ~1 new test file. Backend only. | |
+| 4b | 206 | 206B | `CustomerService.deleteCustomer()` guard: block if linked projects/invoices/retainers exist + archive-guard for projects (no new tasks/time on archived projects via `ProjectLifecycleGuard`) + comprehensive integration tests (~10 tests). ~2 modified files, ~1 new file, ~1 new test file. Backend only. | **Done** (PR #423) |
 
 ### Stage 5: Frontend (parallel tracks)
 
@@ -497,7 +497,7 @@ Stage 6: [207B] // [208B]                                        (parallel, afte
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **206A** | 206.1--206.5 | `ProjectService.deleteProject()` refactor: child-count guards (tasks, time entries, invoices, documents) + reject delete for COMPLETED/ARCHIVED + `TaskService.deleteTask()` guard: block if time entries exist + 409 error responses with descriptive messages. ~2 modified files. Backend only. | **Done** (PR #422) |
-| **206B** | 206.6--206.10 | `ProjectLifecycleGuard` service (reusable guard checking project status for child creation) + customer delete protection verification + comprehensive integration tests (~10 tests). ~1 new file, ~1 modified file, ~1 new test file. Backend only. | |
+| **206B** | 206.6--206.10 | `ProjectLifecycleGuard` service (reusable guard checking project status for child creation) + customer delete protection verification + comprehensive integration tests (~10 tests). ~1 new file, ~1 modified file, ~1 new test file. Backend only. | **Done** (PR #423) |
 
 ### Tasks
 

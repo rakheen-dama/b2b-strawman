@@ -6,7 +6,17 @@ Copy everything below the line into a new Claude Code session.
 
 ## Task
 
-You are orchestrating the build of `frontend-v2/`, a complete UI rebuild of a B2B SaaS practice-management app. The existing `frontend/` must not be touched — it's in active development.
+You are orchestrating the build of `frontend-v2/`, a complete UI rebuild of a B2B SaaS practice-management app.
+
+## HARD RULES — READ BEFORE DOING ANYTHING
+
+1. **NEVER modify `backend/`** — no Java files, no migrations, no pom.xml, no test changes. The backend is frozen for this work.
+2. **NEVER modify `frontend/`** — it's in active development by other contributors. Don't touch it, don't refactor it, don't "fix" imports in it.
+3. **ALL work goes in `frontend-v2/`** — every file you create or modify must be under this directory.
+4. **Copy, don't import** — when you need code from `frontend/`, copy the file into `frontend-v2/`. No cross-directory imports, no symlinks.
+5. **The API contract is fixed** — consume existing backend endpoints exactly as they are. If something doesn't fit the new UI, adapt the frontend, not the backend.
+
+These rules apply to you AND every subagent you spawn. Include them in every subagent prompt.
 
 ## Key Files to Read First
 

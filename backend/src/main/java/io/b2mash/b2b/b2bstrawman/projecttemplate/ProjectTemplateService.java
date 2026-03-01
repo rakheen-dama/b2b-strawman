@@ -11,6 +11,9 @@ import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -67,6 +70,7 @@ public class ProjectTemplateService {
   private final CustomerProjectRepository customerProjectRepository;
   private final EntityTagRepository entityTagRepository;
   private final NameTokenResolver nameTokenResolver;
+  private final FieldDefinitionRepository fieldDefinitionRepository;
 
   public ProjectTemplateService(
       ProjectTemplateRepository templateRepository,
@@ -84,7 +88,8 @@ public class ProjectTemplateService {
       CustomerRepository customerRepository,
       CustomerProjectRepository customerProjectRepository,
       EntityTagRepository entityTagRepository,
-      NameTokenResolver nameTokenResolver) {
+      NameTokenResolver nameTokenResolver,
+      FieldDefinitionRepository fieldDefinitionRepository) {
     this.templateRepository = templateRepository;
     this.templateTaskRepository = templateTaskRepository;
     this.templateTaskItemRepository = templateTaskItemRepository;
@@ -101,6 +106,7 @@ public class ProjectTemplateService {
     this.customerProjectRepository = customerProjectRepository;
     this.entityTagRepository = entityTagRepository;
     this.nameTokenResolver = nameTokenResolver;
+    this.fieldDefinitionRepository = fieldDefinitionRepository;
   }
 
   @Transactional
@@ -663,6 +669,59 @@ public class ProjectTemplateService {
             .build());
 
     return project;
+  }
+
+  @Transactional(readOnly = true)
+  public List<FieldDefinition> getRequiredCustomerFields(UUID templateId) {
+    var template =
+        templateRepository
+            .findById(templateId)
+            .orElseThrow(() -> new ResourceNotFoundException("ProjectTemplate", templateId));
+
+    var fieldIds = template.getRequiredCustomerFieldIds();
+    if (fieldIds == null || fieldIds.isEmpty()) {
+      return List.of();
+    }
+
+    return fieldDefinitionRepository.findAllById(fieldIds).stream()
+        .filter(FieldDefinition::isActive)
+        .toList();
+  }
+
+  @Transactional
+  public void updateRequiredCustomerFields(UUID templateId, List<UUID> fieldDefinitionIds) {
+    var template =
+        templateRepository
+            .findById(templateId)
+            .orElseThrow(() -> new ResourceNotFoundException("ProjectTemplate", templateId));
+
+    if (fieldDefinitionIds != null && !fieldDefinitionIds.isEmpty()) {
+      var fields = fieldDefinitionRepository.findAllById(fieldDefinitionIds);
+      var foundIds = fields.stream().map(FieldDefinition::getId).collect(Collectors.toSet());
+
+      for (UUID requestedId : fieldDefinitionIds) {
+        if (!foundIds.contains(requestedId)) {
+          throw new InvalidStateException(
+              "Invalid field definition", "Field definition not found: " + requestedId);
+        }
+      }
+
+      for (var field : fields) {
+        if (!field.isActive()) {
+          throw new InvalidStateException(
+              "Invalid field definition", "Field definition is not active: " + field.getId());
+        }
+        if (field.getEntityType() != EntityType.CUSTOMER) {
+          throw new InvalidStateException(
+              "Invalid field definition",
+              "Field definition is not a customer field: " + field.getId());
+        }
+      }
+    }
+
+    template.setRequiredCustomerFieldIds(
+        fieldDefinitionIds != null ? fieldDefinitionIds : List.of());
+    templateRepository.save(template);
   }
 
   // --- Private helpers ---

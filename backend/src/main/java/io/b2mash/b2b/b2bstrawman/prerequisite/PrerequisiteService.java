@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldUtils;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionService;
+import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplateService;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -21,11 +22,15 @@ public class PrerequisiteService {
 
   private final FieldDefinitionService fieldDefinitionService;
   private final CustomerRepository customerRepository;
+  private final ProjectTemplateService projectTemplateService;
 
   public PrerequisiteService(
-      FieldDefinitionService fieldDefinitionService, CustomerRepository customerRepository) {
+      FieldDefinitionService fieldDefinitionService,
+      CustomerRepository customerRepository,
+      ProjectTemplateService projectTemplateService) {
     this.fieldDefinitionService = fieldDefinitionService;
     this.customerRepository = customerRepository;
+    this.projectTemplateService = projectTemplateService;
   }
 
   /**
@@ -64,16 +69,42 @@ public class PrerequisiteService {
   }
 
   /**
-   * Placeholder for engagement-level prerequisite checks. Full implementation in Epic 243 after
-   * ProjectTemplate is extended.
+   * Checks engagement-level prerequisites for project creation from a template. Evaluates whether
+   * the customer has all required custom fields filled as defined by the template.
    *
    * @param customerId the customer ID
    * @param templateId the project template ID
-   * @return always returns a passed check
+   * @return a PrerequisiteCheck with pass/fail and any violations
    */
   @Transactional(readOnly = true)
   public PrerequisiteCheck checkEngagementPrerequisites(UUID customerId, UUID templateId) {
-    return PrerequisiteCheck.passed(PrerequisiteContext.PROJECT_CREATION);
+    var requiredFields = projectTemplateService.getRequiredCustomerFields(templateId);
+
+    if (requiredFields.isEmpty()) {
+      return PrerequisiteCheck.passed(PrerequisiteContext.PROJECT_CREATION);
+    }
+
+    var customer =
+        customerRepository
+            .findById(customerId)
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+
+    Map<String, Object> customFields = customer.getCustomFields();
+
+    List<PrerequisiteViolation> violations =
+        requiredFields.stream()
+            .filter(fd -> !isFieldFilled(fd, customFields))
+            .map(
+                fd ->
+                    buildViolation(
+                        fd, PrerequisiteContext.PROJECT_CREATION, EntityType.CUSTOMER, customerId))
+            .toList();
+
+    if (violations.isEmpty()) {
+      return PrerequisiteCheck.passed(PrerequisiteContext.PROJECT_CREATION);
+    }
+
+    return new PrerequisiteCheck(false, PrerequisiteContext.PROJECT_CREATION, violations);
   }
 
   private Map<String, Object> loadCustomFields(EntityType entityType, UUID entityId) {

@@ -1,12 +1,13 @@
 package io.b2mash.b2b.b2bstrawman.proposal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
-import io.b2mash.b2b.b2bstrawman.customer.CustomerType;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineType;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
@@ -20,6 +21,7 @@ import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.math.BigDecimal;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -307,15 +309,10 @@ class ProposalOrchestrationServiceTest {
         runInTenant(
             () -> {
               var customer =
-                  new Customer(
+                  TestCustomerFactory.createActiveCustomer(
                       "Active Corp " + (++counter),
                       "active_orch_" + counter + "@test.com",
-                      null,
-                      null,
-                      null,
-                      memberId,
-                      CustomerType.INDIVIDUAL,
-                      LifecycleStatus.ACTIVE);
+                      memberId);
               customer = customerRepository.save(customer);
 
               var proposal = createSentProposal(customer.getId(), FeeModel.HOURLY, null, null);
@@ -333,20 +330,66 @@ class ProposalOrchestrationServiceTest {
         });
   }
 
+  // --- Negative tests ---
+
+  @Test
+  void accept_proposalNotSent_throws() {
+    var setup =
+        runInTenant(
+            () -> {
+              var customer = createProspectCustomer();
+              // Create a DRAFT proposal (not sent)
+              var proposal =
+                  new Proposal(
+                      "P-ORCH-" + (++counter),
+                      "Draft Proposal " + counter,
+                      customer.getId(),
+                      FeeModel.HOURLY,
+                      memberId);
+              proposal = proposalRepository.save(proposal);
+              return new TestSetup(customer.getId(), proposal.getId(), UUID.randomUUID());
+            });
+
+    assertThatThrownBy(
+            () ->
+                runInTenant(
+                    () ->
+                        orchestrationService.acceptProposal(
+                            setup.proposalId, setup.portalContactId)))
+        .isInstanceOf(InvalidStateException.class)
+        .hasMessageContaining("Cannot accept proposal in status");
+  }
+
+  @Test
+  void accept_wrongPortalContact_throws() {
+    var setup =
+        runInTenant(
+            () -> {
+              var customer = createProspectCustomer();
+              var proposal = createSentProposal(customer.getId(), FeeModel.HOURLY, null, null);
+              return new TestSetup(
+                  customer.getId(), proposal.getId(), proposal.getPortalContactId());
+            });
+
+    UUID wrongContactId = UUID.randomUUID();
+    assertThatThrownBy(
+            () ->
+                runInTenant(
+                    () -> orchestrationService.acceptProposal(setup.proposalId, wrongContactId)))
+        .isInstanceOf(InvalidStateException.class)
+        .hasMessageContaining("Portal contact mismatch");
+  }
+
   // --- Helpers ---
 
   private record TestSetup(UUID customerId, UUID proposalId, UUID portalContactId) {}
 
   private Customer createProspectCustomer() {
     var customer =
-        new Customer(
+        TestCustomerFactory.createCustomerWithStatus(
             "Orch Customer " + (++counter),
             "orch_customer_" + counter + "@test.com",
-            null,
-            null,
-            null,
             memberId,
-            CustomerType.INDIVIDUAL,
             LifecycleStatus.PROSPECT);
     return customerRepository.save(customer);
   }

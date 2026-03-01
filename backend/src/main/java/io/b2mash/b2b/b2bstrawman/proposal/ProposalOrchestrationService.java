@@ -94,6 +94,9 @@ public class ProposalOrchestrationService {
    *   <li>Create billing entities (FIXED fee: invoices; HOURLY: no-op)
    * </ol>
    *
+   * <p><b>Authorization:</b> No {@code @PreAuthorize} here — authorization is enforced at the
+   * controller/portal layer. Epic 234A will add {@code PortalProposalController} with portal auth.
+   *
    * @param proposalId the proposal to accept
    * @param portalContactId the portal contact who accepted the proposal
    * @return orchestration result with references to all created entities
@@ -219,6 +222,14 @@ public class ProposalOrchestrationService {
 
   // --- Step 5: Billing entity creation ---
 
+  /*
+   * Invoice creation bypasses InvoiceService.createDraft() intentionally (ADR-125).
+   * At this point the customer is in ONBOARDING status (transitioned in step 2), but
+   * InvoiceService routes through CustomerLifecycleGuard which requires ACTIVE status.
+   * Since the entire orchestration runs in a single transaction, we create invoices
+   * directly via the repository to avoid the guard check. The guard's purpose (blocking
+   * work on PROSPECT customers) is satisfied — the customer is already past PROSPECT.
+   */
   private List<UUID> createBillingEntities(Proposal proposal, UUID projectId) {
     if (proposal.getFeeModel() != FeeModel.FIXED) {
       // HOURLY and RETAINER (future) — no billing entities created at acceptance

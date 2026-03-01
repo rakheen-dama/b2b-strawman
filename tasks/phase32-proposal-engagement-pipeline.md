@@ -23,7 +23,7 @@ Phase 32 introduces the **Proposal to Engagement Pipeline** -- the connective ti
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 230 | Proposal Entity Foundation & Migration | Backend | -- | M | 230A, 230B | **Done** (PRs #467, #468) |
-| 231 | Proposal CRUD & Lifecycle Backend | Backend | 230 | L | 231A, 231B | |
+| 231 | Proposal CRUD & Lifecycle Backend | Backend | 230 | L | 231A, 231B | **Done** (PRs #469, #470) |
 | 232 | Send Flow & Portal Read-Model Sync | Backend | 231 | M | 232A, 232B | |
 | 233 | Acceptance Orchestration | Backend | 231 | L | 233A, 233B | |
 | 234 | Portal Proposal Backend & Expiry Processor | Backend | 232, 233 | M | 234A, 234B | |
@@ -150,7 +150,7 @@ PORTAL TRACK (after E234A)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 1a | 231 | 231A | ProposalService: full CRUD, validation, milestone/team replacement, filtered listing, customer-scoped query. ~2 new files. Backend only. | **Done** (PR #469) |
-| 1b | 231 | 231B | ProposalController: 9 endpoints + DTOs + pipeline stats query + integration tests (~20 tests). ~2 new files, ~1 new test file. Backend only. | |
+| 1b | 231 | 231B | ProposalController: 9 endpoints + DTOs + pipeline stats query + integration tests (~20 tests). ~2 new files, ~1 new test file. Backend only. | **Done** (PR #470) |
 
 ### Stage 2: Send Flow, Orchestration & Cross-Cutting (parallel tracks)
 
@@ -300,7 +300,7 @@ Stage 6: [239B]                                                      (final)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **231A** | 231.1--231.8 | `ProposalService`: createProposal (number allocation, customer validation, fee validation), getProposal, updateProposal (DRAFT guard), deleteProposal (DRAFT guard), listProposals (filtered), replaceMilestones (percentage validation), replaceTeamMembers, getStats (aggregate query), customer-scoped listing. ~1 new service file. Backend only. | **Done** (PR #469) |
-| **231B** | 231.9--231.16 | `ProposalController`: 9 endpoints (CRUD + milestones + team + stats + customer-scoped) + `ProposalResponse`/`CreateProposalRequest`/`UpdateProposalRequest` DTOs + integration tests (~20 tests). ~2 new files, ~1 test file. Backend only. | |
+| **231B** | 231.9--231.16 | `ProposalController`: 9 endpoints (CRUD + milestones + team + stats + customer-scoped) + `ProposalResponse`/`CreateProposalRequest`/`UpdateProposalRequest` DTOs + integration tests (~20 tests). ~2 new files, ~1 test file. Backend only. | **Done** (PR #470) |
 
 ### Tasks
 

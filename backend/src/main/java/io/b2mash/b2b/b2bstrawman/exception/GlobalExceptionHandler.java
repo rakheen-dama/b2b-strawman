@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.MemberContextNotBoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -87,6 +88,41 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     problem.setTitle("Member context not available");
     problem.setDetail("Unable to resolve member identity for request");
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problem);
+  }
+
+  @ExceptionHandler(PrerequisiteNotMetException.class)
+  public ResponseEntity<Map<String, Object>> handlePrerequisiteNotMet(
+      PrerequisiteNotMetException ex) {
+    log.warn("Prerequisite check failed: {}", ex.getBody().getDetail());
+    var check = ex.getPrerequisiteCheck();
+
+    var violations =
+        check.violations().stream()
+            .map(
+                v ->
+                    Map.of(
+                        "code",
+                        (Object) v.code(),
+                        "message",
+                        v.message(),
+                        "entityType",
+                        v.entityType(),
+                        "entityId",
+                        v.entityId().toString(),
+                        "fieldSlug",
+                        v.fieldSlug() != null ? v.fieldSlug() : "",
+                        "resolution",
+                        v.resolution() != null ? v.resolution() : ""))
+            .toList();
+
+    var body = new LinkedHashMap<String, Object>();
+    body.put("type", "about:blank");
+    body.put("title", ex.getBody().getTitle());
+    body.put("status", 422);
+    body.put("detail", ex.getBody().getDetail());
+    body.put("violations", violations);
+
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(body);
   }
 
   @ExceptionHandler(ObjectOptimisticLockingFailureException.class)

@@ -11,11 +11,18 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.PrerequisiteNotMetException;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldType;
 import io.b2mash.b2b.b2bstrawman.member.MemberSyncService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -44,6 +51,7 @@ class CustomerLifecycleServiceTest {
   @Autowired private MemberSyncService memberSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
+  @Autowired private FieldDefinitionRepository fieldDefinitionRepository;
 
   private String tenantSchema;
   private UUID memberId;
@@ -248,6 +256,90 @@ class CustomerLifecycleServiceTest {
     assertThat(result.candidates()).isNotNull();
     // The newly created ACTIVE customer should appear as dormant (no activity records)
     assertThat(result.candidates()).isNotEmpty();
+  }
+
+  // --- Epic 242A: Prerequisite gate tests ---
+
+  @Test
+  void onboardingToActiveBlockedWhenPrerequisiteFieldMissing() {
+    // Create a required field definition for LIFECYCLE_ACTIVATION context
+    UUID fieldDefId =
+        runInTenant(
+            () -> {
+              var fd =
+                  new FieldDefinition(
+                      EntityType.CUSTOMER,
+                      "Prereq Gate Test Field",
+                      "prereq_gate_test_field",
+                      FieldType.TEXT);
+              fd.setRequiredForContexts(List.of("LIFECYCLE_ACTIVATION"));
+              return fieldDefinitionRepository.save(fd).getId();
+            });
+
+    try {
+      // Create customer in ONBOARDING without filling the required field
+      UUID customerId = createCustomerWithStatus(LifecycleStatus.ONBOARDING);
+
+      assertThatThrownBy(
+              () ->
+                  runInTenant(
+                      () ->
+                          lifecycleService.transition(customerId, "ACTIVE", "activate", memberId)))
+          .isInstanceOf(PrerequisiteNotMetException.class);
+    } finally {
+      // Clean up the field definition
+      runInTenant(() -> fieldDefinitionRepository.deleteById(fieldDefId));
+    }
+  }
+
+  @Test
+  void onboardingToActiveSucceedsWhenPrerequisiteFieldFilled() {
+    // Create a required field definition for LIFECYCLE_ACTIVATION context
+    UUID fieldDefId =
+        runInTenant(
+            () -> {
+              var fd =
+                  new FieldDefinition(
+                      EntityType.CUSTOMER,
+                      "Prereq Gate Test Field 2",
+                      "prereq_gate_test_field_2",
+                      FieldType.TEXT);
+              fd.setRequiredForContexts(List.of("LIFECYCLE_ACTIVATION"));
+              return fieldDefinitionRepository.save(fd).getId();
+            });
+
+    try {
+      // Create customer in ONBOARDING with the required field filled
+      UUID customerId =
+          ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+              .where(RequestScopes.ORG_ID, ORG_ID)
+              .where(RequestScopes.MEMBER_ID, memberId)
+              .call(
+                  () ->
+                      transactionTemplate.execute(
+                          tx -> {
+                            var customer =
+                                new Customer(
+                                    "Prereq Filled Corp " + (++emailCounter),
+                                    "prereq_filled_" + emailCounter + "@test.com",
+                                    null,
+                                    null,
+                                    null,
+                                    memberId,
+                                    null,
+                                    LifecycleStatus.ONBOARDING);
+                            customer.setCustomFields(Map.of("prereq_gate_test_field_2", "12345"));
+                            return customerRepository.save(customer).getId();
+                          }));
+
+      var customer =
+          runInTenant(
+              () -> lifecycleService.transition(customerId, "ACTIVE", "activated", memberId));
+      assertThat(customer.getLifecycleStatus()).isEqualTo(LifecycleStatus.ACTIVE);
+    } finally {
+      // Clean up the field definition
+      runInTenant(() -> fieldDefinitionRepository.deleteById(fieldDefId));
+    }
   }
 
   // --- Helpers ---

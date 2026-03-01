@@ -11,7 +11,11 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerController.DormancyCheckResult
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.PrerequisiteNotMetException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
+import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
+import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
@@ -73,6 +77,7 @@ public class CustomerLifecycleService {
   private final ChecklistInstantiationService checklistInstantiationService;
   private final ChecklistInstanceRepository instanceRepository;
   private final TransactionTemplate requiresNewTx;
+  private final PrerequisiteService prerequisiteService;
 
   public CustomerLifecycleService(
       CustomerRepository customerRepository,
@@ -82,7 +87,8 @@ public class CustomerLifecycleService {
       EntityManager entityManager,
       ChecklistInstantiationService checklistInstantiationService,
       ChecklistInstanceRepository instanceRepository,
-      org.springframework.transaction.PlatformTransactionManager transactionManager) {
+      org.springframework.transaction.PlatformTransactionManager transactionManager,
+      PrerequisiteService prerequisiteService) {
     this.customerRepository = customerRepository;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
@@ -93,6 +99,7 @@ public class CustomerLifecycleService {
     this.requiresNewTx = new TransactionTemplate(transactionManager);
     this.requiresNewTx.setPropagationBehavior(
         org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+    this.prerequisiteService = prerequisiteService;
   }
 
   @Transactional
@@ -114,6 +121,13 @@ public class CustomerLifecycleService {
     // Check onboarding guard when transitioning ONBOARDING -> ACTIVE
     if (oldStatus == LifecycleStatus.ONBOARDING && target == LifecycleStatus.ACTIVE) {
       checkOnboardingGuard(customer);
+      // Epic 242A: Check prerequisites (required fields)
+      var prereqCheck =
+          prerequisiteService.checkForContext(
+              PrerequisiteContext.LIFECYCLE_ACTIVATION, EntityType.CUSTOMER, customerId);
+      if (!prereqCheck.passed()) {
+        throw new PrerequisiteNotMetException(prereqCheck);
+      }
     }
 
     // Entity method validates the transition and throws InvalidStateException if invalid

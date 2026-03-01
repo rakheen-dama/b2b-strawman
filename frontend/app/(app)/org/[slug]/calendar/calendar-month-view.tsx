@@ -12,7 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { CalendarItem } from "./calendar-types";
-import { getStatusVariant, getItemLink } from "./calendar-types";
+import { getStatusVariant, getItemLink, getDueDateColor } from "./calendar-types";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -182,18 +182,25 @@ export function CalendarMonthView({
                   </span>
                   {dayItems.length > 0 && (
                     <div className="mt-1 flex flex-wrap gap-1">
-                      {dayItems.slice(0, maxDots).map((item) => (
-                        <span
-                          key={item.id}
-                          className={cn(
-                            "size-2 rounded-full",
-                            item.itemType === "PROJECT"
-                              ? "bg-teal-500"
-                              : "bg-slate-400 dark:bg-slate-500"
-                          )}
-                          title={item.name}
-                        />
-                      ))}
+                      {dayItems.slice(0, maxDots).map((item) => {
+                        const urgency = getDueDateColor(
+                          item.dueDate,
+                          item.status
+                        );
+                        return (
+                          <span
+                            key={item.id}
+                            className={cn(
+                              "size-2 rounded-full",
+                              urgency.dot ||
+                                (item.itemType === "PROJECT"
+                                  ? "bg-teal-500"
+                                  : "bg-slate-400 dark:bg-slate-500")
+                            )}
+                            title={item.name}
+                          />
+                        );
+                      })}
                       {extraCount > 0 && (
                         <span className="text-[10px] leading-none text-slate-500">
                           +{extraCount}

@@ -33,7 +33,7 @@ export default async function CalendarPage({
 
   let initialData: CalendarResponse = { items: [], overdueCount: 0 };
   try {
-    initialData = await getCalendarItems(from, to);
+    initialData = await getCalendarItems(from, to, { overdue: true });
   } catch (error) {
     console.error("Failed to fetch calendar items:", error);
   }

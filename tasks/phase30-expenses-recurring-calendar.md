@@ -146,7 +146,7 @@ TRACK 4: CALENDAR VIEW
 |-------|------|-------|---------|--------|
 | 0a (parallel) | 218 | 218A | V50 tenant migration: CREATE TABLE expenses + indexes + task recurrence columns + invoice_lines ALTER (expense_id, line_type) + org_settings ALTER (time reminder + markup columns). Single combined file. ~1 new migration file. Backend only. | **Done** (PR #447) |
 | 0b (parallel) | 223 | 223A | Task recurrence columns are part of V50 (contributed by 218A builder, or appended here if running in parallel). If parallel: 223A creates its own section of V50. See migration strategy note. | **Done** (PR #456) |
-| 0c (parallel) | 226 | 226A | OrgSettings extension: entity + DTO + migration — can piggyback on V50 from 218A. Extend entity with 4 time reminder fields + 1 markup field. ~2 modified files, ~1 migration section. Backend only. | |
+| 0c (parallel) | 226 | 226A | OrgSettings extension: entity + DTO + migration — can piggyback on V50 from 218A. Extend entity with 4 time reminder fields + 1 markup field. ~2 modified files, ~1 migration section. Backend only. | **Done** (PR #461) |
 
 ### Stage 1: Entity Layer (parallel tracks)
 
@@ -713,7 +713,7 @@ Stage 5: [220B] // [222A] // [229B]                              (parallel)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **226A** | 226.1–226.5 | V50 migration section for OrgSettings time reminder columns + extend `OrgSettings` entity with 4 new fields + extend `OrgSettingsController` DTO + update the OrgSettings update/create path + unit tests for OrgSettings. ~2 modified files, ~1 migration section. Backend only. | |
+| **226A** | 226.1–226.5 | V50 migration section for OrgSettings time reminder columns + extend `OrgSettings` entity with 4 new fields + extend `OrgSettingsController` DTO + update the OrgSettings update/create path + unit tests for OrgSettings. ~2 modified files, ~1 migration section. Backend only. | **Done** (PR #461) |
 | **226B** | 226.6–226.13 | `TimeReminderScheduler` component: `@Scheduled(fixedRate=900000)` method, tenant iteration, per-org processing (working day check, minimum time check, notification creation), `NotificationPreference` opt-out support + integration tests (~8 tests). ~1 new scheduler file, ~1 test file. Backend only. | |
 
 ### Tasks

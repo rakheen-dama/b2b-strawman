@@ -30,7 +30,7 @@ Phase 32 introduces the **Proposal to Engagement Pipeline** -- the connective ti
 | 235 | Audit, Notifications & Activity Integration | Backend | 231 | S | 235A | **Done** (PR #477) |
 | 236 | Proposals Frontend -- List & Pipeline Stats | Frontend | 231 | M | 236A, 236B | **Done** (PRs #478, #479) |
 | 237 | Proposals Frontend -- Create/Edit & Detail Pages | Frontend | 232, 236 | L | 237A, 237B | **Done** (PRs #480, #481) |
-| 238 | Proposals Frontend -- Customer Tab & Project Link | Frontend | 236 | S | 238A | |
+| 238 | Proposals Frontend -- Customer Tab & Project Link | Frontend | 236 | S | 238A | **Done** (PR #482) |
 | 239 | Portal Frontend -- Proposal Pages | Portal | 234 | M | 239A, 239B | |
 
 ---
@@ -175,7 +175,7 @@ PORTAL TRACK (after E234A)
 |-------|------|-------|---------|--------|
 | 4a (parallel) | 234 | 234A | PortalProposalController (4 endpoints) + portal auth scoping + accept triggers orchestration + decline/withdraw flow + tests (~10 tests). ~1 new controller, ~1 test file. Backend only. | **Done** (PR #475) |
 | 4b (parallel) | 237 | 237A | Create/edit proposal pages: ProposalForm, FeeConfigSection, MilestoneEditor, TeamMemberPicker, template picker + edit route + tests (~7 tests). ~7 new files. Frontend only. | **Done** (PR #480) |
-| 4c (parallel) | 238 | 238A | Customer detail Proposals tab + Project detail "Created from Proposal" link + tests (~3 tests). ~3 modified files. Frontend only. | |
+| 4c (parallel) | 238 | 238A | Customer detail Proposals tab + Project detail "Created from Proposal" link + tests (~3 tests). ~3 modified files. Frontend only. | **Done** (PR #482) |
 
 ### Stage 5: Expiry Processor, Detail Page & Portal Frontend
 
@@ -755,7 +755,7 @@ Stage 6: [239B]                                                      (final)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **238A** | 238.1--238.4 | Customer detail "Proposals" tab (pre-filtered list), project detail "Created from Proposal PROP-XXXX" link + frontend tests (~3 tests). ~3 modified files. Frontend only. | |
+| **238A** | 238.1--238.4 | Customer detail "Proposals" tab (pre-filtered list), project detail "Created from Proposal PROP-XXXX" link + frontend tests (~3 tests). ~3 modified files. Frontend only. | **Done** (PR #482) |
 
 ### Tasks
 

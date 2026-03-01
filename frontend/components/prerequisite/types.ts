@@ -46,6 +46,11 @@ export interface IntakeField {
   options: Array<{ value: string; label: string }> | null;
   defaultValue: Record<string, unknown> | null;
   requiredForContexts: string[];
+  visibilityCondition: {
+    dependsOnSlug: string;
+    operator: string;
+    value: string | string[];
+  } | null;
 }
 
 /** Matches IntakeFieldGroupResponse.GroupResponse from backend */

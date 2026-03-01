@@ -278,7 +278,7 @@
 | 238 | Proposals Frontend — Customer Tab & Project Link | Frontend | 236 | S | 238A | **Done** (PR #482) |
 | 239 | Portal Frontend — Proposal Pages | Portal | 234 | M | 239A, 239B | **Done** (PRs #483, #484) |
 | **Phase 33 — Data Completeness & Prerequisite Enforcement** | | | | | | See [tasks/phase33-data-completeness-prerequisites.md](tasks/phase33-data-completeness-prerequisites.md) |
-| 240 | Prerequisite Infrastructure — Migration, Enum & Core Service | Backend | -- | M | 240A, 240B | 240A **Done** (PR #485) |
+| 240 | Prerequisite Infrastructure — Migration, Enum & Core Service | Backend | -- | M | 240A, 240B | **Done** (PRs #485, #486) |
 | 241 | Prerequisite REST API & Field Definition Extension | Backend | 240 | M | 241A, 241B | |
 | 242 | Lifecycle Transition Gate | Backend | 241 | M | 242A, 242B | |
 | 243 | Engagement Prerequisites — Template Extension & Checks | Backend | 241 | M | 243A, 243B | |

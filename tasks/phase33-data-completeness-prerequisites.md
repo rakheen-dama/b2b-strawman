@@ -20,7 +20,7 @@ Phase 33 transforms DocTeams' metadata infrastructure from passive data capture 
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 240 | Prerequisite Infrastructure -- Migration, Enum & Core Service | Backend | -- | M | 240A, 240B | |
+| 240 | Prerequisite Infrastructure -- Migration, Enum & Core Service | Backend | -- | M | 240A, 240B | **Done** |
 | 241 | Prerequisite REST API & Field Definition Extension | Backend | 240 | M | 241A, 241B | |
 | 242 | Lifecycle Transition Gate | Backend | 241 | M | 242A, 242B | |
 | 243 | Engagement Prerequisites -- Template Extension & Checks | Backend | 241 | M | 243A, 243B | |
@@ -136,7 +136,7 @@ FRONTEND TRACK (after E241B)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 0a | 240 | 240A | V53 tenant migration: ALTER TABLE field_definitions ADD COLUMN required_for_contexts JSONB + GIN index + seed UPDATEs for common-customer pack fields. ~1 new migration file. Backend only. | **Done** (PR #485) |
-| 0b | 240 | 240B | PrerequisiteContext enum + PrerequisiteCheck/PrerequisiteViolation records + PrerequisiteService core evaluation (custom field checks only) + FieldDefinition entity extension + FieldPackField/FieldPackSeeder extension + unit tests (~10 tests). ~7 new/modified files. Backend only. | |
+| 0b | 240 | 240B | PrerequisiteContext enum + PrerequisiteCheck/PrerequisiteViolation records + PrerequisiteService core evaluation (custom field checks only) + FieldDefinition entity extension + FieldPackField/FieldPackSeeder extension + unit tests (~10 tests). ~7 new/modified files. Backend only. | **Done** (PR #486) |
 
 ### Stage 1: Repository Queries, Service Extensions & REST API
 
@@ -216,7 +216,7 @@ Stage 5: [246B] // [249B] // [251B]                                         (par
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **240A** | 240.1--240.3 | V53 tenant migration: ALTER TABLE field_definitions ADD COLUMN required_for_contexts JSONB NOT NULL DEFAULT '[]' + GIN index on required_for_contexts + seed UPDATEs for common-customer pack fields (address_line1, city, country, tax_number). ~1 new migration file. Backend only. | **Done** (PR #485) |
-| **240B** | 240.4--240.12 | `PrerequisiteContext` enum (5 values) + `PrerequisiteCheck` record + `PrerequisiteViolation` record + `PrerequisiteService` core evaluation (custom field checks, no structural checks yet) + `FieldDefinition` entity extension (`requiredForContexts` JSONB field) + `FieldPackField` record extension + `FieldPackSeeder` extension + unit tests (~10 tests). ~7 new/modified files. Backend only. | |
+| **240B** | 240.4--240.12 | `PrerequisiteContext` enum (5 values) + `PrerequisiteCheck` record + `PrerequisiteViolation` record + `PrerequisiteService` core evaluation (custom field checks, no structural checks yet) + `FieldDefinition` entity extension (`requiredForContexts` JSONB field) + `FieldPackField` record extension + `FieldPackSeeder` extension + unit tests (~10 tests). ~7 new/modified files. Backend only. | **Done** (PR #486) |
 
 ### Tasks
 

@@ -25,7 +25,7 @@ Phase 32 introduces the **Proposal to Engagement Pipeline** -- the connective ti
 | 230 | Proposal Entity Foundation & Migration | Backend | -- | M | 230A, 230B | **Done** (PRs #467, #468) |
 | 231 | Proposal CRUD & Lifecycle Backend | Backend | 230 | L | 231A, 231B | **Done** (PRs #469, #470) |
 | 232 | Send Flow & Portal Read-Model Sync | Backend | 231 | M | 232A, 232B | **Done** (PRs #471, #472) |
-| 233 | Acceptance Orchestration | Backend | 231 | L | 233A, 233B | |
+| 233 | Acceptance Orchestration | Backend | 231 | L | 233A, 233B | **Done** (PRs #473, #474) |
 | 234 | Portal Proposal Backend & Expiry Processor | Backend | 232, 233 | M | 234A, 234B | |
 | 235 | Audit, Notifications & Activity Integration | Backend | 231 | S | 235A | |
 | 236 | Proposals Frontend -- List & Pipeline Stats | Frontend | 231 | M | 236A, 236B | |
@@ -166,7 +166,7 @@ PORTAL TRACK (after E234A)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 3a (parallel) | 232 | 232B | ProposalService.sendProposal() + validation + portal sync + email to portal contact + in-app notification + audit + tests (~10 tests). ~2 modified files, ~1 test file. Backend only. | **Done** (PR #472) |
-| 3b (parallel) | 233 | 233B | Orchestration: RETAINER fee path (RetainerAgreement creation), InvoiceLineType.FIXED_FEE extension, OrchestrationResult VO, error handling, transaction rollback tests + tests (~8 tests). ~3 modified files. Backend only. | |
+| 3b (parallel) | 233 | 233B | Orchestration: RETAINER fee path (RetainerAgreement creation), InvoiceLineType.FIXED_FEE extension, OrchestrationResult VO, error handling, transaction rollback tests + tests (~8 tests). ~3 modified files. Backend only. | **Done** (PR #474) |
 | 3c (parallel) | 236 | 236B | ProposalPipelineStats component + filters + sort controls + frontend tests (~5 tests). ~3 new/modified files. Frontend only. | |
 
 ### Stage 4: Portal Backend, Frontend Create/Edit & Customer Integration
@@ -436,7 +436,7 @@ Stage 6: [239B]                                                      (final)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **233A** | 233.1--233.7 | `ProposalOrchestrationService` core: project creation (template + bare), team member assignment, FIXED fee path (milestones + single invoice), HOURLY no-op, customer PROSPECT to ONBOARDING transition + integration tests (~8 tests). ~2 new files, ~1 test file. Backend only. | **Done** (PR #473) |
-| **233B** | 233.8--233.14 | RETAINER fee path (RetainerAgreement creation), `InvoiceLineType.FIXED_FEE` extension, `OrchestrationResult` value object, post-commit event publication (`ProposalAcceptedEvent`), error handling (transaction rollback, failure notification), portal status sync on accept + tests (~8 tests). ~3 modified/new files. Backend only. | |
+| **233B** | 233.8--233.14 | RETAINER fee path (RetainerAgreement creation), `InvoiceLineType.FIXED_FEE` extension, `OrchestrationResult` value object, post-commit event publication (`ProposalAcceptedEvent`), error handling (transaction rollback, failure notification), portal status sync on accept + tests (~8 tests). ~3 modified/new files. Backend only. | **Done** (PR #474) |
 
 ### Tasks
 

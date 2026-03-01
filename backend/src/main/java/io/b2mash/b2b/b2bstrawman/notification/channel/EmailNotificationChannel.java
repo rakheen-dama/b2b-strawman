@@ -216,6 +216,7 @@ public class EmailNotificationChannel implements NotificationChannel {
           "RETAINER_FULLY_CONSUMED",
           "RETAINER_TERMINATED" ->
           "notification-retainer";
+      case "PROPOSAL_EXPIRED", "PROPOSAL_DECLINED" -> "notification-proposal";
       default -> {
         log.warn("No email template mapping for notification type '{}'", notificationType);
         yield null;

@@ -102,6 +102,51 @@ export interface UpdateProposalData {
   expiresAt?: string;
 }
 
+// ---- Additional Types for 237A ----
+
+export interface MilestoneData {
+  description: string;
+  percentage: number;
+  relativeDueDays: number;
+}
+
+export interface TeamMemberData {
+  memberId: string;
+  role: string;
+}
+
+export interface MilestoneResponse {
+  id: string;
+  description: string;
+  percentage: number;
+  relativeDueDays: number;
+  sortOrder: number;
+  invoiceId: string | null;
+}
+
+export interface TeamMemberResponse {
+  id: string;
+  memberId: string;
+  memberName?: string;
+  role: string | null;
+  sortOrder: number;
+}
+
+export interface ProposalDetailResponse extends ProposalResponse {
+  customerName?: string;
+  portalContactName?: string;
+  projectTemplateName?: string;
+  milestones: MilestoneResponse[];
+  teamMembers: TeamMemberResponse[];
+  createdByName?: string;
+}
+
+export interface PortalContactSummary {
+  id: string;
+  displayName: string;
+  email: string;
+}
+
 // ---- Actions ----
 
 export async function listProposals(
@@ -187,4 +232,50 @@ export async function listCustomerProposals(
   return api.get<PaginatedProposals>(
     `/api/customers/${customerId}/proposals${query ? `?${query}` : ""}`,
   );
+}
+
+export async function getProposalDetail(
+  id: string,
+): Promise<ProposalDetailResponse> {
+  return api.get<ProposalDetailResponse>(`/api/proposals/${id}`);
+}
+
+export async function replaceMilestones(
+  proposalId: string,
+  milestones: MilestoneData[],
+): Promise<void> {
+  await api.put<void>(`/api/proposals/${proposalId}/milestones`, milestones);
+  revalidatePath("/", "layout");
+}
+
+export async function replaceTeamMembers(
+  proposalId: string,
+  members: TeamMemberData[],
+): Promise<void> {
+  await api.put<void>(`/api/proposals/${proposalId}/team`, members);
+  revalidatePath("/", "layout");
+}
+
+export async function getPortalContacts(
+  customerId: string,
+): Promise<PortalContactSummary[]> {
+  try {
+    return await api.get<PortalContactSummary[]>(
+      `/api/customers/${customerId}/portal-contacts`,
+    );
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchOrgMembers(): Promise<
+  Array<{
+    id: string;
+    name: string;
+    email: string;
+    avatarUrl: string | null;
+    orgRole: string;
+  }>
+> {
+  return api.get("/api/members");
 }

@@ -269,7 +269,7 @@
 | **Phase 32 — Proposal → Engagement Pipeline** | | | | | | See [tasks/phase32-proposal-engagement-pipeline.md](tasks/phase32-proposal-engagement-pipeline.md) |
 | 230 | Proposal Entity Foundation & Migration | Backend | -- | M | 230A, 230B | **Done** (PRs #467, #468) |
 | 231 | Proposal CRUD & Lifecycle Backend | Backend | 230 | L | 231A, 231B | **Done** (PRs #469, #470) |
-| 232 | Send Flow & Portal Read-Model Sync | Backend | 231 | M | 232A, 232B | 232A **Done** (PR #471) |
+| 232 | Send Flow & Portal Read-Model Sync | Backend | 231 | M | 232A, 232B | **Done** (PRs #471, #472) |
 | 233 | Acceptance Orchestration | Backend | 231 | L | 233A, 233B | |
 | 234 | Portal Proposal Backend & Expiry Processor | Backend | 232, 233 | M | 234A, 234B | |
 | 235 | Audit, Notifications & Activity Integration | Backend | 231 | S | 235A | |

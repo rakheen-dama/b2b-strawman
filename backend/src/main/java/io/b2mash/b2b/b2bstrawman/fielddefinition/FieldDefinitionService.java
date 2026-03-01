@@ -240,6 +240,18 @@ public class FieldDefinitionService {
     fd.deactivate();
     fieldDefinitionRepository.save(fd);
 
+    // Remove this field from any project template required fields
+    // The - operator with text removes a key from a JSONB object or a matching string from an array
+    String fieldIdStr = fd.getId().toString();
+    entityManager
+        .createNativeQuery(
+            "UPDATE project_templates SET required_customer_field_ids = "
+                + "required_customer_field_ids - :fieldId "
+                + "WHERE required_customer_field_ids @> CAST(:fieldIdJsonb AS jsonb)")
+        .setParameter("fieldId", fieldIdStr)
+        .setParameter("fieldIdJsonb", "\"" + fieldIdStr + "\"")
+        .executeUpdate();
+
     log.info("Deactivated field definition: id={}, slug={}", fd.getId(), fd.getSlug());
 
     auditService.log(

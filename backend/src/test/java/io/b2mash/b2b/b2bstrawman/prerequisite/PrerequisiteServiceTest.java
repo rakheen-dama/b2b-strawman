@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionService;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldType;
+import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplateService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,12 +32,14 @@ class PrerequisiteServiceTest {
 
   @Mock private FieldDefinitionService fieldDefinitionService;
   @Mock private CustomerRepository customerRepository;
+  @Mock private ProjectTemplateService projectTemplateService;
 
   private PrerequisiteService service;
 
   @BeforeEach
   void setUp() {
-    service = new PrerequisiteService(fieldDefinitionService, customerRepository);
+    service =
+        new PrerequisiteService(fieldDefinitionService, customerRepository, projectTemplateService);
   }
 
   @Test
@@ -168,7 +171,10 @@ class PrerequisiteServiceTest {
 
   @Test
   void checkEngagementPrerequisites_emptyTemplate_returnsPassed() {
-    var result = service.checkEngagementPrerequisites(CUSTOMER_ID, UUID.randomUUID());
+    var templateId = UUID.randomUUID();
+    when(projectTemplateService.getRequiredCustomerFields(templateId)).thenReturn(List.of());
+
+    var result = service.checkEngagementPrerequisites(CUSTOMER_ID, templateId);
 
     assertThat(result.passed()).isTrue();
     assertThat(result.context()).isEqualTo(PrerequisiteContext.PROJECT_CREATION);

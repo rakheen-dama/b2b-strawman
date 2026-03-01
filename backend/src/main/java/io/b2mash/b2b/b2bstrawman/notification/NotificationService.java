@@ -158,6 +158,8 @@ public class NotificationService {
           "PROJECT_ARCHIVED",
           "TASK_RECURRENCE_CREATED",
           "TIME_REMINDER",
+          "PROPOSAL_SENT",
+          "PROPOSAL_ACCEPTED",
           "PROPOSAL_DECLINED",
           "PROPOSAL_EXPIRED");
 

@@ -69,7 +69,7 @@ class NotificationPreferenceControllerTest {
     mockMvc
         .perform(get("/api/notifications/preferences").with(ownerJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.preferences", hasSize(30)))
+        .andExpect(jsonPath("$.preferences", hasSize(32)))
         .andExpect(jsonPath("$.preferences[0].notificationType").value("TASK_ASSIGNED"))
         .andExpect(jsonPath("$.preferences[0].inAppEnabled").value(true))
         .andExpect(jsonPath("$.preferences[0].emailEnabled").value(false))
@@ -100,7 +100,7 @@ class NotificationPreferenceControllerTest {
                     }
                     """))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.preferences", hasSize(30)))
+        .andExpect(jsonPath("$.preferences", hasSize(32)))
         .andExpect(jsonPath("$.preferences[0].notificationType").value("TASK_ASSIGNED"))
         .andExpect(jsonPath("$.preferences[0].inAppEnabled").value(false))
         .andExpect(jsonPath("$.preferences[0].emailEnabled").value(false));
@@ -263,7 +263,7 @@ class NotificationPreferenceControllerTest {
     mockMvc
         .perform(get("/api/notifications/preferences").with(memberJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.preferences", hasSize(30)))
+        .andExpect(jsonPath("$.preferences", hasSize(32)))
         .andExpect(jsonPath("$.preferences[0].notificationType").value("TASK_ASSIGNED"))
         .andExpect(jsonPath("$.preferences[0].inAppEnabled").value(true))
         .andExpect(jsonPath("$.preferences[0].emailEnabled").value(false))

@@ -151,7 +151,7 @@ FRONTEND TRACK (after E241B)
 |-------|------|-------|---------|--------|
 | 2a (parallel) | 242 | 242A | Wire PrerequisiteService.checkForContext(LIFECYCLE_ACTIVATION) into CustomerLifecycleService for ONBOARDING->ACTIVE. Block auto-transition + send notification on failure. ~2 modified files. Backend only. | **Done** (PR #490) |
 | 2b (parallel) | 243 | 243A | V54 migration (required_customer_field_ids on project_templates) + ProjectTemplate entity extension + ProjectTemplateService.getRequiredCustomerFields() + PrerequisiteService.checkEngagementPrerequisites() + tests (~8 tests). ~4 modified/new files. Backend only. | **Done** (PR #492) |
-| 2c (parallel) | 244 | 244A | Wire prerequisite checks into InvoiceService, ProposalService.sendProposal(), DocumentGenerationReadinessService + structural checks (portal contact, billing address) in PrerequisiteService + tests (~8 tests). ~4 modified files. Backend only. | |
+| 2c (parallel) | 244 | 244A | Wire prerequisite checks into InvoiceService, ProposalService.sendProposal(), DocumentGenerationReadinessService + structural checks (portal contact, billing address) in PrerequisiteService + tests (~8 tests). ~4 modified files. Backend only. | **Done** (PR #494) |
 | 2d (parallel) | 250 | 250A | GET /api/customers/completeness-summary endpoint + CustomerReadinessService.computeReadinessByContext() + batch completeness computation + CompletenessScore record + tests (~6 tests). ~3 modified/new files. Backend only. | |
 | 2e (parallel) | 245 | 245A | Prerequisite TypeScript types + usePrerequisiteCheck hook + InlineFieldEditor component + prerequisite-violation-list.tsx + prerequisites API client + frontend tests (~6 tests). ~6 new files. Frontend only. | |
 
@@ -479,7 +479,7 @@ Stage 5: [246B] // [249B] // [251B]                                         (par
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **244A** | 244.1--244.7 | Add structural prerequisite checks to PrerequisiteService (portal contact, billing address checks per context). Wire prerequisite checks into InvoiceService, ProposalService.sendProposal(), DocumentGenerationReadinessService. Tests (~8 tests). ~5 modified files. Backend only. | |
+| **244A** | 244.1--244.7 | Add structural prerequisite checks to PrerequisiteService (portal contact, billing address checks per context). Wire prerequisite checks into InvoiceService, ProposalService.sendProposal(), DocumentGenerationReadinessService. Tests (~8 tests). ~5 modified files. Backend only. | **Done** (PR #494) |
 | **244B** | 244.8--244.13 | Extended action-point tests: structural violation scenarios, cross-domain 422 responses, update existing invoice/proposal/document tests to pass prerequisites. ~8 tests across ~3 files. Backend only. | |
 
 ### Tasks

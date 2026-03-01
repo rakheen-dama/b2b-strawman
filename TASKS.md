@@ -282,7 +282,7 @@
 | 241 | Prerequisite REST API & Field Definition Extension | Backend | 240 | M | 241A, 241B | **Done** (PRs #487, #489) |
 | 242 | Lifecycle Transition Gate | Backend | 241 | M | 242A, 242B | **Done** (PRs #490, #491) |
 | 243 | Engagement Prerequisites — Template Extension & Checks | Backend | 241 | M | 243A, 243B | **Done** (PRs #492, #493) |
-| 244 | Action-Point Prerequisite Wiring | Backend | 241 | M | 244A, 244B | |
+| 244 | Action-Point Prerequisite Wiring | Backend | 241 | M | 244A, 244B | 244A **Done** (PR #494) |
 | 245 | PrerequisiteModal & Shared Frontend Components | Frontend | 241 | M | 245A, 245B | |
 | 246 | Smart Customer Intake Dialog | Frontend | 241, 245 | M | 246A, 246B | |
 | 247 | Prerequisite Configuration UI | Frontend | 245 | S | 247A | |

@@ -111,6 +111,8 @@ class ProposalExpiryProcessorTest {
           assertThat(proposal.getStatus()).isEqualTo(ProposalStatus.EXPIRED);
           return null;
         });
+
+    assertThat(events.stream(ProposalExpiredEvent.class).count()).isEqualTo(1);
   }
 
   @Test

@@ -60,6 +60,10 @@ describe("CreateCustomerDialog", () => {
     });
     expect(screen.getByText(/Step 1 of 2/)).toBeInTheDocument();
 
+    // Fill required fields before advancing
+    await user.type(screen.getByLabelText("Name"), "Test Corp");
+    await user.type(screen.getByLabelText("Email"), "test@corp.com");
+
     await user.click(screen.getByText("Next"));
 
     await waitFor(() => {
@@ -78,6 +82,10 @@ describe("CreateCustomerDialog", () => {
     await waitFor(() => {
       expect(screen.getByText("Create Customer")).toBeInTheDocument();
     });
+
+    // Fill required fields before advancing
+    await user.type(screen.getByLabelText("Name"), "Test Corp");
+    await user.type(screen.getByLabelText("Email"), "test@corp.com");
 
     await user.click(screen.getByText("Next"));
 
@@ -136,6 +144,10 @@ describe("CreateCustomerDialog", () => {
 
     await user.click(screen.getByText("New Customer"));
     await waitFor(() => expect(screen.getByText("Create Customer")).toBeInTheDocument());
+
+    // Fill required fields before advancing
+    await user.type(screen.getByLabelText("Name"), "Back Corp");
+    await user.type(screen.getByLabelText("Email"), "back@corp.com");
 
     // Go to Step 2
     await user.click(screen.getByText("Next"));

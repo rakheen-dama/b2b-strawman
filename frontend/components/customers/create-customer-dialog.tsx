@@ -17,7 +17,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Plus } from "lucide-react";
 import { createCustomer } from "@/app/(app)/org/[slug]/customers/actions";
 import { fetchIntakeFields } from "@/app/(app)/org/[slug]/customers/intake-actions";
-import { IntakeFieldsSection } from "@/components/customers/intake-fields-section";
+import {
+  IntakeFieldsSection,
+  isFieldVisible,
+} from "@/components/customers/intake-fields-section";
 import type { FieldValue } from "@/components/prerequisite/inline-field-editor";
 import type { IntakeFieldGroup } from "@/components/prerequisite/types";
 import type { CustomerType } from "@/lib/types";
@@ -85,14 +88,16 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
     if (!newOpen) resetForm();
   }
 
-  async function loadIntakeFields() {
+  async function loadIntakeFields(): Promise<boolean> {
     setIsLoadingFields(true);
     setFetchError(null);
     try {
       const response = await fetchIntakeFields("CUSTOMER");
       setIntakeGroups(response.groups);
+      return true;
     } catch {
       setFetchError("Failed to load intake fields.");
+      return false;
     } finally {
       setIsLoadingFields(false);
     }
@@ -100,8 +105,16 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
 
   async function handleNext() {
     setError(null);
-    await loadIntakeFields();
-    setStep(2);
+
+    if (!baseFields.name.trim() || !baseFields.email.trim()) {
+      setError("Name and Email are required.");
+      return;
+    }
+
+    const success = await loadIntakeFields();
+    if (success) {
+      setStep(2);
+    }
   }
 
   function handleBack() {
@@ -119,9 +132,9 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
 
     try {
       const customFields: Record<string, unknown> = {};
-      for (const [slug, value] of Object.entries(fieldValues)) {
+      for (const [fieldSlug, value] of Object.entries(fieldValues)) {
         if (value !== null && value !== undefined && value !== "") {
-          customFields[slug] = value;
+          customFields[fieldSlug] = value;
         }
       }
 
@@ -149,29 +162,9 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
   }
 
   // Compute whether all visible required fields are filled
-  function isFieldVisible(field: IntakeFieldGroup["fields"][number]): boolean {
-    const condition = field.visibilityCondition;
-    if (!condition) return true;
-    const actualValue = fieldValues[condition.dependsOnSlug];
-    if (actualValue === null || actualValue === undefined) return false;
-    switch (condition.operator) {
-      case "eq":
-        return String(actualValue) === String(condition.value);
-      case "neq":
-        return String(actualValue) !== String(condition.value);
-      case "in":
-        return (
-          Array.isArray(condition.value) &&
-          condition.value.some((v) => String(actualValue) === String(v))
-        );
-      default:
-        return true;
-    }
-  }
-
   const allRequiredFilled = intakeGroups.every((group) =>
     group.fields
-      .filter((f) => f.required && isFieldVisible(f))
+      .filter((f) => f.required && isFieldVisible(f, fieldValues))
       .every((f) => {
         const v = fieldValues[f.slug];
         return v !== null && v !== undefined && v !== "";
@@ -322,7 +315,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                 />
               )}
 
-              {allRequiredFilled && !isLoadingFields && (
+              {allRequiredFilled && !isLoadingFields && intakeGroups.length > 0 && (
                 <div className="pt-1">
                   <button
                     type="button"

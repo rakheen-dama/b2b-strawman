@@ -16,7 +16,7 @@ import type {
  * Evaluates whether a field should be visible based on its visibility condition.
  * Fields without a condition are always visible.
  */
-function isFieldVisible(
+export function isFieldVisible(
   field: IntakeField,
   currentValues: Record<string, FieldValue>,
 ): boolean {

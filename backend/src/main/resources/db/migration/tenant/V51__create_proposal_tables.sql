@@ -2,21 +2,28 @@
 -- Phase 32: Proposal → Engagement Pipeline
 
 -- Proposal counter (one row per tenant, follows InvoiceCounter pattern)
-CREATE TABLE proposal_counters (
+CREATE TABLE IF NOT EXISTS proposal_counters (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    next_number INTEGER NOT NULL DEFAULT 1
+    next_number INTEGER NOT NULL DEFAULT 1,
+    singleton   BOOLEAN NOT NULL DEFAULT TRUE,
+
+    CONSTRAINT chk_proposal_counter_positive CHECK (next_number > 0),
+    CONSTRAINT proposal_counters_singleton UNIQUE (singleton),
+    CONSTRAINT chk_proposal_counter_singleton CHECK (singleton = TRUE)
 );
 
--- Seed the counter with a single row
-INSERT INTO proposal_counters (id, next_number) VALUES (gen_random_uuid(), 1);
+-- Seed the counter with a single row (idempotent)
+INSERT INTO proposal_counters (id, next_number)
+VALUES (gen_random_uuid(), 1)
+ON CONFLICT DO NOTHING;
 
 -- Proposal entity
-CREATE TABLE proposals (
+CREATE TABLE IF NOT EXISTS proposals (
     id                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     proposal_number         VARCHAR(20) NOT NULL,
     title                   VARCHAR(200) NOT NULL,
     customer_id             UUID NOT NULL REFERENCES customers(id),
-    portal_contact_id       UUID,
+    portal_contact_id       UUID REFERENCES portal_contacts(id) ON DELETE SET NULL,
     status                  VARCHAR(20) NOT NULL DEFAULT 'DRAFT',
     fee_model               VARCHAR(20) NOT NULL,
 
@@ -58,16 +65,16 @@ CREATE TABLE proposals (
 );
 
 -- Primary query patterns: list by customer, filter by status, filter by creator
-CREATE INDEX idx_proposals_customer_id ON proposals(customer_id);
-CREATE INDEX idx_proposals_status ON proposals(status);
-CREATE INDEX idx_proposals_created_by ON proposals(created_by_id);
+CREATE INDEX IF NOT EXISTS idx_proposals_customer_id ON proposals(customer_id);
+CREATE INDEX IF NOT EXISTS idx_proposals_status ON proposals(status);
+CREATE INDEX IF NOT EXISTS idx_proposals_created_by ON proposals(created_by_id);
 
 -- Expiry processor: find SENT proposals past their expiry date
-CREATE INDEX idx_proposals_expires_at ON proposals(expires_at)
+CREATE INDEX IF NOT EXISTS idx_proposals_expires_at ON proposals(expires_at)
     WHERE status = 'SENT' AND expires_at IS NOT NULL;
 
 -- Proposal milestones (fixed-fee milestone billing schedule)
-CREATE TABLE proposal_milestones (
+CREATE TABLE IF NOT EXISTS proposal_milestones (
     id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     proposal_id       UUID NOT NULL REFERENCES proposals(id) ON DELETE CASCADE,
     description       VARCHAR(200) NOT NULL,
@@ -76,14 +83,16 @@ CREATE TABLE proposal_milestones (
     sort_order        INTEGER NOT NULL DEFAULT 0,
     invoice_id        UUID,
     created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+    updated_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+    CONSTRAINT proposal_milestones_percentage_check CHECK (percentage > 0 AND percentage <= 100)
 );
 
 -- Load milestones by proposal
-CREATE INDEX idx_proposal_milestones_proposal ON proposal_milestones(proposal_id);
+CREATE INDEX IF NOT EXISTS idx_proposal_milestones_proposal ON proposal_milestones(proposal_id);
 
 -- Proposal team members (assigned to project on acceptance)
-CREATE TABLE proposal_team_members (
+CREATE TABLE IF NOT EXISTS proposal_team_members (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     proposal_id UUID NOT NULL REFERENCES proposals(id) ON DELETE CASCADE,
     member_id   UUID NOT NULL,
@@ -92,4 +101,4 @@ CREATE TABLE proposal_team_members (
 );
 
 -- Load team by proposal
-CREATE INDEX idx_proposal_team_proposal ON proposal_team_members(proposal_id);
+CREATE INDEX IF NOT EXISTS idx_proposal_team_proposal ON proposal_team_members(proposal_id);

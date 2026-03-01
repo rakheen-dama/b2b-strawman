@@ -13,13 +13,9 @@ import io.b2mash.b2b.b2bstrawman.proposal.dto.MilestoneRequest;
 import io.b2mash.b2b.b2bstrawman.proposal.dto.ProposalFilterCriteria;
 import io.b2mash.b2b.b2bstrawman.proposal.dto.ProposalStats;
 import io.b2mash.b2b.b2bstrawman.proposal.dto.TeamMemberRequest;
-import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
-import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
-import io.b2mash.b2b.b2bstrawman.template.TiptapRenderer;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -45,11 +41,7 @@ public class ProposalService {
   private final CustomerRepository customerRepository;
   private final MemberRepository memberRepository;
   private final PortalContactRepository portalContactRepository;
-  private final ProposalVariableResolver proposalVariableResolver;
-  private final TiptapRenderer tiptapRenderer;
   private final ProposalPortalSyncService proposalPortalSyncService;
-  private final OrgSettingsRepository orgSettingsRepository;
-  private final OrganizationRepository organizationRepository;
   private final ApplicationEventPublisher eventPublisher;
   private final MemberNameResolver memberNameResolver;
 
@@ -61,11 +53,7 @@ public class ProposalService {
       CustomerRepository customerRepository,
       MemberRepository memberRepository,
       PortalContactRepository portalContactRepository,
-      ProposalVariableResolver proposalVariableResolver,
-      TiptapRenderer tiptapRenderer,
       ProposalPortalSyncService proposalPortalSyncService,
-      OrgSettingsRepository orgSettingsRepository,
-      OrganizationRepository organizationRepository,
       ApplicationEventPublisher eventPublisher,
       MemberNameResolver memberNameResolver) {
     this.proposalRepository = proposalRepository;
@@ -75,11 +63,7 @@ public class ProposalService {
     this.customerRepository = customerRepository;
     this.memberRepository = memberRepository;
     this.portalContactRepository = portalContactRepository;
-    this.proposalVariableResolver = proposalVariableResolver;
-    this.tiptapRenderer = tiptapRenderer;
     this.proposalPortalSyncService = proposalPortalSyncService;
-    this.orgSettingsRepository = orgSettingsRepository;
-    this.organizationRepository = organizationRepository;
     this.eventPublisher = eventPublisher;
     this.memberNameResolver = memberNameResolver;
   }
@@ -463,31 +447,10 @@ public class ProposalService {
     // 6. Transition
     proposal.markSent(portalContactId);
 
-    // 7. Load context for rendering
-    var customer =
-        customerRepository
-            .findById(proposal.getCustomerId())
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", proposal.getCustomerId()));
-    var orgSettings = orgSettingsRepository.findForCurrentTenant().orElse(null);
-    String orgId = RequestScopes.requireOrgId();
-    var org = organizationRepository.findByClerkOrgId(orgId).orElse(null);
-    String orgName = org != null ? org.getName() : orgId;
-
-    // 8. Build variable context and render
-    var variableContext =
-        proposalVariableResolver.buildContext(proposal, customer, contact, orgSettings, orgName);
-    Map<String, Object> renderContext = new HashMap<>(variableContext);
-    String contentHtml =
-        tiptapRenderer.render(proposal.getContentJson(), renderContext, Map.of(), null);
-
-    // 9. Sync to portal
-    proposalPortalSyncService.syncProposalToPortal(
-        proposal, contentHtml, orgId, orgName, orgSettings);
-
-    // 10. Save
+    // 7. Save
     var saved = proposalRepository.save(proposal);
 
-    // 11. Publish event
+    // 8. Publish event — portal sync and notifications run AFTER_COMMIT via event handlers
     UUID memberId = RequestScopes.requireMemberId();
     String actorName = memberNameResolver.resolveName(memberId);
     eventPublisher.publishEvent(
@@ -498,8 +461,8 @@ public class ProposalService {
             null,
             memberId,
             actorName,
-            RequestScopes.getTenantIdOrNull(),
-            RequestScopes.getOrgIdOrNull(),
+            RequestScopes.requireTenantId(),
+            RequestScopes.requireOrgId(),
             Instant.now(),
             Map.of(
                 "proposal_number",
@@ -527,6 +490,8 @@ public class ProposalService {
 
     // Update portal read model status
     proposalPortalSyncService.updatePortalProposalStatus(proposalId, "DRAFT");
+
+    // TODO(Epic-235A): Publish ProposalWithdrawnEvent for audit trail integration
 
     var saved = proposalRepository.save(proposal);
     log.info("Withdrew proposal {}", proposalId);

@@ -58,6 +58,7 @@ class ProposalSendTest {
     memberIdOwner =
         syncMember("user_prop_send_owner", "prop_send_owner@test.com", "SEND Owner", "owner");
     syncMember("user_prop_send_admin", "prop_send_admin@test.com", "SEND Admin", "admin");
+    syncMember("user_prop_send_member", "prop_send_member@test.com", "SEND Member", "member");
 
     customerId = createCustomer(ownerJwt(), "Send Test Customer", "send-customer@test.com");
     portalContactId = createPortalContact(customerId, "contact@send-test.com", "Send Contact");
@@ -250,6 +251,40 @@ class ProposalSendTest {
         .andExpect(status().isBadRequest());
   }
 
+  // --- H2: Member role 403 tests ---
+
+  @Test
+  void sendProposal_memberRole_returns403() throws Exception {
+    String proposalId = createProposalWithContent("Member Send Attempt", "HOURLY", null, null);
+
+    mockMvc
+        .perform(
+            post("/api/proposals/{id}/send", proposalId)
+                .with(memberJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"portalContactId\": \"%s\"}".formatted(portalContactId)))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void withdrawProposal_memberRole_returns403() throws Exception {
+    String proposalId = createProposalWithContent("Member Withdraw Attempt", "HOURLY", null, null);
+
+    // Send it first with owner
+    mockMvc
+        .perform(
+            post("/api/proposals/{id}/send", proposalId)
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"portalContactId\": \"%s\"}".formatted(portalContactId)))
+        .andExpect(status().isOk());
+
+    // Try to withdraw with member — should fail 403
+    mockMvc
+        .perform(post("/api/proposals/{id}/withdraw", proposalId).with(memberJwt()))
+        .andExpect(status().isForbidden());
+  }
+
   // --- 232.12: Withdraw test ---
 
   @Test
@@ -432,5 +467,14 @@ class ProposalSendTest {
         .jwt(
             j -> j.subject("user_prop_send_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
+  }
+
+  private JwtRequestPostProcessor memberJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_prop_send_member")
+                    .claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
   }
 }

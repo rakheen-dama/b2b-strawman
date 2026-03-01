@@ -183,6 +183,7 @@ public class Proposal {
     requireStatus(Set.of(ProposalStatus.SENT), "withdraw");
     this.status = ProposalStatus.DRAFT;
     this.sentAt = null;
+    this.portalContactId = null;
     this.updatedAt = Instant.now();
   }
 

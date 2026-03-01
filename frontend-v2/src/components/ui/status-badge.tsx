@@ -44,15 +44,18 @@ const STATUS_MAP: Record<string, StatusVariant> = {
   DONE: "emerald",
   UPLOADED: "emerald",
   SHARED: "emerald",
+  ACCEPTED: "emerald",
 
   AT_RISK: "amber",
   OVERDUE: "amber",
   DORMANT: "amber",
+  EXPIRED: "amber",
 
   OVER_BUDGET: "red",
   CANCELLED: "red",
   VOID: "red",
   FAILED: "red",
+  DECLINED: "red",
 
   ARCHIVED: "purple",
   OFFBOARDED: "purple",

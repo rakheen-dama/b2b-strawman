@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { getAuthContext } from "@/lib/auth";
 import { api } from "@/lib/api";
-import { TimeTrackingSettingsForm } from "@/components/settings/TimeTrackingSettingsForm";
+import { TimeTrackingSettingsForm } from "@/components/settings/time-tracking-settings-form";
 import type { OrgSettings } from "@/lib/types";
 
 export default async function TimeTrackingSettingsPage({

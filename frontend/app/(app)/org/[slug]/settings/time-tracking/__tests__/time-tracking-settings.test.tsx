@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { TimeTrackingSettingsForm } from "@/components/settings/TimeTrackingSettingsForm";
+import { TimeTrackingSettingsForm } from "@/components/settings/time-tracking-settings-form";
 
 const mockUpdateTimeTrackingSettings = vi.fn();
 vi.mock(

@@ -68,29 +68,59 @@ export function TimeTrackingSettingsForm({
     setMessage(null);
     setIsError(false);
 
+    // Validate minHours range
+    if (minHours < 0 || minHours > 24) {
+      setMessage("Minimum hours must be between 0 and 24.");
+      setIsError(true);
+      setSaving(false);
+      return;
+    }
+
+    // Validate markup percent
+    let parsedMarkup: number | null = null;
+    if (markupPercent.trim() !== "") {
+      parsedMarkup = parseFloat(markupPercent);
+      if (isNaN(parsedMarkup)) {
+        setMessage("Markup percent must be a valid number.");
+        setIsError(true);
+        setSaving(false);
+        return;
+      }
+      if (parsedMarkup < 0 || parsedMarkup > 999) {
+        setMessage("Markup percent must be between 0 and 999.");
+        setIsError(true);
+        setSaving(false);
+        return;
+      }
+    }
+
     const daysCSV = DAYS_OF_WEEK
       .filter((d) => selectedDays.has(d.key))
       .map((d) => d.key)
       .join(",");
 
-    const parsedMarkup = markupPercent.trim() === "" ? null : parseFloat(markupPercent);
+    try {
+      const result = await updateTimeTrackingSettings(slug, {
+        timeReminderEnabled: enabled,
+        timeReminderDays: daysCSV,
+        timeReminderTime: reminderTime,
+        timeReminderMinHours: minHours,
+        defaultExpenseMarkupPercent: parsedMarkup,
+      });
 
-    const result = await updateTimeTrackingSettings(slug, {
-      timeReminderEnabled: enabled,
-      timeReminderDays: daysCSV,
-      timeReminderTime: reminderTime,
-      timeReminderMinHours: minHours,
-      defaultExpenseMarkupPercent: parsedMarkup,
-    });
-
-    if (result.success) {
-      setMessage("Time tracking settings updated.");
-      setIsError(false);
-    } else {
-      setMessage(result.error ?? "Failed to update settings.");
+      if (result.success) {
+        setMessage("Time tracking settings updated.");
+        setIsError(false);
+      } else {
+        setMessage(result.error ?? "Failed to update settings.");
+        setIsError(true);
+      }
+    } catch {
+      setMessage("An unexpected error occurred. Please try again.");
       setIsError(true);
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   }
 
   return (
@@ -177,10 +207,11 @@ export function TimeTrackingSettingsForm({
               id="min-hours"
               type="number"
               min={0}
+              max={24}
               step={0.5}
               value={minHours}
               onChange={(e) =>
-                setMinHours(Math.max(0, parseFloat(e.target.value) || 0))
+                setMinHours(Math.max(0, Math.min(24, parseFloat(e.target.value) || 0)))
               }
               className="mt-1 w-40"
             />
@@ -213,6 +244,7 @@ export function TimeTrackingSettingsForm({
             id="expense-markup"
             type="number"
             min={0}
+            max={999}
             step={0.01}
             value={markupPercent}
             onChange={(e) => setMarkupPercent(e.target.value)}

@@ -85,6 +85,7 @@ services:
       SPRING_DATASOURCE_PORTAL_USERNAME: postgres
       SPRING_DATASOURCE_PORTAL_PASSWORD: changeme
       AWS_S3_ENDPOINT: http://localstack:4566
+      AWS_S3_PRESIGNER_ENDPOINT: http://localhost:4567
       AWS_S3_REGION: us-east-1
       AWS_S3_BUCKET_NAME: docteams-dev
       AWS_CREDENTIALS_ACCESS_KEY_ID: test

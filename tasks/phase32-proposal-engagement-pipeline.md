@@ -26,7 +26,7 @@ Phase 32 introduces the **Proposal to Engagement Pipeline** -- the connective ti
 | 231 | Proposal CRUD & Lifecycle Backend | Backend | 230 | L | 231A, 231B | **Done** (PRs #469, #470) |
 | 232 | Send Flow & Portal Read-Model Sync | Backend | 231 | M | 232A, 232B | **Done** (PRs #471, #472) |
 | 233 | Acceptance Orchestration | Backend | 231 | L | 233A, 233B | **Done** (PRs #473, #474) |
-| 234 | Portal Proposal Backend & Expiry Processor | Backend | 232, 233 | M | 234A, 234B | |
+| 234 | Portal Proposal Backend & Expiry Processor | Backend | 232, 233 | M | 234A, 234B | **Done** (PRs #475, #476) |
 | 235 | Audit, Notifications & Activity Integration | Backend | 231 | S | 235A | |
 | 236 | Proposals Frontend -- List & Pipeline Stats | Frontend | 231 | M | 236A, 236B | |
 | 237 | Proposals Frontend -- Create/Edit & Detail Pages | Frontend | 232, 236 | L | 237A, 237B | |
@@ -181,7 +181,7 @@ PORTAL TRACK (after E234A)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 5a (parallel) | 234 | 234B | ProposalExpiryProcessor: @Scheduled job, tenant iteration, notification + email on expiry + portal sync + tests (~5 tests). ~1 new file, ~1 test file. Backend only. | |
+| 5a (parallel) | 234 | 234B | ProposalExpiryProcessor: @Scheduled job, tenant iteration, notification + email on expiry + portal sync + tests (~5 tests). ~1 new file, ~1 test file. Backend only. | **Done** (PR #476) |
 | 5b (parallel) | 237 | 237B | Proposal detail page + SendProposalDialog + ProposalPreview + context-dependent actions (Send/Edit/Delete/Withdraw/Copy/View Project) + tests (~5 tests). ~5 new files. Frontend only. | |
 | 5c (parallel) | 239 | 239A | Portal proposals list page + nav link + portal proposal-actions.ts + portal ProposalStatusBadge. ~4 new files. Portal only. | |
 
@@ -508,7 +508,7 @@ Stage 6: [239B]                                                      (final)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **234A** | 234.1--234.7 | `PortalProposalController`: list proposals for portal contact, get detail (rendered HTML + fee summary + milestones), accept (triggers orchestration), decline (with optional reason). Portal auth scoping. Decline/withdraw flow. ~1 new controller, ~1 test file. Backend only. | **Done** (PR #475) |
-| **234B** | 234.8--234.12 | `ProposalExpiryProcessor`: @Scheduled job iterating tenant schemas, find SENT proposals past expiry, transition to EXPIRED, notification to creator, email to portal contact, portal sync + tests (~5 tests). ~1 new file, ~1 test file. Backend only. | |
+| **234B** | 234.8--234.12 | `ProposalExpiryProcessor`: @Scheduled job iterating tenant schemas, find SENT proposals past expiry, transition to EXPIRED, notification to creator, email to portal contact, portal sync + tests (~5 tests). ~1 new file, ~1 test file. Backend only. | **Done** (PR #476) |
 
 ### Tasks
 

@@ -389,6 +389,18 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
   @Query("SELECT COUNT(te) FROM TimeEntry te WHERE te.taskId = :taskId")
   long countByTaskId(@Param("taskId") UUID taskId);
 
+  // --- Time reminder scheduler query (Epic 226B) ---
+
+  /**
+   * Sums total duration in minutes for a member on a specific date. Returns 0 when no entries
+   * exist. Used by TimeReminderScheduler to check daily logged time against threshold.
+   */
+  @Query(
+      "SELECT COALESCE(SUM(te.durationMinutes), 0) FROM TimeEntry te WHERE te.memberId = :memberId"
+          + " AND te.date = :date")
+  int sumDurationMinutesByMemberIdAndDate(
+      @Param("memberId") UUID memberId, @Param("date") LocalDate date);
+
   // --- Project lifecycle guardrail queries (Epic 204A) ---
 
   /**

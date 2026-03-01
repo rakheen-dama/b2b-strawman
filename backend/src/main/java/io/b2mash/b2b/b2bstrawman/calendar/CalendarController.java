@@ -1,8 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.calendar;
 
+import io.b2mash.b2b.b2bstrawman.calendar.CalendarService.CalendarResponse;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -38,19 +38,4 @@ public class CalendarController {
             memberId, orgRole, from, to, projectId, type, assigneeId, overdue);
     return ResponseEntity.ok(response);
   }
-
-  // --- DTOs ---
-
-  public record CalendarItemDto(
-      UUID id,
-      String name,
-      String itemType,
-      LocalDate dueDate,
-      String status,
-      String priority,
-      UUID assigneeId,
-      UUID projectId,
-      String projectName) {}
-
-  public record CalendarResponse(List<CalendarItemDto> items, int overdueCount) {}
 }

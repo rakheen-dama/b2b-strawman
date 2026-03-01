@@ -316,6 +316,34 @@ class CalendarControllerTest {
         .andExpect(status().isBadRequest());
   }
 
+  @Test
+  void invalidTypeReturnsBadRequest() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/calendar")
+                .param("from", LocalDate.now().toString())
+                .param("to", LocalDate.now().plusDays(30).toString())
+                .param("type", "INVALID")
+                .with(adminJwt()))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void overdueCountRespectsProjectFilter() throws Exception {
+    // When filtering by project2, the overdue task (in project1) should NOT be counted
+    mockMvc
+        .perform(
+            get("/api/calendar")
+                .param("from", LocalDate.now().toString())
+                .param("to", LocalDate.now().plusDays(30).toString())
+                .param("overdue", "true")
+                .param("projectId", project2Id.toString())
+                .with(adminJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.overdueCount").value(0))
+        .andExpect(jsonPath("$.items[?(@.name == 'Overdue Task')]").isEmpty());
+  }
+
   // --- JWT Helpers ---
 
   private JwtRequestPostProcessor adminJwt() {

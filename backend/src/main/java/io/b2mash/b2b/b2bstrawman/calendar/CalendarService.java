@@ -1,19 +1,17 @@
 package io.b2mash.b2b.b2bstrawman.calendar;
 
-import io.b2mash.b2b.b2bstrawman.calendar.CalendarController.CalendarItemDto;
-import io.b2mash.b2b.b2bstrawman.calendar.CalendarController.CalendarResponse;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
@@ -22,7 +20,28 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class CalendarService {
 
-  @PersistenceContext private EntityManager entityManager;
+  private static final Set<String> VALID_TYPES = Set.of("TASK", "PROJECT");
+
+  private final EntityManager entityManager;
+
+  public CalendarService(EntityManager entityManager) {
+    this.entityManager = entityManager;
+  }
+
+  // --- DTOs ---
+
+  public record CalendarItemDto(
+      UUID id,
+      String name,
+      String itemType,
+      LocalDate dueDate,
+      String status,
+      String priority,
+      UUID assigneeId,
+      UUID projectId,
+      String projectName) {}
+
+  public record CalendarResponse(List<CalendarItemDto> items, int overdueCount) {}
 
   @Transactional(readOnly = true)
   public CalendarResponse getCalendarItems(
@@ -36,6 +55,7 @@ public class CalendarService {
       boolean includeOverdue) {
 
     validateDateRange(from, to);
+    validateType(filterType);
 
     boolean isAdminOrOwner = Roles.ORG_OWNER.equals(orgRole) || Roles.ORG_ADMIN.equals(orgRole);
 
@@ -54,10 +74,8 @@ public class CalendarService {
     }
 
     // Query overdue items
-    int overdueCount = 0;
+    List<CalendarItemDto> overdueItems = new ArrayList<>();
     if (includeOverdue) {
-      List<CalendarItemDto> overdueItems = new ArrayList<>();
-
       if (filterType == null || "TASK".equals(filterType)) {
         List<Task> overdueTasks = queryOverdueTasks(from, memberId, isAdminOrOwner);
         overdueItems.addAll(toTaskDtos(overdueTasks));
@@ -68,17 +86,30 @@ public class CalendarService {
         overdueItems.addAll(toProjectDtos(overdueProjects));
       }
 
-      overdueCount = overdueItems.size();
       items.addAll(overdueItems);
     }
 
-    // Apply optional filters
+    // Apply optional filters (projectId, assigneeId)
     var filtered =
         items.stream()
             .filter(item -> filterProjectId == null || filterProjectId.equals(item.projectId()))
             .filter(item -> filterAssigneeId == null || filterAssigneeId.equals(item.assigneeId()))
             .sorted(Comparator.comparing(CalendarItemDto::dueDate))
             .toList();
+
+    // Calculate overdueCount AFTER applying the same filters
+    int overdueCount = 0;
+    if (includeOverdue) {
+      overdueCount =
+          (int)
+              overdueItems.stream()
+                  .filter(
+                      item -> filterProjectId == null || filterProjectId.equals(item.projectId()))
+                  .filter(
+                      item ->
+                          filterAssigneeId == null || filterAssigneeId.equals(item.assigneeId()))
+                  .count();
+    }
 
     return new CalendarResponse(filtered, overdueCount);
   }
@@ -90,6 +121,14 @@ public class CalendarService {
     }
     if (ChronoUnit.DAYS.between(from, to) > 366) {
       throw new InvalidStateException("Invalid date range", "Date range must not exceed 366 days");
+    }
+  }
+
+  private void validateType(String type) {
+    if (type != null && !VALID_TYPES.contains(type)) {
+      throw new InvalidStateException(
+          "Invalid type filter",
+          "Type must be one of: " + VALID_TYPES + ", but got: '" + type + "'");
     }
   }
 

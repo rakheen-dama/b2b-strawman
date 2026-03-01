@@ -18,7 +18,6 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteCheck;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
@@ -738,11 +737,6 @@ public class ProjectTemplateService {
         fieldDefinitionIds != null ? fieldDefinitionIds : List.of());
     templateRepository.save(template);
     return buildResponse(template);
-  }
-
-  @Transactional(readOnly = true)
-  public PrerequisiteCheck checkEngagementPrerequisites(UUID customerId, UUID templateId) {
-    return prerequisiteService.checkEngagementPrerequisites(customerId, templateId);
   }
 
   // --- Private helpers ---

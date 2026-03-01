@@ -170,26 +170,6 @@ public class ProposalOrchestrationService {
       proposal.setCreatedProjectId(project.getId());
       proposalRepository.save(proposal);
 
-      // Step 3a: Check engagement prerequisites and notify if not met
-      if (proposal.getProjectTemplateId() != null) {
-        var prereqCheck =
-            prerequisiteService.checkEngagementPrerequisites(
-                proposal.getCustomerId(), proposal.getProjectTemplateId());
-        if (!prereqCheck.passed()) {
-          var prereqCustomer = customerRepository.findById(proposal.getCustomerId()).orElseThrow();
-          var template = templateRepository.findById(proposal.getProjectTemplateId()).orElseThrow();
-          String fieldList =
-              prereqCheck.violations().stream()
-                  .map(v -> v.fieldSlug())
-                  .collect(Collectors.joining(", "));
-          String notifTitle =
-              "Customer %s is missing fields required for %s: %s"
-                  .formatted(prereqCustomer.getName(), template.getName(), fieldList);
-          notificationService.notifyAdminsAndOwners(
-              "PREREQUISITE_BLOCKED_ACTIVATION", notifTitle, null, "PROJECT", project.getId());
-        }
-      }
-
       // Step 4: Assign team members
       var assignedMemberIds =
           assignTeamMembers(proposalId, project.getId(), proposal.getCreatedById());
@@ -215,6 +195,30 @@ public class ProposalOrchestrationService {
 
       // Publish success event (fires AFTER_COMMIT)
       var customer = customerRepository.findById(proposal.getCustomerId()).orElseThrow();
+
+      // Step 3a: Check engagement prerequisites and notify if not met (after customer load)
+      if (proposal.getProjectTemplateId() != null) {
+        var prereqCheck =
+            prerequisiteService.checkEngagementPrerequisites(
+                proposal.getCustomerId(), proposal.getProjectTemplateId());
+        if (!prereqCheck.passed()) {
+          var template = templateRepository.findById(proposal.getProjectTemplateId()).orElseThrow();
+          String fieldList =
+              prereqCheck.violations().stream()
+                  .map(v -> v.fieldSlug())
+                  .collect(Collectors.joining(", "));
+          String notifTitle =
+              "Customer %s is missing fields required for %s: %s"
+                  .formatted(customer.getName(), template.getName(), fieldList);
+          try {
+            notificationService.notifyAdminsAndOwners(
+                "PREREQUISITE_BLOCKED_ACTIVATION", notifTitle, null, "PROJECT", project.getId());
+          } catch (Exception e) {
+            log.warn("Failed to send prerequisite notification: {}", e.getMessage());
+          }
+        }
+      }
+
       eventPublisher.publishEvent(
           new ProposalAcceptedEvent(
               proposalId,

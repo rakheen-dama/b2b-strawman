@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.projecttemplate;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
 import io.b2mash.b2b.b2bstrawman.prerequisite.dto.PrerequisiteCheckResponse;
 import io.b2mash.b2b.b2bstrawman.project.ProjectController;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.CreateTemplateRequest;
@@ -29,9 +30,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProjectTemplateController {
 
   private final ProjectTemplateService projectTemplateService;
+  private final PrerequisiteService prerequisiteService;
 
-  public ProjectTemplateController(ProjectTemplateService projectTemplateService) {
+  public ProjectTemplateController(
+      ProjectTemplateService projectTemplateService, PrerequisiteService prerequisiteService) {
     this.projectTemplateService = projectTemplateService;
+    this.prerequisiteService = prerequisiteService;
   }
 
   @GetMapping
@@ -114,7 +118,7 @@ public class ProjectTemplateController {
       @PathVariable UUID id, @RequestParam UUID customerId) {
     return ResponseEntity.ok(
         PrerequisiteCheckResponse.from(
-            projectTemplateService.checkEngagementPrerequisites(customerId, id)));
+            prerequisiteService.checkEngagementPrerequisites(customerId, id)));
   }
 
   public record UpdateRequiredFieldsRequest(List<UUID> fieldDefinitionIds) {}

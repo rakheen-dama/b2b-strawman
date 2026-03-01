@@ -516,8 +516,12 @@ public class RecurringScheduleService {
       String notifTitle =
           "Customer %s is missing fields required for %s: %s"
               .formatted(customerName, templateName, fieldList);
-      notificationService.notifyAdminsAndOwners(
-          "PREREQUISITE_BLOCKED_ACTIVATION", notifTitle, null, "PROJECT", project.getId());
+      try {
+        notificationService.notifyAdminsAndOwners(
+            "PREREQUISITE_BLOCKED_ACTIVATION", notifTitle, null, "PROJECT", project.getId());
+      } catch (Exception e) {
+        log.warn("Failed to send prerequisite notification: {}", e.getMessage());
+      }
     }
 
     // 6. Record execution

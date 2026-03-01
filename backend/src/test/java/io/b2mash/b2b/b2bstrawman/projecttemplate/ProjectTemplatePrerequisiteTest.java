@@ -462,15 +462,9 @@ class ProjectTemplatePrerequisiteTest {
     assertThat(afterCount[0]).isGreaterThan(beforeCount[0]);
   }
 
-  @Test
-  void proposalAcceptance_prerequisitesNotMet_createsProjectAndNotifies() throws Exception {
-    // This test verifies proposal acceptance creates project even when prerequisites fail.
-    // Proposal setup requires complex entity graph (Proposal, PortalContact, etc.).
-    // The prerequisite notification path is exercised via the schedule test above;
-    // the ProposalOrchestrationService follows the identical notification pattern.
-    // The code path is covered by the schedule test and manual review.
-    // A full proposal acceptance test exists in ProposalOrchestrationServiceTest.
-  }
+  // Note: ProposalOrchestrationService follows the identical prerequisite notification pattern
+  // tested in scheduleExecution_prerequisitesNotMet_createsProjectAndNotifies above.
+  // A full proposal acceptance test exists in ProposalOrchestrationServiceTest.
 
   // --- Helpers ---
 

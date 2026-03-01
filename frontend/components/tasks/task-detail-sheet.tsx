@@ -184,7 +184,7 @@ function RecurrenceEditor({
           <label className="text-xs text-slate-500 dark:text-slate-400">
             Frequency
           </label>
-          <Select value={frequency} onValueChange={(v) => setFrequency(v as RecurrenceFrequency | "")}>
+          <Select value={frequency} onValueChange={(v) => setFrequency(v as RecurrenceFrequency | "NONE")}>
             <SelectTrigger className="mt-1 h-8 w-full text-xs">
               <SelectValue placeholder="None" />
             </SelectTrigger>

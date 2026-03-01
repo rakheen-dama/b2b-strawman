@@ -1,4 +1,4 @@
-package io.b2mash.b2b.b2bstrawman.prerequisite.dto;
+package io.b2mash.b2b.b2bstrawman.fielddefinition.dto;
 
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionService.IntakeFieldGroup;

@@ -526,12 +526,6 @@ class PrerequisiteControllerTest {
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
   }
 
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_prc_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_ADMIN")));
-  }
-
   private JwtRequestPostProcessor memberJwt() {
     return jwt()
         .jwt(j -> j.subject("user_prc_member").claim("o", Map.of("id", ORG_ID, "rol", "member")))

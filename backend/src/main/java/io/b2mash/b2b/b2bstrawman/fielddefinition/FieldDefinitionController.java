@@ -2,9 +2,9 @@ package io.b2mash.b2b.b2bstrawman.fielddefinition;
 
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.CreateFieldDefinitionRequest;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.IntakeFieldGroupResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.PatchFieldDefinitionRequest;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.UpdateFieldDefinitionRequest;
-import io.b2mash.b2b.b2bstrawman.prerequisite.dto.IntakeFieldGroupResponse;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
@@ -69,15 +69,13 @@ public class FieldDefinitionController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<IntakeFieldGroupResponse> getIntakeFields(
       @RequestParam EntityType entityType) {
-    return ResponseEntity.ok(
-        IntakeFieldGroupResponse.from(fieldDefinitionService.getIntakeFields(entityType)));
+    return ResponseEntity.ok(fieldDefinitionService.getIntakeFieldGroupResponse(entityType));
   }
 
   @PatchMapping("/{id}")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<FieldDefinitionResponse> patchRequiredForContexts(
       @PathVariable UUID id, @Valid @RequestBody PatchFieldDefinitionRequest request) {
-    return ResponseEntity.ok(
-        fieldDefinitionService.updateRequiredForContexts(id, request.requiredForContexts()));
+    return ResponseEntity.ok(fieldDefinitionService.updateRequiredForContexts(id, request));
   }
 }

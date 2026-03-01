@@ -23,6 +23,9 @@ seed_projects() {
 
     if [ -n "$_cp_id" ] && [ "$_cp_id" != "null" ]; then
       echo "    [skip] ${_cp_name} already exists (${_cp_id})" >&2
+      # Still ensure Bob and Carol are project members (boot seed doesn't add them)
+      api_post "/api/projects/${_cp_id}/members" "{\"memberId\":\"${BOB_MEMBER_ID}\",\"projectRole\":\"contributor\"}" "$jwt" > /dev/null
+      api_post "/api/projects/${_cp_id}/members" "{\"memberId\":\"${CAROL_MEMBER_ID}\",\"projectRole\":\"contributor\"}" "$jwt" > /dev/null
       echo "$_cp_id"
       return 0
     fi

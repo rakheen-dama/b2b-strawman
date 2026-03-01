@@ -237,50 +237,6 @@ class ProposalAuditTest {
             });
   }
 
-  @Test
-  void declineProposal_emitsAuditAndNotification() throws Exception {
-    String proposalId = createProposalWithContent("Audit Decline Proposal");
-
-    // Send first
-    mockMvc
-        .perform(
-            post("/api/proposals/{id}/send", proposalId)
-                .with(ownerJwt())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"portalContactId\": \"%s\"}".formatted(portalContactId)))
-        .andExpect(status().isOk());
-
-    var proposalUuid = UUID.fromString(proposalId);
-
-    // Decline via the service directly (portal controller needs portal auth context)
-    ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
-        .where(RequestScopes.MEMBER_ID, UUID.fromString(ownerMemberId))
-        .run(
-            () -> {
-              var proposalService =
-                  org.springframework.test.util.ReflectionTestUtils.class; // not needed
-            });
-
-    // Instead, verify the existing declined audit from the send test's proposal decline
-    // We'll use a separate approach: call the service within scoped context
-    // For simplicity, verify the existing decline audit pattern works by checking
-    // that the proposal.sent audit event was created (already tested above).
-    // The decline audit is already covered by the existing declineProposal() code.
-
-    // Verify the sent audit exists (decline requires portal auth which is complex to mock)
-    ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
-        .run(
-            () -> {
-              var page =
-                  auditService.findEvents(
-                      new AuditEventFilter(
-                          "proposal", proposalUuid, null, "proposal.sent", null, null),
-                      PageRequest.of(0, 10));
-
-              assertThat(page.getTotalElements()).isEqualTo(1);
-            });
-  }
-
   // --- Helpers ---
 
   private String createProposalWithContent(String title) throws Exception {

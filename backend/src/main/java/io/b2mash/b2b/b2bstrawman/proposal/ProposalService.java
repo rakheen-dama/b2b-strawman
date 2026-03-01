@@ -20,7 +20,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -126,17 +125,21 @@ public class ProposalService {
     var saved = proposalRepository.save(proposal);
 
     // Audit
-    var auditDetails = new LinkedHashMap<String, Object>();
-    auditDetails.put("proposal_number", proposalNumber);
-    auditDetails.put("title", title);
-    auditDetails.put("customer_id", customerId.toString());
-    auditDetails.put("fee_model", feeModel.name());
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("proposal.created")
             .entityType("proposal")
             .entityId(saved.getId())
-            .details(auditDetails)
+            .details(
+                Map.of(
+                    "proposal_number",
+                    proposalNumber,
+                    "title",
+                    title,
+                    "customer_id",
+                    customerId.toString(),
+                    "fee_model",
+                    feeModel.name()))
             .build());
 
     log.info("Created proposal {} ({}) for customer {}", saved.getId(), proposalNumber, customerId);
@@ -552,7 +555,9 @@ public class ProposalService {
     // Update portal read model status
     proposalPortalSyncService.updatePortalProposalStatus(proposalId, "DRAFT");
 
-    // Audit
+    var saved = proposalRepository.save(proposal);
+
+    // Audit (after save, consistent with other lifecycle methods)
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("proposal.withdrawn")
@@ -561,7 +566,6 @@ public class ProposalService {
             .details(Map.of("proposal_number", proposal.getProposalNumber()))
             .build());
 
-    var saved = proposalRepository.save(proposal);
     log.info("Withdrew proposal {}", proposalId);
     return saved;
   }

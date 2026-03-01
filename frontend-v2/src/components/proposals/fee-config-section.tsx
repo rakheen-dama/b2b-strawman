@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { DollarSign, Clock, RefreshCw } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -67,17 +68,33 @@ export function FeeConfigSection({
   onChange,
   initialData,
 }: FeeConfigSectionProps) {
-  const fixedFeeAmount = initialData?.fixedFeeAmount ?? undefined;
-  const fixedFeeCurrency = initialData?.fixedFeeCurrency ?? "ZAR";
-  const hourlyRateNote = initialData?.hourlyRateNote ?? "";
-  const retainerAmount = initialData?.retainerAmount ?? undefined;
-  const retainerCurrency = initialData?.retainerCurrency ?? "ZAR";
-  const retainerHoursIncluded = initialData?.retainerHoursIncluded ?? undefined;
-  const milestones = initialData?.milestones ?? [];
-  const showMilestones = initialData?.showMilestones ?? false;
+  const [fixedFeeAmount, setFixedFeeAmount] = useState<number | undefined>(
+    initialData?.fixedFeeAmount ?? undefined,
+  );
+  const [fixedFeeCurrency, setFixedFeeCurrency] = useState(
+    initialData?.fixedFeeCurrency ?? "ZAR",
+  );
+  const [hourlyRateNote, setHourlyRateNote] = useState(
+    initialData?.hourlyRateNote ?? "",
+  );
+  const [retainerAmount, setRetainerAmount] = useState<number | undefined>(
+    initialData?.retainerAmount ?? undefined,
+  );
+  const [retainerCurrency, setRetainerCurrency] = useState(
+    initialData?.retainerCurrency ?? "ZAR",
+  );
+  const [retainerHoursIncluded, setRetainerHoursIncluded] = useState<
+    number | undefined
+  >(initialData?.retainerHoursIncluded ?? undefined);
+  const [milestones, setMilestones] = useState<MilestoneData[]>(
+    initialData?.milestones ?? [],
+  );
+  const [showMilestones, setShowMilestones] = useState(
+    initialData?.showMilestones ?? false,
+  );
 
   function buildFeeData(overrides: Partial<FeeData>): FeeData {
-    return {
+    const base: FeeData = {
       feeModel,
       fixedFeeAmount,
       fixedFeeCurrency,
@@ -89,9 +106,29 @@ export function FeeConfigSection({
       showMilestones,
       ...overrides,
     };
+    // Sync local state with overrides
+    if (overrides.fixedFeeAmount !== undefined) setFixedFeeAmount(overrides.fixedFeeAmount);
+    if (overrides.fixedFeeCurrency !== undefined) setFixedFeeCurrency(overrides.fixedFeeCurrency);
+    if (overrides.hourlyRateNote !== undefined) setHourlyRateNote(overrides.hourlyRateNote);
+    if (overrides.retainerAmount !== undefined) setRetainerAmount(overrides.retainerAmount);
+    if (overrides.retainerCurrency !== undefined) setRetainerCurrency(overrides.retainerCurrency);
+    if (overrides.retainerHoursIncluded !== undefined) setRetainerHoursIncluded(overrides.retainerHoursIncluded);
+    if (overrides.milestones !== undefined) setMilestones(overrides.milestones);
+    if (overrides.showMilestones !== undefined) setShowMilestones(overrides.showMilestones);
+    return base;
   }
 
   function handleModelChange(model: FeeModel) {
+    // Reset local state
+    setFixedFeeAmount(undefined);
+    setFixedFeeCurrency("ZAR");
+    setHourlyRateNote("");
+    setRetainerAmount(undefined);
+    setRetainerCurrency("ZAR");
+    setRetainerHoursIncluded(undefined);
+    setMilestones([]);
+    setShowMilestones(false);
+
     onChange({
       feeModel: model,
       fixedFeeAmount: undefined,

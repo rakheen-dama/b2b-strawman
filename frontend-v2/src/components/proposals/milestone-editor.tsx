@@ -7,42 +7,58 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import type { MilestoneData } from "@/app/(app)/org/[slug]/proposals/proposal-actions";
 
+export interface MilestoneWithId extends MilestoneData {
+  clientId: string;
+}
+
 interface MilestoneEditorProps {
   milestones: MilestoneData[];
   onChange: (milestones: MilestoneData[]) => void;
 }
 
-const DEFAULT_MILESTONE: MilestoneData = {
-  description: "",
-  percentage: 0,
-  relativeDueDays: 0,
-};
+function ensureClientIds(milestones: MilestoneData[]): MilestoneWithId[] {
+  return milestones.map((m) => ({
+    ...m,
+    clientId: (m as MilestoneWithId).clientId ?? crypto.randomUUID(),
+  }));
+}
+
+function stripClientIds(milestones: MilestoneWithId[]): MilestoneData[] {
+  return milestones.map(({ clientId: _, ...rest }) => rest);
+}
 
 export function MilestoneEditor({
   milestones,
   onChange,
 }: MilestoneEditorProps) {
-  const total = milestones.reduce((sum, m) => sum + (m.percentage || 0), 0);
+  const items = ensureClientIds(milestones);
+  const total = items.reduce((sum, m) => sum + (m.percentage || 0), 0);
   const isValid = total === 100;
 
   function addMilestone() {
-    onChange([...milestones, { ...DEFAULT_MILESTONE }]);
+    const newItem: MilestoneWithId = {
+      clientId: crypto.randomUUID(),
+      description: "",
+      percentage: 0,
+      relativeDueDays: 0,
+    };
+    onChange(stripClientIds([...items, newItem]));
   }
 
-  function removeMilestone(index: number) {
-    onChange(milestones.filter((_, i) => i !== index));
+  function removeMilestone(clientId: string) {
+    onChange(stripClientIds(items.filter((m) => m.clientId !== clientId)));
   }
 
   function updateMilestone(
-    index: number,
+    clientId: string,
     field: keyof MilestoneData,
     value: string | number,
   ) {
-    const updated = milestones.map((m, i) => {
-      if (i !== index) return m;
+    const updated = items.map((m) => {
+      if (m.clientId !== clientId) return m;
       return { ...m, [field]: value };
     });
-    onChange(updated);
+    onChange(stripClientIds(updated));
   }
 
   return (
@@ -60,7 +76,7 @@ export function MilestoneEditor({
         </span>
       </div>
 
-      {milestones.length > 0 && (
+      {items.length > 0 && (
         <div className="space-y-2">
           <div className="grid grid-cols-[1fr_80px_80px_32px] gap-2 text-xs font-medium text-slate-500">
             <span>Description</span>
@@ -68,9 +84,9 @@ export function MilestoneEditor({
             <span>Due (days)</span>
             <span />
           </div>
-          {milestones.map((milestone, index) => (
+          {items.map((milestone) => (
             <div
-              key={index}
+              key={milestone.clientId}
               className="grid grid-cols-[1fr_80px_80px_32px] gap-2"
               data-testid="milestone-row"
             >
@@ -78,7 +94,7 @@ export function MilestoneEditor({
                 placeholder="Milestone description"
                 value={milestone.description}
                 onChange={(e) =>
-                  updateMilestone(index, "description", e.target.value)
+                  updateMilestone(milestone.clientId, "description", e.target.value)
                 }
               />
               <Input
@@ -89,7 +105,7 @@ export function MilestoneEditor({
                 value={milestone.percentage || ""}
                 onChange={(e) =>
                   updateMilestone(
-                    index,
+                    milestone.clientId,
                     "percentage",
                     e.target.value ? Number(e.target.value) : 0,
                   )
@@ -102,7 +118,7 @@ export function MilestoneEditor({
                 value={milestone.relativeDueDays || ""}
                 onChange={(e) =>
                   updateMilestone(
-                    index,
+                    milestone.clientId,
                     "relativeDueDays",
                     e.target.value ? Number(e.target.value) : 0,
                   )
@@ -112,7 +128,7 @@ export function MilestoneEditor({
                 type="button"
                 variant="ghost"
                 size="icon-xs"
-                onClick={() => removeMilestone(index)}
+                onClick={() => removeMilestone(milestone.clientId)}
                 aria-label="Remove milestone"
               >
                 <Trash2 className="h-3.5 w-3.5 text-slate-400" />

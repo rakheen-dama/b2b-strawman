@@ -38,7 +38,7 @@ const mockCustomers: Customer[] = [
     email: "acme@test.com",
     phone: null,
     idNumber: null,
-    status: "ACTIVE" as never,
+    status: "ACTIVE",
     notes: null,
     createdBy: "m1",
     createdByName: "Alice",

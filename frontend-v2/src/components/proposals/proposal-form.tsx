@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
@@ -114,26 +114,31 @@ export function ProposalForm({
     [],
   );
   const [loadingContacts, setLoadingContacts] = useState(false);
+  const prevCustomerIdRef = useRef(customerId);
 
   useEffect(() => {
     if (!customerId) {
       setPortalContacts([]);
       setPortalContactId("");
+      prevCustomerIdRef.current = customerId;
       return;
     }
+    const customerChanged = prevCustomerIdRef.current !== customerId;
+    prevCustomerIdRef.current = customerId;
+
     setLoadingContacts(true);
     getPortalContacts(customerId)
       .then((contacts) => {
         setPortalContacts(contacts);
         if (
+          customerChanged ||
           !contacts.find((c) => c.id === portalContactId)
         ) {
           setPortalContactId("");
         }
       })
       .finally(() => setLoadingContacts(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [customerId]);
+  }, [customerId, portalContactId]);
 
   function handleFeeChange(data: FeeData) {
     setFeeModel(data.feeModel);
@@ -151,11 +156,7 @@ export function ProposalForm({
     try {
       let contentJson: Record<string, unknown> | undefined;
       if (contentBody.trim()) {
-        try {
-          contentJson = JSON.parse(contentBody);
-        } catch {
-          contentJson = { text: contentBody };
-        }
+        contentJson = { text: contentBody };
       }
 
       const milestones: MilestoneData[] = feeData.milestones ?? [];
@@ -228,8 +229,10 @@ export function ProposalForm({
         };
 
         await updateProposal(initialData!.id, updateData);
-        await replaceMilestones(initialData!.id, milestones);
-        await replaceTeamMembers(initialData!.id, teamMembers);
+        await Promise.all([
+          replaceMilestones(initialData!.id, milestones),
+          replaceTeamMembers(initialData!.id, teamMembers),
+        ]);
 
         toast.success("Proposal updated");
         router.push(`/org/${orgSlug}/proposals/${initialData!.id}`);
@@ -238,7 +241,7 @@ export function ProposalForm({
       toast.error(
         mode === "create"
           ? "Failed to create proposal"
-          : "Failed to update proposal",
+          : "Failed to update proposal. The proposal may have been partially saved — please refresh and verify.",
       );
       console.error(error);
     } finally {

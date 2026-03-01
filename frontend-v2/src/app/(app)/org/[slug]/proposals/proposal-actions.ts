@@ -263,19 +263,8 @@ export async function getPortalContacts(
     return await api.get<PortalContactSummary[]>(
       `/api/customers/${customerId}/portal-contacts`,
     );
-  } catch {
+  } catch (error) {
+    console.error(`Failed to fetch portal contacts for customer ${customerId}:`, error);
     return [];
   }
-}
-
-export async function fetchOrgMembers(): Promise<
-  Array<{
-    id: string;
-    name: string;
-    email: string;
-    avatarUrl: string | null;
-    orgRole: string;
-  }>
-> {
-  return api.get("/api/members");
 }

@@ -159,7 +159,7 @@ PORTAL TRACK (after E234A)
 | 2a (parallel) | 232 | 232A | V12 global migration (portal_proposals table) + ProposalPortalSyncService + ProposalVariableResolver + TiptapRenderer integration. ~3 new files, ~1 migration. Backend only. | **Done** (PR #471) |
 | 2b (parallel) | 233 | 233A | ProposalOrchestrationService: FIXED fee (milestones + single), project creation (template + bare), team assignment, HOURLY no-op, customer PROSPECT transition + tests (~8 tests). ~2 new files, ~1 test file. Backend only. | **Done** (PR #473) |
 | 2c (parallel) | 235 | 235A | Audit events for all proposal lifecycle transitions + notification templates (accepted/declined/expired/sent) + activity feed integration + tests (~5 tests). ~2 new/modified files. Backend only. | **Done** (PR #477) |
-| 2d (parallel) | 236 | 236A | Proposals list page + proposal-actions.ts server actions + ProposalListTable + ProposalStatusBadge + sidebar nav update. ~5 new/modified files. Frontend only. | |
+| 2d (parallel) | 236 | 236A | Proposals list page + proposal-actions.ts server actions + ProposalListTable + ProposalStatusBadge + sidebar nav update. ~5 new/modified files. Frontend only. | **Done** (PR #478) |
 
 ### Stage 3: Send Integration, Orchestration Completion & Frontend Stats
 
@@ -621,7 +621,7 @@ Stage 6: [239B]                                                      (final)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **236A** | 236.1--236.6 | Proposals page shell: `proposal-actions.ts` server actions, `ProposalListTable` component, `ProposalStatusBadge` component, proposals route `page.tsx`, sidebar navigation "Proposals" link. ~5 new/modified files. Frontend only. | |
+| **236A** | 236.1--236.6 | Proposals page shell: `proposal-actions.ts` server actions, `ProposalListTable` component, `ProposalStatusBadge` component, proposals route `page.tsx`, sidebar navigation "Proposals" link. ~5 new/modified files. Frontend only. | **Done** (PR #478) |
 | **236B** | 236.7--236.11 | `ProposalPipelineStats` component (stat cards), table filters (status/customer/feeModel/dateRange), sort controls, empty state, frontend tests (~5 tests). ~3 new/modified files. Frontend only. | |
 
 ### Tasks

@@ -1,4 +1,4 @@
-import { LayoutDashboard, ClipboardList, FolderOpen, FileText, Users, UserRound, Bell, TrendingUp, BarChart3, Receipt, CalendarClock, ShieldCheck, Settings, type LucideIcon } from "lucide-react";
+import { LayoutDashboard, ClipboardList, CalendarDays, FolderOpen, FileText, Users, UserRound, Bell, TrendingUp, BarChart3, Receipt, CalendarClock, ShieldCheck, Settings, type LucideIcon } from "lucide-react";
 
 export interface NavItem {
   label: string;
@@ -19,6 +19,12 @@ export const NAV_ITEMS: NavItem[] = [
     label: "My Work",
     href: (slug) => `/org/${slug}/my-work`,
     icon: ClipboardList,
+    exact: true,
+  },
+  {
+    label: "Calendar",
+    href: (slug) => `/org/${slug}/calendar`,
+    icon: CalendarDays,
     exact: true,
   },
   {

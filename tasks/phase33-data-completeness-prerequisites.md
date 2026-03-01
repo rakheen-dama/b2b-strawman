@@ -168,7 +168,7 @@ FRONTEND TRACK (after E241B)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 4a (parallel) | 246 | 246A | IntakeFieldsSection component (renders auto-apply field groups as form controls per field type) + intake endpoint server action + tests (~4 tests). ~3 new files. Frontend only. | |
+| 4a (parallel) | 246 | 246A | IntakeFieldsSection component (renders auto-apply field groups as form controls per field type) + intake endpoint server action + tests (~4 tests). ~3 new files. Frontend only. | **Done** (PR #498) |
 | 4b (parallel) | 247 | 247A | Settings custom-fields "Required For" multi-select on FieldDefinitionDialog + PrerequisiteContext labels constant + tests (~3 tests). ~3 modified files. Frontend only. | |
 | 4c (parallel) | 248 | 248A | Customer detail page lifecycle transition button wired through usePrerequisiteCheck hook + PrerequisiteModal integration + lifecycle-actions.ts update + tests (~4 tests). ~3 modified files. Frontend only. | |
 | 4d (parallel) | 249 | 249A | Invoice generation, proposal send, document generation buttons wired through prerequisite check + PrerequisiteModal integration + tests (~5 tests). ~5 modified files. Frontend only. | |
@@ -612,7 +612,7 @@ Stage 5: [246B] // [249B] // [251B]                                         (par
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **246A** | 246.1--246.5 | `IntakeFieldsSection` component (renders auto-apply field groups as form sections, renders fields by type, handles conditional visibility) + intake endpoint server action + tests (~4 tests). ~3 new files. Frontend only. | |
+| **246A** | 246.1--246.5 | `IntakeFieldsSection` component (renders auto-apply field groups as form sections, renders fields by type, handles conditional visibility) + intake endpoint server action + tests (~4 tests). ~3 new files. Frontend only. | **Done** (PR #498) |
 | **246B** | 246.6--246.10 | `CreateCustomerDialog` multi-step flow: Step 1 (base fields, existing) -> Step 2 (intake custom fields from IntakeFieldsSection). Submit includes customFields in payload. "Skip for now" collapses optional fields. Tests (~5 tests). ~2 modified files. Frontend only. | |
 
 ### Tasks

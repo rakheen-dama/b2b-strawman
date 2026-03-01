@@ -277,6 +277,19 @@
 | 237 | Proposals Frontend — Create/Edit & Detail Pages | Frontend | 232, 236 | L | 237A, 237B | **Done** (PRs #480, #481) |
 | 238 | Proposals Frontend — Customer Tab & Project Link | Frontend | 236 | S | 238A | **Done** (PR #482) |
 | 239 | Portal Frontend — Proposal Pages | Portal | 234 | M | 239A, 239B | **Done** (PRs #483, #484) |
+| **Phase 33 — Data Completeness & Prerequisite Enforcement** | | | | | | See [tasks/phase33-data-completeness-prerequisites.md](tasks/phase33-data-completeness-prerequisites.md) |
+| 240 | Prerequisite Infrastructure — Migration, Enum & Core Service | Backend | -- | M | 240A, 240B | 240A **Done** (PR #485) |
+| 241 | Prerequisite REST API & Field Definition Extension | Backend | 240 | M | 241A, 241B | |
+| 242 | Lifecycle Transition Gate | Backend | 241 | M | 242A, 242B | |
+| 243 | Engagement Prerequisites — Template Extension & Checks | Backend | 241 | M | 243A, 243B | |
+| 244 | Action-Point Prerequisite Wiring | Backend | 241 | M | 244A, 244B | |
+| 245 | PrerequisiteModal & Shared Frontend Components | Frontend | 241 | M | 245A, 245B | |
+| 246 | Smart Customer Intake Dialog | Frontend | 241, 245 | M | 246A, 246B | |
+| 247 | Prerequisite Configuration UI | Frontend | 245 | S | 247A | |
+| 248 | Lifecycle Transition Frontend Integration | Frontend | 242, 245 | S | 248A | |
+| 249 | Engagement & Action-Point Frontend Integration | Frontend | 243, 244, 245 | M | 249A, 249B | |
+| 250 | Completeness Visibility — Backend Queries | Backend | 241 | M | 250A | |
+| 251 | Completeness Visibility — Frontend & Dashboard | Frontend | 250, 245 | M | 251A, 251B | |
 
 ---
 

@@ -1,30 +1,7 @@
 "use server";
 
 import { api } from "@/lib/api";
-
-export interface CalendarItem {
-  id: string;
-  name: string;
-  itemType: "TASK" | "PROJECT";
-  dueDate: string;
-  status: string;
-  priority: string | null;
-  assigneeId: string | null;
-  projectId: string;
-  projectName: string;
-}
-
-export interface CalendarResponse {
-  items: CalendarItem[];
-  overdueCount: number;
-}
-
-export interface CalendarFilters {
-  projectId?: string;
-  type?: "TASK" | "PROJECT";
-  assigneeId?: string;
-  overdue?: boolean;
-}
+import type { CalendarFilters, CalendarResponse } from "./calendar-types";
 
 export async function getCalendarItems(
   from: string,

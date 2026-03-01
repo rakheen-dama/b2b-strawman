@@ -4,31 +4,12 @@ import Link from "next/link";
 import { ClipboardList, FolderOpen } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { CalendarItem } from "./calendar-actions";
+import type { CalendarItem } from "./calendar-types";
+import { getStatusVariant, getItemLink } from "./calendar-types";
 
 interface CalendarListViewProps {
   items: CalendarItem[];
   slug: string;
-}
-
-function getStatusVariant(
-  status: string
-): "neutral" | "warning" | "success" | "secondary" {
-  switch (status) {
-    case "OPEN":
-      return "neutral";
-    case "IN_PROGRESS":
-      return "warning";
-    case "DONE":
-      return "success";
-    case "CANCELLED":
-    case "ARCHIVED":
-      return "secondary";
-    case "ACTIVE":
-      return "success";
-    default:
-      return "neutral";
-  }
 }
 
 function getPriorityColor(priority: string | null): string {
@@ -67,13 +48,6 @@ function formatWeekHeader(start: Date, end: Date): string {
 function getWeekKey(dateStr: string): string {
   const { start } = getWeekRange(dateStr);
   return start.toISOString().split("T")[0];
-}
-
-function getItemLink(item: CalendarItem, slug: string): string {
-  if (item.itemType === "TASK") {
-    return `/org/${slug}/projects/${item.projectId}?taskId=${item.id}`;
-  }
-  return `/org/${slug}/projects/${item.projectId}`;
 }
 
 export function CalendarListView({ items, slug }: CalendarListViewProps) {

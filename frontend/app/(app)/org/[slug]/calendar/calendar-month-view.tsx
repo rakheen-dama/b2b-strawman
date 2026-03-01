@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { ChevronLeft, ChevronRight, ClipboardList, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -10,7 +11,8 @@ import {
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { CalendarItem } from "./calendar-actions";
+import type { CalendarItem } from "./calendar-types";
+import { getStatusVariant, getItemLink } from "./calendar-types";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -35,26 +37,7 @@ interface CalendarMonthViewProps {
   month: number; // 1-indexed
   onNavigate: (year: number, month: number) => void;
   isPending: boolean;
-}
-
-function getStatusVariant(
-  status: string
-): "neutral" | "warning" | "success" | "secondary" {
-  switch (status) {
-    case "OPEN":
-      return "neutral";
-    case "IN_PROGRESS":
-      return "warning";
-    case "DONE":
-      return "success";
-    case "CANCELLED":
-    case "ARCHIVED":
-      return "secondary";
-    case "ACTIVE":
-      return "success";
-    default:
-      return "neutral";
-  }
+  slug: string;
 }
 
 export function CalendarMonthView({
@@ -63,6 +46,7 @@ export function CalendarMonthView({
   month,
   onNavigate,
   isPending,
+  slug,
 }: CalendarMonthViewProps) {
   const [openDay, setOpenDay] = useState<number | null>(null);
 
@@ -85,6 +69,7 @@ export function CalendarMonthView({
   const daysInMonth = new Date(year, month, 0).getDate();
 
   const handlePrev = () => {
+    setOpenDay(null);
     if (month === 1) {
       onNavigate(year - 1, 12);
     } else {
@@ -93,6 +78,7 @@ export function CalendarMonthView({
   };
 
   const handleNext = () => {
+    setOpenDay(null);
     if (month === 12) {
       onNavigate(year + 1, 1);
     } else {
@@ -226,10 +212,16 @@ export function CalendarMonthView({
                   </div>
                   <div className="max-h-[240px] overflow-y-auto p-1">
                     {dayItems.map((item) => (
-                      <div
+                      <Link
                         key={item.id}
-                        className="flex items-start gap-2 rounded-md px-2 py-1.5"
+                        href={getItemLink(item, slug)}
+                        className="flex items-start gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
                       >
+                        {item.itemType === "TASK" ? (
+                          <ClipboardList className="mt-0.5 size-3.5 shrink-0 text-slate-400" />
+                        ) : (
+                          <FolderOpen className="mt-0.5 size-3.5 shrink-0 text-teal-500" />
+                        )}
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
                             {item.name}
@@ -256,7 +248,7 @@ export function CalendarMonthView({
                             {item.projectName}
                           </p>
                         </div>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 </PopoverContent>

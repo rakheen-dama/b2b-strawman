@@ -33,7 +33,7 @@ Phase 30 closes the remaining revenue-capture and daily-work-organisation gaps i
 | 225 | Recurring Task Frontend | Frontend | 224 | M | 225A | **Done** (PR #460) |
 | 226 | Time Reminder Scheduler & OrgSettings | Backend | -- | M | 226A, 226B | **Done** (PRs #461, #462) |
 | 227 | Time Reminder Frontend — Settings & Preferences | Frontend | 226 | S | 227A | **Done** (PR #463) |
-| 228 | Calendar View — Backend Endpoint | Backend | -- | M | 228A | |
+| 228 | Calendar View — Backend Endpoint | Backend | -- | M | 228A | **Done** (PR #464) |
 | 229 | Calendar View — Frontend Page | Frontend | 228 | M | 229A, 229B | |
 
 ---
@@ -171,7 +171,7 @@ TRACK 4: CALENDAR VIEW
 | 3a (parallel) | 219 | 219B | ExpenseController: 7 endpoints + complete integration test suite (~20 tests). ~1 new controller file, ~1 new test file. Backend only. | **Done** (PR #450) |
 | 3b (parallel) | 221 | 221B | InvoiceService extension: unbilled summary + expenses, generate with EXPENSE lines, approve stamps expenses, void clears invoiceId on expenses + profitability query extension + tests (~15 tests). ~2 modified files, ~1 new test file. Backend only. | **Done** (PR #454) |
 | 3c (parallel) | 224 | 224B | TaskController: extend complete response with nextInstance, recurrence fields in create/update DTOs, ?recurring=true filter + integration tests (~15 tests). ~1 modified file, ~1 new test file. Backend only. | **Done** (PR #459) |
-| 3d (parallel) | 228 | 228A | CalendarService + CalendarController: GET /api/calendar, UNION ALL query, access control + tests (~5 tests). ~2 new files, ~1 new test file. Backend only. | |
+| 3d (parallel) | 228 | 228A | CalendarService + CalendarController: GET /api/calendar, UNION ALL query, access control + tests (~5 tests). ~2 new files, ~1 new test file. Backend only. | **Done** (PR #464) |
 
 ### Stage 4: Frontend (parallel tracks)
 
@@ -826,7 +826,7 @@ Stage 5: [220B] // [222A] // [229B]                              (parallel)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **228A** | 228.1–228.8 | `CalendarService` + `CalendarController`: `CalendarItemDto` record, UNION ALL aggregation query (tasks + project deadlines), access control (member vs. admin/owner), optional `overdue=true` parameter, `projectId`/`type`/`assigneeId` filters + integration tests (~5 tests). ~2 new files, ~1 test file. Backend only. | |
+| **228A** | 228.1–228.8 | `CalendarService` + `CalendarController`: `CalendarItemDto` record, UNION ALL aggregation query (tasks + project deadlines), access control (member vs. admin/owner), optional `overdue=true` parameter, `projectId`/`type`/`assigneeId` filters + integration tests (~5 tests). ~2 new files, ~1 test file. Backend only. | **Done** (PR #464) |
 
 ### Tasks
 

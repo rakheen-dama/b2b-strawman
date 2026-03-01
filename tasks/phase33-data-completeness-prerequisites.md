@@ -142,7 +142,7 @@ FRONTEND TRACK (after E241B)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 1a | 241 | 241A | FieldDefinitionRepository native JSONB query + FieldDefinitionService.getIntakeFields() + FieldDefinitionService.getRequiredFieldsForContext() + CustomerService.createCustomer() extension for customFields validation + tests (~8 tests). ~4 modified files, ~1 test file. Backend only. | |
+| 1a | 241 | 241A | FieldDefinitionRepository native JSONB query + FieldDefinitionService.getIntakeFields() + FieldDefinitionService.getRequiredFieldsForContext() + CustomerService.createCustomer() extension for customFields validation + tests (~8 tests). ~4 modified files, ~1 test file. Backend only. | **Done** (PR #487) |
 | 1b | 241 | 241B | PrerequisiteController: GET /api/prerequisites/check + GET /api/field-definitions/intake endpoint + PATCH field-definitions extension for requiredForContexts + integration tests (~12 tests). ~3 modified/new files, ~1 test file. Backend only. | |
 
 ### Stage 2: Backend Enforcement Points & Template Extension (parallel tracks)
@@ -282,7 +282,7 @@ Stage 5: [246B] // [249B] // [251B]                                         (par
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **241A** | 241.1--241.6 | FieldDefinitionRepository native JSONB `@>` query + FieldDefinitionService.getIntakeFields() + FieldDefinitionService.getRequiredFieldsForContext() + CustomerService.createCustomer() extension for customFields validation + tests (~8 tests). ~4 modified files, ~1 test file. Backend only. | |
+| **241A** | 241.1--241.6 | FieldDefinitionRepository native JSONB `@>` query + FieldDefinitionService.getIntakeFields() + FieldDefinitionService.getRequiredFieldsForContext() + CustomerService.createCustomer() extension for customFields validation + tests (~8 tests). ~4 modified files, ~1 test file. Backend only. | **Done** (PR #487) |
 | **241B** | 241.7--241.14 | PrerequisiteController: GET /api/prerequisites/check + GET /api/field-definitions/intake endpoint on FieldDefinitionController + PATCH field-definitions extension for requiredForContexts + integration tests (~12 tests). ~3 modified/new files, ~1 test file. Backend only. | |
 
 ### Tasks

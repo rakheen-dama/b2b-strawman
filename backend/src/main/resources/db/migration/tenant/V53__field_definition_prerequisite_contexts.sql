@@ -17,11 +17,13 @@ CREATE INDEX IF NOT EXISTS idx_field_definitions_required_contexts
 UPDATE field_definitions
 SET required_for_contexts = '["INVOICE_GENERATION", "PROPOSAL_SEND"]'::jsonb
 WHERE pack_id = 'common-customer'
+  AND entity_type = 'CUSTOMER'
   AND slug = 'address_line1'
   AND required_for_contexts = '[]'::jsonb;
 
 UPDATE field_definitions
 SET required_for_contexts = '["INVOICE_GENERATION"]'::jsonb
 WHERE pack_id = 'common-customer'
+  AND entity_type = 'CUSTOMER'
   AND slug IN ('city', 'country', 'tax_number')
   AND required_for_contexts = '[]'::jsonb;

@@ -17,6 +17,7 @@ import {
   LayoutTemplate,
   Mail,
   Receipt,
+  Clock,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getAuthContext } from "@/lib/auth";
@@ -58,6 +59,13 @@ const settingsCards: SettingsCard[] = [
     title: "Tax",
     description: "Configure tax registration, labels, and inclusive pricing",
     href: "tax",
+    comingSoon: false,
+  },
+  {
+    icon: Clock,
+    title: "Time Tracking",
+    description: "Configure time reminders and default expense markup",
+    href: "time-tracking",
     comingSoon: false,
   },
   {

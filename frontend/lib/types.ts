@@ -425,6 +425,13 @@ export interface OrgSettings {
   taxInclusive?: boolean;
   // acceptance fields
   acceptanceExpiryDays?: number;
+  // time tracking reminder fields
+  timeReminderEnabled?: boolean;
+  timeReminderDays?: string;
+  timeReminderTime?: string;
+  timeReminderMinHours?: number;
+  // expense defaults
+  defaultExpenseMarkupPercent?: number | null;
 }
 
 export interface UpdateTaxSettingsRequest {
@@ -469,6 +476,14 @@ export interface UpdateOrgSettingsRequest {
   defaultCurrency: string;
   brandColor?: string;
   documentFooterText?: string;
+}
+
+export interface UpdateTimeTrackingSettingsRequest {
+  timeReminderEnabled: boolean;
+  timeReminderDays: string;
+  timeReminderTime: string;
+  timeReminderMinHours: number;
+  defaultExpenseMarkupPercent?: number | null;
 }
 
 // ---- Integrations (from IntegrationController.java) ----

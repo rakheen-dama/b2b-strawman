@@ -63,6 +63,8 @@ const NOTIFICATION_TYPE_LABELS: Record<
     label: "Retainer Terminated",
     category: "Retainers",
   },
+  // Time Tracking
+  TIME_REMINDER: { label: "Time Reminders", category: "Time Tracking" },
 };
 
 interface NotificationPreferencesFormProps {
@@ -124,6 +126,7 @@ export function NotificationPreferencesForm({
     "Billing & Invoicing",
     "Scheduling",
     "Retainers",
+    "Time Tracking",
     "Other",
   ];
   const sortedCategories = categoryOrder.filter((c) => grouped[c]);

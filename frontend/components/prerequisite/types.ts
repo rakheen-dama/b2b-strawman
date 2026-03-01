@@ -1,4 +1,4 @@
-import type { FieldType } from "@/lib/types";
+import type { FieldType, VisibilityCondition } from "@/lib/types";
 
 /** Matches backend PrerequisiteContext enum */
 export type PrerequisiteContext =
@@ -46,11 +46,7 @@ export interface IntakeField {
   options: Array<{ value: string; label: string }> | null;
   defaultValue: Record<string, unknown> | null;
   requiredForContexts: string[];
-  visibilityCondition: {
-    dependsOnSlug: string;
-    operator: string;
-    value: string | string[];
-  } | null;
+  visibilityCondition: VisibilityCondition | null;
 }
 
 /** Matches IntakeFieldGroupResponse.GroupResponse from backend */

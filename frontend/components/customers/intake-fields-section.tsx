@@ -47,27 +47,28 @@ interface IntakeFieldsSectionProps {
   onChange: (slug: string, value: FieldValue) => void;
 }
 
-function GroupSection({
-  group,
-  values,
-  onChange,
-}: {
+interface GroupSectionProps {
   group: IntakeFieldGroup;
   values: Record<string, FieldValue>;
   onChange: (slug: string, value: FieldValue) => void;
-}) {
+}
+
+function GroupSection({ group, values, onChange }: GroupSectionProps) {
   const visibleFields = group.fields.filter((f) => isFieldVisible(f, values));
   const requiredFields = visibleFields.filter((f) => f.required);
   const optionalFields = visibleFields.filter((f) => !f.required);
 
   const hasRequiredFields = requiredFields.length > 0;
+  // Derive initial open state: open if any required fields are visible.
+  // The key-based remount (see below) ensures this resets when required field
+  // visibility changes from 0 to non-zero.
   const [isOpen, setIsOpen] = useState(hasRequiredFields);
   const [showOptional, setShowOptional] = useState(false);
 
   if (visibleFields.length === 0) return null;
 
   return (
-    <div className="border border-slate-200 rounded-lg">
+    <div className="border border-slate-200 rounded-lg shadow-sm">
       <button
         type="button"
         className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-slate-900 hover:bg-slate-50"
@@ -156,14 +157,22 @@ export function IntakeFieldsSection({
 
   return (
     <div className="space-y-3">
-      {groups.map((group) => (
-        <GroupSection
-          key={group.id}
-          group={group}
-          values={values}
-          onChange={onChange}
-        />
-      ))}
+      {groups.map((group) => {
+        // Include whether the group has visible required fields in the key so
+        // that the component remounts (and re-derives isOpen) when a required
+        // field becomes visible due to a visibility condition change.
+        const hasVisibleRequired = group.fields.some(
+          (f) => f.required && isFieldVisible(f, values),
+        );
+        return (
+          <GroupSection
+            key={`${group.id}-${hasVisibleRequired}`}
+            group={group}
+            values={values}
+            onChange={onChange}
+          />
+        );
+      })}
     </div>
   );
 }

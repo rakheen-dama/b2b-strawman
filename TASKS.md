@@ -261,11 +261,22 @@
 | 222 | Expense Billing Frontend — Unbilled Summary & Invoice Generation | Frontend | 221, 220 | M | 222A | **Done** (PR #455) |
 | 223 | Recurring Task Foundation — Migration & Entity | Backend | -- | M | 223A, 223B | **Done** (PRs #456, #457) |
 | 224 | Recurring Task Service & Controller | Backend | 223 | M | 224A, 224B | **Done** (PRs #458, #459) |
-| 225 | Recurring Task Frontend | Frontend | 224 | M | 225A | |
+| 225 | Recurring Task Frontend | Frontend | 224 | M | 225A | **Done** (PR #460) |
 | 226 | Time Reminder Scheduler & OrgSettings | Backend | -- | M | 226A, 226B | |
 | 227 | Time Reminder Frontend — Settings & Preferences | Frontend | 226 | S | 227A | |
 | 228 | Calendar View — Backend Endpoint | Backend | -- | M | 228A | |
 | 229 | Calendar View — Frontend Page | Frontend | 228 | M | 229A, 229B | |
+| **Phase 32 — Proposal → Engagement Pipeline** | | | | | | See [tasks/phase32-proposal-engagement-pipeline.md](tasks/phase32-proposal-engagement-pipeline.md) |
+| 230 | Proposal Entity Foundation & Migration | Backend | -- | M | 230A, 230B | |
+| 231 | Proposal CRUD & Lifecycle Backend | Backend | 230 | L | 231A, 231B | |
+| 232 | Send Flow & Portal Read-Model Sync | Backend | 231 | M | 232A, 232B | |
+| 233 | Acceptance Orchestration | Backend | 231 | L | 233A, 233B | |
+| 234 | Portal Proposal Backend & Expiry Processor | Backend | 232, 233 | M | 234A, 234B | |
+| 235 | Audit, Notifications & Activity Integration | Backend | 231 | S | 235A | |
+| 236 | Proposals Frontend — List & Pipeline Stats | Frontend | 231 | M | 236A, 236B | |
+| 237 | Proposals Frontend — Create/Edit & Detail Pages | Frontend | 232, 236 | L | 237A, 237B | |
+| 238 | Proposals Frontend — Customer Tab & Project Link | Frontend | 236 | S | 238A | |
+| 239 | Portal Frontend — Proposal Pages | Portal | 234 | M | 239A, 239B | |
 
 ---
 

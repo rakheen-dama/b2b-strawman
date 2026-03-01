@@ -30,7 +30,7 @@ Phase 30 closes the remaining revenue-capture and daily-work-organisation gaps i
 | 222 | Expense Billing Frontend — Unbilled Summary & Invoice Generation | Frontend | 221, 220 | M | 222A | **Done** (PR #455) |
 | 223 | Recurring Task Foundation — Migration & Entity | Backend | -- | M | 223A, 223B | **Done** (PRs #456, #457) |
 | 224 | Recurring Task Service & Controller | Backend | 223 | M | 224A, 224B | **Done** (PRs #458, #459) |
-| 225 | Recurring Task Frontend | Frontend | 224 | M | 225A | |
+| 225 | Recurring Task Frontend | Frontend | 224 | M | 225A | **Done** (PR #460) |
 | 226 | Time Reminder Scheduler & OrgSettings | Backend | -- | M | 226A, 226B | |
 | 227 | Time Reminder Frontend — Settings & Preferences | Frontend | 226 | S | 227A | |
 | 228 | Calendar View — Backend Endpoint | Backend | -- | M | 228A | |
@@ -178,7 +178,7 @@ TRACK 4: CALENDAR VIEW
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 4a (parallel) | 220 | 220A | Project Expenses tab: layout extension, expense-list.tsx, log-expense-dialog.tsx, expense-category-badge.tsx, expense-actions.ts. ~5 new/modified files. Frontend only. | **Done** (PR #451) |
-| 4b (parallel) | 225 | 225A | Recurring Task Frontend: recurrence form section in task dialogs, badge in task list, recurrence info in task detail sheet, completion toast + tests. ~4 modified files. Frontend only. | |
+| 4b (parallel) | 225 | 225A | Recurring Task Frontend: recurrence form section in task dialogs, badge in task list, recurrence info in task detail sheet, completion toast + tests. ~4 modified files. Frontend only. | **Done** (PR #460) |
 | 4c (parallel) | 227 | 227A | Time Reminders Frontend: settings section + notification preference toggle + tests. ~2 modified files. Frontend only. | |
 | 4d (parallel) | 229 | 229A | Calendar page shell: month-view component, list-view component, sidebar nav addition, calendar-actions.ts, basic routing. ~4 new files. Frontend only. | |
 
@@ -659,7 +659,7 @@ Stage 5: [220B] // [222A] // [229B]                              (parallel)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **225A** | 225.1–225.8 | Recurrence section in task create/edit dialogs (frequency, interval, end date), recurring badge in task list, recurrence info panel in task detail sheet, completion toast with next instance info, ?recurring=true filter chip, frontend tests (~5 tests). ~4 modified files, ~1 new component file, ~1 test file. Frontend only. | |
+| **225A** | 225.1–225.8 | Recurrence section in task create/edit dialogs (frequency, interval, end date), recurring badge in task list, recurrence info panel in task detail sheet, completion toast with next instance info, ?recurring=true filter chip, frontend tests (~5 tests). ~4 modified files, ~1 new component file, ~1 test file. Frontend only. | **Done** (PR #460) |
 
 ### Tasks
 

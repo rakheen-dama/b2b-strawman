@@ -5,7 +5,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldUtils;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
-import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionService;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -19,12 +19,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class PrerequisiteService {
 
-  private final FieldDefinitionRepository fieldDefinitionRepository;
+  private final FieldDefinitionService fieldDefinitionService;
   private final CustomerRepository customerRepository;
 
   public PrerequisiteService(
-      FieldDefinitionRepository fieldDefinitionRepository, CustomerRepository customerRepository) {
-    this.fieldDefinitionRepository = fieldDefinitionRepository;
+      FieldDefinitionService fieldDefinitionService, CustomerRepository customerRepository) {
+    this.fieldDefinitionService = fieldDefinitionService;
     this.customerRepository = customerRepository;
   }
 
@@ -39,11 +39,8 @@ public class PrerequisiteService {
   @Transactional(readOnly = true)
   public PrerequisiteCheck checkForContext(
       PrerequisiteContext context, EntityType entityType, UUID entityId) {
-    // Load all active field definitions for the entity type and filter by context
     List<FieldDefinition> requiredFields =
-        fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(entityType).stream()
-            .filter(fd -> fd.getRequiredForContexts().contains(context.name()))
-            .toList();
+        fieldDefinitionService.getRequiredFieldsForContext(entityType, context);
 
     if (requiredFields.isEmpty()) {
       return PrerequisiteCheck.passed(context);

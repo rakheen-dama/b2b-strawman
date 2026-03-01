@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.prerequisite;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
@@ -9,7 +10,7 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerType;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
-import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionService;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldType;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,21 +29,21 @@ class PrerequisiteServiceTest {
   private static final UUID CUSTOMER_ID = UUID.randomUUID();
   private static final UUID MEMBER_ID = UUID.randomUUID();
 
-  @Mock private FieldDefinitionRepository fieldDefinitionRepository;
+  @Mock private FieldDefinitionService fieldDefinitionService;
   @Mock private CustomerRepository customerRepository;
 
   private PrerequisiteService service;
 
   @BeforeEach
   void setUp() {
-    service = new PrerequisiteService(fieldDefinitionRepository, customerRepository);
+    service = new PrerequisiteService(fieldDefinitionService, customerRepository);
   }
 
   @Test
   void checkForContext_allFieldsFilled_returnsPassed() {
     var fd = createFieldDefinition("Address Line 1", "address_line1", FieldType.TEXT);
     fd.setRequiredForContexts(new ArrayList<>(List.of("INVOICE_GENERATION")));
-    mockFieldDefinitions(fd);
+    mockFieldDefinitions(PrerequisiteContext.INVOICE_GENERATION, fd);
     mockCustomer(Map.of("address_line1", "123 Main St"));
 
     var result =
@@ -58,7 +59,7 @@ class PrerequisiteServiceTest {
   void checkForContext_missingRequiredField_returnsFailed() {
     var fd = createFieldDefinition("Address Line 1", "address_line1", FieldType.TEXT);
     fd.setRequiredForContexts(new ArrayList<>(List.of("INVOICE_GENERATION")));
-    mockFieldDefinitions(fd);
+    mockFieldDefinitions(PrerequisiteContext.INVOICE_GENERATION, fd);
     mockCustomer(Map.of());
 
     var result =
@@ -73,7 +74,7 @@ class PrerequisiteServiceTest {
 
   @Test
   void checkForContext_noFieldsRequired_returnsPassed() {
-    mockFieldDefinitions();
+    mockFieldDefinitions(PrerequisiteContext.INVOICE_GENERATION);
     // No customer mock needed — no fields to check
 
     var result =
@@ -90,7 +91,7 @@ class PrerequisiteServiceTest {
     fd1.setRequiredForContexts(new ArrayList<>(List.of("INVOICE_GENERATION")));
     var fd2 = createFieldDefinition("City", "city", FieldType.TEXT);
     fd2.setRequiredForContexts(new ArrayList<>(List.of("INVOICE_GENERATION")));
-    mockFieldDefinitions(fd1, fd2);
+    mockFieldDefinitions(PrerequisiteContext.INVOICE_GENERATION, fd1, fd2);
     mockCustomerWithNullFields();
 
     var result =
@@ -107,7 +108,7 @@ class PrerequisiteServiceTest {
     fd1.setRequiredForContexts(new ArrayList<>(List.of("INVOICE_GENERATION")));
     var fd2 = createFieldDefinition("City", "city", FieldType.TEXT);
     fd2.setRequiredForContexts(new ArrayList<>(List.of("INVOICE_GENERATION")));
-    mockFieldDefinitions(fd1, fd2);
+    mockFieldDefinitions(PrerequisiteContext.INVOICE_GENERATION, fd1, fd2);
     mockCustomer(Map.of("address_line1", "123 Main St"));
 
     var result =
@@ -122,9 +123,7 @@ class PrerequisiteServiceTest {
   @Test
   void checkForContext_contextWithNoMatchingFields_returnsPassed() {
     // Field is required for INVOICE_GENERATION, not PROPOSAL_SEND
-    var fd = createFieldDefinition("Address Line 1", "address_line1", FieldType.TEXT);
-    fd.setRequiredForContexts(new ArrayList<>(List.of("INVOICE_GENERATION")));
-    mockFieldDefinitions(fd);
+    mockFieldDefinitions(PrerequisiteContext.PROPOSAL_SEND);
 
     var result =
         service.checkForContext(
@@ -138,7 +137,7 @@ class PrerequisiteServiceTest {
   void violationContainsFieldSlugAndGroupName() {
     var fd = createFieldDefinition("Tax Number", "tax_number", FieldType.TEXT);
     fd.setRequiredForContexts(new ArrayList<>(List.of("INVOICE_GENERATION")));
-    mockFieldDefinitions(fd);
+    mockFieldDefinitions(PrerequisiteContext.INVOICE_GENERATION, fd);
     mockCustomer(Map.of());
 
     var result =
@@ -154,7 +153,7 @@ class PrerequisiteServiceTest {
   void violationContainsEntityTypeAndId() {
     var fd = createFieldDefinition("Country", "country", FieldType.DROPDOWN);
     fd.setRequiredForContexts(new ArrayList<>(List.of("INVOICE_GENERATION")));
-    mockFieldDefinitions(fd);
+    mockFieldDefinitions(PrerequisiteContext.INVOICE_GENERATION, fd);
     mockCustomer(Map.of());
 
     var result =
@@ -195,9 +194,8 @@ class PrerequisiteServiceTest {
     return new FieldDefinition(EntityType.CUSTOMER, name, slug, fieldType);
   }
 
-  private void mockFieldDefinitions(FieldDefinition... definitions) {
-    when(fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
-            EntityType.CUSTOMER))
+  private void mockFieldDefinitions(PrerequisiteContext context, FieldDefinition... definitions) {
+    when(fieldDefinitionService.getRequiredFieldsForContext(eq(EntityType.CUSTOMER), eq(context)))
         .thenReturn(List.of(definitions));
   }
 

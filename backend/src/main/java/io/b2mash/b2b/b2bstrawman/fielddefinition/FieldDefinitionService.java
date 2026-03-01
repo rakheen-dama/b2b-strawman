@@ -8,7 +8,9 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.CreateFieldDefinitionRequest;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.UpdateFieldDefinitionRequest;
+import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
 import jakarta.persistence.EntityManager;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,14 +29,45 @@ public class FieldDefinitionService {
   private final FieldDefinitionRepository fieldDefinitionRepository;
   private final AuditService auditService;
   private final EntityManager entityManager;
+  private final FieldGroupRepository fieldGroupRepository;
+  private final FieldGroupMemberRepository fieldGroupMemberRepository;
 
   public FieldDefinitionService(
       FieldDefinitionRepository fieldDefinitionRepository,
       AuditService auditService,
-      EntityManager entityManager) {
+      EntityManager entityManager,
+      FieldGroupRepository fieldGroupRepository,
+      FieldGroupMemberRepository fieldGroupMemberRepository) {
     this.fieldDefinitionRepository = fieldDefinitionRepository;
     this.auditService = auditService;
     this.entityManager = entityManager;
+    this.fieldGroupRepository = fieldGroupRepository;
+    this.fieldGroupMemberRepository = fieldGroupMemberRepository;
+  }
+
+  public record IntakeFieldGroup(UUID id, String name, String slug, List<FieldDefinition> fields) {}
+
+  @Transactional(readOnly = true)
+  public List<FieldDefinition> getRequiredFieldsForContext(
+      EntityType entityType, PrerequisiteContext context) {
+    return fieldDefinitionRepository.findRequiredForContext(
+        entityType.name(), "[\"" + context.name() + "\"]");
+  }
+
+  @Transactional(readOnly = true)
+  public List<IntakeFieldGroup> getIntakeFields(EntityType entityType) {
+    var autoApplyGroups =
+        fieldGroupRepository.findByEntityTypeAndAutoApplyTrueAndActiveTrue(entityType);
+    var result = new ArrayList<IntakeFieldGroup>();
+    for (var group : autoApplyGroups) {
+      var members = fieldGroupMemberRepository.findByFieldGroupIdOrderBySortOrder(group.getId());
+      var fields = new ArrayList<FieldDefinition>();
+      for (var member : members) {
+        fieldDefinitionRepository.findById(member.getFieldDefinitionId()).ifPresent(fields::add);
+      }
+      result.add(new IntakeFieldGroup(group.getId(), group.getName(), group.getSlug(), fields));
+    }
+    return result;
   }
 
   @Transactional(readOnly = true)

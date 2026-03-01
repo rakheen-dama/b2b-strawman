@@ -52,7 +52,7 @@ public class ProposalPortalSyncService {
             INSERT INTO portal.portal_proposals
                 (id, org_id, customer_id, portal_contact_id, proposal_number, title, status,
                  fee_model, fee_amount, fee_currency, content_html, milestones_json,
-                 sent_at, expires_at, org_name, org_logo_url, org_brand_color, synced_at)
+                 sent_at, expires_at, org_name, org_logo, org_brand_color, synced_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?, ?, ?, ?, ?, now())
             """)
         .params(

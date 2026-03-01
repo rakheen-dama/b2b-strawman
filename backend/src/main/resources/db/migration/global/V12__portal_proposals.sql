@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS portal.portal_proposals (
     sent_at             TIMESTAMPTZ,
     expires_at          TIMESTAMPTZ,
     org_name            VARCHAR(255) NOT NULL,
-    org_logo_url        VARCHAR(500),
+    org_logo            VARCHAR(500),
     org_brand_color     VARCHAR(7),
     synced_at           TIMESTAMPTZ NOT NULL DEFAULT now()
 );

@@ -21,7 +21,7 @@ Phase 33 transforms DocTeams' metadata infrastructure from passive data capture 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 240 | Prerequisite Infrastructure -- Migration, Enum & Core Service | Backend | -- | M | 240A, 240B | **Done** |
-| 241 | Prerequisite REST API & Field Definition Extension | Backend | 240 | M | 241A, 241B | |
+| 241 | Prerequisite REST API & Field Definition Extension | Backend | 240 | M | 241A, 241B | **Done** |
 | 242 | Lifecycle Transition Gate | Backend | 241 | M | 242A, 242B | |
 | 243 | Engagement Prerequisites -- Template Extension & Checks | Backend | 241 | M | 243A, 243B | |
 | 244 | Action-Point Prerequisite Wiring | Backend | 241 | M | 244A, 244B | |
@@ -143,7 +143,7 @@ FRONTEND TRACK (after E241B)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 1a | 241 | 241A | FieldDefinitionRepository native JSONB query + FieldDefinitionService.getIntakeFields() + FieldDefinitionService.getRequiredFieldsForContext() + CustomerService.createCustomer() extension for customFields validation + tests (~8 tests). ~4 modified files, ~1 test file. Backend only. | **Done** (PR #487) |
-| 1b | 241 | 241B | PrerequisiteController: GET /api/prerequisites/check + GET /api/field-definitions/intake endpoint + PATCH field-definitions extension for requiredForContexts + integration tests (~12 tests). ~3 modified/new files, ~1 test file. Backend only. | |
+| 1b | 241 | 241B | PrerequisiteController: GET /api/prerequisites/check + GET /api/field-definitions/intake endpoint + PATCH field-definitions extension for requiredForContexts + integration tests (~12 tests). ~3 modified/new files, ~1 test file. Backend only. | **Done** (PR #489) |
 
 ### Stage 2: Backend Enforcement Points & Template Extension (parallel tracks)
 
@@ -283,7 +283,7 @@ Stage 5: [246B] // [249B] // [251B]                                         (par
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **241A** | 241.1--241.6 | FieldDefinitionRepository native JSONB `@>` query + FieldDefinitionService.getIntakeFields() + FieldDefinitionService.getRequiredFieldsForContext() + CustomerService.createCustomer() extension for customFields validation + tests (~8 tests). ~4 modified files, ~1 test file. Backend only. | **Done** (PR #487) |
-| **241B** | 241.7--241.14 | PrerequisiteController: GET /api/prerequisites/check + GET /api/field-definitions/intake endpoint on FieldDefinitionController + PATCH field-definitions extension for requiredForContexts + integration tests (~12 tests). ~3 modified/new files, ~1 test file. Backend only. | |
+| **241B** | 241.7--241.14 | PrerequisiteController: GET /api/prerequisites/check + GET /api/field-definitions/intake endpoint on FieldDefinitionController + PATCH field-definitions extension for requiredForContexts + integration tests (~12 tests). ~3 modified/new files, ~1 test file. Backend only. | **Done** (PR #489) |
 
 ### Tasks
 

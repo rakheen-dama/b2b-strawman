@@ -149,7 +149,7 @@ PORTAL TRACK (after E234A)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 1a | 231 | 231A | ProposalService: full CRUD, validation, milestone/team replacement, filtered listing, customer-scoped query. ~2 new files. Backend only. | |
+| 1a | 231 | 231A | ProposalService: full CRUD, validation, milestone/team replacement, filtered listing, customer-scoped query. ~2 new files. Backend only. | **Done** (PR #469) |
 | 1b | 231 | 231B | ProposalController: 9 endpoints + DTOs + pipeline stats query + integration tests (~20 tests). ~2 new files, ~1 new test file. Backend only. | |
 
 ### Stage 2: Send Flow, Orchestration & Cross-Cutting (parallel tracks)
@@ -299,7 +299,7 @@ Stage 6: [239B]                                                      (final)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **231A** | 231.1--231.8 | `ProposalService`: createProposal (number allocation, customer validation, fee validation), getProposal, updateProposal (DRAFT guard), deleteProposal (DRAFT guard), listProposals (filtered), replaceMilestones (percentage validation), replaceTeamMembers, getStats (aggregate query), customer-scoped listing. ~1 new service file. Backend only. | |
+| **231A** | 231.1--231.8 | `ProposalService`: createProposal (number allocation, customer validation, fee validation), getProposal, updateProposal (DRAFT guard), deleteProposal (DRAFT guard), listProposals (filtered), replaceMilestones (percentage validation), replaceTeamMembers, getStats (aggregate query), customer-scoped listing. ~1 new service file. Backend only. | **Done** (PR #469) |
 | **231B** | 231.9--231.16 | `ProposalController`: 9 endpoints (CRUD + milestones + team + stats + customer-scoped) + `ProposalResponse`/`CreateProposalRequest`/`UpdateProposalRequest` DTOs + integration tests (~20 tests). ~2 new files, ~1 test file. Backend only. | |
 
 ### Tasks

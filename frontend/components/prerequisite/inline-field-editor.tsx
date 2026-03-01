@@ -2,7 +2,24 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { FieldType } from "@/lib/types";
+
+/** Proper union type for field values instead of unknown */
+export type FieldValue =
+  | string
+  | number
+  | boolean
+  | { amount?: number | string; currency?: string }
+  | null
+  | undefined;
 
 /** Minimal field definition shape accepted by InlineFieldEditor */
 export interface InlineFieldEditorField {
@@ -17,10 +34,42 @@ export interface InlineFieldEditorField {
 
 interface InlineFieldEditorProps {
   fieldDefinition: InlineFieldEditorField;
-  value: unknown;
-  onChange: (value: unknown) => void;
+  value: FieldValue;
+  onChange: (value: FieldValue) => void;
   disabled?: boolean;
   error?: string;
+}
+
+/** Supported currency codes for CURRENCY field type */
+const CURRENCY_CODES = [
+  "USD",
+  "EUR",
+  "GBP",
+  "ZAR",
+  "AUD",
+  "CAD",
+  "CHF",
+  "JPY",
+  "CNY",
+  "INR",
+] as const;
+
+/** Mapping of simple input field types to their HTML input type and placeholder */
+const SIMPLE_INPUT_TYPES: Partial<
+  Record<FieldType, { type: string; placeholder?: string }>
+> = {
+  TEXT: { type: "text" },
+  NUMBER: { type: "number" },
+  PHONE: { type: "tel", placeholder: "+1 (555) 000-0000" },
+  EMAIL: { type: "email", placeholder: "name@example.com" },
+  URL: { type: "url", placeholder: "https://..." },
+};
+
+function ErrorMessage({ error }: { error?: string }) {
+  if (!error) return null;
+  return (
+    <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
+  );
 }
 
 export function InlineFieldEditor({
@@ -31,42 +80,30 @@ export function InlineFieldEditor({
   error,
 }: InlineFieldEditorProps) {
   const id = `inline-${fieldDefinition.slug}`;
+  const { fieldType } = fieldDefinition;
 
-  switch (fieldDefinition.fieldType) {
-    case "TEXT":
-      return (
-        <div className="space-y-1">
-          <Input
-            id={id}
-            value={(value as string) ?? ""}
-            onChange={(e) => onChange(e.target.value)}
-            disabled={disabled}
-            aria-invalid={!!error}
-            placeholder={fieldDefinition.description ?? undefined}
-          />
-          {error && (
-            <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
-          )}
-        </div>
-      );
+  // Collapsed branch for TEXT, NUMBER, PHONE, EMAIL, URL
+  const simpleConfig = SIMPLE_INPUT_TYPES[fieldType];
+  if (simpleConfig) {
+    return (
+      <div className="space-y-1">
+        <Input
+          id={id}
+          type={simpleConfig.type}
+          value={(value as string) ?? ""}
+          onChange={(e) => onChange(e.target.value)}
+          disabled={disabled}
+          aria-invalid={!!error}
+          placeholder={
+            simpleConfig.placeholder ?? fieldDefinition.description ?? undefined
+          }
+        />
+        <ErrorMessage error={error} />
+      </div>
+    );
+  }
 
-    case "NUMBER":
-      return (
-        <div className="space-y-1">
-          <Input
-            id={id}
-            type="number"
-            value={(value as string) ?? ""}
-            onChange={(e) => onChange(e.target.value)}
-            disabled={disabled}
-            aria-invalid={!!error}
-          />
-          {error && (
-            <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
-          )}
-        </div>
-      );
-
+  switch (fieldType) {
     case "DATE":
       return (
         <div className="space-y-1">
@@ -78,33 +115,34 @@ export function InlineFieldEditor({
             disabled={disabled}
             aria-invalid={!!error}
           />
-          {error && (
-            <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
-          )}
+          <ErrorMessage error={error} />
         </div>
       );
 
     case "DROPDOWN":
       return (
         <div className="space-y-1">
-          <select
-            id={id}
+          <Select
             value={(value as string) ?? ""}
-            onChange={(e) => onChange(e.target.value)}
+            onValueChange={(val) => onChange(val)}
             disabled={disabled}
-            aria-invalid={!!error}
-            className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700"
           >
-            <option value="">Select...</option>
-            {fieldDefinition.options?.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-          {error && (
-            <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
-          )}
+            <SelectTrigger
+              id={id}
+              className="w-full"
+              aria-invalid={!!error}
+            >
+              <SelectValue placeholder="Select..." />
+            </SelectTrigger>
+            <SelectContent>
+              {fieldDefinition.options?.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <ErrorMessage error={error} />
         </div>
       );
 
@@ -112,75 +150,17 @@ export function InlineFieldEditor({
       return (
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <input
+            <Checkbox
               id={id}
-              type="checkbox"
               checked={(value as boolean) ?? false}
-              onChange={(e) => onChange(e.target.checked)}
+              onCheckedChange={(checked) => onChange(checked === true)}
               disabled={disabled}
-              className="size-4 rounded border-slate-300 text-slate-600 focus:ring-slate-500"
             />
             <Label htmlFor={id} className="text-sm font-normal">
               {fieldDefinition.description ?? "Enabled"}
             </Label>
           </div>
-          {error && (
-            <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
-          )}
-        </div>
-      );
-
-    case "PHONE":
-      return (
-        <div className="space-y-1">
-          <Input
-            id={id}
-            type="tel"
-            value={(value as string) ?? ""}
-            onChange={(e) => onChange(e.target.value)}
-            disabled={disabled}
-            aria-invalid={!!error}
-            placeholder="+1 (555) 000-0000"
-          />
-          {error && (
-            <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
-          )}
-        </div>
-      );
-
-    case "EMAIL":
-      return (
-        <div className="space-y-1">
-          <Input
-            id={id}
-            type="email"
-            value={(value as string) ?? ""}
-            onChange={(e) => onChange(e.target.value)}
-            disabled={disabled}
-            aria-invalid={!!error}
-            placeholder="name@example.com"
-          />
-          {error && (
-            <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
-          )}
-        </div>
-      );
-
-    case "URL":
-      return (
-        <div className="space-y-1">
-          <Input
-            id={id}
-            type="url"
-            value={(value as string) ?? ""}
-            onChange={(e) => onChange(e.target.value)}
-            disabled={disabled}
-            aria-invalid={!!error}
-            placeholder="https://..."
-          />
-          {error && (
-            <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
-          )}
+          <ErrorMessage error={error} />
         </div>
       );
 
@@ -208,37 +188,26 @@ export function InlineFieldEditor({
               aria-invalid={!!error}
               className="flex-1"
             />
-            <select
+            <Select
               value={currencyObj.currency ?? ""}
-              onChange={(e) =>
-                onChange({ ...currencyObj, currency: e.target.value })
+              onValueChange={(val) =>
+                onChange({ ...currencyObj, currency: val })
               }
               disabled={disabled}
-              className="flex h-9 w-28 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700"
-              aria-label="Currency"
             >
-              <option value="">Currency</option>
-              {[
-                "USD",
-                "EUR",
-                "GBP",
-                "ZAR",
-                "AUD",
-                "CAD",
-                "CHF",
-                "JPY",
-                "CNY",
-                "INR",
-              ].map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-28" aria-label="Currency">
+                <SelectValue placeholder="Currency" />
+              </SelectTrigger>
+              <SelectContent>
+                {CURRENCY_CODES.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {c}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          {error && (
-            <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
-          )}
+          <ErrorMessage error={error} />
         </div>
       );
     }

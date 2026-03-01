@@ -15,9 +15,11 @@ export function usePrerequisiteCheck(
 ) {
   const [check, setCheck] = useState<PrerequisiteCheck | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
   const runCheck = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const result = await checkPrerequisitesAction(
         context,
@@ -25,8 +27,8 @@ export function usePrerequisiteCheck(
         entityId,
       );
       setCheck(result);
-    } catch {
-      // Let caller handle errors via the check state
+    } catch (e) {
+      setError(e instanceof Error ? e : new Error(String(e)));
     } finally {
       setLoading(false);
     }
@@ -34,7 +36,8 @@ export function usePrerequisiteCheck(
 
   const reset = useCallback(() => {
     setCheck(null);
+    setError(null);
   }, []);
 
-  return { check, loading, runCheck, reset };
+  return { check, loading, error, runCheck, reset };
 }

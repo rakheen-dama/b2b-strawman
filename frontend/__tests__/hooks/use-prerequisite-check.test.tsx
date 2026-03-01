@@ -44,6 +44,7 @@ describe("usePrerequisiteCheck", () => {
 
     expect(hookResult.current.check).toBeNull();
     expect(hookResult.current.loading).toBe(false);
+    expect(hookResult.current.error).toBeNull();
 
     await act(async () => {
       await hookResult.current.runCheck();
@@ -51,6 +52,7 @@ describe("usePrerequisiteCheck", () => {
 
     expect(hookResult.current.loading).toBe(false);
     expect(hookResult.current.check).toEqual(result);
+    expect(hookResult.current.error).toBeNull();
   });
 
   it("returns passed check with no violations", async () => {
@@ -106,5 +108,70 @@ describe("usePrerequisiteCheck", () => {
     });
 
     expect(hookResult.current.check).toBeNull();
+  });
+
+  it("exposes error state when action rejects", async () => {
+    mockAction.mockRejectedValueOnce(new Error("Network failure"));
+
+    const { result: hookResult } = renderHook(() =>
+      usePrerequisiteCheck("INVOICE_GENERATION", "CUSTOMER", "cust-1"),
+    );
+
+    await act(async () => {
+      await hookResult.current.runCheck();
+    });
+
+    expect(hookResult.current.loading).toBe(false);
+    expect(hookResult.current.check).toBeNull();
+    expect(hookResult.current.error).toBeInstanceOf(Error);
+    expect(hookResult.current.error?.message).toBe("Network failure");
+  });
+
+  it("clears error on reset", async () => {
+    mockAction.mockRejectedValueOnce(new Error("Network failure"));
+
+    const { result: hookResult } = renderHook(() =>
+      usePrerequisiteCheck("INVOICE_GENERATION", "CUSTOMER", "cust-1"),
+    );
+
+    await act(async () => {
+      await hookResult.current.runCheck();
+    });
+
+    expect(hookResult.current.error).not.toBeNull();
+
+    act(() => {
+      hookResult.current.reset();
+    });
+
+    expect(hookResult.current.error).toBeNull();
+  });
+
+  it("clears previous error on successful re-run", async () => {
+    mockAction.mockRejectedValueOnce(new Error("Network failure"));
+
+    const { result: hookResult } = renderHook(() =>
+      usePrerequisiteCheck("INVOICE_GENERATION", "CUSTOMER", "cust-1"),
+    );
+
+    await act(async () => {
+      await hookResult.current.runCheck();
+    });
+
+    expect(hookResult.current.error).not.toBeNull();
+
+    const result: PrerequisiteCheck = {
+      passed: true,
+      context: "INVOICE_GENERATION",
+      violations: [],
+    };
+    mockAction.mockResolvedValueOnce(result);
+
+    await act(async () => {
+      await hookResult.current.runCheck();
+    });
+
+    expect(hookResult.current.error).toBeNull();
+    expect(hookResult.current.check?.passed).toBe(true);
   });
 });

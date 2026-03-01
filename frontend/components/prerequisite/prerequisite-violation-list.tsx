@@ -4,6 +4,7 @@ import { AlertTriangle, Info } from "lucide-react";
 import {
   InlineFieldEditor,
   type InlineFieldEditorField,
+  type FieldValue,
 } from "@/components/prerequisite/inline-field-editor";
 import type { PrerequisiteViolation } from "@/components/prerequisite/types";
 
@@ -12,9 +13,9 @@ interface PrerequisiteViolationListProps {
   /** Field definitions keyed by slug, used for rendering inline editors */
   fieldDefinitions?: Record<string, InlineFieldEditorField>;
   /** Current field values keyed by slug */
-  fieldValues?: Record<string, unknown>;
+  fieldValues?: Record<string, FieldValue>;
   /** Callback when a field value changes */
-  onFieldChange?: (slug: string, value: unknown) => void;
+  onFieldChange?: (slug: string, value: FieldValue) => void;
 }
 
 /** Groups violations by entityType for display */
@@ -53,19 +54,22 @@ export function PrerequisiteViolationList({
             {ENTITY_TYPE_LABELS[entityType] ?? entityType}
           </h4>
           <ul className="space-y-2">
-            {items.map((violation, idx) => (
+            {items.map((violation, idx) => {
+              const slug = violation.fieldSlug;
+              const fieldDef = slug ? fieldDefinitions[slug] : undefined;
+
+              return (
               <li
-                key={`${violation.code}-${violation.fieldSlug ?? idx}`}
+                key={`${violation.code}-${slug ?? idx}`}
                 className="rounded-md border border-slate-200 p-3 dark:border-slate-700"
               >
-                {violation.fieldSlug &&
-                fieldDefinitions[violation.fieldSlug] ? (
+                {slug && fieldDef ? (
                   <div className="space-y-2">
                     <div className="flex items-start gap-2">
                       <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-500" />
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                          {fieldDefinitions[violation.fieldSlug].name}
+                          {fieldDef.name}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {violation.message}
@@ -73,10 +77,10 @@ export function PrerequisiteViolationList({
                       </div>
                     </div>
                     <InlineFieldEditor
-                      fieldDefinition={fieldDefinitions[violation.fieldSlug]}
-                      value={fieldValues[violation.fieldSlug]}
+                      fieldDefinition={fieldDef}
+                      value={fieldValues[slug]}
                       onChange={(val) =>
-                        onFieldChange?.(violation.fieldSlug!, val)
+                        onFieldChange?.(slug, val)
                       }
                     />
                   </div>
@@ -96,7 +100,8 @@ export function PrerequisiteViolationList({
                   </div>
                 )}
               </li>
-            ))}
+              );
+            })}
           </ul>
         </div>
       ))}

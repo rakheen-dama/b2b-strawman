@@ -1,10 +1,15 @@
 package io.b2mash.b2b.b2bstrawman.prerequisite;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -111,7 +116,8 @@ class ActionPointPrerequisiteTest {
         createCustomer("Combined Violations Customer", "temp-combined@test.com");
     // Do NOT call fillPrerequisiteFields — custom fields remain empty
     // Blank-ish email (whitespace) + no portal contact = structural violation
-    // Use single space to pass isBlank() while avoiding duplicate key with incompleteCustomerId
+    // Use single space — triggers isBlank() structural violation while avoiding duplicate key with
+    // incompleteCustomerId
     jdbcTemplate.update(
         ("UPDATE \"%s\".customers SET email = ' ', custom_fields = '{}'::jsonb,"
                 + " lifecycle_status = 'ACTIVE' WHERE id = ?::uuid")
@@ -120,7 +126,7 @@ class ActionPointPrerequisiteTest {
 
     // Customer for combined flow test — starts without prerequisites
     flowCustomerId = createCustomer("Flow Test Customer", "temp-flow@test.com");
-    // Use double space to pass isBlank() while remaining unique
+    // Use double space — triggers isBlank() structural violation while remaining unique
     jdbcTemplate.update(
         ("UPDATE \"%s\".customers SET email = '  ', custom_fields = '{}'::jsonb,"
                 + " lifecycle_status = 'ACTIVE' WHERE id = ?::uuid")
@@ -323,18 +329,23 @@ class ActionPointPrerequisiteTest {
 
     List<String> validCodes = List.of("MISSING_FIELD", "STRUCTURAL");
     for (String code : invoiceCodes) {
-      assert validCodes.contains(code)
-          : "Invoice violation code '%s' not in valid set".formatted(code);
+      assertThat(
+          "Invoice violation code '%s' not in valid set".formatted(code),
+          validCodes,
+          hasItem(code));
     }
     for (String code : proposalCodes) {
-      assert validCodes.contains(code)
-          : "Proposal violation code '%s' not in valid set".formatted(code);
+      assertThat(
+          "Proposal violation code '%s' not in valid set".formatted(code),
+          validCodes,
+          hasItem(code));
     }
 
     // Both domains use STRUCTURAL for structural issues
-    assert invoiceCodes.contains("STRUCTURAL") : "Invoice 422 should contain STRUCTURAL violation";
-    assert proposalCodes.contains("STRUCTURAL")
-        : "Proposal 422 should contain STRUCTURAL violation";
+    assertTrue(
+        invoiceCodes.contains("STRUCTURAL"), "Invoice 422 should contain STRUCTURAL violation");
+    assertTrue(
+        proposalCodes.contains("STRUCTURAL"), "Proposal 422 should contain STRUCTURAL violation");
   }
 
   // --- 244.13: Combined prerequisite flow test ---
@@ -354,7 +365,7 @@ class ActionPointPrerequisiteTest {
                         .formatted(flowCustomerId)))
         .andExpect(status().isUnprocessableEntity())
         .andExpect(jsonPath("$.violations").isArray())
-        .andExpect(jsonPath("$.violations", hasSize(org.hamcrest.Matchers.greaterThan(0))));
+        .andExpect(jsonPath("$.violations", hasSize(greaterThan(0))));
 
     // Step 2: Check prerequisite endpoint — should report not passed
     mockMvc
@@ -441,7 +452,7 @@ class ActionPointPrerequisiteTest {
             .andExpect(status().isCreated())
             .andReturn();
     String location = result.getResponse().getHeader("Location");
-    assert location != null : "Expected Location header";
+    assertNotNull(location, "Expected Location header");
     return location.substring(location.lastIndexOf('/') + 1);
   }
 

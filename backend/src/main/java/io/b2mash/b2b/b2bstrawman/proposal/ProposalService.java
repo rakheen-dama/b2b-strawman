@@ -49,6 +49,7 @@ public class ProposalService {
   private final MemberNameResolver memberNameResolver;
   private final AuditService auditService;
   private final NotificationService notificationService;
+  private final io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService prerequisiteService;
 
   public ProposalService(
       ProposalRepository proposalRepository,
@@ -62,7 +63,8 @@ public class ProposalService {
       ApplicationEventPublisher eventPublisher,
       MemberNameResolver memberNameResolver,
       AuditService auditService,
-      NotificationService notificationService) {
+      NotificationService notificationService,
+      io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService prerequisiteService) {
     this.proposalRepository = proposalRepository;
     this.milestoneRepository = milestoneRepository;
     this.teamMemberRepository = teamMemberRepository;
@@ -75,6 +77,7 @@ public class ProposalService {
     this.memberNameResolver = memberNameResolver;
     this.auditService = auditService;
     this.notificationService = notificationService;
+    this.prerequisiteService = prerequisiteService;
   }
 
   // --- 231.1: createProposal ---
@@ -458,6 +461,16 @@ public class ProposalService {
             .findById(proposalId)
             .orElseThrow(() -> new ResourceNotFoundException("Proposal", proposalId));
     requireDraft(proposal);
+
+    // 1b. Check action-point prerequisites (e.g., portal contact)
+    var prerequisiteCheck =
+        prerequisiteService.checkForContext(
+            io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext.PROPOSAL_SEND,
+            io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType.CUSTOMER,
+            proposal.getCustomerId());
+    if (!prerequisiteCheck.passed()) {
+      throw new io.b2mash.b2b.b2bstrawman.exception.PrerequisiteNotMetException(prerequisiteCheck);
+    }
 
     // 2. Validate content is not empty
     if (proposal.getContentJson() == null || proposal.getContentJson().isEmpty()) {

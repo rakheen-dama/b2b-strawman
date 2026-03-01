@@ -48,6 +48,15 @@ class EngagementPrerequisiteTest {
   @Mock private FieldDefinitionService fieldDefinitionService;
   @Mock private CustomerRepository customerRepository;
   @Mock private ProjectTemplateService projectTemplateService;
+  @Mock private io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository portalContactRepository;
+
+  @Mock
+  private io.b2mash.b2b.b2bstrawman.setupstatus.DocumentGenerationReadinessService
+      documentGenerationReadinessService;
+
+  @Mock
+  private io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository customerProjectRepository;
+
   @Mock private ProjectTemplateRepository templateRepository;
   @Mock private FieldDefinitionRepository fieldDefinitionRepository;
   @Mock private AuditService auditService;
@@ -65,7 +74,13 @@ class EngagementPrerequisiteTest {
   @BeforeEach
   void setUp() {
     prerequisiteService =
-        new PrerequisiteService(fieldDefinitionService, customerRepository, projectTemplateService);
+        new PrerequisiteService(
+            fieldDefinitionService,
+            customerRepository,
+            projectTemplateService,
+            portalContactRepository,
+            documentGenerationReadinessService,
+            customerProjectRepository);
   }
 
   // --- Tests 1-4: checkEngagementPrerequisites ---

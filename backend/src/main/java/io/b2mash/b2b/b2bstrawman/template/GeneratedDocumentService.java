@@ -41,6 +41,7 @@ public class GeneratedDocumentService {
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
   private final ClauseResolver clauseResolver;
+  private final io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService prerequisiteService;
 
   public GeneratedDocumentService(
       GeneratedDocumentRepository generatedDocumentRepository,
@@ -53,7 +54,8 @@ public class GeneratedDocumentService {
       DocumentRepository documentRepository,
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
-      ClauseResolver clauseResolver) {
+      ClauseResolver clauseResolver,
+      io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService prerequisiteService) {
     this.generatedDocumentRepository = generatedDocumentRepository;
     this.documentTemplateRepository = documentTemplateRepository;
     this.memberNameResolver = memberNameResolver;
@@ -65,6 +67,7 @@ public class GeneratedDocumentService {
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
     this.clauseResolver = clauseResolver;
+    this.prerequisiteService = prerequisiteService;
   }
 
   /**
@@ -82,12 +85,26 @@ public class GeneratedDocumentService {
       boolean acknowledgeWarnings,
       List<ClauseSelection> clauseSelections,
       UUID memberId) {
-    // 0. Validate required fields before generation
+    // 0. Check action-point prerequisites
     var template =
         documentTemplateRepository
             .findById(templateId)
             .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", templateId));
 
+    UUID customerId = resolveCustomerIdForDocGen(template.getPrimaryEntityType(), entityId);
+    if (customerId != null) {
+      var prerequisiteCheck =
+          prerequisiteService.checkForContext(
+              io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext.DOCUMENT_GENERATION,
+              io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType.CUSTOMER,
+              customerId);
+      if (!prerequisiteCheck.passed()) {
+        throw new io.b2mash.b2b.b2bstrawman.exception.PrerequisiteNotMetException(
+            prerequisiteCheck);
+      }
+    }
+
+    // 0b. Validate required fields before generation
     var contextMap = pdfRenderingService.buildContext(templateId, entityId, memberId);
     var validationResult =
         templateValidationService.validateRequiredFields(
@@ -349,6 +366,20 @@ public class GeneratedDocumentService {
     return switch (entityType) {
       case PROJECT -> entityId;
       case CUSTOMER, INVOICE -> null;
+    };
+  }
+
+  private UUID resolveCustomerIdForDocGen(TemplateEntityType entityType, UUID entityId) {
+    return switch (entityType) {
+      case CUSTOMER -> entityId;
+      case PROJECT -> {
+        try {
+          yield prerequisiteService.resolveCustomerIdFromProject(entityId);
+        } catch (ResourceNotFoundException e) {
+          yield null; // No customer linked — skip prerequisite check
+        }
+      }
+      case INVOICE -> null; // Invoice prerequisite checks not yet supported
     };
   }
 

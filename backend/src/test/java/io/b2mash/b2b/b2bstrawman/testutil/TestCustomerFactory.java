@@ -74,6 +74,38 @@ public final class TestCustomerFactory {
   }
 
   /**
+   * Returns a custom fields map with the minimum required fields for passing prerequisite checks
+   * (INVOICE_GENERATION, PROPOSAL_SEND). Matches the seeded common-customer field pack slugs.
+   */
+  public static Map<String, Object> prerequisiteCustomFields() {
+    return Map.of(
+        "address_line1", "123 Test Street",
+        "city", "Test City",
+        "country", "ZA",
+        "tax_number", "VAT123456");
+  }
+
+  /**
+   * Creates an ACTIVE customer with prerequisite custom fields pre-filled (address, city, country,
+   * tax number). Safe for invoice creation and proposal sending flows.
+   */
+  public static Customer createActiveCustomerWithPrerequisiteFields(
+      String name, String email, UUID createdBy) {
+    var customer =
+        new Customer(
+            name,
+            email,
+            null,
+            null,
+            null,
+            createdBy,
+            CustomerType.INDIVIDUAL,
+            LifecycleStatus.ACTIVE);
+    customer.setCustomFields(new HashMap<>(prerequisiteCustomFields()));
+    return customer;
+  }
+
+  /**
    * Builds a customFields map with appropriate test values for each field definition based on its
    * FieldType.
    */

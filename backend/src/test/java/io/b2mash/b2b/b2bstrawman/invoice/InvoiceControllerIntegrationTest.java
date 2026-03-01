@@ -96,7 +96,7 @@ class InvoiceControllerIntegrationTest {
                     tx -> {
                       // Customer
                       var customer =
-                          TestCustomerFactory.createActiveCustomer(
+                          TestCustomerFactory.createActiveCustomerWithPrerequisiteFields(
                               "Ctrl Test Corp", "ctrltest@test.com", memberIdOwner);
                       customer = customerRepository.save(customer);
                       customerId = customer.getId();

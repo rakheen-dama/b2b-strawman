@@ -1,6 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.tax;
 
-import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
+import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomerWithPrerequisiteFields;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -98,7 +98,8 @@ class InvoiceTaxIntegrationTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var customer =
-                      createActiveCustomer("Tax Test Corp", "taxtest@test.com", memberIdOwner);
+                      createActiveCustomerWithPrerequisiteFields(
+                          "Tax Test Corp", "taxtest@test.com", memberIdOwner);
                   customer = customerRepository.save(customer);
                   customerId = customer.getId();
 

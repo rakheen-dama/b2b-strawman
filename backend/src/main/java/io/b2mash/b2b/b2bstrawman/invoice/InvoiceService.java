@@ -107,6 +107,7 @@ public class InvoiceService {
   private final TaxCalculationService taxCalculationService;
   private final TaxRateRepository taxRateRepository;
   private final ExpenseRepository expenseRepository;
+  private final io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService prerequisiteService;
 
   public InvoiceService(
       InvoiceRepository invoiceRepository,
@@ -136,7 +137,8 @@ public class InvoiceService {
       OrgSettingsRepository orgSettingsRepository,
       TaxCalculationService taxCalculationService,
       TaxRateRepository taxRateRepository,
-      ExpenseRepository expenseRepository) {
+      ExpenseRepository expenseRepository,
+      io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService prerequisiteService) {
     this.invoiceRepository = invoiceRepository;
     this.lineRepository = lineRepository;
     this.customerRepository = customerRepository;
@@ -165,6 +167,7 @@ public class InvoiceService {
     this.taxCalculationService = taxCalculationService;
     this.taxRateRepository = taxRateRepository;
     this.expenseRepository = expenseRepository;
+    this.prerequisiteService = prerequisiteService;
   }
 
   @Transactional(readOnly = true)
@@ -187,6 +190,16 @@ public class InvoiceService {
 
     // Check lifecycle guard (complementary to soft-delete status check above)
     customerLifecycleGuard.requireActionPermitted(customer, LifecycleAction.CREATE_INVOICE);
+
+    // Check action-point prerequisites (e.g., portal contact, required fields)
+    var prerequisiteCheck =
+        prerequisiteService.checkForContext(
+            io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext.INVOICE_GENERATION,
+            EntityType.CUSTOMER,
+            request.customerId());
+    if (!prerequisiteCheck.passed()) {
+      throw new io.b2mash.b2b.b2bstrawman.exception.PrerequisiteNotMetException(prerequisiteCheck);
+    }
 
     // Look up organization for orgName snapshot
     String orgId = RequestScopes.requireOrgId();

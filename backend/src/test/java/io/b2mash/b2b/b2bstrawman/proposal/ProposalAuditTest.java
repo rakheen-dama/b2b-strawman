@@ -64,6 +64,7 @@ class ProposalAuditTest {
     ownerMemberId = syncMember("user_pa_owner", "pa_owner@test.com", "PA Owner", "owner");
 
     customerId = createCustomer("Audit Test Customer", "audit-customer@test.com");
+    fillPrerequisiteFields(customerId);
     portalContactId = createPortalContact(customerId, "contact@audit-test.com", "Audit Contact");
   }
 
@@ -328,5 +329,14 @@ class ProposalAuditTest {
     return jwt()
         .jwt(j -> j.subject("user_pa_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
+  }
+
+  private void fillPrerequisiteFields(String customerIdStr) {
+    jdbcTemplate.update(
+        ("UPDATE \"%s\".customers SET custom_fields ="
+                + " '{\"address_line1\":\"123 Test St\",\"city\":\"Test City\","
+                + "\"country\":\"ZA\",\"tax_number\":\"VAT123\"}'::jsonb WHERE id = ?::uuid")
+            .formatted(schemaName),
+        customerIdStr);
   }
 }

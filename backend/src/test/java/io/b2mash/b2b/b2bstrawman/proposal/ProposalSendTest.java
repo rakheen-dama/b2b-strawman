@@ -61,9 +61,11 @@ class ProposalSendTest {
     syncMember("user_prop_send_member", "prop_send_member@test.com", "SEND Member", "member");
 
     customerId = createCustomer(ownerJwt(), "Send Test Customer", "send-customer@test.com");
+    fillPrerequisiteFields(customerId);
     portalContactId = createPortalContact(customerId, "contact@send-test.com", "Send Contact");
 
     secondCustomerId = createCustomer(ownerJwt(), "Second Customer", "second-customer@test.com");
+    fillPrerequisiteFields(secondCustomerId);
     secondCustomerContactId =
         createPortalContact(secondCustomerId, "contact2@send-test.com", "Second Contact");
   }
@@ -476,5 +478,15 @@ class ProposalSendTest {
                 j.subject("user_prop_send_member")
                     .claim("o", Map.of("id", ORG_ID, "rol", "member")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+
+  private void fillPrerequisiteFields(String customerIdStr) {
+    String schema = SchemaNameGenerator.generateSchemaName(ORG_ID);
+    jdbcTemplate.update(
+        ("UPDATE \"%s\".customers SET custom_fields ="
+                + " '{\"address_line1\":\"123 Test St\",\"city\":\"Test City\","
+                + "\"country\":\"ZA\",\"tax_number\":\"VAT123\"}'::jsonb WHERE id = ?::uuid")
+            .formatted(schema),
+        customerIdStr);
   }
 }

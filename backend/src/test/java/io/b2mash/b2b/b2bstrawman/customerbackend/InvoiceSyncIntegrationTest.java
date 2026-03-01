@@ -199,6 +199,19 @@ class InvoiceSyncIntegrationTest {
             .andExpect(status().isCreated())
             .andReturn();
     var id = extractIdFromLocation(result);
+    // Fill prerequisite custom fields for invoice/proposal checks
+    mockMvc
+        .perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put(
+                    "/api/customers/{id}", id)
+                .with(ownerJwt())
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"name": "%s", "email": "%s", "customFields": {"address_line1": "123 Test St", "city": "Test City", "country": "ZA", "tax_number": "VAT123"}}
+                    """
+                        .formatted(name, email)))
+        .andExpect(status().isOk());
     transitionCustomerToActive(id);
     return id;
   }

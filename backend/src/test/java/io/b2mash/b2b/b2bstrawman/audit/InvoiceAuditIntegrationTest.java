@@ -97,7 +97,7 @@ class InvoiceAuditIntegrationTest {
                 transactionTemplate.executeWithoutResult(
                     tx -> {
                       var customer =
-                          TestCustomerFactory.createActiveCustomer(
+                          TestCustomerFactory.createActiveCustomerWithPrerequisiteFields(
                               "Audit Test Corp", "audit@test.com", memberIdOwner);
                       customer = customerRepository.save(customer);
                       customerId = customer.getId();

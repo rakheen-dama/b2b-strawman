@@ -110,7 +110,7 @@ class InvoiceNotificationIntegrationTest {
                 transactionTemplate.executeWithoutResult(
                     tx -> {
                       var customer =
-                          TestCustomerFactory.createActiveCustomer(
+                          TestCustomerFactory.createActiveCustomerWithPrerequisiteFields(
                               "Notif Test Corp", "notif@test.com", memberIdOwner);
                       customer = customerRepository.save(customer);
                       customerId = customer.getId();

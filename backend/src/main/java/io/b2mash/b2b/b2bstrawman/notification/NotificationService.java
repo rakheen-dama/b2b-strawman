@@ -157,7 +157,9 @@ public class NotificationService {
           "PROJECT_COMPLETED",
           "PROJECT_ARCHIVED",
           "TASK_RECURRENCE_CREATED",
-          "TIME_REMINDER");
+          "TIME_REMINDER",
+          "PROPOSAL_DECLINED",
+          "PROPOSAL_EXPIRED");
 
   // --- Preference methods ---
 

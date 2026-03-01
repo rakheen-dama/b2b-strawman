@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { X } from "lucide-react";
 import {
   createFieldDefinitionAction,
@@ -24,6 +25,10 @@ import type {
   FieldType,
   FieldDefinitionResponse,
 } from "@/lib/types";
+import {
+  type PrerequisiteContext,
+  PREREQUISITE_CONTEXT_LABELS,
+} from "@/components/prerequisite/types";
 
 const ENTITY_TYPES: { value: EntityType; label: string }[] = [
   { value: "PROJECT", label: "Projects" },
@@ -81,6 +86,9 @@ export function FieldDefinitionDialog({
   );
   const [description, setDescription] = useState(field?.description ?? "");
   const [required, setRequired] = useState(field?.required ?? false);
+  const [requiredForContexts, setRequiredForContexts] = useState<
+    PrerequisiteContext[]
+  >((field?.requiredForContexts as PrerequisiteContext[]) ?? []);
   const [sortOrder, setSortOrder] = useState(field?.sortOrder ?? 0);
 
   // Conditional validation fields
@@ -136,6 +144,12 @@ export function FieldDefinitionDialog({
   );
   const isControllingDropdown = controllingField?.fieldType === "DROPDOWN";
 
+  function toggleContext(ctx: PrerequisiteContext) {
+    setRequiredForContexts((prev) =>
+      prev.includes(ctx) ? prev.filter((c) => c !== ctx) : [...prev, ctx],
+    );
+  }
+
   function resetForm() {
     setEntityType(initialEntityType ?? "PROJECT");
     setName("");
@@ -143,6 +157,7 @@ export function FieldDefinitionDialog({
     setFieldType("TEXT");
     setDescription("");
     setRequired(false);
+    setRequiredForContexts([]);
     setSortOrder(0);
     setMinLength("");
     setMaxLength("");
@@ -166,6 +181,9 @@ export function FieldDefinitionDialog({
     setFieldType(f.fieldType);
     setDescription(f.description ?? "");
     setRequired(f.required);
+    setRequiredForContexts(
+      (f.requiredForContexts as PrerequisiteContext[]) ?? [],
+    );
     setSortOrder(f.sortOrder);
     setMinLength(f.validation?.minLength?.toString() ?? "");
     setMaxLength(f.validation?.maxLength?.toString() ?? "");
@@ -317,6 +335,7 @@ export function FieldDefinitionDialog({
           options: buildOptions(),
           sortOrder,
           visibilityCondition: buildVisibilityCondition() ?? null,
+          requiredForContexts,
         });
 
         if (result.success) {
@@ -336,6 +355,7 @@ export function FieldDefinitionDialog({
           options: buildOptions(),
           sortOrder,
           visibilityCondition: buildVisibilityCondition() ?? null,
+          requiredForContexts,
         });
 
         if (result.success) {
@@ -487,6 +507,43 @@ export function FieldDefinitionDialog({
             <Label htmlFor="fd-required" className="text-sm font-normal">
               Required field
             </Label>
+          </div>
+
+          {/* Required For Contexts */}
+          <div className="space-y-3 rounded-md border border-slate-200 p-3 dark:border-slate-700">
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              Required For
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Select which actions require this field to be filled.
+            </p>
+            <div className="space-y-2">
+              {(
+                Object.entries(PREREQUISITE_CONTEXT_LABELS) as [
+                  PrerequisiteContext,
+                  string,
+                ][]
+              ).map(([ctx, label]) => (
+                <div key={ctx} className="flex items-center gap-2">
+                  <Checkbox
+                    id={`fd-ctx-${ctx}`}
+                    checked={requiredForContexts.includes(ctx)}
+                    onCheckedChange={() => toggleContext(ctx)}
+                  />
+                  <Label
+                    htmlFor={`fd-ctx-${ctx}`}
+                    className="text-sm font-normal"
+                  >
+                    {label}
+                  </Label>
+                </div>
+              ))}
+            </div>
+            {isEditing && field?.packId && (
+              <p className="text-xs italic text-slate-500 dark:text-slate-400">
+                Set by field pack — override by changing selections.
+              </p>
+            )}
           </div>
 
           {/* Sort Order */}

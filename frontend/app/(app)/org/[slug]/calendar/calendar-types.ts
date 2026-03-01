@@ -61,3 +61,44 @@ export function getItemLink(item: CalendarItem, slug: string): string {
   }
   return `/org/${slug}/projects/${item.projectId}`;
 }
+
+function parseDueDateToDate(dateStr: string): Date {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+
+/**
+ * Returns urgency-based color classes for calendar items.
+ * Overdue items get red, items due within 7 days get amber.
+ * Completed/cancelled/archived items never show urgency.
+ * @param today - midnight-normalized Date, computed once by the caller
+ */
+export function getDueDateColor(
+  dueDate: string,
+  status: string,
+  today: Date
+): { dot: string; row: string } {
+  if (["DONE", "CANCELLED", "ARCHIVED", "COMPLETED"].includes(status)) {
+    return { dot: "", row: "" };
+  }
+
+  const due = parseDueDateToDate(dueDate);
+
+  if (due < today) {
+    return {
+      dot: "bg-red-500",
+      row: "bg-red-50 dark:bg-red-950/20",
+    };
+  }
+
+  const sevenDaysFromNow = new Date(today);
+  sevenDaysFromNow.setDate(today.getDate() + 7);
+  if (due <= sevenDaysFromNow) {
+    return {
+      dot: "bg-amber-500",
+      row: "bg-amber-50 dark:bg-amber-950/20",
+    };
+  }
+
+  return { dot: "", row: "" };
+}

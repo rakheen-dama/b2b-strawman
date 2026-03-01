@@ -1,6 +1,7 @@
 "use server";
 
 import { api } from "@/lib/api";
+import type { Project, OrgMember } from "@/lib/types";
 import type { CalendarFilters, CalendarResponse } from "./calendar-types";
 
 export async function getCalendarItems(
@@ -17,4 +18,18 @@ export async function getCalendarItems(
   if (filters?.overdue) params.set("overdue", "true");
 
   return api.get<CalendarResponse>(`/api/calendar?${params.toString()}`);
+}
+
+export async function getCalendarProjects(): Promise<
+  { id: string; name: string }[]
+> {
+  const projects = await api.get<Project[]>("/api/projects");
+  return projects.map((p) => ({ id: p.id, name: p.name }));
+}
+
+export async function getCalendarMembers(): Promise<
+  { id: string; name: string }[]
+> {
+  const members = await api.get<OrgMember[]>("/api/members");
+  return members.map((m) => ({ id: m.id, name: m.name }));
 }

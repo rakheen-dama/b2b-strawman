@@ -57,9 +57,10 @@ export const NAV_ZONES: NavZone[] = [
     id: "money",
     icon: Receipt,
     label: "Money",
-    matchPrefixes: ["/invoices", "/retainers"],
+    matchPrefixes: ["/invoices", "/proposals", "/retainers"],
     subNav: [
       { label: "Invoices", href: (s) => `/org/${s}/invoices` },
+      { label: "Proposals", href: (s) => `/org/${s}/proposals` },
       { label: "Retainers", href: (s) => `/org/${s}/retainers` },
     ],
   },

@@ -153,7 +153,7 @@ FRONTEND TRACK (after E241B)
 | 2b (parallel) | 243 | 243A | V54 migration (required_customer_field_ids on project_templates) + ProjectTemplate entity extension + ProjectTemplateService.getRequiredCustomerFields() + PrerequisiteService.checkEngagementPrerequisites() + tests (~8 tests). ~4 modified/new files. Backend only. | **Done** (PR #492) |
 | 2c (parallel) | 244 | 244A | Wire prerequisite checks into InvoiceService, ProposalService.sendProposal(), DocumentGenerationReadinessService + structural checks (portal contact, billing address) in PrerequisiteService + tests (~8 tests). ~4 modified files. Backend only. | **Done** (PR #494) |
 | 2d (parallel) | 250 | 250A | GET /api/customers/completeness-summary endpoint + CustomerReadinessService.computeReadinessByContext() + batch completeness computation + CompletenessScore record + tests (~6 tests). ~3 modified/new files. Backend only. | |
-| 2e (parallel) | 245 | 245A | Prerequisite TypeScript types + usePrerequisiteCheck hook + InlineFieldEditor component + prerequisite-violation-list.tsx + prerequisites API client + frontend tests (~6 tests). ~6 new files. Frontend only. | |
+| 2e (parallel) | 245 | 245A | Prerequisite TypeScript types + usePrerequisiteCheck hook + InlineFieldEditor component + prerequisite-violation-list.tsx + prerequisites API client + frontend tests (~6 tests). ~6 new files. Frontend only. | **Done** (PR #496) |
 
 ### Stage 3: Backend Enforcement Completion & Frontend Modal
 
@@ -543,7 +543,7 @@ Stage 5: [246B] // [249B] // [251B]                                         (par
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **245A** | 245.1--245.8 | PrerequisiteContext/Check/Violation TypeScript types + usePrerequisiteCheck hook + InlineFieldEditor component (all FieldType variants) + prerequisite-violation-list.tsx + prerequisites API client + tests (~6 tests). ~6 new files. Frontend only. | |
+| **245A** | 245.1--245.8 | PrerequisiteContext/Check/Violation TypeScript types + usePrerequisiteCheck hook + InlineFieldEditor component (all FieldType variants) + prerequisite-violation-list.tsx + prerequisites API client + tests (~6 tests). ~6 new files. Frontend only. | **Done** (PR #496) |
 | **245B** | 245.9--245.14 | PrerequisiteModal component: grouped violations, inline field editing, "Check & Continue" re-validation, batch save via customer update, auto-proceed via onResolved callback + tests (~6 tests). ~2 new files. Frontend only. | |
 
 ### Tasks

@@ -32,7 +32,7 @@ Phase 30 closes the remaining revenue-capture and daily-work-organisation gaps i
 | 224 | Recurring Task Service & Controller | Backend | 223 | M | 224A, 224B | **Done** (PRs #458, #459) |
 | 225 | Recurring Task Frontend | Frontend | 224 | M | 225A | **Done** (PR #460) |
 | 226 | Time Reminder Scheduler & OrgSettings | Backend | -- | M | 226A, 226B | **Done** (PRs #461, #462) |
-| 227 | Time Reminder Frontend — Settings & Preferences | Frontend | 226 | S | 227A | |
+| 227 | Time Reminder Frontend — Settings & Preferences | Frontend | 226 | S | 227A | **Done** (PR #463) |
 | 228 | Calendar View — Backend Endpoint | Backend | -- | M | 228A | |
 | 229 | Calendar View — Frontend Page | Frontend | 228 | M | 229A, 229B | |
 
@@ -179,7 +179,7 @@ TRACK 4: CALENDAR VIEW
 |-------|------|-------|---------|--------|
 | 4a (parallel) | 220 | 220A | Project Expenses tab: layout extension, expense-list.tsx, log-expense-dialog.tsx, expense-category-badge.tsx, expense-actions.ts. ~5 new/modified files. Frontend only. | **Done** (PR #451) |
 | 4b (parallel) | 225 | 225A | Recurring Task Frontend: recurrence form section in task dialogs, badge in task list, recurrence info in task detail sheet, completion toast + tests. ~4 modified files. Frontend only. | **Done** (PR #460) |
-| 4c (parallel) | 227 | 227A | Time Reminders Frontend: settings section + notification preference toggle + tests. ~2 modified files. Frontend only. | |
+| 4c (parallel) | 227 | 227A | Time Reminders Frontend: settings section + notification preference toggle + tests. ~2 modified files. Frontend only. | **Done** (PR #463) |
 | 4d (parallel) | 229 | 229A | Calendar page shell: month-view component, list-view component, sidebar nav addition, calendar-actions.ts, basic routing. ~4 new files. Frontend only. | |
 
 ### Stage 5: Frontend Polish & Integration (parallel)
@@ -777,7 +777,7 @@ Stage 5: [220B] // [222A] // [229B]                              (parallel)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **227A** | 227.1–227.7 | Time Tracking settings section in OrgSettings page (toggle, days checkboxes, time picker, min hours), expense markup default field, notification preferences "Time reminders" toggle + frontend tests (~3 tests). ~2 modified files, ~1 test file. Frontend only. | |
+| **227A** | 227.1–227.7 | Time Tracking settings section in OrgSettings page (toggle, days checkboxes, time picker, min hours), expense markup default field, notification preferences "Time reminders" toggle + frontend tests (~3 tests). ~2 modified files, ~1 test file. Frontend only. | **Done** (PR #463) |
 
 ### Tasks
 

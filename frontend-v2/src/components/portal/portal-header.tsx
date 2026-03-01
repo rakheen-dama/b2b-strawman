@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, FolderOpen, LogOut } from "lucide-react";
+import { FileCheck, FileText, FolderOpen, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 const portalNav = [
   { label: "Projects", href: "/portal/projects", icon: FolderOpen },
   { label: "Documents", href: "/portal/documents", icon: FileText },
+  { label: "Proposals", href: "/portal/proposals", icon: FileCheck },
 ];
 
 interface PortalHeaderProps {

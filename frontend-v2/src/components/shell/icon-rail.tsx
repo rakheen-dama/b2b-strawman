@@ -53,7 +53,7 @@ export function IconRail({ slug, orgInitial }: IconRailProps) {
     <TooltipProvider>
       <nav
         aria-label="Main navigation"
-        className="hidden md:flex fixed left-0 top-0 z-40 h-screen w-[var(--rail-width)] flex-col items-center bg-slate-950 py-3"
+        className="hidden md:flex fixed left-0 top-0 z-40 h-screen w-[var(--rail-width)] flex-col items-center bg-slate-950 pt-3 pb-14"
       >
         {/* Org initial */}
         <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 text-sm font-semibold text-white">

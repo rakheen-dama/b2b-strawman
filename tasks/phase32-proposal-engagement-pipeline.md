@@ -24,7 +24,7 @@ Phase 32 introduces the **Proposal to Engagement Pipeline** -- the connective ti
 |------|------|-------|------|--------|--------|--------|
 | 230 | Proposal Entity Foundation & Migration | Backend | -- | M | 230A, 230B | **Done** (PRs #467, #468) |
 | 231 | Proposal CRUD & Lifecycle Backend | Backend | 230 | L | 231A, 231B | **Done** (PRs #469, #470) |
-| 232 | Send Flow & Portal Read-Model Sync | Backend | 231 | M | 232A, 232B | |
+| 232 | Send Flow & Portal Read-Model Sync | Backend | 231 | M | 232A, 232B | 232A **Done** (PR #471) |
 | 233 | Acceptance Orchestration | Backend | 231 | L | 233A, 233B | |
 | 234 | Portal Proposal Backend & Expiry Processor | Backend | 232, 233 | M | 234A, 234B | |
 | 235 | Audit, Notifications & Activity Integration | Backend | 231 | S | 235A | |
@@ -156,7 +156,7 @@ PORTAL TRACK (after E234A)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 2a (parallel) | 232 | 232A | V12 global migration (portal_proposals table) + ProposalPortalSyncService + ProposalVariableResolver + TiptapRenderer integration. ~3 new files, ~1 migration. Backend only. | |
+| 2a (parallel) | 232 | 232A | V12 global migration (portal_proposals table) + ProposalPortalSyncService + ProposalVariableResolver + TiptapRenderer integration. ~3 new files, ~1 migration. Backend only. | **Done** (PR #471) |
 | 2b (parallel) | 233 | 233A | ProposalOrchestrationService: FIXED fee (milestones + single), project creation (template + bare), team assignment, HOURLY no-op, customer PROSPECT transition + tests (~8 tests). ~2 new files, ~1 test file. Backend only. | |
 | 2c (parallel) | 235 | 235A | Audit events for all proposal lifecycle transitions + notification templates (accepted/declined/expired/sent) + activity feed integration + tests (~5 tests). ~2 new/modified files. Backend only. | |
 | 2d (parallel) | 236 | 236A | Proposals list page + proposal-actions.ts server actions + ProposalListTable + ProposalStatusBadge + sidebar nav update. ~5 new/modified files. Frontend only. | |
@@ -366,7 +366,7 @@ Stage 6: [239B]                                                      (final)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **232A** | 232.1--232.5 | V12 global migration for `portal_proposals` table + `ProposalPortalSyncService` (insert on send, status updates) + `ProposalVariableResolver` (build Tiptap variable context from customer/org data). ~3 new files, ~1 migration. Backend only. | |
+| **232A** | 232.1--232.5 | V12 global migration for `portal_proposals` table + `ProposalPortalSyncService` (insert on send, status updates) + `ProposalVariableResolver` (build Tiptap variable context from customer/org data). ~3 new files, ~1 migration. Backend only. | **Done** (PR #471) |
 | **232B** | 232.6--232.12 | `ProposalService.sendProposal()`: send validation, DRAFT to SENT transition, TiptapRenderer integration for HTML, portal sync, email to portal contact via EmailNotificationChannel, in-app notification to creator, audit event + integration tests (~10 tests). ~2 modified files, ~1 test file. Backend only. | |
 
 ### Tasks

@@ -284,6 +284,29 @@ class TimeReminderSchedulerTest {
                 }));
   }
 
+  @Test
+  void deduplication_secondRunDoesNotCreateDuplicate() {
+    configureOrgSettings(true, todayDayAbbrev(), currentUtcTime(), 240);
+
+    // First run — should create a notification
+    scheduler.checkTimeReminders();
+
+    // Second run — should NOT create a duplicate
+    scheduler.checkTimeReminders();
+
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var notifications =
+                      notificationRepository
+                          .findByRecipientMemberId(memberId, PageRequest.of(0, 100))
+                          .getContent();
+                  assertThat(notifications).hasSize(1);
+                  assertThat(notifications.getFirst().getType()).isEqualTo("TIME_REMINDER");
+                }));
+  }
+
   // --- Helpers ---
 
   private void configureOrgSettings(boolean enabled, String days, LocalTime time, int minMinutes) {

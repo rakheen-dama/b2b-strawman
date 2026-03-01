@@ -3,7 +3,7 @@ package io.b2mash.b2b.b2bstrawman.schedule;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.notification.NotificationPreferenceRepository;
+import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
@@ -30,12 +30,15 @@ public class TimeReminderScheduler {
 
   private static final Logger log = LoggerFactory.getLogger(TimeReminderScheduler.class);
 
+  /** Scheduler runs every 15 minutes (900 000 ms). */
+  private static final long CHECK_INTERVAL_MS = 900_000;
+
   private final OrgSchemaMappingRepository mappingRepository;
   private final OrgSettingsRepository orgSettingsRepository;
   private final MemberRepository memberRepository;
   private final TimeEntryRepository timeEntryRepository;
   private final NotificationService notificationService;
-  private final NotificationPreferenceRepository notificationPreferenceRepository;
+  private final NotificationRepository notificationRepository;
   private final TransactionTemplate transactionTemplate;
 
   public TimeReminderScheduler(
@@ -44,20 +47,20 @@ public class TimeReminderScheduler {
       MemberRepository memberRepository,
       TimeEntryRepository timeEntryRepository,
       NotificationService notificationService,
-      NotificationPreferenceRepository notificationPreferenceRepository,
+      NotificationRepository notificationRepository,
       TransactionTemplate transactionTemplate) {
     this.mappingRepository = mappingRepository;
     this.orgSettingsRepository = orgSettingsRepository;
     this.memberRepository = memberRepository;
     this.timeEntryRepository = timeEntryRepository;
     this.notificationService = notificationService;
-    this.notificationPreferenceRepository = notificationPreferenceRepository;
+    this.notificationRepository = notificationRepository;
     this.transactionTemplate = transactionTemplate;
   }
 
-  @Scheduled(fixedRate = 900000)
+  @Scheduled(fixedRate = CHECK_INTERVAL_MS)
   public void checkTimeReminders() {
-    log.info("Time reminder scheduler started");
+    log.debug("Time reminder scheduler started");
     var mappings = mappingRepository.findAll();
     int remindersCreated = 0;
 
@@ -105,6 +108,8 @@ public class TimeReminderScheduler {
       return 0;
     }
 
+    // TODO: Paginate member query for v2 (findAll is acceptable for v1 — members are
+    // tenant-scoped and typical tenants have <100 members)
     var members = transactionTemplate.execute(tx -> memberRepository.findAll());
     if (members == null || members.isEmpty()) {
       return 0;
@@ -121,43 +126,61 @@ public class TimeReminderScheduler {
 
   /**
    * Checks if a member has logged enough time today and creates a reminder notification if not.
+   * Preference checks are handled by {@link NotificationService#createIfEnabled}. Deduplication
+   * prevents multiple reminders per member per day.
    *
    * @return true if a notification was created
    */
   private boolean checkMemberTimeLogged(UUID memberId, LocalDate today, OrgSettings orgSettings) {
-    // Check opt-out preference
-    var prefOpt =
+    // Single transaction for time sum query + dedup check
+    var shouldNotify =
         transactionTemplate.execute(
-            tx ->
-                notificationPreferenceRepository.findByMemberIdAndNotificationType(
-                    memberId, "TIME_REMINDER"));
-    if (prefOpt != null && prefOpt.isPresent() && !prefOpt.get().isInAppEnabled()) {
-      return false;
-    }
+            tx -> {
+              // Deduplication: skip if a TIME_REMINDER was already sent today
+              var startOfDay = today.atStartOfDay(ZoneOffset.UTC).toInstant();
+              if (notificationRepository.existsByTypeAndRecipientMemberIdAndCreatedAtAfter(
+                  "TIME_REMINDER", memberId, startOfDay)) {
+                return false;
+              }
 
-    // Query total minutes logged today
-    var totalMinutes =
-        transactionTemplate.execute(
-            tx -> timeEntryRepository.sumDurationMinutesByMemberIdAndDate(memberId, today));
-    if (totalMinutes == null) {
-      totalMinutes = 0;
-    }
+              // Query total minutes logged today
+              Integer totalMinutes =
+                  timeEntryRepository.sumDurationMinutesByMemberIdAndDate(memberId, today);
+              int logged = totalMinutes != null ? totalMinutes : 0;
 
-    int threshold =
-        orgSettings.getTimeReminderMinMinutes() != null
-            ? orgSettings.getTimeReminderMinMinutes()
-            : 240;
+              int threshold =
+                  orgSettings.getTimeReminderMinMinutes() != null
+                      ? orgSettings.getTimeReminderMinMinutes()
+                      : 240;
 
-    if (totalMinutes < threshold) {
-      double loggedHours = totalMinutes / 60.0;
-      double thresholdHours = threshold / 60.0;
-      String title =
-          "You have logged %.1f of %.1f hours today".formatted(loggedHours, thresholdHours);
-      String body = "Don't forget to log your time!";
+              return logged < threshold;
+            });
 
-      notificationService.createNotification(
-          memberId, "TIME_REMINDER", title, body, null, null, null);
-      return true;
+    if (Boolean.TRUE.equals(shouldNotify)) {
+      int threshold =
+          orgSettings.getTimeReminderMinMinutes() != null
+              ? orgSettings.getTimeReminderMinMinutes()
+              : 240;
+
+      // Build message and create notification in a single transaction
+      var notification =
+          transactionTemplate.execute(
+              tx -> {
+                Integer minutes =
+                    timeEntryRepository.sumDurationMinutesByMemberIdAndDate(memberId, today);
+                int logged = minutes != null ? minutes : 0;
+
+                double loggedHours = logged / 60.0;
+                double thresholdHours = threshold / 60.0;
+                String title =
+                    "You have logged %.1f of %.1f hours today"
+                        .formatted(loggedHours, thresholdHours);
+                String body = "Don't forget to log your time!";
+
+                return notificationService.createIfEnabled(
+                    memberId, "TIME_REMINDER", title, body, null, null, null);
+              });
+      return notification != null;
     }
 
     return false;

@@ -24,6 +24,7 @@ public record FieldDefinitionResponse(
     String packFieldKey,
     boolean active,
     Map<String, Object> visibilityCondition,
+    List<String> requiredForContexts,
     Instant createdAt,
     Instant updatedAt) {
 
@@ -44,6 +45,7 @@ public record FieldDefinitionResponse(
         fd.getPackFieldKey(),
         fd.isActive(),
         fd.getVisibilityCondition(),
+        fd.getRequiredForContexts(),
         fd.getCreatedAt(),
         fd.getUpdatedAt());
   }

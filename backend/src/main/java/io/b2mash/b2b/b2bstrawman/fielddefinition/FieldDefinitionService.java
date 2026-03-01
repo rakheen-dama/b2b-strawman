@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.UpdateFieldDefinitionReques
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
 import jakarta.persistence.EntityManager;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -173,6 +174,47 @@ public class FieldDefinitionService {
             .entityType("field_definition")
             .entityId(fd.getId())
             .details(Map.of("name", fd.getName()))
+            .build());
+
+    return FieldDefinitionResponse.from(fd);
+  }
+
+  @Transactional
+  public FieldDefinitionResponse updateRequiredForContexts(UUID id, List<String> contexts) {
+    var fd =
+        fieldDefinitionRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("FieldDefinition", id));
+
+    if (contexts != null) {
+      for (String ctx : contexts) {
+        try {
+          PrerequisiteContext.valueOf(ctx);
+        } catch (IllegalArgumentException e) {
+          throw new InvalidStateException(
+              "Invalid prerequisite context",
+              "Unknown context: "
+                  + ctx
+                  + ". Valid values: "
+                  + Arrays.toString(PrerequisiteContext.values()));
+        }
+      }
+    }
+
+    fd.setRequiredForContexts(contexts != null ? contexts : List.of());
+    fd = fieldDefinitionRepository.save(fd);
+
+    log.info(
+        "Updated requiredForContexts for field definition: id={}, contexts={}",
+        fd.getId(),
+        fd.getRequiredForContexts());
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("field_definition.contexts_updated")
+            .entityType("field_definition")
+            .entityId(fd.getId())
+            .details(Map.of("requiredForContexts", fd.getRequiredForContexts()))
             .build());
 
     return FieldDefinitionResponse.from(fd);

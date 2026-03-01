@@ -280,7 +280,7 @@
 | **Phase 33 — Data Completeness & Prerequisite Enforcement** | | | | | | See [tasks/phase33-data-completeness-prerequisites.md](tasks/phase33-data-completeness-prerequisites.md) |
 | 240 | Prerequisite Infrastructure — Migration, Enum & Core Service | Backend | -- | M | 240A, 240B | **Done** (PRs #485, #486) |
 | 241 | Prerequisite REST API & Field Definition Extension | Backend | 240 | M | 241A, 241B | **Done** (PRs #487, #489) |
-| 242 | Lifecycle Transition Gate | Backend | 241 | M | 242A, 242B | 242A **Done** (PR #490) |
+| 242 | Lifecycle Transition Gate | Backend | 241 | M | 242A, 242B | **Done** (PRs #490, #491) |
 | 243 | Engagement Prerequisites — Template Extension & Checks | Backend | 241 | M | 243A, 243B | |
 | 244 | Action-Point Prerequisite Wiring | Backend | 241 | M | 244A, 244B | |
 | 245 | PrerequisiteModal & Shared Frontend Components | Frontend | 241 | M | 245A, 245B | |

@@ -1,24 +1,41 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FileText, MoreHorizontal } from "lucide-react";
-import type { ColumnDef } from "@tanstack/react-table";
+import {
+  FileText,
+  MoreHorizontal,
+  ChevronUp,
+  ChevronDown,
+  ChevronsUpDown,
+  Search,
+} from "lucide-react";
+import type { ColumnDef, SortingState } from "@tanstack/react-table";
 import {
   flexRender,
   getCoreRowModel,
+  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 
 import type {
   ProposalResponse,
   ProposalStatus,
+  FeeModel,
 } from "@/app/(app)/org/[slug]/proposals/proposal-actions";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/format";
 import { ProposalStatusBadge } from "@/components/proposals/proposal-status-badge";
 import { DataTableEmpty } from "@/components/ui/data-table-empty";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -49,6 +66,23 @@ const FEE_MODEL_LABELS: Record<string, string> = {
   RETAINER: "Retainer",
 };
 
+function getNumericAmount(p: ProposalResponse): number {
+  if (p.feeModel === "FIXED" && p.fixedFeeAmount != null) {
+    return p.fixedFeeAmount;
+  }
+  if (p.feeModel === "RETAINER" && p.retainerAmount != null) {
+    return p.retainerAmount;
+  }
+  return 0;
+}
+
+function SortIndicator({ column }: { column: { getIsSorted: () => false | "asc" | "desc" } }) {
+  const sorted = column.getIsSorted();
+  if (sorted === "asc") return <ChevronUp className="ml-1 inline size-3.5" />;
+  if (sorted === "desc") return <ChevronDown className="ml-1 inline size-3.5" />;
+  return <ChevronsUpDown className="ml-1 inline size-3.5 opacity-50" />;
+}
+
 function buildColumns(
   orgSlug: string,
   onNavigate: (path: string) => void,
@@ -63,6 +97,7 @@ function buildColumns(
         </span>
       ),
       size: 120,
+      enableSorting: false,
     },
     {
       accessorKey: "title",
@@ -72,6 +107,7 @@ function buildColumns(
           {row.original.title}
         </span>
       ),
+      enableSorting: false,
     },
     {
       accessorKey: "feeModel",
@@ -82,10 +118,21 @@ function buildColumns(
         </span>
       ),
       size: 120,
+      enableSorting: false,
     },
     {
       id: "amount",
-      header: () => <div className="text-right">Amount</div>,
+      accessorFn: (row) => getNumericAmount(row),
+      header: ({ column }) => (
+        <button
+          type="button"
+          className="flex items-center justify-end w-full text-right"
+          onClick={column.getToggleSortingHandler()}
+        >
+          Amount
+          <SortIndicator column={column} />
+        </button>
+      ),
       cell: ({ row }) => {
         const p = row.original;
         let display = "\u2014";
@@ -121,19 +168,42 @@ function buildColumns(
     },
     {
       accessorKey: "status",
-      header: "Status",
+      header: ({ column }) => (
+        <button
+          type="button"
+          className="flex items-center"
+          onClick={column.getToggleSortingHandler()}
+        >
+          Status
+          <SortIndicator column={column} />
+        </button>
+      ),
       cell: ({ row }) => <ProposalStatusBadge status={row.original.status} />,
       size: 110,
     },
     {
       accessorKey: "sentAt",
-      header: "Sent Date",
+      header: ({ column }) => (
+        <button
+          type="button"
+          className="flex items-center"
+          onClick={column.getToggleSortingHandler()}
+        >
+          Sent Date
+          <SortIndicator column={column} />
+        </button>
+      ),
       cell: ({ row }) => (
         <span className="text-sm text-slate-500">
           {row.original.sentAt ? formatDate(row.original.sentAt) : "\u2014"}
         </span>
       ),
       size: 130,
+      sortingFn: (rowA, rowB) => {
+        const a = rowA.original.sentAt ?? "";
+        const b = rowB.original.sentAt ?? "";
+        return a.localeCompare(b);
+      },
     },
     {
       id: "actions",
@@ -193,11 +263,29 @@ export function ProposalListTable({
   activeStatus = "ALL",
 }: ProposalListTableProps) {
   const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [feeModelFilter, setFeeModelFilter] = useState<FeeModel | "ALL">("ALL");
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "sentAt", desc: true },
+  ]);
 
-  const filtered =
-    activeStatus === "ALL"
-      ? proposals
-      : proposals.filter((p) => p.status === activeStatus);
+  const filtered = useMemo(() => {
+    let result =
+      activeStatus === "ALL"
+        ? proposals
+        : proposals.filter((p) => p.status === activeStatus);
+
+    if (feeModelFilter !== "ALL") {
+      result = result.filter((p) => p.feeModel === feeModelFilter);
+    }
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      result = result.filter((p) => p.title.toLowerCase().includes(q));
+    }
+
+    return result;
+  }, [proposals, activeStatus, feeModelFilter, searchQuery]);
 
   const counts: Record<string, number> = { ALL: proposals.length };
   for (const p of proposals) {
@@ -212,11 +300,44 @@ export function ProposalListTable({
   const table = useReactTable({
     data: filtered,
     columns,
+    state: { sorting },
+    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
   });
+
+  const hasActiveFilters =
+    searchQuery.trim() !== "" || feeModelFilter !== "ALL";
 
   return (
     <div className="space-y-4">
+      {/* Filter bar */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative">
+          <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+          <Input
+            placeholder="Search proposals..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="h-9 w-[200px] pl-8 text-sm"
+          />
+        </div>
+        <Select
+          value={feeModelFilter}
+          onValueChange={(v) => setFeeModelFilter(v as FeeModel | "ALL")}
+        >
+          <SelectTrigger className="h-9 w-[150px] text-sm">
+            <SelectValue placeholder="Fee Model" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">All Fee Models</SelectItem>
+            <SelectItem value="FIXED">Fixed Fee</SelectItem>
+            <SelectItem value="HOURLY">Hourly</SelectItem>
+            <SelectItem value="RETAINER">Retainer</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* Status filter tabs */}
       <div className="flex gap-1 overflow-x-auto border-b border-slate-200">
         {STATUS_TABS.map((tab) => {
@@ -266,14 +387,18 @@ export function ProposalListTable({
         <DataTableEmpty
           icon={<FileText />}
           title={
-            activeStatus === "ALL"
-              ? "No proposals yet"
-              : `No ${activeStatus.toLowerCase()} proposals`
+            hasActiveFilters
+              ? "No proposals match your filters."
+              : activeStatus === "ALL"
+                ? "No proposals yet"
+                : `No ${activeStatus.toLowerCase()} proposals`
           }
           description={
-            activeStatus === "ALL"
-              ? "Create your first proposal to get started."
-              : undefined
+            hasActiveFilters
+              ? "Try adjusting your search or filter criteria."
+              : activeStatus === "ALL"
+                ? "Create your first proposal to get started."
+                : undefined
           }
         />
       ) : (

@@ -22,7 +22,7 @@ Phase 32 introduces the **Proposal to Engagement Pipeline** -- the connective ti
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 230 | Proposal Entity Foundation & Migration | Backend | -- | M | 230A, 230B | |
+| 230 | Proposal Entity Foundation & Migration | Backend | -- | M | 230A, 230B | **Done** (PRs #467, #468) |
 | 231 | Proposal CRUD & Lifecycle Backend | Backend | 230 | L | 231A, 231B | |
 | 232 | Send Flow & Portal Read-Model Sync | Backend | 231 | M | 232A, 232B | |
 | 233 | Acceptance Orchestration | Backend | 231 | L | 233A, 233B | |
@@ -143,7 +143,7 @@ PORTAL TRACK (after E234A)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 0a | 230 | 230A | V51 tenant migration: CREATE TABLE proposals, proposal_milestones, proposal_team_members, proposal_counters with all columns, constraints, indexes, and counter seed row. ~1 new migration file. Backend only. | **Done** (PR #467) |
-| 0b | 230 | 230B | Proposal, ProposalMilestone, ProposalTeamMember, ProposalCounter entities + ProposalStatus/FeeModel enums + 4 repositories + ProposalNumberService + entity unit tests (~15 tests). ~12 new files. Backend only. | |
+| 0b | 230 | 230B | Proposal, ProposalMilestone, ProposalTeamMember, ProposalCounter entities + ProposalStatus/FeeModel enums + 4 repositories + ProposalNumberService + entity unit tests (~15 tests). ~12 new files. Backend only. | **Done** (PR #468) |
 
 ### Stage 1: Service & Controller
 
@@ -226,7 +226,7 @@ Stage 6: [239B]                                                      (final)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **230A** | 230.1--230.4 | V51 tenant migration: CREATE TABLE proposals (23 columns, 4 constraints, 4 indexes), proposal_milestones (8 columns, 1 index), proposal_team_members (5 columns, 1 index), proposal_counters (2 columns + seed INSERT). ~1 new migration file. Backend only. | **Done** (PR #467) |
-| **230B** | 230.5--230.16 | `Proposal` entity (23 fields, lifecycle methods, status guards) + `ProposalMilestone` entity + `ProposalTeamMember` entity + `ProposalCounter` entity + `ProposalStatus` enum + `FeeModel` enum + 4 repositories + `ProposalNumberService` (atomic increment) + entity unit tests (~15 tests). ~12 new files. Backend only. | |
+| **230B** | 230.5--230.16 | `Proposal` entity (23 fields, lifecycle methods, status guards) + `ProposalMilestone` entity + `ProposalTeamMember` entity + `ProposalCounter` entity + `ProposalStatus` enum + `FeeModel` enum + 4 repositories + `ProposalNumberService` (atomic increment) + entity unit tests (~15 tests). ~12 new files. Backend only. | **Done** (PR #468) |
 
 ### Tasks
 

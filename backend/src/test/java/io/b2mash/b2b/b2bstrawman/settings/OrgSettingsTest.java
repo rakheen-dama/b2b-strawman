@@ -37,6 +37,14 @@ class OrgSettingsTest {
   }
 
   @Test
+  void getWorkingDays_invalidAbbreviation_skippedGracefully() {
+    var settings = new OrgSettings("USD");
+    settings.setTimeReminderDays("MON,INVALID,FRI");
+    var days = settings.getWorkingDays();
+    assertThat(days).containsExactlyInAnyOrder(DayOfWeek.MONDAY, DayOfWeek.FRIDAY);
+  }
+
+  @Test
   void getTimeReminderMinHours_returns4ForDefault240Minutes() {
     var settings = new OrgSettings("USD");
     settings.setTimeReminderMinMinutes(240);

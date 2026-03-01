@@ -491,6 +491,84 @@ class OrgSettingsIntegrationTest {
         .andExpect(status().isForbidden());
   }
 
+  @Test
+  @Order(15)
+  void patchTimeReminderSettings_updatesAllFields() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/time-reminders")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "timeReminderEnabled": true,
+                      "timeReminderDays": "MON,WED,FRI",
+                      "timeReminderTime": "09:30",
+                      "timeReminderMinMinutes": 120
+                    }
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.timeReminderEnabled").value(true))
+        .andExpect(jsonPath("$.timeReminderDays").value("MON,WED,FRI"))
+        .andExpect(jsonPath("$.timeReminderTime").value("09:30"))
+        .andExpect(jsonPath("$.timeReminderMinHours").value(2.0));
+  }
+
+  @Test
+  @Order(16)
+  void getSettings_returnsTimeReminderFields() throws Exception {
+    mockMvc
+        .perform(get("/api/settings").with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.timeReminderEnabled").value(true))
+        .andExpect(jsonPath("$.timeReminderDays").value("MON,WED,FRI"))
+        .andExpect(jsonPath("$.timeReminderTime").value("09:30"))
+        .andExpect(jsonPath("$.timeReminderMinHours").value(2.0));
+  }
+
+  @Test
+  void patchTimeReminderSettings_rejectsInvalidTime() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/time-reminders")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"timeReminderTime": "25:99"}
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void patchTimeReminderSettings_rejectsInvalidDays() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/time-reminders")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"timeReminderDays": "MONDAY,FUNDAY"}
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void patchTimeReminderSettings_memberGetsForbidden() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/time-reminders")
+                .with(memberJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"timeReminderEnabled": true}
+                    """))
+        .andExpect(status().isForbidden());
+  }
+
   // --- Helpers ---
 
   private String syncMember(

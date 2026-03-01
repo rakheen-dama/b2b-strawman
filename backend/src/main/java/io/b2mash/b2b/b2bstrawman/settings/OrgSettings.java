@@ -447,14 +447,8 @@ public class OrgSettings {
     return Arrays.stream(timeReminderDays.split(","))
         .map(String::trim)
         .filter(s -> !s.isEmpty())
-        .map(
-            s -> {
-              DayOfWeek day = DAY_ABBREVIATIONS.get(s.toUpperCase());
-              if (day == null) {
-                day = DayOfWeek.valueOf(s.toUpperCase());
-              }
-              return day;
-            })
+        .map(s -> DAY_ABBREVIATIONS.get(s.toUpperCase()))
+        .filter(java.util.Objects::nonNull)
         .collect(Collectors.toCollection(() -> EnumSet.noneOf(DayOfWeek.class)));
   }
 

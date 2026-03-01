@@ -17,4 +17,14 @@ public interface FieldDefinitionRepository extends JpaRepository<FieldDefinition
   @Query("SELECT fd FROM FieldDefinition fd WHERE fd.entityType = :entityType AND fd.slug = :slug")
   Optional<FieldDefinition> findByEntityTypeAndSlug(
       @Param("entityType") EntityType entityType, @Param("slug") String slug);
+
+  @Query(
+      value =
+          "SELECT * FROM field_definitions "
+              + "WHERE entity_type = :entityType AND active = true "
+              + "AND required_for_contexts @> CAST(:context AS jsonb) "
+              + "ORDER BY sort_order",
+      nativeQuery = true)
+  List<FieldDefinition> findRequiredForContext(
+      @Param("entityType") String entityType, @Param("context") String context);
 }

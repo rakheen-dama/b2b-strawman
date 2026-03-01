@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldValidator;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMemberRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupRepository;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -126,6 +128,22 @@ public class CustomerService {
     if (repository.existsByEmail(email)) {
       throw new ResourceConflictException(
           "Customer email conflict", "A customer with email " + email + " already exists");
+    }
+
+    // Reject unknown field slugs before validation
+    if (customFields != null && !customFields.isEmpty()) {
+      var activeDefinitions =
+          fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
+              EntityType.CUSTOMER);
+      var knownSlugs =
+          activeDefinitions.stream().map(FieldDefinition::getSlug).collect(Collectors.toSet());
+      for (String slug : customFields.keySet()) {
+        if (!knownSlugs.contains(slug)) {
+          throw new InvalidStateException(
+              "Unknown custom field",
+              "Field slug '" + slug + "' does not exist for entity type CUSTOMER");
+        }
+      }
     }
 
     // Validate custom fields

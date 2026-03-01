@@ -8,11 +8,15 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.CreateFieldDefinitionRequest;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.UpdateFieldDefinitionRequest;
+import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
 import jakarta.persistence.EntityManager;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -27,14 +31,50 @@ public class FieldDefinitionService {
   private final FieldDefinitionRepository fieldDefinitionRepository;
   private final AuditService auditService;
   private final EntityManager entityManager;
+  private final FieldGroupRepository fieldGroupRepository;
+  private final FieldGroupMemberRepository fieldGroupMemberRepository;
 
   public FieldDefinitionService(
       FieldDefinitionRepository fieldDefinitionRepository,
       AuditService auditService,
-      EntityManager entityManager) {
+      EntityManager entityManager,
+      FieldGroupRepository fieldGroupRepository,
+      FieldGroupMemberRepository fieldGroupMemberRepository) {
     this.fieldDefinitionRepository = fieldDefinitionRepository;
     this.auditService = auditService;
     this.entityManager = entityManager;
+    this.fieldGroupRepository = fieldGroupRepository;
+    this.fieldGroupMemberRepository = fieldGroupMemberRepository;
+  }
+
+  public record IntakeFieldGroup(UUID id, String name, String slug, List<FieldDefinition> fields) {}
+
+  @Transactional(readOnly = true)
+  public List<FieldDefinition> getRequiredFieldsForContext(
+      EntityType entityType, PrerequisiteContext context) {
+    return fieldDefinitionRepository.findRequiredForContext(
+        entityType.name(), "[\"" + context.name() + "\"]");
+  }
+
+  @Transactional(readOnly = true)
+  public List<IntakeFieldGroup> getIntakeFields(EntityType entityType) {
+    var autoApplyGroups =
+        fieldGroupRepository.findByEntityTypeAndAutoApplyTrueAndActiveTrue(entityType);
+    var result = new ArrayList<IntakeFieldGroup>();
+    for (var group : autoApplyGroups) {
+      var memberList = fieldGroupMemberRepository.findByFieldGroupIdOrderBySortOrder(group.getId());
+      var ids = memberList.stream().map(FieldGroupMember::getFieldDefinitionId).toList();
+      var definitionsById =
+          fieldDefinitionRepository.findAllById(ids).stream()
+              .collect(Collectors.toMap(FieldDefinition::getId, fd -> fd));
+      var fields =
+          memberList.stream()
+              .map(m -> definitionsById.get(m.getFieldDefinitionId()))
+              .filter(Objects::nonNull)
+              .collect(Collectors.toList());
+      result.add(new IntakeFieldGroup(group.getId(), group.getName(), group.getSlug(), fields));
+    }
+    return result;
   }
 
   @Transactional(readOnly = true)

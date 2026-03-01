@@ -28,7 +28,7 @@ Phase 32 introduces the **Proposal to Engagement Pipeline** -- the connective ti
 | 233 | Acceptance Orchestration | Backend | 231 | L | 233A, 233B | **Done** (PRs #473, #474) |
 | 234 | Portal Proposal Backend & Expiry Processor | Backend | 232, 233 | M | 234A, 234B | **Done** (PRs #475, #476) |
 | 235 | Audit, Notifications & Activity Integration | Backend | 231 | S | 235A | **Done** (PR #477) |
-| 236 | Proposals Frontend -- List & Pipeline Stats | Frontend | 231 | M | 236A, 236B | |
+| 236 | Proposals Frontend -- List & Pipeline Stats | Frontend | 231 | M | 236A, 236B | **Done** (PRs #478, #479) |
 | 237 | Proposals Frontend -- Create/Edit & Detail Pages | Frontend | 232, 236 | L | 237A, 237B | |
 | 238 | Proposals Frontend -- Customer Tab & Project Link | Frontend | 236 | S | 238A | |
 | 239 | Portal Frontend -- Proposal Pages | Portal | 234 | M | 239A, 239B | |
@@ -167,7 +167,7 @@ PORTAL TRACK (after E234A)
 |-------|------|-------|---------|--------|
 | 3a (parallel) | 232 | 232B | ProposalService.sendProposal() + validation + portal sync + email to portal contact + in-app notification + audit + tests (~10 tests). ~2 modified files, ~1 test file. Backend only. | **Done** (PR #472) |
 | 3b (parallel) | 233 | 233B | Orchestration: RETAINER fee path (RetainerAgreement creation), InvoiceLineType.FIXED_FEE extension, OrchestrationResult VO, error handling, transaction rollback tests + tests (~8 tests). ~3 modified files. Backend only. | **Done** (PR #474) |
-| 3c (parallel) | 236 | 236B | ProposalPipelineStats component + filters + sort controls + frontend tests (~5 tests). ~3 new/modified files. Frontend only. | |
+| 3c (parallel) | 236 | 236B | ProposalPipelineStats component + filters + sort controls + frontend tests (~5 tests). ~3 new/modified files. Frontend only. | **Done** (PR #479) |
 
 ### Stage 4: Portal Backend, Frontend Create/Edit & Customer Integration
 
@@ -622,7 +622,7 @@ Stage 6: [239B]                                                      (final)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **236A** | 236.1--236.6 | Proposals page shell: `proposal-actions.ts` server actions, `ProposalListTable` component, `ProposalStatusBadge` component, proposals route `page.tsx`, sidebar navigation "Proposals" link. ~5 new/modified files. Frontend only. | **Done** (PR #478) |
-| **236B** | 236.7--236.11 | `ProposalPipelineStats` component (stat cards), table filters (status/customer/feeModel/dateRange), sort controls, empty state, frontend tests (~5 tests). ~3 new/modified files. Frontend only. | |
+| **236B** | 236.7--236.11 | `ProposalPipelineStats` component (stat cards), table filters (status/customer/feeModel/dateRange), sort controls, empty state, frontend tests (~5 tests). ~3 new/modified files. Frontend only. | **Done** (PR #479) |
 
 ### Tasks
 

@@ -27,7 +27,7 @@ Phase 32 introduces the **Proposal to Engagement Pipeline** -- the connective ti
 | 232 | Send Flow & Portal Read-Model Sync | Backend | 231 | M | 232A, 232B | **Done** (PRs #471, #472) |
 | 233 | Acceptance Orchestration | Backend | 231 | L | 233A, 233B | **Done** (PRs #473, #474) |
 | 234 | Portal Proposal Backend & Expiry Processor | Backend | 232, 233 | M | 234A, 234B | **Done** (PRs #475, #476) |
-| 235 | Audit, Notifications & Activity Integration | Backend | 231 | S | 235A | |
+| 235 | Audit, Notifications & Activity Integration | Backend | 231 | S | 235A | **Done** (PR #477) |
 | 236 | Proposals Frontend -- List & Pipeline Stats | Frontend | 231 | M | 236A, 236B | |
 | 237 | Proposals Frontend -- Create/Edit & Detail Pages | Frontend | 232, 236 | L | 237A, 237B | |
 | 238 | Proposals Frontend -- Customer Tab & Project Link | Frontend | 236 | S | 238A | |
@@ -158,7 +158,7 @@ PORTAL TRACK (after E234A)
 |-------|------|-------|---------|--------|
 | 2a (parallel) | 232 | 232A | V12 global migration (portal_proposals table) + ProposalPortalSyncService + ProposalVariableResolver + TiptapRenderer integration. ~3 new files, ~1 migration. Backend only. | **Done** (PR #471) |
 | 2b (parallel) | 233 | 233A | ProposalOrchestrationService: FIXED fee (milestones + single), project creation (template + bare), team assignment, HOURLY no-op, customer PROSPECT transition + tests (~8 tests). ~2 new files, ~1 test file. Backend only. | **Done** (PR #473) |
-| 2c (parallel) | 235 | 235A | Audit events for all proposal lifecycle transitions + notification templates (accepted/declined/expired/sent) + activity feed integration + tests (~5 tests). ~2 new/modified files. Backend only. | |
+| 2c (parallel) | 235 | 235A | Audit events for all proposal lifecycle transitions + notification templates (accepted/declined/expired/sent) + activity feed integration + tests (~5 tests). ~2 new/modified files. Backend only. | **Done** (PR #477) |
 | 2d (parallel) | 236 | 236A | Proposals list page + proposal-actions.ts server actions + ProposalListTable + ProposalStatusBadge + sidebar nav update. ~5 new/modified files. Frontend only. | |
 
 ### Stage 3: Send Integration, Orchestration Completion & Frontend Stats
@@ -570,7 +570,7 @@ Stage 6: [239B]                                                      (final)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **235A** | 235.1--235.6 | Audit events for all 7 proposal lifecycle transitions + notification templates (proposal.sent/accepted/declined/expired) + activity feed entries for customer and project + tests (~5 tests). ~3 modified files, ~1 test file. Backend only. | |
+| **235A** | 235.1--235.6 | Audit events for all 7 proposal lifecycle transitions + notification templates (proposal.sent/accepted/declined/expired) + activity feed entries for customer and project + tests (~5 tests). ~3 modified files, ~1 test file. Backend only. | **Done** (PR #477) |
 
 ### Tasks
 

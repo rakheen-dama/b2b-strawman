@@ -25,7 +25,7 @@ Phase 33 transforms DocTeams' metadata infrastructure from passive data capture 
 | 242 | Lifecycle Transition Gate | Backend | 241 | M | 242A, 242B | **Done** |
 | 243 | Engagement Prerequisites -- Template Extension & Checks | Backend | 241 | M | 243A, 243B | **Done** |
 | 244 | Action-Point Prerequisite Wiring | Backend | 241 | M | 244A, 244B | **Done** |
-| 245 | PrerequisiteModal & Shared Frontend Components | Frontend | 241 | M | 245A, 245B | |
+| 245 | PrerequisiteModal & Shared Frontend Components | Frontend | 241 | M | 245A, 245B | **Done** |
 | 246 | Smart Customer Intake Dialog | Frontend | 241, 245 | M | 246A, 246B | |
 | 247 | Prerequisite Configuration UI | Frontend | 245 | S | 247A | |
 | 248 | Lifecycle Transition Frontend Integration | Frontend | 242, 245 | S | 248A | |
@@ -162,7 +162,7 @@ FRONTEND TRACK (after E241B)
 | 3a (parallel) | 242 | 242B | Extended lifecycle prerequisite tests: auto-transition scenarios, TestCustomerFactory.withRequiredFields() helper, update existing lifecycle tests to pass with prerequisites (~8 tests). ~3 modified files. Backend only. | **Done** (PR #491) |
 | 3b (parallel) | 243 | 243B | ProjectTemplateController extension: PUT /{id}/required-customer-fields + GET /{id}/prerequisite-check + integration tests (~8 tests). ~2 modified files, ~1 test file. Backend only. | **Done** (PR #493) |
 | 3c (parallel) | 244 | 244B | Extended action-point tests: structural violation scenarios, cross-domain 422 responses, existing invoice/proposal/document test updates (~8 tests). ~3 modified test files. Backend only. | **Done** (PR #495) |
-| 3d (parallel) | 245 | 245B | PrerequisiteModal component: grouped violations, inline editing, "Check & Continue" re-validation, batch field save, auto-proceed on resolved, onCancel + tests (~6 tests). ~2 new files. Frontend only. | |
+| 3d (parallel) | 245 | 245B | PrerequisiteModal component: grouped violations, inline editing, "Check & Continue" re-validation, batch field save, auto-proceed on resolved, onCancel + tests (~6 tests). ~2 new files. Frontend only. | **Done** (PR #497) |
 
 ### Stage 4: Frontend Integration (parallel tracks)
 
@@ -544,7 +544,7 @@ Stage 5: [246B] // [249B] // [251B]                                         (par
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **245A** | 245.1--245.8 | PrerequisiteContext/Check/Violation TypeScript types + usePrerequisiteCheck hook + InlineFieldEditor component (all FieldType variants) + prerequisite-violation-list.tsx + prerequisites API client + tests (~6 tests). ~6 new files. Frontend only. | **Done** (PR #496) |
-| **245B** | 245.9--245.14 | PrerequisiteModal component: grouped violations, inline field editing, "Check & Continue" re-validation, batch save via customer update, auto-proceed via onResolved callback + tests (~6 tests). ~2 new files. Frontend only. | |
+| **245B** | 245.9--245.14 | PrerequisiteModal component: grouped violations, inline field editing, "Check & Continue" re-validation, batch save via customer update, auto-proceed via onResolved callback + tests (~6 tests). ~2 new files. Frontend only. | **Done** (PR #497) |
 
 ### Tasks
 

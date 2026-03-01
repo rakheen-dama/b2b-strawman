@@ -21,7 +21,8 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 public class S3Config {
 
   @ConfigurationProperties("aws.s3")
-  public record S3Properties(String endpoint, String region, String bucketName) {}
+  public record S3Properties(
+      String endpoint, String region, String bucketName, String presignerEndpoint) {}
 
   @ConfigurationProperties("aws.credentials")
   public record AwsCredentialsProperties(String accessKeyId, String secretAccessKey) {}
@@ -49,9 +50,14 @@ public class S3Config {
   S3Presigner s3Presigner(S3Properties s3Props, AwsCredentialsProperties credProps) {
     var builder = S3Presigner.builder().region(Region.of(s3Props.region()));
 
-    if (s3Props.endpoint() != null && !s3Props.endpoint().isBlank()) {
+    var presignerEndpoint =
+        (s3Props.presignerEndpoint() != null && !s3Props.presignerEndpoint().isBlank())
+            ? s3Props.presignerEndpoint()
+            : s3Props.endpoint();
+
+    if (presignerEndpoint != null && !presignerEndpoint.isBlank()) {
       builder
-          .endpointOverride(URI.create(s3Props.endpoint()))
+          .endpointOverride(URI.create(presignerEndpoint))
           .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
           .credentialsProvider(
               StaticCredentialsProvider.create(

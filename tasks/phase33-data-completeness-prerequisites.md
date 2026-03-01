@@ -23,7 +23,7 @@ Phase 33 transforms DocTeams' metadata infrastructure from passive data capture 
 | 240 | Prerequisite Infrastructure -- Migration, Enum & Core Service | Backend | -- | M | 240A, 240B | **Done** |
 | 241 | Prerequisite REST API & Field Definition Extension | Backend | 240 | M | 241A, 241B | **Done** |
 | 242 | Lifecycle Transition Gate | Backend | 241 | M | 242A, 242B | **Done** |
-| 243 | Engagement Prerequisites -- Template Extension & Checks | Backend | 241 | M | 243A, 243B | |
+| 243 | Engagement Prerequisites -- Template Extension & Checks | Backend | 241 | M | 243A, 243B | 243A **Done** |
 | 244 | Action-Point Prerequisite Wiring | Backend | 241 | M | 244A, 244B | |
 | 245 | PrerequisiteModal & Shared Frontend Components | Frontend | 241 | M | 245A, 245B | |
 | 246 | Smart Customer Intake Dialog | Frontend | 241, 245 | M | 246A, 246B | |
@@ -150,7 +150,7 @@ FRONTEND TRACK (after E241B)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 2a (parallel) | 242 | 242A | Wire PrerequisiteService.checkForContext(LIFECYCLE_ACTIVATION) into CustomerLifecycleService for ONBOARDING->ACTIVE. Block auto-transition + send notification on failure. ~2 modified files. Backend only. | **Done** (PR #490) |
-| 2b (parallel) | 243 | 243A | V54 migration (required_customer_field_ids on project_templates) + ProjectTemplate entity extension + ProjectTemplateService.getRequiredCustomerFields() + PrerequisiteService.checkEngagementPrerequisites() + tests (~8 tests). ~4 modified/new files. Backend only. | |
+| 2b (parallel) | 243 | 243A | V54 migration (required_customer_field_ids on project_templates) + ProjectTemplate entity extension + ProjectTemplateService.getRequiredCustomerFields() + PrerequisiteService.checkEngagementPrerequisites() + tests (~8 tests). ~4 modified/new files. Backend only. | **Done** (PR #492) |
 | 2c (parallel) | 244 | 244A | Wire prerequisite checks into InvoiceService, ProposalService.sendProposal(), DocumentGenerationReadinessService + structural checks (portal contact, billing address) in PrerequisiteService + tests (~8 tests). ~4 modified files. Backend only. | |
 | 2d (parallel) | 250 | 250A | GET /api/customers/completeness-summary endpoint + CustomerReadinessService.computeReadinessByContext() + batch completeness computation + CompletenessScore record + tests (~6 tests). ~3 modified/new files. Backend only. | |
 | 2e (parallel) | 245 | 245A | Prerequisite TypeScript types + usePrerequisiteCheck hook + InlineFieldEditor component + prerequisite-violation-list.tsx + prerequisites API client + frontend tests (~6 tests). ~6 new files. Frontend only. | |
@@ -413,7 +413,7 @@ Stage 5: [246B] // [249B] // [251B]                                         (par
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **243A** | 243.1--243.7 | V54 migration (required_customer_field_ids on project_templates) + ProjectTemplate entity extension + ProjectTemplateService.getRequiredCustomerFields() + ProjectTemplateService.updateRequiredCustomerFields() + PrerequisiteService.checkEngagementPrerequisites() full implementation + tests (~8 tests). ~5 modified/new files. Backend only. | |
+| **243A** | 243.1--243.7 | V54 migration (required_customer_field_ids on project_templates) + ProjectTemplate entity extension + ProjectTemplateService.getRequiredCustomerFields() + ProjectTemplateService.updateRequiredCustomerFields() + PrerequisiteService.checkEngagementPrerequisites() full implementation + tests (~8 tests). ~5 modified/new files. Backend only. | **Done** (PR #492) |
 | **243B** | 243.8--243.14 | ProjectTemplateController extension: PUT /{id}/required-customer-fields + GET /{id}/prerequisite-check?customerId={id} + wire notification for automated project creation (proposal acceptance, recurring schedules) + integration tests (~8 tests). ~3 modified files, ~1 test file. Backend only. | |
 
 ### Tasks

@@ -281,7 +281,7 @@
 | 240 | Prerequisite Infrastructure — Migration, Enum & Core Service | Backend | -- | M | 240A, 240B | **Done** (PRs #485, #486) |
 | 241 | Prerequisite REST API & Field Definition Extension | Backend | 240 | M | 241A, 241B | **Done** (PRs #487, #489) |
 | 242 | Lifecycle Transition Gate | Backend | 241 | M | 242A, 242B | **Done** (PRs #490, #491) |
-| 243 | Engagement Prerequisites — Template Extension & Checks | Backend | 241 | M | 243A, 243B | |
+| 243 | Engagement Prerequisites — Template Extension & Checks | Backend | 241 | M | 243A, 243B | 243A **Done** (PR #492) |
 | 244 | Action-Point Prerequisite Wiring | Backend | 241 | M | 244A, 244B | |
 | 245 | PrerequisiteModal & Shared Frontend Components | Frontend | 241 | M | 245A, 245B | |
 | 246 | Smart Customer Intake Dialog | Frontend | 241, 245 | M | 246A, 246B | |
@@ -290,6 +290,16 @@
 | 249 | Engagement & Action-Point Frontend Integration | Frontend | 243, 244, 245 | M | 249A, 249B | |
 | 250 | Completeness Visibility — Backend Queries | Backend | 241 | M | 250A | |
 | 251 | Completeness Visibility — Frontend & Dashboard | Frontend | 250, 245 | M | 251A, 251B | |
+| **Phase 34 — Client Information Requests** | | | | | | See [tasks/phase34-client-information-requests.md](tasks/phase34-client-information-requests.md) |
+| 252 | RequestTemplate Entity Foundation & Pack Seeder | Backend | -- | M | 252A, 252B | |
+| 253 | InformationRequest Entity & Lifecycle Backend | Backend | 252 | L | 253A, 253B | |
+| 254 | Domain Events, Portal Read-Model Sync & Portal API | Backend | 253 | L | 254A, 254B | |
+| 255 | Notifications, Audit & Reminder Scheduler | Backend | 253, 254 | M | 255A, 255B | |
+| 256 | Project Template Integration & OrgSettings Extension | Backend | 253, 255 | M | 256A | |
+| 257 | Request Template Management UI | Frontend | 252 | M | 257A | |
+| 258 | Firm-Side Request Pages & Review UI | Frontend | 253, 257 | L | 258A, 258B | |
+| 259 | Portal Request Pages (Upload & Submit) | Frontend | 254 | M | 259A, 259B | |
+| 260 | Dashboard Widget, Settings & Template Editor Integration | Frontend | 255, 256, 258 | M | 260A, 260B | |
 
 ---
 

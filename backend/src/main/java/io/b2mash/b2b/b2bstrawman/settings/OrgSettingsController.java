@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -133,6 +134,22 @@ public class OrgSettingsController {
             request.acceptanceExpiryDays(), memberId, orgRole));
   }
 
+  @PatchMapping("/time-reminders")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<SettingsResponse> updateTimeReminderSettings(
+      @Valid @RequestBody UpdateTimeReminderSettingsRequest request) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+    return ResponseEntity.ok(
+        orgSettingsService.updateTimeReminderSettings(
+            request.timeReminderEnabled(),
+            request.timeReminderDays(),
+            request.timeReminderTime(),
+            request.timeReminderMinMinutes(),
+            memberId,
+            orgRole));
+  }
+
   // --- DTOs ---
 
   public record SettingsResponse(
@@ -150,7 +167,12 @@ public class OrgSettingsController {
       String taxRegistrationLabel,
       String taxLabel,
       boolean taxInclusive,
-      Integer acceptanceExpiryDays) {}
+      Integer acceptanceExpiryDays,
+      boolean timeReminderEnabled,
+      String timeReminderDays,
+      String timeReminderTime,
+      Double timeReminderMinHours,
+      BigDecimal defaultExpenseMarkupPercent) {}
 
   public record UpdateSettingsRequest(
       @NotBlank(message = "defaultCurrency is required")
@@ -180,4 +202,12 @@ public class OrgSettingsController {
           String taxRegistrationLabel,
       @Size(max = 20, message = "taxLabel must be at most 20 characters") String taxLabel,
       boolean taxInclusive) {}
+
+  public record UpdateTimeReminderSettingsRequest(
+      Boolean timeReminderEnabled,
+      @Size(max = 50, message = "timeReminderDays must be at most 50 characters")
+          String timeReminderDays,
+      String timeReminderTime,
+      @Min(value = 0, message = "timeReminderMinMinutes must be non-negative")
+          Integer timeReminderMinMinutes) {}
 }

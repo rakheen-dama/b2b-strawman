@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsController.SettingsResponse;
 import java.io.IOException;
 import java.time.Duration;
+import java.time.LocalTime;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -58,20 +59,25 @@ public class OrgSettingsService {
         .orElse(
             new SettingsResponse(
                 DEFAULT_CURRENCY,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                false,
-                false,
-                false,
-                null,
-                null,
-                null,
-                false,
-                null));
+                null, // logoUrl
+                null, // brandColor
+                null, // documentFooterText
+                null, // dormancyThresholdDays
+                null, // dataRequestDeadlineDays
+                null, // compliancePackStatus
+                false, // accountingEnabled
+                false, // aiEnabled
+                false, // documentSigningEnabled
+                null, // taxRegistrationNumber
+                null, // taxRegistrationLabel
+                null, // taxLabel
+                false, // taxInclusive
+                null, // acceptanceExpiryDays
+                false, // timeReminderEnabled
+                "MON,TUE,WED,THU,FRI", // timeReminderDays
+                "17:00", // timeReminderTime
+                4.0, // timeReminderMinHours
+                null)); // defaultExpenseMarkupPercent
   }
 
   /** Updates settings including branding fields. */
@@ -232,7 +238,12 @@ public class OrgSettingsService {
         settings.getTaxRegistrationLabel(),
         settings.getTaxLabel(),
         settings.isTaxInclusive(),
-        settings.getAcceptanceExpiryDays());
+        settings.getAcceptanceExpiryDays(),
+        settings.isTimeReminderEnabled(),
+        settings.getTimeReminderDays(),
+        settings.getTimeReminderTime() != null ? settings.getTimeReminderTime().toString() : null,
+        settings.getTimeReminderMinHours(),
+        settings.getDefaultExpenseMarkupPercent());
   }
 
   /**
@@ -373,6 +384,63 @@ public class OrgSettingsService {
             .entityType("org_settings")
             .entityId(settings.getId())
             .details(Map.of("acceptance_expiry_days", acceptanceExpiryDays))
+            .build());
+
+    return toSettingsResponse(settings);
+  }
+
+  /** Updates time reminder settings. */
+  @Transactional
+  public SettingsResponse updateTimeReminderSettings(
+      Boolean timeReminderEnabled,
+      String timeReminderDays,
+      String timeReminderTimeStr,
+      Integer timeReminderMinMinutes,
+      UUID memberId,
+      String orgRole) {
+    requireAdminOrOwner(orgRole);
+
+    var settings =
+        orgSettingsRepository
+            .findForCurrentTenant()
+            .orElseGet(
+                () -> {
+                  var newSettings = new OrgSettings(DEFAULT_CURRENCY);
+                  return orgSettingsRepository.save(newSettings);
+                });
+
+    LocalTime timeReminderTime =
+        timeReminderTimeStr != null
+            ? LocalTime.parse(timeReminderTimeStr)
+            : settings.getTimeReminderTime();
+
+    settings.updateTimeReminderSettings(
+        timeReminderEnabled != null ? timeReminderEnabled : settings.isTimeReminderEnabled(),
+        timeReminderDays != null ? timeReminderDays : settings.getTimeReminderDays(),
+        timeReminderTime,
+        timeReminderMinMinutes != null
+            ? timeReminderMinMinutes
+            : settings.getTimeReminderMinMinutes());
+    settings = orgSettingsRepository.save(settings);
+
+    log.info(
+        "Updated time reminder settings: enabled={}, days={}, time={}, minMinutes={}",
+        settings.isTimeReminderEnabled(),
+        settings.getTimeReminderDays(),
+        settings.getTimeReminderTime(),
+        settings.getTimeReminderMinMinutes());
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("org_settings.time_reminders_updated")
+            .entityType("org_settings")
+            .entityId(settings.getId())
+            .details(
+                Map.of(
+                    "time_reminder_enabled",
+                    settings.isTimeReminderEnabled(),
+                    "time_reminder_days",
+                    settings.getTimeReminderDays() != null ? settings.getTimeReminderDays() : ""))
             .build());
 
     return toSettingsResponse(settings);

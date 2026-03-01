@@ -34,7 +34,7 @@ Phase 30 closes the remaining revenue-capture and daily-work-organisation gaps i
 | 226 | Time Reminder Scheduler & OrgSettings | Backend | -- | M | 226A, 226B | **Done** (PRs #461, #462) |
 | 227 | Time Reminder Frontend — Settings & Preferences | Frontend | 226 | S | 227A | **Done** (PR #463) |
 | 228 | Calendar View — Backend Endpoint | Backend | -- | M | 228A | **Done** (PR #464) |
-| 229 | Calendar View — Frontend Page | Frontend | 228 | M | 229A, 229B | |
+| 229 | Calendar View — Frontend Page | Frontend | 228 | M | 229A, 229B | **Done** (PRs #465, #466) |
 
 ---
 
@@ -188,7 +188,7 @@ TRACK 4: CALENDAR VIEW
 |-------|------|-------|---------|--------|
 | 5a (parallel) | 220 | 220B | My Expenses section on My Work page, write-off UX, edit expense dialog + frontend tests (~10 tests). ~3 modified files. Frontend only. | **Done** (PR #452) |
 | 5b (parallel) | 222 | 222A | Expense Billing Frontend: unbilled-summary.tsx expense section, generate-invoice-dialog.tsx expense selection + tests (~7 tests). ~2 modified files. Frontend only. | **Done** (PR #455) |
-| 5c (parallel) | 229 | 229B | Calendar overdue section, filters (project/type/assignee), color coding + frontend tests (~7 tests). ~3 modified files. Frontend only. | |
+| 5c (parallel) | 229 | 229B | Calendar overdue section, filters (project/type/assignee), color coding + frontend tests (~7 tests). ~3 modified files. Frontend only. | **Done** (PR #466) |
 
 ### Timeline
 
@@ -878,7 +878,7 @@ Stage 5: [220B] // [222A] // [229B]                              (parallel)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **229A** | 229.1–229.6 | Calendar page shell, `calendar-actions.ts`, month-view component (grid with due-date dots/counts), list-view component (chronological grouped by week), sidebar navigation link, view toggle (Month/List). ~4 new files. Frontend only. | **Done** (PR #465) |
-| **229B** | 229.7–229.13 | Overdue section, filters (project, type, assignee), color coding (overdue=red, this week=amber, future=default), frontend tests (~7 tests). ~3 modified files, ~1 test file. Frontend only. | |
+| **229B** | 229.7–229.13 | Overdue section, filters (project, type, assignee), color coding (overdue=red, this week=amber, future=default), frontend tests (~7 tests). ~3 modified files, ~1 test file. Frontend only. | **Done** (PR #466) |
 
 ### Tasks
 

@@ -265,7 +265,7 @@
 | 226 | Time Reminder Scheduler & OrgSettings | Backend | -- | M | 226A, 226B | **Done** (PRs #461, #462) |
 | 227 | Time Reminder Frontend — Settings & Preferences | Frontend | 226 | S | 227A | **Done** (PR #463) |
 | 228 | Calendar View — Backend Endpoint | Backend | -- | M | 228A | **Done** (PR #464) |
-| 229 | Calendar View — Frontend Page | Frontend | 228 | M | 229A, 229B | |
+| 229 | Calendar View — Frontend Page | Frontend | 228 | M | 229A, 229B | **Done** (PRs #465, #466) |
 | **Phase 32 — Proposal → Engagement Pipeline** | | | | | | See [tasks/phase32-proposal-engagement-pipeline.md](tasks/phase32-proposal-engagement-pipeline.md) |
 | 230 | Proposal Entity Foundation & Migration | Backend | -- | M | 230A, 230B | |
 | 231 | Proposal CRUD & Lifecycle Backend | Backend | 230 | L | 231A, 231B | |

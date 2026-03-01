@@ -157,7 +157,7 @@ PORTAL TRACK (after E234A)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 2a (parallel) | 232 | 232A | V12 global migration (portal_proposals table) + ProposalPortalSyncService + ProposalVariableResolver + TiptapRenderer integration. ~3 new files, ~1 migration. Backend only. | **Done** (PR #471) |
-| 2b (parallel) | 233 | 233A | ProposalOrchestrationService: FIXED fee (milestones + single), project creation (template + bare), team assignment, HOURLY no-op, customer PROSPECT transition + tests (~8 tests). ~2 new files, ~1 test file. Backend only. | |
+| 2b (parallel) | 233 | 233A | ProposalOrchestrationService: FIXED fee (milestones + single), project creation (template + bare), team assignment, HOURLY no-op, customer PROSPECT transition + tests (~8 tests). ~2 new files, ~1 test file. Backend only. | **Done** (PR #473) |
 | 2c (parallel) | 235 | 235A | Audit events for all proposal lifecycle transitions + notification templates (accepted/declined/expired/sent) + activity feed integration + tests (~5 tests). ~2 new/modified files. Backend only. | |
 | 2d (parallel) | 236 | 236A | Proposals list page + proposal-actions.ts server actions + ProposalListTable + ProposalStatusBadge + sidebar nav update. ~5 new/modified files. Frontend only. | |
 
@@ -435,7 +435,7 @@ Stage 6: [239B]                                                      (final)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **233A** | 233.1--233.7 | `ProposalOrchestrationService` core: project creation (template + bare), team member assignment, FIXED fee path (milestones + single invoice), HOURLY no-op, customer PROSPECT to ONBOARDING transition + integration tests (~8 tests). ~2 new files, ~1 test file. Backend only. | |
+| **233A** | 233.1--233.7 | `ProposalOrchestrationService` core: project creation (template + bare), team member assignment, FIXED fee path (milestones + single invoice), HOURLY no-op, customer PROSPECT to ONBOARDING transition + integration tests (~8 tests). ~2 new files, ~1 test file. Backend only. | **Done** (PR #473) |
 | **233B** | 233.8--233.14 | RETAINER fee path (RetainerAgreement creation), `InvoiceLineType.FIXED_FEE` extension, `OrchestrationResult` value object, post-commit event publication (`ProposalAcceptedEvent`), error handling (transaction rollback, failure notification), portal status sync on accept + tests (~8 tests). ~3 modified/new files. Backend only. | |
 
 ### Tasks

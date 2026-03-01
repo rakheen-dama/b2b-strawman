@@ -4,6 +4,7 @@ import { useEffect, useReducer, useState, useTransition } from "react";
 import { Ban, Check, Circle, Loader2, MoreHorizontal, Repeat, RotateCcw, X, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -135,14 +136,15 @@ function RecurrenceEditor({
   onUpdate: (task: Task) => void;
 }) {
   const parsed = parseRecurrenceRule(task.recurrenceRule);
-  const [frequency, setFrequency] = useState<RecurrenceFrequency | "">(parsed?.frequency ?? "");
-  const [interval, setInterval] = useState(parsed?.interval ?? 1);
+  const [frequency, setFrequency] = useState<RecurrenceFrequency | "NONE">(parsed?.frequency ?? "NONE");
+  const [recurrenceInterval, setRecurrenceInterval] = useState(parsed?.interval ?? 1);
   const [endDate, setEndDate] = useState(task.recurrenceEndDate ?? "");
   const [, startTransition] = useTransition();
 
   function handleSave() {
-    const rule = frequency ? formatRecurrenceRule(frequency, interval) : null;
-    const newEndDate = frequency && endDate ? endDate : null;
+    const effectiveFrequency = frequency === "NONE" ? null : frequency;
+    const rule = effectiveFrequency ? formatRecurrenceRule(effectiveFrequency, recurrenceInterval) : null;
+    const newEndDate = effectiveFrequency && endDate ? endDate : null;
 
     // Optimistic update
     onUpdate({
@@ -153,20 +155,23 @@ function RecurrenceEditor({
     });
 
     startTransition(async () => {
-      const result = await updateTask(slug, task.id, projectId, {
-        title: task.title,
-        description: task.description ?? undefined,
-        priority: task.priority,
-        status: task.status,
-        type: task.type ?? undefined,
-        dueDate: task.dueDate ?? undefined,
-        assigneeId: task.assigneeId ?? undefined,
-        recurrenceRule: rule ?? undefined,
-        recurrenceEndDate: newEndDate ?? undefined,
-      });
+      try {
+        const result = await updateTask(slug, task.id, projectId, {
+          title: task.title,
+          description: task.description ?? undefined,
+          priority: task.priority,
+          status: task.status,
+          type: task.type ?? undefined,
+          dueDate: task.dueDate ?? undefined,
+          assigneeId: task.assigneeId ?? undefined,
+          recurrenceRule: rule ?? undefined,
+          recurrenceEndDate: newEndDate ?? undefined,
+        });
 
-      if (!result.success) {
-        // Revert on failure
+        if (!result.success) {
+          onUpdate(task);
+        }
+      } catch {
         onUpdate(task);
       }
     });
@@ -176,34 +181,34 @@ function RecurrenceEditor({
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label htmlFor="detail-recurrence-freq" className="text-xs text-slate-500 dark:text-slate-400">
+          <label className="text-xs text-slate-500 dark:text-slate-400">
             Frequency
           </label>
-          <select
-            id="detail-recurrence-freq"
-            value={frequency}
-            onChange={(e) => setFrequency(e.target.value as RecurrenceFrequency | "")}
-            className="mt-1 flex h-8 w-full rounded-md border border-slate-200 bg-transparent px-2 py-1 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
-          >
-            <option value="">None</option>
-            <option value="DAILY">Daily</option>
-            <option value="WEEKLY">Weekly</option>
-            <option value="MONTHLY">Monthly</option>
-            <option value="YEARLY">Yearly</option>
-          </select>
+          <Select value={frequency} onValueChange={(v) => setFrequency(v as RecurrenceFrequency | "")}>
+            <SelectTrigger className="mt-1 h-8 w-full text-xs">
+              <SelectValue placeholder="None" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="NONE">None</SelectItem>
+              <SelectItem value="DAILY">Daily</SelectItem>
+              <SelectItem value="WEEKLY">Weekly</SelectItem>
+              <SelectItem value="MONTHLY">Monthly</SelectItem>
+              <SelectItem value="YEARLY">Yearly</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        {frequency && (
+        {frequency !== "NONE" && (
           <div>
             <label htmlFor="detail-recurrence-interval" className="text-xs text-slate-500 dark:text-slate-400">
               Interval
             </label>
-            <input
+            <Input
               id="detail-recurrence-interval"
               type="number"
               min={1}
-              value={interval}
-              onChange={(e) => setInterval(Math.max(1, parseInt(e.target.value, 10) || 1))}
-              className="mt-1 flex h-8 w-full rounded-md border border-slate-200 bg-transparent px-2 py-1 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
+              value={recurrenceInterval}
+              onChange={(e) => setRecurrenceInterval(Math.max(1, parseInt(e.target.value, 10) || 1))}
+              className="mt-1 h-8 text-xs"
             />
           </div>
         )}
@@ -213,12 +218,12 @@ function RecurrenceEditor({
           <label htmlFor="detail-recurrence-end" className="text-xs text-slate-500 dark:text-slate-400">
             End Date (optional)
           </label>
-          <input
+          <Input
             id="detail-recurrence-end"
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="mt-1 flex h-8 w-full rounded-md border border-slate-200 bg-transparent px-2 py-1 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
+            className="mt-1 h-8 text-xs"
           />
         </div>
       )}

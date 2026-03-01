@@ -88,15 +88,20 @@ describe("Task Recurrence", () => {
     // Open the dialog
     await user.click(screen.getByText("Create Recurrence Task"));
 
-    // Frequency select should be present
-    const freqSelect = screen.getByLabelText(/Recurrence/);
-    expect(freqSelect).toBeInTheDocument();
+    // Frequency select should be present (Shadcn Select renders as a combobox)
+    expect(screen.getByText("Recurrence")).toBeInTheDocument();
 
     // Interval and end date should NOT be visible yet
     expect(screen.queryByLabelText("Interval")).not.toBeInTheDocument();
 
-    // Select "Weekly"
-    await user.selectOptions(freqSelect, "WEEKLY");
+    // Click the recurrence select trigger (shows "None" by default)
+    const triggers = screen.getAllByRole("combobox");
+    // The recurrence trigger is the second combobox (after Priority)
+    const freqTrigger = triggers[1];
+    await user.click(freqTrigger);
+
+    // Select "Weekly" from the dropdown
+    await user.click(screen.getByRole("option", { name: "Weekly" }));
 
     // Now interval and end date should be visible
     expect(screen.getByLabelText("Interval")).toBeInTheDocument();
@@ -115,13 +120,20 @@ describe("Task Recurrence", () => {
 
     await user.click(screen.getByText("Create None Task"));
 
-    const freqSelect = screen.getByLabelText(/Recurrence/);
-
-    // Select Monthly, then back to None
-    await user.selectOptions(freqSelect, "MONTHLY");
+    // Click the recurrence select trigger to select Monthly
+    const triggers = screen.getAllByRole("combobox");
+    const freqTrigger = triggers[1];
+    await user.click(freqTrigger);
+    await user.click(screen.getByRole("option", { name: "Monthly" }));
     expect(screen.getByLabelText("Interval")).toBeInTheDocument();
 
-    await user.selectOptions(freqSelect, "");
+    // Now select None to hide recurrence fields
+    // After selecting Monthly, there are now 3 comboboxes (Priority, Recurrence, + possibly others)
+    // Re-query to get the recurrence trigger
+    const updatedTriggers = screen.getAllByRole("combobox");
+    const recurrenceTrigger = updatedTriggers[1];
+    await user.click(recurrenceTrigger);
+    await user.click(screen.getByRole("option", { name: "None" }));
     expect(screen.queryByLabelText("Interval")).not.toBeInTheDocument();
   });
 

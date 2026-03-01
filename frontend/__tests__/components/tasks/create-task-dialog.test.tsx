@@ -36,7 +36,7 @@ describe("CreateTaskDialog", () => {
 
     expect(screen.getByLabelText("Title")).toBeInTheDocument();
     expect(screen.getByText("Description")).toBeInTheDocument();
-    expect(screen.getByLabelText("Priority")).toBeInTheDocument();
+    expect(screen.getByText("Priority")).toBeInTheDocument();
   });
 
   it("calls createTask on successful submit", async () => {

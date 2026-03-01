@@ -452,6 +452,7 @@ export function TaskListPanel({
           description="Try a different filter or clear the selection."
         />
       ) : (
+        <TooltipProvider>
         <div className="rounded-lg border border-slate-200 dark:border-slate-800">
           <Table>
             <TableHeader>
@@ -527,18 +528,16 @@ export function TaskListPanel({
                               {task.title}
                             </p>
                             {task.isRecurring && (
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <span className="inline-flex shrink-0 text-teal-500" aria-label="Recurring task">
-                                      <Repeat className="size-3.5" />
-                                    </span>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>{describeRecurrence(task.recurrenceRule)}</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="inline-flex shrink-0 text-teal-500" aria-label="Recurring task">
+                                    <Repeat className="size-3.5" />
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>{describeRecurrence(task.recurrenceRule)}</p>
+                                </TooltipContent>
+                              </Tooltip>
                             )}
                           </span>
                           {task.type && (
@@ -656,6 +655,7 @@ export function TaskListPanel({
             </TableBody>
           </Table>
         </div>
+        </TooltipProvider>
       )}
       <TaskDetailSheet
         taskId={selectedTaskId}

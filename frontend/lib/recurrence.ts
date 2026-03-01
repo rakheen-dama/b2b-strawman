@@ -29,10 +29,11 @@ export function parseRecurrenceRule(rule: string | null): ParsedRecurrence | nul
       return [k, v];
     })
   );
-  const frequency = parts.FREQ as RecurrenceFrequency | undefined;
+  const frequency = parts.FREQ;
+  const VALID_FREQUENCIES = new Set(["DAILY", "WEEKLY", "MONTHLY", "YEARLY"]);
+  if (!frequency || !VALID_FREQUENCIES.has(frequency)) return null;
   const interval = parts.INTERVAL ? parseInt(parts.INTERVAL, 10) : 1;
-  if (!frequency) return null;
-  return { frequency, interval };
+  return { frequency: frequency as RecurrenceFrequency, interval };
 }
 
 /**

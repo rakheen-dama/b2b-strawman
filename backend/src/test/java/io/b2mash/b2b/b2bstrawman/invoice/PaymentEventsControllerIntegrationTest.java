@@ -86,7 +86,7 @@ class PaymentEventsControllerIntegrationTest {
                 transactionTemplate.executeWithoutResult(
                     tx -> {
                       var customer =
-                          TestCustomerFactory.createActiveCustomer(
+                          TestCustomerFactory.createActiveCustomerWithPrerequisiteFields(
                               "PayEvents Test Corp", "payevents@test.com", memberIdOwner);
                       customer = customerRepository.save(customer);
                       customerId = customer.getId();

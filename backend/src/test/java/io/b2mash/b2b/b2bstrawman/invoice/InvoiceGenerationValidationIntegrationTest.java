@@ -95,7 +95,7 @@ class InvoiceGenerationValidationIntegrationTest {
                 transactionTemplate.executeWithoutResult(
                     tx -> {
                       var customer =
-                          TestCustomerFactory.createActiveCustomer(
+                          TestCustomerFactory.createActiveCustomerWithPrerequisiteFields(
                               "GenVal Test Corp", "genval@test.com", memberIdOwner);
                       customer = customerRepository.save(customer);
                       customerId = customer.getId();

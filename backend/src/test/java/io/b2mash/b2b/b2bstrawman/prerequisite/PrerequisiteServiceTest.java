@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerType;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
@@ -12,7 +13,12 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionService;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldType;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplateService;
+import io.b2mash.b2b.b2bstrawman.setupstatus.DocumentGenerationReadinessService;
+import io.b2mash.b2b.b2bstrawman.setupstatus.TemplateReadiness;
+import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -33,13 +39,22 @@ class PrerequisiteServiceTest {
   @Mock private FieldDefinitionService fieldDefinitionService;
   @Mock private CustomerRepository customerRepository;
   @Mock private ProjectTemplateService projectTemplateService;
+  @Mock private PortalContactRepository portalContactRepository;
+  @Mock private DocumentGenerationReadinessService documentGenerationReadinessService;
+  @Mock private CustomerProjectRepository customerProjectRepository;
 
   private PrerequisiteService service;
 
   @BeforeEach
   void setUp() {
     service =
-        new PrerequisiteService(fieldDefinitionService, customerRepository, projectTemplateService);
+        new PrerequisiteService(
+            fieldDefinitionService,
+            customerRepository,
+            projectTemplateService,
+            portalContactRepository,
+            documentGenerationReadinessService,
+            customerProjectRepository);
   }
 
   @Test
@@ -48,6 +63,7 @@ class PrerequisiteServiceTest {
     fd.setRequiredForContexts(new ArrayList<>(List.of("INVOICE_GENERATION")));
     mockFieldDefinitions(PrerequisiteContext.INVOICE_GENERATION, fd);
     mockCustomer(Map.of("address_line1", "123 Main St"));
+    mockPortalContactWithEmail();
 
     var result =
         service.checkForContext(
@@ -64,6 +80,7 @@ class PrerequisiteServiceTest {
     fd.setRequiredForContexts(new ArrayList<>(List.of("INVOICE_GENERATION")));
     mockFieldDefinitions(PrerequisiteContext.INVOICE_GENERATION, fd);
     mockCustomer(Map.of());
+    mockPortalContactWithEmail();
 
     var result =
         service.checkForContext(
@@ -78,7 +95,9 @@ class PrerequisiteServiceTest {
   @Test
   void checkForContext_noFieldsRequired_returnsPassed() {
     mockFieldDefinitions(PrerequisiteContext.INVOICE_GENERATION);
-    // No customer mock needed — no fields to check
+    // Structural check for INVOICE_GENERATION needs customer and portal contacts
+    mockCustomer(Map.of());
+    mockPortalContactWithEmail();
 
     var result =
         service.checkForContext(
@@ -96,6 +115,7 @@ class PrerequisiteServiceTest {
     fd2.setRequiredForContexts(new ArrayList<>(List.of("INVOICE_GENERATION")));
     mockFieldDefinitions(PrerequisiteContext.INVOICE_GENERATION, fd1, fd2);
     mockCustomerWithNullFields();
+    mockPortalContactWithEmail();
 
     var result =
         service.checkForContext(
@@ -113,6 +133,7 @@ class PrerequisiteServiceTest {
     fd2.setRequiredForContexts(new ArrayList<>(List.of("INVOICE_GENERATION")));
     mockFieldDefinitions(PrerequisiteContext.INVOICE_GENERATION, fd1, fd2);
     mockCustomer(Map.of("address_line1", "123 Main St"));
+    mockPortalContactWithEmail();
 
     var result =
         service.checkForContext(
@@ -127,6 +148,8 @@ class PrerequisiteServiceTest {
   void checkForContext_contextWithNoMatchingFields_returnsPassed() {
     // Field is required for INVOICE_GENERATION, not PROPOSAL_SEND
     mockFieldDefinitions(PrerequisiteContext.PROPOSAL_SEND);
+    // Structural check for PROPOSAL_SEND needs portal contacts
+    mockPortalContactWithEmail();
 
     var result =
         service.checkForContext(
@@ -142,6 +165,7 @@ class PrerequisiteServiceTest {
     fd.setRequiredForContexts(new ArrayList<>(List.of("INVOICE_GENERATION")));
     mockFieldDefinitions(PrerequisiteContext.INVOICE_GENERATION, fd);
     mockCustomer(Map.of());
+    mockPortalContactWithEmail();
 
     var result =
         service.checkForContext(
@@ -158,6 +182,7 @@ class PrerequisiteServiceTest {
     fd.setRequiredForContexts(new ArrayList<>(List.of("INVOICE_GENERATION")));
     mockFieldDefinitions(PrerequisiteContext.INVOICE_GENERATION, fd);
     mockCustomer(Map.of());
+    mockPortalContactWithEmail();
 
     var result =
         service.checkForContext(
@@ -192,6 +217,74 @@ class PrerequisiteServiceTest {
         .isEqualTo("Document Generation");
     assertThat(PrerequisiteContext.PROJECT_CREATION.getDisplayLabel())
         .isEqualTo("Project Creation");
+  }
+
+  // --- Structural check tests (244.6) ---
+
+  @Test
+  void structuralCheck_invoiceGeneration_missingPortalContactAndEmail_returnsViolation() {
+    mockFieldDefinitions(PrerequisiteContext.INVOICE_GENERATION);
+    mockCustomerWithEmail(null);
+    when(portalContactRepository.findByCustomerId(CUSTOMER_ID)).thenReturn(List.of());
+
+    var result =
+        service.checkForContext(
+            PrerequisiteContext.INVOICE_GENERATION, EntityType.CUSTOMER, CUSTOMER_ID);
+
+    assertThat(result.passed()).isFalse();
+    assertThat(result.violations()).hasSize(1);
+    assertThat(result.violations().getFirst().code()).isEqualTo("STRUCTURAL");
+    assertThat(result.violations().getFirst().message())
+        .contains("email address or portal contact");
+  }
+
+  @Test
+  void structuralCheck_proposalSend_missingPortalContact_returnsViolation() {
+    mockFieldDefinitions(PrerequisiteContext.PROPOSAL_SEND);
+    when(portalContactRepository.findByCustomerId(CUSTOMER_ID)).thenReturn(List.of());
+
+    var result =
+        service.checkForContext(
+            PrerequisiteContext.PROPOSAL_SEND, EntityType.CUSTOMER, CUSTOMER_ID);
+
+    assertThat(result.passed()).isFalse();
+    assertThat(result.violations()).hasSize(1);
+    assertThat(result.violations().getFirst().code()).isEqualTo("STRUCTURAL");
+    assertThat(result.violations().getFirst().message()).contains("portal contact");
+  }
+
+  @Test
+  void structuralCheck_documentGeneration_delegatesToReadinessService() {
+    mockFieldDefinitions(PrerequisiteContext.DOCUMENT_GENERATION);
+    var readiness =
+        new TemplateReadiness(
+            UUID.randomUUID(), "Invoice Template", "invoice-template", false, List.of("org_name"));
+    when(documentGenerationReadinessService.checkReadiness(
+            TemplateEntityType.CUSTOMER, CUSTOMER_ID))
+        .thenReturn(List.of(readiness));
+
+    var result =
+        service.checkForContext(
+            PrerequisiteContext.DOCUMENT_GENERATION, EntityType.CUSTOMER, CUSTOMER_ID);
+
+    assertThat(result.passed()).isFalse();
+    assertThat(result.violations()).hasSize(1);
+    assertThat(result.violations().getFirst().code()).isEqualTo("STRUCTURAL");
+    assertThat(result.violations().getFirst().message()).contains("org_name");
+  }
+
+  @Test
+  void structuralCheck_invoiceGeneration_allPresent_noViolations() {
+    mockFieldDefinitions(PrerequisiteContext.INVOICE_GENERATION);
+    mockCustomer(Map.of());
+    mockPortalContactWithEmail();
+
+    var result =
+        service.checkForContext(
+            PrerequisiteContext.INVOICE_GENERATION, EntityType.CUSTOMER, CUSTOMER_ID);
+
+    assertThat(result.passed()).isTrue();
+    assertThat(result.violations()).isEmpty();
   }
 
   // --- Helper methods ---
@@ -233,5 +326,31 @@ class PrerequisiteServiceTest {
             LifecycleStatus.PROSPECT);
     customer.setCustomFields(null);
     when(customerRepository.findById(CUSTOMER_ID)).thenReturn(Optional.of(customer));
+  }
+
+  private void mockCustomerWithEmail(String email) {
+    var customer =
+        new Customer(
+            "Test Customer",
+            email,
+            null,
+            null,
+            null,
+            MEMBER_ID,
+            CustomerType.INDIVIDUAL,
+            LifecycleStatus.PROSPECT);
+    customer.setCustomFields(Map.of());
+    when(customerRepository.findById(CUSTOMER_ID)).thenReturn(Optional.of(customer));
+  }
+
+  private void mockPortalContactWithEmail() {
+    var contact =
+        new PortalContact(
+            "org-1",
+            CUSTOMER_ID,
+            "contact@test.com",
+            "Test Contact",
+            PortalContact.ContactRole.PRIMARY);
+    when(portalContactRepository.findByCustomerId(CUSTOMER_ID)).thenReturn(List.of(contact));
   }
 }

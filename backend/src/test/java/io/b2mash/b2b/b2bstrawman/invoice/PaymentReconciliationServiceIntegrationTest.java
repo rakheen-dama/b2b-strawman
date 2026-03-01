@@ -89,7 +89,7 @@ class PaymentReconciliationServiceIntegrationTest {
                 transactionTemplate.executeWithoutResult(
                     tx -> {
                       var customer =
-                          TestCustomerFactory.createActiveCustomer(
+                          TestCustomerFactory.createActiveCustomerWithPrerequisiteFields(
                               "Recon Test Corp", "recon@test.com", memberIdOwner);
                       customer = customerRepository.save(customer);
                       customerId = customer.getId();

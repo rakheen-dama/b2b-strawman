@@ -7,11 +7,15 @@ import io.b2mash.b2b.b2bstrawman.clause.ClauseResolver;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.event.DocumentGeneratedEvent;
+import io.b2mash.b2b.b2bstrawman.exception.PrerequisiteNotMetException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.exception.ValidationWarningException;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
+import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.ClauseSelection;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.TemplateDetailResponse;
 import java.time.Instant;
@@ -41,6 +45,7 @@ public class GeneratedDocumentService {
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
   private final ClauseResolver clauseResolver;
+  private final PrerequisiteService prerequisiteService;
 
   public GeneratedDocumentService(
       GeneratedDocumentRepository generatedDocumentRepository,
@@ -53,7 +58,8 @@ public class GeneratedDocumentService {
       DocumentRepository documentRepository,
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
-      ClauseResolver clauseResolver) {
+      ClauseResolver clauseResolver,
+      PrerequisiteService prerequisiteService) {
     this.generatedDocumentRepository = generatedDocumentRepository;
     this.documentTemplateRepository = documentTemplateRepository;
     this.memberNameResolver = memberNameResolver;
@@ -65,6 +71,7 @@ public class GeneratedDocumentService {
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
     this.clauseResolver = clauseResolver;
+    this.prerequisiteService = prerequisiteService;
   }
 
   /**
@@ -82,12 +89,23 @@ public class GeneratedDocumentService {
       boolean acknowledgeWarnings,
       List<ClauseSelection> clauseSelections,
       UUID memberId) {
-    // 0. Validate required fields before generation
+    // 0. Check action-point prerequisites
     var template =
         documentTemplateRepository
             .findById(templateId)
             .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", templateId));
 
+    UUID customerId = resolveCustomerIdForDocGen(template.getPrimaryEntityType(), entityId);
+    if (customerId != null) {
+      var prerequisiteCheck =
+          prerequisiteService.checkForContext(
+              PrerequisiteContext.DOCUMENT_GENERATION, EntityType.CUSTOMER, customerId);
+      if (!prerequisiteCheck.passed()) {
+        throw new PrerequisiteNotMetException(prerequisiteCheck);
+      }
+    }
+
+    // 0b. Validate required fields before generation
     var contextMap = pdfRenderingService.buildContext(templateId, entityId, memberId);
     var validationResult =
         templateValidationService.validateRequiredFields(
@@ -349,6 +367,21 @@ public class GeneratedDocumentService {
     return switch (entityType) {
       case PROJECT -> entityId;
       case CUSTOMER, INVOICE -> null;
+    };
+  }
+
+  private UUID resolveCustomerIdForDocGen(TemplateEntityType entityType, UUID entityId) {
+    return switch (entityType) {
+      case CUSTOMER -> entityId;
+      case PROJECT -> {
+        try {
+          yield prerequisiteService.resolveCustomerIdFromProject(entityId);
+        } catch (ResourceNotFoundException e) {
+          log.warn("No customer linked to project {} — skipping prerequisite check", entityId);
+          yield null;
+        }
+      }
+      case INVOICE -> null; // Invoice prerequisite checks not yet supported
     };
   }
 

@@ -75,7 +75,7 @@ class InvoiceCustomFieldIntegrationTest {
                 transactionTemplate.executeWithoutResult(
                     tx -> {
                       var customer =
-                          TestCustomerFactory.createActiveCustomer(
+                          TestCustomerFactory.createActiveCustomerWithPrerequisiteFields(
                               "CF Invoice Corp", "cf_inv_corp@test.com", memberIdOwner);
                       customer = customerRepository.save(customer);
                       customerId = customer.getId();

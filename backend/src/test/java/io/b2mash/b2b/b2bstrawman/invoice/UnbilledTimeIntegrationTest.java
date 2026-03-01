@@ -101,7 +101,7 @@ class UnbilledTimeIntegrationTest {
                     tx -> {
                       // Customer
                       var customer =
-                          TestCustomerFactory.createActiveCustomer(
+                          TestCustomerFactory.createActiveCustomerWithPrerequisiteFields(
                               "UB Corp", "ub@test.com", memberIdOwner);
                       customer = customerRepository.save(customer);
                       customerId = customer.getId();

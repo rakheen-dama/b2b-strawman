@@ -122,6 +122,15 @@ class PortalProposalControllerTest {
                       null,
                       memberId);
               customerId = customer.getId();
+              customerService.updateCustomer(
+                  customerId,
+                  customer.getName(),
+                  customer.getEmail(),
+                  customer.getPhone(),
+                  customer.getIdNumber(),
+                  customer.getNotes(),
+                  io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.prerequisiteCustomFields(),
+                  null);
 
               var contact =
                   portalContactService.createContact(
@@ -144,6 +153,15 @@ class PortalProposalControllerTest {
                   customerService.createCustomer(
                       "Other Customer", "other-customer@test.com", null, null, null, memberId);
               otherCustomerId = otherCust.getId();
+              customerService.updateCustomer(
+                  otherCustomerId,
+                  otherCust.getName(),
+                  otherCust.getEmail(),
+                  otherCust.getPhone(),
+                  otherCust.getIdNumber(),
+                  otherCust.getNotes(),
+                  io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.prerequisiteCustomFields(),
+                  null);
 
               var otherCon =
                   portalContactService.createContact(

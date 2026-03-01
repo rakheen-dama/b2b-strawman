@@ -96,7 +96,7 @@ class InvoiceLifecycleIntegrationTest {
                     tx -> {
                       // Customer
                       var customer =
-                          TestCustomerFactory.createActiveCustomer(
+                          TestCustomerFactory.createActiveCustomerWithPrerequisiteFields(
                               "Lifecycle Test Corp", "lifecycle@test.com", memberIdOwner);
                       customer = customerRepository.save(customer);
                       customerId = customer.getId();

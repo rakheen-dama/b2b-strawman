@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerType;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
@@ -20,12 +21,15 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionService;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMemberRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldType;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplate;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplateService;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.TemplateTagRepository;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.TemplateTaskItemRepository;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.TemplateTaskRepository;
+import io.b2mash.b2b.b2bstrawman.setupstatus.DocumentGenerationReadinessService;
+import io.b2mash.b2b.b2bstrawman.tag.TagRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import java.util.List;
@@ -48,6 +52,10 @@ class EngagementPrerequisiteTest {
   @Mock private FieldDefinitionService fieldDefinitionService;
   @Mock private CustomerRepository customerRepository;
   @Mock private ProjectTemplateService projectTemplateService;
+  @Mock private PortalContactRepository portalContactRepository;
+  @Mock private DocumentGenerationReadinessService documentGenerationReadinessService;
+  @Mock private CustomerProjectRepository customerProjectRepository;
+
   @Mock private ProjectTemplateRepository templateRepository;
   @Mock private FieldDefinitionRepository fieldDefinitionRepository;
   @Mock private AuditService auditService;
@@ -58,14 +66,20 @@ class EngagementPrerequisiteTest {
   @Mock private TemplateTaskRepository templateTaskRepository;
   @Mock private TemplateTaskItemRepository templateTaskItemRepository;
   @Mock private TemplateTagRepository templateTagRepository;
-  @Mock private io.b2mash.b2b.b2bstrawman.tag.TagRepository tagLookupRepository;
+  @Mock private TagRepository tagLookupRepository;
 
   private PrerequisiteService prerequisiteService;
 
   @BeforeEach
   void setUp() {
     prerequisiteService =
-        new PrerequisiteService(fieldDefinitionService, customerRepository, projectTemplateService);
+        new PrerequisiteService(
+            fieldDefinitionService,
+            customerRepository,
+            projectTemplateService,
+            portalContactRepository,
+            documentGenerationReadinessService,
+            customerProjectRepository);
   }
 
   // --- Tests 1-4: checkEngagementPrerequisites ---

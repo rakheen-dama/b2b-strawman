@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.SchemaNameGenerator;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -64,6 +65,7 @@ class ProposalAuditTest {
     ownerMemberId = syncMember("user_pa_owner", "pa_owner@test.com", "PA Owner", "owner");
 
     customerId = createCustomer("Audit Test Customer", "audit-customer@test.com");
+    fillPrerequisiteFields(customerId);
     portalContactId = createPortalContact(customerId, "contact@audit-test.com", "Audit Contact");
   }
 
@@ -328,5 +330,9 @@ class ProposalAuditTest {
     return jwt()
         .jwt(j -> j.subject("user_pa_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
+  }
+
+  private void fillPrerequisiteFields(String customerIdStr) {
+    TestCustomerFactory.fillPrerequisiteFields(jdbcTemplate, schemaName, customerIdStr);
   }
 }

@@ -108,7 +108,7 @@ class TimeEntryBillingIntegrationTest {
                 transactionTemplate.executeWithoutResult(
                     tx -> {
                       var customer =
-                          TestCustomerFactory.createActiveCustomer(
+                          TestCustomerFactory.createActiveCustomerWithPrerequisiteFields(
                               "Billing Test Corp", "billing@test.com", memberIdOwner);
                       customer = customerRepository.save(customer);
                       customerId = customer.getId();

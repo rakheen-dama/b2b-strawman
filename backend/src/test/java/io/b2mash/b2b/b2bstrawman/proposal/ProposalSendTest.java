@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.SchemaNameGenerator;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -61,9 +62,11 @@ class ProposalSendTest {
     syncMember("user_prop_send_member", "prop_send_member@test.com", "SEND Member", "member");
 
     customerId = createCustomer(ownerJwt(), "Send Test Customer", "send-customer@test.com");
+    fillPrerequisiteFields(customerId);
     portalContactId = createPortalContact(customerId, "contact@send-test.com", "Send Contact");
 
     secondCustomerId = createCustomer(ownerJwt(), "Second Customer", "second-customer@test.com");
+    fillPrerequisiteFields(secondCustomerId);
     secondCustomerContactId =
         createPortalContact(secondCustomerId, "contact2@send-test.com", "Second Contact");
   }
@@ -476,5 +479,10 @@ class ProposalSendTest {
                 j.subject("user_prop_send_member")
                     .claim("o", Map.of("id", ORG_ID, "rol", "member")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+
+  private void fillPrerequisiteFields(String customerIdStr) {
+    String schema = SchemaNameGenerator.generateSchemaName(ORG_ID);
+    TestCustomerFactory.fillPrerequisiteFields(jdbcTemplate, schema, customerIdStr);
   }
 }

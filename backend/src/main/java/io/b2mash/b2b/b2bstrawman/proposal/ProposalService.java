@@ -5,13 +5,17 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.event.ProposalSentEvent;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.PrerequisiteNotMetException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
+import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
+import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
 import io.b2mash.b2b.b2bstrawman.proposal.dto.MilestoneRequest;
 import io.b2mash.b2b.b2bstrawman.proposal.dto.ProposalFilterCriteria;
 import io.b2mash.b2b.b2bstrawman.proposal.dto.ProposalStats;
@@ -49,6 +53,7 @@ public class ProposalService {
   private final MemberNameResolver memberNameResolver;
   private final AuditService auditService;
   private final NotificationService notificationService;
+  private final PrerequisiteService prerequisiteService;
 
   public ProposalService(
       ProposalRepository proposalRepository,
@@ -62,7 +67,8 @@ public class ProposalService {
       ApplicationEventPublisher eventPublisher,
       MemberNameResolver memberNameResolver,
       AuditService auditService,
-      NotificationService notificationService) {
+      NotificationService notificationService,
+      PrerequisiteService prerequisiteService) {
     this.proposalRepository = proposalRepository;
     this.milestoneRepository = milestoneRepository;
     this.teamMemberRepository = teamMemberRepository;
@@ -75,6 +81,7 @@ public class ProposalService {
     this.memberNameResolver = memberNameResolver;
     this.auditService = auditService;
     this.notificationService = notificationService;
+    this.prerequisiteService = prerequisiteService;
   }
 
   // --- 231.1: createProposal ---
@@ -458,6 +465,14 @@ public class ProposalService {
             .findById(proposalId)
             .orElseThrow(() -> new ResourceNotFoundException("Proposal", proposalId));
     requireDraft(proposal);
+
+    // 1b. Check action-point prerequisites (e.g., portal contact)
+    var prerequisiteCheck =
+        prerequisiteService.checkForContext(
+            PrerequisiteContext.PROPOSAL_SEND, EntityType.CUSTOMER, proposal.getCustomerId());
+    if (!prerequisiteCheck.passed()) {
+      throw new PrerequisiteNotMetException(prerequisiteCheck);
+    }
 
     // 2. Validate content is not empty
     if (proposal.getContentJson() == null || proposal.getContentJson().isEmpty()) {

@@ -14,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.event.InvoiceSentEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoiceVoidedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.InvoiceValidationFailedException;
+import io.b2mash.b2b.b2bstrawman.exception.PrerequisiteNotMetException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.expense.ExpenseRepository;
@@ -43,6 +44,8 @@ import io.b2mash.b2b.b2bstrawman.invoice.dto.UpdateInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UpdateLineItemRequest;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
+import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
@@ -107,6 +110,7 @@ public class InvoiceService {
   private final TaxCalculationService taxCalculationService;
   private final TaxRateRepository taxRateRepository;
   private final ExpenseRepository expenseRepository;
+  private final PrerequisiteService prerequisiteService;
 
   public InvoiceService(
       InvoiceRepository invoiceRepository,
@@ -136,7 +140,8 @@ public class InvoiceService {
       OrgSettingsRepository orgSettingsRepository,
       TaxCalculationService taxCalculationService,
       TaxRateRepository taxRateRepository,
-      ExpenseRepository expenseRepository) {
+      ExpenseRepository expenseRepository,
+      PrerequisiteService prerequisiteService) {
     this.invoiceRepository = invoiceRepository;
     this.lineRepository = lineRepository;
     this.customerRepository = customerRepository;
@@ -165,6 +170,7 @@ public class InvoiceService {
     this.taxCalculationService = taxCalculationService;
     this.taxRateRepository = taxRateRepository;
     this.expenseRepository = expenseRepository;
+    this.prerequisiteService = prerequisiteService;
   }
 
   @Transactional(readOnly = true)
@@ -187,6 +193,14 @@ public class InvoiceService {
 
     // Check lifecycle guard (complementary to soft-delete status check above)
     customerLifecycleGuard.requireActionPermitted(customer, LifecycleAction.CREATE_INVOICE);
+
+    // Check action-point prerequisites (e.g., portal contact, required fields)
+    var prerequisiteCheck =
+        prerequisiteService.checkForContext(
+            PrerequisiteContext.INVOICE_GENERATION, EntityType.CUSTOMER, request.customerId());
+    if (!prerequisiteCheck.passed()) {
+      throw new PrerequisiteNotMetException(prerequisiteCheck);
+    }
 
     // Look up organization for orgName snapshot
     String orgId = RequestScopes.requireOrgId();

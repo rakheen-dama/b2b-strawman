@@ -366,6 +366,20 @@ class DeleteProtectionIntegrationTest {
             .andReturn();
     String customerId = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
 
+    // Fill prerequisite custom fields for invoice/proposal checks
+    mockMvc
+        .perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put(
+                    "/api/customers/{id}", customerId)
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"name": "%s", "email": "%s", "customFields": {"address_line1": "123 Test St", "city": "Test City", "country": "ZA", "tax_number": "VAT123"}}
+                    """
+                        .formatted(name, email)))
+        .andExpect(status().isOk());
+
     // Transition PROSPECT -> ONBOARDING
     transitionCustomerLifecycle(customerId, "ONBOARDING");
 

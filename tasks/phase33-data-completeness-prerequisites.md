@@ -27,7 +27,7 @@ Phase 33 transforms DocTeams' metadata infrastructure from passive data capture 
 | 244 | Action-Point Prerequisite Wiring | Backend | 241 | M | 244A, 244B | **Done** |
 | 245 | PrerequisiteModal & Shared Frontend Components | Frontend | 241 | M | 245A, 245B | **Done** |
 | 246 | Smart Customer Intake Dialog | Frontend | 241, 245 | M | 246A, 246B | **Done** |
-| 247 | Prerequisite Configuration UI | Frontend | 245 | S | 247A | |
+| 247 | Prerequisite Configuration UI | Frontend | 245 | S | 247A | **Done** |
 | 248 | Lifecycle Transition Frontend Integration | Frontend | 242, 245 | S | 248A | |
 | 249 | Engagement & Action-Point Frontend Integration | Frontend | 243, 244, 245 | M | 249A, 249B | |
 | 250 | Completeness Visibility -- Backend Queries | Backend | 241 | M | 250A | |
@@ -169,7 +169,7 @@ FRONTEND TRACK (after E241B)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 4a (parallel) | 246 | 246A | IntakeFieldsSection component (renders auto-apply field groups as form controls per field type) + intake endpoint server action + tests (~4 tests). ~3 new files. Frontend only. | **Done** (PR #498) |
-| 4b (parallel) | 247 | 247A | Settings custom-fields "Required For" multi-select on FieldDefinitionDialog + PrerequisiteContext labels constant + tests (~3 tests). ~3 modified files. Frontend only. | |
+| 4b (parallel) | 247 | 247A | Settings custom-fields "Required For" multi-select on FieldDefinitionDialog + PrerequisiteContext labels constant + tests (~3 tests). ~3 modified files. Frontend only. | **Done** (PR #500) |
 | 4c (parallel) | 248 | 248A | Customer detail page lifecycle transition button wired through usePrerequisiteCheck hook + PrerequisiteModal integration + lifecycle-actions.ts update + tests (~4 tests). ~3 modified files. Frontend only. | |
 | 4d (parallel) | 249 | 249A | Invoice generation, proposal send, document generation buttons wired through prerequisite check + PrerequisiteModal integration + tests (~5 tests). ~5 modified files. Frontend only. | |
 | 4e (parallel) | 251 | 251A | CompletenesssBadge component + customer list page completeness column + filter + sort + completeness server actions + tests (~4 tests). ~4 new/modified files. Frontend only. | |
@@ -668,7 +668,7 @@ Stage 5: [246B] // [249B] // [251B]                                         (par
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **247A** | 247.1--247.5 | "Required For" multi-select on FieldDefinitionDialog + PrerequisiteContext human-readable labels + update PATCH action to include requiredForContexts + tests (~3 tests). ~3 modified files. Frontend only. | |
+| **247A** | 247.1--247.5 | "Required For" multi-select on FieldDefinitionDialog + PrerequisiteContext human-readable labels + update PATCH action to include requiredForContexts + tests (~3 tests). ~3 modified files. Frontend only. | **Done** (PR #500) |
 
 ### Tasks
 

@@ -112,6 +112,9 @@ describe("FieldDefinitionDialog", () => {
     expect(screen.getByLabelText("Proposal Sending")).toBeInTheDocument();
     expect(screen.getByLabelText("Document Generation")).toBeInTheDocument();
     expect(screen.getByLabelText("Project Creation")).toBeInTheDocument();
+
+    // Pack default note should NOT be shown for non-pack fields
+    expect(screen.queryByText(/Set by field pack/)).not.toBeInTheDocument();
   });
 
   it("includes requiredForContexts in create payload", async () => {

@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { X } from "lucide-react";
 import {
   createFieldDefinitionAction,
@@ -334,8 +335,7 @@ export function FieldDefinitionDialog({
           options: buildOptions(),
           sortOrder,
           visibilityCondition: buildVisibilityCondition() ?? null,
-          requiredForContexts:
-            requiredForContexts.length > 0 ? requiredForContexts : [],
+          requiredForContexts,
         });
 
         if (result.success) {
@@ -355,8 +355,7 @@ export function FieldDefinitionDialog({
           options: buildOptions(),
           sortOrder,
           visibilityCondition: buildVisibilityCondition() ?? null,
-          requiredForContexts:
-            requiredForContexts.length > 0 ? requiredForContexts : [],
+          requiredForContexts,
         });
 
         if (result.success) {
@@ -526,12 +525,10 @@ export function FieldDefinitionDialog({
                 ][]
               ).map(([ctx, label]) => (
                 <div key={ctx} className="flex items-center gap-2">
-                  <input
+                  <Checkbox
                     id={`fd-ctx-${ctx}`}
-                    type="checkbox"
                     checked={requiredForContexts.includes(ctx)}
-                    onChange={() => toggleContext(ctx)}
-                    className="size-4 rounded border-slate-300 text-slate-600 focus:ring-slate-500"
+                    onCheckedChange={() => toggleContext(ctx)}
                   />
                   <Label
                     htmlFor={`fd-ctx-${ctx}`}

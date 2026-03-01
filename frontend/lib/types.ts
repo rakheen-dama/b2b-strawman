@@ -985,6 +985,13 @@ export type FieldType =
   | "EMAIL"
   | "PHONE";
 
+/** Shared visibility condition used by field definitions and intake fields */
+export interface VisibilityCondition {
+  dependsOnSlug: string;
+  operator: string;
+  value: string | string[];
+}
+
 export interface FieldDefinitionResponse {
   id: string;
   entityType: EntityType;
@@ -999,11 +1006,7 @@ export interface FieldDefinitionResponse {
   sortOrder: number;
   packId: string | null;
   packFieldKey: string | null;
-  visibilityCondition: {
-    dependsOnSlug: string;
-    operator: string;
-    value: string | string[];
-  } | null;
+  visibilityCondition: VisibilityCondition | null;
   active: boolean;
   createdAt: string;
   updatedAt: string;
@@ -1020,11 +1023,7 @@ export interface CreateFieldDefinitionRequest {
   options?: Array<{ value: string; label: string }>;
   validation?: Record<string, unknown>;
   sortOrder: number;
-  visibilityCondition?: {
-    dependsOnSlug: string;
-    operator: string;
-    value: string | string[];
-  } | null;
+  visibilityCondition?: VisibilityCondition | null;
 }
 
 export interface UpdateFieldDefinitionRequest {
@@ -1037,11 +1036,7 @@ export interface UpdateFieldDefinitionRequest {
   options?: Array<{ value: string; label: string }>;
   validation?: Record<string, unknown>;
   sortOrder: number;
-  visibilityCondition?: {
-    dependsOnSlug: string;
-    operator: string;
-    value: string | string[];
-  } | null;
+  visibilityCondition?: VisibilityCondition | null;
 }
 
 export interface FieldGroupResponse {

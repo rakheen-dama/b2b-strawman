@@ -24,7 +24,7 @@ Phase 33 transforms DocTeams' metadata infrastructure from passive data capture 
 | 241 | Prerequisite REST API & Field Definition Extension | Backend | 240 | M | 241A, 241B | **Done** |
 | 242 | Lifecycle Transition Gate | Backend | 241 | M | 242A, 242B | **Done** |
 | 243 | Engagement Prerequisites -- Template Extension & Checks | Backend | 241 | M | 243A, 243B | **Done** |
-| 244 | Action-Point Prerequisite Wiring | Backend | 241 | M | 244A, 244B | |
+| 244 | Action-Point Prerequisite Wiring | Backend | 241 | M | 244A, 244B | **Done** |
 | 245 | PrerequisiteModal & Shared Frontend Components | Frontend | 241 | M | 245A, 245B | |
 | 246 | Smart Customer Intake Dialog | Frontend | 241, 245 | M | 246A, 246B | |
 | 247 | Prerequisite Configuration UI | Frontend | 245 | S | 247A | |
@@ -161,7 +161,7 @@ FRONTEND TRACK (after E241B)
 |-------|------|-------|---------|--------|
 | 3a (parallel) | 242 | 242B | Extended lifecycle prerequisite tests: auto-transition scenarios, TestCustomerFactory.withRequiredFields() helper, update existing lifecycle tests to pass with prerequisites (~8 tests). ~3 modified files. Backend only. | **Done** (PR #491) |
 | 3b (parallel) | 243 | 243B | ProjectTemplateController extension: PUT /{id}/required-customer-fields + GET /{id}/prerequisite-check + integration tests (~8 tests). ~2 modified files, ~1 test file. Backend only. | **Done** (PR #493) |
-| 3c (parallel) | 244 | 244B | Extended action-point tests: structural violation scenarios, cross-domain 422 responses, existing invoice/proposal/document test updates (~8 tests). ~3 modified test files. Backend only. | |
+| 3c (parallel) | 244 | 244B | Extended action-point tests: structural violation scenarios, cross-domain 422 responses, existing invoice/proposal/document test updates (~8 tests). ~3 modified test files. Backend only. | **Done** (PR #495) |
 | 3d (parallel) | 245 | 245B | PrerequisiteModal component: grouped violations, inline editing, "Check & Continue" re-validation, batch field save, auto-proceed on resolved, onCancel + tests (~6 tests). ~2 new files. Frontend only. | |
 
 ### Stage 4: Frontend Integration (parallel tracks)
@@ -480,7 +480,7 @@ Stage 5: [246B] // [249B] // [251B]                                         (par
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **244A** | 244.1--244.7 | Add structural prerequisite checks to PrerequisiteService (portal contact, billing address checks per context). Wire prerequisite checks into InvoiceService, ProposalService.sendProposal(), DocumentGenerationReadinessService. Tests (~8 tests). ~5 modified files. Backend only. | **Done** (PR #494) |
-| **244B** | 244.8--244.13 | Extended action-point tests: structural violation scenarios, cross-domain 422 responses, update existing invoice/proposal/document tests to pass prerequisites. ~8 tests across ~3 files. Backend only. | |
+| **244B** | 244.8--244.13 | Extended action-point tests: structural violation scenarios, cross-domain 422 responses, update existing invoice/proposal/document tests to pass prerequisites. ~8 tests across ~3 files. Backend only. | **Done** (PR #495) |
 
 ### Tasks
 

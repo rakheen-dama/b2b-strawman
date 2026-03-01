@@ -22,7 +22,7 @@ if echo "$URL" | grep -qE '(localhost|127\.0\.0\.1):3000'; then
   echo "BLOCKED: Port 3000 uses Clerk authentication with CAPTCHA — agents cannot authenticate there."
   echo ""
   echo "Use the E2E mock-auth stack on port 3001 instead:"
-  echo "  1. Start the stack:  bash compose/scripts/start-mock-dev.sh"
+  echo "  1. Start the stack:  bash compose/scripts/e2e-up.sh"
   echo "  2. Navigate to:      http://localhost:3001/mock-login"
   echo "  3. Click 'Sign In' to authenticate as Alice (owner)"
   echo ""
@@ -35,7 +35,7 @@ if echo "$URL" | grep -qE '(localhost|127\.0\.0\.1):3001'; then
   if ! curl -sf --max-time 2 http://localhost:3001/ > /dev/null 2>&1; then
     echo "E2E mock-auth stack is not running on port 3001."
     echo ""
-    echo "Start it with:  bash compose/scripts/start-mock-dev.sh"
+    echo "Start it with:  bash compose/scripts/e2e-up.sh"
     echo ""
     echo "This builds the full stack from current source (~3-5 min first time)."
     exit 2

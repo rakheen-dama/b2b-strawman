@@ -27,8 +27,8 @@ Always read the relevant subdirectory CLAUDE.md before making changes.
 ## Local Dev Quick Start
 
 ```bash
-# Services (from compose/)
-docker compose up -d          # Postgres (5432) + LocalStack (4566)
+# Start infrastructure (Postgres, LocalStack, Mailpit)
+bash compose/scripts/dev-up.sh
 
 # Frontend (from frontend/)
 pnpm install && pnpm dev      # Port 3000
@@ -36,6 +36,13 @@ pnpm install && pnpm dev      # Port 3000
 # Backend (from backend/)
 ./mvnw spring-boot:run        # Port 8080
 ./mvnw spring-boot:test-run   # Alternative: uses Testcontainers, no Docker Compose needed
+
+# Stop infrastructure
+bash compose/scripts/dev-down.sh          # Preserve data
+bash compose/scripts/dev-down.sh --clean  # Wipe volumes
+
+# Rebuild a specific service
+bash compose/scripts/dev-rebuild.sh backend
 ```
 
 ## Git Worktrees 
@@ -57,9 +64,10 @@ Use the E2E mock-auth stack on port 3001 instead.
 
 **Start/stop the stack:**
 ```bash
-bash compose/scripts/start-mock-dev.sh   # Build + start (takes ~3-5 min first time)
-bash compose/scripts/stop-mock-dev.sh    # Tear down + wipe data
-bash compose/scripts/reseed-mock-dev.sh  # Reset data without rebuild
+bash compose/scripts/e2e-up.sh           # Build + start (takes ~3-5 min first time)
+bash compose/scripts/e2e-down.sh         # Tear down + wipe data
+bash compose/scripts/e2e-reseed.sh       # Reset data without rebuild
+bash compose/scripts/e2e-rebuild.sh backend frontend  # Rebuild specific services
 ```
 
 **To authenticate in Playwright:**

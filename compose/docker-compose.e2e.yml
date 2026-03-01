@@ -1,5 +1,7 @@
 # Ephemeral E2E-only stack — credentials below are throwaway defaults
 # used only in local/CI containers. No real secrets here.
+name: docteams-e2e
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -42,6 +44,15 @@ services:
     networks:
       - e2e-network
 
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: e2e-mailpit
+    ports:
+      - "1026:1025"    # SMTP (1025 taken by dev stack)
+      - "8026:8025"    # Web UI (8025 taken by dev stack)
+    networks:
+      - e2e-network
+
   mock-idp:
     build:
       context: ./mock-idp
@@ -78,6 +89,8 @@ services:
       AWS_S3_BUCKET_NAME: docteams-dev
       AWS_CREDENTIALS_ACCESS_KEY_ID: test
       AWS_CREDENTIALS_SECRET_ACCESS_KEY: test
+      SPRING_MAIL_HOST: mailpit
+      SPRING_MAIL_PORT: 1025
     ports:
       - "8081:8080"
     depends_on:

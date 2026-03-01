@@ -1,3 +1,5 @@
+name: docteams-dev
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -17,6 +19,18 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - dev-network
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: b2b-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"    # SMTP
+      - "8025:8025"    # Web UI
+    networks:
+      - dev-network
 
   localstack:
     image: localstack/localstack:latest
@@ -38,78 +52,96 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - dev-network
 
-#  backend:
-#    build:
-#      context: ../backend
-#      dockerfile: Dockerfile
-#    container_name: b2b-backend
-#    restart: unless-stopped
-#    environment:
-#      SPRING_PROFILES_ACTIVE: local
-#      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
-#      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
-#      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-#      AWS_S3_ENDPOINT: http://localstack:4566
-#      AWS_S3_REGION: us-east-1
-#      AWS_S3_BUCKET_NAME: ${S3_BUCKET_NAME}
-#      AWS_ACCESS_KEY_ID: ${LS_AWS_ACCESS_KEY_ID}
-#      AWS_SECRET_ACCESS_KEY: ${LS_AWS_SECRET_ACCESS_KEY}
-#      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-local-dev-api-key-change-in-production}
-#    ports:
-#      - "8080:8080"
-#    depends_on:
-#      postgres:
-#        condition: service_healthy
-#      localstack:
-#        condition: service_healthy
-#    healthcheck:
-#      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
-#      interval: 10s
-#      timeout: 5s
-#      retries: 10
-#      start_period: 30s
-#
-#  frontend:
-#    build:
-#      context: ../frontend
-#      dockerfile: Dockerfile
-#      args:
-#        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-#    container_name: b2b-frontend
-#    restart: unless-stopped
-#    environment:
-#      BACKEND_URL: http://backend:8080
-#      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-local-dev-api-key-change-in-production}
-#      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-#      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
-#      CLERK_WEBHOOK_SIGNING_SECRET: ${CLERK_WEBHOOK_SIGNING_SECRET:-}
-#      NEXT_PUBLIC_CLERK_SIGN_IN_URL: /sign-in
-#      NEXT_PUBLIC_CLERK_SIGN_UP_URL: /sign-up
-#      NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL: /dashboard
-#      NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL: /dashboard
-#    ports:
-#      - "3000:3000"
-#    depends_on:
-#      backend:
-#        condition: service_healthy
-#
-#  portal:
-#    build:
-#      context: ../portal
-#      dockerfile: Dockerfile
-#      args:
-#        NEXT_PUBLIC_PORTAL_API_URL: http://backend:8080
-#    container_name: b2b-portal
-#    restart: unless-stopped
-#    environment:
-#      NEXT_PUBLIC_PORTAL_API_URL: http://backend:8080
-#    ports:
-#      - "3002:3001"
-#    depends_on:
-#      backend:
-#        condition: service_healthy
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: b2b-backend
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      # Datasource overrides (Docker service names instead of localhost)
+      SPRING_DATASOURCE_APP_JDBC_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_APP_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_APP_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_DATASOURCE_MIGRATION_JDBC_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_MIGRATION_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_MIGRATION_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_DATASOURCE_PORTAL_JDBC_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_PORTAL_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PORTAL_PASSWORD: ${POSTGRES_PASSWORD}
+      # Mail (Mailpit inside Docker network)
+      SPRING_MAIL_HOST: mailpit
+      SPRING_MAIL_PORT: 1025
+      # S3 (LocalStack inside Docker network)
+      AWS_S3_ENDPOINT: http://localstack:4566
+      AWS_S3_REGION: us-east-1
+      AWS_S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+      AWS_CREDENTIALS_ACCESS_KEY_ID: ${LS_AWS_ACCESS_KEY_ID}
+      AWS_CREDENTIALS_SECRET_ACCESS_KEY: ${LS_AWS_SECRET_ACCESS_KEY}
+      # Security — JWT (Clerk dev instance)
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: ${CLERK_ISSUER_URI}
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: ${CLERK_JWK_SET_URI}
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
+      PORTAL_JWT_SECRET: ${PORTAL_JWT_SECRET}
+      PORTAL_MAGIC_LINK_SECRET: ${PORTAL_MAGIC_LINK_SECRET}
+      INTEGRATION_ENCRYPTION_KEY: ${INTEGRATION_ENCRYPTION_KEY}
+
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - dev-network
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+    container_name: b2b-frontend
+    restart: unless-stopped
+    environment:
+      BACKEND_URL: http://backend:8080
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
+      CLERK_WEBHOOK_SIGNING_SECRET: ${CLERK_WEBHOOK_SIGNING_SECRET:-}
+      NEXT_PUBLIC_CLERK_SIGN_IN_URL: ${NEXT_PUBLIC_CLERK_SIGN_IN_URL}
+      NEXT_PUBLIC_CLERK_SIGN_UP_URL: ${NEXT_PUBLIC_CLERK_SIGN_UP_URL}
+      NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL: ${NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL}
+      NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL: ${NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL}
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+    networks:
+      - dev-network
 
 volumes:
   postgres_data:
   localstack_data:
+
+networks:
+  dev-network:
+    driver: bridge

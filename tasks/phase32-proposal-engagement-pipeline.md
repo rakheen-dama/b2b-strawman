@@ -174,7 +174,7 @@ PORTAL TRACK (after E234A)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 4a (parallel) | 234 | 234A | PortalProposalController (4 endpoints) + portal auth scoping + accept triggers orchestration + decline/withdraw flow + tests (~10 tests). ~1 new controller, ~1 test file. Backend only. | **Done** (PR #475) |
-| 4b (parallel) | 237 | 237A | Create/edit proposal pages: ProposalForm, FeeConfigSection, MilestoneEditor, TeamMemberPicker, template picker + edit route + tests (~7 tests). ~7 new files. Frontend only. | |
+| 4b (parallel) | 237 | 237A | Create/edit proposal pages: ProposalForm, FeeConfigSection, MilestoneEditor, TeamMemberPicker, template picker + edit route + tests (~7 tests). ~7 new files. Frontend only. | **Done** (PR #480) |
 | 4c (parallel) | 238 | 238A | Customer detail Proposals tab + Project detail "Created from Proposal" link + tests (~3 tests). ~3 modified files. Frontend only. | |
 
 ### Stage 5: Expiry Processor, Detail Page & Portal Frontend
@@ -684,7 +684,7 @@ Stage 6: [239B]                                                      (final)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **237A** | 237.1--237.8 | Create/edit proposal pages: `ProposalForm` (multi-section), `FeeConfigSection` (dynamic per model), `MilestoneEditor` (percentage validation), `TeamMemberPicker` (multi-select with roles), template picker, proposals/new route, proposals/[id]/edit route + tests (~7 tests). ~7 new files. Frontend only. | |
+| **237A** | 237.1--237.8 | Create/edit proposal pages: `ProposalForm` (multi-section), `FeeConfigSection` (dynamic per model), `MilestoneEditor` (percentage validation), `TeamMemberPicker` (multi-select with roles), template picker, proposals/new route, proposals/[id]/edit route + tests (~7 tests). ~7 new files. Frontend only. | **Done** (PR #480) |
 | **237B** | 237.9--237.15 | Proposal detail page: read-only view, fee summary card, rendered body (Tiptap viewer), team list, `SendProposalDialog` (confirmation with portal contact selection), `ProposalPreview` component, context-dependent actions (DRAFT: Edit/Send/Delete; SENT: Withdraw/Copy; ACCEPTED: View Project/View Invoice; DECLINED/EXPIRED: Copy) + tests (~5 tests). ~5 new files. Frontend only. | |
 
 ### Tasks

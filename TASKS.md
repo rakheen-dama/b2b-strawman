@@ -274,7 +274,7 @@
 | 234 | Portal Proposal Backend & Expiry Processor | Backend | 232, 233 | M | 234A, 234B | **Done** (PRs #475, #476) |
 | 235 | Audit, Notifications & Activity Integration | Backend | 231 | S | 235A | **Done** (PR #477) |
 | 236 | Proposals Frontend — List & Pipeline Stats | Frontend | 231 | M | 236A, 236B | **Done** (PRs #478, #479) |
-| 237 | Proposals Frontend — Create/Edit & Detail Pages | Frontend | 232, 236 | L | 237A, 237B | |
+| 237 | Proposals Frontend — Create/Edit & Detail Pages | Frontend | 232, 236 | L | 237A, 237B | 237A **Done** (PR #480) |
 | 238 | Proposals Frontend — Customer Tab & Project Link | Frontend | 236 | S | 238A | |
 | 239 | Portal Frontend — Proposal Pages | Portal | 234 | M | 239A, 239B | |
 

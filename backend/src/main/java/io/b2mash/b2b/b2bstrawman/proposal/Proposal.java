@@ -273,6 +273,12 @@ public class Proposal {
     this.updatedAt = Instant.now();
   }
 
+  public void setCustomerId(UUID customerId) {
+    requireEditable();
+    this.customerId = Objects.requireNonNull(customerId, "customerId must not be null");
+    this.updatedAt = Instant.now();
+  }
+
   public void setPortalContactId(UUID portalContactId) {
     requireEditable();
     this.portalContactId = portalContactId;

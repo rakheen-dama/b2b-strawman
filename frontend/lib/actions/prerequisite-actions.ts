@@ -32,3 +32,6 @@ export async function checkEngagementPrerequisitesAction(
 ): Promise<PrerequisiteCheck> {
   return checkEngagementPrerequisites(templateId, customerId);
 }
+
+// Re-export from custom-fields actions so shared components don't import route-group files
+export { updateEntityCustomFieldsAction } from "@/app/(app)/org/[slug]/settings/custom-fields/actions";

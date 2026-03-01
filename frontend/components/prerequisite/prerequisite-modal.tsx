@@ -12,16 +12,20 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { PrerequisiteViolationList } from "@/components/prerequisite/prerequisite-violation-list";
-import type { InlineFieldEditorField } from "@/components/prerequisite/inline-field-editor";
-import type { FieldValue } from "@/components/prerequisite/inline-field-editor";
+import type {
+  InlineFieldEditorField,
+  FieldValue,
+} from "@/components/prerequisite/inline-field-editor";
 import type {
   PrerequisiteContext,
   PrerequisiteViolation,
 } from "@/components/prerequisite/types";
 import { PREREQUISITE_CONTEXT_LABELS } from "@/components/prerequisite/types";
 import type { EntityType } from "@/lib/types";
-import { checkPrerequisitesAction } from "@/lib/actions/prerequisite-actions";
-import { updateEntityCustomFieldsAction } from "@/app/(app)/org/[slug]/settings/custom-fields/actions";
+import {
+  checkPrerequisitesAction,
+  updateEntityCustomFieldsAction,
+} from "@/lib/actions/prerequisite-actions";
 
 interface PrerequisiteModalProps {
   open: boolean;
@@ -59,11 +63,13 @@ export function PrerequisiteModal({
     useState<PrerequisiteViolation[]>(initialViolations);
   const [fieldValues, setFieldValues] =
     useState<Record<string, FieldValue>>(initialFieldValues);
+  const [isDirty, setIsDirty] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleFieldChange = useCallback((fieldSlug: string, value: FieldValue) => {
     setFieldValues((prev) => ({ ...prev, [fieldSlug]: value }));
+    setIsDirty(true);
   }, []);
 
   const handleOpenChange = useCallback(
@@ -81,9 +87,8 @@ export function PrerequisiteModal({
     setError(null);
 
     try {
-      // Step 1: Save edited field values if any
-      const hasEdits = Object.keys(fieldValues).length > 0;
-      if (hasEdits) {
+      // Step 1: Save edited field values if any were changed
+      if (isDirty) {
         const saveResult = await updateEntityCustomFieldsAction(
           slug,
           entityType,
@@ -111,7 +116,7 @@ export function PrerequisiteModal({
     } finally {
       setLoading(false);
     }
-  }, [fieldValues, slug, entityType, entityId, context, onResolved, onOpenChange]);
+  }, [isDirty, fieldValues, slug, entityType, entityId, context, onResolved, onOpenChange]);
 
   const contextLabel = PREREQUISITE_CONTEXT_LABELS[context] ?? context;
 
@@ -135,7 +140,7 @@ export function PrerequisiteModal({
         </div>
 
         {error && (
-          <p className="text-sm text-destructive">{error}</p>
+          <p className="text-sm text-destructive" role="alert">{error}</p>
         )}
 
         <DialogFooter>

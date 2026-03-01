@@ -8,14 +8,13 @@ import type { PrerequisiteCheck } from "@/components/prerequisite/types";
 
 vi.mock("@/lib/actions/prerequisite-actions", () => ({
   checkPrerequisitesAction: vi.fn(),
-}));
-
-vi.mock("@/app/(app)/org/[slug]/settings/custom-fields/actions", () => ({
   updateEntityCustomFieldsAction: vi.fn(),
 }));
 
-import { checkPrerequisitesAction } from "@/lib/actions/prerequisite-actions";
-import { updateEntityCustomFieldsAction } from "@/app/(app)/org/[slug]/settings/custom-fields/actions";
+import {
+  checkPrerequisitesAction,
+  updateEntityCustomFieldsAction,
+} from "@/lib/actions/prerequisite-actions";
 
 const mockCheck = vi.mocked(checkPrerequisitesAction);
 const mockSave = vi.mocked(updateEntityCustomFieldsAction);
@@ -209,6 +208,47 @@ describe("PrerequisiteModal — interaction", () => {
       expect(
         screen.getByText("Email address is now required"),
       ).toBeInTheDocument();
+    });
+  });
+
+  it("shows error and skips re-check when save fails", async () => {
+    const user = userEvent.setup();
+    mockSave.mockResolvedValueOnce({ success: false, error: "Server error" });
+
+    render(<PrerequisiteModal {...defaultProps} />);
+
+    // Type a value to trigger dirty state
+    const input = screen.getByRole("textbox");
+    await user.type(input, "BAD");
+
+    const button = screen.getByRole("button", { name: /check & continue/i });
+    await user.click(button);
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toHaveTextContent("Server error");
+    });
+
+    // Re-check should NOT have been called
+    expect(mockCheck).not.toHaveBeenCalled();
+  });
+
+  it("shows generic error when save throws an exception", async () => {
+    const user = userEvent.setup();
+    mockSave.mockRejectedValueOnce(new Error("Network failure"));
+
+    render(<PrerequisiteModal {...defaultProps} />);
+
+    // Type a value to trigger dirty state
+    const input = screen.getByRole("textbox");
+    await user.type(input, "CRASH");
+
+    const button = screen.getByRole("button", { name: /check & continue/i });
+    await user.click(button);
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "An unexpected error occurred.",
+      );
     });
   });
 });

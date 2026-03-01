@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -68,6 +69,10 @@ public class FieldDefinition {
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "visibility_condition", columnDefinition = "jsonb")
   private Map<String, Object> visibilityCondition;
+
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "required_for_contexts", columnDefinition = "jsonb")
+  private List<String> requiredForContexts = new ArrayList<>();
 
   @Column(name = "active", nullable = false)
   private boolean active;
@@ -231,8 +236,16 @@ public class FieldDefinition {
     return visibilityCondition;
   }
 
+  public List<String> getRequiredForContexts() {
+    return requiredForContexts;
+  }
+
   public void setVisibilityCondition(Map<String, Object> visibilityCondition) {
     this.visibilityCondition = visibilityCondition;
+  }
+
+  public void setRequiredForContexts(List<String> requiredForContexts) {
+    this.requiredForContexts = requiredForContexts;
   }
 
   public void setRequired(boolean required) {

@@ -15,6 +15,7 @@
       "fieldType": "TEXT",
       "description": "Street address",
       "required": false,
+      "requiredForContexts": ["INVOICE_GENERATION", "PROPOSAL_SEND"],
       "sortOrder": 1
     },
     {
@@ -31,6 +32,7 @@
       "fieldType": "TEXT",
       "description": "City or locality",
       "required": false,
+      "requiredForContexts": ["INVOICE_GENERATION"],
       "sortOrder": 3
     },
     {
@@ -55,6 +57,7 @@
       "fieldType": "DROPDOWN",
       "description": "Country",
       "required": false,
+      "requiredForContexts": ["INVOICE_GENERATION"],
       "options": [
         { "value": "US", "label": "United States" },
         { "value": "CA", "label": "Canada" },
@@ -74,6 +77,7 @@
       "fieldType": "TEXT",
       "description": "Tax identification number (VAT, EIN, GST, etc.)",
       "required": false,
+      "requiredForContexts": ["INVOICE_GENERATION"],
       "sortOrder": 7
     },
     {

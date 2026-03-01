@@ -3,7 +3,7 @@
 import { getAuthContext } from "@/lib/auth";
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
-import type { Task, CreateTaskRequest } from "@/lib/types";
+import type { Task, CreateTaskRequest, CompleteTaskResponse } from "@/lib/types";
 
 interface ActionResult {
   success: boolean;
@@ -12,13 +12,14 @@ interface ActionResult {
 
 export async function fetchTasks(
   projectId: string,
-  filters?: { status?: string; assigneeId?: string; priority?: string; viewId?: string }
+  filters?: { status?: string; assigneeId?: string; priority?: string; viewId?: string; recurring?: boolean }
 ): Promise<Task[]> {
   const params = new URLSearchParams();
   if (filters?.status) params.set("status", filters.status);
   if (filters?.assigneeId) params.set("assigneeId", filters.assigneeId);
   if (filters?.priority) params.set("priority", filters.priority);
   if (filters?.viewId) params.set("view", filters.viewId);
+  if (filters?.recurring) params.set("recurring", "true");
 
   const query = params.toString();
   const url = `/api/projects/${projectId}/tasks${query ? `?${query}` : ""}`;
@@ -46,6 +47,8 @@ export async function createTask(
   const priority = formData.get("priority")?.toString() || undefined;
   const type = formData.get("type")?.toString().trim() || undefined;
   const dueDate = formData.get("dueDate")?.toString() || undefined;
+  const recurrenceRule = formData.get("recurrenceRule")?.toString() || undefined;
+  const recurrenceEndDate = formData.get("recurrenceEndDate")?.toString() || undefined;
 
   const body: CreateTaskRequest = {
     title,
@@ -54,6 +57,8 @@ export async function createTask(
     type,
     dueDate,
     assigneeId: assigneeId ?? undefined,
+    recurrenceRule,
+    recurrenceEndDate,
   };
 
   try {
@@ -159,22 +164,27 @@ export async function releaseTask(
   return { success: true };
 }
 
+interface CompleteTaskResult {
+  success: boolean;
+  error?: string;
+  nextInstance?: Task | null;
+}
+
 export async function completeTask(
   slug: string,
   taskId: string,
   projectId: string
-): Promise<ActionResult> {
+): Promise<CompleteTaskResult> {
   try {
-    await api.patch<Task>(`/api/tasks/${taskId}/complete`);
+    const response = await api.patch<CompleteTaskResponse>(`/api/tasks/${taskId}/complete`);
+    revalidatePath(`/org/${slug}/projects/${projectId}`);
+    return { success: true, nextInstance: response?.nextInstance ?? null };
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
     }
     return { success: false, error: "An unexpected error occurred." };
   }
-
-  revalidatePath(`/org/${slug}/projects/${projectId}`);
-  return { success: true };
 }
 
 export async function cancelTask(

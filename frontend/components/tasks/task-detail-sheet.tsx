@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useReducer, useState, useTransition } from "react";
-import { Ban, Check, Circle, Loader2, MoreHorizontal, RotateCcw, X, XCircle } from "lucide-react";
+import { Ban, Check, Circle, Loader2, MoreHorizontal, Repeat, RotateCcw, X, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -46,6 +47,9 @@ import {
 import { fetchTimeEntries } from "@/app/(app)/org/[slug]/projects/[id]/time-entry-actions";
 import { formatDate } from "@/lib/format";
 import { PRIORITY_BADGE, STATUS_BADGE } from "@/components/tasks/task-badge-config";
+import { describeRecurrence, parseRecurrenceRule, formatRecurrenceRule } from "@/lib/recurrence";
+import type { RecurrenceFrequency } from "@/lib/recurrence";
+import { toast } from "sonner";
 import type {
   Task,
   TaskStatus,
@@ -116,6 +120,118 @@ interface TaskDetailSheetProps {
   fieldDefinitions?: FieldDefinitionResponse[];
   fieldGroups?: FieldGroupResponse[];
   groupMembers?: Record<string, FieldGroupMemberResponse[]>;
+}
+
+// --- Recurrence Editor (225.2) ---
+
+function RecurrenceEditor({
+  task,
+  slug,
+  projectId,
+  onUpdate,
+}: {
+  task: Task;
+  slug: string;
+  projectId: string;
+  onUpdate: (task: Task) => void;
+}) {
+  const parsed = parseRecurrenceRule(task.recurrenceRule);
+  const [frequency, setFrequency] = useState<RecurrenceFrequency | "NONE">(parsed?.frequency ?? "NONE");
+  const [recurrenceInterval, setRecurrenceInterval] = useState(parsed?.interval ?? 1);
+  const [endDate, setEndDate] = useState(task.recurrenceEndDate ?? "");
+  const [, startTransition] = useTransition();
+
+  function handleSave() {
+    const effectiveFrequency = frequency === "NONE" ? null : frequency;
+    const rule = effectiveFrequency ? formatRecurrenceRule(effectiveFrequency, recurrenceInterval) : null;
+    const newEndDate = effectiveFrequency && endDate ? endDate : null;
+
+    // Optimistic update
+    onUpdate({
+      ...task,
+      recurrenceRule: rule,
+      recurrenceEndDate: newEndDate,
+      isRecurring: !!rule,
+    });
+
+    startTransition(async () => {
+      try {
+        const result = await updateTask(slug, task.id, projectId, {
+          title: task.title,
+          description: task.description ?? undefined,
+          priority: task.priority,
+          status: task.status,
+          type: task.type ?? undefined,
+          dueDate: task.dueDate ?? undefined,
+          assigneeId: task.assigneeId ?? undefined,
+          recurrenceRule: rule ?? undefined,
+          recurrenceEndDate: newEndDate ?? undefined,
+        });
+
+        if (!result.success) {
+          onUpdate(task);
+        }
+      } catch {
+        onUpdate(task);
+      }
+    });
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="text-xs text-slate-500 dark:text-slate-400">
+            Frequency
+          </label>
+          <Select value={frequency} onValueChange={(v) => setFrequency(v as RecurrenceFrequency | "")}>
+            <SelectTrigger className="mt-1 h-8 w-full text-xs">
+              <SelectValue placeholder="None" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="NONE">None</SelectItem>
+              <SelectItem value="DAILY">Daily</SelectItem>
+              <SelectItem value="WEEKLY">Weekly</SelectItem>
+              <SelectItem value="MONTHLY">Monthly</SelectItem>
+              <SelectItem value="YEARLY">Yearly</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        {frequency !== "NONE" && (
+          <div>
+            <label htmlFor="detail-recurrence-interval" className="text-xs text-slate-500 dark:text-slate-400">
+              Interval
+            </label>
+            <Input
+              id="detail-recurrence-interval"
+              type="number"
+              min={1}
+              value={recurrenceInterval}
+              onChange={(e) => setRecurrenceInterval(Math.max(1, parseInt(e.target.value, 10) || 1))}
+              className="mt-1 h-8 text-xs"
+            />
+          </div>
+        )}
+      </div>
+      {frequency && (
+        <div>
+          <label htmlFor="detail-recurrence-end" className="text-xs text-slate-500 dark:text-slate-400">
+            End Date (optional)
+          </label>
+          <Input
+            id="detail-recurrence-end"
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="mt-1 h-8 text-xs"
+          />
+        </div>
+      )}
+      <Button size="sm" variant="outline" onClick={handleSave}>
+        Save Recurrence
+      </Button>
+    </div>
+  );
 }
 
 // --- Status Select ---
@@ -290,13 +406,32 @@ export function TaskDetailSheet({
   const [actionError, setActionError] = useState<string | null>(null);
 
   // Handle lifecycle actions — call server action then re-fetch task
-  function handleLifecycleAction(action: (slug: string, taskId: string, projectId: string) => Promise<{ success: boolean; error?: string }>) {
+  function handleLifecycleAction(action: (slug: string, taskId: string, projectId: string) => Promise<{ success: boolean; error?: string; nextInstance?: Task | null }>) {
     if (!task) return;
 
     setActionError(null);
     startTransition(async () => {
       const result = await action(slug, task.id, effectiveProjectId);
       if (result.success) {
+        // Show toast for recurring tasks when completing (225.6)
+        if ("nextInstance" in result) {
+          if (result.nextInstance) {
+            const dueLabel = result.nextInstance.dueDate
+              ? new Date(result.nextInstance.dueDate).toLocaleDateString(undefined, {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })
+              : "no due date";
+            toast.success("Task completed", {
+              description: `Next instance due ${dueLabel}`,
+            });
+          } else if (task.isRecurring) {
+            toast.success("Task completed", {
+              description: "Recurrence has ended",
+            });
+          }
+        }
         // Re-fetch to get updated metadata (completedAt, completedByName, etc.)
         try {
           const updated = await fetchTask(task.id);
@@ -514,8 +649,64 @@ export function TaskDetailSheet({
                     {formatDate(task.createdAt)}
                   </dd>
                 </div>
+                {/* Recurrence info (225.5) */}
+                <div>
+                  <dt className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                    <span className="inline-flex items-center gap-1">
+                      <Repeat className="size-3" />
+                      Recurrence
+                    </span>
+                  </dt>
+                  <dd className="mt-1 text-sm text-slate-700 dark:text-slate-300">
+                    {describeRecurrence(task.recurrenceRule)}
+                    {task.recurrenceEndDate && (
+                      <span className="ml-1 text-xs text-slate-500">
+                        (until {formatDate(task.recurrenceEndDate)})
+                      </span>
+                    )}
+                  </dd>
+                </div>
+                {task.parentTaskId && (
+                  <div>
+                    <dt className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                      Parent Task
+                    </dt>
+                    <dd className="mt-1">
+                      <button
+                        type="button"
+                        className="text-sm text-teal-600 hover:text-teal-700 hover:underline dark:text-teal-400"
+                        onClick={() => {
+                          // Navigate to parent task by updating URL
+                          if (task.parentTaskId) {
+                            const params = new URLSearchParams(window.location.search);
+                            params.set("taskId", task.parentTaskId);
+                            window.history.pushState(null, "", `?${params.toString()}`);
+                            window.dispatchEvent(new PopStateEvent("popstate"));
+                          }
+                        }}
+                      >
+                        View parent task
+                      </button>
+                    </dd>
+                  </div>
+                )}
               </dl>
             </div>
+
+            {/* Editable Recurrence (225.2) */}
+            {canChangeStatus && !isTerminal && (
+              <div className="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
+                <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                  Edit Recurrence
+                </h3>
+                <RecurrenceEditor
+                  task={task}
+                  slug={slug}
+                  projectId={effectiveProjectId}
+                  onUpdate={(updated) => dispatch({ type: "UPDATE_TASK", task: updated })}
+                />
+              </div>
+            )}
 
             {/* Description */}
             {task.description && (

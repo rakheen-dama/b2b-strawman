@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AlertTriangle, Check, Clock, ClipboardList, Hand, Plus, RotateCcw, Undo2 } from "lucide-react";
+import { AlertTriangle, Check, Clock, ClipboardList, Hand, Plus, Repeat, RotateCcw, Undo2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
@@ -28,6 +28,14 @@ import {
 import { cn } from "@/lib/utils";
 import { PRIORITY_BADGE, STATUS_BADGE } from "@/components/tasks/task-badge-config";
 import { ViewSelectorClient } from "@/components/views/ViewSelectorClient";
+import { describeRecurrence } from "@/lib/recurrence";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { toast } from "sonner";
 import type {
   Task,
   TaskStatus,
@@ -45,13 +53,14 @@ import type {
 const ALL_STATUSES: TaskStatus[] = ["OPEN", "IN_PROGRESS", "DONE", "CANCELLED"];
 const DEFAULT_STATUSES: TaskStatus[] = ["OPEN", "IN_PROGRESS"];
 
-const FILTER_CHIPS: { key: TaskStatus | "all" | "my"; label: string }[] = [
+const FILTER_CHIPS: { key: TaskStatus | "all" | "my" | "recurring"; label: string }[] = [
   { key: "all", label: "All" },
   { key: "OPEN", label: "Open" },
   { key: "IN_PROGRESS", label: "In Progress" },
   { key: "DONE", label: "Done" },
   { key: "CANCELLED", label: "Cancelled" },
   { key: "my", label: "My Tasks" },
+  { key: "recurring", label: "Recurring" },
 ];
 
 // --- Overdue helper (40.8) ---
@@ -104,6 +113,7 @@ export function TaskListPanel({
   const selectedTaskId = searchParams.get("taskId");
   const [activeStatuses, setActiveStatuses] = useState<Set<TaskStatus>>(new Set(DEFAULT_STATUSES));
   const [myTasksActive, setMyTasksActive] = useState(false);
+  const [recurringActive, setRecurringActive] = useState(false);
   const [tasks, setTasks] = useState<Task[]>(
     initialTasks.filter((t) => DEFAULT_STATUSES.includes(t.status))
   );
@@ -142,19 +152,27 @@ export function TaskListPanel({
 
   // --- Multi-select filter handler (207.2) ---
 
-  function handleChipClick(key: TaskStatus | "all" | "my") {
+  function handleChipClick(key: TaskStatus | "all" | "my" | "recurring") {
     setError(null);
 
     if (key === "all") {
       setMyTasksActive(false);
+      setRecurringActive(false);
       setActiveStatuses(new Set(ALL_STATUSES));
-      fetchWithFilters(new Set(ALL_STATUSES), false);
+      fetchWithFilters(new Set(ALL_STATUSES), false, false);
     } else if (key === "my") {
       const next = !myTasksActive;
       setMyTasksActive(next);
-      fetchWithFilters(activeStatuses, next);
+      setRecurringActive(false);
+      fetchWithFilters(activeStatuses, next, false);
+    } else if (key === "recurring") {
+      const next = !recurringActive;
+      setRecurringActive(next);
+      setMyTasksActive(false);
+      fetchWithFilters(activeStatuses, false, next);
     } else {
       setMyTasksActive(false);
+      setRecurringActive(false);
       const next = new Set(activeStatuses);
       if (next.has(key)) {
         // Don't allow deselecting the last status
@@ -165,16 +183,16 @@ export function TaskListPanel({
         next.add(key);
       }
       setActiveStatuses(next);
-      fetchWithFilters(next, false);
+      fetchWithFilters(next, false, false);
     }
   }
 
-  function fetchWithFilters(statuses: Set<TaskStatus>, myTasks: boolean) {
+  function fetchWithFilters(statuses: Set<TaskStatus>, myTasks: boolean, recurring?: boolean) {
     const currentViewId = searchParams.get("view");
 
     startTransition(async () => {
       try {
-        const filters: { status?: string; assigneeId?: string; viewId?: string } = {};
+        const filters: { status?: string; assigneeId?: string; viewId?: string; recurring?: boolean } = {};
         if (myTasks) {
           if (!currentMemberId) {
             setTasks([]);
@@ -187,6 +205,9 @@ export function TaskListPanel({
         if (currentViewId) {
           filters.viewId = currentViewId;
         }
+        if (recurring) {
+          filters.recurring = true;
+        }
         const fetched = await fetchTasks(projectId, filters);
         setTasks(fetched);
       } catch {
@@ -195,8 +216,8 @@ export function TaskListPanel({
     });
   }
 
-  function buildCurrentFilters(): { status?: string; assigneeId?: string; viewId?: string } {
-    const filters: { status?: string; assigneeId?: string; viewId?: string } = {};
+  function buildCurrentFilters(): { status?: string; assigneeId?: string; viewId?: string; recurring?: boolean } {
+    const filters: { status?: string; assigneeId?: string; viewId?: string; recurring?: boolean } = {};
     if (myTasksActive && currentMemberId) {
       filters.assigneeId = currentMemberId;
     } else {
@@ -206,15 +227,19 @@ export function TaskListPanel({
     if (currentViewId) {
       filters.viewId = currentViewId;
     }
+    if (recurringActive) {
+      filters.recurring = true;
+    }
     return filters;
   }
 
   // --- Chip active state helpers ---
 
-  function isChipActive(key: TaskStatus | "all" | "my"): boolean {
-    if (key === "all") return activeStatuses.size === ALL_STATUSES.length && !myTasksActive;
+  function isChipActive(key: TaskStatus | "all" | "my" | "recurring"): boolean {
+    if (key === "all") return activeStatuses.size === ALL_STATUSES.length && !myTasksActive && !recurringActive;
     if (key === "my") return myTasksActive;
-    return activeStatuses.has(key) && !myTasksActive;
+    if (key === "recurring") return recurringActive;
+    return activeStatuses.has(key) && !myTasksActive && !recurringActive;
   }
 
   // Check if we're in the initial "no filter applied" state for empty state display
@@ -269,7 +294,7 @@ export function TaskListPanel({
     });
   }
 
-  // --- Complete handler (207A) ---
+  // --- Complete handler (207A + 225.6) ---
 
   function handleComplete(taskId: string) {
     setError(null);
@@ -282,6 +307,27 @@ export function TaskListPanel({
           setError(result.error ?? "Failed to complete task.");
           router.refresh();
         } else {
+          // Show toast for recurring tasks (225.6)
+          if (result.nextInstance) {
+            const dueLabel = result.nextInstance.dueDate
+              ? new Date(result.nextInstance.dueDate).toLocaleDateString(undefined, {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })
+              : "no due date";
+            toast.success("Task completed", {
+              description: `Next instance due ${dueLabel}`,
+            });
+          } else if (result.nextInstance === null) {
+            // nextInstance is explicitly null — check if the completed task was recurring
+            const completedTask = tasks.find((t) => t.id === taskId);
+            if (completedTask?.isRecurring) {
+              toast.success("Task completed", {
+                description: "Recurrence has ended",
+              });
+            }
+          }
           const fetched = await fetchTasks(projectId, buildCurrentFilters());
           setTasks(fetched);
         }
@@ -406,6 +452,7 @@ export function TaskListPanel({
           description="Try a different filter or clear the selection."
         />
       ) : (
+        <TooltipProvider>
         <div className="rounded-lg border border-slate-200 dark:border-slate-800">
           <Table>
             <TableHeader>
@@ -469,16 +516,30 @@ export function TaskListPanel({
                         aria-label={`Open task detail for ${task.title}`}
                       >
                         <div className="min-w-0">
-                          <p className={cn(
-                            "truncate text-sm font-medium dark:text-slate-50",
-                            task.status === "DONE"
-                              ? "line-through text-muted-foreground"
-                              : task.status === "CANCELLED"
-                                ? "text-muted-foreground"
-                                : "text-slate-950 hover:text-teal-600",
-                          )}>
-                            {task.title}
-                          </p>
+                          <span className="flex items-center gap-1.5">
+                            <p className={cn(
+                              "truncate text-sm font-medium dark:text-slate-50",
+                              task.status === "DONE"
+                                ? "line-through text-muted-foreground"
+                                : task.status === "CANCELLED"
+                                  ? "text-muted-foreground"
+                                  : "text-slate-950 hover:text-teal-600",
+                            )}>
+                              {task.title}
+                            </p>
+                            {task.isRecurring && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="inline-flex shrink-0 text-teal-500" aria-label="Recurring task">
+                                    <Repeat className="size-3.5" />
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>{describeRecurrence(task.recurrenceRule)}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
+                          </span>
                           {task.type && (
                             <p className="truncate text-xs text-slate-500 dark:text-slate-500">
                               {task.type}
@@ -594,6 +655,7 @@ export function TaskListPanel({
             </TableBody>
           </Table>
         </div>
+        </TooltipProvider>
       )}
       <TaskDetailSheet
         taskId={selectedTaskId}

@@ -13,9 +13,18 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { createTask } from "@/app/(app)/org/[slug]/projects/[id]/task-actions";
 import { AssigneeSelector } from "@/components/tasks/assignee-selector";
+import { formatRecurrenceRule } from "@/lib/recurrence";
+import type { RecurrenceFrequency } from "@/lib/recurrence";
 
 interface CreateTaskDialogProps {
   slug: string;
@@ -36,17 +45,30 @@ export function CreateTaskDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedAssigneeId, setSelectedAssigneeId] = useState<string | null>(null);
+  const [priority, setPriority] = useState("MEDIUM");
+  const [recurrenceFrequency, setRecurrenceFrequency] = useState<RecurrenceFrequency | "NONE">("NONE");
+  const [recurrenceInterval, setRecurrenceInterval] = useState(1);
   const formRef = useRef<HTMLFormElement>(null);
 
   async function handleSubmit(formData: FormData) {
     setError(null);
     setIsSubmitting(true);
 
+    // Add controlled fields to FormData
+    formData.set("priority", priority);
+    if (recurrenceFrequency !== "NONE") {
+      const rule = formatRecurrenceRule(recurrenceFrequency, recurrenceInterval);
+      if (rule) formData.set("recurrenceRule", rule);
+    }
+
     try {
       const result = await createTask(slug, projectId, formData, selectedAssigneeId);
       if (result.success) {
         formRef.current?.reset();
         setSelectedAssigneeId(null);
+        setPriority("MEDIUM");
+        setRecurrenceFrequency("NONE");
+        setRecurrenceInterval(1);
         setOpen(false);
       } else {
         setError(result.error ?? "Failed to create task.");
@@ -62,6 +84,9 @@ export function CreateTaskDialog({
     if (newOpen) {
       setError(null);
       setSelectedAssigneeId(null);
+      setPriority("MEDIUM");
+      setRecurrenceFrequency("NONE");
+      setRecurrenceInterval(1);
     }
     setOpen(newOpen);
   }
@@ -100,17 +125,17 @@ export function CreateTaskDialog({
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="task-priority">Priority</Label>
-              <select
-                id="task-priority"
-                name="priority"
-                defaultValue="MEDIUM"
-                className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800"
-              >
-                <option value="LOW">Low</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="HIGH">High</option>
-              </select>
+              <Label>Priority</Label>
+              <Select value={priority} onValueChange={setPriority}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="LOW">Low</SelectItem>
+                  <SelectItem value="MEDIUM">Medium</SelectItem>
+                  <SelectItem value="HIGH">High</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="task-type">
@@ -130,6 +155,44 @@ export function CreateTaskDialog({
             </Label>
             <Input id="task-due-date" name="dueDate" type="date" />
           </div>
+          {/* Recurrence section */}
+          <div className="space-y-2">
+            <Label htmlFor="task-recurrence-frequency">
+              Recurrence <span className="font-normal text-muted-foreground">(optional)</span>
+            </Label>
+            <Select value={recurrenceFrequency} onValueChange={(v) => setRecurrenceFrequency(v as RecurrenceFrequency | "NONE")}>
+              <SelectTrigger>
+                <SelectValue placeholder="None" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="NONE">None</SelectItem>
+                <SelectItem value="DAILY">Daily</SelectItem>
+                <SelectItem value="WEEKLY">Weekly</SelectItem>
+                <SelectItem value="MONTHLY">Monthly</SelectItem>
+                <SelectItem value="YEARLY">Yearly</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {recurrenceFrequency !== "NONE" && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="task-recurrence-interval">Interval</Label>
+                <Input
+                  id="task-recurrence-interval"
+                  type="number"
+                  min={1}
+                  value={recurrenceInterval}
+                  onChange={(e) => setRecurrenceInterval(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="task-recurrence-end-date">
+                  End Date <span className="font-normal text-muted-foreground">(optional)</span>
+                </Label>
+                <Input id="task-recurrence-end-date" name="recurrenceEndDate" type="date" />
+              </div>
+            </div>
+          )}
           {canManage && (
             <div className="space-y-2">
               <Label>

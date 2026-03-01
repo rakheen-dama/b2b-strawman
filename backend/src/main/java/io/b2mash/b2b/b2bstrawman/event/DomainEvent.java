@@ -43,7 +43,8 @@ public sealed interface DomainEvent
         ProjectReopenedEvent,
         ExpenseCreatedEvent,
         ExpenseDeletedEvent,
-        TaskRecurrenceCreatedEvent {
+        TaskRecurrenceCreatedEvent,
+        ProposalSentEvent {
 
   String eventType();
 

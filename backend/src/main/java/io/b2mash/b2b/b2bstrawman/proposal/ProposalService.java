@@ -1,17 +1,25 @@
 package io.b2mash.b2b.b2bstrawman.proposal;
 
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.event.ProposalSentEvent;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.proposal.dto.MilestoneRequest;
 import io.b2mash.b2b.b2bstrawman.proposal.dto.ProposalFilterCriteria;
 import io.b2mash.b2b.b2bstrawman.proposal.dto.ProposalStats;
 import io.b2mash.b2b.b2bstrawman.proposal.dto.TeamMemberRequest;
+import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import io.b2mash.b2b.b2bstrawman.template.TiptapRenderer;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +27,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -35,6 +44,14 @@ public class ProposalService {
   private final ProposalNumberService proposalNumberService;
   private final CustomerRepository customerRepository;
   private final MemberRepository memberRepository;
+  private final PortalContactRepository portalContactRepository;
+  private final ProposalVariableResolver proposalVariableResolver;
+  private final TiptapRenderer tiptapRenderer;
+  private final ProposalPortalSyncService proposalPortalSyncService;
+  private final OrgSettingsRepository orgSettingsRepository;
+  private final OrganizationRepository organizationRepository;
+  private final ApplicationEventPublisher eventPublisher;
+  private final MemberNameResolver memberNameResolver;
 
   public ProposalService(
       ProposalRepository proposalRepository,
@@ -42,13 +59,29 @@ public class ProposalService {
       ProposalTeamMemberRepository teamMemberRepository,
       ProposalNumberService proposalNumberService,
       CustomerRepository customerRepository,
-      MemberRepository memberRepository) {
+      MemberRepository memberRepository,
+      PortalContactRepository portalContactRepository,
+      ProposalVariableResolver proposalVariableResolver,
+      TiptapRenderer tiptapRenderer,
+      ProposalPortalSyncService proposalPortalSyncService,
+      OrgSettingsRepository orgSettingsRepository,
+      OrganizationRepository organizationRepository,
+      ApplicationEventPublisher eventPublisher,
+      MemberNameResolver memberNameResolver) {
     this.proposalRepository = proposalRepository;
     this.milestoneRepository = milestoneRepository;
     this.teamMemberRepository = teamMemberRepository;
     this.proposalNumberService = proposalNumberService;
     this.customerRepository = customerRepository;
     this.memberRepository = memberRepository;
+    this.portalContactRepository = portalContactRepository;
+    this.proposalVariableResolver = proposalVariableResolver;
+    this.tiptapRenderer = tiptapRenderer;
+    this.proposalPortalSyncService = proposalPortalSyncService;
+    this.orgSettingsRepository = orgSettingsRepository;
+    this.organizationRepository = organizationRepository;
+    this.eventPublisher = eventPublisher;
+    this.memberNameResolver = memberNameResolver;
   }
 
   // --- 231.1: createProposal ---
@@ -378,6 +411,126 @@ public class ProposalService {
         totalExpired,
         conversionRate,
         averageDaysToAccept);
+  }
+
+  // --- 232.6–232.9: sendProposal ---
+
+  @Transactional
+  public Proposal sendProposal(UUID proposalId, UUID portalContactId) {
+    // 1. Load and validate proposal
+    var proposal =
+        proposalRepository
+            .findById(proposalId)
+            .orElseThrow(() -> new ResourceNotFoundException("Proposal", proposalId));
+    requireDraft(proposal);
+
+    // 2. Validate content is not empty
+    if (proposal.getContentJson() == null || proposal.getContentJson().isEmpty()) {
+      throw new InvalidStateException(
+          "Invalid proposal content", "Proposal content must not be empty");
+    }
+
+    // 3. Validate fee configuration
+    validateFeeConfiguration(
+        proposal.getFeeModel(), proposal.getFixedFeeAmount(), proposal.getRetainerAmount());
+
+    // 4. Validate milestones sum to 100 if FIXED + milestones exist
+    if (proposal.getFeeModel() == FeeModel.FIXED) {
+      var milestones = milestoneRepository.findByProposalIdOrderBySortOrder(proposalId);
+      if (!milestones.isEmpty()) {
+        BigDecimal total =
+            milestones.stream()
+                .map(ProposalMilestone::getPercentage)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (total.compareTo(new BigDecimal("100.00")) != 0) {
+          throw new InvalidStateException(
+              "Invalid milestone percentages",
+              "Milestone percentages must sum to exactly 100.00, got " + total);
+        }
+      }
+    }
+
+    // 5. Validate portal contact
+    var contact =
+        portalContactRepository
+            .findById(portalContactId)
+            .orElseThrow(() -> new ResourceNotFoundException("PortalContact", portalContactId));
+    if (!contact.getCustomerId().equals(proposal.getCustomerId())) {
+      throw new InvalidStateException(
+          "Portal contact mismatch", "Portal contact does not belong to the proposal's customer");
+    }
+
+    // 6. Transition
+    proposal.markSent(portalContactId);
+
+    // 7. Load context for rendering
+    var customer =
+        customerRepository
+            .findById(proposal.getCustomerId())
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", proposal.getCustomerId()));
+    var orgSettings = orgSettingsRepository.findForCurrentTenant().orElse(null);
+    String orgId = RequestScopes.requireOrgId();
+    var org = organizationRepository.findByClerkOrgId(orgId).orElse(null);
+    String orgName = org != null ? org.getName() : orgId;
+
+    // 8. Build variable context and render
+    var variableContext =
+        proposalVariableResolver.buildContext(proposal, customer, contact, orgSettings, orgName);
+    Map<String, Object> renderContext = new HashMap<>(variableContext);
+    String contentHtml =
+        tiptapRenderer.render(proposal.getContentJson(), renderContext, Map.of(), null);
+
+    // 9. Sync to portal
+    proposalPortalSyncService.syncProposalToPortal(
+        proposal, contentHtml, orgId, orgName, orgSettings);
+
+    // 10. Save
+    var saved = proposalRepository.save(proposal);
+
+    // 11. Publish event
+    UUID memberId = RequestScopes.requireMemberId();
+    String actorName = memberNameResolver.resolveName(memberId);
+    eventPublisher.publishEvent(
+        new ProposalSentEvent(
+            "proposal.sent",
+            "proposal",
+            saved.getId(),
+            null,
+            memberId,
+            actorName,
+            RequestScopes.getTenantIdOrNull(),
+            RequestScopes.getOrgIdOrNull(),
+            Instant.now(),
+            Map.of(
+                "proposal_number",
+                saved.getProposalNumber(),
+                "customer_id",
+                saved.getCustomerId().toString(),
+                "contact_name",
+                contact.getDisplayName() != null ? contact.getDisplayName() : "")));
+
+    log.info("Sent proposal {} to contact {}", proposalId, portalContactId);
+    return saved;
+  }
+
+  // --- 232.12: withdrawProposal ---
+
+  @Transactional
+  public Proposal withdrawProposal(UUID proposalId) {
+    var proposal =
+        proposalRepository
+            .findById(proposalId)
+            .orElseThrow(() -> new ResourceNotFoundException("Proposal", proposalId));
+
+    // Only SENT proposals can be withdrawn
+    proposal.markWithdrawn();
+
+    // Update portal read model status
+    proposalPortalSyncService.updatePortalProposalStatus(proposalId, "DRAFT");
+
+    var saved = proposalRepository.save(proposal);
+    log.info("Withdrew proposal {}", proposalId);
+    return saved;
   }
 
   // --- Private helpers ---

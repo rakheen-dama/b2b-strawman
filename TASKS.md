@@ -271,7 +271,7 @@
 | 231 | Proposal CRUD & Lifecycle Backend | Backend | 230 | L | 231A, 231B | **Done** (PRs #469, #470) |
 | 232 | Send Flow & Portal Read-Model Sync | Backend | 231 | M | 232A, 232B | **Done** (PRs #471, #472) |
 | 233 | Acceptance Orchestration | Backend | 231 | L | 233A, 233B | **Done** (PRs #473, #474) |
-| 234 | Portal Proposal Backend & Expiry Processor | Backend | 232, 233 | M | 234A, 234B | |
+| 234 | Portal Proposal Backend & Expiry Processor | Backend | 232, 233 | M | 234A, 234B | 234A **Done** (PR #475) |
 | 235 | Audit, Notifications & Activity Integration | Backend | 231 | S | 235A | |
 | 236 | Proposals Frontend — List & Pipeline Stats | Frontend | 231 | M | 236A, 236B | |
 | 237 | Proposals Frontend — Create/Edit & Detail Pages | Frontend | 232, 236 | L | 237A, 237B | |

@@ -173,7 +173,7 @@ PORTAL TRACK (after E234A)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 4a (parallel) | 234 | 234A | PortalProposalController (4 endpoints) + portal auth scoping + accept triggers orchestration + decline/withdraw flow + tests (~10 tests). ~1 new controller, ~1 test file. Backend only. | |
+| 4a (parallel) | 234 | 234A | PortalProposalController (4 endpoints) + portal auth scoping + accept triggers orchestration + decline/withdraw flow + tests (~10 tests). ~1 new controller, ~1 test file. Backend only. | **Done** (PR #475) |
 | 4b (parallel) | 237 | 237A | Create/edit proposal pages: ProposalForm, FeeConfigSection, MilestoneEditor, TeamMemberPicker, template picker + edit route + tests (~7 tests). ~7 new files. Frontend only. | |
 | 4c (parallel) | 238 | 238A | Customer detail Proposals tab + Project detail "Created from Proposal" link + tests (~3 tests). ~3 modified files. Frontend only. | |
 
@@ -507,7 +507,7 @@ Stage 6: [239B]                                                      (final)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **234A** | 234.1--234.7 | `PortalProposalController`: list proposals for portal contact, get detail (rendered HTML + fee summary + milestones), accept (triggers orchestration), decline (with optional reason). Portal auth scoping. Decline/withdraw flow. ~1 new controller, ~1 test file. Backend only. | |
+| **234A** | 234.1--234.7 | `PortalProposalController`: list proposals for portal contact, get detail (rendered HTML + fee summary + milestones), accept (triggers orchestration), decline (with optional reason). Portal auth scoping. Decline/withdraw flow. ~1 new controller, ~1 test file. Backend only. | **Done** (PR #475) |
 | **234B** | 234.8--234.12 | `ProposalExpiryProcessor`: @Scheduled job iterating tenant schemas, find SENT proposals past expiry, transition to EXPIRED, notification to creator, email to portal contact, portal sync + tests (~5 tests). ~1 new file, ~1 test file. Backend only. | |
 
 ### Tasks

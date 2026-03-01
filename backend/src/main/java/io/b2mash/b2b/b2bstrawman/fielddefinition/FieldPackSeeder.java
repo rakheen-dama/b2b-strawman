@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -153,6 +154,12 @@ public class FieldPackSeeder {
       }
       if (field.validation() != null) {
         fd.setValidation(field.validation());
+      }
+
+      // Set requiredForContexts from pack field (Phase 33 prerequisite contexts)
+      var contexts = field.requiredForContexts();
+      if (!contexts.isEmpty()) {
+        fd.setRequiredForContexts(new ArrayList<>(contexts));
       }
 
       fd = fieldDefinitionRepository.save(fd);

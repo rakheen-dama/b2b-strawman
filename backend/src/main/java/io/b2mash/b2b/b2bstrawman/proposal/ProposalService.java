@@ -12,9 +12,11 @@ import io.b2mash.b2b.b2bstrawman.proposal.dto.TeamMemberRequest;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -175,11 +177,27 @@ public class ProposalService {
         retainerAmount != null ? retainerAmount : proposal.getRetainerAmount();
     validateFeeConfiguration(effectiveFeeModel, effectiveFixedAmount, effectiveRetainerAmount);
 
+    // Clear stale fee fields when switching fee models
+    if (feeModel != null && feeModel != proposal.getFeeModel()) {
+      switch (proposal.getFeeModel()) {
+        case FIXED -> {
+          proposal.setFixedFeeAmount(null);
+          proposal.setFixedFeeCurrency(null);
+        }
+        case RETAINER -> {
+          proposal.setRetainerAmount(null);
+          proposal.setRetainerCurrency(null);
+          proposal.setRetainerHoursIncluded(null);
+        }
+        case HOURLY -> proposal.setHourlyRateNote(null);
+      }
+      proposal.setFeeModel(feeModel);
+    }
+
     // Update mutable fields via guarded setters
     if (title != null) proposal.setTitle(title);
     if (customerId != null) proposal.setCustomerId(customerId);
     if (portalContactId != null) proposal.setPortalContactId(portalContactId);
-    if (feeModel != null) proposal.setFeeModel(feeModel);
     if (fixedFeeAmount != null) proposal.setFixedFeeAmount(fixedFeeAmount);
     if (fixedFeeCurrency != null) proposal.setFixedFeeCurrency(fixedFeeCurrency);
     if (hourlyRateNote != null) proposal.setHourlyRateNote(hourlyRateNote);
@@ -230,8 +248,19 @@ public class ProposalService {
           "Invalid fee model", "Milestones are only valid for FIXED fee model proposals");
     }
 
-    // Validate percentages sum to 100
+    // Validate milestones
     if (milestones != null && !milestones.isEmpty()) {
+      for (var m : milestones) {
+        if (m.description() == null || m.description().isBlank()) {
+          throw new InvalidStateException(
+              "Invalid milestone", "Milestone description must not be blank");
+        }
+        if (m.percentage() == null || m.percentage().compareTo(BigDecimal.ZERO) <= 0) {
+          throw new InvalidStateException(
+              "Invalid milestone", "Milestone percentage must be positive");
+        }
+      }
+
       BigDecimal total =
           milestones.stream()
               .map(MilestoneRequest::percentage)
@@ -243,8 +272,9 @@ public class ProposalService {
       }
     }
 
-    // Delete existing
+    // Delete existing and flush to prevent reordering issues
     milestoneRepository.deleteByProposalId(proposalId);
+    milestoneRepository.flush();
 
     // Create new
     if (milestones == null || milestones.isEmpty()) {
@@ -276,17 +306,34 @@ public class ProposalService {
 
     requireDraft(proposal);
 
-    // Validate each member exists
-    if (members != null) {
-      for (var member : members) {
-        memberRepository
-            .findById(member.memberId())
-            .orElseThrow(() -> new ResourceNotFoundException("Member", member.memberId()));
+    // Validate members
+    if (members != null && !members.isEmpty()) {
+      var memberIds = members.stream().map(TeamMemberRequest::memberId).toList();
+
+      // Check for null member IDs
+      if (memberIds.contains(null)) {
+        throw new InvalidStateException("Invalid team member", "Member ID must not be null");
+      }
+
+      // Check for duplicate member IDs
+      var uniqueIds = new HashSet<>(memberIds);
+      if (uniqueIds.size() != memberIds.size()) {
+        throw new InvalidStateException("Invalid team members", "Duplicate member IDs in team");
+      }
+
+      // Batch-validate all members exist (avoids N+1)
+      var foundMembers = memberRepository.findAllById(memberIds);
+      if (foundMembers.size() != memberIds.size()) {
+        var foundIds = foundMembers.stream().map(m -> m.getId()).collect(Collectors.toSet());
+        var missing =
+            memberIds.stream().filter(id -> !foundIds.contains(id)).findFirst().orElseThrow();
+        throw new ResourceNotFoundException("Member", missing);
       }
     }
 
-    // Delete existing
+    // Delete existing and flush to prevent reordering issues
     teamMemberRepository.deleteByProposalId(proposalId);
+    teamMemberRepository.flush();
 
     // Create new
     if (members == null || members.isEmpty()) {

@@ -146,7 +146,8 @@ public class PrerequisiteService {
     switch (context) {
       case INVOICE_GENERATION -> {
         if (entityType == EntityType.CUSTOMER) {
-          // Check customer has portal contact with email or customer.email exists
+          // Re-loads customer for structural check; trade-off: simplicity over avoiding a
+          // redundant query when the caller (e.g. InvoiceService) already loaded the customer.
           var customer =
               customerRepository
                   .findById(entityId)

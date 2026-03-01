@@ -7,11 +7,15 @@ import io.b2mash.b2b.b2bstrawman.clause.ClauseResolver;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.event.DocumentGeneratedEvent;
+import io.b2mash.b2b.b2bstrawman.exception.PrerequisiteNotMetException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.exception.ValidationWarningException;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
+import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.ClauseSelection;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.TemplateDetailResponse;
 import java.time.Instant;
@@ -41,7 +45,7 @@ public class GeneratedDocumentService {
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
   private final ClauseResolver clauseResolver;
-  private final io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService prerequisiteService;
+  private final PrerequisiteService prerequisiteService;
 
   public GeneratedDocumentService(
       GeneratedDocumentRepository generatedDocumentRepository,
@@ -55,7 +59,7 @@ public class GeneratedDocumentService {
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
       ClauseResolver clauseResolver,
-      io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService prerequisiteService) {
+      PrerequisiteService prerequisiteService) {
     this.generatedDocumentRepository = generatedDocumentRepository;
     this.documentTemplateRepository = documentTemplateRepository;
     this.memberNameResolver = memberNameResolver;
@@ -95,12 +99,9 @@ public class GeneratedDocumentService {
     if (customerId != null) {
       var prerequisiteCheck =
           prerequisiteService.checkForContext(
-              io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext.DOCUMENT_GENERATION,
-              io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType.CUSTOMER,
-              customerId);
+              PrerequisiteContext.DOCUMENT_GENERATION, EntityType.CUSTOMER, customerId);
       if (!prerequisiteCheck.passed()) {
-        throw new io.b2mash.b2b.b2bstrawman.exception.PrerequisiteNotMetException(
-            prerequisiteCheck);
+        throw new PrerequisiteNotMetException(prerequisiteCheck);
       }
     }
 
@@ -376,7 +377,8 @@ public class GeneratedDocumentService {
         try {
           yield prerequisiteService.resolveCustomerIdFromProject(entityId);
         } catch (ResourceNotFoundException e) {
-          yield null; // No customer linked — skip prerequisite check
+          log.warn("No customer linked to project {} — skipping prerequisite check", entityId);
+          yield null;
         }
       }
       case INVOICE -> null; // Invoice prerequisite checks not yet supported

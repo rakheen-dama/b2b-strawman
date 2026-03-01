@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.SchemaNameGenerator;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -332,11 +333,6 @@ class ProposalAuditTest {
   }
 
   private void fillPrerequisiteFields(String customerIdStr) {
-    jdbcTemplate.update(
-        ("UPDATE \"%s\".customers SET custom_fields ="
-                + " '{\"address_line1\":\"123 Test St\",\"city\":\"Test City\","
-                + "\"country\":\"ZA\",\"tax_number\":\"VAT123\"}'::jsonb WHERE id = ?::uuid")
-            .formatted(schemaName),
-        customerIdStr);
+    TestCustomerFactory.fillPrerequisiteFields(jdbcTemplate, schemaName, customerIdStr);
   }
 }

@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.SchemaNameGenerator;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -482,11 +483,6 @@ class ProposalSendTest {
 
   private void fillPrerequisiteFields(String customerIdStr) {
     String schema = SchemaNameGenerator.generateSchemaName(ORG_ID);
-    jdbcTemplate.update(
-        ("UPDATE \"%s\".customers SET custom_fields ="
-                + " '{\"address_line1\":\"123 Test St\",\"city\":\"Test City\","
-                + "\"country\":\"ZA\",\"tax_number\":\"VAT123\"}'::jsonb WHERE id = ?::uuid")
-            .formatted(schema),
-        customerIdStr);
+    TestCustomerFactory.fillPrerequisiteFields(jdbcTemplate, schema, customerIdStr);
   }
 }

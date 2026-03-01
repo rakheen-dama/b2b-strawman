@@ -117,6 +117,22 @@ public final class TestCustomerFactory {
     return values;
   }
 
+  /**
+   * Fills prerequisite custom fields directly in the database via JdbcTemplate. Useful for
+   * integration tests that need a customer to pass structural prerequisite checks.
+   */
+  public static void fillPrerequisiteFields(
+      org.springframework.jdbc.core.JdbcTemplate jdbcTemplate,
+      String schemaName,
+      String customerIdStr) {
+    jdbcTemplate.update(
+        ("UPDATE \"%s\".customers SET custom_fields ="
+                + " '{\"address_line1\":\"123 Test St\",\"city\":\"Test City\","
+                + "\"country\":\"ZA\",\"tax_number\":\"VAT123\"}'::jsonb WHERE id = ?::uuid")
+            .formatted(schemaName),
+        customerIdStr);
+  }
+
   private static Object testValueFor(FieldType fieldType) {
     return switch (fieldType) {
       case TEXT -> "test_value";

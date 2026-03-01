@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { FieldDefinitionDialog } from "@/components/field-definitions/FieldDefinitionDialog";
+import type { FieldDefinitionResponse } from "@/lib/types";
 
 const mockCreateFieldDefinition = vi.fn();
 const mockUpdateFieldDefinition = vi.fn();
@@ -93,5 +94,89 @@ describe("FieldDefinitionDialog", () => {
         }),
       );
     });
+  });
+
+  it("renders Required For multi-select checkboxes", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <FieldDefinitionDialog slug="acme" entityType="CUSTOMER">
+        <button>Open Required For Dialog</button>
+      </FieldDefinitionDialog>,
+    );
+
+    await user.click(screen.getByText("Open Required For Dialog"));
+
+    expect(screen.getByLabelText("Customer Activation")).toBeInTheDocument();
+    expect(screen.getByLabelText("Invoice Generation")).toBeInTheDocument();
+    expect(screen.getByLabelText("Proposal Sending")).toBeInTheDocument();
+    expect(screen.getByLabelText("Document Generation")).toBeInTheDocument();
+    expect(screen.getByLabelText("Project Creation")).toBeInTheDocument();
+  });
+
+  it("includes requiredForContexts in create payload", async () => {
+    mockCreateFieldDefinition.mockResolvedValue({ success: true });
+    const user = userEvent.setup();
+
+    render(
+      <FieldDefinitionDialog slug="acme" entityType="CUSTOMER">
+        <button>Open Contexts Create Dialog</button>
+      </FieldDefinitionDialog>,
+    );
+
+    await user.click(screen.getByText("Open Contexts Create Dialog"));
+    await user.type(screen.getByLabelText("Name"), "Tax Number");
+    await user.click(screen.getByLabelText("Invoice Generation"));
+    await user.click(screen.getByLabelText("Customer Activation"));
+    await user.click(screen.getByRole("button", { name: "Create Field" }));
+
+    await waitFor(() => {
+      expect(mockCreateFieldDefinition).toHaveBeenCalledWith(
+        "acme",
+        expect.objectContaining({
+          requiredForContexts: expect.arrayContaining([
+            "INVOICE_GENERATION",
+            "LIFECYCLE_ACTIVATION",
+          ]),
+        }),
+      );
+    });
+  });
+
+  it("shows pack default note for pack fields", async () => {
+    const user = userEvent.setup();
+
+    const packField: FieldDefinitionResponse = {
+      id: "field-1",
+      entityType: "CUSTOMER",
+      name: "Address",
+      slug: "address",
+      fieldType: "TEXT",
+      description: null,
+      required: false,
+      defaultValue: null,
+      options: null,
+      validation: null,
+      sortOrder: 1,
+      packId: "pack-common",
+      packFieldKey: "address_line1",
+      visibilityCondition: null,
+      requiredForContexts: ["INVOICE_GENERATION"],
+      active: true,
+      createdAt: "2026-01-01T00:00:00Z",
+      updatedAt: "2026-01-01T00:00:00Z",
+    };
+
+    render(
+      <FieldDefinitionDialog slug="acme" entityType="CUSTOMER" field={packField}>
+        <button>Open Pack Field Dialog</button>
+      </FieldDefinitionDialog>,
+    );
+
+    await user.click(screen.getByText("Open Pack Field Dialog"));
+
+    expect(
+      screen.getByText("Set by field pack — override by changing selections."),
+    ).toBeInTheDocument();
   });
 });

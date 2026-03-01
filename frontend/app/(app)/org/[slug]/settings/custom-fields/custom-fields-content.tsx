@@ -28,6 +28,10 @@ import type {
   FieldDefinitionResponse,
   FieldGroupResponse,
 } from "@/lib/types";
+import {
+  type PrerequisiteContext,
+  PREREQUISITE_CONTEXT_LABELS,
+} from "@/components/prerequisite/types";
 
 const ENTITY_TYPE_TABS: { value: EntityType; label: string }[] = [
   { value: "PROJECT", label: "Projects" },
@@ -100,6 +104,7 @@ export function CustomFieldsContent({
                     <TableHead>Name</TableHead>
                     <TableHead>Type</TableHead>
                     <TableHead>Required</TableHead>
+                    <TableHead>Required For</TableHead>
                     <TableHead>Pack</TableHead>
                     <TableHead>Status</TableHead>
                     {canManage && (
@@ -128,6 +133,22 @@ export function CustomFieldsContent({
                           <span className="text-sm text-slate-400">
                             Optional
                           </span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {field.requiredForContexts &&
+                        field.requiredForContexts.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {field.requiredForContexts.map((ctx) => (
+                              <Badge key={ctx} variant="pro">
+                                {PREREQUISITE_CONTEXT_LABELS[
+                                  ctx as PrerequisiteContext
+                                ] ?? ctx}
+                              </Badge>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-sm text-slate-400">None</span>
                         )}
                       </TableCell>
                       <TableCell>

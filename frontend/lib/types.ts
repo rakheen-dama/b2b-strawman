@@ -1007,6 +1007,7 @@ export interface FieldDefinitionResponse {
   packId: string | null;
   packFieldKey: string | null;
   visibilityCondition: VisibilityCondition | null;
+  requiredForContexts: string[];
   active: boolean;
   createdAt: string;
   updatedAt: string;
@@ -1024,6 +1025,7 @@ export interface CreateFieldDefinitionRequest {
   validation?: Record<string, unknown>;
   sortOrder: number;
   visibilityCondition?: VisibilityCondition | null;
+  requiredForContexts?: string[];
 }
 
 export interface UpdateFieldDefinitionRequest {
@@ -1037,6 +1039,7 @@ export interface UpdateFieldDefinitionRequest {
   validation?: Record<string, unknown>;
   sortOrder: number;
   visibilityCondition?: VisibilityCondition | null;
+  requiredForContexts?: string[];
 }
 
 export interface FieldGroupResponse {

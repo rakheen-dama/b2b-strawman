@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { FileText, MoreHorizontal } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -15,7 +16,7 @@ import type {
 } from "@/app/(app)/org/[slug]/proposals/proposal-actions";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/format";
-import { StatusBadge } from "@/components/ui/status-badge";
+import { ProposalStatusBadge } from "@/components/proposals/proposal-status-badge";
 import { DataTableEmpty } from "@/components/ui/data-table-empty";
 import { Button } from "@/components/ui/button";
 import {
@@ -121,7 +122,7 @@ function buildColumns(
     {
       accessorKey: "status",
       header: "Status",
-      cell: ({ row }) => <StatusBadge status={row.original.status} />,
+      cell: ({ row }) => <ProposalStatusBadge status={row.original.status} />,
       size: 110,
     },
     {
@@ -203,7 +204,10 @@ export function ProposalListTable({
     counts[p.status] = (counts[p.status] ?? 0) + 1;
   }
 
-  const columns = buildColumns(orgSlug, (path) => router.push(path));
+  const columns = useMemo(
+    () => buildColumns(orgSlug, (path) => router.push(path)),
+    [orgSlug, router],
+  );
 
   const table = useReactTable({
     data: filtered,

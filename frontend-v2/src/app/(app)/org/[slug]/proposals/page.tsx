@@ -8,6 +8,14 @@ import type {
   ProposalStatus,
 } from "./proposal-actions";
 
+const VALID_STATUSES: ProposalStatus[] = [
+  "DRAFT",
+  "SENT",
+  "ACCEPTED",
+  "DECLINED",
+  "EXPIRED",
+];
+
 interface ProposalsPageProps {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ status?: string }>;
@@ -34,16 +42,24 @@ export default async function ProposalsPage({
   };
   let stats: ProposalStats | null = null;
 
+  const activeStatus: ProposalStatus | "ALL" = VALID_STATUSES.includes(
+    status as ProposalStatus,
+  )
+    ? (status as ProposalStatus)
+    : "ALL";
+
   try {
     [proposalsData, stats] = await Promise.all([
-      listProposals({ size: 200 }),
+      // Cap at 200 for initial load; server-side filtering added in 236B
+      listProposals({
+        size: 200,
+        ...(activeStatus !== "ALL" && { status: activeStatus }),
+      }),
       getProposalStats(),
     ]);
   } catch (error) {
-    handleApiError(error);
+    return handleApiError(error);
   }
-
-  const activeStatus = (status as ProposalStatus) || "ALL";
 
   return (
     <div className="space-y-6">

@@ -276,7 +276,7 @@
 | 236 | Proposals Frontend — List & Pipeline Stats | Frontend | 231 | M | 236A, 236B | **Done** (PRs #478, #479) |
 | 237 | Proposals Frontend — Create/Edit & Detail Pages | Frontend | 232, 236 | L | 237A, 237B | **Done** (PRs #480, #481) |
 | 238 | Proposals Frontend — Customer Tab & Project Link | Frontend | 236 | S | 238A | **Done** (PR #482) |
-| 239 | Portal Frontend — Proposal Pages | Portal | 234 | M | 239A, 239B | |
+| 239 | Portal Frontend — Proposal Pages | Portal | 234 | M | 239A, 239B | 239A **Done** (PR #483) |
 
 ---
 

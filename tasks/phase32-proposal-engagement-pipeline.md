@@ -183,7 +183,7 @@ PORTAL TRACK (after E234A)
 |-------|------|-------|---------|--------|
 | 5a (parallel) | 234 | 234B | ProposalExpiryProcessor: @Scheduled job, tenant iteration, notification + email on expiry + portal sync + tests (~5 tests). ~1 new file, ~1 test file. Backend only. | **Done** (PR #476) |
 | 5b (parallel) | 237 | 237B | Proposal detail page + SendProposalDialog + ProposalPreview + context-dependent actions (Send/Edit/Delete/Withdraw/Copy/View Project) + tests (~5 tests). ~5 new files. Frontend only. | **Done** (PR #481) |
-| 5c (parallel) | 239 | 239A | Portal proposals list page + nav link + portal proposal-actions.ts + portal ProposalStatusBadge. ~4 new files. Portal only. | |
+| 5c (parallel) | 239 | 239A | Portal proposals list page + nav link + portal proposal-actions.ts + portal ProposalStatusBadge. ~4 new files. Portal only. | **Done** (PR #483) |
 
 ### Stage 6: Portal Detail Page
 
@@ -802,7 +802,7 @@ Stage 6: [239B]                                                      (final)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **239A** | 239.1--239.4 | Portal proposals list page + nav link + portal `proposal-actions.ts` + portal `ProposalStatusBadge`. ~4 new files. Portal only. | |
+| **239A** | 239.1--239.4 | Portal proposals list page + nav link + portal `proposal-actions.ts` + portal `ProposalStatusBadge`. ~4 new files. Portal only. | **Done** (PR #483) |
 | **239B** | 239.5--239.11 | Portal proposal detail page: rendered HTML body in branded wrapper, fee summary card, milestones table, accept/decline buttons with confirmation dialogs, expired banner, already-actioned banner + tests (~5 tests). ~3 new files. Portal only. | |
 
 ### Tasks

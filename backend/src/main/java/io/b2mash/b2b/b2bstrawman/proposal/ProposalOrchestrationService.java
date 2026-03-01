@@ -19,6 +19,11 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplateService;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.InstantiateTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
+import io.b2mash.b2b.b2bstrawman.retainer.RetainerAgreementService;
+import io.b2mash.b2b.b2bstrawman.retainer.RetainerFrequency;
+import io.b2mash.b2b.b2bstrawman.retainer.RetainerType;
+import io.b2mash.b2b.b2bstrawman.retainer.RolloverPolicy;
+import io.b2mash.b2b.b2bstrawman.retainer.dto.CreateRetainerRequest;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -53,6 +58,7 @@ public class ProposalOrchestrationService {
   private final OrganizationRepository organizationRepository;
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
+  private final RetainerAgreementService retainerAgreementService;
 
   public ProposalOrchestrationService(
       ProposalRepository proposalRepository,
@@ -66,7 +72,8 @@ public class ProposalOrchestrationService {
       CustomerRepository customerRepository,
       OrganizationRepository organizationRepository,
       AuditService auditService,
-      ApplicationEventPublisher eventPublisher) {
+      ApplicationEventPublisher eventPublisher,
+      RetainerAgreementService retainerAgreementService) {
     this.proposalRepository = proposalRepository;
     this.proposalMilestoneRepository = proposalMilestoneRepository;
     this.proposalTeamMemberRepository = proposalTeamMemberRepository;
@@ -79,6 +86,7 @@ public class ProposalOrchestrationService {
     this.organizationRepository = organizationRepository;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
+    this.retainerAgreementService = retainerAgreementService;
   }
 
   /**
@@ -91,7 +99,8 @@ public class ProposalOrchestrationService {
    *   <li>Transition customer lifecycle (PROSPECT -> ONBOARDING if applicable)
    *   <li>Create project (from template or bare)
    *   <li>Assign team members to the project
-   *   <li>Create billing entities (FIXED fee: invoices; HOURLY: no-op)
+   *   <li>Create billing entities (FIXED fee: invoices; RETAINER: retainer agreement; HOURLY:
+   *       no-op)
    * </ol>
    *
    * <p><b>Authorization:</b> No {@code @PreAuthorize} here — authorization is enforced at the
@@ -103,12 +112,13 @@ public class ProposalOrchestrationService {
    */
   @Transactional
   public OrchestrationResult acceptProposal(UUID proposalId, UUID portalContactId) {
-    // Step 1: Update proposal status
+    // Load proposal first (before try-catch) so we have context for failure events
     var proposal =
         proposalRepository
             .findById(proposalId)
             .orElseThrow(() -> new ResourceNotFoundException("Proposal", proposalId));
 
+    // Validation checks — these should throw before we start orchestration
     if (proposal.getStatus() != ProposalStatus.SENT) {
       throw new InvalidStateException(
           "Invalid proposal state", "Cannot accept proposal in status " + proposal.getStatus());
@@ -120,47 +130,87 @@ public class ProposalOrchestrationService {
           "Portal contact does not match the proposal's assigned contact");
     }
 
-    proposal.markAccepted();
-    proposalRepository.save(proposal);
+    try {
+      // Step 1: Update proposal status
+      proposal.markAccepted();
+      proposalRepository.save(proposal);
 
-    auditService.log(
-        AuditEventBuilder.builder()
-            .eventType("proposal.accepted")
-            .entityType("proposal")
-            .entityId(proposalId)
-            .details(
-                Map.of(
-                    "proposal_number", proposal.getProposalNumber(),
-                    "customer_id", proposal.getCustomerId().toString()))
-            .build());
+      auditService.log(
+          AuditEventBuilder.builder()
+              .eventType("proposal.accepted")
+              .entityType("proposal")
+              .entityId(proposalId)
+              .details(
+                  Map.of(
+                      "proposal_number", proposal.getProposalNumber(),
+                      "customer_id", proposal.getCustomerId().toString()))
+              .build());
 
-    log.info("Proposal {} accepted by contact {}", proposalId, portalContactId);
+      log.info("Proposal {} accepted by contact {}", proposalId, portalContactId);
 
-    // Step 2: Transition customer lifecycle (before project creation — lifecycle guard blocks
-    // PROSPECT)
-    transitionCustomerLifecycle(proposal.getCustomerId(), proposal.getCreatedById());
+      // Step 2: Transition customer lifecycle (before project creation — lifecycle guard blocks
+      // PROSPECT)
+      transitionCustomerLifecycle(proposal.getCustomerId(), proposal.getCreatedById());
 
-    // Step 3: Create project
-    var project = createProject(proposal);
-    proposal.setCreatedProjectId(project.getId());
-    proposalRepository.save(proposal);
+      // Step 3: Create project
+      var project = createProject(proposal);
+      proposal.setCreatedProjectId(project.getId());
+      proposalRepository.save(proposal);
 
-    // Step 4: Assign team members
-    var assignedMemberIds =
-        assignTeamMembers(proposalId, project.getId(), proposal.getCreatedById());
+      // Step 4: Assign team members
+      var assignedMemberIds =
+          assignTeamMembers(proposalId, project.getId(), proposal.getCreatedById());
 
-    // Step 5: Create billing entities (FIXED fee only)
-    var createdInvoiceIds = createBillingEntities(proposal, project.getId());
+      // Step 5: Create billing entities
+      UUID retainerAgreementId = null;
+      var createdInvoiceIds = List.<UUID>of();
 
-    log.info(
-        "Orchestration complete for proposal {}: project={}, members={}, invoices={}",
-        proposalId,
-        project.getId(),
-        assignedMemberIds.size(),
-        createdInvoiceIds.size());
+      if (proposal.getFeeModel() == FeeModel.RETAINER) {
+        retainerAgreementId = createRetainerAgreement(proposal);
+      } else if (proposal.getFeeModel() == FeeModel.FIXED) {
+        createdInvoiceIds = createFixedFeeInvoices(proposal, project.getId());
+      }
+      // HOURLY — no billing entities
 
-    return new OrchestrationResult(
-        proposalId, project.getId(), assignedMemberIds, createdInvoiceIds);
+      log.info(
+          "Orchestration complete for proposal {}: project={}, members={}, invoices={}, retainer={}",
+          proposalId,
+          project.getId(),
+          assignedMemberIds.size(),
+          createdInvoiceIds.size(),
+          retainerAgreementId);
+
+      // Publish success event (fires AFTER_COMMIT)
+      var customer = customerRepository.findById(proposal.getCustomerId()).orElseThrow();
+      eventPublisher.publishEvent(
+          new ProposalAcceptedEvent(
+              proposalId,
+              project.getId(),
+              proposal.getProposalNumber(),
+              customer.getName(),
+              project.getName(),
+              assignedMemberIds,
+              proposal.getCreatedById(),
+              RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null,
+              RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null));
+
+      return new OrchestrationResult(
+          proposalId, project.getId(), assignedMemberIds, createdInvoiceIds, retainerAgreementId);
+    } catch (RuntimeException e) {
+      log.error("Orchestration failed for proposal {}: {}", proposalId, e.getMessage(), e);
+
+      // Publish failure event (fires AFTER_ROLLBACK)
+      eventPublisher.publishEvent(
+          new ProposalOrchestrationFailedEvent(
+              proposalId,
+              proposal.getProposalNumber(),
+              proposal.getCreatedById(),
+              e.getMessage(),
+              RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null,
+              RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null));
+
+      throw e;
+    }
   }
 
   // --- Step 2: Customer lifecycle transition ---
@@ -220,7 +270,38 @@ public class ProposalOrchestrationService {
     return assignedMemberIds;
   }
 
-  // --- Step 5: Billing entity creation ---
+  // --- Step 5a: RETAINER billing setup ---
+
+  private UUID createRetainerAgreement(Proposal proposal) {
+    // Proposal v1 supports basic retainer config; advanced fields (type, frequency, rollover)
+    // may be added to proposals in a future phase.
+    var request =
+        new CreateRetainerRequest(
+            proposal.getCustomerId(),
+            null, // scheduleId
+            "Retainer — " + proposal.getTitle(),
+            RetainerType.HOUR_BANK,
+            RetainerFrequency.MONTHLY,
+            LocalDate.now(),
+            null, // endDate
+            proposal.getRetainerHoursIncluded(),
+            proposal.getRetainerAmount(),
+            RolloverPolicy.FORFEIT,
+            null, // rolloverCapHours
+            null // notes
+            );
+
+    var retainerResponse =
+        retainerAgreementService.createRetainer(request, proposal.getCreatedById());
+    proposal.setCreatedRetainerId(retainerResponse.id());
+    proposalRepository.save(proposal);
+
+    log.info(
+        "Created retainer agreement {} for proposal {}", retainerResponse.id(), proposal.getId());
+    return retainerResponse.id();
+  }
+
+  // --- Step 5b: FIXED fee billing setup ---
 
   /*
    * Invoice creation bypasses InvoiceService.createDraft() intentionally (ADR-125).
@@ -230,12 +311,7 @@ public class ProposalOrchestrationService {
    * directly via the repository to avoid the guard check. The guard's purpose (blocking
    * work on PROSPECT customers) is satisfied — the customer is already past PROSPECT.
    */
-  private List<UUID> createBillingEntities(Proposal proposal, UUID projectId) {
-    if (proposal.getFeeModel() != FeeModel.FIXED) {
-      // HOURLY and RETAINER (future) — no billing entities created at acceptance
-      return List.of();
-    }
-
+  private List<UUID> createFixedFeeInvoices(Proposal proposal, UUID projectId) {
     var milestones = proposalMilestoneRepository.findByProposalIdOrderBySortOrder(proposal.getId());
 
     // Look up customer and org for invoice creation
@@ -324,7 +400,7 @@ public class ProposalOrchestrationService {
     var line =
         new InvoiceLine(
             invoice.getId(), projectId, null, lineDescription, BigDecimal.ONE, amount, sortOrder);
-    line.setLineType(InvoiceLineType.MANUAL);
+    line.setLineType(InvoiceLineType.FIXED_FEE);
     invoiceLineRepository.save(line);
 
     // Set subtotal/total on the invoice

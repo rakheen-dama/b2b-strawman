@@ -11,6 +11,11 @@ import java.util.UUID;
  * @param projectId the created project's ID
  * @param assignedMemberIds IDs of team members assigned to the project
  * @param createdInvoiceIds IDs of DRAFT invoices created (empty for HOURLY fee model)
+ * @param retainerAgreementId the created retainer agreement's ID (null for non-RETAINER fee model)
  */
 public record OrchestrationResult(
-    UUID proposalId, UUID projectId, List<UUID> assignedMemberIds, List<UUID> createdInvoiceIds) {}
+    UUID proposalId,
+    UUID projectId,
+    List<UUID> assignedMemberIds,
+    List<UUID> createdInvoiceIds,
+    UUID retainerAgreementId) {}

@@ -21,6 +21,10 @@ import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.retainer.RetainerAgreementRepository;
+import io.b2mash.b2b.b2bstrawman.retainer.RetainerFrequency;
+import io.b2mash.b2b.b2bstrawman.retainer.RetainerType;
+import io.b2mash.b2b.b2bstrawman.retainer.RolloverPolicy;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -50,6 +54,7 @@ class ProposalOrchestrationServiceTest {
   @Autowired private ProjectMemberRepository projectMemberRepository;
   @Autowired private InvoiceRepository invoiceRepository;
   @Autowired private InvoiceLineRepository invoiceLineRepository;
+  @Autowired private RetainerAgreementRepository retainerAgreementRepository;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
   @Autowired private MemberSyncService memberSyncService;
@@ -116,6 +121,7 @@ class ProposalOrchestrationServiceTest {
     assertThat(result.proposalId()).isEqualTo(setup.proposalId);
     assertThat(result.projectId()).isNotNull();
     assertThat(result.createdInvoiceIds()).hasSize(2);
+    assertThat(result.retainerAgreementId()).isNull();
 
     // Verify proposal status
     runInTenant(
@@ -138,7 +144,7 @@ class ProposalOrchestrationServiceTest {
 
             var lines = invoiceLineRepository.findByInvoiceIdOrderBySortOrder(invoiceId);
             assertThat(lines).hasSize(1);
-            assertThat(lines.getFirst().getLineType()).isEqualTo(InvoiceLineType.MANUAL);
+            assertThat(lines.getFirst().getLineType()).isEqualTo(InvoiceLineType.FIXED_FEE);
             assertThat(lines.getFirst().getAmount())
                 .isEqualByComparingTo(new BigDecimal("5000.00"));
           }
@@ -174,6 +180,7 @@ class ProposalOrchestrationServiceTest {
             () -> orchestrationService.acceptProposal(setup.proposalId, setup.portalContactId));
 
     assertThat(result.createdInvoiceIds()).hasSize(1);
+    assertThat(result.retainerAgreementId()).isNull();
 
     runInTenant(
         () -> {
@@ -184,7 +191,7 @@ class ProposalOrchestrationServiceTest {
 
           var lines = invoiceLineRepository.findByInvoiceIdOrderBySortOrder(invoice.getId());
           assertThat(lines).hasSize(1);
-          assertThat(lines.getFirst().getLineType()).isEqualTo(InvoiceLineType.MANUAL);
+          assertThat(lines.getFirst().getLineType()).isEqualTo(InvoiceLineType.FIXED_FEE);
           return null;
         });
   }
@@ -208,11 +215,8 @@ class ProposalOrchestrationServiceTest {
 
     assertThat(result.projectId()).isNotNull();
     assertThat(result.createdInvoiceIds()).isEmpty();
+    assertThat(result.retainerAgreementId()).isNull();
   }
-
-  // --- Test 4: Project from template ---
-  // Note: Template instantiation requires a template to exist. Skipping direct template test
-  // since template setup is complex. The bare project path is verified in test 5.
 
   // --- Test 5: Bare project with customer link ---
 
@@ -330,6 +334,127 @@ class ProposalOrchestrationServiceTest {
         });
   }
 
+  // --- Test 9: RETAINER fee — creates retainer agreement ---
+
+  @Test
+  void acceptProposal_retainerFee_createsRetainerAgreement() {
+    var setup =
+        runInTenant(
+            () -> {
+              var customer = createProspectCustomer();
+              var proposal =
+                  createSentProposal(
+                      customer.getId(), FeeModel.RETAINER, null, null, "5000.00", "ZAR", "40.00");
+              return new TestSetup(
+                  customer.getId(), proposal.getId(), proposal.getPortalContactId());
+            });
+
+    var result =
+        runInTenant(
+            () -> orchestrationService.acceptProposal(setup.proposalId, setup.portalContactId));
+
+    assertThat(result.projectId()).isNotNull();
+    assertThat(result.createdInvoiceIds()).isEmpty();
+    assertThat(result.retainerAgreementId()).isNotNull();
+
+    // Verify retainer agreement exists in DB
+    runInTenant(
+        () -> {
+          var retainer =
+              retainerAgreementRepository.findById(result.retainerAgreementId()).orElseThrow();
+          assertThat(retainer.getCustomerId()).isEqualTo(setup.customerId);
+          assertThat(retainer.getPeriodFee()).isEqualByComparingTo(new BigDecimal("5000.00"));
+          assertThat(retainer.getAllocatedHours()).isEqualByComparingTo(new BigDecimal("40.00"));
+          assertThat(retainer.getType()).isEqualTo(RetainerType.HOUR_BANK);
+          assertThat(retainer.getFrequency()).isEqualTo(RetainerFrequency.MONTHLY);
+          assertThat(retainer.getRolloverPolicy()).isEqualTo(RolloverPolicy.FORFEIT);
+          return null;
+        });
+  }
+
+  // --- Test 10: RETAINER fee — sets createdRetainerId on proposal ---
+
+  @Test
+  void acceptProposal_retainerFee_setsCreatedRetainerIdOnProposal() {
+    var setup =
+        runInTenant(
+            () -> {
+              var customer = createProspectCustomer();
+              var proposal =
+                  createSentProposal(
+                      customer.getId(), FeeModel.RETAINER, null, null, "3000.00", "ZAR", "20.00");
+              return new TestSetup(
+                  customer.getId(), proposal.getId(), proposal.getPortalContactId());
+            });
+
+    var result =
+        runInTenant(
+            () -> orchestrationService.acceptProposal(setup.proposalId, setup.portalContactId));
+
+    runInTenant(
+        () -> {
+          var proposal = proposalRepository.findById(setup.proposalId).orElseThrow();
+          assertThat(proposal.getCreatedRetainerId()).isEqualTo(result.retainerAgreementId());
+          assertThat(proposal.getCreatedRetainerId()).isNotNull();
+          return null;
+        });
+  }
+
+  // --- Test 11: FIXED fee invoice line type is FIXED_FEE ---
+
+  @Test
+  void acceptProposal_fixedFee_invoiceLineTypeIsFixedFee() {
+    var setup =
+        runInTenant(
+            () -> {
+              var customer = createProspectCustomer();
+              var proposal = createSentProposal(customer.getId(), FeeModel.FIXED, "2000.00", "ZAR");
+              return new TestSetup(
+                  customer.getId(), proposal.getId(), proposal.getPortalContactId());
+            });
+
+    var result =
+        runInTenant(
+            () -> orchestrationService.acceptProposal(setup.proposalId, setup.portalContactId));
+
+    runInTenant(
+        () -> {
+          var invoiceId = result.createdInvoiceIds().getFirst();
+          var lines = invoiceLineRepository.findByInvoiceIdOrderBySortOrder(invoiceId);
+          assertThat(lines).hasSize(1);
+          assertThat(lines.getFirst().getLineType()).isEqualTo(InvoiceLineType.FIXED_FEE);
+          return null;
+        });
+  }
+
+  // --- Test 12: OrchestrationResult contains all IDs ---
+
+  @Test
+  void acceptProposal_orchestrationResult_containsAllIds() {
+    var setup =
+        runInTenant(
+            () -> {
+              var customer = createProspectCustomer();
+              var proposal = createSentProposal(customer.getId(), FeeModel.FIXED, "5000.00", "ZAR");
+
+              teamMemberRepository.save(
+                  new ProposalTeamMember(proposal.getId(), secondMemberId, "Developer", 0));
+
+              return new TestSetup(
+                  customer.getId(), proposal.getId(), proposal.getPortalContactId());
+            });
+
+    var result =
+        runInTenant(
+            () -> orchestrationService.acceptProposal(setup.proposalId, setup.portalContactId));
+
+    assertThat(result.proposalId()).isEqualTo(setup.proposalId);
+    assertThat(result.projectId()).isNotNull();
+    assertThat(result.assignedMemberIds()).contains(secondMemberId);
+    assertThat(result.createdInvoiceIds()).hasSize(1);
+    assertThat(result.retainerAgreementId()).isNull();
+  }
+
   // --- Negative tests ---
 
   @Test
@@ -396,6 +521,18 @@ class ProposalOrchestrationServiceTest {
 
   private Proposal createSentProposal(
       UUID customerId, FeeModel feeModel, String fixedFeeAmount, String fixedFeeCurrency) {
+    return createSentProposal(
+        customerId, feeModel, fixedFeeAmount, fixedFeeCurrency, null, null, null);
+  }
+
+  private Proposal createSentProposal(
+      UUID customerId,
+      FeeModel feeModel,
+      String fixedFeeAmount,
+      String fixedFeeCurrency,
+      String retainerAmount,
+      String retainerCurrency,
+      String retainerHoursIncluded) {
     var proposal =
         new Proposal(
             "P-ORCH-" + counter, "Orchestration Test " + counter, customerId, feeModel, memberId);
@@ -405,6 +542,15 @@ class ProposalOrchestrationServiceTest {
     }
     if (fixedFeeCurrency != null) {
       proposal.setFixedFeeCurrency(fixedFeeCurrency);
+    }
+    if (retainerAmount != null) {
+      proposal.setRetainerAmount(new BigDecimal(retainerAmount));
+    }
+    if (retainerCurrency != null) {
+      proposal.setRetainerCurrency(retainerCurrency);
+    }
+    if (retainerHoursIncluded != null) {
+      proposal.setRetainerHoursIncluded(new BigDecimal(retainerHoursIncluded));
     }
 
     proposal = proposalRepository.save(proposal);

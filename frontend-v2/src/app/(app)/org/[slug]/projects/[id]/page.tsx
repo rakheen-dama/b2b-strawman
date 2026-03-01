@@ -51,23 +51,7 @@ export default async function ProjectDetailPage({
 
   const canEdit = isAdmin || project.projectRole === "lead";
 
-  // Look up source proposal (informational link — failures are silent)
-  let sourceProposal: ProposalResponse | null = null;
-  if (project.customerId) {
-    try {
-      const proposalsData = await listCustomerProposals(
-        project.customerId,
-        0,
-        200,
-      );
-      sourceProposal =
-        proposalsData.content.find((p) => p.createdProjectId === id) ?? null;
-    } catch {
-      // informational only — silence all errors
-    }
-  }
-
-  // Parallel fetches for all tab data
+  // Parallel fetches for all tab data + source proposal lookup
   const [
     documentsResult,
     membersResult,
@@ -77,6 +61,7 @@ export default async function ProjectDetailPage({
     byTaskResult,
     byMemberResult,
     budgetResult,
+    proposalsResult,
   ] = await Promise.allSettled([
     api.get<Document[]>(`/api/projects/${id}/documents`),
     api.get<ProjectMember[]>(`/api/projects/${id}/members`),
@@ -90,7 +75,19 @@ export default async function ProjectDetailPage({
     api
       .get<BudgetStatusResponse>(`/api/projects/${id}/budget`)
       .catch(() => null),
+    // Informational only — look up source proposal if project has a customer.
+    // Size capped at 200; pagination not yet supported for this lookup.
+    project.customerId
+      ? listCustomerProposals(project.customerId, 0, 200).catch(() => null)
+      : Promise.resolve(null),
   ]);
+
+  // Find the proposal that created this project (informational link)
+  const sourceProposal: ProposalResponse | null =
+    proposalsResult.status === "fulfilled" && proposalsResult.value
+      ? (proposalsResult.value.content.find((p) => p.createdProjectId === id) ??
+          null)
+      : null;
 
   const documents =
     documentsResult.status === "fulfilled" ? documentsResult.value : [];

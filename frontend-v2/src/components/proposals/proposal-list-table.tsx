@@ -255,12 +255,15 @@ interface ProposalListTableProps {
   proposals: ProposalResponse[];
   orgSlug: string;
   activeStatus?: ProposalStatus | "ALL";
+  /** Hide the status navigation tabs (used when embedded in another page, e.g. customer detail) */
+  embeddedMode?: boolean;
 }
 
 export function ProposalListTable({
   proposals,
   orgSlug,
   activeStatus = "ALL",
+  embeddedMode = false,
 }: ProposalListTableProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
@@ -338,49 +341,51 @@ export function ProposalListTable({
         </Select>
       </div>
 
-      {/* Status filter tabs */}
-      <div className="flex gap-1 overflow-x-auto border-b border-slate-200">
-        {STATUS_TABS.map((tab) => {
-          const isActive = tab.value === activeStatus;
-          const count = counts[tab.value] ?? 0;
-          return (
-            <button
-              key={tab.value}
-              onClick={() => {
-                const base = `/org/${orgSlug}/proposals`;
-                if (tab.value === "ALL") {
-                  router.push(base);
-                } else {
-                  router.push(`${base}?status=${tab.value}`);
-                }
-              }}
-              className={cn(
-                "relative whitespace-nowrap px-3 pb-2.5 pt-1 text-sm font-medium transition-colors",
-                isActive
-                  ? "text-slate-900"
-                  : "text-slate-500 hover:text-slate-700",
-              )}
-            >
-              {tab.label}
-              {count > 0 && (
-                <span
-                  className={cn(
-                    "ml-1.5 inline-flex min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-medium",
-                    isActive
-                      ? "bg-slate-200 text-slate-700"
-                      : "bg-slate-100 text-slate-500",
-                  )}
-                >
-                  {count}
-                </span>
-              )}
-              {isActive && (
-                <span className="absolute inset-x-0 -bottom-px h-0.5 bg-teal-600" />
-              )}
-            </button>
-          );
-        })}
-      </div>
+      {/* Status filter tabs (hidden in embedded mode to avoid navigating away) */}
+      {!embeddedMode && (
+        <div className="flex gap-1 overflow-x-auto border-b border-slate-200">
+          {STATUS_TABS.map((tab) => {
+            const isActive = tab.value === activeStatus;
+            const count = counts[tab.value] ?? 0;
+            return (
+              <button
+                key={tab.value}
+                onClick={() => {
+                  const base = `/org/${orgSlug}/proposals`;
+                  if (tab.value === "ALL") {
+                    router.push(base);
+                  } else {
+                    router.push(`${base}?status=${tab.value}`);
+                  }
+                }}
+                className={cn(
+                  "relative whitespace-nowrap px-3 pb-2.5 pt-1 text-sm font-medium transition-colors",
+                  isActive
+                    ? "text-slate-900"
+                    : "text-slate-500 hover:text-slate-700",
+                )}
+              >
+                {tab.label}
+                {count > 0 && (
+                  <span
+                    className={cn(
+                      "ml-1.5 inline-flex min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-medium",
+                      isActive
+                        ? "bg-slate-200 text-slate-700"
+                        : "bg-slate-100 text-slate-500",
+                    )}
+                  >
+                    {count}
+                  </span>
+                )}
+                {isActive && (
+                  <span className="absolute inset-x-0 -bottom-px h-0.5 bg-teal-600" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Table or empty state */}
       {filtered.length === 0 ? (

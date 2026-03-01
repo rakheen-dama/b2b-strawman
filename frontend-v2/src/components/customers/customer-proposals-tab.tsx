@@ -51,6 +51,7 @@ export function CustomerProposalsTab({
           proposals={proposals}
           orgSlug={params.slug}
           activeStatus="ALL"
+          embeddedMode
         />
       )}
     </div>

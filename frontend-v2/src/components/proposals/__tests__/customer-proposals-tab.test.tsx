@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
-import Link from "next/link";
 
 import type { ProposalResponse } from "@/app/(app)/org/[slug]/proposals/proposal-actions";
 import { CustomerProposalsTab } from "@/components/customers/customer-proposals-tab";
@@ -87,24 +86,16 @@ describe("CustomerProposalsTab", () => {
     expect(link.getAttribute("href")).toContain("customerId=c1");
   });
 
-  it("shows_created_from_proposal_link_when_applicable", () => {
-    // Tests the "Created from Proposal" link pattern rendered in the project detail page.
-    const { container } = render(
-      <span>
-        <Link
-          href="/org/test-org/proposals/p1"
-          className="text-teal-600 hover:text-teal-700 hover:underline"
-        >
-          Created from Proposal PROP-001
-        </Link>
-      </span>,
-    );
+  it("renders_empty_state_when_no_proposals", () => {
+    render(<CustomerProposalsTab proposals={[]} customerId="c1" />);
 
+    expect(screen.getByText("No proposals yet")).toBeInTheDocument();
     expect(
-      container.querySelector('a[href="/org/test-org/proposals/p1"]'),
-    ).not.toBeNull();
-    expect(
-      screen.getByText("Created from Proposal PROP-001"),
+      screen.getByText("Proposals for this customer will appear here."),
     ).toBeInTheDocument();
   });
+
+  // NOTE: "Created from Proposal" link on the project detail page is rendered
+  // by a server component (projects/[id]/page.tsx) and requires integration/e2e
+  // coverage rather than a unit test.
 });

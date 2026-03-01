@@ -88,9 +88,14 @@ public final class TestCustomerFactory {
   private static Object testValueFor(FieldType fieldType) {
     return switch (fieldType) {
       case TEXT -> "test_value";
+      case NUMBER -> 42;
+      case DATE -> "2026-01-01";
       case DROPDOWN -> "option_1";
+      case BOOLEAN -> true;
       case CURRENCY -> Map.of("amount", 100, "currency", "ZAR");
-      default -> "test_value";
+      case URL -> "https://example.com";
+      case EMAIL -> "test@example.com";
+      case PHONE -> "+27123456789";
     };
   }
 }

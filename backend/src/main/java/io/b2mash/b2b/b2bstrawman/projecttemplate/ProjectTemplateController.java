@@ -1,6 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.projecttemplate;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
+import io.b2mash.b2b.b2bstrawman.prerequisite.dto.PrerequisiteCheckResponse;
 import io.b2mash.b2b.b2bstrawman.project.ProjectController;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.CreateTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.InstantiateTemplateRequest;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -27,9 +30,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProjectTemplateController {
 
   private final ProjectTemplateService projectTemplateService;
+  private final PrerequisiteService prerequisiteService;
 
-  public ProjectTemplateController(ProjectTemplateService projectTemplateService) {
+  public ProjectTemplateController(
+      ProjectTemplateService projectTemplateService, PrerequisiteService prerequisiteService) {
     this.projectTemplateService = projectTemplateService;
+    this.prerequisiteService = prerequisiteService;
   }
 
   @GetMapping
@@ -97,4 +103,23 @@ public class ProjectTemplateController {
     return ResponseEntity.created(URI.create("/api/projects/" + project.getId()))
         .body(ProjectController.ProjectResponse.from(project));
   }
+
+  @PutMapping("/{id}/required-customer-fields")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<ProjectTemplateResponse> updateRequiredCustomerFields(
+      @PathVariable UUID id, @RequestBody UpdateRequiredFieldsRequest request) {
+    return ResponseEntity.ok(
+        projectTemplateService.updateRequiredCustomerFields(id, request.fieldDefinitionIds()));
+  }
+
+  @GetMapping("/{id}/prerequisite-check")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<PrerequisiteCheckResponse> checkPrerequisites(
+      @PathVariable UUID id, @RequestParam UUID customerId) {
+    return ResponseEntity.ok(
+        PrerequisiteCheckResponse.from(
+            prerequisiteService.checkEngagementPrerequisites(customerId, id)));
+  }
+
+  public record UpdateRequiredFieldsRequest(List<UUID> fieldDefinitionIds) {}
 }

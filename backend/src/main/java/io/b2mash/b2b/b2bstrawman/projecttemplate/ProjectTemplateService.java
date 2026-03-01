@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.PrerequisiteNotMetException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
@@ -17,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.CreateTemplateRequest;
@@ -46,6 +48,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -71,6 +74,7 @@ public class ProjectTemplateService {
   private final EntityTagRepository entityTagRepository;
   private final NameTokenResolver nameTokenResolver;
   private final FieldDefinitionRepository fieldDefinitionRepository;
+  private final PrerequisiteService prerequisiteService;
 
   public ProjectTemplateService(
       ProjectTemplateRepository templateRepository,
@@ -89,7 +93,8 @@ public class ProjectTemplateService {
       CustomerProjectRepository customerProjectRepository,
       EntityTagRepository entityTagRepository,
       NameTokenResolver nameTokenResolver,
-      FieldDefinitionRepository fieldDefinitionRepository) {
+      FieldDefinitionRepository fieldDefinitionRepository,
+      @Lazy PrerequisiteService prerequisiteService) {
     this.templateRepository = templateRepository;
     this.templateTaskRepository = templateTaskRepository;
     this.templateTaskItemRepository = templateTaskItemRepository;
@@ -107,6 +112,7 @@ public class ProjectTemplateService {
     this.entityTagRepository = entityTagRepository;
     this.nameTokenResolver = nameTokenResolver;
     this.fieldDefinitionRepository = fieldDefinitionRepository;
+    this.prerequisiteService = prerequisiteService;
   }
 
   @Transactional
@@ -460,6 +466,13 @@ public class ProjectTemplateService {
           customerRepository
               .findById(request.customerId())
               .orElseThrow(() -> new ResourceNotFoundException("Customer", request.customerId()));
+
+      // Check engagement prerequisites for manual project creation
+      var prereqCheck =
+          prerequisiteService.checkEngagementPrerequisites(request.customerId(), templateId);
+      if (!prereqCheck.passed()) {
+        throw new PrerequisiteNotMetException(prereqCheck);
+      }
     }
 
     // 3. Resolve project name
@@ -689,7 +702,8 @@ public class ProjectTemplateService {
   }
 
   @Transactional
-  public void updateRequiredCustomerFields(UUID templateId, List<UUID> fieldDefinitionIds) {
+  public ProjectTemplateResponse updateRequiredCustomerFields(
+      UUID templateId, List<UUID> fieldDefinitionIds) {
     var template =
         templateRepository
             .findById(templateId)
@@ -722,6 +736,7 @@ public class ProjectTemplateService {
     template.setRequiredCustomerFieldIds(
         fieldDefinitionIds != null ? fieldDefinitionIds : List.of());
     templateRepository.save(template);
+    return buildResponse(template);
   }
 
   // --- Private helpers ---

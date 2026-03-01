@@ -23,6 +23,9 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldType;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplate;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplateService;
+import io.b2mash.b2b.b2bstrawman.projecttemplate.TemplateTagRepository;
+import io.b2mash.b2b.b2bstrawman.projecttemplate.TemplateTaskItemRepository;
+import io.b2mash.b2b.b2bstrawman.projecttemplate.TemplateTaskRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import java.util.List;
@@ -52,6 +55,10 @@ class EngagementPrerequisiteTest {
   @Mock private FieldGroupRepository fieldGroupRepository;
   @Mock private FieldGroupMemberRepository fieldGroupMemberRepository;
   @Mock private Query nativeQuery;
+  @Mock private TemplateTaskRepository templateTaskRepository;
+  @Mock private TemplateTaskItemRepository templateTaskItemRepository;
+  @Mock private TemplateTagRepository templateTagRepository;
+  @Mock private io.b2mash.b2b.b2bstrawman.tag.TagRepository tagLookupRepository;
 
   private PrerequisiteService prerequisiteService;
 
@@ -127,6 +134,9 @@ class EngagementPrerequisiteTest {
     var template = createTemplate();
     when(templateRepository.findById(TEMPLATE_ID)).thenReturn(Optional.of(template));
     when(fieldDefinitionRepository.findAllById(List.of(fd.getId()))).thenReturn(List.of(fd));
+    when(templateTaskRepository.findByTemplateIdOrderBySortOrder(template.getId()))
+        .thenReturn(List.of());
+    when(templateTagRepository.findTagIdsByTemplateId(template.getId())).thenReturn(List.of());
 
     // Build a ProjectTemplateService for direct testing
     var templateService = buildProjectTemplateService();
@@ -264,10 +274,10 @@ class EngagementPrerequisiteTest {
   private ProjectTemplateService buildProjectTemplateService() {
     return new ProjectTemplateService(
         templateRepository,
-        null, // templateTaskRepository
-        null, // templateTaskItemRepository
-        null, // templateTagRepository
-        null, // tagLookupRepository
+        templateTaskRepository,
+        templateTaskItemRepository,
+        templateTagRepository,
+        tagLookupRepository,
         null, // projectTaskRepository
         null, // taskItemRepository
         null, // projectRepository
@@ -279,6 +289,7 @@ class EngagementPrerequisiteTest {
         null, // customerProjectRepository
         null, // entityTagRepository
         null, // nameTokenResolver
-        fieldDefinitionRepository);
+        fieldDefinitionRepository,
+        null); // prerequisiteService
   }
 }

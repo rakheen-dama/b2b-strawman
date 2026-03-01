@@ -14,8 +14,11 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineType;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
+import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
+import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplateService;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.InstantiateTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
@@ -31,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -59,6 +63,9 @@ public class ProposalOrchestrationService {
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
   private final RetainerAgreementService retainerAgreementService;
+  private final PrerequisiteService prerequisiteService;
+  private final NotificationService notificationService;
+  private final ProjectTemplateRepository templateRepository;
 
   public ProposalOrchestrationService(
       ProposalRepository proposalRepository,
@@ -73,7 +80,10 @@ public class ProposalOrchestrationService {
       OrganizationRepository organizationRepository,
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
-      RetainerAgreementService retainerAgreementService) {
+      RetainerAgreementService retainerAgreementService,
+      PrerequisiteService prerequisiteService,
+      NotificationService notificationService,
+      ProjectTemplateRepository templateRepository) {
     this.proposalRepository = proposalRepository;
     this.proposalMilestoneRepository = proposalMilestoneRepository;
     this.proposalTeamMemberRepository = proposalTeamMemberRepository;
@@ -87,6 +97,9 @@ public class ProposalOrchestrationService {
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
     this.retainerAgreementService = retainerAgreementService;
+    this.prerequisiteService = prerequisiteService;
+    this.notificationService = notificationService;
+    this.templateRepository = templateRepository;
   }
 
   /**
@@ -182,6 +195,30 @@ public class ProposalOrchestrationService {
 
       // Publish success event (fires AFTER_COMMIT)
       var customer = customerRepository.findById(proposal.getCustomerId()).orElseThrow();
+
+      // Step 3a: Check engagement prerequisites and notify if not met (after customer load)
+      if (proposal.getProjectTemplateId() != null) {
+        var prereqCheck =
+            prerequisiteService.checkEngagementPrerequisites(
+                proposal.getCustomerId(), proposal.getProjectTemplateId());
+        if (!prereqCheck.passed()) {
+          var template = templateRepository.findById(proposal.getProjectTemplateId()).orElseThrow();
+          String fieldList =
+              prereqCheck.violations().stream()
+                  .map(v -> v.fieldSlug())
+                  .collect(Collectors.joining(", "));
+          String notifTitle =
+              "Customer %s is missing fields required for %s: %s"
+                  .formatted(customer.getName(), template.getName(), fieldList);
+          try {
+            notificationService.notifyAdminsAndOwners(
+                "PREREQUISITE_BLOCKED_ACTIVATION", notifTitle, null, "PROJECT", project.getId());
+          } catch (Exception e) {
+            log.warn("Failed to send prerequisite notification: {}", e.getMessage());
+          }
+        }
+      }
+
       eventPublisher.publishEvent(
           new ProposalAcceptedEvent(
               proposalId,

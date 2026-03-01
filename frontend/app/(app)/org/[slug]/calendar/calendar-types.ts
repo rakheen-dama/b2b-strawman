@@ -71,17 +71,17 @@ function parseDueDateToDate(dateStr: string): Date {
  * Returns urgency-based color classes for calendar items.
  * Overdue items get red, items due within 7 days get amber.
  * Completed/cancelled/archived items never show urgency.
+ * @param today - midnight-normalized Date, computed once by the caller
  */
 export function getDueDateColor(
   dueDate: string,
-  status: string
+  status: string,
+  today: Date
 ): { dot: string; row: string } {
   if (["DONE", "CANCELLED", "ARCHIVED", "COMPLETED"].includes(status)) {
     return { dot: "", row: "" };
   }
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
   const due = parseDueDateToDate(dueDate);
 
   if (due < today) {

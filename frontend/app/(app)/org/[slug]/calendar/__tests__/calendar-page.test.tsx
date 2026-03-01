@@ -125,10 +125,10 @@ describe("CalendarListView", () => {
         status: "OPEN",
       }),
     ];
-    const { container } = render(
+    render(
       <CalendarListView items={[]} overdueItems={overdueItems} slug="acme" />
     );
-    const overdueSection = container.querySelector(".border-red-200");
-    expect(overdueSection).toBeInTheDocument();
+    expect(screen.getByText(/overdue/i)).toBeInTheDocument();
+    expect(screen.getByText("Old Task")).toBeInTheDocument();
   });
 });

@@ -145,6 +145,7 @@ export function CalendarPageClient({
               <button
                 key={t}
                 type="button"
+                aria-pressed={isActive}
                 onClick={() => {
                   const newType =
                     t === "ALL" ? undefined : (t as "TASK" | "PROJECT");

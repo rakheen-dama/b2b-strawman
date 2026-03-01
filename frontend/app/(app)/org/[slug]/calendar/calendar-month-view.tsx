@@ -87,6 +87,7 @@ export function CalendarMonthView({
   };
 
   const today = new Date();
+  today.setHours(0, 0, 0, 0);
   const isCurrentMonth =
     today.getFullYear() === year && today.getMonth() + 1 === month;
   const todayDate = today.getDate();
@@ -185,7 +186,8 @@ export function CalendarMonthView({
                       {dayItems.slice(0, maxDots).map((item) => {
                         const urgency = getDueDateColor(
                           item.dueDate,
-                          item.status
+                          item.status,
+                          today
                         );
                         return (
                           <span

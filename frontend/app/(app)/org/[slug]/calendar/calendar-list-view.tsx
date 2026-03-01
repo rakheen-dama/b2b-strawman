@@ -56,6 +56,10 @@ export function CalendarListView({
   overdueItems,
   slug,
 }: CalendarListViewProps) {
+  // Compute today once for all getDueDateColor calls
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   // Sort by dueDate
   const sorted = [...items].sort((a, b) =>
     a.dueDate.localeCompare(b.dueDate)
@@ -128,6 +132,16 @@ export function CalendarListView({
                 >
                   {item.status}
                 </Badge>
+                {item.priority && (
+                  <span
+                    className={cn(
+                      "shrink-0 text-xs font-medium",
+                      getPriorityColor(item.priority)
+                    )}
+                  >
+                    {item.priority}
+                  </span>
+                )}
               </Link>
             ))}
           </div>
@@ -142,7 +156,7 @@ export function CalendarListView({
           </h3>
           <div className="divide-y divide-slate-100 rounded-lg border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-700 dark:bg-slate-900">
             {group.items.map((item) => {
-              const urgency = getDueDateColor(item.dueDate, item.status);
+              const urgency = getDueDateColor(item.dueDate, item.status, today);
               return (
                 <Link
                   key={item.id}

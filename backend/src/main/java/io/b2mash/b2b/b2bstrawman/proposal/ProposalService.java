@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.proposal;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
+import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.event.ProposalSentEvent;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
@@ -8,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.proposal.dto.MilestoneRequest;
 import io.b2mash.b2b.b2bstrawman.proposal.dto.ProposalFilterCriteria;
@@ -44,6 +47,8 @@ public class ProposalService {
   private final ProposalPortalSyncService proposalPortalSyncService;
   private final ApplicationEventPublisher eventPublisher;
   private final MemberNameResolver memberNameResolver;
+  private final AuditService auditService;
+  private final NotificationService notificationService;
 
   public ProposalService(
       ProposalRepository proposalRepository,
@@ -55,7 +60,9 @@ public class ProposalService {
       PortalContactRepository portalContactRepository,
       ProposalPortalSyncService proposalPortalSyncService,
       ApplicationEventPublisher eventPublisher,
-      MemberNameResolver memberNameResolver) {
+      MemberNameResolver memberNameResolver,
+      AuditService auditService,
+      NotificationService notificationService) {
     this.proposalRepository = proposalRepository;
     this.milestoneRepository = milestoneRepository;
     this.teamMemberRepository = teamMemberRepository;
@@ -66,6 +73,8 @@ public class ProposalService {
     this.proposalPortalSyncService = proposalPortalSyncService;
     this.eventPublisher = eventPublisher;
     this.memberNameResolver = memberNameResolver;
+    this.auditService = auditService;
+    this.notificationService = notificationService;
   }
 
   // --- 231.1: createProposal ---
@@ -495,6 +504,51 @@ public class ProposalService {
 
     var saved = proposalRepository.save(proposal);
     log.info("Withdrew proposal {}", proposalId);
+    return saved;
+  }
+
+  // --- 234.6: declineProposal ---
+
+  @Transactional
+  public Proposal declineProposal(UUID proposalId, String reason) {
+    var proposal =
+        proposalRepository
+            .findById(proposalId)
+            .orElseThrow(() -> new ResourceNotFoundException("Proposal", proposalId));
+
+    // Guard: only SENT proposals can be declined (markDeclined throws InvalidStateException)
+    proposal.markDeclined(reason);
+
+    var saved = proposalRepository.save(proposal);
+
+    // Audit
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("proposal.declined")
+            .entityType("proposal")
+            .entityId(proposalId)
+            .details(
+                Map.of(
+                    "proposal_number",
+                    proposal.getProposalNumber(),
+                    "reason",
+                    reason != null ? reason : ""))
+            .build());
+
+    // Portal sync
+    proposalPortalSyncService.updatePortalProposalStatus(proposalId, "DECLINED");
+
+    // Notify proposal creator (client-initiated decline)
+    notificationService.createNotification(
+        proposal.getCreatedById(),
+        "PROPOSAL_DECLINED",
+        "Proposal %s was declined".formatted(proposal.getProposalNumber()),
+        reason != null ? "Reason: %s".formatted(reason) : "No reason provided",
+        "PROPOSAL",
+        proposalId,
+        null);
+
+    log.info("Declined proposal {} with reason: {}", proposalId, reason);
     return saved;
   }
 

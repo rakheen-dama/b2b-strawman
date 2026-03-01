@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Portal-facing service for proposal operations. Encapsulates all portal read-model queries and
@@ -47,23 +48,24 @@ public class PortalProposalService {
             """)
         .params(customerId, portalContactId)
         .query(
-            (rs, rowNum) ->
-                new PortalProposalSummary(
-                    rs.getObject("id", UUID.class),
-                    rs.getString("proposal_number"),
-                    rs.getString("title"),
-                    rs.getString("status"),
-                    rs.getString("fee_model"),
-                    rs.getBigDecimal("fee_amount"),
-                    rs.getString("fee_currency"),
-                    rs.getTimestamp("sent_at") != null
-                        ? rs.getTimestamp("sent_at").toInstant()
-                        : null))
+            (rs, rowNum) -> {
+              var sentAtTs = rs.getTimestamp("sent_at");
+              return new PortalProposalSummary(
+                  rs.getObject("id", UUID.class),
+                  rs.getString("proposal_number"),
+                  rs.getString("title"),
+                  rs.getString("status"),
+                  rs.getString("fee_model"),
+                  rs.getBigDecimal("fee_amount"),
+                  rs.getString("fee_currency"),
+                  sentAtTs != null ? sentAtTs.toInstant() : null);
+            })
         .list();
   }
 
   /** Gets proposal detail for portal display. */
-  public PortalProposalDetail getProposalDetail(UUID proposalId, UUID customerId) {
+  public PortalProposalDetail getProposalDetail(
+      UUID proposalId, UUID customerId, UUID portalContactId) {
     return portalJdbc
         .sql(
             """
@@ -71,30 +73,29 @@ public class PortalProposalService {
                    content_html, milestones_json, sent_at, expires_at,
                    org_name, org_logo, org_brand_color
             FROM portal.portal_proposals
-            WHERE id = ? AND customer_id = ?
+            WHERE id = ? AND customer_id = ? AND portal_contact_id = ?
             """)
-        .params(proposalId, customerId)
+        .params(proposalId, customerId, portalContactId)
         .query(
-            (rs, rowNum) ->
-                new PortalProposalDetail(
-                    rs.getObject("id", UUID.class),
-                    rs.getString("proposal_number"),
-                    rs.getString("title"),
-                    rs.getString("status"),
-                    rs.getString("fee_model"),
-                    rs.getBigDecimal("fee_amount"),
-                    rs.getString("fee_currency"),
-                    rs.getString("content_html"),
-                    rs.getString("milestones_json"),
-                    rs.getTimestamp("sent_at") != null
-                        ? rs.getTimestamp("sent_at").toInstant()
-                        : null,
-                    rs.getTimestamp("expires_at") != null
-                        ? rs.getTimestamp("expires_at").toInstant()
-                        : null,
-                    rs.getString("org_name"),
-                    rs.getString("org_logo"),
-                    rs.getString("org_brand_color")))
+            (rs, rowNum) -> {
+              var sentAtTs = rs.getTimestamp("sent_at");
+              var expiresAtTs = rs.getTimestamp("expires_at");
+              return new PortalProposalDetail(
+                  rs.getObject("id", UUID.class),
+                  rs.getString("proposal_number"),
+                  rs.getString("title"),
+                  rs.getString("status"),
+                  rs.getString("fee_model"),
+                  rs.getBigDecimal("fee_amount"),
+                  rs.getString("fee_currency"),
+                  rs.getString("content_html"),
+                  rs.getString("milestones_json"),
+                  sentAtTs != null ? sentAtTs.toInstant() : null,
+                  expiresAtTs != null ? expiresAtTs.toInstant() : null,
+                  rs.getString("org_name"),
+                  rs.getString("org_logo"),
+                  rs.getString("org_brand_color"));
+            })
         .optional()
         .orElseThrow(() -> new ResourceNotFoundException("Proposal", proposalId));
   }
@@ -103,6 +104,7 @@ public class PortalProposalService {
    * Accept a proposal from the portal. Idempotent: re-accepting an ACCEPTED proposal returns
    * success.
    */
+  @Transactional
   public PortalAcceptResponse acceptProposal(
       UUID proposalId, UUID customerId, UUID portalContactId) {
     // Read proposal from portal schema to validate ownership and status
@@ -113,10 +115,11 @@ public class PortalProposalService {
       throw new ResourceNotFoundException("Proposal", proposalId);
     }
 
-    // Idempotent: if already ACCEPTED, return success
+    // Idempotent: if already ACCEPTED, return success with actual acceptance timestamp
     if ("ACCEPTED".equals(portalRow.status())) {
+      var acceptedAt = findAcceptedAt(proposalId);
       return new PortalAcceptResponse(
-          proposalId, "ACCEPTED", Instant.now(), null, "This proposal has already been accepted.");
+          proposalId, "ACCEPTED", acceptedAt, null, "This proposal has already been accepted.");
     }
 
     // Validate status is SENT
@@ -139,6 +142,7 @@ public class PortalProposalService {
   }
 
   /** Decline a proposal from the portal. */
+  @Transactional
   public PortalDeclineResponse declineProposal(
       UUID proposalId, UUID customerId, UUID portalContactId, String reason) {
     // Read proposal from portal schema to validate ownership and status
@@ -183,6 +187,12 @@ public class PortalProposalService {
                     rs.getObject("portal_contact_id", UUID.class)))
         .optional()
         .orElseThrow(() -> new ResourceNotFoundException("Proposal", proposalId));
+  }
+
+  private Instant findAcceptedAt(UUID proposalId) {
+    // Query the tenant-side proposal entity for the actual acceptance timestamp
+    var proposal = proposalService.getProposal(proposalId);
+    return proposal.getAcceptedAt();
   }
 
   // --- DTOs ---

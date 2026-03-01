@@ -40,7 +40,9 @@ public class PortalProposalController {
 
   @GetMapping("/{id}")
   public ResponseEntity<PortalProposalDetail> getProposalDetail(@PathVariable UUID id) {
-    var result = portalProposalService.getProposalDetail(id, RequestScopes.requireCustomerId());
+    var result =
+        portalProposalService.getProposalDetail(
+            id, RequestScopes.requireCustomerId(), RequestScopes.requirePortalContactId());
     return ResponseEntity.ok(result);
   }
 
@@ -62,5 +64,5 @@ public class PortalProposalController {
     return ResponseEntity.ok(result);
   }
 
-  public record DeclineRequest(String reason) {}
+  record DeclineRequest(String reason) {}
 }

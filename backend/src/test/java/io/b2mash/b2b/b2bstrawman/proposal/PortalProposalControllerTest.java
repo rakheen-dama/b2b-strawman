@@ -387,15 +387,73 @@ class PortalProposalControllerTest {
 
   @Test
   void acceptProposal_alreadyAccepted_returns200Idempotent() throws Exception {
-    // The previous test accepted the proposal; update portal status to ACCEPTED
-    portalJdbc
-        .sql("UPDATE portal.portal_proposals SET status = 'ACCEPTED' WHERE id = ?")
-        .params(sentProposalForAcceptId)
-        .update();
+    // Create a dedicated proposal for this test, accept it via the service, then verify idempotency
+    var idempotentProposalId = new UUID[1];
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .run(
+            () -> {
+              var proposal =
+                  proposalService.createProposal(
+                      "Idempotent Accept Test",
+                      customerId,
+                      FeeModel.HOURLY,
+                      memberId,
+                      portalContactId,
+                      null,
+                      null,
+                      "Hourly rate",
+                      null,
+                      null,
+                      null,
+                      Map.of("type", "doc", "content", List.of()),
+                      null,
+                      null);
+              idempotentProposalId[0] = proposal.getId();
+              proposalService.sendProposal(idempotentProposalId[0], portalContactId);
+            });
 
+    // Seed portal read-model for this proposal in SENT state first
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () -> {
+              var p = proposalService.getProposal(idempotentProposalId[0]);
+              seedPortalProposal(
+                  idempotentProposalId[0],
+                  customerId,
+                  portalContactId,
+                  p.getProposalNumber(),
+                  "Idempotent Accept Test",
+                  "SENT",
+                  "HOURLY",
+                  null,
+                  null,
+                  "<p>Idempotent test</p>",
+                  "[]",
+                  p.getSentAt(),
+                  null);
+            });
+
+    // First accept — triggers orchestration
     mockMvc
         .perform(
-            post("/portal/api/proposals/{id}/accept", sentProposalForAcceptId)
+            post("/portal/api/proposals/{id}/accept", idempotentProposalId[0])
+                .header("Authorization", "Bearer " + portalToken))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("ACCEPTED"));
+
+    // Update portal read-model to reflect ACCEPTED status
+    portalJdbc
+        .sql("UPDATE portal.portal_proposals SET status = 'ACCEPTED' WHERE id = ?")
+        .params(idempotentProposalId[0])
+        .update();
+
+    // Second accept — idempotent, should return 200 with already-accepted message
+    mockMvc
+        .perform(
+            post("/portal/api/proposals/{id}/accept", idempotentProposalId[0])
                 .header("Authorization", "Bearer " + portalToken))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("ACCEPTED"))

@@ -27,6 +27,8 @@ import {
 } from "../actions";
 import { createTask, updateTask, deleteTask } from "./task-actions";
 import { createTimeEntry } from "./time-entry-actions";
+import { listCustomerProposals } from "@/app/(app)/org/[slug]/proposals/proposal-actions";
+import type { ProposalResponse } from "@/app/(app)/org/[slug]/proposals/proposal-actions";
 
 export default async function ProjectDetailPage({
   params,
@@ -48,6 +50,22 @@ export default async function ProjectDetailPage({
   }
 
   const canEdit = isAdmin || project.projectRole === "lead";
+
+  // Look up source proposal (informational link — failures are silent)
+  let sourceProposal: ProposalResponse | null = null;
+  if (project.customerId) {
+    try {
+      const proposalsData = await listCustomerProposals(
+        project.customerId,
+        0,
+        200,
+      );
+      sourceProposal =
+        proposalsData.content.find((p) => p.createdProjectId === id) ?? null;
+    } catch {
+      // informational only — silence all errors
+    }
+  }
 
   // Parallel fetches for all tab data
   const [
@@ -155,6 +173,16 @@ export default async function ProjectDetailPage({
                   className="text-teal-600 hover:text-teal-700 hover:underline"
                 >
                   {customers[0].name}
+                </Link>
+              </span>
+            )}
+            {sourceProposal && (
+              <span>
+                <Link
+                  href={`/org/${slug}/proposals/${sourceProposal.id}`}
+                  className="text-teal-600 hover:text-teal-700 hover:underline"
+                >
+                  Created from Proposal {sourceProposal.proposalNumber}
                 </Link>
               </span>
             )}

@@ -20,7 +20,9 @@ import { CustomerProjectsTab } from "@/components/customers/customer-projects-ta
 import { LifecycleTab } from "@/components/customers/lifecycle-tab";
 import { CustomerInvoicesTab } from "@/components/customers/customer-invoices-tab";
 import { CustomerDocsTab } from "@/components/customers/customer-docs-tab";
+import { CustomerProposalsTab } from "@/components/customers/customer-proposals-tab";
 import { EditCustomerDialog } from "@/components/customers/edit-customer-dialog";
+import type { ProposalResponse } from "@/app/(app)/org/[slug]/proposals/proposal-actions";
 
 interface LinkedProject {
   id: string;
@@ -36,6 +38,7 @@ interface CustomerDetailClientProps {
   history: LifecycleHistoryEntry[];
   invoices: InvoiceResponse[];
   documents: Document[];
+  proposals: ProposalResponse[];
 }
 
 export function CustomerDetailClient({
@@ -45,6 +48,7 @@ export function CustomerDetailClient({
   history,
   invoices,
   documents,
+  proposals,
 }: CustomerDetailClientProps) {
   const params = useParams<{ slug: string }>();
   const [editOpen, setEditOpen] = React.useState(false);
@@ -102,6 +106,17 @@ export function CustomerDetailClient({
       label: "Invoices",
       count: invoices.length,
       content: <CustomerInvoicesTab invoices={invoices} />,
+    },
+    {
+      id: "proposals",
+      label: "Proposals",
+      count: proposals.length,
+      content: (
+        <CustomerProposalsTab
+          proposals={proposals}
+          customerId={customer.id}
+        />
+      ),
     },
     {
       id: "docs",

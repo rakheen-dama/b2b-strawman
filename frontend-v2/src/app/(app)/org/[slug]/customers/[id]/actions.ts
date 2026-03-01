@@ -88,3 +88,19 @@ export async function getCustomerDocuments(
     return [];
   }
 }
+
+import type { PaginatedProposals } from "@/app/(app)/org/[slug]/proposals/proposal-actions";
+import { listCustomerProposals } from "@/app/(app)/org/[slug]/proposals/proposal-actions";
+
+export async function getCustomerProposals(
+  id: string,
+): Promise<PaginatedProposals> {
+  try {
+    return await listCustomerProposals(id, 0, 200);
+  } catch {
+    return {
+      content: [],
+      page: { number: 0, size: 200, totalElements: 0, totalPages: 0 },
+    };
+  }
+}

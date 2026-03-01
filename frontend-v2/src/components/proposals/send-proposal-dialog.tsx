@@ -51,17 +51,22 @@ export function SendProposalDialog({
 
   React.useEffect(() => {
     if (open && !loaded) {
-      getPortalContacts(customerId).then((result) => {
-        setContacts(result);
-        // Pre-select existing portal contact or first contact
-        const preselect =
-          existingPortalContactId &&
-          result.some((c) => c.id === existingPortalContactId)
-            ? existingPortalContactId
-            : "";
-        setSelectedContactId(preselect);
-        setLoaded(true);
-      });
+      getPortalContacts(customerId)
+        .then((result) => {
+          setContacts(result);
+          // Pre-select existing portal contact or first contact
+          const preselect =
+            existingPortalContactId &&
+            result.some((c) => c.id === existingPortalContactId)
+              ? existingPortalContactId
+              : "";
+          setSelectedContactId(preselect);
+          setLoaded(true);
+        })
+        .catch(() => {
+          setContacts([]);
+          setLoaded(true);
+        });
     }
     if (!open) {
       setLoaded(false);
@@ -95,7 +100,12 @@ export function SendProposalDialog({
         <div className="space-y-4 py-2">
           <div className="space-y-2">
             <Label htmlFor="portal-contact">Portal Contact</Label>
-            {contacts.length === 0 && loaded ? (
+            {!loaded ? (
+              <div className="flex items-center gap-2 py-2 text-sm text-slate-500">
+                <Loader2 className="size-4 animate-spin" />
+                Loading contacts...
+              </div>
+            ) : contacts.length === 0 ? (
               <p className="text-sm text-slate-500">
                 No portal contacts found for this customer. Add a portal contact
                 first.

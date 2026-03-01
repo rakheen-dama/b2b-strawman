@@ -135,28 +135,35 @@ export function ProposalDetailClient({
 
         const newProposal = await createProposal(createData);
 
-        if (proposal.milestones.length > 0) {
-          await replaceMilestones(
-            newProposal.id,
-            proposal.milestones.map((m) => ({
-              description: m.description,
-              percentage: m.percentage,
-              relativeDueDays: m.relativeDueDays,
-            })),
+        try {
+          if (proposal.milestones.length > 0) {
+            await replaceMilestones(
+              newProposal.id,
+              proposal.milestones.map((m) => ({
+                description: m.description,
+                percentage: m.percentage,
+                relativeDueDays: m.relativeDueDays,
+              })),
+            );
+          }
+
+          if (proposal.teamMembers.length > 0) {
+            await replaceTeamMembers(
+              newProposal.id,
+              proposal.teamMembers.map((t) => ({
+                memberId: t.memberId,
+                role: t.role ?? "",
+              })),
+            );
+          }
+
+          toast.success("Proposal copied");
+        } catch {
+          toast.error(
+            "Proposal created but some details could not be copied",
           );
         }
 
-        if (proposal.teamMembers.length > 0) {
-          await replaceTeamMembers(
-            newProposal.id,
-            proposal.teamMembers.map((t) => ({
-              memberId: t.memberId,
-              role: t.role ?? "",
-            })),
-          );
-        }
-
-        toast.success("Proposal copied");
         router.push(`/org/${orgSlug}/proposals/${newProposal.id}/edit`);
       } catch {
         toast.error("Failed to copy proposal");

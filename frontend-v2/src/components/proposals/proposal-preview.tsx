@@ -1,5 +1,3 @@
-"use client";
-
 interface ProposalPreviewProps {
   contentJson: Record<string, unknown> | null;
 }

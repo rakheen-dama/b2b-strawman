@@ -1,6 +1,7 @@
 import { handleApiError } from "@/lib/api";
 import { PageHeader } from "@/components/layout/page-header";
 import { ProposalListTable } from "@/components/proposals/proposal-list-table";
+import { ProposalPipelineStats } from "@/components/proposals/proposal-pipeline-stats";
 import { listProposals, getProposalStats } from "./proposal-actions";
 import type {
   ProposalResponse,
@@ -65,7 +66,7 @@ export default async function ProposalsPage({
     <div className="space-y-6">
       <PageHeader title="Proposals" count={proposalsData.content.length} />
 
-      {/* ProposalPipelineStats placeholder — implemented in 236B */}
+      {stats && <ProposalPipelineStats stats={stats} />}
 
       <ProposalListTable
         proposals={proposalsData.content}

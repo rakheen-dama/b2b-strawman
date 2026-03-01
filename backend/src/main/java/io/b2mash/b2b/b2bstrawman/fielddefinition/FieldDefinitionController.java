@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.fielddefinition;
 
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.CreateFieldDefinitionRequest;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.IntakeFieldGroupResponse;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.PatchFieldDefinitionRequest;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.UpdateFieldDefinitionRequest;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -11,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -60,5 +63,19 @@ public class FieldDefinitionController {
   public ResponseEntity<Void> delete(@PathVariable UUID id) {
     fieldDefinitionService.deactivate(id);
     return ResponseEntity.noContent().build();
+  }
+
+  @GetMapping("/intake")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<IntakeFieldGroupResponse> getIntakeFields(
+      @RequestParam EntityType entityType) {
+    return ResponseEntity.ok(fieldDefinitionService.getIntakeFieldGroupResponse(entityType));
+  }
+
+  @PatchMapping("/{id}")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<FieldDefinitionResponse> patchRequiredForContexts(
+      @PathVariable UUID id, @Valid @RequestBody PatchFieldDefinitionRequest request) {
+    return ResponseEntity.ok(fieldDefinitionService.updateRequiredForContexts(id, request));
   }
 }

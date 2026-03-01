@@ -7,10 +7,13 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.CreateFieldDefinitionRequest;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.IntakeFieldGroupResponse;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.PatchFieldDefinitionRequest;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.UpdateFieldDefinitionRequest;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
 import jakarta.persistence.EntityManager;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -27,6 +30,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class FieldDefinitionService {
 
   private static final Logger log = LoggerFactory.getLogger(FieldDefinitionService.class);
+
+  private static final Set<String> VALID_CONTEXT_NAMES =
+      Arrays.stream(PrerequisiteContext.values())
+          .map(PrerequisiteContext::name)
+          .collect(Collectors.toUnmodifiableSet());
 
   private final FieldDefinitionRepository fieldDefinitionRepository;
   private final AuditService auditService;
@@ -75,6 +83,11 @@ public class FieldDefinitionService {
       result.add(new IntakeFieldGroup(group.getId(), group.getName(), group.getSlug(), fields));
     }
     return result;
+  }
+
+  @Transactional(readOnly = true)
+  public IntakeFieldGroupResponse getIntakeFieldGroupResponse(EntityType entityType) {
+    return IntakeFieldGroupResponse.from(getIntakeFields(entityType));
   }
 
   @Transactional(readOnly = true)
@@ -173,6 +186,45 @@ public class FieldDefinitionService {
             .entityType("field_definition")
             .entityId(fd.getId())
             .details(Map.of("name", fd.getName()))
+            .build());
+
+    return FieldDefinitionResponse.from(fd);
+  }
+
+  @Transactional
+  public FieldDefinitionResponse updateRequiredForContexts(
+      UUID id, PatchFieldDefinitionRequest request) {
+    var fd =
+        fieldDefinitionRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("FieldDefinition", id));
+
+    var contexts = request.requiredForContexts();
+    for (String ctx : contexts) {
+      if (!VALID_CONTEXT_NAMES.contains(ctx)) {
+        throw new InvalidStateException(
+            "Invalid prerequisite context",
+            "Unknown context: "
+                + ctx
+                + ". Valid values: "
+                + Arrays.toString(PrerequisiteContext.values()));
+      }
+    }
+
+    fd.setRequiredForContexts(contexts);
+    fd = fieldDefinitionRepository.save(fd);
+
+    log.info(
+        "Updated requiredForContexts for field definition: id={}, contexts={}",
+        fd.getId(),
+        fd.getRequiredForContexts());
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("field_definition.contexts_updated")
+            .entityType("field_definition")
+            .entityId(fd.getId())
+            .details(Map.of("requiredForContexts", fd.getRequiredForContexts()))
             .build());
 
     return FieldDefinitionResponse.from(fd);

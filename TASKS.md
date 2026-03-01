@@ -284,7 +284,7 @@
 | 243 | Engagement Prerequisites — Template Extension & Checks | Backend | 241 | M | 243A, 243B | **Done** (PRs #492, #493) |
 | 244 | Action-Point Prerequisite Wiring | Backend | 241 | M | 244A, 244B | **Done** (PRs #494, #495) |
 | 245 | PrerequisiteModal & Shared Frontend Components | Frontend | 241 | M | 245A, 245B | **Done** (PRs #496, #497) |
-| 246 | Smart Customer Intake Dialog | Frontend | 241, 245 | M | 246A, 246B | |
+| 246 | Smart Customer Intake Dialog | Frontend | 241, 245 | M | 246A, 246B | **Done** |
 | 247 | Prerequisite Configuration UI | Frontend | 245 | S | 247A | |
 | 248 | Lifecycle Transition Frontend Integration | Frontend | 242, 245 | S | 248A | |
 | 249 | Engagement & Action-Point Frontend Integration | Frontend | 243, 244, 245 | M | 249A, 249B | |

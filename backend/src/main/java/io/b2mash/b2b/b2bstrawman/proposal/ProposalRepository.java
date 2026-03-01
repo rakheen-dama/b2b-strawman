@@ -32,4 +32,11 @@ public interface ProposalRepository extends JpaRepository<Proposal, UUID> {
       @Param("feeModel") FeeModel feeModel,
       @Param("createdById") UUID createdById,
       Pageable pageable);
+
+  @Query(
+      value =
+          "SELECT AVG(EXTRACT(EPOCH FROM (accepted_at - sent_at)) / 86400) FROM proposals"
+              + " WHERE status = 'ACCEPTED' AND sent_at IS NOT NULL AND accepted_at IS NOT NULL",
+      nativeQuery = true)
+  Double averageDaysToAccept();
 }

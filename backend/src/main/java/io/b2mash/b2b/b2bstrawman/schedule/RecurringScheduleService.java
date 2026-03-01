@@ -11,6 +11,8 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
+import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.NameTokenResolver;
@@ -59,6 +61,8 @@ public class RecurringScheduleService {
   private final ProjectRepository projectRepository;
   private final ProjectTemplateService projectTemplateService;
   private final NameTokenResolver nameTokenResolver;
+  private final PrerequisiteService prerequisiteService;
+  private final NotificationService notificationService;
 
   public RecurringScheduleService(
       RecurringScheduleRepository scheduleRepository,
@@ -72,7 +76,9 @@ public class RecurringScheduleService {
       ScheduleExecutionRepository executionRepository,
       ProjectRepository projectRepository,
       ProjectTemplateService projectTemplateService,
-      NameTokenResolver nameTokenResolver) {
+      NameTokenResolver nameTokenResolver,
+      PrerequisiteService prerequisiteService,
+      NotificationService notificationService) {
     this.scheduleRepository = scheduleRepository;
     this.templateRepository = templateRepository;
     this.customerRepository = customerRepository;
@@ -85,6 +91,8 @@ public class RecurringScheduleService {
     this.projectRepository = projectRepository;
     this.projectTemplateService = projectTemplateService;
     this.nameTokenResolver = nameTokenResolver;
+    this.prerequisiteService = prerequisiteService;
+    this.notificationService = notificationService;
   }
 
   @Transactional
@@ -496,6 +504,21 @@ public class RecurringScheduleService {
     Project project =
         projectTemplateService.instantiateFromTemplate(
             template, projectName, customer, schedule.getProjectLeadMemberId(), actingMemberId);
+
+    // 5a. Check engagement prerequisites and notify if not met
+    var prereqCheck =
+        prerequisiteService.checkEngagementPrerequisites(customer.getId(), template.getId());
+    if (!prereqCheck.passed()) {
+      String fieldList =
+          prereqCheck.violations().stream()
+              .map(v -> v.fieldSlug())
+              .collect(Collectors.joining(", "));
+      String notifTitle =
+          "Customer %s is missing fields required for %s: %s"
+              .formatted(customerName, templateName, fieldList);
+      notificationService.notifyAdminsAndOwners(
+          "PREREQUISITE_BLOCKED_ACTIVATION", notifTitle, null, "PROJECT", project.getId());
+    }
 
     // 6. Record execution
     executionRepository.save(

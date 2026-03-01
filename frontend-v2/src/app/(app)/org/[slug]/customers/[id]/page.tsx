@@ -6,6 +6,7 @@ import {
   getCustomerChecklist,
   getCustomerInvoices,
   getCustomerDocuments,
+  getCustomerProposals,
 } from "./actions";
 
 export default async function CustomerDetailPage({
@@ -15,15 +16,23 @@ export default async function CustomerDetailPage({
 }) {
   const { id } = await params;
 
-  const [customer, projects, history, checklist, invoices, documents] =
-    await Promise.all([
-      getCustomer(id),
-      getCustomerProjects(id),
-      getLifecycleHistory(id),
-      getCustomerChecklist(id),
-      getCustomerInvoices(id),
-      getCustomerDocuments(id),
-    ]);
+  const [
+    customer,
+    projects,
+    history,
+    checklist,
+    invoices,
+    documents,
+    proposalsData,
+  ] = await Promise.all([
+    getCustomer(id),
+    getCustomerProjects(id),
+    getLifecycleHistory(id),
+    getCustomerChecklist(id),
+    getCustomerInvoices(id),
+    getCustomerDocuments(id),
+    getCustomerProposals(id),
+  ]);
 
   return (
     <CustomerDetailClient
@@ -33,6 +42,7 @@ export default async function CustomerDetailPage({
       history={history}
       invoices={invoices}
       documents={documents}
+      proposals={proposalsData.content}
     />
   );
 }

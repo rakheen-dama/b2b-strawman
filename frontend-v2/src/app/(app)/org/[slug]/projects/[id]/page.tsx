@@ -27,6 +27,8 @@ import {
 } from "../actions";
 import { createTask, updateTask, deleteTask } from "./task-actions";
 import { createTimeEntry } from "./time-entry-actions";
+import { listCustomerProposals } from "@/app/(app)/org/[slug]/proposals/proposal-actions";
+import type { ProposalResponse } from "@/app/(app)/org/[slug]/proposals/proposal-actions";
 
 export default async function ProjectDetailPage({
   params,
@@ -49,7 +51,7 @@ export default async function ProjectDetailPage({
 
   const canEdit = isAdmin || project.projectRole === "lead";
 
-  // Parallel fetches for all tab data
+  // Parallel fetches for all tab data + source proposal lookup
   const [
     documentsResult,
     membersResult,
@@ -59,6 +61,7 @@ export default async function ProjectDetailPage({
     byTaskResult,
     byMemberResult,
     budgetResult,
+    proposalsResult,
   ] = await Promise.allSettled([
     api.get<Document[]>(`/api/projects/${id}/documents`),
     api.get<ProjectMember[]>(`/api/projects/${id}/members`),
@@ -72,7 +75,19 @@ export default async function ProjectDetailPage({
     api
       .get<BudgetStatusResponse>(`/api/projects/${id}/budget`)
       .catch(() => null),
+    // Informational only — look up source proposal if project has a customer.
+    // Size capped at 200; pagination not yet supported for this lookup.
+    project.customerId
+      ? listCustomerProposals(project.customerId, 0, 200).catch(() => null)
+      : Promise.resolve(null),
   ]);
+
+  // Find the proposal that created this project (informational link)
+  const sourceProposal: ProposalResponse | null =
+    proposalsResult.status === "fulfilled" && proposalsResult.value
+      ? (proposalsResult.value.content.find((p) => p.createdProjectId === id) ??
+          null)
+      : null;
 
   const documents =
     documentsResult.status === "fulfilled" ? documentsResult.value : [];
@@ -155,6 +170,16 @@ export default async function ProjectDetailPage({
                   className="text-teal-600 hover:text-teal-700 hover:underline"
                 >
                   {customers[0].name}
+                </Link>
+              </span>
+            )}
+            {sourceProposal && (
+              <span>
+                <Link
+                  href={`/org/${slug}/proposals/${sourceProposal.id}`}
+                  className="text-teal-600 hover:text-teal-700 hover:underline"
+                >
+                  Created from Proposal {sourceProposal.proposalNumber}
                 </Link>
               </span>
             )}

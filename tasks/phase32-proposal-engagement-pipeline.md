@@ -31,7 +31,7 @@ Phase 32 introduces the **Proposal to Engagement Pipeline** -- the connective ti
 | 236 | Proposals Frontend -- List & Pipeline Stats | Frontend | 231 | M | 236A, 236B | **Done** (PRs #478, #479) |
 | 237 | Proposals Frontend -- Create/Edit & Detail Pages | Frontend | 232, 236 | L | 237A, 237B | **Done** (PRs #480, #481) |
 | 238 | Proposals Frontend -- Customer Tab & Project Link | Frontend | 236 | S | 238A | **Done** (PR #482) |
-| 239 | Portal Frontend -- Proposal Pages | Portal | 234 | M | 239A, 239B | |
+| 239 | Portal Frontend -- Proposal Pages | Portal | 234 | M | 239A, 239B | **Done** (PRs #483, #484) |
 
 ---
 
@@ -189,7 +189,7 @@ PORTAL TRACK (after E234A)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 6a | 239 | 239B | Portal proposal detail: rendered HTML body, fee summary card, milestones table, accept/decline buttons, expired banner, confirmation dialogs + tests (~5 tests). ~3 new files. Portal only. | |
+| 6a | 239 | 239B | Portal proposal detail: rendered HTML body, fee summary card, milestones table, accept/decline buttons, expired banner, confirmation dialogs + tests (~5 tests). ~3 new files. Portal only. | **Done** (PR #484) |
 
 ### Timeline
 
@@ -803,7 +803,7 @@ Stage 6: [239B]                                                      (final)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **239A** | 239.1--239.4 | Portal proposals list page + nav link + portal `proposal-actions.ts` + portal `ProposalStatusBadge`. ~4 new files. Portal only. | **Done** (PR #483) |
-| **239B** | 239.5--239.11 | Portal proposal detail page: rendered HTML body in branded wrapper, fee summary card, milestones table, accept/decline buttons with confirmation dialogs, expired banner, already-actioned banner + tests (~5 tests). ~3 new files. Portal only. | |
+| **239B** | 239.5--239.11 | Portal proposal detail page: rendered HTML body in branded wrapper, fee summary card, milestones table, accept/decline buttons with confirmation dialogs, expired banner, already-actioned banner + tests (~5 tests). ~3 new files. Portal only. | **Done** (PR #484) |
 
 ### Tasks
 

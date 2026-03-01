@@ -149,9 +149,15 @@ export default function PortalProposalDetailPage() {
   }
 
   const brandColor = proposal.orgBrandColor ?? "#0d9488";
-  const milestones: PortalMilestone[] = proposal.milestonesJson
-    ? JSON.parse(proposal.milestonesJson)
-    : [];
+  const milestones: PortalMilestone[] = (() => {
+    try {
+      return proposal.milestonesJson
+        ? JSON.parse(proposal.milestonesJson)
+        : [];
+    } catch {
+      return [];
+    }
+  })();
   const isSent = proposal.status === "SENT";
 
   return (
@@ -170,8 +176,7 @@ export default function PortalProposalDetailPage() {
         <div className="flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-800 dark:bg-emerald-950/30">
           <CheckCircle2 className="size-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
           <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300">
-            You accepted this proposal on{" "}
-            {proposal.sentAt ? formatDate(proposal.sentAt) : "a previous date"}.
+            You have accepted this proposal.
           </p>
         </div>
       )}
@@ -180,8 +185,7 @@ export default function PortalProposalDetailPage() {
         <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
           <XCircle className="size-5 shrink-0 text-slate-500 dark:text-slate-400" />
           <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
-            You declined this proposal on{" "}
-            {proposal.sentAt ? formatDate(proposal.sentAt) : "a previous date"}.
+            You have declined this proposal.
           </p>
         </div>
       )}
@@ -321,7 +325,7 @@ export default function PortalProposalDetailPage() {
                             : null;
 
                         return (
-                          <TableRow key={index}>
+                          <TableRow key={`${milestone.description}-${milestone.sortOrder}`}>
                             <TableCell className="text-sm text-slate-700 dark:text-slate-300">
                               {milestone.description}
                             </TableCell>

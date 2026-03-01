@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { render, screen, cleanup, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
@@ -29,16 +30,21 @@ vi.mock("@/app/portal/proposals/proposal-actions", () => ({
 import {
   listPortalProposals,
   getPortalProposal,
+  acceptProposal,
+  declineProposal,
 } from "@/app/portal/proposals/proposal-actions";
 import type {
   PortalProposalSummary,
   PortalProposalDetail,
 } from "@/app/portal/proposals/proposal-actions";
+import { toast } from "@/lib/toast";
 
 afterEach(() => cleanup());
 
 const mockListProposals = listPortalProposals as ReturnType<typeof vi.fn>;
 const mockGetProposal = getPortalProposal as ReturnType<typeof vi.fn>;
+const mockAcceptProposal = acceptProposal as ReturnType<typeof vi.fn>;
+const mockDeclineProposal = declineProposal as ReturnType<typeof vi.fn>;
 
 const summaryBase: PortalProposalSummary = {
   id: "p1",
@@ -205,5 +211,100 @@ describe("PortalProposalDetailPage", () => {
     ).toBeInTheDocument();
     expect(screen.queryByText("Accept Proposal")).not.toBeInTheDocument();
     expect(screen.queryByText("Decline")).not.toBeInTheDocument();
+  });
+
+  it("accept_proposal_calls_action_and_shows_success_toast", async () => {
+    const user = userEvent.setup();
+    mockGetProposal.mockResolvedValue(detailBase);
+    mockAcceptProposal.mockResolvedValue({ message: "Proposal accepted successfully." });
+
+    const { default: PortalProposalDetailPage } = await import(
+      "@/app/portal/proposals/[id]/page"
+    );
+    render(<PortalProposalDetailPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Accept Proposal")).toBeInTheDocument();
+    });
+
+    // Click the Accept Proposal button to open confirmation dialog
+    await user.click(screen.getByRole("button", { name: /Accept Proposal/ }));
+
+    // Wait for dialog description to appear (rendered via Radix AlertDialog portal)
+    await waitFor(() => {
+      expect(screen.getByText(/By accepting this proposal/)).toBeInTheDocument();
+    });
+
+    // Find the confirm button inside the dialog by its text — it's the second "Accept Proposal" button
+    const allAcceptButtons = screen.getAllByText("Accept Proposal");
+    // Click the last one (inside the dialog footer)
+    await user.click(allAcceptButtons[allAcceptButtons.length - 1]);
+
+    await waitFor(() => {
+      expect(mockAcceptProposal).toHaveBeenCalledWith("p1");
+    });
+    expect(toast.success).toHaveBeenCalledWith("Proposal accepted successfully.");
+  });
+
+  it("decline_proposal_calls_action_with_reason", async () => {
+    const user = userEvent.setup();
+    mockGetProposal.mockResolvedValue(detailBase);
+    mockDeclineProposal.mockResolvedValue(undefined);
+
+    const { default: PortalProposalDetailPage } = await import(
+      "@/app/portal/proposals/[id]/page"
+    );
+    render(<PortalProposalDetailPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Decline")).toBeInTheDocument();
+    });
+
+    // Click Decline to open dialog
+    await user.click(screen.getByRole("button", { name: "Decline" }));
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/Reason for declining/)).toBeInTheDocument();
+    });
+
+    // Type a reason
+    await user.type(screen.getByPlaceholderText(/Reason for declining/), "Too expensive");
+
+    // Click Decline Proposal button
+    await user.click(screen.getByRole("button", { name: "Decline Proposal" }));
+
+    await waitFor(() => {
+      expect(mockDeclineProposal).toHaveBeenCalledWith("p1", "Too expensive");
+    });
+    expect(toast.success).toHaveBeenCalledWith("Proposal declined.");
+  });
+
+  it("accept_proposal_error_shows_error_toast", async () => {
+    const user = userEvent.setup();
+    mockGetProposal.mockResolvedValue(detailBase);
+    mockAcceptProposal.mockRejectedValue(new Error("Server error"));
+
+    const { default: PortalProposalDetailPage } = await import(
+      "@/app/portal/proposals/[id]/page"
+    );
+    render(<PortalProposalDetailPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Accept Proposal")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole("button", { name: /Accept Proposal/ }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/By accepting this proposal/)).toBeInTheDocument();
+    });
+
+    const allAcceptButtons = screen.getAllByText("Accept Proposal");
+    await user.click(allAcceptButtons[allAcceptButtons.length - 1]);
+
+    await waitFor(() => {
+      expect(mockAcceptProposal).toHaveBeenCalledWith("p1");
+    });
+    expect(toast.error).toHaveBeenCalledWith("Server error");
   });
 });

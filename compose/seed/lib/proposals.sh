@@ -19,7 +19,7 @@ seed_proposals() {
     body=$(api_post "/api/proposals" "{
       \"title\": \"E-Commerce Platform Build\",
       \"customerId\": \"${BRIGHT_ID}\",
-      \"feeModel\": \"FIXED_FEE\",
+      \"feeModel\": \"FIXED\",
       \"fixedFeeAmount\": 8500.00,
       \"fixedFeeCurrency\": \"USD\",
       \"expiresAt\": \"${expires_at}\"

@@ -2,9 +2,7 @@
 # compose/seed/lib/retainers.sh — Create retainer agreements
 # Requires: lib/common.sh, ACME_ID
 #
-# NOTE: The retainers endpoint has a known deserialization issue that has not
-# been resolved yet. This script may fail at runtime. The code is correct per
-# the API spec; the bug is server-side.
+# Creates one "Monthly Support Retainer" for Acme Corp (20 hrs/month, $3k).
 
 seed_retainers() {
   echo ""
@@ -12,7 +10,7 @@ seed_retainers() {
   jwt=$(get_jwt user_e2e_alice owner)
 
   existing=$(api_get "/api/retainers?size=200" "$jwt")
-  acme_retainer=$(echo "$existing" | jq -r '.content[] | select(.name == "Monthly Support Retainer") | .id' 2>/dev/null)
+  acme_retainer=$(echo "$existing" | jq -r '.[] | select(.name == "Monthly Support Retainer") | .id' 2>/dev/null)
 
   if [ -n "$acme_retainer" ] && [ "$acme_retainer" != "null" ]; then
     echo "    [skip] Monthly Support Retainer exists (${acme_retainer})"
@@ -23,7 +21,7 @@ seed_retainers() {
     body=$(api_post "/api/retainers" "{
       \"customerId\": \"${ACME_ID}\",
       \"name\": \"Monthly Support Retainer\",
-      \"type\": \"HOURS_BASED\",
+      \"type\": \"HOUR_BANK\",
       \"frequency\": \"MONTHLY\",
       \"startDate\": \"${start_date}\",
       \"allocatedHours\": 20,

@@ -6,7 +6,9 @@ WORKDIR /seed
 
 COPY wait-for-backend.sh .
 COPY seed.sh .
+COPY rich-seed.sh .
+COPY lib/ lib/
 
-RUN chmod +x wait-for-backend.sh seed.sh
+RUN chmod +x wait-for-backend.sh seed.sh rich-seed.sh lib/*.sh
 
 CMD ["./seed.sh"]

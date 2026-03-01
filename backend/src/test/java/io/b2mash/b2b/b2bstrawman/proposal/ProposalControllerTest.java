@@ -42,6 +42,7 @@ class ProposalControllerTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
+  @Autowired private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
   private String memberIdOwner;
   private String memberIdAdmin;
@@ -299,6 +300,35 @@ class ProposalControllerTest {
         .andExpect(status().isForbidden());
   }
 
+  @Test
+  void updateProposal_sentStatus_returns409() throws Exception {
+    String proposalId = createProposal("Update Sent Guard", "HOURLY", null, null);
+    transitionToSent(proposalId);
+
+    mockMvc
+        .perform(
+            put("/api/proposals/" + proposalId)
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "title": "Should Not Work"
+                    }
+                    """))
+        .andExpect(status().isConflict());
+  }
+
+  @Test
+  void deleteProposal_sentStatus_returns409() throws Exception {
+    String proposalId = createProposal("Delete Sent Guard", "HOURLY", null, null);
+    transitionToSent(proposalId);
+
+    mockMvc
+        .perform(delete("/api/proposals/" + proposalId).with(ownerJwt()))
+        .andExpect(status().isConflict());
+  }
+
   // ==================== Milestones ====================
 
   @Test
@@ -476,7 +506,17 @@ class ProposalControllerTest {
 
   private String extractIdFromLocation(MvcResult result) {
     String location = result.getResponse().getHeader("Location");
+    assert location != null : "Expected Location header to be present";
     return location.substring(location.lastIndexOf('/') + 1);
+  }
+
+  private void transitionToSent(String proposalId) {
+    String schema =
+        io.b2mash.b2b.b2bstrawman.provisioning.SchemaNameGenerator.generateSchemaName(ORG_ID);
+    jdbcTemplate.update(
+        "UPDATE \"%s\".proposals SET status = 'SENT', sent_at = now() WHERE id = ?::uuid"
+            .formatted(schema),
+        proposalId);
   }
 
   private String syncMember(String clerkUserId, String email, String name, String orgRole)

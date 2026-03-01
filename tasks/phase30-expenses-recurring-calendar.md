@@ -31,7 +31,7 @@ Phase 30 closes the remaining revenue-capture and daily-work-organisation gaps i
 | 223 | Recurring Task Foundation — Migration & Entity | Backend | -- | M | 223A, 223B | **Done** (PRs #456, #457) |
 | 224 | Recurring Task Service & Controller | Backend | 223 | M | 224A, 224B | **Done** (PRs #458, #459) |
 | 225 | Recurring Task Frontend | Frontend | 224 | M | 225A | **Done** (PR #460) |
-| 226 | Time Reminder Scheduler & OrgSettings | Backend | -- | M | 226A, 226B | |
+| 226 | Time Reminder Scheduler & OrgSettings | Backend | -- | M | 226A, 226B | **Done** (PRs #461, #462) |
 | 227 | Time Reminder Frontend — Settings & Preferences | Frontend | 226 | S | 227A | |
 | 228 | Calendar View — Backend Endpoint | Backend | -- | M | 228A | |
 | 229 | Calendar View — Frontend Page | Frontend | 228 | M | 229A, 229B | |
@@ -162,7 +162,7 @@ TRACK 4: CALENDAR VIEW
 | 2a (parallel) | 219 | 219A | ExpenseService: full CRUD, validation, billing status computation, write-off/restore, audit events, domain events. ~1 new file, ~1 new event file. Backend only. | **Done** (PR #449) |
 | 2b (parallel) | 221 | 221A | InvoiceLine entity extension (expenseId + lineType fields) + InvoiceLineType enum + InvoiceLineRepository update + backfill handling. ~3 modified/new files. Backend only. | **Done** (PR #453) |
 | 2c (parallel) | 224 | 224A | TaskService.completeTask() extension: recurrence check, next-date calculation, auto-create new Task in same transaction, audit event, notification. ~1 modified file, ~1 new event file. Backend only. | **Done** (PR #458) |
-| 2d (parallel) | 226 | 226B | TimeReminderScheduler: @Scheduled component, per-org processing, working day check, member time query, notification creation. ~1 new file. Backend only. | |
+| 2d (parallel) | 226 | 226B | TimeReminderScheduler: @Scheduled component, per-org processing, working day check, member time query, notification creation. ~1 new file. Backend only. | **Done** (PR #462) |
 
 ### Stage 3: Controllers + Integration Tests (parallel tracks)
 
@@ -714,7 +714,7 @@ Stage 5: [220B] // [222A] // [229B]                              (parallel)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **226A** | 226.1–226.5 | V50 migration section for OrgSettings time reminder columns + extend `OrgSettings` entity with 4 new fields + extend `OrgSettingsController` DTO + update the OrgSettings update/create path + unit tests for OrgSettings. ~2 modified files, ~1 migration section. Backend only. | **Done** (PR #461) |
-| **226B** | 226.6–226.13 | `TimeReminderScheduler` component: `@Scheduled(fixedRate=900000)` method, tenant iteration, per-org processing (working day check, minimum time check, notification creation), `NotificationPreference` opt-out support + integration tests (~8 tests). ~1 new scheduler file, ~1 test file. Backend only. | |
+| **226B** | 226.6–226.13 | `TimeReminderScheduler` component: `@Scheduled(fixedRate=900000)` method, tenant iteration, per-org processing (working day check, minimum time check, notification creation), `NotificationPreference` opt-out support + integration tests (~8 tests). ~1 new scheduler file, ~1 test file. Backend only. | **Done** (PR #462) |
 
 ### Tasks
 

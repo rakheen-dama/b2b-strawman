@@ -262,7 +262,7 @@
 | 223 | Recurring Task Foundation — Migration & Entity | Backend | -- | M | 223A, 223B | **Done** (PRs #456, #457) |
 | 224 | Recurring Task Service & Controller | Backend | 223 | M | 224A, 224B | **Done** (PRs #458, #459) |
 | 225 | Recurring Task Frontend | Frontend | 224 | M | 225A | **Done** (PR #460) |
-| 226 | Time Reminder Scheduler & OrgSettings | Backend | -- | M | 226A, 226B | 226A **Done** (PR #461) |
+| 226 | Time Reminder Scheduler & OrgSettings | Backend | -- | M | 226A, 226B | **Done** (PRs #461, #462) |
 | 227 | Time Reminder Frontend — Settings & Preferences | Frontend | 226 | S | 227A | |
 | 228 | Calendar View — Backend Endpoint | Backend | -- | M | 228A | |
 | 229 | Calendar View — Frontend Page | Frontend | 228 | M | 229A, 229B | |

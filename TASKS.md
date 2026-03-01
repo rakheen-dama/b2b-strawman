@@ -267,7 +267,7 @@
 | 228 | Calendar View — Backend Endpoint | Backend | -- | M | 228A | **Done** (PR #464) |
 | 229 | Calendar View — Frontend Page | Frontend | 228 | M | 229A, 229B | **Done** (PRs #465, #466) |
 | **Phase 32 — Proposal → Engagement Pipeline** | | | | | | See [tasks/phase32-proposal-engagement-pipeline.md](tasks/phase32-proposal-engagement-pipeline.md) |
-| 230 | Proposal Entity Foundation & Migration | Backend | -- | M | 230A, 230B | |
+| 230 | Proposal Entity Foundation & Migration | Backend | -- | M | 230A, 230B | 230A **Done** (PR #467) |
 | 231 | Proposal CRUD & Lifecycle Backend | Backend | 230 | L | 231A, 231B | |
 | 232 | Send Flow & Portal Read-Model Sync | Backend | 231 | M | 232A, 232B | |
 | 233 | Acceptance Orchestration | Backend | 231 | L | 233A, 233B | |

@@ -5,5 +5,6 @@ public enum InvoiceLineType {
   TIME,
   EXPENSE,
   RETAINER,
-  MANUAL
+  MANUAL,
+  FIXED_FEE
 }

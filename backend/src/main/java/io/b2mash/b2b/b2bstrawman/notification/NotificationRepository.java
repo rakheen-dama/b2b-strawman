@@ -53,4 +53,16 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
       """)
   boolean existsByTypeAndReferenceEntityId(
       @Param("type") String type, @Param("entityId") UUID entityId);
+
+  @Query(
+      """
+      SELECT COUNT(n) > 0 FROM Notification n
+      WHERE n.type = :type
+        AND n.recipientMemberId = :memberId
+        AND n.createdAt >= :since
+      """)
+  boolean existsByTypeAndRecipientMemberIdAndCreatedAtAfter(
+      @Param("type") String type,
+      @Param("memberId") UUID memberId,
+      @Param("since") java.time.Instant since);
 }

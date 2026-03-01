@@ -156,7 +156,8 @@ public class NotificationService {
           "ACCEPTANCE_COMPLETED",
           "PROJECT_COMPLETED",
           "PROJECT_ARCHIVED",
-          "TASK_RECURRENCE_CREATED");
+          "TASK_RECURRENCE_CREATED",
+          "TIME_REMINDER");
 
   // --- Preference methods ---
 
@@ -814,7 +815,7 @@ public class NotificationService {
     return created;
   }
 
-  Notification createIfEnabled(
+  public Notification createIfEnabled(
       UUID recipientMemberId,
       String notificationType,
       String title,

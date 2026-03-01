@@ -216,7 +216,8 @@ public class EmailNotificationChannel implements NotificationChannel {
           "RETAINER_FULLY_CONSUMED",
           "RETAINER_TERMINATED" ->
           "notification-retainer";
-      case "PROPOSAL_EXPIRED", "PROPOSAL_DECLINED" -> "notification-proposal";
+      case "PROPOSAL_SENT", "PROPOSAL_ACCEPTED", "PROPOSAL_EXPIRED", "PROPOSAL_DECLINED" ->
+          "notification-proposal";
       default -> {
         log.warn("No email template mapping for notification type '{}'", notificationType);
         yield null;
@@ -301,6 +302,13 @@ public class EmailNotificationChannel implements NotificationChannel {
           "RETAINER_FULLY_CONSUMED",
           "RETAINER_TERMINATED" -> {
         context.put("retainerUrl", appUrl);
+      }
+      case "PROPOSAL_SENT", "PROPOSAL_ACCEPTED", "PROPOSAL_EXPIRED", "PROPOSAL_DECLINED" -> {
+        context.put(
+            "proposalUrl",
+            notification.getReferenceEntityId() != null
+                ? appUrl + "/proposals/" + notification.getReferenceEntityId()
+                : null);
       }
       default -> {
         // No additional context for unmapped types

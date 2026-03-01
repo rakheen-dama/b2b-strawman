@@ -1,0 +1,42 @@
+<!-- Portal-facing email: sent TO the customer contact when a proposal is sent via the portal.
+     Invoked by the portal email delivery mechanism (not via NotificationService/EmailNotificationChannel).
+     Context variables: contactName, orgName, proposalNumber, proposalTitle, portalUrl, brandColor, expiresAtFormatted -->
+<div xmlns:th="http://www.thymeleaf.org">
+  <h2 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 600; color: #111827;">New Proposal for Your Review</h2>
+  <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.6; color: #374151;">
+    Hi <span th:text="${contactName != null ? contactName : 'there'}">there</span>,
+  </p>
+  <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.6; color: #374151;">
+    <span th:text="${orgName != null ? orgName : 'DocTeams'}">DocTeams</span> has sent you a proposal for your review.
+  </p>
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin: 16px 0;">
+    <tr>
+      <td style="padding: 16px; background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px;">
+        <p style="margin: 0; font-size: 14px; font-weight: 600; color: #111827;">
+          Proposal <span th:text="${proposalNumber}">P-0001</span>
+        </p>
+        <p th:if="${proposalTitle}" style="margin: 4px 0 0 0; font-size: 13px; color: #6b7280;"
+           th:text="${proposalTitle}">Proposal title</p>
+      </td>
+    </tr>
+  </table>
+  <p style="margin: 0 0 24px 0; font-size: 14px; line-height: 1.6; color: #374151;">
+    Please review the proposal and respond at your convenience by clicking the button below.
+  </p>
+  <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 0 24px 0;">
+    <tr>
+      <td align="center" style="border-radius: 6px;" th:style="'border-radius: 6px; background-color: ' + (${brandColor != null ? brandColor : '#2563EB'}) + ';'">
+        <a th:href="${portalUrl}" style="display: inline-block; padding: 12px 24px; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; border-radius: 6px;" th:style="'display: inline-block; padding: 12px 24px; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; border-radius: 6px; background-color: ' + (${brandColor != null ? brandColor : '#2563EB'}) + ';'">
+          View Proposal
+        </a>
+      </td>
+    </tr>
+  </table>
+  <p th:if="${expiresAtFormatted}" style="margin: 0 0 16px 0; font-size: 13px; color: #6b7280;">
+    This proposal will expire on <span th:text="${expiresAtFormatted}">1 January 2026</span>.
+  </p>
+  <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #374151;">
+    Best,<br/>
+    <span th:text="${orgName != null ? orgName : 'DocTeams'}">DocTeams</span>
+  </p>
+</div>

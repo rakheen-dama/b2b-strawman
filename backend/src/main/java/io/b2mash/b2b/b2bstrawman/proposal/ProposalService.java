@@ -123,6 +123,25 @@ public class ProposalService {
     if (expiresAt != null) proposal.setExpiresAt(expiresAt);
 
     var saved = proposalRepository.save(proposal);
+
+    // Audit
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("proposal.created")
+            .entityType("proposal")
+            .entityId(saved.getId())
+            .details(
+                Map.of(
+                    "proposal_number",
+                    proposalNumber,
+                    "title",
+                    title,
+                    "customer_id",
+                    customerId.toString(),
+                    "fee_model",
+                    feeModel.name()))
+            .build());
+
     log.info("Created proposal {} ({}) for customer {}", saved.getId(), proposalNumber, customerId);
     return saved;
   }
@@ -235,6 +254,16 @@ public class ProposalService {
     if (expiresAt != null) proposal.setExpiresAt(expiresAt);
 
     var saved = proposalRepository.save(proposal);
+
+    // Audit
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("proposal.updated")
+            .entityType("proposal")
+            .entityId(saved.getId())
+            .details(Map.of("proposal_number", saved.getProposalNumber()))
+            .build());
+
     log.info("Updated proposal {}", proposalId);
     return saved;
   }
@@ -253,6 +282,19 @@ public class ProposalService {
 
     // CASCADE handles milestones and team members in DB
     proposalRepository.deleteById(proposalId);
+
+    // Audit
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("proposal.deleted")
+            .entityType("proposal")
+            .entityId(proposalId)
+            .details(
+                Map.of(
+                    "proposal_number", proposal.getProposalNumber(),
+                    "title", proposal.getTitle()))
+            .build());
+
     log.info("Deleted proposal {}", proposalId);
   }
 
@@ -459,6 +501,19 @@ public class ProposalService {
     // 7. Save
     var saved = proposalRepository.save(proposal);
 
+    // Audit
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("proposal.sent")
+            .entityType("proposal")
+            .entityId(saved.getId())
+            .details(
+                Map.of(
+                    "proposal_number", saved.getProposalNumber(),
+                    "customer_id", saved.getCustomerId().toString(),
+                    "portal_contact_id", portalContactId.toString()))
+            .build());
+
     // 8. Publish event — portal sync and notifications run AFTER_COMMIT via event handlers
     UUID memberId = RequestScopes.requireMemberId();
     String actorName = memberNameResolver.resolveName(memberId);
@@ -500,9 +555,17 @@ public class ProposalService {
     // Update portal read model status
     proposalPortalSyncService.updatePortalProposalStatus(proposalId, "DRAFT");
 
-    // TODO(Epic-235A): Publish ProposalWithdrawnEvent for audit trail integration
-
     var saved = proposalRepository.save(proposal);
+
+    // Audit (after save, consistent with other lifecycle methods)
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("proposal.withdrawn")
+            .entityType("proposal")
+            .entityId(proposalId)
+            .details(Map.of("proposal_number", proposal.getProposalNumber()))
+            .build());
+
     log.info("Withdrew proposal {}", proposalId);
     return saved;
   }

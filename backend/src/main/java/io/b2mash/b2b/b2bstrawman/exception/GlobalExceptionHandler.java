@@ -4,7 +4,6 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.MemberContextNotBoundException;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -91,8 +90,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
   }
 
   @ExceptionHandler(PrerequisiteNotMetException.class)
-  public ResponseEntity<Map<String, Object>> handlePrerequisiteNotMet(
-      PrerequisiteNotMetException ex) {
+  public ResponseEntity<ProblemDetail> handlePrerequisiteNotMet(PrerequisiteNotMetException ex) {
     log.warn("Prerequisite check failed: {}", ex.getBody().getDetail());
     var check = ex.getPrerequisiteCheck();
 
@@ -115,14 +113,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                         v.resolution() != null ? v.resolution() : ""))
             .toList();
 
-    var body = new LinkedHashMap<String, Object>();
-    body.put("type", "about:blank");
-    body.put("title", ex.getBody().getTitle());
-    body.put("status", 422);
-    body.put("detail", ex.getBody().getDetail());
-    body.put("violations", violations);
+    var problem = ex.getBody();
+    problem.setProperty("violations", violations);
 
-    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(body);
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(problem);
   }
 
   @ExceptionHandler(ObjectOptimisticLockingFailureException.class)

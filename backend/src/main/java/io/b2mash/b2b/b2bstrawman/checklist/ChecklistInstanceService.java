@@ -483,20 +483,11 @@ public class ChecklistInstanceService {
 
   private void sendPrerequisiteBlockedNotification(
       io.b2mash.b2b.b2bstrawman.customer.Customer customer, PrerequisiteCheck prereqCheck) {
-    var adminsAndOwners = memberRepository.findByOrgRoleIn(List.of("admin", "owner"));
     var title =
         "Customer \"%s\" has completed all checklist items but has %d incomplete required fields for activation."
             .formatted(customer.getName(), prereqCheck.violations().size());
 
-    for (var member : adminsAndOwners) {
-      notificationService.createIfEnabled(
-          member.getId(),
-          "PREREQUISITE_BLOCKED_ACTIVATION",
-          title,
-          null,
-          "CUSTOMER",
-          customer.getId(),
-          null);
-    }
+    notificationService.notifyAdminsAndOwners(
+        "PREREQUISITE_BLOCKED_ACTIVATION", title, null, "CUSTOMER", customer.getId());
   }
 }

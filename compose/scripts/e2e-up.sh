@@ -102,9 +102,15 @@ echo "[3/3] Waiting for seed to complete..."
 SEED_TIMEOUT=120
 ELAPSED=0
 while [[ $ELAPSED -lt $SEED_TIMEOUT ]]; do
-  SEED_STATUS=$(docker compose -f "$COMPOSE_FILE" ps seed --format json 2>/dev/null | jq -r '.State // .state // "unknown"' 2>/dev/null || echo "unknown")
+  SEED_JSON=$(docker compose -f "$COMPOSE_FILE" ps seed --format json 2>/dev/null || true)
+  # Empty output means container exited and was removed — treat as success
+  if [[ -z "$SEED_JSON" ]]; then
+    echo "  Seed completed (container exited)"
+    break
+  fi
+  SEED_STATUS=$(echo "$SEED_JSON" | jq -r '.State // .state // "unknown"' 2>/dev/null || echo "unknown")
   if [[ "$SEED_STATUS" == "exited" ]]; then
-    SEED_EXIT=$(docker compose -f "$COMPOSE_FILE" ps seed --format json 2>/dev/null | jq -r '.ExitCode // .exit_code // "0"' 2>/dev/null || echo "0")
+    SEED_EXIT=$(echo "$SEED_JSON" | jq -r '.ExitCode // .exit_code // "0"' 2>/dev/null || echo "0")
     if [[ "$SEED_EXIT" == "0" ]]; then
       echo "  Seed completed successfully"
     else

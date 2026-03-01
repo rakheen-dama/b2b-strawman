@@ -139,13 +139,46 @@ STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
   -d '{"targetStatus": "ONBOARDING", "notes": "E2E seed: start onboarding"}')
 check_status "Transition to ONBOARDING" "$STATUS"
 
-# ONBOARDING -> ACTIVE (passes because fresh tenant has no checklist templates)
-STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-  -X POST "${BACKEND_URL}/api/customers/${CUSTOMER_ID}/transition" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer ${ALICE_JWT}" \
-  -d '{"targetStatus": "ACTIVE", "notes": "E2E seed: activate customer"}')
-check_status "Transition to ACTIVE" "$STATUS"
+# Complete all checklist items (required before ACTIVE transition)
+CHECKLISTS=$(curl -sf \
+  "${BACKEND_URL}/api/customers/${CUSTOMER_ID}/checklists" \
+  -H "Authorization: Bearer ${ALICE_JWT}")
+
+ITEM_IDS=$(echo "$CHECKLISTS" | jq -r '
+  [.[] | .items[]? | select(.status != "COMPLETED" and .status != "SKIPPED") | .id] | .[]
+' 2>/dev/null)
+
+for ITEM_ID in $ITEM_IDS; do
+  S=$(curl -s -o /dev/null -w "%{http_code}" \
+    -X PUT "${BACKEND_URL}/api/checklist-items/${ITEM_ID}/complete" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${ALICE_JWT}" \
+    -d '{"notes":"boot-seed"}')
+  case "$S" in
+    2[0-9][0-9]) ;;
+    *) curl -s -o /dev/null -X PUT "${BACKEND_URL}/api/checklist-items/${ITEM_ID}/skip" \
+         -H "Content-Type: application/json" \
+         -H "Authorization: Bearer ${ALICE_JWT}" \
+         -d '{"reason":"boot-seed"}' ;;
+  esac
+done
+echo "    [ok] Checklists completed"
+
+# Check if auto-transitioned to ACTIVE; if not, transition explicitly
+CURRENT_STATUS=$(curl -sf \
+  "${BACKEND_URL}/api/customers/${CUSTOMER_ID}" \
+  -H "Authorization: Bearer ${ALICE_JWT}" | jq -r '.lifecycleStatus')
+
+if [ "$CURRENT_STATUS" = "ACTIVE" ]; then
+  echo "    [ok] Auto-transitioned to ACTIVE"
+else
+  STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+    -X POST "${BACKEND_URL}/api/customers/${CUSTOMER_ID}/transition" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${ALICE_JWT}" \
+    -d '{"targetStatus": "ACTIVE", "notes": "E2E seed: activate customer"}')
+  check_status "Transition to ACTIVE" "$STATUS"
+fi
 
 # -- Step 7: Create project -------------------------------------------------
 echo ""

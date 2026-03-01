@@ -10,8 +10,13 @@ import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
+import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteCheck;
+import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
+import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,6 +45,8 @@ public class ChecklistInstanceService {
   private final CustomerRepository customerRepository;
   private final CustomerLifecycleService customerLifecycleService;
   private final MemberRepository memberRepository;
+  private final PrerequisiteService prerequisiteService;
+  private final NotificationService notificationService;
 
   public ChecklistInstanceService(
       ChecklistInstanceRepository instanceRepository,
@@ -49,7 +56,9 @@ public class ChecklistInstanceService {
       AuditService auditService,
       CustomerRepository customerRepository,
       CustomerLifecycleService customerLifecycleService,
-      MemberRepository memberRepository) {
+      MemberRepository memberRepository,
+      PrerequisiteService prerequisiteService,
+      NotificationService notificationService) {
     this.instanceRepository = instanceRepository;
     this.instanceItemRepository = instanceItemRepository;
     this.templateRepository = templateRepository;
@@ -58,6 +67,8 @@ public class ChecklistInstanceService {
     this.customerRepository = customerRepository;
     this.customerLifecycleService = customerLifecycleService;
     this.memberRepository = memberRepository;
+    this.prerequisiteService = prerequisiteService;
+    this.notificationService = notificationService;
   }
 
   @Transactional
@@ -450,9 +461,33 @@ public class ChecklistInstanceService {
         instanceRepository.existsByCustomerIdAndStatusNot(customerId, "COMPLETED");
 
     if (!anyInstanceNotComplete) {
+      // Epic 242A: Check prerequisites before auto-transition
+      var prereqCheck =
+          prerequisiteService.checkForContext(
+              PrerequisiteContext.LIFECYCLE_ACTIVATION, EntityType.CUSTOMER, customerId);
+      if (!prereqCheck.passed()) {
+        log.warn(
+            "Customer {} has completed all checklists but has {} prerequisite violations — "
+                + "auto-transition to ACTIVE blocked",
+            customerId,
+            prereqCheck.violations().size());
+        sendPrerequisiteBlockedNotification(customer, prereqCheck);
+        return;
+      }
+
       customerLifecycleService.transition(
           customerId, "ACTIVE", "All onboarding checklists completed", actorId);
       log.info("Customer {} auto-transitioned to ACTIVE — all checklists completed", customerId);
     }
+  }
+
+  private void sendPrerequisiteBlockedNotification(
+      io.b2mash.b2b.b2bstrawman.customer.Customer customer, PrerequisiteCheck prereqCheck) {
+    var title =
+        "Customer \"%s\" has completed all checklist items but has %d incomplete required fields for activation."
+            .formatted(customer.getName(), prereqCheck.violations().size());
+
+    notificationService.notifyAdminsAndOwners(
+        "PREREQUISITE_BLOCKED_ACTIVATION", title, null, "CUSTOMER", customer.getId());
   }
 }

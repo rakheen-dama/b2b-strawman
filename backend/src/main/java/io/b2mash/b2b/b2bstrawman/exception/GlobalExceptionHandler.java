@@ -89,6 +89,36 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problem);
   }
 
+  @ExceptionHandler(PrerequisiteNotMetException.class)
+  public ResponseEntity<ProblemDetail> handlePrerequisiteNotMet(PrerequisiteNotMetException ex) {
+    log.warn("Prerequisite check failed: {}", ex.getBody().getDetail());
+    var check = ex.getPrerequisiteCheck();
+
+    var violations =
+        check.violations().stream()
+            .map(
+                v ->
+                    Map.of(
+                        "code",
+                        (Object) v.code(),
+                        "message",
+                        v.message(),
+                        "entityType",
+                        v.entityType(),
+                        "entityId",
+                        v.entityId().toString(),
+                        "fieldSlug",
+                        v.fieldSlug() != null ? v.fieldSlug() : "",
+                        "resolution",
+                        v.resolution() != null ? v.resolution() : ""))
+            .toList();
+
+    var problem = ex.getBody();
+    problem.setProperty("violations", violations);
+
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(problem);
+  }
+
   @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
   public ResponseEntity<ProblemDetail> handleOptimisticLock(
       ObjectOptimisticLockingFailureException ex) {

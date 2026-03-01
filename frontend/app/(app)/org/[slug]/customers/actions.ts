@@ -3,34 +3,47 @@
 import { getAuthContext } from "@/lib/auth";
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
-import type { Customer, CustomerType, CreateCustomerRequest, UpdateCustomerRequest } from "@/lib/types";
+import type { Customer, CustomerType, UpdateCustomerRequest } from "@/lib/types";
 
 interface ActionResult {
   success: boolean;
   error?: string;
 }
 
-export async function createCustomer(slug: string, formData: FormData): Promise<ActionResult> {
+interface CreateCustomerData {
+  name: string;
+  email: string;
+  phone?: string;
+  idNumber?: string;
+  notes?: string;
+  customerType?: string;
+  customFields?: Record<string, unknown>;
+}
+
+export async function createCustomer(slug: string, data: CreateCustomerData): Promise<ActionResult> {
   const { orgRole } = await getAuthContext();
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return { success: false, error: "Only admins and owners can manage customers." };
   }
 
-  const name = formData.get("name")?.toString().trim() ?? "";
-  const email = formData.get("email")?.toString().trim() ?? "";
-  const phone = formData.get("phone")?.toString().trim() || undefined;
-  const idNumber = formData.get("idNumber")?.toString().trim() || undefined;
-  const notes = formData.get("notes")?.toString().trim() || undefined;
-  const customerType = (formData.get("customerType")?.toString() as CustomerType) || undefined;
+  const { name, email, phone, idNumber, notes, customerType, customFields } = data;
 
-  if (!name) {
+  if (!name?.trim()) {
     return { success: false, error: "Customer name is required." };
   }
-  if (!email) {
+  if (!email?.trim()) {
     return { success: false, error: "Customer email is required." };
   }
 
-  const body: CreateCustomerRequest = { name, email, phone, idNumber, notes, customerType };
+  const body = {
+    name: name.trim(),
+    email: email.trim(),
+    phone,
+    idNumber,
+    notes,
+    customerType,
+    customFields: customFields ?? {},
+  };
 
   try {
     await api.post<Customer>("/api/customers", body);

@@ -178,6 +178,15 @@ public class Proposal {
     this.updatedAt = Instant.now();
   }
 
+  /** Withdraws a sent proposal back to DRAFT. Only valid from SENT. */
+  public void markWithdrawn() {
+    requireStatus(Set.of(ProposalStatus.SENT), "withdraw");
+    this.status = ProposalStatus.DRAFT;
+    this.sentAt = null;
+    this.portalContactId = null;
+    this.updatedAt = Instant.now();
+  }
+
   /** Marks the proposal as expired (past its expiresAt deadline). Only valid from SENT. */
   public void markExpired() {
     requireStatus(Set.of(ProposalStatus.SENT), "mark as expired");

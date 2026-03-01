@@ -132,6 +132,23 @@ public class ProposalController {
     return ResponseEntity.ok(saved.stream().map(TeamMemberResponse::from).toList());
   }
 
+  // --- 232.12: Send and withdraw endpoints ---
+
+  @PostMapping("/api/proposals/{id}/send")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<ProposalResponse> sendProposal(
+      @PathVariable UUID id, @Valid @RequestBody SendProposalRequest request) {
+    var proposal = proposalService.sendProposal(id, request.portalContactId());
+    return ResponseEntity.ok(ProposalResponse.from(proposal));
+  }
+
+  @PostMapping("/api/proposals/{id}/withdraw")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<ProposalResponse> withdrawProposal(@PathVariable UUID id) {
+    var proposal = proposalService.withdrawProposal(id);
+    return ResponseEntity.ok(ProposalResponse.from(proposal));
+  }
+
   // --- 231.11: Stats and customer-scoped endpoints ---
 
   @GetMapping("/api/proposals/stats")
@@ -148,7 +165,10 @@ public class ProposalController {
     return ResponseEntity.ok(page.map(ProposalResponse::from));
   }
 
-  // --- 231.12: DTOs ---
+  // --- 231.12 + 232.12: DTOs ---
+
+  public record SendProposalRequest(
+      @NotNull(message = "portalContactId is required") UUID portalContactId) {}
 
   public record CreateProposalRequest(
       @NotBlank(message = "title is required")

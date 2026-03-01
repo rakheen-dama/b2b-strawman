@@ -29,7 +29,7 @@ Phase 32 introduces the **Proposal to Engagement Pipeline** -- the connective ti
 | 234 | Portal Proposal Backend & Expiry Processor | Backend | 232, 233 | M | 234A, 234B | **Done** (PRs #475, #476) |
 | 235 | Audit, Notifications & Activity Integration | Backend | 231 | S | 235A | **Done** (PR #477) |
 | 236 | Proposals Frontend -- List & Pipeline Stats | Frontend | 231 | M | 236A, 236B | **Done** (PRs #478, #479) |
-| 237 | Proposals Frontend -- Create/Edit & Detail Pages | Frontend | 232, 236 | L | 237A, 237B | |
+| 237 | Proposals Frontend -- Create/Edit & Detail Pages | Frontend | 232, 236 | L | 237A, 237B | **Done** (PRs #480, #481) |
 | 238 | Proposals Frontend -- Customer Tab & Project Link | Frontend | 236 | S | 238A | |
 | 239 | Portal Frontend -- Proposal Pages | Portal | 234 | M | 239A, 239B | |
 
@@ -182,7 +182,7 @@ PORTAL TRACK (after E234A)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 5a (parallel) | 234 | 234B | ProposalExpiryProcessor: @Scheduled job, tenant iteration, notification + email on expiry + portal sync + tests (~5 tests). ~1 new file, ~1 test file. Backend only. | **Done** (PR #476) |
-| 5b (parallel) | 237 | 237B | Proposal detail page + SendProposalDialog + ProposalPreview + context-dependent actions (Send/Edit/Delete/Withdraw/Copy/View Project) + tests (~5 tests). ~5 new files. Frontend only. | |
+| 5b (parallel) | 237 | 237B | Proposal detail page + SendProposalDialog + ProposalPreview + context-dependent actions (Send/Edit/Delete/Withdraw/Copy/View Project) + tests (~5 tests). ~5 new files. Frontend only. | **Done** (PR #481) |
 | 5c (parallel) | 239 | 239A | Portal proposals list page + nav link + portal proposal-actions.ts + portal ProposalStatusBadge. ~4 new files. Portal only. | |
 
 ### Stage 6: Portal Detail Page
@@ -685,7 +685,7 @@ Stage 6: [239B]                                                      (final)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **237A** | 237.1--237.8 | Create/edit proposal pages: `ProposalForm` (multi-section), `FeeConfigSection` (dynamic per model), `MilestoneEditor` (percentage validation), `TeamMemberPicker` (multi-select with roles), template picker, proposals/new route, proposals/[id]/edit route + tests (~7 tests). ~7 new files. Frontend only. | **Done** (PR #480) |
-| **237B** | 237.9--237.15 | Proposal detail page: read-only view, fee summary card, rendered body (Tiptap viewer), team list, `SendProposalDialog` (confirmation with portal contact selection), `ProposalPreview` component, context-dependent actions (DRAFT: Edit/Send/Delete; SENT: Withdraw/Copy; ACCEPTED: View Project/View Invoice; DECLINED/EXPIRED: Copy) + tests (~5 tests). ~5 new files. Frontend only. | |
+| **237B** | 237.9--237.15 | Proposal detail page: read-only view, fee summary card, rendered body (Tiptap viewer), team list, `SendProposalDialog` (confirmation with portal contact selection), `ProposalPreview` component, context-dependent actions (DRAFT: Edit/Send/Delete; SENT: Withdraw/Copy; ACCEPTED: View Project/View Invoice; DECLINED/EXPIRED: Copy) + tests (~5 tests). ~5 new files. Frontend only. | **Done** (PR #481) |
 
 ### Tasks
 

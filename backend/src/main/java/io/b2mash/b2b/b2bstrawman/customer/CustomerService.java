@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldValidator;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMemberRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupRepository;
@@ -135,7 +136,7 @@ public class CustomerService {
           fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
               EntityType.CUSTOMER);
       var knownSlugs =
-          activeDefinitions.stream().map(fd -> fd.getSlug()).collect(Collectors.toSet());
+          activeDefinitions.stream().map(FieldDefinition::getSlug).collect(Collectors.toSet());
       for (String slug : customFields.keySet()) {
         if (!knownSlugs.contains(slug)) {
           throw new InvalidStateException(

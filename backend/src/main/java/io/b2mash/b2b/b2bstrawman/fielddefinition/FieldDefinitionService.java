@@ -13,8 +13,10 @@ import jakarta.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -60,11 +62,16 @@ public class FieldDefinitionService {
         fieldGroupRepository.findByEntityTypeAndAutoApplyTrueAndActiveTrue(entityType);
     var result = new ArrayList<IntakeFieldGroup>();
     for (var group : autoApplyGroups) {
-      var members = fieldGroupMemberRepository.findByFieldGroupIdOrderBySortOrder(group.getId());
-      var fields = new ArrayList<FieldDefinition>();
-      for (var member : members) {
-        fieldDefinitionRepository.findById(member.getFieldDefinitionId()).ifPresent(fields::add);
-      }
+      var memberList = fieldGroupMemberRepository.findByFieldGroupIdOrderBySortOrder(group.getId());
+      var ids = memberList.stream().map(FieldGroupMember::getFieldDefinitionId).toList();
+      var definitionsById =
+          fieldDefinitionRepository.findAllById(ids).stream()
+              .collect(Collectors.toMap(FieldDefinition::getId, fd -> fd));
+      var fields =
+          memberList.stream()
+              .map(m -> definitionsById.get(m.getFieldDefinitionId()))
+              .filter(Objects::nonNull)
+              .collect(Collectors.toList());
       result.add(new IntakeFieldGroup(group.getId(), group.getName(), group.getSlug(), fields));
     }
     return result;

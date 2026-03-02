@@ -11,6 +11,7 @@ import type {
   CrossProjectActivityItem,
   PersonalDashboardResponse,
 } from "@/lib/dashboard-types";
+import type { AggregatedCompletenessResponse } from "@/lib/types";
 
 export async function fetchDashboardKpis(
   from: string,
@@ -52,6 +53,16 @@ export async function fetchDashboardActivity(
   try {
     return await api.get<CrossProjectActivityItem[]>(
       `/api/dashboard/activity?limit=${limit}`
+    );
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchAggregatedCompleteness(): Promise<AggregatedCompletenessResponse | null> {
+  try {
+    return await api.get<AggregatedCompletenessResponse>(
+      "/api/customers/completeness-summary/aggregated"
     );
   } catch {
     return null;

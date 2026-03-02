@@ -300,6 +300,14 @@
 | 258 | Firm-Side Request Pages & Review UI | Frontend | 253, 257 | L | 258A, 258B | |
 | 259 | Portal Request Pages (Upload & Submit) | Frontend | 254 | M | 259A, 259B | |
 | 260 | Dashboard Widget, Settings & Template Editor Integration | Frontend | 255, 256, 258 | M | 260A, 260B | |
+| **Phase 35 — Keycloak Auth Provider Migration** | | | | | | See [tasks/phase35-keycloak-auth-migration.md](tasks/phase35-keycloak-auth-migration.md) |
+| 261 | Backend Field Renames | Backend + Frontend | -- | M | 261A, 261B, 261C | 261A, 261B **Done** (PR #507) |
+| 262 | Keycloak SPI + Docker Setup | Keycloak + Infra | -- | M | 262A, 262B | |
+| 263 | Backend Keycloak Integration | Backend | 262 | L | 263A, 263B | |
+| 264 | Frontend Keycloak Provider | Frontend | 261C | M | 264A, 264B | |
+| 265 | Frontend UI Components | Frontend | 263B, 264B | M | 265A, 265B, 265C | |
+| 266 | Integration Testing + E2E | Both | 263B, 265C | L | 266A, 266B | |
+| 267 | Documentation | Docs | 266B | S | 267A | |
 
 ---
 

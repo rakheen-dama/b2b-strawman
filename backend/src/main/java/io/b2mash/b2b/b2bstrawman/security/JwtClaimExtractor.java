@@ -4,20 +4,20 @@ import java.util.Map;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 /**
- * Extracts Clerk JWT v2 org claims from the nested "o" object.
+ * Extracts JWT v2 org claims from the nested "o" object.
  *
- * <p>Clerk v2 format: {@code { "o": { "id": "org_xxx", "rol": "owner", "slg": "my-org" } }}
+ * <p>JWT v2 format: {@code { "o": { "id": "org_xxx", "rol": "owner", "slg": "my-org" } }}
  */
-public final class ClerkJwtUtils {
+public final class JwtClaimExtractor {
 
   private static final String ORG_CLAIM = "o";
 
-  /** Extracts the org ID ({@code o.id}) from a Clerk JWT v2 token. */
+  /** Extracts the org ID ({@code o.id}) from a JWT v2 token. */
   public static String extractOrgId(Jwt jwt) {
     return extractNestedClaim(jwt, "id");
   }
 
-  /** Extracts the org role ({@code o.rol}) from a Clerk JWT v2 token. */
+  /** Extracts the org role ({@code o.rol}) from a JWT v2 token. */
   public static String extractOrgRole(Jwt jwt) {
     return extractNestedClaim(jwt, "rol");
   }
@@ -33,5 +33,5 @@ public final class ClerkJwtUtils {
     return null;
   }
 
-  private ClerkJwtUtils() {}
+  private JwtClaimExtractor() {}
 }

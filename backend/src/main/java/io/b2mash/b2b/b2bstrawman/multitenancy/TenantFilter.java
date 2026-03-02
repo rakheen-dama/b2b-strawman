@@ -2,7 +2,7 @@ package io.b2mash.b2b.b2bstrawman.multitenancy;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import io.b2mash.b2b.b2bstrawman.security.ClerkJwtUtils;
+import io.b2mash.b2b.b2bstrawman.security.JwtClaimExtractor;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,7 +40,7 @@ public class TenantFilter extends OncePerRequestFilter {
 
     if (authentication instanceof JwtAuthenticationToken jwtAuth) {
       Jwt jwt = jwtAuth.getToken();
-      String orgId = ClerkJwtUtils.extractOrgId(jwt);
+      String orgId = JwtClaimExtractor.extractOrgId(jwt);
 
       if (orgId != null) {
         String schema = resolveTenant(orgId);

@@ -39,7 +39,7 @@ Organize by **feature**, not by layer. Each feature package contains its entity,
 - Repositories: `*Repository` extending `JpaRepository`
 - Services: `*Service`
 - Controllers: `*Controller`
-- Filters: `*Filter` (e.g., `ClerkJwtAuthFilter`, `TenantFilter`)
+- Filters: `*Filter` (e.g., `TenantFilter`, `MemberFilter`)
 - Configuration: `*Config` or `*Configuration`
 - DTOs: nested records inside the controller or in a `dto` sub-package if shared
 
@@ -196,7 +196,7 @@ src/main/resources/db/migration/
 
 ### Filter Chain Order
 1. `ApiKeyAuthFilter` — API key validation for `/internal/*` endpoints
-2. `BearerTokenAuthenticationFilter` + `ClerkJwtAuthenticationConverter` — JWT validation, role extraction from `o.rol`
+2. `BearerTokenAuthenticationFilter` + `OrgJwtAuthenticationConverter` — JWT validation, role extraction from `o.rol`
 3. `TenantFilter` — binds `RequestScopes.TENANT_ID` ScopedValue from JWT `o.id`
 4. `MemberFilter` — binds `RequestScopes.MEMBER_ID` and `RequestScopes.ORG_ROLE` ScopedValues
 5. `TenantLoggingFilter` — MDC setup (tenantId, userId, memberId, requestId)
@@ -269,7 +269,7 @@ private JwtRequestPostProcessor memberJwt() {
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
 }
 ```
-Note: Spring Security Test `jwt()` mock does NOT invoke `ClerkJwtAuthenticationConverter` — set `.authorities()` explicitly.
+Note: Spring Security Test `jwt()` mock does NOT invoke `OrgJwtAuthenticationConverter` — set `.authorities()` explicitly.
 
 ## Error Handling & Resilience
 

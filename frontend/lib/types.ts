@@ -1536,6 +1536,18 @@ export interface CompletenessScore {
   percentage: number;
 }
 
+export interface MissingFieldSummary {
+  fieldName: string;
+  fieldSlug: string;
+  customerCount: number;
+}
+
+export interface AggregatedCompletenessResponse {
+  topMissingFields: MissingFieldSummary[];
+  incompleteCount: number;
+  totalCount: number;
+}
+
 // ---- Error (RFC 9457 ProblemDetail) ----
 
 export interface ProblemDetail {

@@ -4,6 +4,7 @@ import type {
   Customer,
   CustomerStatus,
   CustomerReadiness,
+  CompletenessScore,
   UnbilledTimeSummary,
   TemplateReadiness,
   Document,
@@ -22,7 +23,8 @@ import type {
   ChecklistInstanceResponse,
   ChecklistTemplateResponse,
 } from "@/lib/types";
-import type { SetupStep } from "@/components/setup/types";
+import type { SetupStep, ContextGroup } from "@/components/setup/types";
+import { MiniProgressRing } from "@/components/dashboard/mini-progress-ring";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EditCustomerDialog } from "@/components/customers/edit-customer-dialog";
@@ -50,6 +52,7 @@ import {
   fetchCustomerReadiness,
   fetchCustomerUnbilledSummary,
   fetchTemplateReadiness,
+  fetchCompletenessScore,
 } from "@/lib/api/setup-status";
 import { getCustomerChecklists, getChecklistTemplates } from "@/lib/checklist-api";
 import { fetchRetainers, fetchPeriods } from "@/lib/api/retainers";
@@ -256,15 +259,18 @@ export default async function CustomerDetailPage({
   let customerReadiness: CustomerReadiness | null = null;
   let customerUnbilledSummary: UnbilledTimeSummary | null = null;
   let customerTemplateReadiness: TemplateReadiness[] = [];
+  let completenessScore: CompletenessScore | null = null;
   try {
-    const [readinessRes, unbilledRes, templateReadinessRes] = await Promise.all([
+    const [readinessRes, unbilledRes, templateReadinessRes, completenessRes] = await Promise.all([
       fetchCustomerReadiness(id),
       fetchCustomerUnbilledSummary(id),
       fetchTemplateReadiness("CUSTOMER", id),
+      fetchCompletenessScore(id),
     ]);
     customerReadiness = readinessRes;
     customerUnbilledSummary = unbilledRes;
     customerTemplateReadiness = templateReadinessRes;
+    completenessScore = completenessRes;
   } catch {
     // Non-fatal: setup guidance cards will not render if fetch fails
   }
@@ -330,6 +336,23 @@ export default async function CustomerDetailPage({
   const customerReadinessComplete =
     customerSetupSteps.length === 0 || customerSetupSteps.every((s) => s.complete);
 
+  // Build context groups from required fields for expandable display (Epic 251B)
+  const contextGroups: ContextGroup[] =
+    customerReadiness && customerReadiness.requiredFields.fields.length > 0
+      ? [
+          {
+            contextLabel: "Required Fields",
+            filled: customerReadiness.requiredFields.filled,
+            total: customerReadiness.requiredFields.total,
+            fields: customerReadiness.requiredFields.fields.map((f) => ({
+              name: f.name,
+              slug: f.slug,
+              filled: f.filled,
+            })),
+          },
+        ]
+      : [];
+
   // Lifecycle action prompt (Epic 113A)
   const lifecycleActionPrompt: {
     icon: typeof ArrowRight;
@@ -386,6 +409,9 @@ export default async function CustomerDetailPage({
             <h1 className="font-display text-2xl text-slate-950 dark:text-slate-50">
               {customer.name}
             </h1>
+            {completenessScore && completenessScore.totalRequired > 0 && (
+              <MiniProgressRing value={completenessScore.percentage} size={40} />
+            )}
             <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
             {customer.lifecycleStatus && (
               <LifecycleStatusBadge status={customer.lifecycleStatus} />
@@ -503,6 +529,7 @@ export default async function CustomerDetailPage({
           steps={customerSetupSteps}
           canManage={isAdmin}
           activationBlockers={activationBlockers.length > 0 ? activationBlockers : undefined}
+          contextGroups={contextGroups.length > 0 ? contextGroups : undefined}
         />
       )}
 

@@ -7,11 +7,13 @@ import { KpiCardRow } from "@/components/dashboard/kpi-card-row";
 import { ProjectHealthWidget } from "@/components/dashboard/project-health-widget";
 import { TeamWorkloadWidget } from "@/components/dashboard/team-workload-widget";
 import { RecentActivityWidget } from "@/components/dashboard/recent-activity-widget";
+import { IncompleteProfilesWidget } from "@/components/dashboard/incomplete-profiles-widget";
 import {
   fetchDashboardKpis,
   fetchProjectHealth,
   fetchTeamWorkload,
   fetchDashboardActivity,
+  fetchAggregatedCompleteness,
 } from "@/lib/actions/dashboard";
 import { resolveDateRange } from "@/lib/date-utils";
 
@@ -32,13 +34,15 @@ export default async function OrgDashboardPage({
   let projectHealth;
   let teamWorkload;
   let activity;
+  let aggregatedCompleteness;
 
   try {
-    [kpis, projectHealth, teamWorkload, activity] = await Promise.all([
+    [kpis, projectHealth, teamWorkload, activity, aggregatedCompleteness] = await Promise.all([
       fetchDashboardKpis(from, to),
       fetchProjectHealth(),
       fetchTeamWorkload(from, to),
       fetchDashboardActivity(10),
+      isAdmin ? fetchAggregatedCompleteness() : Promise.resolve(null),
     ]);
   } catch (error) {
     // 403 = tenant not provisioned yet.
@@ -83,6 +87,12 @@ export default async function OrgDashboardPage({
         </div>
         <div className="space-y-6 lg:col-span-2">
           <TeamWorkloadWidget data={teamWorkload ?? null} isAdmin={isAdmin} />
+          {isAdmin && (
+            <IncompleteProfilesWidget
+              data={aggregatedCompleteness ?? null}
+              orgSlug={slug}
+            />
+          )}
           <RecentActivityWidget items={activity ?? null} orgSlug={slug} />
         </div>
       </div>

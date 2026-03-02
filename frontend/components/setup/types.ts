@@ -18,6 +18,17 @@ export interface SetupProgressCardProps {
   canManage?: boolean;
   /** Activation prerequisite violation messages to display when customer is ONBOARDING */
   activationBlockers?: string[];
+  /** Optional context-grouped field display (Epic 251B) */
+  contextGroups?: ContextGroup[];
+}
+
+// ---- Context Group (Epic 251B) ----
+
+export interface ContextGroup {
+  contextLabel: string;
+  filled: number;
+  total: number;
+  fields: Array<{ name: string; slug: string; filled: boolean }>;
 }
 
 // ---- ActionCard ----

@@ -301,7 +301,7 @@
 | 259 | Portal Request Pages (Upload & Submit) | Frontend | 254 | M | 259A, 259B | |
 | 260 | Dashboard Widget, Settings & Template Editor Integration | Frontend | 255, 256, 258 | M | 260A, 260B | |
 | **Phase 35 — Keycloak Auth Provider Migration** | | | | | | See [tasks/phase35-keycloak-auth-migration.md](tasks/phase35-keycloak-auth-migration.md) |
-| 261 | Backend Field Renames | Backend + Frontend | -- | M | 261A, 261B, 261C | 261A, 261B **Done** (PR #507) |
+| 261 | Backend Field Renames | Backend + Frontend | -- | M | 261A, 261B, 261C | **Done** (PRs #507, #508) |
 | 262 | Keycloak SPI + Docker Setup | Keycloak + Infra | -- | M | 262A, 262B | |
 | 263 | Backend Keycloak Integration | Backend | 262 | L | 263A, 263B | |
 | 264 | Frontend Keycloak Provider | Frontend | 261C | M | 264A, 264B | |

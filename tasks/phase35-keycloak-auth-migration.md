@@ -12,7 +12,7 @@ Phase 35 adds **Keycloak 26.5 as a self-hosted auth provider** alongside the exi
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 261 | Backend Field Renames | Backend + Frontend | -- | M | 261A, 261B, 261C | 261A, 261B **Done** (PR #507) |
+| 261 | Backend Field Renames | Backend + Frontend | -- | M | 261A, 261B, 261C | **Done** (PRs #507, #508) |
 | 262 | Keycloak SPI + Docker Setup | Keycloak + Infra | -- | M | 262A, 262B | Not started |
 | 263 | Backend Keycloak Integration | Backend | 262 | L | 263A, 263B | Not started |
 | 264 | Frontend Keycloak Provider | Frontend | 261C | M | 264A, 264B | Not started |
@@ -64,7 +64,7 @@ Phase 35 adds **Keycloak 26.5 as a self-hosted auth provider** alongside the exi
 |-------|------|-------|-----------|
 | 1a | Epic 261 | 261A | **Flyway migrations V13 (global) + V55 (tenant)** — rename `clerk_org_id` → `external_org_id`, `clerk_user_id` → `external_user_id`. Update 19 backend files: entities, repositories, services, controllers. Mechanical refactor, validated by compilation + tests. Foundation for everything else. | **Done** (PR #507) |
 | 1b | Epic 261 | 261B | **Frontend DTO renames** — update `lib/internal-api.ts`, `lib/webhook-handlers.ts` to use `externalOrgId`/`externalUserId`. Must match backend changes from 261A. | **Done** (shipped with PR #507) |
-| 1c | Epic 261 | 261C | **Class renames** — `ClerkJwtUtils` → `JwtClaimExtractor`, `ClerkJwtAuthenticationConverter` → `OrgJwtAuthenticationConverter`. Update all imports (~8 files). Provider-agnostic naming. |
+| 1c | Epic 261 | 261C | **Class renames** — `ClerkJwtUtils` → `JwtClaimExtractor`, `ClerkJwtAuthenticationConverter` → `OrgJwtAuthenticationConverter`. Update all imports (~8 files). Provider-agnostic naming. | **Done** (PR #508) |
 | 1d | Epic 262 | 262A | **Custom protocol mapper SPI** — `keycloak-spi/` Maven module with `OrgRoleProtocolMapper`. Reads org membership + role, injects `"o"` claim matching Clerk v2 format. ~80-100 lines Java. Can run in parallel with 261. |
 | 1e | Epic 262 | 262B | **Docker Compose + realm config** — add Keycloak service (port 9090), `realm-export.json`, `application-keycloak.yml`. Can run in parallel with 261. |
 
@@ -126,7 +126,7 @@ Stage 4:  [266A] ──► [266B] ──► [267A]  ← testing + docs (sequenti
 |-------|-------|---------|--------|
 | **261A** | 261.1-261.8 | Flyway migrations V13 (global) + V55 (tenant), entity field renames (Organization, OrgSchemaMapping, Member), repository method renames (4 repos), service/controller param renames (8 services), DTO field renames (3 controllers), test factory updates, verify all tests pass | **Done** (PR #507) |
 | **261B** | 261.9-261.11 | Frontend DTO renames in `lib/internal-api.ts` and `lib/webhook-handlers.ts`, update webhook test | **Done** (shipped with PR #507 — atomic API contract change) |
-| **261C** | 261.12-261.16 | Class renames: `ClerkJwtUtils` → `JwtClaimExtractor`, `ClerkJwtAuthenticationConverter` → `OrgJwtAuthenticationConverter`, update all imports in SecurityConfig, TenantFilter, MemberFilter, tests | Not started |
+| **261C** | 261.12-261.16 | Class renames: `ClerkJwtUtils` → `JwtClaimExtractor`, `ClerkJwtAuthenticationConverter` → `OrgJwtAuthenticationConverter`, update all imports in SecurityConfig, TenantFilter, MemberFilter, tests | **Done** (PR #508) |
 
 ### Tasks
 

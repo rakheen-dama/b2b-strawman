@@ -3,7 +3,7 @@
 import { getAuthContext } from "@/lib/auth";
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
-import type { Customer, CustomerType, UpdateCustomerRequest } from "@/lib/types";
+import type { Customer, CustomerType, UpdateCustomerRequest, CompletenessScore, AggregatedCompletenessResponse } from "@/lib/types";
 
 interface ActionResult {
   success: boolean;
@@ -100,6 +100,25 @@ export async function updateCustomer(
   revalidatePath(`/org/${slug}/dashboard`);
 
   return { success: true };
+}
+
+export async function fetchCompletenessSummary(
+  customerIds: string[]
+): Promise<Record<string, CompletenessScore>> {
+  if (customerIds.length === 0) {
+    return {};
+  }
+  const params = new URLSearchParams();
+  customerIds.forEach((id) => params.append("customerIds", id));
+  return api.get<Record<string, CompletenessScore>>(
+    `/api/customers/completeness-summary?${params.toString()}`
+  );
+}
+
+export async function fetchAggregatedCompleteness(): Promise<AggregatedCompletenessResponse> {
+  return api.get<AggregatedCompletenessResponse>(
+    "/api/customers/completeness-summary/aggregated"
+  );
 }
 
 export async function archiveCustomer(slug: string, id: string): Promise<ActionResult> {

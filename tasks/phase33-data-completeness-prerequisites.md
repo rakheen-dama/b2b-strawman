@@ -31,7 +31,7 @@ Phase 33 transforms DocTeams' metadata infrastructure from passive data capture 
 | 248 | Lifecycle Transition Frontend Integration | Frontend | 242, 245 | S | 248A | **Done** |
 | 249 | Engagement & Action-Point Frontend Integration | Frontend | 243, 244, 245 | M | 249A, 249B | **Done** |
 | 250 | Completeness Visibility -- Backend Queries | Backend | 241 | M | 250A | **Done** |
-| 251 | Completeness Visibility -- Frontend & Dashboard | Frontend | 250, 245 | M | 251A, 251B | |
+| 251 | Completeness Visibility -- Frontend & Dashboard | Frontend | 250, 245 | M | 251A, 251B | **Done** |
 
 ---
 
@@ -180,7 +180,7 @@ FRONTEND TRACK (after E241B)
 |-------|------|-------|---------|--------|
 | 5a (parallel) | 246 | 246B | CreateCustomerDialog multi-step flow (base fields -> intake custom fields) + submit with customFields payload + tests (~5 tests). ~2 modified files. Frontend only. | **Done** (PR #499) |
 | 5b (parallel) | 249 | 249B | Project template editor "Required Customer Fields" section + project creation dialog prerequisite check + tests (~4 tests). ~3 modified files. Frontend only. | **Done** (PR #503) |
-| 5c (parallel) | 251 | 251B | Enhanced SetupProgressCard with context-grouped display + completeness ring on customer detail header + "Incomplete Customer Profiles" dashboard widget + tests (~5 tests). ~4 modified/new files. Frontend only. | |
+| 5c (parallel) | 251 | 251B | Enhanced SetupProgressCard with context-grouped display + completeness ring on customer detail header + "Incomplete Customer Profiles" dashboard widget + tests (~5 tests). ~4 modified/new files. Frontend only. | **Done** (PR #506) |
 
 ### Timeline
 
@@ -863,7 +863,7 @@ Stage 5: [246B] // [249B] // [251B]                                         (par
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **251A** | 251.1--251.5 | `CompletenessBadge` component + customer list page completeness column + filter ("show incomplete") + sort by completeness + completeness server actions + tests (~4 tests). ~4 new/modified files. Frontend only. | **Done** (PR #505) |
-| **251B** | 251.6--251.11 | Enhanced `SetupProgressCard` with context-grouped display + expandable groups showing missing fields + completeness ring on customer detail header + "Incomplete Customer Profiles" dashboard widget + tests (~5 tests). ~4 modified/new files. Frontend only. | |
+| **251B** | 251.6--251.11 | Enhanced `SetupProgressCard` with context-grouped display + expandable groups showing missing fields + completeness ring on customer detail header + "Incomplete Customer Profiles" dashboard widget + tests (~5 tests). ~4 modified/new files. Frontend only. | **Done** (PR #506) |
 
 ### Tasks
 

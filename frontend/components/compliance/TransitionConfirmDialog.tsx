@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { AlertTriangle } from "lucide-react";
 import { transitionCustomerLifecycle } from "@/app/(app)/org/[slug]/customers/[id]/lifecycle-actions";
 import type { LifecycleStatus } from "@/lib/types";
+import type { PrerequisiteCheck } from "@/components/prerequisite/types";
 
 interface TransitionConfirmDialogProps {
   open: boolean;
@@ -23,6 +24,8 @@ interface TransitionConfirmDialogProps {
   customerId: string;
   targetStatus: LifecycleStatus;
   onSuccess?: () => void;
+  /** Called when the backend returns a 422 with prerequisite violations */
+  onPrerequisiteFailed?: (check: PrerequisiteCheck) => void;
 }
 
 interface TransitionMeta {
@@ -83,6 +86,7 @@ export function TransitionConfirmDialog({
   customerId,
   targetStatus,
   onSuccess,
+  onPrerequisiteFailed,
 }: TransitionConfirmDialogProps) {
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -111,6 +115,11 @@ export function TransitionConfirmDialog({
         onOpenChange(false);
         setNotes("");
         onSuccess?.();
+      } else if (result.prerequisiteCheck && onPrerequisiteFailed) {
+        // Backend returned 422 with prerequisite violations — delegate to parent
+        onOpenChange(false);
+        setNotes("");
+        onPrerequisiteFailed(result.prerequisiteCheck);
       } else {
         setError(result.error ?? "Transition failed.");
       }

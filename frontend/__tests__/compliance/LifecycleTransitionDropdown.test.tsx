@@ -10,6 +10,12 @@ vi.mock("@/app/(app)/org/[slug]/customers/[id]/lifecycle-actions", () => ({
   transitionCustomerLifecycle: (...args: unknown[]) => mockTransitionCustomerLifecycle(...args),
 }));
 
+// Mock prerequisite actions imported by PrerequisiteModal (via LifecycleTransitionDropdown)
+vi.mock("@/lib/actions/prerequisite-actions", () => ({
+  checkPrerequisitesAction: vi.fn().mockResolvedValue({ passed: true, context: "LIFECYCLE_ACTIVATION", violations: [] }),
+  updateEntityCustomFieldsAction: vi.fn(),
+}));
+
 describe("LifecycleTransitionDropdown", () => {
   beforeEach(() => {
     vi.clearAllMocks();

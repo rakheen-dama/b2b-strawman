@@ -121,8 +121,10 @@ class CompletenessQueryTest {
                 .with(ownerJwt())
                 .param("customerIds", customerId1 + "," + customerId2))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$." + customerId1).exists())
-        .andExpect(jsonPath("$." + customerId2).exists());
+        .andExpect(jsonPath("$." + customerId1 + ".totalRequired").isNumber())
+        .andExpect(jsonPath("$." + customerId1 + ".filled").isNumber())
+        .andExpect(jsonPath("$." + customerId1 + ".percentage").isNumber())
+        .andExpect(jsonPath("$." + customerId2 + ".totalRequired").isNumber());
   }
 
   @Test
@@ -139,27 +141,20 @@ class CompletenessQueryTest {
   }
 
   @Test
-  void completenessEndpoint_returnsScoresForRequestedIds() throws Exception {
-    mockMvc
-        .perform(
-            get("/api/customers/completeness-summary")
-                .with(ownerJwt())
-                .param("customerIds", customerId1 + "," + customerId2))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$." + customerId1 + ".totalRequired").isNumber())
-        .andExpect(jsonPath("$." + customerId1 + ".filled").isNumber())
-        .andExpect(jsonPath("$." + customerId1 + ".percentage").isNumber());
-  }
-
-  @Test
   void aggregatedQuery_returnsTopMissingFields() throws Exception {
     mockMvc
-        .perform(
-            get("/api/customers/completeness-summary").with(ownerJwt()).param("aggregated", "true"))
+        .perform(get("/api/customers/completeness-summary/aggregated").with(ownerJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.topMissingFields").isArray())
         .andExpect(jsonPath("$.totalCount").isNumber())
         .andExpect(jsonPath("$.incompleteCount").isNumber());
+  }
+
+  @Test
+  void aggregatedQuery_memberRole_returnsForbidden() throws Exception {
+    mockMvc
+        .perform(get("/api/customers/completeness-summary/aggregated").with(memberJwt()))
+        .andExpect(status().isForbidden());
   }
 
   @Test

@@ -2,7 +2,6 @@ package io.b2mash.b2b.b2bstrawman.customer;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
 import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleService;
-import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceService;
@@ -11,6 +10,8 @@ import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
+import io.b2mash.b2b.b2bstrawman.setupstatus.AggregatedCompletenessResponse;
+import io.b2mash.b2b.b2bstrawman.setupstatus.CompletenessScore;
 import io.b2mash.b2b.b2bstrawman.setupstatus.CustomerReadiness;
 import io.b2mash.b2b.b2bstrawman.setupstatus.CustomerReadinessService;
 import io.b2mash.b2b.b2bstrawman.setupstatus.UnbilledTimeSummary;
@@ -163,20 +164,15 @@ public class CustomerController {
 
   @GetMapping("/completeness-summary")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
-  public ResponseEntity<?> getCompletenessSummary(
-      @RequestParam(required = false) List<UUID> customerIds,
-      @RequestParam(defaultValue = "false") boolean aggregated) {
-    if (aggregated) {
-      String role = RequestScopes.getOrgRole();
-      if ("member".equals(role)) {
-        throw new ForbiddenException(
-            "Forbidden", "Aggregated completeness summary requires admin or owner role");
-      }
-      return ResponseEntity.ok(customerReadinessService.getAggregatedSummary(10));
-    }
-    return ResponseEntity.ok(
-        customerReadinessService.batchComputeCompleteness(
-            customerIds != null ? customerIds : List.of()));
+  public ResponseEntity<Map<UUID, CompletenessScore>> getCompletenessSummary(
+      @RequestParam List<UUID> customerIds) {
+    return ResponseEntity.ok(customerReadinessService.batchComputeCompleteness(customerIds));
+  }
+
+  @GetMapping("/completeness-summary/aggregated")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<AggregatedCompletenessResponse> getAggregatedCompletenessSummary() {
+    return ResponseEntity.ok(customerReadinessService.getAggregatedSummary(10));
   }
 
   @GetMapping("/{id}")

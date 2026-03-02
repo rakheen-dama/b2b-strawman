@@ -17,11 +17,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CustomerReadinessService {
+
+  private static final Logger log = LoggerFactory.getLogger(CustomerReadinessService.class);
 
   private final CustomerRepository customerRepository;
   private final CustomerProjectRepository customerProjectRepository;
@@ -188,8 +192,13 @@ public class CustomerReadinessService {
       var fieldStatus = new FieldStatus(fd.getName(), fd.getSlug(), filled);
 
       for (String contextName : contexts) {
-        PrerequisiteContext ctx = PrerequisiteContext.valueOf(contextName);
-        byContext.computeIfAbsent(ctx, k -> new ArrayList<>()).add(fieldStatus);
+        try {
+          PrerequisiteContext ctx = PrerequisiteContext.valueOf(contextName);
+          byContext.computeIfAbsent(ctx, k -> new ArrayList<>()).add(fieldStatus);
+        } catch (IllegalArgumentException e) {
+          log.warn(
+              "Skipping unknown PrerequisiteContext '{}' on field '{}'", contextName, fd.getSlug());
+        }
       }
     }
 

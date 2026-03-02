@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,7 +11,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TransitionConfirmDialog } from "@/components/compliance/TransitionConfirmDialog";
+import { PrerequisiteModal } from "@/components/prerequisite/prerequisite-modal";
+import { checkPrerequisitesAction } from "@/lib/actions/prerequisite-actions";
 import type { LifecycleStatus } from "@/lib/types";
+import type {
+  PrerequisiteCheck,
+  PrerequisiteViolation,
+} from "@/components/prerequisite/types";
 
 // Valid transitions per status (mirrors LifecycleStatus.java)
 const ALLOWED_TRANSITIONS: Record<LifecycleStatus, LifecycleStatus[]> = {
@@ -37,6 +43,14 @@ function getTransitionLabel(fromStatus: LifecycleStatus, toStatus: LifecycleStat
 
 const DESTRUCTIVE_TARGETS = new Set<LifecycleStatus>(["OFFBOARDING", "OFFBOARDED"]);
 
+/** Transitions that require a prerequisite check before proceeding */
+function requiresPrerequisiteCheck(
+  fromStatus: LifecycleStatus,
+  toStatus: LifecycleStatus,
+): boolean {
+  return toStatus === "ACTIVE" && fromStatus === "ONBOARDING";
+}
+
 interface LifecycleTransitionDropdownProps {
   currentStatus: LifecycleStatus;
   customerId: string;
@@ -52,6 +66,11 @@ export function LifecycleTransitionDropdown({
 }: LifecycleTransitionDropdownProps) {
   const [pendingTarget, setPendingTarget] = useState<LifecycleStatus | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [checkingPrereqs, setCheckingPrereqs] = useState(false);
+
+  // PrerequisiteModal state
+  const [prereqModalOpen, setPrereqModalOpen] = useState(false);
+  const [prereqViolations, setPrereqViolations] = useState<PrerequisiteViolation[]>([]);
 
   const transitions = ALLOWED_TRANSITIONS[currentStatus] ?? [];
 
@@ -59,22 +78,69 @@ export function LifecycleTransitionDropdown({
     return null;
   }
 
-  function handleSelect(target: LifecycleStatus) {
+  async function handleSelect(target: LifecycleStatus) {
     setPendingTarget(target);
-    setDialogOpen(true);
+
+    if (requiresPrerequisiteCheck(currentStatus, target)) {
+      // Run prerequisite check before showing dialog
+      setCheckingPrereqs(true);
+      try {
+        const check: PrerequisiteCheck = await checkPrerequisitesAction(
+          "LIFECYCLE_ACTIVATION",
+          "CUSTOMER",
+          customerId,
+        );
+        if (check.passed) {
+          // Prerequisites met — show confirm dialog
+          setDialogOpen(true);
+        } else {
+          // Prerequisites NOT met — show prerequisite modal
+          setPrereqViolations(check.violations);
+          setPrereqModalOpen(true);
+        }
+      } catch {
+        // If prerequisite check fails, fall through to normal confirm dialog
+        setDialogOpen(true);
+      } finally {
+        setCheckingPrereqs(false);
+      }
+    } else {
+      setDialogOpen(true);
+    }
   }
 
   function handleSuccess() {
     onTransition?.();
   }
 
+  function handlePrerequisiteFailed(check: PrerequisiteCheck) {
+    // Backend returned 422 during transition — open PrerequisiteModal
+    setPrereqViolations(check.violations);
+    setPrereqModalOpen(true);
+  }
+
+  function handlePrereqResolved() {
+    // All prerequisites resolved — now proceed with confirm dialog
+    setPrereqModalOpen(false);
+    setDialogOpen(true);
+  }
+
   return (
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm">
-            Change Status
-            <ChevronDown className="ml-1.5 size-3" />
+          <Button variant="outline" size="sm" disabled={checkingPrereqs}>
+            {checkingPrereqs ? (
+              <>
+                <Loader2 className="mr-1.5 size-3 animate-spin" />
+                Checking...
+              </>
+            ) : (
+              <>
+                Change Status
+                <ChevronDown className="ml-1.5 size-3" />
+              </>
+            )}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
@@ -104,6 +170,20 @@ export function LifecycleTransitionDropdown({
           customerId={customerId}
           targetStatus={pendingTarget}
           onSuccess={handleSuccess}
+          onPrerequisiteFailed={handlePrerequisiteFailed}
+        />
+      )}
+
+      {prereqModalOpen && (
+        <PrerequisiteModal
+          open={prereqModalOpen}
+          onOpenChange={setPrereqModalOpen}
+          context="LIFECYCLE_ACTIVATION"
+          violations={prereqViolations}
+          entityType="CUSTOMER"
+          entityId={customerId}
+          slug={slug}
+          onResolved={handlePrereqResolved}
         />
       )}
     </>

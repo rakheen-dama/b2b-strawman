@@ -16,6 +16,8 @@ export interface SetupProgressCardProps {
   steps: SetupStep[];
   defaultCollapsed?: boolean;
   canManage?: boolean;
+  /** Activation prerequisite violation messages to display when customer is ONBOARDING */
+  activationBlockers?: string[];
 }
 
 // ---- ActionCard ----

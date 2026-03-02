@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { CheckCircle2, AlertCircle, ChevronDown, ChevronUp, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Card,
@@ -21,10 +21,13 @@ export function SetupProgressCard({
   steps,
   defaultCollapsed,
   canManage = false,
+  activationBlockers,
 }: SetupProgressCardProps) {
   const [collapsed, setCollapsed] = useState(
     defaultCollapsed ?? overallComplete,
   );
+
+  const hasBlockers = activationBlockers && activationBlockers.length > 0;
 
   return (
     <Card>
@@ -89,6 +92,25 @@ export function SetupProgressCard({
               </li>
             ))}
           </ul>
+
+          {hasBlockers && (
+            <div className="space-y-2 rounded-md border border-red-200 bg-red-50 p-3 dark:border-red-900 dark:bg-red-950/50">
+              <div className="flex items-center gap-2 text-sm font-medium text-red-700 dark:text-red-400">
+                <ShieldAlert className="h-4 w-4 shrink-0" />
+                <span>Blocking activation</span>
+              </div>
+              <ul className="space-y-1 pl-6">
+                {activationBlockers.map((message) => (
+                  <li
+                    key={message}
+                    className="text-sm text-red-600 dark:text-red-400"
+                  >
+                    {message}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </CardContent>
       )}
     </Card>

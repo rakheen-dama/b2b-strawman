@@ -55,6 +55,8 @@ import { getCustomerChecklists, getChecklistTemplates } from "@/lib/checklist-ap
 import { fetchRetainers, fetchPeriods } from "@/lib/api/retainers";
 import type { RetainerResponse, PeriodSummary } from "@/lib/api/retainers";
 import { CustomerRetainerTab } from "@/components/customers/customer-retainer-tab";
+import { checkPrerequisites } from "@/lib/prerequisites";
+import type { PrerequisiteCheck } from "@/components/prerequisite/types";
 import { formatDate, formatCurrencySafe } from "@/lib/format";
 import { ArrowLeft, Pencil, Archive, Clock, UserCheck, ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -266,6 +268,25 @@ export default async function CustomerDetailPage({
   } catch {
     // Non-fatal: setup guidance cards will not render if fetch fails
   }
+
+  // Activation prerequisite check for ONBOARDING customers (Task 248.4)
+  let activationPrerequisites: PrerequisiteCheck | null = null;
+  if (customer.lifecycleStatus === "ONBOARDING") {
+    try {
+      activationPrerequisites = await checkPrerequisites(
+        "LIFECYCLE_ACTIVATION",
+        "CUSTOMER",
+        id,
+      );
+    } catch {
+      // Non-fatal: activation blockers won't show if check fails
+    }
+  }
+
+  const activationBlockers: string[] =
+    activationPrerequisites && !activationPrerequisites.passed
+      ? activationPrerequisites.violations.map((v) => v.message)
+      : [];
 
   // Map customer readiness to setup steps
   const customerSetupSteps: SetupStep[] = customerReadiness
@@ -480,6 +501,7 @@ export default async function CustomerDetailPage({
           overallComplete={customerReadinessComplete}
           steps={customerSetupSteps}
           canManage={isAdmin}
+          activationBlockers={activationBlockers.length > 0 ? activationBlockers : undefined}
         />
       )}
 

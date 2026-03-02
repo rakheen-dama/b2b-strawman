@@ -43,12 +43,12 @@ export async function handleOrganizationCreated(
   svixId: string | null
 ): Promise<void> {
   const payload: ProvisionOrgRequest = {
-    clerkOrgId: data.id,
+    externalOrgId: data.id,
     orgName: data.name,
   };
 
   console.log(
-    `[webhook] organization.created: clerkOrgId=${data.id}, name=${data.name}, svixId=${svixId}`
+    `[webhook] organization.created: externalOrgId=${data.id}, name=${data.name}, svixId=${svixId}`
   );
 
   try {
@@ -77,13 +77,13 @@ export async function handleOrganizationUpdated(
   svixId: string | null
 ): Promise<void> {
   const payload: UpdateOrgRequest = {
-    clerkOrgId: data.id,
+    externalOrgId: data.id,
     orgName: data.name,
     updatedAt: data.updated_at,
   };
 
   console.log(
-    `[webhook] organization.updated: clerkOrgId=${data.id}, name=${data.name}, svixId=${svixId}`
+    `[webhook] organization.updated: externalOrgId=${data.id}, name=${data.name}, svixId=${svixId}`
   );
 
   try {
@@ -114,29 +114,29 @@ async function syncMember(
   svixId: string | null,
   eventType: "created" | "updated"
 ): Promise<void> {
-  const clerkOrgId = data.organization.id;
-  const clerkUserId = data.public_user_data.user_id;
+  const externalOrgId = data.organization.id;
+  const externalUserId = data.public_user_data.user_id;
   const orgRole = mapClerkRole(data.role);
 
   console.log(
-    `[webhook] organizationMembership.${eventType}: orgId=${clerkOrgId}, userId=${clerkUserId}, role=${orgRole}, svixId=${svixId}`
+    `[webhook] organizationMembership.${eventType}: orgId=${externalOrgId}, userId=${externalUserId}, role=${orgRole}, svixId=${svixId}`
   );
 
   try {
     const client = await clerkClient();
-    const user = await client.users.getUser(clerkUserId);
+    const user = await client.users.getUser(externalUserId);
 
     const email = user.emailAddresses[0]?.emailAddress;
     if (!email) {
       console.error(
-        `[webhook] Cannot sync member ${clerkUserId}: no email address found in Clerk`
+        `[webhook] Cannot sync member ${externalUserId}: no email address found in Clerk`
       );
       return;
     }
 
     const payload: SyncMemberRequest = {
-      clerkOrgId,
-      clerkUserId,
+      externalOrgId,
+      externalUserId,
       email,
       name: [user.firstName, user.lastName].filter(Boolean).join(" ") || undefined,
       avatarUrl: user.imageUrl || undefined,
@@ -152,7 +152,7 @@ async function syncMember(
     );
   } catch (error) {
     console.error(
-      `[webhook] Failed to sync member ${clerkUserId} in org ${clerkOrgId}:`,
+      `[webhook] Failed to sync member ${externalUserId} in org ${externalOrgId}:`,
       error instanceof InternalApiError
         ? `${error.status} ${error.statusText} - ${error.body}`
         : error
@@ -178,28 +178,28 @@ export async function handleMembershipDeleted(
   data: MembershipEventData,
   svixId: string | null
 ): Promise<void> {
-  const clerkOrgId = data.organization.id;
-  const clerkUserId = data.public_user_data.user_id;
+  const externalOrgId = data.organization.id;
+  const externalUserId = data.public_user_data.user_id;
 
   console.log(
-    `[webhook] organizationMembership.deleted: orgId=${clerkOrgId}, userId=${clerkUserId}, svixId=${svixId}`
+    `[webhook] organizationMembership.deleted: orgId=${externalOrgId}, userId=${externalUserId}, svixId=${svixId}`
   );
 
   try {
     await internalApiClient<void>(
-      `/internal/members/${encodeURIComponent(clerkUserId)}?clerkOrgId=${encodeURIComponent(clerkOrgId)}`,
+      `/internal/members/${encodeURIComponent(externalUserId)}?externalOrgId=${encodeURIComponent(externalOrgId)}`,
       { method: "DELETE" }
     );
-    console.log(`[webhook] Member ${clerkUserId} deleted from org ${clerkOrgId}`);
+    console.log(`[webhook] Member ${externalUserId} deleted from org ${externalOrgId}`);
   } catch (error) {
     if (error instanceof InternalApiError && error.status === 404) {
       console.log(
-        `[webhook] Member ${clerkUserId} already deleted from org ${clerkOrgId} (404)`
+        `[webhook] Member ${externalUserId} already deleted from org ${externalOrgId} (404)`
       );
       return;
     }
     console.error(
-      `[webhook] Failed to delete member ${clerkUserId} from org ${clerkOrgId}:`,
+      `[webhook] Failed to delete member ${externalUserId} from org ${externalOrgId}:`,
       error instanceof InternalApiError
         ? `${error.status} ${error.statusText} - ${error.body}`
         : error

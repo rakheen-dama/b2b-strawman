@@ -10,6 +10,12 @@ vi.mock("@/app/(app)/org/[slug]/customers/[id]/invoice-actions", () => ({
   createInvoiceDraft: vi.fn(),
 }));
 
+// Mock prerequisite actions (needed because InvoiceGenerationDialog now imports them)
+vi.mock("@/lib/actions/prerequisite-actions", () => ({
+  checkPrerequisitesAction: vi.fn().mockResolvedValue({ passed: true, context: "INVOICE_GENERATION", violations: [] }),
+  updateEntityCustomFieldsAction: vi.fn(),
+}));
+
 const sampleInvoices: InvoiceResponse[] = [
   {
     id: "inv-1",

@@ -430,6 +430,7 @@ export default async function CustomerDetailPage({
                 templates={customerTemplates}
                 entityId={id}
                 entityType="CUSTOMER"
+                slug={slug}
               />
             )}
             {customer.status === "ACTIVE" && (

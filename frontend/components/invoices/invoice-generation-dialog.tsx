@@ -9,7 +9,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,7 +26,10 @@ import type {
   UnbilledExpenseEntry,
   ValidationCheck,
 } from "@/lib/types";
-import { Plus, ArrowLeft, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Plus, ArrowLeft, CheckCircle2, AlertTriangle, Loader2 } from "lucide-react";
+import { PrerequisiteModal } from "@/components/prerequisite/prerequisite-modal";
+import { checkPrerequisitesAction } from "@/lib/actions/prerequisite-actions";
+import type { PrerequisiteViolation } from "@/components/prerequisite/types";
 
 /** Wraps formatCurrency in a try-catch to handle invalid currency codes gracefully. */
 function safeFormatCurrency(amount: number, curr: string): string {
@@ -55,6 +57,11 @@ export function InvoiceGenerationDialog({
   const [step, setStep] = useState<1 | 2>(1);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  // Prerequisite gate state
+  const [checkingPrereqs, setCheckingPrereqs] = useState(false);
+  const [prereqModalOpen, setPrereqModalOpen] = useState(false);
+  const [prereqViolations, setPrereqViolations] = useState<PrerequisiteViolation[]>([]);
 
   // Step 1 state
   const [fromDate, setFromDate] = useState("");
@@ -88,6 +95,28 @@ export function InvoiceGenerationDialog({
       resetState();
     }
     setOpen(newOpen);
+  }
+
+  async function handleNewInvoiceClick() {
+    setCheckingPrereqs(true);
+    try {
+      const check = await checkPrerequisitesAction(
+        "INVOICE_GENERATION",
+        "CUSTOMER",
+        customerId,
+      );
+      if (check.passed) {
+        handleOpenChange(true);
+      } else {
+        setPrereqViolations(check.violations);
+        setPrereqModalOpen(true);
+      }
+    } catch {
+      // Fail-open: proceed to dialog if check throws
+      handleOpenChange(true);
+    } finally {
+      setCheckingPrereqs(false);
+    }
   }
 
   function handleFetchUnbilled() {
@@ -281,14 +310,18 @@ export function InvoiceGenerationDialog({
     : [];
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button size="sm">
+    <>
+      <Button size="sm" onClick={handleNewInvoiceClick} disabled={checkingPrereqs}>
+        {checkingPrereqs ? (
+          <Loader2 className="mr-1.5 size-4 animate-spin" />
+        ) : (
           <Plus className="mr-1.5 size-4" />
-          New Invoice
-        </Button>
-      </DialogTrigger>
-      <DialogContent className={step === 2 ? "sm:max-w-2xl" : undefined}>
+        )}
+        New Invoice
+      </Button>
+
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className={step === 2 ? "sm:max-w-2xl" : undefined}>
         <DialogHeader>
           <DialogTitle>
             {step === 1 ? "Generate Invoice" : "Select Unbilled Items"}
@@ -506,6 +539,23 @@ export function InvoiceGenerationDialog({
         )}
       </DialogContent>
     </Dialog>
+
+      {prereqModalOpen && (
+        <PrerequisiteModal
+          open={prereqModalOpen}
+          onOpenChange={setPrereqModalOpen}
+          context="INVOICE_GENERATION"
+          violations={prereqViolations}
+          entityType="CUSTOMER"
+          entityId={customerId}
+          slug={slug}
+          onResolved={() => {
+            setPrereqModalOpen(false);
+            handleOpenChange(true);
+          }}
+        />
+      )}
+    </>
   );
 }
 

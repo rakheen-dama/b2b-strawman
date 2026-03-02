@@ -461,6 +461,7 @@ export default async function ProjectDetailPage({
                 templates={projectTemplates}
                 entityId={id}
                 entityType="PROJECT"
+                slug={slug}
               />
             )}
             {canManage && (

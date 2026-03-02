@@ -10,6 +10,8 @@ import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
+import io.b2mash.b2b.b2bstrawman.setupstatus.AggregatedCompletenessResponse;
+import io.b2mash.b2b.b2bstrawman.setupstatus.CompletenessScore;
 import io.b2mash.b2b.b2bstrawman.setupstatus.CustomerReadiness;
 import io.b2mash.b2b.b2bstrawman.setupstatus.CustomerReadinessService;
 import io.b2mash.b2b.b2bstrawman.setupstatus.UnbilledTimeSummary;
@@ -158,6 +160,19 @@ public class CustomerController {
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Map<String, Long>> getLifecycleSummary() {
     return ResponseEntity.ok(customerService.getLifecycleSummary());
+  }
+
+  @GetMapping("/completeness-summary")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<Map<UUID, CompletenessScore>> getCompletenessSummary(
+      @RequestParam List<UUID> customerIds) {
+    return ResponseEntity.ok(customerReadinessService.batchComputeCompleteness(customerIds));
+  }
+
+  @GetMapping("/completeness-summary/aggregated")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<AggregatedCompletenessResponse> getAggregatedCompletenessSummary() {
+    return ResponseEntity.ok(customerReadinessService.getAggregatedSummary(10));
   }
 
   @GetMapping("/{id}")

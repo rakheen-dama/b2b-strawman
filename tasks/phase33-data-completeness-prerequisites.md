@@ -172,7 +172,7 @@ FRONTEND TRACK (after E241B)
 | 4b (parallel) | 247 | 247A | Settings custom-fields "Required For" multi-select on FieldDefinitionDialog + PrerequisiteContext labels constant + tests (~3 tests). ~3 modified files. Frontend only. | **Done** (PR #500) |
 | 4c (parallel) | 248 | 248A | Customer detail page lifecycle transition button wired through usePrerequisiteCheck hook + PrerequisiteModal integration + lifecycle-actions.ts update + tests (~4 tests). ~3 modified files. Frontend only. | **Done** (PR #501) |
 | 4d (parallel) | 249 | 249A | Invoice generation, proposal send, document generation buttons wired through prerequisite check + PrerequisiteModal integration + tests (~5 tests). ~5 modified files. Frontend only. | **Done** (PR #502) |
-| 4e (parallel) | 251 | 251A | CompletenesssBadge component + customer list page completeness column + filter + sort + completeness server actions + tests (~4 tests). ~4 new/modified files. Frontend only. | |
+| 4e (parallel) | 251 | 251A | CompletenesssBadge component + customer list page completeness column + filter + sort + completeness server actions + tests (~4 tests). ~4 new/modified files. Frontend only. | **Done** (PR #505) |
 
 ### Stage 5: Remaining Frontend
 
@@ -862,7 +862,7 @@ Stage 5: [246B] // [249B] // [251B]                                         (par
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **251A** | 251.1--251.5 | `CompletenessBadge` component + customer list page completeness column + filter ("show incomplete") + sort by completeness + completeness server actions + tests (~4 tests). ~4 new/modified files. Frontend only. | |
+| **251A** | 251.1--251.5 | `CompletenessBadge` component + customer list page completeness column + filter ("show incomplete") + sort by completeness + completeness server actions + tests (~4 tests). ~4 new/modified files. Frontend only. | **Done** (PR #505) |
 | **251B** | 251.6--251.11 | Enhanced `SetupProgressCard` with context-grouped display + expandable groups showing missing fields + completeness ring on customer detail header + "Incomplete Customer Profiles" dashboard widget + tests (~5 tests). ~4 modified/new files. Frontend only. | |
 
 ### Tasks

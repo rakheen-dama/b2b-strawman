@@ -289,7 +289,7 @@
 | 248 | Lifecycle Transition Frontend Integration | Frontend | 242, 245 | S | 248A | **Done** (PR #501) |
 | 249 | Engagement & Action-Point Frontend Integration | Frontend | 243, 244, 245 | M | 249A, 249B | **Done** (PRs #502, #503) |
 | 250 | Completeness Visibility — Backend Queries | Backend | 241 | M | 250A | **Done** (PR #504) |
-| 251 | Completeness Visibility — Frontend & Dashboard | Frontend | 250, 245 | M | 251A, 251B | |
+| 251 | Completeness Visibility — Frontend & Dashboard | Frontend | 250, 245 | M | 251A, 251B | 251A **Done** (PR #505) |
 | **Phase 34 — Client Information Requests** | | | | | | See [tasks/phase34-client-information-requests.md](tasks/phase34-client-information-requests.md) |
 | 252 | RequestTemplate Entity Foundation & Pack Seeder | Backend | -- | M | 252A, 252B | |
 | 253 | InformationRequest Entity & Lifecycle Backend | Backend | 252 | L | 253A, 253B | |

@@ -1528,6 +1528,14 @@ export interface PaginatedExpenseResponse {
   };
 }
 
+// ---- Completeness (from CompletenessScore.java, AggregatedCompletenessResponse.java) ----
+
+export interface CompletenessScore {
+  totalRequired: number;
+  filled: number;
+  percentage: number;
+}
+
 // ---- Error (RFC 9457 ProblemDetail) ----
 
 export interface ProblemDetail {

@@ -30,7 +30,7 @@ Phase 33 transforms DocTeams' metadata infrastructure from passive data capture 
 | 247 | Prerequisite Configuration UI | Frontend | 245 | S | 247A | **Done** |
 | 248 | Lifecycle Transition Frontend Integration | Frontend | 242, 245 | S | 248A | **Done** |
 | 249 | Engagement & Action-Point Frontend Integration | Frontend | 243, 244, 245 | M | 249A, 249B | **Done** |
-| 250 | Completeness Visibility -- Backend Queries | Backend | 241 | M | 250A | |
+| 250 | Completeness Visibility -- Backend Queries | Backend | 241 | M | 250A | **Done** |
 | 251 | Completeness Visibility -- Frontend & Dashboard | Frontend | 250, 245 | M | 251A, 251B | |
 
 ---
@@ -152,7 +152,7 @@ FRONTEND TRACK (after E241B)
 | 2a (parallel) | 242 | 242A | Wire PrerequisiteService.checkForContext(LIFECYCLE_ACTIVATION) into CustomerLifecycleService for ONBOARDING->ACTIVE. Block auto-transition + send notification on failure. ~2 modified files. Backend only. | **Done** (PR #490) |
 | 2b (parallel) | 243 | 243A | V54 migration (required_customer_field_ids on project_templates) + ProjectTemplate entity extension + ProjectTemplateService.getRequiredCustomerFields() + PrerequisiteService.checkEngagementPrerequisites() + tests (~8 tests). ~4 modified/new files. Backend only. | **Done** (PR #492) |
 | 2c (parallel) | 244 | 244A | Wire prerequisite checks into InvoiceService, ProposalService.sendProposal(), DocumentGenerationReadinessService + structural checks (portal contact, billing address) in PrerequisiteService + tests (~8 tests). ~4 modified files. Backend only. | **Done** (PR #494) |
-| 2d (parallel) | 250 | 250A | GET /api/customers/completeness-summary endpoint + CustomerReadinessService.computeReadinessByContext() + batch completeness computation + CompletenessScore record + tests (~6 tests). ~3 modified/new files. Backend only. | |
+| 2d (parallel) | 250 | 250A | GET /api/customers/completeness-summary endpoint + CustomerReadinessService.computeReadinessByContext() + batch completeness computation + CompletenessScore record + tests (~6 tests). ~3 modified/new files. Backend only. | **Done** (PR #504) |
 | 2e (parallel) | 245 | 245A | Prerequisite TypeScript types + usePrerequisiteCheck hook + InlineFieldEditor component + prerequisite-violation-list.tsx + prerequisites API client + frontend tests (~6 tests). ~6 new files. Frontend only. | **Done** (PR #496) |
 
 ### Stage 3: Backend Enforcement Completion & Frontend Modal
@@ -812,7 +812,7 @@ Stage 5: [246B] // [249B] // [251B]                                         (par
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **250A** | 250.1--250.7 | GET /api/customers/completeness-summary endpoint + CustomerReadinessService.computeReadinessByContext() + CompletenessScore record + batch computation (avoid N+1) + aggregated query for dashboard widget + tests (~6 tests). ~3 modified/new files, ~1 test file. Backend only. | |
+| **250A** | 250.1--250.7 | GET /api/customers/completeness-summary endpoint + CustomerReadinessService.computeReadinessByContext() + CompletenessScore record + batch computation (avoid N+1) + aggregated query for dashboard widget + tests (~6 tests). ~3 modified/new files, ~1 test file. Backend only. | **Done** (PR #504) |
 
 ### Tasks
 

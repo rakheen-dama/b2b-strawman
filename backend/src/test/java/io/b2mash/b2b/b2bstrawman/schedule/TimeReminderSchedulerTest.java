@@ -77,7 +77,7 @@ class TimeReminderSchedulerTest {
             syncMember(
                 ORG_ID, "user_reminder_owner", "reminder@test.com", "Reminder Owner", "owner"));
     tenantSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     // Create a project and task so we can log time entries
     runInTenant(
@@ -348,7 +348,7 @@ class TimeReminderSchedulerTest {
   }
 
   private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
+      String orgId, String externalUserId, String email, String name, String orgRole)
       throws Exception {
     var result =
         mockMvc
@@ -358,9 +358,9 @@ class TimeReminderSchedulerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                    {"clerkOrgId":"%s","clerkUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
+                    {"externalOrgId":"%s","externalUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
                     """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
+                            .formatted(orgId, externalUserId, email, name, orgRole)))
             .andExpect(status().isCreated())
             .andReturn();
     return com.jayway.jsonpath.JsonPath.read(

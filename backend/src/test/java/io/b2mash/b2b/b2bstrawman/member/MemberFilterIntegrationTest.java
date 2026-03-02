@@ -52,7 +52,7 @@ class MemberFilterIntegrationTest {
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     schemaName =
         mappingRepository
-            .findByClerkOrgId(ORG_ID)
+            .findByExternalOrgId(ORG_ID)
             .map(OrgSchemaMapping::getSchemaName)
             .orElseThrow();
   }
@@ -76,7 +76,7 @@ class MemberFilterIntegrationTest {
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
         .run(
             () -> {
-              var member = memberRepository.findByClerkUserId("user_lazy_create");
+              var member = memberRepository.findByExternalUserId("user_lazy_create");
               assertThat(member).isPresent();
               assertThat(member.get().getOrgRole()).isEqualTo("member");
               assertThat(member.get().getEmail())
@@ -95,8 +95,8 @@ class MemberFilterIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "user_internal_skip",
+                      "externalOrgId": "%s",
+                      "externalUserId": "user_internal_skip",
                       "email": "internal@test.com",
                       "name": "Internal Test",
                       "avatarUrl": null,
@@ -119,7 +119,7 @@ class MemberFilterIntegrationTest {
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
         .run(
             () -> {
-              var member = memberRepository.findByClerkUserId("user_cache_test");
+              var member = memberRepository.findByExternalUserId("user_cache_test");
               assertThat(member).isPresent();
             });
   }

@@ -58,7 +58,7 @@ class EntityTagIntegrationTest {
             syncMember(ORG_ID, "user_et_owner", "et_owner@test.com", "ET Owner", "owner"));
 
     tenantSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     provisioningService.provisionTenant(ORG_ID_B, "Entity Tag Test Org B");
     planSyncService.syncPlan(ORG_ID_B, "pro-plan");
@@ -68,7 +68,7 @@ class EntityTagIntegrationTest {
             syncMember(ORG_ID_B, "user_et_owner_b", "et_owner_b@test.com", "ET Owner B", "owner"));
 
     tenantSchemaB =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID_B).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID_B).orElseThrow().getSchemaName();
   }
 
   @Test
@@ -239,7 +239,7 @@ class EntityTagIntegrationTest {
   }
 
   private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
+      String orgId, String externalUserId, String email, String name, String orgRole)
       throws Exception {
     var result =
         mockMvc
@@ -250,15 +250,15 @@ class EntityTagIntegrationTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
+                          "externalOrgId": "%s",
+                          "externalUserId": "%s",
                           "email": "%s",
                           "name": "%s",
                           "avatarUrl": null,
                           "orgRole": "%s"
                         }
                         """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
+                            .formatted(orgId, externalUserId, email, name, orgRole)))
             .andExpect(status().isCreated())
             .andReturn();
     return com.jayway.jsonpath.JsonPath.read(

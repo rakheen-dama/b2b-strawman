@@ -63,7 +63,7 @@ class InvoiceCustomFieldIntegrationTest {
             syncMember("user_inv_cf_owner", "inv_cf_owner@test.com", "CF Owner", "owner"));
 
     tenantSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     // Create an ACTIVE customer in tenant scope
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -346,7 +346,7 @@ class InvoiceCustomFieldIntegrationTest {
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
   }
 
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
+  private String syncMember(String externalUserId, String email, String name, String orgRole)
       throws Exception {
     var result =
         mockMvc
@@ -357,15 +357,15 @@ class InvoiceCustomFieldIntegrationTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
+                          "externalOrgId": "%s",
+                          "externalUserId": "%s",
                           "email": "%s",
                           "name": "%s",
                           "avatarUrl": null,
                           "orgRole": "%s"
                         }
                         """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
+                            .formatted(ORG_ID, externalUserId, email, name, orgRole)))
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");

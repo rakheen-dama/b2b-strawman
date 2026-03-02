@@ -57,7 +57,7 @@ class SubscriptionIntegrationTest {
     String freshOrg = "org_billing_provision_check";
     provisioningService.provisionTenant(freshOrg, "Provision Check Org");
 
-    var org = organizationRepository.findByClerkOrgId(freshOrg).orElseThrow();
+    var org = organizationRepository.findByExternalOrgId(freshOrg).orElseThrow();
     var subscription = subscriptionRepository.findByOrganizationId(org.getId());
 
     assertThat(subscription).isPresent();
@@ -91,14 +91,14 @@ class SubscriptionIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "%s",
+                      "externalOrgId": "%s",
                       "planSlug": "pro"
                     }
                     """
                         .formatted(ORG_A)))
         .andExpect(status().isOk());
 
-    var org = organizationRepository.findByClerkOrgId(ORG_A).orElseThrow();
+    var org = organizationRepository.findByExternalOrgId(ORG_A).orElseThrow();
     assertThat(org.getTier()).isEqualTo(Tier.PRO);
     assertThat(org.getPlanSlug()).isEqualTo("pro");
 
@@ -119,7 +119,7 @@ class SubscriptionIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "%s",
+                      "externalOrgId": "%s",
                       "planSlug": "pro"
                     }
                     """
@@ -143,7 +143,7 @@ class SubscriptionIntegrationTest {
     provisioningService.provisionTenant(upgradeOrg, "Upgrade Test Org");
 
     // Verify starts as STARTER
-    var org = organizationRepository.findByClerkOrgId(upgradeOrg).orElseThrow();
+    var org = organizationRepository.findByExternalOrgId(upgradeOrg).orElseThrow();
     assertThat(org.getTier()).isEqualTo(Tier.STARTER);
 
     // Trigger plan change → should trigger upgrade (Starter→Pro schema migration)
@@ -155,7 +155,7 @@ class SubscriptionIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "%s",
+                      "externalOrgId": "%s",
                       "planSlug": "pro"
                     }
                     """
@@ -163,7 +163,7 @@ class SubscriptionIntegrationTest {
         .andExpect(status().isOk());
 
     // After upgrade, org should be PRO
-    org = organizationRepository.findByClerkOrgId(upgradeOrg).orElseThrow();
+    org = organizationRepository.findByExternalOrgId(upgradeOrg).orElseThrow();
     assertThat(org.getTier()).isEqualTo(Tier.PRO);
   }
 
@@ -179,7 +179,7 @@ class SubscriptionIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "org_nonexistent",
+                      "externalOrgId": "org_nonexistent",
                       "planSlug": "pro"
                     }
                     """))
@@ -197,7 +197,7 @@ class SubscriptionIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "%s",
+                      "externalOrgId": "%s",
                       "planSlug": "pro"
                     }
                     """
@@ -208,7 +208,7 @@ class SubscriptionIntegrationTest {
   // --- Helpers ---
 
   private void syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
+      String orgId, String externalUserId, String email, String name, String orgRole)
       throws Exception {
     mockMvc
         .perform(
@@ -218,15 +218,15 @@ class SubscriptionIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "%s",
+                      "externalOrgId": "%s",
+                      "externalUserId": "%s",
                       "email": "%s",
                       "name": "%s",
                       "avatarUrl": null,
                       "orgRole": "%s"
                     }
                     """
-                        .formatted(orgId, clerkUserId, email, name, orgRole)))
+                        .formatted(orgId, externalUserId, email, name, orgRole)))
         .andExpect(status().isCreated());
   }
 

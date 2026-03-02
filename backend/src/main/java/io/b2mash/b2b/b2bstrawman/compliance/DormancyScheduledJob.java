@@ -46,7 +46,7 @@ public class DormancyScheduledJob {
       try {
         int transitioned =
             ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
-                .where(RequestScopes.ORG_ID, mapping.getClerkOrgId())
+                .where(RequestScopes.ORG_ID, mapping.getExternalOrgId())
                 .call(() -> processTenant());
         totalTransitioned += transitioned;
       } catch (Exception e) {

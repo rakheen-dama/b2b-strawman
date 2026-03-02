@@ -92,8 +92,8 @@ class PortalProposalControllerTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "user_proposal_owner",
+                          "externalOrgId": "%s",
+                          "externalUserId": "user_proposal_owner",
                           "email": "proposal_owner@test.com",
                           "name": "Proposal Owner",
                           "avatarUrl": null,
@@ -106,7 +106,7 @@ class PortalProposalControllerTest {
     String memberIdStr = JsonPath.read(syncResult.getResponse().getContentAsString(), "$.memberId");
     memberId = UUID.fromString(memberIdStr);
 
-    tenantSchema = orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).get().getSchemaName();
+    tenantSchema = orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).get().getSchemaName();
 
     // Create customer and portal contact in tenant scope
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)

@@ -165,7 +165,7 @@ class EmailAdminControllerIntegrationTest {
 
   // --- Helper methods ---
 
-  private UUID syncMember(String clerkUserId, String email, String name, String role)
+  private UUID syncMember(String externalUserId, String email, String name, String role)
       throws Exception {
     var result =
         mockMvc
@@ -176,15 +176,15 @@ class EmailAdminControllerIntegrationTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
+                          "externalOrgId": "%s",
+                          "externalUserId": "%s",
                           "email": "%s",
                           "name": "%s",
                           "avatarUrl": null,
                           "orgRole": "%s"
                         }
                         """
-                            .formatted(ORG_ID, clerkUserId, email, name, role)))
+                            .formatted(ORG_ID, externalUserId, email, name, role)))
             .andExpect(status().isCreated())
             .andReturn();
 

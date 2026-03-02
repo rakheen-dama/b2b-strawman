@@ -60,7 +60,7 @@ public sealed interface DomainEvent
 
   String tenantId();
 
-  /** Clerk org ID for ORG_ID ScopedValue binding. */
+  /** External org ID for ORG_ID ScopedValue binding. */
   String orgId();
 
   Instant occurredAt();

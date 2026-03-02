@@ -34,7 +34,7 @@ STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
   -H "Content-Type: application/json" \
   -H "X-API-KEY: ${API_KEY}" \
   -d "{
-    \"clerkOrgId\": \"${ORG_ID}\",
+    \"externalOrgId\": \"${ORG_ID}\",
     \"orgName\": \"${ORG_NAME}\"
   }")
 check_status "Provision org" "$STATUS"
@@ -47,7 +47,7 @@ STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
   -H "Content-Type: application/json" \
   -H "X-API-KEY: ${API_KEY}" \
   -d "{
-    \"clerkOrgId\": \"${ORG_ID}\",
+    \"externalOrgId\": \"${ORG_ID}\",
     \"planSlug\": \"pro\"
   }")
 check_status "Plan sync" "$STATUS"
@@ -68,8 +68,8 @@ sync_member() {
     -H "Content-Type: application/json" \
     -H "X-API-KEY: ${API_KEY}" \
     -d "{
-      \"clerkOrgId\": \"${ORG_ID}\",
-      \"clerkUserId\": \"${user_id}\",
+      \"externalOrgId\": \"${ORG_ID}\",
+      \"externalUserId\": \"${user_id}\",
       \"email\": \"${email}\",
       \"name\": \"${name}\",
       \"avatarUrl\": \"${avatar}\",

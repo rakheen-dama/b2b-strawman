@@ -206,7 +206,7 @@ public class InvoiceService {
     String orgId = RequestScopes.requireOrgId();
     var organization =
         organizationRepository
-            .findByClerkOrgId(orgId)
+            .findByExternalOrgId(orgId)
             .orElseThrow(() -> new ResourceNotFoundException("Organization", orgId));
 
     var invoice =

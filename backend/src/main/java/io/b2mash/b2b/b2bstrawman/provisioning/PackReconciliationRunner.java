@@ -64,13 +64,13 @@ public class PackReconciliationRunner implements ApplicationRunner {
     for (var mapping : allMappings) {
       try {
         var schemaName = mapping.getSchemaName();
-        var clerkOrgId = mapping.getClerkOrgId();
+        var externalOrgId = mapping.getExternalOrgId();
 
-        fieldPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
-        templatePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
-        clausePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
-        compliancePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
-        standardReportPackSeeder.seedForTenant(schemaName, clerkOrgId);
+        fieldPackSeeder.seedPacksForTenant(schemaName, externalOrgId);
+        templatePackSeeder.seedPacksForTenant(schemaName, externalOrgId);
+        clausePackSeeder.seedPacksForTenant(schemaName, externalOrgId);
+        compliancePackSeeder.seedPacksForTenant(schemaName, externalOrgId);
+        standardReportPackSeeder.seedForTenant(schemaName, externalOrgId);
 
         succeeded++;
       } catch (Exception e) {
@@ -78,7 +78,7 @@ public class PackReconciliationRunner implements ApplicationRunner {
         log.error(
             "Failed to reconcile packs for tenant {} (org {})",
             mapping.getSchemaName(),
-            mapping.getClerkOrgId(),
+            mapping.getExternalOrgId(),
             e);
       }
     }

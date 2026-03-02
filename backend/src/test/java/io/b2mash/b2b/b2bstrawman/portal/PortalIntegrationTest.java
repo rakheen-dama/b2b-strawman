@@ -93,8 +93,8 @@ class PortalIntegrationTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "user_portal_integ_owner",
+                          "externalOrgId": "%s",
+                          "externalUserId": "user_portal_integ_owner",
                           "email": "portal_integ_owner@test.com",
                           "name": "Portal Integ Owner",
                           "avatarUrl": null,
@@ -118,8 +118,8 @@ class PortalIntegrationTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "user_portal_integ_b_owner",
+                          "externalOrgId": "%s",
+                          "externalUserId": "user_portal_integ_b_owner",
                           "email": "portal_integ_b_owner@test.com",
                           "name": "Portal Integ Owner B",
                           "avatarUrl": null,
@@ -135,9 +135,9 @@ class PortalIntegrationTest {
             JsonPath.read(syncResultB.getResponse().getContentAsString(), "$.memberId"));
 
     // Resolve tenant schema
-    tenantSchema = orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).get().getSchemaName();
+    tenantSchema = orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).get().getSchemaName();
     String tenantSchemaB =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID_B).get().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID_B).get().getSchemaName();
 
     // Create test data in org A
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)

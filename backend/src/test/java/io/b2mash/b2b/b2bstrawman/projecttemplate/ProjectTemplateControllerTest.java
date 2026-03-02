@@ -95,7 +95,7 @@ class ProjectTemplateControllerTest {
             syncMember(
                 ORG_ID, "user_tmpl_ctrl_member", "tmpl_ctrl_member@test.com", "Member", "member"));
     tenantSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     // Create a project with tasks for saveFromProject tests
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -1052,7 +1052,7 @@ class ProjectTemplateControllerTest {
   }
 
   private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
+      String orgId, String externalUserId, String email, String name, String orgRole)
       throws Exception {
     var result =
         mockMvc
@@ -1062,9 +1062,9 @@ class ProjectTemplateControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {"clerkOrgId":"%s","clerkUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
+                        {"externalOrgId":"%s","externalUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
                         """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
+                            .formatted(orgId, externalUserId, email, name, orgRole)))
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");

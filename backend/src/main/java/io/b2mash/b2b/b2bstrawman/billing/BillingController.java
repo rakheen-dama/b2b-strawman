@@ -25,15 +25,15 @@ public class BillingController {
   @GetMapping("/subscription")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<BillingResponse> getSubscription() {
-    String clerkOrgId = RequestScopes.requireOrgId();
-    return ResponseEntity.ok(subscriptionService.getSubscription(clerkOrgId));
+    String externalOrgId = RequestScopes.requireOrgId();
+    return ResponseEntity.ok(subscriptionService.getSubscription(externalOrgId));
   }
 
   @PostMapping("/upgrade")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<BillingResponse> upgrade(@Valid @RequestBody UpgradeRequest request) {
-    String clerkOrgId = RequestScopes.requireOrgId();
-    return ResponseEntity.ok(subscriptionService.upgradePlan(clerkOrgId, request.planSlug()));
+    String externalOrgId = RequestScopes.requireOrgId();
+    return ResponseEntity.ok(subscriptionService.upgradePlan(externalOrgId, request.planSlug()));
   }
 
   public record UpgradeRequest(@NotBlank(message = "planSlug is required") String planSlug) {}

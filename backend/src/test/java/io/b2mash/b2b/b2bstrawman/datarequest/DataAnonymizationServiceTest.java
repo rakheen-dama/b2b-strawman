@@ -91,7 +91,7 @@ class DataAnonymizationServiceTest {
     provisioningService.provisionTenant(ORG_ID, "Anon Service Test Org");
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).orElseThrow().getSchemaName();
     var syncResult =
         memberSyncService.syncMember(
             ORG_ID, "user_anon_svc_test", "anon_svc@test.com", "Anon SVC Tester", null, "owner");

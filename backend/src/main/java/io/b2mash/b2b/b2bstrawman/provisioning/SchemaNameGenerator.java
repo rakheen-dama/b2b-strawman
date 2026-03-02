@@ -9,11 +9,11 @@ public final class SchemaNameGenerator {
 
   private SchemaNameGenerator() {}
 
-  public static String generateSchemaName(String clerkOrgId) {
-    if (clerkOrgId == null || clerkOrgId.isBlank()) {
-      throw new IllegalArgumentException("Clerk org ID must not be null or blank");
+  public static String generateSchemaName(String externalOrgId) {
+    if (externalOrgId == null || externalOrgId.isBlank()) {
+      throw new IllegalArgumentException("External org ID must not be null or blank");
     }
-    byte[] input = (NAMESPACE + clerkOrgId).getBytes(StandardCharsets.UTF_8);
+    byte[] input = (NAMESPACE + externalOrgId).getBytes(StandardCharsets.UTF_8);
     UUID hash = UUID.nameUUIDFromBytes(input);
     String hex = hash.toString().replace("-", "");
     return "tenant_" + hex.substring(0, 12);

@@ -73,7 +73,7 @@ class V50TaskRecurrenceMigrationTest {
     syncMember(ORG_ID, "user_v50_owner", "v50_owner@test.com", "V50 Owner", "owner");
 
     tenantSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).orElseThrow().getSchemaName();
   }
 
   @Test
@@ -162,7 +162,7 @@ class V50TaskRecurrenceMigrationTest {
   // --- Helpers ---
 
   private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
+      String orgId, String externalUserId, String email, String name, String orgRole)
       throws Exception {
     var result =
         mockMvc
@@ -173,15 +173,15 @@ class V50TaskRecurrenceMigrationTest {
                     .content(
                         """
                             {
-                              "clerkOrgId": "%s",
-                              "clerkUserId": "%s",
+                              "externalOrgId": "%s",
+                              "externalUserId": "%s",
                               "email": "%s",
                               "name": "%s",
                               "avatarUrl": null,
                               "orgRole": "%s"
                             }
                             """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
+                            .formatted(orgId, externalUserId, email, name, orgRole)))
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");

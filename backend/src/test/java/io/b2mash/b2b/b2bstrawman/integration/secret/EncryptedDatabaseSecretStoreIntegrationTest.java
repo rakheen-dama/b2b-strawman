@@ -58,7 +58,7 @@ class EncryptedDatabaseSecretStoreIntegrationTest {
         UUID.fromString(
             syncMember(ORG_ID_A, "user_secret_a", "secret_a@test.com", "Secret A", "owner"));
     tenantSchemaA =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID_A).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID_A).orElseThrow().getSchemaName();
 
     provisioningService.provisionTenant(ORG_ID_B, "Secret Test Org B");
     planSyncService.syncPlan(ORG_ID_B, "pro-plan");
@@ -66,7 +66,7 @@ class EncryptedDatabaseSecretStoreIntegrationTest {
         UUID.fromString(
             syncMember(ORG_ID_B, "user_secret_b", "secret_b@test.com", "Secret B", "owner"));
     tenantSchemaB =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID_B).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID_B).orElseThrow().getSchemaName();
   }
 
   @Test
@@ -222,7 +222,7 @@ class EncryptedDatabaseSecretStoreIntegrationTest {
   }
 
   private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
+      String orgId, String externalUserId, String email, String name, String orgRole)
       throws Exception {
     var result =
         mockMvc
@@ -233,15 +233,15 @@ class EncryptedDatabaseSecretStoreIntegrationTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
+                          "externalOrgId": "%s",
+                          "externalUserId": "%s",
                           "email": "%s",
                           "name": "%s",
                           "avatarUrl": null,
                           "orgRole": "%s"
                         }
                         """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
+                            .formatted(orgId, externalUserId, email, name, orgRole)))
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");

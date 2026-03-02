@@ -47,14 +47,14 @@ class PlanSyncIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "%s",
+                      "externalOrgId": "%s",
                       "planSlug": "pro"
                     }
                     """
                         .formatted(ORG_A)))
         .andExpect(status().isOk());
 
-    var org = organizationRepository.findByClerkOrgId(ORG_A).orElseThrow();
+    var org = organizationRepository.findByExternalOrgId(ORG_A).orElseThrow();
     assertThat(org.getTier()).isEqualTo(Tier.PRO);
     assertThat(org.getPlanSlug()).isEqualTo("pro");
   }
@@ -69,14 +69,14 @@ class PlanSyncIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "%s",
+                      "externalOrgId": "%s",
                       "planSlug": "starter-monthly"
                     }
                     """
                         .formatted(ORG_A)))
         .andExpect(status().isOk());
 
-    var org = organizationRepository.findByClerkOrgId(ORG_A).orElseThrow();
+    var org = organizationRepository.findByExternalOrgId(ORG_A).orElseThrow();
     assertThat(org.getTier()).isEqualTo(Tier.STARTER);
     assertThat(org.getPlanSlug()).isEqualTo("starter-monthly");
   }
@@ -91,14 +91,14 @@ class PlanSyncIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "%s",
+                      "externalOrgId": "%s",
                       "planSlug": "pro-annual"
                     }
                     """
                         .formatted(ORG_A)))
         .andExpect(status().isOk());
 
-    var org = organizationRepository.findByClerkOrgId(ORG_A).orElseThrow();
+    var org = organizationRepository.findByExternalOrgId(ORG_A).orElseThrow();
     assertThat(org.getTier()).isEqualTo(Tier.PRO);
     assertThat(org.getPlanSlug()).isEqualTo("pro-annual");
   }
@@ -115,7 +115,7 @@ class PlanSyncIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "org_nonexistent",
+                      "externalOrgId": "org_nonexistent",
                       "planSlug": "pro"
                     }
                     """))
@@ -125,7 +125,7 @@ class PlanSyncIntegrationTest {
   // --- Validation ---
 
   @Test
-  void shouldReject400WhenClerkOrgIdBlank() throws Exception {
+  void shouldReject400WhenExternalOrgIdBlank() throws Exception {
     mockMvc
         .perform(
             post("/internal/orgs/plan-sync")
@@ -134,7 +134,7 @@ class PlanSyncIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "",
+                      "externalOrgId": "",
                       "planSlug": "pro"
                     }
                     """))
@@ -151,7 +151,7 @@ class PlanSyncIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "%s",
+                      "externalOrgId": "%s",
                       "planSlug": ""
                     }
                     """
@@ -170,7 +170,7 @@ class PlanSyncIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "%s",
+                      "externalOrgId": "%s",
                       "planSlug": "pro"
                     }
                     """
@@ -188,7 +188,7 @@ class PlanSyncIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "%s",
+                      "externalOrgId": "%s",
                       "planSlug": "pro"
                     }
                     """

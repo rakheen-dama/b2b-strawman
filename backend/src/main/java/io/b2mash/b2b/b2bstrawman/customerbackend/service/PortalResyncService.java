@@ -58,7 +58,7 @@ public class PortalResyncService {
   public ResyncResult resyncOrg(String orgId) {
     var mapping =
         orgSchemaMappingRepository
-            .findByClerkOrgId(orgId)
+            .findByExternalOrgId(orgId)
             .orElseThrow(
                 () ->
                     ResourceNotFoundException.withDetail(

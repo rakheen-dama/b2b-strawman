@@ -57,8 +57,8 @@ class UnsubscribeControllerIntegrationTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "user_unsub_owner",
+                          "externalOrgId": "%s",
+                          "externalUserId": "user_unsub_owner",
                           "email": "unsub_owner@test.com",
                           "name": "Unsub Owner",
                           "avatarUrl": null,

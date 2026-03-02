@@ -78,7 +78,7 @@ class ProjectTemplatePrerequisiteTest {
         UUID.fromString(
             syncMember("user_tpq243_member", "tpq243_member@test.com", "Member", "member"));
     tenantSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).orElseThrow().getSchemaName();
   }
 
   // --- Task 243.12: Template required fields tests ---
@@ -514,7 +514,7 @@ class ProjectTemplatePrerequisiteTest {
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
   }
 
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
+  private String syncMember(String externalUserId, String email, String name, String orgRole)
       throws Exception {
     var result =
         mockMvc
@@ -525,15 +525,15 @@ class ProjectTemplatePrerequisiteTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
+                          "externalOrgId": "%s",
+                          "externalUserId": "%s",
                           "email": "%s",
                           "name": "%s",
                           "avatarUrl": null,
                           "orgRole": "%s"
                         }
                         """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
+                            .formatted(ORG_ID, externalUserId, email, name, orgRole)))
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");

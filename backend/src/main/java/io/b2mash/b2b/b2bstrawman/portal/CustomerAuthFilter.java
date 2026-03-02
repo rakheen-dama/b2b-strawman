@@ -66,7 +66,7 @@ public class CustomerAuthFilter extends OncePerRequestFilter {
     // Resolve tenant from org ID
     String schema =
         mappingRepository
-            .findByClerkOrgId(claims.clerkOrgId())
+            .findByExternalOrgId(claims.externalOrgId())
             .map(OrgSchemaMapping::getSchemaName)
             .orElse(null);
     if (schema == null) {
@@ -78,7 +78,7 @@ public class CustomerAuthFilter extends OncePerRequestFilter {
     var carrier =
         ScopedValue.where(RequestScopes.CUSTOMER_ID, claims.customerId())
             .where(RequestScopes.TENANT_ID, schema)
-            .where(RequestScopes.ORG_ID, claims.clerkOrgId());
+            .where(RequestScopes.ORG_ID, claims.externalOrgId());
 
     // Attempt to resolve PortalContact and bind PORTAL_CONTACT_ID (backward compatible)
     try {
@@ -87,7 +87,7 @@ public class CustomerAuthFilter extends OncePerRequestFilter {
               .call(
                   () ->
                       portalContactRepository
-                          .findByCustomerIdAndOrgId(claims.customerId(), claims.clerkOrgId())
+                          .findByCustomerIdAndOrgId(claims.customerId(), claims.externalOrgId())
                           .orElse(null));
       if (contact != null) {
         carrier = carrier.where(RequestScopes.PORTAL_CONTACT_ID, contact.getId());

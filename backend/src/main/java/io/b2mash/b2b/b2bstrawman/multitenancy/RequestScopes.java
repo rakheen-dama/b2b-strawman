@@ -40,7 +40,7 @@ public final class RequestScopes {
     return MEMBER_ID.get();
   }
 
-  /** Returns the Clerk org ID. Throws if not bound by filter chain. */
+  /** Returns the External org ID. Throws if not bound by filter chain. */
   public static String requireOrgId() {
     if (!ORG_ID.isBound()) {
       throw new MissingOrganizationContextException();
@@ -66,7 +66,7 @@ public final class RequestScopes {
     return TENANT_ID.isBound() ? TENANT_ID.get() : null;
   }
 
-  /** Returns the Clerk org ID, or null if not bound. */
+  /** Returns the External org ID, or null if not bound. */
   public static String getOrgIdOrNull() {
     return ORG_ID.isBound() ? ORG_ID.get() : null;
   }

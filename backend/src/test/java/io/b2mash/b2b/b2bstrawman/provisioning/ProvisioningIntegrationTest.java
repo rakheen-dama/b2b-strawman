@@ -30,33 +30,33 @@ class ProvisioningIntegrationTest {
 
   @Test
   void shouldProvisionStarterTenantWithDedicatedSchema() {
-    String clerkOrgId = "org_provision_test";
+    String externalOrgId = "org_provision_test";
     String orgName = "Provision Test Org";
 
-    var result = provisioningService.provisionTenant(clerkOrgId, orgName);
+    var result = provisioningService.provisionTenant(externalOrgId, orgName);
 
     assertThat(result.success()).isTrue();
     assertThat(result.alreadyProvisioned()).isFalse();
     assertThat(result.schemaName()).matches("tenant_[0-9a-f]{12}");
 
-    var org = organizationRepository.findByClerkOrgId(clerkOrgId);
+    var org = organizationRepository.findByExternalOrgId(externalOrgId);
     assertThat(org).isPresent();
     assertThat(org.get().getProvisioningStatus())
         .isEqualTo(Organization.ProvisioningStatus.COMPLETED);
     assertThat(org.get().getTier()).isEqualTo(Tier.STARTER);
 
-    var mapping = mappingRepository.findByClerkOrgId(clerkOrgId);
+    var mapping = mappingRepository.findByExternalOrgId(externalOrgId);
     assertThat(mapping).isPresent();
     assertThat(mapping.get().getSchemaName()).matches("tenant_[0-9a-f]{12}");
   }
 
   @Test
   void shouldBeIdempotent() {
-    String clerkOrgId = "org_idempotent_test";
+    String externalOrgId = "org_idempotent_test";
     String orgName = "Idempotent Test Org";
 
-    var result1 = provisioningService.provisionTenant(clerkOrgId, orgName);
-    var result2 = provisioningService.provisionTenant(clerkOrgId, orgName);
+    var result1 = provisioningService.provisionTenant(externalOrgId, orgName);
+    var result2 = provisioningService.provisionTenant(externalOrgId, orgName);
 
     assertThat(result1.success()).isTrue();
     assertThat(result1.alreadyProvisioned()).isFalse();

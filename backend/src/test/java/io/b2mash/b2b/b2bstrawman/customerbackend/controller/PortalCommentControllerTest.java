@@ -70,8 +70,8 @@ class PortalCommentControllerTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "user_comment_owner",
+                          "externalOrgId": "%s",
+                          "externalUserId": "user_comment_owner",
                           "email": "comment_owner@test.com",
                           "name": "Comment Owner",
                           "avatarUrl": null,
@@ -84,7 +84,7 @@ class PortalCommentControllerTest {
     String memberIdStr = JsonPath.read(syncResult.getResponse().getContentAsString(), "$.memberId");
     UUID memberId = UUID.fromString(memberIdStr);
 
-    tenantSchema = orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).get().getSchemaName();
+    tenantSchema = orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).get().getSchemaName();
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)

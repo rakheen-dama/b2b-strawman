@@ -57,7 +57,7 @@ class TemplateTagRepositoryTest {
                 ORG_ID, "user_tt_owner", "tt_owner@test.com", "Template Tag Owner", "owner"));
 
     tenantSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).orElseThrow().getSchemaName();
   }
 
   @Test
@@ -191,7 +191,7 @@ class TemplateTagRepositoryTest {
   }
 
   private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
+      String orgId, String externalUserId, String email, String name, String orgRole)
       throws Exception {
     var result =
         mockMvc
@@ -202,15 +202,15 @@ class TemplateTagRepositoryTest {
                     .content(
                         """
                 {
-                  "clerkOrgId": "%s",
-                  "clerkUserId": "%s",
+                  "externalOrgId": "%s",
+                  "externalUserId": "%s",
                   "email": "%s",
                   "name": "%s",
                   "avatarUrl": null,
                   "orgRole": "%s"
                 }
                 """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
+                            .formatted(orgId, externalUserId, email, name, orgRole)))
             .andExpect(status().isCreated())
             .andReturn();
     return com.jayway.jsonpath.JsonPath.read(

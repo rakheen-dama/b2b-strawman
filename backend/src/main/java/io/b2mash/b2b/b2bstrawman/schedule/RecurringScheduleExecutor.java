@@ -39,7 +39,7 @@ public class RecurringScheduleExecutor {
       try {
         int[] result =
             ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
-                .where(RequestScopes.ORG_ID, mapping.getClerkOrgId())
+                .where(RequestScopes.ORG_ID, mapping.getExternalOrgId())
                 .call(() -> processSchedulesForTenant());
         totalProcessed += result[0];
         totalCreated += result[1];

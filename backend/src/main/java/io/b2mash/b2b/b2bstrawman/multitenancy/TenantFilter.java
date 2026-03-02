@@ -27,9 +27,9 @@ public class TenantFilter extends OncePerRequestFilter {
     this.mappingRepository = mappingRepository;
   }
 
-  /** Evicts the cached schema name for the given Clerk org ID. */
-  public void evictSchema(String clerkOrgId) {
-    tenantCache.invalidate(clerkOrgId);
+  /** Evicts the cached schema name for the given External org ID. */
+  public void evictSchema(String externalOrgId) {
+    tenantCache.invalidate(externalOrgId);
   }
 
   @Override
@@ -70,23 +70,23 @@ public class TenantFilter extends OncePerRequestFilter {
         || path.startsWith("/portal/");
   }
 
-  private String resolveTenant(String clerkOrgId) {
+  private String resolveTenant(String externalOrgId) {
     // Caffeine's cache.get(key, loader) throws NPE if loader returns null.
     // Use getIfPresent + manual put to handle unprovisioned orgs gracefully.
-    String cached = tenantCache.getIfPresent(clerkOrgId);
+    String cached = tenantCache.getIfPresent(externalOrgId);
     if (cached != null) {
       return cached;
     }
-    String schema = lookupTenant(clerkOrgId);
+    String schema = lookupTenant(externalOrgId);
     if (schema != null) {
-      tenantCache.put(clerkOrgId, schema);
+      tenantCache.put(externalOrgId, schema);
     }
     return schema;
   }
 
-  private String lookupTenant(String clerkOrgId) {
+  private String lookupTenant(String externalOrgId) {
     return mappingRepository
-        .findByClerkOrgId(clerkOrgId)
+        .findByExternalOrgId(externalOrgId)
         .map(OrgSchemaMapping::getSchemaName)
         .orElse(null);
   }

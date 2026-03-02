@@ -15,25 +15,25 @@ export class InternalApiError extends Error {
 }
 
 export interface ProvisionOrgRequest {
-  clerkOrgId: string;
+  externalOrgId: string;
   orgName: string;
 }
 
 export interface ProvisionOrgResponse {
-  clerkOrgId: string;
+  externalOrgId: string;
   schemaName: string;
   status: string;
 }
 
 export interface UpdateOrgRequest {
-  clerkOrgId: string;
+  externalOrgId: string;
   orgName: string;
   updatedAt: number;
 }
 
 export interface SyncMemberRequest {
-  clerkOrgId: string;
-  clerkUserId: string;
+  externalOrgId: string;
+  externalUserId: string;
   email: string;
   name?: string;
   avatarUrl?: string;
@@ -42,7 +42,7 @@ export interface SyncMemberRequest {
 
 export interface SyncMemberResponse {
   memberId: string;
-  clerkUserId: string;
+  externalUserId: string;
   action: string;
 }
 
@@ -61,7 +61,7 @@ export interface BillingResponse {
 }
 
 export interface SetPlanRequest {
-  clerkOrgId: string;
+  externalOrgId: string;
   planSlug: string;
 }
 

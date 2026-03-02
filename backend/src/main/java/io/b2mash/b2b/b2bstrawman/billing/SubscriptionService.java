@@ -51,37 +51,37 @@ public class SubscriptionService {
    * update.
    */
   @Transactional
-  public void changePlan(String clerkOrgId, String planSlug) {
+  public void changePlan(String externalOrgId, String planSlug) {
     var org =
         organizationRepository
-            .findByClerkOrgId(clerkOrgId)
-            .orElseThrow(() -> new ResourceNotFoundException("Organization", clerkOrgId));
+            .findByExternalOrgId(externalOrgId)
+            .orElseThrow(() -> new ResourceNotFoundException("Organization", externalOrgId));
 
     var subscription =
         subscriptionRepository
             .findByOrganizationId(org.getId())
-            .orElseThrow(() -> new ResourceNotFoundException("Subscription", clerkOrgId));
+            .orElseThrow(() -> new ResourceNotFoundException("Subscription", externalOrgId));
 
     subscription.changePlan(planSlug);
     subscriptionRepository.save(subscription);
 
-    log.info("Updated subscription plan to {} for org {}", planSlug, clerkOrgId);
-    planSyncService.syncPlan(clerkOrgId, planSlug);
+    log.info("Updated subscription plan to {} for org {}", planSlug, externalOrgId);
+    planSyncService.syncPlan(externalOrgId, planSlug);
   }
 
   /**
    * Upgrades the org to the given plan. All tenants already have dedicated schemas, so no schema
    * migration is needed — just a plan change.
    */
-  public BillingResponse upgradePlan(String clerkOrgId, String planSlug) {
+  public BillingResponse upgradePlan(String externalOrgId, String planSlug) {
     if (!UPGRADEABLE_PLANS.contains(planSlug.toLowerCase())) {
       throw new InvalidStateException(
           "Invalid plan", "Plan '%s' is not a valid upgrade target".formatted(planSlug));
     }
 
-    changePlan(clerkOrgId, planSlug);
+    changePlan(externalOrgId, planSlug);
 
-    return getSubscription(clerkOrgId);
+    return getSubscription(externalOrgId);
   }
 
   /**
@@ -89,11 +89,11 @@ public class SubscriptionService {
    * Returns a synthetic STARTER response if no subscription exists (defensive).
    */
   @Transactional(readOnly = true)
-  public BillingResponse getSubscription(String clerkOrgId) {
+  public BillingResponse getSubscription(String externalOrgId) {
     var org =
         organizationRepository
-            .findByClerkOrgId(clerkOrgId)
-            .orElseThrow(() -> new ResourceNotFoundException("Organization", clerkOrgId));
+            .findByExternalOrgId(externalOrgId)
+            .orElseThrow(() -> new ResourceNotFoundException("Organization", externalOrgId));
 
     var subscription = subscriptionRepository.findByOrganizationId(org.getId());
     long currentMembers = memberRepository.count();

@@ -61,7 +61,7 @@ class DataSubjectRequestServiceTest {
     provisioningService.provisionTenant(ORG_ID, "DSR Service Test Org");
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).orElseThrow().getSchemaName();
     var syncResult =
         memberSyncService.syncMember(
             ORG_ID, "user_dsr_svc_test", "dsr_svc@test.com", "DSR SVC Tester", null, "owner");

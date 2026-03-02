@@ -94,8 +94,8 @@ class MagicLinkTokenIntegrationTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "user_mlt_owner_a",
+                          "externalOrgId": "%s",
+                          "externalUserId": "user_mlt_owner_a",
                           "email": "mlt_owner_a@test.com",
                           "name": "MLT Owner A",
                           "avatarUrl": null,
@@ -119,8 +119,8 @@ class MagicLinkTokenIntegrationTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "user_mlt_owner_b",
+                          "externalOrgId": "%s",
+                          "externalUserId": "user_mlt_owner_b",
                           "email": "mlt_owner_b@test.com",
                           "name": "MLT Owner B",
                           "avatarUrl": null,
@@ -135,8 +135,8 @@ class MagicLinkTokenIntegrationTest {
             JsonPath.read(syncResultB.getResponse().getContentAsString(), "$.memberId"));
 
     // Resolve tenant schemas
-    tenantSchemaA = orgSchemaMappingRepository.findByClerkOrgId(ORG_ID_A).get().getSchemaName();
-    tenantSchemaB = orgSchemaMappingRepository.findByClerkOrgId(ORG_ID_B).get().getSchemaName();
+    tenantSchemaA = orgSchemaMappingRepository.findByExternalOrgId(ORG_ID_A).get().getSchemaName();
+    tenantSchemaB = orgSchemaMappingRepository.findByExternalOrgId(ORG_ID_B).get().getSchemaName();
 
     // Create customer and multiple portal contacts in tenant A (one per test group)
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchemaA)

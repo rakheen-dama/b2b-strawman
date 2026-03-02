@@ -85,7 +85,7 @@ public class InvoiceValidationService {
 
   private ValidationCheck checkOrgBranding(Severity severity) {
     String orgId = RequestScopes.requireOrgId();
-    var orgOpt = organizationRepository.findByClerkOrgId(orgId);
+    var orgOpt = organizationRepository.findByExternalOrgId(orgId);
     boolean passed =
         orgOpt.isPresent() && orgOpt.get().getName() != null && !orgOpt.get().getName().isBlank();
     return new ValidationCheck(

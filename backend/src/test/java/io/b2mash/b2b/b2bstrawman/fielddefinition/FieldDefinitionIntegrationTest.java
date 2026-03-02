@@ -65,7 +65,7 @@ class FieldDefinitionIntegrationTest {
             syncMember(ORG_ID, "user_fd_owner", "fd_owner@test.com", "FD Owner", "owner"));
 
     tenantSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     // --- Tenant B ---
     provisioningService.provisionTenant(ORG_ID_B, "FD Test Org B");
@@ -76,7 +76,7 @@ class FieldDefinitionIntegrationTest {
             syncMember(ORG_ID_B, "user_fd_owner_b", "fd_owner_b@test.com", "FD Owner B", "owner"));
 
     tenantSchemaB =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID_B).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID_B).orElseThrow().getSchemaName();
   }
 
   @Test
@@ -316,7 +316,7 @@ class FieldDefinitionIntegrationTest {
   }
 
   private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
+      String orgId, String externalUserId, String email, String name, String orgRole)
       throws Exception {
     var result =
         mockMvc
@@ -327,15 +327,15 @@ class FieldDefinitionIntegrationTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
+                          "externalOrgId": "%s",
+                          "externalUserId": "%s",
                           "email": "%s",
                           "name": "%s",
                           "avatarUrl": null,
                           "orgRole": "%s"
                         }
                         """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
+                            .formatted(orgId, externalUserId, email, name, orgRole)))
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");

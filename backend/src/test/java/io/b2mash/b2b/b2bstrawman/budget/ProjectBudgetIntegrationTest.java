@@ -92,7 +92,7 @@ class ProjectBudgetIntegrationTest {
                 ORG_ID, "user_budget_member", "budget_member@test.com", "Budget Member", "member"));
 
     tenantSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     // Create project, task, billing rate, and time entries within tenant scope
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -181,7 +181,7 @@ class ProjectBudgetIntegrationTest {
                 "owner"));
 
     tenantSchemaB =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID_B).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID_B).orElseThrow().getSchemaName();
 
     // Create a project in tenant B
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchemaB)
@@ -598,7 +598,7 @@ class ProjectBudgetIntegrationTest {
   }
 
   private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
+      String orgId, String externalUserId, String email, String name, String orgRole)
       throws Exception {
     var result =
         mockMvc
@@ -609,15 +609,15 @@ class ProjectBudgetIntegrationTest {
                     .content(
                         """
                 {
-                  "clerkOrgId": "%s",
-                  "clerkUserId": "%s",
+                  "externalOrgId": "%s",
+                  "externalUserId": "%s",
                   "email": "%s",
                   "name": "%s",
                   "avatarUrl": null,
                   "orgRole": "%s"
                 }
                 """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
+                            .formatted(orgId, externalUserId, email, name, orgRole)))
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");

@@ -26,23 +26,23 @@ public class PlanSyncService {
    * migration is required on tier change.
    */
   @Transactional
-  public PlanSyncResult syncPlan(String clerkOrgId, String planSlug) {
+  public PlanSyncResult syncPlan(String externalOrgId, String planSlug) {
     var org =
         organizationRepository
-            .findByClerkOrgId(clerkOrgId)
-            .orElseThrow(() -> new ResourceNotFoundException("Organization", clerkOrgId));
+            .findByExternalOrgId(externalOrgId)
+            .orElseThrow(() -> new ResourceNotFoundException("Organization", externalOrgId));
 
     Tier previousTier = org.getTier();
     Tier newTier = deriveTier(planSlug);
     org.updatePlan(newTier, planSlug);
     organizationRepository.save(org);
 
-    tenantFilter.evictSchema(clerkOrgId);
+    tenantFilter.evictSchema(externalOrgId);
 
     boolean upgradeNeeded = previousTier == Tier.STARTER && newTier == Tier.PRO;
     log.info(
-        "Plan synced: clerkOrgId={}, tier={} → {}, planSlug={}, upgradeNeeded={}",
-        clerkOrgId,
+        "Plan synced: externalOrgId={}, tier={} → {}, planSlug={}, upgradeNeeded={}",
+        externalOrgId,
         previousTier,
         newTier,
         planSlug,

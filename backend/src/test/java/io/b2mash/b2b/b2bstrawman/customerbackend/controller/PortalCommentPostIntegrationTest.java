@@ -75,8 +75,8 @@ class PortalCommentPostIntegrationTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "user_comment_post_owner",
+                          "externalOrgId": "%s",
+                          "externalUserId": "user_comment_post_owner",
                           "email": "comment_post_owner@test.com",
                           "name": "Comment Post Owner",
                           "avatarUrl": null,
@@ -88,7 +88,7 @@ class PortalCommentPostIntegrationTest {
 
     String memberIdStr = JsonPath.read(syncResult.getResponse().getContentAsString(), "$.memberId");
     UUID memberId = UUID.fromString(memberIdStr);
-    tenantSchema = orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).get().getSchemaName();
+    tenantSchema = orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).get().getSchemaName();
 
     // Create customer + portal contact + real project in tenant schema
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)

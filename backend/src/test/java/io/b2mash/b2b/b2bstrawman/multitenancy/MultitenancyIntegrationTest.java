@@ -48,17 +48,17 @@ class MultitenancyIntegrationTest {
     jdbc.execute("DELETE FROM " + TENANT_B + ".test_data");
 
     jdbc.execute(
-        "INSERT INTO org_schema_mapping (id, clerk_org_id, schema_name, created_at) "
+        "INSERT INTO org_schema_mapping (id, external_org_id, schema_name, created_at) "
             + "VALUES (gen_random_uuid(), 'org_aaa', '"
             + TENANT_A
             + "', now()) "
-            + "ON CONFLICT (clerk_org_id) DO NOTHING");
+            + "ON CONFLICT (external_org_id) DO NOTHING");
     jdbc.execute(
-        "INSERT INTO org_schema_mapping (id, clerk_org_id, schema_name, created_at) "
+        "INSERT INTO org_schema_mapping (id, external_org_id, schema_name, created_at) "
             + "VALUES (gen_random_uuid(), 'org_bbb', '"
             + TENANT_B
             + "', now()) "
-            + "ON CONFLICT (clerk_org_id) DO NOTHING");
+            + "ON CONFLICT (external_org_id) DO NOTHING");
   }
 
   @Test
@@ -81,15 +81,15 @@ class MultitenancyIntegrationTest {
   }
 
   @Test
-  void schemaMapping_lookupByClerkOrgId() {
-    var mapping = mappingRepository.findByClerkOrgId("org_aaa");
+  void schemaMapping_lookupByExternalOrgId() {
+    var mapping = mappingRepository.findByExternalOrgId("org_aaa");
     assertThat(mapping).isPresent();
     assertThat(mapping.get().getSchemaName()).isEqualTo(TENANT_A);
   }
 
   @Test
   void schemaMapping_returnsEmptyForUnknownOrg() {
-    var mapping = mappingRepository.findByClerkOrgId("org_unknown");
+    var mapping = mappingRepository.findByExternalOrgId("org_unknown");
     assertThat(mapping).isEmpty();
   }
 

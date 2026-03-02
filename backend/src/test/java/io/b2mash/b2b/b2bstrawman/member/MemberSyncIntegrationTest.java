@@ -57,8 +57,8 @@ class MemberSyncIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "user_create_test",
+                      "externalOrgId": "%s",
+                      "externalUserId": "user_create_test",
                       "email": "alice@example.com",
                       "name": "Alice",
                       "avatarUrl": "https://img.example.com/alice.png",
@@ -68,7 +68,7 @@ class MemberSyncIntegrationTest {
                         .formatted(ORG_A)))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.memberId").exists())
-        .andExpect(jsonPath("$.clerkUserId").value("user_create_test"))
+        .andExpect(jsonPath("$.externalUserId").value("user_create_test"))
         .andExpect(jsonPath("$.action").value("created"));
   }
 
@@ -85,8 +85,8 @@ class MemberSyncIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "user_resync_test",
+                      "externalOrgId": "%s",
+                      "externalUserId": "user_resync_test",
                       "email": "bob@example.com",
                       "name": "Bob",
                       "avatarUrl": null,
@@ -106,8 +106,8 @@ class MemberSyncIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "user_resync_test",
+                      "externalOrgId": "%s",
+                      "externalUserId": "user_resync_test",
                       "email": "bob@example.com",
                       "name": "Bob Updated",
                       "avatarUrl": "https://img.example.com/bob.png",
@@ -132,8 +132,8 @@ class MemberSyncIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "user_delete_test",
+                      "externalOrgId": "%s",
+                      "externalUserId": "user_delete_test",
                       "email": "charlie@example.com",
                       "name": "Charlie",
                       "avatarUrl": null,
@@ -147,7 +147,7 @@ class MemberSyncIntegrationTest {
     mockMvc
         .perform(
             delete("/internal/members/user_delete_test")
-                .param("clerkOrgId", ORG_A)
+                .param("externalOrgId", ORG_A)
                 .header("X-API-KEY", API_KEY))
         .andExpect(status().isNoContent());
   }
@@ -157,7 +157,7 @@ class MemberSyncIntegrationTest {
     mockMvc
         .perform(
             delete("/internal/members/user_nonexistent")
-                .param("clerkOrgId", ORG_A)
+                .param("externalOrgId", ORG_A)
                 .header("X-API-KEY", API_KEY))
         .andExpect(status().isNotFound());
   }
@@ -175,8 +175,8 @@ class MemberSyncIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "user_isolation_test",
+                      "externalOrgId": "%s",
+                      "externalUserId": "user_isolation_test",
                       "email": "diana@example.com",
                       "name": "Diana",
                       "avatarUrl": null,
@@ -190,7 +190,7 @@ class MemberSyncIntegrationTest {
     mockMvc
         .perform(
             delete("/internal/members/user_isolation_test")
-                .param("clerkOrgId", ORG_B)
+                .param("externalOrgId", ORG_B)
                 .header("X-API-KEY", API_KEY))
         .andExpect(status().isNotFound());
   }
@@ -198,7 +198,7 @@ class MemberSyncIntegrationTest {
   // --- Validation ---
 
   @Test
-  void shouldReject400WhenClerkOrgIdMissing() throws Exception {
+  void shouldReject400WhenExternalOrgIdMissing() throws Exception {
     mockMvc
         .perform(
             post("/internal/members/sync")
@@ -207,8 +207,8 @@ class MemberSyncIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "",
-                      "clerkUserId": "user_val1",
+                      "externalOrgId": "",
+                      "externalUserId": "user_val1",
                       "email": "val@example.com",
                       "name": "Val",
                       "avatarUrl": null,
@@ -219,7 +219,7 @@ class MemberSyncIntegrationTest {
   }
 
   @Test
-  void shouldReject400WhenClerkUserIdMissing() throws Exception {
+  void shouldReject400WhenExternalUserIdMissing() throws Exception {
     mockMvc
         .perform(
             post("/internal/members/sync")
@@ -228,8 +228,8 @@ class MemberSyncIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "",
+                      "externalOrgId": "%s",
+                      "externalUserId": "",
                       "email": "val@example.com",
                       "name": "Val",
                       "avatarUrl": null,
@@ -250,8 +250,8 @@ class MemberSyncIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "user_val3",
+                      "externalOrgId": "%s",
+                      "externalUserId": "user_val3",
                       "email": "",
                       "name": "Val",
                       "avatarUrl": null,
@@ -272,8 +272,8 @@ class MemberSyncIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "user_val4",
+                      "externalOrgId": "%s",
+                      "externalUserId": "user_val4",
                       "email": "val@example.com",
                       "name": "Val",
                       "avatarUrl": null,
@@ -295,8 +295,8 @@ class MemberSyncIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "user_nokey",
+                      "externalOrgId": "%s",
+                      "externalUserId": "user_nokey",
                       "email": "nokey@example.com",
                       "name": "NoKey",
                       "avatarUrl": null,
@@ -317,8 +317,8 @@ class MemberSyncIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "user_wrongkey",
+                      "externalOrgId": "%s",
+                      "externalUserId": "user_wrongkey",
                       "email": "wrongkey@example.com",
                       "name": "WrongKey",
                       "avatarUrl": null,
@@ -342,8 +342,8 @@ class MemberSyncIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "user_null_safe_test",
+                      "externalOrgId": "%s",
+                      "externalUserId": "user_null_safe_test",
                       "email": "orig@test.com",
                       "name": "Original",
                       "avatarUrl": "https://img.example.com/orig.png",
@@ -363,8 +363,8 @@ class MemberSyncIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "user_null_safe_test",
+                      "externalOrgId": "%s",
+                      "externalUserId": "user_null_safe_test",
                       "email": "new@test.com",
                       "name": null,
                       "avatarUrl": null,
@@ -386,8 +386,8 @@ class MemberSyncIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "user_null_safe_test",
+                      "externalOrgId": "%s",
+                      "externalUserId": "user_null_safe_test",
                       "email": "new@test.com",
                       "name": null,
                       "avatarUrl": null,
@@ -396,7 +396,7 @@ class MemberSyncIntegrationTest {
                     """
                         .formatted(ORG_A)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.clerkUserId").value("user_null_safe_test"))
+        .andExpect(jsonPath("$.externalUserId").value("user_null_safe_test"))
         .andExpect(jsonPath("$.action").value("updated"));
   }
 
@@ -413,8 +413,8 @@ class MemberSyncIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "user_stale_check",
+                      "externalOrgId": "%s",
+                      "externalUserId": "user_stale_check",
                       "email": "real@test.com",
                       "name": "Real User",
                       "avatarUrl": null,
@@ -427,7 +427,9 @@ class MemberSyncIntegrationTest {
     // Stale endpoint must return empty list — real@test.com does not end with @placeholder.internal
     mockMvc
         .perform(
-            get("/internal/members/stale").param("clerkOrgId", ORG_A).header("X-API-KEY", API_KEY))
+            get("/internal/members/stale")
+                .param("externalOrgId", ORG_A)
+                .header("X-API-KEY", API_KEY))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray());
   }
@@ -437,7 +439,9 @@ class MemberSyncIntegrationTest {
     // ORG_B has no members at all — stale list must be an empty JSON array
     mockMvc
         .perform(
-            get("/internal/members/stale").param("clerkOrgId", ORG_B).header("X-API-KEY", API_KEY))
+            get("/internal/members/stale")
+                .param("externalOrgId", ORG_B)
+                .header("X-API-KEY", API_KEY))
         .andExpect(status().isOk())
         .andExpect(content().json("[]"));
   }
@@ -458,8 +462,8 @@ class MemberSyncIntegrationTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "org_does_not_exist",
-                          "clerkUserId": "user_unprovisioned",
+                          "externalOrgId": "org_does_not_exist",
+                          "externalUserId": "user_unprovisioned",
                           "email": "ghost@test.com",
                           "name": "Ghost",
                           "avatarUrl": null,
@@ -481,8 +485,8 @@ class MemberSyncIntegrationTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "user_null_name_create",
+                      "externalOrgId": "%s",
+                      "externalUserId": "user_null_name_create",
                       "email": "nullname@test.com",
                       "name": null,
                       "avatarUrl": null,
@@ -492,7 +496,7 @@ class MemberSyncIntegrationTest {
                         .formatted(ORG_A)))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.memberId").exists())
-        .andExpect(jsonPath("$.clerkUserId").value("user_null_name_create"))
+        .andExpect(jsonPath("$.externalUserId").value("user_null_name_create"))
         .andExpect(jsonPath("$.action").value("created"));
   }
 }

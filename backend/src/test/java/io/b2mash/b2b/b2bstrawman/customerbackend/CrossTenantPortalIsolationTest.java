@@ -73,8 +73,8 @@ class CrossTenantPortalIsolationTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "user_iso_a_owner",
+                          "externalOrgId": "%s",
+                          "externalUserId": "user_iso_a_owner",
                           "email": "iso_a_owner@test.com",
                           "name": "Iso A Owner",
                           "avatarUrl": null,
@@ -86,7 +86,7 @@ class CrossTenantPortalIsolationTest {
 
     String memberAIdStr = JsonPath.read(syncA.getResponse().getContentAsString(), "$.memberId");
     UUID memberAId = UUID.fromString(memberAIdStr);
-    String schemaA = orgSchemaMappingRepository.findByClerkOrgId(ORG_A_ID).get().getSchemaName();
+    String schemaA = orgSchemaMappingRepository.findByExternalOrgId(ORG_A_ID).get().getSchemaName();
 
     UUID[] customerAHolder = new UUID[1];
     ScopedValue.where(RequestScopes.TENANT_ID, schemaA)
@@ -141,8 +141,8 @@ class CrossTenantPortalIsolationTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "user_iso_b_owner",
+                          "externalOrgId": "%s",
+                          "externalUserId": "user_iso_b_owner",
                           "email": "iso_b_owner@test.com",
                           "name": "Iso B Owner",
                           "avatarUrl": null,
@@ -154,7 +154,7 @@ class CrossTenantPortalIsolationTest {
 
     String memberBIdStr = JsonPath.read(syncB.getResponse().getContentAsString(), "$.memberId");
     UUID memberBId = UUID.fromString(memberBIdStr);
-    String schemaB = orgSchemaMappingRepository.findByClerkOrgId(ORG_B_ID).get().getSchemaName();
+    String schemaB = orgSchemaMappingRepository.findByExternalOrgId(ORG_B_ID).get().getSchemaName();
 
     UUID[] customerBHolder = new UUID[1];
     ScopedValue.where(RequestScopes.TENANT_ID, schemaB)

@@ -64,7 +64,7 @@ public class PaymentWebhookController {
     String orgId =
         orgSchemaMappingRepository
             .findBySchemaName(tenantSchema)
-            .map(m -> m.getClerkOrgId())
+            .map(m -> m.getExternalOrgId())
             .orElse(null);
 
     if (orgId == null) {

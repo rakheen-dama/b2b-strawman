@@ -8,11 +8,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface MemberRepository extends JpaRepository<Member, UUID> {
-  Optional<Member> findByClerkUserId(String clerkUserId);
+  Optional<Member> findByExternalUserId(String externalUserId);
 
-  void deleteByClerkUserId(String clerkUserId);
+  void deleteByExternalUserId(String externalUserId);
 
-  boolean existsByClerkUserId(String clerkUserId);
+  boolean existsByExternalUserId(String externalUserId);
 
   List<Member> findByEmailEndingWith(String suffix);
 

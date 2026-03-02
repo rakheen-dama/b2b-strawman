@@ -765,7 +765,7 @@ public class AcceptanceService {
                                     .orElse(null)));
         if (found != null) {
           return new TenantAcceptanceContext(
-              found, mapping.getSchemaName(), mapping.getClerkOrgId());
+              found, mapping.getSchemaName(), mapping.getExternalOrgId());
         }
       } catch (RuntimeException e) {
         // Infrastructure error (connection failure, schema misconfiguration, etc.)

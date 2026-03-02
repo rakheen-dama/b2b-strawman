@@ -629,7 +629,7 @@ public class PortalEventHandler {
             // Resolve org name from Organization entity (public schema)
             String orgName =
                 organizationRepository
-                    .findByClerkOrgId(event.orgId())
+                    .findByExternalOrgId(event.orgId())
                     .map(org -> org.getName())
                     .orElse(event.orgId());
 

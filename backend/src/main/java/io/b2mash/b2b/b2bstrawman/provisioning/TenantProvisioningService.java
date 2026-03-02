@@ -59,52 +59,52 @@ public class TenantProvisioningService {
       noRetryFor = IllegalArgumentException.class,
       maxAttempts = 3,
       backoff = @Backoff(delay = 1000, multiplier = 2))
-  public ProvisioningResult provisionTenant(String clerkOrgId, String orgName) {
+  public ProvisioningResult provisionTenant(String externalOrgId, String orgName) {
     // Idempotency check: already fully provisioned?
-    var existingMapping = mappingRepository.findByClerkOrgId(clerkOrgId);
+    var existingMapping = mappingRepository.findByExternalOrgId(externalOrgId);
     if (existingMapping.isPresent()) {
-      log.info("Tenant already provisioned for org {}", clerkOrgId);
+      log.info("Tenant already provisioned for org {}", externalOrgId);
       return ProvisioningResult.alreadyProvisioned(existingMapping.get().getSchemaName());
     }
 
     // Create or find organization record (default tier is STARTER)
     var org =
         organizationRepository
-            .findByClerkOrgId(clerkOrgId)
-            .orElseGet(() -> organizationRepository.save(new Organization(clerkOrgId, orgName)));
+            .findByExternalOrgId(externalOrgId)
+            .orElseGet(() -> organizationRepository.save(new Organization(externalOrgId, orgName)));
 
     org.markInProgress();
     organizationRepository.save(org);
     organizationRepository.flush();
 
     try {
-      String schemaName = SchemaNameGenerator.generateSchemaName(clerkOrgId);
-      log.info("Provisioning tenant schema {} for org {}", schemaName, clerkOrgId);
+      String schemaName = SchemaNameGenerator.generateSchemaName(externalOrgId);
+      log.info("Provisioning tenant schema {} for org {}", schemaName, externalOrgId);
 
       // Each step is idempotent — safe to retry after partial failure.
       // Mapping is created LAST so TenantFilter only resolves to this
       // schema once all tables exist (prevents race with first request).
       createSchema(schemaName);
       runTenantMigrations(schemaName);
-      fieldPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
-      templatePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
-      clausePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
-      compliancePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
-      standardReportPackSeeder.seedForTenant(schemaName, clerkOrgId);
-      createMapping(clerkOrgId, schemaName);
+      fieldPackSeeder.seedPacksForTenant(schemaName, externalOrgId);
+      templatePackSeeder.seedPacksForTenant(schemaName, externalOrgId);
+      clausePackSeeder.seedPacksForTenant(schemaName, externalOrgId);
+      compliancePackSeeder.seedPacksForTenant(schemaName, externalOrgId);
+      standardReportPackSeeder.seedForTenant(schemaName, externalOrgId);
+      createMapping(externalOrgId, schemaName);
       String planSlug = org.getPlanSlug() != null ? org.getPlanSlug() : "starter";
       subscriptionService.createSubscription(org.getId(), planSlug);
 
       org.markCompleted();
       organizationRepository.save(org);
 
-      log.info("Successfully provisioned tenant {} for org {}", schemaName, clerkOrgId);
+      log.info("Successfully provisioned tenant {} for org {}", schemaName, externalOrgId);
       return ProvisioningResult.success(schemaName);
     } catch (Exception e) {
-      log.error("Failed to provision tenant for org {}", clerkOrgId, e);
+      log.error("Failed to provision tenant for org {}", externalOrgId, e);
       org.markFailed();
       organizationRepository.save(org);
-      throw new ProvisioningException("Provisioning failed for org " + clerkOrgId, e);
+      throw new ProvisioningException("Provisioning failed for org " + externalOrgId, e);
     }
   }
 
@@ -129,10 +129,10 @@ public class TenantProvisioningService {
     }
   }
 
-  private void createMapping(String clerkOrgId, String schemaName) {
-    if (mappingRepository.findByClerkOrgId(clerkOrgId).isEmpty()) {
-      mappingRepository.save(new OrgSchemaMapping(clerkOrgId, schemaName));
-      log.info("Created mapping {} -> {}", clerkOrgId, schemaName);
+  private void createMapping(String externalOrgId, String schemaName) {
+    if (mappingRepository.findByExternalOrgId(externalOrgId).isEmpty()) {
+      mappingRepository.save(new OrgSchemaMapping(externalOrgId, schemaName));
+      log.info("Created mapping {} -> {}", externalOrgId, schemaName);
     }
   }
 

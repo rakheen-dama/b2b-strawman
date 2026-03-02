@@ -25,14 +25,16 @@ public class AdminBillingController {
   @PostMapping("/set-plan")
   public ResponseEntity<Void> setPlan(@Valid @RequestBody SetPlanRequest request) {
     log.info(
-        "Received set-plan: clerkOrgId={}, planSlug={}", request.clerkOrgId(), request.planSlug());
+        "Received set-plan: externalOrgId={}, planSlug={}",
+        request.externalOrgId(),
+        request.planSlug());
 
-    subscriptionService.changePlan(request.clerkOrgId(), request.planSlug());
+    subscriptionService.changePlan(request.externalOrgId(), request.planSlug());
 
     return ResponseEntity.ok().build();
   }
 
   public record SetPlanRequest(
-      @NotBlank(message = "clerkOrgId is required") String clerkOrgId,
+      @NotBlank(message = "externalOrgId is required") String externalOrgId,
       @NotBlank(message = "planSlug is required") String planSlug) {}
 }

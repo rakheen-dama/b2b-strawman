@@ -83,8 +83,8 @@ class DevPortalControllerTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "user_dev_harness_owner",
+                          "externalOrgId": "%s",
+                          "externalUserId": "user_dev_harness_owner",
                           "email": "dev_harness_owner@test.com",
                           "name": "Dev Harness Owner",
                           "avatarUrl": null,
@@ -98,7 +98,7 @@ class DevPortalControllerTest {
     String memberIdStr = JsonPath.read(syncResult.getResponse().getContentAsString(), "$.memberId");
     UUID memberId = UUID.fromString(memberIdStr);
 
-    tenantSchema = orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).get().getSchemaName();
+    tenantSchema = orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).get().getSchemaName();
 
     // Create a customer in the tenant
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)

@@ -74,7 +74,7 @@ class PrerequisiteControllerTest {
     syncMember("user_prc_member", "prc_member@test.com", "PRC Member", "member");
 
     tenantSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).orElseThrow().getSchemaName();
     memberIdOwner =
         UUID.fromString(
             syncMember("user_prc_owner2", "prc_owner2@test.com", "PRC Owner2", "owner"));
@@ -495,7 +495,7 @@ class PrerequisiteControllerTest {
         .run(action);
   }
 
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
+  private String syncMember(String externalUserId, String email, String name, String orgRole)
       throws Exception {
     var result =
         mockMvc
@@ -506,15 +506,15 @@ class PrerequisiteControllerTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
+                          "externalOrgId": "%s",
+                          "externalUserId": "%s",
                           "email": "%s",
                           "name": "%s",
                           "avatarUrl": null,
                           "orgRole": "%s"
                         }
                         """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
+                            .formatted(ORG_ID, externalUserId, email, name, orgRole)))
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");

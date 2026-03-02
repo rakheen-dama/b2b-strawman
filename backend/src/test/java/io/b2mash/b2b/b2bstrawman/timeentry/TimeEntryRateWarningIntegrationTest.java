@@ -176,7 +176,7 @@ class TimeEntryRateWarningIntegrationTest {
   }
 
   private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
+      String orgId, String externalUserId, String email, String name, String orgRole)
       throws Exception {
     var result =
         mockMvc
@@ -186,9 +186,9 @@ class TimeEntryRateWarningIntegrationTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {"clerkOrgId": "%s", "clerkUserId": "%s", "email": "%s", "name": "%s", "avatarUrl": null, "orgRole": "%s"}
+                        {"externalOrgId": "%s", "externalUserId": "%s", "email": "%s", "name": "%s", "avatarUrl": null, "orgRole": "%s"}
                         """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
+                            .formatted(orgId, externalUserId, email, name, orgRole)))
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");

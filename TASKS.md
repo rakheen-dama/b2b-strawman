@@ -287,7 +287,7 @@
 | 246 | Smart Customer Intake Dialog | Frontend | 241, 245 | M | 246A, 246B | **Done** |
 | 247 | Prerequisite Configuration UI | Frontend | 245 | S | 247A | **Done** (PR #500) |
 | 248 | Lifecycle Transition Frontend Integration | Frontend | 242, 245 | S | 248A | **Done** (PR #501) |
-| 249 | Engagement & Action-Point Frontend Integration | Frontend | 243, 244, 245 | M | 249A, 249B | |
+| 249 | Engagement & Action-Point Frontend Integration | Frontend | 243, 244, 245 | M | 249A, 249B | 249A **Done** (PR #502) |
 | 250 | Completeness Visibility — Backend Queries | Backend | 241 | M | 250A | |
 | 251 | Completeness Visibility — Frontend & Dashboard | Frontend | 250, 245 | M | 251A, 251B | |
 | **Phase 34 — Client Information Requests** | | | | | | See [tasks/phase34-client-information-requests.md](tasks/phase34-client-information-requests.md) |

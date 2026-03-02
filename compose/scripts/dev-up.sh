@@ -39,6 +39,12 @@ for arg in "$@"; do
 done
 
 if [[ "$KEYCLOAK" == "true" ]]; then
+  SPI_JAR="$COMPOSE_DIR/../keycloak-spi/target/keycloak-spi-0.0.1-SNAPSHOT.jar"
+  if [[ ! -f "$SPI_JAR" ]]; then
+    echo "❌ SPI JAR not found at $SPI_JAR"
+    echo "   Build it first: cd keycloak-spi && ../backend/mvnw package -DskipTests"
+    exit 1
+  fi
   if [[ "$ALL" == "false" ]]; then
     SERVICES="$SERVICES keycloak"
   fi

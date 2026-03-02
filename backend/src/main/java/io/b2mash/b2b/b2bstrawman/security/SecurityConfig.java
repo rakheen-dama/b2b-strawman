@@ -28,7 +28,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-  private final ClerkJwtAuthenticationConverter jwtAuthConverter;
+  private final OrgJwtAuthenticationConverter jwtAuthConverter;
   private final ApiKeyAuthFilter apiKeyAuthFilter;
   private final TenantFilter tenantFilter;
   private final MemberFilter memberFilter;
@@ -38,7 +38,7 @@ public class SecurityConfig {
   private final Environment environment;
 
   public SecurityConfig(
-      ClerkJwtAuthenticationConverter jwtAuthConverter,
+      OrgJwtAuthenticationConverter jwtAuthConverter,
       ApiKeyAuthFilter apiKeyAuthFilter,
       TenantFilter tenantFilter,
       MemberFilter memberFilter,

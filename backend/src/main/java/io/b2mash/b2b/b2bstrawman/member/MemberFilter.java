@@ -4,7 +4,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ScopedFilterChain;
-import io.b2mash.b2b.b2bstrawman.security.ClerkJwtUtils;
+import io.b2mash.b2b.b2bstrawman.security.JwtClaimExtractor;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -81,7 +81,7 @@ public class MemberFilter extends OncePerRequestFilter {
 
     Jwt jwt = jwtAuth.getToken();
     String externalUserId = jwt.getSubject();
-    String orgRole = ClerkJwtUtils.extractOrgRole(jwt);
+    String orgRole = JwtClaimExtractor.extractOrgRole(jwt);
 
     if (externalUserId == null) {
       return null;

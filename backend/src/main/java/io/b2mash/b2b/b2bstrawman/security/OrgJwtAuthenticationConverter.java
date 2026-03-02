@@ -12,10 +12,9 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.stereotype.Component;
 
 @Component
-public class ClerkJwtAuthenticationConverter
-    implements Converter<Jwt, AbstractAuthenticationToken> {
+public class OrgJwtAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
-  // Clerk JWT v2 uses short role names inside the "o" claim
+  // JWT v2 uses short role names inside the "o" claim
   private static final Map<String, String> ROLE_MAPPING =
       Map.of(
           Roles.ORG_OWNER, Roles.AUTHORITY_ORG_OWNER,
@@ -29,7 +28,7 @@ public class ClerkJwtAuthenticationConverter
   }
 
   private Collection<GrantedAuthority> extractAuthorities(Jwt jwt) {
-    String orgRole = ClerkJwtUtils.extractOrgRole(jwt);
+    String orgRole = JwtClaimExtractor.extractOrgRole(jwt);
     if (orgRole == null) {
       return List.of();
     }

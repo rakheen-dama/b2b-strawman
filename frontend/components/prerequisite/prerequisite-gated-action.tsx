@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { Loader2 } from "lucide-react";
 import { PrerequisiteModal } from "@/components/prerequisite/prerequisite-modal";
 import { checkPrerequisitesAction } from "@/lib/actions/prerequisite-actions";
@@ -54,6 +54,16 @@ export function PrerequisiteGatedAction({
     onAction();
   }
 
+  // Inject disabled={true} into the child button while checking,
+  // preventing double-clicks from bypassing the prerequisite guard.
+  const childrenWithDisabled = checking
+    ? React.Children.map(children, (child) =>
+        React.isValidElement(child)
+          ? React.cloneElement(child as React.ReactElement<{ disabled?: boolean }>, { disabled: true })
+          : child,
+      )
+    : children;
+
   return (
     <>
       <span
@@ -61,7 +71,7 @@ export function PrerequisiteGatedAction({
         style={{ display: "contents" }}
         aria-busy={checking}
       >
-        {children}
+        {childrenWithDisabled}
       </span>
       {checking && (
         <span className="sr-only">

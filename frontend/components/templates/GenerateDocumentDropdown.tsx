@@ -85,6 +85,8 @@ export function GenerateDocumentDropdown({
               key={tpl.id}
               onSelect={async () => {
                 setSelectedTemplate(tpl);
+                // Clear stale violations from a prior failed check
+                setPrereqViolations([]);
                 // Run prerequisite check before opening dialog
                 setCheckingPrereqs(true);
                 try {

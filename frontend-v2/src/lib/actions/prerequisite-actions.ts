@@ -1,5 +1,7 @@
 "use server";
 
+import "server-only";
+
 import { api } from "@/lib/api";
 import type {
   PrerequisiteCheck,

@@ -87,7 +87,11 @@ export function ProposalDetailClient({
         toast.error(`Cannot send proposal: ${messages}`);
       }
     } catch {
-      // Fail-open
+      // Fail-open: the backend enforces prerequisites server-side on
+      // POST /proposals/{id}/send (via PrerequisiteService.checkForContext),
+      // so the frontend check is a UX convenience. If the check network call
+      // fails, we allow the user to proceed — the backend will reject if
+      // prerequisites are truly unmet.
       setSendDialogOpen(true);
     } finally {
       setCheckingPrereqs(false);

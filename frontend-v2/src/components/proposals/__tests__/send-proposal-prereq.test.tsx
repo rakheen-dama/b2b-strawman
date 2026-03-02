@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
@@ -76,6 +76,7 @@ const mockProposal: ProposalDetailResponse = {
 afterEach(() => cleanup());
 
 describe("ProposalDetailClient — prerequisite gate for Send", () => {
+  beforeEach(() => vi.clearAllMocks());
   it("shows error toast when prerequisites fail", async () => {
     const user = userEvent.setup();
     mockCheckPrerequisitesAction.mockResolvedValueOnce({
@@ -107,9 +108,11 @@ describe("ProposalDetailClient — prerequisite gate for Send", () => {
       );
     });
 
-    // Verify error shown via toast
+    // Verify error toast includes violation message
     await waitFor(() => {
-      expect(vi.mocked(toast.error)).toHaveBeenCalled();
+      expect(vi.mocked(toast.error)).toHaveBeenCalledWith(
+        expect.stringContaining("portal contact"),
+      );
     });
   });
 });

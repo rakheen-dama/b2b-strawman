@@ -1,3 +1,8 @@
+/**
+ * Minimal subset of frontend/components/prerequisite/types.ts,
+ * scoped to what frontend-v2 needs for prerequisite checking.
+ * Keep in sync with the canonical types in the main frontend.
+ */
 export type PrerequisiteContext =
   | "LIFECYCLE_ACTIVATION"
   | "INVOICE_GENERATION"

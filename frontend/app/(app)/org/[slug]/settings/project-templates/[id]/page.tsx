@@ -4,9 +4,9 @@ import { getAuthContext } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { TemplateEditor } from "@/components/templates/TemplateEditor";
 import { getProjectTemplate } from "@/lib/api/templates";
-import { getTags } from "@/lib/api";
+import { getTags, getFieldDefinitions } from "@/lib/api";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
-import type { TagResponse } from "@/lib/types";
+import type { TagResponse, FieldDefinitionResponse } from "@/lib/types";
 
 export default async function TemplateEditorPage({
   params,
@@ -24,6 +24,7 @@ export default async function TemplateEditorPage({
 
   let template: ProjectTemplateResponse | undefined;
   let tags: TagResponse[] = [];
+  let availableCustomerFields: FieldDefinitionResponse[] = [];
   let notFound = false;
 
   if (id !== "new") {
@@ -43,6 +44,13 @@ export default async function TemplateEditorPage({
     tags = await getTags();
   } catch {
     // Non-fatal: tag selector will show "no tags available"
+  }
+
+  try {
+    availableCustomerFields = await getFieldDefinitions("CUSTOMER");
+    availableCustomerFields = availableCustomerFields.filter((f) => f.active);
+  } catch {
+    // Non-fatal: required fields section won't render
   }
 
   if (notFound) {
@@ -78,7 +86,7 @@ export default async function TemplateEditorPage({
         </h1>
       </div>
 
-      <TemplateEditor slug={slug} template={template} availableTags={tags} />
+      <TemplateEditor slug={slug} template={template} availableTags={tags} availableCustomerFields={availableCustomerFields} />
     </div>
   );
 }

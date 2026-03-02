@@ -44,6 +44,12 @@ interface PrerequisiteModalProps {
   onResolved: () => void;
   /** Called when user dismisses the modal */
   onCancel?: () => void;
+  /**
+   * Optional custom re-check function. When provided, replaces the default
+   * `checkPrerequisitesAction` call. Useful when the caller needs a
+   * context-specific check (e.g. engagement prerequisites with templateId).
+   */
+  onRecheck?: () => Promise<{ passed: boolean; violations: PrerequisiteViolation[] }>;
 }
 
 export function PrerequisiteModal({
@@ -58,6 +64,7 @@ export function PrerequisiteModal({
   slug,
   onResolved,
   onCancel,
+  onRecheck,
 }: PrerequisiteModalProps) {
   const [violations, setViolations] =
     useState<PrerequisiteViolation[]>(initialViolations);
@@ -102,8 +109,10 @@ export function PrerequisiteModal({
         }
       }
 
-      // Step 2: Re-check prerequisites
-      const check = await checkPrerequisitesAction(context, entityType, entityId);
+      // Step 2: Re-check prerequisites (use custom recheck if provided)
+      const check = onRecheck
+        ? await onRecheck()
+        : await checkPrerequisitesAction(context, entityType, entityId);
 
       if (check.passed) {
         onResolved();
@@ -116,7 +125,7 @@ export function PrerequisiteModal({
     } finally {
       setLoading(false);
     }
-  }, [isDirty, fieldValues, slug, entityType, entityId, context, onResolved, onOpenChange]);
+  }, [isDirty, fieldValues, slug, entityType, entityId, context, onResolved, onOpenChange, onRecheck]);
 
   const contextLabel = PREREQUISITE_CONTEXT_LABELS[context] ?? context;
 

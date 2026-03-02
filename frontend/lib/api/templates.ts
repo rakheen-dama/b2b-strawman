@@ -42,6 +42,7 @@ export interface ProjectTemplateResponse {
   tagCount: number;
   tasks: TemplateTaskResponse[];
   tags: ProjectTemplateTagResponse[];
+  requiredCustomerFieldIds?: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -148,4 +149,13 @@ export async function instantiateProjectTemplate(
   data: InstantiateTemplateRequest,
 ): Promise<InstantiateTemplateResponse> {
   return api.post<InstantiateTemplateResponse>(`/api/project-templates/${templateId}/instantiate`, data);
+}
+
+export async function updateTemplateRequiredCustomerFields(
+  id: string,
+  fieldDefinitionIds: string[],
+): Promise<void> {
+  return api.put<void>(`/api/project-templates/${id}/required-customer-fields`, {
+    fieldDefinitionIds,
+  });
 }

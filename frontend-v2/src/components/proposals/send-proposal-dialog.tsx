@@ -81,8 +81,21 @@ export function SendProposalDialog({
       toast.success("Proposal sent successfully");
       onOpenChange(false);
       router.refresh();
-    } catch {
-      toast.error("Failed to send proposal");
+    } catch (err) {
+      // Check for 422 with prerequisite violations
+      const error = err as { violations?: unknown[] };
+      if (
+        error?.violations &&
+        Array.isArray(error.violations) &&
+        error.violations.length > 0
+      ) {
+        const messages = (error.violations as Array<{ message: string }>)
+          .map((v) => v.message)
+          .join("; ");
+        toast.error(`Prerequisites not met: ${messages}`);
+      } else {
+        toast.error("Failed to send proposal");
+      }
     } finally {
       setIsPending(false);
     }

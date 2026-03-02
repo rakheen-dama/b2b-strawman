@@ -15,6 +15,12 @@ vi.mock("@/app/(app)/org/[slug]/customers/[id]/invoice-actions", () => ({
     mockValidateInvoiceGeneration(...args),
 }));
 
+// Mock prerequisite actions (needed because InvoiceGenerationDialog now imports them)
+vi.mock("@/lib/actions/prerequisite-actions", () => ({
+  checkPrerequisitesAction: vi.fn().mockResolvedValue({ passed: true, context: "INVOICE_GENERATION", violations: [] }),
+  updateEntityCustomFieldsAction: vi.fn(),
+}));
+
 const sampleUnbilledData: UnbilledTimeResponse = {
   customerId: "c1",
   customerName: "Acme Corp",

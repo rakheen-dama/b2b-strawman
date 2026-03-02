@@ -18,6 +18,12 @@ vi.mock(
   }),
 );
 
+// Mock prerequisite actions (needed because InvoiceGenerationDialog now imports them)
+vi.mock("@/lib/actions/prerequisite-actions", () => ({
+  checkPrerequisitesAction: vi.fn().mockResolvedValue({ passed: true, context: "INVOICE_GENERATION", violations: [] }),
+  updateEntityCustomFieldsAction: vi.fn(),
+}));
+
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),

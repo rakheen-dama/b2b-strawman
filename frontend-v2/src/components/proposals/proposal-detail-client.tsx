@@ -21,6 +21,7 @@ import type {
   ProposalDetailResponse,
   CreateProposalData,
 } from "@/app/(app)/org/[slug]/proposals/proposal-actions";
+import { checkPrerequisitesAction } from "@/lib/actions/prerequisite-actions";
 import {
   deleteProposal,
   withdrawProposal,
@@ -68,6 +69,34 @@ export function ProposalDetailClient({
   const router = useRouter();
   const [loadingAction, setLoadingAction] = React.useState<string | null>(null);
   const [sendDialogOpen, setSendDialogOpen] = React.useState(false);
+  const [checkingPrereqs, setCheckingPrereqs] = React.useState(false);
+
+  async function handleSendClick() {
+    setCheckingPrereqs(true);
+    try {
+      const check = await checkPrerequisitesAction(
+        "PROPOSAL_SEND",
+        "CUSTOMER",
+        proposal.customerId,
+      );
+      if (check.passed) {
+        setSendDialogOpen(true);
+      } else {
+        // Surface violations as toast messages (PrerequisiteModal not available in frontend-v2)
+        const messages = check.violations.map((v) => v.message).join("; ");
+        toast.error(`Cannot send proposal: ${messages}`);
+      }
+    } catch {
+      // Fail-open: the backend enforces prerequisites server-side on
+      // POST /proposals/{id}/send (via PrerequisiteService.checkForContext),
+      // so the frontend check is a UX convenience. If the check network call
+      // fails, we allow the user to proceed — the backend will reject if
+      // prerequisites are truly unmet.
+      setSendDialogOpen(true);
+    } finally {
+      setCheckingPrereqs(false);
+    }
+  }
 
   const executeAction = async (name: string, fn: () => Promise<void>) => {
     setLoadingAction(name);
@@ -248,9 +277,14 @@ export function ProposalDetailClient({
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => setSendDialogOpen(true)}
+                onClick={handleSendClick}
+                disabled={checkingPrereqs}
               >
-                <Send className="mr-1.5 size-4" />
+                {checkingPrereqs ? (
+                  <Loader2 className="mr-1.5 size-4 animate-spin" />
+                ) : (
+                  <Send className="mr-1.5 size-4" />
+                )}
                 Send
               </Button>
               <AlertDialog>

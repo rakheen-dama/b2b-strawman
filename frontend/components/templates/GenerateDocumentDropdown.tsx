@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { FileText, ChevronDown } from "lucide-react";
+import { FileText, ChevronDown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,7 +11,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { GenerateDocumentDialog } from "@/components/templates/GenerateDocumentDialog";
-import type { TemplateListResponse, TemplateEntityType } from "@/lib/types";
+import { PrerequisiteModal } from "@/components/prerequisite/prerequisite-modal";
+import { checkPrerequisitesAction } from "@/lib/actions/prerequisite-actions";
+import type { PrerequisiteViolation } from "@/components/prerequisite/types";
+import type { TemplateListResponse, TemplateEntityType, EntityType } from "@/lib/types";
 
 interface GenerateDocumentDropdownProps {
   templates: TemplateListResponse[];
@@ -20,6 +23,7 @@ interface GenerateDocumentDropdownProps {
   onDocumentSaved?: () => void;
   customerId?: string;
   isAdmin?: boolean;
+  slug?: string;
 }
 
 export function GenerateDocumentDropdown({
@@ -29,11 +33,17 @@ export function GenerateDocumentDropdown({
   onDocumentSaved,
   customerId,
   isAdmin,
+  slug,
 }: GenerateDocumentDropdownProps) {
   const searchParams = useSearchParams();
   const [selectedTemplate, setSelectedTemplate] =
     useState<TemplateListResponse | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Prerequisite gate state
+  const [checkingPrereqs, setCheckingPrereqs] = useState(false);
+  const [prereqModalOpen, setPrereqModalOpen] = useState(false);
+  const [prereqViolations, setPrereqViolations] = useState<PrerequisiteViolation[]>([]);
 
   // Auto-open dialog when ?generateTemplate=<id> is in the URL
   const generateTemplateId = searchParams.get("generateTemplate");
@@ -59,8 +69,12 @@ export function GenerateDocumentDropdown({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm">
-            <FileText className="mr-1.5 size-4" />
+          <Button variant="outline" size="sm" disabled={checkingPrereqs}>
+            {checkingPrereqs ? (
+              <Loader2 className="mr-1.5 size-4 animate-spin" />
+            ) : (
+              <FileText className="mr-1.5 size-4" />
+            )}
             Generate Document
             <ChevronDown className="ml-1.5 size-3" />
           </Button>
@@ -69,11 +83,30 @@ export function GenerateDocumentDropdown({
           {templates.map((tpl) => (
             <DropdownMenuItem
               key={tpl.id}
-              onSelect={() => {
+              onSelect={async () => {
                 setSelectedTemplate(tpl);
-                // Dropdown focus cleanup takes longer than one rAF —
-                // wait for Radix to fully unmount before opening the dialog
-                setTimeout(() => setDialogOpen(true), 150);
+                // Clear stale violations from a prior failed check
+                setPrereqViolations([]);
+                // Run prerequisite check before opening dialog
+                setCheckingPrereqs(true);
+                try {
+                  const check = await checkPrerequisitesAction(
+                    "DOCUMENT_GENERATION",
+                    entityType as EntityType,
+                    entityId,
+                  );
+                  if (check.passed) {
+                    setTimeout(() => setDialogOpen(true), 150);
+                  } else {
+                    setPrereqViolations(check.violations);
+                    setTimeout(() => setPrereqModalOpen(true), 150);
+                  }
+                } catch {
+                  // Fail-open: proceed to dialog if check throws
+                  setTimeout(() => setDialogOpen(true), 150);
+                } finally {
+                  setCheckingPrereqs(false);
+                }
               }}
             >
               {tpl.name}
@@ -93,6 +126,22 @@ export function GenerateDocumentDropdown({
           onSaved={onDocumentSaved}
           customerId={customerId}
           isAdmin={isAdmin}
+        />
+      )}
+
+      {selectedTemplate && slug && prereqModalOpen && (
+        <PrerequisiteModal
+          open={prereqModalOpen}
+          onOpenChange={setPrereqModalOpen}
+          context="DOCUMENT_GENERATION"
+          violations={prereqViolations}
+          entityType={entityType as EntityType}
+          entityId={entityId}
+          slug={slug}
+          onResolved={() => {
+            setPrereqModalOpen(false);
+            setDialogOpen(true);
+          }}
         />
       )}
     </>

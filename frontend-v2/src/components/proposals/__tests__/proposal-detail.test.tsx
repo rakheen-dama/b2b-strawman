@@ -28,6 +28,11 @@ vi.mock("@/lib/toast", () => ({
   },
 }));
 
+// Mock prerequisite actions (needed because ProposalDetailClient now imports them)
+vi.mock("@/lib/actions/prerequisite-actions", () => ({
+  checkPrerequisitesAction: vi.fn().mockResolvedValue({ passed: true, context: "PROPOSAL_SEND", violations: [] }),
+}));
+
 import { ProposalDetailClient } from "@/components/proposals/proposal-detail-client";
 import type { ProposalDetailResponse } from "@/app/(app)/org/[slug]/proposals/proposal-actions";
 

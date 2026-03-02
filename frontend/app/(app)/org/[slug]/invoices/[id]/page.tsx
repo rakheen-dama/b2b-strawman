@@ -124,6 +124,7 @@ export default async function InvoiceDetailPage({
             templates={invoiceTemplates}
             entityId={id}
             entityType="INVOICE"
+            slug={slug}
           />
         )}
       </div>

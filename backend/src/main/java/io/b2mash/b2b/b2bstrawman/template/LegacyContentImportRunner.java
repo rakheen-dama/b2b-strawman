@@ -79,7 +79,7 @@ public class LegacyContentImportRunner implements ApplicationRunner {
     for (var mapping : allMappings) {
       try {
         var schemaName = mapping.getSchemaName();
-        var orgId = mapping.getClerkOrgId();
+        var orgId = mapping.getExternalOrgId();
         int[] counts = {0, 0};
 
         ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
@@ -106,7 +106,7 @@ public class LegacyContentImportRunner implements ApplicationRunner {
         log.error(
             "Failed legacy content import for tenant {} (org {})",
             mapping.getSchemaName(),
-            mapping.getClerkOrgId(),
+            mapping.getExternalOrgId(),
             e);
       }
     }

@@ -73,7 +73,7 @@ class ReportingControllerTest {
             syncMember(ORG_ID, "user_rc_owner", "rc_owner@test.com", "RC Owner", "owner"));
 
     tenantSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     // Create test data for execute endpoint tests
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -445,7 +445,7 @@ class ReportingControllerTest {
   }
 
   private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
+      String orgId, String externalUserId, String email, String name, String orgRole)
       throws Exception {
     var result =
         mockMvc
@@ -456,15 +456,15 @@ class ReportingControllerTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
+                          "externalOrgId": "%s",
+                          "externalUserId": "%s",
                           "email": "%s",
                           "name": "%s",
                           "avatarUrl": null,
                           "orgRole": "%s"
                         }
                         """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
+                            .formatted(orgId, externalUserId, email, name, orgRole)))
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");

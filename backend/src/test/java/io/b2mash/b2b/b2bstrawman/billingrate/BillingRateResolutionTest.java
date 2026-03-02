@@ -75,7 +75,7 @@ class BillingRateResolutionTest {
                 ORG_ID, "user_rate_res_member", "rate_res_member@test.com", "Member", "member"));
 
     tenantSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     // Create project, customer, and link within tenant scope
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -347,7 +347,7 @@ class BillingRateResolutionTest {
   }
 
   private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
+      String orgId, String externalUserId, String email, String name, String orgRole)
       throws Exception {
     var result =
         mockMvc
@@ -358,15 +358,15 @@ class BillingRateResolutionTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
+                          "externalOrgId": "%s",
+                          "externalUserId": "%s",
                           "email": "%s",
                           "name": "%s",
                           "avatarUrl": null,
                           "orgRole": "%s"
                         }
                         """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
+                            .formatted(orgId, externalUserId, email, name, orgRole)))
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");

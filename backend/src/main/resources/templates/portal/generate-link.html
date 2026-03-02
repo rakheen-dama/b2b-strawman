@@ -32,8 +32,8 @@
         <label for="orgId">Organization</label>
         <select id="orgId" name="orgId">
             <option value="">-- Select an organization --</option>
-            <option th:each="org : ${orgs}" th:value="${org.clerkOrgId}" th:text="${org.clerkOrgId}"
-                    th:selected="${org.clerkOrgId == orgId}">Org</option>
+            <option th:each="org : ${orgs}" th:value="${org.externalOrgId}" th:text="${org.externalOrgId}"
+                    th:selected="${org.externalOrgId == orgId}">Org</option>
         </select>
 
         <label for="email">Customer Email</label>

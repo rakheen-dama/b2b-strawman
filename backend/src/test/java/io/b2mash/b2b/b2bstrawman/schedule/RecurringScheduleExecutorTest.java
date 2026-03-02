@@ -79,7 +79,7 @@ class RecurringScheduleExecutorTest {
         UUID.fromString(
             syncMember(ORG_ID, "user_exec_owner", "exec@test.com", "Exec Owner", "owner"));
     tenantSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     runInTenant(
         () ->
@@ -573,7 +573,7 @@ class RecurringScheduleExecutorTest {
         UUID.fromString(
             syncMember(orgId2, "user_exec_owner2", "exec2@test.com", "Exec Owner 2", "owner"));
     var tenantSchema2 =
-        orgSchemaMappingRepository.findByClerkOrgId(orgId2).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(orgId2).orElseThrow().getSchemaName();
 
     var templateId2 = new UUID[1];
     var customerId2 = new UUID[1];
@@ -723,7 +723,7 @@ class RecurringScheduleExecutorTest {
   }
 
   private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
+      String orgId, String externalUserId, String email, String name, String orgRole)
       throws Exception {
     var result =
         mockMvc
@@ -733,9 +733,9 @@ class RecurringScheduleExecutorTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                    {"clerkOrgId":"%s","clerkUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
+                    {"externalOrgId":"%s","externalUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
                     """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
+                            .formatted(orgId, externalUserId, email, name, orgRole)))
             .andExpect(status().isCreated())
             .andReturn();
     return com.jayway.jsonpath.JsonPath.read(

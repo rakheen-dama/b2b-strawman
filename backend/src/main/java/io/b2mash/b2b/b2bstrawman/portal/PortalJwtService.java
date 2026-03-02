@@ -37,23 +37,23 @@ public class PortalJwtService {
   }
 
   /** Claims extracted from a verified portal JWT. */
-  public record PortalClaims(UUID customerId, String clerkOrgId) {}
+  public record PortalClaims(UUID customerId, String externalOrgId) {}
 
   /**
    * Issues a portal session JWT with customer and org claims.
    *
    * @param customerId the authenticated customer UUID
-   * @param clerkOrgId the Clerk org ID for tenant resolution
+   * @param externalOrgId the External org ID for tenant resolution
    * @return signed JWT string (1-hour TTL)
    */
-  public String issueToken(UUID customerId, String clerkOrgId) {
+  public String issueToken(UUID customerId, String externalOrgId) {
     try {
       Instant now = Instant.now();
       var claims =
           new JWTClaimsSet.Builder()
               .jwtID(UUID.randomUUID().toString())
               .subject(customerId.toString())
-              .claim("org_id", clerkOrgId)
+              .claim("org_id", externalOrgId)
               .claim("type", "customer")
               .issueTime(Date.from(now))
               .expirationTime(Date.from(now.plus(SESSION_TTL)))
@@ -63,7 +63,7 @@ public class PortalJwtService {
       JWSSigner signer = new MACSigner(secret);
       signedJwt.sign(signer);
 
-      log.debug("Issued portal JWT for customer {} in org {}", customerId, clerkOrgId);
+      log.debug("Issued portal JWT for customer {} in org {}", customerId, externalOrgId);
       return signedJwt.serialize();
     } catch (JOSEException e) {
       throw new IllegalStateException("Failed to sign portal JWT", e);

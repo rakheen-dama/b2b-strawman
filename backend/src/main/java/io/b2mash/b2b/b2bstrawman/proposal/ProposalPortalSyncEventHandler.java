@@ -87,7 +87,7 @@ public class ProposalPortalSyncEventHandler {
             var orgSettings = orgSettingsRepository.findForCurrentTenant().orElse(null);
 
             String orgId = event.orgId();
-            var org = organizationRepository.findByClerkOrgId(orgId).orElse(null);
+            var org = organizationRepository.findByExternalOrgId(orgId).orElse(null);
             String orgName = org != null ? org.getName() : orgId;
 
             var variableContext =

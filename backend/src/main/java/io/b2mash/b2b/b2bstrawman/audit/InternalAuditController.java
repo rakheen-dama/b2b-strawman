@@ -81,7 +81,7 @@ public class InternalAuditController {
 
   private String resolveSchema(String orgId) {
     return mappingRepository
-        .findByClerkOrgId(orgId)
+        .findByExternalOrgId(orgId)
         .orElseThrow(
             () ->
                 ResourceNotFoundException.withDetail(

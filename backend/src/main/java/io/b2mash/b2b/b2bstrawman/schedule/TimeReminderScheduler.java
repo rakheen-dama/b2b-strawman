@@ -68,7 +68,7 @@ public class TimeReminderScheduler {
       try {
         int created =
             ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
-                .where(RequestScopes.ORG_ID, mapping.getClerkOrgId())
+                .where(RequestScopes.ORG_ID, mapping.getExternalOrgId())
                 .call(() -> processTenant());
         remindersCreated += created;
       } catch (Exception e) {

@@ -64,7 +64,7 @@ class FieldGroupMemberIntegrationTest {
             syncMember(ORG_ID, "user_fgm_owner", "fgm_owner@test.com", "FGM Owner", "owner"));
 
     tenantSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).orElseThrow().getSchemaName();
   }
 
   @Test
@@ -327,7 +327,7 @@ class FieldGroupMemberIntegrationTest {
   }
 
   private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
+      String orgId, String externalUserId, String email, String name, String orgRole)
       throws Exception {
     var result =
         mockMvc
@@ -338,15 +338,15 @@ class FieldGroupMemberIntegrationTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
+                          "externalOrgId": "%s",
+                          "externalUserId": "%s",
                           "email": "%s",
                           "name": "%s",
                           "avatarUrl": null,
                           "orgRole": "%s"
                         }
                         """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
+                            .formatted(orgId, externalUserId, email, name, orgRole)))
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");

@@ -33,7 +33,7 @@ class ProvisioningControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"clerkOrgId": "org_ctrl_test", "orgName": "Controller Test Org"}
+                    {"externalOrgId": "org_ctrl_test", "orgName": "Controller Test Org"}
                     """))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.schemaName").exists())
@@ -50,7 +50,7 @@ class ProvisioningControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"clerkOrgId": "org_dup_test", "orgName": "Duplicate Org"}
+                    {"externalOrgId": "org_dup_test", "orgName": "Duplicate Org"}
                     """))
         .andExpect(status().isCreated());
 
@@ -61,7 +61,7 @@ class ProvisioningControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"clerkOrgId": "org_dup_test", "orgName": "Duplicate Org"}
+                    {"externalOrgId": "org_dup_test", "orgName": "Duplicate Org"}
                     """))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.message").value("Tenant already provisioned"));
@@ -75,13 +75,13 @@ class ProvisioningControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"clerkOrgId": "org_no_key", "orgName": "No Key Org"}
+                    {"externalOrgId": "org_no_key", "orgName": "No Key Org"}
                     """))
         .andExpect(status().isUnauthorized());
   }
 
   @Test
-  void shouldReject400OnMissingClerkOrgId() throws Exception {
+  void shouldReject400OnMissingExternalOrgId() throws Exception {
     mockMvc
         .perform(
             post("/internal/orgs/provision")
@@ -89,7 +89,7 @@ class ProvisioningControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"clerkOrgId": "", "orgName": "Invalid Org"}
+                    {"externalOrgId": "", "orgName": "Invalid Org"}
                     """))
         .andExpect(status().isBadRequest());
   }
@@ -103,7 +103,7 @@ class ProvisioningControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"clerkOrgId": "org_no_name", "orgName": ""}
+                    {"externalOrgId": "org_no_name", "orgName": ""}
                     """))
         .andExpect(status().isBadRequest());
   }

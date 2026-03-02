@@ -360,7 +360,7 @@ public class ProposalOrchestrationService {
     String orgId = RequestScopes.requireOrgId();
     var organization =
         organizationRepository
-            .findByClerkOrgId(orgId)
+            .findByExternalOrgId(orgId)
             .orElseThrow(() -> new ResourceNotFoundException("Organization", orgId));
     String orgName = organization.getName();
 

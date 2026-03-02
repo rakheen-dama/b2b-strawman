@@ -103,7 +103,7 @@ class RetainerPeriodControllerTest {
 
     // Remove seeded tax rates so retainer tests don't get unexpected tax application
     var tenantSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).orElseThrow().getSchemaName();
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .run(() -> transactionTemplate.executeWithoutResult(tx -> taxRateRepository.deleteAll()));
   }
@@ -256,7 +256,7 @@ class RetainerPeriodControllerTest {
   // --- Helpers ---
 
   private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
+      String orgId, String externalUserId, String email, String name, String orgRole)
       throws Exception {
     var result =
         mockMvc
@@ -266,9 +266,9 @@ class RetainerPeriodControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {"clerkOrgId":"%s","clerkUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
+                        {"externalOrgId":"%s","externalUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
                         """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
+                            .formatted(orgId, externalUserId, email, name, orgRole)))
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");

@@ -35,7 +35,7 @@ public class AcceptanceExpiryProcessor {
       try {
         int expired =
             ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
-                .where(RequestScopes.ORG_ID, mapping.getClerkOrgId())
+                .where(RequestScopes.ORG_ID, mapping.getExternalOrgId())
                 .call(() -> acceptanceService.processExpiredForTenant());
         totalExpired += expired;
       } catch (Exception e) {

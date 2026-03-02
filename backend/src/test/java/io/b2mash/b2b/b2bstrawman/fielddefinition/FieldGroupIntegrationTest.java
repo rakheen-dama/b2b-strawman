@@ -65,7 +65,7 @@ class FieldGroupIntegrationTest {
             syncMember(ORG_ID, "user_fg_owner", "fg_owner@test.com", "FG Owner", "owner"));
 
     tenantSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     // --- Tenant B ---
     provisioningService.provisionTenant(ORG_ID_B, "FG Test Org B");
@@ -76,7 +76,7 @@ class FieldGroupIntegrationTest {
             syncMember(ORG_ID_B, "user_fg_owner_b", "fg_owner_b@test.com", "FG Owner B", "owner"));
 
     tenantSchemaB =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID_B).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID_B).orElseThrow().getSchemaName();
   }
 
   @Test
@@ -252,7 +252,7 @@ class FieldGroupIntegrationTest {
   }
 
   private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
+      String orgId, String externalUserId, String email, String name, String orgRole)
       throws Exception {
     var result =
         mockMvc
@@ -263,15 +263,15 @@ class FieldGroupIntegrationTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
+                          "externalOrgId": "%s",
+                          "externalUserId": "%s",
                           "email": "%s",
                           "name": "%s",
                           "avatarUrl": null,
                           "orgRole": "%s"
                         }
                         """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
+                            .formatted(orgId, externalUserId, email, name, orgRole)))
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");

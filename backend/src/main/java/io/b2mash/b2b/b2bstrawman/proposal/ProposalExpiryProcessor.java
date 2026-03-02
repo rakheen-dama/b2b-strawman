@@ -64,8 +64,8 @@ public class ProposalExpiryProcessor {
       try {
         int expired =
             ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
-                .where(RequestScopes.ORG_ID, mapping.getClerkOrgId())
-                .call(() -> processExpiredForTenant(mapping.getClerkOrgId()));
+                .where(RequestScopes.ORG_ID, mapping.getExternalOrgId())
+                .call(() -> processExpiredForTenant(mapping.getExternalOrgId()));
         totalExpired += expired;
       } catch (Exception e) {
         log.error("Proposal expiry processor failed for schema {}", mapping.getSchemaName(), e);
@@ -127,7 +127,7 @@ public class ProposalExpiryProcessor {
 
                 String orgName =
                     organizationRepository
-                        .findByClerkOrgId(orgId)
+                        .findByExternalOrgId(orgId)
                         .map(o -> o.getName())
                         .orElse("Unknown");
 

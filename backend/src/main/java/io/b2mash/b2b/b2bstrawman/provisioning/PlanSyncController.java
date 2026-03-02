@@ -25,14 +25,16 @@ public class PlanSyncController {
   @PostMapping("/plan-sync")
   public ResponseEntity<Void> syncPlan(@Valid @RequestBody PlanSyncRequest request) {
     log.info(
-        "Received plan sync: clerkOrgId={}, planSlug={}", request.clerkOrgId(), request.planSlug());
+        "Received plan sync: externalOrgId={}, planSlug={}",
+        request.externalOrgId(),
+        request.planSlug());
 
-    planSyncService.syncPlan(request.clerkOrgId(), request.planSlug());
+    planSyncService.syncPlan(request.externalOrgId(), request.planSlug());
 
     return ResponseEntity.ok().build();
   }
 
   public record PlanSyncRequest(
-      @NotBlank(message = "clerkOrgId is required") String clerkOrgId,
+      @NotBlank(message = "externalOrgId is required") String externalOrgId,
       @NotBlank(message = "planSlug is required") String planSlug) {}
 }

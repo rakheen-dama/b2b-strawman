@@ -97,7 +97,7 @@ public class TemplateContextHelper {
     var schemaName = RequestScopes.TENANT_ID.get();
     orgSchemaMappingRepository
         .findBySchemaName(schemaName)
-        .flatMap(mapping -> organizationRepository.findByClerkOrgId(mapping.getClerkOrgId()))
+        .flatMap(mapping -> organizationRepository.findByExternalOrgId(mapping.getExternalOrgId()))
         .ifPresentOrElse(
             org -> orgMap.put("name", org.getName()),
             () -> orgMap.put("name", "Unknown Organization"));

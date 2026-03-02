@@ -17,8 +17,8 @@ public class Member {
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
-  @Column(name = "clerk_user_id", nullable = false, length = 255)
-  private String clerkUserId;
+  @Column(name = "external_user_id", nullable = false, length = 255)
+  private String externalUserId;
 
   @Column(name = "email", nullable = false, length = 255)
   private String email;
@@ -40,8 +40,9 @@ public class Member {
 
   protected Member() {}
 
-  public Member(String clerkUserId, String email, String name, String avatarUrl, String orgRole) {
-    this.clerkUserId = clerkUserId;
+  public Member(
+      String externalUserId, String email, String name, String avatarUrl, String orgRole) {
+    this.externalUserId = externalUserId;
     this.email = email;
     this.name = name;
     this.avatarUrl = avatarUrl;
@@ -54,8 +55,8 @@ public class Member {
     return id;
   }
 
-  public String getClerkUserId() {
-    return clerkUserId;
+  public String getExternalUserId() {
+    return externalUserId;
   }
 
   public String getEmail() {

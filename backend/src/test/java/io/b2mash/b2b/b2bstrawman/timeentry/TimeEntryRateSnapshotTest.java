@@ -74,7 +74,7 @@ class TimeEntryRateSnapshotTest {
                 ORG_ID, "user_snap_member", "snap_member@test.com", "Snapshot Member", "member"));
 
     tenantSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     // Create project via MockMvc (owner is auto-assigned as project lead)
     var projectResult =
@@ -425,7 +425,7 @@ class TimeEntryRateSnapshotTest {
   // --- Helpers ---
 
   private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
+      String orgId, String externalUserId, String email, String name, String orgRole)
       throws Exception {
     var result =
         mockMvc
@@ -436,15 +436,15 @@ class TimeEntryRateSnapshotTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
+                          "externalOrgId": "%s",
+                          "externalUserId": "%s",
                           "email": "%s",
                           "name": "%s",
                           "avatarUrl": null,
                           "orgRole": "%s"
                         }
                         """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
+                            .formatted(orgId, externalUserId, email, name, orgRole)))
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");

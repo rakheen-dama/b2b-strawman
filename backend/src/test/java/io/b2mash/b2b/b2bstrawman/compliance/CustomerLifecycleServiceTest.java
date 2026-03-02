@@ -62,7 +62,7 @@ class CustomerLifecycleServiceTest {
     provisioningService.provisionTenant(ORG_ID, "Lifecycle Service Test Org");
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     // Sync a member so we have a valid member ID for FK constraints
     var syncResult =

@@ -66,7 +66,7 @@ class InvoiceIntegrationTest {
                 ORG_ID, "user_invoice_owner", "invoice_owner@test.com", "Invoice Owner", "owner"));
 
     tenantSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     // Create a customer in tenant A
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -97,7 +97,7 @@ class InvoiceIntegrationTest {
                 "owner"));
 
     tenantSchemaB =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID_B).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID_B).orElseThrow().getSchemaName();
 
     // Create a customer in tenant B
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchemaB)
@@ -328,7 +328,7 @@ class InvoiceIntegrationTest {
   }
 
   private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
+      String orgId, String externalUserId, String email, String name, String orgRole)
       throws Exception {
     var result =
         mockMvc
@@ -339,15 +339,15 @@ class InvoiceIntegrationTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
+                          "externalOrgId": "%s",
+                          "externalUserId": "%s",
                           "email": "%s",
                           "name": "%s",
                           "avatarUrl": null,
                           "orgRole": "%s"
                         }
                         """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
+                            .formatted(orgId, externalUserId, email, name, orgRole)))
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");

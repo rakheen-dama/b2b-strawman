@@ -71,7 +71,7 @@ class TimesheetReportQueryTest {
             syncMember("user_tsq_member", "tsq_member@test.com", "Bob Jones", "member"));
 
     tenantSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
@@ -383,7 +383,7 @@ class TimesheetReportQueryTest {
         .run(() -> transactionTemplate.executeWithoutResult(tx -> action.run()));
   }
 
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
+  private String syncMember(String externalUserId, String email, String name, String orgRole)
       throws Exception {
     var result =
         mockMvc
@@ -394,15 +394,15 @@ class TimesheetReportQueryTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
+                          "externalOrgId": "%s",
+                          "externalUserId": "%s",
                           "email": "%s",
                           "name": "%s",
                           "avatarUrl": null,
                           "orgRole": "%s"
                         }
                         """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
+                            .formatted(ORG_ID, externalUserId, email, name, orgRole)))
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");

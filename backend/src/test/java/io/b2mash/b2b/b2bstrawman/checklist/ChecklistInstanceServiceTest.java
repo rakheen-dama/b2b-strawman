@@ -58,7 +58,7 @@ class ChecklistInstanceServiceTest {
     provisioningService.provisionTenant(ORG_ID, "Checklist Instance Service Test Org");
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     var syncResult =
         memberSyncService.syncMember(

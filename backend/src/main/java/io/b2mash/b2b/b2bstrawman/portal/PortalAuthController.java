@@ -59,7 +59,7 @@ public class PortalAuthController {
   public ResponseEntity<MagicLinkResponse> requestMagicLink(
       @Valid @RequestBody MagicLinkRequest request, HttpServletRequest httpRequest) {
     // Resolve org to verify it exists and get schema
-    var mapping = orgSchemaMappingRepository.findByClerkOrgId(request.orgId()).orElse(null);
+    var mapping = orgSchemaMappingRepository.findByExternalOrgId(request.orgId()).orElse(null);
 
     // Return generic message even if org not found (prevent enumeration)
     if (mapping == null) {
@@ -127,7 +127,7 @@ public class PortalAuthController {
     // Resolve org schema
     var mapping =
         orgSchemaMappingRepository
-            .findByClerkOrgId(request.orgId())
+            .findByExternalOrgId(request.orgId())
             .orElseThrow(() -> new PortalAuthException("Organization not found"));
 
     String tenantSchema = mapping.getSchemaName();

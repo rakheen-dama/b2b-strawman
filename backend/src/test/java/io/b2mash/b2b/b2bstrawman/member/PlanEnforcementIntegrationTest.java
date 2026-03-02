@@ -127,8 +127,8 @@ class PlanEnforcementIntegrationTest {
             .content(
                 """
                 {
-                  "clerkOrgId": "%s",
-                  "clerkUserId": "%s",
+                  "externalOrgId": "%s",
+                  "externalUserId": "%s",
                   "email": "%s",
                   "name": "%s",
                   "avatarUrl": null,

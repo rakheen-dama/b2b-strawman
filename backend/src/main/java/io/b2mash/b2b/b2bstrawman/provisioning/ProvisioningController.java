@@ -26,9 +26,9 @@ public class ProvisioningController {
   @PostMapping("/provision")
   public ResponseEntity<ProvisioningResponse> provisionTenant(
       @Valid @RequestBody ProvisioningRequest request) {
-    log.info("Received provisioning request for org {}", request.clerkOrgId());
+    log.info("Received provisioning request for org {}", request.externalOrgId());
 
-    var result = provisioningService.provisionTenant(request.clerkOrgId(), request.orgName());
+    var result = provisioningService.provisionTenant(request.externalOrgId(), request.orgName());
 
     if (result.alreadyProvisioned()) {
       return ResponseEntity.status(409)
@@ -37,14 +37,14 @@ public class ProvisioningController {
                   result.schemaName(), "Tenant already provisioned", "COMPLETED"));
     }
 
-    return ResponseEntity.created(URI.create("/internal/orgs/" + request.clerkOrgId()))
+    return ResponseEntity.created(URI.create("/internal/orgs/" + request.externalOrgId()))
         .body(
             new ProvisioningResponse(
                 result.schemaName(), "Tenant provisioned successfully", "COMPLETED"));
   }
 
   public record ProvisioningRequest(
-      @NotBlank(message = "clerkOrgId is required") String clerkOrgId,
+      @NotBlank(message = "externalOrgId is required") String externalOrgId,
       @NotBlank(message = "orgName is required") String orgName) {}
 
   public record ProvisioningResponse(String schemaName, String message, String status) {}

@@ -165,7 +165,7 @@ public class AcceptanceCertificateService {
       return "DocTeams";
     }
     return organizationRepository
-        .findByClerkOrgId(orgId)
+        .findByExternalOrgId(orgId)
         .map(org -> org.getName())
         .orElse("DocTeams");
   }

@@ -85,7 +85,7 @@ public class DevPortalController {
     model.addAttribute("email", email);
     model.addAttribute("orgId", orgId);
 
-    var mapping = orgSchemaMappingRepository.findByClerkOrgId(orgId).orElse(null);
+    var mapping = orgSchemaMappingRepository.findByExternalOrgId(orgId).orElse(null);
     if (mapping == null) {
       model.addAttribute("error", "Organization not found: " + orgId);
       return "portal/generate-link";
@@ -145,7 +145,7 @@ public class DevPortalController {
    */
   @GetMapping("/exchange")
   public String exchangeToken(@RequestParam String token, @RequestParam String orgId, Model model) {
-    var mapping = orgSchemaMappingRepository.findByClerkOrgId(orgId).orElse(null);
+    var mapping = orgSchemaMappingRepository.findByExternalOrgId(orgId).orElse(null);
     if (mapping == null) {
       model.addAttribute("orgs", orgSchemaMappingRepository.findAll());
       model.addAttribute("error", "Organization not found");
@@ -187,13 +187,14 @@ public class DevPortalController {
       return "portal/dashboard";
     }
 
-    var mapping = orgSchemaMappingRepository.findByClerkOrgId(claims.clerkOrgId()).orElse(null);
+    var mapping =
+        orgSchemaMappingRepository.findByExternalOrgId(claims.externalOrgId()).orElse(null);
     if (mapping == null) {
       model.addAttribute("error", "Organization not found");
       return "portal/dashboard";
     }
 
-    String orgId = claims.clerkOrgId();
+    String orgId = claims.externalOrgId();
     UUID customerId = claims.customerId();
 
     try {
@@ -244,13 +245,14 @@ public class DevPortalController {
       return "portal/project-detail";
     }
 
-    var mapping = orgSchemaMappingRepository.findByClerkOrgId(claims.clerkOrgId()).orElse(null);
+    var mapping =
+        orgSchemaMappingRepository.findByExternalOrgId(claims.externalOrgId()).orElse(null);
     if (mapping == null) {
       model.addAttribute("error", "Organization not found");
       return "portal/project-detail";
     }
 
-    String orgId = claims.clerkOrgId();
+    String orgId = claims.externalOrgId();
     UUID customerId = claims.customerId();
 
     try {

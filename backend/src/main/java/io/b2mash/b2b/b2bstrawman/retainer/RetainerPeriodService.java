@@ -202,7 +202,7 @@ public class RetainerPeriodService {
     String orgId = RequestScopes.requireOrgId();
     var organization =
         organizationRepository
-            .findByClerkOrgId(orgId)
+            .findByExternalOrgId(orgId)
             .orElseThrow(() -> new ResourceNotFoundException("Organization", orgId));
 
     // 9. Create DRAFT invoice directly (do NOT use InvoiceService — it requires RequestScopes)

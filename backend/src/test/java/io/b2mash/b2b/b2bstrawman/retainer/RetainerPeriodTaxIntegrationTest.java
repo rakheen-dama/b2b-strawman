@@ -80,7 +80,7 @@ class RetainerPeriodTaxIntegrationTest {
                 ORG_ID, "user_ret_tax_owner", "ret_tax_owner@test.com", "RetTax Owner", "owner"));
 
     tenantSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).orElseThrow().getSchemaName();
   }
 
   @BeforeEach
@@ -620,7 +620,7 @@ class RetainerPeriodTaxIntegrationTest {
   }
 
   private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
+      String orgId, String externalUserId, String email, String name, String orgRole)
       throws Exception {
     var result =
         mockMvc
@@ -630,9 +630,9 @@ class RetainerPeriodTaxIntegrationTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {"clerkOrgId":"%s","clerkUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
+                        {"externalOrgId":"%s","externalUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
                         """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
+                            .formatted(orgId, externalUserId, email, name, orgRole)))
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");

@@ -83,7 +83,7 @@ public class EmailContextBuilder {
       return "DocTeams";
     }
     return organizationRepository
-        .findByClerkOrgId(orgId)
+        .findByExternalOrgId(orgId)
         .map(org -> org.getName())
         .orElse("DocTeams");
   }

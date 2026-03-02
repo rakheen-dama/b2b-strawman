@@ -77,8 +77,8 @@ class PortalPaymentStatusIntegrationTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "user_pay_status_owner",
+                          "externalOrgId": "%s",
+                          "externalUserId": "user_pay_status_owner",
                           "email": "pay_status_owner@test.com",
                           "name": "Payment Status Owner",
                           "avatarUrl": null,
@@ -90,7 +90,7 @@ class PortalPaymentStatusIntegrationTest {
 
     String memberIdStr = JsonPath.read(syncResult.getResponse().getContentAsString(), "$.memberId");
     UUID memberId = UUID.fromString(memberIdStr);
-    tenantSchema = orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).get().getSchemaName();
+    tenantSchema = orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).get().getSchemaName();
 
     // Create primary customer + portal contact
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)

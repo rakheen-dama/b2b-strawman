@@ -103,7 +103,7 @@ class AcceptanceCertificateServiceTest {
     when(storageService.download(genDoc.getS3Key())).thenReturn(fakePdfBytes);
     when(portalContactRepository.findById(contactId)).thenReturn(Optional.of(contact));
     when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.empty());
-    when(organizationRepository.findByClerkOrgId("org_test123")).thenReturn(Optional.empty());
+    when(organizationRepository.findByExternalOrgId("org_test123")).thenReturn(Optional.empty());
     when(templateEngine.process(eq("certificates/certificate-of-acceptance"), any(IContext.class)))
         .thenReturn("<html><body>Certificate HTML</body></html>");
     when(pdfRenderingService.htmlToPdf(anyString())).thenReturn(fakeCertPdf);
@@ -130,7 +130,7 @@ class AcceptanceCertificateServiceTest {
     when(storageService.download(genDoc.getS3Key())).thenReturn(fakePdfBytes);
     when(portalContactRepository.findById(contactId)).thenReturn(Optional.of(contact));
     when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.empty());
-    when(organizationRepository.findByClerkOrgId("org_test123")).thenReturn(Optional.empty());
+    when(organizationRepository.findByExternalOrgId("org_test123")).thenReturn(Optional.empty());
     when(templateEngine.process(anyString(), any(IContext.class)))
         .thenReturn("<html><body>Certificate</body></html>");
     when(pdfRenderingService.htmlToPdf(anyString())).thenReturn(fakeCertPdf);
@@ -153,7 +153,7 @@ class AcceptanceCertificateServiceTest {
     when(storageService.download(genDoc.getS3Key())).thenReturn(fakePdfBytes);
     when(portalContactRepository.findById(contactId)).thenReturn(Optional.of(contact));
     when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.empty());
-    when(organizationRepository.findByClerkOrgId("org_test123")).thenReturn(Optional.empty());
+    when(organizationRepository.findByExternalOrgId("org_test123")).thenReturn(Optional.empty());
     when(templateEngine.process(anyString(), any(IContext.class)))
         .thenReturn("<html><body>Certificate</body></html>");
     when(pdfRenderingService.htmlToPdf(anyString())).thenReturn(fakeCertPdf);
@@ -210,7 +210,7 @@ class AcceptanceCertificateServiceTest {
     when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.empty());
 
     Organization org = new Organization("org_test123", "Acme Legal LLP");
-    when(organizationRepository.findByClerkOrgId("org_test123")).thenReturn(Optional.of(org));
+    when(organizationRepository.findByExternalOrgId("org_test123")).thenReturn(Optional.of(org));
 
     ArgumentCaptor<IContext> contextCaptor = ArgumentCaptor.forClass(IContext.class);
     when(templateEngine.process(eq("certificates/certificate-of-acceptance"), any(IContext.class)))

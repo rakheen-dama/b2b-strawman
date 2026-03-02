@@ -54,13 +54,13 @@ public class PortalBrandingController {
     // Resolve org -> tenant schema
     var mapping =
         orgSchemaMappingRepository
-            .findByClerkOrgId(orgId)
+            .findByExternalOrgId(orgId)
             .orElseThrow(() -> new ResourceNotFoundException("Organization", orgId));
 
     // Get org name from public schema
     var org =
         organizationRepository
-            .findByClerkOrgId(orgId)
+            .findByExternalOrgId(orgId)
             .orElseThrow(() -> new ResourceNotFoundException("Organization", orgId));
 
     // Read OrgSettings within tenant scope with a transaction

@@ -72,8 +72,8 @@ class PortalAuthIntegrationTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "user_portal_owner",
+                          "externalOrgId": "%s",
+                          "externalUserId": "user_portal_owner",
                           "email": "portal_owner@test.com",
                           "name": "Portal Owner",
                           "avatarUrl": null,
@@ -88,7 +88,7 @@ class PortalAuthIntegrationTest {
     UUID memberId = UUID.fromString(memberIdStr);
 
     // Resolve tenant schema
-    tenantSchema = orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).get().getSchemaName();
+    tenantSchema = orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).get().getSchemaName();
 
     // Create a customer and portal contacts in the tenant
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -215,7 +215,7 @@ class PortalAuthIntegrationTest {
 
       var claims = portalJwtService.verifyToken(token);
       assertThat(claims.customerId()).isEqualTo(customerId);
-      assertThat(claims.clerkOrgId()).isEqualTo(ORG_ID);
+      assertThat(claims.externalOrgId()).isEqualTo(ORG_ID);
     }
 
     @Test

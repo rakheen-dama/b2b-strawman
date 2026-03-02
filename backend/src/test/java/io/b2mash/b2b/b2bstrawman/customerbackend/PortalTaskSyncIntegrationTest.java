@@ -71,7 +71,7 @@ class PortalTaskSyncIntegrationTest {
     syncMember(
         ORG_ID, "user_task_sync_owner", "task_sync_owner@test.com", "Task Sync Owner", "owner");
 
-    tenantSchema = orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).get().getSchemaName();
+    tenantSchema = orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).get().getSchemaName();
     projectId = createProject("Task Sync Project", "For portal task sync tests");
     customerId = createCustomer("Task Sync Customer", "task_sync_cust@test.com");
     linkProjectToCustomer(customerId, projectId);
@@ -269,7 +269,7 @@ class PortalTaskSyncIntegrationTest {
   }
 
   private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
+      String orgId, String externalUserId, String email, String name, String orgRole)
       throws Exception {
     var result =
         mockMvc
@@ -280,15 +280,15 @@ class PortalTaskSyncIntegrationTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
+                          "externalOrgId": "%s",
+                          "externalUserId": "%s",
                           "email": "%s",
                           "name": "%s",
                           "avatarUrl": null,
                           "orgRole": "%s"
                         }
                         """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
+                            .formatted(orgId, externalUserId, email, name, orgRole)))
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");

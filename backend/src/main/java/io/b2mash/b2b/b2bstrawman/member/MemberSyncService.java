@@ -47,21 +47,21 @@ public class MemberSyncService {
   }
 
   public SyncResult syncMember(
-      String clerkOrgId,
-      String clerkUserId,
+      String externalOrgId,
+      String externalUserId,
       String email,
       String name,
       String avatarUrl,
       String orgRole) {
-    String schemaName = resolveSchemaWithRetry(clerkOrgId);
+    String schemaName = resolveSchemaWithRetry(externalOrgId);
     var result =
         ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
-            .where(RequestScopes.ORG_ID, clerkOrgId)
+            .where(RequestScopes.ORG_ID, externalOrgId)
             .call(
                 () ->
                     txTemplate.execute(
                         status -> {
-                          var existing = memberRepository.findByClerkUserId(clerkUserId);
+                          var existing = memberRepository.findByExternalUserId(externalUserId);
                           if (existing.isPresent()) {
                             var member = existing.get();
 
@@ -70,7 +70,7 @@ public class MemberSyncService {
 
                             member.updateFrom(email, name, avatarUrl, orgRole);
                             memberRepository.save(member);
-                            log.info("Updated member {} in tenant {}", clerkUserId, schemaName);
+                            log.info("Updated member {} in tenant {}", externalUserId, schemaName);
 
                             // Only emit role_changed if role actually changed
                             if (orgRole != null && !oldRole.equals(orgRole)) {
@@ -90,11 +90,11 @@ public class MemberSyncService {
                             return new SyncResult(member.getId(), false);
                           }
 
-                          enforceMemberLimit(clerkOrgId);
+                          enforceMemberLimit(externalOrgId);
 
-                          var member = new Member(clerkUserId, email, name, avatarUrl, orgRole);
+                          var member = new Member(externalUserId, email, name, avatarUrl, orgRole);
                           memberRepository.save(member);
-                          log.info("Created member {} in tenant {}", clerkUserId, schemaName);
+                          log.info("Created member {} in tenant {}", externalUserId, schemaName);
 
                           auditService.log(
                               AuditEventBuilder.builder()
@@ -108,29 +108,29 @@ public class MemberSyncService {
 
                           return new SyncResult(member.getId(), true);
                         }));
-    memberFilter.evictFromCache(schemaName, clerkUserId);
+    memberFilter.evictFromCache(schemaName, externalUserId);
     return result;
   }
 
-  public void deleteMember(String clerkOrgId, String clerkUserId) {
-    String schemaName = resolveSchema(clerkOrgId);
+  public void deleteMember(String externalOrgId, String externalUserId) {
+    String schemaName = resolveSchema(externalOrgId);
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
-        .where(RequestScopes.ORG_ID, clerkOrgId)
+        .where(RequestScopes.ORG_ID, externalOrgId)
         .call(
             () -> {
               txTemplate.executeWithoutResult(
                   status -> {
                     var member =
                         memberRepository
-                            .findByClerkUserId(clerkUserId)
+                            .findByExternalUserId(externalUserId)
                             .orElseThrow(
                                 () ->
                                     ResourceNotFoundException.withDetail(
                                         "Member not found",
-                                        "No member found with clerkUserId: " + clerkUserId));
+                                        "No member found with externalUserId: " + externalUserId));
                     UUID memberId = member.getId();
-                    memberRepository.deleteByClerkUserId(clerkUserId);
-                    log.info("Deleted member {} from tenant {}", clerkUserId, schemaName);
+                    memberRepository.deleteByExternalUserId(externalUserId);
+                    log.info("Deleted member {} from tenant {}", externalUserId, schemaName);
 
                     auditService.log(
                         AuditEventBuilder.builder()
@@ -139,18 +139,18 @@ public class MemberSyncService {
                             .entityId(memberId)
                             .actorType("WEBHOOK")
                             .source("WEBHOOK")
-                            .details(Map.of("clerk_user_id", clerkUserId))
+                            .details(Map.of("external_user_id", externalUserId))
                             .build());
                   });
-              memberFilter.evictFromCache(schemaName, clerkUserId);
+              memberFilter.evictFromCache(schemaName, externalUserId);
               return null;
             });
   }
 
-  public List<MemberSyncController.StaleMemberResponse> findStaleMembers(String clerkOrgId) {
-    String schemaName = resolveSchema(clerkOrgId);
+  public List<MemberSyncController.StaleMemberResponse> findStaleMembers(String externalOrgId) {
+    String schemaName = resolveSchema(externalOrgId);
     return ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
-        .where(RequestScopes.ORG_ID, clerkOrgId)
+        .where(RequestScopes.ORG_ID, externalOrgId)
         .call(
             () ->
                 txTemplate.execute(
@@ -159,16 +159,21 @@ public class MemberSyncService {
                             .map(
                                 m ->
                                     new MemberSyncController.StaleMemberResponse(
-                                        m.getId(), m.getClerkUserId(), m.getName(), m.getEmail()))
+                                        m.getId(),
+                                        m.getExternalUserId(),
+                                        m.getName(),
+                                        m.getEmail()))
                             .toList()));
   }
 
-  private void enforceMemberLimit(String clerkOrgId) {
+  private void enforceMemberLimit(String externalOrgId) {
     var org =
         organizationRepository
-            .findByClerkOrgId(clerkOrgId)
+            .findByExternalOrgId(externalOrgId)
             .orElseThrow(
-                () -> new IllegalArgumentException("No organization found for org: " + clerkOrgId));
+                () ->
+                    new IllegalArgumentException(
+                        "No organization found for org: " + externalOrgId));
     int limit = PlanLimits.maxMembers(org.getTier());
     long currentCount = memberRepository.count();
     if (currentCount >= limit) {
@@ -178,38 +183,38 @@ public class MemberSyncService {
     }
   }
 
-  private String resolveSchemaWithRetry(String clerkOrgId) {
+  private String resolveSchemaWithRetry(String externalOrgId) {
     for (int attempt = 1; attempt <= 5; attempt++) {
-      var mapping = mappingRepository.findByClerkOrgId(clerkOrgId);
+      var mapping = mappingRepository.findByExternalOrgId(externalOrgId);
       if (mapping.isPresent()) {
         if (attempt > 1) {
-          log.info("Schema resolved for org {} on attempt {}", clerkOrgId, attempt);
+          log.info("Schema resolved for org {} on attempt {}", externalOrgId, attempt);
         }
         return mapping.get().getSchemaName();
       }
       if (attempt < 5) {
         log.warn(
             "Schema not yet provisioned for org {} (attempt {}/5), retrying in 500ms...",
-            clerkOrgId,
+            externalOrgId,
             attempt);
         try {
           Thread.sleep(500);
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
           throw new IllegalArgumentException(
-              "Interrupted while waiting for schema provisioning: " + clerkOrgId);
+              "Interrupted while waiting for schema provisioning: " + externalOrgId);
         }
       }
     }
     throw new IllegalArgumentException(
-        "No tenant provisioned for org after 5 attempts: " + clerkOrgId);
+        "No tenant provisioned for org after 5 attempts: " + externalOrgId);
   }
 
-  private String resolveSchema(String clerkOrgId) {
+  private String resolveSchema(String externalOrgId) {
     return mappingRepository
-        .findByClerkOrgId(clerkOrgId)
+        .findByExternalOrgId(externalOrgId)
         .orElseThrow(
-            () -> new IllegalArgumentException("No tenant provisioned for org: " + clerkOrgId))
+            () -> new IllegalArgumentException("No tenant provisioned for org: " + externalOrgId))
         .getSchemaName();
   }
 

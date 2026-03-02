@@ -56,7 +56,7 @@ class TemplateClauseSyncTest {
     provisioningService.provisionTenant(ORG_ID, "TC Sync Test Org");
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     runInTenantVoid(
         () -> {

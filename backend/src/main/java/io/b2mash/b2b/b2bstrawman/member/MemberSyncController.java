@@ -33,14 +33,14 @@ public class MemberSyncController {
   public ResponseEntity<SyncMemberResponse> syncMember(
       @Valid @RequestBody SyncMemberRequest request) {
     log.info(
-        "Received member sync: clerkOrgId={}, clerkUserId={}",
-        request.clerkOrgId(),
-        request.clerkUserId());
+        "Received member sync: externalOrgId={}, externalUserId={}",
+        request.externalOrgId(),
+        request.externalUserId());
 
     var result =
         syncService.syncMember(
-            request.clerkOrgId(),
-            request.clerkUserId(),
+            request.externalOrgId(),
+            request.externalUserId(),
             request.email(),
             request.name(),
             request.avatarUrl(),
@@ -48,7 +48,7 @@ public class MemberSyncController {
 
     var response =
         new SyncMemberResponse(
-            result.memberId(), request.clerkUserId(), result.created() ? "created" : "updated");
+            result.memberId(), request.externalUserId(), result.created() ? "created" : "updated");
 
     if (result.created()) {
       return ResponseEntity.created(URI.create("/internal/members/" + result.memberId()))
@@ -58,31 +58,35 @@ public class MemberSyncController {
     return ResponseEntity.ok(response);
   }
 
-  @DeleteMapping("/{clerkUserId}")
+  @DeleteMapping("/{externalUserId}")
   public ResponseEntity<Void> deleteMember(
-      @PathVariable String clerkUserId, @RequestParam String clerkOrgId) {
-    log.info("Received member delete: clerkOrgId={}, clerkUserId={}", clerkOrgId, clerkUserId);
-    syncService.deleteMember(clerkOrgId, clerkUserId);
+      @PathVariable String externalUserId, @RequestParam String externalOrgId) {
+    log.info(
+        "Received member delete: externalOrgId={}, externalUserId={}",
+        externalOrgId,
+        externalUserId);
+    syncService.deleteMember(externalOrgId, externalUserId);
     return ResponseEntity.noContent().build();
   }
 
   @GetMapping("/stale")
   public ResponseEntity<List<StaleMemberResponse>> listStaleMembers(
-      @RequestParam String clerkOrgId) {
-    log.info("Checking stale members for org: {}", clerkOrgId);
-    var staleMembers = syncService.findStaleMembers(clerkOrgId);
+      @RequestParam String externalOrgId) {
+    log.info("Checking stale members for org: {}", externalOrgId);
+    var staleMembers = syncService.findStaleMembers(externalOrgId);
     return ResponseEntity.ok(staleMembers);
   }
 
   public record SyncMemberRequest(
-      @NotBlank(message = "clerkOrgId is required") String clerkOrgId,
-      @NotBlank(message = "clerkUserId is required") String clerkUserId,
+      @NotBlank(message = "externalOrgId is required") String externalOrgId,
+      @NotBlank(message = "externalUserId is required") String externalUserId,
       @NotBlank(message = "email is required") String email,
       String name,
       String avatarUrl,
       @NotBlank(message = "orgRole is required") String orgRole) {}
 
-  public record SyncMemberResponse(UUID memberId, String clerkUserId, String action) {}
+  public record SyncMemberResponse(UUID memberId, String externalUserId, String action) {}
 
-  public record StaleMemberResponse(UUID memberId, String clerkUserId, String name, String email) {}
+  public record StaleMemberResponse(
+      UUID memberId, String externalUserId, String name, String email) {}
 }

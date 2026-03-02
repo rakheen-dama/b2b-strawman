@@ -72,8 +72,8 @@ class PortalContactIntegrationTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "user_contact_owner_a",
+                          "externalOrgId": "%s",
+                          "externalUserId": "user_contact_owner_a",
                           "email": "contact_owner_a@test.com",
                           "name": "Contact Owner A",
                           "avatarUrl": null,
@@ -97,8 +97,8 @@ class PortalContactIntegrationTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "user_contact_owner_b",
+                          "externalOrgId": "%s",
+                          "externalUserId": "user_contact_owner_b",
                           "email": "contact_owner_b@test.com",
                           "name": "Contact Owner B",
                           "avatarUrl": null,
@@ -113,8 +113,8 @@ class PortalContactIntegrationTest {
             JsonPath.read(syncResultB.getResponse().getContentAsString(), "$.memberId"));
 
     // Resolve tenant schemas
-    tenantSchemaA = orgSchemaMappingRepository.findByClerkOrgId(ORG_ID_A).get().getSchemaName();
-    tenantSchemaB = orgSchemaMappingRepository.findByClerkOrgId(ORG_ID_B).get().getSchemaName();
+    tenantSchemaA = orgSchemaMappingRepository.findByExternalOrgId(ORG_ID_A).get().getSchemaName();
+    tenantSchemaB = orgSchemaMappingRepository.findByExternalOrgId(ORG_ID_B).get().getSchemaName();
 
     // Create customers in tenant A
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchemaA)

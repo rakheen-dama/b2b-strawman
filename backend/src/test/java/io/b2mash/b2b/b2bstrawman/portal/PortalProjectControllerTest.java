@@ -64,8 +64,8 @@ class PortalProjectControllerTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "user_projdetail_owner",
+                          "externalOrgId": "%s",
+                          "externalUserId": "user_projdetail_owner",
                           "email": "projdetail_owner@test.com",
                           "name": "ProjDetail Owner",
                           "avatarUrl": null,
@@ -78,7 +78,8 @@ class PortalProjectControllerTest {
     String memberIdStr = JsonPath.read(syncResult.getResponse().getContentAsString(), "$.memberId");
     UUID memberId = UUID.fromString(memberIdStr);
 
-    String tenantSchema = orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).get().getSchemaName();
+    String tenantSchema =
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).get().getSchemaName();
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)

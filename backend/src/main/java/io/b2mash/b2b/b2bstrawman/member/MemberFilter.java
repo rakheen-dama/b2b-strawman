@@ -67,8 +67,8 @@ public class MemberFilter extends OncePerRequestFilter {
         || path.startsWith("/portal/");
   }
 
-  public void evictFromCache(String tenantId, String clerkUserId) {
-    memberCache.invalidate(tenantId + ":" + clerkUserId);
+  public void evictFromCache(String tenantId, String externalUserId) {
+    memberCache.invalidate(tenantId + ":" + externalUserId);
   }
 
   private record MemberInfo(UUID memberId, String orgRole) {}
@@ -80,21 +80,21 @@ public class MemberFilter extends OncePerRequestFilter {
     }
 
     Jwt jwt = jwtAuth.getToken();
-    String clerkUserId = jwt.getSubject();
+    String externalUserId = jwt.getSubject();
     String orgRole = ClerkJwtUtils.extractOrgRole(jwt);
 
-    if (clerkUserId == null) {
+    if (externalUserId == null) {
       return null;
     }
 
-    String cacheKey = tenantId + ":" + clerkUserId;
+    String cacheKey = tenantId + ":" + externalUserId;
     UUID memberId;
     try {
-      memberId = memberCache.get(cacheKey, k -> resolveOrCreateMember(clerkUserId, orgRole));
+      memberId = memberCache.get(cacheKey, k -> resolveOrCreateMember(externalUserId, orgRole));
     } catch (Exception e) {
       log.warn(
           "Failed to resolve/create member for user {} in tenant {}: {}",
-          clerkUserId,
+          externalUserId,
           tenantId,
           e.getMessage());
       return null;
@@ -103,19 +103,19 @@ public class MemberFilter extends OncePerRequestFilter {
     return new MemberInfo(memberId, orgRole);
   }
 
-  private UUID resolveOrCreateMember(String clerkUserId, String orgRole) {
+  private UUID resolveOrCreateMember(String externalUserId, String orgRole) {
     return memberRepository
-        .findByClerkUserId(clerkUserId)
+        .findByExternalUserId(externalUserId)
         .map(Member::getId)
-        .orElseGet(() -> lazyCreateMember(clerkUserId, orgRole));
+        .orElseGet(() -> lazyCreateMember(externalUserId, orgRole));
   }
 
-  private UUID lazyCreateMember(String clerkUserId, String orgRole) {
+  private UUID lazyCreateMember(String externalUserId, String orgRole) {
     try {
       var member =
           new Member(
-              clerkUserId,
-              clerkUserId + "@placeholder.internal",
+              externalUserId,
+              externalUserId + "@placeholder.internal",
               null,
               null,
               orgRole != null ? orgRole : Roles.ORG_MEMBER);
@@ -123,18 +123,18 @@ public class MemberFilter extends OncePerRequestFilter {
       log.info(
           "Lazy-created member {} for user {} in tenant {}",
           member.getId(),
-          clerkUserId,
+          externalUserId,
           RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : "unknown");
       return member.getId();
     } catch (DataIntegrityViolationException e) {
       // Race condition: another instance already created this member
       return memberRepository
-          .findByClerkUserId(clerkUserId)
+          .findByExternalUserId(externalUserId)
           .map(Member::getId)
           .orElseThrow(
               () ->
                   new IllegalStateException(
-                      "Member not found after constraint violation for: " + clerkUserId));
+                      "Member not found after constraint violation for: " + externalUserId));
     }
   }
 }

@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface OrgSchemaMappingRepository extends JpaRepository<OrgSchemaMapping, UUID> {
-  Optional<OrgSchemaMapping> findByClerkOrgId(String clerkOrgId);
+  Optional<OrgSchemaMapping> findByExternalOrgId(String externalOrgId);
 
   Optional<OrgSchemaMapping> findBySchemaName(String schemaName);
 }

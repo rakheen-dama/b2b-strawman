@@ -91,8 +91,8 @@ class PortalInvoiceControllerIntegrationTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "user_inv_portal_owner",
+                          "externalOrgId": "%s",
+                          "externalUserId": "user_inv_portal_owner",
                           "email": "inv_portal_owner@test.com",
                           "name": "Invoice Portal Owner",
                           "avatarUrl": null,
@@ -104,7 +104,7 @@ class PortalInvoiceControllerIntegrationTest {
 
     String memberIdStr = JsonPath.read(syncResult.getResponse().getContentAsString(), "$.memberId");
     memberId = UUID.fromString(memberIdStr);
-    tenantSchema = orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).get().getSchemaName();
+    tenantSchema = orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).get().getSchemaName();
 
     // Create primary customer + portal contact
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)

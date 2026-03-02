@@ -65,8 +65,8 @@ class MemberSyncAuditTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "user_ms_new",
+                          "externalOrgId": "%s",
+                          "externalUserId": "user_ms_new",
                           "email": "ms_new@test.com",
                           "name": "New Member",
                           "avatarUrl": null,
@@ -112,8 +112,8 @@ class MemberSyncAuditTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "user_ms_role",
+                          "externalOrgId": "%s",
+                          "externalUserId": "user_ms_role",
                           "email": "ms_role@test.com",
                           "name": "Role Change Member",
                           "avatarUrl": null,
@@ -137,8 +137,8 @@ class MemberSyncAuditTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "user_ms_role",
+                      "externalOrgId": "%s",
+                      "externalUserId": "user_ms_role",
                       "email": "ms_role@test.com",
                       "name": "Role Change Member",
                       "avatarUrl": null,
@@ -182,8 +182,8 @@ class MemberSyncAuditTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "user_ms_norole",
+                          "externalOrgId": "%s",
+                          "externalUserId": "user_ms_norole",
                           "email": "ms_norole@test.com",
                           "name": "No Role Change",
                           "avatarUrl": null,
@@ -207,8 +207,8 @@ class MemberSyncAuditTest {
                 .content(
                     """
                     {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "user_ms_norole",
+                      "externalOrgId": "%s",
+                      "externalUserId": "user_ms_norole",
                       "email": "ms_norole@test.com",
                       "name": "Updated Name",
                       "avatarUrl": null,
@@ -244,8 +244,8 @@ class MemberSyncAuditTest {
                     .content(
                         """
                         {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "user_ms_delete",
+                          "externalOrgId": "%s",
+                          "externalUserId": "user_ms_delete",
                           "email": "ms_delete@test.com",
                           "name": "Delete Me",
                           "avatarUrl": null,
@@ -265,7 +265,7 @@ class MemberSyncAuditTest {
         .perform(
             delete("/internal/members/user_ms_delete")
                 .header("X-API-KEY", API_KEY)
-                .param("clerkOrgId", ORG_ID))
+                .param("externalOrgId", ORG_ID))
         .andExpect(status().isNoContent());
 
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
@@ -283,7 +283,7 @@ class MemberSyncAuditTest {
               assertThat(event.getEntityId()).isEqualTo(memberId);
               assertThat(event.getActorType()).isEqualTo("WEBHOOK");
               assertThat(event.getSource()).isEqualTo("WEBHOOK");
-              assertThat(event.getDetails()).containsEntry("clerk_user_id", "user_ms_delete");
+              assertThat(event.getDetails()).containsEntry("external_user_id", "user_ms_delete");
             });
   }
 }

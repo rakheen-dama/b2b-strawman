@@ -51,7 +51,7 @@ class PortalBrandingControllerIntegrationTest {
     provisioningService.provisionTenant(ORG_ID, "Branding Test Org");
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
-    var schema = orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).get().getSchemaName();
+    var schema = orgSchemaMappingRepository.findByExternalOrgId(ORG_ID).get().getSchemaName();
     ScopedValue.where(RequestScopes.TENANT_ID, schema)
         .run(
             () -> {
@@ -68,7 +68,7 @@ class PortalBrandingControllerIntegrationTest {
     planSyncService.syncPlan(ORG_WITH_LOGO_ID, "pro-plan");
 
     var logoSchema =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_WITH_LOGO_ID).get().getSchemaName();
+        orgSchemaMappingRepository.findByExternalOrgId(ORG_WITH_LOGO_ID).get().getSchemaName();
     ScopedValue.where(RequestScopes.TENANT_ID, logoSchema)
         .run(
             () -> {

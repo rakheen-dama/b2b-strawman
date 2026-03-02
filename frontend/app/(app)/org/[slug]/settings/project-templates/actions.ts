@@ -9,6 +9,7 @@ import {
   updateProjectTemplate,
   saveProjectFromTemplate,
   instantiateProjectTemplate,
+  updateTemplateRequiredCustomerFields,
 } from "@/lib/api/templates";
 import type {
   ProjectTemplateResponse,
@@ -135,6 +136,29 @@ export async function saveAsTemplateAction(
         return {
           success: false,
           error: "You do not have permission to create templates.",
+        };
+      }
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+}
+
+export async function updateRequiredCustomerFieldsAction(
+  slug: string,
+  templateId: string,
+  fieldDefinitionIds: string[],
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await updateTemplateRequiredCustomerFields(templateId, fieldDefinitionIds);
+    revalidatePath(`/org/${slug}/settings/project-templates/${templateId}`);
+    return { success: true };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 403) {
+        return {
+          success: false,
+          error: "You do not have permission to configure template fields.",
         };
       }
       return { success: false, error: error.message };

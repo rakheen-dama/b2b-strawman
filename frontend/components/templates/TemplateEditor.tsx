@@ -10,14 +10,16 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   createProjectTemplateAction,
   updateProjectTemplateAction,
+  updateRequiredCustomerFieldsAction,
 } from "@/app/(app)/org/[slug]/settings/project-templates/actions";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
-import type { TagResponse } from "@/lib/types";
+import type { TagResponse, FieldDefinitionResponse } from "@/lib/types";
 
 interface TemplateEditorProps {
   slug: string;
   template?: ProjectTemplateResponse;
   availableTags: TagResponse[];
+  availableCustomerFields?: FieldDefinitionResponse[];
 }
 
 interface TaskItemRow {
@@ -36,7 +38,7 @@ interface TaskRow {
   itemsExpanded: boolean;
 }
 
-export function TemplateEditor({ slug, template, availableTags }: TemplateEditorProps) {
+export function TemplateEditor({ slug, template, availableTags, availableCustomerFields = [] }: TemplateEditorProps) {
   const router = useRouter();
   const nextKeyRef = useRef(0);
 
@@ -91,6 +93,11 @@ export function TemplateEditor({ slug, template, availableTags }: TemplateEditor
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>(() =>
     template?.tags?.map((t) => t.id) ?? [],
   );
+  const [selectedRequiredFieldIds, setSelectedRequiredFieldIds] = useState<string[]>(
+    () => template?.requiredCustomerFieldIds ?? [],
+  );
+  const [isSavingFields, setIsSavingFields] = useState(false);
+  const [fieldsError, setFieldsError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -176,6 +183,22 @@ export function TemplateEditor({ slug, template, availableTags }: TemplateEditor
         return { ...t, items: next };
       }),
     );
+  }
+
+  async function handleSaveRequiredFields() {
+    if (!template) return;
+    setIsSavingFields(true);
+    setFieldsError(null);
+    try {
+      const result = await updateRequiredCustomerFieldsAction(slug, template.id, selectedRequiredFieldIds);
+      if (!result.success) {
+        setFieldsError(result.error ?? "Failed to save required fields.");
+      }
+    } catch {
+      setFieldsError("An unexpected error occurred.");
+    } finally {
+      setIsSavingFields(false);
+    }
   }
 
   async function handleSave() {
@@ -533,6 +556,56 @@ export function TemplateEditor({ slug, template, availableTags }: TemplateEditor
           </div>
         )}
       </div>
+
+      {/* Section 4 — Required Customer Fields (edit mode only) */}
+      {template && availableCustomerFields.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
+                Required Customer Fields
+              </h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Fields the customer must fill before a project can be created from this template.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              type="button"
+              onClick={handleSaveRequiredFields}
+              disabled={isSavingFields}
+            >
+              {isSavingFields ? "Saving..." : "Save Fields"}
+            </Button>
+          </div>
+          <div className="space-y-2">
+            {availableCustomerFields.map((field) => (
+              <label key={field.id} className="flex cursor-pointer items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={selectedRequiredFieldIds.includes(field.id)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setSelectedRequiredFieldIds((prev) => [...prev, field.id]);
+                    } else {
+                      setSelectedRequiredFieldIds((prev) => prev.filter((id) => id !== field.id));
+                    }
+                  }}
+                  className="size-3.5 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                />
+                <span className="font-medium">{field.name}</span>
+                {field.description && (
+                  <span className="text-slate-400">&mdash; {field.description}</span>
+                )}
+              </label>
+            ))}
+          </div>
+          {fieldsError && (
+            <p className="text-sm text-destructive" role="alert">{fieldsError}</p>
+          )}
+        </div>
+      )}
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 

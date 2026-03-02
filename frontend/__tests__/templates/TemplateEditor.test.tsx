@@ -1,12 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen, fireEvent } from "@testing-library/react";
+import { cleanup, render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { TemplateEditor } from "@/components/templates/TemplateEditor";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
-import type { TagResponse } from "@/lib/types";
+import type { TagResponse, FieldDefinitionResponse } from "@/lib/types";
 
 const mockCreateTemplate = vi.fn();
 const mockUpdateTemplate = vi.fn();
+const mockUpdateRequiredFields = vi.fn();
 const mockRouterPush = vi.fn();
 
 vi.mock(
@@ -16,6 +17,7 @@ vi.mock(
     duplicateTemplateAction: vi.fn(),
     createProjectTemplateAction: (...args: unknown[]) => mockCreateTemplate(...args),
     updateProjectTemplateAction: (...args: unknown[]) => mockUpdateTemplate(...args),
+    updateRequiredCustomerFieldsAction: (...args: unknown[]) => mockUpdateRequiredFields(...args),
   }),
 );
 
@@ -60,6 +62,49 @@ const SAMPLE_TEMPLATE: ProjectTemplateResponse = {
 const AVAILABLE_TAGS: TagResponse[] = [
   { id: "tag-1", name: "Accounting", slug: "accounting", color: "#22c55e" },
   { id: "tag-2", name: "Monthly", slug: "monthly", color: null },
+];
+
+const CUSTOMER_FIELDS: FieldDefinitionResponse[] = [
+  {
+    id: "fd-1",
+    entityType: "CUSTOMER",
+    name: "VAT Number",
+    slug: "vat_number",
+    fieldType: "TEXT",
+    description: "Company VAT number",
+    required: false,
+    defaultValue: null,
+    options: null,
+    validation: null,
+    sortOrder: 0,
+    packId: null,
+    packFieldKey: null,
+    visibilityCondition: null,
+    requiredForContexts: [],
+    active: true,
+    createdAt: "2026-01-01T00:00:00Z",
+    updatedAt: "2026-01-01T00:00:00Z",
+  },
+  {
+    id: "fd-2",
+    entityType: "CUSTOMER",
+    name: "Tax Year End",
+    slug: "tax_year_end",
+    fieldType: "DATE",
+    description: null,
+    required: false,
+    defaultValue: null,
+    options: null,
+    validation: null,
+    sortOrder: 1,
+    packId: null,
+    packFieldKey: null,
+    visibilityCondition: null,
+    requiredForContexts: [],
+    active: true,
+    createdAt: "2026-01-01T00:00:00Z",
+    updatedAt: "2026-01-01T00:00:00Z",
+  },
 ];
 
 describe("TemplateEditor", () => {
@@ -202,5 +247,47 @@ describe("TemplateEditor", () => {
         ]),
       }),
     );
+  });
+
+  it("selecting required customer fields and saving calls updateRequiredCustomerFieldsAction", async () => {
+    mockUpdateRequiredFields.mockResolvedValue({ success: true });
+    const user = userEvent.setup();
+    render(
+      <TemplateEditor
+        slug="acme"
+        template={SAMPLE_TEMPLATE}
+        availableTags={[]}
+        availableCustomerFields={CUSTOMER_FIELDS}
+      />,
+    );
+    const vatCheckbox = screen.getByRole("checkbox", { name: /vat number/i });
+    await user.click(vatCheckbox);
+    await user.click(screen.getByRole("button", { name: /save fields/i }));
+    await waitFor(() => {
+      expect(mockUpdateRequiredFields).toHaveBeenCalledWith(
+        "acme",
+        "pt-1",
+        ["fd-1"],
+      );
+    });
+  });
+
+  it("displays pre-selected required fields when template has requiredCustomerFieldIds", () => {
+    const templateWithFields: ProjectTemplateResponse = {
+      ...SAMPLE_TEMPLATE,
+      requiredCustomerFieldIds: ["fd-2"],
+    };
+    render(
+      <TemplateEditor
+        slug="acme"
+        template={templateWithFields}
+        availableTags={[]}
+        availableCustomerFields={CUSTOMER_FIELDS}
+      />,
+    );
+    const taxYearCheckbox = screen.getByRole("checkbox", { name: /tax year end/i });
+    expect(taxYearCheckbox).toBeChecked();
+    const vatCheckbox = screen.getByRole("checkbox", { name: /vat number/i });
+    expect(vatCheckbox).not.toBeChecked();
   });
 });

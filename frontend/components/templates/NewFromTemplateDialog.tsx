@@ -17,9 +17,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { TemplatePicker } from "@/components/templates/TemplatePicker";
 import { instantiateTemplateAction } from "@/app/(app)/org/[slug]/settings/project-templates/actions";
+import { checkEngagementPrerequisitesAction } from "@/lib/actions/prerequisite-actions";
+import { PrerequisiteModal } from "@/components/prerequisite/prerequisite-modal";
 import { resolveNameTokens } from "@/lib/name-token-resolver";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
 import type { OrgMember, Customer } from "@/lib/types";
+import type { PrerequisiteViolation } from "@/components/prerequisite/types";
 
 interface NewFromTemplateDialogProps {
   slug: string;
@@ -50,6 +53,10 @@ export function NewFromTemplateDialog({
   const [description, setDescription] = useState("");
   const [customerId, setCustomerId] = useState("");
   const [projectLeadMemberId, setProjectLeadMemberId] = useState("");
+
+  // Prerequisite modal state
+  const [prereqModalOpen, setPrereqModalOpen] = useState(false);
+  const [prereqViolations, setPrereqViolations] = useState<PrerequisiteViolation[]>([]);
 
   // Hide when no templates — must be after all hooks (rules of hooks)
   if (templates.length === 0) return null;
@@ -99,7 +106,7 @@ export function NewFromTemplateDialog({
     setError(null);
   }
 
-  async function handleSubmit() {
+  async function doCreateProject() {
     if (!selectedTemplateId) return;
 
     setError(null);
@@ -126,6 +133,29 @@ export function NewFromTemplateDialog({
     }
   }
 
+  async function handleSubmit() {
+    if (!selectedTemplateId) return;
+
+    // Prerequisite check only when customer is selected
+    if (customerId) {
+      setIsSubmitting(true);
+      try {
+        const check = await checkEngagementPrerequisitesAction(selectedTemplateId, customerId);
+        if (!check.passed) {
+          setPrereqViolations(check.violations);
+          setPrereqModalOpen(true);
+          return;
+        }
+      } catch {
+        // Fail-open: proceed if check throws
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
+
+    await doCreateProject();
+  }
+
   // Update name preview when customer changes
   function handleCustomerChange(newCustomerId: string) {
     setCustomerId(newCustomerId);
@@ -138,138 +168,158 @@ export function NewFromTemplateDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>
-            {step === 1
-              ? "New from Template \u2014 Select Template"
-              : "New from Template \u2014 Configure"}
-          </DialogTitle>
-          <DialogDescription>
-            {step === 1
-              ? "Choose a template to create a new project."
-              : `Creating from: ${selectedTemplate?.name}`}
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogTrigger asChild>{children}</DialogTrigger>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>
+              {step === 1
+                ? "New from Template \u2014 Select Template"
+                : "New from Template \u2014 Configure"}
+            </DialogTitle>
+            <DialogDescription>
+              {step === 1
+                ? "Choose a template to create a new project."
+                : `Creating from: ${selectedTemplate?.name}`}
+            </DialogDescription>
+          </DialogHeader>
 
-        {step === 1 ? (
-          <>
-            <div className="py-2">
-              <TemplatePicker
-                templates={templates}
-                selectedId={selectedTemplateId}
-                onSelect={handleSelectTemplate}
-              />
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="plain" onClick={() => setOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="button" onClick={handleNext} disabled={!selectedTemplateId}>
-                Next
-              </Button>
-            </DialogFooter>
-          </>
-        ) : (
-          <>
-            <div className="space-y-4 py-2">
-              {/* Project Name */}
-              <div className="space-y-2">
-                <Label htmlFor="new-proj-name">Project name</Label>
-                <Input
-                  id="new-proj-name"
-                  value={projectName}
-                  onChange={(e) => setProjectName(e.target.value)}
-                  placeholder="Project name..."
-                  maxLength={255}
+          {step === 1 ? (
+            <>
+              <div className="py-2">
+                <TemplatePicker
+                  templates={templates}
+                  selectedId={selectedTemplateId}
+                  onSelect={handleSelectTemplate}
                 />
-                {namePreview && projectName !== namePreview && (
-                  <p className="text-xs text-slate-400 dark:text-slate-500">
-                    Pattern preview:{" "}
-                    <span className="font-medium text-slate-600 dark:text-slate-300">
-                      {namePreview}
-                    </span>
-                  </p>
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="plain" onClick={() => setOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="button" onClick={handleNext} disabled={!selectedTemplateId}>
+                  Next
+                </Button>
+              </DialogFooter>
+            </>
+          ) : (
+            <>
+              <div className="space-y-4 py-2">
+                {/* Project Name */}
+                <div className="space-y-2">
+                  <Label htmlFor="new-proj-name">Project name</Label>
+                  <Input
+                    id="new-proj-name"
+                    value={projectName}
+                    onChange={(e) => setProjectName(e.target.value)}
+                    placeholder="Project name..."
+                    maxLength={255}
+                  />
+                  {namePreview && projectName !== namePreview && (
+                    <p className="text-xs text-slate-400 dark:text-slate-500">
+                      Pattern preview:{" "}
+                      <span className="font-medium text-slate-600 dark:text-slate-300">
+                        {namePreview}
+                      </span>
+                    </p>
+                  )}
+                </div>
+
+                {/* Description */}
+                <div className="space-y-2">
+                  <Label htmlFor="new-proj-desc">
+                    Description{" "}
+                    <span className="font-normal text-muted-foreground">(optional)</span>
+                  </Label>
+                  <Textarea
+                    id="new-proj-desc"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Optional description..."
+                    rows={2}
+                    maxLength={2000}
+                  />
+                </div>
+
+                {/* Customer */}
+                {customers.length > 0 && (
+                  <div className="space-y-2">
+                    <Label htmlFor="new-proj-customer">
+                      Customer{" "}
+                      <span className="font-normal text-muted-foreground">(optional)</span>
+                    </Label>
+                    <select
+                      id="new-proj-customer"
+                      value={customerId}
+                      onChange={(e) => handleCustomerChange(e.target.value)}
+                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
+                    >
+                      <option value="">None</option>
+                      {customers.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 )}
+
+                {/* Project Lead */}
+                {orgMembers.length > 0 && (
+                  <div className="space-y-2">
+                    <Label htmlFor="new-proj-lead">
+                      Project lead{" "}
+                      <span className="font-normal text-muted-foreground">(optional)</span>
+                    </Label>
+                    <select
+                      id="new-proj-lead"
+                      value={projectLeadMemberId}
+                      onChange={(e) => setProjectLeadMemberId(e.target.value)}
+                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
+                    >
+                      <option value="">Unassigned</option>
+                      {orgMembers.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {error && <p className="text-sm text-destructive">{error}</p>}
               </div>
+              <DialogFooter>
+                <Button type="button" variant="plain" onClick={handleBack} disabled={isSubmitting}>
+                  Back
+                </Button>
+                <Button type="button" onClick={handleSubmit} disabled={isSubmitting}>
+                  {isSubmitting ? "Creating..." : "Create Project"}
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
-              {/* Description */}
-              <div className="space-y-2">
-                <Label htmlFor="new-proj-desc">
-                  Description{" "}
-                  <span className="font-normal text-muted-foreground">(optional)</span>
-                </Label>
-                <Textarea
-                  id="new-proj-desc"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Optional description..."
-                  rows={2}
-                  maxLength={2000}
-                />
-              </div>
-
-              {/* Customer */}
-              {customers.length > 0 && (
-                <div className="space-y-2">
-                  <Label htmlFor="new-proj-customer">
-                    Customer{" "}
-                    <span className="font-normal text-muted-foreground">(optional)</span>
-                  </Label>
-                  <select
-                    id="new-proj-customer"
-                    value={customerId}
-                    onChange={(e) => handleCustomerChange(e.target.value)}
-                    className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
-                  >
-                    <option value="">None</option>
-                    {customers.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              {/* Project Lead */}
-              {orgMembers.length > 0 && (
-                <div className="space-y-2">
-                  <Label htmlFor="new-proj-lead">
-                    Project lead{" "}
-                    <span className="font-normal text-muted-foreground">(optional)</span>
-                  </Label>
-                  <select
-                    id="new-proj-lead"
-                    value={projectLeadMemberId}
-                    onChange={(e) => setProjectLeadMemberId(e.target.value)}
-                    className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
-                  >
-                    <option value="">Unassigned</option>
-                    {orgMembers.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              {error && <p className="text-sm text-destructive">{error}</p>}
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="plain" onClick={handleBack} disabled={isSubmitting}>
-                Back
-              </Button>
-              <Button type="button" onClick={handleSubmit} disabled={isSubmitting}>
-                {isSubmitting ? "Creating..." : "Create Project"}
-              </Button>
-            </DialogFooter>
-          </>
-        )}
-      </DialogContent>
-    </Dialog>
+      {/* Prerequisite Modal — rendered outside Dialog to avoid nesting conflicts */}
+      {prereqModalOpen && customerId && (
+        <PrerequisiteModal
+          open={prereqModalOpen}
+          onOpenChange={setPrereqModalOpen}
+          context="PROJECT_CREATION"
+          violations={prereqViolations}
+          entityType="CUSTOMER"
+          entityId={customerId}
+          slug={slug}
+          onResolved={() => {
+            setPrereqModalOpen(false);
+            void doCreateProject();
+          }}
+          onCancel={() => setPrereqModalOpen(false)}
+        />
+      )}
+    </>
   );
 }

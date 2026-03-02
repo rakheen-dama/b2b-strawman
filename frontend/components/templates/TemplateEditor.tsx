@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2, ArrowUp, ArrowDown, X, ChevronDown, ChevronRight } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -582,17 +583,15 @@ export function TemplateEditor({ slug, template, availableTags, availableCustome
           <div className="space-y-2">
             {availableCustomerFields.map((field) => (
               <label key={field.id} className="flex cursor-pointer items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={selectedRequiredFieldIds.includes(field.id)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
+                  onCheckedChange={(checked) => {
+                    if (checked) {
                       setSelectedRequiredFieldIds((prev) => [...prev, field.id]);
                     } else {
                       setSelectedRequiredFieldIds((prev) => prev.filter((id) => id !== field.id));
                     }
                   }}
-                  className="size-3.5 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
                 />
                 <span className="font-medium">{field.name}</span>
                 {field.description && (

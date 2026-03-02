@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { TemplatePicker } from "@/components/templates/TemplatePicker";
 import { instantiateTemplateAction } from "@/app/(app)/org/[slug]/settings/project-templates/actions";
 import { checkEngagementPrerequisitesAction } from "@/lib/actions/prerequisite-actions";
+import { toast } from "sonner";
 import { PrerequisiteModal } from "@/components/prerequisite/prerequisite-modal";
 import { resolveNameTokens } from "@/lib/name-token-resolver";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
@@ -147,7 +148,8 @@ export function NewFromTemplateDialog({
           return;
         }
       } catch {
-        // Fail-open: proceed if check throws
+        // Fail-open: proceed if prerequisite service is unavailable, but warn the user
+        toast.warning("Could not verify prerequisites — proceeding anyway");
       } finally {
         setIsSubmitting(false);
       }
@@ -304,7 +306,7 @@ export function NewFromTemplateDialog({
       </Dialog>
 
       {/* Prerequisite Modal — rendered outside Dialog to avoid nesting conflicts */}
-      {prereqModalOpen && customerId && (
+      {prereqModalOpen && customerId && selectedTemplateId && (
         <PrerequisiteModal
           open={prereqModalOpen}
           onOpenChange={setPrereqModalOpen}
@@ -313,6 +315,9 @@ export function NewFromTemplateDialog({
           entityType="CUSTOMER"
           entityId={customerId}
           slug={slug}
+          onRecheck={() =>
+            checkEngagementPrerequisitesAction(selectedTemplateId, customerId)
+          }
           onResolved={() => {
             setPrereqModalOpen(false);
             void doCreateProject();

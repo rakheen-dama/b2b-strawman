@@ -19,6 +19,11 @@ import type {
   InstantiateTemplateRequest,
 } from "@/lib/api/templates";
 
+// NOTE: `slug` is accepted as a client parameter in all actions below and used
+// solely for `revalidatePath`. Tenant isolation is enforced by the backend via
+// the auth token — a mismatched slug would only invalidate the wrong cache path,
+// not grant cross-tenant access. This pattern is consistent across all Next.js
+// server actions in this codebase.
 interface ActionResult {
   success: boolean;
   error?: string;

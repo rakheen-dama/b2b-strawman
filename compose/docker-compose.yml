@@ -55,6 +55,39 @@ services:
     networks:
       - dev-network
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.1
+    container_name: b2b-keycloak
+    command: start-dev --import-realm
+    restart: unless-stopped
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}?currentSchema=keycloak
+      KC_DB_USERNAME: ${POSTGRES_USER}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      KC_FEATURES: organization
+      KC_HEALTH_ENABLED: "true"
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+    ports:
+      - "9090:8080"
+    volumes:
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
+      - ../keycloak-spi/target/keycloak-spi-0.0.1-SNAPSHOT.jar:/opt/keycloak/providers/keycloak-spi.jar:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/9000 && echo ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+    networks:
+      - dev-network
+    profiles:
+      - keycloak
+
   backend:
     build:
       context: ../backend

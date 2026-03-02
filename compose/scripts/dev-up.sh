@@ -3,7 +3,7 @@
 # Starts Postgres, LocalStack, and Mailpit. Backend is NOT started here —
 # run it locally via ./mvnw spring-boot:run for hot-reload.
 #
-# Usage: bash compose/scripts/dev-up.sh
+# Usage: bash compose/scripts/dev-up.sh [--all] [--keycloak]
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -20,10 +20,42 @@ echo ""
 
 # Start infrastructure services only (exclude backend/frontend by default)
 SERVICES="postgres localstack mailpit"
-if [[ "${1:-}" == "--all" ]]; then
-  SERVICES=""
-  echo "Starting all services (including backend + frontend)..."
-else
+KEYCLOAK=false
+ALL=false
+COMPOSE_PROFILES=""
+
+for arg in "$@"; do
+  case "$arg" in
+    --all)
+      ALL=true
+      SERVICES=""
+      echo "Starting all services (including backend + frontend)..."
+      ;;
+    --keycloak)
+      KEYCLOAK=true
+      COMPOSE_PROFILES="--profile keycloak"
+      ;;
+  esac
+done
+
+if [[ "$KEYCLOAK" == "true" ]]; then
+  SPI_JAR="$COMPOSE_DIR/../keycloak-spi/target/keycloak-spi-0.0.1-SNAPSHOT.jar"
+  if [[ ! -f "$SPI_JAR" ]]; then
+    echo "❌ SPI JAR not found at $SPI_JAR"
+    echo "   Build it first: cd keycloak-spi && ../backend/mvnw package -DskipTests"
+    exit 1
+  fi
+  if [[ "$ALL" == "false" ]]; then
+    SERVICES="$SERVICES keycloak"
+  fi
+  echo "Including Keycloak (port 9090)..."
+fi
+
+if [[ -n "$SERVICES" ]] && [[ "$KEYCLOAK" == "false" ]]; then
+  echo "Starting infrastructure services..."
+  echo "  (use --all to also start backend + frontend containers)"
+  echo "  (use --keycloak to include Keycloak identity provider)"
+elif [[ -n "$SERVICES" ]] && [[ "$KEYCLOAK" == "true" ]]; then
   echo "Starting infrastructure services..."
   echo "  (use --all to also start backend + frontend containers)"
 fi
@@ -31,9 +63,9 @@ fi
 echo ""
 echo "[1/2] Starting services..."
 if [[ -n "$SERVICES" ]]; then
-  docker compose -f "$COMPOSE_FILE" up -d $SERVICES
+  docker compose -f "$COMPOSE_FILE" $COMPOSE_PROFILES up -d $SERVICES
 else
-  docker compose -f "$COMPOSE_FILE" up -d
+  docker compose -f "$COMPOSE_FILE" $COMPOSE_PROFILES up -d
 fi
 
 echo ""
@@ -91,8 +123,27 @@ if [[ $ELAPSED -ge 15 ]]; then
   echo "TIMEOUT (15s)"
 fi
 
+# Wait for Keycloak (if started)
+if [[ "$KEYCLOAK" == "true" ]]; then
+  ELAPSED=0
+  printf "  Keycloak (localhost:9090)... "
+  while [[ $ELAPSED -lt 120 ]]; do
+    if curl -sf http://localhost:9090/health/ready > /dev/null 2>&1; then
+      echo "ready"
+      break
+    fi
+    sleep $INTERVAL
+    ELAPSED=$((ELAPSED + INTERVAL))
+  done
+  if [[ $ELAPSED -ge 120 ]]; then
+    echo "TIMEOUT (120s)"
+    echo "Check logs: docker compose -f $COMPOSE_FILE logs keycloak"
+    exit 1
+  fi
+fi
+
 # If --all was requested, wait for backend and frontend too
-if [[ "${1:-}" == "--all" ]]; then
+if [[ "$ALL" == "true" ]]; then
   ELAPSED=0
   printf "  Backend (localhost:8080)... "
   while [[ $ELAPSED -lt 300 ]]; do
@@ -133,7 +184,10 @@ echo "  Postgres:       localhost:5432"
 echo "  LocalStack S3:  localhost:4566"
 echo "  Mailpit SMTP:   localhost:1025"
 echo "  Mailpit UI:     http://localhost:8025"
-if [[ "${1:-}" == "--all" ]]; then
+if [[ "$KEYCLOAK" == "true" ]]; then
+  echo "  Keycloak Admin: http://localhost:9090/admin (admin/admin)"
+fi
+if [[ "$ALL" == "true" ]]; then
   echo "  Backend:        http://localhost:8080"
   echo "  Frontend:       http://localhost:3000"
 fi

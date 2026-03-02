@@ -13,7 +13,7 @@ Phase 35 adds **Keycloak 26.5 as a self-hosted auth provider** alongside the exi
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 261 | Backend Field Renames | Backend + Frontend | -- | M | 261A, 261B, 261C | **Done** (PRs #507, #508) |
-| 262 | Keycloak SPI + Docker Setup | Keycloak + Infra | -- | M | 262A, 262B | Not started |
+| 262 | Keycloak SPI + Docker Setup | Keycloak + Infra | -- | M | 262A, 262B | **Done** (PRs #509, #510) |
 | 263 | Backend Keycloak Integration | Backend | 262 | L | 263A, 263B | Not started |
 | 264 | Frontend Keycloak Provider | Frontend | 261C | M | 264A, 264B | Not started |
 | 265 | Frontend UI Components | Frontend | 263B, 264B | M | 265A, 265B, 265C | Not started |
@@ -66,7 +66,7 @@ Phase 35 adds **Keycloak 26.5 as a self-hosted auth provider** alongside the exi
 | 1b | Epic 261 | 261B | **Frontend DTO renames** — update `lib/internal-api.ts`, `lib/webhook-handlers.ts` to use `externalOrgId`/`externalUserId`. Must match backend changes from 261A. | **Done** (shipped with PR #507) |
 | 1c | Epic 261 | 261C | **Class renames** — `ClerkJwtUtils` → `JwtClaimExtractor`, `ClerkJwtAuthenticationConverter` → `OrgJwtAuthenticationConverter`. Update all imports (~8 files). Provider-agnostic naming. | **Done** (PR #508) |
 | 1d | Epic 262 | 262A | **Custom protocol mapper SPI** — `keycloak-spi/` Maven module with `OrgRoleProtocolMapper`. Reads org membership + role, injects `"o"` claim matching Clerk v2 format. ~80-100 lines Java. Can run in parallel with 261. | **Done** (PR #509) |
-| 1e | Epic 262 | 262B | **Docker Compose + realm config** — add Keycloak service (port 9090), `realm-export.json`, `application-keycloak.yml`. Can run in parallel with 261. |
+| 1e | Epic 262 | 262B | **Docker Compose + realm config** — add Keycloak service (port 9090), `realm-export.json`, `application-keycloak.yml`. Can run in parallel with 261. | **Done** (PR #510) |
 
 ### Stage 2: Backend Integration (Sequential)
 
@@ -168,7 +168,7 @@ Stage 4:  [266A] ──► [266B] ──► [267A]  ← testing + docs (sequenti
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **262A** | 262.1-262.5 | New `keycloak-spi/` Maven module, `OrgRoleProtocolMapper` implementing `OIDCAccessTokenMapper`, reads org membership + role via OrganizationProvider SPI, injects `"o"` claim, META-INF services descriptor, unit tests | **Done** (PR #509) |
-| **262B** | 262.6-262.11 | Keycloak Docker service in docker-compose.yml (port 9090), `compose/keycloak/realm-export.json` (realm, clients, org feature, mapper, roles, SMTP), `application-keycloak.yml` Spring profile, dev-up.sh script update, verify Keycloak starts and SPI loads | Not started |
+| **262B** | 262.6-262.11 | Keycloak Docker service in docker-compose.yml (port 9090), `compose/keycloak/realm-export.json` (realm, clients, org feature, mapper, roles, SMTP), `application-keycloak.yml` Spring profile, dev-up.sh script update, verify Keycloak starts and SPI loads | **Done** (PR #510) |
 
 ### Tasks
 

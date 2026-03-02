@@ -1,5 +1,4 @@
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import type { CompletenessScore } from "@/lib/types";
 
 interface CompletenessBadgeProps {
@@ -10,7 +9,7 @@ interface CompletenessBadgeProps {
 export function CompletenessBadge({ score, className }: CompletenessBadgeProps) {
   if (score.totalRequired === 0) {
     return (
-      <Badge variant="neutral" className={cn(className)}>
+      <Badge variant="neutral" className={className}>
         N/A
       </Badge>
     );
@@ -24,7 +23,7 @@ export function CompletenessBadge({ score, className }: CompletenessBadgeProps) 
         : "destructive";
 
   return (
-    <Badge variant={variant} className={cn(className)}>
+    <Badge variant={variant} className={className}>
       {score.percentage}%
     </Badge>
   );

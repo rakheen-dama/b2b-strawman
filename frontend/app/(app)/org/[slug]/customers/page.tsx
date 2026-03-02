@@ -8,7 +8,6 @@ import { CompletenessBadge } from "@/components/customers/completeness-badge";
 import { CustomFieldBadges } from "@/components/field-definitions/CustomFieldBadges";
 import { ViewSelectorClient } from "@/components/views/ViewSelectorClient";
 import { createSavedViewAction } from "./view-actions";
-import { fetchCompletenessSummary } from "./actions";
 import { formatDate } from "@/lib/format";
 import { LifecycleStatusBadge } from "@/components/compliance/LifecycleStatusBadge";
 import { UserRound } from "lucide-react";
@@ -113,7 +112,11 @@ export default async function CustomersPage({
   let completenessScores: Record<string, CompletenessScore> = {};
   if (customers.length > 0) {
     try {
-      completenessScores = await fetchCompletenessSummary(customers.map((c) => c.id));
+      const params = new URLSearchParams();
+      customers.forEach((c) => params.append("customerIds", c.id));
+      completenessScores = await api.get<Record<string, CompletenessScore>>(
+        `/api/customers/completeness-summary?${params.toString()}`
+      );
     } catch {
       // Non-fatal: completeness column will show N/A
     }

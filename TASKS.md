@@ -302,7 +302,7 @@
 | 260 | Dashboard Widget, Settings & Template Editor Integration | Frontend | 255, 256, 258 | M | 260A, 260B | |
 | **Phase 35 — Keycloak Auth Provider Migration** | | | | | | See [tasks/phase35-keycloak-auth-migration.md](tasks/phase35-keycloak-auth-migration.md) |
 | 261 | Backend Field Renames | Backend + Frontend | -- | M | 261A, 261B, 261C | **Done** (PRs #507, #508) |
-| 262 | Keycloak SPI + Docker Setup | Keycloak + Infra | -- | M | 262A, 262B | |
+| 262 | Keycloak SPI + Docker Setup | Keycloak + Infra | -- | M | 262A, 262B | 262A **Done** (PR #509) |
 | 263 | Backend Keycloak Integration | Backend | 262 | L | 263A, 263B | |
 | 264 | Frontend Keycloak Provider | Frontend | 261C | M | 264A, 264B | |
 | 265 | Frontend UI Components | Frontend | 263B, 264B | M | 265A, 265B, 265C | |

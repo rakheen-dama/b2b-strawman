@@ -29,7 +29,7 @@ Phase 33 transforms DocTeams' metadata infrastructure from passive data capture 
 | 246 | Smart Customer Intake Dialog | Frontend | 241, 245 | M | 246A, 246B | **Done** |
 | 247 | Prerequisite Configuration UI | Frontend | 245 | S | 247A | **Done** |
 | 248 | Lifecycle Transition Frontend Integration | Frontend | 242, 245 | S | 248A | **Done** |
-| 249 | Engagement & Action-Point Frontend Integration | Frontend | 243, 244, 245 | M | 249A, 249B | |
+| 249 | Engagement & Action-Point Frontend Integration | Frontend | 243, 244, 245 | M | 249A, 249B | **Done** |
 | 250 | Completeness Visibility -- Backend Queries | Backend | 241 | M | 250A | |
 | 251 | Completeness Visibility -- Frontend & Dashboard | Frontend | 250, 245 | M | 251A, 251B | |
 
@@ -179,7 +179,7 @@ FRONTEND TRACK (after E241B)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 5a (parallel) | 246 | 246B | CreateCustomerDialog multi-step flow (base fields -> intake custom fields) + submit with customFields payload + tests (~5 tests). ~2 modified files. Frontend only. | **Done** (PR #499) |
-| 5b (parallel) | 249 | 249B | Project template editor "Required Customer Fields" section + project creation dialog prerequisite check + tests (~4 tests). ~3 modified files. Frontend only. | |
+| 5b (parallel) | 249 | 249B | Project template editor "Required Customer Fields" section + project creation dialog prerequisite check + tests (~4 tests). ~3 modified files. Frontend only. | **Done** (PR #503) |
 | 5c (parallel) | 251 | 251B | Enhanced SetupProgressCard with context-grouped display + completeness ring on customer detail header + "Incomplete Customer Profiles" dashboard widget + tests (~5 tests). ~4 modified/new files. Frontend only. | |
 
 ### Timeline
@@ -755,7 +755,7 @@ Stage 5: [246B] // [249B] // [251B]                                         (par
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **249A** | 249.1--249.6 | Invoice generation, proposal send, document generation buttons wired through prerequisite check + PrerequisiteModal integration at each action point + tests (~5 tests). ~5 modified files. Frontend only. | **Done** (PR #502) |
-| **249B** | 249.7--249.12 | Project template editor "Required Customer Fields" multi-select section + project creation dialog prerequisite check with template + tests (~4 tests). ~3 modified files. Frontend only. | |
+| **249B** | 249.7--249.12 | Project template editor "Required Customer Fields" multi-select section + project creation dialog prerequisite check with template + tests (~4 tests). ~3 modified files. Frontend only. | **Done** (PR #503) |
 
 ### Tasks
 

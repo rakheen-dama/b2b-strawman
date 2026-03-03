@@ -19,7 +19,7 @@ Always read the relevant subdirectory CLAUDE.md before making changes.
 | Layer | Technology |
 |-------|------------|
 | Frontend | Next.js 16 (App Router), React 19, TypeScript 5, Tailwind CSS v4, Shadcn UI |
-| Auth | Clerk (default, cloud) OR Keycloak 26.1 (self-hosted), selectable via `AUTH_MODE` |
+| Auth | Clerk (default, cloud) OR Keycloak 26.1 (self-hosted), selectable via `NEXT_PUBLIC_AUTH_MODE` |
 | Backend | Spring Boot 4.0.2, Java 25, Maven |
 | Database | PostgreSQL 16 with schema-per-tenant multitenancy (Hibernate + Flyway) |
 | Identity (Keycloak) | Keycloak 26.1, custom SPI for JWT claims, next-auth v5 on frontend |

@@ -18,7 +18,7 @@ Phase 35 adds **Keycloak 26.5 as a self-hosted auth provider** alongside the exi
 | 264 | Frontend Keycloak Provider | Frontend | 261C | M | 264A, 264B | **Done** (PRs #513, #514) |
 | 265 | Frontend UI Components | Frontend | 263B, 264B | M | 265A, 265B, 265C | **Done** (PRs #515, #516, #517) |
 | 266 | Integration Testing + E2E | Both | 263B, 265C | L | 266A, 266B | **Done** (PRs #518, #519) |
-| 267 | Documentation | Docs | 266B | S | 267A | Not started |
+| 267 | Documentation | Docs | 266B | S | 267A | **Done** (PR #520) |
 
 ## Dependency Graph
 
@@ -91,7 +91,7 @@ Phase 35 adds **Keycloak 26.5 as a self-hosted auth provider** alongside the exi
 |-------|------|-------|-----------|
 | 4a | Epic 266 | 266A | **Backend integration tests** — full provisioning flow with Keycloak org IDs, OrgManagementController tests, Testcontainers. Verify Clerk regression (existing tests still pass). Depends on 263B. | **Done** (PR #518) |
 | 4b | Epic 266 | 266B | **E2E stack** — add Keycloak to docker-compose.e2e.yml (port 9091), update seed script (create org in Keycloak + provision), Playwright auth fixture (`loginAs()` via Keycloak), smoke tests (login, dashboard, team page). Depends on 265C + 266A. | **Done** (PR #519) |
-| 4c | Epic 267 | 267A | **Documentation** — update `backend/CLAUDE.md`, `frontend/CLAUDE.md` with Keycloak profile/mode docs. Update `TASKS.md` with Phase 35 status. Update `MEMORY.md`. Depends on 266B. |
+| 4c | Epic 267 | 267A | **Documentation** — update `backend/CLAUDE.md`, `frontend/CLAUDE.md` with Keycloak profile/mode docs. Update `TASKS.md` with Phase 35 status. Update `MEMORY.md`. Depends on 266B. | **Done** (PR #520) |
 
 ### Timeline
 
@@ -356,7 +356,7 @@ Stage 4:  [266A] ──► [266B] ──► [267A]  ← testing + docs (sequenti
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **267A** | 267.1-267.5 | Update backend/CLAUDE.md (Keycloak profile, renamed classes), frontend/CLAUDE.md (AUTH_MODE=keycloak, next-auth), TASKS.md (Phase 35 entry), MEMORY.md (Phase 35 summary) | Not started |
+| **267A** | 267.1-267.5 | Update backend/CLAUDE.md (Keycloak profile, renamed classes), frontend/CLAUDE.md (AUTH_MODE=keycloak, next-auth), TASKS.md (Phase 35 entry), MEMORY.md (Phase 35 summary) | **Done** (PR #520) |
 
 ### Tasks
 

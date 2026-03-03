@@ -323,7 +323,7 @@ class OrgManagementControllerIntegrationTest {
             result -> {
               int statusCode = result.getResponse().getStatus();
               // Keycloak may return 404 for non-existent invitation, or the service may wrap it
-              assertThat(statusCode).isIn(400, 404, 500);
+              assertThat(statusCode).isIn(400, 404);
             });
   }
 

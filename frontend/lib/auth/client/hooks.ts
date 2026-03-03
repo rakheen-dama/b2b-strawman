@@ -88,6 +88,21 @@ export function useOrgMembers(): {
   return { members, isLoaded };
 }
 
+// --- getOrgIdFromToken ---
+
+/**
+ * Extracts the organization ID from a JWT access token's payload.
+ * Used by Keycloak-mode components that need to call org-scoped backend APIs.
+ */
+export function getOrgIdFromToken(token: string): string | null {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.o?.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
 // --- useSignOut ---
 
 export function useSignOut(): { signOut: () => void } {

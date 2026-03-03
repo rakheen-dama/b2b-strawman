@@ -1,10 +1,12 @@
 "use client";
 
 import { useOrganization } from "@clerk/nextjs";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { BACKEND_URL, getOrgIdFromToken } from "@/lib/auth/client";
 import { inviteMember } from "@/app/(app)/org/[slug]/team/actions";
 
 const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
@@ -35,6 +37,52 @@ function ClerkInviteMemberForm({ maxMembers, currentMembers, planTier, orgSlug }
       orgSlug={orgSlug}
       onInviteSent={() => invitations?.revalidate?.()}
       ready={!!organization}
+    />
+  );
+}
+
+function KeycloakInviteMemberForm({ maxMembers, currentMembers, planTier, orgSlug }: InviteMemberFormProps) {
+  const { data: session } = useSession();
+  const [pendingCount, setPendingCount] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    const token = session?.accessToken;
+    if (!token) return;
+
+    const orgId = getOrgIdFromToken(token);
+    if (!orgId) return;
+
+    let cancelled = false;
+
+    fetch(`${BACKEND_URL}/api/orgs/${orgId}/invitations`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data: Array<{ status: string }>) => {
+        if (!cancelled) {
+          const pending = Array.isArray(data) ? data.filter((inv) => inv.status === "pending").length : 0;
+          setPendingCount(pending);
+        }
+      })
+      .catch((err) => {
+        console.error("KeycloakInviteMemberForm: failed to fetch invitations", err);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [session?.accessToken, refreshKey]);
+
+  return (
+    <InviteFormUI
+      maxMembers={maxMembers}
+      currentMembers={currentMembers}
+      pendingInvitations={pendingCount}
+      planTier={planTier}
+      orgSlug={orgSlug}
+      onInviteSent={() => setRefreshKey((k) => k + 1)}
+      ready={!!session?.accessToken}
     />
   );
 }
@@ -191,6 +239,7 @@ function InviteFormUI({
 }
 
 export function InviteMemberForm(props: InviteMemberFormProps) {
+  if (AUTH_MODE === "keycloak") return <KeycloakInviteMemberForm {...props} />;
   if (AUTH_MODE === "mock") return <MockInviteMemberForm {...props} />;
   return <ClerkInviteMemberForm {...props} />;
 }

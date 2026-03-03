@@ -59,6 +59,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientId: process.env.KEYCLOAK_CLIENT_ID,
       clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
       issuer: process.env.KEYCLOAK_ISSUER,
+      authorization: {
+        params: {
+          scope: "openid",
+          // kc_org tells Keycloak to pre-select this organization during login,
+          // skipping the org-selection screen when the user belongs to multiple orgs.
+          ...(process.env.KEYCLOAK_DEFAULT_ORG
+            ? { kc_org: process.env.KEYCLOAK_DEFAULT_ORG }
+            : {}),
+        },
+      },
     }),
   ],
   session: {

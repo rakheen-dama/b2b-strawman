@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# e2e-up.sh — Start the E2E mock-auth stack for agent UI navigation.
+# e2e-up.sh — Start the E2E Keycloak-auth stack for agent UI navigation.
 # Builds from current source (always latest code), starts all services,
 # waits for health checks, and prints a connection summary.
 #
@@ -15,7 +15,7 @@ if [[ ! -f "$COMPOSE_FILE" ]]; then
   exit 1
 fi
 
-echo "=== E2E Mock-Auth Stack ==="
+echo "=== E2E Keycloak-Auth Stack ==="
 echo ""
 echo "Building from source at: $(cd "$COMPOSE_DIR/.." && pwd)"
 echo ""
@@ -32,7 +32,24 @@ MAX_WAIT=300
 INTERVAL=5
 ELAPSED=0
 
+# Wait for Keycloak
+printf "  Keycloak (localhost:9091)... "
+while [[ $ELAPSED -lt $MAX_WAIT ]]; do
+  if curl -sf http://localhost:9091/realms/docteams/.well-known/openid-configuration > /dev/null 2>&1; then
+    echo "ready"
+    break
+  fi
+  sleep $INTERVAL
+  ELAPSED=$((ELAPSED + INTERVAL))
+done
+if [[ $ELAPSED -ge $MAX_WAIT ]]; then
+  echo "TIMEOUT (${MAX_WAIT}s)"
+  echo "Check logs: docker compose -f $COMPOSE_FILE logs keycloak"
+  exit 1
+fi
+
 # Wait for backend
+ELAPSED=0
 printf "  Backend (localhost:8081)... "
 while [[ $ELAPSED -lt $MAX_WAIT ]]; do
   if curl -sf http://localhost:8081/actuator/health > /dev/null 2>&1; then
@@ -62,22 +79,6 @@ done
 if [[ $ELAPSED -ge $MAX_WAIT ]]; then
   echo "TIMEOUT (${MAX_WAIT}s)"
   echo "Check logs: docker compose -f $COMPOSE_FILE logs frontend"
-  exit 1
-fi
-
-# Wait for mock IDP
-ELAPSED=0
-printf "  Mock IDP (localhost:8090)... "
-while [[ $ELAPSED -lt 60 ]]; do
-  if curl -sf http://localhost:8090/.well-known/jwks.json > /dev/null 2>&1; then
-    echo "ready"
-    break
-  fi
-  sleep 2
-  ELAPSED=$((ELAPSED + 2))
-done
-if [[ $ELAPSED -ge 60 ]]; then
-  echo "TIMEOUT (60s)"
   exit 1
 fi
 
@@ -130,18 +131,21 @@ fi
 echo ""
 echo "=== E2E Stack Ready ==="
 echo ""
-echo "  Frontend (mock auth):  http://localhost:3001"
-echo "  Mock login page:       http://localhost:3001/mock-login"
-echo "  Backend (e2e profile): http://localhost:8081"
-echo "  Mock IDP:              http://localhost:8090"
-echo "  Mailpit SMTP:          localhost:1026"
-echo "  Mailpit UI:            http://localhost:8026"
-echo "  Postgres:              localhost:5433 (user: postgres, pass: changeme, db: app)"
+echo "  Frontend (Keycloak auth): http://localhost:3001"
+echo "  Backend (e2e+keycloak):   http://localhost:8081"
+echo "  Keycloak admin console:   http://localhost:9091 (admin/admin)"
+echo "  Keycloak realm:           http://localhost:9091/realms/docteams"
+echo "  Mailpit SMTP:             localhost:1026"
+echo "  Mailpit UI:               http://localhost:8026"
+echo "  Postgres:                 localhost:5433 (user: postgres, pass: changeme, db: app)"
 echo ""
 echo "  Users: Alice (owner), Bob (admin), Carol (member)"
 echo "  Org:   e2e-test-org"
 echo ""
-echo "  Tail logs:   docker compose -f $COMPOSE_FILE logs -f backend frontend"
+echo "  Run Playwright tests:"
+echo "    cd frontend && PLAYWRIGHT_BASE_URL=http://localhost:3001 pnpm exec playwright test --config e2e/playwright.config.ts e2e/tests/keycloak-smoke.spec.ts"
+echo ""
+echo "  Tail logs:   docker compose -f $COMPOSE_FILE logs -f backend frontend keycloak"
 echo "  Access DB:   docker exec -it e2e-postgres psql -U postgres -d app"
 echo "  Stop stack:  bash compose/scripts/e2e-down.sh"
 echo "  Reseed data: bash compose/scripts/e2e-reseed.sh"

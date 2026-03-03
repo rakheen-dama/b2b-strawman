@@ -14,7 +14,7 @@ Phase 35 adds **Keycloak 26.5 as a self-hosted auth provider** alongside the exi
 |------|------|-------|------|--------|--------|--------|
 | 261 | Backend Field Renames | Backend + Frontend | -- | M | 261A, 261B, 261C | **Done** (PRs #507, #508) |
 | 262 | Keycloak SPI + Docker Setup | Keycloak + Infra | -- | M | 262A, 262B | **Done** (PRs #509, #510) |
-| 263 | Backend Keycloak Integration | Backend | 262 | L | 263A, 263B | Not started |
+| 263 | Backend Keycloak Integration | Backend | 262 | L | 263A, 263B | **Done** (PRs #511, #512) |
 | 264 | Frontend Keycloak Provider | Frontend | 261C | M | 264A, 264B | Not started |
 | 265 | Frontend UI Components | Frontend | 263B, 264B | M | 265A, 265B, 265C | Not started |
 | 266 | Integration Testing + E2E | Both | 263B, 265C | L | 266A, 266B | Not started |
@@ -73,7 +73,7 @@ Phase 35 adds **Keycloak 26.5 as a self-hosted auth provider** alongside the exi
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 2a | Epic 263 | 263A | **KeycloakAdminService** — REST client for Keycloak Admin API. Operations: createOrg, deleteOrg, addMember, inviteUser, listInvitations, cancelInvitation, getUserOrganizations. Uses Spring RestClient with client credentials auth. @ConditionalOnProperty for Keycloak-only activation. Integration tests with Testcontainers (Keycloak + Postgres). Depends on 262B (Docker setup). | **Done** (PR #511) |
-| 2b | Epic 263 | 263B | **OrgManagementController** — REST endpoints: POST /api/orgs (create org + provision), GET /api/orgs/mine (list user orgs), POST /api/orgs/{id}/invite, GET /api/orgs/{id}/invitations, DELETE /api/orgs/{id}/invitations/{invId}. OrgManagementService orchestrates Keycloak Admin calls + TenantProvisioningService. Integration tests. Depends on 263A. |
+| 2b | Epic 263 | 263B | **OrgManagementController** — REST endpoints: POST /api/orgs (create org + provision), GET /api/orgs/mine (list user orgs), POST /api/orgs/{id}/invite, GET /api/orgs/{id}/invitations, DELETE /api/orgs/{id}/invitations/{invId}. OrgManagementService orchestrates Keycloak Admin calls + TenantProvisioningService. Integration tests. Depends on 263A. | **Done** (PR #512) |
 
 ### Stage 3: Frontend (Sequential, then Parallel)
 
@@ -205,7 +205,7 @@ Stage 4:  [266A] ──► [266B] ──► [267A]  ← testing + docs (sequenti
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **263A** | 263.1-263.6 | `KeycloakAdminService` — REST client for Keycloak Admin API. Operations: createOrg, deleteOrg, addMember, inviteUser, listInvitations, cancelInvitation, getUserOrganizations. Client credentials auth. `KeycloakConfig` with RestClient bean. @ConditionalOnProperty. Integration tests with Testcontainers | **Done** (PR #511) |
-| **263B** | 263.7-263.12 | `OrgManagementController` — POST /api/orgs (create + provision), GET /api/orgs/mine, POST /api/orgs/{id}/invite, GET /api/orgs/{id}/invitations, DELETE /api/orgs/{id}/invitations/{invId}. `OrgManagementService` orchestrating Keycloak + provisioning. Integration tests | Not started |
+| **263B** | 263.7-263.12 | `OrgManagementController` — POST /api/orgs (create + provision), GET /api/orgs/mine, POST /api/orgs/{id}/invite, GET /api/orgs/{id}/invitations, DELETE /api/orgs/{id}/invitations/{invId}. `OrgManagementService` orchestrating Keycloak + provisioning. Integration tests | **Done** (PR #512) |
 
 ### Tasks
 

@@ -1,0 +1,7 @@
+# Keycloak auth provider — overrides JWT validation to use Keycloak JWKS
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${KEYCLOAK_URL:http://localhost:9090}/realms/docteams/protocol/openid-connect/certs

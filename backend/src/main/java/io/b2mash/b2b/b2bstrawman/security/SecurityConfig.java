@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.TenantFilter;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantLoggingFilter;
 import io.b2mash.b2b.b2bstrawman.portal.CustomerAuthFilter;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.context.annotation.Bean;
@@ -36,6 +37,10 @@ public class SecurityConfig {
   private final CustomerAuthFilter customerAuthFilter;
   private final AuditAuthenticationEntryPoint auditAuthEntryPoint;
   private final Environment environment;
+
+  /** When true, CORS is disabled in the backend (gateway handles it). */
+  @Value("${cors.disabled:false}")
+  private boolean corsDisabled;
 
   public SecurityConfig(
       OrgJwtAuthenticationConverter jwtAuthConverter,
@@ -128,18 +133,25 @@ public class SecurityConfig {
 
   @Bean
   CorsConfigurationSource corsConfigurationSource() {
-    List<String> origins =
-        Binder.get(environment)
-            .bind("cors.allowed-origins", Bindable.listOf(String.class))
-            .orElse(List.of());
-
     var config = new CorsConfiguration();
-    if (!origins.isEmpty()) {
-      config.setAllowedOrigins(origins);
+
+    if (corsDisabled) {
+      // Gateway handles CORS — backend allows all origins from internal network
+      config.setAllowedOrigins(List.of("*"));
+      config.setAllowCredentials(false);
+    } else {
+      List<String> origins =
+          Binder.get(environment)
+              .bind("cors.allowed-origins", Bindable.listOf(String.class))
+              .orElse(List.of());
+      if (!origins.isEmpty()) {
+        config.setAllowedOrigins(origins);
+      }
+      config.setAllowCredentials(true);
     }
+
     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
     config.setAllowedHeaders(List.of("*"));
-    config.setAllowCredentials(true);
     config.setMaxAge(3600L);
 
     var source = new UrlBasedCorsConfigurationSource();

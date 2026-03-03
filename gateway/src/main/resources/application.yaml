@@ -1,0 +1,104 @@
+server:
+  port: ${GATEWAY_PORT:8090}
+
+spring:
+  application:
+    name: gateway
+
+  cloud:
+    gateway:
+      routes:
+        - id: api
+          uri: ${BACKEND_URL:http://localhost:8080}
+          predicates:
+            - Path=/api/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: backendCircuitBreaker
+                fallbackUri: forward:/fallback
+
+        - id: portal
+          uri: ${BACKEND_URL:http://localhost:8080}
+          predicates:
+            - Path=/portal/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: backendCircuitBreaker
+                fallbackUri: forward:/fallback
+
+        - id: actuator-backend
+          uri: ${BACKEND_URL:http://localhost:8080}
+          predicates:
+            - Path=/backend/actuator/**
+          filters:
+            - StripPrefix=1
+
+      # CORS handled at gateway level — backend trusts internal traffic
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:3001,http://localhost:3002}
+            allowed-methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - OPTIONS
+            allowed-headers: "*"
+            allow-credentials: true
+            max-age: 3600
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${JWT_JWK_SET_URI:https://crucial-sturgeon-38.clerk.accounts.dev/.well-known/jwks.json}
+
+# Actuator — gateway health + downstream health aggregation
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  health:
+    show-details: when-authorized
+
+# Circuit breaker (Resilience4j)
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50       # Open circuit at 50% failure rate
+        wait-duration-in-open-state: 10s # Wait 10s before half-open
+        permitted-number-of-calls-in-half-open-state: 3
+        slow-call-duration-threshold: 5s
+        slow-call-rate-threshold: 80
+    instances:
+      backendCircuitBreaker:
+        base-config: default
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 10s           # Max wait for backend response
+
+# Rate limiting (in-memory token bucket)
+gateway:
+  rate-limit:
+    enabled: true
+    ip-capacity: 100          # Max burst per IP
+    ip-refill-tokens: 100     # Tokens/sec per IP
+    ip-refill-interval: 1s
+    tenant-capacity: 200      # Max burst per tenant
+    tenant-refill-tokens: 200 # Tokens/sec per tenant
+    tenant-refill-interval: 1s
+
+logging:
+  structured:
+    format:
+      console: ecs

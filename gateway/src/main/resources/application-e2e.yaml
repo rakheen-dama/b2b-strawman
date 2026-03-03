@@ -1,0 +1,27 @@
+# E2E testing profile — uses mock IDP for JWT validation
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://mock-idp:8090/.well-known/jwks.json
+
+  cloud:
+    gateway:
+      routes:
+        - id: api
+          uri: http://backend:8080
+          predicates:
+            - Path=/api/**
+
+        - id: portal
+          uri: http://backend:8080
+          predicates:
+            - Path=/portal/**
+
+        - id: actuator-backend
+          uri: http://backend:8080
+          predicates:
+            - Path=/backend/actuator/**
+          filters:
+            - StripPrefix=1

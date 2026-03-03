@@ -140,6 +140,31 @@ services:
     networks:
       - dev-network
 
+  gateway:
+    build:
+      context: ../gateway
+      dockerfile: Dockerfile
+    container_name: b2b-gateway
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: ${GATEWAY_PROFILES:default}
+      BACKEND_URL: http://backend:8080
+      JWT_JWK_SET_URI: ${JWT_JWK_SET_URI:-https://crucial-sturgeon-38.clerk.accounts.dev/.well-known/jwks.json}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:3001,http://localhost:3002}
+    ports:
+      - "8090:8090"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8090/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - dev-network
+
   frontend:
     build:
       context: ../frontend

@@ -1,6 +1,11 @@
 import "server-only";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
+// Internal API calls bypass the gateway and go directly to the backend.
+// INTERNAL_BACKEND_URL defaults to BACKEND_URL for backwards compatibility.
+const INTERNAL_BACKEND_URL =
+  process.env.INTERNAL_BACKEND_URL ||
+  process.env.BACKEND_URL ||
+  "http://localhost:8080";
 const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY;
 
 export class InternalApiError extends Error {
@@ -85,7 +90,7 @@ export async function internalApiClient<T>(
     throw new Error("INTERNAL_API_KEY environment variable is not set");
   }
 
-  const response = await fetch(`${BACKEND_URL}${endpoint}`, {
+  const response = await fetch(`${INTERNAL_BACKEND_URL}${endpoint}`, {
     method: options.method || "POST",
     headers: {
       "Content-Type": "application/json",

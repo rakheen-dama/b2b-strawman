@@ -17,7 +17,7 @@ Phase 35 adds **Keycloak 26.5 as a self-hosted auth provider** alongside the exi
 | 263 | Backend Keycloak Integration | Backend | 262 | L | 263A, 263B | **Done** (PRs #511, #512) |
 | 264 | Frontend Keycloak Provider | Frontend | 261C | M | 264A, 264B | **Done** (PRs #513, #514) |
 | 265 | Frontend UI Components | Frontend | 263B, 264B | M | 265A, 265B, 265C | **Done** (PRs #515, #516, #517) |
-| 266 | Integration Testing + E2E | Both | 263B, 265C | L | 266A, 266B | Not started |
+| 266 | Integration Testing + E2E | Both | 263B, 265C | L | 266A, 266B | **Done** (PRs #518, #519) |
 | 267 | Documentation | Docs | 266B | S | 267A | Not started |
 
 ## Dependency Graph
@@ -90,7 +90,7 @@ Phase 35 adds **Keycloak 26.5 as a self-hosted auth provider** alongside the exi
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 4a | Epic 266 | 266A | **Backend integration tests** — full provisioning flow with Keycloak org IDs, OrgManagementController tests, Testcontainers. Verify Clerk regression (existing tests still pass). Depends on 263B. | **Done** (PR #518) |
-| 4b | Epic 266 | 266B | **E2E stack** — add Keycloak to docker-compose.e2e.yml (port 9091), update seed script (create org in Keycloak + provision), Playwright auth fixture (`loginAs()` via Keycloak), smoke tests (login, dashboard, team page). Depends on 265C + 266A. |
+| 4b | Epic 266 | 266B | **E2E stack** — add Keycloak to docker-compose.e2e.yml (port 9091), update seed script (create org in Keycloak + provision), Playwright auth fixture (`loginAs()` via Keycloak), smoke tests (login, dashboard, team page). Depends on 265C + 266A. | **Done** (PR #519) |
 | 4c | Epic 267 | 267A | **Documentation** — update `backend/CLAUDE.md`, `frontend/CLAUDE.md` with Keycloak profile/mode docs. Update `TASKS.md` with Phase 35 status. Update `MEMORY.md`. Depends on 266B. |
 
 ### Timeline
@@ -321,7 +321,7 @@ Stage 4:  [266A] ──► [266B] ──► [267A]  ← testing + docs (sequenti
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **266A** | 266.1-266.4 | Backend integration tests: full provisioning flow with Keycloak org IDs, OrgManagement tests, Clerk regression (all existing tests pass unchanged) | **Done** (PR #518) |
-| **266B** | 266.5-266.10 | E2E stack: Keycloak in docker-compose.e2e.yml, seed script (create KC org + provision tenant + sync members), Playwright auth fixture, smoke tests (login, dashboard, team page, invite flow) | Not started |
+| **266B** | 266.5-266.10 | E2E stack: Keycloak in docker-compose.e2e.yml, seed script (create KC org + provision tenant + sync members), Playwright auth fixture, smoke tests (login, dashboard, team page, invite flow) | **Done** (PR #519) |
 
 ### Tasks
 

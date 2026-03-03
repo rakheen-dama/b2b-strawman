@@ -59,6 +59,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientId: process.env.KEYCLOAK_CLIENT_ID,
       clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
       issuer: process.env.KEYCLOAK_ISSUER,
+      authorization: {
+        params: {
+          scope: "openid",
+          ...(process.env.KEYCLOAK_DEFAULT_ORG
+            ? { kc_org: process.env.KEYCLOAK_DEFAULT_ORG }
+            : {}),
+        },
+      },
     }),
   ],
   session: {

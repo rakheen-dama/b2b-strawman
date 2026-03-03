@@ -3,11 +3,20 @@ set -eu
 
 BACKEND_URL="${BACKEND_URL:-http://backend:8080}"
 MOCK_IDP_URL="${MOCK_IDP_URL:-http://mock-idp:8090}"
+KEYCLOAK_URL="${KEYCLOAK_URL:-}"
+KC_ADMIN_CLIENT_SECRET="${KEYCLOAK_ADMIN_CLIENT_SECRET:-docteams-admin-secret}"
 API_KEY="${API_KEY:-e2e-test-api-key}"
 
 ORG_ID="org_e2e_test"
 ORG_NAME="E2E Test Organization"
 ORG_SLUG="e2e-test-org"
+
+# Detect auth mode: keycloak if KEYCLOAK_URL is set, mock otherwise
+if [ -n "$KEYCLOAK_URL" ]; then
+  AUTH_MODE="keycloak"
+else
+  AUTH_MODE="mock"
+fi
 
 # -- Helper ----------------------------------------------------------------
 check_status() {
@@ -22,9 +31,32 @@ check_status() {
 
 # -- Wait for backend ------------------------------------------------------
 echo "============================================"
-echo "  E2E Boot-Seed"
+echo "  E2E Boot-Seed (auth: ${AUTH_MODE})"
 echo "============================================"
 ./wait-for-backend.sh
+
+# -- Keycloak pre-seed (if enabled) ----------------------------------------
+if [ "$AUTH_MODE" = "keycloak" ]; then
+  echo ""
+  echo "==> Step 0: Seed Keycloak (org + users)"
+  ./keycloak-seed.sh "$ORG_NAME" "$ORG_SLUG"
+
+  # For Keycloak mode, use the Keycloak org ID as the external org ID.
+  # Fetch it from Keycloak so the backend provisioning is consistent.
+  KC_TOKEN=$(curl -sf -X POST \
+    "${KEYCLOAK_URL}/realms/docteams/protocol/openid-connect/token" \
+    -d "grant_type=client_credentials" \
+    -d "client_id=docteams-admin" \
+    -d "client_secret=${KC_ADMIN_CLIENT_SECRET}" | jq -r '.access_token')
+
+  KC_ORG=$(curl -sf -H "Authorization: Bearer ${KC_TOKEN}" \
+    "${KEYCLOAK_URL}/admin/realms/docteams/organizations?search=${ORG_SLUG}")
+  KC_ORG_ID=$(echo "$KC_ORG" | jq -r '.[0].id')
+
+  # Override ORG_ID with the Keycloak org UUID for backend provisioning
+  ORG_ID="$KC_ORG_ID"
+  echo "    Using Keycloak org ID: ${ORG_ID}"
+fi
 
 # -- Step 1: Provision org -------------------------------------------------
 echo ""
@@ -78,28 +110,66 @@ sync_member() {
   check_status "Sync ${name}" "$STATUS"
 }
 
-sync_member "user_e2e_alice" "alice@e2e-test.local" "Alice Owner" \
-  "https://api.dicebear.com/7.x/initials/svg?seed=AO" "owner"
+if [ "$AUTH_MODE" = "keycloak" ]; then
+  # For Keycloak mode, use Keycloak user IDs as external user IDs
+  KC_TOKEN=$(curl -sf -X POST \
+    "${KEYCLOAK_URL}/realms/docteams/protocol/openid-connect/token" \
+    -d "grant_type=client_credentials" \
+    -d "client_id=docteams-admin" \
+    -d "client_secret=${KC_ADMIN_CLIENT_SECRET}" | jq -r '.access_token')
 
-sync_member "user_e2e_bob" "bob@e2e-test.local" "Bob Admin" \
-  "https://api.dicebear.com/7.x/initials/svg?seed=BA" "admin"
+  ALICE_KC_ID=$(curl -sf -H "Authorization: Bearer ${KC_TOKEN}" \
+    "${KEYCLOAK_URL}/admin/realms/docteams/users?email=alice@e2e-test.local&exact=true" | jq -r '.[0].id')
+  BOB_KC_ID=$(curl -sf -H "Authorization: Bearer ${KC_TOKEN}" \
+    "${KEYCLOAK_URL}/admin/realms/docteams/users?email=bob@e2e-test.local&exact=true" | jq -r '.[0].id')
+  CAROL_KC_ID=$(curl -sf -H "Authorization: Bearer ${KC_TOKEN}" \
+    "${KEYCLOAK_URL}/admin/realms/docteams/users?email=carol@e2e-test.local&exact=true" | jq -r '.[0].id')
 
-sync_member "user_e2e_carol" "carol@e2e-test.local" "Carol Member" \
-  "https://api.dicebear.com/7.x/initials/svg?seed=CM" "member"
+  sync_member "$ALICE_KC_ID" "alice@e2e-test.local" "Alice Owner" \
+    "https://api.dicebear.com/7.x/initials/svg?seed=AO" "owner"
+  sync_member "$BOB_KC_ID" "bob@e2e-test.local" "Bob Admin" \
+    "https://api.dicebear.com/7.x/initials/svg?seed=BA" "admin"
+  sync_member "$CAROL_KC_ID" "carol@e2e-test.local" "Carol Member" \
+    "https://api.dicebear.com/7.x/initials/svg?seed=CM" "member"
+else
+  sync_member "user_e2e_alice" "alice@e2e-test.local" "Alice Owner" \
+    "https://api.dicebear.com/7.x/initials/svg?seed=AO" "owner"
+  sync_member "user_e2e_bob" "bob@e2e-test.local" "Bob Admin" \
+    "https://api.dicebear.com/7.x/initials/svg?seed=BA" "admin"
+  sync_member "user_e2e_carol" "carol@e2e-test.local" "Carol Member" \
+    "https://api.dicebear.com/7.x/initials/svg?seed=CM" "member"
+fi
 
 # -- Step 4: Get Alice's JWT -----------------------------------------------
 echo ""
-echo "==> Step 4: Get Alice's JWT from mock IDP"
-TOKEN_RESPONSE=$(curl -sf -X POST "${MOCK_IDP_URL}/token" \
-  -H "Content-Type: application/json" \
-  -d "{
-    \"userId\": \"user_e2e_alice\",
-    \"orgId\": \"${ORG_ID}\",
-    \"orgSlug\": \"${ORG_SLUG}\",
-    \"orgRole\": \"owner\"
-  }")
+echo "==> Step 4: Get Alice's JWT"
 
-ALICE_JWT=$(echo "$TOKEN_RESPONSE" | jq -r '.access_token')
+if [ "$AUTH_MODE" = "keycloak" ]; then
+  # Get JWT from Keycloak via resource owner password grant
+  TOKEN_RESPONSE=$(curl -sf -X POST \
+    "${KEYCLOAK_URL}/realms/docteams/protocol/openid-connect/token" \
+    -d "grant_type=password" \
+    -d "client_id=docteams-admin" \
+    -d "client_secret=${KC_ADMIN_CLIENT_SECRET}" \
+    -d "username=alice@e2e-test.local" \
+    -d "password=alice-e2e-pass" \
+    -d "scope=openid")
+
+  ALICE_JWT=$(echo "$TOKEN_RESPONSE" | jq -r '.access_token')
+else
+  # Get JWT from mock IDP
+  TOKEN_RESPONSE=$(curl -sf -X POST "${MOCK_IDP_URL}/token" \
+    -H "Content-Type: application/json" \
+    -d "{
+      \"userId\": \"user_e2e_alice\",
+      \"orgId\": \"${ORG_ID}\",
+      \"orgSlug\": \"${ORG_SLUG}\",
+      \"orgRole\": \"owner\"
+    }")
+
+  ALICE_JWT=$(echo "$TOKEN_RESPONSE" | jq -r '.access_token')
+fi
+
 if [ -z "$ALICE_JWT" ] || [ "$ALICE_JWT" = "null" ]; then
   echo "    [FAIL] Failed to get Alice's JWT"
   exit 1
@@ -196,7 +266,7 @@ check_status "Create project" "$STATUS"
 
 echo ""
 echo "============================================"
-echo "  E2E Boot-Seed Complete!"
+echo "  E2E Boot-Seed Complete! (auth: ${AUTH_MODE})"
 echo "============================================"
 echo ""
 echo "  Org:      ${ORG_NAME} (${ORG_ID})"

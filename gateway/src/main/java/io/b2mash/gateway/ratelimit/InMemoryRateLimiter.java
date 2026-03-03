@@ -81,7 +81,10 @@ public class InMemoryRateLimiter {
       if (lastRefillNanos.compareAndSet(lastRefill, newLastRefill)) {
         long current = tokens.get();
         long newTokens = Math.min(capacity, current + tokensToAdd);
-        tokens.set(newTokens); // Slight race here is acceptable — over-granting a few tokens
+        // Slight race: brief under-granting (rejecting during refill window) and
+        // over-granting (overwriting concurrent consumption) are both possible but
+        // self-correcting within one refill interval. Acceptable for gateway rate limiting.
+        tokens.set(newTokens);
       }
     }
   }

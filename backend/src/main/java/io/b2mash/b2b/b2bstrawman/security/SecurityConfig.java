@@ -136,9 +136,12 @@ public class SecurityConfig {
     var config = new CorsConfiguration();
 
     if (corsDisabled) {
-      // Gateway handles CORS — backend allows all origins from internal network
-      config.setAllowedOrigins(List.of("*"));
-      config.setAllowCredentials(false);
+      // Gateway handles CORS — backend should not be directly reachable from browsers.
+      // Apply permissive CORS for internal network traffic only.
+      config.applyPermitDefaultValues();
+      var source = new UrlBasedCorsConfigurationSource();
+      source.registerCorsConfiguration("/**", config);
+      return source;
     } else {
       List<String> origins =
           Binder.get(environment)

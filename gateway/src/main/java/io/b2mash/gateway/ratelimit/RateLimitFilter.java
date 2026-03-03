@@ -93,6 +93,14 @@ public class RateLimitFilter implements GlobalFilter, Ordered {
     return null;
   }
 
+  /**
+   * Resolves the client IP from the request. Uses X-Forwarded-For if present (first entry).
+   *
+   * <p>WARNING: X-Forwarded-For is trivially spoofable. When deployed behind a trusted reverse
+   * proxy (ALB, CloudFront), configure {@code server.forward-headers-strategy=native} and rely on
+   * Spring's ForwardedHeaderTransformer. If no upstream proxy, the gateway is the first hop and
+   * remoteAddress is reliable.
+   */
   private String resolveClientIp(ServerWebExchange exchange) {
     String forwarded = exchange.getRequest().getHeaders().getFirst("X-Forwarded-For");
     if (forwarded != null && !forwarded.isBlank()) {

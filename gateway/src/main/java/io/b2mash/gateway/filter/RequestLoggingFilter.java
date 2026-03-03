@@ -40,6 +40,11 @@ public class RequestLoggingFilter implements GlobalFilter, Ordered {
             .request(request.mutate().header("X-Request-Id", requestId).build())
             .build();
 
+    // NOTE: MDC is ThreadLocal-based, which is unreliable in reactive (WebFlux) context
+    // since execution may hop between threads. The pattern below — set MDC, log, clear
+    // immediately — minimizes risk. The log message uses inline parameters (not MDC) for
+    // correctness. MDC fields are supplementary structured data in ECS output.
+    // TODO: Migrate to Micrometer context-propagation for proper reactive MDC support.
     return chain
         .filter(mutatedExchange)
         .then(

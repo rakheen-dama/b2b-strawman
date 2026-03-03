@@ -133,8 +133,9 @@ services:
       dockerfile: Dockerfile
     container_name: e2e-gateway
     environment:
-      SPRING_PROFILES_ACTIVE: e2e,keycloak
+      SPRING_PROFILES_ACTIVE: keycloak,e2e
       BACKEND_URL: http://backend:8080
+      KEYCLOAK_URL: http://keycloak:8080
       CORS_ALLOWED_ORIGINS: http://localhost:3001,http://localhost:3002
     ports:
       - "8091:8090"

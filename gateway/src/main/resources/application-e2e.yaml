@@ -1,11 +1,6 @@
-# E2E testing profile — uses mock IDP for JWT validation
+# E2E testing profile — Docker network route URIs and relaxed rate limiting.
+# JWT validation configured by the keycloak profile (activated via SPRING_PROFILES_ACTIVE=keycloak,e2e).
 spring:
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          jwk-set-uri: http://mock-idp:8090/.well-known/jwks.json
-
   cloud:
     gateway:
       routes:
@@ -13,11 +8,21 @@ spring:
           uri: http://backend:8080
           predicates:
             - Path=/api/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: backendCircuitBreaker
+                fallbackUri: forward:/fallback
 
         - id: portal
           uri: http://backend:8080
           predicates:
             - Path=/portal/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: backendCircuitBreaker
+                fallbackUri: forward:/fallback
 
         - id: actuator-backend
           uri: http://backend:8080
@@ -25,3 +30,8 @@ spring:
             - Path=/backend/actuator/**
           filters:
             - StripPrefix=1
+
+# Disable rate limiting in E2E tests to avoid flaky failures
+gateway:
+  rate-limit:
+    enabled: false

@@ -16,7 +16,7 @@ Phase 35 adds **Keycloak 26.5 as a self-hosted auth provider** alongside the exi
 | 262 | Keycloak SPI + Docker Setup | Keycloak + Infra | -- | M | 262A, 262B | **Done** (PRs #509, #510) |
 | 263 | Backend Keycloak Integration | Backend | 262 | L | 263A, 263B | **Done** (PRs #511, #512) |
 | 264 | Frontend Keycloak Provider | Frontend | 261C | M | 264A, 264B | **Done** (PRs #513, #514) |
-| 265 | Frontend UI Components | Frontend | 263B, 264B | M | 265A, 265B, 265C | Not started |
+| 265 | Frontend UI Components | Frontend | 263B, 264B | M | 265A, 265B, 265C | 265A **Done** (PR #515), 265B **Done** (PR #516) |
 | 266 | Integration Testing + E2E | Both | 263B, 265C | L | 266A, 266B | Not started |
 | 267 | Documentation | Docs | 266B | S | 267A | Not started |
 
@@ -82,7 +82,7 @@ Phase 35 adds **Keycloak 26.5 as a self-hosted auth provider** alongside the exi
 | 3a | Epic 264 | 264A | **next-auth v5 setup** — install `next-auth`, create `auth.ts` config with Keycloak OIDC provider, create `lib/auth/providers/keycloak.ts` (5 server functions: getAuthContext, getAuthToken, getCurrentUserEmail, hasPlan, requireRole), create `app/api/auth/[...nextauth]/route.ts`. Update `lib/auth/server.ts` dispatch. Depends on 261C (class renames). | **Done** (PR #513) |
 | 3b | Epic 264 | 264B | **Middleware + client** — add `createKeycloakMiddleware()` to `lib/auth/middleware.ts`, create `lib/auth/client/keycloak-context.tsx` using `SessionProvider`, update `lib/auth/client/auth-provider.tsx` with Keycloak branch, update `lib/auth/client/hooks.ts` (useAuthUser, useSignOut). Depends on 264A. | **Done** (PR #514) |
 | 3c | Epic 265 | 265A | **Auth pages** — update `sign-in/page.tsx` (Keycloak redirect), `sign-up/page.tsx` (redirect to `/create-org`), `create-org/page.tsx` (custom org creation form → POST /api/orgs). Depends on 264B + 263B. | **Done** (PR #515) |
-| 3d | Epic 265 | 265B | **Header controls** — custom `KeycloakUserButton` + `KeycloakOrgSwitcher` in `auth-header-controls.tsx`. OrgSwitcher fetches from GET /api/orgs/mine, triggers re-auth with `kc_org` param. Update `sidebar-user-footer.tsx`. Depends on 264B + 263B. Can parallel with 265A. |
+| 3d | Epic 265 | 265B | **Header controls** — custom `KeycloakUserButton` + `KeycloakOrgSwitcher` in `auth-header-controls.tsx`. OrgSwitcher fetches from GET /api/orgs/mine, triggers re-auth with `kc_org` param. Update `sidebar-user-footer.tsx`. Depends on 264B + 263B. Can parallel with 265A. | **Done** (PR #516) |
 | 3e | Epic 265 | 265C | **Team components** — update `member-list.tsx`, `invite-member-form.tsx`, `pending-invitations.tsx` with Keycloak branches (call backend API instead of Clerk hooks). Update `team/actions.ts` inviteMember server action for Keycloak. Depends on 264B + 263B. Can parallel with 265A, 265B. |
 
 ### Stage 4: Testing + Documentation
@@ -281,7 +281,7 @@ Stage 4:  [266A] ──► [266B] ──► [267A]  ← testing + docs (sequenti
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **265A** | 265.1-265.4 | Auth pages: sign-in (Keycloak redirect), sign-up (redirect to create-org), create-org (custom form → POST /api/orgs with name + email + password) | **Done** (PR #515) |
-| **265B** | 265.5-265.8 | Header controls: custom KeycloakUserButton (user info + sign-out), KeycloakOrgSwitcher (fetch from GET /api/orgs/mine, re-auth with kc_org param). Sidebar user footer | Not started |
+| **265B** | 265.5-265.8 | Header controls: custom KeycloakUserButton (user info + sign-out), KeycloakOrgSwitcher (fetch from GET /api/orgs/mine, re-auth with kc_org param). Sidebar user footer | **Done** (PR #516) |
 | **265C** | 265.9-265.13 | Team components: member-list, invite-member-form, pending-invitations — Keycloak branches calling backend API. Update team/actions.ts inviteMember for Keycloak | Not started |
 
 ### Tasks

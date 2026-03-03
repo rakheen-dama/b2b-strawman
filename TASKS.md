@@ -307,7 +307,7 @@
 | 264 | Frontend Keycloak Provider | Frontend | 261C | M | 264A, 264B | **Done** (PRs #513, #514) |
 | 265 | Frontend UI Components | Frontend | 263B, 264B | M | 265A, 265B, 265C | **Done** (PRs #515, #516, #517) |
 | 266 | Integration Testing + E2E | Both | 263B, 265C | L | 266A, 266B | **Done** (PRs #518, #519) |
-| 267 | Documentation | Docs | 266B | S | 267A | |
+| 267 | Documentation | Docs | 266B | S | 267A | **Done** |
 
 ---
 

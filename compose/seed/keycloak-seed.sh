@@ -101,9 +101,9 @@ create_kc_user() {
 # -- Create test users ------------------------------------------------------
 echo ""
 echo "    Creating Keycloak users..."
-ALICE_KC_ID=$(create_kc_user "alice@e2e-test.local" "Alice" "Owner" "alice-e2e-pass" 2>&1 | tail -1)
-BOB_KC_ID=$(create_kc_user "bob@e2e-test.local" "Bob" "Admin" "bob-e2e-pass" 2>&1 | tail -1)
-CAROL_KC_ID=$(create_kc_user "carol@e2e-test.local" "Carol" "Member" "carol-e2e-pass" 2>&1 | tail -1)
+ALICE_KC_ID=$(create_kc_user "alice@e2e-test.local" "Alice" "Owner" "alice-e2e-pass" | tail -1)
+BOB_KC_ID=$(create_kc_user "bob@e2e-test.local" "Bob" "Admin" "bob-e2e-pass" | tail -1)
+CAROL_KC_ID=$(create_kc_user "carol@e2e-test.local" "Carol" "Member" "carol-e2e-pass" | tail -1)
 
 # Print progress lines (the create_kc_user output goes to the ID variables above)
 echo "    Alice KC ID: ${ALICE_KC_ID}"

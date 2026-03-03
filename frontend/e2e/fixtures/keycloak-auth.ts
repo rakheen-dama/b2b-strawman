@@ -40,7 +40,9 @@ export async function loginAsKeycloak(page: Page, user: SeedUser): Promise<void>
   await usernameField.fill(creds.email)
   await passwordField.fill(creds.password)
 
-  // Click the sign-in button on Keycloak's form
+  // Click the sign-in button on Keycloak's form.
+  // Primary selector is #kc-login (Keycloak's default theme); the fallbacks
+  // cover custom themes that may use a generic submit button instead.
   await page.locator('#kc-login, button[type="submit"], input[type="submit"]').first().click()
 
   // Wait for the OIDC callback to complete and redirect to the app

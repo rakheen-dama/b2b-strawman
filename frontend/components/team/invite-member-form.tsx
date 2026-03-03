@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { BACKEND_URL } from "@/lib/auth/client";
+import { BACKEND_URL, getOrgIdFromToken } from "@/lib/auth/client";
 import { inviteMember } from "@/app/(app)/org/[slug]/team/actions";
 
 const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
@@ -16,15 +16,6 @@ interface InviteMemberFormProps {
   currentMembers: number;
   planTier: string;
   orgSlug: string;
-}
-
-function getOrgIdFromToken(token: string): string | null {
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    return payload.o?.id ?? null;
-  } catch {
-    return null;
-  }
 }
 
 function ClerkInviteMemberForm({ maxMembers, currentMembers, planTier, orgSlug }: InviteMemberFormProps) {
@@ -46,7 +37,6 @@ function ClerkInviteMemberForm({ maxMembers, currentMembers, planTier, orgSlug }
       orgSlug={orgSlug}
       onInviteSent={() => invitations?.revalidate?.()}
       ready={!!organization}
-      useOrgPrefix={true}
     />
   );
 }
@@ -93,7 +83,6 @@ function KeycloakInviteMemberForm({ maxMembers, currentMembers, planTier, orgSlu
       orgSlug={orgSlug}
       onInviteSent={() => setRefreshKey((k) => k + 1)}
       ready={!!session?.accessToken}
-      useOrgPrefix={false}
     />
   );
 }
@@ -108,7 +97,6 @@ function MockInviteMemberForm({ maxMembers, currentMembers, planTier, orgSlug }:
       orgSlug={orgSlug}
       onInviteSent={() => {}}
       ready={true}
-      useOrgPrefix={true}
     />
   );
 }
@@ -121,7 +109,6 @@ function InviteFormUI({
   orgSlug,
   onInviteSent,
   ready,
-  useOrgPrefix,
 }: {
   maxMembers: number;
   currentMembers: number;
@@ -130,7 +117,6 @@ function InviteFormUI({
   orgSlug: string;
   onInviteSent: () => void;
   ready: boolean;
-  useOrgPrefix: boolean;
 }) {
   const [emailAddress, setEmailAddress] = useState("");
   const [role, setRole] = useState<"org:member" | "org:admin">("org:member");
@@ -206,17 +192,8 @@ function InviteFormUI({
               onChange={(e) => setRole(e.target.value as "org:member" | "org:admin")}
               className="border-input bg-background h-9 rounded-md border px-3 text-sm shadow-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500"
             >
-              {useOrgPrefix ? (
-                <>
-                  <option value="org:member">Member</option>
-                  <option value="org:admin">Admin</option>
-                </>
-              ) : (
-                <>
-                  <option value="org:member">Member</option>
-                  <option value="org:admin">Admin</option>
-                </>
-              )}
+              <option value="org:member">Member</option>
+              <option value="org:admin">Admin</option>
             </select>
           </div>
           <Button type="submit" disabled={isSubmitting} size="sm">

@@ -9,8 +9,8 @@ When implementing epics, check TASKS.md and recent PRs to understand which parts
 
 ## Service-Specific Guides
 
-- `frontend/CLAUDE.md` — Next.js 16, Clerk, Shadcn conventions
-- `backend/CLAUDE.md` — Spring Boot 4, Hibernate 7, multitenancy
+- `frontend/CLAUDE.md` — Next.js 16, Clerk/Keycloak auth, Shadcn conventions
+- `backend/CLAUDE.md` — Spring Boot 4, Hibernate 7, multitenancy, Keycloak integration
 
 Always read the relevant subdirectory CLAUDE.md before making changes.
 
@@ -19,9 +19,10 @@ Always read the relevant subdirectory CLAUDE.md before making changes.
 | Layer | Technology |
 |-------|------------|
 | Frontend | Next.js 16 (App Router), React 19, TypeScript 5, Tailwind CSS v4, Shadcn UI |
-| Auth | Clerk (orgs, invitations, RBAC, webhooks) |
+| Auth | Clerk (default, cloud) OR Keycloak 26.1 (self-hosted), selectable via `NEXT_PUBLIC_AUTH_MODE` |
 | Backend | Spring Boot 4.0.2, Java 25, Maven |
 | Database | PostgreSQL 16 with schema-per-tenant multitenancy (Hibernate + Flyway) |
+| Identity (Keycloak) | Keycloak 26.1, custom SPI for JWT claims, next-auth v5 on frontend |
 | File Storage | AWS S3 (LocalStack locally) |
 
 ## Local Dev Quick Start
@@ -45,6 +46,25 @@ bash compose/scripts/dev-down.sh --clean  # Wipe volumes
 bash compose/scripts/dev-rebuild.sh backend
 ```
 
+### With Keycloak (self-hosted auth)
+
+```bash
+# Build the Keycloak SPI JAR first (one-time)
+cd keycloak-spi && ../backend/mvnw package -DskipTests && cd ..
+
+# Start infrastructure with Keycloak (port 9090)
+bash compose/scripts/dev-up.sh --keycloak
+
+# Seed Keycloak with test org + users (alice/bob/carol, password: 'password')
+bash compose/scripts/keycloak-seed.sh
+
+# Backend with Keycloak profile
+cd backend && ./mvnw spring-boot:run -Dspring-boot.run.profiles=local,keycloak
+
+# Frontend with Keycloak auth mode
+cd frontend && NEXT_PUBLIC_AUTH_MODE=keycloak pnpm dev
+```
+
 ## Git Worktrees 
 When working in a git worktree, ALWAYS verify the correct working directory before writing any files. 
 The worktree path is NOT inside the main repo directory. Before writing the first file, run `pwd` and confirm you 
@@ -60,6 +80,7 @@ Use the E2E mock-auth stack on port 3001 instead.
 | Frontend (mock auth) | http://localhost:3001 |
 | Backend (e2e profile) | http://localhost:8081 |
 | Mock IDP | http://localhost:8090 |
+| Keycloak Admin Console | http://localhost:9090/admin (admin/admin) |
 | Postgres | localhost:5433 (user: postgres, pass: changeme, db: app) |
 
 **Start/stop the stack:**

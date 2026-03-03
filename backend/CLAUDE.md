@@ -19,8 +19,9 @@ Requires Docker running for Testcontainers (tests and local dev). Postgres avail
 src/main/java/io/b2mash/b2b/b2bstrawman/
 ├── config/           # Spring configuration beans (Security, Hibernate, S3, Resilience4j)
 ├── exception/        # Shared semantic exceptions (ResourceNotFoundException, ForbiddenException, etc.)
+├── keycloak/         # Keycloak Admin API client, org management controller/service, DTOs
 ├── multitenancy/     # RequestScopes (ScopedValue), identifier resolver, connection provider, filters
-├── security/         # JWT auth filter, API key filter, role converter
+├── security/         # JwtClaimExtractor, OrgJwtAuthenticationConverter, API key filter, role converter
 ├── provisioning/     # Tenant provisioning controller, service, schema name generator
 ├── project/          # Project entity, repository, service, controller
 ├── document/         # Document entity, repository, service, controller
@@ -61,7 +62,7 @@ Organize by **feature**, not by layer. Each feature package contains its entity,
 - Never use `java -jar` for the Docker entry point — use `org.springframework.boot.loader.launch.JarLauncher`
 - Never make `TestcontainersConfiguration` package-private — it must be `public` for `@Import` from subpackages
 - Never use `@ActiveProfiles("local")` in tests — use `@ActiveProfiles("test")`. The "local" profile connects to Docker Compose Postgres. Tests must run against ephemeral Testcontainers only.
-- Never use flat JWT claims (`org_id`, `org_role`) — Clerk JWT v2 nests org claims under `"o"`: `jwt.getClaim("o")` returns `Map<String, Object>` with keys `id`, `rol`, `slg`
+- Never use flat JWT claims (`org_id`, `org_role`) — both Clerk and Keycloak nest org claims under `"o"`: `jwt.getClaim("o")` returns `Map<String, Object>` with keys `id`, `rol`, `slg`. Use `JwtClaimExtractor` helper methods instead of raw claim access.
 - Never use `ThreadLocal` for request-scoped context — use `ScopedValue` via `RequestScopes` (guaranteed cleanup, virtual thread safe)
 - Never call `RequestScopes.TENANT_ID.get()` without checking `isBound()` first or accepting `NoSuchElementException`
 - Never build `ProblemDetail` directly in controllers or services — throw semantic exceptions from `exception/` package instead
@@ -88,9 +89,11 @@ Organize by **feature**, not by layer. Each feature package contains its entity,
 
 - All profiles (including `local`) use `SecurityConfig` with full JWT + RBAC filter chain.
 - The `local` profile uses Clerk dev instance URLs in `application-local.yml` for JWT validation.
+- The `keycloak` profile overrides JWT issuer/JWKS to point at Keycloak (`application-keycloak.yml`). Combine with base profile: `spring.profiles.active=local,keycloak`.
 
 ### Spring Profiles
 - `local` — Docker Compose Postgres, LocalStack S3
+- `keycloak` — Keycloak auth provider (combine with other profiles, e.g., `local,keycloak`). Overrides JWT issuer/JWKS to Keycloak, enables `KeycloakAdminService` and `OrgManagementController`
 - `dev` — Neon dev branch, AWS S3
 - `prod` — Neon main, AWS S3, full observability
 
@@ -144,10 +147,10 @@ public ResponseEntity<byte[]> exportPdf(@PathVariable String slug, @RequestParam
 
 Schema-per-tenant isolation within a single Postgres database. Every tenant — regardless of billing tier — gets a dedicated `tenant_<hash>` schema. There is no shared schema.
 
-- **Schema naming**: `tenant_<12-hex-chars>` — deterministic hash of Clerk org ID
-- **Global tables** (`public` schema): `organizations`, `org_schema_mapping`, `processed_webhooks`
+- **Schema naming**: `tenant_<12-hex-chars>` — deterministic hash of external org ID (Clerk org ID or Keycloak org UUID)
+- **Global tables** (`public` schema): `organizations` (with `external_org_id`), `org_schema_mapping` (with `external_org_id`), `processed_webhooks`
 - **Tenant tables** (per `tenant_*` schema): `projects`, `documents`, and all other domain entities
-- **Tenant resolution**: JWT `o.id` claim → `org_schema_mapping` lookup → `RequestScopes.TENANT_ID` ScopedValue → Hibernate `search_path`
+- **Tenant resolution**: JWT `o.id` claim → `org_schema_mapping` lookup (by `external_org_id`) → `RequestScopes.TENANT_ID` ScopedValue → Hibernate `search_path`
 - **Connection provider** sets `search_path` on checkout, resets to `public` on release
 - **Isolation model**: Pure schema boundary — no `@Filter`, no RLS policies, no `tenant_id` columns. Standard `JpaRepository.findById()` works correctly.
 - Never trust client-supplied headers for tenant resolution — always derive from validated JWT
@@ -178,14 +181,31 @@ src/main/resources/db/migration/
 ## Security
 
 ### Authentication
-- Clerk JWTs validated via Spring Security OAuth2 Resource Server
-- JWKS endpoint for signature verification
-- **Clerk JWT v2 format** (`"v": 2`): org claims nested under `"o"` object
-  - `o.id` — Clerk org ID (e.g., `org_abc123`)
-  - `o.rol` — short role name: `owner`, `admin`, `member`
-  - `o.slg` — org slug
-  - Access via: `Map<String, Object> org = jwt.getClaim("o"); org.get("id");`
+- JWTs validated via Spring Security OAuth2 Resource Server (provider-agnostic)
+- JWKS endpoint for signature verification (Clerk or Keycloak, configured per profile)
+- **JWT org claims** nested under `"o"` object (both Clerk and Keycloak produce this structure):
+  - `o.id` — External org ID (Clerk org ID or Keycloak org UUID)
+  - `o.rol` — Short role name: `owner`, `admin`, `member`
+  - `o.slg` — Org slug
+  - Access via: `JwtClaimExtractor.extractOrgId(jwt)`, `extractOrgRole(jwt)`, `extractOrgSlug(jwt)`
 - Top-level claims: `sub` (user ID), `sid` (session ID), `azp` (authorized party)
+- **Keycloak mode**: Custom SPI mapper (`OrgRoleProtocolMapper` in `keycloak-spi/`) shapes the access token to match the claim structure. Activated via `spring.profiles.active=...,keycloak`
+- **Clerk mode** (default): Clerk JWT v2 format (`"v": 2`) — same `o.id`/`o.rol`/`o.slg` structure
+
+### Keycloak Integration (keycloak profile only)
+
+The `keycloak/` package is conditionally activated via `@ConditionalOnProperty(name = "keycloak.admin.enabled")`:
+
+- **`KeycloakAdminService`** — REST client for Keycloak Admin API (org CRUD, member management, invitations). Authenticates via client credentials flow (`docteams-admin` service account).
+- **`OrgManagementService`** — Orchestrates synchronous org creation: creates Keycloak org → provisions tenant schema → adds creator as owner.
+- **`OrgManagementController`** — REST endpoints:
+  - `POST /api/orgs` — Create organization (provisions Keycloak org + tenant schema)
+  - `GET /api/orgs/mine` — List current user's organizations
+  - `POST /api/orgs/{id}/invite` — Send invitation via Keycloak
+  - `GET /api/orgs/{id}/invitations` — List pending invitations
+  - `DELETE /api/orgs/{id}/invitations/{invId}` — Cancel invitation
+- **`KeycloakConfig`** — RestClient bean + client credentials interceptor
+- Configuration: `application-keycloak.yml`
 
 ### Role Mapping
 | Clerk JWT `o.rol` | Spring Authority | Access Level |
@@ -342,8 +362,10 @@ running with `local` or `dev` Spring profile (`@Profile({"local", "dev"})` per A
 |----------|-------------|
 | `DATABASE_URL` | Neon pooled connection string |
 | `DATABASE_MIGRATION_URL` | Neon direct connection string (Flyway) |
-| `CLERK_ISSUER` | Clerk JWT issuer URL |
-| `CLERK_JWKS_URI` | Clerk JWKS endpoint |
+| `CLERK_ISSUER` | Clerk JWT issuer URL (Clerk mode) |
+| `CLERK_JWKS_URI` | Clerk JWKS endpoint (Clerk mode) |
+| `KEYCLOAK_URL` | Keycloak server URL, default `http://localhost:9090` (Keycloak mode) |
+| `KEYCLOAK_ADMIN_CLIENT_SECRET` | Client secret for `docteams-admin` service account (Keycloak mode) |
 | `AWS_S3_BUCKET` | S3 bucket name |
 | `AWS_REGION` | AWS region |
 | `INTERNAL_API_KEY` | Shared API key for `/internal/*` |

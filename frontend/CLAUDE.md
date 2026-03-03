@@ -1,6 +1,6 @@
 # Frontend CLAUDE.md
 
-Next.js 16 (App Router) / React 19 / TypeScript 5 frontend for a multi-tenant B2B SaaS platform. Auth via Clerk, UI via Shadcn (new-york style) + Tailwind CSS v4. Custom "Signal Deck" design system — precise, high-contrast, information-forward aesthetic with cool slate palette and teal accents.
+Next.js 16 (App Router) / React 19 / TypeScript 5 frontend for a multi-tenant B2B SaaS platform. Auth via Clerk (default) or Keycloak (self-hosted), selectable via `NEXT_PUBLIC_AUTH_MODE`. UI via Shadcn (new-york style) + Tailwind CSS v4. Custom "Signal Deck" design system — precise, high-contrast, information-forward aesthetic with cool slate palette and teal accents.
 
 ## Build & Run
 
@@ -60,13 +60,39 @@ frontend/
 │   ├── mobile-sidebar.tsx            # Sheet-based mobile sidebar
 │   └── breadcrumbs.tsx               # Pathname-based breadcrumb nav
 ├── lib/
+│   ├── auth/                         # Auth abstraction layer (provider-agnostic)
+│   │   ├── server.ts                 # Dispatches to clerk/keycloak/mock based on AUTH_MODE
+│   │   ├── middleware.ts             # Auth middleware factory (Clerk/Keycloak/mock)
+│   │   ├── types.ts                  # AuthContext, shared types
+│   │   ├── utils.ts                  # Shared auth utilities
+│   │   ├── index.ts                  # Public exports
+│   │   ├── providers/
+│   │   │   ├── clerk.ts              # Clerk server-side auth functions
+│   │   │   ├── keycloak.ts           # Keycloak server-side auth functions (next-auth)
+│   │   │   └── mock/                 # Mock auth provider (E2E testing)
+│   │   └── client/
+│   │       ├── auth-provider.tsx     # Conditional ClerkProvider / SessionProvider
+│   │       ├── keycloak-context.tsx  # Keycloak SessionProvider wrapper
+│   │       ├── mock-context.tsx      # Mock auth context
+│   │       ├── hooks.ts             # useAuth, useOrganization hooks
+│   │       └── index.ts
 │   ├── api.ts                        # Spring Boot API client (attaches Bearer JWT)
 │   ├── internal-api.ts               # Types for internal/billing API
 │   ├── nav-items.ts                  # Sidebar navigation item definitions
 │   └── utils.ts                      # cn() helper from Shadcn
 ├── hooks/                            # Custom React hooks
 ├── __tests__/                        # Test files
+├── auth.ts                          # next-auth v5 config (Keycloak OIDC provider, token refresh)
 ├── proxy.ts                         # Clerk auth proxy with org sync
+├── types/
+│   └── next-auth.d.ts               # next-auth session type augmentation
+├── components/
+│   └── auth/                        # Auth-mode-specific components
+│       ├── keycloak-create-org-form.tsx
+│       ├── keycloak-sign-in.tsx
+│       ├── mock-login-form.tsx
+│       ├── mock-org-switcher.tsx
+│       └── mock-user-button.tsx
 ├── components.json                   # Shadcn UI config
 ├── vitest.config.ts                  # Vitest config with @/* alias
 ├── next.config.ts
@@ -198,6 +224,7 @@ The `components/ui/` directory started from Shadcn scaffolding but **base compon
 - Never use indigo for accents — use **teal** instead
 - Never import `motion` in server components — it's client-only. Only import in `"use client"` files.
 - Never pass functions or component references as props from Server Components to `"use client"` components — Next.js 16 throws a runtime serialization error. Pass serializable data (strings, objects) instead.
+- Never import `@clerk/nextjs` directly in feature code — use `lib/auth/server.ts` functions instead. Direct Clerk imports break Keycloak and mock modes.
 
 ### RSC Serialization Boundary
 
@@ -241,25 +268,55 @@ Shadcn components use the bundled `radix-ui` package (not `@radix-ui/react-*`):
 import { Slot } from "radix-ui";
 ```
 
-## Authentication (Clerk)
+## Authentication
 
-### Proxy (`proxy.ts`)
+Auth is provider-agnostic via `lib/auth/` abstraction layer. The active provider is selected by `NEXT_PUBLIC_AUTH_MODE` (build-time, tree-shakeable): `clerk` (default), `keycloak`, or `mock`.
 
-- `clerkMiddleware()` protects `(app)/**` routes
+### Auth Dispatch (`lib/auth/server.ts`)
+
+All server-side auth calls go through five functions that dispatch to the active provider:
+- `getAuthContext()` — Returns `{ userId, orgId, orgRole, orgSlug }` or redirects
+- `getAuthToken()` — Returns Bearer token for backend API calls
+- `getCurrentUserEmail()` — Returns current user's email
+- `requireRole(role)` — Throws/redirects if role insufficient
+- `hasPlan(plan)` — Checks billing plan
+
+### Clerk Mode (default, `AUTH_MODE=clerk`)
+
+- `clerkMiddleware()` in `proxy.ts` protects `(app)/**` routes
 - `organizationSyncOptions` auto-activates org from URL slug pattern
-- Patterns: `/org/:slug`, `/org/:slug/(.*)`
-- Webhook route (`/api/webhooks/clerk`) excluded from auth (public route)
+- `ClerkProvider` wraps app in root `layout.tsx`
+- Server components call `auth().getToken()` for JWTs
+- Webhook route (`/api/webhooks/clerk`) handles org/member provisioning
 
-### ClerkProvider
+### Keycloak Mode (`AUTH_MODE=keycloak`)
 
-- Wraps entire app in root `layout.tsx`
-- Provides session context, org switching, user management
+- **next-auth v5** (Auth.js) handles OIDC flows, session management, and token refresh
+- Config in `auth.ts` (project root): Keycloak OIDC provider, JWT/session callbacks
+- `SessionProvider` wraps app instead of `ClerkProvider`
+- Route handler: `app/api/auth/[...nextauth]/route.ts`
+- `createKeycloakMiddleware()` checks next-auth session cookie, redirects unauthenticated users
+- Token refresh handled automatically via `refreshAccessToken()` in `auth.ts` callbacks
+- Org selection via `kc_org` authorization parameter (Keycloak organization feature)
+- **No webhooks** — provisioning is synchronous via `POST /api/orgs` (backend creates Keycloak org + tenant schema)
+- **Invitation-only** — no public sign-up. First user creates org at `/create-org`, subsequent users invited by admins
+
+### Keycloak UI Components
+
+| Clerk Component | Keycloak Replacement | File |
+|---|---|---|
+| `<SignIn>` | Redirect to Keycloak login | `components/auth/keycloak-sign-in.tsx` |
+| `<SignUp>` | Redirect to `/create-org` | `app/(auth)/sign-up/page.tsx` |
+| `<CreateOrganization>` | Custom form → `POST /api/orgs` | `components/auth/keycloak-create-org-form.tsx` |
+| `<UserButton>` | Custom dropdown | `components/auth-header-controls.tsx` |
+| `<OrganizationSwitcher>` | Custom dropdown, re-auth with `kc_org` | `components/auth-header-controls.tsx` |
+| `ClerkProvider` | `SessionProvider` (next-auth) | `lib/auth/client/auth-provider.tsx` |
 
 ### JWT for Backend Calls
 
-- Server components call `auth().getToken()` to get a Clerk JWT with org claims
+- Server components call `getAuthToken()` from `lib/auth/server.ts` (provider-agnostic)
 - JWT passed as `Authorization: Bearer <token>` to Spring Boot API
-- Claims: `sub` (user ID), `o.id` (org ID), `o.rol` (org role), `o.slg` (org slug) — Clerk JWT v2 nests under `"o"` map
+- Claims: `sub` (user ID), `o.id` (org ID), `o.rol` (org role), `o.slg` (org slug) — both Clerk and Keycloak produce this structure
 
 ### API Client (`lib/api.ts`)
 
@@ -303,12 +360,31 @@ interface PaginatedResponse<T> {
 
 ## Environment Variables
 
+### Common (all modes)
+
+| Variable                            | Side   | Description                     |
+| ----------------------------------- | ------ | ------------------------------- |
+| `NEXT_PUBLIC_AUTH_MODE`             | Client | Auth provider: `clerk` (default), `keycloak`, or `mock` |
+| `BACKEND_URL`                       | Server | Spring Boot internal ALB URL    |
+| `INTERNAL_API_KEY`                  | Server | API key for `/internal/*` calls |
+
+### Clerk Mode (`AUTH_MODE=clerk`, default)
+
 | Variable                            | Side   | Description                     |
 | ----------------------------------- | ------ | ------------------------------- |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Client | Clerk public key                |
 | `CLERK_SECRET_KEY`                  | Server | Clerk backend key               |
 | `CLERK_WEBHOOK_SIGNING_SECRET`      | Server | Svix webhook verification       |
-| `BACKEND_URL`                       | Server | Spring Boot internal ALB URL    |
-| `INTERNAL_API_KEY`                  | Server | API key for `/internal/*` calls |
+
+### Keycloak Mode (`AUTH_MODE=keycloak`)
+
+| Variable                            | Side   | Description                     |
+| ----------------------------------- | ------ | ------------------------------- |
+| `KEYCLOAK_CLIENT_ID`               | Server | OIDC client ID (`docteams-web`) |
+| `KEYCLOAK_CLIENT_SECRET`           | Server | OIDC client secret              |
+| `KEYCLOAK_ISSUER`                  | Server | Keycloak realm URL (e.g., `http://localhost:9090/realms/docteams`) |
+| `KEYCLOAK_DEFAULT_ORG`            | Server | Optional: pre-select org during login (skips org selection screen) |
+| `NEXTAUTH_SECRET`                  | Server | Random 32-char string for next-auth session encryption |
+| `NEXTAUTH_URL`                     | Server | App URL for next-auth callbacks (e.g., `http://localhost:3000`) |
 
 Variables prefixed `NEXT_PUBLIC_` are exposed to the browser. All others are server-only.

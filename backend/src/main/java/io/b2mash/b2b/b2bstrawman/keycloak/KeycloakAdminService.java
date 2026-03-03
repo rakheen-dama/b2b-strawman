@@ -53,6 +53,8 @@ public class KeycloakAdminService {
                         "Organization conflict",
                         "Organization with alias '" + alias + "' already exists");
                   }
+                  throw new RuntimeException(
+                      "Keycloak Admin API error: " + errorResponse.getStatusCode());
                 })
             .toBodilessEntity();
 
@@ -77,6 +79,7 @@ public class KeycloakAdminService {
               if (response.getStatusCode() == HttpStatus.NOT_FOUND) {
                 throw new ResourceNotFoundException("Organization", orgId);
               }
+              throw new RuntimeException("Keycloak Admin API error: " + response.getStatusCode());
             })
         .toBodilessEntity();
 
@@ -104,6 +107,7 @@ public class KeycloakAdminService {
                     "Member conflict",
                     "User '" + userId + "' is already a member of organization '" + orgId + "'");
               }
+              throw new RuntimeException("Keycloak Admin API error: " + response.getStatusCode());
             })
         .toBodilessEntity();
 
@@ -129,6 +133,7 @@ public class KeycloakAdminService {
               if (response.getStatusCode() == HttpStatus.NOT_FOUND) {
                 throw new ResourceNotFoundException("Organization", orgId);
               }
+              throw new RuntimeException("Keycloak Admin API error: " + response.getStatusCode());
             })
         .toBodilessEntity();
 
@@ -149,6 +154,7 @@ public class KeycloakAdminService {
               if (response.getStatusCode() == HttpStatus.NOT_FOUND) {
                 throw new ResourceNotFoundException("Organization", orgId);
               }
+              throw new RuntimeException("Keycloak Admin API error: " + response.getStatusCode());
             })
         .body(new ParameterizedTypeReference<>() {});
   }
@@ -167,6 +173,7 @@ public class KeycloakAdminService {
               if (response.getStatusCode() == HttpStatus.NOT_FOUND) {
                 throw new ResourceNotFoundException("Invitation", invitationId);
               }
+              throw new RuntimeException("Keycloak Admin API error: " + response.getStatusCode());
             })
         .toBodilessEntity();
 
@@ -187,6 +194,7 @@ public class KeycloakAdminService {
               if (response.getStatusCode() == HttpStatus.NOT_FOUND) {
                 throw new ResourceNotFoundException("User", userId);
               }
+              throw new RuntimeException("Keycloak Admin API error: " + response.getStatusCode());
             })
         .body(new ParameterizedTypeReference<>() {});
   }

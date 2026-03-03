@@ -15,7 +15,14 @@ public class KeycloakConfig {
 
   @ConfigurationProperties("keycloak.admin")
   public record KeycloakAdminProperties(
-      boolean enabled, String serverUrl, String realm, String clientId, String clientSecret) {}
+      boolean enabled, String serverUrl, String realm, String clientId, String clientSecret) {
+
+    @Override
+    public String toString() {
+      return "KeycloakAdminProperties[serverUrl=%s, realm=%s, clientId=%s, clientSecret=***]"
+          .formatted(serverUrl, realm, clientId);
+    }
+  }
 
   @Bean
   RestClient keycloakAdminRestClient(KeycloakAdminProperties props) {

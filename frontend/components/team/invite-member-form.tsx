@@ -1,10 +1,12 @@
 "use client";
 
 import { useOrganization } from "@clerk/nextjs";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { BACKEND_URL } from "@/lib/auth/client";
 import { inviteMember } from "@/app/(app)/org/[slug]/team/actions";
 
 const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
@@ -14,6 +16,15 @@ interface InviteMemberFormProps {
   currentMembers: number;
   planTier: string;
   orgSlug: string;
+}
+
+function getOrgIdFromToken(token: string): string | null {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.o?.id ?? null;
+  } catch {
+    return null;
+  }
 }
 
 function ClerkInviteMemberForm({ maxMembers, currentMembers, planTier, orgSlug }: InviteMemberFormProps) {
@@ -35,6 +46,54 @@ function ClerkInviteMemberForm({ maxMembers, currentMembers, planTier, orgSlug }
       orgSlug={orgSlug}
       onInviteSent={() => invitations?.revalidate?.()}
       ready={!!organization}
+      useOrgPrefix={true}
+    />
+  );
+}
+
+function KeycloakInviteMemberForm({ maxMembers, currentMembers, planTier, orgSlug }: InviteMemberFormProps) {
+  const { data: session } = useSession();
+  const [pendingCount, setPendingCount] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    const token = session?.accessToken;
+    if (!token) return;
+
+    const orgId = getOrgIdFromToken(token);
+    if (!orgId) return;
+
+    let cancelled = false;
+
+    fetch(`${BACKEND_URL}/api/orgs/${orgId}/invitations`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data: Array<{ status: string }>) => {
+        if (!cancelled) {
+          const pending = Array.isArray(data) ? data.filter((inv) => inv.status === "pending").length : 0;
+          setPendingCount(pending);
+        }
+      })
+      .catch((err) => {
+        console.error("KeycloakInviteMemberForm: failed to fetch invitations", err);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [session?.accessToken, refreshKey]);
+
+  return (
+    <InviteFormUI
+      maxMembers={maxMembers}
+      currentMembers={currentMembers}
+      pendingInvitations={pendingCount}
+      planTier={planTier}
+      orgSlug={orgSlug}
+      onInviteSent={() => setRefreshKey((k) => k + 1)}
+      ready={!!session?.accessToken}
+      useOrgPrefix={false}
     />
   );
 }
@@ -49,6 +108,7 @@ function MockInviteMemberForm({ maxMembers, currentMembers, planTier, orgSlug }:
       orgSlug={orgSlug}
       onInviteSent={() => {}}
       ready={true}
+      useOrgPrefix={true}
     />
   );
 }
@@ -61,6 +121,7 @@ function InviteFormUI({
   orgSlug,
   onInviteSent,
   ready,
+  useOrgPrefix,
 }: {
   maxMembers: number;
   currentMembers: number;
@@ -69,6 +130,7 @@ function InviteFormUI({
   orgSlug: string;
   onInviteSent: () => void;
   ready: boolean;
+  useOrgPrefix: boolean;
 }) {
   const [emailAddress, setEmailAddress] = useState("");
   const [role, setRole] = useState<"org:member" | "org:admin">("org:member");
@@ -144,8 +206,17 @@ function InviteFormUI({
               onChange={(e) => setRole(e.target.value as "org:member" | "org:admin")}
               className="border-input bg-background h-9 rounded-md border px-3 text-sm shadow-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500"
             >
-              <option value="org:member">Member</option>
-              <option value="org:admin">Admin</option>
+              {useOrgPrefix ? (
+                <>
+                  <option value="org:member">Member</option>
+                  <option value="org:admin">Admin</option>
+                </>
+              ) : (
+                <>
+                  <option value="org:member">Member</option>
+                  <option value="org:admin">Admin</option>
+                </>
+              )}
             </select>
           </div>
           <Button type="submit" disabled={isSubmitting} size="sm">
@@ -191,6 +262,7 @@ function InviteFormUI({
 }
 
 export function InviteMemberForm(props: InviteMemberFormProps) {
+  if (AUTH_MODE === "keycloak") return <KeycloakInviteMemberForm {...props} />;
   if (AUTH_MODE === "mock") return <MockInviteMemberForm {...props} />;
   return <ClerkInviteMemberForm {...props} />;
 }

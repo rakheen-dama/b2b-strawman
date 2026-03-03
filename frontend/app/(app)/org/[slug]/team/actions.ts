@@ -18,8 +18,20 @@ export async function inviteMember(
     return { success: false, error: "You must be an admin to invite members." };
   }
 
+  if (AUTH_MODE === "keycloak") {
+    try {
+      const { api } = await import("@/lib/api");
+      const backendRole = role.replace("org:", "");
+      await api.post(`/api/orgs/${orgId}/invite`, { email: emailAddress, role: backendRole });
+      return { success: true };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to send invitation.";
+      return { success: false, error: message };
+    }
+  }
+
   if (AUTH_MODE === "mock") {
-    // Mock mode: stub success — E2E tests don't exercise Clerk invitations
+    // Mock mode: stub success -- E2E tests don't exercise Clerk invitations
     return { success: true };
   }
 

@@ -14,6 +14,9 @@ const ROLE_BADGES: Record<string, { label: string; variant: "owner" | "admin" | 
   "org:owner": { label: "Owner", variant: "owner" },
   "org:admin": { label: "Admin", variant: "admin" },
   "org:member": { label: "Member", variant: "member" },
+  owner: { label: "Owner", variant: "owner" },
+  admin: { label: "Admin", variant: "admin" },
+  member: { label: "Member", variant: "member" },
 };
 
 function ClerkMemberList() {
@@ -73,6 +76,44 @@ function ClerkMemberList() {
         </div>
       )}
     </div>
+  );
+}
+
+function KeycloakMemberList() {
+  const { members, isLoaded } = useOrgMembers();
+
+  if (!isLoaded) {
+    return <div className="py-8 text-center text-sm text-slate-600 dark:text-slate-400">Loading members...</div>;
+  }
+
+  if (!members.length) {
+    return (
+      <EmptyState
+        icon={Users}
+        title="No members found"
+        description="Organization members will appear here"
+      />
+    );
+  }
+
+  return (
+    <MemberTable>
+      {members.map((member) => {
+        const roleInfo = ROLE_BADGES[member.role] ?? {
+          label: member.role,
+          variant: "member" as const,
+        };
+        return (
+          <MemberRow
+            key={member.id}
+            name={member.name ?? "Unknown"}
+            email={member.email}
+            role={roleInfo}
+            joinedAt="—"
+          />
+        );
+      })}
+    </MemberTable>
   );
 }
 
@@ -171,6 +212,7 @@ function MemberRow({
 }
 
 export function MemberList() {
+  if (AUTH_MODE === "keycloak") return <KeycloakMemberList />;
   if (AUTH_MODE === "mock") return <MockMemberList />;
   return <ClerkMemberList />;
 }

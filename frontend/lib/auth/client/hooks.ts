@@ -10,7 +10,7 @@ const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
 
 // This URL is used for direct browser-to-backend calls in mock/keycloak mode.
 // In production (Clerk), authenticated requests go through Next.js route handlers.
-const BACKEND_URL =
+export const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
 
 // --- useAuthUser ---

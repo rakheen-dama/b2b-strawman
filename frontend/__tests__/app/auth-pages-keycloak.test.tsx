@@ -17,7 +17,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 // Mock next-auth/react
-const mockSignIn = vi.fn();
+const mockSignIn = vi.fn().mockResolvedValue(undefined);
 vi.mock("next-auth/react", () => ({
   signIn: mockSignIn,
   useSession: () => ({ data: null, status: "unauthenticated" }),

@@ -10,7 +10,13 @@ async function createOrg(
   name: string,
 ): Promise<{ slug: string; orgId: string }> {
   "use server";
-  return api.post<{ slug: string; orgId: string }>("/api/orgs", { name });
+  const trimmed = name.trim();
+  if (!trimmed || trimmed.length > 255) {
+    throw new Error("Organization name must be between 1 and 255 characters");
+  }
+  return api.post<{ slug: string; orgId: string }>("/api/orgs", {
+    name: trimmed,
+  });
 }
 
 export default function CreateOrgPage() {

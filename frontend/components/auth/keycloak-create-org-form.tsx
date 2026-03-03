@@ -24,9 +24,13 @@ export function KeycloakCreateOrgForm({
 
     try {
       const result = await createOrgAction(name);
+      // Validate slug before using in redirect URL to prevent open redirect
+      const safeSlug = /^[a-z0-9][a-z0-9-]*$/.test(result.slug)
+        ? result.slug
+        : "dashboard";
       // Re-authenticate to pick up the new org in the JWT token
       await signIn("keycloak", {
-        callbackUrl: `/org/${result.slug}/dashboard`,
+        callbackUrl: `/org/${safeSlug}/dashboard`,
       });
     } catch (err) {
       setError(

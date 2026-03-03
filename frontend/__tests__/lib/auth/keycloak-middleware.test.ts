@@ -62,10 +62,10 @@ describe("Keycloak auth middleware", () => {
     );
   });
 
-  it("passes through when next-auth.session-token cookie exists on protected route", async () => {
+  it("passes through when authjs.session-token cookie exists on protected route", async () => {
     const middleware = await loadMiddleware("keycloak");
     const request = createMockRequest("/org/my-org/dashboard", {
-      "next-auth.session-token": "encrypted-session-value",
+      "authjs.session-token": "encrypted-session-value",
     });
 
     const response = (await middleware(
@@ -76,10 +76,10 @@ describe("Keycloak auth middleware", () => {
     expect(response.status).toBe(200);
   });
 
-  it("passes through when __Secure-next-auth.session-token cookie exists", async () => {
+  it("passes through when __Secure-authjs.session-token cookie exists", async () => {
     const middleware = await loadMiddleware("keycloak");
     const request = createMockRequest("/org/my-org/dashboard", {
-      "__Secure-next-auth.session-token": "encrypted-session-value",
+      "__Secure-authjs.session-token": "encrypted-session-value",
     });
 
     const response = (await middleware(

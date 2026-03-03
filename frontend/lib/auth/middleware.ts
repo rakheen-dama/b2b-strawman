@@ -72,10 +72,10 @@ function createKeycloakMiddleware(): NextMiddleware {
       return NextResponse.next();
     }
 
-    // Check for next-auth session cookie (name differs between dev and production)
+    // Check for Auth.js v5 session cookie (name differs between dev and production)
     const sessionToken =
-      request.cookies.get("__Secure-next-auth.session-token")?.value ||
-      request.cookies.get("next-auth.session-token")?.value;
+      request.cookies.get("__Secure-authjs.session-token")?.value ||
+      request.cookies.get("authjs.session-token")?.value;
 
     if (!sessionToken) {
       // Redirect to next-auth sign-in (which triggers the Keycloak OIDC flow)

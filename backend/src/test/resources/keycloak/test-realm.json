@@ -1,0 +1,48 @@
+{
+  "realm": "docteams",
+  "enabled": true,
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "sslRequired": "none",
+  "roles": {
+    "realm": [
+      {
+        "name": "default-roles-docteams",
+        "description": "Default realm roles",
+        "composite": true,
+        "composites": {
+          "realm": ["offline_access", "uma_authorization"]
+        }
+      },
+      {
+        "name": "offline_access",
+        "description": "Offline access"
+      },
+      {
+        "name": "uma_authorization",
+        "description": "UMA authorization"
+      }
+    ]
+  },
+  "defaultRole": {
+    "name": "default-roles-docteams"
+  },
+  "users": [
+    {
+      "username": "testuser",
+      "enabled": true,
+      "email": "testuser@example.com",
+      "firstName": "Test",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "testpassword",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["default-roles-docteams"]
+    }
+  ]
+}

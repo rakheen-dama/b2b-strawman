@@ -147,7 +147,7 @@ services:
     container_name: b2b-gateway
     restart: unless-stopped
     environment:
-      SPRING_PROFILES_ACTIVE: ${GATEWAY_PROFILES:default}
+      SPRING_PROFILES_ACTIVE: ${GATEWAY_PROFILES:-default}
       BACKEND_URL: http://backend:8080
       JWT_JWK_SET_URI: ${JWT_JWK_SET_URI:-https://crucial-sturgeon-38.clerk.accounts.dev/.well-known/jwks.json}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:3001,http://localhost:3002}

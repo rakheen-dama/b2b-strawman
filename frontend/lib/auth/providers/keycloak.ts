@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import type { AuthContext } from "../types";
+import { decodeJwtPayload } from "../utils";
 
 /**
  * Keycloak auth provider — wraps next-auth v5 session calls.
@@ -9,15 +10,6 @@ import type { AuthContext } from "../types";
  * (shaped by the OrgRoleProtocolMapper SPI):
  *   { sub, o: { id, rol, slg }, ... }
  */
-
-function decodeJwtPayload(token: string): Record<string, unknown> {
-  const parts = token.split(".");
-  if (parts.length !== 3) {
-    throw new Error("Invalid JWT format — expected 3 parts");
-  }
-  const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
-  return JSON.parse(atob(base64));
-}
 
 export async function getAuthContext(): Promise<AuthContext> {
   const session = await auth();

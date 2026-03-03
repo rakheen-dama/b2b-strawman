@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import type { AuthContext } from "../../types";
+import { decodeJwtPayload } from "../../utils";
 
 const MOCK_IDP_URL = process.env.MOCK_IDP_URL || "http://mock-idp:8090";
 
@@ -19,16 +20,6 @@ function getTokenFromCookie(
     throw new Error("No mock-auth-token cookie — user is not authenticated");
   }
   return token;
-}
-
-function decodeJwtPayload(token: string): Record<string, unknown> {
-  const parts = token.split(".");
-  if (parts.length !== 3) {
-    throw new Error("Invalid JWT format — expected 3 parts");
-  }
-  // Base64url decode: replace URL-safe chars, add padding
-  const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
-  return JSON.parse(atob(base64));
 }
 
 export async function getAuthContext(): Promise<AuthContext> {

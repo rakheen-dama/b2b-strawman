@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeAll, beforeEach, afterAll, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
@@ -37,10 +37,15 @@ vi.mock("@/lib/auth/client/mock-context", () => ({
   }),
 }));
 
-// Set AUTH_MODE before component import
-vi.stubEnv("NEXT_PUBLIC_AUTH_MODE", "keycloak");
-
 describe("Keycloak Header Controls", () => {
+  beforeAll(() => {
+    vi.stubEnv("NEXT_PUBLIC_AUTH_MODE", "keycloak");
+  });
+
+  afterAll(() => {
+    vi.unstubAllEnvs();
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseSession.mockReturnValue({

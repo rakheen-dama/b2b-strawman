@@ -6,14 +6,11 @@ import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";
 import { useSession, signIn } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { useMockAuthContext } from "@/lib/auth/client/mock-context";
-import { useAuthUser, useSignOut } from "@/lib/auth/client";
+import { useAuthUser, useSignOut, BACKEND_URL } from "@/lib/auth/client";
 import { cn } from "@/lib/utils";
 import type { AuthUser } from "@/lib/auth";
 
 const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
-
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
 
 function getInitials(user: AuthUser | null): string {
   if (!user) return "?";
@@ -179,10 +176,14 @@ function KeycloakOrgSwitcher() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [open]);
 
-  function handleOrgSelect(org: UserOrg) {
+  async function handleOrgSelect(org: UserOrg) {
     setOpen(false);
     if (org.slug === currentSlug) return;
-    signIn("keycloak", { kc_org: org.slug });
+    try {
+      await signIn("keycloak", { kc_org: org.slug });
+    } catch (err) {
+      console.error("KeycloakOrgSwitcher: failed to switch org", err);
+    }
   }
 
   return (

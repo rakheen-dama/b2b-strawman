@@ -2,7 +2,6 @@
 
 import { useUser } from "@clerk/nextjs";
 import { useAuthUser } from "@/lib/auth/client";
-import type { AuthUser } from "@/lib/auth";
 
 const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
 
@@ -50,6 +49,21 @@ function MockUserFooter() {
   return <UserFooterUI initials={initials} name={name} email={user?.email ?? ""} />;
 }
 
+function KeycloakUserFooter() {
+  const { user } = useAuthUser();
+  const initials = getInitials(
+    user?.firstName ?? null,
+    user?.lastName ?? null,
+    user?.email ?? null,
+  );
+  const name =
+    user?.firstName && user?.lastName
+      ? `${user.firstName} ${user.lastName}`
+      : user?.firstName ?? "User";
+
+  return <UserFooterUI initials={initials} name={name} email={user?.email ?? ""} />;
+}
+
 function UserFooterUI({
   initials,
   name,
@@ -76,10 +90,11 @@ function UserFooterUI({
 }
 
 /**
- * Auth-aware sidebar user footer — dispatches between Clerk and mock
+ * Auth-aware sidebar user footer — dispatches between Clerk, Keycloak, and mock
  * based on build-time AUTH_MODE selection.
  */
 export function SidebarUserFooter() {
   if (AUTH_MODE === "mock") return <MockUserFooter />;
+  if (AUTH_MODE === "keycloak") return <KeycloakUserFooter />;
   return <ClerkUserFooter />;
 }

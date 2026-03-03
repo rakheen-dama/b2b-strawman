@@ -30,4 +30,14 @@ class KeycloakConditionalActivationTest {
   void keycloakConfig_notCreatedWithoutProperty() {
     assertThat(context.getBeanNamesForType(KeycloakConfig.class)).isEmpty();
   }
+
+  @Test
+  void orgManagementService_notCreatedWithoutProperty() {
+    assertThat(context.getBeanNamesForType(OrgManagementService.class)).isEmpty();
+  }
+
+  @Test
+  void orgManagementController_notCreatedWithoutProperty() {
+    assertThat(context.getBeanNamesForType(OrgManagementController.class)).isEmpty();
+  }
 }

@@ -24,6 +24,10 @@ import org.springframework.web.bind.annotation.RestController;
  * REST controller for organization management in Keycloak auth mode. Provides endpoints for org
  * creation, listing, invitations, and cancellation. Conditionally activated only when {@code
  * keycloak.admin.enabled=true}.
+ *
+ * <p>Note: {@code @PreAuthorize} is not used here because these endpoints operate outside of tenant
+ * context (org management happens before tenant selection). Authorization is enforced at the
+ * service level by verifying the caller's Keycloak org membership via the Admin API.
  */
 @RestController
 @RequestMapping("/api/orgs")
@@ -61,22 +65,26 @@ public class OrgManagementController {
   /** Invites a user to an organization by email. */
   @PostMapping("/{id}/invite")
   public ResponseEntity<Void> inviteToOrganization(
-      @PathVariable String id, @Valid @RequestBody InviteRequest request) {
-    orgManagementService.inviteToOrganization(id, request.email());
+      @PathVariable String id,
+      @Valid @RequestBody InviteRequest request,
+      @AuthenticationPrincipal Jwt jwt) {
+    orgManagementService.inviteToOrganization(
+        id, request.email(), request.role(), jwt.getSubject());
     return ResponseEntity.noContent().build();
   }
 
   /** Lists pending invitations for an organization. */
   @GetMapping("/{id}/invitations")
-  public ResponseEntity<List<InvitationResponse>> listInvitations(@PathVariable String id) {
-    return ResponseEntity.ok(orgManagementService.listInvitations(id));
+  public ResponseEntity<List<InvitationResponse>> listInvitations(
+      @PathVariable String id, @AuthenticationPrincipal Jwt jwt) {
+    return ResponseEntity.ok(orgManagementService.listInvitations(id, jwt.getSubject()));
   }
 
   /** Cancels a pending invitation. */
   @DeleteMapping("/{id}/invitations/{invId}")
   public ResponseEntity<Void> cancelInvitation(
-      @PathVariable String id, @PathVariable String invId) {
-    orgManagementService.cancelInvitation(id, invId);
+      @PathVariable String id, @PathVariable String invId, @AuthenticationPrincipal Jwt jwt) {
+    orgManagementService.cancelInvitation(id, invId, jwt.getSubject());
     return ResponseEntity.noContent().build();
   }
 }

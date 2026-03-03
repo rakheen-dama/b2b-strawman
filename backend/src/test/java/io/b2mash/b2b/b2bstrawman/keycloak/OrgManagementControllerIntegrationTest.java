@@ -178,6 +178,7 @@ class OrgManagementControllerIntegrationTest {
   @Test
   @Order(3)
   void listInvitations_returnsEmptyList() throws Exception {
+    // testUserId is a member of createdOrgId (added during org creation), so this should pass auth
     mockMvc
         .perform(
             get("/api/orgs/{id}/invitations", createdOrgId)

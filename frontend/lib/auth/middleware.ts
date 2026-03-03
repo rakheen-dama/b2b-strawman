@@ -17,11 +17,17 @@ const isPublicRoute = createRouteMatcher([
 
 /**
  * Auth middleware factory.
- * Returns Clerk middleware for production, mock middleware for E2E tests.
+ * Returns the appropriate middleware based on AUTH_MODE:
+ * - "clerk": Clerk middleware (default)
+ * - "keycloak": next-auth session cookie check
+ * - "mock": Mock middleware for E2E tests
  */
 export function createAuthMiddleware(): NextMiddleware {
   if (AUTH_MODE === "mock") {
     return createMockMiddleware();
+  }
+  if (AUTH_MODE === "keycloak") {
+    return createKeycloakMiddleware();
   }
   return createClerkMiddleware();
 }
@@ -50,6 +56,39 @@ function createClerkMiddleware(): NextMiddleware {
       },
     },
   );
+}
+
+function createKeycloakMiddleware(): NextMiddleware {
+  return (request: NextRequest) => {
+    const { pathname } = request.nextUrl;
+
+    // Public routes skip auth check
+    if (isPublicRoute(request)) {
+      return NextResponse.next();
+    }
+
+    // next-auth API routes must be accessible without auth
+    if (pathname.startsWith("/api/auth")) {
+      return NextResponse.next();
+    }
+
+    // Check for Auth.js v5 session cookie (name differs between dev and production)
+    const sessionToken =
+      request.cookies.get("__Secure-authjs.session-token")?.value ||
+      request.cookies.get("authjs.session-token")?.value;
+
+    if (!sessionToken) {
+      // Redirect to next-auth sign-in (which triggers the Keycloak OIDC flow)
+      const signInUrl = new URL("/api/auth/signin", request.url);
+      signInUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(signInUrl);
+    }
+
+    // For /dashboard redirect: the next-auth session cookie is encrypted,
+    // so we cannot extract the org slug in middleware. The /dashboard page
+    // (server component) handles the org-scoped redirect via getAuthContext().
+    return NextResponse.next();
+  };
 }
 
 function decodeMockJwtPayload(token: string): Record<string, unknown> | null {

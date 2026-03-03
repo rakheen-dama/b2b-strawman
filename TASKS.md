@@ -303,7 +303,7 @@
 | **Phase 35 — Keycloak Auth Provider Migration** | | | | | | See [tasks/phase35-keycloak-auth-migration.md](tasks/phase35-keycloak-auth-migration.md) |
 | 261 | Backend Field Renames | Backend + Frontend | -- | M | 261A, 261B, 261C | **Done** (PRs #507, #508) |
 | 262 | Keycloak SPI + Docker Setup | Keycloak + Infra | -- | M | 262A, 262B | **Done** (PRs #509, #510) |
-| 263 | Backend Keycloak Integration | Backend | 262 | L | 263A, 263B | |
+| 263 | Backend Keycloak Integration | Backend | 262 | L | 263A, 263B | 263A **Done** (PR #511) |
 | 264 | Frontend Keycloak Provider | Frontend | 261C | M | 264A, 264B | |
 | 265 | Frontend UI Components | Frontend | 263B, 264B | M | 265A, 265B, 265C | |
 | 266 | Integration Testing + E2E | Both | 263B, 265C | L | 266A, 266B | |

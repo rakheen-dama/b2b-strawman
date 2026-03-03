@@ -304,7 +304,7 @@
 | 261 | Backend Field Renames | Backend + Frontend | -- | M | 261A, 261B, 261C | **Done** (PRs #507, #508) |
 | 262 | Keycloak SPI + Docker Setup | Keycloak + Infra | -- | M | 262A, 262B | **Done** (PRs #509, #510) |
 | 263 | Backend Keycloak Integration | Backend | 262 | L | 263A, 263B | **Done** (PRs #511, #512) |
-| 264 | Frontend Keycloak Provider | Frontend | 261C | M | 264A, 264B | |
+| 264 | Frontend Keycloak Provider | Frontend | 261C | M | 264A, 264B | 264A **Done** (PR #513) |
 | 265 | Frontend UI Components | Frontend | 263B, 264B | M | 265A, 265B, 265C | |
 | 266 | Integration Testing + E2E | Both | 263B, 265C | L | 266A, 266B | |
 | 267 | Documentation | Docs | 266B | S | 267A | |

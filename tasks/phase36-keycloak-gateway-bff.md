@@ -25,7 +25,7 @@ Phase 35 (PRs #507-#519) already completed: Keycloak SPI, `JwtClaimExtractor` st
 |------|------|-------|------|--------|--------|--------|
 | 268 | Spring Cloud Gateway BFF — Module Scaffolding & Security | Backend (Gateway) | — | L | 268A, 268B | **Done** |
 | 269 | Gateway Session Storage & Route Configuration | Backend (Gateway) | 268 | M | 269A, 269B | **Done** |
-| 270 | Gateway BFF Endpoints & Admin Proxy | Backend (Gateway) | 269 | M | 270A, 270B | |
+| 270 | Gateway BFF Endpoints & Admin Proxy | Backend (Gateway) | 269 | M | 270A, 270B | **Done** |
 | 271 | JIT Tenant & Member Provisioning | Backend | — | M | 271A, 271B | |
 | 272 | Keycloak 26.5 Upgrade & Realm Configuration | Infra | — | S | 272A | |
 | 273 | Docker Compose Gateway Integration | Infra | 268, 272 | S | 273A | |
@@ -195,14 +195,14 @@ INTEGRATION TRACK (last)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 2a | 269 | 269B | Route configuration in `application.yml`: `backend-api` route (`/api/**` -> `${BACKEND_URL}`), `backend-internal` route (`/internal/**` -> `${BACKEND_URL}`), `TokenRelay=` + `SaveSession` filters on both routes. CORS config for frontend origin. ~1 modified file (~4 tests). Gateway only. | **Done** (PR #524) |
-| 2b | 270 | 270A | `BffController` with `GET /bff/me`: extract user info from `@AuthenticationPrincipal OidcUser`, parse `organization` claim for org ID/slug/role, return JSON response `{authenticated, userId, email, name, picture, orgId, orgSlug, orgRole}`. Handle unauthenticated case. ~2 new files (~6 tests). Gateway only. | |
+| 2b | 270 | 270A | `BffController` with `GET /bff/me`: extract user info from `@AuthenticationPrincipal OidcUser`, parse `organization` claim for org ID/slug/role, return JSON response `{authenticated, userId, email, name, picture, orgId, orgSlug, orgRole}`. Handle unauthenticated case. ~2 new files (~6 tests). Gateway only. | **Done** (PR #525) |
 | 2c | 273 | 273A | Docker Compose `gateway` service definition: Dockerfile for gateway module, service in `docker-compose.yml` (conditional with `--keycloak` flag), env vars (DB_HOST, KEYCLOAK_ISSUER, KEYCLOAK_CLIENT_SECRET, BACKEND_URL), port 8443, depends_on keycloak + postgres. Update `dev-up.sh --keycloak`. ~3 new/modified files. Infra only. | |
 
 ### Stage 3: Gateway Admin Proxy & Frontend BFF Provider (parallel tracks)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 3a | 270 | 270B | `AdminProxyController` with endpoints: `POST /bff/admin/invite` (relay to Keycloak Admin API org invitations), `GET /bff/admin/invitations` (list pending invitations), `DELETE /bff/admin/invitations/{id}` (revoke invitation), `GET /bff/admin/members` (list org members), `DELETE /bff/admin/members/{id}` (remove member). Uses `WebClient` with admin credentials from config. ADMIN+ role check. ~3 new files (~8 tests). Gateway only. | |
+| 3a | 270 | 270B | `AdminProxyController` with endpoints: `POST /bff/admin/invite` (relay to Keycloak Admin API org invitations), `GET /bff/admin/invitations` (list pending invitations), `DELETE /bff/admin/invitations/{id}` (revoke invitation), `GET /bff/admin/members` (list org members), `DELETE /bff/admin/members/{id}` (remove member). Uses `WebClient` with admin credentials from config. ADMIN+ role check. ~3 new files (~8 tests). Gateway only. | **Done** (PR #525) |
 | 3b (parallel) | 274 | 274A | BFF auth provider `lib/auth/providers/keycloak-bff.ts`: `getAuthContext()` calls `/bff/me` with forwarded cookies, `getAuthToken()` throws (not available in BFF mode), `getCurrentUserEmail()` via `/bff/me`. Update `lib/auth/server.ts` to add `keycloak` case dispatching to BFF provider. ~3 new/modified files (~5 tests). Frontend only. | |
 
 ### Stage 4: Frontend API Client & Middleware
@@ -395,8 +395,8 @@ Stage 8: [279A] → [279B]                                          (after all t
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **270A** | 270.1--270.6 | `BffController` with `GET /bff/me`: extract `@AuthenticationPrincipal OidcUser`, parse `organization` claim, return user info JSON. Handle unauthenticated case (`authenticated: false`). Response DTO as nested record. ~2 new files (~6 tests). Gateway only. | |
-| **270B** | 270.7--270.14 | `AdminProxyController`: `POST /bff/admin/invite` (Keycloak org invitation), `GET /bff/admin/invitations` (list pending), `DELETE /bff/admin/invitations/{id}` (revoke), `GET /bff/admin/members` (list org members from Keycloak), `PATCH /bff/admin/members/{id}/role` (change role). `KeycloakAdminClient` service using `WebClient` with service account credentials. ADMIN+ authorization. ~3 new files (~8 tests). Gateway only. | |
+| **270A** | 270.1--270.6 | `BffController` with `GET /bff/me`: extract `@AuthenticationPrincipal OidcUser`, parse `organization` claim, return user info JSON. Handle unauthenticated case (`authenticated: false`). Response DTO as nested record. ~2 new files (~6 tests). Gateway only. | **Done** (PR #525) |
+| **270B** | 270.7--270.14 | `AdminProxyController`: `POST /bff/admin/invite` (Keycloak org invitation), `GET /bff/admin/invitations` (list pending), `DELETE /bff/admin/invitations/{id}` (revoke), `GET /bff/admin/members` (list org members from Keycloak), `PATCH /bff/admin/members/{id}/role` (change role). `KeycloakAdminClient` service using `WebClient` with service account credentials. ADMIN+ authorization. ~3 new files (~8 tests). Gateway only. | **Done** (PR #525) |
 
 ### Tasks
 

@@ -44,6 +44,13 @@ spring:
               filters:
                 - TokenRelay=
                 - SaveSession
+            - id: backend-internal
+              uri: ${BACKEND_URL:http://localhost:8080}
+              predicates:
+                - Path=/internal/**
+              filters:
+                - TokenRelay=
+                - SaveSession
 
   jmx:
     enabled: false
@@ -51,6 +58,9 @@ spring:
   threads:
     virtual:
       enabled: true
+
+gateway:
+  frontend-url: ${FRONTEND_URL:http://localhost:3000}
 
 management:
   endpoints:

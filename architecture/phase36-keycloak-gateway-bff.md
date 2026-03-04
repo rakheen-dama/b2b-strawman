@@ -8,7 +8,7 @@
 
 This phase replaces Clerk with **Keycloak 26.5** as the identity provider and introduces a **Spring Cloud Gateway BFF** (Backend-for-Frontend) that keeps all OAuth2 tokens server-side. The browser never sees a JWT — only an opaque HttpOnly session cookie. The backend remains a stateless resource server with minimal changes (YAML config + JWT claim extractor).
 
-Phase 20 introduced an auth provider abstraction layer (`lib/auth/providers/`) and a mock IDP for E2E testing. This phase builds on that foundation: `keycloak.ts` becomes the third provider alongside `clerk.ts` and `mock/server.ts`, selected at build time via `NEXT_PUBLIC_AUTH_MODE=keycloak`.
+Phase 20 introduced an auth provider abstraction layer (`lib/auth/providers/`) and a mock IDP for E2E testing. This phase builds on that foundation: `keycloak-bff.ts` becomes the third provider alongside `clerk.ts` and `mock/server.ts`, selected at build time via `NEXT_PUBLIC_AUTH_MODE=keycloak`.
 
 **Dependencies on prior phases**: Phase 20 (auth abstraction layer, mock IDP, `NEXT_PUBLIC_AUTH_MODE` dispatch). No other phase dependencies — this is a cross-cutting infrastructure change.
 
@@ -313,14 +313,9 @@ spring:
               filters:
                 - TokenRelay=
                 - SaveSession
-            - id: backend-internal
-              uri: ${BACKEND_URL:http://localhost:8080}
-              predicates:
-                - Path=/internal/**
-              filters:
-                - TokenRelay=
-                - SaveSession
 ```
+
+> **Note**: There is no `backend-internal` route. `/internal/**` endpoints are blocked at the security layer with `denyAll()` — proxying internal API-key endpoints through the gateway would bypass internal-only authentication.
 
 #### 3.3 Security Configuration
 
@@ -333,9 +328,9 @@ public class GatewaySecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/error", "/actuator/health").permitAll()
-                .requestMatchers("/bff/me").authenticated()
-                .requestMatchers("/api/**", "/internal/**").authenticated()
+                .requestMatchers("/", "/error", "/actuator/health", "/bff/me").permitAll()
+                .requestMatchers("/internal/**").denyAll()
+                .requestMatchers("/api/**").authenticated()
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2
@@ -672,10 +667,10 @@ On first login, if no tenant schema exists for the user's org, provision it on t
 
 ### 6. Frontend Changes
 
-#### 6.1 New Auth Provider (`lib/auth/providers/keycloak.ts`)
+#### 6.1 New Auth Provider (`lib/auth/providers/keycloak-bff.ts`)
 
 ```typescript
-// lib/auth/providers/keycloak.ts
+// lib/auth/providers/keycloak-bff.ts
 import "server-only";
 
 const GATEWAY_URL = process.env.GATEWAY_URL || "http://localhost:8443";
@@ -872,7 +867,7 @@ Add Keycloak and Gateway to `compose/docker-compose.yml`:
 services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.5.0
-    command: start-dev --import-realm
+    command: start-dev --import-realm --features=scripts
     environment:
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
@@ -1056,7 +1051,7 @@ The entire system can run in three modes, selected by environment variables:
 
 | # | Task | Files | Notes |
 |---|---|---|---|
-| C1 | Create `lib/auth/providers/keycloak.ts` | Frontend auth | `/bff/me` based auth context |
+| C1 | Create `lib/auth/providers/keycloak-bff.ts` | Frontend auth | `/bff/me` based auth context |
 | C2 | Update `lib/auth/server.ts` dispatch | Frontend auth | Add `keycloak` case |
 | C3 | Update `lib/api.ts` for BFF mode | Frontend API | Session cookie + CSRF instead of Bearer |
 | C4 | Create `keycloakMiddleware()` | Frontend middleware | Session cookie check |

@@ -61,7 +61,7 @@ DocTeams supports three authentication modes, selected entirely by environment v
    ```bash
    bash compose/scripts/dev-up.sh
    ```
-   Services started: PostgreSQL, LocalStack, Mailpit
+   Services started: PostgreSQL, LocalStack, Mailpit, Keycloak, Gateway
 
 2. **Start backend**:
    ```bash
@@ -221,7 +221,9 @@ For member sync: `MemberFilter` extracts email and name from the JWT and creates
 | Variable | Required | Example |
 |---|---|---|
 | `NEXT_PUBLIC_AUTH_MODE` | Yes | `mock` |
-| `NEXT_PUBLIC_MOCK_IDP_URL` | Yes | `http://localhost:8090` |
+| `NEXT_PUBLIC_MOCK_IDP_URL` | Yes (build-time, client components) | `http://localhost:8090` |
+
+> **Note**: `NEXT_PUBLIC_MOCK_IDP_URL` is a build-time variable baked into the client bundle (used by `mock-context.tsx` for browser-side token/userinfo calls). Server-side code (`lib/auth/providers/mock/server.ts`, `mock-login/page.tsx`) reads `MOCK_IDP_URL` (without the `NEXT_PUBLIC_` prefix) at runtime instead. In Docker, set both: `NEXT_PUBLIC_MOCK_IDP_URL` as a build arg and `MOCK_IDP_URL` as a runtime env var.
 
 #### Frontend (server-side)
 
@@ -229,6 +231,7 @@ For member sync: `MemberFilter` extracts email and name from the JWT and creates
 |---|---|---|
 | `BACKEND_URL` | Yes | `http://backend:8080` (Docker) or `http://localhost:8081` |
 | `INTERNAL_API_KEY` | Yes | `e2e-test-api-key` |
+| `MOCK_IDP_URL` | Yes (server-side, runtime) | `http://mock-idp:8090` (Docker) or `http://localhost:8090` |
 
 #### Backend
 
@@ -455,9 +458,9 @@ docker exec -it keycloak /opt/keycloak/bin/kc.sh export \
 
 #### Keycloak JWT claims not recognized by backend
 
-- **Symptom**: `ClerkJwtUtils.extractOrgId()` returns null
+- **Symptom**: `KeycloakJwtClaimExtractor.extractOrgId()` returns null or JWT claims are not recognized
 - **Cause**: Keycloak JWT uses `organization` claim structure, not the Clerk `o` claim
-- **Fix**: Ensure `JwtClaimExtractor` interface is implemented and `@Profile("keycloak")` is on `KeycloakJwtClaimExtractor`
+- **Fix**: Ensure `JwtClaimExtractor` interface is implemented and `@Profile("keycloak")` is on `KeycloakJwtClaimExtractor`. Verify `SPRING_PROFILES_ACTIVE` includes `keycloak`
 - **Check**: Decode a Keycloak JWT at jwt.io and verify the `organization` claim structure
 
 ### 7.3 Mock E2E Mode Issues

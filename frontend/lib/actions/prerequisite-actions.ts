@@ -11,6 +11,8 @@ import {
   fetchIntakeFields,
   checkEngagementPrerequisites,
 } from "@/lib/prerequisites";
+import { api, ApiError, setEntityFieldGroups } from "@/lib/api";
+import { revalidatePath } from "next/cache";
 
 export async function checkPrerequisitesAction(
   context: PrerequisiteContext,
@@ -33,5 +35,60 @@ export async function checkEngagementPrerequisitesAction(
   return checkEngagementPrerequisites(templateId, customerId);
 }
 
-// Re-export from custom-fields actions so shared components don't import route-group files
-export { updateEntityCustomFieldsAction } from "@/app/(app)/org/[slug]/settings/custom-fields/actions";
+interface ActionResult {
+  success: boolean;
+  error?: string;
+}
+
+export async function updateEntityCustomFieldsAction(
+  slug: string,
+  entityType: EntityType,
+  entityId: string,
+  customFields: Record<string, unknown>,
+): Promise<ActionResult> {
+  const prefix = entityType.toLowerCase() + "s";
+  try {
+    if (entityType === "INVOICE") {
+      await api.put(`/api/${prefix}/${entityId}/custom-fields`, { customFields });
+    } else {
+      const current = await api.get<Record<string, unknown>>(`/api/${prefix}/${entityId}`);
+      await api.put(`/api/${prefix}/${entityId}`, { ...current, customFields });
+    }
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 403) {
+        return { success: false, error: "You do not have permission to update custom fields." };
+      }
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${slug}/${prefix}/${entityId}`);
+  revalidatePath(`/org/${slug}/${prefix}`);
+  return { success: true };
+}
+
+export async function setEntityFieldGroupsAction(
+  slug: string,
+  entityType: EntityType,
+  entityId: string,
+  appliedFieldGroups: string[],
+): Promise<ActionResult> {
+  const prefix = entityType.toLowerCase() + "s";
+  try {
+    await setEntityFieldGroups(entityType, entityId, appliedFieldGroups);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 403) {
+        return { success: false, error: "You do not have permission to manage field groups." };
+      }
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${slug}/${prefix}/${entityId}`);
+  revalidatePath(`/org/${slug}/${prefix}`);
+  return { success: true };
+}

@@ -4,15 +4,15 @@ import userEvent from "@testing-library/user-event";
 import { FieldGroupSelector } from "@/components/field-definitions/FieldGroupSelector";
 import type { FieldGroupResponse } from "@/lib/types";
 
+// Mock server-only (imported transitively via prerequisite-actions -> api)
+vi.mock("server-only", () => ({}));
+
 const mockSetEntityFieldGroups = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/settings/custom-fields/actions",
-  () => ({
-    setEntityFieldGroupsAction: (...args: unknown[]) =>
-      mockSetEntityFieldGroups(...args),
-  }),
-);
+vi.mock("@/lib/actions/prerequisite-actions", () => ({
+  setEntityFieldGroupsAction: (...args: unknown[]) =>
+    mockSetEntityFieldGroups(...args),
+}));
 
 const group1: FieldGroupResponse = {
   id: "grp-1",

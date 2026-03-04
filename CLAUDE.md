@@ -49,10 +49,8 @@ bash compose/scripts/dev-rebuild.sh backend
 ### With Keycloak (self-hosted auth)
 
 ```bash
-# Build the Keycloak SPI JAR first (one-time)
-cd keycloak-spi && ../backend/mvnw package -DskipTests && cd ..
-
 # Start infrastructure with Keycloak (port 9090)
+# (SPI JAR is built automatically inside the Keycloak Docker image)
 bash compose/scripts/dev-up.sh --keycloak
 
 # Seed Keycloak with test org + users (alice/bob/carol, password: 'password')

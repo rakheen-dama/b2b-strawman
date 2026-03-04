@@ -16,7 +16,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Plus, X, Loader2 } from "lucide-react";
-import { setEntityFieldGroupsAction } from "@/app/(app)/org/[slug]/settings/custom-fields/actions";
+import { setEntityFieldGroupsAction } from "@/lib/actions/prerequisite-actions";
 import type { EntityType, FieldGroupResponse } from "@/lib/types";
 
 interface FieldGroupSelectorProps {

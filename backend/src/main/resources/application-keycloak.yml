@@ -6,7 +6,11 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${KEYCLOAK_URL:http://localhost:9090}/realms/docteams
+          # issuer-uri must match the `iss` claim in Keycloak tokens.
+          # With KC_HOSTNAME pinned, all tokens use the external URL regardless
+          # of which network the request comes from.
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:9090/realms/docteams}
+          # jwk-set-uri uses the internal Docker URL for server-to-server JWKS fetch.
           jwk-set-uri: ${KEYCLOAK_URL:http://localhost:9090}/realms/docteams/protocol/openid-connect/certs
 
 keycloak:

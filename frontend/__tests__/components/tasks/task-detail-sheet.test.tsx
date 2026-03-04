@@ -50,7 +50,7 @@ vi.mock("@/app/(app)/org/[slug]/settings/tags/actions", () => ({
   setEntityTagsAction: (...args: unknown[]) => mockSetEntityTags(...args),
 }));
 
-vi.mock("@/app/(app)/org/[slug]/settings/custom-fields/actions", () => ({
+vi.mock("@/lib/actions/prerequisite-actions", () => ({
   updateEntityCustomFieldsAction: (...args: unknown[]) =>
     mockUpdateEntityCustomFields(...args),
 }));

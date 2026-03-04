@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Save, Loader2, ListChecks } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
-import { updateEntityCustomFieldsAction } from "@/app/(app)/org/[slug]/settings/custom-fields/actions";
+import { updateEntityCustomFieldsAction } from "@/lib/actions/prerequisite-actions";
 import type {
   EntityType,
   FieldDefinitionResponse,

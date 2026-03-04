@@ -12,10 +12,11 @@
     <description>Custom Keycloak SPI mapper for DocTeams org role claims</description>
 
     <properties>
-        <java.version>25</java.version>
-        <maven.compiler.source>25</maven.compiler.source>
-        <maven.compiler.target>25</maven.compiler.target>
-        <keycloak.version>26.1.0</keycloak.version>
+        <!-- Keycloak 26.5 runs on Java 21 — SPI must target its runtime -->
+        <java.version>21</java.version>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <keycloak.version>26.5.0</keycloak.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 

@@ -3,6 +3,9 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ValidationCheck } from "@/lib/types";
 
+// Mock server-only (imported transitively via invoice-actions -> api)
+vi.mock("server-only", () => ({}));
+
 // Mock server actions
 const mockValidateInvoiceGeneration = vi.fn();
 const mockFetchUnbilledTime = vi.fn();

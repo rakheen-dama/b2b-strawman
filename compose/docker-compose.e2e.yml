@@ -54,7 +54,9 @@ services:
       - e2e-network
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.1
+    build:
+      context: ..
+      dockerfile: compose/keycloak/Dockerfile
     container_name: e2e-keycloak
     command: start-dev --import-realm
     environment:
@@ -64,13 +66,14 @@ services:
       KC_DB_PASSWORD: changeme
       KC_FEATURES: organization
       KC_HEALTH_ENABLED: "true"
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HOSTNAME_STRICT: "false"
+      KC_HTTP_ENABLED: "true"
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
     ports:
       - "9091:8080"
     volumes:
       - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
-      - ../keycloak-spi/target/keycloak-spi-0.0.1-SNAPSHOT.jar:/opt/keycloak/providers/keycloak-spi.jar:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -80,6 +83,24 @@ services:
       timeout: 5s
       retries: 15
       start_period: 30s
+    networks:
+      - e2e-network
+
+  keycloak-init:
+    build:
+      context: ..
+      dockerfile: compose/keycloak/Dockerfile
+    container_name: e2e-keycloak-init
+    entrypoint: /init/disable-ssl.sh
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    volumes:
+      - ./keycloak/disable-ssl.sh:/init/disable-ssl.sh:ro
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    restart: "no"
     networks:
       - e2e-network
 
@@ -165,6 +186,7 @@ services:
       KEYCLOAK_CLIENT_ID: docteams-web
       KEYCLOAK_CLIENT_SECRET: docteams-web-secret
       KEYCLOAK_ISSUER: http://keycloak:8080/realms/docteams
+      KEYCLOAK_ISSUER_EXTERNAL: http://localhost:9091/realms/docteams
       KEYCLOAK_DEFAULT_ORG: e2e-test-org
       NEXTAUTH_URL: http://localhost:3001
       NEXTAUTH_SECRET: e2e-nextauth-secret-at-least-32-chars

@@ -114,6 +114,43 @@ public class KeycloakAdminService {
     log.info("Added member to Keycloak organization: orgId={}, userId={}", orgId, userId);
   }
 
+  /**
+   * Sets the user's org role attribute ({@code org:<orgId>:role}) in Keycloak. This attribute is
+   * read by the OrgRoleProtocolMapper SPI to embed the role in JWT tokens.
+   */
+  public void setUserOrgRole(String userId, String orgId, String role) {
+    log.debug("Setting org role attribute: userId={}, orgId={}, role={}", userId, orgId, role);
+
+    // Fetch current user representation to preserve existing attributes
+    var user =
+        restClient
+            .get()
+            .uri("/users/{userId}", userId)
+            .retrieve()
+            .body(new ParameterizedTypeReference<Map<String, Object>>() {});
+
+    if (user == null) {
+      throw new ResourceNotFoundException("User", userId);
+    }
+
+    // Merge the org role attribute into existing attributes
+    @SuppressWarnings("unchecked")
+    var attributes =
+        (Map<String, List<String>>)
+            user.computeIfAbsent("attributes", k -> new java.util.HashMap<>());
+    attributes.put("org:" + orgId + ":role", List.of(role));
+
+    restClient
+        .put()
+        .uri("/users/{userId}", userId)
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(user)
+        .retrieve()
+        .toBodilessEntity();
+
+    log.info("Set org role attribute: userId={}, orgId={}, role={}", userId, orgId, role);
+  }
+
   /** Invites a user to an organization by email. Keycloak sends the invitation email. */
   public void inviteToOrganization(String orgId, String email) {
     log.debug("Inviting user to Keycloak organization: orgId={}, email={}", orgId, email);

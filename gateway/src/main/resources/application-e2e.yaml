@@ -3,33 +3,35 @@
 spring:
   cloud:
     gateway:
-      routes:
-        - id: api
-          uri: http://backend:8080
-          predicates:
-            - Path=/api/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: backendCircuitBreaker
-                fallbackUri: forward:/fallback
+      server:
+        webflux:
+          routes:
+            - id: api
+              uri: http://backend:8080
+              predicates:
+                - Path=/api/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: backendCircuitBreaker
+                    fallbackUri: forward:/fallback
 
-        - id: portal
-          uri: http://backend:8080
-          predicates:
-            - Path=/portal/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: backendCircuitBreaker
-                fallbackUri: forward:/fallback
+            - id: portal
+              uri: http://backend:8080
+              predicates:
+                - Path=/portal/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: backendCircuitBreaker
+                    fallbackUri: forward:/fallback
 
-        - id: actuator-backend
-          uri: http://backend:8080
-          predicates:
-            - Path=/backend/actuator/**
-          filters:
-            - StripPrefix=1
+            - id: actuator-backend
+              uri: http://backend:8080
+              predicates:
+                - Path=/backend/actuator/**
+              filters:
+                - StripPrefix=1
 
 # Disable rate limiting in E2E tests to avoid flaky failures
 gateway:

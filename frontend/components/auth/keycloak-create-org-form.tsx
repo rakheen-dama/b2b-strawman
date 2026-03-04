@@ -28,10 +28,14 @@ export function KeycloakCreateOrgForm({
       const safeSlug = /^[a-z0-9][a-z0-9-]*$/.test(result.slug)
         ? result.slug
         : "dashboard";
-      // Re-authenticate to pick up the new org in the JWT token
-      await signIn("keycloak", {
-        callbackUrl: `/org/${safeSlug}/dashboard`,
-      });
+      // Re-authenticate to pick up the new org in the JWT token.
+      // Pass kc_org as authorization param so Keycloak selects the new org
+      // and the SPI mapper embeds org claims in the fresh JWT.
+      await signIn(
+        "keycloak",
+        { callbackUrl: `/org/${safeSlug}/dashboard` },
+        { kc_org: safeSlug },
+      );
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to create organization",

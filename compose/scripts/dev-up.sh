@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
-# dev-up.sh — Start the local development infrastructure.
-# Starts Postgres, LocalStack, and Mailpit. Backend is NOT started here —
-# run it locally via ./mvnw spring-boot:run for hot-reload.
+# dev-up.sh — Start the local development stack.
+#
+# Auth mode is controlled by AUTH_MODE in compose/.env:
+#   AUTH_MODE=clerk    → Clerk cloud auth (default)
+#   AUTH_MODE=keycloak → Self-hosted Keycloak (auto-started)
+#
+# You can also pass --keycloak to override AUTH_MODE for this run.
 #
 # Usage: bash compose/scripts/dev-up.sh [--all] [--keycloak]
 set -euo pipefail
@@ -9,6 +13,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 COMPOSE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 COMPOSE_FILE="$COMPOSE_DIR/docker-compose.yml"
+ENV_FILE="$COMPOSE_DIR/.env"
 
 if [[ ! -f "$COMPOSE_FILE" ]]; then
   echo "ERROR: docker-compose.yml not found at $COMPOSE_FILE"
@@ -17,6 +22,15 @@ fi
 
 echo "=== Dev Stack ==="
 echo ""
+
+# Read AUTH_MODE from .env (default: clerk)
+AUTH_MODE="clerk"
+if [[ -f "$ENV_FILE" ]]; then
+  PARSED_MODE=$(grep -E "^AUTH_MODE=" "$ENV_FILE" 2>/dev/null | cut -d= -f2 | tr -d '[:space:]' || true)
+  if [[ -n "$PARSED_MODE" ]]; then
+    AUTH_MODE="$PARSED_MODE"
+  fi
+fi
 
 # Start infrastructure services only (exclude backend/frontend by default)
 SERVICES="postgres localstack mailpit"
@@ -32,32 +46,36 @@ for arg in "$@"; do
       echo "Starting all services (including backend + frontend)..."
       ;;
     --keycloak)
-      KEYCLOAK=true
-      COMPOSE_PROFILES="--profile keycloak"
+      AUTH_MODE="keycloak"
       ;;
   esac
 done
 
-if [[ "$KEYCLOAK" == "true" ]]; then
-  SPI_JAR="$COMPOSE_DIR/../keycloak-spi/target/keycloak-spi-0.0.1-SNAPSHOT.jar"
-  if [[ ! -f "$SPI_JAR" ]]; then
-    echo "❌ SPI JAR not found at $SPI_JAR"
-    echo "   Build it first: cd keycloak-spi && ../backend/mvnw package -DskipTests"
-    exit 1
-  fi
+# Export AUTH_MODE so docker-compose picks it up for build args
+# (NEXT_PUBLIC_AUTH_MODE: ${AUTH_MODE:-clerk} in docker-compose.yml)
+export AUTH_MODE
+
+# Enable Keycloak profile when AUTH_MODE=keycloak
+if [[ "$AUTH_MODE" == "keycloak" ]]; then
+  KEYCLOAK=true
+  COMPOSE_PROFILES="--profile keycloak"
+
+  # Set Spring profiles so backend and gateway pick up keycloak config
+  export BACKEND_PROFILES="local,keycloak"
+  export GATEWAY_PROFILES="default,keycloak"
+
   if [[ "$ALL" == "false" ]]; then
-    SERVICES="$SERVICES keycloak"
+    SERVICES="$SERVICES keycloak keycloak-init"
   fi
-  echo "Including Keycloak (port 9090)..."
+  echo "Auth mode: Keycloak (self-hosted)"
+  echo "  Keycloak will be available at http://localhost:9090"
+else
+  echo "Auth mode: Clerk (cloud)"
 fi
 
-if [[ -n "$SERVICES" ]] && [[ "$KEYCLOAK" == "false" ]]; then
+if [[ "$ALL" == "false" ]]; then
   echo "Starting infrastructure services..."
-  echo "  (use --all to also start backend + frontend containers)"
-  echo "  (use --keycloak to include Keycloak identity provider)"
-elif [[ -n "$SERVICES" ]] && [[ "$KEYCLOAK" == "true" ]]; then
-  echo "Starting infrastructure services..."
-  echo "  (use --all to also start backend + frontend containers)"
+  echo "  (use --all to also start backend + frontend + gateway containers)"
 fi
 
 echo ""
@@ -65,7 +83,10 @@ echo "[1/2] Starting services..."
 if [[ -n "$SERVICES" ]]; then
   docker compose -f "$COMPOSE_FILE" $COMPOSE_PROFILES up -d $SERVICES
 else
-  docker compose -f "$COMPOSE_FILE" $COMPOSE_PROFILES up -d
+  # Always --build when starting all services: NEXT_PUBLIC_AUTH_MODE is inlined
+  # at Next.js build time, so the frontend image must be rebuilt when switching
+  # between clerk/keycloak. Docker layer caching keeps this fast when unchanged.
+  docker compose -f "$COMPOSE_FILE" $COMPOSE_PROFILES up -d --build
 fi
 
 echo ""
@@ -128,7 +149,7 @@ if [[ "$KEYCLOAK" == "true" ]]; then
   ELAPSED=0
   printf "  Keycloak (localhost:9090)... "
   while [[ $ELAPSED -lt 120 ]]; do
-    if curl -sf http://localhost:9090/health/ready > /dev/null 2>&1; then
+    if curl -sf http://localhost:9090/realms/master > /dev/null 2>&1; then
       echo "ready"
       break
     fi
@@ -142,7 +163,7 @@ if [[ "$KEYCLOAK" == "true" ]]; then
   fi
 fi
 
-# If --all was requested, wait for backend and frontend too
+# If --all was requested, wait for backend, gateway, and frontend too
 if [[ "$ALL" == "true" ]]; then
   ELAPSED=0
   printf "  Backend (localhost:8080)... "
@@ -157,6 +178,22 @@ if [[ "$ALL" == "true" ]]; then
   if [[ $ELAPSED -ge 300 ]]; then
     echo "TIMEOUT (300s)"
     echo "Check logs: docker compose -f $COMPOSE_FILE logs backend"
+    exit 1
+  fi
+
+  ELAPSED=0
+  printf "  Gateway (localhost:8090)... "
+  while [[ $ELAPSED -lt 120 ]]; do
+    if curl -sf http://localhost:8090/actuator/health > /dev/null 2>&1; then
+      echo "ready"
+      break
+    fi
+    sleep 5
+    ELAPSED=$((ELAPSED + 5))
+  done
+  if [[ $ELAPSED -ge 120 ]]; then
+    echo "TIMEOUT (120s)"
+    echo "Check logs: docker compose -f $COMPOSE_FILE logs gateway"
     exit 1
   fi
 
@@ -189,11 +226,14 @@ if [[ "$KEYCLOAK" == "true" ]]; then
 fi
 if [[ "$ALL" == "true" ]]; then
   echo "  Backend:        http://localhost:8080"
+  echo "  Gateway:        http://localhost:8090"
   echo "  Frontend:       http://localhost:3000"
 fi
 echo ""
-echo "  Start backend:  cd backend && ./mvnw spring-boot:run"
-echo "  Start frontend: cd frontend && pnpm dev"
+if [[ "$ALL" == "false" ]]; then
+  echo "  Start backend:  cd backend && ./mvnw spring-boot:run"
+  echo "  Start frontend: cd frontend && pnpm dev"
+fi
 echo "  Tail logs:      docker compose -f $COMPOSE_FILE logs -f"
 echo "  Stop stack:     bash compose/scripts/dev-down.sh"
 echo ""

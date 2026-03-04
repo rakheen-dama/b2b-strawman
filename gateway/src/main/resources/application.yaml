@@ -7,49 +7,51 @@ spring:
 
   cloud:
     gateway:
-      routes:
-        - id: api
-          uri: ${BACKEND_URL:http://localhost:8080}
-          predicates:
-            - Path=/api/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: backendCircuitBreaker
-                fallbackUri: forward:/fallback
+      server:
+        webflux:
+          routes:
+            - id: api
+              uri: ${BACKEND_URL:http://localhost:8080}
+              predicates:
+                - Path=/api/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: backendCircuitBreaker
+                    fallbackUri: forward:/fallback
 
-        - id: portal
-          uri: ${BACKEND_URL:http://localhost:8080}
-          predicates:
-            - Path=/portal/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: backendCircuitBreaker
-                fallbackUri: forward:/fallback
+            - id: portal
+              uri: ${BACKEND_URL:http://localhost:8080}
+              predicates:
+                - Path=/portal/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: backendCircuitBreaker
+                    fallbackUri: forward:/fallback
 
-        - id: actuator-backend
-          uri: ${BACKEND_URL:http://localhost:8080}
-          predicates:
-            - Path=/backend/actuator/**
-          filters:
-            - StripPrefix=1
+            - id: actuator-backend
+              uri: ${BACKEND_URL:http://localhost:8080}
+              predicates:
+                - Path=/backend/actuator/**
+              filters:
+                - StripPrefix=1
 
-      # CORS handled at gateway level — backend trusts internal traffic
-      globalcors:
-        cors-configurations:
-          '[/**]':
-            allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:3001,http://localhost:3002}
-            allowed-methods:
-              - GET
-              - POST
-              - PUT
-              - DELETE
-              - PATCH
-              - OPTIONS
-            allowed-headers: "*"
-            allow-credentials: true
-            max-age: 3600
+          # CORS handled at gateway level — backend trusts internal traffic
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:3001,http://localhost:3002}
+                allowed-methods:
+                  - GET
+                  - POST
+                  - PUT
+                  - DELETE
+                  - PATCH
+                  - OPTIONS
+                allowed-headers: "*"
+                allow-credentials: true
+                max-age: 3600
 
   security:
     oauth2:
@@ -91,8 +93,8 @@ resilience4j:
 gateway:
   rate-limit:
     enabled: true
-    ip-capacity: 100          # Max burst per IP
-    ip-refill-tokens: 100     # Tokens/sec per IP
+    ip-capacity: 500          # Max burst per IP (high for SSR servers behind gateway)
+    ip-refill-tokens: 500     # Tokens/sec per IP
     ip-refill-interval: 1s
     tenant-capacity: 200      # Max burst per tenant
     tenant-refill-tokens: 200 # Tokens/sec per tenant

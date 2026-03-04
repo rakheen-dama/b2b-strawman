@@ -13,12 +13,12 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 @TestPropertySource(
     properties = {
       "spring.security.oauth2.resourceserver.jwt.jwk-set-uri=https://example.com/.well-known/jwks.json",
-      "spring.cloud.gateway.routes[0].id=api",
-      "spring.cloud.gateway.routes[0].uri=http://localhost:8080",
-      "spring.cloud.gateway.routes[0].predicates[0]=Path=/api/**",
-      "spring.cloud.gateway.routes[1].id=portal",
-      "spring.cloud.gateway.routes[1].uri=http://localhost:8080",
-      "spring.cloud.gateway.routes[1].predicates[0]=Path=/portal/**",
+      "spring.cloud.gateway.server.webflux.routes[0].id=api",
+      "spring.cloud.gateway.server.webflux.routes[0].uri=http://localhost:8080",
+      "spring.cloud.gateway.server.webflux.routes[0].predicates[0]=Path=/api/**",
+      "spring.cloud.gateway.server.webflux.routes[1].id=portal",
+      "spring.cloud.gateway.server.webflux.routes[1].uri=http://localhost:8080",
+      "spring.cloud.gateway.server.webflux.routes[1].predicates[0]=Path=/portal/**",
       "gateway.rate-limit.enabled=false"
     })
 class GatewayApplicationTests {
@@ -54,22 +54,31 @@ class GatewayApplicationTests {
   @Test
   void webhookEndpointDoesNotRequireAuth() {
     // /api/webhooks/** is permitted without JWT (permitAll in security config).
-    // Returns 404 in test (no backend running) — the important thing is NOT 401.
+    // The important thing is NOT 401 — any other status proves the path is accessible.
+    // With routes configured, the circuit breaker may return 503 (no backend) or the
+    // backend may return 400/404 depending on availability.
     var status =
         webTestClient
             .post()
             .uri("/api/webhooks/email/inbound")
             .exchange()
-            .expectStatus()
-            .isNotFound()
             .returnResult(Void.class)
             .getStatus();
-    // 404 (not 401) proves the security config permits webhook paths
+    // Any status other than 401 proves the security config permits webhook paths
+    assert status.value() != 401 : "Webhook endpoint should not require auth, got 401";
   }
 
   @Test
   void portalAuthEndpointDoesNotRequireAuth() {
-    // /portal/auth/** is permitted without JWT. Returns 404 in test (no backend).
-    webTestClient.post().uri("/portal/auth/login").exchange().expectStatus().isNotFound();
+    // /portal/auth/** is permitted without JWT. With routes, the backend may return
+    // various status codes depending on availability.
+    var status =
+        webTestClient
+            .post()
+            .uri("/portal/auth/login")
+            .exchange()
+            .returnResult(Void.class)
+            .getStatus();
+    assert status.value() != 401 : "Portal auth endpoint should not require auth, got 401";
   }
 }

@@ -69,16 +69,26 @@ public class OrgRoleProtocolMapper extends AbstractOIDCProtocolMapper
       UserSessionModel userSession,
       ClientSessionContext clientSessionCtx) {
 
-    // 1. Read active org from kc_org session note
+    UserModel user = userSession.getUser();
+
+    // 1. Read active org from kc_org session note, or auto-select if user has exactly one
     String kcOrg = clientSessionCtx.getClientSession().getNote("kc_org");
-    if (kcOrg == null) {
-      return token;
-    }
 
     // 2. Get OrganizationProvider
     OrganizationProvider orgProvider = session.getProvider(OrganizationProvider.class);
     if (orgProvider == null) {
       return token;
+    }
+
+    // Auto-select: if no kc_org was provided, check if user has exactly one org
+    if (kcOrg == null) {
+      List<OrganizationModel> userOrgs = orgProvider.getByMember(user).toList();
+      if (userOrgs.size() == 1) {
+        kcOrg = userOrgs.getFirst().getAlias();
+      } else {
+        // Zero or multiple orgs — cannot auto-select, skip org claim
+        return token;
+      }
     }
 
     // 3. Resolve org (kc_org can be alias or ID)
@@ -91,7 +101,6 @@ public class OrgRoleProtocolMapper extends AbstractOIDCProtocolMapper
     }
 
     // 4. Check user membership
-    UserModel user = userSession.getUser();
     if (!org.isMember(user)) {
       return token;
     }

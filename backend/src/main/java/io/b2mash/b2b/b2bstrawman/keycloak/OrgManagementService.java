@@ -70,6 +70,9 @@ public class OrgManagementService {
       // Step 3: Add creator as member in Keycloak org
       keycloakAdminService.addMember(orgId, creatorUserId);
 
+      // Step 3.5: Set org role attribute so the SPI mapper embeds the role in JWTs
+      keycloakAdminService.setUserOrgRole(creatorUserId, orgId, "owner");
+
       // Step 4: Sync creator as owner in the tenant
       memberSyncService.syncMember(orgId, creatorUserId, creatorEmail, creatorName, null, "owner");
 

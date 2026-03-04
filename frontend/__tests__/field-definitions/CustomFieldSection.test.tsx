@@ -8,15 +8,15 @@ import type {
   FieldGroupMemberResponse,
 } from "@/lib/types";
 
+// Mock server-only (imported transitively via prerequisite-actions -> api)
+vi.mock("server-only", () => ({}));
+
 const mockUpdateEntityCustomFields = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/settings/custom-fields/actions",
-  () => ({
-    updateEntityCustomFieldsAction: (...args: unknown[]) =>
-      mockUpdateEntityCustomFields(...args),
-  }),
-);
+vi.mock("@/lib/actions/prerequisite-actions", () => ({
+  updateEntityCustomFieldsAction: (...args: unknown[]) =>
+    mockUpdateEntityCustomFields(...args),
+}));
 
 // --- Test Data ---
 

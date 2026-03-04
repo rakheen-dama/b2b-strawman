@@ -33,6 +33,17 @@ RUN pnpm build
 FROM node:20-alpine AS runner
 WORKDIR /app
 
+# Carry NEXT_PUBLIC_ vars into the runner stage. Turbopack (Next.js 16) does
+# not fully inline all process.env.NEXT_PUBLIC_* references at build time —
+# some remain as runtime lookups. Without these, they resolve to undefined
+# and the auth dispatch defaults to "clerk".
+ARG NEXT_PUBLIC_AUTH_MODE
+ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+ARG NEXT_PUBLIC_MOCK_IDP_URL
+ENV NEXT_PUBLIC_AUTH_MODE=$NEXT_PUBLIC_AUTH_MODE
+ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+ENV NEXT_PUBLIC_MOCK_IDP_URL=$NEXT_PUBLIC_MOCK_IDP_URL
+
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV HOSTNAME=0.0.0.0

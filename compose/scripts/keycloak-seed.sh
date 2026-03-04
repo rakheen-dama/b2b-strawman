@@ -65,6 +65,26 @@ if [[ -z "$ORG_ID" ]]; then
 fi
 echo "  Org ID: ${ORG_ID}"
 
+# 2.5. Enable unmanaged user attributes for org role attributes
+# Keycloak 26+ declarative user profile silently drops attributes not in the profile config.
+# We need ADMIN_EDIT to allow the seed script to set org:<id>:role user attributes.
+echo "  Enabling unmanaged attribute policy..."
+PROFILE_JSON=$(curl -sf "${KC_URL}/admin/realms/${KC_REALM}/users/profile" \
+  -H "${AUTH_HEADER}" 2>/dev/null || echo "")
+if [[ -n "$PROFILE_JSON" ]]; then
+  UPDATED_PROFILE=$(echo "$PROFILE_JSON" | python3 -c "
+import sys, json
+profile = json.load(sys.stdin)
+profile['unmanagedAttributePolicy'] = 'ADMIN_EDIT'
+json.dump(profile, sys.stdout)
+")
+  curl -sf -X PUT "${KC_URL}/admin/realms/${KC_REALM}/users/profile" \
+    -H "${AUTH_HEADER}" \
+    -H "Content-Type: application/json" \
+    -d "${UPDATED_PROFILE}" > /dev/null 2>&1 || true
+  echo "  User profile updated (ADMIN_EDIT)"
+fi
+
 # 3. Create test users
 echo "[3/5] Creating test users..."
 
@@ -111,11 +131,20 @@ USERJSON
     -H "${AUTH_HEADER}" | python3 -c "import sys,json; users=json.load(sys.stdin); print(users[0]['id'] if users else '')")
 
   if [[ -n "$USER_ID" ]]; then
-    # Update attributes (in case user already existed without role attr)
+    # Update user with full representation (email, name, attributes, password).
+    # PUT is a full replace in Keycloak Admin API, so we must include all fields.
     curl -sf -X PUT "${KC_URL}/admin/realms/${KC_REALM}/users/${USER_ID}" \
       -H "${AUTH_HEADER}" \
       -H "Content-Type: application/json" \
-      -d "{\"attributes\": {\"org:${ORG_ID}:role\": [\"${role}\"]}}" > /dev/null 2>&1 || true
+      -d "{
+        \"email\": \"${email}\",
+        \"firstName\": \"${first}\",
+        \"lastName\": \"${last}\",
+        \"emailVerified\": true,
+        \"enabled\": true,
+        \"credentials\": [{\"type\": \"password\", \"value\": \"${password}\", \"temporary\": false}],
+        \"attributes\": {\"org:${ORG_ID}:role\": [\"${role}\"]}
+      }" > /dev/null 2>&1 || true
 
     # Add user to organization
     curl -sf -w "%{http_code}" -X POST "${KC_URL}/admin/realms/${KC_REALM}/organizations/${ORG_ID}/members" \

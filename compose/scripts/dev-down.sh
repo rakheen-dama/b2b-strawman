@@ -15,14 +15,17 @@ if [[ ! -f "$COMPOSE_FILE" ]]; then
   exit 1
 fi
 
+# Include all profiles so containers like Keycloak are also stopped
+PROFILES="--profile keycloak"
+
 if [[ "${1:-}" == "--clean" ]]; then
   echo "Stopping dev stack and wiping all volumes..."
-  docker compose -f "$COMPOSE_FILE" down -v --remove-orphans
+  docker compose -f "$COMPOSE_FILE" $PROFILES down -v --remove-orphans
   echo ""
   echo "Stack stopped. All containers and volumes removed."
 else
   echo "Stopping dev stack (preserving data)..."
-  docker compose -f "$COMPOSE_FILE" down --remove-orphans
+  docker compose -f "$COMPOSE_FILE" $PROFILES down --remove-orphans
   echo ""
   echo "Stack stopped. Volumes preserved — data will persist on next start."
   echo "Use --clean to also wipe volumes."

@@ -13,8 +13,8 @@ COPY src src
 
 RUN ./mvnw clean package -DskipTests -B
 
-# Extract application (Spring Boot 4 format)
-RUN java -Djarmode=tools -jar target/*.jar extract --destination extracted
+# Extract layers (Spring Boot 4 format)
+RUN java -Djarmode=tools -jar target/*.jar extract --layers --destination extracted
 
 # ---- Stage 2: Production runner ----
 FROM eclipse-temurin:25-jre-alpine AS runner
@@ -23,10 +23,13 @@ WORKDIR /app
 RUN addgroup --system --gid 1001 spring && \
     adduser --system --uid 1001 spring
 
-COPY --from=builder --chown=spring:spring /build/extracted/ ./
+COPY --from=builder --chown=spring:spring /build/extracted/dependencies/ ./
+COPY --from=builder --chown=spring:spring /build/extracted/spring-boot-loader/ ./
+COPY --from=builder --chown=spring:spring /build/extracted/snapshot-dependencies/ ./
+COPY --from=builder --chown=spring:spring /build/extracted/application/ ./
 
 USER spring
 
 EXPOSE 8443
 
-ENTRYPOINT ["java", "-jar", "b2b-strawman-gateway-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]

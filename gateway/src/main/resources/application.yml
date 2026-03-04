@@ -13,7 +13,8 @@ spring:
   session:
     store-type: jdbc
     jdbc:
-      initialize-schema: always
+      # TODO: Use Flyway migration for session schema in production
+      initialize-schema: embedded
       table-name: SPRING_SESSION
     timeout: 8h
 
@@ -22,7 +23,7 @@ spring:
       client:
         registration:
           keycloak:
-            client-id: gateway-bff
+            client-id: ${KEYCLOAK_CLIENT_ID:gateway-bff}
             client-secret: ${KEYCLOAK_CLIENT_SECRET}
             scope: openid,profile,email,organization
             authorization-grant-type: authorization_code
@@ -42,12 +43,7 @@ spring:
                 - Path=/api/**
               filters:
                 - TokenRelay=
-            - id: backend-internal
-              uri: ${BACKEND_URL:http://localhost:8080}
-              predicates:
-                - Path=/internal/**
-              filters:
-                - TokenRelay=
+                - SaveSession
 
   jmx:
     enabled: false
@@ -63,4 +59,4 @@ management:
         include: health
   endpoint:
     health:
-      show-details: always
+      show-details: when-authorized

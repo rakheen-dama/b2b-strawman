@@ -2,6 +2,7 @@
   "id": "docteams",
   "realm": "docteams",
   "displayName": "DocTeams",
+  "loginTheme": "docteams",
   "enabled": true,
   "registrationAllowed": true,
   "registrationEmailAsUsername": true,

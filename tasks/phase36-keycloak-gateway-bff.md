@@ -31,7 +31,7 @@ Phase 35 (PRs #507-#519) already completed: Keycloak SPI, `JwtClaimExtractor` st
 | 273 | Docker Compose Gateway Integration | Infra | 268, 272 | S | 273A | **Done** |
 | 274 | Frontend BFF Auth Provider & API Client | Frontend | 269, 270 | M | 274A, 274B | **Done** |
 | 275 | Frontend BFF Middleware & Login/Logout Flows | Frontend | 274 | M | 275A, 275B | **Done** (PR #531) |
-| 276 | Frontend Team Management Rewiring | Frontend | 270, 275 | M | 276A | |
+| 276 | Frontend Team Management Rewiring | Frontend | 270, 275 | M | 276A | **Done** (PR #533) |
 | 277 | Keycloakify Theme Project — Login & Registration | Infra/Frontend | 272 | L | 277A, 277B | **Done** |
 | 278 | Keycloak Email Templates & Theme Deployment | Infra | 277 | S | 278A | |
 | 279 | Integration Testing & Verification | Both | 271, 273, 275, 276 | M | 279A, 279B | |
@@ -217,7 +217,7 @@ INTEGRATION TRACK (last)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 5a | 275 | 275B | Login/logout flows: login redirects to `${GATEWAY_URL}/oauth2/authorization/keycloak`, logout redirects to `${GATEWAY_URL}/logout`. Custom `UserMenuBff` component for keycloak mode (avatar + name from `/bff/me`, sign-out link). Update header component conditional rendering. ~4 new/modified files (~4 tests). Frontend only. | **Done** (PR #531) |
-| 5b (parallel) | 276 | 276A | Team management rewiring for BFF mode: `invite-member-form.tsx` calls `/bff/admin/invite` (via gateway proxy) instead of Clerk SDK, `pending-invitations.tsx` calls `/bff/admin/invitations`, add actions for revoke/resend. `member-list.tsx` unchanged (already uses `/api/members`). Conditional logic based on `AUTH_MODE`. ~4 modified files (~6 tests). Frontend only. | |
+| 5b (parallel) | 276 | 276A | Team management rewiring for BFF mode: `invite-member-form.tsx` calls `/bff/admin/invite` (via gateway proxy) instead of Clerk SDK, `pending-invitations.tsx` calls `/bff/admin/invitations`, add actions for revoke/resend. `member-list.tsx` unchanged (already uses `/api/members`). Conditional logic based on `AUTH_MODE`. ~4 modified files (~6 tests). Frontend only. | **Done** (PR #533) |
 
 ### Stage 6: Keycloakify Theme (parallel with frontend track)
 
@@ -736,7 +736,7 @@ Stage 8: [279A] → [279B]                                          (after all t
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **276A** | 276.1--276.7 | Team management rewiring: `invite-member-form.tsx` calls `/bff/admin/invite` (via server action), `pending-invitations.tsx` fetches from `/bff/admin/invitations`, revoke calls `DELETE /bff/admin/invitations/{id}`. `member-list.tsx` unchanged (already uses `/api/members`). Conditional logic per `AUTH_MODE`. ~4 modified files (~6 tests). Frontend only. | |
+| **276A** | 276.1--276.7 | Team management rewiring: `invite-member-form.tsx` calls `/bff/admin/invite` (via server action), `pending-invitations.tsx` fetches from `/bff/admin/invitations`, revoke calls `DELETE /bff/admin/invitations/{id}`. `member-list.tsx` unchanged (already uses `/api/members`). Conditional logic per `AUTH_MODE`. ~4 modified files (~6 tests). Frontend only. | **Done** (PR #533) |
 
 ### Tasks
 

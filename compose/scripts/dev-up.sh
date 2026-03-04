@@ -19,7 +19,7 @@ echo "=== Dev Stack ==="
 echo ""
 
 # Start infrastructure services only (exclude backend/frontend by default)
-SERVICES="postgres localstack mailpit keycloak"
+SERVICES="postgres localstack mailpit keycloak gateway"
 if [[ "${1:-}" == "--all" ]]; then
   SERVICES=""
   echo "Starting all services (including backend + frontend)..."
@@ -108,6 +108,23 @@ if [[ $ELAPSED -ge 120 ]]; then
   exit 1
 fi
 
+# Wait for Gateway
+ELAPSED=0
+printf "  Gateway (localhost:8443)... "
+while [[ $ELAPSED -lt 120 ]]; do
+  if curl -sf http://localhost:8443/actuator/health > /dev/null 2>&1; then
+    echo "ready"
+    break
+  fi
+  sleep $INTERVAL
+  ELAPSED=$((ELAPSED + INTERVAL))
+done
+if [[ $ELAPSED -ge 120 ]]; then
+  echo "TIMEOUT (120s)"
+  echo "Check logs: docker compose -f $COMPOSE_FILE logs gateway"
+  exit 1
+fi
+
 # If --all was requested, wait for backend and frontend too
 if [[ "${1:-}" == "--all" ]]; then
   ELAPSED=0
@@ -151,6 +168,7 @@ echo "  LocalStack S3:  localhost:4566"
 echo "  Mailpit SMTP:   localhost:1025"
 echo "  Mailpit UI:     http://localhost:8025"
 echo "  Keycloak:       http://localhost:8180 (admin/admin)"
+echo "  Gateway:        http://localhost:8443"
 if [[ "${1:-}" == "--all" ]]; then
   echo "  Backend:        http://localhost:8080"
   echo "  Frontend:       http://localhost:3000"

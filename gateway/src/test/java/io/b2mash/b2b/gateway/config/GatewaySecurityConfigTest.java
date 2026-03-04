@@ -60,11 +60,12 @@ class GatewaySecurityConfigTest {
   }
 
   @Test
-  void protectedEndpoints_bffMeRedirectsToLogin() throws Exception {
-    mockMvc
-        .perform(get("/bff/me"))
-        .andExpect(status().is3xxRedirection())
-        .andExpect(redirectedUrl("/oauth2/authorization/keycloak"));
+  void publicEndpoints_bffMeIsAccessibleUnauthenticated() throws Exception {
+    var result = mockMvc.perform(get("/bff/me")).andReturn();
+    int statusCode = result.getResponse().getStatus();
+    assertThat(statusCode)
+        .as("/bff/me should be publicly accessible (returns {authenticated: false})")
+        .isIn(PUBLIC_OK_STATUSES);
   }
 
   @Test

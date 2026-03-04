@@ -80,8 +80,12 @@ class BffControllerTest {
   }
 
   @Test
-  void me_unauthenticated_redirectsToLogin() throws Exception {
-    mockMvc.perform(get("/bff/me")).andExpect(status().is3xxRedirection());
+  void me_unauthenticated_returnsUnauthenticatedResponse() throws Exception {
+    mockMvc
+        .perform(get("/bff/me"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.authenticated").value(false))
+        .andExpect(jsonPath("$.userId").doesNotExist());
   }
 
   @Test

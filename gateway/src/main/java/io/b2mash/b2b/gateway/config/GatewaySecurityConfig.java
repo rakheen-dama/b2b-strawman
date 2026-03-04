@@ -37,12 +37,10 @@ public class GatewaySecurityConfig {
     http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .authorizeHttpRequests(
             auth ->
-                auth.requestMatchers("/", "/error", "/actuator/health")
+                auth.requestMatchers("/", "/error", "/actuator/health", "/bff/me")
                     .permitAll()
                     .requestMatchers("/internal/**")
                     .denyAll()
-                    .requestMatchers("/bff/me")
-                    .authenticated()
                     .requestMatchers("/api/**")
                     .authenticated()
                     .anyRequest()

@@ -1,12 +1,15 @@
 package io.b2mash.b2b.gateway.service;
 
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Version;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
@@ -44,9 +47,15 @@ public class KeycloakAdminClient {
             .defaultStatusHandler(
                 HttpStatusCode::isError,
                 (request, response) -> {
+                  HttpStatusCode status = response.getStatusCode();
+                  if (status.value() == 401 || status.value() == 403 || status.value() >= 500) {
+                    // Service account auth failure or Keycloak internal error -> 502 Bad Gateway
+                    throw new ResponseStatusException(
+                        HttpStatus.BAD_GATEWAY, "Keycloak Admin API unavailable");
+                  }
+                  // 4xx client errors (400, 404, 409) are meaningful — pass through
                   throw new ResponseStatusException(
-                      response.getStatusCode(),
-                      "Keycloak Admin API error: " + response.getStatusCode());
+                      status, "Keycloak Admin API error: " + status.value());
                 })
             .build();
     this.tokenRestClient = RestClient.builder().requestFactory(requestFactory).build();
@@ -111,22 +120,29 @@ public class KeycloakAdminClient {
   }
 
   @SuppressWarnings("unchecked")
-  private String getServiceAccountToken() {
+  private synchronized String getServiceAccountToken() {
     if (Instant.now().isBefore(tokenExpiry)) {
       return cachedToken;
     }
+    String formBody =
+        "grant_type=client_credentials&client_id="
+            + URLEncoder.encode(clientId, StandardCharsets.UTF_8)
+            + "&client_secret="
+            + URLEncoder.encode(clientSecret, StandardCharsets.UTF_8);
     var response =
         tokenRestClient
             .post()
             .uri(tokenUrl)
             .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-            .body(
-                "grant_type=client_credentials&client_id="
-                    + clientId
-                    + "&client_secret="
-                    + clientSecret)
+            .body(formBody)
             .retrieve()
             .body(Map.class);
+    if (response == null
+        || response.get("access_token") == null
+        || response.get("expires_in") == null) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_GATEWAY, "Invalid token response from Keycloak");
+    }
     cachedToken = (String) response.get("access_token");
     tokenExpiry = Instant.now().plusSeconds(((Number) response.get("expires_in")).longValue() - 30);
     return cachedToken;

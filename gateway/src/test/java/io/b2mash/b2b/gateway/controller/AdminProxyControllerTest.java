@@ -234,11 +234,7 @@ class AdminProxyControllerTest {
   }
 
   @Test
-  void invite_invalidRole_returnsError() throws Exception {
-    wireMock.stubFor(
-        WireMock.post(urlPathEqualTo("/admin/realms/" + REALM + "/orgs/" + ORG_ID + "/invitations"))
-            .willReturn(aResponse().withStatus(400).withBody("Invalid role")));
-
+  void invite_invalidRole_returnsBadRequest() throws Exception {
     mockMvc
         .perform(
             post("/bff/admin/invite")
@@ -247,7 +243,37 @@ class AdminProxyControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"email":"newuser@test.com","role":"invalid"}
+                    {"email":"newuser@test.com","role":"superadmin"}
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void invite_missingEmail_returnsBadRequest() throws Exception {
+    mockMvc
+        .perform(
+            post("/bff/admin/invite")
+                .with(oidcLogin().oidcUser(buildAdminUser()))
+                .with(csrf().asHeader())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"role":"member"}
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void invite_invalidEmail_returnsBadRequest() throws Exception {
+    mockMvc
+        .perform(
+            post("/bff/admin/invite")
+                .with(oidcLogin().oidcUser(buildAdminUser()))
+                .with(csrf().asHeader())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"email":"not-an-email","role":"member"}
                     """))
         .andExpect(status().isBadRequest());
   }

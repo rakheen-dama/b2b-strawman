@@ -22,6 +22,11 @@ public final class ClerkJwtUtils {
     return extractNestedClaim(jwt, "rol");
   }
 
+  /** Extracts the org slug ({@code o.slg}) from a Clerk JWT v2 token. */
+  public static String extractOrgSlug(Jwt jwt) {
+    return extractNestedClaim(jwt, "slg");
+  }
+
   private static String extractNestedClaim(Jwt jwt, String key) {
     Object orgClaim = jwt.getClaim(ORG_CLAIM);
     if (orgClaim instanceof Map<?, ?> map) {

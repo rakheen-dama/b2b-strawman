@@ -1,0 +1,6 @@
+# Keycloak profile configuration
+# Activated via: SPRING_PROFILES_ACTIVE=keycloak
+
+app:
+  jit-provisioning:
+    enabled: true

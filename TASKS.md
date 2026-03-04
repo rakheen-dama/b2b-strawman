@@ -310,7 +310,7 @@
 | 272 | Keycloak 26.5 Upgrade & Realm Configuration | Infra | -- | S | 272A | **Done** (PR #526)                                                                                                                 |
 | 273 | Docker Compose Gateway Integration | Infra | 268, 272 | S | 273A | **Done** (PR #528)                                                                                                                 |
 | 274 | Frontend BFF Auth Provider & API Client | Frontend | 269, 270 | M | 274A, 274B | **Done** (PR #529)                                                                                                                 |
-| 275 | Frontend BFF Middleware & Login/Logout Flows | Frontend | 274 | M | 275A, 275B |                                                                                                                                    |
+| 275 | Frontend BFF Middleware & Login/Logout Flows | Frontend | 274 | M | 275A, 275B | **Done** (PR #531)                                                                                                                 |
 | 276 | Frontend Team Management Rewiring | Frontend | 270, 275 | M | 276A |                                                                                                                                    |
 | 277 | Keycloakify Theme Project — Login & Registration | Infra/Frontend | 272 | L | 277A, 277B |                                                                                                                                    |
 | 278 | Keycloak Email Templates & Theme Deployment | Infra | 277 | S | 278A |                                                                                                                                    |

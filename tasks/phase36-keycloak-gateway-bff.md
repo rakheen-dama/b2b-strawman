@@ -30,7 +30,7 @@ Phase 35 (PRs #507-#519) already completed: Keycloak SPI, `JwtClaimExtractor` st
 | 272 | Keycloak 26.5 Upgrade & Realm Configuration | Infra | — | S | 272A | **Done** |
 | 273 | Docker Compose Gateway Integration | Infra | 268, 272 | S | 273A | **Done** |
 | 274 | Frontend BFF Auth Provider & API Client | Frontend | 269, 270 | M | 274A, 274B | **Done** |
-| 275 | Frontend BFF Middleware & Login/Logout Flows | Frontend | 274 | M | 275A, 275B | |
+| 275 | Frontend BFF Middleware & Login/Logout Flows | Frontend | 274 | M | 275A, 275B | **Done** (PR #531) |
 | 276 | Frontend Team Management Rewiring | Frontend | 270, 275 | M | 276A | |
 | 277 | Keycloakify Theme Project — Login & Registration | Infra/Frontend | 272 | L | 277A, 277B | |
 | 278 | Keycloak Email Templates & Theme Deployment | Infra | 277 | S | 278A | |
@@ -210,13 +210,13 @@ INTEGRATION TRACK (last)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 4a | 274 | 274B | `lib/api.ts` BFF mode: when `AUTH_MODE === "keycloak"`, skip Bearer token, set `credentials: "include"`, add `X-XSRF-TOKEN` header from cookie for mutations, point `API_BASE` to gateway origin. `getCsrfToken()` utility function. ~2 modified files (~6 tests). Frontend only. | **Done** (PR #529) |
-| 4b | 275 | 275A | `createKeycloakMiddleware()` in `lib/auth/middleware.ts`: check `SESSION` cookie presence on protected routes, redirect to `${GATEWAY_URL}/oauth2/authorization/keycloak` if absent, handle `/dashboard` redirect via `/bff/me` call. Update `createAuthMiddleware()` dispatch. ~1 modified file (~5 tests). Frontend only. | |
+| 4b | 275 | 275A | `createKeycloakMiddleware()` in `lib/auth/middleware.ts`: check `SESSION` cookie presence on protected routes, redirect to `${GATEWAY_URL}/oauth2/authorization/keycloak` if absent, handle `/dashboard` redirect via `/bff/me` call. Update `createAuthMiddleware()` dispatch. ~1 modified file (~5 tests). Frontend only. | **Done** (PR #531) |
 
 ### Stage 5: Frontend Login/Logout & Team Rewiring
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 5a | 275 | 275B | Login/logout flows: login redirects to `${GATEWAY_URL}/oauth2/authorization/keycloak`, logout redirects to `${GATEWAY_URL}/logout`. Custom `UserMenuBff` component for keycloak mode (avatar + name from `/bff/me`, sign-out link). Update header component conditional rendering. ~4 new/modified files (~4 tests). Frontend only. | |
+| 5a | 275 | 275B | Login/logout flows: login redirects to `${GATEWAY_URL}/oauth2/authorization/keycloak`, logout redirects to `${GATEWAY_URL}/logout`. Custom `UserMenuBff` component for keycloak mode (avatar + name from `/bff/me`, sign-out link). Update header component conditional rendering. ~4 new/modified files (~4 tests). Frontend only. | **Done** (PR #531) |
 | 5b (parallel) | 276 | 276A | Team management rewiring for BFF mode: `invite-member-form.tsx` calls `/bff/admin/invite` (via gateway proxy) instead of Clerk SDK, `pending-invitations.tsx` calls `/bff/admin/invitations`, add actions for revoke/resend. `member-list.tsx` unchanged (already uses `/api/members`). Conditional logic based on `AUTH_MODE`. ~4 modified files (~6 tests). Frontend only. | |
 
 ### Stage 6: Keycloakify Theme (parallel with frontend track)
@@ -677,8 +677,8 @@ Stage 8: [279A] → [279B]                                          (after all t
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **275A** | 275.1--275.5 | `createKeycloakMiddleware()`: check `SESSION` cookie on protected routes, redirect to `${GATEWAY_URL}/oauth2/authorization/keycloak` if absent, handle `/dashboard` redirect via org slug from session. Update `createAuthMiddleware()` dispatch. ~1 modified file (~5 tests). Frontend only. | |
-| **275B** | 275.6--275.10 | Login/logout flows: login button redirects to gateway OAuth2 endpoint, logout redirects to `${GATEWAY_URL}/logout`. Custom `UserMenuBff` component (avatar + name from `/bff/me`, sign-out link). Update header conditional rendering for `AUTH_MODE`. ~4 new/modified files (~4 tests). Frontend only. | |
+| **275A** | 275.1--275.5 | `createKeycloakMiddleware()`: check `SESSION` cookie on protected routes, redirect to `${GATEWAY_URL}/oauth2/authorization/keycloak` if absent, handle `/dashboard` redirect via org slug from session. Update `createAuthMiddleware()` dispatch. ~1 modified file (~5 tests). Frontend only. | **Done** (PR #531) |
+| **275B** | 275.6--275.10 | Login/logout flows: login button redirects to gateway OAuth2 endpoint, logout redirects to `${GATEWAY_URL}/logout`. Custom `UserMenuBff` component (avatar + name from `/bff/me`, sign-out link). Update header conditional rendering for `AUTH_MODE`. ~4 new/modified files (~4 tests). Frontend only. | **Done** (PR #531) |
 
 ### Tasks
 

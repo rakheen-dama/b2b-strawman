@@ -107,7 +107,8 @@ class SessionStorageTest {
     var jdbcTemplate = new JdbcTemplate(dataSource);
     Integer count =
         jdbcTemplate.queryForObject("SELECT COUNT(*) FROM SPRING_SESSION", Integer.class);
-    assertThat(count).isNotNull().isGreaterThanOrEqualTo(0);
+    // Verifies the table EXISTS — the query would throw if the table was not created
+    assertThat(count).isNotNull();
   }
 
   @Test
@@ -116,7 +117,8 @@ class SessionStorageTest {
     Integer count =
         jdbcTemplate.queryForObject(
             "SELECT COUNT(*) FROM SPRING_SESSION_ATTRIBUTES", Integer.class);
-    assertThat(count).isNotNull().isGreaterThanOrEqualTo(0);
+    // Verifies the table EXISTS — the query would throw if the table was not created
+    assertThat(count).isNotNull();
   }
 
   @Test
@@ -130,7 +132,7 @@ class SessionStorageTest {
 
     int after = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM SPRING_SESSION", Integer.class);
 
-    assertThat(after).isGreaterThanOrEqualTo(before);
+    assertThat(after).isGreaterThan(before);
   }
 
   @TestConfiguration

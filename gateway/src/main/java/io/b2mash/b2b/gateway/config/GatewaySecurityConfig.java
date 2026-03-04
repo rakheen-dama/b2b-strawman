@@ -68,7 +68,7 @@ public class GatewaySecurityConfig {
     CorsConfiguration config = new CorsConfiguration();
     config.setAllowedOrigins(List.of(frontendUrl));
     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-    config.setAllowedHeaders(List.of("*"));
+    config.setAllowedHeaders(List.of("Content-Type", "Authorization", "X-XSRF-TOKEN", "Accept"));
     config.setExposedHeaders(List.of("X-XSRF-TOKEN"));
     config.setAllowCredentials(true);
     config.setMaxAge(3600L);

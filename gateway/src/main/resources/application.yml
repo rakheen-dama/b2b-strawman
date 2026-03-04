@@ -1,5 +1,12 @@
 server:
   port: 8443
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        secure: true
+        same-site: lax
+        name: SESSION
 
 spring:
   application:
@@ -41,13 +48,6 @@ spring:
               uri: ${BACKEND_URL:http://localhost:8080}
               predicates:
                 - Path=/api/**
-              filters:
-                - TokenRelay=
-                - SaveSession
-            - id: backend-internal
-              uri: ${BACKEND_URL:http://localhost:8080}
-              predicates:
-                - Path=/internal/**
               filters:
                 - TokenRelay=
                 - SaveSession

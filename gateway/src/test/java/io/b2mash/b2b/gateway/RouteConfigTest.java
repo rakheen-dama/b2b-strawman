@@ -34,9 +34,6 @@ import org.springframework.test.web.servlet.MockMvc;
       "spring.cloud.gateway.server.webmvc.routes[0].id=backend-api",
       "spring.cloud.gateway.server.webmvc.routes[0].uri=http://localhost:8080",
       "spring.cloud.gateway.server.webmvc.routes[0].predicates[0]=Path=/api/**",
-      "spring.cloud.gateway.server.webmvc.routes[1].id=backend-internal",
-      "spring.cloud.gateway.server.webmvc.routes[1].uri=http://localhost:8080",
-      "spring.cloud.gateway.server.webmvc.routes[1].predicates[0]=Path=/internal/**",
       "gateway.frontend-url=http://localhost:3000",
       "spring.autoconfigure.exclude="
           + "org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientAutoConfiguration"
@@ -56,7 +53,15 @@ class RouteConfigTest {
 
   @Test
   void internalRoute_deniedEvenWhenAuthenticated() throws Exception {
-    mockMvc.perform(get("/internal/sync").with(oauth2Login())).andExpect(status().isForbidden());
+    var result =
+        mockMvc
+            .perform(get("/internal/sync").with(oauth2Login()))
+            .andExpect(status().isForbidden())
+            .andReturn();
+
+    // Verify no backend content leaks in the response body
+    String body = result.getResponse().getContentAsString();
+    assertThat(body).doesNotContain("internal", "sync", "backend");
   }
 
   @Test

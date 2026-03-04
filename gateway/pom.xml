@@ -90,13 +90,6 @@
             <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- Test: WireMock for route proxy tests -->
-        <dependency>
-            <groupId>org.wiremock</groupId>
-            <artifactId>wiremock-standalone</artifactId>
-            <version>3.12.1</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>

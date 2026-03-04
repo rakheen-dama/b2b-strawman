@@ -1,0 +1,124 @@
+{
+  "id": "docteams",
+  "realm": "docteams",
+  "displayName": "DocTeams",
+  "enabled": true,
+  "registrationAllowed": true,
+  "registrationEmailAsUsername": true,
+  "verifyEmail": true,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "sslRequired": "external",
+  "organizationsEnabled": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "default-roles-docteams",
+        "composite": true,
+        "composites": {
+          "realm": ["offline_access", "uma_authorization"]
+        }
+      },
+      {
+        "name": "offline_access",
+        "description": "Offline access"
+      },
+      {
+        "name": "uma_authorization",
+        "description": "UMA authorization"
+      }
+    ]
+  },
+  "defaultRole": {
+    "name": "default-roles-docteams"
+  },
+  "clients": [
+    {
+      "clientId": "gateway-bff",
+      "name": "Gateway BFF",
+      "description": "Spring Cloud Gateway Backend-for-Frontend",
+      "enabled": true,
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "secret": "${KEYCLOAK_CLIENT_SECRET}",
+      "redirectUris": [
+        "http://localhost:8443/login/oauth2/code/keycloak"
+      ],
+      "postLogoutRedirectUris": [
+        "http://localhost:3000/"
+      ],
+      "webOrigins": [
+        "http://localhost:3000"
+      ],
+      "defaultClientScopes": [
+        "openid",
+        "profile",
+        "email",
+        "organization"
+      ],
+      "optionalClientScopes": [
+        "offline_access"
+      ],
+      "protocol": "openid-connect",
+      "fullScopeAllowed": false
+    },
+    {
+      "clientId": "admin-cli",
+      "name": "Admin CLI",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true
+    }
+  ],
+  "clientScopes": [
+    {
+      "name": "organization",
+      "description": "Organization membership and roles",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "consent.screen.text": "Organization membership"
+      },
+      "protocolMappers": [
+        {
+          "name": "organization-membership",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-organization-membership-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "organization",
+            "jsonType.label": "JSON",
+            "organization.id.claim.enabled": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "defaultDefaultClientScopes": [
+    "openid",
+    "profile",
+    "email",
+    "organization"
+  ],
+  "smtpServer": {
+    "host": "mailpit",
+    "port": "1025",
+    "from": "noreply@docteams.local",
+    "fromDisplayName": "DocTeams",
+    "ssl": "false",
+    "starttls": "false",
+    "auth": "false"
+  },
+  "internationalizationEnabled": true,
+  "supportedLocales": ["en"],
+  "defaultLocale": "en"
+}

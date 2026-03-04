@@ -24,7 +24,7 @@ Phase 35 (PRs #507-#519) already completed: Keycloak SPI, `JwtClaimExtractor` st
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 268 | Spring Cloud Gateway BFF — Module Scaffolding & Security | Backend (Gateway) | — | L | 268A, 268B | **Done** |
-| 269 | Gateway Session Storage & Route Configuration | Backend (Gateway) | 268 | M | 269A, 269B | |
+| 269 | Gateway Session Storage & Route Configuration | Backend (Gateway) | 268 | M | 269A, 269B | **Done** |
 | 270 | Gateway BFF Endpoints & Admin Proxy | Backend (Gateway) | 269 | M | 270A, 270B | |
 | 271 | JIT Tenant & Member Provisioning | Backend | — | M | 271A, 271B | |
 | 272 | Keycloak 26.5 Upgrade & Realm Configuration | Infra | — | S | 272A | |
@@ -187,14 +187,14 @@ INTEGRATION TRACK (last)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 1a | 268 | 268B | `GatewaySecurityConfig`: `SecurityFilterChain` with `oauth2Login()` (Keycloak provider), `logout()` with `OidcClientInitiatedLogoutSuccessHandler`, `CookieCsrfTokenRepository.withHttpOnlyFalse()`, `SpaCsrfTokenRequestHandler`, `SessionCreationPolicy.IF_REQUIRED`, permit `/actuator/health` + `/error`. ~3 new files (~6 tests). Gateway only. | **Done** (PR #523) |
-| 1b | 269 | 269A | Spring Session JDBC configuration: `application.yml` with `spring.session.store-type=jdbc`, `spring.session.jdbc.initialize-schema=always`, 8h timeout, datasource config, `GatewayApplication` with `@EnableJdbcHttpSession`. Health check test. ~2 modified files (~3 tests). Gateway only. | |
+| 1b | 269 | 269A | Spring Session JDBC configuration: `application.yml` with `spring.session.store-type=jdbc`, `spring.session.jdbc.initialize-schema=always`, 8h timeout, datasource config, `GatewayApplication` with `@EnableJdbcHttpSession`. Health check test. ~2 modified files (~3 tests). Gateway only. | **Done** (PR #524) |
 | 1c (parallel) | 271 | 271B | JIT member provisioning in `MemberFilter`: when member lookup by `externalUserId` returns null, call `MemberSyncService.syncMember()` using JWT claims (`sub`, `email`, `name`, org role from `organization` claim). Add `@Profile("keycloak")` conditional. ~2 modified files, ~1 test file (~5 tests). Backend only. | |
 
 ### Stage 2: Gateway Routes & BFF Endpoints
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 2a | 269 | 269B | Route configuration in `application.yml`: `backend-api` route (`/api/**` -> `${BACKEND_URL}`), `backend-internal` route (`/internal/**` -> `${BACKEND_URL}`), `TokenRelay=` + `SaveSession` filters on both routes. CORS config for frontend origin. ~1 modified file (~4 tests). Gateway only. | |
+| 2a | 269 | 269B | Route configuration in `application.yml`: `backend-api` route (`/api/**` -> `${BACKEND_URL}`), `backend-internal` route (`/internal/**` -> `${BACKEND_URL}`), `TokenRelay=` + `SaveSession` filters on both routes. CORS config for frontend origin. ~1 modified file (~4 tests). Gateway only. | **Done** (PR #524) |
 | 2b | 270 | 270A | `BffController` with `GET /bff/me`: extract user info from `@AuthenticationPrincipal OidcUser`, parse `organization` claim for org ID/slug/role, return JSON response `{authenticated, userId, email, name, picture, orgId, orgSlug, orgRole}`. Handle unauthenticated case. ~2 new files (~6 tests). Gateway only. | |
 | 2c | 273 | 273A | Docker Compose `gateway` service definition: Dockerfile for gateway module, service in `docker-compose.yml` (conditional with `--keycloak` flag), env vars (DB_HOST, KEYCLOAK_ISSUER, KEYCLOAK_CLIENT_SECRET, BACKEND_URL), port 8443, depends_on keycloak + postgres. Update `dev-up.sh --keycloak`. ~3 new/modified files. Infra only. | |
 
@@ -335,8 +335,8 @@ Stage 8: [279A] → [279B]                                          (after all t
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **269A** | 269.1--269.5 | Spring Session JDBC: `spring.session.store-type=jdbc`, `initialize-schema=always`, 8h timeout, datasource config for shared PostgreSQL. `@EnableJdbcHttpSession` annotation (if needed). Health check test verifying session table creation. ~2 modified files (~3 tests). Gateway only. | |
-| **269B** | 269.6--269.10 | Route configuration: `spring.cloud.gateway.server.webmvc.routes` with `backend-api` route (`/api/**`), `backend-internal` route (`/internal/**`), `TokenRelay=` and `SaveSession` filters on both. CORS configuration for frontend origin. ~1 modified file (~4 tests). Gateway only. | |
+| **269A** | 269.1--269.5 | Spring Session JDBC: `spring.session.store-type=jdbc`, `initialize-schema=always`, 8h timeout, datasource config for shared PostgreSQL. `@EnableJdbcHttpSession` annotation (if needed). Health check test verifying session table creation. ~2 modified files (~3 tests). Gateway only. | **Done** (PR #524) |
+| **269B** | 269.6--269.10 | Route configuration: `spring.cloud.gateway.server.webmvc.routes` with `backend-api` route (`/api/**`), `backend-internal` route (`/internal/**`), `TokenRelay=` and `SaveSession` filters on both. CORS configuration for frontend origin. ~1 modified file (~4 tests). Gateway only. | **Done** (PR #524) |
 
 ### Tasks
 

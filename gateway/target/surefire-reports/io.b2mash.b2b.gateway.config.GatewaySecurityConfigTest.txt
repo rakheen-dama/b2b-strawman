@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: io.b2mash.b2b.gateway.config.GatewaySecurityConfigTest
+-------------------------------------------------------------------------------
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.546 s -- in io.b2mash.b2b.gateway.config.GatewaySecurityConfigTest

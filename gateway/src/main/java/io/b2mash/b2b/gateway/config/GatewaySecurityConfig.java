@@ -8,6 +8,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 @Configuration
@@ -26,13 +27,15 @@ public class GatewaySecurityConfig {
             auth ->
                 auth.requestMatchers("/", "/error", "/actuator/health")
                     .permitAll()
+                    .requestMatchers("/internal/**")
+                    .denyAll()
                     .requestMatchers("/bff/me")
                     .authenticated()
-                    .requestMatchers("/api/**", "/internal/**")
+                    .requestMatchers("/api/**")
                     .authenticated()
                     .anyRequest()
                     .authenticated())
-        .oauth2Login(oauth2 -> oauth2.defaultSuccessUrl("/", true))
+        .oauth2Login(oauth2 -> oauth2.defaultSuccessUrl("/"))
         .logout(
             logout ->
                 logout
@@ -44,12 +47,14 @@ public class GatewaySecurityConfig {
                 csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                     .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler()))
         .sessionManagement(
-            session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
+            session ->
+                session
+                    .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                    .sessionFixation(sessionFixation -> sessionFixation.changeSessionId()));
     return http.build();
   }
 
-  @Bean
-  public OidcClientInitiatedLogoutSuccessHandler oidcLogoutSuccessHandler() {
+  private LogoutSuccessHandler oidcLogoutSuccessHandler() {
     OidcClientInitiatedLogoutSuccessHandler handler =
         new OidcClientInitiatedLogoutSuccessHandler(clientRegistrationRepository);
     handler.setPostLogoutRedirectUri("{baseUrl}/");

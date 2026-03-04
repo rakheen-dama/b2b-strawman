@@ -14,7 +14,7 @@ spring:
     store-type: jdbc
     jdbc:
       # TODO: Use Flyway migration for session schema in production
-      initialize-schema: embedded
+      initialize-schema: always
       table-name: SPRING_SESSION
     timeout: 8h
 

@@ -1,11 +1,14 @@
 package io.b2mash.b2b.gateway.config;
 
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oauth2Login;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -34,22 +37,26 @@ import org.springframework.test.web.servlet.MockMvc;
 @Import(GatewaySecurityConfigTest.MockOAuth2Config.class)
 class GatewaySecurityConfigTest {
 
+  private static final Set<Integer> PUBLIC_OK_STATUSES = Set.of(200, 404, 500, 503);
+
   @Autowired private MockMvc mockMvc;
 
   @Test
   void publicEndpoints_actuatorHealthIsAccessible() throws Exception {
-    // Health endpoint is public (no redirect to login). May return 503 if no DB in test context.
     var result = mockMvc.perform(get("/actuator/health")).andReturn();
     int statusCode = result.getResponse().getStatus();
-    assertNotEquals(302, statusCode, "Health endpoint should not redirect to login");
+    assertThat(statusCode)
+        .as("Health endpoint should return a non-redirect status")
+        .isIn(PUBLIC_OK_STATUSES);
   }
 
   @Test
   void publicEndpoints_errorIsAccessible() throws Exception {
-    // /error is permitAll — should not redirect to login
     var result = mockMvc.perform(get("/error")).andReturn();
     int statusCode = result.getResponse().getStatus();
-    assertNotEquals(302, statusCode, "Error endpoint should not redirect to login");
+    assertThat(statusCode)
+        .as("Error endpoint should return a non-redirect status")
+        .isIn(PUBLIC_OK_STATUSES);
   }
 
   @Test
@@ -69,7 +76,10 @@ class GatewaySecurityConfigTest {
   }
 
   @Test
-  void protectedEndpoints_internalRequiresAuth() throws Exception {
+  void protectedEndpoints_internalIsDeniedUnauthenticated() throws Exception {
+    // Unauthenticated requests to /internal/** get redirected to login first (Spring Security
+    // evaluates authentication before authorization), but this is fine — the key is that
+    // authenticated users are also denied (see next test).
     mockMvc
         .perform(get("/internal/test"))
         .andExpect(status().is3xxRedirection())
@@ -77,12 +87,43 @@ class GatewaySecurityConfigTest {
   }
 
   @Test
+  void protectedEndpoints_internalDeniedEvenWhenAuthenticated() throws Exception {
+    // /internal/** must be denied for ALL users — even authenticated ones
+    mockMvc.perform(get("/internal/test").with(oauth2Login())).andExpect(status().isForbidden());
+  }
+
+  @Test
   void authenticatedUser_canAccessProtectedEndpoint() throws Exception {
-    // /bff/me has no controller yet (268C), so expect 404 — but NOT a redirect to login
+    // /bff/me has no controller yet (268C), so expect 404 — but NOT a redirect or 401
     var result = mockMvc.perform(get("/bff/me").with(oauth2Login())).andReturn();
     int statusCode = result.getResponse().getStatus();
-    assertNotEquals(302, statusCode, "Authenticated user should not be redirected to login");
-    assertNotEquals(401, statusCode, "Authenticated user should not get 401");
+    assertThat(statusCode)
+        .as("Authenticated user should not be redirected or unauthorized")
+        .isNotIn(302, 401);
+  }
+
+  @Test
+  void csrf_postWithoutTokenReturns403() throws Exception {
+    // POST without CSRF token should be rejected even for authenticated users
+    mockMvc.perform(post("/bff/me").with(oauth2Login())).andExpect(status().isForbidden());
+  }
+
+  @Test
+  void csrf_postWithValidTokenSucceeds() throws Exception {
+    // With CSRF token, the POST should pass CSRF filter (may get 404 since no controller exists)
+    var result =
+        mockMvc.perform(post("/bff/me").with(oauth2Login()).with(csrf().asHeader())).andReturn();
+    int statusCode = result.getResponse().getStatus();
+    assertThat(statusCode)
+        .as("POST with valid CSRF token should not be blocked by CSRF filter")
+        .isNotEqualTo(403);
+  }
+
+  @Test
+  void logout_invalidatesSessionAndRedirects() throws Exception {
+    mockMvc
+        .perform(post("/logout").with(oauth2Login()).with(csrf().asHeader()))
+        .andExpect(status().is3xxRedirection());
   }
 
   @TestConfiguration

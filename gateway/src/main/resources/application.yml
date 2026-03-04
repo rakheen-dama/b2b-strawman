@@ -1,5 +1,12 @@
 server:
   port: 8443
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        secure: true
+        same-site: lax
+        name: SESSION
 
 spring:
   application:
@@ -51,6 +58,9 @@ spring:
   threads:
     virtual:
       enabled: true
+
+gateway:
+  frontend-url: ${FRONTEND_URL:http://localhost:3000}
 
 management:
   endpoints:

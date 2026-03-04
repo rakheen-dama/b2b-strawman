@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import type { NextMiddleware, NextRequest } from "next/server";
 
 const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
+const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:8443";
 
 // createRouteMatcher is a pure regex-like function with no Clerk runtime dependency.
 // Both Clerk and mock paths need the same route matching, so this coupling is acceptable.
@@ -17,11 +18,15 @@ const isPublicRoute = createRouteMatcher([
 
 /**
  * Auth middleware factory.
- * Returns Clerk middleware for production, mock middleware for E2E tests.
+ * Returns Clerk middleware for production, mock middleware for E2E tests,
+ * or Keycloak BFF middleware for gateway-based auth.
  */
 export function createAuthMiddleware(): NextMiddleware {
   if (AUTH_MODE === "mock") {
     return createMockMiddleware();
+  }
+  if (AUTH_MODE === "keycloak") {
+    return createKeycloakMiddleware();
   }
   return createClerkMiddleware();
 }
@@ -61,6 +66,30 @@ function decodeMockJwtPayload(token: string): Record<string, unknown> | null {
   } catch {
     return null;
   }
+}
+
+function createKeycloakMiddleware(): NextMiddleware {
+  return (request: NextRequest) => {
+    // Public routes skip auth check
+    if (isPublicRoute(request)) {
+      return NextResponse.next();
+    }
+
+    // Check for gateway session cookie
+    const sessionCookie = request.cookies.get("SESSION");
+    if (!sessionCookie) {
+      // Redirect to gateway OAuth2 authorization endpoint
+      const gatewayLoginUrl = new URL(
+        "/oauth2/authorization/keycloak",
+        GATEWAY_URL,
+      );
+      return NextResponse.redirect(gatewayLoginUrl.toString());
+    }
+
+    // /dashboard redirect: pass through — let server component resolve org slug
+    // via getAuthContext() which calls /bff/me
+    return NextResponse.next();
+  };
 }
 
 function createMockMiddleware(): NextMiddleware {

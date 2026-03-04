@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getAuthToken } from "@/lib/auth";
+import { getAuthToken, AUTH_MODE } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { notFound } from "next/navigation";
 import type { ProblemDetail } from "@/lib/types";
@@ -32,7 +32,44 @@ import type {
   PreviewResponse,
 } from "@/lib/types";
 
+const GATEWAY_URL = process.env.GATEWAY_URL || "http://localhost:8443";
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
+const API_BASE = AUTH_MODE === "keycloak" ? GATEWAY_URL : BACKEND_URL;
+
+/**
+ * Get auth headers and fetch options for the current auth mode.
+ * In BFF mode: forwards SESSION cookie, adds CSRF token for mutations.
+ * In Clerk/mock mode: adds Bearer token.
+ */
+async function getAuthFetchOptions(method: string = "GET"): Promise<{
+  headers: Record<string, string>;
+  credentials?: RequestCredentials;
+}> {
+  if (AUTH_MODE === "keycloak") {
+    const headers: Record<string, string> = {};
+    // Server-side: forward cookies
+    const { cookies } = await import("next/headers");
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get("SESSION");
+    if (sessionCookie) {
+      headers["cookie"] = `SESSION=${sessionCookie.value}`;
+    }
+    // Add CSRF for mutations
+    if (method !== "GET" && method !== "HEAD" && method !== "OPTIONS") {
+      const csrfCookie = cookieStore.get("XSRF-TOKEN");
+      if (csrfCookie) {
+        headers["X-XSRF-TOKEN"] = decodeURIComponent(csrfCookie.value);
+      }
+    }
+    return { headers, credentials: "include" as RequestCredentials };
+  }
+
+  // Clerk/mock mode: Bearer token
+  const token = await getAuthToken();
+  return {
+    headers: { Authorization: `Bearer ${token}` },
+  };
+}
 
 export class ApiError extends Error {
   constructor(
@@ -54,28 +91,32 @@ interface ApiRequestOptions {
 }
 
 /**
- * Server-side API client for Spring Boot backend.
- * Automatically attaches Clerk JWT as Bearer token.
+ * Server-side API client for Spring Boot backend (or gateway in BFF mode).
+ * In Clerk/mock mode: attaches JWT as Bearer token.
+ * In keycloak (BFF) mode: forwards SESSION cookie, adds CSRF for mutations.
  * Use only in Server Components, Server Actions, or Route Handlers.
  */
 async function apiRequest<T>(endpoint: string, options: ApiRequestOptions = {}): Promise<T> {
-  let token: string;
+  const method = options.method || "GET";
+
+  let authOptions: { headers: Record<string, string>; credentials?: RequestCredentials };
   try {
-    token = await getAuthToken();
+    authOptions = await getAuthFetchOptions(method);
   } catch {
     redirect("/sign-in");
   }
 
-  const response = await fetch(`${BACKEND_URL}${endpoint}`, {
-    method: options.method || "GET",
+  const response = await fetch(`${API_BASE}${endpoint}`, {
+    method,
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
+      ...authOptions.headers,
       ...options.headers,
     },
     body: options.body ? JSON.stringify(options.body) : undefined,
     cache: options.cache,
     next: options.next,
+    credentials: authOptions.credentials,
   });
 
   if (!response.ok) {
@@ -379,20 +420,21 @@ export async function previewTemplate(
   entityId: string,
   clauses?: Array<{ clauseId: string; sortOrder: number }>,
 ): Promise<PreviewResponse> {
-  let token: string;
+  let authOptions: { headers: Record<string, string>; credentials?: RequestCredentials };
   try {
-    token = await getAuthToken();
+    authOptions = await getAuthFetchOptions("POST");
   } catch {
     redirect("/sign-in");
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/templates/${id}/preview`, {
+  const response = await fetch(`${API_BASE}/api/templates/${id}/preview`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
+      ...authOptions.headers,
     },
     body: JSON.stringify({ entityId, ...(clauses?.length ? { clauses } : {}) }),
+    credentials: authOptions.credentials,
   });
 
   if (!response.ok) {
@@ -415,9 +457,9 @@ export async function updateOrgSettings(
 }
 
 export async function uploadOrgLogo(file: File): Promise<OrgSettings> {
-  let token: string;
+  let authOptions: { headers: Record<string, string>; credentials?: RequestCredentials };
   try {
-    token = await getAuthToken();
+    authOptions = await getAuthFetchOptions("POST");
   } catch {
     redirect("/sign-in");
   }
@@ -425,12 +467,13 @@ export async function uploadOrgLogo(file: File): Promise<OrgSettings> {
   const formData = new FormData();
   formData.append("file", file);
 
-  const response = await fetch(`${BACKEND_URL}/api/settings/logo`, {
+  const response = await fetch(`${API_BASE}/api/settings/logo`, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${token}`,
+      ...authOptions.headers,
     },
     body: formData,
+    credentials: authOptions.credentials,
   });
 
   if (!response.ok) {
@@ -460,22 +503,23 @@ export async function generateDocument(
   acknowledgeWarnings: boolean = false,
   clauses?: Array<{ clauseId: string; sortOrder: number }>,
 ): Promise<GenerateDocumentResponse | Blob> {
-  let token: string;
+  let authOptions: { headers: Record<string, string>; credentials?: RequestCredentials };
   try {
-    token = await getAuthToken();
+    authOptions = await getAuthFetchOptions("POST");
   } catch {
     redirect("/sign-in");
   }
 
   const response = await fetch(
-    `${BACKEND_URL}/api/templates/${templateId}/generate`,
+    `${API_BASE}/api/templates/${templateId}/generate`,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        ...authOptions.headers,
       },
       body: JSON.stringify({ entityId, saveToDocuments, acknowledgeWarnings, ...(clauses?.length ? { clauses } : {}) }),
+      credentials: authOptions.credentials,
     },
   );
 
@@ -511,21 +555,22 @@ export async function deleteGeneratedDocument(id: string): Promise<void> {
 }
 
 export async function downloadGeneratedDocument(id: string): Promise<Blob> {
-  let token: string;
+  let authOptions: { headers: Record<string, string>; credentials?: RequestCredentials };
   try {
-    token = await getAuthToken();
+    authOptions = await getAuthFetchOptions("GET");
   } catch {
     redirect("/sign-in");
   }
 
   const response = await fetch(
-    `${BACKEND_URL}/api/generated-documents/${id}/download`,
+    `${API_BASE}/api/generated-documents/${id}/download`,
     {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${token}`,
+        ...authOptions.headers,
       },
       redirect: "follow",
+      credentials: authOptions.credentials,
     },
   );
 
@@ -544,21 +589,22 @@ export async function downloadGeneratedDocument(id: string): Promise<Blob> {
 }
 
 export async function downloadCertificateBlob(id: string): Promise<Blob> {
-  let token: string;
+  let authOptions: { headers: Record<string, string>; credentials?: RequestCredentials };
   try {
-    token = await getAuthToken();
+    authOptions = await getAuthFetchOptions("GET");
   } catch {
     redirect("/sign-in");
   }
 
   const response = await fetch(
-    `${BACKEND_URL}/api/acceptance-requests/${id}/certificate`,
+    `${API_BASE}/api/acceptance-requests/${id}/certificate`,
     {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${token}`,
+        ...authOptions.headers,
       },
       redirect: "follow",
+      credentials: authOptions.credentials,
     },
   );
 

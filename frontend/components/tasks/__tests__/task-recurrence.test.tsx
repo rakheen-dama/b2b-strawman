@@ -54,6 +54,7 @@ vi.mock("@/lib/actions/comments", () => ({
 }));
 
 vi.mock("@/lib/auth", () => ({
+  AUTH_MODE: "mock",
   getAuthContext: vi.fn().mockResolvedValue({
     userId: "user-1",
     orgId: "org-1",

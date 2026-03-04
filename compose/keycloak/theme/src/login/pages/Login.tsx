@@ -1,13 +1,15 @@
 import type { PageProps } from "keycloakify/login/pages/PageProps";
 import type { KcContext } from "../KcContext";
 import type { I18n } from "../i18n";
+import { kcSanitize } from "keycloakify/lib/kcSanitize";
 import { Layout } from "./shared/Layout";
 
 export default function Login(
   props: PageProps<Extract<KcContext, { pageId: "login.ftl" }>, I18n>
 ) {
-  const { kcContext } = props;
+  const { kcContext, i18n } = props;
   const { url, realm, social, login, message } = kcContext;
+  const { msg, msgStr } = i18n;
 
   return (
     <Layout title="Sign in to DocTeams">
@@ -20,7 +22,8 @@ export default function Login(
               : "bg-blue-50 text-blue-700 border border-blue-200"
           }`}
         >
-          {message.summary}
+          {/* kcSanitize is Keycloak's built-in HTML sanitizer — safe for rendering server messages */}
+          <span dangerouslySetInnerHTML={{ __html: kcSanitize(message.summary) }} />
         </div>
       )}
 
@@ -41,7 +44,7 @@ export default function Login(
                   <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
                 </svg>
               )}
-              Sign in with {provider.displayName}
+              {msgStr("doLogIn")} with {provider.displayName}
             </a>
           ))}
 
@@ -62,7 +65,7 @@ export default function Login(
         {/* Email */}
         <div>
           <label htmlFor="username" className="mb-1.5 block text-sm font-medium text-slate-700">
-            Email
+            {msgStr("email")}
           </label>
           <input
             id="username"
@@ -78,7 +81,7 @@ export default function Login(
         {/* Password */}
         <div>
           <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-slate-700">
-            Password
+            {msgStr("password")}
           </label>
           <input
             id="password"
@@ -99,7 +102,7 @@ export default function Login(
                 defaultChecked={!!login.rememberMe}
                 className="size-4 rounded border-slate-300"
               />
-              Remember me
+              {msg("rememberMe")}
             </label>
           )}
           {realm.resetPasswordAllowed && (
@@ -107,7 +110,7 @@ export default function Login(
               href={url.loginResetCredentialsUrl}
               className="text-sm text-teal-600 hover:text-teal-700"
             >
-              Forgot password?
+              {msg("doForgotPassword")}
             </a>
           )}
         </div>
@@ -118,7 +121,7 @@ export default function Login(
           name="login"
           className="inline-flex h-9 w-full items-center justify-center rounded-full bg-slate-950 px-4 text-sm font-medium text-white transition-all hover:bg-slate-950/90 active:scale-[0.97]"
         >
-          Sign In
+          {msg("doLogIn")}
         </button>
       </form>
 
@@ -127,7 +130,7 @@ export default function Login(
         <p className="mt-6 text-center text-sm text-slate-600">
           Don&apos;t have an account?{" "}
           <a href={url.registrationUrl} className="font-medium text-teal-600 hover:text-teal-700">
-            Register
+            {msg("doRegister")}
           </a>
         </p>
       )}

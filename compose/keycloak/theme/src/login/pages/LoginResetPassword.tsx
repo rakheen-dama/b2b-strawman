@@ -1,13 +1,15 @@
 import type { PageProps } from "keycloakify/login/pages/PageProps";
 import type { KcContext } from "../KcContext";
 import type { I18n } from "../i18n";
+import { kcSanitize } from "keycloakify/lib/kcSanitize";
 import { Layout } from "./shared/Layout";
 
 export default function LoginResetPassword(
   props: PageProps<Extract<KcContext, { pageId: "login-reset-password.ftl" }>, I18n>
 ) {
-  const { kcContext } = props;
+  const { kcContext, i18n } = props;
   const { url, message } = kcContext;
+  const { msg, msgStr } = i18n;
 
   return (
     <Layout title="Reset your password">
@@ -25,14 +27,15 @@ export default function LoginResetPassword(
                 : "bg-blue-50 text-blue-700 border border-blue-200"
           }`}
         >
-          {message.summary}
+          {/* kcSanitize is Keycloak's built-in HTML sanitizer — safe for rendering server messages */}
+          <span dangerouslySetInnerHTML={{ __html: kcSanitize(message.summary) }} />
         </div>
       )}
 
       <form action={url.loginAction} method="post" className="space-y-4">
         <div>
           <label htmlFor="username" className="mb-1.5 block text-sm font-medium text-slate-700">
-            Email
+            {msgStr("email")}
           </label>
           <input
             id="username"
@@ -48,13 +51,13 @@ export default function LoginResetPassword(
           type="submit"
           className="inline-flex h-9 w-full items-center justify-center rounded-full bg-slate-950 px-4 text-sm font-medium text-white transition-all hover:bg-slate-950/90 active:scale-[0.97]"
         >
-          Reset Password
+          {msg("doSubmit")}
         </button>
       </form>
 
       <p className="mt-6 text-center text-sm text-slate-600">
         <a href={url.loginUrl} className="font-medium text-teal-600 hover:text-teal-700">
-          Back to sign in
+          {msg("backToLogin")}
         </a>
       </p>
     </Layout>

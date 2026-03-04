@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import type { NextMiddleware, NextRequest } from "next/server";
 
 const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
-const GATEWAY_URL = process.env.GATEWAY_URL || "http://localhost:8443";
+const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:8443";
 
 // createRouteMatcher is a pure regex-like function with no Clerk runtime dependency.
 // Both Clerk and mock paths need the same route matching, so this coupling is acceptable.

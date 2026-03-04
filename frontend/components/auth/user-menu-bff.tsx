@@ -11,7 +11,7 @@ interface BffUserInfo {
   email: string;
 }
 
-function getInitials(name: string): string {
+export function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/);
   if (parts.length >= 2) {
     return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
@@ -19,7 +19,7 @@ function getInitials(name: string): string {
   return name.charAt(0).toUpperCase() || "?";
 }
 
-function useBffUser(): BffUserInfo | null {
+export function useBffUser(): BffUserInfo | null {
   const [user, setUser] = useState<BffUserInfo | null>(null);
 
   useEffect(() => {
@@ -93,6 +93,9 @@ export function UserMenuBff() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
+        aria-label="User menu"
+        aria-expanded={open}
+        aria-haspopup="menu"
         className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
       >
         {initials}

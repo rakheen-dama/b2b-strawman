@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useAuthUser } from "@/lib/auth/client";
+import { useBffUser, getInitials as getBffInitials } from "@/components/auth/user-menu-bff";
 
 const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
 
@@ -75,44 +75,12 @@ function UserFooterUI({
   );
 }
 
-const GATEWAY_URL =
-  process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:8443";
-
 function KeycloakUserFooter() {
-  const [user, setUser] = useState<{
-    name: string;
-    email: string;
-  } | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    fetch(`${GATEWAY_URL}/bff/me`, { credentials: "include" })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (!cancelled && data?.authenticated) {
-          setUser({
-            name: data.name || "User",
-            email: data.email || "",
-          });
-        }
-      })
-      .catch(() => {
-        // Silently fail — footer will show fallback
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const user = useBffUser();
 
   const name = user?.name ?? "User";
   const email = user?.email ?? "";
-  const parts = name.trim().split(/\s+/);
-  const initials =
-    parts.length >= 2
-      ? (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
-      : name.charAt(0).toUpperCase() || "?";
+  const initials = getBffInitials(name);
 
   return <UserFooterUI initials={initials} name={name} email={email} />;
 }

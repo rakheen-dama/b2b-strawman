@@ -35,7 +35,7 @@ describe("Keycloak BFF middleware", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.resetModules();
-    vi.stubEnv("GATEWAY_URL", "http://localhost:8443");
+    vi.stubEnv("NEXT_PUBLIC_GATEWAY_URL", "http://localhost:8443");
   });
 
   async function loadMiddleware() {

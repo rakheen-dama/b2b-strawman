@@ -1,6 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { InviteMemberForm } from "./invite-member-form";
 
 const mockUseOrganization = vi.fn();
@@ -18,8 +19,11 @@ vi.mock("next/link", () => ({
   }) => <a href={href}>{children}</a>,
 }));
 
+const mockInviteMember = vi.fn();
+const mockListInvitations = vi.fn();
 vi.mock("@/app/(app)/org/[slug]/team/actions", () => ({
-  inviteMember: vi.fn(),
+  inviteMember: (...args: unknown[]) => mockInviteMember(...args),
+  listInvitations: () => mockListInvitations(),
 }));
 
 afterEach(() => cleanup());
@@ -82,7 +86,7 @@ describe("InviteMemberForm", () => {
       invitations: null,
     });
     const { container } = render(
-      <InviteMemberForm maxMembers={2} currentMembers={1} planTier="SHARED" />
+      <InviteMemberForm maxMembers={2} currentMembers={1} planTier="SHARED" orgSlug="acme" />
     );
 
     expect(container.innerHTML).toBe("");
@@ -93,5 +97,34 @@ describe("InviteMemberForm", () => {
     render(<InviteMemberForm maxMembers={10} currentMembers={3} planTier="SHARED" orgSlug="acme" />);
 
     expect(screen.getByText("3 of 10 members")).toBeInTheDocument();
+  });
+
+  it("submits invite and shows success message", async () => {
+    const user = userEvent.setup();
+    mockUseOrganization.mockReturnValue(mockOrg());
+    mockInviteMember.mockResolvedValue({ success: true });
+
+    render(<InviteMemberForm maxMembers={10} currentMembers={1} planTier="SHARED" orgSlug="acme" />);
+
+    await user.type(screen.getByLabelText("Email address"), "test@example.com");
+    await user.click(screen.getByRole("button", { name: "Send Invite" }));
+
+    await waitFor(() => {
+      expect(mockInviteMember).toHaveBeenCalledWith("test@example.com", "org:member");
+    });
+    expect(await screen.findByText(/Invitation sent to test@example.com/)).toBeInTheDocument();
+  });
+
+  it("shows error when invite fails", async () => {
+    const user = userEvent.setup();
+    mockUseOrganization.mockReturnValue(mockOrg());
+    mockInviteMember.mockResolvedValue({ success: false, error: "Already invited" });
+
+    render(<InviteMemberForm maxMembers={10} currentMembers={1} planTier="SHARED" orgSlug="acme" />);
+
+    await user.type(screen.getByLabelText("Email address"), "dup@example.com");
+    await user.click(screen.getByRole("button", { name: "Send Invite" }));
+
+    expect(await screen.findByText("Already invited")).toBeInTheDocument();
   });
 });

@@ -1,11 +1,14 @@
 "use client";
 
 import { useOrganization } from "@clerk/nextjs";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { inviteMember } from "@/app/(app)/org/[slug]/team/actions";
+import {
+  inviteMember,
+  listInvitations,
+} from "@/app/(app)/org/[slug]/team/actions";
 
 const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
 
@@ -16,7 +19,12 @@ interface InviteMemberFormProps {
   orgSlug: string;
 }
 
-function ClerkInviteMemberForm({ maxMembers, currentMembers, planTier, orgSlug }: InviteMemberFormProps) {
+function ClerkInviteMemberForm({
+  maxMembers,
+  currentMembers,
+  planTier,
+  orgSlug,
+}: InviteMemberFormProps) {
   const { organization, invitations } = useOrganization({
     invitations: {
       pageSize: 5,
@@ -39,7 +47,12 @@ function ClerkInviteMemberForm({ maxMembers, currentMembers, planTier, orgSlug }
   );
 }
 
-function MockInviteMemberForm({ maxMembers, currentMembers, planTier, orgSlug }: InviteMemberFormProps) {
+function MockInviteMemberForm({
+  maxMembers,
+  currentMembers,
+  planTier,
+  orgSlug,
+}: InviteMemberFormProps) {
   return (
     <InviteFormUI
       maxMembers={maxMembers}
@@ -48,6 +61,40 @@ function MockInviteMemberForm({ maxMembers, currentMembers, planTier, orgSlug }:
       planTier={planTier}
       orgSlug={orgSlug}
       onInviteSent={() => {}}
+      ready={true}
+    />
+  );
+}
+
+function KeycloakBffInviteMemberForm({
+  maxMembers,
+  currentMembers,
+  planTier,
+  orgSlug,
+}: InviteMemberFormProps) {
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    listInvitations().then((invitations) => {
+      setPendingCount(invitations.length);
+    });
+  }, []);
+
+  const handleInviteSent = () => {
+    // Refresh the pending count after a new invite
+    listInvitations().then((invitations) => {
+      setPendingCount(invitations.length);
+    });
+  };
+
+  return (
+    <InviteFormUI
+      maxMembers={maxMembers}
+      currentMembers={currentMembers}
+      pendingInvitations={pendingCount}
+      planTier={planTier}
+      orgSlug={orgSlug}
+      onInviteSent={handleInviteSent}
       ready={true}
     />
   );
@@ -80,7 +127,8 @@ function InviteFormUI({
 
   const totalUsed = currentMembers + pendingInvitations;
   const isAtLimit = maxMembers > 0 && totalUsed >= maxMembers;
-  const fillPercent = maxMembers > 0 ? Math.min((totalUsed / maxMembers) * 100, 100) : 0;
+  const fillPercent =
+    maxMembers > 0 ? Math.min((totalUsed / maxMembers) * 100, 100) : 0;
   const isPro = planTier === "DEDICATED";
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -105,7 +153,8 @@ function InviteFormUI({
       setEmailAddress("");
       setSuccess(`Invitation sent to ${trimmedEmail}.`);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to send invitation.";
+      const message =
+        err instanceof Error ? err.message : "Failed to send invitation.";
       setError(message);
     } finally {
       setIsSubmitting(false);
@@ -116,7 +165,10 @@ function InviteFormUI({
     <div className="space-y-4">
       {/* Form row */}
       {!isAtLimit && (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row sm:items-end">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-3 sm:flex-row sm:items-end"
+        >
           <div className="flex-1 space-y-1.5">
             <label htmlFor="invite-email" className="text-sm font-medium">
               Email address
@@ -141,7 +193,9 @@ function InviteFormUI({
             <select
               id="invite-role"
               value={role}
-              onChange={(e) => setRole(e.target.value as "org:member" | "org:admin")}
+              onChange={(e) =>
+                setRole(e.target.value as "org:member" | "org:admin")
+              }
               className="border-input bg-background h-9 rounded-md border px-3 text-sm shadow-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500"
             >
               <option value="org:member">Member</option>
@@ -192,5 +246,7 @@ function InviteFormUI({
 
 export function InviteMemberForm(props: InviteMemberFormProps) {
   if (AUTH_MODE === "mock") return <MockInviteMemberForm {...props} />;
+  if (AUTH_MODE === "keycloak")
+    return <KeycloakBffInviteMemberForm {...props} />;
   return <ClerkInviteMemberForm {...props} />;
 }

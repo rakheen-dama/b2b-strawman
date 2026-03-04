@@ -7,10 +7,16 @@ import { AvatarCircle } from "@/components/ui/avatar-circle";
 import { EmptyState } from "@/components/empty-state";
 import { useOrgMembers } from "@/lib/auth/client";
 import { formatDate } from "@/lib/format";
+import { useState, useEffect } from "react";
+import type { OrgMemberInfo } from "@/lib/auth/types";
+import { listMembers } from "@/app/(app)/org/[slug]/team/actions";
 
 const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
 
-const ROLE_BADGES: Record<string, { label: string; variant: "owner" | "admin" | "member" }> = {
+const ROLE_BADGES: Record<
+  string,
+  { label: string; variant: "owner" | "admin" | "member" }
+> = {
   "org:owner": { label: "Owner", variant: "owner" },
   "org:admin": { label: "Admin", variant: "admin" },
   "org:member": { label: "Member", variant: "member" },
@@ -25,7 +31,11 @@ function ClerkMemberList() {
   });
 
   if (!isLoaded) {
-    return <div className="py-8 text-center text-sm text-slate-600 dark:text-slate-400">Loading members...</div>;
+    return (
+      <div className="py-8 text-center text-sm text-slate-600 dark:text-slate-400">
+        Loading members...
+      </div>
+    );
   }
 
   if (!memberships?.data?.length) {
@@ -53,9 +63,11 @@ function ClerkMemberList() {
             <MemberRow
               key={member.id}
               name={fullName}
-              email={member.publicUserData?.identifier ?? "—"}
+              email={member.publicUserData?.identifier ?? "\u2014"}
               role={roleInfo}
-              joinedAt={member.createdAt ? formatDate(member.createdAt) : "—"}
+              joinedAt={
+                member.createdAt ? formatDate(member.createdAt) : "\u2014"
+              }
             />
           );
         })}
@@ -80,7 +92,11 @@ function MockMemberList() {
   const { members, isLoaded } = useOrgMembers();
 
   if (!isLoaded) {
-    return <div className="py-8 text-center text-sm text-slate-600 dark:text-slate-400">Loading members...</div>;
+    return (
+      <div className="py-8 text-center text-sm text-slate-600 dark:text-slate-400">
+        Loading members...
+      </div>
+    );
   }
 
   if (!members.length) {
@@ -106,7 +122,65 @@ function MockMemberList() {
             name={member.name ?? "Unknown"}
             email={member.email}
             role={roleInfo}
-            joinedAt="—"
+            joinedAt="\u2014"
+          />
+        );
+      })}
+    </MemberTable>
+  );
+}
+
+function KeycloakBffMemberList() {
+  const [members, setMembers] = useState<OrgMemberInfo[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    listMembers()
+      .then((data) => {
+        setMembers(
+          data.map((m) => ({
+            id: m.id,
+            email: m.email,
+            name: m.name,
+            role: m.role,
+          })),
+        );
+      })
+      .finally(() => setIsLoaded(true));
+  }, []);
+
+  if (!isLoaded) {
+    return (
+      <div className="py-8 text-center text-sm text-slate-600 dark:text-slate-400">
+        Loading members...
+      </div>
+    );
+  }
+
+  if (!members.length) {
+    return (
+      <EmptyState
+        icon={Users}
+        title="No members found"
+        description="Organization members will appear here"
+      />
+    );
+  }
+
+  return (
+    <MemberTable>
+      {members.map((member) => {
+        const roleInfo = ROLE_BADGES[member.role] ?? {
+          label: member.role,
+          variant: "member" as const,
+        };
+        return (
+          <MemberRow
+            key={member.id}
+            name={member.name ?? "Unknown"}
+            email={member.email}
+            role={roleInfo}
+            joinedAt="\u2014"
           />
         );
       })}
@@ -158,10 +232,14 @@ function MemberRow({
       <td className="py-3 pr-4">
         <div className="flex items-center gap-3">
           <AvatarCircle name={name} size={32} />
-          <span className="font-medium text-slate-900 dark:text-slate-100">{name}</span>
+          <span className="font-medium text-slate-900 dark:text-slate-100">
+            {name}
+          </span>
         </div>
       </td>
-      <td className="py-3 pr-4 text-slate-600 dark:text-slate-400">{email}</td>
+      <td className="py-3 pr-4 text-slate-600 dark:text-slate-400">
+        {email}
+      </td>
       <td className="py-3 pr-4">
         <Badge variant={role.variant}>{role.label}</Badge>
       </td>
@@ -172,5 +250,6 @@ function MemberRow({
 
 export function MemberList() {
   if (AUTH_MODE === "mock") return <MockMemberList />;
+  if (AUTH_MODE === "keycloak") return <KeycloakBffMemberList />;
   return <ClerkMemberList />;
 }

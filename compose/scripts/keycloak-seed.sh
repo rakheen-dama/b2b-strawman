@@ -57,7 +57,7 @@ ORG_ID=$($KCADM create organizations \
 if [[ -z "$ORG_ID" ]]; then
   # Organization may already exist — look it up
   ORG_ID=$($KCADM get organizations -r "${REALM}" --fields id,alias \
-    | python3 -c "import sys,json; orgs=json.load(sys.stdin); print(next((o['id'] for o in orgs if o['alias']=='acme-corp'), ''))" 2>/dev/null || true)
+    | jq -r '.[] | select(.alias=="acme-corp") | .id' 2>/dev/null || true)
 fi
 
 if [[ -z "$ORG_ID" ]]; then
@@ -90,15 +90,15 @@ create_user() {
   if [[ -z "$USER_ID" ]]; then
     # User may already exist — look up by username
     USER_ID=$($KCADM get "users?username=${username}&exact=true" -r "${REALM}" \
-      | python3 -c "import sys,json; users=json.load(sys.stdin); print(users[0]['id'] if users else '')" 2>/dev/null || true)
+      | jq -r '.[0].id // empty' 2>/dev/null || true)
   fi
 
   if [[ -n "$USER_ID" ]]; then
     # Set password
     $KCADM set-password -r "${REALM}" --userid "${USER_ID}" --new-password "${password}" 2>/dev/null || true
-    echo "  ${first} ${last} (${email}): ${USER_ID}"
+    echo "  ${first} ${last} (${email}): ${USER_ID}" >&2
   else
-    echo "  WARNING: Could not create or find user ${username}"
+    echo "  WARNING: Could not create or find user ${username}" >&2
   fi
 
   echo "${USER_ID}"
@@ -111,29 +111,30 @@ CAROL_ID=$(create_user "carol" "carol@example.com" "Carol" "Member" "password")
 # ---- Assign Organization Membership & Roles ----
 echo "[5/5] Assigning organization membership and roles..."
 
-assign_org_role() {
+assign_org_member() {
   local user_id="$1"
-  local role="$2"
+  local role_label="$2"
   local user_name="$3"
 
   # Add user to organization
+  # Note: kcadm requires the userId as the request body (not -s flag)
   $KCADM create "organizations/${ORG_ID}/members" \
     -r "${REALM}" \
-    -s userId="${user_id}" 2>/dev/null || true
+    -b "${user_id}" 2>/dev/null || true
 
-  # Grant organization role
-  # In Keycloak 26.5, org roles are assigned via:
-  #   PUT /admin/realms/{realm}/orgs/{orgId}/members/{userId}/roles/{roleName}
-  # or via kcadm:
-  $KCADM create "organizations/${ORG_ID}/members/${user_id}/organizations/${ORG_ID}/roles/${role}" \
-    -r "${REALM}" 2>/dev/null || true
+  # TODO: Keycloak 26.x does not yet expose organization-level role assignment
+  # via the Admin REST API. Organization members are added without roles.
+  # Org role management will be addressed when the Keycloak Organizations feature
+  # matures (tracked upstream: https://github.com/keycloak/keycloak/issues/30180).
+  # For now, the built-in oidc-organization-membership-mapper emits org membership
+  # in the JWT. Role-based authorization will use realm roles or a custom SPI.
 
-  echo "  ${user_name}: ${role} in acme-corp"
+  echo "  ${user_name}: member of acme-corp (intended role: ${role_label})"
 }
 
-assign_org_role "${ALICE_ID}" "owner" "Alice"
-assign_org_role "${BOB_ID}" "admin" "Bob"
-assign_org_role "${CAROL_ID}" "member" "Carol"
+assign_org_member "${ALICE_ID}" "owner" "Alice"
+assign_org_member "${BOB_ID}" "admin" "Bob"
+assign_org_member "${CAROL_ID}" "member" "Carol"
 
 echo ""
 echo "=== Keycloak Seed Complete ==="

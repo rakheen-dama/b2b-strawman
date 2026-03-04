@@ -65,22 +65,7 @@
         "offline_access"
       ],
       "protocol": "openid-connect",
-      "fullScopeAllowed": true,
-      "protocolMappers": [
-        {
-          "name": "organization-roles-mapper",
-          "protocol": "openid-connect",
-          "protocolMapper": "oidc-script-based-id-token-mapper",
-          "consentRequired": false,
-          "config": {
-            "id.token.claim": "true",
-            "access.token.claim": "true",
-            "userinfo.token.claim": "true",
-            "multivalued": "false",
-            "script": "var orgs = user.getOrganizations();\nvar orgClaim = {};\norgs.forEach(function(org) {\n    var roles = org.getRoles().stream()\n        .map(function(r) { return r.getName(); })\n        .collect(java.util.stream.Collectors.toList());\n    orgClaim[org.getAlias()] = {\n        \"id\": org.getId(),\n        \"roles\": roles\n    };\n});\ntoken.getOtherClaims().put(\"organization\", orgClaim);"
-          }
-        }
-      ]
+      "fullScopeAllowed": false
     },
     {
       "clientId": "admin-cli",

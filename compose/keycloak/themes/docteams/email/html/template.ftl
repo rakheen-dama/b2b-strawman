@@ -1,6 +1,6 @@
 <#macro emailLayout>
 <!DOCTYPE html>
-<html lang="${locale.language}" dir="${(ltr)?then('ltr','rtl')}">
+<html lang="${(locale.language)!'en'}" dir="${(ltr!true)?then('ltr','rtl')}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,14 +21,14 @@
     body {
       margin: 0;
       padding: 0;
-      background-color: #f8fafc;
+      background-color: #f1f5f9;
       font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
     .email-wrapper {
       width: 100%;
-      background-color: #f8fafc;
+      background-color: #f1f5f9;
       padding: 40px 0;
     }
     .email-content {
@@ -39,12 +39,11 @@
       text-align: center;
       padding-bottom: 32px;
     }
-    .email-logo a {
+    .email-logo span {
       font-family: 'Sora', -apple-system, BlinkMacSystemFont, sans-serif;
       font-size: 22px;
       font-weight: 600;
       color: #020617;
-      text-decoration: none;
       letter-spacing: -0.025em;
     }
     .email-card {
@@ -101,22 +100,22 @@
     }
   </style>
 </head>
-<body>
-  <div class="email-wrapper">
-    <div class="email-content">
+<body style="margin:0;padding:0;background-color:#f1f5f9;font-family:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <div class="email-wrapper" style="width:100%;background-color:#f1f5f9;padding:40px 0;">
+    <div class="email-content" style="max-width:560px;margin:0 auto;">
       <!-- Logo -->
-      <div class="email-logo">
-        <a href="#">DocTeams</a>
+      <div class="email-logo" style="text-align:center;padding-bottom:32px;">
+        <span style="font-family:'Sora',-apple-system,BlinkMacSystemFont,sans-serif;font-size:22px;font-weight:600;color:#020617;letter-spacing:-0.025em;">DocTeams</span>
       </div>
 
       <!-- Card -->
-      <div class="email-card">
+      <div class="email-card" style="background-color:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:32px;">
         <#nested>
       </div>
 
       <!-- Footer -->
-      <div class="email-footer">
-        <p>&copy; ${.now?string('yyyy')} DocTeams. All rights reserved.</p>
+      <div class="email-footer" style="text-align:center;padding-top:32px;">
+        <p style="font-size:12px;color:#94a3b8;margin:0;">&copy; ${.now?string('yyyy')} DocTeams. All rights reserved.</p>
       </div>
     </div>
   </div>

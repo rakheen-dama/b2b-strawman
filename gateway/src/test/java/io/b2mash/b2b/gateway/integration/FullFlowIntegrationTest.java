@@ -77,8 +77,8 @@ class FullFlowIntegrationTest extends GatewayIntegrationTestBase {
   }
 
   @Nested
-  @DisplayName("Token Relay to Backend")
-  class TokenRelayTests {
+  @DisplayName("Backend Proxy Routing")
+  class BackendProxyTests {
 
     @Test
     @DisplayName("GET /api/** proxied to backend via gateway route")
@@ -101,17 +101,6 @@ class FullFlowIntegrationTest extends GatewayIntegrationTestBase {
       // MockMvc tests use oidcLogin() which provides the principal but not an
       // OAuth2AuthorizedClient, so token relay is not exercised here.
       backendWireMock.verify(getRequestedFor(urlPathEqualTo("/api/projects")));
-    }
-
-    @Test
-    @DisplayName("Unauthenticated /api/** request is redirected to login")
-    void apiRoute_unauthenticated_redirectsToLogin() throws Exception {
-      var result = mockMvc.perform(get("/api/projects")).andReturn();
-
-      // Spring Security redirects unauthenticated requests to the OAuth2 authorization endpoint
-      assertThat(result.getResponse().getStatus())
-          .as("Unauthenticated API request should redirect to login")
-          .isEqualTo(302);
     }
   }
 
@@ -276,12 +265,12 @@ class FullFlowIntegrationTest extends GatewayIntegrationTestBase {
   }
 
   @Nested
-  @DisplayName("Session Expiry")
-  class SessionExpiryTests {
+  @DisplayName("Unauthenticated Access")
+  class UnauthenticatedAccessTests {
 
     @Test
-    @DisplayName("Expired session results in redirect to OAuth2 login")
-    void sessionExpiry_redirectsToLogin() throws Exception {
+    @DisplayName("Unauthenticated request redirects to OAuth2 Keycloak login")
+    void unauthenticated_redirectsToKeycloakLogin() throws Exception {
       // Without any valid session/OAuth2Login, accessing a protected resource
       // should redirect to the OAuth2 authorization endpoint
       var result = mockMvc.perform(get("/api/projects")).andReturn();
@@ -290,8 +279,8 @@ class FullFlowIntegrationTest extends GatewayIntegrationTestBase {
           .as("Request without valid session should redirect to OAuth2 login")
           .isEqualTo(302);
       assertThat(result.getResponse().getRedirectedUrl())
-          .as("Redirect should point to OAuth2 authorization endpoint")
-          .contains("oauth2/authorization");
+          .as("Redirect should point to Keycloak OAuth2 authorization endpoint")
+          .isEqualTo("/oauth2/authorization/keycloak");
     }
   }
 }

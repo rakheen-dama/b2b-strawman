@@ -23,7 +23,7 @@ Phase 35 (PRs #507-#519) already completed: Keycloak SPI, `JwtClaimExtractor` st
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 268 | Spring Cloud Gateway BFF — Module Scaffolding & Security | Backend (Gateway) | — | L | 268A, 268B | |
+| 268 | Spring Cloud Gateway BFF — Module Scaffolding & Security | Backend (Gateway) | — | L | 268A, 268B | **Done** |
 | 269 | Gateway Session Storage & Route Configuration | Backend (Gateway) | 268 | M | 269A, 269B | |
 | 270 | Gateway BFF Endpoints & Admin Proxy | Backend (Gateway) | 269 | M | 270A, 270B | |
 | 271 | JIT Tenant & Member Provisioning | Backend | — | M | 271A, 271B | |
@@ -186,7 +186,7 @@ INTEGRATION TRACK (last)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 1a | 268 | 268B | `GatewaySecurityConfig`: `SecurityFilterChain` with `oauth2Login()` (Keycloak provider), `logout()` with `OidcClientInitiatedLogoutSuccessHandler`, `CookieCsrfTokenRepository.withHttpOnlyFalse()`, `SpaCsrfTokenRequestHandler`, `SessionCreationPolicy.IF_REQUIRED`, permit `/actuator/health` + `/error`. ~3 new files (~6 tests). Gateway only. | |
+| 1a | 268 | 268B | `GatewaySecurityConfig`: `SecurityFilterChain` with `oauth2Login()` (Keycloak provider), `logout()` with `OidcClientInitiatedLogoutSuccessHandler`, `CookieCsrfTokenRepository.withHttpOnlyFalse()`, `SpaCsrfTokenRequestHandler`, `SessionCreationPolicy.IF_REQUIRED`, permit `/actuator/health` + `/error`. ~3 new files (~6 tests). Gateway only. | **Done** (PR #523) |
 | 1b | 269 | 269A | Spring Session JDBC configuration: `application.yml` with `spring.session.store-type=jdbc`, `spring.session.jdbc.initialize-schema=always`, 8h timeout, datasource config, `GatewayApplication` with `@EnableJdbcHttpSession`. Health check test. ~2 modified files (~3 tests). Gateway only. | |
 | 1c (parallel) | 271 | 271B | JIT member provisioning in `MemberFilter`: when member lookup by `externalUserId` returns null, call `MemberSyncService.syncMember()` using JWT claims (`sub`, `email`, `name`, org role from `organization` claim). Add `@Profile("keycloak")` conditional. ~2 modified files, ~1 test file (~5 tests). Backend only. | |
 
@@ -276,7 +276,7 @@ Stage 8: [279A] → [279B]                                          (after all t
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **268A** | 268.1--268.4 | Maven module scaffold: `gateway/pom.xml` with Spring Boot 4.0.2 parent, Spring Cloud 2025.1.x BOM, `spring-cloud-starter-gateway-server-webmvc`, `spring-boot-starter-oauth2-client`, `spring-session-jdbc`, PostgreSQL driver, `spring-boot-starter-test`. `GatewayApplication.java` main class. `application.yml` skeleton with server port 8443. ~3 new files. Gateway only. | **Done** (PR #522) |
-| **268B** | 268.5--268.11 | `GatewaySecurityConfig`: `SecurityFilterChain` with `oauth2Login()` targeting Keycloak provider, `defaultSuccessUrl("/", true)`, `OidcClientInitiatedLogoutSuccessHandler` for RP-Initiated Logout, `CookieCsrfTokenRepository.withHttpOnlyFalse()` for SPA CSRF, `SpaCsrfTokenRequestHandler` for deferred CSRF token loading, `SessionCreationPolicy.IF_REQUIRED`, public endpoints `/`, `/error`, `/actuator/health`. Unit tests (~6). ~3 new files. Gateway only. | |
+| **268B** | 268.5--268.11 | `GatewaySecurityConfig`: `SecurityFilterChain` with `oauth2Login()` targeting Keycloak provider, `defaultSuccessUrl("/", true)`, `OidcClientInitiatedLogoutSuccessHandler` for RP-Initiated Logout, `CookieCsrfTokenRepository.withHttpOnlyFalse()` for SPA CSRF, `SpaCsrfTokenRequestHandler` for deferred CSRF token loading, `SessionCreationPolicy.IF_REQUIRED`, public endpoints `/`, `/error`, `/actuator/health`. Unit tests (~6). ~3 new files. Gateway only. | **Done** (PR #523) |
 
 ### Tasks
 

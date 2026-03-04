@@ -15,6 +15,7 @@ import java.time.Duration;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,11 +30,15 @@ public class MemberFilter extends OncePerRequestFilter {
   private static final Logger log = LoggerFactory.getLogger(MemberFilter.class);
 
   private final MemberRepository memberRepository;
+  private final boolean jitProvisioningEnabled;
   private final Cache<String, UUID> memberCache =
       Caffeine.newBuilder().maximumSize(50_000).expireAfterWrite(Duration.ofHours(1)).build();
 
-  public MemberFilter(MemberRepository memberRepository) {
+  public MemberFilter(
+      MemberRepository memberRepository,
+      @Value("${app.jit-provisioning.enabled:false}") boolean jitProvisioningEnabled) {
     this.memberRepository = memberRepository;
+    this.jitProvisioningEnabled = jitProvisioningEnabled;
   }
 
   @Override
@@ -90,7 +95,7 @@ public class MemberFilter extends OncePerRequestFilter {
     String cacheKey = tenantId + ":" + clerkUserId;
     UUID memberId;
     try {
-      memberId = memberCache.get(cacheKey, k -> resolveOrCreateMember(clerkUserId, orgRole));
+      memberId = memberCache.get(cacheKey, k -> resolveOrCreateMember(clerkUserId, orgRole, jwt));
     } catch (Exception e) {
       log.warn(
           "Failed to resolve/create member for user {} in tenant {}: {}",
@@ -103,22 +108,34 @@ public class MemberFilter extends OncePerRequestFilter {
     return new MemberInfo(memberId, orgRole);
   }
 
-  private UUID resolveOrCreateMember(String clerkUserId, String orgRole) {
+  private UUID resolveOrCreateMember(String clerkUserId, String orgRole, Jwt jwt) {
     return memberRepository
         .findByClerkUserId(clerkUserId)
         .map(Member::getId)
-        .orElseGet(() -> lazyCreateMember(clerkUserId, orgRole));
+        .orElseGet(() -> lazyCreateMember(clerkUserId, orgRole, jwt));
   }
 
-  private UUID lazyCreateMember(String clerkUserId, String orgRole) {
+  private UUID lazyCreateMember(String clerkUserId, String orgRole, Jwt jwt) {
+    String email;
+    String name;
+
+    if (jitProvisioningEnabled) {
+      // When JIT is enabled, try to extract real email/name from JWT
+      String jwtEmail = jwt.getClaimAsString("email");
+      String jwtName = jwt.getClaimAsString("name");
+      email =
+          (jwtEmail != null && jwtEmail.contains("@"))
+              ? jwtEmail
+              : clerkUserId + "@placeholder.internal";
+      name = jwtName != null ? jwtName : null;
+    } else {
+      email = clerkUserId + "@placeholder.internal";
+      name = null;
+    }
+
     try {
       var member =
-          new Member(
-              clerkUserId,
-              clerkUserId + "@placeholder.internal",
-              null,
-              null,
-              orgRole != null ? orgRole : Roles.ORG_MEMBER);
+          new Member(clerkUserId, email, name, null, orgRole != null ? orgRole : Roles.ORG_MEMBER);
       member = memberRepository.save(member);
       log.info(
           "Lazy-created member {} for user {} in tenant {}",

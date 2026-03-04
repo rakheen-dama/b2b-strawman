@@ -26,7 +26,7 @@ Phase 35 (PRs #507-#519) already completed: Keycloak SPI, `JwtClaimExtractor` st
 | 268 | Spring Cloud Gateway BFF — Module Scaffolding & Security | Backend (Gateway) | — | L | 268A, 268B | **Done** |
 | 269 | Gateway Session Storage & Route Configuration | Backend (Gateway) | 268 | M | 269A, 269B | **Done** |
 | 270 | Gateway BFF Endpoints & Admin Proxy | Backend (Gateway) | 269 | M | 270A, 270B | **Done** |
-| 271 | JIT Tenant & Member Provisioning | Backend | — | M | 271A, 271B | |
+| 271 | JIT Tenant & Member Provisioning | Backend | — | M | 271A, 271B | **Done** |
 | 272 | Keycloak 26.5 Upgrade & Realm Configuration | Infra | — | S | 272A | **Done** |
 | 273 | Docker Compose Gateway Integration | Infra | 268, 272 | S | 273A | **Done** |
 | 274 | Frontend BFF Auth Provider & API Client | Frontend | 269, 270 | M | 274A, 274B | |
@@ -180,7 +180,7 @@ INTEGRATION TRACK (last)
 |-------|------|-------|---------|--------|
 | 0a (parallel) | 272 | 272A | Keycloak 26.1 -> 26.5 Docker image bump: update `compose/docker-compose.yml` image tag, update realm-export.json for 26.5 org features (org ID in token toggle, native invitation API), adjust `compose/scripts/keycloak-seed.sh` for 26.5 Admin REST API changes. ~4 modified files. Infra only. | **Done** (PR #526) |
 | 0b (parallel) | 268 | 268A | Create `gateway/` Maven module: `pom.xml` with Spring Boot 4.0.2 parent, Spring Cloud 2025.1.x BOM, `spring-cloud-starter-gateway-server-webmvc`, `spring-boot-starter-oauth2-client`, `spring-session-jdbc`, PostgreSQL driver. `GatewayApplication.java` main class. ~3 new files. Gateway only. | **Done** (PR #522) |
-| 0c (parallel) | 271 | 271A | JIT tenant provisioning in `TenantFilter`: when `org_schema_mapping` lookup returns null for a Keycloak org ID, synchronously call `TenantProvisioningService.provision()` with org details from JWT claims. Add `@Profile("keycloak")` conditional or feature flag. Idempotent (existing provisioning pipeline). ~2 modified files, ~1 test file (~6 tests). Backend only. | |
+| 0c (parallel) | 271 | 271A | JIT tenant provisioning in `TenantFilter`: when `org_schema_mapping` lookup returns null for a Keycloak org ID, synchronously call `TenantProvisioningService.provision()` with org details from JWT claims. Add `@Profile("keycloak")` conditional or feature flag. Idempotent (existing provisioning pipeline). ~2 modified files, ~1 test file (~6 tests). Backend only. | **Done** (PR #527) |
 
 ### Stage 1: Gateway Security & Session (sequential)
 
@@ -188,7 +188,7 @@ INTEGRATION TRACK (last)
 |-------|------|-------|---------|--------|
 | 1a | 268 | 268B | `GatewaySecurityConfig`: `SecurityFilterChain` with `oauth2Login()` (Keycloak provider), `logout()` with `OidcClientInitiatedLogoutSuccessHandler`, `CookieCsrfTokenRepository.withHttpOnlyFalse()`, `SpaCsrfTokenRequestHandler`, `SessionCreationPolicy.IF_REQUIRED`, permit `/actuator/health` + `/error`. ~3 new files (~6 tests). Gateway only. | **Done** (PR #523) |
 | 1b | 269 | 269A | Spring Session JDBC configuration: `application.yml` with `spring.session.store-type=jdbc`, `spring.session.jdbc.initialize-schema=always`, 8h timeout, datasource config, `GatewayApplication` with `@EnableJdbcHttpSession`. Health check test. ~2 modified files (~3 tests). Gateway only. | **Done** (PR #524) |
-| 1c (parallel) | 271 | 271B | JIT member provisioning in `MemberFilter`: when member lookup by `externalUserId` returns null, call `MemberSyncService.syncMember()` using JWT claims (`sub`, `email`, `name`, org role from `organization` claim). Add `@Profile("keycloak")` conditional. ~2 modified files, ~1 test file (~5 tests). Backend only. | |
+| 1c (parallel) | 271 | 271B | JIT member provisioning in `MemberFilter`: when member lookup by `externalUserId` returns null, call `MemberSyncService.syncMember()` using JWT claims (`sub`, `email`, `name`, org role from `organization` claim). Add `@Profile("keycloak")` conditional. ~2 modified files, ~1 test file (~5 tests). Backend only. | **Done** (PR #527) |
 
 ### Stage 2: Gateway Routes & BFF Endpoints
 
@@ -459,8 +459,8 @@ Stage 8: [279A] → [279B]                                          (after all t
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **271A** | 271.1--271.6 | JIT tenant provisioning: modify `TenantFilter` to detect unprovisioned org (null schema mapping), call `TenantProvisioningService.provision()` synchronously using JWT claims (`sub`, org slug, org ID from `organization` claim). Only active when `keycloak` profile. Idempotent. ~2 modified files, ~1 test file (~6 tests). Backend only. | |
-| **271B** | 271.7--271.11 | JIT member provisioning: modify `MemberFilter` to detect unknown `externalUserId`, call `MemberSyncService.syncMember()` using JWT claims (`sub`, `email`, `name`, org role from `organization` claim). Only active when `keycloak` profile. ~2 modified files, ~1 test file (~5 tests). Backend only. | |
+| **271A** | 271.1--271.6 | JIT tenant provisioning: modify `TenantFilter` to detect unprovisioned org (null schema mapping), call `TenantProvisioningService.provision()` synchronously using JWT claims (`sub`, org slug, org ID from `organization` claim). Only active when `keycloak` profile. Idempotent. ~2 modified files, ~1 test file (~6 tests). Backend only. | **Done** (PR #527) |
+| **271B** | 271.7--271.11 | JIT member provisioning: modify `MemberFilter` to detect unknown `externalUserId`, call `MemberSyncService.syncMember()` using JWT claims (`sub`, `email`, `name`, org role from `organization` claim). Only active when `keycloak` profile. ~2 modified files, ~1 test file (~5 tests). Backend only. | **Done** (PR #527) |
 
 ### Tasks
 

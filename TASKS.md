@@ -306,7 +306,7 @@
 | 268 | Spring Cloud Gateway BFF — Module Scaffolding & Security | Backend (Gateway) | -- | L | 268A, 268B | **Done** (268A: PR #522, 268B: PR #523)                                                                                             |
 | 269 | Gateway Session Storage & Route Configuration | Backend (Gateway) | 268 | M | 269A, 269B | **Done** (PR #524)                                                                                                                 |
 | 270 | Gateway BFF Endpoints & Admin Proxy | Backend (Gateway) | 269 | M | 270A, 270B | **Done** (PR #525)                                                                                                                 |
-| 271 | JIT Tenant & Member Provisioning | Backend | -- | M | 271A, 271B |                                                                                                                                    |
+| 271 | JIT Tenant & Member Provisioning | Backend | -- | M | 271A, 271B | **Done** (PR #527)                                                                                                                 |
 | 272 | Keycloak 26.5 Upgrade & Realm Configuration | Infra | -- | S | 272A | **Done** (PR #526)                                                                                                                 |
 | 273 | Docker Compose Gateway Integration | Infra | 268, 272 | S | 273A | **Done** (PR #528)                                                                                                                 |
 | 274 | Frontend BFF Auth Provider & API Client | Frontend | 269, 270 | M | 274A, 274B |                                                                                                                                    |

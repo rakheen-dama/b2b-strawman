@@ -3,6 +3,7 @@
   "realm": "docteams",
   "displayName": "DocTeams",
   "loginTheme": "docteams",
+  "emailTheme": "docteams",
   "enabled": true,
   "registrationAllowed": true,
   "registrationEmailAsUsername": true,

@@ -223,7 +223,7 @@ INTEGRATION TRACK (last)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 6a (parallel) | 277 | 277A | Keycloakify project scaffold: `compose/keycloak/theme/` directory, `package.json` with keycloakify + React + Tailwind deps, Vite config, login page (username/password + Google button), registration page (name, email, password), password reset page. DocTeams branding: Sora font, slate palette, teal accents, logo. Build to theme JAR. ~12 new files. Frontend/Infra. | |
+| 6a (parallel) | 277 | 277A | Keycloakify project scaffold: `compose/keycloak/theme/` directory, `package.json` with keycloakify + React + Tailwind deps, Vite config, login page (username/password + Google button), registration page (name, email, password), password reset page. DocTeams branding: Sora font, slate palette, teal accents, logo. Build to theme JAR. ~12 new files. Frontend/Infra. | **Done** (PR #530) |
 | 6b | 277 | 277B | Theme polish: invitation acceptance page, email verification page, error pages (generic, expired link, account disabled). Consistent branding across all pages. Theme build verification. ~6 new/modified files. Frontend/Infra. | |
 
 ### Stage 7: Email Templates & Theme Deployment
@@ -784,7 +784,7 @@ Stage 8: [279A] → [279B]                                          (after all t
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **277A** | 277.1--277.8 | Keycloakify project scaffold: `compose/keycloak/theme/` directory, `package.json` with keycloakify v11+ dependencies, Vite config, Tailwind CSS setup, login page (username/password + Google social), registration page (name, email, password), password reset page. DocTeams branding (Sora font, slate palette, teal accents, logo). Build script producing theme JAR. ~12 new files. | |
+| **277A** | 277.1--277.8 | Keycloakify project scaffold: `compose/keycloak/theme/` directory, `package.json` with keycloakify v11+ dependencies, Vite config, Tailwind CSS setup, login page (username/password + Google social), registration page (name, email, password), password reset page. DocTeams branding (Sora font, slate palette, teal accents, logo). Build script producing theme JAR. ~12 new files. | **Done** (PR #530) |
 | **277B** | 277.9--277.12 | Theme polish: invitation acceptance page, email verification page, generic error page (expired link, account disabled), branding consistency review. ~6 new/modified files. | |
 
 ### Tasks

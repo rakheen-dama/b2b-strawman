@@ -1,9 +1,11 @@
 import "server-only";
 
+import { cache } from "react";
 import { cookies } from "next/headers";
 import type { AuthContext } from "../types";
 
 const GATEWAY_URL = process.env.GATEWAY_URL || "http://localhost:8443";
+const BFF_TIMEOUT_MS = 5_000;
 
 /** Response shape from the gateway's /bff/me endpoint. */
 interface BffUserInfo {
@@ -20,19 +22,22 @@ interface BffUserInfo {
 /**
  * Fetch the current user's identity from the gateway BFF endpoint.
  * Forwards the SESSION cookie from the incoming Next.js request.
+ *
+ * Wrapped with React.cache to deduplicate calls within a single
+ * server-side request (e.g. getAuthContext + getCurrentUserEmail).
  */
-async function fetchBffMe(): Promise<BffUserInfo> {
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get("SESSION");
-
+async function fetchBffMeInternal(
+  cookieHeader: string,
+): Promise<BffUserInfo> {
   const headers: Record<string, string> = {};
-  if (sessionCookie) {
-    headers["cookie"] = `SESSION=${sessionCookie.value}`;
+  if (cookieHeader) {
+    headers["cookie"] = cookieHeader;
   }
 
   const response = await fetch(`${GATEWAY_URL}/bff/me`, {
     headers,
     cache: "no-store",
+    signal: AbortSignal.timeout(BFF_TIMEOUT_MS),
   });
 
   if (!response.ok) {
@@ -42,6 +47,21 @@ async function fetchBffMe(): Promise<BffUserInfo> {
   }
 
   return response.json() as Promise<BffUserInfo>;
+}
+
+/** Request-scoped cached version — deduplicates within a single RSC render. */
+const fetchBffMeCached = cache(fetchBffMeInternal);
+
+/**
+ * Resolve the cookie header and call the cached fetcher.
+ */
+async function fetchBffMe(): Promise<BffUserInfo> {
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get("SESSION");
+  const cookieHeader = sessionCookie
+    ? `SESSION=${sessionCookie.value}`
+    : "";
+  return fetchBffMeCached(cookieHeader);
 }
 
 export async function getAuthContext(): Promise<AuthContext> {

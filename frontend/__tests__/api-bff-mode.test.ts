@@ -121,6 +121,17 @@ describe("API client in BFF (keycloak) mode", () => {
     expect(fetchOptions.headers["X-XSRF-TOKEN"]).toBe("csrf-token-abc");
   });
 
+  it("sends request without SESSION cookie when no session exists", async () => {
+    mockCookieGet.mockImplementation(() => undefined);
+
+    const { api } = await import("@/lib/api");
+    await api.get("/api/projects");
+
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    const [, fetchOptions] = mockFetch.mock.calls[0];
+    expect(fetchOptions.headers).not.toHaveProperty("cookie");
+  });
+
   it("URL-decodes XSRF-TOKEN cookie value", async () => {
     mockCookieGet.mockImplementation((name: string) => {
       if (name === "SESSION") return { value: "session-xyz" };

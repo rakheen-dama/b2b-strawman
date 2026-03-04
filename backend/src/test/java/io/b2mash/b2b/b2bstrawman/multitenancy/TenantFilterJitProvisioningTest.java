@@ -125,6 +125,27 @@ class TenantFilterJitProvisioningTest {
     assertThat(mappingRepository.findByClerkOrgId(orgId)).isPresent();
   }
 
+  @Test
+  void jitProvisioning_memberRole_returns403() throws Exception {
+    String orgId = "org_jit_member_role";
+    mockMvc
+        .perform(get("/api/projects").with(jwtForOrgWithRole(orgId, "member-org", "member")))
+        .andExpect(status().isForbidden());
+
+    // Verify org was NOT provisioned
+    assertThat(mappingRepository.findByClerkOrgId(orgId)).isEmpty();
+  }
+
+  @Test
+  void jitProvisioning_adminRole_provisions() throws Exception {
+    String orgId = "org_jit_admin_role";
+    mockMvc
+        .perform(get("/api/projects").with(jwtForOrgWithRole(orgId, "admin-org", "admin")))
+        .andExpect(status().isOk());
+
+    assertThat(mappingRepository.findByClerkOrgId(orgId)).isPresent();
+  }
+
   // --- JWT helpers ---
 
   private JwtRequestPostProcessor jwtForOrg(String orgId, String slug) {
@@ -140,5 +161,15 @@ class TenantFilterJitProvisioningTest {
     return jwt()
         .jwt(j -> j.subject("user_jit_tenant_test").claim("o", Map.of("id", orgId, "rol", "owner")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
+  }
+
+  private JwtRequestPostProcessor jwtForOrgWithRole(String orgId, String slug, String role) {
+    String authority = "ROLE_ORG_" + role.toUpperCase();
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_jit_tenant_test")
+                    .claim("o", Map.of("id", orgId, "rol", role, "slg", slug)))
+        .authorities(List.of(new SimpleGrantedAuthority(authority)));
   }
 }

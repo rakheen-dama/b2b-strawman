@@ -123,7 +123,10 @@ public class MemberFilter extends OncePerRequestFilter {
       // When JIT is enabled, try to extract real email/name from JWT
       String jwtEmail = jwt.getClaimAsString("email");
       String jwtName = jwt.getClaimAsString("name");
-      email = jwtEmail != null ? jwtEmail : clerkUserId + "@placeholder.internal";
+      email =
+          (jwtEmail != null && jwtEmail.contains("@"))
+              ? jwtEmail
+              : clerkUserId + "@placeholder.internal";
       name = jwtName != null ? jwtName : null;
     } else {
       email = clerkUserId + "@placeholder.internal";

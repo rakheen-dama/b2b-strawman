@@ -4,6 +4,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.security.ClerkJwtUtils;
+import io.b2mash.b2b.b2bstrawman.security.Roles;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -66,9 +67,19 @@ public class TenantFilter extends OncePerRequestFilter {
               response);
           return;
         } else {
-          // Schema not found — attempt JIT provisioning if enabled
-          if (jitProvisioningEnabled && provisioningService.getIfAvailable() != null) {
-            schema = attemptJitProvisioning(jwt, orgId);
+          // Schema not found — attempt JIT provisioning if enabled and user is admin/owner
+          TenantProvisioningService svc =
+              jitProvisioningEnabled ? provisioningService.getIfAvailable() : null;
+          if (svc != null) {
+            String orgRole = ClerkJwtUtils.extractOrgRole(jwt);
+            if (Roles.ORG_OWNER.equals(orgRole) || Roles.ORG_ADMIN.equals(orgRole)) {
+              schema = attemptJitProvisioning(jwt, orgId, svc);
+            } else {
+              log.debug(
+                  "JIT provisioning skipped for org {} — user role '{}' is not admin/owner",
+                  orgId,
+                  orgRole);
+            }
           }
           if (schema != null) {
             ScopedFilterChain.runScoped(
@@ -118,15 +129,17 @@ public class TenantFilter extends OncePerRequestFilter {
         .orElse(null);
   }
 
-  private String attemptJitProvisioning(Jwt jwt, String orgId) {
+  private String attemptJitProvisioning(Jwt jwt, String orgId, TenantProvisioningService svc) {
     String orgSlug = ClerkJwtUtils.extractOrgSlug(jwt);
     String orgName = orgSlug != null ? orgSlug : orgId;
     try {
       log.info("JIT provisioning tenant for org {}", orgId);
-      provisioningService.getObject().provisionTenant(orgId, orgName);
+      svc.provisionTenant(orgId, orgName);
       // Provisioning succeeded — retry lookup (bypasses cache)
       String schema = lookupTenant(orgId);
-      if (schema != null) {
+      if (schema == null) {
+        log.error("JIT provisioning completed but schema mapping not found for org {}", orgId);
+      } else {
         tenantCache.put(orgId, schema);
       }
       return schema;

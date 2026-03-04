@@ -124,21 +124,21 @@ class MemberFilterJitSyncTest {
   }
 
   @Test
-  void concurrent_firstRequests_noDuplicate() throws Exception {
+  void secondRequest_sameUser_usesExisting() throws Exception {
     // First request creates the member
     mockMvc
-        .perform(get("/api/projects").with(jwtWithEmailAndName("user_jit_concurrent", ORG_ID)))
+        .perform(get("/api/projects").with(jwtWithEmailAndName("user_jit_second_req", ORG_ID)))
         .andExpect(status().isOk());
 
-    // Second request for same user
+    // Second request for same user should reuse existing member
     mockMvc
-        .perform(get("/api/projects").with(jwtWithEmailAndName("user_jit_concurrent", ORG_ID)))
+        .perform(get("/api/projects").with(jwtWithEmailAndName("user_jit_second_req", ORG_ID)))
         .andExpect(status().isOk());
 
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
         .run(
             () -> {
-              var member = memberRepository.findByClerkUserId("user_jit_concurrent");
+              var member = memberRepository.findByClerkUserId("user_jit_second_req");
               assertThat(member).isPresent();
             });
   }

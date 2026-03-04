@@ -28,7 +28,7 @@ Phase 35 (PRs #507-#519) already completed: Keycloak SPI, `JwtClaimExtractor` st
 | 270 | Gateway BFF Endpoints & Admin Proxy | Backend (Gateway) | 269 | M | 270A, 270B | **Done** |
 | 271 | JIT Tenant & Member Provisioning | Backend | — | M | 271A, 271B | |
 | 272 | Keycloak 26.5 Upgrade & Realm Configuration | Infra | — | S | 272A | **Done** |
-| 273 | Docker Compose Gateway Integration | Infra | 268, 272 | S | 273A | |
+| 273 | Docker Compose Gateway Integration | Infra | 268, 272 | S | 273A | **Done** |
 | 274 | Frontend BFF Auth Provider & API Client | Frontend | 269, 270 | M | 274A, 274B | |
 | 275 | Frontend BFF Middleware & Login/Logout Flows | Frontend | 274 | M | 275A, 275B | |
 | 276 | Frontend Team Management Rewiring | Frontend | 270, 275 | M | 276A | |
@@ -196,7 +196,7 @@ INTEGRATION TRACK (last)
 |-------|------|-------|---------|--------|
 | 2a | 269 | 269B | Route configuration in `application.yml`: `backend-api` route (`/api/**` -> `${BACKEND_URL}`), `backend-internal` route (`/internal/**` -> `${BACKEND_URL}`), `TokenRelay=` + `SaveSession` filters on both routes. CORS config for frontend origin. ~1 modified file (~4 tests). Gateway only. | **Done** (PR #524) |
 | 2b | 270 | 270A | `BffController` with `GET /bff/me`: extract user info from `@AuthenticationPrincipal OidcUser`, parse `organization` claim for org ID/slug/role, return JSON response `{authenticated, userId, email, name, picture, orgId, orgSlug, orgRole}`. Handle unauthenticated case. ~2 new files (~6 tests). Gateway only. | **Done** (PR #525) |
-| 2c | 273 | 273A | Docker Compose `gateway` service definition: Dockerfile for gateway module, service in `docker-compose.yml` (conditional with `--keycloak` flag), env vars (DB_HOST, KEYCLOAK_ISSUER, KEYCLOAK_CLIENT_SECRET, BACKEND_URL), port 8443, depends_on keycloak + postgres. Update `dev-up.sh --keycloak`. ~3 new/modified files. Infra only. | |
+| 2c | 273 | 273A | Docker Compose `gateway` service definition: Dockerfile for gateway module, service in `docker-compose.yml` (conditional with `--keycloak` flag), env vars (DB_HOST, KEYCLOAK_ISSUER, KEYCLOAK_CLIENT_SECRET, BACKEND_URL), port 8443, depends_on keycloak + postgres. Update `dev-up.sh --keycloak`. ~3 new/modified files. Infra only. | **Done** (PR #528) |
 
 ### Stage 3: Gateway Admin Proxy & Frontend BFF Provider (parallel tracks)
 
@@ -571,7 +571,7 @@ Stage 8: [279A] → [279B]                                          (after all t
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **273A** | 273.1--273.5 | Gateway Docker Compose service: service definition with build context, environment variables, port mapping (8443), depends_on (keycloak, postgres). Update `dev-up.sh --keycloak` to include gateway. Health check configuration. ~3 modified files. Infra only. | |
+| **273A** | 273.1--273.5 | Gateway Docker Compose service: service definition with build context, environment variables, port mapping (8443), depends_on (keycloak, postgres). Update `dev-up.sh --keycloak` to include gateway. Health check configuration. ~3 modified files. Infra only. | **Done** (PR #528) |
 
 ### Tasks
 

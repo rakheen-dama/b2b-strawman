@@ -307,7 +307,7 @@
 | 269 | Gateway Session Storage & Route Configuration | Backend (Gateway) | 268 | M | 269A, 269B | **Done** (PR #524)                                                                                                                 |
 | 270 | Gateway BFF Endpoints & Admin Proxy | Backend (Gateway) | 269 | M | 270A, 270B | **Done** (PR #525)                                                                                                                 |
 | 271 | JIT Tenant & Member Provisioning | Backend | -- | M | 271A, 271B |                                                                                                                                    |
-| 272 | Keycloak 26.5 Upgrade & Realm Configuration | Infra | -- | S | 272A |                                                                                                                                    |
+| 272 | Keycloak 26.5 Upgrade & Realm Configuration | Infra | -- | S | 272A | **Done** (PR #526)                                                                                                                 |
 | 273 | Docker Compose Gateway Integration | Infra | 268, 272 | S | 273A |                                                                                                                                    |
 | 274 | Frontend BFF Auth Provider & API Client | Frontend | 269, 270 | M | 274A, 274B |                                                                                                                                    |
 | 275 | Frontend BFF Middleware & Login/Logout Flows | Frontend | 274 | M | 275A, 275B |                                                                                                                                    |

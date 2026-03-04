@@ -27,7 +27,7 @@ Phase 35 (PRs #507-#519) already completed: Keycloak SPI, `JwtClaimExtractor` st
 | 269 | Gateway Session Storage & Route Configuration | Backend (Gateway) | 268 | M | 269A, 269B | **Done** |
 | 270 | Gateway BFF Endpoints & Admin Proxy | Backend (Gateway) | 269 | M | 270A, 270B | **Done** |
 | 271 | JIT Tenant & Member Provisioning | Backend | — | M | 271A, 271B | |
-| 272 | Keycloak 26.5 Upgrade & Realm Configuration | Infra | — | S | 272A | |
+| 272 | Keycloak 26.5 Upgrade & Realm Configuration | Infra | — | S | 272A | **Done** |
 | 273 | Docker Compose Gateway Integration | Infra | 268, 272 | S | 273A | |
 | 274 | Frontend BFF Auth Provider & API Client | Frontend | 269, 270 | M | 274A, 274B | |
 | 275 | Frontend BFF Middleware & Login/Logout Flows | Frontend | 274 | M | 275A, 275B | |
@@ -178,7 +178,7 @@ INTEGRATION TRACK (last)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 0a (parallel) | 272 | 272A | Keycloak 26.1 -> 26.5 Docker image bump: update `compose/docker-compose.yml` image tag, update realm-export.json for 26.5 org features (org ID in token toggle, native invitation API), adjust `compose/scripts/keycloak-seed.sh` for 26.5 Admin REST API changes. ~4 modified files. Infra only. | |
+| 0a (parallel) | 272 | 272A | Keycloak 26.1 -> 26.5 Docker image bump: update `compose/docker-compose.yml` image tag, update realm-export.json for 26.5 org features (org ID in token toggle, native invitation API), adjust `compose/scripts/keycloak-seed.sh` for 26.5 Admin REST API changes. ~4 modified files. Infra only. | **Done** (PR #526) |
 | 0b (parallel) | 268 | 268A | Create `gateway/` Maven module: `pom.xml` with Spring Boot 4.0.2 parent, Spring Cloud 2025.1.x BOM, `spring-cloud-starter-gateway-server-webmvc`, `spring-boot-starter-oauth2-client`, `spring-session-jdbc`, PostgreSQL driver. `GatewayApplication.java` main class. ~3 new files. Gateway only. | **Done** (PR #522) |
 | 0c (parallel) | 271 | 271A | JIT tenant provisioning in `TenantFilter`: when `org_schema_mapping` lookup returns null for a Keycloak org ID, synchronously call `TenantProvisioningService.provision()` with org details from JWT claims. Add `@Profile("keycloak")` conditional or feature flag. Idempotent (existing provisioning pipeline). ~2 modified files, ~1 test file (~6 tests). Backend only. | |
 
@@ -525,7 +525,7 @@ Stage 8: [279A] → [279B]                                          (after all t
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **272A** | 272.1--272.5 | Keycloak 26.5 upgrade: Docker image tag bump in `compose/docker-compose.yml`, realm-export.json updates for 26.5 org features (org ID in token, native invitation REST API), seed script adjustments (`compose/scripts/keycloak-seed.sh`), `gateway-bff` client registration in realm. ~4 modified files. Infra only. | |
+| **272A** | 272.1--272.5 | Keycloak 26.5 upgrade: Docker image tag bump in `compose/docker-compose.yml`, realm-export.json updates for 26.5 org features (org ID in token, native invitation REST API), seed script adjustments (`compose/scripts/keycloak-seed.sh`), `gateway-bff` client registration in realm. ~4 modified files. Infra only. | **Done** (PR #526) |
 
 ### Tasks
 

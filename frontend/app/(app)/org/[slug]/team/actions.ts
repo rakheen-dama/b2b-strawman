@@ -124,7 +124,7 @@ async function listInvitationsBff(): Promise<MappedInvitation[]> {
 
 async function revokeInvitationBff(id: string): Promise<ActionResult> {
   try {
-    await api.delete<void>(`/bff/admin/invitations/${id}`);
+    await api.delete<void>(`/bff/admin/invitations/${encodeURIComponent(id)}`);
     return { success: true };
   } catch (err: unknown) {
     const message =
@@ -184,6 +184,15 @@ export async function listInvitations(): Promise<MappedInvitation[]> {
 }
 
 export async function revokeInvitation(id: string): Promise<ActionResult> {
+  const { orgRole } = await getAuthContext();
+
+  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+    return {
+      success: false,
+      error: "You must be an admin to revoke invitations.",
+    };
+  }
+
   if (AUTH_MODE === "mock") {
     return { success: true };
   }

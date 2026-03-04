@@ -87,6 +87,41 @@ services:
     networks:
       - dev-network
 
+  gateway:
+    build:
+      context: ../gateway
+      dockerfile: Dockerfile
+    container_name: b2b-gateway
+    restart: unless-stopped
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      KEYCLOAK_ISSUER: http://keycloak:8180/realms/docteams
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-gateway-bff}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
+      KEYCLOAK_ADMIN_URL: http://keycloak:8180
+      KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET:-}
+      BACKEND_URL: http://backend:8080
+      FRONTEND_URL: http://localhost:3000
+    ports:
+      - "8443:8443"
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8443/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - dev-network
+
   backend:
     build:
       context: ../backend

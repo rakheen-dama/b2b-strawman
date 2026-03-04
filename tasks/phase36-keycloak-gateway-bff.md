@@ -236,7 +236,7 @@ INTEGRATION TRACK (last)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 8a | 279 | 279A | Manual flow verification scripts + backend integration tests: (1) signup -> org creation -> first login -> JIT provisioning -> API access, (2) invite member -> accept -> JIT member sync, (3) session expiry -> transparent token refresh, (4) CSRF validation for mutations, (5) backend tests with keycloak profile ensuring JwtClaimExtractor works with gateway-relayed JWTs. ~3 new files (~10 tests). Both. | |
+| 8a | 279 | 279A | Manual flow verification scripts + backend integration tests: (1) signup -> org creation -> first login -> JIT provisioning -> API access, (2) invite member -> accept -> JIT member sync, (3) session expiry -> transparent token refresh, (4) CSRF validation for mutations, (5) backend tests with keycloak profile ensuring JwtClaimExtractor works with gateway-relayed JWTs. ~3 new files (~10 tests). Both. | **Done** (PR #535) |
 | 8b | 279 | 279B | Clerk regression + reversibility test: switch `AUTH_MODE` back to `clerk`, verify all existing Clerk flows work unchanged. Verify mock E2E mode works unchanged. Document operational runbook (env vars, startup order, troubleshooting). ~2 new files (docs). Both. | |
 
 ### Timeline
@@ -891,7 +891,7 @@ Stage 8: [279A] → [279B]                                          (after all t
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **279A** | 279.1--279.6 | Full flow verification: (1) signup -> org creation -> first login -> JIT provisioning -> API access, (2) invite member -> accept -> JIT member sync, (3) session expiry -> transparent re-auth, (4) CSRF validation for mutations. Backend integration tests with keycloak profile. ~3 new files (~10 tests). Both. | |
+| **279A** | 279.1--279.6 | Full flow verification: (1) signup -> org creation -> first login -> JIT provisioning -> API access, (2) invite member -> accept -> JIT member sync, (3) session expiry -> transparent re-auth, (4) CSRF validation for mutations. Backend integration tests with keycloak profile. ~3 new files (~10 tests). Both. | **Done** (PR #535) |
 | **279B** | 279.7--279.10 | Clerk regression: switch `AUTH_MODE` to clerk, verify all existing flows. Mock E2E mode verification. Operational runbook documenting env vars, startup order, troubleshooting. ~2 new files (docs/tests). Both. | |
 
 ### Tasks

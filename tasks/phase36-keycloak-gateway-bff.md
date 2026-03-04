@@ -29,7 +29,7 @@ Phase 35 (PRs #507-#519) already completed: Keycloak SPI, `JwtClaimExtractor` st
 | 271 | JIT Tenant & Member Provisioning | Backend | — | M | 271A, 271B | **Done** |
 | 272 | Keycloak 26.5 Upgrade & Realm Configuration | Infra | — | S | 272A | **Done** |
 | 273 | Docker Compose Gateway Integration | Infra | 268, 272 | S | 273A | **Done** |
-| 274 | Frontend BFF Auth Provider & API Client | Frontend | 269, 270 | M | 274A, 274B | |
+| 274 | Frontend BFF Auth Provider & API Client | Frontend | 269, 270 | M | 274A, 274B | **Done** |
 | 275 | Frontend BFF Middleware & Login/Logout Flows | Frontend | 274 | M | 275A, 275B | |
 | 276 | Frontend Team Management Rewiring | Frontend | 270, 275 | M | 276A | |
 | 277 | Keycloakify Theme Project — Login & Registration | Infra/Frontend | 272 | L | 277A, 277B | |
@@ -203,13 +203,13 @@ INTEGRATION TRACK (last)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 3a | 270 | 270B | `AdminProxyController` with endpoints: `POST /bff/admin/invite` (relay to Keycloak Admin API org invitations), `GET /bff/admin/invitations` (list pending invitations), `DELETE /bff/admin/invitations/{id}` (revoke invitation), `GET /bff/admin/members` (list org members), `DELETE /bff/admin/members/{id}` (remove member). Uses `WebClient` with admin credentials from config. ADMIN+ role check. ~3 new files (~8 tests). Gateway only. | **Done** (PR #525) |
-| 3b (parallel) | 274 | 274A | BFF auth provider `lib/auth/providers/keycloak-bff.ts`: `getAuthContext()` calls `/bff/me` with forwarded cookies, `getAuthToken()` throws (not available in BFF mode), `getCurrentUserEmail()` via `/bff/me`. Update `lib/auth/server.ts` to add `keycloak` case dispatching to BFF provider. ~3 new/modified files (~5 tests). Frontend only. | |
+| 3b (parallel) | 274 | 274A | BFF auth provider `lib/auth/providers/keycloak-bff.ts`: `getAuthContext()` calls `/bff/me` with forwarded cookies, `getAuthToken()` throws (not available in BFF mode), `getCurrentUserEmail()` via `/bff/me`. Update `lib/auth/server.ts` to add `keycloak` case dispatching to BFF provider. ~3 new/modified files (~5 tests). Frontend only. | **Done** (PR #529) |
 
 ### Stage 4: Frontend API Client & Middleware
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 4a | 274 | 274B | `lib/api.ts` BFF mode: when `AUTH_MODE === "keycloak"`, skip Bearer token, set `credentials: "include"`, add `X-XSRF-TOKEN` header from cookie for mutations, point `API_BASE` to gateway origin. `getCsrfToken()` utility function. ~2 modified files (~6 tests). Frontend only. | |
+| 4a | 274 | 274B | `lib/api.ts` BFF mode: when `AUTH_MODE === "keycloak"`, skip Bearer token, set `credentials: "include"`, add `X-XSRF-TOKEN` header from cookie for mutations, point `API_BASE` to gateway origin. `getCsrfToken()` utility function. ~2 modified files (~6 tests). Frontend only. | **Done** (PR #529) |
 | 4b | 275 | 275A | `createKeycloakMiddleware()` in `lib/auth/middleware.ts`: check `SESSION` cookie presence on protected routes, redirect to `${GATEWAY_URL}/oauth2/authorization/keycloak` if absent, handle `/dashboard` redirect via `/bff/me` call. Update `createAuthMiddleware()` dispatch. ~1 modified file (~5 tests). Frontend only. | |
 
 ### Stage 5: Frontend Login/Logout & Team Rewiring
@@ -610,8 +610,8 @@ Stage 8: [279A] → [279B]                                          (after all t
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **274A** | 274.1--274.6 | BFF auth provider: `lib/auth/providers/keycloak-bff.ts` with `getAuthContext()` calling `/bff/me`, `getAuthToken()` throwing (BFF mode has no client-visible tokens), `getCurrentUserEmail()` via `/bff/me`. Update `lib/auth/server.ts` dispatch to add `keycloak` case. ~3 new/modified files (~5 tests). Frontend only. | |
-| **274B** | 274.7--274.12 | API client BFF mode: modify `lib/api.ts` to detect `AUTH_MODE === "keycloak"`, skip Bearer token, set `credentials: "include"` for session cookie, add `X-XSRF-TOKEN` header for mutations. `getCsrfToken()` utility. Point `API_BASE` to gateway. ~2 modified files (~6 tests). Frontend only. | |
+| **274A** | 274.1--274.6 | BFF auth provider: `lib/auth/providers/keycloak-bff.ts` with `getAuthContext()` calling `/bff/me`, `getAuthToken()` throwing (BFF mode has no client-visible tokens), `getCurrentUserEmail()` via `/bff/me`. Update `lib/auth/server.ts` dispatch to add `keycloak` case. ~3 new/modified files (~5 tests). Frontend only. | **Done** (PR #529) |
+| **274B** | 274.7--274.12 | API client BFF mode: modify `lib/api.ts` to detect `AUTH_MODE === "keycloak"`, skip Bearer token, set `credentials: "include"` for session cookie, add `X-XSRF-TOKEN` header for mutations. `getCsrfToken()` utility. Point `API_BASE` to gateway. ~2 modified files (~6 tests). Frontend only. | **Done** (PR #529) |
 
 ### Tasks
 

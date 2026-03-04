@@ -33,7 +33,7 @@ Phase 35 (PRs #507-#519) already completed: Keycloak SPI, `JwtClaimExtractor` st
 | 275 | Frontend BFF Middleware & Login/Logout Flows | Frontend | 274 | M | 275A, 275B | **Done** (PR #531) |
 | 276 | Frontend Team Management Rewiring | Frontend | 270, 275 | M | 276A | **Done** (PR #533) |
 | 277 | Keycloakify Theme Project — Login & Registration | Infra/Frontend | 272 | L | 277A, 277B | **Done** |
-| 278 | Keycloak Email Templates & Theme Deployment | Infra | 277 | S | 278A | |
+| 278 | Keycloak Email Templates & Theme Deployment | Infra | 277 | S | 278A | **Done** (PR #534) |
 | 279 | Integration Testing & Verification | Both | 271, 273, 275, 276 | M | 279A, 279B | |
 
 ---
@@ -230,7 +230,7 @@ INTEGRATION TRACK (last)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 7a | 278 | 278A | Keycloak email templates (Freemarker): invitation email (org name, inviter name, branded header/footer), password reset email, email verification email. Mount in `compose/keycloak/themes/docteams/email/`. Realm config to use `docteams` theme for login + email. ~6 new files. Infra only. | |
+| 7a | 278 | 278A | Keycloak email templates (Freemarker): invitation email (org name, inviter name, branded header/footer), password reset email, email verification email. Mount in `compose/keycloak/themes/docteams/email/`. Realm config to use `docteams` theme for login + email. ~6 new files. Infra only. | **Done** (PR #534) |
 
 ### Stage 8: Integration Testing
 
@@ -849,7 +849,7 @@ Stage 8: [279A] → [279B]                                          (after all t
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **278A** | 278.1--278.5 | Email templates (Freemarker): invitation email (org name, inviter, branded header/footer), password reset, email verification. Mount in Keycloak themes directory. Realm config for `docteams` email theme. ~6 new files. Infra only. | |
+| **278A** | 278.1--278.5 | Email templates (Freemarker): invitation email (org name, inviter, branded header/footer), password reset, email verification. Mount in Keycloak themes directory. Realm config for `docteams` email theme. ~6 new files. Infra only. | **Done** (PR #534) |
 
 ### Tasks
 

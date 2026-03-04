@@ -313,7 +313,7 @@
 | 275 | Frontend BFF Middleware & Login/Logout Flows | Frontend | 274 | M | 275A, 275B | **Done** (PR #531)                                                                                                                 |
 | 276 | Frontend Team Management Rewiring | Frontend | 270, 275 | M | 276A | **Done** (PR #533)                                                                                                                 |
 | 277 | Keycloakify Theme Project — Login & Registration | Infra/Frontend | 272 | L | 277A, 277B | **Done**                                                                                                                               |
-| 278 | Keycloak Email Templates & Theme Deployment | Infra | 277 | S | 278A |                                                                                                                                    |
+| 278 | Keycloak Email Templates & Theme Deployment | Infra | 277 | S | 278A | **Done** (PR #534)                                                                                                                 |
 | 279 | Integration Testing & Verification | Both | 271, 273, 275, 276 | M | 279A, 279B |                                                                                                                                    |
 
 ---

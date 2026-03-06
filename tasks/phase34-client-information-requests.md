@@ -635,7 +635,7 @@ Stage 6: [260A] // [260B]                                         (parallel)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **258A** | 258.1--258.8 | CreateRequestDialog + RequestStatusBadge + ItemStatusBadge + RequestProgressBar + customer detail "Requests" tab + project detail "Requests" tab + request-actions.ts + API client extensions + tests (~8 tests). ~10 new/modified files. Frontend only. | |
+| **258A** | 258.1--258.8 | CreateRequestDialog + RequestStatusBadge + ItemStatusBadge + RequestProgressBar + customer detail "Requests" tab + project detail "Requests" tab + request-actions.ts + API client extensions + tests (~8 tests). ~10 new/modified files. Frontend only. | **Done** (PR #549) |
 | **258B** | 258.9--258.15 | information-requests/[id]/page.tsx detail page + item list with status + Accept/Reject review actions + RejectItemDialog modal + Cancel request + Resend notification + tests (~8 tests). ~5 new files. Frontend only. | |
 
 ### Tasks

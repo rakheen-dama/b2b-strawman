@@ -33,5 +33,15 @@ export async function checkEngagementPrerequisitesAction(
   return checkEngagementPrerequisites(templateId, customerId);
 }
 
-// Re-export from custom-fields actions so shared components don't import route-group files
-export { updateEntityCustomFieldsAction } from "@/app/(app)/org/[slug]/settings/custom-fields/actions";
+// Wrapper for custom-fields action — "use server" files cannot re-export,
+// only async function declarations are allowed.
+import { updateEntityCustomFieldsAction as _updateEntityCustomFields } from "@/app/(app)/org/[slug]/settings/custom-fields/actions";
+
+export async function updateEntityCustomFieldsAction(
+  slug: string,
+  entityType: EntityType,
+  entityId: string,
+  customFields: Record<string, unknown>,
+) {
+  return _updateEntityCustomFields(slug, entityType, entityId, customFields);
+}

@@ -291,7 +291,7 @@
 | 250 | Completeness Visibility — Backend Queries | Backend | 241 | M | 250A | **Done** (PR #504)                                                                                                                 |
 | 251 | Completeness Visibility — Frontend & Dashboard | Frontend | 250, 245 | M | 251A, 251B | **Done** (PRs #505, #506)                                                                                                          |
 | **Phase 34 — Client Information Requests** | | | | | | See [tasks/phase34-client-information-requests.md](tasks/phase34-client-information-requests.md)                                   |
-| 252 | RequestTemplate Entity Foundation & Pack Seeder | Backend | -- | M | 252A, 252B |                                                                                                                                    |
+| 252 | RequestTemplate Entity Foundation & Pack Seeder | Backend | -- | M | 252A, 252B | 252A **Done** (PR #539)                                                                                                             |
 | 253 | InformationRequest Entity & Lifecycle Backend | Backend | 252 | L | 253A, 253B |                                                                                                                                    |
 | 254 | Domain Events, Portal Read-Model Sync & Portal API | Backend | 253 | L | 254A, 254B |                                                                                                                                    |
 | 255 | Notifications, Audit & Reminder Scheduler | Backend | 253, 254 | M | 255A, 255B |                                                                                                                                    |

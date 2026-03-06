@@ -146,7 +146,7 @@ FRONTEND TRACK (after respective backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 0a | 252 | 252A | V54 tenant migration (partial): CREATE TABLE request_templates, request_template_items, request_counters + all indexes. ~1 new migration file. Backend only. | |
+| 0a | 252 | 252A | V54 tenant migration (partial): CREATE TABLE request_templates, request_template_items, request_counters + all indexes. ~1 new migration file. Backend only. | **Done** (PR #539) |
 | 0b | 252 | 252B | RequestTemplate + RequestTemplateItem entities, repos, RequestTemplateController (full CRUD + duplicate), RequestPackSeeder + 4 pack JSON files, OrgSettings requestPackStatus extension, V55 migration (partial: request_pack_status column), provisioning hook + integration tests (~15 tests). ~12 new/modified files. Backend only. | |
 
 ### Stage 1: Request Entity & Lifecycle
@@ -229,7 +229,7 @@ Stage 6: [260A] // [260B]                                         (parallel)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **252A** | 252.1--252.3 | V54 tenant migration (partial): CREATE TABLE request_templates + request_template_items + request_counters + all indexes + constraints. ~1 new migration file. Backend only. | |
+| **252A** | 252.1--252.3 | V54 tenant migration (partial): CREATE TABLE request_templates + request_template_items + request_counters + all indexes + constraints. ~1 new migration file. Backend only. | **Done** (PR #539) |
 | **252B** | 252.4--252.17 | RequestTemplate + RequestTemplateItem entities + TemplateSource enum + repos + RequestTemplateController (CRUD + duplicate) + DTOs + RequestPackSeeder + 4 pack JSON definitions + OrgSettings requestPackStatus extension + V55 migration (partial: request_pack_status column) + provisioning hook + integration tests (~15 tests). ~12 new/modified files. Backend only. | |
 
 ### Tasks

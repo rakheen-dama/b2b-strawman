@@ -62,7 +62,7 @@ export function RequestList({
             >
               <td className="px-4 py-3">
                 <Link
-                  href={`/org/${slug}/requests/${request.id}`}
+                  href={`/org/${slug}/information-requests/${request.id}`}
                   className="font-medium text-teal-600 hover:text-teal-700 hover:underline dark:text-teal-400 dark:hover:text-teal-300"
                 >
                   {request.requestNumber}

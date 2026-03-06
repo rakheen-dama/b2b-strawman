@@ -24,7 +24,7 @@ Phase 34 introduces a Client Information Requests system that transforms the cus
 | 253 | InformationRequest Entity & Lifecycle Backend | Backend | 252 | L | 253A, 253B | **Done** (PRs #541, #542) |
 | 254 | Domain Events, Portal Read-Model Sync & Portal API | Backend | 253 | L | 254A, 254B | **Done** (PRs #543, #544) |
 | 255 | Notifications, Audit & Reminder Scheduler | Backend | 253, 254 | M | 255A, 255B | **Done** (PRs #545, #546) |
-| 256 | Project Template Integration & OrgSettings Extension | Backend | 253, 255 | M | 256A | |
+| 256 | Project Template Integration & OrgSettings Extension | Backend | 253, 255 | M | 256A | **Done** (PR #547) |
 | 257 | Request Template Management UI | Frontend | 252 | M | 257A | |
 | 258 | Firm-Side Request Pages & Review UI | Frontend | 253, 257 | L | 258A, 258B | |
 | 259 | Portal Request Pages (Upload & Submit) | Frontend | 254 | M | 259A, 259B | |
@@ -170,7 +170,7 @@ FRONTEND TRACK (after respective backend epics)
 |-------|------|-------|---------|--------|
 | 3a (parallel) | 254 | 254B | PortalInformationRequestController + PortalInformationRequestService (list, detail, upload initiation via DocumentService + presigned URL, submit file, submit text, re-submission flow) + portal auth/authorization tests (~10 tests). ~5 new files + ~1 test file. Backend only. | **Done** (PR #544) |
 | 3b (parallel) | 255 | 255B | RequestReminderScheduler (per-tenant iteration, interval-based, ScopedValue binding) + OrgSettings extension (defaultRequestReminderDays) + V55 migration (partial: default_request_reminder_days column) + reminder audit event + scheduler tests (~8 tests). ~5 new/modified files. Backend only. | **Done** (PR #546) |
-| 3c (parallel) | 256 | 256A | ProjectTemplate extension (requestTemplateId field) + V55 migration (partial: request_template_id column on project_templates) + ProjectInstantiationService extension (auto-draft creation) + in-app notification for project members + integration tests (~8 tests). ~5 modified files + ~1 test file. Backend only. | |
+| 3c (parallel) | 256 | 256A | ProjectTemplate extension (requestTemplateId field) + V55 migration (partial: request_template_id column on project_templates) + ProjectInstantiationService extension (auto-draft creation) + in-app notification for project members + integration tests (~8 tests). ~5 modified files + ~1 test file. Backend only. | **Done** (PR #547) |
 
 ### Stage 4: Firm-Side Frontend
 
@@ -528,7 +528,7 @@ Stage 6: [260A] // [260B]                                         (parallel)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **256A** | 256.1--256.6 | ProjectTemplate extension (requestTemplateId) + V55 migration extension (request_template_id column) + ProjectInstantiationService auto-draft creation + notification + integration tests (~8 tests). ~5 modified files + ~1 test file. Backend only. | |
+| **256A** | 256.1--256.6 | ProjectTemplate extension (requestTemplateId) + V55 migration extension (request_template_id column) + ProjectInstantiationService auto-draft creation + notification + integration tests (~8 tests). ~5 modified files + ~1 test file. Backend only. | **Done** (PR #547) |
 
 ### Tasks
 

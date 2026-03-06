@@ -89,8 +89,8 @@ public class BffController {
     String slug = toSlug(request.name());
     log.info("Creating org '{}' (slug: {}) for user {}", request.name(), slug, user.getSubject());
 
-    // Create organization in Keycloak
-    String orgId = keycloakAdmin.createOrganization(request.name(), slug);
+    // Create organization in Keycloak (stores creator's user ID as an org attribute)
+    String orgId = keycloakAdmin.createOrganization(request.name(), slug, user.getSubject());
     if (orgId == null) {
       // Fallback: look up by alias
       var org = keycloakAdmin.findOrganizationByAlias(slug);
@@ -102,7 +102,19 @@ public class BffController {
 
     // Add current user to the organization
     keycloakAdmin.addMember(orgId, user.getSubject());
-    log.info("Added user {} to org {} ({})", user.getSubject(), orgId, slug);
+
+    // Assign owner role — best-effort; if it fails, the list-format fallback in
+    // BffUserInfoExtractor defaults to owner for the org creator's session.
+    try {
+      keycloakAdmin.updateMemberRole(orgId, user.getSubject(), "owner");
+      log.info("Added user {} as owner to org {} ({})", user.getSubject(), orgId, slug);
+    } catch (Exception e) {
+      log.warn(
+          "Failed to assign owner role to user {} in org {} — will use fallback: {}",
+          user.getSubject(),
+          orgId,
+          e.getMessage());
+    }
 
     return ResponseEntity.status(HttpStatus.CREATED).body(new CreateOrgResponse(orgId, slug));
   }

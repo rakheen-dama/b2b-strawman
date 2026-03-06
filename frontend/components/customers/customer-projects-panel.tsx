@@ -135,8 +135,8 @@ export function CustomerProjectsPanel({
                     </Link>
                   </td>
                   <td className="hidden px-4 py-3 sm:table-cell">
-                    <Badge variant={STATUS_BADGE[project.status].variant} data-testid="customer-project-status-badge">
-                      {STATUS_BADGE[project.status].label}
+                    <Badge variant={(STATUS_BADGE[project.status] ?? { variant: "neutral", label: project.status }).variant} data-testid="customer-project-status-badge">
+                      {(STATUS_BADGE[project.status] ?? { label: project.status }).label}
                     </Badge>
                   </td>
                   <td className="hidden px-4 py-3 text-sm text-slate-600 sm:table-cell dark:text-slate-400">

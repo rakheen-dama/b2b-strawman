@@ -6,10 +6,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -109,32 +107,8 @@ class FullFlowIntegrationTest extends GatewayIntegrationTestBase {
   class CsrfProtectionTests {
 
     @Test
-    @DisplayName("POST without CSRF token returns 403")
-    void csrfProtection_postWithoutToken_returns403() throws Exception {
-      mockMvc
-          .perform(post("/api/projects").with(oidcLogin().oidcUser(buildOwnerUser())))
-          .andExpect(status().isForbidden());
-    }
-
-    @Test
-    @DisplayName("PUT without CSRF token returns 403")
-    void csrfProtection_putWithoutToken_returns403() throws Exception {
-      mockMvc
-          .perform(put("/api/projects/1").with(oidcLogin().oidcUser(buildOwnerUser())))
-          .andExpect(status().isForbidden());
-    }
-
-    @Test
-    @DisplayName("DELETE without CSRF token returns 403")
-    void csrfProtection_deleteWithoutToken_returns403() throws Exception {
-      mockMvc
-          .perform(delete("/api/projects/1").with(oidcLogin().oidcUser(buildOwnerUser())))
-          .andExpect(status().isForbidden());
-    }
-
-    @Test
-    @DisplayName("POST with valid CSRF token is proxied to backend")
-    void csrfProtection_postWithValidToken_proxiedToBackend() throws Exception {
+    @DisplayName("/api/** routes are CSRF-exempt (server-to-server from Next.js)")
+    void csrfProtection_apiRoutes_csrfExempt() throws Exception {
       backendWireMock.stubFor(
           WireMock.post(urlPathEqualTo("/api/projects"))
               .willReturn(
@@ -143,18 +117,18 @@ class FullFlowIntegrationTest extends GatewayIntegrationTestBase {
                       .withHeader("Content-Type", "application/json")
                       .withBody("{\"id\":1,\"name\":\"Test Project\"}")));
 
+      // POST without CSRF token should pass through to backend (not blocked)
       var result =
           mockMvc
               .perform(
                   post("/api/projects")
                       .with(oidcLogin().oidcUser(buildOwnerUser()))
-                      .with(csrf().asHeader())
                       .contentType(MediaType.APPLICATION_JSON)
                       .content("{\"name\":\"Test Project\"}"))
               .andReturn();
 
       assertThat(result.getResponse().getStatus())
-          .as("POST with valid CSRF token should not be blocked (should proxy to backend)")
+          .as("/api/** is CSRF-exempt — POST without token should proxy to backend")
           .isNotEqualTo(403);
     }
 
@@ -184,8 +158,7 @@ class FullFlowIntegrationTest extends GatewayIntegrationTestBase {
     void adminProxy_invite_relaysToKeycloak() throws Exception {
       // Stub Keycloak token endpoint for service account auth
       keycloakWireMock.stubFor(
-          WireMock.post(
-                  urlPathEqualTo("/realms/" + KEYCLOAK_REALM + "/protocol/openid-connect/token"))
+          WireMock.post(urlPathEqualTo("/realms/master/protocol/openid-connect/token"))
               .willReturn(
                   aResponse()
                       .withStatus(200)
@@ -195,23 +168,16 @@ class FullFlowIntegrationTest extends GatewayIntegrationTestBase {
                           {"access_token":"mock-admin-token","expires_in":300,"token_type":"Bearer"}
                           """)));
 
-      // Stub Keycloak invitation endpoint
+      // Stub Keycloak invite-user endpoint (Keycloak 26.5 form-urlencoded)
       keycloakWireMock.stubFor(
           WireMock.post(
                   urlPathEqualTo(
                       "/admin/realms/"
                           + KEYCLOAK_REALM
-                          + "/orgs/"
+                          + "/organizations/"
                           + DEFAULT_ORG_ID
-                          + "/invitations"))
-              .willReturn(
-                  aResponse()
-                      .withStatus(200)
-                      .withHeader("Content-Type", "application/json")
-                      .withBody(
-                          """
-                          {"id":"inv-1","email":"newuser@test.com","roles":["member"]}
-                          """)));
+                          + "/members/invite-user"))
+              .willReturn(aResponse().withStatus(204)));
 
       mockMvc
           .perform(
@@ -232,8 +198,7 @@ class FullFlowIntegrationTest extends GatewayIntegrationTestBase {
     void adminProxy_listMembers_relaysToKeycloak() throws Exception {
       // Stub Keycloak token endpoint
       keycloakWireMock.stubFor(
-          WireMock.post(
-                  urlPathEqualTo("/realms/" + KEYCLOAK_REALM + "/protocol/openid-connect/token"))
+          WireMock.post(urlPathEqualTo("/realms/master/protocol/openid-connect/token"))
               .willReturn(
                   aResponse()
                       .withStatus(200)
@@ -243,11 +208,30 @@ class FullFlowIntegrationTest extends GatewayIntegrationTestBase {
                           {"access_token":"mock-admin-token","expires_in":300,"token_type":"Bearer"}
                           """)));
 
+      // Stub org fetch (for creatorUserId attribute lookup)
+      keycloakWireMock.stubFor(
+          WireMock.get(
+                  urlPathEqualTo(
+                      "/admin/realms/" + KEYCLOAK_REALM + "/organizations/" + DEFAULT_ORG_ID))
+              .willReturn(
+                  aResponse()
+                      .withStatus(200)
+                      .withHeader("Content-Type", "application/json")
+                      .withBody(
+                          """
+                          {"id":"%s","attributes":{"creatorUserId":["user-1"]}}
+                          """
+                              .formatted(DEFAULT_ORG_ID))));
+
       // Stub Keycloak members endpoint
       keycloakWireMock.stubFor(
           WireMock.get(
                   urlPathEqualTo(
-                      "/admin/realms/" + KEYCLOAK_REALM + "/orgs/" + DEFAULT_ORG_ID + "/members"))
+                      "/admin/realms/"
+                          + KEYCLOAK_REALM
+                          + "/organizations/"
+                          + DEFAULT_ORG_ID
+                          + "/members"))
               .willReturn(
                   aResponse()
                       .withStatus(200)
@@ -260,7 +244,8 @@ class FullFlowIntegrationTest extends GatewayIntegrationTestBase {
       mockMvc
           .perform(get("/bff/admin/members").with(oidcLogin().oidcUser(buildAdminUser())))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$[0].email").value("alice@example.com"));
+          .andExpect(jsonPath("$[0].email").value("alice@example.com"))
+          .andExpect(jsonPath("$[0].role").value("owner"));
     }
   }
 

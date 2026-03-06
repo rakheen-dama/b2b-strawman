@@ -41,7 +41,8 @@ export interface MappedInvitation {
  * Normalize a gateway role (e.g. "owner", "admin", "member") to the
  * UI format ("org:owner", "org:admin", "org:member").
  */
-function normalizeRole(role: string): string {
+function normalizeRole(role: string | undefined | null): string {
+  if (!role) return "org:member";
   if (role.startsWith("org:")) return role;
   return `org:${role}`;
 }
@@ -159,7 +160,6 @@ export async function inviteMember(
   }
 
   if (AUTH_MODE === "mock") {
-    // Mock mode: stub success — E2E tests don't exercise Clerk invitations
     return { success: true };
   }
 

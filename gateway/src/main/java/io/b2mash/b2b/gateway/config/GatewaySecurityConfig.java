@@ -56,9 +56,9 @@ public class GatewaySecurityConfig {
             csrf ->
                 csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                     .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
-                    // BFF endpoints are called server-to-server from Next.js, not from browser JS.
+                    // All requests come server-to-server from Next.js, not from browser JS.
                     // SESSION cookie + SameSite=Lax + CORS provide sufficient CSRF protection.
-                    .ignoringRequestMatchers("/bff/**"))
+                    .ignoringRequestMatchers("/bff/**", "/api/**"))
         .sessionManagement(
             session ->
                 session

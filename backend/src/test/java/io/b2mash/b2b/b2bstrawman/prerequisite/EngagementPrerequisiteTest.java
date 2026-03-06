@@ -307,6 +307,7 @@ class EngagementPrerequisiteTest {
         null, // prerequisiteService
         null, // informationRequestService
         null, // portalContactRepository
-        null); // memberRepository
+        null, // memberRepository
+        null); // requestTemplateRepository
   }
 }

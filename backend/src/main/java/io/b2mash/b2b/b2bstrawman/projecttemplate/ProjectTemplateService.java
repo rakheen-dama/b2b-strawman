@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestService;
+import io.b2mash.b2b.b2bstrawman.informationrequest.RequestTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.informationrequest.dto.InformationRequestDtos.CreateInformationRequestRequest;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
@@ -48,8 +49,10 @@ import io.b2mash.b2b.b2bstrawman.task.TaskItemRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -85,6 +88,7 @@ public class ProjectTemplateService {
   private final InformationRequestService informationRequestService;
   private final PortalContactRepository portalContactRepository;
   private final MemberRepository memberRepository;
+  private final RequestTemplateRepository requestTemplateRepository;
 
   public ProjectTemplateService(
       ProjectTemplateRepository templateRepository,
@@ -107,7 +111,8 @@ public class ProjectTemplateService {
       @Lazy PrerequisiteService prerequisiteService,
       InformationRequestService informationRequestService,
       PortalContactRepository portalContactRepository,
-      MemberRepository memberRepository) {
+      MemberRepository memberRepository,
+      RequestTemplateRepository requestTemplateRepository) {
     this.templateRepository = templateRepository;
     this.templateTaskRepository = templateTaskRepository;
     this.templateTaskItemRepository = templateTaskItemRepository;
@@ -129,6 +134,7 @@ public class ProjectTemplateService {
     this.informationRequestService = informationRequestService;
     this.portalContactRepository = portalContactRepository;
     this.memberRepository = memberRepository;
+    this.requestTemplateRepository = requestTemplateRepository;
   }
 
   @Transactional
@@ -142,6 +148,7 @@ public class ProjectTemplateService {
             "MANUAL",
             null,
             memberId);
+    validateRequestTemplateId(request.requestTemplateId());
     template.setRequestTemplateId(request.requestTemplateId());
     template = templateRepository.save(template);
 
@@ -202,9 +209,12 @@ public class ProjectTemplateService {
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("ProjectTemplate", id));
 
+    validateRequestTemplateId(request.requestTemplateId());
     template.update(
         request.name(), request.namePattern(), request.description(), request.billableDefault());
     template.setRequestTemplateId(request.requestTemplateId());
+    // saveAndFlush required: downstream deleteByTemplateId uses @Modifying(clearAutomatically=true)
+    // which clears the persistence context — without flush, requestTemplateId would be lost
     template = templateRepository.saveAndFlush(template);
 
     // Replace tasks: delete items first (JPQL delete doesn't cascade), then tasks, then re-insert
@@ -799,6 +809,21 @@ public class ProjectTemplateService {
             Instant.now()));
   }
 
+  private static Map<String, Object> buildDraftEventDetails(
+      String requestNumber, String customerName, String templateName) {
+    var details = new HashMap<String, Object>();
+    details.put("request_number", Objects.toString(requestNumber, "unknown"));
+    details.put("customer_name", Objects.toString(customerName, "unknown"));
+    details.put("template_name", Objects.toString(templateName, "unknown"));
+    return details;
+  }
+
+  private void validateRequestTemplateId(UUID requestTemplateId) {
+    if (requestTemplateId != null && !requestTemplateRepository.existsById(requestTemplateId)) {
+      throw new ResourceNotFoundException("RequestTemplate", requestTemplateId);
+    }
+  }
+
   private UUID resolveAssignee(String assigneeRole, UUID projectLeadMemberId) {
     if (assigneeRole == null) {
       return null;
@@ -829,7 +854,7 @@ public class ProjectTemplateService {
     }
 
     var primaryContact =
-        portalContactRepository.findByCustomerIdAndRoleAndStatusActive(
+        portalContactRepository.findFirstByCustomerIdAndRoleAndStatusActive(
             customer.getId(), PortalContact.ContactRole.PRIMARY);
     if (primaryContact.isEmpty()) {
       log.warn(
@@ -879,13 +904,8 @@ public class ProjectTemplateService {
               tenantId,
               orgId,
               Instant.now(),
-              Map.of(
-                  "request_number",
-                  draftResponse.requestNumber(),
-                  "customer_name",
-                  customer.getName(),
-                  "template_name",
-                  template.getName())));
+              buildDraftEventDetails(
+                  draftResponse.requestNumber(), customer.getName(), template.getName())));
     } catch (Exception e) {
       log.warn(
           "Failed to auto-create draft information request for project {} from template {}: {}",

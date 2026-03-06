@@ -162,7 +162,10 @@ public class NotificationService {
           "PROPOSAL_ACCEPTED",
           "PROPOSAL_DECLINED",
           "PROPOSAL_EXPIRED",
-          "PREREQUISITE_BLOCKED_ACTIVATION");
+          "PREREQUISITE_BLOCKED_ACTIVATION",
+          "INFORMATION_REQUEST_ITEM_SUBMITTED",
+          "INFORMATION_REQUEST_COMPLETED",
+          "INFORMATION_REQUEST_DRAFT_CREATED");
 
   // --- Preference methods ---
 

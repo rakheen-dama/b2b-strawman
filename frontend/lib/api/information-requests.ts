@@ -169,6 +169,10 @@ export interface InformationRequestSummary {
   inProgressCount: number;
   completedCount: number;
   cancelledCount: number;
+  // Dashboard widget fields (from architecture spec)
+  itemsPendingReview?: number;
+  overdueRequests?: number;
+  completionRateLast30Days?: number;
 }
 
 // ---- Information Request API Functions ----

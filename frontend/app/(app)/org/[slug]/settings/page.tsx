@@ -133,6 +133,13 @@ const settingsCards: SettingsCard[] = [
     comingSoon: false,
   },
   {
+    icon: ClipboardList,
+    title: "Request Settings",
+    description: "Configure default reminder interval for information requests",
+    href: "request-settings",
+    comingSoon: false,
+  },
+  {
     icon: Mail,
     title: "Email",
     description: "View email delivery logs, stats, and rate limits",

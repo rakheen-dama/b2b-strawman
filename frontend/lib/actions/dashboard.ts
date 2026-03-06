@@ -12,6 +12,7 @@ import type {
   PersonalDashboardResponse,
 } from "@/lib/dashboard-types";
 import type { AggregatedCompletenessResponse } from "@/lib/types";
+import type { InformationRequestSummary } from "@/lib/api/information-requests";
 
 export async function fetchDashboardKpis(
   from: string,
@@ -76,6 +77,16 @@ export async function fetchPersonalDashboard(
   try {
     return await api.get<PersonalDashboardResponse>(
       `/api/dashboard/personal?from=${from}&to=${to}`
+    );
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchInformationRequestSummary(): Promise<InformationRequestSummary | null> {
+  try {
+    return await api.get<InformationRequestSummary>(
+      "/api/information-requests/summary",
     );
   } catch {
     return null;

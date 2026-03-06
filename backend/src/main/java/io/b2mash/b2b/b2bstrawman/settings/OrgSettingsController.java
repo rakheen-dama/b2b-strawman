@@ -168,6 +168,7 @@ public class OrgSettingsController {
       String taxLabel,
       boolean taxInclusive,
       Integer acceptanceExpiryDays,
+      Integer defaultRequestReminderDays,
       boolean timeReminderEnabled,
       String timeReminderDays,
       String timeReminderTime,

@@ -292,7 +292,7 @@
 | 251 | Completeness Visibility — Frontend & Dashboard | Frontend | 250, 245 | M | 251A, 251B | **Done** (PRs #505, #506)                                                                                                          |
 | **Phase 34 — Client Information Requests** | | | | | | See [tasks/phase34-client-information-requests.md](tasks/phase34-client-information-requests.md)                                   |
 | 252 | RequestTemplate Entity Foundation & Pack Seeder | Backend | -- | M | 252A, 252B | **Done** (PRs #539, #540)                                                                                                           |
-| 253 | InformationRequest Entity & Lifecycle Backend | Backend | 252 | L | 253A, 253B | 253A **Done** (PR #541)                                                                                                             |
+| 253 | InformationRequest Entity & Lifecycle Backend | Backend | 252 | L | 253A, 253B | **Done** (PRs #541, #542)                                                                                                           |
 | 254 | Domain Events, Portal Read-Model Sync & Portal API | Backend | 253 | L | 254A, 254B |                                                                                                                                    |
 | 255 | Notifications, Audit & Reminder Scheduler | Backend | 253, 254 | M | 255A, 255B |                                                                                                                                    |
 | 256 | Project Template Integration & OrgSettings Extension | Backend | 253, 255 | M | 256A |                                                                                                                                    |
@@ -315,6 +315,16 @@
 | 277 | Keycloakify Theme Project — Login & Registration | Infra/Frontend | 272 | L | 277A, 277B | **Done**                                                                                                                               |
 | 278 | Keycloak Email Templates & Theme Deployment | Infra | 277 | S | 278A | **Done** (PR #534)                                                                                                                 |
 | 279 | Integration Testing & Verification | Both | 271, 273, 275, 276 | M | 279A, 279B | **Done** (PRs #535, #536)                                                                                                              |
+| **Phase 37 — Workflow Automations v1** | | | | | | See [tasks/phase37-workflow-automations.md](tasks/phase37-workflow-automations.md)                                                 |
+| 280 | Automation Entity Foundation & Migration | Backend | -- | M | 280A, 280B | |
+| 281 | Trigger Matching & Condition Evaluation Engine | Backend | 280 | L | 281A, 281B | |
+| 282 | Action Executors & Variable Resolution | Backend | 280, 281 | L | 282A, 282B | |
+| 283 | Delayed Action Scheduler & Cycle Detection | Backend | 282 | M | 283A | |
+| 284 | Rule CRUD API, Template Seeder & Execution Log API | Backend | 280–283 | L | 284A, 284B | |
+| 285 | Frontend: Rule List, Template Gallery & Settings Nav | Frontend | 284 | M | 285A | |
+| 286 | Frontend: Rule Create/Edit Wizard | Frontend | 285 | L | 286A, 286B | |
+| 287 | Frontend: Execution Log & Dashboard Widget | Frontend | 285 | M | 287A | |
+| 288 | End-to-End Integration Tests & Edge Cases | Backend | 283, 284 | M | 288A | |
 
 ---
 

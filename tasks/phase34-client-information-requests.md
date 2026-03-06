@@ -21,7 +21,7 @@ Phase 34 introduces a Client Information Requests system that transforms the cus
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 252 | RequestTemplate Entity Foundation & Pack Seeder | Backend | -- | M | 252A, 252B | **Done** (PRs #539, #540) |
-| 253 | InformationRequest Entity & Lifecycle Backend | Backend | 252 | L | 253A, 253B | |
+| 253 | InformationRequest Entity & Lifecycle Backend | Backend | 252 | L | 253A, 253B | **Done** (PRs #541, #542) |
 | 254 | Domain Events, Portal Read-Model Sync & Portal API | Backend | 253 | L | 254A, 254B | |
 | 255 | Notifications, Audit & Reminder Scheduler | Backend | 253, 254 | M | 255A, 255B | |
 | 256 | Project Template Integration & OrgSettings Extension | Backend | 253, 255 | M | 256A | |
@@ -154,7 +154,7 @@ FRONTEND TRACK (after respective backend epics)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 1a | 253 | 253A | V54 migration extension (remainder): CREATE TABLE information_requests, request_items + indexes. InformationRequest + RequestItem + RequestCounter entities + enums (RequestStatus, ItemStatus, ResponseType) + repos + RequestNumberService. ~8 new files. Backend only. | **Done** (PR #541) |
-| 1b | 253 | 253B | InformationRequestService (create from template + ad-hoc, send, cancel, accept, reject, auto-complete) + InformationRequestController (all firm-side endpoints + customer/project convenience + dashboard summary) + DTOs + integration tests (~25 tests). ~8 new files + ~1 test file. Backend only. | |
+| 1b | 253 | 253B | InformationRequestService (create from template + ad-hoc, send, cancel, accept, reject, auto-complete) + InformationRequestController (all firm-side endpoints + customer/project convenience + dashboard summary) + DTOs + integration tests (~25 tests). ~8 new files + ~1 test file. Backend only. | **Done** (PR #542) |
 
 ### Stage 2: Backend Tracks (parallel) + Template Frontend
 
@@ -311,7 +311,7 @@ Stage 6: [260A] // [260B]                                         (parallel)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **253A** | 253.1--253.8 | InformationRequest + RequestItem + RequestCounter entities + RequestStatus/ItemStatus enums + InformationRequestRepository + RequestItemRepository + RequestNumberService (atomic upsert). ~8 new files. Backend only. | **Done** (PR #541) |
-| **253B** | 253.9--253.16 | InformationRequestService (full lifecycle: create template + ad-hoc, send, cancel, accept, reject, auto-complete) + InformationRequestController (all firm-side endpoints + customer/project convenience + dashboard summary) + DTOs + integration tests (~25 tests). ~6 new files + ~1 test file. Backend only. | |
+| **253B** | 253.9--253.16 | InformationRequestService (full lifecycle: create template + ad-hoc, send, cancel, accept, reject, auto-complete) + InformationRequestController (all firm-side endpoints + customer/project convenience + dashboard summary) + DTOs + integration tests (~25 tests). ~6 new files + ~1 test file. Backend only. | **Done** (PR #542) |
 
 ### Tasks
 

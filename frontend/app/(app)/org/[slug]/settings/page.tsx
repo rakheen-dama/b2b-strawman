@@ -18,6 +18,7 @@ import {
   Mail,
   Receipt,
   Clock,
+  ClipboardList,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getAuthContext } from "@/lib/auth";
@@ -122,6 +123,13 @@ const settingsCards: SettingsCard[] = [
     title: "Project Templates",
     description: "Create and manage reusable project blueprints",
     href: "project-templates",
+    comingSoon: false,
+  },
+  {
+    icon: ClipboardList,
+    title: "Request Templates",
+    description: "Create and manage reusable information request templates",
+    href: "request-templates",
     comingSoon: false,
   },
   {

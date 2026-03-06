@@ -1,0 +1,40 @@
+{
+  "packId": "company-registration",
+  "version": 1,
+  "name": "Company Registration",
+  "description": "Documents required for new company registration",
+  "items": [
+    {
+      "name": "CIPC Certificate",
+      "description": "Certificate of Incorporation from CIPC",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF",
+      "sortOrder": 1
+    },
+    {
+      "name": "Shareholder Register",
+      "description": "Register of shareholders with shareholding percentages",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF, Excel",
+      "sortOrder": 2
+    },
+    {
+      "name": "Director Appointments",
+      "description": "CoR39 forms or director appointment letters",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF",
+      "sortOrder": 3
+    },
+    {
+      "name": "B-BBEE Certificate",
+      "description": "Broad-Based Black Economic Empowerment certificate or affidavit",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF",
+      "sortOrder": 4
+    }
+  ]
+}

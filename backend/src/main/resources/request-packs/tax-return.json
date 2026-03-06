@@ -1,0 +1,48 @@
+{
+  "packId": "tax-return",
+  "version": 1,
+  "name": "Tax Return Supporting Docs",
+  "description": "Supporting documentation required for tax return preparation",
+  "items": [
+    {
+      "name": "IRP5 Certificates",
+      "description": "IRP5/IT3(a) certificates from all employers",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF",
+      "sortOrder": 1
+    },
+    {
+      "name": "Medical Aid Tax Certificate",
+      "description": "Tax certificate from medical aid provider",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF",
+      "sortOrder": 2
+    },
+    {
+      "name": "Retirement Annuity Certificate",
+      "description": "Section 11F retirement annuity contribution certificate",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF",
+      "sortOrder": 3
+    },
+    {
+      "name": "Investment Income Statements",
+      "description": "IT3(b) and IT3(c) certificates for investment income",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF",
+      "sortOrder": 4
+    },
+    {
+      "name": "Logbook Summary",
+      "description": "Travel logbook summary for business travel deductions",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF, Excel",
+      "sortOrder": 5
+    }
+  ]
+}

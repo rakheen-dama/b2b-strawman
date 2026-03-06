@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.provisioning;
 import io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder;
 import io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldPackSeeder;
+import io.b2mash.b2b.b2bstrawman.informationrequest.RequestPackSeeder;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.reporting.StandardReportPackSeeder;
 import io.b2mash.b2b.b2bstrawman.template.TemplatePackSeeder;
@@ -33,6 +34,7 @@ public class PackReconciliationRunner implements ApplicationRunner {
   private final ClausePackSeeder clausePackSeeder;
   private final CompliancePackSeeder compliancePackSeeder;
   private final StandardReportPackSeeder standardReportPackSeeder;
+  private final RequestPackSeeder requestPackSeeder;
 
   public PackReconciliationRunner(
       OrgSchemaMappingRepository mappingRepository,
@@ -40,13 +42,15 @@ public class PackReconciliationRunner implements ApplicationRunner {
       TemplatePackSeeder templatePackSeeder,
       ClausePackSeeder clausePackSeeder,
       CompliancePackSeeder compliancePackSeeder,
-      StandardReportPackSeeder standardReportPackSeeder) {
+      StandardReportPackSeeder standardReportPackSeeder,
+      RequestPackSeeder requestPackSeeder) {
     this.mappingRepository = mappingRepository;
     this.fieldPackSeeder = fieldPackSeeder;
     this.templatePackSeeder = templatePackSeeder;
     this.clausePackSeeder = clausePackSeeder;
     this.compliancePackSeeder = compliancePackSeeder;
     this.standardReportPackSeeder = standardReportPackSeeder;
+    this.requestPackSeeder = requestPackSeeder;
   }
 
   @Override
@@ -71,6 +75,7 @@ public class PackReconciliationRunner implements ApplicationRunner {
         clausePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
         compliancePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
         standardReportPackSeeder.seedForTenant(schemaName, clerkOrgId);
+        requestPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
 
         succeeded++;
       } catch (Exception e) {

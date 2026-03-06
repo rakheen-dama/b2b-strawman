@@ -76,6 +76,13 @@ public class OrgSettings {
   @Column(name = "clause_pack_status", columnDefinition = "jsonb")
   private List<Map<String, Object>> clausePackStatus;
 
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "request_pack_status", columnDefinition = "jsonb")
+  private List<Map<String, Object>> requestPackStatus;
+
+  @Column(name = "default_request_reminder_days")
+  private Integer defaultRequestReminderDays;
+
   @Column(name = "acceptance_expiry_days")
   private Integer acceptanceExpiryDays;
 
@@ -293,6 +300,36 @@ public class OrgSettings {
     entry.put("version", version);
     entry.put("appliedAt", Instant.now().toString());
     this.clausePackStatus.add(entry);
+    this.updatedAt = Instant.now();
+  }
+
+  public List<Map<String, Object>> getRequestPackStatus() {
+    return requestPackStatus;
+  }
+
+  public void setRequestPackStatus(List<Map<String, Object>> status) {
+    this.requestPackStatus = status;
+  }
+
+  /** Records a request pack application in the status list. */
+  public void recordRequestPackApplication(String packId, int version) {
+    if (this.requestPackStatus == null) {
+      this.requestPackStatus = new ArrayList<>();
+    }
+    var entry = new HashMap<String, Object>();
+    entry.put("packId", packId);
+    entry.put("version", version);
+    entry.put("appliedAt", Instant.now().toString());
+    this.requestPackStatus.add(entry);
+    this.updatedAt = Instant.now();
+  }
+
+  public Integer getDefaultRequestReminderDays() {
+    return defaultRequestReminderDays;
+  }
+
+  public void setDefaultRequestReminderDays(Integer defaultRequestReminderDays) {
+    this.defaultRequestReminderDays = defaultRequestReminderDays;
     this.updatedAt = Instant.now();
   }
 

@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.billing.SubscriptionService;
 import io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder;
 import io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldPackSeeder;
+import io.b2mash.b2b.b2bstrawman.informationrequest.RequestPackSeeder;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.reporting.StandardReportPackSeeder;
@@ -42,6 +43,7 @@ class TenantProvisioningServiceTest {
   @Mock private ClausePackSeeder clausePackSeeder;
   @Mock private CompliancePackSeeder compliancePackSeeder;
   @Mock private StandardReportPackSeeder standardReportPackSeeder;
+  @Mock private RequestPackSeeder requestPackSeeder;
 
   private TenantProvisioningService service;
 
@@ -59,7 +61,8 @@ class TenantProvisioningServiceTest {
                 templatePackSeeder,
                 clausePackSeeder,
                 compliancePackSeeder,
-                standardReportPackSeeder));
+                standardReportPackSeeder,
+                requestPackSeeder));
   }
 
   @Test

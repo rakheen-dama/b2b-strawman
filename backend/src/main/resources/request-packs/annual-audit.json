@@ -1,0 +1,48 @@
+{
+  "packId": "annual-audit",
+  "version": 1,
+  "name": "Annual Audit Document Pack",
+  "description": "Standard documents required for annual audit engagements",
+  "items": [
+    {
+      "name": "Trial Balance",
+      "description": "Year-end trial balance for the audit period",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF, Excel",
+      "sortOrder": 1
+    },
+    {
+      "name": "Bank Statements",
+      "description": "Bank statements for all accounts for the full audit period",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF",
+      "sortOrder": 2
+    },
+    {
+      "name": "Fixed Asset Register",
+      "description": "Complete fixed asset register with additions, disposals, and depreciation",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF, Excel",
+      "sortOrder": 3
+    },
+    {
+      "name": "Debtors/Creditors Age Analysis",
+      "description": "Aged analysis of debtors and creditors at year-end",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF, Excel",
+      "sortOrder": 4
+    },
+    {
+      "name": "Prior Year Signed AFS",
+      "description": "Prior year signed annual financial statements",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF",
+      "sortOrder": 5
+    }
+  ]
+}

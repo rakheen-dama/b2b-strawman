@@ -1,6 +1,8 @@
 "use server";
 
 import { ApiError } from "@/lib/api";
+import { listRequestTemplates } from "@/lib/api/information-requests";
+import type { RequestTemplateResponse } from "@/lib/api/information-requests";
 import { revalidatePath } from "next/cache";
 import {
   deleteProjectTemplate,
@@ -199,5 +201,21 @@ export async function instantiateTemplateAction(
       return { success: false, error: error.message };
     }
     return { success: false, error: "An unexpected error occurred." };
+  }
+}
+
+export async function getActiveRequestTemplatesAction(): Promise<{
+  success: boolean;
+  error?: string;
+  data?: RequestTemplateResponse[];
+}> {
+  try {
+    const data = await listRequestTemplates(true);
+    return { success: true, data };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to fetch request templates." };
   }
 }

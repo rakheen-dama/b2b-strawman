@@ -43,6 +43,7 @@ export interface ProjectTemplateResponse {
   tasks: TemplateTaskResponse[];
   tags: ProjectTemplateTagResponse[];
   requiredCustomerFieldIds?: string[];
+  requestTemplateId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -71,6 +72,7 @@ export interface CreateProjectTemplateRequest {
   billableDefault: boolean;
   tasks: TemplateTaskRequest[];
   tagIds: string[];
+  requestTemplateId?: string | null;
 }
 
 export interface UpdateProjectTemplateRequest {
@@ -80,6 +82,7 @@ export interface UpdateProjectTemplateRequest {
   billableDefault: boolean;
   tasks: TemplateTaskRequest[];
   tagIds: string[];
+  requestTemplateId?: string | null;
 }
 
 export interface SaveFromProjectRequest {

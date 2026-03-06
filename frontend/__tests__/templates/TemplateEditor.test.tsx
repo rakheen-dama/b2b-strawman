@@ -64,6 +64,11 @@ const AVAILABLE_TAGS: TagResponse[] = [
   { id: "tag-2", name: "Monthly", slug: "monthly", color: null },
 ];
 
+const REQUEST_TEMPLATES = [
+  { id: "rt-1", name: "Annual Audit Pack" },
+  { id: "rt-2", name: "Tax Return Documents" },
+];
+
 const CUSTOMER_FIELDS: FieldDefinitionResponse[] = [
   {
     id: "fd-1",
@@ -289,5 +294,86 @@ describe("TemplateEditor", () => {
     expect(taxYearCheckbox).toBeChecked();
     const vatCheckbox = screen.getByRole("checkbox", { name: /vat number/i });
     expect(vatCheckbox).not.toBeChecked();
+  });
+
+  it("shows request template dropdown when availableRequestTemplates is provided", () => {
+    render(
+      <TemplateEditor
+        slug="acme"
+        availableTags={[]}
+        availableRequestTemplates={REQUEST_TEMPLATES}
+      />,
+    );
+    expect(screen.getByText("Information Request Template")).toBeInTheDocument();
+    expect(screen.getByText("None")).toBeInTheDocument();
+  });
+
+  it("selecting a request template includes requestTemplateId in save payload", async () => {
+    mockCreateTemplate.mockResolvedValue({ success: true });
+    const user = userEvent.setup();
+    render(
+      <TemplateEditor
+        slug="acme"
+        availableTags={[]}
+        availableRequestTemplates={REQUEST_TEMPLATES}
+      />,
+    );
+    const nameInput = screen.getByPlaceholderText("e.g. Monthly Accounting Package");
+    const patternInput = screen.getByPlaceholderText("e.g. {customer} — {month} {year}");
+    await user.type(nameInput, "Test Template");
+    fireEvent.change(patternInput, { target: { value: "customer-year" } });
+
+    // Open the select and pick "Annual Audit Pack"
+    await user.click(screen.getByRole("combobox", { name: /information request template/i }));
+    await user.click(screen.getByRole("option", { name: "Annual Audit Pack" }));
+
+    await user.click(screen.getByRole("button", { name: /create template/i }));
+    expect(mockCreateTemplate).toHaveBeenCalledWith(
+      "acme",
+      expect.objectContaining({ requestTemplateId: "rt-1" }),
+    );
+  });
+
+  it("clearing request template selection saves null requestTemplateId", async () => {
+    mockUpdateTemplate.mockResolvedValue({ success: true });
+    const user = userEvent.setup();
+    const templateWithRequestTemplate: ProjectTemplateResponse = {
+      ...SAMPLE_TEMPLATE,
+      requestTemplateId: "rt-1",
+    };
+    render(
+      <TemplateEditor
+        slug="acme"
+        template={templateWithRequestTemplate}
+        availableTags={[]}
+        availableRequestTemplates={REQUEST_TEMPLATES}
+      />,
+    );
+
+    // Open the select and pick "None"
+    await user.click(screen.getByRole("combobox", { name: /information request template/i }));
+    await user.click(screen.getByRole("option", { name: "None" }));
+
+    await user.click(screen.getByRole("button", { name: /save changes/i }));
+    expect(mockUpdateTemplate).toHaveBeenCalledWith(
+      "acme",
+      "pt-1",
+      expect.objectContaining({ requestTemplateId: null }),
+    );
+  });
+
+  it("request template dropdown shows all provided templates", async () => {
+    const user = userEvent.setup();
+    render(
+      <TemplateEditor
+        slug="acme"
+        availableTags={[]}
+        availableRequestTemplates={REQUEST_TEMPLATES}
+      />,
+    );
+    await user.click(screen.getByRole("combobox", { name: /information request template/i }));
+    expect(screen.getByRole("option", { name: "Annual Audit Pack" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Tax Return Documents" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "None" })).toBeInTheDocument();
   });
 });

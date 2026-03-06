@@ -26,7 +26,7 @@ Phase 34 introduces a Client Information Requests system that transforms the cus
 | 255 | Notifications, Audit & Reminder Scheduler | Backend | 253, 254 | M | 255A, 255B | **Done** (PRs #545, #546) |
 | 256 | Project Template Integration & OrgSettings Extension | Backend | 253, 255 | M | 256A | **Done** (PR #547) |
 | 257 | Request Template Management UI | Frontend | 252 | M | 257A | **Done** (PR #548) |
-| 258 | Firm-Side Request Pages & Review UI | Frontend | 253, 257 | L | 258A, 258B | |
+| 258 | Firm-Side Request Pages & Review UI | Frontend | 253, 257 | L | 258A, 258B | **Done** (PRs #549, #550) |
 | 259 | Portal Request Pages (Upload & Submit) | Frontend | 254 | M | 259A, 259B | |
 | 260 | Dashboard Widget, Settings & Template Editor Integration | Frontend | 255, 256, 258 | M | 260A, 260B | |
 
@@ -177,7 +177,7 @@ FRONTEND TRACK (after respective backend epics)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 4a | 258 | 258A | CreateRequestDialog (template selection, customer/project/contact pickers, interval config) + RequestStatusBadge + ItemStatusBadge + RequestProgressBar shared components + customer detail page "Requests" tab + project detail page "Requests" tab + request-actions.ts server actions + API client extensions + tests (~8 tests). ~10 new/modified files. Frontend only. | **Done** (PR #549) |
-| 4b | 258 | 258B | information-requests/[id]/page.tsx firm-side detail page (header, progress, item list with status) + Accept/Reject review actions + RejectItemDialog modal + Cancel request + Resend notification + tests (~8 tests). ~5 new files. Frontend only. | |
+| 4b | 258 | 258B | information-requests/[id]/page.tsx firm-side detail page (header, progress, item list with status) + Accept/Reject review actions + RejectItemDialog modal + Cancel request + Resend notification + tests (~8 tests). ~5 new files. Frontend only. | **Done** (PR #550) |
 
 ### Stage 5: Portal Frontend (parallel with Stage 4)
 
@@ -636,7 +636,7 @@ Stage 6: [260A] // [260B]                                         (parallel)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **258A** | 258.1--258.8 | CreateRequestDialog + RequestStatusBadge + ItemStatusBadge + RequestProgressBar + customer detail "Requests" tab + project detail "Requests" tab + request-actions.ts + API client extensions + tests (~8 tests). ~10 new/modified files. Frontend only. | **Done** (PR #549) |
-| **258B** | 258.9--258.15 | information-requests/[id]/page.tsx detail page + item list with status + Accept/Reject review actions + RejectItemDialog modal + Cancel request + Resend notification + tests (~8 tests). ~5 new files. Frontend only. | |
+| **258B** | 258.9--258.15 | information-requests/[id]/page.tsx detail page + item list with status + Accept/Reject review actions + RejectItemDialog modal + Cancel request + Resend notification + tests (~8 tests). ~5 new files. Frontend only. | **Done** (PR #550) |
 
 ### Tasks
 

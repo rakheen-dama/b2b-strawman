@@ -297,7 +297,7 @@
 | 255 | Notifications, Audit & Reminder Scheduler | Backend | 253, 254 | M | 255A, 255B | **Done** (PRs #545, #546)                                                                                                           |
 | 256 | Project Template Integration & OrgSettings Extension | Backend | 253, 255 | M | 256A | **Done** (PR #547)                                                                                                                 |
 | 257 | Request Template Management UI | Frontend | 252 | M | 257A | **Done** (PR #548)                                                                                                                 |
-| 258 | Firm-Side Request Pages & Review UI | Frontend | 253, 257 | L | 258A, 258B | 258A **Done** (PR #549)                                                                                                             |
+| 258 | Firm-Side Request Pages & Review UI | Frontend | 253, 257 | L | 258A, 258B | **Done** (PRs #549, #550)                                                                                                           |
 | 259 | Portal Request Pages (Upload & Submit) | Frontend | 254 | M | 259A, 259B |                                                                                                                                    |
 | 260 | Dashboard Widget, Settings & Template Editor Integration | Frontend | 255, 256, 258 | M | 260A, 260B |                                                                                                                                    |
 | **Phase 35 — Keycloak Auth Provider Migration** | | | | | | See [tasks/phase35-keycloak-auth-migration.md](tasks/phase35-keycloak-auth-migration.md)                                           |

@@ -52,7 +52,7 @@ public class RequestReminderScheduler {
     this.transactionTemplate = transactionTemplate;
   }
 
-  @Scheduled(fixedRate = CHECK_INTERVAL_MS)
+  @Scheduled(fixedRate = CHECK_INTERVAL_MS, initialDelay = CHECK_INTERVAL_MS)
   public void checkRequestReminders() {
     log.debug("Request reminder scheduler started");
     var mappings = mappingRepository.findAll();
@@ -113,7 +113,7 @@ public class RequestReminderScheduler {
 
       long daysSince = Duration.between(referenceTime, Instant.now()).toDays();
       if (daysSince >= intervalDays) {
-        if (sendReminder(request, intervalDays)) {
+        if (sendReminder(request.getId(), intervalDays)) {
           sent++;
         }
       }
@@ -130,12 +130,29 @@ public class RequestReminderScheduler {
       List<RequestItem> pendingItems,
       UUID requestId) {}
 
-  private boolean sendReminder(InformationRequest request, int intervalDays) {
+  private boolean sendReminder(UUID requestId, int intervalDays) {
     try {
-      // Phase 1: DB operations in a transaction (update lastReminderSentAt + audit)
+      // Phase 1: DB operations in a transaction (re-fetch to avoid stale merge)
       var reminderData =
           transactionTemplate.execute(
               tx -> {
+                // Re-fetch to get a managed entity and re-check status
+                var requestOpt = informationRequestRepository.findById(requestId);
+                if (requestOpt.isEmpty()) {
+                  return null;
+                }
+                var request = requestOpt.get();
+
+                // Re-check status — request may have been completed/cancelled concurrently
+                if (request.getStatus() != RequestStatus.SENT
+                    && request.getStatus() != RequestStatus.IN_PROGRESS) {
+                  log.debug(
+                      "Request {} is no longer in a remindable state ({}), skipping",
+                      request.getRequestNumber(),
+                      request.getStatus());
+                  return null;
+                }
+
                 var items = requestItemRepository.findByRequestIdOrderBySortOrder(request.getId());
                 var pendingItems =
                     items.stream()
@@ -159,7 +176,7 @@ public class RequestReminderScheduler {
 
                 var contact = contactOpt.get();
 
-                // Update lastReminderSentAt and save within this transaction
+                // Update lastReminderSentAt on the managed entity
                 request.setLastReminderSentAt(Instant.now());
                 informationRequestRepository.save(request);
 
@@ -202,7 +219,7 @@ public class RequestReminderScheduler {
 
       return true;
     } catch (Exception e) {
-      log.error("Failed to send reminder for request {}", request.getRequestNumber(), e);
+      log.error("Failed to send reminder for request {}", requestId, e);
       return false;
     }
   }

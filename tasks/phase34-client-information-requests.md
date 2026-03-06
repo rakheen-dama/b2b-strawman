@@ -25,7 +25,7 @@ Phase 34 introduces a Client Information Requests system that transforms the cus
 | 254 | Domain Events, Portal Read-Model Sync & Portal API | Backend | 253 | L | 254A, 254B | **Done** (PRs #543, #544) |
 | 255 | Notifications, Audit & Reminder Scheduler | Backend | 253, 254 | M | 255A, 255B | **Done** (PRs #545, #546) |
 | 256 | Project Template Integration & OrgSettings Extension | Backend | 253, 255 | M | 256A | **Done** (PR #547) |
-| 257 | Request Template Management UI | Frontend | 252 | M | 257A | |
+| 257 | Request Template Management UI | Frontend | 252 | M | 257A | **Done** (PR #548) |
 | 258 | Firm-Side Request Pages & Review UI | Frontend | 253, 257 | L | 258A, 258B | |
 | 259 | Portal Request Pages (Upload & Submit) | Frontend | 254 | M | 259A, 259B | |
 | 260 | Dashboard Widget, Settings & Template Editor Integration | Frontend | 255, 256, 258 | M | 260A, 260B | |
@@ -162,7 +162,7 @@ FRONTEND TRACK (after respective backend epics)
 |-------|------|-------|---------|--------|
 | 2a (parallel) | 254 | 254A | Domain events (6 event classes) + V13 global migration (portal_requests + portal_request_items) + PortalEventHandler extensions (6 handler methods) + PortalReadModelRepository upsert methods + PortalRequestView/PortalRequestItemView records + sync integration tests (~10 tests). ~12 new/modified files. Backend only. | **Done** (PR #543) |
 | 2b (parallel) | 255 | 255A | Email templates (5 Thymeleaf HTML+text pairs: request-sent, item-accepted, item-rejected, request-completed, request-reminder) + NotificationService integration (7 notification types) + AuditEventService integration (8 audit event types) + activity feed wiring + tests (~12 tests). ~10 new/modified files. Backend only. | **Done** (PR #545) |
-| 2c (parallel) | 257 | 257A | Request template management frontend: settings nav item, list page (settings/request-templates/page.tsx), create page (new/page.tsx), edit page ([id]/page.tsx), item editor (response type, required, drag-reorder), platform template "Duplicate" action, lib/api/information-requests.ts API client, server actions + tests (~10 tests). ~8 new files. Frontend only. | |
+| 2c (parallel) | 257 | 257A | Request template management frontend: settings nav item, list page (settings/request-templates/page.tsx), create page (new/page.tsx), edit page ([id]/page.tsx), item editor (response type, required, drag-reorder), platform template "Duplicate" action, lib/api/information-requests.ts API client, server actions + tests (~10 tests). ~8 new files. Frontend only. | **Done** (PR #548) |
 
 ### Stage 3: Portal Backend + Scheduler + Integration Backend
 

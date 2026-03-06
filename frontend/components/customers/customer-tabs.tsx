@@ -13,11 +13,12 @@ interface CustomerTabsProps {
   financialsPanel?: ReactNode;
   invoicesPanel?: ReactNode;
   retainerPanel?: ReactNode;
+  requestsPanel?: ReactNode;
   generatedPanel?: ReactNode;
   onboardingPanel?: ReactNode;
 }
 
-type TabId = "projects" | "documents" | "onboarding" | "rates" | "financials" | "invoices" | "retainer" | "generated";
+type TabId = "projects" | "documents" | "onboarding" | "rates" | "financials" | "invoices" | "retainer" | "requests" | "generated";
 
 interface TabDef {
   id: TabId;
@@ -30,12 +31,13 @@ const baseTabs: TabDef[] = [
   { id: "onboarding", label: "Onboarding" },
   { id: "invoices", label: "Invoices" },
   { id: "retainer", label: "Retainer" },
+  { id: "requests", label: "Requests" },
   { id: "rates", label: "Rates" },
   { id: "generated", label: "Generated Docs" },
   { id: "financials", label: "Financials" },
 ];
 
-const validTabIds = new Set<string>(["projects", "documents", "onboarding", "invoices", "retainer", "rates", "generated", "financials"]);
+const validTabIds = new Set<string>(["projects", "documents", "onboarding", "invoices", "retainer", "requests", "rates", "generated", "financials"]);
 
 export function CustomerTabs({
   projectsPanel,
@@ -44,6 +46,7 @@ export function CustomerTabs({
   financialsPanel,
   invoicesPanel,
   retainerPanel,
+  requestsPanel,
   generatedPanel,
   onboardingPanel,
 }: CustomerTabsProps) {
@@ -60,12 +63,13 @@ export function CustomerTabs({
       if (t.id === "onboarding" && !onboardingPanel) return false;
       if (t.id === "invoices" && !invoicesPanel) return false;
       if (t.id === "retainer" && !retainerPanel) return false;
+      if (t.id === "requests" && !requestsPanel) return false;
       if (t.id === "rates" && !ratesPanel) return false;
       if (t.id === "generated" && !generatedPanel) return false;
       if (t.id === "financials" && !financialsPanel) return false;
       return true;
     });
-  }, [onboardingPanel, invoicesPanel, retainerPanel, ratesPanel, financialsPanel, generatedPanel]);
+  }, [onboardingPanel, invoicesPanel, retainerPanel, requestsPanel, ratesPanel, financialsPanel, generatedPanel]);
 
   return (
     <TabsPrimitive.Root value={activeTab} onValueChange={(v) => setUserTab(v as TabId)}>
@@ -113,6 +117,11 @@ export function CustomerTabs({
       {retainerPanel && (
         <TabsPrimitive.Content value="retainer" className="pt-6 outline-none">
           {retainerPanel}
+        </TabsPrimitive.Content>
+      )}
+      {requestsPanel && (
+        <TabsPrimitive.Content value="requests" className="pt-6 outline-none">
+          {requestsPanel}
         </TabsPrimitive.Content>
       )}
       {ratesPanel && (

@@ -432,6 +432,8 @@ export interface OrgSettings {
   timeReminderMinHours?: number;
   // expense defaults
   defaultExpenseMarkupPercent?: number | null;
+  // information request defaults
+  defaultRequestReminderDays?: number;
 }
 
 export interface UpdateTaxSettingsRequest {

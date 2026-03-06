@@ -55,6 +55,9 @@ import {
   fetchCompletenessScore,
 } from "@/lib/api/setup-status";
 import { getCustomerChecklists, getChecklistTemplates } from "@/lib/checklist-api";
+import { getCustomerRequests, type InformationRequestResponse } from "@/lib/api/information-requests";
+import { RequestList } from "@/components/information-requests/request-list";
+import { CreateRequestDialog } from "@/components/information-requests/create-request-dialog";
 import { fetchRetainers, fetchPeriods } from "@/lib/api/retainers";
 import type { RetainerResponse, PeriodSummary } from "@/lib/api/retainers";
 import { CustomerRetainerTab } from "@/components/customers/customer-retainer-tab";
@@ -239,6 +242,14 @@ export default async function CustomerDetailPage({
     } catch {
       // Non-fatal: period history table will show empty
     }
+  }
+
+  // Fetch information requests for the Requests tab
+  let customerRequests: InformationRequestResponse[] = [];
+  try {
+    customerRequests = await getCustomerRequests(id);
+  } catch {
+    // Non-fatal: requests tab will show empty state
   }
 
   const showRetainerTab =
@@ -615,6 +626,22 @@ export default async function CustomerDetailPage({
               canManage={isAdmin && customer.status === "ACTIVE"}
             />
           ) : undefined
+        }
+        requestsPanel={
+          <div className="space-y-6">
+            <div className="flex items-center justify-end">
+              <CreateRequestDialog
+                slug={slug}
+                customerId={id}
+                customerName={customer.name}
+              />
+            </div>
+            <RequestList
+              requests={customerRequests}
+              slug={slug}
+              showCustomer={false}
+            />
+          </div>
         }
         ratesPanel={
           isAdmin ? (

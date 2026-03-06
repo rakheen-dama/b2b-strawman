@@ -108,6 +108,7 @@ export function RequestDetailClient({
       if (result.success) {
         setCancelDialogOpen(false);
         router.refresh();
+        toast.success("Request cancelled successfully.");
       } else {
         toast.error(result.error ?? "Failed to cancel request.");
       }
@@ -258,7 +259,6 @@ export function RequestDetailClient({
             <RequestItemRow
               key={item.id}
               item={item}
-              slug={slug}
               onAccept={() => handleAccept(item.id)}
               onReject={() => setRejectDialogItem(item)}
               isAccepting={acceptingItemId === item.id}
@@ -314,7 +314,6 @@ export function RequestDetailClient({
 
 interface RequestItemRowProps {
   item: InformationRequestItemResponse;
-  slug: string;
   onAccept: () => void;
   onReject: () => void;
   isAccepting: boolean;

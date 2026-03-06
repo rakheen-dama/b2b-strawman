@@ -3,7 +3,6 @@
 import { ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import {
-  getRequest,
   acceptItem,
   rejectItem,
   cancelRequest,
@@ -20,20 +19,6 @@ interface ActionResult {
 interface VoidActionResult {
   success: boolean;
   error?: string;
-}
-
-export async function getRequestAction(
-  id: string,
-): Promise<ActionResult> {
-  try {
-    const data = await getRequest(id);
-    return { success: true, data };
-  } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "Failed to fetch request." };
-  }
 }
 
 export async function acceptItemAction(

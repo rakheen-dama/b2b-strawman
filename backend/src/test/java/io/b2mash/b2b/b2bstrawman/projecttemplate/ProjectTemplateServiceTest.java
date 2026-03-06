@@ -108,7 +108,8 @@ class ProjectTemplateServiceTest {
                           "Collect docs", null, BigDecimal.valueOf(2), 0, true, "ANY_MEMBER", null),
                       new TemplateTaskRequest(
                           "Process", null, BigDecimal.valueOf(4), 1, true, "ANY_MEMBER", null)),
-                  List.of(tag.getId()));
+                  List.of(tag.getId()),
+                  null);
 
           var response = templateService.create(request, memberId);
 
@@ -130,7 +131,7 @@ class ProjectTemplateServiceTest {
         () -> {
           var request =
               new CreateTemplateRequest(
-                  "Empty Template", "{customer}", null, false, List.of(), List.of());
+                  "Empty Template", "{customer}", null, false, List.of(), List.of(), null);
 
           var response = templateService.create(request, memberId);
 
@@ -156,7 +157,8 @@ class ProjectTemplateServiceTest {
                   List.of(
                       new TemplateTaskRequest(
                           "Old Task", null, null, 0, false, "UNASSIGNED", null)),
-                  List.of());
+                  List.of(),
+                  null);
           var created = templateService.create(createReq, memberId);
 
           var updateReq =
@@ -170,7 +172,8 @@ class ProjectTemplateServiceTest {
                           "New Task 1", null, null, 0, true, "ANY_MEMBER", null),
                       new TemplateTaskRequest(
                           "New Task 2", null, null, 1, true, "PROJECT_LEAD", null)),
-                  List.of());
+                  List.of(),
+                  null);
           var updated = templateService.update(created.id(), updateReq);
 
           assertThat(updated.name()).isEqualTo("Update Test Updated");
@@ -188,7 +191,7 @@ class ProjectTemplateServiceTest {
         () -> {
           var request =
               new CreateTemplateRequest(
-                  "To Delete", "{customer}", null, false, List.of(), List.of());
+                  "To Delete", "{customer}", null, false, List.of(), List.of(), null);
           var created = templateService.create(request, memberId);
 
           templateService.delete(created.id());
@@ -258,7 +261,8 @@ class ProjectTemplateServiceTest {
                   true,
                   List.of(
                       new TemplateTaskRequest("Task A", null, null, 0, true, "ANY_MEMBER", null)),
-                  List.of(tag.getId()));
+                  List.of(tag.getId()),
+                  null);
           var original = templateService.create(request, memberId);
 
           var copy = templateService.duplicate(original.id(), memberId);
@@ -456,7 +460,8 @@ class ProjectTemplateServiceTest {
                   List.of(
                       new TemplateTaskRequest(
                           "Get Task", "desc", BigDecimal.valueOf(1), 0, true, "UNASSIGNED", null)),
-                  List.of(tag.getId()));
+                  List.of(tag.getId()),
+                  null);
           var created = templateService.create(request, memberId);
 
           var retrieved = templateService.get(created.id());

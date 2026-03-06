@@ -55,6 +55,9 @@ public class ProjectTemplate {
   @Column(name = "required_customer_field_ids", columnDefinition = "jsonb")
   private List<UUID> requiredCustomerFieldIds = new ArrayList<>();
 
+  @Column(name = "request_template_id")
+  private UUID requestTemplateId;
+
   protected ProjectTemplate() {}
 
   public ProjectTemplate(
@@ -145,6 +148,15 @@ public class ProjectTemplate {
 
   public void setRequiredCustomerFieldIds(List<UUID> requiredCustomerFieldIds) {
     this.requiredCustomerFieldIds = requiredCustomerFieldIds;
+    this.updatedAt = Instant.now();
+  }
+
+  public UUID getRequestTemplateId() {
+    return requestTemplateId;
+  }
+
+  public void setRequestTemplateId(UUID requestTemplateId) {
+    this.requestTemplateId = requestTemplateId;
     this.updatedAt = Instant.now();
   }
 }

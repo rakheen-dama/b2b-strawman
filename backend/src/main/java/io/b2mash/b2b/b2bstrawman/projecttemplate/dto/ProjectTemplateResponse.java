@@ -17,5 +17,6 @@ public record ProjectTemplateResponse(
     int tagCount,
     List<TemplateTaskResponse> tasks,
     List<TagResponse> tags,
+    UUID requestTemplateId,
     Instant createdAt,
     Instant updatedAt) {}

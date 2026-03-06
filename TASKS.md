@@ -332,6 +332,14 @@
 | 292 | Allocation Grid UI | Frontend | 290 | L | 292A, 292B | |
 | 293 | Utilization, Dashboard & Project Staffing UI | Frontend | 291, 292 | M | 293A, 293B | |
 | 294 | Notifications, Audit Events & Settings UI | Backend + Frontend | 290 | M | 294A, 294B | |
+| **Phase 39 — Admin-Approved Tenant Provisioning** | | | | | | See [tasks/phase39-admin-approved-provisioning.md](tasks/phase39-admin-approved-provisioning.md) |
+| 295 | Access Request Entity & Public API | Backend | -- | M | 295A, 295B | |
+| 296 | Keycloak Admin Client & Provisioning Orchestration | Backend | 295 | L | 296A, 296B | |
+| 297 | JWT Refactor & Security Config | Backend | 295 | M | 297A, 297B | |
+| 298 | MemberFilter JIT Role Assignment | Backend | 295, 297 | S | 298A | |
+| 299 | Frontend -- Public Access Request Form | Frontend | 295 | S | 299A | |
+| 300 | Frontend -- Admin Access Request Dashboard | Frontend | 296, 297 | M | 300A, 300B | |
+| 301 | Cleanup -- Remove Clerk-Specific Code | Backend + Frontend | 296, 297, 298, 300 | M | 301A, 301B | |
 
 ---
 

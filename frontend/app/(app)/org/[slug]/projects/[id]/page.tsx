@@ -24,6 +24,9 @@ import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocument
 import { ProjectCommentsSection } from "@/components/projects/project-comments-section";
 import { ExpenseList } from "@/components/expenses/expense-list";
 import { LogExpenseDialog } from "@/components/expenses/log-expense-dialog";
+import { getProjectRequests, type InformationRequestResponse } from "@/lib/api/information-requests";
+import { RequestList } from "@/components/information-requests/request-list";
+import { CreateRequestDialog } from "@/components/information-requests/create-request-dialog";
 import {
   fetchProjectSetupStatus,
   fetchProjectUnbilledSummary,
@@ -160,6 +163,16 @@ export default async function ProjectDetailPage({
     customers = await api.get<Customer[]>(`/api/projects/${id}/customers`);
   } catch {
     // Non-fatal: show empty customers list if fetch fails
+  }
+
+  // Fetch information requests for the Requests tab (only if project has customers)
+  let projectRequests: InformationRequestResponse[] = [];
+  if (customers.length > 0) {
+    try {
+      projectRequests = await getProjectRequests(id);
+    } catch {
+      // Non-fatal: requests tab will show empty state
+    }
   }
 
   // Fetch retainer summary for the project's primary customer (for RetainerIndicator in LogTimeDialog).
@@ -675,6 +688,26 @@ export default async function ProjectDetailPage({
             slug={slug}
             isAdmin={isAdmin}
           />
+        }
+        requestsPanel={
+          customers.length > 0 ? (
+            <div className="space-y-6">
+              <div className="flex items-center justify-end">
+                <CreateRequestDialog
+                  slug={slug}
+                  customerId={customers[0].id}
+                  customerName={customers[0].name}
+                  projectId={id}
+                  projectName={project.name}
+                />
+              </div>
+              <RequestList
+                requests={projectRequests}
+                slug={slug}
+                showCustomer={false}
+              />
+            </div>
+          ) : undefined
         }
         customerCommentsPanel={
           customers && customers.length > 0 ? (

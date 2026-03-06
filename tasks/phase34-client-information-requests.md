@@ -183,7 +183,7 @@ FRONTEND TRACK (after respective backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 5a (parallel) | 259 | 259A | Portal request list page (portal/(authenticated)/requests/page.tsx) + portal layout nav "Requests" item + lib/api/portal-requests.ts API client + RequestProgressBar (portal variant) + RequestStatusBadge (portal) + tests (~6 tests). ~5 new/modified files. Frontend only. | |
+| 5a (parallel) | 259 | 259A | Portal request list page (portal/(authenticated)/requests/page.tsx) + portal layout nav "Requests" item + lib/api/portal-requests.ts API client + RequestProgressBar (portal variant) + RequestStatusBadge (portal) + tests (~6 tests). ~5 new/modified files. Frontend only. | **Done** (PR #551) |
 | 5b (parallel) | 259 | 259B | Portal request detail page (portal/(authenticated)/requests/[id]/page.tsx) + file upload flow (dropzone, presigned URL upload, submit confirmation) + text response input + re-submission after rejection + item status display + tests (~6 tests). ~3 new files. Frontend only. | |
 
 ### Stage 6: Dashboard, Settings & Template Editor Integration
@@ -709,7 +709,7 @@ Stage 6: [260A] // [260B]                                         (parallel)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **259A** | 259.1--259.5 | Portal request list page + nav item + portalApi client + portal request components + tests (~6 tests). ~5 new/modified files. Frontend only. | |
+| **259A** | 259.1--259.5 | Portal request list page + nav item + portalApi client + portal request components + tests (~6 tests). ~5 new/modified files. Frontend only. | **Done** (PR #551) |
 | **259B** | 259.6--259.11 | Portal request detail page + file upload flow (dropzone, presigned URL, submit) + text response input + re-submission after rejection + tests (~6 tests). ~3 new files. Frontend only. | |
 
 ### Tasks

@@ -28,7 +28,7 @@ Phase 34 introduces a Client Information Requests system that transforms the cus
 | 257 | Request Template Management UI | Frontend | 252 | M | 257A | **Done** (PR #548) |
 | 258 | Firm-Side Request Pages & Review UI | Frontend | 253, 257 | L | 258A, 258B | **Done** (PRs #549, #550) |
 | 259 | Portal Request Pages (Upload & Submit) | Frontend | 254 | M | 259A, 259B | **Done** (PRs #551, #552) |
-| 260 | Dashboard Widget, Settings & Template Editor Integration | Frontend | 255, 256, 258 | M | 260A, 260B | |
+| 260 | Dashboard Widget, Settings & Template Editor Integration | Frontend | 255, 256, 258 | M | 260A, 260B | **Done** (PRs #553, #554) |
 
 ---
 
@@ -191,7 +191,7 @@ FRONTEND TRACK (after respective backend epics)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 6a (parallel) | 260 | 260A | Dashboard "Information Requests" widget (awaiting review, overdue, completion rate, click-through) + settings/page.tsx "Request Templates" nav link + OrgSettings reminder interval configuration in settings page + tests (~5 tests). ~4 modified files. Frontend only. | **Done** (PR #553) |
-| 6b (parallel) | 260 | 260B | Project template editor [id]/page.tsx: "Information Request Template" combobox populated from request templates API + help text + persist via PUT + tests (~4 tests). ~2 modified files. Frontend only. | |
+| 6b (parallel) | 260 | 260B | Project template editor [id]/page.tsx: "Information Request Template" combobox populated from request templates API + help text + persist via PUT + tests (~4 tests). ~2 modified files. Frontend only. | **Done** (PR #554) |
 
 ### Timeline
 
@@ -773,7 +773,7 @@ Stage 6: [260A] // [260B]                                         (parallel)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **260A** | 260.1--260.5 | Dashboard "Information Requests" widget + OrgSettings reminder interval config in settings page + tests (~5 tests). ~4 modified files. Frontend only. | **Done** (PR #553) |
-| **260B** | 260.6--260.9 | Project template editor "Information Request Template" combobox + help text + persist via PUT + tests (~4 tests). ~2 modified files. Frontend only. | |
+| **260B** | 260.6--260.9 | Project template editor "Information Request Template" combobox + help text + persist via PUT + tests (~4 tests). ~2 modified files. Frontend only. | **Done** (PR #554) |
 
 ### Tasks
 

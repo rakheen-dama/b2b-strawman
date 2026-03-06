@@ -290,7 +290,7 @@
 | 249 | Engagement & Action-Point Frontend Integration | Frontend | 243, 244, 245 | M | 249A, 249B | **Done** (PRs #502, #503)                                                                                                          |
 | 250 | Completeness Visibility — Backend Queries | Backend | 241 | M | 250A | **Done** (PR #504)                                                                                                                 |
 | 251 | Completeness Visibility — Frontend & Dashboard | Frontend | 250, 245 | M | 251A, 251B | **Done** (PRs #505, #506)                                                                                                          |
-| **Phase 34 — Client Information Requests** | | | | | | See [tasks/phase34-client-information-requests.md](tasks/phase34-client-information-requests.md)                                   |
+| **Phase 34 — Client Information Requests** | | | | | | **Done** — See [tasks/phase34-client-information-requests.md](tasks/phase34-client-information-requests.md)                        |
 | 252 | RequestTemplate Entity Foundation & Pack Seeder | Backend | -- | M | 252A, 252B | **Done** (PRs #539, #540)                                                                                                           |
 | 253 | InformationRequest Entity & Lifecycle Backend | Backend | 252 | L | 253A, 253B | **Done** (PRs #541, #542)                                                                                                           |
 | 254 | Domain Events, Portal Read-Model Sync & Portal API | Backend | 253 | L | 254A, 254B | **Done** (PRs #543, #544)                                                                                                           |
@@ -299,7 +299,7 @@
 | 257 | Request Template Management UI | Frontend | 252 | M | 257A | **Done** (PR #548)                                                                                                                 |
 | 258 | Firm-Side Request Pages & Review UI | Frontend | 253, 257 | L | 258A, 258B | **Done** (PRs #549, #550)                                                                                                           |
 | 259 | Portal Request Pages (Upload & Submit) | Frontend | 254 | M | 259A, 259B | **Done** (PRs #551, #552)                                                                                                           |
-| 260 | Dashboard Widget, Settings & Template Editor Integration | Frontend | 255, 256, 258 | M | 260A, 260B | 260A **Done** (PR #553)                                                                                                             |
+| 260 | Dashboard Widget, Settings & Template Editor Integration | Frontend | 255, 256, 258 | M | 260A, 260B | **Done** (PRs #553, #554)                                                                                                             |
 | **Phase 35 — Keycloak Auth Provider Migration** | | | | | | See [tasks/phase35-keycloak-auth-migration.md](tasks/phase35-keycloak-auth-migration.md)                                           |
 | 261–267 | Keycloak SPI, Backend Integration, Frontend Integration, E2E, Docs | Both | -- | L | 261A–267A | **Reverted** (PRs #507–#519)                                                                                                       |
 | **Phase 36 — Keycloak + Spring Cloud Gateway BFF Migration** | | | | | | See [tasks/phase36-keycloak-gateway-bff.md](tasks/phase36-keycloak-gateway-bff.md)                                                 |

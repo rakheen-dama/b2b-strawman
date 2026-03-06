@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { ACCEPT_ATTRIBUTE } from "@/lib/upload-validation";
+import { ACCEPT_ATTRIBUTE, validateFile } from "@/lib/upload-validation";
 import {
   getPortalRequest,
   initiateUpload,
@@ -108,6 +108,12 @@ export default function PortalRequestDetailPage() {
   // --- File upload handler ---
 
   async function handleFileUpload(itemId: string, file: File) {
+    const validation = validateFile(file);
+    if (!validation.valid) {
+      setActionError(validation.error ?? "Invalid file");
+      return;
+    }
+
     setUploadingItemId(itemId);
     setUploadProgress(0);
     setActionError(null);
@@ -312,6 +318,7 @@ function ItemRow({
 }: ItemRowProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isUploading = uploadingItemId === item.id;
+  const isAnotherUploading = uploadingItemId !== null && uploadingItemId !== item.id;
   const isSubmitting = submittingItemId === item.id;
   const canRespond = item.status === "PENDING" || item.status === "REJECTED";
 
@@ -369,6 +376,7 @@ function ItemRow({
               <FileUploadArea
                 fileInputRef={fileInputRef}
                 isUploading={isUploading}
+                disabled={isAnotherUploading}
                 uploadProgress={uploadProgress}
                 fileTypeHints={item.fileTypeHints}
                 onFileSelected={onFileUpload}
@@ -381,13 +389,13 @@ function ItemRow({
                   placeholder="Enter your response..."
                   value={textValue}
                   onChange={(e) => onTextChange(e.target.value)}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isAnotherUploading}
                   rows={3}
                 />
                 <Button
                   size="sm"
                   onClick={onTextSubmit}
-                  disabled={isSubmitting || !textValue.trim()}
+                  disabled={isSubmitting || isAnotherUploading || !textValue.trim()}
                 >
                   {isSubmitting ? (
                     <>
@@ -448,6 +456,7 @@ function ItemRow({
 interface FileUploadAreaProps {
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   isUploading: boolean;
+  disabled?: boolean;
   uploadProgress: number;
   fileTypeHints: string | null;
   onFileSelected: (file: File) => void;
@@ -456,6 +465,7 @@ interface FileUploadAreaProps {
 function FileUploadArea({
   fileInputRef,
   isUploading,
+  disabled = false,
   uploadProgress,
   fileTypeHints,
   onFileSelected,
@@ -466,7 +476,7 @@ function FileUploadArea({
     e.preventDefault();
     e.stopPropagation();
     setIsDragOver(false);
-    if (isUploading) return;
+    if (isUploading || disabled) return;
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0) {
       onFileSelected(files[0]);
@@ -501,10 +511,11 @@ function FileUploadArea({
   return (
     <div
       role="button"
-      tabIndex={0}
-      onClick={() => fileInputRef.current?.click()}
+      tabIndex={disabled ? -1 : 0}
+      aria-disabled={disabled}
+      onClick={() => !disabled && fileInputRef.current?.click()}
       onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
+        if (!disabled && (e.key === "Enter" || e.key === " ")) {
           e.preventDefault();
           fileInputRef.current?.click();
         }
@@ -526,10 +537,15 @@ function FileUploadArea({
       }}
       onDrop={handleDrop}
       className={cn(
-        "cursor-pointer rounded-lg border-2 border-dashed p-4 text-center transition-colors",
-        isDragOver
+        "rounded-lg border-2 border-dashed p-4 text-center transition-colors",
+        disabled
+          ? "cursor-not-allowed opacity-50 border-slate-300 dark:border-slate-600"
+          : "cursor-pointer",
+        !disabled && isDragOver
           ? "border-teal-500 bg-teal-50 dark:bg-teal-950/20"
-          : "border-slate-300 hover:border-slate-400 dark:border-slate-600 dark:hover:border-slate-500",
+          : !disabled
+            ? "border-slate-300 hover:border-slate-400 dark:border-slate-600 dark:hover:border-slate-500"
+            : "",
       )}
     >
       <input

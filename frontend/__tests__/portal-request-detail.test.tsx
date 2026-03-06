@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import PortalRequestDetailPage from "@/app/portal/(authenticated)/requests/[id]/page";
 import type {
   PortalRequestDetail,
@@ -215,5 +216,87 @@ describe("Portal Request Detail", () => {
     expect(screen.getByText("1 submitted")).toBeInTheDocument();
     expect(screen.getByText("1 accepted")).toBeInTheDocument();
     expect(screen.getByText("1 rejected")).toBeInTheDocument();
+  });
+
+  it("submits text response when Submit Response is clicked", async () => {
+    mockGetPortalRequest.mockResolvedValue(sampleRequest);
+    mockSubmitItem.mockResolvedValue(undefined);
+
+    const user = userEvent.setup();
+    render(<PortalRequestDetailPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Company Description")).toBeInTheDocument();
+    });
+
+    const textarea = screen.getByPlaceholderText("Enter your response...");
+    await user.type(textarea, "Our company builds software.");
+
+    // After fetchRequest is called again post-submit, return the same data
+    mockGetPortalRequest.mockResolvedValue(sampleRequest);
+
+    const submitButton = screen.getByText("Submit Response");
+    await user.click(submitButton);
+
+    await waitFor(() => {
+      expect(mockSubmitItem).toHaveBeenCalledWith("req-detail-1", "item-2", {
+        textResponse: "Our company builds software.",
+      });
+    });
+  });
+
+  it("shows validation error when an invalid file is dropped", async () => {
+    // Use a request with only a FILE_UPLOAD PENDING item
+    const requestWithFileItem: PortalRequestDetail = {
+      ...sampleRequest,
+      items: [
+        makeItem({
+          id: "item-1",
+          name: "Tax Certificate",
+          responseType: "FILE_UPLOAD",
+          sortOrder: 1,
+          status: "PENDING",
+        }),
+      ],
+    };
+    mockGetPortalRequest.mockResolvedValue(requestWithFileItem);
+
+    render(<PortalRequestDetailPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Tax Certificate")).toBeInTheDocument();
+    });
+
+    // Create a file with an unsupported type (e.g. .exe)
+    const badFile = new File(["content"], "malware.exe", {
+      type: "application/x-msdownload",
+    });
+
+    // Find the dropzone and simulate a drop
+    const dropzone = screen.getByText("Drop a file here, or click to browse")
+      .closest("[role='button']") as HTMLElement;
+
+    const dataTransfer = {
+      files: [badFile],
+      items: [{ kind: "file", type: badFile.type, getAsFile: () => badFile }],
+      types: ["Files"],
+    };
+
+    // Fire drop event
+    const dropEvent = new Event("drop", { bubbles: true });
+    Object.assign(dropEvent, {
+      dataTransfer,
+      preventDefault: vi.fn(),
+      stopPropagation: vi.fn(),
+    });
+    dropzone.dispatchEvent(dropEvent);
+
+    // The validation error should appear
+    await waitFor(() => {
+      expect(screen.getByText(/not supported/)).toBeInTheDocument();
+    });
+
+    // Should NOT have called initiateUpload
+    expect(mockInitiateUpload).not.toHaveBeenCalled();
   });
 });

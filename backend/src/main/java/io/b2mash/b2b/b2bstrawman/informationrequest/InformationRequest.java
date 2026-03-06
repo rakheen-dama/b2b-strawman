@@ -119,8 +119,11 @@ public class InformationRequest {
     this.updatedAt = Instant.now();
   }
 
-  /** Any state except COMPLETED -> CANCELLED. Sets cancelledAt. */
+  /** Any state except COMPLETED -> CANCELLED. Idempotent — no-op if already CANCELLED. */
   public void cancel() {
+    if (this.status == RequestStatus.CANCELLED) {
+      return;
+    }
     if (this.status == RequestStatus.COMPLETED) {
       throw new InvalidStateException(
           "Invalid request state", "Cannot cancel request in status " + this.status);

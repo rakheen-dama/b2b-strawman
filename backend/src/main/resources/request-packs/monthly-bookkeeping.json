@@ -1,0 +1,40 @@
+{
+  "packId": "monthly-bookkeeping",
+  "version": 1,
+  "name": "Monthly Bookkeeping",
+  "description": "Monthly documents required for bookkeeping processing",
+  "items": [
+    {
+      "name": "Bank Statements",
+      "description": "Bank statements for all accounts for the month",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF",
+      "sortOrder": 1
+    },
+    {
+      "name": "Petty Cash Slips",
+      "description": "All petty cash slips and receipts for the month",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF, Images",
+      "sortOrder": 2
+    },
+    {
+      "name": "Supplier Invoices",
+      "description": "All supplier invoices received during the month",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF",
+      "sortOrder": 3
+    },
+    {
+      "name": "Payroll Summaries",
+      "description": "Payroll summary reports and payslips for the month",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF, Excel",
+      "sortOrder": 4
+    }
+  ]
+}

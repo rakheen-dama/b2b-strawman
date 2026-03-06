@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.billing.SubscriptionService;
 import io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder;
 import io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldPackSeeder;
+import io.b2mash.b2b.b2bstrawman.informationrequest.RequestPackSeeder;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.reporting.StandardReportPackSeeder;
@@ -32,6 +33,7 @@ public class TenantProvisioningService {
   private final ClausePackSeeder clausePackSeeder;
   private final CompliancePackSeeder compliancePackSeeder;
   private final StandardReportPackSeeder standardReportPackSeeder;
+  private final RequestPackSeeder requestPackSeeder;
 
   public TenantProvisioningService(
       OrganizationRepository organizationRepository,
@@ -42,7 +44,8 @@ public class TenantProvisioningService {
       TemplatePackSeeder templatePackSeeder,
       ClausePackSeeder clausePackSeeder,
       CompliancePackSeeder compliancePackSeeder,
-      StandardReportPackSeeder standardReportPackSeeder) {
+      StandardReportPackSeeder standardReportPackSeeder,
+      RequestPackSeeder requestPackSeeder) {
     this.organizationRepository = organizationRepository;
     this.mappingRepository = mappingRepository;
     this.migrationDataSource = migrationDataSource;
@@ -52,6 +55,7 @@ public class TenantProvisioningService {
     this.clausePackSeeder = clausePackSeeder;
     this.compliancePackSeeder = compliancePackSeeder;
     this.standardReportPackSeeder = standardReportPackSeeder;
+    this.requestPackSeeder = requestPackSeeder;
   }
 
   @Retryable(
@@ -91,6 +95,7 @@ public class TenantProvisioningService {
       clausePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
       compliancePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
       standardReportPackSeeder.seedForTenant(schemaName, clerkOrgId);
+      requestPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
       createMapping(clerkOrgId, schemaName);
       String planSlug = org.getPlanSlug() != null ? org.getPlanSlug() : "starter";
       subscriptionService.createSubscription(org.getId(), planSlug);

@@ -298,7 +298,7 @@
 | 256 | Project Template Integration & OrgSettings Extension | Backend | 253, 255 | M | 256A | **Done** (PR #547)                                                                                                                 |
 | 257 | Request Template Management UI | Frontend | 252 | M | 257A | **Done** (PR #548)                                                                                                                 |
 | 258 | Firm-Side Request Pages & Review UI | Frontend | 253, 257 | L | 258A, 258B | **Done** (PRs #549, #550)                                                                                                           |
-| 259 | Portal Request Pages (Upload & Submit) | Frontend | 254 | M | 259A, 259B | 259A **Done** (PR #551)                                                                                                             |
+| 259 | Portal Request Pages (Upload & Submit) | Frontend | 254 | M | 259A, 259B | **Done** (PRs #551, #552)                                                                                                           |
 | 260 | Dashboard Widget, Settings & Template Editor Integration | Frontend | 255, 256, 258 | M | 260A, 260B |                                                                                                                                    |
 | **Phase 35 — Keycloak Auth Provider Migration** | | | | | | See [tasks/phase35-keycloak-auth-migration.md](tasks/phase35-keycloak-auth-migration.md)                                           |
 | 261–267 | Keycloak SPI, Backend Integration, Frontend Integration, E2E, Docs | Both | -- | L | 261A–267A | **Reverted** (PRs #507–#519)                                                                                                       |

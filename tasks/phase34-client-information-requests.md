@@ -27,7 +27,7 @@ Phase 34 introduces a Client Information Requests system that transforms the cus
 | 256 | Project Template Integration & OrgSettings Extension | Backend | 253, 255 | M | 256A | **Done** (PR #547) |
 | 257 | Request Template Management UI | Frontend | 252 | M | 257A | **Done** (PR #548) |
 | 258 | Firm-Side Request Pages & Review UI | Frontend | 253, 257 | L | 258A, 258B | **Done** (PRs #549, #550) |
-| 259 | Portal Request Pages (Upload & Submit) | Frontend | 254 | M | 259A, 259B | |
+| 259 | Portal Request Pages (Upload & Submit) | Frontend | 254 | M | 259A, 259B | **Done** (PRs #551, #552) |
 | 260 | Dashboard Widget, Settings & Template Editor Integration | Frontend | 255, 256, 258 | M | 260A, 260B | |
 
 ---
@@ -184,7 +184,7 @@ FRONTEND TRACK (after respective backend epics)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 5a (parallel) | 259 | 259A | Portal request list page (portal/(authenticated)/requests/page.tsx) + portal layout nav "Requests" item + lib/api/portal-requests.ts API client + RequestProgressBar (portal variant) + RequestStatusBadge (portal) + tests (~6 tests). ~5 new/modified files. Frontend only. | **Done** (PR #551) |
-| 5b (parallel) | 259 | 259B | Portal request detail page (portal/(authenticated)/requests/[id]/page.tsx) + file upload flow (dropzone, presigned URL upload, submit confirmation) + text response input + re-submission after rejection + item status display + tests (~6 tests). ~3 new files. Frontend only. | |
+| 5b (parallel) | 259 | 259B | Portal request detail page (portal/(authenticated)/requests/[id]/page.tsx) + file upload flow (dropzone, presigned URL upload, submit confirmation) + text response input + re-submission after rejection + item status display + tests (~6 tests). ~3 new files. Frontend only. | **Done** (PR #552) |
 
 ### Stage 6: Dashboard, Settings & Template Editor Integration
 
@@ -710,7 +710,7 @@ Stage 6: [260A] // [260B]                                         (parallel)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **259A** | 259.1--259.5 | Portal request list page + nav item + portalApi client + portal request components + tests (~6 tests). ~5 new/modified files. Frontend only. | **Done** (PR #551) |
-| **259B** | 259.6--259.11 | Portal request detail page + file upload flow (dropzone, presigned URL, submit) + text response input + re-submission after rejection + tests (~6 tests). ~3 new files. Frontend only. | |
+| **259B** | 259.6--259.11 | Portal request detail page + file upload flow (dropzone, presigned URL, submit) + text response input + re-submission after rejection + tests (~6 tests). ~3 new files. Frontend only. | **Done** (PR #552) |
 
 ### Tasks
 

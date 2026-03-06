@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.informationrequest;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -11,18 +12,23 @@ import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestEvents.Inf
 import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestEvents.RequestItemAcceptedEvent;
 import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestEvents.RequestItemRejectedEvent;
 import io.b2mash.b2b.b2bstrawman.informationrequest.dto.InformationRequestDtos.AdHocItemRequest;
+import io.b2mash.b2b.b2bstrawman.informationrequest.dto.InformationRequestDtos.AddItemRequest;
 import io.b2mash.b2b.b2bstrawman.informationrequest.dto.InformationRequestDtos.CreateInformationRequestRequest;
 import io.b2mash.b2b.b2bstrawman.informationrequest.dto.InformationRequestDtos.DashboardSummaryResponse;
 import io.b2mash.b2b.b2bstrawman.informationrequest.dto.InformationRequestDtos.InformationRequestResponse;
+import io.b2mash.b2b.b2bstrawman.informationrequest.dto.InformationRequestDtos.UpdateInformationRequestRequest;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
+import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -340,6 +346,8 @@ public class InformationRequestService {
     return toResponse(request);
   }
 
+  // checkAutoComplete is intentionally only called from acceptItem, not rejectItem.
+  // Rejecting an item cannot trigger request completion — only accepting all required items can.
   private void checkAutoComplete(InformationRequest request) {
     var items = itemRepository.findByRequestId(request.getId());
     boolean allRequiredAccepted =
@@ -371,20 +379,20 @@ public class InformationRequestService {
 
   @Transactional
   public InformationRequestResponse updateRequest(
-      UUID requestId, Integer reminderIntervalDays, UUID projectId) {
+      UUID requestId, UpdateInformationRequestRequest dto) {
     var request =
         requestRepository
             .findById(requestId)
             .orElseThrow(() -> new ResourceNotFoundException("InformationRequest", requestId));
     request.requireEditable();
 
-    if (projectId != null) {
+    if (dto.projectId() != null) {
       projectRepository
-          .findById(projectId)
-          .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+          .findById(dto.projectId())
+          .orElseThrow(() -> new ResourceNotFoundException("Project", dto.projectId()));
     }
-    request.setProjectId(projectId);
-    request.setReminderIntervalDays(reminderIntervalDays);
+    request.setProjectId(dto.projectId());
+    request.setReminderIntervalDays(dto.reminderIntervalDays());
     var saved = requestRepository.save(request);
 
     auditService.log(
@@ -399,14 +407,7 @@ public class InformationRequestService {
   }
 
   @Transactional
-  public InformationRequestResponse addItem(
-      UUID requestId,
-      String name,
-      String description,
-      ResponseType responseType,
-      boolean required,
-      String fileTypeHints,
-      int sortOrder) {
+  public InformationRequestResponse addItem(UUID requestId, AddItemRequest dto) {
     var request =
         requestRepository
             .findById(requestId)
@@ -415,7 +416,13 @@ public class InformationRequestService {
 
     var item =
         new RequestItem(
-            requestId, name, description, responseType, required, fileTypeHints, sortOrder);
+            requestId,
+            dto.name(),
+            dto.description(),
+            dto.responseType(),
+            dto.required(),
+            dto.fileTypeHints(),
+            dto.sortOrder());
     itemRepository.save(item);
 
     return toResponse(request);
@@ -457,34 +464,36 @@ public class InformationRequestService {
   public List<InformationRequestResponse> list(
       UUID customerId, UUID projectId, RequestStatus status) {
     List<InformationRequest> requests;
-    if (customerId != null) {
+    if (customerId != null && projectId != null && status != null) {
+      requests =
+          requestRepository.findByCustomerIdAndProjectIdAndStatus(customerId, projectId, status);
+    } else if (customerId != null && status != null) {
+      requests = requestRepository.findByCustomerIdAndStatus(customerId, status);
+    } else if (projectId != null && status != null) {
+      requests = requestRepository.findByProjectIdAndStatus(projectId, status);
+    } else if (customerId != null && projectId != null) {
+      requests = requestRepository.findByCustomerIdAndProjectId(customerId, projectId);
+    } else if (customerId != null) {
       requests = requestRepository.findByCustomerId(customerId);
     } else if (projectId != null) {
       requests = requestRepository.findByProjectId(projectId);
     } else if (status != null) {
-      requests = requestRepository.findByStatusIn(List.of(status));
+      requests = requestRepository.findByStatus(status);
     } else {
       requests = requestRepository.findAll();
     }
 
-    if (status != null && customerId != null) {
-      requests = requests.stream().filter(r -> r.getStatus() == status).toList();
-    }
-    if (status != null && projectId != null) {
-      requests = requests.stream().filter(r -> r.getStatus() == status).toList();
-    }
-
-    return requests.stream().map(this::toResponse).toList();
+    return toResponseList(requests);
   }
 
   @Transactional(readOnly = true)
   public List<InformationRequestResponse> listByCustomer(UUID customerId) {
-    return requestRepository.findByCustomerId(customerId).stream().map(this::toResponse).toList();
+    return toResponseList(requestRepository.findByCustomerId(customerId));
   }
 
   @Transactional(readOnly = true)
   public List<InformationRequestResponse> listByProject(UUID projectId) {
-    return requestRepository.findByProjectId(projectId).stream().map(this::toResponse).toList();
+    return toResponseList(requestRepository.findByProjectId(projectId));
   }
 
   // ========== Dashboard Summary ==========
@@ -498,16 +507,16 @@ public class InformationRequestService {
       byStatus.put(s.name(), requestRepository.countByStatus(s));
     }
 
-    // Items pending review (SUBMITTED status across all items)
-    long itemsPendingReview = 0;
+    // Items pending review — single query across all active request items
     var activeRequests =
         requestRepository.findByStatusIn(List.of(RequestStatus.SENT, RequestStatus.IN_PROGRESS));
-    for (var req : activeRequests) {
-      itemsPendingReview +=
-          itemRepository.countByRequestIdAndStatus(req.getId(), ItemStatus.SUBMITTED);
-    }
+    List<UUID> activeRequestIds = activeRequests.stream().map(InformationRequest::getId).toList();
+    long itemsPendingReview =
+        activeRequestIds.isEmpty()
+            ? 0
+            : itemRepository.countByRequestIdInAndStatus(activeRequestIds, ItemStatus.SUBMITTED);
 
-    // Overdue requests
+    // Overdue requests — iterate only active requests (not all)
     long overdueRequests = 0;
     for (var req : activeRequests) {
       if (isOverdue(req)) {
@@ -515,23 +524,12 @@ public class InformationRequestService {
       }
     }
 
-    // Completion rate last 30 days
+    // Completion rate last 30 days — use count queries instead of findAll()
     Instant thirtyDaysAgo = Instant.now().minus(30, ChronoUnit.DAYS);
-    var allRequests = requestRepository.findAll();
     long completedLast30 =
-        allRequests.stream()
-            .filter(r -> r.getStatus() == RequestStatus.COMPLETED)
-            .filter(r -> r.getCompletedAt() != null && r.getCompletedAt().isAfter(thirtyDaysAgo))
-            .count();
-    long totalRelevantLast30 =
-        allRequests.stream()
-            .filter(
-                r ->
-                    (r.getStatus() == RequestStatus.COMPLETED
-                            && r.getCompletedAt() != null
-                            && r.getCompletedAt().isAfter(thirtyDaysAgo))
-                        || (r.getSentAt() != null && r.getSentAt().isAfter(thirtyDaysAgo)))
-            .count();
+        requestRepository.countByStatusAndCompletedAtAfter(RequestStatus.COMPLETED, thirtyDaysAgo);
+    long sentLast30 = requestRepository.countBySentAtAfter(thirtyDaysAgo);
+    long totalRelevantLast30 = completedLast30 + sentLast30;
     double completionRate =
         totalRelevantLast30 > 0 ? (double) completedLast30 / totalRelevantLast30 : 0.0;
 
@@ -567,16 +565,17 @@ public class InformationRequestService {
 
   // ========== Response Mapping ==========
 
+  /** Maps a single request to its response — used for single-entity operations. */
   private InformationRequestResponse toResponse(InformationRequest request) {
     var items = itemRepository.findByRequestIdOrderBySortOrder(request.getId());
 
     String customerName =
-        customerRepository.findById(request.getCustomerId()).map(c -> c.getName()).orElse(null);
+        customerRepository.findById(request.getCustomerId()).map(Customer::getName).orElse(null);
 
     String projectName = null;
     if (request.getProjectId() != null) {
       projectName =
-          projectRepository.findById(request.getProjectId()).map(p -> p.getName()).orElse(null);
+          projectRepository.findById(request.getProjectId()).map(Project::getName).orElse(null);
     }
 
     String portalContactName = null;
@@ -589,6 +588,58 @@ public class InformationRequestService {
 
     return InformationRequestResponse.from(
         request, items, customerName, projectName, portalContactName, portalContactEmail);
+  }
+
+  /**
+   * Maps a list of requests to responses with batch-fetched related entities. Pre-fetches
+   * customers, projects, and portal contacts into maps to avoid N+1 queries.
+   */
+  private List<InformationRequestResponse> toResponseList(List<InformationRequest> requests) {
+    if (requests.isEmpty()) {
+      return List.of();
+    }
+
+    // Batch-fetch customers
+    var customerIds = requests.stream().map(InformationRequest::getCustomerId).distinct().toList();
+    Map<UUID, String> customerNames = new HashMap<>();
+    customerRepository
+        .findAllById(customerIds)
+        .forEach(c -> customerNames.put(c.getId(), c.getName()));
+
+    // Batch-fetch projects
+    var projectIds =
+        requests.stream()
+            .map(InformationRequest::getProjectId)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+    Map<UUID, String> projectNames = new HashMap<>();
+    if (!projectIds.isEmpty()) {
+      projectRepository
+          .findAllById(projectIds)
+          .forEach(p -> projectNames.put(p.getId(), p.getName()));
+    }
+
+    // Batch-fetch portal contacts
+    var contactIds =
+        requests.stream().map(InformationRequest::getPortalContactId).distinct().toList();
+    Map<UUID, PortalContact> contactMap = new HashMap<>();
+    portalContactRepository.findAllById(contactIds).forEach(c -> contactMap.put(c.getId(), c));
+
+    return requests.stream()
+        .map(
+            request -> {
+              var items = itemRepository.findByRequestIdOrderBySortOrder(request.getId());
+              String customerName = customerNames.get(request.getCustomerId());
+              String projectName =
+                  request.getProjectId() != null ? projectNames.get(request.getProjectId()) : null;
+              var contact = contactMap.get(request.getPortalContactId());
+              String portalContactName = contact != null ? contact.getDisplayName() : null;
+              String portalContactEmail = contact != null ? contact.getEmail() : null;
+              return InformationRequestResponse.from(
+                  request, items, customerName, projectName, portalContactName, portalContactEmail);
+            })
+        .toList();
   }
 
   private void validatePortalContact(UUID portalContactId, UUID customerId) {

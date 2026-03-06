@@ -30,7 +30,7 @@ public class InformationRequestController {
   }
 
   @PostMapping("/api/information-requests")
-  @PreAuthorize("isAuthenticated()")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN','ORG_OWNER')")
   public ResponseEntity<InformationRequestResponse> create(
       @Valid @RequestBody CreateInformationRequestRequest request) {
     var response = informationRequestService.create(request);
@@ -54,50 +54,40 @@ public class InformationRequestController {
   }
 
   @PutMapping("/api/information-requests/{id}")
-  @PreAuthorize("isAuthenticated()")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN','ORG_OWNER')")
   public ResponseEntity<InformationRequestResponse> update(
       @PathVariable UUID id, @Valid @RequestBody UpdateInformationRequestRequest request) {
-    return ResponseEntity.ok(
-        informationRequestService.updateRequest(
-            id, request.reminderIntervalDays(), request.projectId()));
+    return ResponseEntity.ok(informationRequestService.updateRequest(id, request));
   }
 
   @PostMapping("/api/information-requests/{id}/send")
-  @PreAuthorize("isAuthenticated()")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN','ORG_OWNER')")
   public ResponseEntity<InformationRequestResponse> send(@PathVariable UUID id) {
     return ResponseEntity.ok(informationRequestService.send(id));
   }
 
   @PostMapping("/api/information-requests/{id}/cancel")
-  @PreAuthorize("isAuthenticated()")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN','ORG_OWNER')")
   public ResponseEntity<InformationRequestResponse> cancel(@PathVariable UUID id) {
     return ResponseEntity.ok(informationRequestService.cancel(id));
   }
 
   @PostMapping("/api/information-requests/{id}/items")
-  @PreAuthorize("isAuthenticated()")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN','ORG_OWNER')")
   public ResponseEntity<InformationRequestResponse> addItem(
       @PathVariable UUID id, @Valid @RequestBody AddItemRequest request) {
-    return ResponseEntity.ok(
-        informationRequestService.addItem(
-            id,
-            request.name(),
-            request.description(),
-            request.responseType(),
-            request.required(),
-            request.fileTypeHints(),
-            request.sortOrder()));
+    return ResponseEntity.ok(informationRequestService.addItem(id, request));
   }
 
   @PostMapping("/api/information-requests/{id}/items/{itemId}/accept")
-  @PreAuthorize("isAuthenticated()")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN','ORG_OWNER')")
   public ResponseEntity<InformationRequestResponse> acceptItem(
       @PathVariable UUID id, @PathVariable UUID itemId) {
     return ResponseEntity.ok(informationRequestService.acceptItem(id, itemId));
   }
 
   @PostMapping("/api/information-requests/{id}/items/{itemId}/reject")
-  @PreAuthorize("isAuthenticated()")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN','ORG_OWNER')")
   public ResponseEntity<InformationRequestResponse> rejectItem(
       @PathVariable UUID id,
       @PathVariable UUID itemId,
@@ -106,7 +96,7 @@ public class InformationRequestController {
   }
 
   @PostMapping("/api/information-requests/{id}/resend-notification")
-  @PreAuthorize("isAuthenticated()")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN','ORG_OWNER')")
   public ResponseEntity<InformationRequestResponse> resendNotification(@PathVariable UUID id) {
     return ResponseEntity.ok(informationRequestService.resendNotification(id));
   }

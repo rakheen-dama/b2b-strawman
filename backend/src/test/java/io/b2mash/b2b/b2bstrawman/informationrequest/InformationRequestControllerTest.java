@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.informationrequest;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -342,11 +343,11 @@ class InformationRequestControllerTest {
         JsonPath.read(result2.getResponse().getContentAsString(), "$.requestNumber").toString();
 
     // Both should match REQ-NNNN pattern, and num2 > num1
-    assert num1.startsWith("REQ-") : "Expected REQ- prefix, got: " + num1;
-    assert num2.startsWith("REQ-") : "Expected REQ- prefix, got: " + num2;
+    assertTrue(num1.startsWith("REQ-"), "Expected REQ- prefix, got: " + num1);
+    assertTrue(num2.startsWith("REQ-"), "Expected REQ- prefix, got: " + num2);
     int n1 = Integer.parseInt(num1.substring(4));
     int n2 = Integer.parseInt(num2.substring(4));
-    assert n2 > n1 : "Expected sequential numbering: " + num1 + " then " + num2;
+    assertTrue(n2 > n1, "Expected sequential numbering: " + num1 + " then " + num2);
   }
 
   // ========== Update & Add Item Tests ==========
@@ -547,11 +548,26 @@ class InformationRequestControllerTest {
   }
 
   @Test
-  void shouldAllowMemberToCreate() throws Exception {
+  void shouldForbidMemberFromCreating() throws Exception {
     mockMvc
         .perform(
             post("/api/information-requests")
                 .with(memberJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"requestTemplateId": "%s", "customerId": "%s", "portalContactId": "%s"}
+                    """
+                        .formatted(templateId, customerId, portalContactId)))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void shouldAllowAdminToCreate() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/information-requests")
+                .with(adminJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """

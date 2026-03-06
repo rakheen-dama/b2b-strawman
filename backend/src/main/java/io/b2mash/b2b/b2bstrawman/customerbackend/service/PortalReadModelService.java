@@ -7,6 +7,8 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalInvoiceLineView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalInvoiceView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalProjectSummaryView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalProjectView;
+import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalRequestItemView;
+import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalRequestView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalTaskView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -196,6 +198,34 @@ public class PortalReadModelService {
   public List<io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalAcceptanceView>
       findPendingAcceptances(UUID portalContactId) {
     return readModelRepository.findPendingAcceptancesByContactId(portalContactId);
+  }
+
+  // ── Information request query methods ──────────────────────────────
+
+  /** Lists all portal information requests for a given portal contact. */
+  public List<PortalRequestView> findRequestsByPortalContactId(UUID portalContactId) {
+    return readModelRepository.findRequestsByPortalContactId(portalContactId);
+  }
+
+  /** Returns a single request by ID, verifying the portal contact owns it. */
+  public PortalRequestView findRequestById(UUID requestId, UUID portalContactId) {
+    var request =
+        readModelRepository
+            .findRequestById(requestId)
+            .orElseThrow(() -> new ResourceNotFoundException("InformationRequest", requestId));
+
+    if (!request.portalContactId().equals(portalContactId)) {
+      throw new ResourceNotFoundException("InformationRequest", requestId);
+    }
+    return request;
+  }
+
+  /** Lists items for a request, verifying the portal contact owns the request. */
+  public List<PortalRequestItemView> findRequestItemsByRequestId(
+      UUID requestId, UUID portalContactId) {
+    // Verify ownership
+    findRequestById(requestId, portalContactId);
+    return readModelRepository.findRequestItemsByRequestId(requestId);
   }
 
   /** Deserializes the tax breakdown JSON string from the read-model into a typed list. */

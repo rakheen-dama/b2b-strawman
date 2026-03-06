@@ -7,6 +7,8 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalInvoiceLineView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalInvoiceView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalProjectSummaryView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalProjectView;
+import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalRequestItemView;
+import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalRequestView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalTaskView;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -757,6 +759,180 @@ public class PortalReadModelRepository {
         .params(token)
         .query(PortalAcceptanceView.class)
         .optional();
+  }
+
+  // ── Information request methods ─────────────────────────────────────
+
+  public void upsertPortalRequest(
+      UUID id,
+      String requestNumber,
+      UUID customerId,
+      UUID portalContactId,
+      UUID projectId,
+      String projectName,
+      String orgId,
+      String status,
+      int totalItems,
+      int submittedItems,
+      int acceptedItems,
+      int rejectedItems,
+      Instant sentAt,
+      Instant completedAt) {
+    jdbc.sql(
+            """
+            INSERT INTO portal.portal_requests
+              (id, request_number, customer_id, portal_contact_id, project_id, project_name,
+               org_id, status, total_items, submitted_items, accepted_items, rejected_items,
+               sent_at, completed_at, synced_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+            ON CONFLICT (id) DO UPDATE SET
+              status = EXCLUDED.status,
+              total_items = EXCLUDED.total_items,
+              submitted_items = EXCLUDED.submitted_items,
+              accepted_items = EXCLUDED.accepted_items,
+              rejected_items = EXCLUDED.rejected_items,
+              completed_at = EXCLUDED.completed_at,
+              synced_at = NOW()
+            """)
+        .params(
+            id,
+            requestNumber,
+            customerId,
+            portalContactId,
+            projectId,
+            projectName,
+            orgId,
+            status,
+            totalItems,
+            submittedItems,
+            acceptedItems,
+            rejectedItems,
+            toTimestamp(sentAt),
+            toTimestamp(completedAt))
+        .update();
+  }
+
+  public void upsertPortalRequestItem(
+      UUID id,
+      UUID requestId,
+      String name,
+      String description,
+      String responseType,
+      boolean required,
+      String fileTypeHints,
+      int sortOrder,
+      String status,
+      String rejectionReason,
+      UUID documentId,
+      String textResponse) {
+    jdbc.sql(
+            """
+            INSERT INTO portal.portal_request_items
+              (id, request_id, name, description, response_type, required, file_type_hints,
+               sort_order, status, rejection_reason, document_id, text_response, synced_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+            ON CONFLICT (id) DO UPDATE SET
+              status = EXCLUDED.status,
+              rejection_reason = EXCLUDED.rejection_reason,
+              document_id = EXCLUDED.document_id,
+              text_response = EXCLUDED.text_response,
+              synced_at = NOW()
+            """)
+        .params(
+            id,
+            requestId,
+            name,
+            description,
+            responseType,
+            required,
+            fileTypeHints,
+            sortOrder,
+            status,
+            rejectionReason,
+            documentId,
+            textResponse)
+        .update();
+  }
+
+  public void updatePortalRequestStatus(UUID requestId, String status, Instant completedAt) {
+    jdbc.sql(
+            """
+            UPDATE portal.portal_requests
+            SET status = ?, completed_at = ?, synced_at = NOW()
+            WHERE id = ?
+            """)
+        .params(status, toTimestamp(completedAt), requestId)
+        .update();
+  }
+
+  public void updatePortalRequestItemStatus(
+      UUID itemId, String status, String rejectionReason, UUID documentId, String textResponse) {
+    jdbc.sql(
+            """
+            UPDATE portal.portal_request_items
+            SET status = ?, rejection_reason = ?, document_id = ?, text_response = ?, synced_at = NOW()
+            WHERE id = ?
+            """)
+        .params(status, rejectionReason, documentId, textResponse, itemId)
+        .update();
+  }
+
+  public void recalculatePortalRequestCounts(UUID requestId) {
+    jdbc.sql(
+            """
+            UPDATE portal.portal_requests SET
+              total_items = (SELECT COUNT(*) FROM portal.portal_request_items WHERE request_id = ?),
+              submitted_items = (SELECT COUNT(*) FROM portal.portal_request_items WHERE request_id = ? AND status = 'SUBMITTED'),
+              accepted_items = (SELECT COUNT(*) FROM portal.portal_request_items WHERE request_id = ? AND status = 'ACCEPTED'),
+              rejected_items = (SELECT COUNT(*) FROM portal.portal_request_items WHERE request_id = ? AND status = 'REJECTED'),
+              synced_at = NOW()
+            WHERE id = ?
+            """)
+        .params(requestId, requestId, requestId, requestId, requestId)
+        .update();
+  }
+
+  public List<PortalRequestView> findRequestsByPortalContactId(UUID portalContactId) {
+    return jdbc.sql(
+            """
+            SELECT id, request_number, customer_id, portal_contact_id, project_id, project_name,
+                   org_id, status, total_items, submitted_items, accepted_items, rejected_items,
+                   sent_at, completed_at, synced_at
+            FROM portal.portal_requests
+            WHERE portal_contact_id = ?
+            ORDER BY synced_at DESC
+            """)
+        .params(portalContactId)
+        .query(PortalRequestView.class)
+        .list();
+  }
+
+  public Optional<PortalRequestView> findRequestById(UUID requestId) {
+    return jdbc.sql(
+            """
+            SELECT id, request_number, customer_id, portal_contact_id, project_id, project_name,
+                   org_id, status, total_items, submitted_items, accepted_items, rejected_items,
+                   sent_at, completed_at, synced_at
+            FROM portal.portal_requests
+            WHERE id = ?
+            """)
+        .params(requestId)
+        .query(PortalRequestView.class)
+        .optional();
+  }
+
+  public List<PortalRequestItemView> findRequestItemsByRequestId(UUID requestId) {
+    return jdbc.sql(
+            """
+            SELECT id, request_id, name, description, response_type, required, file_type_hints,
+                   sort_order, status, rejection_reason, document_id, text_response, synced_at
+            FROM portal.portal_request_items
+            WHERE request_id = ?
+            ORDER BY sort_order ASC
+            """)
+        .params(requestId)
+        .query(PortalRequestItemView.class)
+        .list();
   }
 
   public List<PortalAcceptanceView> findPendingAcceptancesByContactId(UUID contactId) {

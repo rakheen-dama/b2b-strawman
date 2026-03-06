@@ -26,11 +26,20 @@ import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestSentEvent;
 import io.b2mash.b2b.b2bstrawman.event.CommentCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.event.CommentDeletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.CommentVisibilityChangedEvent;
+import io.b2mash.b2b.b2bstrawman.event.InformationRequestCancelledEvent;
+import io.b2mash.b2b.b2bstrawman.event.InformationRequestCompletedEvent;
+import io.b2mash.b2b.b2bstrawman.event.InformationRequestSentEvent;
+import io.b2mash.b2b.b2bstrawman.event.RequestItemAcceptedEvent;
+import io.b2mash.b2b.b2bstrawman.event.RequestItemRejectedEvent;
+import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestRepository;
+import io.b2mash.b2b.b2bstrawman.informationrequest.ItemStatus;
+import io.b2mash.b2b.b2bstrawman.informationrequest.RequestItemRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
@@ -77,6 +86,8 @@ public class PortalEventHandler {
   private final OrganizationRepository organizationRepository;
   private final OrgSettingsRepository orgSettingsRepository;
   private final AcceptanceRequestRepository acceptanceRequestRepository;
+  private final InformationRequestRepository informationRequestRepository;
+  private final RequestItemRepository requestItemRepository;
 
   public PortalEventHandler(
       PortalReadModelRepository readModelRepo,
@@ -90,7 +101,9 @@ public class PortalEventHandler {
       ObjectMapper objectMapper,
       OrganizationRepository organizationRepository,
       OrgSettingsRepository orgSettingsRepository,
-      AcceptanceRequestRepository acceptanceRequestRepository) {
+      AcceptanceRequestRepository acceptanceRequestRepository,
+      InformationRequestRepository informationRequestRepository,
+      RequestItemRepository requestItemRepository) {
     this.readModelRepo = readModelRepo;
     this.projectRepository = projectRepository;
     this.documentRepository = documentRepository;
@@ -103,6 +116,8 @@ public class PortalEventHandler {
     this.organizationRepository = organizationRepository;
     this.orgSettingsRepository = orgSettingsRepository;
     this.acceptanceRequestRepository = acceptanceRequestRepository;
+    this.informationRequestRepository = informationRequestRepository;
+    this.requestItemRepository = requestItemRepository;
   }
 
   // ── Customer-project events ────────────────────────────────────────
@@ -716,6 +731,140 @@ public class PortalEventHandler {
                 "Failed to project AcceptanceRequestExpiredEvent: requestId={}",
                 event.requestId(),
                 e);
+          }
+        });
+  }
+
+  // ── Information request events ─────────────────────────────────────
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onInformationRequestSent(InformationRequestSentEvent event) {
+    handleInTenantScope(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            var request = informationRequestRepository.findById(event.requestId()).orElseThrow();
+            var items = requestItemRepository.findByRequestId(request.getId());
+            var projectName =
+                request.getProjectId() != null
+                    ? projectRepository
+                        .findById(request.getProjectId())
+                        .map(Project::getName)
+                        .orElse(null)
+                    : null;
+
+            int totalItems = items.size();
+            int submittedItems =
+                (int) items.stream().filter(i -> i.getStatus() == ItemStatus.SUBMITTED).count();
+            int acceptedItems =
+                (int) items.stream().filter(i -> i.getStatus() == ItemStatus.ACCEPTED).count();
+            int rejectedItems =
+                (int) items.stream().filter(i -> i.getStatus() == ItemStatus.REJECTED).count();
+
+            readModelRepo.upsertPortalRequest(
+                request.getId(),
+                request.getRequestNumber(),
+                request.getCustomerId(),
+                request.getPortalContactId(),
+                request.getProjectId(),
+                projectName,
+                event.orgId(),
+                request.getStatus().name(),
+                totalItems,
+                submittedItems,
+                acceptedItems,
+                rejectedItems,
+                request.getSentAt(),
+                request.getCompletedAt());
+
+            for (var item : items) {
+              readModelRepo.upsertPortalRequestItem(
+                  item.getId(),
+                  item.getRequestId(),
+                  item.getName(),
+                  item.getDescription(),
+                  item.getResponseType().name(),
+                  item.isRequired(),
+                  item.getFileTypeHints(),
+                  item.getSortOrder(),
+                  item.getStatus().name(),
+                  item.getRejectionReason(),
+                  item.getDocumentId(),
+                  item.getTextResponse());
+            }
+          } catch (Exception e) {
+            log.warn(
+                "Failed to project InformationRequestSentEvent: requestId={}",
+                event.requestId(),
+                e);
+          }
+        });
+  }
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onInformationRequestCancelled(InformationRequestCancelledEvent event) {
+    handleInTenantScope(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            readModelRepo.updatePortalRequestStatus(event.requestId(), "CANCELLED", null);
+          } catch (Exception e) {
+            log.warn(
+                "Failed to project InformationRequestCancelledEvent: requestId={}",
+                event.requestId(),
+                e);
+          }
+        });
+  }
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onInformationRequestCompleted(InformationRequestCompletedEvent event) {
+    handleInTenantScope(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            readModelRepo.updatePortalRequestStatus(
+                event.requestId(), "COMPLETED", event.occurredAt());
+          } catch (Exception e) {
+            log.warn(
+                "Failed to project InformationRequestCompletedEvent: requestId={}",
+                event.requestId(),
+                e);
+          }
+        });
+  }
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onRequestItemAccepted(RequestItemAcceptedEvent event) {
+    handleInTenantScope(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            readModelRepo.updatePortalRequestItemStatus(
+                event.itemId(), "ACCEPTED", null, null, null);
+            readModelRepo.recalculatePortalRequestCounts(event.requestId());
+          } catch (Exception e) {
+            log.warn("Failed to project RequestItemAcceptedEvent: itemId={}", event.itemId(), e);
+          }
+        });
+  }
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onRequestItemRejected(RequestItemRejectedEvent event) {
+    handleInTenantScope(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            readModelRepo.updatePortalRequestItemStatus(
+                event.itemId(), "REJECTED", event.rejectionReason(), null, null);
+            readModelRepo.recalculatePortalRequestCounts(event.requestId());
+          } catch (Exception e) {
+            log.warn("Failed to project RequestItemRejectedEvent: itemId={}", event.itemId(), e);
           }
         });
   }

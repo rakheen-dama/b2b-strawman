@@ -7,6 +7,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
   createProjectTemplateAction,
@@ -21,6 +28,7 @@ interface TemplateEditorProps {
   template?: ProjectTemplateResponse;
   availableTags: TagResponse[];
   availableCustomerFields?: FieldDefinitionResponse[];
+  availableRequestTemplates?: { id: string; name: string }[];
 }
 
 interface TaskItemRow {
@@ -39,7 +47,7 @@ interface TaskRow {
   itemsExpanded: boolean;
 }
 
-export function TemplateEditor({ slug, template, availableTags, availableCustomerFields = [] }: TemplateEditorProps) {
+export function TemplateEditor({ slug, template, availableTags, availableCustomerFields = [], availableRequestTemplates = [] }: TemplateEditorProps) {
   const router = useRouter();
   const nextKeyRef = useRef(0);
 
@@ -67,6 +75,7 @@ export function TemplateEditor({ slug, template, availableTags, availableCustome
   const [namePattern, setNamePattern] = useState(template?.namePattern ?? "");
   const [description, setDescription] = useState(template?.description ?? "");
   const [billableDefault, setBillableDefault] = useState(template?.billableDefault ?? false);
+  const [requestTemplateId, setRequestTemplateId] = useState(template?.requestTemplateId ?? "");
   const [tasks, setTasks] = useState<TaskRow[]>(() => {
     if (template?.tasks && template.tasks.length > 0) {
       return template.tasks
@@ -238,6 +247,7 @@ export function TemplateEditor({ slug, template, availableTags, availableCustome
         items: t.items.map((item, idx) => ({ title: item.title.trim(), sortOrder: idx })),
       })),
       tagIds: selectedTagIds,
+      requestTemplateId: requestTemplateId || null,
     };
 
     try {
@@ -338,6 +348,31 @@ export function TemplateEditor({ slug, template, availableTags, availableCustome
             Tasks billable by default
           </Label>
         </div>
+
+        {availableRequestTemplates.length > 0 && (
+          <div className="space-y-2">
+            <Label htmlFor="request-template-select">Information Request Template</Label>
+            <Select
+              value={requestTemplateId || "none"}
+              onValueChange={(val) => setRequestTemplateId(val === "none" ? "" : val)}
+            >
+              <SelectTrigger id="request-template-select" className="w-full">
+                <SelectValue placeholder="None" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                {availableRequestTemplates.map((rt) => (
+                  <SelectItem key={rt.id} value={rt.id}>
+                    {rt.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              When a project is created from this template, a draft information request will be created for the linked customer.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Section 2 — Task List */}

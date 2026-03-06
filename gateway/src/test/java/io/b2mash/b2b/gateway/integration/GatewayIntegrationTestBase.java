@@ -65,7 +65,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @Import(GatewayIntegrationTestBase.IntegrationTestConfig.class)
 abstract class GatewayIntegrationTestBase {
 
-  protected static final String DEFAULT_ORG_ID = "org-uuid-456";
+  protected static final String DEFAULT_ORG_ID = "a1b2c3d4-e5f6-7890-abcd-ef1234567890";
   protected static final String DEFAULT_ORG_SLUG = "acme-corp";
   protected static final String KEYCLOAK_REALM = "docteams";
 
@@ -101,9 +101,10 @@ abstract class GatewayIntegrationTestBase {
 
     // Keycloak admin config
     registry.add("keycloak.admin.url", keycloakWireMock::baseUrl);
+    registry.add("keycloak.admin.auth-server-url", keycloakWireMock::baseUrl);
     registry.add("keycloak.admin.realm", () -> KEYCLOAK_REALM);
-    registry.add("keycloak.admin.client-id", () -> "admin-cli");
-    registry.add("keycloak.admin.client-secret", () -> "test-secret");
+    registry.add("keycloak.admin.username", () -> "admin");
+    registry.add("keycloak.admin.password", () -> "admin");
   }
 
   @BeforeEach

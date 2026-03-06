@@ -71,18 +71,28 @@ public class KeycloakAdminClient {
   }
 
   /**
-   * Creates an organization in Keycloak.
+   * Creates an organization in Keycloak with the creator's user ID stored as an attribute.
    *
    * @return the organization ID from the Location header, or null if not returned
    */
-  public String createOrganization(String name, String alias) {
+  public String createOrganization(String name, String alias, String creatorUserId) {
+    var body =
+        Map.of(
+            "name",
+            name,
+            "alias",
+            alias,
+            "enabled",
+            true,
+            "attributes",
+            Map.of("creatorUserId", List.of(creatorUserId)));
     var response =
         restClient
             .post()
             .uri("/organizations")
             .header("Authorization", "Bearer " + getAdminToken())
             .contentType(MediaType.APPLICATION_JSON)
-            .body(Map.of("name", name, "alias", alias, "enabled", true))
+            .body(body)
             .retrieve()
             .toBodilessEntity();
     // Extract org ID from Location header: .../organizations/{id}
@@ -126,17 +136,34 @@ public class KeycloakAdminClient {
         .body(new ParameterizedTypeReference<>() {});
   }
 
-  /** Invites a user to the organization by email with the given role. */
-  public Map<String, Object> inviteMember(String orgId, String email, String role) {
-    Map<String, Object> body = Map.of("email", email, "roles", List.of(role));
+  /** Fetches a single organization by ID, including its attributes. */
+  public Map<String, Object> getOrganization(String orgId) {
     return restClient
-        .post()
-        .uri("/organizations/{orgId}/invitations", orgId)
+        .get()
+        .uri("/organizations/{orgId}", orgId)
         .header("Authorization", "Bearer " + getAdminToken())
-        .contentType(MediaType.APPLICATION_JSON)
-        .body(body)
         .retrieve()
         .body(new ParameterizedTypeReference<>() {});
+  }
+
+  /**
+   * Invites a user to the organization by email. Keycloak 26.5 uses the {@code
+   * /members/invite-user} endpoint with form-urlencoded body. The {@code redirectUrl} tells
+   * Keycloak where to send the user after they accept the invitation and complete registration.
+   */
+  public void inviteMember(String orgId, String email, String role, String redirectUrl) {
+    String formBody = "email=" + URLEncoder.encode(email, StandardCharsets.UTF_8);
+    if (redirectUrl != null && !redirectUrl.isBlank()) {
+      formBody += "&redirectUrl=" + URLEncoder.encode(redirectUrl, StandardCharsets.UTF_8);
+    }
+    restClient
+        .post()
+        .uri("/organizations/{orgId}/members/invite-user", orgId)
+        .header("Authorization", "Bearer " + getAdminToken())
+        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+        .body(formBody)
+        .retrieve()
+        .toBodilessEntity();
   }
 
   /** Lists pending invitations for the organization. */
@@ -159,24 +186,104 @@ public class KeycloakAdminClient {
         .toBodilessEntity();
   }
 
-  /** Updates a member's role within the organization. */
+  /**
+   * Ensures an organization role exists (creates it if not found), then grants it to the member.
+   * Keycloak 26 organizations require roles to be created before they can be assigned.
+   */
   public void updateMemberRole(String orgId, String userId, String role) {
+    // Step 1: Ensure the role exists in the organization
+    Map<String, Object> orgRole = ensureOrgRole(orgId, role);
+
+    // Step 2: Grant the role to the member
     restClient
-        .put()
-        .uri("/organizations/{orgId}/members/{userId}/roles", orgId, userId)
+        .post()
+        .uri("/organizations/{orgId}/members/{userId}/organization-roles/grant", orgId, userId)
         .header("Authorization", "Bearer " + getAdminToken())
         .contentType(MediaType.APPLICATION_JSON)
-        .body(List.of(role))
+        .body(List.of(orgRole))
         .retrieve()
         .toBodilessEntity();
   }
 
+  /**
+   * Ensures an organization role exists. Creates it if not found. Returns the role representation
+   * (with id and name) needed for granting.
+   */
+  @SuppressWarnings("unchecked")
+  private Map<String, Object> ensureOrgRole(String orgId, String roleName) {
+    // Try to find existing role
+    List<Map<String, Object>> roles =
+        restClient
+            .get()
+            .uri("/organizations/{orgId}/roles", orgId)
+            .header("Authorization", "Bearer " + getAdminToken())
+            .retrieve()
+            .body(new ParameterizedTypeReference<>() {});
+    if (roles != null) {
+      for (Map<String, Object> r : roles) {
+        if (roleName.equals(r.get("name"))) {
+          return r;
+        }
+      }
+    }
+
+    // Role doesn't exist — create it
+    var response =
+        restClient
+            .post()
+            .uri("/organizations/{orgId}/roles", orgId)
+            .header("Authorization", "Bearer " + getAdminToken())
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(Map.of("name", roleName))
+            .retrieve()
+            .toBodilessEntity();
+
+    // Re-fetch to get the full representation with ID
+    List<Map<String, Object>> updatedRoles =
+        restClient
+            .get()
+            .uri("/organizations/{orgId}/roles", orgId)
+            .header("Authorization", "Bearer " + getAdminToken())
+            .retrieve()
+            .body(new ParameterizedTypeReference<>() {});
+    if (updatedRoles != null) {
+      for (Map<String, Object> r : updatedRoles) {
+        if (roleName.equals(r.get("name"))) {
+          return r;
+        }
+      }
+    }
+
+    // Fallback: return minimal representation
+    return Map.of("name", roleName);
+  }
+
+  /**
+   * Resolves an org identifier (alias or UUID) to a Keycloak org UUID. If the identifier is already
+   * a UUID, it is returned as-is. Otherwise, looks up the organization by alias.
+   *
+   * @throws ResponseStatusException (404) if the alias is not found
+   */
+  public String resolveOrgId(String aliasOrId) {
+    // UUIDs are 36 chars with hyphens — aliases are shorter slugs
+    if (aliasOrId != null && aliasOrId.length() == 36 && aliasOrId.contains("-")) {
+      return aliasOrId;
+    }
+    var org = findOrganizationByAlias(aliasOrId);
+    if (org == null || org.get("id") == null) {
+      throw new ResponseStatusException(
+          HttpStatus.NOT_FOUND, "Organization not found for alias: " + aliasOrId);
+    }
+    return (String) org.get("id");
+  }
+
   /** Finds an organization by alias. Returns null if not found. */
   public Map<String, Object> findOrganizationByAlias(String alias) {
+    // Keycloak 26: "search" matches by name, "q=alias:<value>" matches by alias
     List<Map<String, Object>> orgs =
         restClient
             .get()
-            .uri("/organizations?search={alias}&exact=true", alias)
+            .uri("/organizations?q=alias:{alias}", alias)
             .header("Authorization", "Bearer " + getAdminToken())
             .retrieve()
             .body(new ParameterizedTypeReference<>() {});

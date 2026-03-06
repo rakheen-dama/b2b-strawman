@@ -1,7 +1,6 @@
 package io.b2mash.b2b.gateway.controller;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
@@ -60,7 +59,7 @@ class AdminProxyControllerTest {
 
   @Autowired private MockMvc mockMvc;
 
-  private static final String ORG_ID = "org-uuid-456";
+  private static final String ORG_ID = "a1b2c3d4-e5f6-7890-abcd-ef1234567890";
   private static final String REALM = "docteams";
 
   @BeforeAll
@@ -76,17 +75,18 @@ class AdminProxyControllerTest {
   @DynamicPropertySource
   static void configureProperties(DynamicPropertyRegistry registry) {
     registry.add("keycloak.admin.url", () -> wireMock.baseUrl());
+    registry.add("keycloak.admin.auth-server-url", () -> wireMock.baseUrl());
     registry.add("keycloak.admin.realm", () -> REALM);
-    registry.add("keycloak.admin.client-id", () -> "admin-cli");
-    registry.add("keycloak.admin.client-secret", () -> "test-secret");
+    registry.add("keycloak.admin.username", () -> "admin");
+    registry.add("keycloak.admin.password", () -> "admin");
   }
 
   @BeforeEach
   void setupTokenStub() {
     wireMock.resetAll();
-    // Stub the token endpoint for service account authentication
+    // KeycloakAdminClient authenticates against the master realm
     wireMock.stubFor(
-        WireMock.post(urlPathEqualTo("/realms/" + REALM + "/protocol/openid-connect/token"))
+        WireMock.post(urlPathEqualTo("/realms/master/protocol/openid-connect/token"))
             .willReturn(
                 aResponse()
                     .withStatus(200)
@@ -99,16 +99,12 @@ class AdminProxyControllerTest {
 
   @Test
   void invite_asAdmin_succeeds() throws Exception {
+    // Keycloak 26.5: POST /members/invite-user with form-urlencoded body
     wireMock.stubFor(
-        WireMock.post(urlPathEqualTo("/admin/realms/" + REALM + "/orgs/" + ORG_ID + "/invitations"))
-            .willReturn(
-                aResponse()
-                    .withStatus(200)
-                    .withHeader("Content-Type", "application/json")
-                    .withBody(
-                        """
-                        {"id":"inv-1","email":"newuser@test.com","roles":["member"]}
-                        """)));
+        WireMock.post(
+                urlPathEqualTo(
+                    "/admin/realms/" + REALM + "/organizations/" + ORG_ID + "/members/invite-user"))
+            .willReturn(aResponse().withStatus(204)));
 
     mockMvc
         .perform(
@@ -142,7 +138,9 @@ class AdminProxyControllerTest {
   @Test
   void listInvitations_asAdmin_returnsList() throws Exception {
     wireMock.stubFor(
-        WireMock.get(urlPathEqualTo("/admin/realms/" + REALM + "/orgs/" + ORG_ID + "/invitations"))
+        WireMock.get(
+                urlPathEqualTo(
+                    "/admin/realms/" + REALM + "/organizations/" + ORG_ID + "/invitations"))
             .willReturn(
                 aResponse()
                     .withStatus(200)
@@ -162,7 +160,8 @@ class AdminProxyControllerTest {
   void revokeInvitation_asAdmin_succeeds() throws Exception {
     wireMock.stubFor(
         WireMock.delete(
-                urlPathEqualTo("/admin/realms/" + REALM + "/orgs/" + ORG_ID + "/invitations/inv-1"))
+                urlPathEqualTo(
+                    "/admin/realms/" + REALM + "/organizations/" + ORG_ID + "/invitations/inv-1"))
             .willReturn(aResponse().withStatus(204)));
 
     mockMvc
@@ -175,30 +174,65 @@ class AdminProxyControllerTest {
 
   @Test
   void listMembers_asAdmin_returnsList() throws Exception {
+    // Stub org fetch (for creatorUserId attribute lookup)
     wireMock.stubFor(
-        WireMock.get(urlPathEqualTo("/admin/realms/" + REALM + "/orgs/" + ORG_ID + "/members"))
+        WireMock.get(urlPathEqualTo("/admin/realms/" + REALM + "/organizations/" + ORG_ID))
             .willReturn(
                 aResponse()
                     .withStatus(200)
                     .withHeader("Content-Type", "application/json")
                     .withBody(
                         """
-                        [{"id":"user-1","username":"alice","email":"alice@test.com"}]
+                        {"id":"%s","attributes":{"creatorUserId":["user-1"]}}
+                        """
+                            .formatted(ORG_ID))));
+
+    wireMock.stubFor(
+        WireMock.get(
+                urlPathEqualTo("/admin/realms/" + REALM + "/organizations/" + ORG_ID + "/members"))
+            .willReturn(
+                aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(
+                        """
+                        [{"id":"user-1","username":"alice","email":"alice@test.com"},
+                         {"id":"user-2","username":"bob","email":"bob@test.com"}]
                         """)));
 
     mockMvc
         .perform(get("/bff/admin/members").with(oidcLogin().oidcUser(buildAdminUser())))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$[0].username").value("alice"));
+        .andExpect(jsonPath("$[0].email").value("alice@test.com"))
+        .andExpect(jsonPath("$[0].role").value("owner"))
+        .andExpect(jsonPath("$[1].email").value("bob@test.com"))
+        .andExpect(jsonPath("$[1].role").value("member"));
   }
 
   @Test
   void changeRole_asAdmin_succeeds() throws Exception {
+    // Stub: list existing org roles (returns the "admin" role already exists)
     wireMock.stubFor(
-        WireMock.put(
+        WireMock.get(
+                urlPathEqualTo("/admin/realms/" + REALM + "/organizations/" + ORG_ID + "/roles"))
+            .willReturn(
+                aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(
+                        """
+                        [{"id":"role-admin-id","name":"admin"}]
+                        """)));
+
+    // Stub: grant role to member
+    wireMock.stubFor(
+        WireMock.post(
                 urlPathEqualTo(
-                    "/admin/realms/" + REALM + "/orgs/" + ORG_ID + "/members/user-1/roles"))
-            .withRequestBody(equalToJson("[\"admin\"]"))
+                    "/admin/realms/"
+                        + REALM
+                        + "/organizations/"
+                        + ORG_ID
+                        + "/members/user-1/organization-roles/grant"))
             .willReturn(aResponse().withStatus(204)));
 
     mockMvc
@@ -217,7 +251,9 @@ class AdminProxyControllerTest {
   @Test
   void invite_duplicateEmail_returnsError() throws Exception {
     wireMock.stubFor(
-        WireMock.post(urlPathEqualTo("/admin/realms/" + REALM + "/orgs/" + ORG_ID + "/invitations"))
+        WireMock.post(
+                urlPathEqualTo(
+                    "/admin/realms/" + REALM + "/organizations/" + ORG_ID + "/members/invite-user"))
             .willReturn(aResponse().withStatus(409).withBody("Invitation already exists")));
 
     mockMvc

@@ -1,0 +1,799 @@
+package io.b2mash.b2b.b2bstrawman.informationrequest;
+
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.jayway.jsonpath.JsonPath;
+import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
+import io.b2mash.b2b.b2bstrawman.provisioning.SchemaNameGenerator;
+import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+@Import(TestcontainersConfiguration.class)
+@ActiveProfiles("test")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+class InformationRequestControllerTest {
+
+  private static final String API_KEY = "test-api-key";
+  private static final String ORG_ID = "org_inforeq_ctrl_test";
+
+  @Autowired private MockMvc mockMvc;
+  @Autowired private TenantProvisioningService provisioningService;
+  @Autowired private PlanSyncService planSyncService;
+  @Autowired private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
+  private String memberIdOwner;
+  private String memberIdAdmin;
+  private String memberIdMember;
+  private String customerId;
+  private String portalContactId;
+  private String templateId;
+
+  @BeforeAll
+  void provisionTenantAndSeedData() throws Exception {
+    provisioningService.provisionTenant(ORG_ID, "InfoReq Controller Test Org");
+    planSyncService.syncPlan(ORG_ID, "pro-plan");
+    memberIdOwner =
+        syncMember("user_inforeq_owner", "inforeq_owner@test.com", "InfoReq Owner", "owner");
+    memberIdAdmin =
+        syncMember("user_inforeq_admin", "inforeq_admin@test.com", "InfoReq Admin", "admin");
+    memberIdMember =
+        syncMember("user_inforeq_member", "inforeq_member@test.com", "InfoReq Member", "member");
+    customerId = createCustomer(ownerJwt());
+    portalContactId = createPortalContact(customerId, "contact@test.com", "Test Contact");
+    templateId = createRequestTemplate();
+  }
+
+  // ========== Create Tests ==========
+
+  @Test
+  void shouldCreateFromTemplate() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/information-requests")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "requestTemplateId": "%s",
+                      "customerId": "%s",
+                      "portalContactId": "%s",
+                      "reminderIntervalDays": 7
+                    }
+                    """
+                        .formatted(templateId, customerId, portalContactId)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.id").exists())
+        .andExpect(jsonPath("$.requestNumber").exists())
+        .andExpect(jsonPath("$.status").value("DRAFT"))
+        .andExpect(jsonPath("$.customerName").value("InfoReq Test Customer"))
+        .andExpect(jsonPath("$.portalContactName").value("Test Contact"))
+        .andExpect(jsonPath("$.portalContactEmail").value("contact@test.com"))
+        .andExpect(jsonPath("$.items.length()").value(3))
+        .andExpect(jsonPath("$.items[0].name").value("Bank Statements"))
+        .andExpect(jsonPath("$.reminderIntervalDays").value(7));
+  }
+
+  @Test
+  void shouldCreateAdHoc() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/information-requests")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "customerId": "%s",
+                      "portalContactId": "%s",
+                      "items": [
+                        {"name": "ID Document", "description": "Certified copy", "responseType": "FILE_UPLOAD", "required": true, "sortOrder": 0},
+                        {"name": "Address", "description": "Current address", "responseType": "TEXT_RESPONSE", "required": false, "sortOrder": 1}
+                      ]
+                    }
+                    """
+                        .formatted(customerId, portalContactId)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.requestNumber").exists())
+        .andExpect(jsonPath("$.status").value("DRAFT"))
+        .andExpect(jsonPath("$.items.length()").value(2))
+        .andExpect(jsonPath("$.items[0].name").value("ID Document"))
+        .andExpect(jsonPath("$.requestTemplateId").isEmpty());
+  }
+
+  // ========== Lifecycle Tests ==========
+
+  @Test
+  void shouldSendRequest() throws Exception {
+    String requestId = createInfoRequest();
+    mockMvc
+        .perform(post("/api/information-requests/{id}/send", requestId).with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("SENT"))
+        .andExpect(jsonPath("$.sentAt").exists());
+  }
+
+  @Test
+  void shouldCancelDraftRequest() throws Exception {
+    String requestId = createInfoRequest();
+    mockMvc
+        .perform(post("/api/information-requests/{id}/cancel", requestId).with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("CANCELLED"));
+  }
+
+  @Test
+  void shouldCancelSentRequest() throws Exception {
+    String requestId = createInfoRequest();
+    // Send first
+    mockMvc.perform(post("/api/information-requests/{id}/send", requestId).with(ownerJwt()));
+    // Then cancel
+    mockMvc
+        .perform(post("/api/information-requests/{id}/cancel", requestId).with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("CANCELLED"));
+  }
+
+  @Test
+  void shouldNotCancelCompletedRequest() throws Exception {
+    String requestId = createInfoRequestAndComplete();
+    mockMvc
+        .perform(post("/api/information-requests/{id}/cancel", requestId).with(ownerJwt()))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void shouldNotSendEmptyRequest() throws Exception {
+    // Create ad-hoc with no items
+    var result =
+        mockMvc
+            .perform(
+                post("/api/information-requests")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"customerId": "%s", "portalContactId": "%s"}
+                        """
+                            .formatted(customerId, portalContactId)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    String emptyRequestId =
+        JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
+
+    mockMvc
+        .perform(post("/api/information-requests/{id}/send", emptyRequestId).with(ownerJwt()))
+        .andExpect(status().isBadRequest());
+  }
+
+  // ========== Item Review Tests ==========
+
+  @Test
+  void shouldAcceptSubmittedItem() throws Exception {
+    String requestId = createInfoRequest();
+    mockMvc.perform(post("/api/information-requests/{id}/send", requestId).with(ownerJwt()));
+
+    // Get items
+    var items = getItemIds(requestId);
+    String itemId = items.get(0);
+
+    // Simulate submission
+    simulateItemSubmission(requestId, itemId);
+
+    mockMvc
+        .perform(
+            post("/api/information-requests/{id}/items/{itemId}/accept", requestId, itemId)
+                .with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.items[?(@.id=='%s')].status".formatted(itemId)).value("ACCEPTED"));
+  }
+
+  @Test
+  void shouldRejectSubmittedItem() throws Exception {
+    String requestId = createInfoRequest();
+    mockMvc.perform(post("/api/information-requests/{id}/send", requestId).with(ownerJwt()));
+
+    var items = getItemIds(requestId);
+    String itemId = items.get(0);
+    simulateItemSubmission(requestId, itemId);
+
+    mockMvc
+        .perform(
+            post("/api/information-requests/{id}/items/{itemId}/reject", requestId, itemId)
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"reason": "Incorrect document, please resubmit"}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.items[?(@.id=='%s')].status".formatted(itemId)).value("REJECTED"))
+        .andExpect(
+            jsonPath("$.items[?(@.id=='%s')].rejectionReason".formatted(itemId))
+                .value("Incorrect document, please resubmit"));
+  }
+
+  @Test
+  void shouldNotAcceptNonSubmittedItem() throws Exception {
+    String requestId = createInfoRequest();
+    mockMvc.perform(post("/api/information-requests/{id}/send", requestId).with(ownerJwt()));
+
+    var items = getItemIds(requestId);
+    String itemId = items.get(0); // Still PENDING
+
+    mockMvc
+        .perform(
+            post("/api/information-requests/{id}/items/{itemId}/accept", requestId, itemId)
+                .with(ownerJwt()))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void shouldRejectRequireReason() throws Exception {
+    String requestId = createInfoRequest();
+    mockMvc.perform(post("/api/information-requests/{id}/send", requestId).with(ownerJwt()));
+
+    var items = getItemIds(requestId);
+    String itemId = items.get(0);
+    simulateItemSubmission(requestId, itemId);
+
+    mockMvc
+        .perform(
+            post("/api/information-requests/{id}/items/{itemId}/reject", requestId, itemId)
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"reason": ""}
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void shouldAutoCompleteWhenAllRequiredAccepted() throws Exception {
+    String requestId = createInfoRequest();
+    mockMvc.perform(post("/api/information-requests/{id}/send", requestId).with(ownerJwt()));
+
+    var items = getItemIds(requestId);
+    // Template has 2 required items (index 0, 1) and 1 optional (index 2)
+    // Get required item IDs from the response
+    var getResult =
+        mockMvc
+            .perform(get("/api/information-requests/{id}", requestId).with(ownerJwt()))
+            .andReturn();
+    String responseBody = getResult.getResponse().getContentAsString();
+    List<Map<String, Object>> itemsList = JsonPath.read(responseBody, "$.items");
+
+    // Accept all required items
+    for (var item : itemsList) {
+      if ((boolean) item.get("required")) {
+        String itemId = item.get("id").toString();
+        simulateItemSubmission(requestId, itemId);
+        mockMvc.perform(
+            post("/api/information-requests/{id}/items/{itemId}/accept", requestId, itemId)
+                .with(ownerJwt()));
+      }
+    }
+
+    // Verify auto-completed
+    mockMvc
+        .perform(get("/api/information-requests/{id}", requestId).with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("COMPLETED"));
+  }
+
+  // ========== Numbering Tests ==========
+
+  @Test
+  void shouldGenerateSequentialNumbers() throws Exception {
+    var result1 =
+        mockMvc
+            .perform(
+                post("/api/information-requests")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"requestTemplateId": "%s", "customerId": "%s", "portalContactId": "%s"}
+                        """
+                            .formatted(templateId, customerId, portalContactId)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    String num1 =
+        JsonPath.read(result1.getResponse().getContentAsString(), "$.requestNumber").toString();
+
+    var result2 =
+        mockMvc
+            .perform(
+                post("/api/information-requests")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"requestTemplateId": "%s", "customerId": "%s", "portalContactId": "%s"}
+                        """
+                            .formatted(templateId, customerId, portalContactId)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    String num2 =
+        JsonPath.read(result2.getResponse().getContentAsString(), "$.requestNumber").toString();
+
+    // Both should match REQ-NNNN pattern, and num2 > num1
+    assert num1.startsWith("REQ-") : "Expected REQ- prefix, got: " + num1;
+    assert num2.startsWith("REQ-") : "Expected REQ- prefix, got: " + num2;
+    int n1 = Integer.parseInt(num1.substring(4));
+    int n2 = Integer.parseInt(num2.substring(4));
+    assert n2 > n1 : "Expected sequential numbering: " + num1 + " then " + num2;
+  }
+
+  // ========== Update & Add Item Tests ==========
+
+  @Test
+  void shouldUpdateDraftRequest() throws Exception {
+    String requestId = createInfoRequest();
+    mockMvc
+        .perform(
+            put("/api/information-requests/{id}", requestId)
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"reminderIntervalDays": 14}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.reminderIntervalDays").value(14));
+  }
+
+  @Test
+  void shouldAddAdHocItem() throws Exception {
+    String requestId = createInfoRequest();
+    mockMvc
+        .perform(
+            post("/api/information-requests/{id}/items", requestId)
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"name": "Extra Doc", "description": "Additional document", "responseType": "FILE_UPLOAD", "required": false, "sortOrder": 10}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.items.length()").value(4));
+  }
+
+  // ========== Query Tests ==========
+
+  @Test
+  void shouldGetRequestWithItems() throws Exception {
+    String requestId = createInfoRequest();
+    mockMvc
+        .perform(get("/api/information-requests/{id}", requestId).with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(requestId))
+        .andExpect(jsonPath("$.items").isArray())
+        .andExpect(jsonPath("$.items.length()").value(3))
+        .andExpect(jsonPath("$.customerName").exists())
+        .andExpect(jsonPath("$.portalContactName").exists());
+  }
+
+  @Test
+  void shouldListWithStatusFilter() throws Exception {
+    // Create and send a request
+    String sentRequestId = createInfoRequest();
+    mockMvc.perform(post("/api/information-requests/{id}/send", sentRequestId).with(ownerJwt()));
+
+    mockMvc
+        .perform(get("/api/information-requests").with(ownerJwt()).param("status", "SENT"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray())
+        .andExpect(jsonPath("$[?(@.status=='SENT')]").isNotEmpty());
+  }
+
+  @Test
+  void shouldListWithCustomerFilter() throws Exception {
+    mockMvc
+        .perform(get("/api/information-requests").with(ownerJwt()).param("customerId", customerId))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray());
+  }
+
+  @Test
+  void shouldListWithProjectFilter() throws Exception {
+    // Create a project first
+    String projectId = createProject(ownerJwt());
+
+    // Create request with project
+    mockMvc.perform(
+        post("/api/information-requests")
+            .with(ownerJwt())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(
+                """
+                {"requestTemplateId": "%s", "customerId": "%s", "projectId": "%s", "portalContactId": "%s"}
+                """
+                    .formatted(templateId, customerId, projectId, portalContactId)));
+
+    mockMvc
+        .perform(get("/api/information-requests").with(ownerJwt()).param("projectId", projectId))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray())
+        .andExpect(jsonPath("$[0].projectId").value(projectId));
+  }
+
+  // ========== Convenience Endpoints ==========
+
+  @Test
+  void shouldListByCustomer() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/customers/{customerId}/information-requests", customerId).with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray());
+  }
+
+  @Test
+  void shouldListByProject() throws Exception {
+    String projectId = createProject(ownerJwt());
+    mockMvc.perform(
+        post("/api/information-requests")
+            .with(ownerJwt())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(
+                """
+                {"requestTemplateId": "%s", "customerId": "%s", "projectId": "%s", "portalContactId": "%s"}
+                """
+                    .formatted(templateId, customerId, projectId, portalContactId)));
+
+    mockMvc
+        .perform(get("/api/projects/{projectId}/information-requests", projectId).with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray())
+        .andExpect(jsonPath("$[0].projectId").value(projectId));
+  }
+
+  // ========== Dashboard Summary ==========
+
+  @Test
+  void shouldGetDashboardSummary() throws Exception {
+    mockMvc
+        .perform(get("/api/information-requests/summary").with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.total").isNumber())
+        .andExpect(jsonPath("$.byStatus").isMap())
+        .andExpect(jsonPath("$.byStatus.DRAFT").isNumber())
+        .andExpect(jsonPath("$.itemsPendingReview").isNumber())
+        .andExpect(jsonPath("$.overdueRequests").isNumber())
+        .andExpect(jsonPath("$.completionRateLast30Days").isNumber());
+  }
+
+  // ========== Validation Tests ==========
+
+  @Test
+  void shouldRejectInvalidCustomer() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/information-requests")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"requestTemplateId": "%s", "customerId": "%s", "portalContactId": "%s"}
+                    """
+                        .formatted(templateId, UUID.randomUUID(), portalContactId)))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void shouldRejectInvalidPortalContact() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/information-requests")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"requestTemplateId": "%s", "customerId": "%s", "portalContactId": "%s"}
+                    """
+                        .formatted(templateId, customerId, UUID.randomUUID())))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void shouldRejectPortalContactFromDifferentCustomer() throws Exception {
+    // Create another customer and contact
+    String otherCustomerId = createCustomer2(ownerJwt());
+    String otherContactId = createPortalContact(otherCustomerId, "other@test.com", "Other Contact");
+
+    mockMvc
+        .perform(
+            post("/api/information-requests")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"requestTemplateId": "%s", "customerId": "%s", "portalContactId": "%s"}
+                    """
+                        .formatted(templateId, customerId, otherContactId)))
+        .andExpect(status().isBadRequest());
+  }
+
+  // ========== RBAC Tests ==========
+
+  @Test
+  void shouldAllowMemberToList() throws Exception {
+    mockMvc.perform(get("/api/information-requests").with(memberJwt())).andExpect(status().isOk());
+  }
+
+  @Test
+  void shouldAllowMemberToCreate() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/information-requests")
+                .with(memberJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"requestTemplateId": "%s", "customerId": "%s", "portalContactId": "%s"}
+                    """
+                        .formatted(templateId, customerId, portalContactId)))
+        .andExpect(status().isCreated());
+  }
+
+  // ========== Resend Notification ==========
+
+  @Test
+  void shouldResendNotification() throws Exception {
+    String requestId = createInfoRequest();
+    mockMvc.perform(post("/api/information-requests/{id}/send", requestId).with(ownerJwt()));
+
+    mockMvc
+        .perform(
+            post("/api/information-requests/{id}/resend-notification", requestId).with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("SENT"));
+  }
+
+  // ========== Helpers ==========
+
+  private String createInfoRequest() throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                post("/api/information-requests")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"requestTemplateId": "%s", "customerId": "%s", "portalContactId": "%s", "reminderIntervalDays": 5}
+                        """
+                            .formatted(templateId, customerId, portalContactId)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
+  }
+
+  private String createInfoRequestAndComplete() throws Exception {
+    String requestId = createInfoRequest();
+    // Send
+    mockMvc.perform(post("/api/information-requests/{id}/send", requestId).with(ownerJwt()));
+
+    // Get items and accept all required
+    var getResult =
+        mockMvc
+            .perform(get("/api/information-requests/{id}", requestId).with(ownerJwt()))
+            .andReturn();
+    String responseBody = getResult.getResponse().getContentAsString();
+    List<Map<String, Object>> itemsList = JsonPath.read(responseBody, "$.items");
+
+    for (var item : itemsList) {
+      if ((boolean) item.get("required")) {
+        String itemId = item.get("id").toString();
+        simulateItemSubmission(requestId, itemId);
+        mockMvc.perform(
+            post("/api/information-requests/{id}/items/{itemId}/accept", requestId, itemId)
+                .with(ownerJwt()));
+      }
+    }
+    return requestId;
+  }
+
+  private List<String> getItemIds(String requestId) throws Exception {
+    var result =
+        mockMvc
+            .perform(get("/api/information-requests/{id}", requestId).with(ownerJwt()))
+            .andReturn();
+    String body = result.getResponse().getContentAsString();
+    List<String> ids = JsonPath.read(body, "$.items[*].id");
+    return ids;
+  }
+
+  private void simulateItemSubmission(String requestId, String itemId) {
+    String schema = SchemaNameGenerator.generateSchemaName(ORG_ID);
+    jdbcTemplate.update(
+        "UPDATE \"%s\".request_items SET status = 'SUBMITTED', submitted_at = now(), document_id = ?::uuid WHERE id = ?::uuid"
+            .formatted(schema),
+        UUID.randomUUID().toString(),
+        itemId);
+  }
+
+  private String createCustomer(JwtRequestPostProcessor jwt) throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                post("/api/customers")
+                    .with(jwt)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"name": "InfoReq Test Customer", "email": "inforeq-customer@test.com", "type": "INDIVIDUAL"}
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
+  }
+
+  private String createCustomer2(JwtRequestPostProcessor jwt) throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                post("/api/customers")
+                    .with(jwt)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"name": "Other Customer", "email": "other-customer@test.com", "type": "INDIVIDUAL"}
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
+  }
+
+  private String createPortalContact(String customerId, String email, String displayName) {
+    String schema = SchemaNameGenerator.generateSchemaName(ORG_ID);
+    String contactId = UUID.randomUUID().toString();
+    jdbcTemplate.update(
+        "INSERT INTO \"%s\".portal_contacts (id, org_id, customer_id, email, display_name, role, status, created_at, updated_at) VALUES (?::uuid, ?, ?::uuid, ?, ?, 'PRIMARY', 'ACTIVE', now(), now())"
+            .formatted(schema),
+        contactId,
+        ORG_ID,
+        customerId,
+        email,
+        displayName);
+    return contactId;
+  }
+
+  private String createRequestTemplate() throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                post("/api/request-templates")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "name": "Test Template",
+                          "description": "For testing",
+                          "items": [
+                            {"name": "Bank Statements", "description": "Jan-Dec", "responseType": "FILE_UPLOAD", "required": true, "sortOrder": 0},
+                            {"name": "Tax Number", "description": "Company tax number", "responseType": "TEXT_RESPONSE", "required": true, "sortOrder": 1},
+                            {"name": "Optional Doc", "description": "Nice to have", "responseType": "FILE_UPLOAD", "required": false, "sortOrder": 2}
+                          ]
+                        }
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
+  }
+
+  private String createProject(JwtRequestPostProcessor jwt) throws Exception {
+    // Projects require an ACTIVE customer; create and activate one
+    String activeCustomerId = createActiveCustomerForProject(jwt);
+    var result =
+        mockMvc
+            .perform(
+                post("/api/projects")
+                    .with(jwt)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"name": "InfoReq Test Project", "customerId": "%s"}
+                        """
+                            .formatted(activeCustomerId)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
+  }
+
+  private static int projectCustomerCounter = 0;
+
+  private String createActiveCustomerForProject(JwtRequestPostProcessor jwt) throws Exception {
+    int counter = ++projectCustomerCounter;
+    var result =
+        mockMvc
+            .perform(
+                post("/api/customers")
+                    .with(jwt)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"name": "Project Customer %d", "email": "proj-cust-%d@test.com", "type": "INDIVIDUAL"}
+                        """
+                            .formatted(counter, counter)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    String activeCustomerId =
+        JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
+    // Transition PROSPECT -> ONBOARDING
+    mockMvc
+        .perform(
+            post("/api/customers/" + activeCustomerId + "/transition")
+                .with(jwt)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"targetStatus\": \"ONBOARDING\"}"))
+        .andExpect(status().isOk());
+    // Complete all checklist items (auto-transitions ONBOARDING -> ACTIVE)
+    TestChecklistHelper.completeChecklistItems(mockMvc, activeCustomerId, jwt);
+    return activeCustomerId;
+  }
+
+  private String syncMember(String clerkUserId, String email, String name, String orgRole)
+      throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                post("/internal/members/sync")
+                    .header("X-API-KEY", API_KEY)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        { "clerkOrgId": "%s", "clerkUserId": "%s", "email": "%s",
+                          "name": "%s", "avatarUrl": null, "orgRole": "%s" }
+                        """
+                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
+  }
+
+  private JwtRequestPostProcessor ownerJwt() {
+    return jwt()
+        .jwt(j -> j.subject("user_inforeq_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
+  }
+
+  private JwtRequestPostProcessor adminJwt() {
+    return jwt()
+        .jwt(j -> j.subject("user_inforeq_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_ADMIN")));
+  }
+
+  private JwtRequestPostProcessor memberJwt() {
+    return jwt()
+        .jwt(
+            j -> j.subject("user_inforeq_member").claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+}

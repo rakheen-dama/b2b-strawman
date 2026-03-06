@@ -212,9 +212,10 @@ for i in "${!SLICES_TO_RUN[@]}"; do
   SLICE_MINUTES=$(( SLICE_DURATION / 60 ))
 
   # Check if slice was marked Done in ANY table row in the task file
-  # (epic_v2 may mark Done in the implementation order table, the slice detail table, or both)
+  # Check both bold (**slice**) and unbolded (slice) references — epic_v2 may mark Done
+  # in the implementation order table, the epic overview, or the slice detail table.
   SLICE_DONE=false
-  if grep -E "\*\*${slice}\*\*" "$TASK_FILE" | grep -q '\*\*Done\*\*'; then
+  if grep "${slice}" "$TASK_FILE" | grep -q '\*\*Done\*\*'; then
     SLICE_DONE=true
   fi
 

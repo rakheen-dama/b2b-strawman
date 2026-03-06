@@ -190,7 +190,7 @@ FRONTEND TRACK (after respective backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 6a (parallel) | 260 | 260A | Dashboard "Information Requests" widget (awaiting review, overdue, completion rate, click-through) + settings/page.tsx "Request Templates" nav link + OrgSettings reminder interval configuration in settings page + tests (~5 tests). ~4 modified files. Frontend only. | |
+| 6a (parallel) | 260 | 260A | Dashboard "Information Requests" widget (awaiting review, overdue, completion rate, click-through) + settings/page.tsx "Request Templates" nav link + OrgSettings reminder interval configuration in settings page + tests (~5 tests). ~4 modified files. Frontend only. | **Done** (PR #553) |
 | 6b (parallel) | 260 | 260B | Project template editor [id]/page.tsx: "Information Request Template" combobox populated from request templates API + help text + persist via PUT + tests (~4 tests). ~2 modified files. Frontend only. | |
 
 ### Timeline
@@ -772,7 +772,7 @@ Stage 6: [260A] // [260B]                                         (parallel)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **260A** | 260.1--260.5 | Dashboard "Information Requests" widget + OrgSettings reminder interval config in settings page + tests (~5 tests). ~4 modified files. Frontend only. | |
+| **260A** | 260.1--260.5 | Dashboard "Information Requests" widget + OrgSettings reminder interval config in settings page + tests (~5 tests). ~4 modified files. Frontend only. | **Done** (PR #553) |
 | **260B** | 260.6--260.9 | Project template editor "Information Request Template" combobox + help text + persist via PUT + tests (~4 tests). ~2 modified files. Frontend only. | |
 
 ### Tasks

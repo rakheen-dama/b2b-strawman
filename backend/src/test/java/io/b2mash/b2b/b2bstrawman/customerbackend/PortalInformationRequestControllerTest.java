@@ -520,6 +520,44 @@ class PortalInformationRequestControllerTest {
         .andExpect(status().isBadRequest());
   }
 
+  // ── 11. Submit text on ACCEPTED item rejected (400) ─────────────────
+
+  @Test
+  @Order(11)
+  void shouldRejectTextSubmitOnAcceptedItem() throws Exception {
+    String token = tokenForCustomerA();
+
+    mockMvc
+        .perform(
+            post("/portal/requests/{id}/items/{itemId}/submit", sentRequestId, acceptedItemId)
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"textResponse": "Trying to overwrite accepted item"}
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
+  // ── 12. Submit with both fields null rejected (400) ────────────────
+
+  @Test
+  @Order(12)
+  void shouldRejectSubmitWithBothFieldsNull() throws Exception {
+    String token = tokenForCustomerA();
+
+    mockMvc
+        .perform(
+            post("/portal/requests/{id}/items/{itemId}/submit", sentRequestId, textItemId)
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {}
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
   // ── Helpers ──────────────────────────────────────────────────────────
 
   private String tokenForCustomerA() {

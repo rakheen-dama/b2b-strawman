@@ -97,12 +97,8 @@ public class PortalInformationRequestController {
       @Valid @RequestBody SubmitItemRequest request) {
     UUID portalContactId = RequestScopes.requirePortalContactId();
 
-    if (request.documentId() != null) {
-      portalInformationRequestService.submitItem(id, itemId, request.documentId(), portalContactId);
-    } else {
-      portalInformationRequestService.submitTextResponse(
-          id, itemId, request.textResponse(), portalContactId);
-    }
+    portalInformationRequestService.submitResponse(
+        id, itemId, request.documentId(), request.textResponse(), portalContactId);
 
     return ResponseEntity.ok().build();
   }

@@ -115,7 +115,9 @@ public class PortalInformationRequestService {
       scope = Document.Scope.CUSTOMER;
     }
 
-    // uploadedBy must reference a member (FK constraint), use the request creator
+    // uploadedBy must reference a member (FK constraint on members table), so we attribute the
+    // document to the staff member who created the request rather than the portal contact.
+    // This is intentional — portal contacts are not members.
     var document =
         new Document(
             scope,
@@ -147,6 +149,23 @@ public class PortalInformationRequestService {
     return new UploadInitResult(document.getId(), presigned.url(), presigned.expiresAt());
   }
 
+  /**
+   * Submits a response for a request item. Dispatches to file or text submission based on which
+   * field is provided. At least one of documentId or textResponse must be non-null.
+   */
+  @Transactional
+  public void submitResponse(
+      UUID requestId, UUID itemId, UUID documentId, String textResponse, UUID portalContactId) {
+    if (documentId != null) {
+      submitItem(requestId, itemId, documentId, portalContactId);
+    } else if (textResponse != null) {
+      submitTextResponse(requestId, itemId, textResponse, portalContactId);
+    } else {
+      throw new InvalidStateException(
+          "Invalid submission", "Either documentId or textResponse must be provided");
+    }
+  }
+
   /** Submits a file response for a request item. */
   @Transactional
   public void submitItem(UUID requestId, UUID itemId, UUID documentId, UUID portalContactId) {
@@ -163,10 +182,12 @@ public class PortalInformationRequestService {
     verifyItemBelongsToRequest(item.getRequestId(), requestId, itemId);
     verifyItemSubmittable(item);
 
-    // Verify document exists
-    documentRepository
-        .findById(documentId)
-        .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
+    // Verify document exists and belongs to this request's scope
+    var document =
+        documentRepository
+            .findById(documentId)
+            .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
+    verifyDocumentScope(document, request);
 
     item.submit(documentId);
     itemRepository.save(item);
@@ -189,6 +210,7 @@ public class PortalInformationRequestService {
             .findById(itemId)
             .orElseThrow(() -> new ResourceNotFoundException("RequestItem", itemId));
     verifyItemBelongsToRequest(item.getRequestId(), requestId, itemId);
+    verifyItemSubmittable(item);
 
     item.submitText(text);
     itemRepository.save(item);
@@ -208,6 +230,24 @@ public class PortalInformationRequestService {
   private void verifyItemBelongsToRequest(UUID itemRequestId, UUID requestId, UUID itemId) {
     if (!itemRequestId.equals(requestId)) {
       throw new ResourceNotFoundException("RequestItem", itemId);
+    }
+  }
+
+  private void verifyDocumentScope(
+      Document document, io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequest request) {
+    boolean scopeMatch;
+    if (request.getProjectId() != null) {
+      scopeMatch =
+          Document.Scope.PROJECT.equals(document.getScope())
+              && request.getProjectId().equals(document.getProjectId());
+    } else {
+      scopeMatch =
+          Document.Scope.CUSTOMER.equals(document.getScope())
+              && request.getCustomerId().equals(document.getCustomerId());
+    }
+    if (!scopeMatch) {
+      throw new InvalidStateException(
+          "Document scope mismatch", "Document does not belong to this request's scope");
     }
   }
 

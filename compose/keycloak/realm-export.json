@@ -13,7 +13,7 @@
   "resetPasswordAllowed": true,
   "editUsernameAllowed": false,
   "bruteForceProtected": true,
-  "sslRequired": "external",
+  "sslRequired": "none",
   "organizationsEnabled": true,
   "roles": {
     "realm": [
@@ -49,25 +49,14 @@
       "serviceAccountsEnabled": false,
       "secret": "${KEYCLOAK_CLIENT_SECRET}",
       "redirectUris": [
-        "http://localhost:8443/login/oauth2/code/keycloak"
-      ],
-      "postLogoutRedirectUris": [
-        "http://localhost:3000/"
+        "http://localhost:8443/login/oauth2/code/keycloak",
+        "http://localhost:3000/*"
       ],
       "webOrigins": [
         "http://localhost:3000"
       ],
-      "defaultClientScopes": [
-        "openid",
-        "profile",
-        "email",
-        "organization"
-      ],
-      "optionalClientScopes": [
-        "offline_access"
-      ],
       "protocol": "openid-connect",
-      "fullScopeAllowed": false
+      "fullScopeAllowed": true
     },
     {
       "clientId": "admin-cli",
@@ -77,39 +66,6 @@
       "standardFlowEnabled": false,
       "directAccessGrantsEnabled": true
     }
-  ],
-  "clientScopes": [
-    {
-      "name": "organization",
-      "description": "Organization membership and roles",
-      "protocol": "openid-connect",
-      "attributes": {
-        "include.in.token.scope": "true",
-        "display.on.consent.screen": "true",
-        "consent.screen.text": "Organization membership"
-      },
-      "protocolMappers": [
-        {
-          "name": "organization-membership",
-          "protocol": "openid-connect",
-          "protocolMapper": "oidc-organization-membership-mapper",
-          "consentRequired": false,
-          "config": {
-            "id.token.claim": "true",
-            "access.token.claim": "true",
-            "claim.name": "organization",
-            "jsonType.label": "JSON",
-            "organization.id.claim.enabled": "true"
-          }
-        }
-      ]
-    }
-  ],
-  "defaultDefaultClientScopes": [
-    "openid",
-    "profile",
-    "email",
-    "organization"
   ],
   "smtpServer": {
     "host": "mailpit",

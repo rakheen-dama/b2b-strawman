@@ -108,6 +108,14 @@ if [[ $ELAPSED -ge 120 ]]; then
   exit 1
 fi
 
+# Disable HTTPS requirement on master realm (allows admin console over HTTP in dev)
+printf "  Keycloak master realm SSL fix... "
+docker exec b2b-keycloak /opt/keycloak/bin/kcadm.sh config credentials \
+  --server http://localhost:8180 --realm master --user admin --password admin > /dev/null 2>&1 \
+  && docker exec b2b-keycloak /opt/keycloak/bin/kcadm.sh update realms/master \
+  -s sslRequired=NONE > /dev/null 2>&1 \
+  && echo "done" || echo "skipped (non-critical)"
+
 # Wait for Gateway
 ELAPSED=0
 printf "  Gateway (localhost:8443)... "

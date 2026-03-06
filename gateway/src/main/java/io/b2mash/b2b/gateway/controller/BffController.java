@@ -1,10 +1,16 @@
 package io.b2mash.b2b.gateway.controller;
 
+import io.b2mash.b2b.gateway.service.KeycloakAdminClient;
 import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -12,6 +18,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/bff")
 public class BffController {
+
+  private static final Logger log = LoggerFactory.getLogger(BffController.class);
+
+  private final KeycloakAdminClient keycloakAdmin;
+
+  public BffController(KeycloakAdminClient keycloakAdmin) {
+    this.keycloakAdmin = keycloakAdmin;
+  }
 
   /** Response DTO for the /bff/me endpoint. */
   public record BffUserInfo(
@@ -30,12 +44,19 @@ public class BffController {
     }
   }
 
+  /** Request DTO for creating an organization. */
+  public record CreateOrgRequest(String name) {}
+
+  /** Response DTO after creating an organization. */
+  public record CreateOrgResponse(String orgId, String slug) {}
+
   @GetMapping("/me")
   public ResponseEntity<BffUserInfo> me(@AuthenticationPrincipal OidcUser user) {
     if (user == null) {
       return ResponseEntity.ok(BffUserInfo.unauthenticated());
     }
 
+    log.info("BFF /me claims: {}", user.getClaims());
     BffUserInfoExtractor.OrgInfo orgInfo = BffUserInfoExtractor.extractOrgInfo(user);
 
     return ResponseEntity.ok(
@@ -48,5 +69,51 @@ public class BffController {
             orgInfo != null ? orgInfo.id() : null,
             orgInfo != null ? orgInfo.slug() : null,
             orgInfo != null ? orgInfo.role() : null));
+  }
+
+  /**
+   * Creates an organization in Keycloak and adds the current user as a member. After this call, the
+   * frontend should redirect to /oauth2/authorization/keycloak to refresh the session with updated
+   * org claims.
+   */
+  @PostMapping("/orgs")
+  public ResponseEntity<CreateOrgResponse> createOrg(
+      @AuthenticationPrincipal OidcUser user, @RequestBody CreateOrgRequest request) {
+    if (user == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+    if (request.name() == null || request.name().isBlank()) {
+      return ResponseEntity.badRequest().build();
+    }
+
+    String slug = toSlug(request.name());
+    log.info("Creating org '{}' (slug: {}) for user {}", request.name(), slug, user.getSubject());
+
+    // Create organization in Keycloak
+    String orgId = keycloakAdmin.createOrganization(request.name(), slug);
+    if (orgId == null) {
+      // Fallback: look up by alias
+      var org = keycloakAdmin.findOrganizationByAlias(slug);
+      orgId = org != null ? (String) org.get("id") : null;
+    }
+    if (orgId == null) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+
+    // Add current user to the organization
+    keycloakAdmin.addMember(orgId, user.getSubject());
+    log.info("Added user {} to org {} ({})", user.getSubject(), orgId, slug);
+
+    return ResponseEntity.status(HttpStatus.CREATED).body(new CreateOrgResponse(orgId, slug));
+  }
+
+  /** Converts an org name to a URL-safe slug. */
+  private static String toSlug(String name) {
+    return name.toLowerCase()
+        .trim()
+        .replaceAll("[^a-z0-9\\s-]", "")
+        .replaceAll("[\\s]+", "-")
+        .replaceAll("-+", "-")
+        .replaceAll("^-|-$", "");
   }
 }

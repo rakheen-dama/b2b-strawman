@@ -4,7 +4,7 @@ server:
     session:
       cookie:
         http-only: true
-        secure: true
+        secure: false
         same-site: lax
         name: SESSION
 
@@ -31,7 +31,7 @@ spring:
         registration:
           keycloak:
             client-id: ${KEYCLOAK_CLIENT_ID:gateway-bff}
-            client-secret: ${KEYCLOAK_CLIENT_SECRET}
+            client-secret: ${KEYCLOAK_CLIENT_SECRET:docteams-web-secret}
             scope: openid,profile,email,organization
             authorization-grant-type: authorization_code
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
@@ -50,7 +50,6 @@ spring:
                 - Path=/api/**
               filters:
                 - TokenRelay=
-                - SaveSession
 
   jmx:
     enabled: false
@@ -66,8 +65,10 @@ keycloak:
   admin:
     url: ${KEYCLOAK_ADMIN_URL:http://localhost:8180}
     realm: ${KEYCLOAK_ADMIN_REALM:docteams}
-    client-id: ${KEYCLOAK_ADMIN_CLIENT_ID:admin-cli}
-    client-secret: ${KEYCLOAK_ADMIN_CLIENT_SECRET:}
+    # Master realm admin credentials for Admin REST API access (password grant)
+    auth-server-url: ${KEYCLOAK_ADMIN_URL:http://localhost:8180}
+    username: ${KEYCLOAK_ADMIN_USERNAME:admin}
+    password: ${KEYCLOAK_ADMIN_PASSWORD:admin}
 
 management:
   endpoints:

@@ -1,6 +1,14 @@
 # Keycloak profile configuration
 # Activated via: SPRING_PROFILES_ACTIVE=keycloak
-# TODO: Add Keycloak-specific properties (issuer-uri, JWKS endpoint) in a subsequent epic
+# Overrides Clerk JWT settings from application-local.yml when both profiles are active.
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER_URI:http://localhost:8180/realms/docteams}
+          jwk-set-uri: ${JWT_JWK_SET_URI:http://localhost:8180/realms/docteams/protocol/openid-connect/certs}
 
 app:
   jit-provisioning:

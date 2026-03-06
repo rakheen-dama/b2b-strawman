@@ -3,7 +3,7 @@ spring:
     app:
       jdbc-url: jdbc:postgresql://localhost:5432/docteams
       username: postgres
-      password: changeme
+      password: postgres
       driver-class-name: org.postgresql.Driver
       maximum-pool-size: 5
       minimum-idle: 2
@@ -16,14 +16,14 @@ spring:
     migration:
       jdbc-url: jdbc:postgresql://localhost:5432/docteams
       username: postgres
-      password: changeme
+      password: postgres
       driver-class-name: org.postgresql.Driver
       maximum-pool-size: 2
       connection-timeout: 30000
     portal:
       jdbc-url: jdbc:postgresql://localhost:5432/docteams
       username: postgres
-      password: changeme
+      password: postgres
       driver-class-name: org.postgresql.Driver
       maximum-pool-size: 3
       minimum-idle: 1

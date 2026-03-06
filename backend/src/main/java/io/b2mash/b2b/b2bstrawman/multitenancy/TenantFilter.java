@@ -55,6 +55,7 @@ public class TenantFilter extends OncePerRequestFilter {
 
     if (authentication instanceof JwtAuthenticationToken jwtAuth) {
       Jwt jwt = jwtAuth.getToken();
+      // ClerkJwtUtils.extractOrgId handles both Clerk v2 and Keycloak formats
       String orgId = ClerkJwtUtils.extractOrgId(jwt);
 
       if (orgId != null) {
@@ -72,7 +73,13 @@ public class TenantFilter extends OncePerRequestFilter {
               jitProvisioningEnabled ? provisioningService.getIfAvailable() : null;
           if (svc != null) {
             String orgRole = ClerkJwtUtils.extractOrgRole(jwt);
-            if (Roles.ORG_OWNER.equals(orgRole) || Roles.ORG_ADMIN.equals(orgRole)) {
+            // For Keycloak JWTs, role may not be in Clerk format — allow any authenticated user to
+            // trigger JIT provisioning (first-login scenario)
+            boolean canProvision =
+                orgRole == null
+                    || Roles.ORG_OWNER.equals(orgRole)
+                    || Roles.ORG_ADMIN.equals(orgRole);
+            if (canProvision) {
               schema = attemptJitProvisioning(jwt, orgId, svc);
             } else {
               log.debug(

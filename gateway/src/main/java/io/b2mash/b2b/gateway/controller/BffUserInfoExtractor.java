@@ -25,17 +25,32 @@ public final class BffUserInfoExtractor {
     if (user == null) {
       return null;
     }
-    Map<String, Object> orgClaim = user.getClaim("organization");
-    if (orgClaim == null || orgClaim.isEmpty()) {
+    Object raw = user.getClaim("organization");
+    if (raw == null) {
       return null;
     }
-    var entry = orgClaim.entrySet().iterator().next();
-    String slug = entry.getKey();
-    Map<String, Object> orgData = (Map<String, Object>) entry.getValue();
-    String id = (String) orgData.get("id");
-    List<String> roles = (List<String>) orgData.get("roles");
-    String role = (roles != null && !roles.isEmpty()) ? roles.getFirst() : null;
-    return new OrgInfo(slug, id, role);
+
+    // Keycloak 26.x built-in org scope emits a List<String> of org aliases
+    if (raw instanceof List<?> list) {
+      if (list.isEmpty()) return null;
+      String alias = (String) list.getFirst();
+      return new OrgInfo(alias, alias, "org:member");
+    }
+
+    // Rich format: Map<alias, {id, roles}>
+    if (raw instanceof Map<?, ?>) {
+      Map<String, Object> orgClaim = (Map<String, Object>) raw;
+      if (orgClaim.isEmpty()) return null;
+      var entry = orgClaim.entrySet().iterator().next();
+      String slug = entry.getKey();
+      Map<String, Object> orgData = (Map<String, Object>) entry.getValue();
+      String id = (String) orgData.getOrDefault("id", slug);
+      List<String> roles = (List<String>) orgData.get("roles");
+      String role = (roles != null && !roles.isEmpty()) ? roles.getFirst() : "org:member";
+      return new OrgInfo(slug, id, role);
+    }
+
+    return null;
   }
 
   /** Extracts the organization slug from OidcUser claims, or null if absent. */

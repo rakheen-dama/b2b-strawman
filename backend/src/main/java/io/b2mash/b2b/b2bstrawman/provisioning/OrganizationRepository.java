@@ -5,5 +5,9 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface OrganizationRepository extends JpaRepository<Organization, UUID> {
-  Optional<Organization> findByClerkOrgId(String clerkOrgId);
+  Optional<Organization> findByExternalOrgId(String externalOrgId);
+
+  default Optional<Organization> findByClerkOrgId(String clerkOrgId) {
+    return findByExternalOrgId(clerkOrgId);
+  }
 }

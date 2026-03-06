@@ -48,17 +48,17 @@ class MultitenancyIntegrationTest {
     jdbc.execute("DELETE FROM " + TENANT_B + ".test_data");
 
     jdbc.execute(
-        "INSERT INTO org_schema_mapping (id, clerk_org_id, schema_name, created_at) "
+        "INSERT INTO org_schema_mapping (id, external_org_id, schema_name, created_at) "
             + "VALUES (gen_random_uuid(), 'org_aaa', '"
             + TENANT_A
             + "', now()) "
-            + "ON CONFLICT (clerk_org_id) DO NOTHING");
+            + "ON CONFLICT (external_org_id) DO NOTHING");
     jdbc.execute(
-        "INSERT INTO org_schema_mapping (id, clerk_org_id, schema_name, created_at) "
+        "INSERT INTO org_schema_mapping (id, external_org_id, schema_name, created_at) "
             + "VALUES (gen_random_uuid(), 'org_bbb', '"
             + TENANT_B
             + "', now()) "
-            + "ON CONFLICT (clerk_org_id) DO NOTHING");
+            + "ON CONFLICT (external_org_id) DO NOTHING");
   }
 
   @Test

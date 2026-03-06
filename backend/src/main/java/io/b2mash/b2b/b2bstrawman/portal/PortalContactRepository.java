@@ -20,4 +20,10 @@ public interface PortalContactRepository extends JpaRepository<PortalContact, UU
   @Query("SELECT pc FROM PortalContact pc WHERE pc.customerId = :customerId AND pc.orgId = :orgId")
   Optional<PortalContact> findByCustomerIdAndOrgId(
       @Param("customerId") UUID customerId, @Param("orgId") String orgId);
+
+  @Query(
+      "SELECT pc FROM PortalContact pc WHERE pc.customerId = :customerId AND pc.role = :role AND"
+          + " pc.status = 'ACTIVE'")
+  Optional<PortalContact> findByCustomerIdAndRoleAndStatusActive(
+      @Param("customerId") UUID customerId, @Param("role") PortalContact.ContactRole role);
 }

@@ -304,6 +304,9 @@ class EngagementPrerequisiteTest {
         null, // entityTagRepository
         null, // nameTokenResolver
         fieldDefinitionRepository,
-        null); // prerequisiteService
+        null, // prerequisiteService
+        null, // informationRequestService
+        null, // portalContactRepository
+        null); // memberRepository
   }
 }

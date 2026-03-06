@@ -12,4 +12,5 @@ public record UpdateTemplateRequest(
     String description,
     boolean billableDefault,
     @Valid List<TemplateTaskRequest> tasks,
-    List<UUID> tagIds) {}
+    List<UUID> tagIds,
+    UUID requestTemplateId) {}

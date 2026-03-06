@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectCreatedEvent;
+import io.b2mash.b2b.b2bstrawman.event.InformationRequestDraftCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.PrerequisiteNotMetException;
@@ -15,9 +16,15 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
+import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestService;
+import io.b2mash.b2b.b2bstrawman.informationrequest.dto.InformationRequestDtos.CreateInformationRequestRequest;
+import io.b2mash.b2b.b2bstrawman.member.Member;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
@@ -75,6 +82,9 @@ public class ProjectTemplateService {
   private final NameTokenResolver nameTokenResolver;
   private final FieldDefinitionRepository fieldDefinitionRepository;
   private final PrerequisiteService prerequisiteService;
+  private final InformationRequestService informationRequestService;
+  private final PortalContactRepository portalContactRepository;
+  private final MemberRepository memberRepository;
 
   public ProjectTemplateService(
       ProjectTemplateRepository templateRepository,
@@ -94,7 +104,10 @@ public class ProjectTemplateService {
       EntityTagRepository entityTagRepository,
       NameTokenResolver nameTokenResolver,
       FieldDefinitionRepository fieldDefinitionRepository,
-      @Lazy PrerequisiteService prerequisiteService) {
+      @Lazy PrerequisiteService prerequisiteService,
+      InformationRequestService informationRequestService,
+      PortalContactRepository portalContactRepository,
+      MemberRepository memberRepository) {
     this.templateRepository = templateRepository;
     this.templateTaskRepository = templateTaskRepository;
     this.templateTaskItemRepository = templateTaskItemRepository;
@@ -113,6 +126,9 @@ public class ProjectTemplateService {
     this.nameTokenResolver = nameTokenResolver;
     this.fieldDefinitionRepository = fieldDefinitionRepository;
     this.prerequisiteService = prerequisiteService;
+    this.informationRequestService = informationRequestService;
+    this.portalContactRepository = portalContactRepository;
+    this.memberRepository = memberRepository;
   }
 
   @Transactional
@@ -126,6 +142,7 @@ public class ProjectTemplateService {
             "MANUAL",
             null,
             memberId);
+    template.setRequestTemplateId(request.requestTemplateId());
     template = templateRepository.save(template);
 
     int taskCount = 0;
@@ -187,7 +204,8 @@ public class ProjectTemplateService {
 
     template.update(
         request.name(), request.namePattern(), request.description(), request.billableDefault());
-    template = templateRepository.save(template);
+    template.setRequestTemplateId(request.requestTemplateId());
+    template = templateRepository.saveAndFlush(template);
 
     // Replace tasks: delete items first (JPQL delete doesn't cascade), then tasks, then re-insert
     var existingTaskIds =
@@ -575,6 +593,9 @@ public class ProjectTemplateService {
         new ProjectCreatedEvent(
             project.getId(), project.getName(), project.getDescription(), null, orgId, tenantId));
 
+    // 12. Auto-create draft information request
+    tryCreateDraftInformationRequest(template, project, customer, memberId);
+
     return project;
   }
 
@@ -681,6 +702,9 @@ public class ProjectTemplateService {
                     customer != null ? customer.getName() : "none"))
             .build());
 
+    // 7. Auto-create draft information request
+    tryCreateDraftInformationRequest(template, project, customer, actingMemberId);
+
     return project;
   }
 
@@ -786,6 +810,92 @@ public class ProjectTemplateService {
     };
   }
 
+  /**
+   * Attempts to auto-create a DRAFT information request when a template has a requestTemplateId.
+   * Skips silently (with log warning) if: template has no requestTemplateId, no customer linked, no
+   * PRIMARY portal contact, or MEMBER_ID not bound (scheduler path without member context).
+   */
+  private void tryCreateDraftInformationRequest(
+      ProjectTemplate template, Project project, Customer customer, UUID actingMemberId) {
+    if (template.getRequestTemplateId() == null) {
+      return;
+    }
+    if (customer == null) {
+      log.warn(
+          "Skipping auto-draft: no customer linked for project {} from template {}",
+          project.getId(),
+          template.getId());
+      return;
+    }
+
+    var primaryContact =
+        portalContactRepository.findByCustomerIdAndRoleAndStatusActive(
+            customer.getId(), PortalContact.ContactRole.PRIMARY);
+    if (primaryContact.isEmpty()) {
+      log.warn(
+          "Skipping auto-draft: no active PRIMARY portal contact for customer {} (project {})",
+          customer.getId(),
+          project.getId());
+      return;
+    }
+
+    if (!RequestScopes.MEMBER_ID.isBound()) {
+      log.warn(
+          "Skipping auto-draft: no member context for project {} from template {}",
+          project.getId(),
+          template.getId());
+      return;
+    }
+
+    try {
+      var createRequest =
+          new CreateInformationRequestRequest(
+              template.getRequestTemplateId(),
+              customer.getId(),
+              project.getId(),
+              primaryContact.get().getId(),
+              null,
+              null);
+      var draftResponse = informationRequestService.create(createRequest);
+
+      log.info(
+          "Auto-created draft information request {} for project {} from template {}",
+          draftResponse.id(),
+          project.getId(),
+          template.getId());
+
+      String actorName =
+          memberRepository.findById(actingMemberId).map(Member::getName).orElse("System");
+      String tenantId = RequestScopes.getTenantIdOrNull();
+      String orgId = RequestScopes.getOrgIdOrNull();
+      eventPublisher.publishEvent(
+          new InformationRequestDraftCreatedEvent(
+              "information_request.draft_created",
+              "information_request",
+              draftResponse.id(),
+              project.getId(),
+              actingMemberId,
+              actorName,
+              tenantId,
+              orgId,
+              Instant.now(),
+              Map.of(
+                  "request_number",
+                  draftResponse.requestNumber(),
+                  "customer_name",
+                  customer.getName(),
+                  "template_name",
+                  template.getName())));
+    } catch (Exception e) {
+      log.warn(
+          "Failed to auto-create draft information request for project {} from template {}: {}",
+          project.getId(),
+          template.getId(),
+          e.getMessage(),
+          e);
+    }
+  }
+
   private ProjectTemplateResponse buildResponse(ProjectTemplate template) {
     var templateTasks = templateTaskRepository.findByTemplateIdOrderBySortOrder(template.getId());
 
@@ -837,6 +947,7 @@ public class ProjectTemplateService {
         tags.size(),
         tasks,
         tags,
+        template.getRequestTemplateId(),
         template.getCreatedAt(),
         template.getUpdatedAt());
   }

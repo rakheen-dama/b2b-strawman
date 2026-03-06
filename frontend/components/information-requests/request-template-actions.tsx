@@ -29,11 +29,16 @@ export function RequestTemplateActions({
   async function handleDuplicate() {
     setDuplicating(true);
     setError(null);
-    const result = await duplicateTemplateAction(slug, templateId);
-    if (!result.success) {
-      setError(result.error ?? "Failed to duplicate template.");
+    try {
+      const result = await duplicateTemplateAction(slug, templateId);
+      if (!result.success) {
+        setError(result.error ?? "Failed to duplicate template.");
+      }
+    } catch {
+      setError("Failed to duplicate template.");
+    } finally {
+      setDuplicating(false);
     }
-    setDuplicating(false);
   }
 
   async function handleDeactivate() {
@@ -45,11 +50,16 @@ export function RequestTemplateActions({
       return;
     setDeactivating(true);
     setError(null);
-    const result = await deactivateTemplateAction(slug, templateId);
-    if (!result.success) {
-      setError(result.error ?? "Failed to deactivate template.");
+    try {
+      const result = await deactivateTemplateAction(slug, templateId);
+      if (!result.success) {
+        setError(result.error ?? "Failed to deactivate template.");
+      }
+    } catch {
+      setError("Failed to deactivate template.");
+    } finally {
+      setDeactivating(false);
     }
-    setDeactivating(false);
   }
 
   return (

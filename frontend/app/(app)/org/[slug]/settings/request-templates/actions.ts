@@ -1,11 +1,15 @@
 "use server";
 
-import { api, ApiError } from "@/lib/api";
+import { ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
-import type {
-  RequestTemplateResponse,
-  CreateRequestTemplateRequest,
-  UpdateRequestTemplateRequest,
+import {
+  createRequestTemplate,
+  updateRequestTemplate,
+  deactivateRequestTemplate,
+  duplicateRequestTemplate,
+  type RequestTemplateResponse,
+  type CreateRequestTemplateRequest,
+  type UpdateRequestTemplateRequest,
 } from "@/lib/api/information-requests";
 
 interface ActionResult {
@@ -19,10 +23,7 @@ export async function createTemplateAction(
   input: CreateRequestTemplateRequest,
 ): Promise<ActionResult> {
   try {
-    const data = await api.post<RequestTemplateResponse>(
-      "/api/request-templates",
-      input,
-    );
+    const data = await createRequestTemplate(input);
     revalidatePath(`/org/${slug}/settings/request-templates`);
     return { success: true, data };
   } catch (error) {
@@ -51,10 +52,7 @@ export async function updateTemplateAction(
   input: UpdateRequestTemplateRequest,
 ): Promise<ActionResult> {
   try {
-    const data = await api.put<RequestTemplateResponse>(
-      `/api/request-templates/${id}`,
-      input,
-    );
+    const data = await updateRequestTemplate(id, input);
     revalidatePath(`/org/${slug}/settings/request-templates`);
     revalidatePath(`/org/${slug}/settings/request-templates/${id}`);
     return { success: true, data };
@@ -83,7 +81,7 @@ export async function deactivateTemplateAction(
   id: string,
 ): Promise<ActionResult> {
   try {
-    await api.delete(`/api/request-templates/${id}`);
+    await deactivateRequestTemplate(id);
   } catch (error) {
     if (error instanceof ApiError) {
       if (error.status === 403) {
@@ -106,9 +104,7 @@ export async function duplicateTemplateAction(
   id: string,
 ): Promise<ActionResult> {
   try {
-    const data = await api.post<RequestTemplateResponse>(
-      `/api/request-templates/${id}/duplicate`,
-    );
+    const data = await duplicateRequestTemplate(id);
     revalidatePath(`/org/${slug}/settings/request-templates`);
     return { success: true, data };
   } catch (error) {

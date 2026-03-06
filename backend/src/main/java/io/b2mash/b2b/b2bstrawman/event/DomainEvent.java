@@ -44,7 +44,13 @@ public sealed interface DomainEvent
         ExpenseCreatedEvent,
         ExpenseDeletedEvent,
         TaskRecurrenceCreatedEvent,
-        ProposalSentEvent {
+        ProposalSentEvent,
+        InformationRequestSentEvent,
+        InformationRequestCancelledEvent,
+        InformationRequestCompletedEvent,
+        RequestItemSubmittedEvent,
+        RequestItemAcceptedEvent,
+        RequestItemRejectedEvent {
 
   String eventType();
 

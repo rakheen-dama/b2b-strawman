@@ -8,6 +8,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import io.b2mash.b2b.b2bstrawman.acceptance.AcceptanceRequestRepository;
+import io.b2mash.b2b.b2bstrawman.comment.CommentRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerProjectLinkedEvent;
@@ -24,9 +26,14 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalDocumentView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
+import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestRepository;
+import io.b2mash.b2b.b2bstrawman.informationrequest.RequestItemRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -38,6 +45,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import tools.jackson.databind.ObjectMapper;
 
 @ExtendWith(MockitoExtension.class)
 class PortalEventHandlerTest {
@@ -51,6 +59,14 @@ class PortalEventHandlerTest {
   @Mock private CustomerProjectRepository customerProjectRepository;
   @Mock private io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository invoiceRepository;
   @Mock private io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository invoiceLineRepository;
+  @Mock private CommentRepository commentRepository;
+  @Mock private MemberRepository memberRepository;
+  @Mock private ObjectMapper objectMapper;
+  @Mock private OrganizationRepository organizationRepository;
+  @Mock private OrgSettingsRepository orgSettingsRepository;
+  @Mock private AcceptanceRequestRepository acceptanceRequestRepository;
+  @Mock private InformationRequestRepository informationRequestRepository;
+  @Mock private RequestItemRepository requestItemRepository;
 
   @InjectMocks private PortalEventHandler handler;
 

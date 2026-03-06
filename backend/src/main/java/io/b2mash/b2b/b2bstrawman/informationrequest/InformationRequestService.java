@@ -4,19 +4,21 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.event.InformationRequestCancelledEvent;
+import io.b2mash.b2b.b2bstrawman.event.InformationRequestCompletedEvent;
+import io.b2mash.b2b.b2bstrawman.event.InformationRequestSentEvent;
+import io.b2mash.b2b.b2bstrawman.event.RequestItemAcceptedEvent;
+import io.b2mash.b2b.b2bstrawman.event.RequestItemRejectedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
-import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestEvents.InformationRequestCancelledEvent;
-import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestEvents.InformationRequestCompletedEvent;
-import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestEvents.InformationRequestSentEvent;
-import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestEvents.RequestItemAcceptedEvent;
-import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestEvents.RequestItemRejectedEvent;
 import io.b2mash.b2b.b2bstrawman.informationrequest.dto.InformationRequestDtos.AdHocItemRequest;
 import io.b2mash.b2b.b2bstrawman.informationrequest.dto.InformationRequestDtos.AddItemRequest;
 import io.b2mash.b2b.b2bstrawman.informationrequest.dto.InformationRequestDtos.CreateInformationRequestRequest;
 import io.b2mash.b2b.b2bstrawman.informationrequest.dto.InformationRequestDtos.DashboardSummaryResponse;
 import io.b2mash.b2b.b2bstrawman.informationrequest.dto.InformationRequestDtos.InformationRequestResponse;
 import io.b2mash.b2b.b2bstrawman.informationrequest.dto.InformationRequestDtos.UpdateInformationRequestRequest;
+import io.b2mash.b2b.b2bstrawman.member.Member;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
@@ -52,6 +54,7 @@ public class InformationRequestService {
   private final PortalContactRepository portalContactRepository;
   private final ApplicationEventPublisher eventPublisher;
   private final AuditService auditService;
+  private final MemberRepository memberRepository;
 
   public InformationRequestService(
       InformationRequestRepository requestRepository,
@@ -63,7 +66,8 @@ public class InformationRequestService {
       ProjectRepository projectRepository,
       PortalContactRepository portalContactRepository,
       ApplicationEventPublisher eventPublisher,
-      AuditService auditService) {
+      AuditService auditService,
+      MemberRepository memberRepository) {
     this.requestRepository = requestRepository;
     this.itemRepository = itemRepository;
     this.requestNumberService = requestNumberService;
@@ -74,6 +78,12 @@ public class InformationRequestService {
     this.portalContactRepository = portalContactRepository;
     this.eventPublisher = eventPublisher;
     this.auditService = auditService;
+    this.memberRepository = memberRepository;
+  }
+
+  private String resolveActorName() {
+    UUID memberId = RequestScopes.requireMemberId();
+    return memberRepository.findById(memberId).map(Member::getName).orElse("Unknown");
   }
 
   // ========== Create Operations ==========
@@ -248,7 +258,22 @@ public class InformationRequestService {
             .entityId(saved.getId())
             .details(Map.of("request_number", saved.getRequestNumber()))
             .build());
-    eventPublisher.publishEvent(new InformationRequestSentEvent(requestId));
+    var actorName = resolveActorName();
+    eventPublisher.publishEvent(
+        new InformationRequestSentEvent(
+            "information_request.sent",
+            "information_request",
+            requestId,
+            saved.getProjectId(),
+            RequestScopes.requireMemberId(),
+            actorName,
+            RequestScopes.TENANT_ID.get(),
+            RequestScopes.ORG_ID.get(),
+            Instant.now(),
+            Map.of("request_number", saved.getRequestNumber()),
+            requestId,
+            saved.getCustomerId(),
+            saved.getPortalContactId()));
     log.info("Sent information request {} ({})", saved.getId(), saved.getRequestNumber());
 
     return toResponse(saved);
@@ -270,7 +295,21 @@ public class InformationRequestService {
             .entityId(saved.getId())
             .details(Map.of("request_number", saved.getRequestNumber()))
             .build());
-    eventPublisher.publishEvent(new InformationRequestCancelledEvent(requestId));
+    var actorName = resolveActorName();
+    eventPublisher.publishEvent(
+        new InformationRequestCancelledEvent(
+            "information_request.cancelled",
+            "information_request",
+            requestId,
+            saved.getProjectId(),
+            RequestScopes.requireMemberId(),
+            actorName,
+            RequestScopes.TENANT_ID.get(),
+            RequestScopes.ORG_ID.get(),
+            Instant.now(),
+            Map.of("request_number", saved.getRequestNumber()),
+            requestId,
+            saved.getCustomerId()));
     log.info("Cancelled information request {} ({})", saved.getId(), saved.getRequestNumber());
 
     return toResponse(saved);
@@ -306,7 +345,22 @@ public class InformationRequestService {
                     "request_id", requestId.toString(),
                     "item_name", item.getName()))
             .build());
-    eventPublisher.publishEvent(new RequestItemAcceptedEvent(requestId, itemId));
+    var acceptActorName = resolveActorName();
+    eventPublisher.publishEvent(
+        new RequestItemAcceptedEvent(
+            "information_request.item_accepted",
+            "request_item",
+            itemId,
+            request.getProjectId(),
+            RequestScopes.requireMemberId(),
+            acceptActorName,
+            RequestScopes.TENANT_ID.get(),
+            RequestScopes.ORG_ID.get(),
+            Instant.now(),
+            Map.of("request_id", requestId.toString(), "item_name", item.getName()),
+            requestId,
+            itemId,
+            request.getCustomerId()));
 
     checkAutoComplete(request);
     return toResponse(request);
@@ -341,7 +395,26 @@ public class InformationRequestService {
                     "item_name", item.getName(),
                     "reason", reason))
             .build());
-    eventPublisher.publishEvent(new RequestItemRejectedEvent(requestId, itemId));
+    var rejectActorName = resolveActorName();
+    eventPublisher.publishEvent(
+        new RequestItemRejectedEvent(
+            "information_request.item_rejected",
+            "request_item",
+            itemId,
+            request.getProjectId(),
+            RequestScopes.requireMemberId(),
+            rejectActorName,
+            RequestScopes.TENANT_ID.get(),
+            RequestScopes.ORG_ID.get(),
+            Instant.now(),
+            Map.of(
+                "request_id", requestId.toString(),
+                "item_name", item.getName(),
+                "reason", reason),
+            requestId,
+            itemId,
+            request.getCustomerId(),
+            reason));
 
     return toResponse(request);
   }
@@ -367,7 +440,22 @@ public class InformationRequestService {
               .details(
                   Map.of("request_number", request.getRequestNumber(), "auto_completed", "true"))
               .build());
-      eventPublisher.publishEvent(new InformationRequestCompletedEvent(request.getId()));
+      var completeActorName = resolveActorName();
+      eventPublisher.publishEvent(
+          new InformationRequestCompletedEvent(
+              "information_request.completed",
+              "information_request",
+              request.getId(),
+              request.getProjectId(),
+              RequestScopes.requireMemberId(),
+              completeActorName,
+              RequestScopes.TENANT_ID.get(),
+              RequestScopes.ORG_ID.get(),
+              Instant.now(),
+              Map.of("request_number", request.getRequestNumber(), "auto_completed", "true"),
+              request.getId(),
+              request.getCustomerId(),
+              request.getPortalContactId()));
       log.info(
           "Auto-completed information request {} ({})",
           request.getId(),
@@ -440,7 +528,22 @@ public class InformationRequestService {
           "Cannot resend notification",
           "Request must be in SENT or IN_PROGRESS status to resend notification");
     }
-    eventPublisher.publishEvent(new InformationRequestSentEvent(requestId));
+    var resendActorName = resolveActorName();
+    eventPublisher.publishEvent(
+        new InformationRequestSentEvent(
+            "information_request.sent",
+            "information_request",
+            requestId,
+            request.getProjectId(),
+            RequestScopes.requireMemberId(),
+            resendActorName,
+            RequestScopes.TENANT_ID.get(),
+            RequestScopes.ORG_ID.get(),
+            Instant.now(),
+            Map.of("request_number", request.getRequestNumber(), "resend", "true"),
+            requestId,
+            request.getCustomerId(),
+            request.getPortalContactId()));
     log.info(
         "Resent notification for information request {} ({})",
         request.getId(),

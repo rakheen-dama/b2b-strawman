@@ -23,7 +23,7 @@ Phase 34 introduces a Client Information Requests system that transforms the cus
 | 252 | RequestTemplate Entity Foundation & Pack Seeder | Backend | -- | M | 252A, 252B | **Done** (PRs #539, #540) |
 | 253 | InformationRequest Entity & Lifecycle Backend | Backend | 252 | L | 253A, 253B | **Done** (PRs #541, #542) |
 | 254 | Domain Events, Portal Read-Model Sync & Portal API | Backend | 253 | L | 254A, 254B | **Done** (PRs #543, #544) |
-| 255 | Notifications, Audit & Reminder Scheduler | Backend | 253, 254 | M | 255A, 255B | |
+| 255 | Notifications, Audit & Reminder Scheduler | Backend | 253, 254 | M | 255A, 255B | **Done** (PRs #545, #546) |
 | 256 | Project Template Integration & OrgSettings Extension | Backend | 253, 255 | M | 256A | |
 | 257 | Request Template Management UI | Frontend | 252 | M | 257A | |
 | 258 | Firm-Side Request Pages & Review UI | Frontend | 253, 257 | L | 258A, 258B | |
@@ -169,7 +169,7 @@ FRONTEND TRACK (after respective backend epics)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 3a (parallel) | 254 | 254B | PortalInformationRequestController + PortalInformationRequestService (list, detail, upload initiation via DocumentService + presigned URL, submit file, submit text, re-submission flow) + portal auth/authorization tests (~10 tests). ~5 new files + ~1 test file. Backend only. | **Done** (PR #544) |
-| 3b (parallel) | 255 | 255B | RequestReminderScheduler (per-tenant iteration, interval-based, ScopedValue binding) + OrgSettings extension (defaultRequestReminderDays) + V55 migration (partial: default_request_reminder_days column) + reminder audit event + scheduler tests (~8 tests). ~5 new/modified files. Backend only. | |
+| 3b (parallel) | 255 | 255B | RequestReminderScheduler (per-tenant iteration, interval-based, ScopedValue binding) + OrgSettings extension (defaultRequestReminderDays) + V55 migration (partial: default_request_reminder_days column) + reminder audit event + scheduler tests (~8 tests). ~5 new/modified files. Backend only. | **Done** (PR #546) |
 | 3c (parallel) | 256 | 256A | ProjectTemplate extension (requestTemplateId field) + V55 migration (partial: request_template_id column on project_templates) + ProjectInstantiationService extension (auto-draft creation) + in-app notification for project members + integration tests (~8 tests). ~5 modified files + ~1 test file. Backend only. | |
 
 ### Stage 4: Firm-Side Frontend
@@ -453,7 +453,7 @@ Stage 6: [260A] // [260B]                                         (parallel)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **255A** | 255.1--255.7 | 5 Thymeleaf email template pairs (HTML + text) + NotificationService integration (7 notification types) + AuditEventService integration (8 audit event types) + activity feed formatting + tests (~12 tests). ~10 new/modified files. Backend only. | **Done** (PR #545) |
-| **255B** | 255.8--255.14 | RequestReminderScheduler (per-tenant iteration, ScopedValue, interval-based) + OrgSettings extension (defaultRequestReminderDays) + V55 migration extension (default_request_reminder_days column) + reminder email template + REQUEST_REMINDER_SENT audit event + scheduler integration tests (~8 tests). ~5 new/modified files. Backend only. | |
+| **255B** | 255.8--255.14 | RequestReminderScheduler (per-tenant iteration, ScopedValue, interval-based) + OrgSettings extension (defaultRequestReminderDays) + V55 migration extension (default_request_reminder_days column) + reminder email template + REQUEST_REMINDER_SENT audit event + scheduler integration tests (~8 tests). ~5 new/modified files. Backend only. | **Done** (PR #546) |
 
 ### Tasks
 

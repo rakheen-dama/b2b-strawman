@@ -294,7 +294,7 @@
 | 252 | RequestTemplate Entity Foundation & Pack Seeder | Backend | -- | M | 252A, 252B | **Done** (PRs #539, #540)                                                                                                           |
 | 253 | InformationRequest Entity & Lifecycle Backend | Backend | 252 | L | 253A, 253B | **Done** (PRs #541, #542)                                                                                                           |
 | 254 | Domain Events, Portal Read-Model Sync & Portal API | Backend | 253 | L | 254A, 254B | **Done** (PRs #543, #544)                                                                                                           |
-| 255 | Notifications, Audit & Reminder Scheduler | Backend | 253, 254 | M | 255A, 255B | 255A **Done** (PR #545)                                                                                                             |
+| 255 | Notifications, Audit & Reminder Scheduler | Backend | 253, 254 | M | 255A, 255B | **Done** (PRs #545, #546)                                                                                                           |
 | 256 | Project Template Integration & OrgSettings Extension | Backend | 253, 255 | M | 256A |                                                                                                                                    |
 | 257 | Request Template Management UI | Frontend | 252 | M | 257A |                                                                                                                                    |
 | 258 | Firm-Side Request Pages & Review UI | Frontend | 253, 257 | L | 258A, 258B |                                                                                                                                    |

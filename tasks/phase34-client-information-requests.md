@@ -153,7 +153,7 @@ FRONTEND TRACK (after respective backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 1a | 253 | 253A | V54 migration extension (remainder): CREATE TABLE information_requests, request_items + indexes. InformationRequest + RequestItem + RequestCounter entities + enums (RequestStatus, ItemStatus, ResponseType) + repos + RequestNumberService. ~8 new files. Backend only. | |
+| 1a | 253 | 253A | V54 migration extension (remainder): CREATE TABLE information_requests, request_items + indexes. InformationRequest + RequestItem + RequestCounter entities + enums (RequestStatus, ItemStatus, ResponseType) + repos + RequestNumberService. ~8 new files. Backend only. | **Done** (PR #541) |
 | 1b | 253 | 253B | InformationRequestService (create from template + ad-hoc, send, cancel, accept, reject, auto-complete) + InformationRequestController (all firm-side endpoints + customer/project convenience + dashboard summary) + DTOs + integration tests (~25 tests). ~8 new files + ~1 test file. Backend only. | |
 
 ### Stage 2: Backend Tracks (parallel) + Template Frontend
@@ -310,7 +310,7 @@ Stage 6: [260A] // [260B]                                         (parallel)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **253A** | 253.1--253.8 | InformationRequest + RequestItem + RequestCounter entities + RequestStatus/ItemStatus enums + InformationRequestRepository + RequestItemRepository + RequestNumberService (atomic upsert). ~8 new files. Backend only. | |
+| **253A** | 253.1--253.8 | InformationRequest + RequestItem + RequestCounter entities + RequestStatus/ItemStatus enums + InformationRequestRepository + RequestItemRepository + RequestNumberService (atomic upsert). ~8 new files. Backend only. | **Done** (PR #541) |
 | **253B** | 253.9--253.16 | InformationRequestService (full lifecycle: create template + ad-hoc, send, cancel, accept, reject, auto-complete) + InformationRequestController (all firm-side endpoints + customer/project convenience + dashboard summary) + DTOs + integration tests (~25 tests). ~6 new files + ~1 test file. Backend only. | |
 
 ### Tasks

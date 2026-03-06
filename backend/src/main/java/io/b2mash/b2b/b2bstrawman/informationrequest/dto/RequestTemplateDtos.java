@@ -2,7 +2,9 @@ package io.b2mash.b2b.b2bstrawman.informationrequest.dto;
 
 import io.b2mash.b2b.b2bstrawman.informationrequest.RequestTemplate;
 import io.b2mash.b2b.b2bstrawman.informationrequest.RequestTemplateItem;
+import io.b2mash.b2b.b2bstrawman.informationrequest.ResponseType;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -20,7 +22,7 @@ public final class RequestTemplateDtos {
   public record RequestTemplateItemRequest(
       @NotBlank String name,
       String description,
-      @NotBlank String responseType,
+      @NotNull ResponseType responseType,
       boolean required,
       String fileTypeHints,
       int sortOrder) {}

@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.informationrequest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -173,7 +174,7 @@ class RequestTemplateControllerTest {
             .andReturn();
     // Verify the duplicate has a different ID
     String duplicateId = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
-    assert !duplicateId.equals(createdTemplateId);
+    assertThat(duplicateId).isNotEqualTo(createdTemplateId);
   }
 
   @Test
@@ -291,8 +292,8 @@ class RequestTemplateControllerTest {
     String content = result.getResponse().getContentAsString();
     // Platform templates have packId set
     List<String> packIds = JsonPath.read(content, "$[?(@.source == 'PLATFORM')].packId");
-    assert !packIds.isEmpty();
-    assert packIds.stream().allMatch(p -> p != null && !p.isEmpty());
+    assertThat(packIds).isNotEmpty();
+    assertThat(packIds).allMatch(p -> p != null && !p.isEmpty());
   }
 
   @Test
@@ -302,7 +303,7 @@ class RequestTemplateControllerTest {
     String content = result.getResponse().getContentAsString();
     // All platform templates should have at least one item
     List<List<?>> itemLists = JsonPath.read(content, "$[?(@.source == 'PLATFORM')].items");
-    assert itemLists.stream().allMatch(items -> !items.isEmpty());
+    assertThat(itemLists).allMatch(items -> !items.isEmpty());
   }
 
   private JwtRequestPostProcessor ownerJwt() {

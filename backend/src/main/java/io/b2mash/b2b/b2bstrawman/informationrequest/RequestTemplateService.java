@@ -176,7 +176,7 @@ public class RequestTemplateService {
                       templateId,
                       req.name(),
                       req.description(),
-                      ResponseType.valueOf(req.responseType()),
+                      req.responseType(),
                       req.required(),
                       req.fileTypeHints(),
                       req.sortOrder());

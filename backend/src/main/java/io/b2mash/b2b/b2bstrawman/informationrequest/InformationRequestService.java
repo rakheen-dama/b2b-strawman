@@ -150,19 +150,19 @@ public class InformationRequestService {
       itemRepository.save(item);
     }
 
+    var createAuditDetails = new HashMap<String, Object>();
+    createAuditDetails.put("request_number", requestNumber);
+    createAuditDetails.put("customer_id", customerId.toString());
+    createAuditDetails.put("template_id", templateId.toString());
+    if (projectId != null) {
+      createAuditDetails.put("project_id", projectId.toString());
+    }
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("information_request.created")
             .entityType("information_request")
             .entityId(saved.getId())
-            .details(
-                Map.of(
-                    "request_number",
-                    requestNumber,
-                    "customer_id",
-                    customerId.toString(),
-                    "template_id",
-                    templateId.toString()))
+            .details(createAuditDetails)
             .build());
     log.info(
         "Created information request {} ({}) from template {} for customer {}",
@@ -211,19 +211,19 @@ public class InformationRequestService {
       }
     }
 
+    var adHocAuditDetails = new HashMap<String, Object>();
+    adHocAuditDetails.put("request_number", requestNumber);
+    adHocAuditDetails.put("customer_id", customerId.toString());
+    adHocAuditDetails.put("ad_hoc", "true");
+    if (projectId != null) {
+      adHocAuditDetails.put("project_id", projectId.toString());
+    }
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("information_request.created")
             .entityType("information_request")
             .entityId(saved.getId())
-            .details(
-                Map.of(
-                    "request_number",
-                    requestNumber,
-                    "customer_id",
-                    customerId.toString(),
-                    "ad_hoc",
-                    "true"))
+            .details(adHocAuditDetails)
             .build());
     log.info(
         "Created ad-hoc information request {} ({}) for customer {}",
@@ -251,12 +251,17 @@ public class InformationRequestService {
     request.send();
     var saved = requestRepository.save(request);
 
+    var sentAuditDetails = new HashMap<String, Object>();
+    sentAuditDetails.put("request_number", saved.getRequestNumber());
+    if (saved.getProjectId() != null) {
+      sentAuditDetails.put("project_id", saved.getProjectId().toString());
+    }
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("information_request.sent")
             .entityType("information_request")
             .entityId(saved.getId())
-            .details(Map.of("request_number", saved.getRequestNumber()))
+            .details(sentAuditDetails)
             .build());
     var actorName = resolveActorName();
     eventPublisher.publishEvent(
@@ -288,12 +293,17 @@ public class InformationRequestService {
     request.cancel();
     var saved = requestRepository.save(request);
 
+    var cancelAuditDetails = new HashMap<String, Object>();
+    cancelAuditDetails.put("request_number", saved.getRequestNumber());
+    if (saved.getProjectId() != null) {
+      cancelAuditDetails.put("project_id", saved.getProjectId().toString());
+    }
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("information_request.cancelled")
             .entityType("information_request")
             .entityId(saved.getId())
-            .details(Map.of("request_number", saved.getRequestNumber()))
+            .details(cancelAuditDetails)
             .build());
     var actorName = resolveActorName();
     eventPublisher.publishEvent(
@@ -335,15 +345,18 @@ public class InformationRequestService {
     item.accept(memberId);
     itemRepository.save(item);
 
+    var acceptAuditDetails = new HashMap<String, Object>();
+    acceptAuditDetails.put("request_id", requestId.toString());
+    acceptAuditDetails.put("item_name", item.getName());
+    if (request.getProjectId() != null) {
+      acceptAuditDetails.put("project_id", request.getProjectId().toString());
+    }
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("information_request.item_accepted")
             .entityType("request_item")
             .entityId(itemId)
-            .details(
-                Map.of(
-                    "request_id", requestId.toString(),
-                    "item_name", item.getName()))
+            .details(acceptAuditDetails)
             .build());
     var acceptActorName = resolveActorName();
     eventPublisher.publishEvent(
@@ -384,16 +397,19 @@ public class InformationRequestService {
     item.reject(reason, memberId);
     itemRepository.save(item);
 
+    var rejectAuditDetails = new HashMap<String, Object>();
+    rejectAuditDetails.put("request_id", requestId.toString());
+    rejectAuditDetails.put("item_name", item.getName());
+    rejectAuditDetails.put("reason", reason);
+    if (request.getProjectId() != null) {
+      rejectAuditDetails.put("project_id", request.getProjectId().toString());
+    }
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("information_request.item_rejected")
             .entityType("request_item")
             .entityId(itemId)
-            .details(
-                Map.of(
-                    "request_id", requestId.toString(),
-                    "item_name", item.getName(),
-                    "reason", reason))
+            .details(rejectAuditDetails)
             .build());
     var rejectActorName = resolveActorName();
     eventPublisher.publishEvent(
@@ -432,13 +448,18 @@ public class InformationRequestService {
       request.complete();
       requestRepository.save(request);
 
+      var completedAuditDetails = new HashMap<String, Object>();
+      completedAuditDetails.put("request_number", request.getRequestNumber());
+      completedAuditDetails.put("auto_completed", "true");
+      if (request.getProjectId() != null) {
+        completedAuditDetails.put("project_id", request.getProjectId().toString());
+      }
       auditService.log(
           AuditEventBuilder.builder()
               .eventType("information_request.completed")
               .entityType("information_request")
               .entityId(request.getId())
-              .details(
-                  Map.of("request_number", request.getRequestNumber(), "auto_completed", "true"))
+              .details(completedAuditDetails)
               .build());
       var completeActorName = resolveActorName();
       eventPublisher.publishEvent(
@@ -483,12 +504,17 @@ public class InformationRequestService {
     request.setReminderIntervalDays(dto.reminderIntervalDays());
     var saved = requestRepository.save(request);
 
+    var updatedAuditDetails = new HashMap<String, Object>();
+    updatedAuditDetails.put("request_number", saved.getRequestNumber());
+    if (saved.getProjectId() != null) {
+      updatedAuditDetails.put("project_id", saved.getProjectId().toString());
+    }
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("information_request.updated")
             .entityType("information_request")
             .entityId(saved.getId())
-            .details(Map.of("request_number", saved.getRequestNumber()))
+            .details(updatedAuditDetails)
             .build());
 
     return toResponse(saved);

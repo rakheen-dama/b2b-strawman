@@ -84,6 +84,26 @@ public class ActivityMessageFormatter {
           "Proposal \"%s\" has expired".formatted(getProposalNumber(details));
       case "proposal.withdrawn" ->
           "%s withdrew proposal \"%s\"".formatted(actorName, getProposalNumber(details));
+      case "information_request.created" ->
+          "%s created information request %s".formatted(actorName, getRequestNumber(details));
+      case "information_request.sent" ->
+          "Information request %s sent to %s"
+              .formatted(getRequestNumber(details), getContactName(details, actorName));
+      case "information_request.cancelled" ->
+          "%s cancelled information request %s".formatted(actorName, getRequestNumber(details));
+      case "information_request.completed" ->
+          "%s completed — all items accepted".formatted(getRequestNumber(details));
+      case "information_request.item_submitted" ->
+          "Client submitted \"%s\" for %s"
+              .formatted(getItemName(details), getRequestNumber(details));
+      case "information_request.item_accepted" ->
+          "%s accepted \"%s\" for %s"
+              .formatted(actorName, getItemName(details), getRequestNumber(details));
+      case "information_request.item_rejected" ->
+          "%s rejected \"%s\" — waiting for re-submission"
+              .formatted(actorName, getItemName(details));
+      case "information_request.updated" ->
+          "%s updated information request %s".formatted(actorName, getRequestNumber(details));
       default -> "%s performed %s on %s".formatted(actorName, eventType, entityType);
     };
   }
@@ -207,6 +227,21 @@ public class ActivityMessageFormatter {
     return num instanceof String s ? s : "unknown";
   }
 
+  private String getRequestNumber(Map<String, Object> details) {
+    Object num = details.get("request_number");
+    return num instanceof String s ? s : "unknown";
+  }
+
+  private String getItemName(Map<String, Object> details) {
+    Object name = details.get("item_name");
+    return name instanceof String s ? s : "an item";
+  }
+
+  private String getContactName(Map<String, Object> details, String fallback) {
+    Object name = details.get("contact_name");
+    return name instanceof String s ? s : fallback;
+  }
+
   private String resolveEntityName(String entityType, Map<String, Object> details) {
     return switch (entityType) {
       case "task" -> getTitle(details);
@@ -218,6 +253,8 @@ public class ActivityMessageFormatter {
         yield name instanceof String s ? s : "member";
       }
       case "proposal" -> getProposalNumber(details);
+      case "information_request" -> getRequestNumber(details);
+      case "request_item" -> getItemName(details);
       default -> "unknown";
     };
   }

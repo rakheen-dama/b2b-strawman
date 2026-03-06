@@ -50,7 +50,8 @@ public sealed interface DomainEvent
         InformationRequestCompletedEvent,
         RequestItemSubmittedEvent,
         RequestItemAcceptedEvent,
-        RequestItemRejectedEvent {
+        RequestItemRejectedEvent,
+        InformationRequestDraftCreatedEvent {
 
   String eventType();
 

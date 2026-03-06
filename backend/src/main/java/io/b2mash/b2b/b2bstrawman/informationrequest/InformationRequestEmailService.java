@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.integration.email.EmailRateLimiter;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailContextBuilder;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailTemplateRenderer;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -92,6 +93,30 @@ public class InformationRequestEmailService {
     String orgName = (String) context.get("orgName");
     context.put("subject", "Item requires re-submission — %s (%s)".formatted(itemName, orgName));
     sendEmail("request-item-rejected", recipientEmail, context, requestId);
+  }
+
+  public void sendReminderEmail(
+      String recipientEmail,
+      String contactName,
+      String requestNumber,
+      List<RequestItem> pendingItems,
+      UUID requestId) {
+    var context = emailContextBuilder.buildBaseContext(contactName, null);
+    context.put("contactName", contactName);
+    context.put("requestNumber", requestNumber);
+    context.put("outstandingCount", String.valueOf(pendingItems.size()));
+    context.put(
+        "items",
+        pendingItems.stream()
+            .map(item -> Map.of("name", item.getName(), "status", item.getStatus().name()))
+            .toList());
+    context.put("portalUrl", appBaseUrl + "/portal");
+    String orgName = (String) context.get("orgName");
+    context.put(
+        "subject",
+        "Reminder: %d outstanding items for %s (%s)"
+            .formatted(pendingItems.size(), requestNumber, orgName));
+    sendEmail("request-reminder", recipientEmail, context, requestId);
   }
 
   public void sendRequestCompletedEmail(

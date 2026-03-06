@@ -73,6 +73,7 @@ public class OrgSettingsService {
                 null, // taxLabel
                 false, // taxInclusive
                 null, // acceptanceExpiryDays
+                5, // defaultRequestReminderDays
                 false, // timeReminderEnabled
                 "MON,TUE,WED,THU,FRI", // timeReminderDays
                 "17:00", // timeReminderTime
@@ -239,6 +240,7 @@ public class OrgSettingsService {
         settings.getTaxLabel(),
         settings.isTaxInclusive(),
         settings.getAcceptanceExpiryDays(),
+        settings.getDefaultRequestReminderDays(),
         settings.isTimeReminderEnabled(),
         settings.getTimeReminderDays(),
         settings.getTimeReminderTime() != null ? settings.getTimeReminderTime().toString() : null,

@@ -4,7 +4,7 @@ server:
     session:
       cookie:
         http-only: true
-        secure: true
+        secure: false
         same-site: lax
         name: SESSION
 
@@ -50,7 +50,6 @@ spring:
                 - Path=/api/**
               filters:
                 - TokenRelay=
-                - SaveSession
 
   jmx:
     enabled: false
@@ -67,7 +66,7 @@ keycloak:
     url: ${KEYCLOAK_ADMIN_URL:http://localhost:8180}
     realm: ${KEYCLOAK_ADMIN_REALM:docteams}
     client-id: ${KEYCLOAK_ADMIN_CLIENT_ID:admin-cli}
-    client-secret: ${KEYCLOAK_ADMIN_CLIENT_SECRET:}
+    client-secret: ${KEYCLOAK_ADMIN_CLIENT_SECRET:docteams-admin-secret}
 
 management:
   endpoints:

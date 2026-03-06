@@ -19,8 +19,8 @@ public class Organization {
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
-  @Column(name = "clerk_org_id", nullable = false, unique = true)
-  private String clerkOrgId;
+  @Column(name = "external_org_id", nullable = false, unique = true)
+  private String externalOrgId;
 
   @Column(name = "name", nullable = false)
   private String name;
@@ -44,8 +44,8 @@ public class Organization {
 
   protected Organization() {}
 
-  public Organization(String clerkOrgId, String name) {
-    this.clerkOrgId = clerkOrgId;
+  public Organization(String externalOrgId, String name) {
+    this.externalOrgId = externalOrgId;
     this.name = name;
     this.provisioningStatus = ProvisioningStatus.PENDING;
     this.tier = Tier.STARTER;
@@ -57,8 +57,16 @@ public class Organization {
     return id;
   }
 
+  public String getExternalOrgId() {
+    return externalOrgId;
+  }
+
+  /**
+   * @deprecated Use {@link #getExternalOrgId()}
+   */
+  @Deprecated
   public String getClerkOrgId() {
-    return clerkOrgId;
+    return externalOrgId;
   }
 
   public String getName() {

@@ -36,6 +36,8 @@ public class BffController {
       return ResponseEntity.ok(BffUserInfo.unauthenticated());
     }
 
+    org.slf4j.LoggerFactory.getLogger(BffController.class)
+        .info("BFF /me claims: {}", user.getClaims());
     BffUserInfoExtractor.OrgInfo orgInfo = BffUserInfoExtractor.extractOrgInfo(user);
 
     return ResponseEntity.ok(

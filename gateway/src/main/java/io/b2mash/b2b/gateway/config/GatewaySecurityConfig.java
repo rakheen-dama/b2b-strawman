@@ -45,7 +45,7 @@ public class GatewaySecurityConfig {
                     .authenticated()
                     .anyRequest()
                     .authenticated())
-        .oauth2Login(oauth2 -> oauth2.defaultSuccessUrl("/"))
+        .oauth2Login(oauth2 -> oauth2.defaultSuccessUrl(frontendUrl + "/dashboard", true))
         .logout(
             logout ->
                 logout

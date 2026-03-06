@@ -17,8 +17,8 @@ public class OrgSchemaMapping {
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
-  @Column(name = "clerk_org_id", nullable = false, unique = true)
-  private String clerkOrgId;
+  @Column(name = "external_org_id", nullable = false, unique = true)
+  private String externalOrgId;
 
   @Column(name = "schema_name", nullable = false)
   private String schemaName;
@@ -28,8 +28,8 @@ public class OrgSchemaMapping {
 
   protected OrgSchemaMapping() {}
 
-  public OrgSchemaMapping(String clerkOrgId, String schemaName) {
-    this.clerkOrgId = clerkOrgId;
+  public OrgSchemaMapping(String externalOrgId, String schemaName) {
+    this.externalOrgId = externalOrgId;
     this.schemaName = schemaName;
     this.createdAt = Instant.now();
   }
@@ -38,8 +38,16 @@ public class OrgSchemaMapping {
     return id;
   }
 
+  public String getExternalOrgId() {
+    return externalOrgId;
+  }
+
+  /**
+   * @deprecated Use {@link #getExternalOrgId()}
+   */
+  @Deprecated
   public String getClerkOrgId() {
-    return clerkOrgId;
+    return externalOrgId;
   }
 
   public String getSchemaName() {

@@ -65,10 +65,12 @@ services:
       KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
       KC_DB_USERNAME: ${POSTGRES_USER}
       KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
-      KC_HOSTNAME: localhost
+      KC_HOSTNAME_STRICT: "false"
+      KC_HTTP_ENABLED: "true"
       KC_HTTP_PORT: 8180
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-docteams-web-secret}
     volumes:
       - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
       - ./keycloak/providers:/opt/keycloak/providers
@@ -129,7 +131,7 @@ services:
     container_name: b2b-backend
     restart: unless-stopped
     environment:
-      SPRING_PROFILES_ACTIVE: local
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-local}
       # Datasource overrides (Docker service names instead of localhost)
       SPRING_DATASOURCE_APP_JDBC_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
       SPRING_DATASOURCE_APP_USERNAME: ${POSTGRES_USER}
@@ -150,9 +152,9 @@ services:
       AWS_S3_BUCKET_NAME: ${S3_BUCKET_NAME}
       AWS_CREDENTIALS_ACCESS_KEY_ID: ${LS_AWS_ACCESS_KEY_ID}
       AWS_CREDENTIALS_SECRET_ACCESS_KEY: ${LS_AWS_SECRET_ACCESS_KEY}
-      # Security — JWT (Clerk dev instance)
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: ${CLERK_ISSUER_URI}
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: ${CLERK_JWK_SET_URI}
+      # Security — JWT (set by .env file based on auth mode)
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: ${JWT_ISSUER_URI}
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: ${JWT_JWK_SET_URI}
       INTERNAL_API_KEY: ${INTERNAL_API_KEY}
       PORTAL_JWT_SECRET: ${PORTAL_JWT_SECRET}
       PORTAL_MAGIC_LINK_SECRET: ${PORTAL_MAGIC_LINK_SECRET}
@@ -179,6 +181,7 @@ services:
       context: ../frontend
       dockerfile: Dockerfile
       args:
+        NEXT_PUBLIC_AUTH_MODE: ${NEXT_PUBLIC_AUTH_MODE:-clerk}
         NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
     container_name: b2b-frontend
     restart: unless-stopped

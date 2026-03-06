@@ -55,7 +55,11 @@ public class TenantFilter extends OncePerRequestFilter {
 
     if (authentication instanceof JwtAuthenticationToken jwtAuth) {
       Jwt jwt = jwtAuth.getToken();
+      // Try Clerk format first ("o" claim), then Keycloak format ("organization" List<String>)
       String orgId = ClerkJwtUtils.extractOrgId(jwt);
+      if (orgId == null) {
+        orgId = extractKeycloakOrgId(jwt);
+      }
 
       if (orgId != null) {
         String schema = resolveTenant(orgId);
@@ -72,7 +76,13 @@ public class TenantFilter extends OncePerRequestFilter {
               jitProvisioningEnabled ? provisioningService.getIfAvailable() : null;
           if (svc != null) {
             String orgRole = ClerkJwtUtils.extractOrgRole(jwt);
-            if (Roles.ORG_OWNER.equals(orgRole) || Roles.ORG_ADMIN.equals(orgRole)) {
+            // For Keycloak JWTs, role may not be in Clerk format — allow any authenticated user to
+            // trigger JIT provisioning (first-login scenario)
+            boolean canProvision =
+                orgRole == null
+                    || Roles.ORG_OWNER.equals(orgRole)
+                    || Roles.ORG_ADMIN.equals(orgRole);
+            if (canProvision) {
               schema = attemptJitProvisioning(jwt, orgId, svc);
             } else {
               log.debug(
@@ -127,6 +137,19 @@ public class TenantFilter extends OncePerRequestFilter {
         .findByClerkOrgId(clerkOrgId)
         .map(OrgSchemaMapping::getSchemaName)
         .orElse(null);
+  }
+
+  /**
+   * Extracts the org ID from a Keycloak JWT where the {@code organization} claim is a {@code
+   * List<String>} of org aliases. Returns the first alias, or null if absent.
+   */
+  @SuppressWarnings("unchecked")
+  private String extractKeycloakOrgId(Jwt jwt) {
+    Object orgClaim = jwt.getClaim("organization");
+    if (orgClaim instanceof java.util.List<?> list && !list.isEmpty()) {
+      return (String) list.getFirst();
+    }
+    return null;
   }
 
   private String attemptJitProvisioning(Jwt jwt, String orgId, TenantProvisioningService svc) {

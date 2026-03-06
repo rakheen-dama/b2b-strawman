@@ -176,7 +176,7 @@ FRONTEND TRACK (after respective backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 4a | 258 | 258A | CreateRequestDialog (template selection, customer/project/contact pickers, interval config) + RequestStatusBadge + ItemStatusBadge + RequestProgressBar shared components + customer detail page "Requests" tab + project detail page "Requests" tab + request-actions.ts server actions + API client extensions + tests (~8 tests). ~10 new/modified files. Frontend only. | |
+| 4a | 258 | 258A | CreateRequestDialog (template selection, customer/project/contact pickers, interval config) + RequestStatusBadge + ItemStatusBadge + RequestProgressBar shared components + customer detail page "Requests" tab + project detail page "Requests" tab + request-actions.ts server actions + API client extensions + tests (~8 tests). ~10 new/modified files. Frontend only. | **Done** (PR #549) |
 | 4b | 258 | 258B | information-requests/[id]/page.tsx firm-side detail page (header, progress, item list with status) + Accept/Reject review actions + RejectItemDialog modal + Cancel request + Resend notification + tests (~8 tests). ~5 new files. Frontend only. | |
 
 ### Stage 5: Portal Frontend (parallel with Stage 4)
@@ -576,7 +576,7 @@ Stage 6: [260A] // [260B]                                         (parallel)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **257A** | 257.1--257.8 | Settings nav item + request template list page + create page + edit page with item editor (response type, required, drag-reorder, file type hints) + platform template "Duplicate" action + lib/api/information-requests.ts API client + server actions + tests (~10 tests). ~8 new files. Frontend only. | |
+| **257A** | 257.1--257.8 | Settings nav item + request template list page + create page + edit page with item editor (response type, required, drag-reorder, file type hints) + platform template "Duplicate" action + lib/api/information-requests.ts API client + server actions + tests (~10 tests). ~8 new files. Frontend only. | **Done** (PR #548) |
 
 ### Tasks
 

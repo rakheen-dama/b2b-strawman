@@ -3,7 +3,6 @@ package io.b2mash.b2b.b2bstrawman.accessrequest;
 import io.b2mash.b2b.b2bstrawman.accessrequest.dto.AccessRequestDtos.AccessRequestSubmission;
 import io.b2mash.b2b.b2bstrawman.accessrequest.dto.AccessRequestDtos.SubmitResponse;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
-import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import jakarta.mail.internet.MimeMessage;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -65,8 +64,10 @@ public class AccessRequestService {
         accessRequestRepository.existsByEmailAndStatusIn(
             email, List.of(AccessRequestStatus.PENDING_VERIFICATION, AccessRequestStatus.PENDING));
     if (duplicateExists) {
-      throw new ResourceConflictException(
-          "Duplicate request", "A request for this email is already pending");
+      // Return generic response to prevent email enumeration on this public endpoint
+      return new SubmitResponse(
+          "If the email is valid, a verification code will be sent.",
+          configProperties.otpExpiryMinutes());
     }
 
     String otp = String.format("%06d", secureRandom.nextInt(1_000_000));
@@ -88,12 +89,13 @@ public class AccessRequestService {
     sendOtpEmail(email, otp, submission.fullName(), configProperties.otpExpiryMinutes());
 
     return new SubmitResponse(
-        "Verification code sent to " + email, configProperties.otpExpiryMinutes());
+        "If the email is valid, a verification code will be sent.",
+        configProperties.otpExpiryMinutes());
   }
 
   private void sendOtpEmail(String recipientEmail, String otp, String fullName, int expiryMinutes) {
     if (mailSender.isEmpty()) {
-      log.info("No mail sender configured. OTP for {}: {}", recipientEmail, otp);
+      log.info("No mail sender configured — OTP email not sent for {}", recipientEmail);
       return;
     }
     try {
@@ -109,7 +111,7 @@ public class AccessRequestService {
       mailSender.get().send(message);
       log.debug("OTP email sent to {}", recipientEmail);
     } catch (Exception e) {
-      log.error("Failed to send OTP email to {}: {}", recipientEmail, e.getMessage());
+      throw new RuntimeException("Failed to send OTP email to " + recipientEmail, e);
     }
   }
 }

@@ -1,11 +1,15 @@
 package io.b2mash.b2b.b2bstrawman.accessrequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import jakarta.mail.Session;
+import jakarta.mail.internet.MimeMessage;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +17,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
@@ -26,6 +32,13 @@ class AccessRequestPublicControllerTest {
   @Autowired private MockMvc mockMvc;
 
   @Autowired private AccessRequestRepository accessRequestRepository;
+
+  @MockitoBean private JavaMailSender javaMailSender;
+
+  @BeforeEach
+  void setUpMailMock() {
+    when(javaMailSender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
+  }
 
   @Test
   void submitRequest_validCompanyEmail_returns200() throws Exception {
@@ -44,7 +57,8 @@ class AccessRequestPublicControllerTest {
                     }
                     """))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.message").value("Verification code sent to jane@acme-corp.com"))
+        .andExpect(
+            jsonPath("$.message").value("If the email is valid, a verification code will be sent."))
         .andExpect(jsonPath("$.expiresInMinutes").value(10));
   }
 
@@ -70,7 +84,7 @@ class AccessRequestPublicControllerTest {
   }
 
   @Test
-  void submitRequest_duplicatePending_returns409() throws Exception {
+  void submitRequest_duplicatePending_returnsGeneric200() throws Exception {
     // First request succeeds
     mockMvc
         .perform(
@@ -88,7 +102,7 @@ class AccessRequestPublicControllerTest {
                     """))
         .andExpect(status().isOk());
 
-    // Second request with same email returns 409
+    // Second request with same email returns generic 200 (prevents email enumeration)
     mockMvc
         .perform(
             post("/api/access-requests")
@@ -103,9 +117,10 @@ class AccessRequestPublicControllerTest {
                       "industry": "Legal"
                     }
                     """))
-        .andExpect(status().isConflict())
-        .andExpect(jsonPath("$.title").value("Duplicate request"))
-        .andExpect(jsonPath("$.detail").value("A request for this email is already pending"));
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.message")
+                .value("If the email is valid, a verification code will be sent."));
   }
 
   @Test

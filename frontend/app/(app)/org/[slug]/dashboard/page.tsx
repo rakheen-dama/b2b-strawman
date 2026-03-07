@@ -1,5 +1,5 @@
-import { getAuthContext } from "@/lib/auth";
-import { ApiError, handleApiError } from "@/lib/api";
+import { getAuthContext, getCurrentUserEmail } from "@/lib/auth";
+import { api, ApiError, handleApiError } from "@/lib/api";
 import { Loader2 } from "lucide-react";
 import { ProvisioningPendingRefresh } from "./provisioning-pending-refresh";
 import { DashboardHeader } from "./dashboard-header";
@@ -10,6 +10,8 @@ import { RecentActivityWidget } from "@/components/dashboard/recent-activity-wid
 import { IncompleteProfilesWidget } from "@/components/dashboard/incomplete-profiles-widget";
 import { InformationRequestsWidget } from "@/components/dashboard/information-requests-widget";
 import { AutomationsWidget } from "@/components/automations/automations-widget";
+import { TeamCapacityWidget } from "@/components/dashboard/team-capacity-widget";
+import { MyScheduleWidget } from "@/components/dashboard/my-schedule-widget";
 import {
   fetchDashboardKpis,
   fetchProjectHealth,
@@ -19,7 +21,16 @@ import {
   fetchInformationRequestSummary,
   fetchAutomationSummary,
 } from "@/lib/actions/dashboard";
-import { resolveDateRange } from "@/lib/date-utils";
+import {
+  getTeamCapacityGrid,
+  listAllocations,
+  listLeaveForMember,
+  type TeamCapacityGrid,
+  type AllocationResponse,
+  type LeaveBlockResponse,
+} from "@/lib/api/capacity";
+import { resolveDateRange, getCurrentMonday, formatDate as formatDateUtil, addWeeks } from "@/lib/date-utils";
+import type { OrgMember } from "@/lib/types";
 
 export default async function OrgDashboardPage({
   params,
@@ -80,6 +91,49 @@ export default async function OrgDashboardPage({
     handleApiError(error);
   }
 
+  // Capacity data for dashboard widgets
+  const monday = getCurrentMonday();
+  const weekEnd = addWeeks(monday, 1);
+  const weekStartStr = formatDateUtil(monday);
+  const weekEndStr = formatDateUtil(weekEnd);
+
+  let capacityGrid: TeamCapacityGrid | null = null;
+  let myAllocations: AllocationResponse[] | null = null;
+  let myLeave: LeaveBlockResponse[] | null = null;
+  let myWeeklyCapacity = 40;
+
+  try {
+    capacityGrid = await getTeamCapacityGrid(weekStartStr, weekEndStr);
+  } catch {
+    // Non-fatal: widget will show error state
+  }
+
+  // Resolve current member ID for personal schedule widget
+  try {
+    const [email, orgMembers] = await Promise.all([
+      getCurrentUserEmail(),
+      api.get<OrgMember[]>("/api/members"),
+    ]);
+    if (email) {
+      const match = orgMembers.find((m) => m.email === email);
+      if (match) {
+        const [allocRes, leaveRes] = await Promise.all([
+          listAllocations({ memberId: match.id, weekStart: weekStartStr, weekEnd: weekEndStr }),
+          listLeaveForMember(match.id),
+        ]);
+        myAllocations = allocRes;
+        myLeave = leaveRes;
+        // If capacity grid has this member, use their effective capacity
+        const memberRow = capacityGrid?.members.find((m) => m.memberId === match.id);
+        if (memberRow && memberRow.weeks.length > 0) {
+          myWeeklyCapacity = memberRow.weeks[0].effectiveCapacity;
+        }
+      }
+    }
+  } catch {
+    // Non-fatal: my schedule widget will show error state
+  }
+
   return (
     <div className="space-y-8">
       <DashboardHeader from={from} to={to} />
@@ -95,6 +149,12 @@ export default async function OrgDashboardPage({
         </div>
         <div className="space-y-6 lg:col-span-2">
           <TeamWorkloadWidget data={teamWorkload ?? null} isAdmin={isAdmin} />
+          <TeamCapacityWidget data={capacityGrid} orgSlug={slug} />
+          <MyScheduleWidget
+            allocations={myAllocations}
+            leaveBlocks={myLeave}
+            weeklyCapacity={myWeeklyCapacity}
+          />
           {isAdmin && (
             <IncompleteProfilesWidget
               data={aggregatedCompleteness ?? null}

@@ -1,132 +1,198 @@
-# Admin-Approved Tenant Provisioning -- Task Breakdown
+# Phase 39 — Admin-Approved Org Provisioning
 
-Replaces Clerk-driven self-registration with an admin-approved provisioning flow. A visitor submits an access request via a public form (no auth). A product admin reviews and approves/rejects requests from a dashboard. On approval, the backend orchestrates Keycloak org creation, tenant schema provisioning, and owner invitation in a single synchronous sequence. This feature depends on Phase 36 (Keycloak + Gateway BFF Migration) and Phase 20 (auth abstraction layer).
+Phase 39 replaces self-registration with an **admin-approved access request pipeline**. Prospective customers submit a public form (with company email OTP verification), platform admins review and approve/reject requests via a dedicated panel, and approved requests trigger Keycloak org creation, tenant schema provisioning, and owner invitation -- all reusing existing infrastructure from Phase 36 and Phase 13.
 
-**Architecture doc**: `architecture/admin-approved-provisioning.md`
+**Architecture doc**: `architecture/phase39-admin-approved-provisioning.md`
 
-**ADRs**: [ADR-154](adr/ADR-154-admin-approved-provisioning-flow.md) (admin-approved flow), [ADR-155](adr/ADR-155-access-request-lifecycle-model.md) (access request lifecycle), [ADR-156](adr/ADR-156-invitation-role-gap-mitigation.md) (invitation role gap mitigation)
+**Dependencies on prior phases**:
+- Phase 36 (Keycloak + Gateway BFF): `KeycloakAdminClient`, Gateway BFF session, auth abstraction
+- Phase 13 (Dedicated Schema): `TenantProvisioningService`
+- Phase 6.5 (Notifications): Email sending infrastructure
+
+---
 
 ## Epic Overview
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 295 | Access Request Entity & Public API | Backend | -- | M | 295A, 295B | |
-| 296 | Keycloak Admin Client & Provisioning Orchestration | Backend | 295 | L | 296A, 296B | |
-| 297 | JWT Refactor & Security Config | Backend | 295 | M | 297A, 297B | |
-| 298 | MemberFilter JIT Role Assignment | Backend | 295, 297 | S | 298A | |
-| 299 | Frontend -- Public Access Request Form | Frontend | 295 | S | 299A | |
-| 300 | Frontend -- Admin Access Request Dashboard | Frontend | 296, 297 | M | 300A, 300B | |
-| 301 | Cleanup -- Remove Clerk-Specific Code | Backend + Frontend | 296, 297, 298, 300 | M | 301A, 301B | |
+| 295 | Access Request Entity Foundation & Migration | Backend | -- | M | 295A, 295B | |
+| 296 | OTP Verification & Public Access Request API | Backend | 295 | M | 296A, 296B | |
+| 297 | Platform Admin Identity & Security Infrastructure | Backend | 295 | M | 297A, 297B | |
+| 298 | Approval Pipeline & Platform Admin API | Backend | 296, 297 | M | 298A, 298B | |
+| 299 | Keycloak Configuration & Gateway Routing | Infra | 297 | S | 299A | |
+| 300 | Public Access Request Form (Frontend) | Frontend | 296 | M | 300A, 300B | |
+| 301 | Platform Admin Panel (Frontend) | Frontend | 298, 300 | M | 301A, 301B | |
+| 302 | Self-Service Org Creation Gate & JIT Provisioning Toggle | Backend + Frontend | 298 | S | 302A | |
+
+---
 
 ## Dependency Graph
 
 ```
-[E295A Migration + Entity]──>[E295B Public API + Service]
-       (Backend)                    (Backend)
-            │                            │
-            ├────────────────────────────┤
-            │                            │
-            ▼                            ▼
-[E296A KC Admin Client Config]   [E297A JwtClaimExtractor Refactor]
-       (Backend)                       (Backend)
-            │                            │
-            ▼                            ▼
-[E296B Provisioning Service]     [E297B SecurityConfig + PRODUCT_ADMIN]
-       (Backend)                       (Backend)
-            │                            │
-            └──────────┬─────────────────┤
-                       │                 │
-                       ▼                 │
-            [E298A MemberFilter JIT]     │
-                 (Backend)               │
-                       │                 │
-                       │                 ▼
-                       │        [E300A Admin Dashboard List]
-                       │              (Frontend)
-                       │                 │
-                       │                 ▼
-                       │        [E300B Admin Actions]
-                       │              (Frontend)
-                       │                 │
-                       └────────┬────────┘
-                                │
-                                ▼
-         ┌──────────────────────┴──────────────────────┐
-         ▼                                             ▼
-[E301A Backend Clerk Cleanup]              [E301B Frontend Clerk Cleanup]
-       (Backend)                                  (Frontend)
+BACKEND TRACK (sequential core, parallel branches)
+──────────────────────────────────────────────────
 
-         PARALLEL: E299A (Public Form) can start after E295B, independent of all others.
-         PARALLEL: E296A/296B and E297A/297B can run concurrently (both depend on E295 only).
-         PARALLEL: E301A and E301B can run concurrently.
+[E295A Access Request entity,
+ enum, DTO records, repo
+ + global migration V15]
+        |
+[E295B Access Request config
+ properties, email domain
+ validator, PasswordEncoder
+ bean + unit tests]
+        |
+        +──────────────────────────────────+
+        |                                  |
+[E296A OTP generation, email              [E297A RequestScopes.GROUPS,
+ sending, submit endpoint                  ClerkJwtUtils.extractGroups,
+ + public controller                       PlatformSecurityService,
+ + SecurityConfig permitAll                PlatformAdminFilter
+ + integration tests]                      + unit tests]
+        |                                  |
+[E296B OTP verification endpoint,         [E297B SecurityConfig platform-
+ attempt tracking, expiry,                 admin filter chain ordering,
+ status promotion                          @PreAuthorize integration
+ + integration tests]                      + integration tests]
+        |                                  |
+        +─────────────┬───────────────────+
+                      |
+[E298A Approval service:
+ KC org creation, tenant
+ provisioning, KC invitation,
+ idempotency + integration tests]
+        |
+[E298B Platform admin controller:
+ list/approve/reject endpoints,
+ @PreAuthorize guards
+ + integration tests]
+        |
+        +──────────────────────────────────+
+        |                                  |
+[E302A Disable self-service               |
+ org creation, JIT provisioning           |
+ toggle, feature flag                     |
+ + test updates]                          |
+                                          |
+INFRA TRACK (parallel with 296/297)       |
+────────────────────────────────────      |
+[E299A Keycloak seed:                     |
+ platform-admins group,                   |
+ Group Membership Mapper,                 |
+ realm-export.json update,                |
+ gateway route config]                    |
+                                          |
+FRONTEND TRACK (after backend APIs)       |
+────────────────────────────────────      |
+[E300A /request-access page:              |
+ Step 1 form (email, name,               |
+ org, country, industry),                 |
+ blocked domain check,                    |
+ server action, submit flow]              |
+        |                                 |
+[E300B OTP verification step:             |
+ Step 2 (OTP input), Step 3              |
+ (success), error handling,              |
+ + tests]                                |
+        |                                 |
+        +─────────────────────────────────+
+        |
+[E301A AuthContext groups field,
+ BFF /bff/me groups extraction,
+ (platform-admin) layout +
+ route guard + nav link]
+        |
+[E301B AccessRequestsTable,
+ ApproveDialog, RejectDialog,
+ server actions, filtering
+ + tests]
 ```
 
 **Parallel opportunities**:
-- After Epic 295 completes, Epic 296 (KC integration) and Epic 297 (JWT refactor) can run in parallel
-- Epic 299 (Public Form) can start as soon as Epic 295B is complete, independent of all other epics
-- Epic 301A (backend cleanup) and 301B (frontend cleanup) can run in parallel after their dependencies
+- E295A/B are sequential (entity before config).
+- E296A/B and E297A/B can run in parallel after E295B (public API vs. admin identity -- independent domains).
+- E299A (Keycloak config) is independent of the backend track -- can start anytime after E297A.
+- E300A/B (public form frontend) can start after E296B is complete.
+- E301A/B (admin panel frontend) requires E298B + E300A (needs AuthContext groups + admin API).
+- E302A can run after E298B (depends on approval pipeline being ready).
+
+---
 
 ## Implementation Order
 
-### Stage 1: Foundation -- Migration & Entity (Sequential)
+### Stage 0: Entity Foundation
 
-| Order | Epic | Slice | Rationale |
-|-------|------|-------|-----------|
-| 1a | Epic 295 | 295A | **V15 global migration** (access_requests table). AccessRequest entity in public schema. AccessRequestStatus enum. AccessRequestRepository with JPQL queries. Foundation for all access request work. |
-| 1b | Epic 295 | 295B | AccessRequestService (CRUD + validation + duplicate email check). AccessRequestController (public POST endpoint). Rate limiting (per-email DB check). Integration tests for entity, service, and controller. |
+| Order | Epic | Slice | Summary | Status |
+|-------|------|-------|---------|--------|
+| 0a | 295 | 295A | `AccessRequest` entity, `AccessRequestStatus` enum, `AccessRequestRepository`, DTO records, global migration `V15__create_access_requests.sql`. ~6 new files. Backend only. | |
+| 0b | 295 | 295B | `AccessRequestConfigProperties` (blocked domains, OTP expiry, max attempts), `EmailDomainValidator`, `PasswordEncoder` bean for OTP hashing. ~4 new files (~6 unit tests). Backend only. | |
 
-### Stage 2: Keycloak Integration & JWT Refactor (Parallel Tracks)
+### Stage 1: Public API & Platform Admin Identity (parallel tracks)
 
-| Order | Epic | Slice | Rationale |
-|-------|------|-------|-----------|
-| 2a | Epic 296 | 296A | Keycloak admin-client Maven dependency. KeycloakAdminConfig bean. KeycloakOrgService (create org, send invitation). Unit/integration tests with mock KC. |
-| 2b | Epic 296 | 296B | AdminProvisioningService (orchestrates KC org + schema + invite). Admin controller endpoints (approve, reject, retry). Integration tests for orchestration flow. Depends on 296A. |
-| 2a' | Epic 297 | 297A | Rename ClerkJwtUtils to JwtClaimExtractor. Remove Clerk v2 format detection. Keycloak-only extraction. Update all 4 consumers (TenantFilter, MemberFilter, ClerkJwtAuthenticationConverter, TenantLoggingFilter if applicable). Unit tests. |
-| 2b' | Epic 297 | 297B | Add PRODUCT_ADMIN realm role extraction to JWT converter. SecurityConfig: add /api/access-requests permitAll, /admin/** PRODUCT_ADMIN authority. Rename ClerkJwtAuthenticationConverter to KeycloakJwtAuthConverter. Update Roles.java constants. Integration tests for security rules. |
+| Order | Epic | Slice | Summary | Status |
+|-------|------|-------|---------|--------|
+| 1a (parallel) | 296 | 296A | `AccessRequestService.submitRequest()` — OTP generation, email domain validation, OTP email sending via existing `EmailProvider`. `AccessRequestPublicController` with `POST /api/access-requests`. `SecurityConfig` update to permitAll on `/api/access-requests/**`. ~4 new/modified files (~8 tests). Backend only. | |
+| 1b (parallel) | 296 | 296B | `AccessRequestService.verifyOtp()` — OTP verification, attempt tracking, expiry check, status promotion to PENDING. `POST /api/access-requests/verify` endpoint. ~2 modified files (~7 tests). Backend only. | |
+| 1c (parallel) | 297 | 297A | `RequestScopes.GROUPS` ScopedValue, `ClerkJwtUtils.extractGroups()`, `PlatformSecurityService.isPlatformAdmin()`. New `PlatformAdminFilter` binding groups from JWT. ~4 new/modified files (~6 unit tests). Backend only. | |
+| 1d | 297 | 297B | `SecurityConfig` filter chain update — `PlatformAdminFilter` ordering, `/api/platform-admin/**` requiring authentication. `@PreAuthorize("@platformSecurityService.isPlatformAdmin()")` integration test. ~2 modified files (~5 tests). Backend only. | |
 
-### Stage 3: JIT Role & Public Form (Parallel)
+### Stage 2: Approval Pipeline & Admin API (sequential)
 
-| Order | Epic | Slice | Rationale |
-|-------|------|-------|-----------|
-| 3a | Epic 298 | 298A | Enhance MemberFilter to check access_requests table for intended role on first login. AccessRequestRepository.findByKeycloakOrgIdAndContactEmail query. Integration tests for JIT owner assignment. |
-| 3b | Epic 299 | 299A | Public /request-access page. Server Action calling POST /api/access-requests. Form validation (Zod). Success/error states. Frontend tests. |
+| Order | Epic | Slice | Summary | Status |
+|-------|------|-------|---------|--------|
+| 2a | 298 | 298A | `AccessRequestApprovalService.approve()` — orchestrates KC org creation (via backend's own Keycloak admin client or HTTP call to gateway), tenant provisioning, KC invitation. Idempotent. `reject()` method. ~3 new files (~8 tests). Backend only. | |
+| 2b | 298 | 298B | `PlatformAdminController` — `GET /api/platform-admin/access-requests`, `POST /{id}/approve`, `POST /{id}/reject`. `@PreAuthorize` guards. ~2 new files (~7 tests). Backend only. | |
 
-### Stage 4: Admin Dashboard (Sequential)
+### Stage 3: Keycloak Configuration (parallel with Stage 1-2)
 
-| Order | Epic | Slice | Rationale |
-|-------|------|-------|-----------|
-| 4a | Epic 300 | 300A | Admin layout at /admin. Access request list page with status filter. API client functions for GET /admin/access-requests. Data table component. Frontend tests. |
-| 4b | Epic 300 | 300B | Approve, reject, retry actions. Reject dialog with reason input. Status badges. Loading/error states. Frontend tests. |
+| Order | Epic | Slice | Summary | Status |
+|-------|------|-------|---------|--------|
+| 3a (parallel) | 299 | 299A | Keycloak seed script: create `platform-admins` group, add Group Membership Mapper to `gateway-bff` client scope, update `realm-export.json`, gateway route for `/api/platform-admin/**`. ~4 modified files. Infra only. | |
 
-### Stage 5: Cleanup (Parallel)
+### Stage 4: Public Frontend (after Stage 1)
 
-| Order | Epic | Slice | Rationale |
-|-------|------|-------|-----------|
-| 5a | Epic 301 | 301A | Backend: remove ProcessedWebhook entity/repo. Remove webhook-related code from ProvisioningController. Remove Clerk-specific JIT provisioning TODO comments. Update test JWT mocks to Keycloak format. |
-| 5b | Epic 301 | 301B | Frontend: remove Clerk webhook route. Remove sign-up page. Remove/redirect create-org page. Remove Clerk auth provider. Update root layout to remove ClerkProvider. |
+| Order | Epic | Slice | Summary | Status |
+|-------|------|-------|---------|--------|
+| 4a | 300 | 300A | `/request-access` page + route, `RequestAccessForm` component (Step 1: email, name, org, country, industry), server action calling `POST /api/access-requests`, client-side blocked domain check. ~6 new files. Frontend only. | |
+| 4b | 300 | 300B | OTP verification step (Step 2: OTP input), success message (Step 3), error handling, retry flow. Server action calling `POST /api/access-requests/verify`. ~3 modified/new files (~6 tests). Frontend only. | |
+
+### Stage 5: Platform Admin Frontend (after Stage 2 + 4a)
+
+| Order | Epic | Slice | Summary | Status |
+|-------|------|-------|---------|--------|
+| 5a | 301 | 301A | `AuthContext.groups` field, BFF `/bff/me` groups extraction update, `(platform-admin)` layout with route guard, sidebar nav link (conditional on group). ~6 new/modified files (~4 tests). Frontend only. | |
+| 5b | 301 | 301B | `AccessRequestsTable`, `ApproveDialog`, `RejectDialog`, server actions for approve/reject, status filtering. ~6 new files (~6 tests). Frontend only. | |
+
+### Stage 6: Cleanup & Toggle (after Stage 2)
+
+| Order | Epic | Slice | Summary | Status |
+|-------|------|-------|---------|--------|
+| 6a | 302 | 302A | Disable/gate self-service org creation on frontend (remove or hide create-org page for non-platform-admins), add `app.jit-provisioning.enabled` toggle to backend `TenantFilter`. ~4 modified files (~4 tests). Both. | |
 
 ### Timeline
 
 ```
-Stage 1:  [295A] ──> [295B]                                   <- foundation (sequential)
-Stage 2:  [296A] ──> [296B]  //  [297A] ──> [297B]            <- KC + JWT (parallel tracks)
-Stage 3:  [298A]  //  [299A]                                   <- JIT role + form (parallel)
-Stage 4:  [300A] ──> [300B]                                    <- admin dashboard (sequential)
-Stage 5:  [301A]  //  [301B]                                   <- cleanup (parallel)
+Stage 0: [295A] → [295B]                                              (sequential)
+Stage 1: [296A] → [296B] // [297A] → [297B]                          (2 parallel tracks)
+Stage 2: [298A] → [298B]                                              (sequential, after both Stage 1 tracks)
+Stage 3: [299A]                                                        (parallel with Stages 1-2, after 297A)
+Stage 4: [300A] → [300B]                                              (after 296B)
+Stage 5: [301A] → [301B]                                              (after 298B + 300A)
+Stage 6: [302A]                                                        (after 298B)
 ```
 
-**Critical path**: 295A -> 295B -> 296A -> 296B -> 300A -> 300B -> 301B
-**Parallelizable**: 296/297 run concurrently; 298A/299A run concurrently; 301A/301B run concurrently
+**Critical path**: 295A -> 295B -> 296A -> 296B -> 298A -> 298B -> 301A -> 301B (8 slices sequential at most).
+
+**Fastest path with parallelism**: 2 starting points after 295B, infra parallel, frontend overlapping. Estimated: 13 slices total, 8 on critical path.
 
 ---
 
-## Epic 295: Access Request Entity & Public API
+## Epic 295: Access Request Entity Foundation & Migration
 
-**Goal**: Establish the AccessRequest entity in the public schema with its five-state lifecycle (PENDING, PROVISIONING, APPROVED, REJECTED, FAILED). Provide the public submission endpoint that visitors use to request access (no auth required), with per-email rate limiting.
+**Goal**: Create the `AccessRequest` entity in the public schema with its enum, repository, DTO records, and the global database migration. This is the foundational data model that all other epics depend on.
 
-**References**: Architecture doc Sections 2.1-2.5 (entity model, status lifecycle, migration, API design, rate limiting). [ADR-155](adr/ADR-155-access-request-lifecycle-model.md).
+**References**: Architecture doc Sections 39.3, 39.9.
 
-**Dependencies**: None (new table in global schema, new package)
+**Dependencies**: None -- greenfield entity in public schema.
 
 **Scope**: Backend
 
@@ -136,110 +202,64 @@ Stage 5:  [301A]  //  [301B]                                   <- cleanup (paral
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **295A** | 295.1-295.5 | V15 global migration (access_requests table, indexes). AccessRequest entity (@Entity, @Table(schema = "public"), 12 fields). AccessRequestStatus enum (5 states). AccessRequestRepository (findById, findByStatus, findByContactEmail). Entity persistence tests (~5 tests). | |
-| **295B** | 295.6-295.12 | AccessRequestService (submit, getById, list with status filter, per-email duplicate/rate check). AccessRequestController (public POST /api/access-requests). DTO records (SubmitAccessRequestRequest, AccessRequestResponse). Input validation (@Valid, @NotBlank, @Email). Integration tests for service + controller (~8 tests). | |
+| **295A** | 295.1--295.5 | `AccessRequest` entity (JPA, public schema), `AccessRequestStatus` enum, `AccessRequestRepository` with custom queries, DTO records (`AccessRequestSubmission`, `AccessRequestResponse`, `OtpVerifyRequest`), global migration `V15__create_access_requests.sql`. ~6 new files. Backend only. | |
+| **295B** | 295.6--295.10 | `AccessRequestConfigProperties` record (blocked domains list, OTP expiry minutes, max attempts), `EmailDomainValidator` utility, `PasswordEncoder` bean registration for OTP BCrypt hashing, unit tests for domain validation and config binding. ~4 new files (~6 tests). Backend only. | |
 
 ### Tasks
 
-| ID | Task | Slice | Status | Notes |
-|----|------|-------|--------|-------|
-| 295.1 | Create V15 global migration file | 295A | | `db/migration/global/V15__create_access_requests.sql`. Create access_requests table (12 columns per Section 2.3: id UUID PK, company_name VARCHAR(200) NOT NULL, contact_name VARCHAR(100) NOT NULL, contact_email VARCHAR(320) NOT NULL, reason VARCHAR(1000), status VARCHAR(20) NOT NULL DEFAULT 'PENDING', rejection_reason VARCHAR(500), keycloak_org_id VARCHAR(100), tenant_schema VARCHAR(50), created_at TIMESTAMPTZ NOT NULL DEFAULT now(), reviewed_at TIMESTAMPTZ, reviewed_by VARCHAR(100)). Indexes: idx_access_requests_status, idx_access_requests_email. Pattern: follow existing global migrations V1-V14 in `db/migration/global/`. |
-| 295.2 | Create AccessRequestStatus enum | 295A | | `accessrequest/AccessRequestStatus.java` in new `accessrequest` package. Enum values: PENDING, PROVISIONING, APPROVED, REJECTED, FAILED. No methods needed -- simple enum. Pattern: follow existing enums (e.g., `provisioning/Organization.java` ProvisioningStatus). |
-| 295.3 | Create AccessRequest entity | 295A | | `accessrequest/AccessRequest.java`. @Entity, @Table(name = "access_requests", schema = "public"). 12 fields per Section 2.1. Protected no-arg constructor. Public constructor taking (companyName, contactName, contactEmail, reason). Domain transition methods: `markProvisioning()`, `markApproved(String reviewedBy)`, `markRejected(String reviewedBy, String rejectionReason)`, `markFailed()`. @PrePersist sets createdAt. Status transitions enforce valid source states (e.g., markProvisioning only from PENDING or FAILED). Pattern: follow `provisioning/Organization.java` entity. |
-| 295.4 | Create AccessRequestRepository | 295A | | `accessrequest/AccessRequestRepository.java`. JpaRepository<AccessRequest, UUID>. Methods: `findByStatus(AccessRequestStatus status, Pageable pageable)` returning Page, `findByContactEmailOrderByCreatedAtDesc(String email)` returning List, `countByContactEmailAndCreatedAtAfter(String email, Instant since)`. Pattern: follow OrganizationRepository. |
-| 295.5 | Add AccessRequest entity persistence tests | 295A | | `accessrequest/AccessRequestTest.java` (~5 tests): save and retrieve, status transitions (PENDING->PROVISIONING, PENDING->REJECTED, PROVISIONING->APPROVED, PROVISIONING->FAILED), invalid transition throws IllegalStateException, find by status. Tests run against public schema (no tenant scope needed). Pattern: follow Organization entity tests. Use `@SpringBootTest` + `@Import(TestcontainersConfiguration.class)`. |
-| 295.6 | Create DTO records | 295B | | Nested records in controller or `accessrequest/dto/` sub-package. `SubmitAccessRequestRequest(String companyName, String contactName, String contactEmail, String reason)` with @NotBlank on required fields, @Email on contactEmail, @Size(max=200) etc. `AccessRequestResponse(UUID id, String companyName, String contactName, String contactEmail, String reason, String status, Instant createdAt)`. `AccessRequestDetailResponse` extends with rejectionReason, keycloakOrgId, tenantSchema, reviewedAt, reviewedBy. |
-| 295.7 | Create AccessRequestService | 295B | | `accessrequest/AccessRequestService.java`. @Service. Methods: `submit(SubmitAccessRequestRequest)` -- validate per-email rate (max 3 per 24h via countByContactEmailAndCreatedAtAfter), create entity, save, return response. `getById(UUID id)` -- return entity or throw ResourceNotFoundException. `listByStatus(AccessRequestStatus status, Pageable pageable)` -- return Page<AccessRequestResponse>. `listAll(Pageable pageable)` -- return Page. No provisioning logic here -- that belongs in Epic 296. Pattern: follow thin service pattern, throw exceptions from `exception/` package. |
-| 295.8 | Create AccessRequestController (public endpoint) | 295B | | `accessrequest/AccessRequestController.java`. @RestController. Single endpoint: `POST /api/access-requests` -- accepts @Valid @RequestBody SubmitAccessRequestRequest, delegates to service.submit(), returns ResponseEntity.status(201).body(response). No auth required (endpoint will be configured as permitAll in Epic 297). For now, add a comment noting SecurityConfig change is in 297B. Pattern: follow controller discipline -- one-liner delegation. |
-| 295.9 | Create AccessRequestAdminController (read-only admin endpoints) | 295B | | `accessrequest/AccessRequestAdminController.java`. @RestController, @RequestMapping("/admin/access-requests"). Endpoints: `GET /` -- list all with optional status query param, paginated. `GET /{id}` -- get detail. These are read-only; mutation endpoints (approve/reject/retry) added in Epic 296B. @PreAuthorize("hasAuthority('ROLE_PRODUCT_ADMIN')") on class. Pattern: separate controller for admin namespace. |
-| 295.10 | Add AccessRequestService integration tests | 295B | | `accessrequest/AccessRequestServiceTest.java` (~4 tests): submit creates PENDING request, submit rate-limits per email (4th request in 24h rejected with 429-equivalent exception), getById throws on missing, listByStatus filters correctly. Use @SpringBootTest + @Import(TestcontainersConfiguration.class). |
-| 295.11 | Add AccessRequestController integration tests | 295B | | `accessrequest/AccessRequestControllerTest.java` (~4 tests): POST creates request and returns 201, POST with invalid email returns 400, POST with missing companyName returns 400, GET admin list returns 200. Use MockMvc. Note: SecurityConfig permitAll for POST not yet configured (test with security disabled or mock). |
-| 295.12 | Verify V15 migration runs cleanly | 295B | | Run `./mvnw clean test -q` and verify no migration errors. Confirm access_requests table created in public schema with correct indexes. |
+| ID | Task | Slice | Deps | Notes |
+|----|------|-------|------|-------|
+| 295.1 | Create `AccessRequestStatus` enum | 295A | | New file: `backend/src/main/java/io/b2mash/b2b/b2bstrawman/accessrequest/AccessRequestStatus.java`. Values: `PENDING_VERIFICATION`, `PENDING`, `APPROVED`, `REJECTED`. Pattern: `backend/.../customer/LifecycleStatus.java` for enum conventions. |
+| 295.2 | Create `AccessRequest` entity | 295A | 295.1 | New file: `backend/src/main/java/io/b2mash/b2b/b2bstrawman/accessrequest/AccessRequest.java`. JPA entity mapped to `access_requests` table. Fields per architecture doc Section 39.3.1. Use `@Table(schema = "public")` explicitly since this is NOT a tenant-scoped entity. Use `@PrePersist`/`@PreUpdate` for `createdAt`/`updatedAt`. Pattern: `backend/.../provisioning/Organization.java` (also public schema entity). |
+| 295.3 | Create `AccessRequestRepository` | 295A | 295.2 | New file: `backend/src/main/java/io/b2mash/b2b/b2bstrawman/accessrequest/AccessRequestRepository.java`. Extends `JpaRepository<AccessRequest, UUID>`. Custom queries: `findByEmailAndStatus(String email, AccessRequestStatus status)`, `existsByEmailAndStatusIn(String email, List<AccessRequestStatus> statuses)` (for duplicate check), `findByStatusOrderByCreatedAtAsc(AccessRequestStatus status)` (admin list). Pattern: `backend/.../provisioning/OrganizationRepository.java`. |
+| 295.4 | Create DTO records | 295A | | New file: `backend/src/main/java/io/b2mash/b2b/b2bstrawman/accessrequest/dto/AccessRequestDtos.java`. Records: `AccessRequestSubmission(String email, String fullName, String organizationName, String country, String industry)`, `OtpVerifyRequest(String email, String otp)`, `AccessRequestResponse(UUID id, String email, String fullName, String organizationName, String country, String industry, AccessRequestStatus status, Instant otpVerifiedAt, Instant createdAt, String reviewedBy, Instant reviewedAt, String keycloakOrgId)`, `SubmitResponse(String message, int expiresInMinutes)`, `VerifyResponse(String message)`. Pattern: `backend/.../informationrequest/dto/InformationRequestDtos.java` for nested records in single file. |
+| 295.5 | Create global migration `V15__create_access_requests.sql` | 295A | | New file: `backend/src/main/resources/db/migration/global/V15__create_access_requests.sql`. DDL from architecture doc Section 39.9: `CREATE TABLE access_requests(...)`, partial unique index on `(email) WHERE status IN ('PENDING_VERIFICATION', 'PENDING')`, indexes on `status` and `email`. Pattern: existing global migrations `V1__*.sql` through `V14__*.sql`. |
+| 295.6 | Create `AccessRequestConfigProperties` | 295B | 295A | New file: `backend/src/main/java/io/b2mash/b2b/b2bstrawman/accessrequest/AccessRequestConfigProperties.java`. `@ConfigurationProperties(prefix = "app.access-request")`. Fields: `List<String> blockedEmailDomains`, `int otpExpiryMinutes` (default 10), `int otpMaxAttempts` (default 5). Pattern: existing `@ConfigurationProperties` classes in the codebase. Add YAML defaults to `application.yml`. |
+| 295.7 | Add config defaults to `application.yml` | 295B | 295.6 | Modify: `backend/src/main/resources/application.yml`. Add `app.access-request.blocked-email-domains` list (gmail.com, yahoo.com, hotmail.com, outlook.com, aol.com, icloud.com, mail.com, protonmail.com, zoho.com), `otp-expiry-minutes: 10`, `otp-max-attempts: 5`. |
+| 295.8 | Create `EmailDomainValidator` | 295B | 295.6 | New file: `backend/src/main/java/io/b2mash/b2b/b2bstrawman/accessrequest/EmailDomainValidator.java`. Utility class: `boolean isBlockedDomain(String email)` — extracts domain after `@`, case-insensitive match against `blockedEmailDomains` list. Constructor injection of `AccessRequestConfigProperties`. |
+| 295.9 | Register `PasswordEncoder` bean | 295B | | Modify: `backend/src/main/java/io/b2mash/b2b/b2bstrawman/config/` — add a `@Bean PasswordEncoder passwordEncoder()` returning `new BCryptPasswordEncoder()` (if not already registered). Check if Spring Security auto-config already provides one. The `PasswordEncoder` is used for OTP hashing in `AccessRequestService`. |
+| 295.10 | Write unit tests for config and domain validator | 295B | 295.8 | New file: `backend/src/test/java/io/b2mash/b2b/b2bstrawman/accessrequest/EmailDomainValidatorTest.java`. Tests (~6): (1) `gmailBlocked`; (2) `companEmailAllowed`; (3) `caseInsensitive`; (4) `nullEmailThrows`; (5) `emptyDomainListAllowsAll`; (6) `subdomainOfBlockedNotBlocked` (e.g., `corp.gmail.com` should NOT be blocked). Pure unit tests, no Spring context. |
 
 ### Key Files
 
-| File | Purpose |
-|------|---------|
-| `db/migration/global/V15__create_access_requests.sql` | DDL migration for access_requests table |
-| `accessrequest/AccessRequest.java` | Entity with status lifecycle methods |
-| `accessrequest/AccessRequestStatus.java` | Five-state enum |
-| `accessrequest/AccessRequestRepository.java` | JPA repository with status/email queries |
-| `accessrequest/AccessRequestService.java` | Submit + list + rate limiting logic |
-| `accessrequest/AccessRequestController.java` | Public POST endpoint |
-| `accessrequest/AccessRequestAdminController.java` | Admin GET endpoints |
+**Slice 295A -- Create:**
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/accessrequest/AccessRequestStatus.java`
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/accessrequest/AccessRequest.java`
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/accessrequest/AccessRequestRepository.java`
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/accessrequest/dto/AccessRequestDtos.java`
+- `backend/src/main/resources/db/migration/global/V15__create_access_requests.sql`
+
+**Slice 295A -- Read for context:**
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/provisioning/Organization.java` -- public schema entity pattern
+- `backend/src/main/resources/db/migration/global/V14__portal_requests.sql` -- latest migration for version numbering
+
+**Slice 295B -- Create:**
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/accessrequest/AccessRequestConfigProperties.java`
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/accessrequest/EmailDomainValidator.java`
+- `backend/src/test/java/io/b2mash/b2b/b2bstrawman/accessrequest/EmailDomainValidatorTest.java`
+
+**Slice 295B -- Modify:**
+- `backend/src/main/resources/application.yml` -- add `app.access-request` config block
+
+**Slice 295B -- Read for context:**
+- Existing `@ConfigurationProperties` classes in the project for pattern
 
 ### Architecture Decisions
 
-- Entity lives in **public schema** (not tenant-scoped) because it exists before any tenant does. Consistent with `organizations`, `org_schema_mapping` (ADR-155).
-- Five-state lifecycle: PROVISIONING state prevents double-click race; FAILED enables intelligent retry (ADR-155).
-- Per-email rate limiting via DB count (max 3 per 24h) rather than external rate limiter -- simple, sufficient for B2B volume.
+- **Public schema entity**: `AccessRequest` lives in the `public` schema (not tenant-scoped) because it exists before any tenant is created. Uses `@Table(schema = "public")` explicitly.
+- **Global migration**: `V15__create_access_requests.sql` runs once against the public schema at startup, not per-tenant.
+- **DTO records in single file**: Following the `InformationRequestDtos.java` pattern of grouping related request/response records in one file.
+- **BCrypt for OTP hash**: Reuses Spring Security's `PasswordEncoder` (BCrypt) to hash 6-digit OTP codes. The hash is cleared after successful verification.
 
 ---
 
-## Epic 296: Keycloak Admin Client & Provisioning Orchestration
+## Epic 296: OTP Verification & Public Access Request API
 
-**Goal**: Integrate the Keycloak Admin Client to create organizations and send invitations. Build the `AdminProvisioningService` that orchestrates the full approval flow: KC org creation, tenant schema provisioning (via existing `TenantProvisioningService`), and owner invitation. Provide admin endpoints for approve, reject, and retry actions.
+**Goal**: Implement the public (unauthenticated) API endpoints for submitting access requests and verifying OTP codes. Includes email sending, rate limiting, and the security configuration change to permit unauthenticated access.
 
-**References**: Architecture doc Sections 3.1-3.5 (service architecture, KC admin client, org creation, invitation, failure handling). [ADR-154](adr/ADR-154-admin-approved-provisioning-flow.md), [ADR-156](adr/ADR-156-invitation-role-gap-mitigation.md).
+**References**: Architecture doc Sections 39.5.1, 39.7.
 
-**Dependencies**: Epic 295 (AccessRequest entity and repository)
-
-**Scope**: Backend
-
-**Estimated Effort**: L
-
-### Slices
-
-| Slice | Tasks | Summary | Status |
-|-------|-------|---------|--------|
-| **296A** | 296.1-296.7 | Maven keycloak-admin-client dependency. KeycloakAdminConfig (@Configuration, admin client bean). KeycloakAdminProperties (@ConfigurationProperties). KeycloakOrgService (createOrg, sendInvitation helper methods). Application.yml KC admin properties. Unit tests with mocked KC client (~6 tests). | |
-| **296B** | 296.8-296.14 | AdminProvisioningService (approve, reject, retry orchestration). ProvisioningException extension. AccessRequestAdminController mutation endpoints (POST approve/reject/retry). Slug generator for org names. Integration tests for approve flow, reject, retry, failure scenarios (~8 tests). | |
-
-### Tasks
-
-| ID | Task | Slice | Status | Notes |
-|----|------|-------|--------|-------|
-| 296.1 | Add keycloak-admin-client Maven dependency | 296A | | `backend/pom.xml`. Add `org.keycloak:keycloak-admin-client:26.0.8`. Verify no dependency conflicts with existing Spring Boot 4 dependencies. Pattern: check existing `pom.xml` for dependency management conventions. |
-| 296.2 | Create KeycloakAdminProperties | 296A | | `config/KeycloakAdminProperties.java`. @ConfigurationProperties(prefix = "keycloak.admin"). Fields: serverUrl, realm, clientId, clientSecret. Pattern: follow existing @ConfigurationProperties in config/ package (if any), or use @Value injection via KeycloakAdminConfig. |
-| 296.3 | Create KeycloakAdminConfig | 296A | | `config/KeycloakAdminConfig.java`. @Configuration. @Bean Keycloak keycloakAdminClient() -- builds Keycloak instance using KeycloakBuilder with CLIENT_CREDENTIALS grant type. Per Section 3.2. Pattern: follow existing config beans in `config/` package. |
-| 296.4 | Add KC admin properties to application.yml | 296A | | `application.yml` and `application-local.yml`: add keycloak.admin.server-url, realm, client-id, client-secret with defaults for local dev. Also add `application-test.yml` with test values. |
-| 296.5 | Create KeycloakOrgService | 296A | | `provisioning/KeycloakOrgService.java`. @Service. Methods: `createOrganization(String companyName)` returns String (KC org ID) -- creates OrganizationRepresentation, sets name=toSlug(companyName), enabled=true, attributes (displayName, tier). Parses Location header for org ID. `sendInvitation(String kcOrgId, String email, String firstName, String lastName)` -- calls OrganizationMembersResource.inviteUser(). Private `toSlug(String name)` helper. Pattern: follow existing service conventions. |
-| 296.6 | Add KeycloakOrgService unit tests | 296A | | `provisioning/KeycloakOrgServiceTest.java` (~4 tests): createOrg builds correct representation, createOrg parses Location header, sendInvitation calls correct KC API, toSlug normalizes names ("Acme Corp" -> "acme-corp"). Mock the Keycloak admin client. Pattern: Mockito unit test. |
-| 296.7 | Add KC connectivity integration test | 296A | | `provisioning/KeycloakAdminConfigTest.java` (~2 tests): bean loads correctly with test properties, keycloak client can be created. Use @SpringBootTest with test profile. Keycloak not actually running -- just verify config wiring. |
-| 296.8 | Create AdminProvisioningService | 296B | | `provisioning/AdminProvisioningService.java`. @Service. Method: `approve(UUID accessRequestId)` -- implements the 6-step orchestration from Section 3.1 (mark PROVISIONING, create KC org, provision schema via TenantProvisioningService, send invitation, mark APPROVED). Method: `reject(UUID accessRequestId, String reason)` -- validate PENDING status, mark REJECTED. Method: `retry(UUID accessRequestId)` -- resume from failed step per Section 3.5 (check keycloakOrgId/tenantSchema to determine where it left off). Uses `@Transactional` (but note KC calls are non-transactional). Pattern: follow TenantProvisioningService for orchestration and error handling. |
-| 296.9 | Create org name slug generator | 296B | | Add `toSlug(String companyName)` as a static utility in KeycloakOrgService or a separate `SlugUtils.java`. Lowercase, replace whitespace with hyphens, strip non-alphanumeric except hyphens, collapse consecutive hyphens, trim leading/trailing hyphens. Pattern: follow DocumentTemplate slug generation (Epic 93). |
-| 296.10 | Add mutation endpoints to AccessRequestAdminController | 296B | | Extend `accessrequest/AccessRequestAdminController.java` (created in 295B). Add endpoints: `POST /{id}/approve` -- delegates to adminProvisioningService.approve(id), returns 200 with AccessRequestDetailResponse. `POST /{id}/reject` -- accepts optional RejectRequest(String reason), delegates to service. `POST /{id}/retry` -- delegates to service.retry(). All @PreAuthorize("hasAuthority('ROLE_PRODUCT_ADMIN')"). Pattern: controller discipline -- one-liner delegation. |
-| 296.11 | Create RejectRequest DTO | 296B | | `accessrequest/dto/RejectRequest.java` record. Single field: `String reason` (optional, @Size(max=500)). |
-| 296.12 | Add AdminProvisioningService unit tests | 296B | | `provisioning/AdminProvisioningServiceTest.java` (~5 tests): approve happy path (all 6 steps), approve from FAILED retries correctly, reject sets reason and reviewedBy, retry resumes from keycloakOrgId set but tenantSchema null, approve on APPROVED throws IllegalStateException. Mock KeycloakOrgService and TenantProvisioningService. |
-| 296.13 | Add admin controller integration tests | 296B | | `accessrequest/AccessRequestAdminControllerTest.java` (~3 tests): POST approve returns 200, POST reject with reason returns 200, POST retry on FAILED returns 200. Mock Keycloak client (no real KC). Use MockMvc with PRODUCT_ADMIN JWT mock. |
-| 296.14 | Verify approve flow end-to-end in test | 296B | | Integration test that exercises: submit access request, approve it, verify status transitions (PENDING -> PROVISIONING -> APPROVED), verify keycloakOrgId and tenantSchema set on entity. KC calls mocked. TenantProvisioningService mocked or uses Testcontainers Postgres for real schema creation. |
-
-### Key Files
-
-| File | Purpose |
-|------|---------|
-| `config/KeycloakAdminConfig.java` | KC admin client bean configuration |
-| `provisioning/KeycloakOrgService.java` | KC org creation and invitation |
-| `provisioning/AdminProvisioningService.java` | Orchestrates approve/reject/retry |
-| `accessrequest/AccessRequestAdminController.java` | Admin mutation endpoints |
-| `backend/pom.xml` | keycloak-admin-client dependency |
-
-### Architecture Decisions
-
-- Synchronous orchestration (not async/event-driven) for the approval flow -- admin gets immediate feedback on success/failure (ADR-154).
-- PROVISIONING status set atomically before external calls begin -- prevents double-click race condition (ADR-155).
-- Retry resumes from last successful step by inspecting `keycloakOrgId` and `tenantSchema` fields (Section 3.5).
-- KC admin client uses client_credentials grant (service account), not username/password.
-
----
-
-## Epic 297: JWT Refactor & Security Config
-
-**Goal**: Rename `ClerkJwtUtils` to `JwtClaimExtractor` with Keycloak-only extraction logic. Update `ClerkJwtAuthenticationConverter` to `KeycloakJwtAuthConverter` with PRODUCT_ADMIN realm role extraction. Update `SecurityConfig` to permit the public access request endpoint and protect `/admin/**` with PRODUCT_ADMIN authority.
-
-**References**: Architecture doc Sections 4.1-4.5 (JWT structure, claim extractor, role resolution, TenantFilter, SecurityConfig).
-
-**Dependencies**: Epic 295 (needs the `/api/access-requests` endpoint to exist for permitAll config)
+**Dependencies**: Epic 295 (entity, repository, config, domain validator).
 
 **Scope**: Backend
 
@@ -249,55 +269,187 @@ Stage 5:  [301A]  //  [301B]                                   <- cleanup (paral
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **297A** | 297.1-297.7 | Rename ClerkJwtUtils -> JwtClaimExtractor. Remove Clerk v2 format detection. Keycloak-only extractOrgId/extractOrgSlug/extractOrgRole. Add extractRealmRoles and isProductAdmin methods. Update all consumers (TenantFilter, MemberFilter, ClerkJwtAuthenticationConverter). Unit tests (~8 tests). | |
-| **297B** | 297.8-297.13 | Rename ClerkJwtAuthenticationConverter -> KeycloakJwtAuthConverter. Add PRODUCT_ADMIN realm role to granted authorities. Update Roles.java with AUTHORITY_PRODUCT_ADMIN. SecurityConfig: add /api/access-requests permitAll, /admin/** hasAuthority PRODUCT_ADMIN. Add shouldNotFilter paths for admin endpoints in TenantFilter/MemberFilter. Integration tests for security rules (~6 tests). | |
+| **296A** | 296.1--296.6 | `AccessRequestService.submitRequest()` -- validate email domain, check duplicate pending, generate OTP, hash with BCrypt, save `PENDING_VERIFICATION` entity, send OTP email. `AccessRequestPublicController` with `POST /api/access-requests`. `SecurityConfig` update to permitAll on `/api/access-requests/**`. OTP email template method in service. ~4 new/modified files (~8 integration tests). Backend only. | |
+| **296B** | 296.7--296.11 | `AccessRequestService.verifyOtp()` -- look up by email + `PENDING_VERIFICATION` status, check attempt count, check expiry, match OTP against hash, promote to `PENDING`, clear OTP hash. `POST /api/access-requests/verify` endpoint. ~2 modified files (~7 integration tests). Backend only. | |
 
 ### Tasks
 
-| ID | Task | Slice | Status | Notes |
-|----|------|-------|--------|-------|
-| 297.1 | Rename ClerkJwtUtils to JwtClaimExtractor | 297A | | Rename `security/ClerkJwtUtils.java` -> `security/JwtClaimExtractor.java`. Remove all Clerk v2 extraction methods (extractClerkClaim, CLERK_ORG_CLAIM constant, isClerkJwt). Keep only Keycloak extraction. Per Section 4.2. |
-| 297.2 | Implement Keycloak-only extractOrgId | 297A | | `JwtClaimExtractor.extractOrgId(Jwt)` -- extracts from `organization` claim map. Handles both map-of-maps format `{"org-name": {"id": "uuid"}}` and list format `["org-name"]`. Single-org constraint: takes first entry. Per Section 4.2. |
-| 297.3 | Implement extractOrgSlug (Keycloak) | 297A | | `JwtClaimExtractor.extractOrgSlug(Jwt)` -- returns the map key from `organization` claim (the org alias IS the slug). |
-| 297.4 | Implement extractOrgRole (Keycloak) | 297A | | `JwtClaimExtractor.extractOrgRole(Jwt)` -- checks rich format for roles array within org map entry. Returns null if no roles in JWT (expected path per Section 4.3 -- role resolved from DB by MemberFilter). Normalizes "org:owner" -> "owner". |
-| 297.5 | Add isProductAdmin method | 297A | | `JwtClaimExtractor.isProductAdmin(Jwt)` -- checks `realm_access.roles` for "PRODUCT_ADMIN" string. Per Section 4.2. |
-| 297.6 | Update all consumers of ClerkJwtUtils | 297A | | Update imports in: `multitenancy/TenantFilter.java` (ClerkJwtUtils -> JwtClaimExtractor, 3 call sites), `member/MemberFilter.java` (1 call site), `security/ClerkJwtAuthenticationConverter.java` (1 call site). Search codebase for any other references. |
-| 297.7 | Add JwtClaimExtractor unit tests | 297A | | `security/JwtClaimExtractorTest.java` (~8 tests): extractOrgId from map-of-maps, extractOrgId from list format, extractOrgSlug, extractOrgRole from rich format, extractOrgRole returns null when no roles, isProductAdmin true when PRODUCT_ADMIN in realm_access.roles, isProductAdmin false when absent, null org claim returns null. Build mock Jwt objects with claims. Pattern: follow existing ClerkJwtUtils tests if any, or plain JUnit 5. |
-| 297.8 | Rename ClerkJwtAuthenticationConverter | 297B | | Rename `security/ClerkJwtAuthenticationConverter.java` -> `security/KeycloakJwtAuthConverter.java`. Update @Component name. Update SecurityConfig import. |
-| 297.9 | Add realm role extraction to JWT converter | 297B | | In `KeycloakJwtAuthConverter.extractAuthorities()`: after org role extraction, also extract `realm_access.roles` and map "PRODUCT_ADMIN" to `new SimpleGrantedAuthority("ROLE_PRODUCT_ADMIN")`. Per Section 4.5 keycloakJwtAuthConverter pattern. |
-| 297.10 | Update Roles.java | 297B | | Add `AUTHORITY_PRODUCT_ADMIN = "ROLE_PRODUCT_ADMIN"` constant. Add `PRODUCT_ADMIN = "PRODUCT_ADMIN"` realm role constant. |
-| 297.11 | Update SecurityConfig for new endpoints | 297B | | In `securityFilterChain()`: add `.requestMatchers(HttpMethod.POST, "/api/access-requests").permitAll()` before the `.requestMatchers("/api/**").authenticated()` rule. Add `.requestMatchers("/admin/**").hasAuthority(Roles.AUTHORITY_PRODUCT_ADMIN)` before `.anyRequest()`. Per Section 4.5. Also update the bean name reference from ClerkJwtAuthenticationConverter to KeycloakJwtAuthConverter. |
-| 297.12 | Update TenantFilter/MemberFilter shouldNotFilter | 297B | | Add `path.startsWith("/admin/")` to `shouldNotFilter()` in both `TenantFilter.java` and `MemberFilter.java`. Admin endpoints are not org-scoped -- they operate on the public schema. Also add `path.equals("/api/access-requests")` for the public POST endpoint (no tenant context needed). |
-| 297.13 | Add SecurityConfig integration tests | 297B | | `security/SecurityConfigAccessRequestTest.java` (~6 tests): POST /api/access-requests without auth returns 201 (after creating valid body), GET /admin/access-requests without auth returns 401, GET /admin/access-requests with regular user JWT returns 403, GET /admin/access-requests with PRODUCT_ADMIN JWT returns 200, POST /admin/access-requests/{id}/approve without PRODUCT_ADMIN returns 403, verify /api/** still requires auth. Use MockMvc with jwt() post-processor. |
+| ID | Task | Slice | Deps | Notes |
+|----|------|-------|------|-------|
+| 296.1 | Add `POST /api/access-requests` to `SecurityConfig` permitAll | 296A | 295A | Modify: `backend/.../security/SecurityConfig.java`. In `securityFilterChain()`, add `.requestMatchers("/api/access-requests/**").permitAll()` BEFORE the `.requestMatchers("/api/**").authenticated()` line. Pattern: existing `.requestMatchers("/api/webhooks/email/**").permitAll()` in same method. |
+| 296.2 | Create `AccessRequestService` with `submitRequest()` | 296A | 295B | New file: `backend/.../accessrequest/AccessRequestService.java`. `@Service` with constructor injection of `AccessRequestRepository`, `AccessRequestConfigProperties`, `EmailDomainValidator`, `PasswordEncoder`, `SecureRandom`. `submitRequest(AccessRequestSubmission dto)` method: (1) validate domain, (2) check duplicate via `existsByEmailAndStatusIn()`, (3) generate 6-digit OTP, (4) create entity with BCrypt-hashed OTP and `PENDING_VERIFICATION` status, (5) send OTP email. Throws `InvalidStateException` for blocked domains, `ResourceConflictException` for duplicates. Pattern: `backend/.../portal/MagicLinkService.java` for similar OTP/token generation pattern. |
+| 296.3 | Add OTP email sending method | 296A | 296.2 | In `AccessRequestService` or a new `AccessRequestEmailService`. Use `JavaMailSender` directly (this is a public/global context email, NOT tenant-scoped -- cannot use `EmailNotificationChannel` which requires tenant context). Simple text email: "Your DocTeams verification code is: {OTP}. This code expires in {minutes} minutes." Pattern: `backend/.../portal/PortalEmailService.java` for direct `JavaMailSender` usage. If `JavaMailSender` is not available, use the `SmtpEmailProvider` or `NoOpEmailProvider` via `EmailProvider` interface. |
+| 296.4 | Create `AccessRequestPublicController` | 296A | 296.2 | New file: `backend/.../accessrequest/AccessRequestPublicController.java`. `@RestController @RequestMapping("/api/access-requests")`. Single endpoint: `@PostMapping` delegating to `accessRequestService.submitRequest()`, returns `ResponseEntity<SubmitResponse>`. Pure delegation -- no business logic. |
+| 296.5 | Create `AccessRequestMapper` (entity to response) | 296A | 295.4 | In `AccessRequestService` or as a private method. Maps `AccessRequest` entity to `AccessRequestResponse` DTO. Used by both public and admin endpoints. |
+| 296.6 | Write integration tests for submit endpoint | 296A | 296.4 | New file: `backend/src/test/java/io/b2mash/b2b/b2bstrawman/accessrequest/AccessRequestPublicControllerTest.java`. Tests (~8): (1) `submitRequest_validCompanyEmail_returns200`; (2) `submitRequest_blockedDomain_returns400`; (3) `submitRequest_duplicatePending_returns409`; (4) `submitRequest_missingFields_returns400`; (5) `submitRequest_createsEntityWithPendingVerification`; (6) `submitRequest_noAuthRequired` (no JWT, should still work); (7) `submitRequest_otpHashStored`; (8) `submitRequest_previousRejectedEmail_allowsNewRequest`. Use `@SpringBootTest @AutoConfigureMockMvc`. No JWT needed (public endpoint). |
+| 296.7 | Implement `verifyOtp()` in `AccessRequestService` | 296B | 296A | Modify: `backend/.../accessrequest/AccessRequestService.java`. `verifyOtp(String email, String otp)` method: (1) find by email + `PENDING_VERIFICATION`, (2) check `otpAttempts >= maxAttempts` -> throw `InvalidStateException` with 429-like message, (3) check `otpExpiresAt.isBefore(now)` -> throw `InvalidStateException`, (4) increment attempts, (5) match OTP via `passwordEncoder.matches()`, (6) on success: promote to `PENDING`, set `otpVerifiedAt`, clear `otpHash`. |
+| 296.8 | Add `POST /api/access-requests/verify` endpoint | 296B | 296.7 | Modify: `backend/.../accessrequest/AccessRequestPublicController.java`. Add `@PostMapping("/verify")` delegating to `accessRequestService.verifyOtp()`, returns `ResponseEntity<VerifyResponse>`. |
+| 296.9 | Create custom exception for too many attempts | 296B | | New file or modify: `backend/.../exception/TooManyRequestsException.java`. Extends `RuntimeException`, mapped to HTTP 429 via `@ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)` or a `@ControllerAdvice` handler. Check if a global exception handler already exists. Pattern: other exceptions in `backend/.../exception/` package. |
+| 296.10 | Add expired request cleanup query | 296B | | Modify: `backend/.../accessrequest/AccessRequestRepository.java`. Add `@Modifying @Query` method: `deleteByStatusAndOtpExpiresAtBefore(AccessRequestStatus status, Instant cutoff)` for periodic cleanup of stale `PENDING_VERIFICATION` records. (Scheduler implementation is out of scope for this phase -- just the query.) |
+| 296.11 | Write integration tests for verify endpoint | 296B | 296.8 | New file: `backend/src/test/java/io/b2mash/b2b/b2bstrawman/accessrequest/AccessRequestVerifyTest.java`. Tests (~7): (1) `verifyOtp_validCode_promotesToPending`; (2) `verifyOtp_invalidCode_incrementsAttempts`; (3) `verifyOtp_expiredCode_returns400`; (4) `verifyOtp_tooManyAttempts_returns429`; (5) `verifyOtp_noMatchingRequest_returns404`; (6) `verifyOtp_clearsOtpHashOnSuccess`; (7) `verifyOtp_setsOtpVerifiedAt`. Use `@SpringBootTest @AutoConfigureMockMvc`. |
 
 ### Key Files
 
-| File | Purpose |
-|------|---------|
-| `security/JwtClaimExtractor.java` | Keycloak-only JWT claim extraction (renamed from ClerkJwtUtils) |
-| `security/KeycloakJwtAuthConverter.java` | JWT -> Spring authorities with realm roles (renamed from ClerkJwtAuthenticationConverter) |
-| `security/Roles.java` | Add PRODUCT_ADMIN authority constant |
-| `security/SecurityConfig.java` | Add permitAll and PRODUCT_ADMIN authorization rules |
-| `multitenancy/TenantFilter.java` | Update import + shouldNotFilter for /admin/ |
-| `member/MemberFilter.java` | Update import + shouldNotFilter for /admin/ |
+**Slice 296A -- Create:**
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/accessrequest/AccessRequestService.java`
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/accessrequest/AccessRequestPublicController.java`
+- `backend/src/test/java/io/b2mash/b2b/b2bstrawman/accessrequest/AccessRequestPublicControllerTest.java`
+
+**Slice 296A -- Modify:**
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/security/SecurityConfig.java` -- add permitAll for `/api/access-requests/**`
+
+**Slice 296A -- Read for context:**
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/portal/PortalEmailService.java` -- email sending pattern
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/portal/MagicLinkService.java` -- OTP/token generation pattern
+
+**Slice 296B -- Modify:**
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/accessrequest/AccessRequestService.java`
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/accessrequest/AccessRequestPublicController.java`
+
+**Slice 296B -- Create:**
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/exception/TooManyRequestsException.java` (if not already present)
+- `backend/src/test/java/io/b2mash/b2b/b2bstrawman/accessrequest/AccessRequestVerifyTest.java`
 
 ### Architecture Decisions
 
-- Org role is NOT extracted from JWT -- MemberFilter resolves it from `Member.orgRole` in the database (Section 4.3, Option B). This is consistent with the existing architecture.
-- PRODUCT_ADMIN is a Keycloak realm role (platform-level), distinct from org-level roles (owner/admin/member).
-- Public POST endpoint for access requests must bypass both auth AND tenant/member filters.
+- **Direct `JavaMailSender` usage**: OTP emails are sent from a public (pre-tenancy) context, so the tenant-scoped `EmailNotificationChannel` cannot be used. Direct `JavaMailSender` or `SmtpEmailProvider` is appropriate here.
+- **BCrypt OTP hashing**: Prevents OTP exposure in database breaches. Hash is cleared after verification for data minimization.
+- **SecurityConfig permitAll**: `/api/access-requests/**` is added to the existing main filter chain's permitAll list, alongside webhooks and portal acceptance endpoints.
 
 ---
 
-## Epic 298: MemberFilter JIT Role Assignment
+## Epic 297: Platform Admin Identity & Security Infrastructure
 
-**Goal**: Enhance `MemberFilter` to check the `access_requests` table when creating a new member on first login, assigning the correct role (Owner for the original access requester). This closes the Keycloak invitation role gap (ADR-156).
+**Goal**: Introduce the platform admin concept to the backend: extract `groups` claim from JWT, expose via `RequestScopes.GROUPS`, and create the `PlatformSecurityService` for `@PreAuthorize` checks on platform admin endpoints.
 
-**References**: Architecture doc Section 5 (Member JIT sync enhancement), [ADR-156](adr/ADR-156-invitation-role-gap-mitigation.md).
+**References**: Architecture doc Sections 39.4.2, 39.4.3.
 
-**Dependencies**: Epic 295 (AccessRequestRepository), Epic 297 (JwtClaimExtractor)
+**Dependencies**: Epic 295 (entity exists for admin queries).
 
 **Scope**: Backend
+
+**Estimated Effort**: M
+
+### Slices
+
+| Slice | Tasks | Summary | Status |
+|-------|-------|---------|--------|
+| **297A** | 297.1--297.5 | `RequestScopes.GROUPS` ScopedValue, `ClerkJwtUtils.extractGroups()` method, `PlatformSecurityService` with `isPlatformAdmin()`, `PlatformAdminFilter` that binds groups from JWT. ~4 new/modified files (~6 unit tests). Backend only. | |
+| **297B** | 297.6--297.9 | `SecurityConfig` update to insert `PlatformAdminFilter` in filter chain, verify `/api/platform-admin/**` requires authentication, `@PreAuthorize` integration test with mock JWT containing groups claim. ~2 modified files (~5 integration tests). Backend only. | |
+
+### Tasks
+
+| ID | Task | Slice | Deps | Notes |
+|----|------|-------|------|-------|
+| 297.1 | Add `GROUPS` ScopedValue to `RequestScopes` | 297A | | Modify: `backend/.../multitenancy/RequestScopes.java`. Add `public static final ScopedValue<Set<String>> GROUPS = ScopedValue.newInstance();`. Add `public static Set<String> getGroups()` helper (returns empty set if not bound). Add `public static boolean isPlatformAdmin()` convenience method checking if `GROUPS` contains `"platform-admins"`. |
+| 297.2 | Add `extractGroups()` to `ClerkJwtUtils` | 297A | | Modify: `backend/.../security/ClerkJwtUtils.java`. Add `public static Set<String> extractGroups(Jwt jwt)` method. For Keycloak JWTs: extract `groups` claim (expected `List<String>`). For Clerk JWTs: return empty set (Clerk does not support groups). Handle null/missing claim gracefully. |
+| 297.3 | Create `PlatformSecurityService` | 297A | 297.1 | New file: `backend/.../accessrequest/PlatformSecurityService.java`. `@Service("platformSecurityService")`. Method: `public boolean isPlatformAdmin()` -- delegates to `RequestScopes.isPlatformAdmin()`. This is the SpEL target for `@PreAuthorize("@platformSecurityService.isPlatformAdmin()")`. Pattern: other SpEL-referenced services used in `@PreAuthorize`. |
+| 297.4 | Create `PlatformAdminFilter` | 297A | 297.1, 297.2 | New file: `backend/.../security/PlatformAdminFilter.java`. Extends `OncePerRequestFilter`. Extracts JWT from Spring Security context (via `SecurityContextHolder`), calls `ClerkJwtUtils.extractGroups()`, binds to `RequestScopes.GROUPS` via `ScopedValue.where().run()`. Only activates if JWT authentication is present. Pattern: `backend/.../multitenancy/TenantFilter.java` for ScopedValue binding in filter. |
+| 297.5 | Write unit tests for groups extraction and platform security | 297A | 297.2, 297.3 | New file: `backend/src/test/java/io/b2mash/b2b/b2bstrawman/security/ClerkJwtUtilsGroupsTest.java`. Tests (~6): (1) `extractGroups_keycloakJwt_returnsGroups`; (2) `extractGroups_clerkJwt_returnsEmpty`; (3) `extractGroups_missingClaim_returnsEmpty`; (4) `extractGroups_nullClaim_returnsEmpty`; (5) `isPlatformAdmin_withGroup_returnsTrue`; (6) `isPlatformAdmin_withoutGroup_returnsFalse`. Use mock `Jwt` objects. |
+| 297.6 | Add `PlatformAdminFilter` to `SecurityConfig` filter chain | 297B | 297A | Modify: `backend/.../security/SecurityConfig.java`. Add `PlatformAdminFilter` to constructor injection. Insert `.addFilterAfter(platformAdminFilter, MemberFilter.class)` in `securityFilterChain()`. The filter runs after `MemberFilter` so JWT is already validated and tenant/member context is bound. Platform admin endpoints also need tenant context to exist. |
+| 297.7 | Ensure `/api/platform-admin/**` requires authentication | 297B | 297.6 | Verify: In `SecurityConfig.securityFilterChain()`, `/api/platform-admin/**` is matched by the existing `.requestMatchers("/api/**").authenticated()` catch-all. No additional rule needed -- just verify this with a test. The `@PreAuthorize` on the controller provides the additional group check. |
+| 297.8 | Enable `@EnableMethodSecurity` if not already | 297B | | Verify: `SecurityConfig.java` already has `@EnableMethodSecurity`. If not, add it. This is required for `@PreAuthorize` annotations to work. |
+| 297.9 | Write integration tests for platform admin security | 297B | 297.6 | New file: `backend/src/test/java/io/b2mash/b2b/b2bstrawman/accessrequest/PlatformAdminSecurityTest.java`. Tests (~5): (1) `platformAdminEndpoint_withGroupClaim_returns200`; (2) `platformAdminEndpoint_withoutGroupClaim_returns403`; (3) `platformAdminEndpoint_noAuth_returns401`; (4) `platformAdminEndpoint_wrongGroup_returns403`; (5) `regularApiEndpoint_unaffectedByGroupFilter`. Use `@SpringBootTest @AutoConfigureMockMvc` with mock JWT containing `groups` claim. Mock JWT pattern: `jwt().jwt(j -> j.subject("admin-user").claim("groups", List.of("platform-admins")).claim("o", Map.of(...))).authorities(...)`. |
+
+### Key Files
+
+**Slice 297A -- Modify:**
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/multitenancy/RequestScopes.java` -- add `GROUPS` ScopedValue
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/security/ClerkJwtUtils.java` -- add `extractGroups()`
+
+**Slice 297A -- Create:**
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/accessrequest/PlatformSecurityService.java`
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/security/PlatformAdminFilter.java`
+- `backend/src/test/java/io/b2mash/b2b/b2bstrawman/security/ClerkJwtUtilsGroupsTest.java`
+
+**Slice 297B -- Modify:**
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/security/SecurityConfig.java` -- add filter + verify auth rules
+
+**Slice 297B -- Create:**
+- `backend/src/test/java/io/b2mash/b2b/b2bstrawman/accessrequest/PlatformAdminSecurityTest.java`
+
+**Slice 297B -- Read for context:**
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/multitenancy/TenantFilter.java` -- ScopedValue binding in filter pattern
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/member/MemberFilter.java` -- filter chain ordering
+
+### Architecture Decisions
+
+- **ScopedValue for groups**: Consistent with existing `RequestScopes` pattern. Groups are bound once by `PlatformAdminFilter` and accessible throughout the request scope.
+- **Filter after MemberFilter**: Platform admin endpoints are also org-scoped (the admin has a JWT with org claims). The groups filter runs after tenant/member resolution so all contexts are available.
+- **SpEL-based `@PreAuthorize`**: Using `@platformSecurityService.isPlatformAdmin()` rather than role-based authorities keeps the platform admin concept separate from org roles. Platform admins are NOT an org role -- they are a cross-tenant capability.
+- **Keycloak-only groups**: The `groups` claim is only available in Keycloak JWTs (via Group Membership Mapper). Clerk JWTs return an empty group set, which is correct -- Clerk mode does not support platform admin functionality.
+
+---
+
+## Epic 298: Approval Pipeline & Platform Admin API
+
+**Goal**: Implement the approval/rejection workflow that orchestrates Keycloak org creation, tenant schema provisioning, and Keycloak invitation on approval. Expose platform admin API endpoints for listing, approving, and rejecting access requests.
+
+**References**: Architecture doc Sections 39.5.2, 39.6.
+
+**Dependencies**: Epic 296 (access request submission exists), Epic 297 (platform admin security).
+
+**Scope**: Backend
+
+**Estimated Effort**: M
+
+### Slices
+
+| Slice | Tasks | Summary | Status |
+|-------|-------|---------|--------|
+| **298A** | 298.1--298.5 | `AccessRequestApprovalService` -- orchestrates approval: create KC org via `KeycloakAdminClient` (call gateway or add backend's own KC client), provision tenant schema via `TenantProvisioningService`, send KC invitation, mark `APPROVED`. `reject()` method. Idempotent retry support. ~3 new files (~8 integration tests). Backend only. | |
+| **298B** | 298.6--298.10 | `PlatformAdminController` with `@PreAuthorize("@platformSecurityService.isPlatformAdmin()")`. Endpoints: `GET /api/platform-admin/access-requests` (with optional `?status=` filter), `POST /api/platform-admin/access-requests/{id}/approve`, `POST /api/platform-admin/access-requests/{id}/reject`. Pure delegation to service. ~2 new files (~7 integration tests). Backend only. | |
+
+### Tasks
+
+| ID | Task | Slice | Deps | Notes |
+|----|------|-------|------|-------|
+| 298.1 | Create `KeycloakProvisioningClient` in backend | 298A | | New file: `backend/.../accessrequest/KeycloakProvisioningClient.java`. `@Service` wrapping a `RestClient` that calls the **gateway's admin proxy endpoints** (`POST /bff/admin/invite`, etc.) or calls Keycloak Admin API directly. Decision: calling the gateway is simpler (reuses existing `KeycloakAdminClient` in gateway), but requires backend-to-gateway HTTP calls. Alternative: duplicate minimal Keycloak admin logic in backend. **Recommended**: Create a lightweight Keycloak Admin REST client in the backend using the same `RestClient` pattern as the gateway's `KeycloakAdminClient.java`. This avoids circular dependency (backend -> gateway -> backend). Methods: `createOrganization(String name, String slug)`, `inviteUser(String orgId, String email)`. Uses master realm admin credentials from config. |
+| 298.2 | Add Keycloak admin config to backend `application.yml` | 298A | 298.1 | Modify: `backend/src/main/resources/application.yml`. Add `keycloak.admin.auth-server-url`, `keycloak.admin.realm`, `keycloak.admin.username`, `keycloak.admin.password` properties (same as gateway config, from env vars). Only needed when `app.access-request` features are enabled. |
+| 298.3 | Implement `AccessRequestApprovalService.approve()` | 298A | 298.1, 296A | New file: `backend/.../accessrequest/AccessRequestApprovalService.java`. `@Service @Transactional`. `approve(UUID requestId, String adminUserId)` method per architecture doc Section 39.6: (1) find request, verify `PENDING` status, (2) slugify org name, (3) call `keycloakProvisioningClient.createOrganization()`, (4) call `tenantProvisioningService.provisionTenant()` with KC org ID, (5) call `keycloakProvisioningClient.inviteUser()`, (6) mark `APPROVED`, set `keycloakOrgId`, `reviewedBy`, `reviewedAt`. Catch exceptions -> set `provisioningError`, re-throw. |
+| 298.4 | Implement `AccessRequestApprovalService.reject()` | 298A | 298.3 | In `AccessRequestApprovalService`. `reject(UUID requestId, String adminUserId)`: find request, verify `PENDING` status, set status to `REJECTED`, set `reviewedBy`, `reviewedAt`. Simple -- no external calls. |
+| 298.5 | Write integration tests for approval pipeline | 298A | 298.3 | New file: `backend/src/test/java/io/b2mash/b2b/b2bstrawman/accessrequest/AccessRequestApprovalServiceTest.java`. Tests (~8): (1) `approve_pendingRequest_createsKcOrg` (mock KC client); (2) `approve_pendingRequest_provisionsTenant` (mock provisioning); (3) `approve_pendingRequest_sendsInvitation` (mock KC client); (4) `approve_pendingRequest_marksApproved`; (5) `approve_alreadyApproved_throwsConflict`; (6) `approve_rejected_throwsConflict`; (7) `approve_kcFailure_setsProvisioningError`; (8) `reject_pendingRequest_marksRejected`. Use `@SpringBootTest` with mocked `KeycloakProvisioningClient` and `TenantProvisioningService` via `@MockitoBean`. |
+| 298.6 | Create `PlatformAdminController` | 298B | 298A, 297B | New file: `backend/.../accessrequest/PlatformAdminController.java`. `@RestController @RequestMapping("/api/platform-admin/access-requests") @PreAuthorize("@platformSecurityService.isPlatformAdmin()")`. Three endpoints, pure delegation. Pattern: thin controller discipline from `backend/CLAUDE.md`. |
+| 298.7 | Add `GET /api/platform-admin/access-requests` (list) | 298B | 298.6 | In `PlatformAdminController`. `@GetMapping` with optional `@RequestParam("status") AccessRequestStatus status`. Delegates to service method that calls `repository.findByStatus()` or `repository.findAll()`. Returns `List<AccessRequestResponse>`. |
+| 298.8 | Add `POST /{id}/approve` endpoint | 298B | 298.6 | In `PlatformAdminController`. `@PostMapping("/{id}/approve")`. Extracts admin user ID from JWT (`SecurityContextHolder` or `@AuthenticationPrincipal`). Delegates to `approvalService.approve(id, adminUserId)`. Returns approval result DTO. |
+| 298.9 | Add `POST /{id}/reject` endpoint | 298B | 298.6 | In `PlatformAdminController`. `@PostMapping("/{id}/reject")`. Delegates to `approvalService.reject(id, adminUserId)`. Returns simple success message. |
+| 298.10 | Write integration tests for admin controller | 298B | 298.6 | New file: `backend/src/test/java/io/b2mash/b2b/b2bstrawman/accessrequest/PlatformAdminControllerTest.java`. Tests (~7): (1) `listRequests_platformAdmin_returns200`; (2) `listRequests_filterByStatus_returnsFiltered`; (3) `listRequests_nonAdmin_returns403`; (4) `approve_platformAdmin_returns200`; (5) `approve_nonAdmin_returns403`; (6) `reject_platformAdmin_returns200`; (7) `approve_notFound_returns404`. Use `@SpringBootTest @AutoConfigureMockMvc` with mock JWT containing `groups: ["platform-admins"]`. Mock `KeycloakProvisioningClient` and `TenantProvisioningService` via `@MockitoBean`. |
+
+### Key Files
+
+**Slice 298A -- Create:**
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/accessrequest/KeycloakProvisioningClient.java`
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/accessrequest/AccessRequestApprovalService.java`
+- `backend/src/test/java/io/b2mash/b2b/b2bstrawman/accessrequest/AccessRequestApprovalServiceTest.java`
+
+**Slice 298A -- Modify:**
+- `backend/src/main/resources/application.yml` -- Keycloak admin config
+
+**Slice 298A -- Read for context:**
+- `gateway/src/main/java/io/b2mash/b2b/gateway/service/KeycloakAdminClient.java` -- Keycloak Admin API pattern to replicate
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/provisioning/TenantProvisioningService.java` -- provisioning API
+
+**Slice 298B -- Create:**
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/accessrequest/PlatformAdminController.java`
+- `backend/src/test/java/io/b2mash/b2b/b2bstrawman/accessrequest/PlatformAdminControllerTest.java`
+
+### Architecture Decisions
+
+- **Backend's own Keycloak admin client**: Rather than calling the gateway's admin proxy (which would create a backend -> gateway -> Keycloak circular dependency), the backend gets its own lightweight `KeycloakProvisioningClient` that calls Keycloak Admin REST API directly. This duplicates ~50 lines of REST client code from the gateway but keeps the architecture clean. The gateway client handles org member management (invitations, member list), while the backend client handles provisioning-specific operations (org creation, invitation for approved requests).
+- **`@PreAuthorize` on class level**: All methods in `PlatformAdminController` require platform admin access, so the annotation is placed at class level rather than per-method.
+- **Idempotent approval**: Per architecture doc Section 39.6, Keycloak `createOrganization()` returns existing org if alias matches, `provisionTenant()` checks for existing schema, and `inviteUser()` ignores duplicates. Safe to retry after partial failures.
+
+---
+
+## Epic 299: Keycloak Configuration & Gateway Routing
+
+**Goal**: Configure Keycloak realm with the `platform-admins` group and Group Membership Mapper, update the gateway to proxy platform admin API routes, and update seed scripts.
+
+**References**: Architecture doc Sections 39.4.1, 39.4.3, 39.10.
+
+**Dependencies**: Epic 297 (backend expects `groups` claim in JWT).
+
+**Scope**: Infra
 
 **Estimated Effort**: S
 
@@ -305,41 +457,175 @@ Stage 5:  [301A]  //  [301B]                                   <- cleanup (paral
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **298A** | 298.1-298.5 | Add AccessRequestRepository.findApprovedByKeycloakOrgIdAndContactEmail query. Modify MemberFilter.lazyCreateMember to check access_requests for intended role. Use RequestScopes.ORG_ID to get Keycloak org ID. Integration tests (~4 tests). | |
+| **299A** | 299.1--299.5 | Keycloak seed script updates: create `platform-admins` group, add Group Membership Mapper to `gateway-bff` client scope, assign initial admin user to group. Update `realm-export.json`. Gateway `application.yml` route for `/api/platform-admin/**`. ~4 modified files. Infra only. | |
 
 ### Tasks
 
-| ID | Task | Slice | Status | Notes |
-|----|------|-------|--------|-------|
-| 298.1 | Add access request lookup query | 298A | | `AccessRequestRepository.java`: add `Optional<AccessRequest> findFirstByKeycloakOrgIdAndContactEmailAndStatus(String keycloakOrgId, String contactEmail, AccessRequestStatus status)`. This query finds the APPROVED access request matching the org and email, used to determine if the logging-in user is the original requester. |
-| 298.2 | Inject AccessRequestRepository into MemberFilter | 298A | | Add `AccessRequestRepository` as a constructor parameter in `MemberFilter.java`. Update constructor injection. |
-| 298.3 | Modify lazyCreateMember for role lookup | 298A | | In `MemberFilter.lazyCreateMember()`: before defaulting to `Roles.ORG_MEMBER`, check if `RequestScopes.ORG_ID` is bound, then query `accessRequestRepository.findFirstByKeycloakOrgIdAndContactEmailAndStatus(orgId, jwt.getClaimAsString("email"), AccessRequestStatus.APPROVED)`. If found, use `Roles.ORG_OWNER` instead of the JWT role or default. Per Section 5.1-5.2. |
-| 298.4 | Add MemberFilter JIT role integration tests | 298A | | `member/MemberFilterJitRoleTest.java` (~4 tests): first login with matching access request gets Owner role, first login without access request gets Member role, first login with PENDING (not APPROVED) access request gets Member role (not Owner), second login uses cached member (no re-lookup). Use @SpringBootTest + MockMvc. Create access request records in test setup. |
-| 298.5 | Add unit test for role determination logic | 298A | | `member/MemberFilterRoleDeterminationTest.java` (~2 tests): verify role precedence (access request match -> owner, no match -> member). Extract role determination to a private method for testability, or test via the integration tests only. |
+| ID | Task | Slice | Deps | Notes |
+|----|------|-------|------|-------|
+| 299.1 | Add `platform-admins` group creation to seed script | 299A | | Modify: `compose/scripts/keycloak-seed.sh`. After realm setup, create group via Keycloak Admin REST API: `POST /admin/realms/docteams/groups` with `{"name": "platform-admins"}`. Pattern: existing group/role creation calls in the same script. |
+| 299.2 | Add Group Membership Mapper to client scope | 299A | 299.1 | Modify: `compose/scripts/keycloak-seed.sh`. Add protocol mapper to the `gateway-bff` client scope: `POST /admin/realms/docteams/client-scopes/{id}/protocol-mappers/models` with `{"name": "groups", "protocol": "openid-connect", "protocolMapper": "oidc-group-membership-mapper", "config": {"claim.name": "groups", "full.path": "false", "id.token.claim": "true", "access.token.claim": "true"}}`. |
+| 299.3 | Assign seed admin user to `platform-admins` group | 299A | 299.1 | Modify: `compose/scripts/keycloak-seed.sh`. After creating the admin user (or using existing seed user), add to group: `PUT /admin/realms/docteams/users/{userId}/groups/{groupId}`. This ensures local dev has a platform admin for testing. |
+| 299.4 | Update `realm-export.json` | 299A | | Modify: `compose/keycloak/realm-export.json`. Add `platform-admins` group definition and the Group Membership Mapper to the client scope section. This ensures automated imports include the configuration. |
+| 299.5 | Verify gateway route for `/api/platform-admin/**` | 299A | | Verify: Gateway's existing route config for `/api/**` should already proxy `/api/platform-admin/**` to the backend (it is a sub-path of `/api/**`). If not, add explicit route in `gateway/src/main/resources/application.yml`. No change expected -- just verify and document. |
 
 ### Key Files
 
-| File | Purpose |
-|------|---------|
-| `member/MemberFilter.java` | Enhanced with access request role lookup |
-| `accessrequest/AccessRequestRepository.java` | New query for matching approved requests |
+**Slice 299A -- Modify:**
+- `compose/scripts/keycloak-seed.sh` -- group creation, mapper, admin assignment
+- `compose/keycloak/realm-export.json` -- group and mapper config
+- `gateway/src/main/resources/application.yml` -- verify route (likely no change)
+
+**Slice 299A -- Read for context:**
+- Existing `keycloak-seed.sh` for API call patterns
+- `gateway/src/main/resources/application.yml` for route configuration patterns
 
 ### Architecture Decisions
 
-- Role source of truth remains `Member.orgRole` in the tenant DB -- the access request lookup only happens at member creation time (first login). After that, the member record is used. (ADR-156, Option 3)
-- Only APPROVED access requests are checked -- PENDING/REJECTED/FAILED are ignored for role assignment.
+- **Group Membership Mapper (built-in)**: Uses Keycloak's built-in `oidc-group-membership-mapper` -- no custom SPI needed. The mapper adds a `groups` array to both ID and access tokens.
+- **Seed script for local dev**: The group and mapper are created via seed script for local development. Production Keycloak should have these configured via realm import or Terraform/Pulumi.
+- **Gateway route reuse**: The existing `/api/**` route in the gateway already covers `/api/platform-admin/**`. No new route definition needed.
 
 ---
 
-## Epic 299: Frontend -- Public Access Request Form
+## Epic 300: Public Access Request Form (Frontend)
 
-**Goal**: Build the public-facing access request form at `/request-access`. Visitors can submit their company name, contact details, and optional reason. The form calls `POST /api/access-requests` and shows a success confirmation.
+**Goal**: Create the public `/request-access` page with a multi-step form: Step 1 collects company details, Step 2 verifies OTP, Step 3 shows success message. Unauthenticated -- no login required.
 
-**References**: Architecture doc Section 6.1 (public form wireframe).
+**References**: Architecture doc Section 39.8.1.
 
-**Dependencies**: Epic 295 (public POST endpoint exists)
+**Dependencies**: Epic 296 (backend public API endpoints).
 
 **Scope**: Frontend
+
+**Estimated Effort**: M
+
+### Slices
+
+| Slice | Tasks | Summary | Status |
+|-------|-------|---------|--------|
+| **300A** | 300.1--300.6 | `/request-access` page + route (outside `(app)` layout), `RequestAccessForm` component (Step 1: email, full name, org name, country dropdown, industry dropdown), client-side blocked domain check, server action calling `POST /api/access-requests`. ~6 new files. Frontend only. | |
+| **300B** | 300.7--300.11 | OTP verification step (Step 2: 6-digit OTP input), success message (Step 3: "Your request has been submitted"), error handling (invalid OTP, expired, too many attempts), retry flow (resend OTP). Server action calling `POST /api/access-requests/verify`. ~3 modified/new files (~6 tests). Frontend only. | |
+
+### Tasks
+
+| ID | Task | Slice | Deps | Notes |
+|----|------|-------|------|-------|
+| 300.1 | Create `/request-access` route | 300A | | New file: `frontend/app/request-access/page.tsx`. Server Component page outside `(app)` layout -- no auth required. Simple page shell rendering `RequestAccessForm`. Pattern: `frontend/app/page.tsx` (landing page, also unauthenticated). |
+| 300.2 | Create `RequestAccessForm` component (Step 1) | 300A | 300.1 | New file: `frontend/components/access-request/request-access-form.tsx`. `"use client"` component. Multi-step form with state management via `useState`. Step 1 fields: email (text input), full name (text input), organization name (text input), country (combobox/select), industry (select). Client-side email domain validation. Submit button triggers server action. Pattern: existing form components in `frontend/components/`. Use Shadcn `Input`, `Select`, `Button`, `Label`. Slate color scheme, teal accent on submit button. |
+| 300.3 | Create country and industry lists | 300A | | New file: `frontend/lib/access-request-data.ts`. Export `COUNTRIES: string[]` (common list) and `INDUSTRIES: string[]` (Accounting, Legal, Consulting, Engineering, Architecture, IT Services, Marketing, Other). Export `BLOCKED_EMAIL_DOMAINS: string[]` (mirror of backend list for client-side validation). |
+| 300.4 | Create server action for submit | 300A | | New file: `frontend/app/request-access/actions.ts`. `submitAccessRequest(formData)` server action -- calls backend `POST /api/access-requests` via direct `fetch()` (no auth token needed, public endpoint). Returns `{success, message, expiresInMinutes}` or `{error}`. Note: this server action does NOT use `lib/api.ts` since that attaches auth tokens. Use raw `fetch()` with `BACKEND_URL` or gateway URL. |
+| 300.5 | Create layout for request-access | 300A | | New file: `frontend/app/request-access/layout.tsx`. Minimal layout without sidebar/header -- centered card design on concrete gray background. DocTeams logo at top. Pattern: `frontend/app/(auth)/layout.tsx` (split-screen auth layout) for inspiration on unauthenticated layouts. |
+| 300.6 | Style the form | 300A | | In `request-access-form.tsx`. Centered card (`max-w-lg mx-auto`), Sora heading, IBM Plex Sans body, slate borders, teal accent submit button. Responsive. Loading state on submit (spinner or disabled button). |
+| 300.7 | Add OTP verification step (Step 2) | 300B | 300A | Modify: `frontend/components/access-request/request-access-form.tsx`. When Step 1 succeeds, show Step 2: 6-digit OTP input. Could use 6 separate digit inputs or a single text input with `inputMode="numeric" maxLength={6}`. Timer showing OTP expiry countdown. "Resend code" link (re-submits Step 1 form data). |
+| 300.8 | Create server action for OTP verification | 300B | | Modify: `frontend/app/request-access/actions.ts`. `verifyAccessRequestOtp(email, otp)` server action -- calls `POST /api/access-requests/verify` via raw `fetch()`. Returns `{success, message}` or `{error}`. |
+| 300.9 | Add success step (Step 3) | 300B | 300.7 | Modify: `frontend/components/access-request/request-access-form.tsx`. When Step 2 succeeds, show Step 3: success message ("Your access request has been submitted for review. We'll notify you by email once it's been reviewed."), checkmark icon, "Back to home" link. |
+| 300.10 | Add error handling | 300B | 300.7 | In `request-access-form.tsx`. Handle: blocked domain (show inline error on email field), duplicate pending (show message with contact info), invalid OTP (show error, allow retry), expired OTP (show "resend" prompt), too many attempts (show "request new code" prompt). Use Shadcn `Alert` or inline error messages. |
+| 300.11 | Write tests for access request form | 300B | 300.7 | New file: `frontend/__tests__/access-request/request-access-form.test.tsx`. Tests (~6): (1) `rendersStep1FormFields`; (2) `blockedDomainShowsError`; (3) `submitShowsOtpInput`; (4) `validOtpShowsSuccess`; (5) `invalidOtpShowsError`; (6) `resendOtpResubmitsForm`. Mock server actions. Pattern: existing frontend tests in `frontend/__tests__/`. |
+
+### Key Files
+
+**Slice 300A -- Create:**
+- `frontend/app/request-access/page.tsx`
+- `frontend/app/request-access/layout.tsx`
+- `frontend/app/request-access/actions.ts`
+- `frontend/components/access-request/request-access-form.tsx`
+- `frontend/lib/access-request-data.ts`
+
+**Slice 300A -- Read for context:**
+- `frontend/app/(auth)/layout.tsx` -- unauthenticated layout pattern
+- `frontend/components/ui/input.tsx`, `frontend/components/ui/button.tsx`, `frontend/components/ui/select.tsx` -- Shadcn component usage
+
+**Slice 300B -- Modify:**
+- `frontend/components/access-request/request-access-form.tsx` -- add Steps 2 and 3
+- `frontend/app/request-access/actions.ts` -- add verify action
+
+**Slice 300B -- Create:**
+- `frontend/__tests__/access-request/request-access-form.test.tsx`
+
+### Architecture Decisions
+
+- **Outside `(app)` layout**: The `/request-access` route is public (no auth) so it lives at the root level, not inside `(app)/`. It has its own minimal layout.
+- **Raw `fetch()` for public API**: The `lib/api.ts` client attaches auth tokens, which is inappropriate for unauthenticated requests. Server actions use raw `fetch()` with `BACKEND_URL` (or gateway URL in BFF mode).
+- **Client-side domain validation**: The blocked domain list is duplicated client-side for immediate feedback. Server-side validation is the source of truth.
+- **Multi-step form**: State-managed via `useState` in a single `"use client"` component rather than separate routes. Keeps the flow simple and avoids URL manipulation.
+
+---
+
+## Epic 301: Platform Admin Panel (Frontend)
+
+**Goal**: Create the platform admin panel at `/platform-admin/access-requests` with a filterable table, approve/reject dialogs, and route guard based on the `groups` claim in the auth context.
+
+**References**: Architecture doc Sections 39.4.4, 39.8.2.
+
+**Dependencies**: Epic 298 (backend admin API), Epic 300 (needs `AuthContext` groups pattern).
+
+**Scope**: Frontend
+
+**Estimated Effort**: M
+
+### Slices
+
+| Slice | Tasks | Summary | Status |
+|-------|-------|---------|--------|
+| **301A** | 301.1--301.5 | Extend `AuthContext` with `groups: string[]`, update BFF `/bff/me` response parsing to extract groups, update keycloak-bff provider. Create `(platform-admin)` route group with layout and route guard. Add conditional "Platform Admin" nav link to sidebar. ~6 modified/new files (~4 tests). Frontend only. | |
+| **301B** | 301.6--301.11 | `AccessRequestsTable` component with status filtering, `ApproveDialog` confirmation, `RejectDialog` confirmation, server actions for approve/reject/list, loading states. ~6 new files (~6 tests). Frontend only. | |
+
+### Tasks
+
+| ID | Task | Slice | Deps | Notes |
+|----|------|-------|------|-------|
+| 301.1 | Add `groups` to `AuthContext` interface | 301A | | Modify: `frontend/lib/auth/types.ts`. Add `groups: string[]` to `AuthContext` interface. |
+| 301.2 | Update BFF auth provider to extract groups | 301A | 301.1 | Modify: `frontend/lib/auth/providers/keycloak-bff.ts`. In `getAuthContext()`, extract `groups` from `/bff/me` response. If `groups` is not in BFF response, return `[]`. |
+| 301.3 | Update BFF `/bff/me` endpoint to include groups | 301A | | Modify: `gateway/src/main/java/io/b2mash/b2b/gateway/controller/BffController.java`. Add `List<String> groups` field to `BffUserInfo` record. Extract groups from `OidcUser` claims (`user.getClaim("groups")`). Handle null (return empty list). Also update `BffUserInfoExtractor` if groups extraction logic is complex. |
+| 301.4 | Create `(platform-admin)` route group with layout | 301A | 301.1 | New files: `frontend/app/(app)/org/[slug]/platform-admin/layout.tsx` OR `frontend/app/(platform-admin)/layout.tsx` (decide placement -- should it be org-scoped or global?). Per architecture doc, platform admin is cross-tenant, so create at `frontend/app/(app)/platform-admin/layout.tsx` (inside `(app)` for auth but outside `org/[slug]` for no-org requirement). Layout checks `groups.includes("platform-admins")` from auth context, renders 404 for non-admins. Simple sidebar with "Access Requests" link. |
+| 301.5 | Add conditional "Platform Admin" nav link | 301A | 301.4 | Modify: `frontend/lib/nav-items.ts` or `frontend/components/desktop-sidebar.tsx`. Add "Platform Admin" link (icon: `Shield` from lucide-react) visible only when `groups.includes("platform-admins")`. Links to `/platform-admin/access-requests`. |
+| 301.6 | Create server actions for admin endpoints | 301B | 301A | New file: `frontend/app/(app)/platform-admin/access-requests/actions.ts`. Actions: `listAccessRequests(status?: string)` -- calls `GET /api/platform-admin/access-requests`, `approveAccessRequest(id: string)` -- calls `POST /api/platform-admin/access-requests/{id}/approve`, `rejectAccessRequest(id: string)` -- calls `POST /api/platform-admin/access-requests/{id}/reject`. Use `lib/api.ts` (authenticated). |
+| 301.7 | Create `AccessRequestsTable` component | 301B | 301.6 | New file: `frontend/components/access-request/access-requests-table.tsx`. `"use client"` component. Columns: Org Name, Email, Name, Country, Industry, Submitted (relative time), Status (badge). Status filter tabs: ALL / PENDING / APPROVED / REJECTED (default PENDING). Sorted by creation date ascending (oldest first). Uses Shadcn `Table`, `Badge`, `Tabs`. Pattern: existing table components (e.g., team member list). |
+| 301.8 | Create `/platform-admin/access-requests` page | 301B | 301.7 | New file: `frontend/app/(app)/platform-admin/access-requests/page.tsx`. Server Component. Fetches access requests via server action, passes to `AccessRequestsTable`. Page heading "Access Requests". |
+| 301.9 | Create `ApproveDialog` component | 301B | 301.6 | New file: `frontend/components/access-request/approve-dialog.tsx`. `"use client"` component. Shadcn `AlertDialog` confirming: "Approve access request for {orgName}? This will create a Keycloak organization, provision a tenant schema, and send an invitation to {email}." Approve button (teal accent), Cancel button. Calls `approveAccessRequest()` action on confirm. Loading state during provisioning. Pattern: existing dialog components with `afterEach(() => cleanup())` in tests. |
+| 301.10 | Create `RejectDialog` component | 301B | 301.9 | New file: `frontend/components/access-request/reject-dialog.tsx`. `"use client"` component. Simple `AlertDialog`: "Reject access request from {email} for {orgName}? This action cannot be undone." Reject button (destructive variant), Cancel. Calls `rejectAccessRequest()` action. |
+| 301.11 | Write tests for admin panel | 301B | 301.7 | New file: `frontend/__tests__/access-request/access-requests-table.test.tsx`. Tests (~6): (1) `rendersTableWithPendingRequests`; (2) `filterByStatus_showsMatchingRequests`; (3) `approveDialog_showsConfirmation`; (4) `rejectDialog_showsConfirmation`; (5) `approveAction_refreshesList`; (6) `emptyState_showsMessage`. Mock server actions. Use `cleanup()` in `afterEach`. |
+
+### Key Files
+
+**Slice 301A -- Modify:**
+- `frontend/lib/auth/types.ts` -- add `groups` field
+- `frontend/lib/auth/providers/keycloak-bff.ts` -- extract groups from BFF response
+- `gateway/src/main/java/io/b2mash/b2b/gateway/controller/BffController.java` -- add `groups` to `/bff/me`
+- `frontend/components/desktop-sidebar.tsx` or `frontend/lib/nav-items.ts` -- conditional nav link
+
+**Slice 301A -- Create:**
+- `frontend/app/(app)/platform-admin/layout.tsx` -- route guard layout
+- `frontend/app/(app)/platform-admin/access-requests/page.tsx` (stub)
+
+**Slice 301B -- Create:**
+- `frontend/app/(app)/platform-admin/access-requests/actions.ts`
+- `frontend/components/access-request/access-requests-table.tsx`
+- `frontend/components/access-request/approve-dialog.tsx`
+- `frontend/components/access-request/reject-dialog.tsx`
+- `frontend/__tests__/access-request/access-requests-table.test.tsx`
+
+**Slice 301B -- Read for context:**
+- `frontend/components/team/` -- table and dialog patterns for member management
+
+### Architecture Decisions
+
+- **Platform admin route outside org scope**: The `(platform-admin)` layout lives under `(app)/` (requires auth) but NOT under `org/[slug]/` (not org-specific). Platform admins operate cross-tenant. This requires the `(app)/layout.tsx` to handle routes where org context may be absent.
+- **Route guard via auth context**: The layout checks `groups.includes("platform-admins")` and renders a 404 (not a redirect) for non-admins. This is security-by-obscurity consistent with the backend's 403 response.
+- **Gateway BFF `/bff/me` extension**: The `groups` field is added to the BFF response. This is the only change to the gateway in this phase. The Clerk and mock auth providers return `groups: []` (they do not support platform admin).
+
+---
+
+## Epic 302: Self-Service Org Creation Gate & JIT Provisioning Toggle
+
+**Goal**: Disable self-service organization creation for non-platform-admins and add a feature toggle for JIT tenant provisioning so that provisioning only happens through the admin approval pipeline.
+
+**References**: Architecture doc Sections 39.10 (items 3, 4), 39.11.
+
+**Dependencies**: Epic 298 (approval pipeline is the replacement for self-service).
+
+**Scope**: Backend + Frontend
 
 **Estimated Effort**: S
 
@@ -347,166 +633,41 @@ Stage 5:  [301A]  //  [301B]                                   <- cleanup (paral
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **299A** | 299.1-299.7 | Public route /request-access (outside auth route groups). Form component with Zod validation. Server Action calling backend POST. Success/error states. Responsive layout matching design system. Frontend tests (~5 tests). | |
+| **302A** | 302.1--302.5 | Gate/remove `POST /bff/orgs` (self-service org creation) for non-platform-admins or behind a feature flag. Add `app.jit-provisioning.enabled=false` config property to backend, conditional check in `TenantFilter` JIT provisioning path. Update frontend create-org page. ~4 modified files (~4 tests). Both. | |
 
 ### Tasks
 
-| ID | Task | Slice | Status | Notes |
-|----|------|-------|--------|-------|
-| 299.1 | Create request-access route | 299A | | `frontend/app/request-access/page.tsx`. Server component that renders the form. Public route (no auth wrapper). Route is outside `(app)/` and `(auth)/` route groups. Title: "Request Access to DocTeams". |
-| 299.2 | Create AccessRequestForm client component | 299A | | `frontend/components/access-request/access-request-form.tsx`. "use client". Form fields: Company Name (Input, required), Your Name (Input, required), Email Address (Input, required, email validation), Reason (Textarea, optional, max 1000 chars). Submit button. Uses Shadcn UI components (Input, Textarea, Button, Label). Zod schema for client-side validation. Pattern: follow existing form patterns in the codebase (e.g., create-org-form.tsx). |
-| 299.3 | Create Server Action for form submission | 299A | | `frontend/app/request-access/actions.ts`. Server Action `submitAccessRequest(formData)`. Calls backend `POST /api/access-requests` via fetch (no auth token needed -- public endpoint). Returns `{ success: boolean, error?: string }`. Note: does NOT use `lib/api.ts` (which attaches Bearer JWT) -- this is an unauthenticated call. Use `BACKEND_URL` env var directly. |
-| 299.4 | Add success confirmation state | 299A | | After successful submission, the form is replaced with a success message: "Your request has been submitted. We will review it and send you an invitation if approved." Include a "Submit another" link to reset the form. Use Shadcn Alert or Card component for the confirmation. |
-| 299.5 | Add error handling | 299A | | Handle 429 (rate limit) with message "Too many requests. Please try again later." Handle 400 (validation) with field-specific errors. Handle network errors with generic error alert. Pattern: use Shadcn Alert component with destructive variant. |
-| 299.6 | Style the page layout | 299A | | Centered card layout, similar to sign-in page styling. Use the slate/teal design system. Max width container. Responsive for mobile. Pattern: follow `(auth)/layout.tsx` split-screen or centered card pattern. |
-| 299.7 | Add frontend tests | 299A | | `frontend/__tests__/request-access.test.tsx` (~5 tests): form renders all fields, submit with valid data calls action, submit with empty required fields shows validation errors, success state renders confirmation message, error state renders error alert. Use @testing-library/react. Mock the server action. |
+| ID | Task | Slice | Deps | Notes |
+|----|------|-------|------|-------|
+| 302.1 | Add JIT provisioning toggle to backend | 302A | | Modify: `backend/src/main/resources/application.yml`. Add `app.jit-provisioning.enabled: false`. Modify: `backend/.../multitenancy/TenantFilter.java` (or wherever JIT provisioning is triggered). Check this property before calling `TenantProvisioningService`. When disabled, JIT provisioning is skipped -- tenants must be pre-provisioned via the approval pipeline. |
+| 302.2 | Gate self-service org creation in gateway | 302A | 302.1 | Modify: `gateway/.../controller/BffController.java`. Add a check to `POST /bff/orgs`: either (a) check for `platform-admins` group in the user's claims and only allow org creation for platform admins, or (b) add a `app.self-service-org-creation.enabled=false` config property and return 403 when disabled. Option (b) is simpler and more explicit. |
+| 302.3 | Update frontend create-org page | 302A | 302.2 | Modify: `frontend/app/(app)/create-org/page.tsx`. When `AUTH_MODE === "keycloak"`, redirect to `/request-access` instead of showing the create-org form. Or conditionally render a message: "Organization creation is managed by administrators. Please submit an access request." with link to `/request-access`. |
+| 302.4 | Update frontend dashboard (no-org state) | 302A | 302.3 | Modify: `frontend/app/(app)/dashboard/page.tsx`. When user has no org and `AUTH_MODE === "keycloak"`, show a different message: "Your access request is being reviewed" or "Contact your administrator" instead of "Create an Organization". |
+| 302.5 | Write tests for JIT toggle and org creation gate | 302A | 302.1 | Modify existing test files or new file: `backend/src/test/java/io/b2mash/b2b/b2bstrawman/multitenancy/JitProvisioningToggleTest.java`. Tests (~4): (1) `jitEnabled_provisionsTenant`; (2) `jitDisabled_skipsProvisioning`; (3) `createOrg_disabled_returns403` (gateway); (4) `createOrg_platformAdmin_returns201` (gateway). |
 
 ### Key Files
 
-| File | Purpose |
-|------|---------|
-| `frontend/app/request-access/page.tsx` | Public route page |
-| `frontend/components/access-request/access-request-form.tsx` | Form component |
-| `frontend/app/request-access/actions.ts` | Server Action for submission |
+**Slice 302A -- Modify:**
+- `backend/src/main/resources/application.yml` -- JIT provisioning toggle
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/multitenancy/TenantFilter.java` -- conditional JIT
+- `gateway/src/main/java/io/b2mash/b2b/gateway/controller/BffController.java` -- gate org creation
+- `frontend/app/(app)/create-org/page.tsx` -- redirect or message
+- `frontend/app/(app)/dashboard/page.tsx` -- no-org state message
+
+**Slice 302A -- Read for context:**
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/multitenancy/TenantFilter.java` -- understand JIT provisioning trigger location
 
 ### Architecture Decisions
 
-- No auth needed -- the form is completely public. Does NOT use `lib/api.ts` (which attaches JWT).
-- Route lives at top level `/request-access`, not under `(app)/` or `(auth)/` route groups.
-- Zod validation on client side mirrors backend @Valid constraints.
+- **Feature flag over removal**: Rather than removing self-service org creation entirely, a `app.self-service-org-creation.enabled` flag allows reverting. The flag defaults to `false` in Keycloak mode. Clerk mode retains self-service.
+- **Graceful degradation**: Users who reach the create-org page in Keycloak mode see a helpful redirect to the access request form, not a broken page.
+- **JIT provisioning disable**: When `app.jit-provisioning.enabled=false`, `TenantFilter` does not trigger automatic schema creation on first request. This prevents unapproved users from provisioning tenant schemas by somehow obtaining a valid JWT with an org claim.
 
 ---
-
-## Epic 300: Frontend -- Admin Access Request Dashboard
-
-**Goal**: Build the admin dashboard at `/admin/access-requests` for product admins to view, approve, reject, and retry access requests. This is a platform-level admin page (not org-scoped) that requires the PRODUCT_ADMIN role.
-
-**References**: Architecture doc Section 6.2 (admin dashboard wireframe).
-
-**Dependencies**: Epic 296 (admin API endpoints), Epic 297 (PRODUCT_ADMIN role in JWT)
-
-**Scope**: Frontend
-
-**Estimated Effort**: M
-
-### Slices
-
-| Slice | Tasks | Summary | Status |
-|-------|-------|---------|--------|
-| **300A** | 300.1-300.7 | Admin layout at /admin. Access request list page with DataTable. Status filter (PENDING/APPROVED/REJECTED/FAILED/All). Pagination. API client functions for admin endpoints. Frontend tests (~5 tests). | |
-| **300B** | 300.8-300.13 | Approve action (confirmation dialog). Reject action (dialog with reason textarea). Retry action for FAILED requests. Status badge component. Loading/optimistic update states. Frontend tests (~5 tests). | |
-
-### Tasks
-
-| ID | Task | Slice | Status | Notes |
-|----|------|-------|--------|-------|
-| 300.1 | Create admin layout | 300A | | `frontend/app/admin/layout.tsx`. Server component. Check auth context for PRODUCT_ADMIN role -- redirect to / if not admin. Minimal layout: header with "DocTeams Admin" title, navigation back to main app. No sidebar (simple admin panel). Pattern: follow existing layout patterns but simpler (no org scope). |
-| 300.2 | Create admin API client functions | 300A | | `frontend/lib/admin-api.ts`. Functions: `getAccessRequests(status?, page?, size?)` -- GET /admin/access-requests with query params. `getAccessRequest(id)` -- GET /admin/access-requests/{id}. `approveAccessRequest(id)` -- POST .../approve. `rejectAccessRequest(id, reason?)` -- POST .../reject. `retryAccessRequest(id)` -- POST .../retry. Uses `lib/api.ts` fetch wrapper (needs JWT with PRODUCT_ADMIN role). TypeScript interfaces: AccessRequest, PaginatedAccessRequests. |
-| 300.3 | Create access request list page | 300A | | `frontend/app/admin/access-requests/page.tsx`. Server component. Fetches access requests from API (default: all statuses, page 0). Renders AccessRequestTable component. Status filter dropdown (Shadcn Select). Pagination controls. |
-| 300.4 | Create AccessRequestTable component | 300A | | `frontend/components/admin/access-request-table.tsx`. "use client". Columns: Company, Contact, Email, Status, Submitted, Actions. Uses Shadcn Table component. Receives data as props (serializable). Action column renders approve/reject/retry buttons based on status. Pattern: follow existing DataTable patterns in the codebase. |
-| 300.5 | Create StatusFilter component | 300A | | `frontend/components/admin/status-filter.tsx`. "use client". Shadcn Select with options: All, Pending, Approved, Rejected, Failed. On change, updates URL search params to trigger server re-fetch. Pattern: follow existing filter patterns. |
-| 300.6 | Create pagination component for admin | 300A | | Reuse existing pagination components if available, or create a simple `AdminPagination` component. Previous/Next buttons + page indicator. Updates URL search params. |
-| 300.7 | Add list page frontend tests | 300A | | `frontend/__tests__/admin/access-request-list.test.tsx` (~5 tests): table renders access requests, status filter changes URL params, pagination renders correctly, empty state shows message, loading state. Mock API responses. |
-| 300.8 | Create ApproveDialog component | 300B | | `frontend/components/admin/approve-dialog.tsx`. "use client". Shadcn AlertDialog. Confirmation: "Approve request from {companyName}? This will create a Keycloak org, provision a tenant schema, and send an invitation to {email}." Approve button triggers server action. Shows loading state during provisioning. Pattern: follow existing AlertDialog patterns. |
-| 300.9 | Create RejectDialog component | 300B | | `frontend/components/admin/reject-dialog.tsx`. "use client". Shadcn Dialog with form. Textarea for optional rejection reason (@Size(max=500)). Cancel and Reject buttons. Reject triggers server action. Pattern: follow existing dialog-with-form patterns. |
-| 300.10 | Create admin server actions | 300B | | `frontend/app/admin/access-requests/actions.ts`. Server Actions: `approveRequest(id)`, `rejectRequest(id, reason?)`, `retryRequest(id)`. Call admin API client functions. Revalidate the list page path after mutation. Return `{ success, error? }`. |
-| 300.11 | Create StatusBadge component | 300B | | `frontend/components/admin/status-badge.tsx`. Maps status to Shadcn Badge variant: PENDING -> neutral, PROVISIONING -> warning, APPROVED -> success, REJECTED -> destructive, FAILED -> destructive. Pattern: follow existing Badge variant patterns. |
-| 300.12 | Wire action buttons in AccessRequestTable | 300B | | Update AccessRequestTable: PENDING rows get Approve + Reject buttons. FAILED rows get Retry button. APPROVED/REJECTED rows get no action buttons (dash). Buttons trigger dialogs from 300.8/300.9. |
-| 300.13 | Add action frontend tests | 300B | | `frontend/__tests__/admin/access-request-actions.test.tsx` (~5 tests): approve dialog renders on button click, approve calls server action, reject dialog renders textarea, reject with reason calls action, retry button calls action for FAILED status. Mock server actions. afterEach cleanup for Dialog components (Radix leak). |
-
-### Key Files
-
-| File | Purpose |
-|------|---------|
-| `frontend/app/admin/layout.tsx` | Admin layout with role check |
-| `frontend/app/admin/access-requests/page.tsx` | List page |
-| `frontend/app/admin/access-requests/actions.ts` | Server Actions for mutations |
-| `frontend/lib/admin-api.ts` | API client for admin endpoints |
-| `frontend/components/admin/access-request-table.tsx` | Data table component |
-| `frontend/components/admin/approve-dialog.tsx` | Approve confirmation |
-| `frontend/components/admin/reject-dialog.tsx` | Reject with reason |
-| `frontend/components/admin/status-badge.tsx` | Status badge |
-
-### Architecture Decisions
-
-- Admin pages live at `/admin/` (top-level), not under `(app)/org/[slug]/` -- they are platform-scoped, not org-scoped.
-- Auth check for PRODUCT_ADMIN happens in the layout (server component) -- redirects non-admins.
-- Server Actions wrap API calls and revalidate the list page path for fresh data.
-
----
-
-## Epic 301: Cleanup -- Remove Clerk-Specific Code
-
-**Goal**: Remove Clerk-specific code paths that are no longer needed after the Keycloak migration and admin-approved provisioning. This includes the Clerk webhook route, sign-up page, create-org page, Clerk auth provider, ProcessedWebhook entity, and Clerk-specific test helpers.
-
-**References**: Architecture doc Section 7 (impact on existing system -- files to remove, modify).
-
-**Dependencies**: Epics 296, 297, 298, 300 (all new code in place before removing old code)
-
-**Scope**: Backend + Frontend (separate slices)
-
-**Estimated Effort**: M
-
-### Slices
-
-| Slice | Tasks | Summary | Status |
-|-------|-------|---------|--------|
-| **301A** | 301.1-301.6 | Backend: remove ProcessedWebhook entity + repo. Remove/simplify ProvisioningController webhook-triggered endpoint. Remove `isClerkJwt` references. Update test JWT mocks from Clerk v2 to Keycloak format. Remove Clerk-related comments/TODOs. Verify all tests pass (~0 new tests, update ~10-15 existing tests). | |
-| **301B** | 301.7-301.12 | Frontend: remove Clerk webhook route (app/api/webhooks/clerk/). Remove sign-up page. Remove/redirect create-org page to /request-access. Remove Clerk auth provider (lib/auth/providers/clerk.ts). Update lib/auth/providers/index.ts. Remove ClerkProvider from root layout. Update proxy.ts. Frontend tests pass. | |
-
-### Tasks
-
-| ID | Task | Slice | Status | Notes |
-|----|------|-------|--------|-------|
-| 301.1 | Remove ProcessedWebhook entity and repository | 301A | | Delete `webhook/ProcessedWebhook.java` and `webhook/ProcessedWebhookRepository.java` (if they exist -- check for `processed_webhooks` table references). Search for all usages before deleting. If the `processed_webhooks` table is referenced in global migrations, keep the migration file but note the table is no longer used. |
-| 301.2 | Simplify ProvisioningController | 301A | | `provisioning/ProvisioningController.java` -- review the `/internal/orgs/provision` endpoint. If it was only used by the Clerk webhook route in Next.js, consider: (a) keeping it for potential future internal use, or (b) marking it as deprecated. Do NOT delete if other internal callers exist. Check all references. |
-| 301.3 | Remove Clerk-specific detection code | 301A | | In `JwtClaimExtractor.java` (formerly ClerkJwtUtils): remove `isClerkJwt()` method if still present after Epic 297. Remove any remaining `CLERK_ORG_CLAIM` constant. Search codebase for "clerk" references (case-insensitive) and update or remove. |
-| 301.4 | Update test JWT mocks to Keycloak format | 301A | | Search all test files for `jwt.claim("o", Map.of(` (Clerk v2 format) and update to Keycloak format: `.claim("organization", Map.of("org-slug", Map.of("id", ORG_ID)))`. Update role extraction in test helpers. This is a mechanical refactor across ~10-15 test files. Verify all tests pass after update. |
-| 301.5 | Remove Clerk-related comments and TODOs | 301A | | Search for "Clerk", "clerk", "Svix" comments/TODOs and remove or update. Update Javadoc on `MemberFilter`, `TenantFilter`, `SecurityConfig` to reference Keycloak instead of Clerk. |
-| 301.6 | Verify all backend tests pass | 301A | | Run `./mvnw clean test -q`. Fix any test failures caused by the cleanup. This is a verification step, not a code creation step. |
-| 301.7 | Remove Clerk webhook route | 301B | | Delete `frontend/app/api/webhooks/clerk/route.ts` and `frontend/app/api/webhooks/clerk/route.test.ts`. Check if `lib/webhook-handlers.ts` exists and delete if so. Remove any webhook-related exports from lib/. |
-| 301.8 | Remove sign-up page | 301B | | Delete `frontend/app/(auth)/sign-up/` directory (contains `[[...sign-up]]/page.tsx`). Any links to "/sign-up" in the codebase should be redirected to "/request-access". Search for "sign-up" references. |
-| 301.9 | Remove/redirect create-org page | 301B | | Either delete `frontend/app/(app)/create-org/` or replace `page.tsx` content with a redirect to `/request-access`. Remove `create-org-form.tsx` and `actions.ts` from the directory. Update any navigation links that point to "/create-org". |
-| 301.10 | Remove Clerk auth provider | 301B | | Delete `frontend/lib/auth/providers/clerk.ts`. Update `frontend/lib/auth/providers/index.ts` to remove Clerk import/export. Verify keycloak-bff provider is the only remaining provider. Update `frontend/lib/auth/server.ts` to remove Clerk dispatch logic (should only call keycloak-bff provider). |
-| 301.11 | Update root layout | 301B | | `frontend/app/layout.tsx` -- remove `ClerkProvider` wrapper if it still exists. Remove `@clerk/nextjs` imports. If the layout was already updated in Phase 36/Phase 20, verify no Clerk references remain. |
-| 301.12 | Verify frontend builds and tests pass | 301B | | Run `pnpm run build` and `pnpm test`. Fix any import errors or broken references caused by the cleanup. This is a verification step. |
-
-### Key Files
-
-| File | Purpose |
-|------|---------|
-| `frontend/app/api/webhooks/clerk/route.ts` | To be deleted |
-| `frontend/app/(auth)/sign-up/` | To be deleted |
-| `frontend/app/(app)/create-org/` | To be deleted or redirected |
-| `frontend/lib/auth/providers/clerk.ts` | To be deleted |
-| `frontend/lib/auth/providers/index.ts` | Remove Clerk export |
-| `frontend/lib/auth/server.ts` | Remove Clerk dispatch |
-| `backend/.../security/JwtClaimExtractor.java` | Remove any residual Clerk code |
-| All test files with `claim("o", ...)` | Update JWT mocks to Keycloak format |
-
-### Architecture Decisions
-
-- Cleanup is intentionally the LAST epic -- ensures all new code works before removing old code paths.
-- ProvisioningController `/internal/orgs/provision` endpoint is kept (not deleted) as it may be useful for internal tooling or migration scripts. It is marked as deprecated.
-- Test JWT format migration is mechanical but touches many files -- grouped into a single slice to maintain consistency.
-
----
-
-## Risk Register
-
-| Risk | Likelihood | Impact | Mitigation | Epic |
-|------|-----------|--------|------------|------|
-| KC org creation succeeds but schema fails -- orphaned KC org | Low | Medium | Retry endpoint resumes from failed step; admin sees FAILED status | 296 |
-| Keycloak admin-client version incompatible with Spring Boot 4 | Medium | High | Test dependency resolution early in 296A; fallback to HTTP client if needed | 296 |
-| V15 global migration number conflicts with concurrent development | Medium | Medium | Check latest migration number before implementation; coordinate with team | 295 |
-| PRODUCT_ADMIN role not present in test JWT mocks | Low | Medium | Create test helper for PRODUCT_ADMIN JWT mock in 297B | 297 |
-| Public POST endpoint vulnerable to spam without CAPTCHA | Medium | Low | Per-email DB rate limiting (3/24h) sufficient for launch; CAPTCHA can be added later | 295 |
-| Clerk cleanup breaks existing functionality | Medium | High | Cleanup is last epic (301); full test suite must pass before merge | 301 |
-| MemberFilter access request lookup adds latency to all requests | Low | Low | Lookup only happens on first login (member not found path); subsequent requests use cached member | 298 |
 
 ### Critical Files for Implementation
-- `/Users/rakheendama/Projects/2026/b2b-strawman/architecture/admin-approved-provisioning.md` - Complete architecture specification with entity model, API design, service design, and JWT mapping
-- `/Users/rakheendama/Projects/2026/b2b-strawman/backend/src/main/java/io/b2mash/b2b/b2bstrawman/security/SecurityConfig.java` - Must be modified for permitAll and PRODUCT_ADMIN rules (Epics 297, 301)
-- `/Users/rakheendama/Projects/2026/b2b-strawman/backend/src/main/java/io/b2mash/b2b/b2bstrawman/member/MemberFilter.java` - Must be enhanced for JIT role assignment from access requests (Epic 298)
-- `/Users/rakheendama/Projects/2026/b2b-strawman/backend/src/main/java/io/b2mash/b2b/b2bstrawman/provisioning/TenantProvisioningService.java` - Called by AdminProvisioningService for schema creation (Epic 296)
-- `/Users/rakheendama/Projects/2026/b2b-strawman/backend/src/main/java/io/b2mash/b2b/b2bstrawman/security/ClerkJwtUtils.java` - Renamed to JwtClaimExtractor, Clerk logic removed (Epic 297)
+- `/Users/rakheendama/Projects/2026/b2b-strawman/backend/src/main/java/io/b2mash/b2b/b2bstrawman/security/SecurityConfig.java` - Core security config that needs permitAll for public endpoints and PlatformAdminFilter insertion
+- `/Users/rakheendama/Projects/2026/b2b-strawman/backend/src/main/java/io/b2mash/b2b/b2bstrawman/multitenancy/RequestScopes.java` - Must add GROUPS ScopedValue for platform admin identity
+- `/Users/rakheendama/Projects/2026/b2b-strawman/gateway/src/main/java/io/b2mash/b2b/gateway/service/KeycloakAdminClient.java` - Pattern reference for backend's own Keycloak admin client
+- `/Users/rakheendama/Projects/2026/b2b-strawman/gateway/src/main/java/io/b2mash/b2b/gateway/controller/BffController.java` - Must extend /bff/me with groups claim and gate org creation
+- `/Users/rakheendama/Projects/2026/b2b-strawman/frontend/lib/auth/types.ts` - AuthContext interface must add groups field for frontend route guards

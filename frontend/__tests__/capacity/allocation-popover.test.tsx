@@ -84,7 +84,7 @@ function makeGrid(
             remainingCapacity: 10,
             utilizationPct: 75,
             allocations: [
-              { projectId: "p1", projectName: "Project Alpha", hours: 30 },
+              { id: "a1", projectId: "p1", projectName: "Project Alpha", hours: 30 },
             ],
           }),
           makeWeekCell({ weekStart: "2026-03-16" }),
@@ -106,7 +106,7 @@ function makeGrid(
             utilizationPct: 120,
             overAllocated: true,
             allocations: [
-              { projectId: "p1", projectName: "Project Alpha", hours: 48 },
+              { id: "a3", projectId: "p1", projectName: "Project Alpha", hours: 48 },
             ],
           }),
           makeWeekCell({ weekStart: "2026-03-16" }),
@@ -147,7 +147,7 @@ describe("AllocationPopover", () => {
     const user = userEvent.setup();
     const cell = makeWeekCell({
       allocations: [
-        { projectId: "p1", projectName: "Project Alpha", hours: 20 },
+        { id: "a4", projectId: "p1", projectName: "Project Alpha", hours: 20 },
       ],
       totalAllocated: 20,
     });
@@ -175,8 +175,8 @@ describe("AllocationPopover", () => {
     const user = userEvent.setup();
     const cell = makeWeekCell({
       allocations: [
-        { projectId: "p1", projectName: "Project Alpha", hours: 20 },
-        { projectId: "p2", projectName: "Project Beta", hours: 10 },
+        { id: "a4", projectId: "p1", projectName: "Project Alpha", hours: 20 },
+        { id: "a5", projectId: "p2", projectName: "Project Beta", hours: 10 },
       ],
       totalAllocated: 30,
     });
@@ -235,7 +235,7 @@ describe("AllocationPopover", () => {
       effectiveCapacity: 40,
       utilizationPct: 120,
       allocations: [
-        { projectId: "p1", projectName: "Project Alpha", hours: 48 },
+        { id: "a3", projectId: "p1", projectName: "Project Alpha", hours: 48 },
       ],
     });
 

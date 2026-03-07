@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
@@ -43,7 +43,7 @@ export function GridFilters({ grid, projects, onFilteredGrid }: GridFiltersProps
   const [showOverAllocatedOnly, setShowOverAllocatedOnly] = useState(false);
   const [projectFilterOpen, setProjectFilterOpen] = useState(false);
 
-  useMemo(() => {
+  useEffect(() => {
     let filtered = grid.members;
 
     // Filter by member name

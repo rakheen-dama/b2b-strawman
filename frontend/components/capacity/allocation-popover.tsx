@@ -21,6 +21,7 @@ import {
 import type { WeekCell } from "@/lib/api/capacity";
 import {
   createAllocationAction,
+  updateAllocationAction,
   deleteAllocationAction,
 } from "@/app/(app)/org/[slug]/resources/actions";
 
@@ -68,7 +69,6 @@ export function AllocationPopover({
     setNote("");
     setError(null);
     setShowAddForm(false);
-    setOverAllocatedWarning(false);
   }
 
   function resetEditForm() {
@@ -76,7 +76,6 @@ export function AllocationPopover({
     setEditHours("");
     setEditNote("");
     setError(null);
-    setOverAllocatedWarning(false);
   }
 
   function handleOpenChange(newOpen: boolean) {
@@ -84,6 +83,7 @@ export function AllocationPopover({
     if (!newOpen) {
       resetForm();
       resetEditForm();
+      setOverAllocatedWarning(false);
     }
   }
 
@@ -102,10 +102,10 @@ export function AllocationPopover({
         note: note || undefined,
       });
       if (result.success) {
+        resetForm();
         if (result.allocation?.overAllocated) {
           setOverAllocatedWarning(true);
         }
-        resetForm();
       } else {
         setError(result.error ?? "Failed to create allocation.");
       }
@@ -116,30 +116,21 @@ export function AllocationPopover({
     }
   }
 
-  async function handleUpdate(allocationProjectId: string) {
+  async function handleUpdate(allocationId: string) {
     if (!editHours) return;
     setError(null);
     setIsSubmitting(true);
-    setOverAllocatedWarning(false);
 
-    // Find the allocation ID — we need to look it up. Since AllocationSlot doesn't have an ID,
-    // we use the update action with the projectId-based approach. The actual allocation ID
-    // isn't in the grid cell data, so we create a new allocation to replace it.
-    // For simplicity, we'll delete the old one and create a new one.
     try {
-      // Delete the old allocation first
-      await deleteAllocationAction(slug, allocationProjectId);
-      // Create the updated allocation
-      const result = await createAllocationAction(slug, {
-        memberId,
-        projectId: allocationProjectId,
-        weekStart,
+      const result = await updateAllocationAction(slug, allocationId, {
         allocatedHours: Number(editHours),
         note: editNote || undefined,
       });
       if (result.success) {
         if (result.allocation?.overAllocated) {
           setOverAllocatedWarning(true);
+        } else {
+          setOverAllocatedWarning(false);
         }
         resetEditForm();
       } else {
@@ -152,12 +143,12 @@ export function AllocationPopover({
     }
   }
 
-  async function handleDelete(allocationProjectId: string) {
+  async function handleDelete(allocationId: string) {
     setError(null);
     setIsSubmitting(true);
 
     try {
-      const result = await deleteAllocationAction(slug, allocationProjectId);
+      const result = await deleteAllocationAction(slug, allocationId);
       if (!result.success) {
         setError(result.error ?? "Failed to delete allocation.");
       }
@@ -231,7 +222,7 @@ export function AllocationPopover({
                         <Button
                           size="sm"
                           className="h-6 text-xs"
-                          onClick={() => handleUpdate(slot.projectId)}
+                          onClick={() => handleUpdate(slot.id)}
                           disabled={isSubmitting || !editHours}
                         >
                           {isSubmitting ? "Saving..." : "Save"}
@@ -265,7 +256,7 @@ export function AllocationPopover({
                           variant="ghost"
                           size="icon"
                           className="h-6 w-6 text-red-500 hover:text-red-700"
-                          onClick={() => handleDelete(slot.projectId)}
+                          onClick={() => handleDelete(slot.id)}
                           disabled={isSubmitting}
                           aria-label={`Delete ${slot.projectName}`}
                         >

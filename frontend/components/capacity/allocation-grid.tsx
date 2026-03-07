@@ -17,8 +17,8 @@ interface ProjectOption {
 
 interface AllocationGridProps {
   grid: TeamCapacityGrid;
-  projects?: ProjectOption[];
-  slug?: string;
+  projects: ProjectOption[];
+  slug: string;
 }
 
 function formatWeekHeader(weekStart: string): string {
@@ -29,8 +29,8 @@ function formatWeekHeader(weekStart: string): string {
 
 export function AllocationGrid({
   grid,
-  projects = [],
-  slug = "",
+  projects,
+  slug,
 }: AllocationGridProps) {
   const [filteredGrid, setFilteredGrid] = useState<TeamCapacityGrid>(grid);
   const [selectedMember, setSelectedMember] = useState<MemberRow | null>(null);
@@ -188,6 +188,7 @@ export function AllocationGrid({
         onOpenChange={setPanelOpen}
         member={selectedMember}
         slug={slug}
+        projects={projects}
       />
     </div>
   );

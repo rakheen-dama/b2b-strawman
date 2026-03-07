@@ -199,6 +199,7 @@ export async function listLeaveAction(
   _slug: string,
   memberId: string,
 ): Promise<LeaveListResult> {
+  await getAuthContext();
   try {
     const blocks = await listLeaveForMember(memberId);
     return { success: true, blocks };
@@ -300,6 +301,7 @@ export async function listCapacityRecordsAction(
   _slug: string,
   memberId: string,
 ): Promise<CapacityListResult> {
+  await getAuthContext();
   try {
     const records = await listCapacityRecords(memberId);
     return { success: true, records };
@@ -321,6 +323,7 @@ export async function listAllocationsAction(
   _slug: string,
   memberId: string,
 ): Promise<AllocationListResult> {
+  await getAuthContext();
   try {
     const allocations = await listAllocations({ memberId });
     return { success: true, allocations };

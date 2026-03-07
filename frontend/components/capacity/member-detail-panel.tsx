@@ -30,11 +30,17 @@ import {
   deleteLeaveAction,
 } from "@/app/(app)/org/[slug]/resources/actions";
 
+interface ProjectOption {
+  id: string;
+  name: string;
+}
+
 interface MemberDetailPanelProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   member: MemberRow | null;
   slug: string;
+  projects?: ProjectOption[];
 }
 
 export function MemberDetailPanel({
@@ -42,6 +48,7 @@ export function MemberDetailPanel({
   onOpenChange,
   member,
   slug,
+  projects = [],
 }: MemberDetailPanelProps) {
   const [capacityRecords, setCapacityRecords] = useState<
     MemberCapacityResponse[]
@@ -58,10 +65,12 @@ export function MemberDetailPanel({
   const [newEffectiveFrom, setNewEffectiveFrom] = useState("");
   const [capacityNote, setCapacityNote] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     if (!member) return;
     setIsLoading(true);
+    setError(null);
     try {
       const [capResult, leaveResult, allocResult] = await Promise.all([
         listCapacityRecordsAction(slug, member.memberId),
@@ -70,15 +79,21 @@ export function MemberDetailPanel({
       ]);
       if (capResult.success && capResult.records) {
         setCapacityRecords(capResult.records);
+      } else if (!capResult.success) {
+        setError(capResult.error ?? "Failed to load capacity records.");
       }
       if (leaveResult.success && leaveResult.blocks) {
         setLeaveBlocks(leaveResult.blocks);
+      } else if (!leaveResult.success) {
+        setError(leaveResult.error ?? "Failed to load leave blocks.");
       }
       if (allocResult.success && allocResult.allocations) {
         setAllocations(allocResult.allocations);
+      } else if (!allocResult.success) {
+        setError(allocResult.error ?? "Failed to load allocations.");
       }
     } catch {
-      // Silently handle — data will remain empty
+      setError("An unexpected error occurred while loading data.");
     } finally {
       setIsLoading(false);
     }
@@ -93,6 +108,7 @@ export function MemberDetailPanel({
   async function handleAddCapacity() {
     if (!member || !newWeeklyHours || !newEffectiveFrom) return;
     setIsSubmitting(true);
+    setError(null);
     try {
       const result = await createCapacityRecordAction(slug, member.memberId, {
         weeklyHours: Number(newWeeklyHours),
@@ -105,9 +121,11 @@ export function MemberDetailPanel({
         setNewEffectiveFrom("");
         setCapacityNote("");
         await loadData();
+      } else {
+        setError(result.error ?? "Failed to add capacity record.");
       }
     } catch {
-      // ignore
+      setError("An unexpected error occurred.");
     } finally {
       setIsSubmitting(false);
     }
@@ -116,6 +134,7 @@ export function MemberDetailPanel({
   async function handleDeleteCapacity(id: string) {
     if (!member) return;
     setIsSubmitting(true);
+    setError(null);
     try {
       const result = await deleteCapacityRecordAction(
         slug,
@@ -124,9 +143,11 @@ export function MemberDetailPanel({
       );
       if (result.success) {
         await loadData();
+      } else {
+        setError(result.error ?? "Failed to delete capacity record.");
       }
     } catch {
-      // ignore
+      setError("An unexpected error occurred.");
     } finally {
       setIsSubmitting(false);
     }
@@ -135,13 +156,16 @@ export function MemberDetailPanel({
   async function handleDeleteLeave(id: string) {
     if (!member) return;
     setIsSubmitting(true);
+    setError(null);
     try {
       const result = await deleteLeaveAction(slug, member.memberId, id);
       if (result.success) {
         await loadData();
+      } else {
+        setError(result.error ?? "Failed to delete leave block.");
       }
     } catch {
-      // ignore
+      setError("An unexpected error occurred.");
     } finally {
       setIsSubmitting(false);
     }
@@ -157,6 +181,9 @@ export function MemberDetailPanel({
 
   if (!member) return null;
 
+  // Build project name lookup
+  const projectNameMap = new Map(projects.map((p) => [p.id, p.name]));
+
   // Group allocations by project for the timeline
   const allocationsByProject = allocations.reduce(
     (acc, a) => {
@@ -171,7 +198,7 @@ export function MemberDetailPanel({
   // Current capacity (latest record)
   const currentCapacity =
     capacityRecords.length > 0
-      ? capacityRecords.sort(
+      ? [...capacityRecords].sort(
           (a, b) =>
             new Date(b.effectiveFrom).getTime() -
             new Date(a.effectiveFrom).getTime(),
@@ -215,6 +242,12 @@ export function MemberDetailPanel({
               </Button>
             </SheetClose>
           </div>
+
+          {error && (
+            <div className="mx-6 mt-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
+              {error}
+            </div>
+          )}
 
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
@@ -329,7 +362,7 @@ export function MemberDetailPanel({
                   </p>
                 ) : (
                   <ul className="space-y-1.5">
-                    {capacityRecords
+                    {[...capacityRecords]
                       .sort(
                         (a, b) =>
                           new Date(b.effectiveFrom).getTime() -
@@ -389,7 +422,8 @@ export function MemberDetailPanel({
                           >
                             <div className="flex items-center justify-between">
                               <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                                Project {allocs[0].projectId.slice(0, 8)}
+                                {projectNameMap.get(allocs[0].projectId) ??
+                                  `Project ${allocs[0].projectId.slice(0, 8)}`}
                               </span>
                               <span className="font-mono text-xs tabular-nums text-slate-600 dark:text-slate-400">
                                 {totalHours}h total

@@ -52,7 +52,7 @@ function makeGrid(
             remainingCapacity: 10,
             utilizationPct: 75,
             allocations: [
-              { projectId: "p1", projectName: "Project Alpha", hours: 30 },
+              { id: "a1", projectId: "p1", projectName: "Project Alpha", hours: 30 },
             ],
           }),
           makeWeekCell({ weekStart: "2026-03-16" }),
@@ -102,14 +102,14 @@ describe("AllocationGrid", () => {
   });
 
   it("renders member rows", () => {
-    render(<AllocationGrid grid={makeGrid()} />);
+    render(<AllocationGrid grid={makeGrid()} projects={[]} slug="test-org" />);
 
     expect(screen.getByText("Alice Smith")).toBeInTheDocument();
     expect(screen.getByText("Bob Jones")).toBeInTheDocument();
   });
 
   it("renders week columns", () => {
-    render(<AllocationGrid grid={makeGrid()} />);
+    render(<AllocationGrid grid={makeGrid()} projects={[]} slug="test-org" />);
 
     expect(screen.getByText("9 Mar")).toBeInTheDocument();
     expect(screen.getByText("16 Mar")).toBeInTheDocument();
@@ -117,7 +117,7 @@ describe("AllocationGrid", () => {
 
   it("shows empty state when no members", () => {
     render(
-      <AllocationGrid grid={{ members: [], weekSummaries: [] }} />,
+      <AllocationGrid grid={{ members: [], weekSummaries: [] }} projects={[]} slug="test-org" />,
     );
 
     expect(screen.getByText(/No team members found/)).toBeInTheDocument();
@@ -135,7 +135,7 @@ describe("CapacityCell", () => {
       effectiveCapacity: 40,
       utilizationPct: 50,
       allocations: [
-        { projectId: "p1", projectName: "Alpha", hours: 20 },
+        { id: "a2", projectId: "p1", projectName: "Alpha", hours: 20 },
       ],
     });
 
@@ -152,7 +152,7 @@ describe("CapacityCell", () => {
       effectiveCapacity: 40,
       utilizationPct: 90,
       allocations: [
-        { projectId: "p1", projectName: "Alpha", hours: 36 },
+        { id: "a3", projectId: "p1", projectName: "Alpha", hours: 36 },
       ],
     });
 
@@ -169,7 +169,7 @@ describe("CapacityCell", () => {
       utilizationPct: 120,
       overAllocated: true,
       allocations: [
-        { projectId: "p1", projectName: "Alpha", hours: 48 },
+        { id: "a4", projectId: "p1", projectName: "Alpha", hours: 48 },
       ],
     });
 
@@ -186,7 +186,7 @@ describe("CapacityCell", () => {
       utilizationPct: 62.5,
       leaveDays: 1,
       allocations: [
-        { projectId: "p1", projectName: "Alpha", hours: 20 },
+        { id: "a2", projectId: "p1", projectName: "Alpha", hours: 20 },
       ],
     });
 

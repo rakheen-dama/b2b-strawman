@@ -31,6 +31,7 @@ export interface WeekCell {
 }
 
 export interface AllocationSlot {
+  id: string;
   projectId: string;
   projectName: string;
   hours: number;

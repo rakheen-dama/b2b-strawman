@@ -1,6 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.multitenancy;
 
 import io.b2mash.b2b.b2bstrawman.exception.MissingOrganizationContextException;
+import java.util.Collections;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -35,6 +37,11 @@ public final class RequestScopes {
    * services to propagate the execution ID into domain events for cycle detection.
    */
   public static final ScopedValue<UUID> AUTOMATION_EXECUTION_ID = ScopedValue.newInstance();
+
+  /** JWT group memberships (e.g., "platform-admins"). Bound by PlatformAdminFilter. */
+  public static final ScopedValue<Set<String>> GROUPS = ScopedValue.newInstance();
+
+  private static final String PLATFORM_ADMINS_GROUP = "platform-admins";
 
   public static final String DEFAULT_TENANT = "public";
 
@@ -92,6 +99,16 @@ public final class RequestScopes {
           "Portal contact context not available — PORTAL_CONTACT_ID not bound");
     }
     return PORTAL_CONTACT_ID.get();
+  }
+
+  /** Returns the JWT groups, or an empty set if not bound. */
+  public static Set<String> getGroups() {
+    return GROUPS.isBound() ? GROUPS.get() : Collections.emptySet();
+  }
+
+  /** Returns true if the current request has the platform-admins group. */
+  public static boolean isPlatformAdmin() {
+    return getGroups().contains(PLATFORM_ADMINS_GROUP);
   }
 
   private RequestScopes() {}

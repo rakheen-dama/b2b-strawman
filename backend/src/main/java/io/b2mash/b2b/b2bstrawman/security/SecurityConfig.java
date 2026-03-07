@@ -33,6 +33,7 @@ public class SecurityConfig {
   private final TenantFilter tenantFilter;
   private final MemberFilter memberFilter;
   private final TenantLoggingFilter tenantLoggingFilter;
+  private final PlatformAdminFilter platformAdminFilter;
   private final CustomerAuthFilter customerAuthFilter;
   private final AuditAuthenticationEntryPoint auditAuthEntryPoint;
   private final Environment environment;
@@ -43,6 +44,7 @@ public class SecurityConfig {
       TenantFilter tenantFilter,
       MemberFilter memberFilter,
       TenantLoggingFilter tenantLoggingFilter,
+      PlatformAdminFilter platformAdminFilter,
       CustomerAuthFilter customerAuthFilter,
       AuditAuthenticationEntryPoint auditAuthEntryPoint,
       Environment environment) {
@@ -51,6 +53,7 @@ public class SecurityConfig {
     this.tenantFilter = tenantFilter;
     this.memberFilter = memberFilter;
     this.tenantLoggingFilter = tenantLoggingFilter;
+    this.platformAdminFilter = platformAdminFilter;
     this.customerAuthFilter = customerAuthFilter;
     this.auditAuthEntryPoint = auditAuthEntryPoint;
     this.environment = environment;
@@ -125,7 +128,8 @@ public class SecurityConfig {
         .addFilterBefore(apiKeyAuthFilter, BearerTokenAuthenticationFilter.class)
         .addFilterAfter(tenantFilter, BearerTokenAuthenticationFilter.class)
         .addFilterAfter(memberFilter, TenantFilter.class)
-        .addFilterAfter(tenantLoggingFilter, MemberFilter.class);
+        .addFilterAfter(platformAdminFilter, MemberFilter.class)
+        .addFilterAfter(tenantLoggingFilter, PlatformAdminFilter.class);
 
     return http.build();
   }

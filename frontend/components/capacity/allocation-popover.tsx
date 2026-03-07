@@ -51,7 +51,7 @@ export function AllocationPopover({
 }: AllocationPopoverProps) {
   const [open, setOpen] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [editingAllocationProjectId, setEditingAllocationProjectId] = useState<
+  const [editingAllocationId, setEditingAllocationId] = useState<
     string | null
   >(null);
   const [projectId, setProjectId] = useState("");
@@ -72,7 +72,7 @@ export function AllocationPopover({
   }
 
   function resetEditForm() {
-    setEditingAllocationProjectId(null);
+    setEditingAllocationId(null);
     setEditHours("");
     setEditNote("");
     setError(null);
@@ -182,10 +182,10 @@ export function AllocationPopover({
             <ul className="space-y-2">
               {cell.allocations.map((slot) => (
                 <li
-                  key={slot.projectId}
+                  key={slot.id}
                   className="flex items-center justify-between text-sm"
                 >
-                  {editingAllocationProjectId === slot.projectId ? (
+                  {editingAllocationId === slot.id ? (
                     <div className="flex w-full flex-col gap-2">
                       <div className="flex items-center gap-2">
                         <span className="min-w-0 flex-1 truncate font-medium text-slate-900 dark:text-slate-100">
@@ -243,7 +243,7 @@ export function AllocationPopover({
                           size="icon"
                           className="h-6 w-6"
                           onClick={() => {
-                            setEditingAllocationProjectId(slot.projectId);
+                            setEditingAllocationId(slot.id);
                             setEditHours(String(slot.hours));
                             setEditNote("");
                           }}

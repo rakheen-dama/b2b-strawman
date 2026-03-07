@@ -158,7 +158,7 @@ FRONTEND TRACK (after respective backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 6a | 292 | 292A | resources/page.tsx + AllocationGrid component + CapacityCell component + WeekRangeSelector component + "Resources" sidebar nav item + lib/api/capacity.ts API client + server actions + tests (~8 tests). ~8 new files + ~1 modified file. Frontend only. | |
+| 6a | 292 | 292A | resources/page.tsx + AllocationGrid component + CapacityCell component + WeekRangeSelector component + "Resources" sidebar nav item + lib/api/capacity.ts API client + server actions + tests (~8 tests). ~8 new files + ~1 modified file. Frontend only. | **Done** (PR #576) |
 | 6b | 292 | 292B | AllocationPopover (view/edit/add allocations per cell) + MemberDetailPanel (slide-over for capacity config + timeline) + LeaveDialog (add/edit leave block) + grid filters (member search, project filter, "show only over-allocated") + tests (~8 tests). ~6 new files + ~1 modified file. Frontend only. | |
 
 ### Stage 7: Utilization UI + Dashboard + Settings (parallel tracks)
@@ -432,7 +432,7 @@ Stage 7: [293A] // [293B] // [294B]                                (parallel)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **292A** | 292.1--292.9 | resources/page.tsx (Resources page) + AllocationGrid component + CapacityCell component + WeekRangeSelector component + "Resources" sidebar nav item + lib/api/capacity.ts API client + server actions + tests (~8 tests). ~8 new files + ~1 modified file. Frontend only. | |
+| **292A** | 292.1--292.9 | resources/page.tsx (Resources page) + AllocationGrid component + CapacityCell component + WeekRangeSelector component + "Resources" sidebar nav item + lib/api/capacity.ts API client + server actions + tests (~8 tests). ~8 new files + ~1 modified file. Frontend only. | **Done** (PR #576) |
 | **292B** | 292.10--292.17 | AllocationPopover (click-to-edit per cell) + MemberDetailPanel (slide-over for capacity config + timeline) + LeaveDialog (add/edit leave block) + grid filters (member search, project filter, "show only over-allocated") + tests (~8 tests). ~6 new files + ~1 modified file. Frontend only. | |
 
 ### Tasks

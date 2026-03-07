@@ -329,7 +329,7 @@
 | 289 | Entity Foundation & Migration | Backend | -- | M | 289A, 289B | **Done** (PRs #569, #570) |
 | 290 | Capacity & Allocation Services | Backend | 289 | L | 290A, 290B, 290C | **Done** (PRs #571, #572, #573) |
 | 291 | Utilization Service & Profitability Integration | Backend | 290 | M | 291A, 291B | **Done** (PRs #574, #575) |
-| 292 | Allocation Grid UI | Frontend | 290 | L | 292A, 292B | |
+| 292 | Allocation Grid UI | Frontend | 290 | L | 292A, 292B | 292A **Done** (PR #576) |
 | 293 | Utilization, Dashboard & Project Staffing UI | Frontend | 291, 292 | M | 293A, 293B | |
 | 294 | Notifications, Audit Events & Settings UI | Backend + Frontend | 290 | M | 294A, 294B | |
 | **Phase 39 — Admin-Approved Org Provisioning** | | | | | | See [tasks/phase39-admin-approved-provisioning.md](tasks/phase39-admin-approved-provisioning.md) |

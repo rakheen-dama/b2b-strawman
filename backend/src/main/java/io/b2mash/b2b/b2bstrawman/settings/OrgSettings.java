@@ -115,6 +115,9 @@ public class OrgSettings {
   @Column(name = "default_expense_markup_percent", precision = 5, scale = 2)
   private BigDecimal defaultExpenseMarkupPercent;
 
+  @Column(name = "default_weekly_capacity_hours", precision = 5, scale = 2)
+  private BigDecimal defaultWeeklyCapacityHours;
+
   @Column(name = "time_reminder_enabled", nullable = false)
   private boolean timeReminderEnabled;
 
@@ -434,6 +437,15 @@ public class OrgSettings {
 
   public void setDefaultExpenseMarkupPercent(BigDecimal defaultExpenseMarkupPercent) {
     this.defaultExpenseMarkupPercent = defaultExpenseMarkupPercent;
+    this.updatedAt = Instant.now();
+  }
+
+  public BigDecimal getDefaultWeeklyCapacityHours() {
+    return defaultWeeklyCapacityHours;
+  }
+
+  public void setDefaultWeeklyCapacityHours(BigDecimal defaultWeeklyCapacityHours) {
+    this.defaultWeeklyCapacityHours = defaultWeeklyCapacityHours;
     this.updatedAt = Instant.now();
   }
 

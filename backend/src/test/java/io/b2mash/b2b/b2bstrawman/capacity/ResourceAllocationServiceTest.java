@@ -11,6 +11,8 @@ import io.b2mash.b2b.b2bstrawman.capacity.dto.AllocationDtos.AllocationResponse;
 import io.b2mash.b2b.b2bstrawman.capacity.dto.AllocationDtos.BulkAllocationResponse;
 import io.b2mash.b2b.b2bstrawman.capacity.dto.AllocationDtos.CreateAllocationRequest;
 import io.b2mash.b2b.b2bstrawman.capacity.dto.AllocationDtos.UpdateAllocationRequest;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
@@ -177,7 +179,7 @@ class ResourceAllocationServiceTest {
   @Order(2)
   void createAllocation_weekStartNotMonday_rejected() {
     Assertions.assertThrows(
-        Exception.class,
+        InvalidStateException.class,
         () ->
             runInTenant(
                 () -> {
@@ -197,7 +199,7 @@ class ResourceAllocationServiceTest {
   @Order(3)
   void createAllocation_archivedProject_rejected() {
     Assertions.assertThrows(
-        Exception.class,
+        InvalidStateException.class,
         () ->
             runInTenant(
                 () -> {
@@ -217,7 +219,7 @@ class ResourceAllocationServiceTest {
   @Order(4)
   void createAllocation_duplicate_rejected() {
     Assertions.assertThrows(
-        Exception.class,
+        ResourceConflictException.class,
         () ->
             runInTenant(
                 () -> {
@@ -480,7 +482,7 @@ class ResourceAllocationServiceTest {
   @Order(15)
   void createAllocation_zeroHours_rejected() {
     Assertions.assertThrows(
-        Exception.class,
+        InvalidStateException.class,
         () ->
             runInTenant(
                 () -> {

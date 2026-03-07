@@ -64,7 +64,10 @@ public class ResourceAllocationService {
     } else if (weekStart != null && weekEnd != null) {
       allocations = allocationRepository.findByWeekStartBetween(weekStart, weekEnd);
     } else {
-      allocations = allocationRepository.findAll();
+      // Default to current week through 12 weeks out to avoid unbounded queries
+      LocalDate defaultStart = LocalDate.now().with(DayOfWeek.MONDAY);
+      LocalDate defaultEnd = defaultStart.plusWeeks(12);
+      allocations = allocationRepository.findByWeekStartBetween(defaultStart, defaultEnd);
     }
 
     return allocations.stream().map(a -> toResponse(a, false, BigDecimal.ZERO)).toList();
@@ -242,7 +245,11 @@ public class ResourceAllocationService {
 
   private void autoAddProjectMember(UUID projectId, UUID memberId, UUID addedBy) {
     if (!projectMemberService.isProjectMember(projectId, memberId)) {
-      projectMemberService.addMember(projectId, memberId, addedBy);
+      try {
+        projectMemberService.addMember(projectId, memberId, addedBy);
+      } catch (ResourceConflictException e) {
+        // Another request already added the member — safe to ignore (idempotent add)
+      }
     }
   }
 

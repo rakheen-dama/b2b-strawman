@@ -10,6 +10,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   team: "Team",
   settings: "Settings",
   billing: "Billing",
+  resources: "Resources",
 };
 
 /** Segments that contain dynamic child routes (e.g. /projects/[id]) */

@@ -56,6 +56,12 @@ export const NAV_ITEMS: NavItem[] = [
     exact: true,
   },
   {
+    label: "Resources",
+    href: (slug) => `/org/${slug}/resources`,
+    icon: Users,
+    exact: true,
+  },
+  {
     label: "Profitability",
     href: (slug) => `/org/${slug}/profitability`,
     icon: TrendingUp,

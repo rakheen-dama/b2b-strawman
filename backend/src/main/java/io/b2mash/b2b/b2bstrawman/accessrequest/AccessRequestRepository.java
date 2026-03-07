@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.accessrequest;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -12,4 +13,6 @@ public interface AccessRequestRepository extends JpaRepository<AccessRequest, UU
   boolean existsByEmailAndStatusIn(String email, List<AccessRequestStatus> statuses);
 
   List<AccessRequest> findByStatusOrderByCreatedAtAsc(AccessRequestStatus status);
+
+  void deleteByStatusAndOtpExpiresAtBefore(AccessRequestStatus status, Instant cutoff);
 }

@@ -50,13 +50,13 @@ public class MemberCapacityController {
       @PathVariable UUID memberId,
       @PathVariable UUID id,
       @Valid @RequestBody UpdateCapacityRequest request) {
-    return ResponseEntity.ok(capacityService.updateCapacityRecord(id, request));
+    return ResponseEntity.ok(capacityService.updateCapacityRecord(memberId, id, request));
   }
 
   @DeleteMapping("/{id}")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> deleteCapacity(@PathVariable UUID memberId, @PathVariable UUID id) {
-    capacityService.deleteCapacityRecord(id);
+    capacityService.deleteCapacityRecord(memberId, id);
     return ResponseEntity.noContent().build();
   }
 }

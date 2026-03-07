@@ -49,6 +49,7 @@ public class CapacityService {
       return records.getFirst().getWeeklyHours();
     }
 
+    // OrgSettingsService already falls back to 40.0, but this is a safety net
     BigDecimal orgDefault = orgSettingsService.getDefaultWeeklyCapacityHours();
     return orgDefault != null ? orgDefault : HARD_DEFAULT_WEEKLY_HOURS;
   }
@@ -83,6 +84,10 @@ public class CapacityService {
   public MemberCapacityResponse createCapacityRecord(
       UUID memberId, CreateCapacityRequest request, UUID createdBy) {
     validateEffectiveFrom(request.effectiveFrom());
+    if (request.effectiveTo() != null && request.effectiveTo().isBefore(request.effectiveFrom())) {
+      throw new InvalidStateException(
+          "Invalid effective date", "effectiveTo must be after effectiveFrom");
+    }
 
     var record =
         new MemberCapacity(
@@ -96,13 +101,17 @@ public class CapacityService {
     return toResponse(record);
   }
 
-  /** Updates an existing capacity record. */
+  /** Updates an existing capacity record. Validates that the record belongs to the given member. */
   @Transactional
-  public MemberCapacityResponse updateCapacityRecord(UUID id, UpdateCapacityRequest request) {
+  public MemberCapacityResponse updateCapacityRecord(
+      UUID memberId, UUID id, UpdateCapacityRequest request) {
     var record =
         memberCapacityRepository
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("MemberCapacity", id));
+    if (!record.getMemberId().equals(memberId)) {
+      throw new ResourceNotFoundException("MemberCapacity", id);
+    }
 
     record.update(
         request.weeklyHours(), record.getEffectiveFrom(), request.effectiveTo(), request.note());
@@ -110,13 +119,16 @@ public class CapacityService {
     return toResponse(record);
   }
 
-  /** Deletes a capacity record by ID. */
+  /** Deletes a capacity record by ID. Validates that the record belongs to the given member. */
   @Transactional
-  public void deleteCapacityRecord(UUID id) {
+  public void deleteCapacityRecord(UUID memberId, UUID id) {
     var record =
         memberCapacityRepository
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("MemberCapacity", id));
+    if (!record.getMemberId().equals(memberId)) {
+      throw new ResourceNotFoundException("MemberCapacity", id);
+    }
     memberCapacityRepository.delete(record);
   }
 

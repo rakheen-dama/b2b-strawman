@@ -36,6 +36,17 @@ export type ActionExecutionStatus =
 
 export type RuleSource = "MANUAL" | "TEMPLATE";
 
+export type ConditionOperator =
+  | "EQUALS"
+  | "NOT_EQUALS"
+  | "IN"
+  | "NOT_IN"
+  | "GREATER_THAN"
+  | "LESS_THAN"
+  | "CONTAINS"
+  | "IS_NULL"
+  | "IS_NOT_NULL";
+
 export type DelayUnit = "MINUTES" | "HOURS" | "DAYS";
 
 // === Response DTOs ===

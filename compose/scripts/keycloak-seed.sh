@@ -181,18 +181,30 @@ $KCADM create "clients/${CLIENT_KC_ID}/protocol-mappers/models" \
   -s 'config."userinfo.token.claim"=true' \
   2>/dev/null || true
 
-echo "  Group Membership Mapper added to gateway-bff client."
+# Verify the mapper exists (idempotency check, same pattern as Step 6 group creation)
+MAPPER_EXISTS=$($KCADM get "clients/${CLIENT_KC_ID}/protocol-mappers/models" -r "${REALM}" \
+  | jq -r '.[] | select(.name=="groups") | .name' 2>/dev/null || true)
+
+if [[ "$MAPPER_EXISTS" == "groups" ]]; then
+  echo "  Group Membership Mapper present on gateway-bff client."
+else
+  echo "  ERROR: Could not create or find 'groups' protocol mapper on gateway-bff client"
+  exit 1
+fi
 
 # ---- Assign Alice to platform-admins group ----
 echo "[8/8] Assigning Alice to 'platform-admins' group..."
-$KCADM update "users/${ALICE_ID}/groups/${GROUP_ID}" \
-  -r "${REALM}" \
-  -s realm="${REALM}" \
-  -s userId="${ALICE_ID}" \
-  -s groupId="${GROUP_ID}" \
-  -n 2>/dev/null || true
-
-echo "  Alice assigned to platform-admins group."
+if [[ -z "$ALICE_ID" ]]; then
+  echo "  ERROR: ALICE_ID not set — skipping group assignment"
+else
+  $KCADM update "users/${ALICE_ID}/groups/${GROUP_ID}" \
+    -r "${REALM}" \
+    -s realm="${REALM}" \
+    -s userId="${ALICE_ID}" \
+    -s groupId="${GROUP_ID}" \
+    -n 2>/dev/null || true
+  echo "  Alice assigned to platform-admins group."
+fi
 
 echo ""
 echo "=== Keycloak Seed Complete ==="

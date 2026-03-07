@@ -90,3 +90,18 @@ audit:
     domain-events-days: 1095
     security-events-days: 365
     purge-enabled: false
+
+app:
+  access-request:
+    blocked-email-domains:
+      - gmail.com
+      - yahoo.com
+      - hotmail.com
+      - outlook.com
+      - aol.com
+      - icloud.com
+      - mail.com
+      - protonmail.com
+      - zoho.com
+    otp-expiry-minutes: 10
+    otp-max-attempts: 5

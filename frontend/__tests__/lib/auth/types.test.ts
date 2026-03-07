@@ -2,18 +2,32 @@ import { describe, it, expect } from "vitest";
 import type { AuthContext, AuthUser, OrgMemberInfo } from "@/lib/auth/types";
 
 describe("Auth types — compile-time type assertions", () => {
-  it("AuthContext has orgId, orgSlug, orgRole, userId fields", () => {
+  it("AuthContext has orgId, orgSlug, orgRole, userId, groups fields", () => {
     const ctx = {
       orgId: "org_123",
       orgSlug: "acme",
       orgRole: "org:admin",
       userId: "user_456",
+      groups: [],
     } satisfies AuthContext;
 
     expect(ctx.orgId).toBe("org_123");
     expect(ctx.orgSlug).toBe("acme");
     expect(ctx.orgRole).toBe("org:admin");
     expect(ctx.userId).toBe("user_456");
+    expect(ctx.groups).toEqual([]);
+  });
+
+  it("AuthContext includes groups field", () => {
+    const ctx = {
+      orgId: "org_123",
+      orgSlug: "acme",
+      orgRole: "org:admin",
+      userId: "user_456",
+      groups: ["platform-admins"],
+    } satisfies AuthContext;
+
+    expect(ctx.groups).toEqual(["platform-admins"]);
   });
 
   it("AuthUser allows null for firstName, lastName, and imageUrl", () => {

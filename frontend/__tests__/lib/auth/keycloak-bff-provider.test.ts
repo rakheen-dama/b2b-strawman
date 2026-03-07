@@ -52,6 +52,7 @@ describe("Keycloak BFF auth provider", () => {
       orgId: "kc-org-456",
       orgSlug: "acme-corp",
       orgRole: "org:owner",
+      groups: [],
     });
   });
 

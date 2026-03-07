@@ -1,10 +1,27 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
-import type { AuthContext } from "../types";
+import type { AuthContext, SessionIdentity } from "../types";
 
 /**
  * Clerk auth provider — wraps all Clerk SDK server calls.
  * This is the single location for all Clerk SDK usage in the codebase.
+ *
+ * NOTE: Clerk does not support user groups. The `groups` field is always
+ * an empty array. Platform admin features that rely on group membership
+ * (e.g. "platform-admins") are Keycloak-only and will not work with Clerk.
  */
+
+/**
+ * Lightweight identity — returns userId + groups (always empty for Clerk).
+ * Platform admin guards using this will always deny access under Clerk,
+ * which is the correct behavior since platform admin is Keycloak-only.
+ */
+export async function getSessionIdentity(): Promise<SessionIdentity> {
+  const { userId } = await auth();
+  if (!userId) {
+    throw new Error("Not authenticated — no userId from Clerk");
+  }
+  return { userId, groups: [] };
+}
 
 export async function getAuthContext(): Promise<AuthContext> {
   const { orgId, orgSlug, orgRole, userId } = await auth();
@@ -13,7 +30,7 @@ export async function getAuthContext(): Promise<AuthContext> {
     throw new Error("No active organization — select an organization first");
   }
 
-  return { orgId, orgSlug, orgRole, userId };
+  return { orgId, orgSlug, orgRole, userId, groups: [] };
 }
 
 export async function getAuthToken(): Promise<string> {

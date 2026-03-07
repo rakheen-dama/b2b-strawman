@@ -1,6 +1,7 @@
 package io.b2mash.b2b.gateway.controller;
 
 import io.b2mash.b2b.gateway.service.KeycloakAdminClient;
+import java.util.List;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,11 +37,12 @@ public class BffController {
       String picture,
       String orgId,
       String orgSlug,
-      String orgRole) {
+      String orgRole,
+      List<String> groups) {
 
     /** Factory for unauthenticated response. */
     public static BffUserInfo unauthenticated() {
-      return new BffUserInfo(false, null, null, null, null, null, null, null);
+      return new BffUserInfo(false, null, null, null, null, null, null, null, List.of());
     }
   }
 
@@ -58,6 +60,7 @@ public class BffController {
 
     log.info("BFF /me claims: {}", user.getClaims());
     BffUserInfoExtractor.OrgInfo orgInfo = BffUserInfoExtractor.extractOrgInfo(user);
+    List<String> groups = extractGroups(user);
 
     return ResponseEntity.ok(
         new BffUserInfo(
@@ -68,7 +71,8 @@ public class BffController {
             Objects.toString(user.getPicture(), ""),
             orgInfo != null ? orgInfo.id() : null,
             orgInfo != null ? orgInfo.slug() : null,
-            orgInfo != null ? orgInfo.role() : null));
+            orgInfo != null ? orgInfo.role() : null,
+            groups));
   }
 
   /**
@@ -117,6 +121,15 @@ public class BffController {
     }
 
     return ResponseEntity.status(HttpStatus.CREATED).body(new CreateOrgResponse(orgId, slug));
+  }
+
+  /** Extracts the groups claim from the OidcUser, defaulting to an empty list. */
+  private static List<String> extractGroups(OidcUser user) {
+    Object raw = user.getClaim("groups");
+    if (raw instanceof List<?> list) {
+      return list.stream().filter(String.class::isInstance).map(String.class::cast).toList();
+    }
+    return List.of();
   }
 
   /** Converts an org name to a URL-safe slug. */

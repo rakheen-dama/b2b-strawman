@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { Shield } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "@/lib/nav-items";
@@ -9,9 +10,10 @@ import { SidebarUserFooter } from "@/components/sidebar-user-footer";
 
 interface DesktopSidebarProps {
   slug: string;
+  groups?: string[];
 }
 
-export function DesktopSidebar({ slug }: DesktopSidebarProps) {
+export function DesktopSidebar({ slug, groups = [] }: DesktopSidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -59,6 +61,27 @@ export function DesktopSidebar({ slug }: DesktopSidebarProps) {
           );
         })}
       </nav>
+
+      {/* Platform Admin */}
+      {groups.includes("platform-admins") && (
+        <>
+          <div className="mx-4 border-t border-white/10" />
+          <div className="p-2">
+            <Link
+              href="/platform-admin/access-requests"
+              className={cn(
+                "relative flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
+                pathname.startsWith("/platform-admin")
+                  ? "bg-white/5 text-white"
+                  : "text-white/60 hover:bg-slate-800 hover:text-white"
+              )}
+            >
+              <Shield className="h-4 w-4" />
+              Platform Admin
+            </Link>
+          </div>
+        </>
+      )}
 
       {/* Footer */}
       <SidebarUserFooter />

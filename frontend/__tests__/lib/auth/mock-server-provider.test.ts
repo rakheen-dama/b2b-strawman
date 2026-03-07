@@ -10,6 +10,7 @@ const mockFetch = vi.fn();
 vi.stubGlobal("fetch", mockFetch);
 
 import {
+  getSessionIdentity,
   getAuthContext,
   getAuthToken,
   getCurrentUserEmail,
@@ -43,6 +44,29 @@ describe("Mock auth provider", () => {
     } as never);
   });
 
+  it("getSessionIdentity() returns userId and groups without org context", async () => {
+    const identity = await getSessionIdentity();
+
+    expect(identity).toEqual({
+      userId: "user_e2e_alice",
+      groups: ["platform-admins"],
+    });
+  });
+
+  it("getSessionIdentity() returns empty groups for non-admin user", async () => {
+    const bobPayload = { ...defaultPayload, sub: "user_e2e_bob" };
+    vi.mocked(cookies).mockResolvedValue({
+      get: vi.fn().mockReturnValue({ value: buildMockJwt(bobPayload) }),
+    } as never);
+
+    const identity = await getSessionIdentity();
+
+    expect(identity).toEqual({
+      userId: "user_e2e_bob",
+      groups: [],
+    });
+  });
+
   it("getAuthContext() extracts claims from JWT cookie", async () => {
     const ctx = await getAuthContext();
 
@@ -51,6 +75,7 @@ describe("Mock auth provider", () => {
       orgId: "org_e2e_test",
       orgSlug: "e2e-test-org",
       orgRole: "org:owner",
+      groups: ["platform-admins"],
     });
   });
 

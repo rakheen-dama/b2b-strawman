@@ -11,6 +11,11 @@ export default async function AccessRequestsPage() {
       <p className="mt-2 text-sm text-muted-foreground">
         Review and manage organization access requests.
       </p>
+      {!result.success && (
+        <div className="mt-4 rounded-md bg-red-50 p-4 text-sm text-red-700">
+          Failed to load access requests: {result.error}
+        </div>
+      )}
       <div className="mt-8">
         <AccessRequestsTable requests={requests} />
       </div>

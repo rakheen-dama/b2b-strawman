@@ -1,4 +1,11 @@
 spring:
+  mail:
+    host: localhost
+    port: 1025
+    properties:
+      mail.smtp.auth: false
+      mail.smtp.starttls.enable: false
+
   datasource:
     app:
       jdbc-url: jdbc:postgresql://localhost:5432/docteams

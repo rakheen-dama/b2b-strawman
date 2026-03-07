@@ -39,6 +39,8 @@ public class GatewaySecurityConfig {
             auth ->
                 auth.requestMatchers("/", "/error", "/actuator/health", "/bff/me")
                     .permitAll()
+                    .requestMatchers("/api/access-requests", "/api/access-requests/verify")
+                    .permitAll()
                     .requestMatchers("/internal/**")
                     .denyAll()
                     .requestMatchers("/api/**")

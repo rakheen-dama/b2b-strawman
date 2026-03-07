@@ -1,16 +1,28 @@
 import { CreateOrganization } from "@clerk/nextjs";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getSessionIdentity } from "@/lib/auth/server";
 
 const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
 const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:8443";
 
-export default function CreateOrgPage() {
+export default async function CreateOrgPage() {
   if (AUTH_MODE === "mock") {
     redirect("/org/e2e-test-org/dashboard");
   }
 
   if (AUTH_MODE === "keycloak") {
+    // Platform admins should go to the admin panel, not the access request page
+    let isPlatformAdmin = false;
+    try {
+      const identity = await getSessionIdentity();
+      isPlatformAdmin = identity.groups.includes("platform-admins");
+    } catch {
+      // not authenticated or no groups
+    }
+    if (isPlatformAdmin) {
+      redirect("/platform-admin/access-requests");
+    }
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50">
         <div className="w-full max-w-md space-y-6 rounded-xl border border-slate-200 bg-white p-8 shadow-sm">

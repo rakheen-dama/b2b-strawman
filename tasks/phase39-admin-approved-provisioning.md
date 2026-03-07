@@ -139,7 +139,7 @@ FRONTEND TRACK (after backend APIs)       |
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 2a | 298 | 298A | `AccessRequestApprovalService.approve()` — orchestrates KC org creation (via backend's own Keycloak admin client or HTTP call to gateway), tenant provisioning, KC invitation. Idempotent. `reject()` method. ~3 new files (~8 tests). Backend only. | |
+| 2a | 298 | 298A | `AccessRequestApprovalService.approve()` — orchestrates KC org creation (via backend's own Keycloak admin client or HTTP call to gateway), tenant provisioning, KC invitation. Idempotent. `reject()` method. ~3 new files (~8 tests). Backend only. | **Done** (PR #587) |
 | 2b | 298 | 298B | `PlatformAdminController` — `GET /api/platform-admin/access-requests`, `POST /{id}/approve`, `POST /{id}/reject`. `@PreAuthorize` guards. ~2 new files (~7 tests). Backend only. | |
 
 ### Stage 3: Keycloak Configuration (parallel with Stage 1-2)
@@ -397,7 +397,7 @@ Stage 6: [302A]                                                        (after 29
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **298A** | 298.1--298.5 | `AccessRequestApprovalService` -- orchestrates approval: create KC org via `KeycloakAdminClient` (call gateway or add backend's own KC client), provision tenant schema via `TenantProvisioningService`, send KC invitation, mark `APPROVED`. `reject()` method. Idempotent retry support. ~3 new files (~8 integration tests). Backend only. | |
+| **298A** | 298.1--298.5 | `AccessRequestApprovalService` -- orchestrates approval: create KC org via `KeycloakAdminClient` (call gateway or add backend's own KC client), provision tenant schema via `TenantProvisioningService`, send KC invitation, mark `APPROVED`. `reject()` method. Idempotent retry support. ~3 new files (~8 integration tests). Backend only. | **Done** (PR #587) |
 | **298B** | 298.6--298.10 | `PlatformAdminController` with `@PreAuthorize("@platformSecurityService.isPlatformAdmin()")`. Endpoints: `GET /api/platform-admin/access-requests` (with optional `?status=` filter), `POST /api/platform-admin/access-requests/{id}/approve`, `POST /api/platform-admin/access-requests/{id}/reject`. Pure delegation to service. ~2 new files (~7 integration tests). Backend only. | |
 
 ### Tasks

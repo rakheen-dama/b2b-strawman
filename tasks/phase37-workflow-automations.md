@@ -131,7 +131,7 @@ FRONTEND TRACK (after respective backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 0a | 280 | 280A | V58 tenant migration: CREATE TABLE automation_rules, automation_actions, automation_executions, action_executions + all indexes + constraints. ~1 new migration file. Backend only. | |
+| 0a | 280 | 280A | V58 tenant migration: CREATE TABLE automation_rules, automation_actions, automation_executions, action_executions + all indexes + constraints. ~1 new migration file. Backend only. | **Done** (PR #555) |
 
 ### Stage 1: Entity Foundation
 
@@ -228,7 +228,7 @@ Stage 9: [288A]                                                    (after Stages
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **280A** | 280.1--280.4 | V58 tenant migration: CREATE TABLE automation_rules, automation_actions, automation_executions, action_executions + all indexes + constraints + CHECK constraints. ~1 new migration file. Backend only. | |
+| **280A** | 280.1--280.4 | V58 tenant migration: CREATE TABLE automation_rules, automation_actions, automation_executions, action_executions + all indexes + constraints + CHECK constraints. ~1 new migration file. Backend only. | **Done** (PR #555) |
 | **280B** | 280.5--280.18 | AutomationRule + AutomationAction + AutomationExecution + ActionExecution entities + 7 enums + JPA repositories + sealed class hierarchies (TriggerConfig, ActionConfig, ActionResult) + ConfigDeserializer utility + persistence integration tests (~10 tests). ~12 new files. Backend only. | |
 
 ### Tasks

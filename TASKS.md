@@ -316,7 +316,7 @@
 | 278 | Keycloak Email Templates & Theme Deployment | Infra | 277 | S | 278A | **Done** (PR #534)                                                                                                                 |
 | 279 | Integration Testing & Verification | Both | 271, 273, 275, 276 | M | 279A, 279B | **Done** (PRs #535, #536)                                                                                                              |
 | **Phase 37 — Workflow Automations v1** | | | | | | See [tasks/phase37-workflow-automations.md](tasks/phase37-workflow-automations.md)                                                 |
-| 280 | Automation Entity Foundation & Migration | Backend | -- | M | 280A, 280B | |
+| 280 | Automation Entity Foundation & Migration | Backend | -- | M | 280A, 280B | 280A Done (PR #555) |
 | 281 | Trigger Matching & Condition Evaluation Engine | Backend | 280 | L | 281A, 281B | |
 | 282 | Action Executors & Variable Resolution | Backend | 280, 281 | L | 282A, 282B | |
 | 283 | Delayed Action Scheduler & Cycle Detection | Backend | 282 | M | 283A | |

@@ -80,6 +80,10 @@ public class OrgSettings {
   @Column(name = "request_pack_status", columnDefinition = "jsonb")
   private List<Map<String, Object>> requestPackStatus;
 
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "automation_pack_status", columnDefinition = "jsonb")
+  private List<Map<String, Object>> automationPackStatus;
+
   @Column(name = "default_request_reminder_days")
   private Integer defaultRequestReminderDays;
 
@@ -322,6 +326,35 @@ public class OrgSettings {
     entry.put("appliedAt", Instant.now().toString());
     this.requestPackStatus.add(entry);
     this.updatedAt = Instant.now();
+  }
+
+  public List<Map<String, Object>> getAutomationPackStatus() {
+    return automationPackStatus;
+  }
+
+  public void setAutomationPackStatus(List<Map<String, Object>> status) {
+    this.automationPackStatus = status;
+  }
+
+  /** Records an automation pack application in the status list. */
+  public void recordAutomationPackApplication(String packId, int version) {
+    if (this.automationPackStatus == null) {
+      this.automationPackStatus = new ArrayList<>();
+    }
+    var entry = new HashMap<String, Object>();
+    entry.put("packId", packId);
+    entry.put("version", version);
+    entry.put("appliedAt", Instant.now().toString());
+    this.automationPackStatus.add(entry);
+    this.updatedAt = Instant.now();
+  }
+
+  /** Checks whether an automation pack has already been applied. */
+  public boolean isAutomationPackApplied(String packId) {
+    if (this.automationPackStatus == null) {
+      return false;
+    }
+    return this.automationPackStatus.stream().anyMatch(entry -> packId.equals(entry.get("packId")));
   }
 
   public Integer getDefaultRequestReminderDays() {

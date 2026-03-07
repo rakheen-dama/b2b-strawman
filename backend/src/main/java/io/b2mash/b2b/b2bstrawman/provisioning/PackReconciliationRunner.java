@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.provisioning;
 
+import io.b2mash.b2b.b2bstrawman.automation.template.AutomationTemplateSeeder;
 import io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder;
 import io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldPackSeeder;
@@ -35,6 +36,7 @@ public class PackReconciliationRunner implements ApplicationRunner {
   private final CompliancePackSeeder compliancePackSeeder;
   private final StandardReportPackSeeder standardReportPackSeeder;
   private final RequestPackSeeder requestPackSeeder;
+  private final AutomationTemplateSeeder automationTemplateSeeder;
 
   public PackReconciliationRunner(
       OrgSchemaMappingRepository mappingRepository,
@@ -43,7 +45,8 @@ public class PackReconciliationRunner implements ApplicationRunner {
       ClausePackSeeder clausePackSeeder,
       CompliancePackSeeder compliancePackSeeder,
       StandardReportPackSeeder standardReportPackSeeder,
-      RequestPackSeeder requestPackSeeder) {
+      RequestPackSeeder requestPackSeeder,
+      AutomationTemplateSeeder automationTemplateSeeder) {
     this.mappingRepository = mappingRepository;
     this.fieldPackSeeder = fieldPackSeeder;
     this.templatePackSeeder = templatePackSeeder;
@@ -51,6 +54,7 @@ public class PackReconciliationRunner implements ApplicationRunner {
     this.compliancePackSeeder = compliancePackSeeder;
     this.standardReportPackSeeder = standardReportPackSeeder;
     this.requestPackSeeder = requestPackSeeder;
+    this.automationTemplateSeeder = automationTemplateSeeder;
   }
 
   @Override
@@ -76,6 +80,7 @@ public class PackReconciliationRunner implements ApplicationRunner {
         compliancePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
         standardReportPackSeeder.seedForTenant(schemaName, clerkOrgId);
         requestPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+        automationTemplateSeeder.seedPacksForTenant(schemaName, clerkOrgId);
 
         succeeded++;
       } catch (Exception e) {

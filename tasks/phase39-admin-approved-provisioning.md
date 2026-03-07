@@ -132,7 +132,7 @@ FRONTEND TRACK (after backend APIs)       |
 |-------|------|-------|---------|--------|
 | 1a (parallel) | 296 | 296A | `AccessRequestService.submitRequest()` — OTP generation, email domain validation, OTP email sending via existing `EmailProvider`. `AccessRequestPublicController` with `POST /api/access-requests`. `SecurityConfig` update to permitAll on `/api/access-requests/**`. ~4 new/modified files (~8 tests). Backend only. | **Done** (PR #583) |
 | 1b (parallel) | 296 | 296B | `AccessRequestService.verifyOtp()` — OTP verification, attempt tracking, expiry check, status promotion to PENDING. `POST /api/access-requests/verify` endpoint. ~2 modified files (~7 tests). Backend only. | **Done** (PR #584) |
-| 1c (parallel) | 297 | 297A | `RequestScopes.GROUPS` ScopedValue, `ClerkJwtUtils.extractGroups()`, `PlatformSecurityService.isPlatformAdmin()`. New `PlatformAdminFilter` binding groups from JWT. ~4 new/modified files (~6 unit tests). Backend only. | |
+| 1c (parallel) | 297 | 297A | `RequestScopes.GROUPS` ScopedValue, `ClerkJwtUtils.extractGroups()`, `PlatformSecurityService.isPlatformAdmin()`. New `PlatformAdminFilter` binding groups from JWT. ~4 new/modified files (~6 unit tests). Backend only. | **Done** (PR #585) |
 | 1d | 297 | 297B | `SecurityConfig` filter chain update — `PlatformAdminFilter` ordering, `/api/platform-admin/**` requiring authentication. `@PreAuthorize("@platformSecurityService.isPlatformAdmin()")` integration test. ~2 modified files (~5 tests). Backend only. | |
 
 ### Stage 2: Approval Pipeline & Admin API (sequential)
@@ -334,7 +334,7 @@ Stage 6: [302A]                                                        (after 29
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **297A** | 297.1--297.5 | `RequestScopes.GROUPS` ScopedValue, `ClerkJwtUtils.extractGroups()` method, `PlatformSecurityService` with `isPlatformAdmin()`, `PlatformAdminFilter` that binds groups from JWT. ~4 new/modified files (~6 unit tests). Backend only. | |
+| **297A** | 297.1--297.5 | `RequestScopes.GROUPS` ScopedValue, `ClerkJwtUtils.extractGroups()` method, `PlatformSecurityService` with `isPlatformAdmin()`, `PlatformAdminFilter` that binds groups from JWT. ~4 new/modified files (~6 unit tests). Backend only. | **Done** (PR #585) |
 | **297B** | 297.6--297.9 | `SecurityConfig` update to insert `PlatformAdminFilter` in filter chain, verify `/api/platform-admin/**` requires authentication, `@PreAuthorize` integration test with mock JWT containing groups claim. ~2 modified files (~5 integration tests). Backend only. | |
 
 ### Tasks

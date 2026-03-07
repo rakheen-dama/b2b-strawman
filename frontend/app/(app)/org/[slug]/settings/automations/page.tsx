@@ -44,6 +44,14 @@ export default async function AutomationsSettingsPage({
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Create rules to automate tasks, notifications, and workflows.
         </p>
+        {isAdmin && (
+          <Link
+            href={`/org/${slug}/settings/automations/executions`}
+            className="mt-2 inline-flex items-center gap-1 text-sm text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
+          >
+            View Execution Log
+          </Link>
+        )}
       </div>
 
       <RuleList

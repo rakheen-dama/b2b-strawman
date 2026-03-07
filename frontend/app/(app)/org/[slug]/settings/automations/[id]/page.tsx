@@ -2,8 +2,12 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { getAuthContext } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { getRule } from "@/lib/api/automations";
-import type { AutomationRuleResponse } from "@/lib/api/automations";
+import { getRule, getRuleExecutions } from "@/lib/api/automations";
+import type {
+  AutomationRuleResponse,
+  AutomationExecutionResponse,
+  PaginatedResponse,
+} from "@/lib/api/automations";
 import { RuleDetailClient } from "./rule-detail-client";
 
 export default async function AutomationDetailPage({
@@ -22,6 +26,10 @@ export default async function AutomationDetailPage({
 
   let rule: AutomationRuleResponse | undefined;
   let notFound = false;
+  let executions: PaginatedResponse<AutomationExecutionResponse> = {
+    content: [],
+    page: { totalElements: 0, totalPages: 0, size: 20, number: 0 },
+  };
 
   try {
     rule = await getRule(id);
@@ -31,6 +39,14 @@ export default async function AutomationDetailPage({
       notFound = true;
     } else {
       throw error;
+    }
+  }
+
+  if (rule) {
+    try {
+      executions = await getRuleExecutions(id, { size: 20 });
+    } catch {
+      // Non-fatal: show empty executions
     }
   }
 
@@ -61,7 +77,7 @@ export default async function AutomationDetailPage({
         Automations
       </Link>
 
-      <RuleDetailClient slug={slug} rule={rule} />
+      <RuleDetailClient slug={slug} rule={rule} initialExecutions={executions} />
     </div>
   );
 }

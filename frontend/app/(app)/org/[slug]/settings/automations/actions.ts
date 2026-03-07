@@ -7,10 +7,14 @@ import {
   activateTemplate,
   updateRule,
   duplicateRule,
+  listExecutions,
 } from "@/lib/api/automations";
 import type {
   UpdateRuleRequest,
   AutomationRuleResponse,
+  ExecutionStatus,
+  AutomationExecutionResponse,
+  PaginatedResponse,
 } from "@/lib/api/automations";
 import { revalidatePath } from "next/cache";
 
@@ -111,6 +115,15 @@ export async function updateRuleAction(
     }
     return { success: false, error: "An unexpected error occurred." };
   }
+}
+
+export async function fetchExecutionsAction(params?: {
+  ruleId?: string;
+  status?: ExecutionStatus;
+  page?: number;
+  size?: number;
+}): Promise<PaginatedResponse<AutomationExecutionResponse>> {
+  return listExecutions(params);
 }
 
 export async function duplicateRuleAction(

@@ -2,6 +2,15 @@ import "server-only";
 
 import { api } from "@/lib/api";
 
+// === Dashboard Summary ===
+
+export interface AutomationSummary {
+  activeRulesCount: number;
+  todayTotal: number;
+  todaySucceeded: number;
+  todayFailed: number;
+}
+
 // === Enums ===
 
 export type TriggerType =

@@ -13,6 +13,8 @@ import type {
 } from "@/lib/dashboard-types";
 import type { AggregatedCompletenessResponse } from "@/lib/types";
 import type { InformationRequestSummary } from "@/lib/api/information-requests";
+import { listRules, listExecutions } from "@/lib/api/automations";
+import type { AutomationSummary } from "@/lib/api/automations";
 
 export async function fetchDashboardKpis(
   from: string,
@@ -88,6 +90,35 @@ export async function fetchInformationRequestSummary(): Promise<InformationReque
     return await api.get<InformationRequestSummary>(
       "/api/information-requests/summary",
     );
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchAutomationSummary(): Promise<AutomationSummary | null> {
+  try {
+    const [rules, executions] = await Promise.all([
+      listRules({ enabled: true }),
+      listExecutions({ size: 100 }),
+    ]);
+
+    const todayStart = new Date();
+    todayStart.setUTCHours(0, 0, 0, 0);
+
+    const todayExecutions = executions.content.filter(
+      (e) => new Date(e.startedAt) >= todayStart,
+    );
+
+    return {
+      activeRulesCount: rules.length,
+      todayTotal: todayExecutions.length,
+      todaySucceeded: todayExecutions.filter(
+        (e) => e.status === "ACTIONS_COMPLETED",
+      ).length,
+      todayFailed: todayExecutions.filter(
+        (e) => e.status === "ACTIONS_FAILED",
+      ).length,
+    };
   } catch {
     return null;
   }

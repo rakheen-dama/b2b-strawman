@@ -14,6 +14,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/webhooks(.*)",
   "/portal(.*)",
   "/mock-login(.*)",
+  "/request-access(.*)",
 ]);
 
 /**

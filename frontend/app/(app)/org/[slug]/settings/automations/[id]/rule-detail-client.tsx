@@ -26,8 +26,11 @@ import {
   duplicateRuleAction,
 } from "@/app/(app)/org/[slug]/settings/automations/actions";
 import { MoreHorizontal, Copy, Trash2 } from "lucide-react";
+import { ExecutionLog } from "@/components/automations/execution-log";
 import type {
   AutomationRuleResponse,
+  AutomationExecutionResponse,
+  PaginatedResponse,
   ActionType,
   DelayUnit,
 } from "@/lib/api/automations";
@@ -35,9 +38,10 @@ import type {
 interface RuleDetailClientProps {
   slug: string;
   rule: AutomationRuleResponse;
+  initialExecutions: PaginatedResponse<AutomationExecutionResponse>;
 }
 
-export function RuleDetailClient({ slug, rule }: RuleDetailClientProps) {
+export function RuleDetailClient({ slug, rule, initialExecutions }: RuleDetailClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isSaving, setIsSaving] = useState(false);
@@ -209,9 +213,11 @@ export function RuleDetailClient({ slug, rule }: RuleDetailClientProps) {
         </TabsContent>
 
         <TabsContent value="execution-log" className="mt-6">
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Execution log will be available in a future update.
-          </p>
+          <ExecutionLog
+            initialExecutions={initialExecutions}
+            ruleId={rule.id}
+            slug={slug}
+          />
         </TabsContent>
       </Tabs>
     </div>

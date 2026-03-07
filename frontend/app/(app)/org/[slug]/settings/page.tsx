@@ -20,6 +20,7 @@ import {
   Clock,
   ClipboardList,
   Zap,
+  Users,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getAuthContext } from "@/lib/auth";
@@ -138,6 +139,13 @@ const settingsCards: SettingsCard[] = [
     title: "Request Settings",
     description: "Configure default reminder interval for information requests",
     href: "request-settings",
+    comingSoon: false,
+  },
+  {
+    icon: Users,
+    title: "Capacity",
+    description: "Set default weekly capacity hours for team members",
+    href: "capacity",
     comingSoon: false,
   },
   {

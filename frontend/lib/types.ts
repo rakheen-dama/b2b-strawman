@@ -434,6 +434,8 @@ export interface OrgSettings {
   defaultExpenseMarkupPercent?: number | null;
   // information request defaults
   defaultRequestReminderDays?: number;
+  // capacity defaults
+  defaultWeeklyCapacityHours?: number;
 }
 
 export interface UpdateTaxSettingsRequest {

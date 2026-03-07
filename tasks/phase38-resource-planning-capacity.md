@@ -145,7 +145,7 @@ FRONTEND TRACK (after respective backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 4a (parallel) | 291 | 291A | UtilizationService (planned vs actual combination) + CapacityController (team grid, member detail, project staffing, utilization endpoints) + DTOs + integration tests (~15 tests). ~5 new files. Backend only. | |
+| 4a (parallel) | 291 | 291A | UtilizationService (planned vs actual combination) + CapacityController (team grid, member detail, project staffing, utilization endpoints) + DTOs + integration tests (~15 tests). ~5 new files. Backend only. | **Done** (PR #574) |
 | 4b (parallel) | 294 | 294A | Notification types (ALLOCATION_CHANGED, MEMBER_OVER_ALLOCATED, LEAVE_CREATED) + audit events (7 types) wired into capacity/allocation/leave services + integration tests (~12 tests). ~1 new file + ~3 modified files. Backend only. | |
 
 ### Stage 5: Profitability Extension
@@ -362,7 +362,7 @@ Stage 7: [293A] // [293B] // [294B]                                (parallel)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **291A** | 291.1--291.8 | UtilizationService (planned vs actual combination, per-member per-week metrics) + CapacityController (5 endpoints: team grid, member detail, project staffing, team utilization, member utilization) + grid/utilization DTOs + integration tests (~15 tests). ~5 new files. Backend only. | |
+| **291A** | 291.1--291.8 | UtilizationService (planned vs actual combination, per-member per-week metrics) + CapacityController (5 endpoints: team grid, member detail, project staffing, team utilization, member utilization) + grid/utilization DTOs + integration tests (~15 tests). ~5 new files. Backend only. | **Done** (PR #574) |
 | **291B** | 291.9--291.13 | ProfitabilityReportService extension (includeProjections parameter, allocation-based revenue/cost via RateResolutionService and CostRateService) + integration tests (~8 tests). ~0 new files + ~2 modified files. Backend only. | |
 
 ### Tasks

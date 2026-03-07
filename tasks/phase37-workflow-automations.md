@@ -29,7 +29,7 @@ Phase 37 adds a rule-based automation engine to the DocTeams platform. Firm admi
 | 285 | Frontend: Rule List, Template Gallery & Settings Nav | Frontend | 284 | M | 285A | **Done** (PR #564) |
 | 286 | Frontend: Rule Create/Edit Wizard | Frontend | 285 | L | 286A, 286B | **Done** (PRs #565, #566) |
 | 287 | Frontend: Execution Log & Dashboard Widget | Frontend | 285 | M | 287A | **Done** (PR #567) |
-| 288 | End-to-End Integration Tests & Edge Cases | Backend | 283, 284 | M | 288A | |
+| 288 | End-to-End Integration Tests & Edge Cases | Backend | 283, 284 | M | 288A | **Done** (PR #568) |
 
 ---
 
@@ -189,7 +189,7 @@ FRONTEND TRACK (after respective backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 9a | 288 | 288A | End-to-end: domain event -> rule evaluation -> condition check -> action execution -> execution log. Multi-rule test (same event, multiple rules). Condition edge cases (null, unknown fields, type mismatches). Cycle detection end-to-end. Delayed action end-to-end. Template activation + execution. Error recovery (action failure). Rule deletion cancels scheduled actions. Rule toggle prevents execution. ~15 integration tests. ~1-2 test files. Backend only. | |
+| 9a | 288 | 288A | End-to-end: domain event -> rule evaluation -> condition check -> action execution -> execution log. Multi-rule test (same event, multiple rules). Condition edge cases (null, unknown fields, type mismatches). Cycle detection end-to-end. Delayed action end-to-end. Template activation + execution. Error recovery (action failure). Rule deletion cancels scheduled actions. Rule toggle prevents execution. ~15 integration tests. ~1-2 test files. Backend only. | **Done** (PR #568) |
 
 ### Timeline
 
@@ -784,7 +784,7 @@ Stage 9: [288A]                                                    (after Stages
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **288A** | 288.1--288.8 | End-to-end integration tests covering: full event->execution flow, multi-rule evaluation, condition edge cases, cycle detection end-to-end, delayed action lifecycle, template activation + execution, error recovery, rule lifecycle effects. ~15 integration tests. ~1-2 test files. Backend only. | |
+| **288A** | 288.1--288.8 | End-to-end integration tests covering: full event->execution flow, multi-rule evaluation, condition edge cases, cycle detection end-to-end, delayed action lifecycle, template activation + execution, error recovery, rule lifecycle effects. ~15 integration tests. ~1-2 test files. Backend only. | **Done** (PR #568) |
 
 ### Tasks
 

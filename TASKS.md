@@ -324,7 +324,7 @@
 | 285 | Frontend: Rule List, Template Gallery & Settings Nav | Frontend | 284 | M | 285A | **Done** (PR #564) |
 | 286 | Frontend: Rule Create/Edit Wizard | Frontend | 285 | L | 286A, 286B | **Done** (PRs #565, #566) |
 | 287 | Frontend: Execution Log & Dashboard Widget | Frontend | 285 | M | 287A | **Done** (PR #567) |
-| 288 | End-to-End Integration Tests & Edge Cases | Backend | 283, 284 | M | 288A | |
+| 288 | End-to-End Integration Tests & Edge Cases | Backend | 283, 284 | M | 288A | **Done** (PR #568) |
 | **Phase 38 — Resource Planning & Capacity** | | | | | | See [tasks/phase38-resource-planning-capacity.md](tasks/phase38-resource-planning-capacity.md) |
 | 289 | Entity Foundation & Migration | Backend | -- | M | 289A, 289B | |
 | 290 | Capacity & Allocation Services | Backend | 289 | L | 290A, 290B, 290C | |

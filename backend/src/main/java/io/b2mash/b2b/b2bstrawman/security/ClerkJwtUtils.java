@@ -1,7 +1,10 @@
 package io.b2mash.b2b.b2bstrawman.security;
 
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 /**
@@ -16,6 +19,7 @@ public final class ClerkJwtUtils {
 
   private static final String CLERK_ORG_CLAIM = "o";
   private static final String KEYCLOAK_ORG_CLAIM = "organization";
+  private static final String GROUPS_CLAIM = "groups";
 
   /** Extracts the org ID from JWT. Tries Clerk format first, then Keycloak. */
   public static String extractOrgId(Jwt jwt) {
@@ -42,6 +46,21 @@ public final class ClerkJwtUtils {
     if (clerkSlug != null) return clerkSlug;
     // Keycloak: the alias IS the slug
     return extractKeycloakOrgId(jwt);
+  }
+
+  /**
+   * Extracts the groups claim from a JWT. Keycloak JWTs may include a top-level {@code groups}
+   * claim (e.g., {@code ["platform-admins"]}). Clerk JWTs do not support groups.
+   *
+   * @return the set of groups, never null
+   */
+  @SuppressWarnings("unchecked")
+  public static Set<String> extractGroups(Jwt jwt) {
+    Object groupsClaim = jwt.getClaim(GROUPS_CLAIM);
+    if (groupsClaim instanceof List<?> list && !list.isEmpty()) {
+      return Collections.unmodifiableSet(new LinkedHashSet<>((List<String>) list));
+    }
+    return Collections.emptySet();
   }
 
   /** Returns true if this JWT uses Clerk format (has "o" claim). */

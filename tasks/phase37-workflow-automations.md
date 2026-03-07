@@ -22,7 +22,7 @@ Phase 37 adds a rule-based automation engine to the DocTeams platform. Firm admi
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 280 | Automation Entity Foundation & Migration | Backend | -- | M | 280A, 280B | **Done** (PRs #555, #556) |
-| 281 | Trigger Matching & Condition Evaluation Engine | Backend | 280 | L | 281A, 281B | |
+| 281 | Trigger Matching & Condition Evaluation Engine | Backend | 280 | L | 281A, 281B | **Done** (PRs #557, #558) |
 | 282 | Action Executors & Variable Resolution | Backend | 280, 281 | L | 282A, 282B | |
 | 283 | Delayed Action Scheduler & Cycle Detection | Backend | 282 | M | 283A | |
 | 284 | Rule CRUD API, Template Seeder & Execution Log API | Backend | 280, 281, 282, 283 | L | 284A, 284B | |
@@ -144,7 +144,7 @@ FRONTEND TRACK (after respective backend epics)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 2a (parallel) | 281 | 281A | AutomationEventListener (@EventListener for DomainEvent) + trigger type mapping (event class to TriggerType) + trigger config matching logic (StatusChangeTriggerConfig, BudgetThresholdTriggerConfig, EmptyTriggerConfig matching against event data) + AutomationExecution creation for matched rules + integration tests (~10 tests). ~6 new files. Backend only. | **Done** (PR #557) |
-| 2b (parallel) | 281 | 281B | ConditionEvaluator (dot-notation field resolution, 9 operators, AND logic) + AutomationContext builder (builds context map per trigger type from event data) + context definitions for all 8 trigger types + fail-safe behavior (unknown fields) + unit tests (~12 tests). ~4 new files. Backend only. | |
+| 2b (parallel) | 281 | 281B | ConditionEvaluator (dot-notation field resolution, 9 operators, AND logic) + AutomationContext builder (builds context map per trigger type from event data) + context definitions for all 8 trigger types + fail-safe behavior (unknown fields) + unit tests (~12 tests). ~4 new files. Backend only. | **Done** (PR #558) |
 
 ### Stage 3: Action Executors
 
@@ -312,7 +312,7 @@ Stage 9: [288A]                                                    (after Stages
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **281A** | 281.1--281.6 | AutomationEventListener (@EventListener for DomainEvent) + trigger type mapping (event class -> TriggerType lookup table) + trigger config matching logic (StatusChangeTriggerConfig against event fromStatus/toStatus, BudgetThresholdTriggerConfig against threshold, EmptyTriggerConfig always matches) + AutomationExecution creation for matched rules + integration tests (~10 tests). ~6 new files. Backend only. | **Done** (PR #557) |
-| **281B** | 281.7--281.12 | ConditionEvaluator (dot-notation field path resolution, 9 operators, AND logic, fail-safe for unknown fields) + AutomationContext builder (context map per trigger type, resolves entity + parent data) + context definitions for all 8 trigger types + unit tests (~12 tests). ~4 new files. Backend only. | |
+| **281B** | 281.7--281.12 | ConditionEvaluator (dot-notation field path resolution, 9 operators, AND logic, fail-safe for unknown fields) + AutomationContext builder (context map per trigger type, resolves entity + parent data) + context definitions for all 8 trigger types + unit tests (~12 tests). ~4 new files. Backend only. | **Done** (PR #558) |
 
 ### Tasks
 

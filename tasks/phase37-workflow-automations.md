@@ -25,7 +25,7 @@ Phase 37 adds a rule-based automation engine to the DocTeams platform. Firm admi
 | 281 | Trigger Matching & Condition Evaluation Engine | Backend | 280 | L | 281A, 281B | **Done** (PRs #557, #558) |
 | 282 | Action Executors & Variable Resolution | Backend | 280, 281 | L | 282A, 282B | **Done** (PRs #559, #560) |
 | 283 | Delayed Action Scheduler & Cycle Detection | Backend | 282 | M | 283A | **Done** (PR #561) |
-| 284 | Rule CRUD API, Template Seeder & Execution Log API | Backend | 280, 281, 282, 283 | L | 284A, 284B | |
+| 284 | Rule CRUD API, Template Seeder & Execution Log API | Backend | 280, 281, 282, 283 | L | 284A, 284B | **Done** (PRs #562, #563) |
 | 285 | Frontend: Rule List, Template Gallery & Settings Nav | Frontend | 284 | M | 285A | |
 | 286 | Frontend: Rule Create/Edit Wizard | Frontend | 285 | L | 286A, 286B | |
 | 287 | Frontend: Execution Log & Dashboard Widget | Frontend | 285 | M | 287A | |
@@ -164,7 +164,7 @@ FRONTEND TRACK (after respective backend epics)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 5a (parallel) | 284 | 284A | AutomationRuleService (CRUD, toggle, duplicate, dry-run test) + AutomationRuleController (all rule endpoints) + AutomationActionController (action CRUD + reorder) + AutomationExecutionController (list, detail, per-rule executions) + request/response DTOs + audit events (7 event types) + API integration tests (~18 tests). ~8 new files. Backend only. | **Done** (PR #562) |
-| 5b (parallel) | 284 | 284B | AutomationTemplateService (template listing + activation) + AutomationTemplateController (list + activate endpoints) + AutomationTemplateSeeder (loads from classpath JSON) + 6 template definition JSON files + OrgSettings.automationPackStatus JSONB field + V58 migration addendum (ALTER TABLE org_settings ADD COLUMN automation_pack_status) + provisioning + PackReconciliationRunner registration + integration tests (~8 tests). ~10 new/modified files. Backend only. | |
+| 5b (parallel) | 284 | 284B | AutomationTemplateService (template listing + activation) + AutomationTemplateController (list + activate endpoints) + AutomationTemplateSeeder (loads from classpath JSON) + 6 template definition JSON files + OrgSettings.automationPackStatus JSONB field + V58 migration addendum (ALTER TABLE org_settings ADD COLUMN automation_pack_status) + provisioning + PackReconciliationRunner registration + integration tests (~8 tests). ~10 new/modified files. Backend only. | **Done** (PR #563) |
 
 ### Stage 6: Frontend Rule Management
 
@@ -516,7 +516,7 @@ Stage 9: [288A]                                                    (after Stages
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **284A** | 284.1--284.10 | AutomationRuleService (CRUD, toggle, duplicate, dry-run) + AutomationRuleController + AutomationActionController (CRUD + reorder) + AutomationExecutionController (list, detail, per-rule) + DTOs + audit events (7 types) + API integration tests (~18 tests). ~8 new files. Backend only. | **Done** (PR #562) |
-| **284B** | 284.11--284.18 | AutomationTemplateService (listing + activation) + AutomationTemplateController + AutomationTemplateSeeder + 6 template JSON files + OrgSettings.automationPackStatus extension + provisioning + PackReconciliationRunner registration + integration tests (~8 tests). ~10 new/modified files. Backend only. | |
+| **284B** | 284.11--284.18 | AutomationTemplateService (listing + activation) + AutomationTemplateController + AutomationTemplateSeeder + 6 template JSON files + OrgSettings.automationPackStatus extension + provisioning + PackReconciliationRunner registration + integration tests (~8 tests). ~10 new/modified files. Backend only. | **Done** (PR #563) |
 
 ### Tasks
 

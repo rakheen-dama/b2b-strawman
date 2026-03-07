@@ -320,7 +320,7 @@
 | 281 | Trigger Matching & Condition Evaluation Engine | Backend | 280 | L | 281A, 281B | **Done** (PRs #557, #558) |
 | 282 | Action Executors & Variable Resolution | Backend | 280, 281 | L | 282A, 282B | **Done** (PRs #559, #560) |
 | 283 | Delayed Action Scheduler & Cycle Detection | Backend | 282 | M | 283A | **Done** (PR #561) |
-| 284 | Rule CRUD API, Template Seeder & Execution Log API | Backend | 280–283 | L | 284A, 284B | 284A **Done** (PR #562) |
+| 284 | Rule CRUD API, Template Seeder & Execution Log API | Backend | 280–283 | L | 284A, 284B | **Done** (PRs #562, #563) |
 | 285 | Frontend: Rule List, Template Gallery & Settings Nav | Frontend | 284 | M | 285A | |
 | 286 | Frontend: Rule Create/Edit Wizard | Frontend | 285 | L | 286A, 286B | |
 | 287 | Frontend: Execution Log & Dashboard Widget | Frontend | 285 | M | 287A | |

@@ -45,6 +45,11 @@ public class ConditionEvaluator {
     String operatorStr = (String) condition.get("operator");
     Object value = condition.get("value");
 
+    if (operatorStr == null) {
+      log.warn("Missing 'operator' key in condition {}, evaluating as false", condition);
+      return false;
+    }
+
     ConditionOperator operator;
     try {
       operator = ConditionOperator.valueOf(operatorStr);
@@ -101,8 +106,11 @@ public class ConditionEvaluator {
         yield collection.contains(resolved) || containsToString(collection, resolved);
       }
       case NOT_IN -> {
-        if (resolved == null || !(value instanceof Collection<?> collection)) {
+        if (!(value instanceof Collection<?> collection)) {
           yield false;
+        }
+        if (resolved == null) {
+          yield true; // null is NOT in any collection
         }
         yield !collection.contains(resolved) && !containsToString(collection, resolved);
       }

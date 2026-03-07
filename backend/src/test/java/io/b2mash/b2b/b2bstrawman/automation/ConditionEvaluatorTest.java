@@ -121,6 +121,23 @@ class ConditionEvaluatorTest {
   }
 
   @Test
+  void notIn_nullResolved_returnsTrue() {
+    var context = contextWith("task", "assigneeId", null);
+    var conditions =
+        List.of(condition("task.assigneeId", "NOT_IN", List.of("member-1", "member-2")));
+
+    assertThat(evaluator.evaluate(conditions, context)).isTrue();
+  }
+
+  @Test
+  void nullOperator_returnsFalse() {
+    var context = contextWith("task", "status", "OPEN");
+    var conditions = List.of(condition("task.status", null, "OPEN"));
+
+    assertThat(evaluator.evaluate(conditions, context)).isFalse();
+  }
+
+  @Test
   void greaterThan_nonNumericValue_returnsFalse() {
     var context = contextWith("task", "status", "OPEN");
     var conditions = List.of(condition("task.status", "GREATER_THAN", 10));

@@ -24,7 +24,7 @@ Phase 37 adds a rule-based automation engine to the DocTeams platform. Firm admi
 | 280 | Automation Entity Foundation & Migration | Backend | -- | M | 280A, 280B | **Done** (PRs #555, #556) |
 | 281 | Trigger Matching & Condition Evaluation Engine | Backend | 280 | L | 281A, 281B | **Done** (PRs #557, #558) |
 | 282 | Action Executors & Variable Resolution | Backend | 280, 281 | L | 282A, 282B | **Done** (PRs #559, #560) |
-| 283 | Delayed Action Scheduler & Cycle Detection | Backend | 282 | M | 283A | |
+| 283 | Delayed Action Scheduler & Cycle Detection | Backend | 282 | M | 283A | **Done** (PR #561) |
 | 284 | Rule CRUD API, Template Seeder & Execution Log API | Backend | 280, 281, 282, 283 | L | 284A, 284B | |
 | 285 | Frontend: Rule List, Template Gallery & Settings Nav | Frontend | 284 | M | 285A | |
 | 286 | Frontend: Rule Create/Edit Wizard | Frontend | 285 | L | 286A, 286B | |
@@ -157,7 +157,7 @@ FRONTEND TRACK (after respective backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 4a | 283 | 283A | AutomationScheduler (@Scheduled, 15-min poll, per-tenant ScopedValue binding) + delayed action creation (SCHEDULED ActionExecution with scheduledFor) + scheduler picks up due actions + cancels when rule disabled/deleted + DomainEvent.automationExecutionId() default method + cycle detection in AutomationEventListener + executionId propagation through executors -> services -> events + integration tests (~12 tests). ~5 new/modified files. Backend only. | |
+| 4a | 283 | 283A | AutomationScheduler (@Scheduled, 15-min poll, per-tenant ScopedValue binding) + delayed action creation (SCHEDULED ActionExecution with scheduledFor) + scheduler picks up due actions + cancels when rule disabled/deleted + DomainEvent.automationExecutionId() default method + cycle detection in AutomationEventListener + executionId propagation through executors -> services -> events + integration tests (~12 tests). ~5 new/modified files. Backend only. | **Done** (PR #561) |
 
 ### Stage 5: API & Templates (parallel tracks)
 
@@ -456,7 +456,7 @@ Stage 9: [288A]                                                    (after Stages
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **283A** | 283.1--283.10 | AutomationScheduler (@Scheduled, 15-min poll, per-tenant ScopedValue) + delayed action creation (SCHEDULED ActionExecution with scheduledFor) + scheduler picks up due actions + cancels when rule disabled + DomainEvent.automationExecutionId() default method + cycle detection in listener + executionId propagation through executors + integration tests (~12 tests). ~5 new/modified files. Backend only. | |
+| **283A** | 283.1--283.10 | AutomationScheduler (@Scheduled, 15-min poll, per-tenant ScopedValue) + delayed action creation (SCHEDULED ActionExecution with scheduledFor) + scheduler picks up due actions + cancels when rule disabled + DomainEvent.automationExecutionId() default method + cycle detection in listener + executionId propagation through executors + integration tests (~12 tests). ~5 new/modified files. Backend only. | **Done** (PR #561) |
 
 ### Tasks
 

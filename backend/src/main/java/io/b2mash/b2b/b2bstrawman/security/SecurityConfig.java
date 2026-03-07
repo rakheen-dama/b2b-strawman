@@ -107,6 +107,8 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers("/api/portal/acceptance/**")
                     .permitAll()
+                    .requestMatchers("/api/access-requests/**")
+                    .permitAll()
                     .requestMatchers("/internal/**")
                     .authenticated()
                     .requestMatchers("/api/**")

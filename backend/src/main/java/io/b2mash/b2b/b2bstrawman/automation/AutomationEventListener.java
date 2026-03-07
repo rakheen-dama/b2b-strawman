@@ -1,6 +1,10 @@
 package io.b2mash.b2b.b2bstrawman.automation;
 
+import io.b2mash.b2b.b2bstrawman.automation.config.ActionFailure;
 import io.b2mash.b2b.b2bstrawman.event.DomainEvent;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +33,8 @@ public class AutomationEventListener {
   private final TriggerConfigMatcher triggerConfigMatcher;
   private final ConditionEvaluator conditionEvaluator;
   private final AutomationActionExecutor automationActionExecutor;
+  private final NotificationService notificationService;
+  private final MemberRepository memberRepository;
 
   public AutomationEventListener(
       AutomationRuleRepository ruleRepository,
@@ -36,13 +42,17 @@ public class AutomationEventListener {
       AutomationActionRepository actionRepository,
       TriggerConfigMatcher triggerConfigMatcher,
       ConditionEvaluator conditionEvaluator,
-      AutomationActionExecutor automationActionExecutor) {
+      AutomationActionExecutor automationActionExecutor,
+      NotificationService notificationService,
+      MemberRepository memberRepository) {
     this.ruleRepository = ruleRepository;
     this.executionRepository = executionRepository;
     this.actionRepository = actionRepository;
     this.triggerConfigMatcher = triggerConfigMatcher;
     this.conditionEvaluator = conditionEvaluator;
     this.automationActionExecutor = automationActionExecutor;
+    this.notificationService = notificationService;
+    this.memberRepository = memberRepository;
   }
 
   @EventListener
@@ -153,31 +163,69 @@ public class AutomationEventListener {
     }
 
     boolean allSucceeded = true;
-    String failureMessage = null;
+    List<String> failureMessages = new ArrayList<>();
 
     for (var action : actions) {
       var result = automationActionExecutor.execute(action, execution.getId(), context);
       if (!result.isSuccess()) {
         allSucceeded = false;
-        var failure = (io.b2mash.b2b.b2bstrawman.automation.config.ActionFailure) result;
-        failureMessage = failure.errorMessage();
+        var failure = (ActionFailure) result;
+        failureMessages.add(action.getActionType() + ": " + failure.errorMessage());
         log.warn(
             "Action {} (type {}) failed for rule {} ({}): {}",
             action.getId(),
             action.getActionType(),
             rule.getId(),
             rule.getName(),
-            failureMessage);
-        break; // Stop executing remaining actions on failure
+            failure.errorMessage());
+        // Continue executing subsequent actions — no short-circuit
       }
     }
 
     if (allSucceeded) {
       execution.complete();
     } else {
-      execution.fail(failureMessage);
+      execution.fail(String.join("; ", failureMessages));
+      sendFailureNotification(rule, failureMessages);
     }
     executionRepository.save(execution);
+  }
+
+  private void sendFailureNotification(AutomationRule rule, List<String> failureMessages) {
+    try {
+      var admins = memberRepository.findByOrgRoleIn(List.of("admin", "owner"));
+      if (admins.isEmpty()) {
+        log.debug("No admins/owners to notify about automation action failure");
+        return;
+      }
+
+      String title = "Automation action failed: " + rule.getName();
+      String body = "The following action(s) failed: " + String.join("; ", failureMessages);
+
+      for (var admin : admins) {
+        notificationService.createNotification(
+            admin.getId(),
+            "AUTOMATION_ACTION_FAILED",
+            title,
+            body,
+            "AutomationRule",
+            rule.getId(),
+            null);
+      }
+
+      log.info(
+          "Sent AUTOMATION_ACTION_FAILED notification to {} admin(s) for rule {} ({})",
+          admins.size(),
+          rule.getId(),
+          rule.getName());
+    } catch (Exception e) {
+      log.error(
+          "Failed to send automation failure notification for rule {} ({}): {}",
+          rule.getId(),
+          rule.getName(),
+          e.getMessage(),
+          e);
+    }
   }
 
   private boolean isCycleDetected(DomainEvent event) {

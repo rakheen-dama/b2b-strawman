@@ -163,7 +163,7 @@ FRONTEND TRACK (after respective backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 5a (parallel) | 284 | 284A | AutomationRuleService (CRUD, toggle, duplicate, dry-run test) + AutomationRuleController (all rule endpoints) + AutomationActionController (action CRUD + reorder) + AutomationExecutionController (list, detail, per-rule executions) + request/response DTOs + audit events (7 event types) + API integration tests (~18 tests). ~8 new files. Backend only. | |
+| 5a (parallel) | 284 | 284A | AutomationRuleService (CRUD, toggle, duplicate, dry-run test) + AutomationRuleController (all rule endpoints) + AutomationActionController (action CRUD + reorder) + AutomationExecutionController (list, detail, per-rule executions) + request/response DTOs + audit events (7 event types) + API integration tests (~18 tests). ~8 new files. Backend only. | **Done** (PR #562) |
 | 5b (parallel) | 284 | 284B | AutomationTemplateService (template listing + activation) + AutomationTemplateController (list + activate endpoints) + AutomationTemplateSeeder (loads from classpath JSON) + 6 template definition JSON files + OrgSettings.automationPackStatus JSONB field + V58 migration addendum (ALTER TABLE org_settings ADD COLUMN automation_pack_status) + provisioning + PackReconciliationRunner registration + integration tests (~8 tests). ~10 new/modified files. Backend only. | |
 
 ### Stage 6: Frontend Rule Management
@@ -515,7 +515,7 @@ Stage 9: [288A]                                                    (after Stages
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **284A** | 284.1--284.10 | AutomationRuleService (CRUD, toggle, duplicate, dry-run) + AutomationRuleController + AutomationActionController (CRUD + reorder) + AutomationExecutionController (list, detail, per-rule) + DTOs + audit events (7 types) + API integration tests (~18 tests). ~8 new files. Backend only. | |
+| **284A** | 284.1--284.10 | AutomationRuleService (CRUD, toggle, duplicate, dry-run) + AutomationRuleController + AutomationActionController (CRUD + reorder) + AutomationExecutionController (list, detail, per-rule) + DTOs + audit events (7 types) + API integration tests (~18 tests). ~8 new files. Backend only. | **Done** (PR #562) |
 | **284B** | 284.11--284.18 | AutomationTemplateService (listing + activation) + AutomationTemplateController + AutomationTemplateSeeder + 6 template JSON files + OrgSettings.automationPackStatus extension + provisioning + PackReconciliationRunner registration + integration tests (~8 tests). ~10 new/modified files. Backend only. | |
 
 ### Tasks

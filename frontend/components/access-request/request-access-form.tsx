@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,8 +18,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
-import { submitAccessRequest } from "@/app/request-access/actions";
+import { CheckCircle2, Loader2 } from "lucide-react";
+import {
+  submitAccessRequest,
+  verifyAccessRequestOtp,
+} from "@/app/request-access/actions";
 import {
   BLOCKED_EMAIL_DOMAINS,
   COUNTRIES,
@@ -39,13 +42,22 @@ function isBlockedDomain(email: string): boolean {
   return domain ? BLOCKED_EMAIL_DOMAINS.includes(domain) : false;
 }
 
+function formatTime(totalSeconds: number): string {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
 export function RequestAccessForm() {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
+  const [otpError, setOtpError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [expiresInMinutes, setExpiresInMinutes] = useState<number | null>(null);
+  const [otp, setOtp] = useState("");
+  const [secondsLeft, setSecondsLeft] = useState(0);
   const [fields, setFields] = useState<FormFields>({
     email: "",
     fullName: "",
@@ -53,6 +65,20 @@ export function RequestAccessForm() {
     country: "",
     industry: "",
   });
+
+  useEffect(() => {
+    if (secondsLeft <= 0) return;
+    const interval = setInterval(() => {
+      setSecondsLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [secondsLeft]);
 
   function updateField(key: keyof FormFields, value: string) {
     setFields((prev) => ({ ...prev, [key]: value }));
@@ -76,6 +102,34 @@ export function RequestAccessForm() {
     );
   }
 
+  const handleResend = useCallback(async () => {
+    setOtpError(null);
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      const result = await submitAccessRequest({
+        email: fields.email.trim(),
+        fullName: fields.fullName.trim(),
+        organizationName: fields.organizationName.trim(),
+        country: fields.country,
+        industry: fields.industry,
+      });
+
+      if (result.success) {
+        setSuccessMessage(result.message ?? "Verification code sent.");
+        setSecondsLeft((result.expiresInMinutes ?? 10) * 60);
+        setOtp("");
+      } else {
+        setError(result.error ?? "Failed to resend code.");
+      }
+    } catch {
+      setError("An unexpected error occurred.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [fields]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -98,7 +152,7 @@ export function RequestAccessForm() {
 
       if (result.success) {
         setSuccessMessage(result.message ?? "Verification code sent.");
-        setExpiresInMinutes(result.expiresInMinutes ?? null);
+        setSecondsLeft((result.expiresInMinutes ?? 10) * 60);
         setStep(2);
       } else {
         setError(result.error ?? "Failed to submit request.");
@@ -110,18 +164,62 @@ export function RequestAccessForm() {
     }
   }
 
+  async function handleVerify(e: React.FormEvent) {
+    e.preventDefault();
+    setOtpError(null);
+    setIsVerifying(true);
+
+    try {
+      const result = await verifyAccessRequestOtp(fields.email.trim(), otp);
+
+      if (result.success) {
+        setStep(3);
+      } else {
+        setOtpError(result.error ?? "Verification failed.");
+      }
+    } catch {
+      setOtpError("An unexpected error occurred.");
+    } finally {
+      setIsVerifying(false);
+    }
+  }
+
+  if (step === 3) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-display text-lg">
+            <span className="flex items-center gap-2">
+              <CheckCircle2 className="size-5 text-green-600" />
+              Request Submitted
+            </span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Your access request has been submitted for review. We&apos;ll notify
+            you by email once it&apos;s been reviewed.
+          </p>
+          <a
+            href="/"
+            className="inline-block text-sm font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
+          >
+            Back to home
+          </a>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (step === 2) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="font-display text-lg">Check Your Email</CardTitle>
+          <CardTitle className="font-display text-lg">
+            Check Your Email
+          </CardTitle>
           <CardDescription>
             {successMessage}
-            {expiresInMinutes != null && (
-              <span className="mt-1 block text-xs text-slate-500">
-                The code expires in {expiresInMinutes} minutes.
-              </span>
-            )}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -132,7 +230,85 @@ export function RequestAccessForm() {
             </span>{" "}
             to continue.
           </p>
-          {/* OTP input will be added in Epic 300B */}
+          <form onSubmit={handleVerify} className="mt-4 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="otp">Verification Code</Label>
+              <Input
+                id="otp"
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                pattern="[0-9]*"
+                placeholder="000000"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                className="text-center text-2xl tracking-[0.5em] font-mono"
+                aria-invalid={otpError ? true : undefined}
+                autoFocus
+              />
+              {otpError && (
+                <p className="text-sm text-red-600" role="alert">{otpError}</p>
+              )}
+            </div>
+
+            {secondsLeft > 0 ? (
+              <p className="text-center text-xs text-slate-500">
+                Code expires in {formatTime(secondsLeft)}
+              </p>
+            ) : (
+              <p className="text-center text-xs text-red-600">
+                Code expired.{" "}
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={isSubmitting}
+                  className="font-medium text-teal-600 hover:text-teal-700 underline disabled:opacity-50"
+                >
+                  Resend code
+                </button>
+              </p>
+            )}
+
+            {secondsLeft > 0 && (
+              <p className="text-center text-xs text-slate-500">
+                Didn&apos;t receive it?{" "}
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={isSubmitting}
+                  className="font-medium text-teal-600 hover:text-teal-700 underline disabled:opacity-50"
+                >
+                  Resend code
+                </button>
+              </p>
+            )}
+
+            {error && (
+              <div
+                role="alert"
+                className="rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-400"
+              >
+                {error}
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              variant="accent"
+              size="lg"
+              className="w-full"
+              disabled={otp.length !== 6 || isVerifying || secondsLeft <= 0}
+            >
+              {isVerifying ? (
+                <>
+                  <Loader2 className="animate-spin" />
+                  Verifying...
+                </>
+              ) : (
+                "Verify"
+              )}
+            </Button>
+          </form>
         </CardContent>
       </Card>
     );
@@ -227,7 +403,10 @@ export function RequestAccessForm() {
           </div>
 
           {error && (
-            <div role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-400">
+            <div
+              role="alert"
+              className="rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-400"
+            >
               {error}
             </div>
           )}

@@ -81,3 +81,53 @@ export async function submitAccessRequest(
     };
   }
 }
+
+interface VerifyOtpResult {
+  success: boolean;
+  message?: string;
+  error?: string;
+}
+
+export async function verifyAccessRequestOtp(
+  email: string,
+  otp: string,
+): Promise<VerifyOtpResult> {
+  if (!email?.trim()) {
+    return { success: false, error: "Email is required." };
+  }
+  if (!otp?.trim()) {
+    return { success: false, error: "Verification code is required." };
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/api/access-requests/verify`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: email.trim(),
+        otp: otp.trim(),
+      }),
+    });
+
+    if (response.ok) {
+      const body = await response.json();
+      return {
+        success: true,
+        message: body.message,
+      };
+    }
+
+    const errorBody = await response.json().catch(() => null);
+    const errorMessage =
+      errorBody?.detail ||
+      errorBody?.error ||
+      errorBody?.message ||
+      "Something went wrong.";
+    return { success: false, error: errorMessage };
+  } catch {
+    return {
+      success: false,
+      error: "Unable to reach the server. Please try again later.",
+    };
+  }
+}

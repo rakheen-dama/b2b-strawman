@@ -30,7 +30,7 @@ public final class GridDtos {
       boolean overAllocated,
       int leaveDays) {}
 
-  public record AllocationSlot(UUID projectId, String projectName, BigDecimal hours) {}
+  public record AllocationSlot(UUID id, UUID projectId, String projectName, BigDecimal hours) {}
 
   public record WeekSummary(
       LocalDate weekStart,

@@ -1,6 +1,8 @@
 import { getAuthContext } from "@/lib/auth";
+import { api } from "@/lib/api";
 import { getTeamCapacityGrid } from "@/lib/api/capacity";
 import type { TeamCapacityGrid } from "@/lib/api/capacity";
+import type { Project } from "@/lib/types";
 import { AllocationGrid } from "@/components/capacity/allocation-grid";
 import { WeekRangeSelector } from "@/components/capacity/week-range-selector";
 import { getCurrentMonday, formatDate, addWeeks } from "@/lib/date-utils";
@@ -19,7 +21,7 @@ export default async function ResourcesPage({
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ weekStart?: string; weekEnd?: string }>;
 }) {
-  const { slug: _slug } = await params;
+  const { slug } = await params;
   const sp = await searchParams;
   await getAuthContext();
 
@@ -29,11 +31,21 @@ export default async function ResourcesPage({
   const weekCount = computeWeekCount(weekStart, weekEnd);
 
   let grid: TeamCapacityGrid = { members: [], weekSummaries: [] };
+  let projectOptions: { id: string; name: string }[] = [];
 
   try {
     grid = await getTeamCapacityGrid(weekStart, weekEnd);
   } catch (err) {
     console.error("Failed to load team capacity grid", err);
+  }
+
+  try {
+    const projects = await api.get<Project[]>("/api/projects");
+    projectOptions = projects
+      .filter((p) => p.status === "ACTIVE")
+      .map((p) => ({ id: p.id, name: p.name }));
+  } catch (err) {
+    console.error("Failed to load projects", err);
   }
 
   return (
@@ -50,7 +62,7 @@ export default async function ResourcesPage({
         <WeekRangeSelector weekStart={weekStart} weekCount={weekCount} />
       </div>
 
-      <AllocationGrid grid={grid} />
+      <AllocationGrid grid={grid} projects={projectOptions} slug={slug} />
     </div>
   );
 }

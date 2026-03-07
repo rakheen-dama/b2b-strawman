@@ -148,6 +148,7 @@ public class CapacityGridService {
         for (ResourceAllocation alloc : weekAllocs) {
           slots.add(
               new AllocationSlot(
+                  alloc.getId(),
                   alloc.getProjectId(),
                   projectNames.getOrDefault(alloc.getProjectId(), "Unknown"),
                   alloc.getAllocatedHours()));
@@ -239,6 +240,7 @@ public class CapacityGridService {
       for (ResourceAllocation alloc : weekAllocs) {
         slots.add(
             new AllocationSlot(
+                alloc.getId(),
                 alloc.getProjectId(),
                 projectNames.getOrDefault(alloc.getProjectId(), "Unknown"),
                 alloc.getAllocatedHours()));

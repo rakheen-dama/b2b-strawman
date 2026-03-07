@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { ExecutionStatusBadge } from "@/components/automations/execution-status-badge";
 import { TriggerTypeBadge } from "@/components/automations/trigger-type-badge";
 import { ExecutionDetail } from "@/components/automations/execution-detail";
-import { formatRelativeDate } from "@/lib/format";
+import { formatRelativeDate, computeDuration } from "@/lib/format";
 import { Check, X, RefreshCw } from "lucide-react";
 import { fetchExecutionsAction } from "@/app/(app)/org/[slug]/settings/automations/actions";
 import type {
@@ -30,28 +30,15 @@ import type {
   PaginatedResponse,
 } from "@/lib/api/automations";
 
-function computeDuration(
-  startedAt: string,
-  completedAt: string | null,
-): string {
-  if (!completedAt) return "...";
-  const ms = new Date(completedAt).getTime() - new Date(startedAt).getTime();
-  if (ms < 1000) return `${ms}ms`;
-  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
-  return `${Math.round(ms / 60000)}m`;
-}
-
 interface ExecutionLogProps {
   initialExecutions: PaginatedResponse<AutomationExecutionResponse>;
   ruleId?: string;
-  slug: string;
   rules?: { id: string; name: string }[];
 }
 
 export function ExecutionLog({
   initialExecutions,
   ruleId,
-  slug: _slug,
   rules,
 }: ExecutionLogProps) {
   const [executions, setExecutions] =

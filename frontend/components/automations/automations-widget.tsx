@@ -1,16 +1,8 @@
-"use client";
-
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Zap } from "lucide-react";
-
-export interface AutomationSummary {
-  activeRulesCount: number;
-  todayTotal: number;
-  todaySucceeded: number;
-  todayFailed: number;
-}
+import type { AutomationSummary } from "@/lib/api/automations";
 
 interface AutomationsWidgetProps {
   data: AutomationSummary | null;

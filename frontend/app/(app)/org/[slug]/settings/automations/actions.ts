@@ -8,7 +8,6 @@ import {
   updateRule,
   duplicateRule,
   listExecutions,
-  getRuleExecutions,
 } from "@/lib/api/automations";
 import type {
   UpdateRuleRequest,
@@ -124,12 +123,6 @@ export async function fetchExecutionsAction(params?: {
   page?: number;
   size?: number;
 }): Promise<PaginatedResponse<AutomationExecutionResponse>> {
-  if (params?.ruleId) {
-    return getRuleExecutions(params.ruleId, {
-      page: params.page,
-      size: params.size,
-    });
-  }
   return listExecutions(params);
 }
 

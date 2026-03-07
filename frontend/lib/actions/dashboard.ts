@@ -14,7 +14,7 @@ import type {
 import type { AggregatedCompletenessResponse } from "@/lib/types";
 import type { InformationRequestSummary } from "@/lib/api/information-requests";
 import { listRules, listExecutions } from "@/lib/api/automations";
-import type { AutomationSummary } from "@/components/automations/automations-widget";
+import type { AutomationSummary } from "@/lib/api/automations";
 
 export async function fetchDashboardKpis(
   from: string,
@@ -103,7 +103,7 @@ export async function fetchAutomationSummary(): Promise<AutomationSummary | null
     ]);
 
     const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
+    todayStart.setUTCHours(0, 0, 0, 0);
 
     const todayExecutions = executions.content.filter(
       (e) => new Date(e.startedAt) >= todayStart,

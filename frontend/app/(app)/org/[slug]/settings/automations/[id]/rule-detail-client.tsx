@@ -216,7 +216,6 @@ export function RuleDetailClient({ slug, rule, initialExecutions }: RuleDetailCl
           <ExecutionLog
             initialExecutions={initialExecutions}
             ruleId={rule.id}
-            slug={slug}
           />
         </TabsContent>
       </Tabs>

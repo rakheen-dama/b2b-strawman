@@ -102,7 +102,6 @@ describe("ExecutionLog", () => {
     render(
       <ExecutionLog
         initialExecutions={samplePaginatedResponse}
-        slug="acme"
       />,
     );
     expect(screen.getByText("Auto-assign tasks")).toBeInTheDocument();
@@ -113,7 +112,6 @@ describe("ExecutionLog", () => {
     render(
       <ExecutionLog
         initialExecutions={samplePaginatedResponse}
-        slug="acme"
       />,
     );
     expect(screen.getByText("Completed")).toBeInTheDocument();
@@ -124,7 +122,6 @@ describe("ExecutionLog", () => {
     render(
       <ExecutionLog
         initialExecutions={samplePaginatedResponse}
-        slug="acme"
       />,
     );
     fireEvent.click(screen.getByText("Auto-assign tasks"));
@@ -140,7 +137,7 @@ describe("ExecutionLog", () => {
       page: { totalElements: 0, totalPages: 0, size: 20, number: 0 },
     };
     render(
-      <ExecutionLog initialExecutions={empty} slug="acme" />,
+      <ExecutionLog initialExecutions={empty} />,
     );
     expect(screen.getByText("No executions found.")).toBeInTheDocument();
   });

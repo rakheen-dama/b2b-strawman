@@ -70,7 +70,6 @@ export default async function ExecutionLogPage({
 
       <ExecutionLog
         initialExecutions={executions}
-        slug={slug}
         rules={rules}
       />
     </div>

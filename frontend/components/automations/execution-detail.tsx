@@ -10,7 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ExecutionStatusBadge } from "@/components/automations/execution-status-badge";
 import { TriggerTypeBadge } from "@/components/automations/trigger-type-badge";
-import { formatRelativeDate } from "@/lib/format";
+import { formatRelativeDate, computeDuration } from "@/lib/format";
 import { Check, X, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import type {
@@ -28,17 +28,6 @@ const ACTION_STATUS_CONFIG: Record<
   FAILED: { label: "Failed", variant: "destructive" },
   SKIPPED: { label: "Skipped", variant: "neutral" },
 };
-
-function computeDuration(
-  startedAt: string,
-  completedAt: string | null,
-): string {
-  if (!completedAt) return "...";
-  const ms = new Date(completedAt).getTime() - new Date(startedAt).getTime();
-  if (ms < 1000) return `${ms}ms`;
-  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
-  return `${Math.round(ms / 60000)}m`;
-}
 
 function formatActionType(type: string): string {
   return type

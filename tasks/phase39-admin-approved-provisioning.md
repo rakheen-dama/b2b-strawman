@@ -17,7 +17,7 @@ Phase 39 replaces self-registration with an **admin-approved access request pipe
 |------|------|-------|------|--------|--------|--------|
 | 295 | Access Request Entity Foundation & Migration | Backend | -- | M | 295A, 295B | **Done** (PR #582) |
 | 296 | OTP Verification & Public Access Request API | Backend | 295 | M | 296A, 296B | **Done** (PR #583, #584) |
-| 297 | Platform Admin Identity & Security Infrastructure | Backend | 295 | M | 297A, 297B | |
+| 297 | Platform Admin Identity & Security Infrastructure | Backend | 295 | M | 297A, 297B | **Done** (PRs #585, #586) |
 | 298 | Approval Pipeline & Platform Admin API | Backend | 296, 297 | M | 298A, 298B | |
 | 299 | Keycloak Configuration & Gateway Routing | Infra | 297 | S | 299A | |
 | 300 | Public Access Request Form (Frontend) | Frontend | 296 | M | 300A, 300B | |
@@ -133,7 +133,7 @@ FRONTEND TRACK (after backend APIs)       |
 | 1a (parallel) | 296 | 296A | `AccessRequestService.submitRequest()` — OTP generation, email domain validation, OTP email sending via existing `EmailProvider`. `AccessRequestPublicController` with `POST /api/access-requests`. `SecurityConfig` update to permitAll on `/api/access-requests/**`. ~4 new/modified files (~8 tests). Backend only. | **Done** (PR #583) |
 | 1b (parallel) | 296 | 296B | `AccessRequestService.verifyOtp()` — OTP verification, attempt tracking, expiry check, status promotion to PENDING. `POST /api/access-requests/verify` endpoint. ~2 modified files (~7 tests). Backend only. | **Done** (PR #584) |
 | 1c (parallel) | 297 | 297A | `RequestScopes.GROUPS` ScopedValue, `ClerkJwtUtils.extractGroups()`, `PlatformSecurityService.isPlatformAdmin()`. New `PlatformAdminFilter` binding groups from JWT. ~4 new/modified files (~6 unit tests). Backend only. | **Done** (PR #585) |
-| 1d | 297 | 297B | `SecurityConfig` filter chain update — `PlatformAdminFilter` ordering, `/api/platform-admin/**` requiring authentication. `@PreAuthorize("@platformSecurityService.isPlatformAdmin()")` integration test. ~2 modified files (~5 tests). Backend only. | |
+| 1d | 297 | 297B | `SecurityConfig` filter chain update — `PlatformAdminFilter` ordering, `/api/platform-admin/**` requiring authentication. `@PreAuthorize("@platformSecurityService.isPlatformAdmin()")` integration test. ~2 modified files (~5 tests). Backend only. | **Done** (PR #586) |
 
 ### Stage 2: Approval Pipeline & Admin API (sequential)
 
@@ -335,7 +335,7 @@ Stage 6: [302A]                                                        (after 29
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **297A** | 297.1--297.5 | `RequestScopes.GROUPS` ScopedValue, `ClerkJwtUtils.extractGroups()` method, `PlatformSecurityService` with `isPlatformAdmin()`, `PlatformAdminFilter` that binds groups from JWT. ~4 new/modified files (~6 unit tests). Backend only. | **Done** (PR #585) |
-| **297B** | 297.6--297.9 | `SecurityConfig` update to insert `PlatformAdminFilter` in filter chain, verify `/api/platform-admin/**` requires authentication, `@PreAuthorize` integration test with mock JWT containing groups claim. ~2 modified files (~5 integration tests). Backend only. | |
+| **297B** | 297.6--297.9 | `SecurityConfig` update to insert `PlatformAdminFilter` in filter chain, verify `/api/platform-admin/**` requires authentication, `@PreAuthorize` integration test with mock JWT containing groups claim. ~2 modified files (~5 integration tests). Backend only. | **Done** (PR #586) |
 
 ### Tasks
 

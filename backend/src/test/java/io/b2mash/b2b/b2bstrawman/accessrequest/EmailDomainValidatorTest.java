@@ -45,4 +45,17 @@ class EmailDomainValidatorTest {
   void emptyEmail_returnsFalse() {
     assertThat(validator.isBlockedDomain("")).isFalse();
   }
+
+  @Test
+  void emailWithEmptyDomain_returnsFalse() {
+    assertThat(validator.isBlockedDomain("user@")).isFalse();
+  }
+
+  @Test
+  void emptyBlockedList_allowsAllEmails() {
+    EmailDomainValidator permissiveValidator =
+        new EmailDomainValidator(new AccessRequestConfigProperties(List.of(), 10, 5));
+    assertThat(permissiveValidator.isBlockedDomain("user@gmail.com")).isFalse();
+    assertThat(permissiveValidator.isBlockedDomain("user@anything.com")).isFalse();
+  }
 }

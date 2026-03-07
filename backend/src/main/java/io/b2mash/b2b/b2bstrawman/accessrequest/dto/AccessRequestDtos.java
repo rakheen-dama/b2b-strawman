@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.accessrequest.dto;
 
 import io.b2mash.b2b.b2bstrawman.accessrequest.AccessRequest;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import java.time.Instant;
 import java.util.UUID;
@@ -10,13 +11,13 @@ public final class AccessRequestDtos {
   private AccessRequestDtos() {}
 
   public record AccessRequestSubmission(
-      @NotBlank String email,
+      @NotBlank @Email String email,
       @NotBlank String fullName,
       @NotBlank String organizationName,
       @NotBlank String country,
       @NotBlank String industry) {}
 
-  public record OtpVerifyRequest(@NotBlank String email, @NotBlank String otp) {}
+  public record OtpVerifyRequest(@NotBlank @Email String email, @NotBlank String otp) {}
 
   public record AccessRequestResponse(
       UUID id,

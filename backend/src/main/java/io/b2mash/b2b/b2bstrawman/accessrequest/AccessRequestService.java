@@ -2,7 +2,9 @@ package io.b2mash.b2b.b2bstrawman.accessrequest;
 
 import io.b2mash.b2b.b2bstrawman.accessrequest.dto.AccessRequestDtos.AccessRequestSubmission;
 import io.b2mash.b2b.b2bstrawman.accessrequest.dto.AccessRequestDtos.SubmitResponse;
+import io.b2mash.b2b.b2bstrawman.accessrequest.dto.AccessRequestDtos.VerifyResponse;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.TooManyRequestsException;
 import jakarta.mail.internet.MimeMessage;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -91,6 +93,41 @@ public class AccessRequestService {
     return new SubmitResponse(
         "If the email is valid, a verification code will be sent.",
         configProperties.otpExpiryMinutes());
+  }
+
+  @Transactional(noRollbackFor = {InvalidStateException.class, TooManyRequestsException.class})
+  public VerifyResponse verifyOtp(String email, String otp) {
+    String normalizedEmail = email.toLowerCase();
+    Instant now = Instant.now();
+
+    var entity =
+        accessRequestRepository
+            .findWithLockByEmailAndStatus(normalizedEmail, AccessRequestStatus.PENDING_VERIFICATION)
+            .orElseThrow(
+                () -> new InvalidStateException("Verification failed", "Verification failed"));
+
+    if (now.isAfter(entity.getOtpExpiresAt())) {
+      throw new InvalidStateException("OTP expired", "Please submit a new access request");
+    }
+
+    if (entity.getOtpAttempts() >= configProperties.otpMaxAttempts()) {
+      throw new TooManyRequestsException(
+          "Too many attempts", "Maximum verification attempts exceeded");
+    }
+
+    entity.setOtpAttempts(entity.getOtpAttempts() + 1);
+    accessRequestRepository.save(entity);
+
+    if (!passwordEncoder.matches(otp, entity.getOtpHash())) {
+      throw new InvalidStateException("Invalid OTP", "The verification code is incorrect");
+    }
+
+    entity.setStatus(AccessRequestStatus.PENDING);
+    entity.setOtpVerifiedAt(now);
+    entity.setOtpHash(null);
+    accessRequestRepository.save(entity);
+
+    return new VerifyResponse("Email verified successfully");
   }
 
   private void sendOtpEmail(String recipientEmail, String otp, String fullName, int expiryMinutes) {

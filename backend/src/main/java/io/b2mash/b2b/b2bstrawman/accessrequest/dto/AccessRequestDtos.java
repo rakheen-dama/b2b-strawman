@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.accessrequest.dto;
 import io.b2mash.b2b.b2bstrawman.accessrequest.AccessRequest;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -17,7 +18,9 @@ public final class AccessRequestDtos {
       @NotBlank String country,
       @NotBlank String industry) {}
 
-  public record OtpVerifyRequest(@NotBlank @Email String email, @NotBlank String otp) {}
+  public record OtpVerifyRequest(
+      @NotBlank @Email String email,
+      @NotBlank @Pattern(regexp = "\\d{6}", message = "OTP must be a 6-digit code") String otp) {}
 
   public record AccessRequestResponse(
       UUID id,

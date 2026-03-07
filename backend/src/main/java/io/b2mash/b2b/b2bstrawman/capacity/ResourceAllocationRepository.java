@@ -17,6 +17,9 @@ public interface ResourceAllocationRepository extends JpaRepository<ResourceAllo
   List<ResourceAllocation> findByProjectIdAndWeekStartBetween(
       UUID projectId, LocalDate start, LocalDate end);
 
+  List<ResourceAllocation> findByProjectIdInAndWeekStartBetween(
+      List<UUID> projectIds, LocalDate start, LocalDate end);
+
   List<ResourceAllocation> findByWeekStartBetween(LocalDate start, LocalDate end);
 
   @Query(

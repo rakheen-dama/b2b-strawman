@@ -52,9 +52,10 @@ class ProfitabilityProjectionTest {
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_profitability_projection_test";
 
-  // Use a Monday far in the future so it's always "future" relative to today
-  private static final LocalDate FUTURE_MONDAY = LocalDate.of(2027, 6, 7); // Monday
-  private static final LocalDate FUTURE_MONDAY_2 = LocalDate.of(2027, 6, 14); // Next Monday
+  // Dynamically compute a Monday far in the future so it's always "future" relative to today
+  private static final LocalDate FUTURE_MONDAY =
+      LocalDate.now().plusYears(1).with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY));
+  private static final LocalDate FUTURE_MONDAY_2 = FUTURE_MONDAY.plusWeeks(1);
 
   @Autowired private MockMvc mockMvc;
   @Autowired private ProjectService projectService;

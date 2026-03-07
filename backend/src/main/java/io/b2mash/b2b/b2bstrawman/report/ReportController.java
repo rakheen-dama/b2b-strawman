@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.report;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -100,12 +101,14 @@ public class ReportController {
       BigDecimal totalExpenseCost,
       BigDecimal totalExpenseRevenue) {}
 
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   public record ProjectProfitabilityResponse(
       UUID projectId,
       String projectName,
       List<CurrencyBreakdown> currencies,
       ProjectionData projections) {}
 
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   public record CustomerProfitabilityResponse(
       UUID customerId,
       String customerName,
@@ -138,6 +141,7 @@ public class ReportController {
       BigDecimal margin,
       BigDecimal marginPercent) {}
 
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   public record OrgProfitabilityResponse(
       List<ProjectProfitabilitySummary> projects, ProjectionData projections) {}
 }

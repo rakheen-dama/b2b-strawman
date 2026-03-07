@@ -22,6 +22,7 @@ import io.b2mash.b2b.b2bstrawman.report.ReportController.UtilizationResponse;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Clock;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
@@ -42,6 +43,10 @@ public class ReportService {
 
   private static final Logger log = LoggerFactory.getLogger(ReportService.class);
 
+  /** Default projection horizon when no end date is specified. */
+  private static final long DEFAULT_PROJECTION_HORIZON_YEARS = 2;
+
+  private final Clock clock;
   private final ReportRepository reportRepository;
   private final ProjectAccessService projectAccessService;
   private final CustomerRepository customerRepository;
@@ -52,6 +57,7 @@ public class ReportService {
   private final ResourceAllocationRepository resourceAllocationRepository;
 
   public ReportService(
+      Clock clock,
       ReportRepository reportRepository,
       ProjectAccessService projectAccessService,
       CustomerRepository customerRepository,
@@ -60,6 +66,7 @@ public class ReportService {
       BillingRateService billingRateService,
       CostRateService costRateService,
       ResourceAllocationRepository resourceAllocationRepository) {
+    this.clock = clock;
     this.reportRepository = reportRepository;
     this.projectAccessService = projectAccessService;
     this.customerRepository = customerRepository;
@@ -456,12 +463,14 @@ public class ReportService {
     }
 
     var links = customerProjectRepository.findByCustomerId(customerId);
-    List<ResourceAllocation> allAllocations = new ArrayList<>();
-    for (var link : links) {
-      allAllocations.addAll(
-          resourceAllocationRepository.findByProjectIdAndWeekStartBetween(
-              link.getProjectId(), futureWindow.start(), futureWindow.end()));
+    var projectIds = links.stream().map(l -> l.getProjectId()).toList();
+    if (projectIds.isEmpty()) {
+      return new ProjectionData(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
     }
+
+    var allAllocations =
+        resourceAllocationRepository.findByProjectIdInAndWeekStartBetween(
+            projectIds, futureWindow.start(), futureWindow.end());
 
     return aggregateProjections(allAllocations);
   }
@@ -479,12 +488,13 @@ public class ReportService {
     List<ResourceAllocation> allocations;
     if (customerId != null) {
       var links = customerProjectRepository.findByCustomerId(customerId);
-      allocations = new ArrayList<>();
-      for (var link : links) {
-        allocations.addAll(
-            resourceAllocationRepository.findByProjectIdAndWeekStartBetween(
-                link.getProjectId(), futureWindow.start(), futureWindow.end()));
+      var projectIds = links.stream().map(l -> l.getProjectId()).toList();
+      if (projectIds.isEmpty()) {
+        return new ProjectionData(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
       }
+      allocations =
+          resourceAllocationRepository.findByProjectIdInAndWeekStartBetween(
+              projectIds, futureWindow.start(), futureWindow.end());
     } else {
       allocations =
           resourceAllocationRepository.findByWeekStartBetween(
@@ -533,14 +543,15 @@ public class ReportService {
   private record FutureWindow(LocalDate start, LocalDate end) {}
 
   private FutureWindow resolveFutureWindow(LocalDate from, LocalDate to) {
-    LocalDate today = LocalDate.now();
+    LocalDate today = LocalDate.now(clock);
     LocalDate currentMonday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
 
     // Future starts at current Monday (current week counts as future for projections)
     LocalDate futureStart = from != null && from.isAfter(currentMonday) ? from : currentMonday;
 
-    // Default to 2 years out if no end date (captures all future allocations)
-    LocalDate futureEnd = to != null ? to : currentMonday.plusYears(2);
+    // Default to DEFAULT_PROJECTION_HORIZON_YEARS out if no end date
+    LocalDate futureEnd =
+        to != null ? to : currentMonday.plusYears(DEFAULT_PROJECTION_HORIZON_YEARS);
 
     if (futureStart.isAfter(futureEnd)) {
       return null;

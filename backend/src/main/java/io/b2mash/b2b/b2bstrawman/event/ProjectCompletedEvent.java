@@ -17,5 +17,12 @@ public record ProjectCompletedEvent(
     Map<String, Object> details,
     UUID completedBy,
     String projectName,
-    boolean unbilledTimeWaived)
-    implements DomainEvent {}
+    boolean unbilledTimeWaived,
+    UUID automationExecutionId)
+    implements DomainEvent {
+
+  @Override
+  public UUID automationExecutionId() {
+    return automationExecutionId;
+  }
+}

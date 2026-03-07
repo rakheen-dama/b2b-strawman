@@ -396,7 +396,8 @@ class AutomationActionExecutorExtendedTest {
                       "OPEN",
                       "COMPLETED",
                       null,
-                      "Non-Short-Circuit Task");
+                      "Non-Short-Circuit Task",
+                      null);
 
               long notifCountBefore = notificationRepository.count();
               eventPublisher.publishEvent(event);
@@ -488,7 +489,8 @@ class AutomationActionExecutorExtendedTest {
                       "OPEN",
                       "IN_PROGRESS",
                       null,
-                      "Three Action Task");
+                      "Three Action Task",
+                      null);
 
               eventPublisher.publishEvent(event);
 
@@ -558,7 +560,8 @@ class AutomationActionExecutorExtendedTest {
                       "OPEN",
                       "COMPLETED",
                       null,
-                      "Failure Notif Task");
+                      "Failure Notif Task",
+                      null);
 
               eventPublisher.publishEvent(event);
 
@@ -623,7 +626,8 @@ class AutomationActionExecutorExtendedTest {
                       "OPEN",
                       "IN_PROGRESS",
                       null,
-                      "Worst Case Task");
+                      "Worst Case Task",
+                      null);
 
               eventPublisher.publishEvent(event);
 

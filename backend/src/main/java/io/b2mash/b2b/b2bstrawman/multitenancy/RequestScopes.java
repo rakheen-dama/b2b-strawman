@@ -30,6 +30,12 @@ public final class RequestScopes {
   /** Authenticated portal contact's UUID. Bound by CustomerAuthFilter for portal requests. */
   public static final ScopedValue<UUID> PORTAL_CONTACT_ID = ScopedValue.newInstance();
 
+  /**
+   * Automation execution ID. Bound by AutomationActionExecutor when executing actions. Used by
+   * services to propagate the execution ID into domain events for cycle detection.
+   */
+  public static final ScopedValue<UUID> AUTOMATION_EXECUTION_ID = ScopedValue.newInstance();
+
   public static final String DEFAULT_TENANT = "public";
 
   /** Returns the current member's UUID. Throws if not bound by filter chain. */

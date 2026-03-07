@@ -3,8 +3,13 @@ package io.b2mash.b2b.b2bstrawman.automation;
 import io.b2mash.b2b.b2bstrawman.automation.config.ActionConfig;
 import io.b2mash.b2b.b2bstrawman.automation.config.ActionFailure;
 import io.b2mash.b2b.b2bstrawman.automation.config.ActionResult;
+import io.b2mash.b2b.b2bstrawman.automation.config.ActionSuccess;
 import io.b2mash.b2b.b2bstrawman.automation.config.AutomationConfigDeserializer;
 import io.b2mash.b2b.b2bstrawman.automation.executor.ActionExecutor;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -50,9 +55,45 @@ public class AutomationActionExecutor {
   public ActionResult execute(
       AutomationAction action, UUID executionId, Map<String, Map<String, Object>> context) {
 
+    // Check if this is a delayed action
+    if (action.getDelayDuration() != null && action.getDelayUnit() != null) {
+      return createScheduledExecution(action, executionId, context);
+    }
+
+    return executeImmediate(action, executionId, context);
+  }
+
+  /**
+   * Executes an action immediately with the provided executor. Also used by the scheduler to
+   * execute delayed actions when their scheduled time arrives.
+   */
+  public ActionResult executeImmediate(
+      AutomationAction action, UUID executionId, Map<String, Map<String, Object>> context) {
+
     var actionExecution =
         new ActionExecution(executionId, action.getId(), ActionExecutionStatus.PENDING, null);
     actionExecutionRepository.save(actionExecution);
+
+    return executeWithRecord(action, executionId, context, actionExecution);
+  }
+
+  /**
+   * Executes a previously scheduled action execution. Used by the scheduler to execute delayed
+   * actions with their pre-existing ActionExecution record.
+   */
+  public ActionResult executeScheduled(
+      AutomationAction action,
+      UUID executionId,
+      Map<String, Map<String, Object>> context,
+      ActionExecution actionExecution) {
+    return executeWithRecord(action, executionId, context, actionExecution);
+  }
+
+  private ActionResult executeWithRecord(
+      AutomationAction action,
+      UUID executionId,
+      Map<String, Map<String, Object>> context,
+      ActionExecution actionExecution) {
 
     try {
       ActionExecutor executor = executors.get(action.getActionType());
@@ -68,10 +109,14 @@ public class AutomationActionExecutor {
           configDeserializer.deserializeActionConfig(
               action.getActionType(), action.getActionConfig());
 
-      ActionResult result = executor.execute(config, context);
+      // Bind the automation execution ID so domain events published by services
+      // during action execution carry this ID for cycle detection (ADR-146).
+      ActionResult result =
+          ScopedValue.where(RequestScopes.AUTOMATION_EXECUTION_ID, executionId)
+              .call(() -> executor.execute(config, context, executionId));
 
       if (result.isSuccess()) {
-        var success = (io.b2mash.b2b.b2bstrawman.automation.config.ActionSuccess) result;
+        var success = (ActionSuccess) result;
         actionExecution.complete(success.resultData());
       } else {
         var failure = (ActionFailure) result;
@@ -91,5 +136,38 @@ public class AutomationActionExecutor {
       actionExecutionRepository.save(actionExecution);
       return new ActionFailure("Unexpected error: " + e.getMessage(), e.toString());
     }
+  }
+
+  private ActionResult createScheduledExecution(
+      AutomationAction action, UUID executionId, Map<String, Map<String, Object>> context) {
+    Instant scheduledFor = calculateScheduledFor(action.getDelayDuration(), action.getDelayUnit());
+
+    var actionExecution =
+        new ActionExecution(
+            executionId, action.getId(), ActionExecutionStatus.SCHEDULED, scheduledFor);
+
+    // Store context for later deserialization by the scheduler
+    Map<String, Object> scheduledData = new LinkedHashMap<>();
+    scheduledData.put("_context", context);
+    actionExecution.storeContext(scheduledData);
+
+    actionExecutionRepository.save(actionExecution);
+
+    log.info(
+        "Scheduled action {} (type {}) for execution at {}",
+        action.getId(),
+        action.getActionType(),
+        scheduledFor);
+
+    return new ActionSuccess(Map.of("scheduled", true, "scheduledFor", scheduledFor.toString()));
+  }
+
+  private Instant calculateScheduledFor(Integer delayDuration, DelayUnit delayUnit) {
+    Instant now = Instant.now();
+    return switch (delayUnit) {
+      case MINUTES -> now.plus(Duration.ofMinutes(delayDuration));
+      case HOURS -> now.plus(Duration.ofHours(delayDuration));
+      case DAYS -> now.plus(Duration.ofDays(delayDuration));
+    };
   }
 }

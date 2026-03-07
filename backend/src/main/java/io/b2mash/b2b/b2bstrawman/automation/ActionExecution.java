@@ -86,6 +86,15 @@ public class ActionExecution {
     this.updatedAt = Instant.now();
   }
 
+  /**
+   * Stores the automation context for delayed action execution. The context is serialized into the
+   * resultData JSONB field and deserialized later by the scheduler.
+   */
+  public void storeContext(Map<String, Object> context) {
+    this.resultData = context;
+    this.updatedAt = Instant.now();
+  }
+
   public UUID getId() {
     return id;
   }

@@ -35,7 +35,8 @@ public class CreateProjectActionExecutor implements ActionExecutor {
   }
 
   @Override
-  public ActionResult execute(ActionConfig config, Map<String, Map<String, Object>> context) {
+  public ActionResult execute(
+      ActionConfig config, Map<String, Map<String, Object>> context, UUID automationExecutionId) {
     if (!(config instanceof CreateProjectActionConfig projectConfig)) {
       return new ActionFailure(
           "Invalid config type for CREATE_PROJECT", config.getClass().getSimpleName());

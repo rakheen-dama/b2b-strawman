@@ -383,7 +383,8 @@ class AutomationActionExecutorTest {
                       "OPEN",
                       "COMPLETED",
                       null,
-                      "E2E Test Task");
+                      "E2E Test Task",
+                      null);
 
               eventPublisher.publishEvent(event);
 
@@ -430,7 +431,8 @@ class AutomationActionExecutorTest {
                       "OPEN",
                       "COMPLETED",
                       null,
-                      "Failed Action Task");
+                      "Failed Action Task",
+                      null);
 
               eventPublisher.publishEvent(event);
 

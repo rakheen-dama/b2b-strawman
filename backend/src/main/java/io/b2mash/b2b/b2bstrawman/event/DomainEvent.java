@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.event;
 
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
@@ -73,4 +74,22 @@ public sealed interface DomainEvent
   Instant occurredAt();
 
   Map<String, Object> details();
+
+  /**
+   * Returns the automation execution ID if this event was triggered by an automation action. Used
+   * for cycle detection — events with a non-null execution ID are skipped by the automation engine
+   * to prevent infinite loops.
+   *
+   * <p>The default implementation reads from {@link RequestScopes#AUTOMATION_EXECUTION_ID}, which
+   * is bound by {@code AutomationActionExecutor} when executing actions. Events that carry the
+   * execution ID as an explicit field (e.g., {@link TaskStatusChangedEvent}, {@link
+   * ProjectCompletedEvent}) override this method.
+   *
+   * @return the automation execution ID, or null if this event was not automation-triggered
+   */
+  default UUID automationExecutionId() {
+    return RequestScopes.AUTOMATION_EXECUTION_ID.isBound()
+        ? RequestScopes.AUTOMATION_EXECUTION_ID.get()
+        : null;
+  }
 }

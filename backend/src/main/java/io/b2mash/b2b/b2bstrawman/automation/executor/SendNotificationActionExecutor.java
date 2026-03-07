@@ -44,7 +44,8 @@ public class SendNotificationActionExecutor implements ActionExecutor {
   }
 
   @Override
-  public ActionResult execute(ActionConfig config, Map<String, Map<String, Object>> context) {
+  public ActionResult execute(
+      ActionConfig config, Map<String, Map<String, Object>> context, UUID automationExecutionId) {
     if (!(config instanceof SendNotificationActionConfig notifConfig)) {
       return new ActionFailure(
           "Invalid config type for SEND_NOTIFICATION", config.getClass().getSimpleName());

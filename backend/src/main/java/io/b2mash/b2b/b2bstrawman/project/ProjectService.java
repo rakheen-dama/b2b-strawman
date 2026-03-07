@@ -510,7 +510,10 @@ public class ProjectService {
             Map.of("name", project.getName()),
             memberId,
             project.getName(),
-            unbilledCount > 0 && acknowledgeUnbilledTime));
+            unbilledCount > 0 && acknowledgeUnbilledTime,
+            RequestScopes.AUTOMATION_EXECUTION_ID.isBound()
+                ? RequestScopes.AUTOMATION_EXECUTION_ID.get()
+                : null));
 
     return project;
   }

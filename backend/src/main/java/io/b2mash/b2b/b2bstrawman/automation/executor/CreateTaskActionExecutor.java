@@ -41,7 +41,8 @@ public class CreateTaskActionExecutor implements ActionExecutor {
   }
 
   @Override
-  public ActionResult execute(ActionConfig config, Map<String, Map<String, Object>> context) {
+  public ActionResult execute(
+      ActionConfig config, Map<String, Map<String, Object>> context, UUID automationExecutionId) {
     if (!(config instanceof CreateTaskActionConfig taskConfig)) {
       return new ActionFailure(
           "Invalid config type for CREATE_TASK", config.getClass().getSimpleName());

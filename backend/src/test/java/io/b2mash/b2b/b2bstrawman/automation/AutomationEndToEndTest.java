@@ -150,8 +150,14 @@ class AutomationEndToEndTest {
                   .isEqualTo(ActionExecutionStatus.COMPLETED);
               assertThat(actionExecs.getFirst().getResultData()).containsKey("createdTaskId");
 
-              // Verify task was actually created
+              // Verify task was actually created with expected content
               assertThat(taskRepository.count()).isGreaterThan(taskCountBefore);
+              var createdTaskId =
+                  UUID.fromString(
+                      actionExecs.getFirst().getResultData().get("createdTaskId").toString());
+              var createdTask = taskRepository.findById(createdTaskId);
+              assertThat(createdTask).isPresent();
+              assertThat(createdTask.get().getTitle()).contains("Follow-up:");
             });
   }
 
@@ -359,7 +365,8 @@ class AutomationEndToEndTest {
                   .isEqualTo(ActionExecutionStatus.SCHEDULED);
               assertThat(actionExecs.getFirst().getScheduledFor()).isNotNull();
               assertThat(actionExecs.getFirst().getScheduledFor())
-                  .isAfter(Instant.now().minusSeconds(10));
+                  .isAfter(Instant.now().minusSeconds(5))
+                  .isBefore(Instant.now().plus(2, ChronoUnit.MINUTES));
 
               // To test execution by the scheduler, create a separate SCHEDULED action
               // execution with scheduledFor in the past (ActionExecution has no setter)
@@ -389,7 +396,7 @@ class AutomationEndToEndTest {
               // Verify the past-due action was executed
               var updated = actionExecutionRepository.findById(pastActionExec.getId());
               assertThat(updated).isPresent();
-              assertThat(updated.get().getStatus()).isNotEqualTo(ActionExecutionStatus.SCHEDULED);
+              assertThat(updated.get().getStatus()).isEqualTo(ActionExecutionStatus.COMPLETED);
             });
   }
 
@@ -477,8 +484,6 @@ class AutomationEndToEndTest {
               actionRepository.save(action1);
               actionRepository.save(action2);
 
-              long notifCountBefore = notificationRepository.count();
-
               var event = taskStatusChangedEvent("OPEN", "COMPLETED");
               eventPublisher.publishEvent(event);
 
@@ -494,18 +499,18 @@ class AutomationEndToEndTest {
                   actionExecutionRepository.findByExecutionId(executions.getFirst().getId());
               assertThat(actionExecs).hasSize(3);
 
-              // Sort by action ID to match creation order (sortOrder)
+              // Sort by action sortOrder using a single batch lookup
+              var actionIds = actionExecs.stream().map(ActionExecution::getActionId).toList();
+              var actionSortOrders =
+                  actionRepository.findAllById(actionIds).stream()
+                      .collect(
+                          java.util.stream.Collectors.toMap(
+                              AutomationAction::getId, AutomationAction::getSortOrder));
               var sortedExecs =
                   actionExecs.stream()
                       .sorted(
-                          (a, b) -> {
-                            // Find matching action to get sortOrder
-                            var aAction = actionRepository.findById(a.getActionId());
-                            var bAction = actionRepository.findById(b.getActionId());
-                            return Integer.compare(
-                                aAction.map(AutomationAction::getSortOrder).orElse(0),
-                                bAction.map(AutomationAction::getSortOrder).orElse(0));
-                          })
+                          java.util.Comparator.comparingInt(
+                              ae -> actionSortOrders.getOrDefault(ae.getActionId(), 0)))
                       .toList();
 
               assertThat(sortedExecs.get(0).getStatus()).isEqualTo(ActionExecutionStatus.COMPLETED);

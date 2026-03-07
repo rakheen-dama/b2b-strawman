@@ -23,7 +23,7 @@ Phase 37 adds a rule-based automation engine to the DocTeams platform. Firm admi
 |------|------|-------|------|--------|--------|--------|
 | 280 | Automation Entity Foundation & Migration | Backend | -- | M | 280A, 280B | **Done** (PRs #555, #556) |
 | 281 | Trigger Matching & Condition Evaluation Engine | Backend | 280 | L | 281A, 281B | **Done** (PRs #557, #558) |
-| 282 | Action Executors & Variable Resolution | Backend | 280, 281 | L | 282A, 282B | |
+| 282 | Action Executors & Variable Resolution | Backend | 280, 281 | L | 282A, 282B | **Done** (PRs #559, #560) |
 | 283 | Delayed Action Scheduler & Cycle Detection | Backend | 282 | M | 283A | |
 | 284 | Rule CRUD API, Template Seeder & Execution Log API | Backend | 280, 281, 282, 283 | L | 284A, 284B | |
 | 285 | Frontend: Rule List, Template Gallery & Settings Nav | Frontend | 284 | M | 285A | |
@@ -151,7 +151,7 @@ FRONTEND TRACK (after respective backend epics)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 3a | 282 | 282A | ActionExecutor interface + CreateTaskActionExecutor (delegates to TaskService) + SendNotificationActionExecutor (delegates to NotificationService) + SendEmailActionExecutor (delegates to EmailNotificationChannel) + VariableResolver ({{variable}} substitution) + AutomationActionExecutor dispatcher (routes by ActionType) + ActionExecution recording (COMPLETED/FAILED) + integration tests (~12 tests). ~8 new files. Backend only. | **Done** (PR #559) |
-| 3b | 282 | 282B | UpdateStatusActionExecutor (delegates to entity-specific services) + CreateProjectActionExecutor (delegates to ProjectInstantiationService) + AssignMemberActionExecutor (delegates to ProjectMemberService) + error handling: failed action logged, subsequent actions still execute + AUTOMATION_ACTION_FAILED notification to org admins + integration tests (~10 tests). ~5 new files. Backend only. | |
+| 3b | 282 | 282B | UpdateStatusActionExecutor (delegates to entity-specific services) + CreateProjectActionExecutor (delegates to ProjectInstantiationService) + AssignMemberActionExecutor (delegates to ProjectMemberService) + error handling: failed action logged, subsequent actions still execute + AUTOMATION_ACTION_FAILED notification to org admins + integration tests (~10 tests). ~5 new files. Backend only. | **Done** (PR #560) |
 
 ### Stage 4: Scheduler & Cycle Detection
 
@@ -382,7 +382,7 @@ Stage 9: [288A]                                                    (after Stages
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **282A** | 282.1--282.8 | ActionExecutor interface + CreateTaskActionExecutor + SendNotificationActionExecutor + SendEmailActionExecutor + VariableResolver + AutomationActionExecutor dispatcher + ActionExecution recording (COMPLETED/FAILED) + integration tests (~12 tests). ~8 new files. Backend only. | **Done** (PR #559) |
-| **282B** | 282.9--282.14 | UpdateStatusActionExecutor + CreateProjectActionExecutor + AssignMemberActionExecutor + error handling (failed action does not short-circuit) + AUTOMATION_ACTION_FAILED notification to org admins + integration tests (~10 tests). ~5 new files. Backend only. | |
+| **282B** | 282.9--282.14 | UpdateStatusActionExecutor + CreateProjectActionExecutor + AssignMemberActionExecutor + error handling (failed action does not short-circuit) + AUTOMATION_ACTION_FAILED notification to org admins + integration tests (~10 tests). ~5 new files. Backend only. | **Done** (PR #560) |
 
 ### Tasks
 

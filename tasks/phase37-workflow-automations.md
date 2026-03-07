@@ -26,7 +26,7 @@ Phase 37 adds a rule-based automation engine to the DocTeams platform. Firm admi
 | 282 | Action Executors & Variable Resolution | Backend | 280, 281 | L | 282A, 282B | **Done** (PRs #559, #560) |
 | 283 | Delayed Action Scheduler & Cycle Detection | Backend | 282 | M | 283A | **Done** (PR #561) |
 | 284 | Rule CRUD API, Template Seeder & Execution Log API | Backend | 280, 281, 282, 283 | L | 284A, 284B | **Done** (PRs #562, #563) |
-| 285 | Frontend: Rule List, Template Gallery & Settings Nav | Frontend | 284 | M | 285A | |
+| 285 | Frontend: Rule List, Template Gallery & Settings Nav | Frontend | 284 | M | 285A | **Done** (PR #564) |
 | 286 | Frontend: Rule Create/Edit Wizard | Frontend | 285 | L | 286A, 286B | |
 | 287 | Frontend: Execution Log & Dashboard Widget | Frontend | 285 | M | 287A | |
 | 288 | End-to-End Integration Tests & Edge Cases | Backend | 283, 284 | M | 288A | |
@@ -170,7 +170,7 @@ FRONTEND TRACK (after respective backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 6a | 285 | 285A | settings/automations/page.tsx (rule list with enabled toggles, DataTable) + TemplateGallery Sheet (template cards with activate button) + settings nav "Automations" link + lib/api/automations.ts (API client) + RuleList component + TemplateGallery component + server actions (toggle, delete, activate) + tests (~8 tests). ~8 new files. Frontend only. | |
+| 6a | 285 | 285A | settings/automations/page.tsx (rule list with enabled toggles, DataTable) + TemplateGallery Sheet (template cards with activate button) + settings nav "Automations" link + lib/api/automations.ts (API client) + RuleList component + TemplateGallery component + server actions (toggle, delete, activate) + tests (~8 tests). ~8 new files. Frontend only. | **Done** (PR #564) |
 
 ### Stage 7: Frontend Create/Edit + Execution Log (parallel)
 
@@ -596,7 +596,7 @@ Stage 9: [288A]                                                    (after Stages
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **285A** | 285.1--285.9 | settings/automations/page.tsx (rule list with enabled toggles) + TemplateGallery Sheet component + settings nav "Automations" link + lib/api/automations.ts API client + RuleList component + server actions (toggle, delete, activate template) + tests (~8 tests). ~8 new files + ~1 modified file. Frontend only. | |
+| **285A** | 285.1--285.9 | settings/automations/page.tsx (rule list with enabled toggles) + TemplateGallery Sheet component + settings nav "Automations" link + lib/api/automations.ts API client + RuleList component + server actions (toggle, delete, activate template) + tests (~8 tests). ~8 new files + ~1 modified file. Frontend only. | **Done** (PR #564) |
 
 ### Tasks
 

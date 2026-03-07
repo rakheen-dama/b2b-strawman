@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.capacity;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
+import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.capacity.dto.AllocationDtos.AllocationResponse;
 import io.b2mash.b2b.b2bstrawman.capacity.dto.AllocationDtos.AllocationResultItem;
 import io.b2mash.b2b.b2bstrawman.capacity.dto.AllocationDtos.BulkAllocationResponse;
@@ -8,13 +10,17 @@ import io.b2mash.b2b.b2bstrawman.capacity.dto.AllocationDtos.UpdateAllocationReq
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.project.ProjectStatus;
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -35,18 +41,27 @@ public class ResourceAllocationService {
   private final ProjectMemberService projectMemberService;
   private final CapacityService capacityService;
   private final ApplicationEventPublisher eventPublisher;
+  private final NotificationService notificationService;
+  private final AuditService auditService;
+  private final MemberRepository memberRepository;
 
   public ResourceAllocationService(
       ResourceAllocationRepository allocationRepository,
       ProjectRepository projectRepository,
       ProjectMemberService projectMemberService,
       CapacityService capacityService,
-      ApplicationEventPublisher eventPublisher) {
+      ApplicationEventPublisher eventPublisher,
+      NotificationService notificationService,
+      AuditService auditService,
+      MemberRepository memberRepository) {
     this.allocationRepository = allocationRepository;
     this.projectRepository = projectRepository;
     this.projectMemberService = projectMemberService;
     this.capacityService = capacityService;
     this.eventPublisher = eventPublisher;
+    this.notificationService = notificationService;
+    this.auditService = auditService;
+    this.memberRepository = memberRepository;
   }
 
   /** Lists allocations with optional filters: memberId, projectId, weekStart, weekEnd. */
@@ -92,6 +107,34 @@ public class ResourceAllocationService {
             createdBy);
     allocation = allocationRepository.save(allocation);
 
+    // Notification: ALLOCATION_CHANGED (only if allocating someone else)
+    if (!createdBy.equals(request.memberId())) {
+      String projectName = getProjectName(request.projectId());
+      notificationService.createIfEnabled(
+          request.memberId(),
+          "ALLOCATION_CHANGED",
+          "Allocation: %s — %s, %sh"
+              .formatted(projectName, request.weekStart(), request.allocatedHours()),
+          null,
+          "RESOURCE_ALLOCATION",
+          allocation.getId(),
+          request.projectId());
+    }
+
+    // Audit event: resource_allocation.created
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("resource_allocation.created")
+            .entityType("resource_allocation")
+            .entityId(allocation.getId())
+            .details(
+                Map.of(
+                    "member_id", request.memberId().toString(),
+                    "project_id", request.projectId().toString(),
+                    "week_start", request.weekStart().toString(),
+                    "allocated_hours", request.allocatedHours().toString()))
+            .build());
+
     return buildResponseWithOverAllocationCheck(allocation);
   }
 
@@ -105,8 +148,39 @@ public class ResourceAllocationService {
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("ResourceAllocation", id));
 
+    BigDecimal oldHours = allocation.getAllocatedHours();
     allocation.update(request.allocatedHours(), request.note());
     allocation = allocationRepository.save(allocation);
+
+    // Notification: ALLOCATION_CHANGED (only if updating someone else's allocation)
+    UUID actorId = RequestScopes.MEMBER_ID.isBound() ? RequestScopes.MEMBER_ID.get() : null;
+    if (actorId != null && !actorId.equals(allocation.getMemberId())) {
+      String projectName = getProjectName(allocation.getProjectId());
+      notificationService.createIfEnabled(
+          allocation.getMemberId(),
+          "ALLOCATION_CHANGED",
+          "Allocation updated: %s — %s, %sh"
+              .formatted(projectName, allocation.getWeekStart(), request.allocatedHours()),
+          null,
+          "RESOURCE_ALLOCATION",
+          allocation.getId(),
+          allocation.getProjectId());
+    }
+
+    // Audit event: resource_allocation.updated
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("resource_allocation.updated")
+            .entityType("resource_allocation")
+            .entityId(allocation.getId())
+            .details(
+                Map.of(
+                    "member_id", allocation.getMemberId().toString(),
+                    "project_id", allocation.getProjectId().toString(),
+                    "week_start", allocation.getWeekStart().toString(),
+                    "old_hours", oldHours.toString(),
+                    "new_hours", request.allocatedHours().toString()))
+            .build());
 
     return buildResponseWithOverAllocationCheck(allocation);
   }
@@ -118,6 +192,21 @@ public class ResourceAllocationService {
         allocationRepository
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("ResourceAllocation", id));
+
+    // Audit event: resource_allocation.deleted (capture before delete)
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("resource_allocation.deleted")
+            .entityType("resource_allocation")
+            .entityId(allocation.getId())
+            .details(
+                Map.of(
+                    "member_id", allocation.getMemberId().toString(),
+                    "project_id", allocation.getProjectId().toString(),
+                    "week_start", allocation.getWeekStart().toString(),
+                    "allocated_hours", allocation.getAllocatedHours().toString()))
+            .build());
+
     allocationRepository.delete(allocation);
   }
 
@@ -269,9 +358,43 @@ public class ResourceAllocationService {
       eventPublisher.publishEvent(
           new MemberOverAllocatedEvent(
               memberId, weekStart, totalAllocated, effectiveCapacity, overageHours));
+
+      // Notification: MEMBER_OVER_ALLOCATED to the member + admins/owners
+      sendOverAllocationNotifications(memberId, weekStart, overageHours);
+
       return new OverAllocationResult(true, overageHours);
     }
     return new OverAllocationResult(false, BigDecimal.ZERO);
+  }
+
+  private void sendOverAllocationNotifications(
+      UUID memberId, LocalDate weekStart, BigDecimal overageHours) {
+    String memberName = memberRepository.findById(memberId).map(m -> m.getName()).orElse("Unknown");
+    String title =
+        "Over-allocated: %s — week of %s, %sh over capacity"
+            .formatted(memberName, weekStart, overageHours);
+
+    UUID actorId = RequestScopes.MEMBER_ID.isBound() ? RequestScopes.MEMBER_ID.get() : null;
+
+    // Collect unique recipients: the member + admins/owners, excluding actor
+    Set<UUID> recipients = new HashSet<>();
+    recipients.add(memberId);
+    var adminsAndOwners = memberRepository.findByOrgRoleIn(List.of("admin", "owner"));
+    for (var admin : adminsAndOwners) {
+      recipients.add(admin.getId());
+    }
+    if (actorId != null) {
+      recipients.remove(actorId);
+    }
+
+    for (UUID recipientId : recipients) {
+      notificationService.createIfEnabled(
+          recipientId, "MEMBER_OVER_ALLOCATED", title, null, "MEMBER", memberId, null);
+    }
+  }
+
+  private String getProjectName(UUID projectId) {
+    return projectRepository.findById(projectId).map(p -> p.getName()).orElse("Unknown Project");
   }
 
   private AllocationResponse toResponse(

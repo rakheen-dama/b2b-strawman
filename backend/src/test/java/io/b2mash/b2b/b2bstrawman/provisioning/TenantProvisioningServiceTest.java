@@ -11,6 +11,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.b2mash.b2b.b2bstrawman.automation.template.AutomationTemplateSeeder;
 import io.b2mash.b2b.b2bstrawman.billing.SubscriptionService;
 import io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder;
 import io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder;
@@ -44,6 +45,7 @@ class TenantProvisioningServiceTest {
   @Mock private CompliancePackSeeder compliancePackSeeder;
   @Mock private StandardReportPackSeeder standardReportPackSeeder;
   @Mock private RequestPackSeeder requestPackSeeder;
+  @Mock private AutomationTemplateSeeder automationTemplateSeeder;
 
   private TenantProvisioningService service;
 
@@ -62,7 +64,8 @@ class TenantProvisioningServiceTest {
                 clausePackSeeder,
                 compliancePackSeeder,
                 standardReportPackSeeder,
-                requestPackSeeder));
+                requestPackSeeder,
+                automationTemplateSeeder));
   }
 
   @Test

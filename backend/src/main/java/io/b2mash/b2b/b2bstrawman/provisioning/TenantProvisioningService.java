@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.provisioning;
 
+import io.b2mash.b2b.b2bstrawman.automation.template.AutomationTemplateSeeder;
 import io.b2mash.b2b.b2bstrawman.billing.SubscriptionService;
 import io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder;
 import io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder;
@@ -34,6 +35,7 @@ public class TenantProvisioningService {
   private final CompliancePackSeeder compliancePackSeeder;
   private final StandardReportPackSeeder standardReportPackSeeder;
   private final RequestPackSeeder requestPackSeeder;
+  private final AutomationTemplateSeeder automationTemplateSeeder;
 
   public TenantProvisioningService(
       OrganizationRepository organizationRepository,
@@ -45,7 +47,8 @@ public class TenantProvisioningService {
       ClausePackSeeder clausePackSeeder,
       CompliancePackSeeder compliancePackSeeder,
       StandardReportPackSeeder standardReportPackSeeder,
-      RequestPackSeeder requestPackSeeder) {
+      RequestPackSeeder requestPackSeeder,
+      AutomationTemplateSeeder automationTemplateSeeder) {
     this.organizationRepository = organizationRepository;
     this.mappingRepository = mappingRepository;
     this.migrationDataSource = migrationDataSource;
@@ -56,6 +59,7 @@ public class TenantProvisioningService {
     this.compliancePackSeeder = compliancePackSeeder;
     this.standardReportPackSeeder = standardReportPackSeeder;
     this.requestPackSeeder = requestPackSeeder;
+    this.automationTemplateSeeder = automationTemplateSeeder;
   }
 
   @Retryable(
@@ -96,6 +100,7 @@ public class TenantProvisioningService {
       compliancePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
       standardReportPackSeeder.seedForTenant(schemaName, clerkOrgId);
       requestPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+      automationTemplateSeeder.seedPacksForTenant(schemaName, clerkOrgId);
       createMapping(clerkOrgId, schemaName);
       String planSlug = org.getPlanSlug() != null ? org.getPlanSlug() : "starter";
       subscriptionService.createSubscription(org.getId(), planSlug);

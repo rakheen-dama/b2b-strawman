@@ -1,0 +1,149 @@
+{
+  "packId": "automation-common",
+  "version": 1,
+  "templates": [
+    {
+      "slug": "task-completion-chain",
+      "name": "Task Completion Chain",
+      "description": "Automatically creates a follow-up task when a task is completed",
+      "category": "workflow",
+      "triggerType": "TASK_STATUS_CHANGED",
+      "triggerConfig": { "toStatus": "COMPLETED" },
+      "conditions": [],
+      "actions": [
+        {
+          "actionType": "CREATE_TASK",
+          "actionConfig": {
+            "taskName": "Follow-up: {{task.name}}",
+            "taskDescription": "Follow-up review for completed task",
+            "assignTo": "PROJECT_OWNER"
+          },
+          "delayDuration": null,
+          "delayUnit": null,
+          "sortOrder": 0
+        }
+      ]
+    },
+    {
+      "slug": "overdue-invoice-reminder",
+      "name": "Overdue Invoice Reminder",
+      "description": "Sends email to customer when invoice becomes overdue, then notifies project owner after 7 days",
+      "category": "notifications",
+      "triggerType": "INVOICE_STATUS_CHANGED",
+      "triggerConfig": { "toStatus": "OVERDUE" },
+      "conditions": [],
+      "actions": [
+        {
+          "actionType": "SEND_EMAIL",
+          "actionConfig": {
+            "recipientType": "CUSTOMER_CONTACT",
+            "subject": "Invoice {{invoice.invoiceNumber}} is overdue",
+            "body": "Dear {{customer.name}},\n\nYour invoice {{invoice.invoiceNumber}} is now overdue. Please arrange payment at your earliest convenience."
+          },
+          "delayDuration": null,
+          "delayUnit": null,
+          "sortOrder": 0
+        },
+        {
+          "actionType": "SEND_NOTIFICATION",
+          "actionConfig": {
+            "recipientType": "PROJECT_OWNER",
+            "title": "Invoice {{invoice.invoiceNumber}} still overdue",
+            "message": "Invoice {{invoice.invoiceNumber}} for {{customer.name}} has been overdue for 7 days."
+          },
+          "delayDuration": 7,
+          "delayUnit": "DAYS",
+          "sortOrder": 1
+        }
+      ]
+    },
+    {
+      "slug": "budget-alert-escalation",
+      "name": "Budget Alert Escalation",
+      "description": "Notifies admins when a project budget threshold is reached",
+      "category": "monitoring",
+      "triggerType": "BUDGET_THRESHOLD_REACHED",
+      "triggerConfig": {},
+      "conditions": [],
+      "actions": [
+        {
+          "actionType": "SEND_NOTIFICATION",
+          "actionConfig": {
+            "recipientType": "ORG_ADMINS",
+            "title": "Budget alert: {{project.name}}",
+            "message": "Project {{project.name}} has reached its budget threshold."
+          },
+          "delayDuration": null,
+          "delayUnit": null,
+          "sortOrder": 0
+        }
+      ]
+    },
+    {
+      "slug": "new-project-welcome",
+      "name": "New Project Welcome",
+      "description": "Sends a welcome notification to project members when a project becomes active",
+      "category": "notifications",
+      "triggerType": "PROJECT_STATUS_CHANGED",
+      "triggerConfig": { "toStatus": "ACTIVE" },
+      "conditions": [],
+      "actions": [
+        {
+          "actionType": "SEND_NOTIFICATION",
+          "actionConfig": {
+            "recipientType": "PROJECT_MEMBERS",
+            "title": "Welcome to {{project.name}}",
+            "message": "Project {{project.name}} is now active. You can start logging time and creating tasks."
+          },
+          "delayDuration": null,
+          "delayUnit": null,
+          "sortOrder": 0
+        }
+      ]
+    },
+    {
+      "slug": "document-review-notification",
+      "name": "Document Review Notification",
+      "description": "Notifies project owner when a document is accepted",
+      "category": "notifications",
+      "triggerType": "DOCUMENT_ACCEPTED",
+      "triggerConfig": {},
+      "conditions": [],
+      "actions": [
+        {
+          "actionType": "SEND_NOTIFICATION",
+          "actionConfig": {
+            "recipientType": "PROJECT_OWNER",
+            "title": "Document accepted: {{document.name}}",
+            "message": "A document has been accepted in project {{project.name}}."
+          },
+          "delayDuration": null,
+          "delayUnit": null,
+          "sortOrder": 0
+        }
+      ]
+    },
+    {
+      "slug": "request-complete-followup",
+      "name": "Request Complete Follow-up",
+      "description": "Creates a review task when an information request is completed",
+      "category": "workflow",
+      "triggerType": "INFORMATION_REQUEST_COMPLETED",
+      "triggerConfig": {},
+      "conditions": [],
+      "actions": [
+        {
+          "actionType": "CREATE_TASK",
+          "actionConfig": {
+            "taskName": "Review completed request: {{request.name}}",
+            "taskDescription": "Information request has been completed. Please review the submitted documents.",
+            "assignTo": "PROJECT_OWNER"
+          },
+          "delayDuration": null,
+          "delayUnit": null,
+          "sortOrder": 0
+        }
+      ]
+    }
+  ]
+}

@@ -68,6 +68,25 @@ public class AutomationAction {
     this.updatedAt = Instant.now();
   }
 
+  public void update(
+      ActionType actionType,
+      Map<String, Object> actionConfig,
+      int sortOrder,
+      Integer delayDuration,
+      DelayUnit delayUnit) {
+    this.actionType = actionType;
+    this.actionConfig = actionConfig;
+    this.sortOrder = sortOrder;
+    this.delayDuration = delayDuration;
+    this.delayUnit = delayUnit;
+    this.updatedAt = Instant.now();
+  }
+
+  public void setSortOrder(int sortOrder) {
+    this.sortOrder = sortOrder;
+    this.updatedAt = Instant.now();
+  }
+
   public UUID getId() {
     return id;
   }

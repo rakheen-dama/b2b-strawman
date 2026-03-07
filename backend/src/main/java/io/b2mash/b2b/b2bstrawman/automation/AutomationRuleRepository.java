@@ -6,4 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface AutomationRuleRepository extends JpaRepository<AutomationRule, UUID> {
   List<AutomationRule> findByEnabledAndTriggerType(boolean enabled, TriggerType triggerType);
+
+  List<AutomationRule> findByEnabled(boolean enabled);
+
+  List<AutomationRule> findByTriggerType(TriggerType triggerType);
+
+  List<AutomationRule> findAllByOrderByCreatedAtDesc();
 }

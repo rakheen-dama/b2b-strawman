@@ -24,7 +24,7 @@ Phase 38 adds resource planning and capacity management to the DocTeams platform
 | 290 | Capacity & Allocation Services | Backend | 289 | L | 290A, 290B, 290C | **Done** (PRs #571, #572, #573) |
 | 291 | Utilization Service & Profitability Integration | Backend | 290 | M | 291A, 291B | **Done** (PRs #574, #575) |
 | 292 | Allocation Grid UI | Frontend | 290 | L | 292A, 292B | **Done** (PRs #576, #577) |
-| 293 | Utilization, Dashboard & Project Staffing UI | Frontend | 291, 292 | M | 293A, 293B | |
+| 293 | Utilization, Dashboard & Project Staffing UI | Frontend | 291, 292 | M | 293A, 293B | **Done** (PRs #578, #579) |
 | 294 | Notifications, Audit Events & Settings UI | Backend + Frontend | 290 | M | 294A, 294B | |
 
 ---
@@ -166,7 +166,7 @@ FRONTEND TRACK (after respective backend epics)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 7a (parallel) | 293 | 293A | resources/utilization/page.tsx + UtilizationTable component + utilization bar charts + tests (~6 tests). ~5 new files. Frontend only. | **Done** (PR #578) |
-| 7b (parallel) | 293 | 293B | Project detail "Staffing" tab + TeamCapacityWidget (dashboard) + MyScheduleWidget (dashboard) + profitability "Include Projections" toggle + tests (~8 tests). ~6 new files + ~2 modified files. Frontend only. | |
+| 7b (parallel) | 293 | 293B | Project detail "Staffing" tab + TeamCapacityWidget (dashboard) + MyScheduleWidget (dashboard) + profitability "Include Projections" toggle + tests (~8 tests). ~6 new files + ~2 modified files. Frontend only. | **Done** (PR #579) |
 | 7c (parallel) | 294 | 294B | Settings capacity section (org default weekly capacity hours) + capacity notification rendering in NotificationBell/Notifications page + tests (~4 tests). ~3 new files + ~2 modified files. Frontend only. | |
 
 ### Timeline
@@ -517,7 +517,7 @@ Stage 7: [293A] // [293B] // [294B]                                (parallel)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **293A** | 293.1--293.5 | resources/utilization/page.tsx + UtilizationTable component + utilization bar charts + tests (~6 tests). ~5 new files. Frontend only. | **Done** (PR #578) |
-| **293B** | 293.6--293.13 | Project detail "Staffing" tab + TeamCapacityWidget (dashboard) + MyScheduleWidget (dashboard) + profitability "Include Projections" toggle + tests (~8 tests). ~6 new files + ~2 modified files. Frontend only. | |
+| **293B** | 293.6--293.13 | Project detail "Staffing" tab + TeamCapacityWidget (dashboard) + MyScheduleWidget (dashboard) + profitability "Include Projections" toggle + tests (~8 tests). ~6 new files + ~2 modified files. Frontend only. | **Done** (PR #579) |
 
 ### Tasks
 

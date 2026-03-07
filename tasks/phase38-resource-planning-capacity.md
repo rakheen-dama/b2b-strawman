@@ -20,7 +20,7 @@ Phase 38 adds resource planning and capacity management to the DocTeams platform
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 289 | Entity Foundation & Migration | Backend | -- | M | 289A, 289B | |
+| 289 | Entity Foundation & Migration | Backend | -- | M | 289A, 289B | **Done** (PRs #569, #570) |
 | 290 | Capacity & Allocation Services | Backend | 289 | L | 290A, 290B, 290C | |
 | 291 | Utilization Service & Profitability Integration | Backend | 290 | M | 291A, 291B | |
 | 292 | Allocation Grid UI | Frontend | 290 | L | 292A, 292B | |
@@ -126,7 +126,7 @@ FRONTEND TRACK (after respective backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 1a | 289 | 289B | MemberCapacity + ResourceAllocation + LeaveBlock entities + JPA repositories with JPQL queries + MemberOverAllocatedEvent domain event record + OrgSettings extension (defaultWeeklyCapacityHours field) + persistence integration tests (~12 tests). ~10 new files + ~1 modified file. Backend only. | |
+| 1a | 289 | 289B | MemberCapacity + ResourceAllocation + LeaveBlock entities + JPA repositories with JPQL queries + MemberOverAllocatedEvent domain event record + OrgSettings extension (defaultWeeklyCapacityHours field) + persistence integration tests (~12 tests). ~10 new files + ~1 modified file. Backend only. | **Done** (PR #570) |
 
 ### Stage 2: Core Services (sequential with parallelism)
 
@@ -205,7 +205,7 @@ Stage 7: [293A] // [293B] // [294B]                                (parallel)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **289A** | 289.1--289.4 | V62 tenant migration: CREATE TABLE member_capacities, resource_allocations, leave_blocks + ALTER TABLE org_settings + all indexes + constraints + CHECK constraints. ~1 new migration file. Backend only. | **Done** (PR #569) |
-| **289B** | 289.5--289.14 | MemberCapacity + ResourceAllocation + LeaveBlock entities + 3 JPA repositories with JPQL queries + MemberOverAllocatedEvent record + OrgSettings extension (defaultWeeklyCapacityHours) + persistence integration tests (~12 tests). ~10 new files + ~1 modified file. Backend only. | |
+| **289B** | 289.5--289.14 | MemberCapacity + ResourceAllocation + LeaveBlock entities + 3 JPA repositories with JPQL queries + MemberOverAllocatedEvent record + OrgSettings extension (defaultWeeklyCapacityHours) + persistence integration tests (~12 tests). ~10 new files + ~1 modified file. Backend only. | **Done** (PR #570) |
 
 ### Tasks
 

@@ -2,7 +2,7 @@ import "server-only";
 
 import { cache } from "react";
 import { cookies } from "next/headers";
-import type { AuthContext } from "../types";
+import type { AuthContext, SessionIdentity } from "../types";
 
 const GATEWAY_URL = process.env.GATEWAY_URL || "http://localhost:8443";
 const BFF_TIMEOUT_MS = 5_000;
@@ -63,6 +63,24 @@ async function fetchBffMe(): Promise<BffUserInfo> {
     ? `SESSION=${sessionCookie.value}`
     : "";
   return fetchBffMeCached(cookieHeader);
+}
+
+/**
+ * Lightweight identity check — only requires authentication, not an active org.
+ * Used for platform-level guards (e.g. platform-admin) where the user may not
+ * have selected an organization yet.
+ */
+export async function getSessionIdentity(): Promise<SessionIdentity> {
+  const info = await fetchBffMe();
+
+  if (!info.authenticated || !info.userId) {
+    throw new Error("User is not authenticated via BFF");
+  }
+
+  return {
+    userId: info.userId,
+    groups: info.groups ?? [],
+  };
 }
 
 export async function getAuthContext(): Promise<AuthContext> {

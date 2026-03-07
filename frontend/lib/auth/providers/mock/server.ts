@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import type { AuthContext } from "../../types";
+import type { AuthContext, SessionIdentity } from "../../types";
 
 const MOCK_IDP_URL = process.env.MOCK_IDP_URL || "http://mock-idp:8090";
 
@@ -31,6 +31,30 @@ function decodeJwtPayload(token: string): Record<string, unknown> {
   return JSON.parse(atob(base64));
 }
 
+/**
+ * Mock user groups — maps userId to group names.
+ * Alice gets platform-admins so E2E tests can exercise the admin panel.
+ */
+const MOCK_USER_GROUPS: Record<string, string[]> = {
+  user_e2e_alice: ["platform-admins"],
+};
+
+export async function getSessionIdentity(): Promise<SessionIdentity> {
+  const cookieStore = await cookies();
+  const token = getTokenFromCookie(cookieStore);
+  const payload = decodeJwtPayload(token);
+
+  const userId = payload.sub as string | undefined;
+  if (!userId) {
+    throw new Error("No userId in mock JWT");
+  }
+
+  return {
+    userId,
+    groups: MOCK_USER_GROUPS[userId] ?? [],
+  };
+}
+
 export async function getAuthContext(): Promise<AuthContext> {
   const cookieStore = await cookies();
   const token = getTokenFromCookie(cookieStore);
@@ -52,7 +76,7 @@ export async function getAuthContext(): Promise<AuthContext> {
     orgId: org.id,
     orgSlug: org.slg,
     orgRole: org.rol.startsWith("org:") ? org.rol : `org:${org.rol}`,
-    groups: [],
+    groups: MOCK_USER_GROUPS[userId] ?? [],
   };
 }
 

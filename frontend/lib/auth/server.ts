@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { AuthContext } from "./types";
+import type { AuthContext, SessionIdentity } from "./types";
 // TODO(138B): Switch to dynamic imports for tree-shaking — both providers are stubs now
 import * as clerkProvider from "./providers/clerk";
 import * as mockProvider from "./providers/mock/server";
@@ -12,6 +12,12 @@ import * as keycloakBffProvider from "./providers/keycloak-bff";
  * so mock code is tree-shaken out of production builds.
  */
 export const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
+
+export async function getSessionIdentity(): Promise<SessionIdentity> {
+  if (AUTH_MODE === "mock") return mockProvider.getSessionIdentity();
+  if (AUTH_MODE === "keycloak") return keycloakBffProvider.getSessionIdentity();
+  return clerkProvider.getSessionIdentity();
+}
 
 export async function getAuthContext(): Promise<AuthContext> {
   if (AUTH_MODE === "mock") return mockProvider.getAuthContext();

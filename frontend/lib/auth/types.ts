@@ -4,6 +4,17 @@
  * All server-side auth functions return these types — never provider-specific types.
  */
 
+/**
+ * Lightweight identity for guards that do NOT require an active org context.
+ * Used by platform-admin layout where a user may belong to groups but have
+ * no org selected yet.
+ */
+export interface SessionIdentity {
+  userId: string;
+  /** Keycloak groups the user belongs to (e.g. ["platform-admins"]) */
+  groups: string[];
+}
+
 /** Replaces auth() destructure from Clerk. Contains org + user identity. */
 export interface AuthContext {
   orgId: string;

@@ -1,2 +1,2 @@
-export { getAuthContext, getAuthToken, getCurrentUserEmail, requireRole, hasPlan, AUTH_MODE } from "./server";
-export type { AuthContext, AuthUser, OrgMemberInfo } from "./types";
+export { getSessionIdentity, getAuthContext, getAuthToken, getCurrentUserEmail, requireRole, hasPlan, AUTH_MODE } from "./server";
+export type { SessionIdentity, AuthContext, AuthUser, OrgMemberInfo } from "./types";

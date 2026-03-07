@@ -11,9 +11,9 @@ vi.mock("next/navigation", () => ({
 }));
 
 // Mock @/lib/auth
-const mockGetAuthContext = vi.fn();
+const mockGetSessionIdentity = vi.fn();
 vi.mock("@/lib/auth", () => ({
-  getAuthContext: () => mockGetAuthContext(),
+  getSessionIdentity: () => mockGetSessionIdentity(),
 }));
 
 import PlatformAdminLayout from "@/app/(app)/platform-admin/layout";
@@ -24,10 +24,7 @@ describe("PlatformAdminLayout", () => {
   });
 
   it("renders children when user has platform-admins group", async () => {
-    mockGetAuthContext.mockResolvedValue({
-      orgId: "org_1",
-      orgSlug: "acme",
-      orgRole: "org:owner",
+    mockGetSessionIdentity.mockResolvedValue({
       userId: "user_1",
       groups: ["platform-admins"],
     });
@@ -42,10 +39,7 @@ describe("PlatformAdminLayout", () => {
   });
 
   it("calls notFound when user lacks platform-admins group", async () => {
-    mockGetAuthContext.mockResolvedValue({
-      orgId: "org_1",
-      orgSlug: "acme",
-      orgRole: "org:owner",
+    mockGetSessionIdentity.mockResolvedValue({
       userId: "user_1",
       groups: [],
     });
@@ -59,8 +53,8 @@ describe("PlatformAdminLayout", () => {
     expect(mockNotFound).toHaveBeenCalled();
   });
 
-  it("calls notFound when getAuthContext throws", async () => {
-    mockGetAuthContext.mockRejectedValue(new Error("No auth"));
+  it("calls notFound when getSessionIdentity throws", async () => {
+    mockGetSessionIdentity.mockRejectedValue(new Error("No auth"));
 
     await expect(
       PlatformAdminLayout({

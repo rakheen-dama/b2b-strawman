@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
-import { getAuthContext } from "@/lib/auth";
+import { getSessionIdentity } from "@/lib/auth";
+
+export const dynamic = "force-dynamic";
 
 export default async function PlatformAdminLayout({
   children,
@@ -8,8 +10,8 @@ export default async function PlatformAdminLayout({
 }) {
   let groups: string[] = [];
   try {
-    const ctx = await getAuthContext();
-    groups = ctx.groups;
+    const identity = await getSessionIdentity();
+    groups = identity.groups;
   } catch {
     notFound();
   }

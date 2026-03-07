@@ -17,11 +17,15 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Handles member capacity CRUD and resolution. Grid assembly and staffing views are in {@link
+ * CapacityGridService}.
+ */
 @Service
 public class CapacityService {
 
   private static final BigDecimal HARD_DEFAULT_WEEKLY_HOURS = new BigDecimal("40.00");
-  private static final int WORKING_DAYS_PER_WEEK = 5;
+  static final int WORKING_DAYS_PER_WEEK = 5;
 
   private final MemberCapacityRepository memberCapacityRepository;
   private final LeaveBlockRepository leaveBlockRepository;
@@ -48,10 +52,7 @@ public class CapacityService {
     if (!records.isEmpty()) {
       return records.getFirst().getWeeklyHours();
     }
-
-    // OrgSettingsService already falls back to 40.0, but this is a safety net
-    BigDecimal orgDefault = orgSettingsService.getDefaultWeeklyCapacityHours();
-    return orgDefault != null ? orgDefault : HARD_DEFAULT_WEEKLY_HOURS;
+    return getOrgDefaultCapacity();
   }
 
   /**
@@ -69,6 +70,12 @@ public class CapacityService {
     return baseCapacity
         .multiply(BigDecimal.valueOf(workingDays))
         .divide(BigDecimal.valueOf(WORKING_DAYS_PER_WEEK), 2, RoundingMode.HALF_UP);
+  }
+
+  /** Returns the org-level default weekly capacity, falling back to 40.0 if not configured. */
+  BigDecimal getOrgDefaultCapacity() {
+    BigDecimal orgDefault = orgSettingsService.getDefaultWeeklyCapacityHours();
+    return orgDefault != null ? orgDefault : HARD_DEFAULT_WEEKLY_HOURS;
   }
 
   /** Lists all capacity records for a member, ordered by effectiveFrom DESC. */
@@ -132,7 +139,8 @@ public class CapacityService {
     memberCapacityRepository.delete(record);
   }
 
-  private int countLeaveDaysInWeek(UUID memberId, LocalDate weekStart) {
+  /** Counts leave days in a given week by querying the database. Package-private for reuse. */
+  int countLeaveDaysInWeek(UUID memberId, LocalDate weekStart) {
     LocalDate weekEnd = weekStart.plusDays(4); // Monday to Friday
     List<LeaveBlock> overlappingBlocks =
         leaveBlockRepository.findByMemberIdAndOverlapping(memberId, weekStart, weekEnd);

@@ -51,6 +51,7 @@ describe("Mock auth provider", () => {
       orgId: "org_e2e_test",
       orgSlug: "e2e-test-org",
       orgRole: "org:owner",
+      groups: [],
     });
   });
 

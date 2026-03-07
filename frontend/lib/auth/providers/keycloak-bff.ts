@@ -17,6 +17,7 @@ interface BffUserInfo {
   orgId: string | null;
   orgSlug: string | null;
   orgRole: string | null;
+  groups: string[] | null;
 }
 
 /**
@@ -76,6 +77,7 @@ export async function getAuthContext(): Promise<AuthContext> {
     orgId: info.orgId,
     orgSlug: info.orgSlug,
     orgRole: info.orgRole.startsWith("org:") ? info.orgRole : `org:${info.orgRole}`,
+    groups: info.groups ?? [],
   };
 }
 

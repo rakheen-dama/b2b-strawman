@@ -41,6 +41,7 @@ describe("Clerk auth provider", () => {
       orgSlug: "test-org",
       orgRole: "org:owner",
       userId: "user_1",
+      groups: [],
     });
   });
 

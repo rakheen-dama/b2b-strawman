@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Menu } from "lucide-react";
+import { Menu, Shield } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -19,9 +19,10 @@ import { SidebarUserFooter } from "@/components/sidebar-user-footer";
 
 interface MobileSidebarProps {
   slug: string;
+  groups?: string[];
 }
 
-export function MobileSidebar({ slug }: MobileSidebarProps) {
+export function MobileSidebar({ slug, groups = [] }: MobileSidebarProps) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -90,6 +91,28 @@ export function MobileSidebar({ slug }: MobileSidebarProps) {
             );
           })}
         </nav>
+
+        {/* Platform Admin */}
+        {groups.includes("platform-admins") && (
+          <>
+            <div className="mx-4 border-t border-white/10" />
+            <div className="p-2">
+              <Link
+                href="/platform-admin/access-requests"
+                onClick={() => setOpen(false)}
+                className={cn(
+                  "relative flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
+                  pathname.startsWith("/platform-admin")
+                    ? "bg-white/5 text-white"
+                    : "text-white/60 hover:bg-slate-800 hover:text-white"
+                )}
+              >
+                <Shield className="h-4 w-4" />
+                Platform Admin
+              </Link>
+            </div>
+          </>
+        )}
 
         {/* Footer */}
         <SidebarUserFooter />

@@ -85,7 +85,9 @@ class BffControllerTest {
         .perform(get("/bff/me"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.authenticated").value(false))
-        .andExpect(jsonPath("$.userId").doesNotExist());
+        .andExpect(jsonPath("$.userId").doesNotExist())
+        .andExpect(jsonPath("$.groups").isArray())
+        .andExpect(jsonPath("$.groups").isEmpty());
   }
 
   @Test
@@ -136,6 +138,41 @@ class BffControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.authenticated").value(true))
         .andExpect(jsonPath("$.orgId").isNotEmpty());
+  }
+
+  @Test
+  void me_authenticated_returnsGroups() throws Exception {
+    OidcIdToken idToken =
+        OidcIdToken.withTokenValue("mock-token")
+            .subject("admin-user")
+            .claim("email", "admin@example.com")
+            .claim("name", "Admin User")
+            .claim("groups", List.of("platform-admins"))
+            .claim(
+                "organization",
+                Map.of("acme-corp", Map.of("id", "org-uuid-456", "roles", List.of("owner"))))
+            .issuer("https://keycloak.example.com/realms/docteams")
+            .issuedAt(Instant.now())
+            .expiresAt(Instant.now().plusSeconds(3600))
+            .build();
+
+    var oidcUser = new DefaultOidcUser(List.of(new SimpleGrantedAuthority("ROLE_USER")), idToken);
+
+    mockMvc
+        .perform(get("/bff/me").with(oidcLogin().oidcUser(oidcUser)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.groups[0]").value("platform-admins"));
+  }
+
+  @Test
+  void me_authenticated_returnsEmptyGroupsWhenNoClaim() throws Exception {
+    var oidcUser = buildOidcUser("user-uuid-123", "alice@example.com", "Alice", "owner");
+
+    mockMvc
+        .perform(get("/bff/me").with(oidcLogin().oidcUser(oidcUser)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.groups").isArray())
+        .andExpect(jsonPath("$.groups").isEmpty());
   }
 
   private DefaultOidcUser buildOidcUser(String subject, String email, String name, String role) {

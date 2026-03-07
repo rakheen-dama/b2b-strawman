@@ -18,9 +18,11 @@ export default async function OrgLayout({
   const { slug } = await params;
 
   let orgSlug: string;
+  let groups: string[] = [];
   try {
     const ctx = await getAuthContext();
     orgSlug = ctx.orgSlug;
+    groups = ctx.groups;
   } catch {
     // No valid auth context (no token or missing org claims) — redirect to dashboard
     redirect("/dashboard");
@@ -32,10 +34,10 @@ export default async function OrgLayout({
 
   return (
     <div className="flex min-h-screen">
-      <DesktopSidebar slug={slug} />
+      <DesktopSidebar slug={slug} groups={groups} />
       <div className="flex flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-slate-200/60 bg-slate-100/80 px-4 backdrop-blur-md md:px-6 dark:border-slate-800/60 dark:bg-slate-950/90">
-          <MobileSidebar slug={slug} />
+          <MobileSidebar slug={slug} groups={groups} />
           <Breadcrumbs slug={slug} />
           <div className="ml-auto flex items-center gap-3">
             <AuthHeaderControls />

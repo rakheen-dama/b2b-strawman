@@ -52,6 +52,7 @@ export async function getAuthContext(): Promise<AuthContext> {
     orgId: org.id,
     orgSlug: org.slg,
     orgRole: org.rol.startsWith("org:") ? org.rol : `org:${org.rol}`,
+    groups: [],
   };
 }
 

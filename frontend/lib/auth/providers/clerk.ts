@@ -13,7 +13,7 @@ export async function getAuthContext(): Promise<AuthContext> {
     throw new Error("No active organization — select an organization first");
   }
 
-  return { orgId, orgSlug, orgRole, userId };
+  return { orgId, orgSlug, orgRole, userId, groups: [] };
 }
 
 export async function getAuthToken(): Promise<string> {

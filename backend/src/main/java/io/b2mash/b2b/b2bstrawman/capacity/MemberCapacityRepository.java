@@ -21,4 +21,15 @@ public interface MemberCapacityRepository extends JpaRepository<MemberCapacity, 
       @Param("memberId") UUID memberId, @Param("date") LocalDate date);
 
   List<MemberCapacity> findByMemberIdOrderByEffectiveFromDesc(UUID memberId);
+
+  /** Batch-fetches all capacity records effective within the given date range. */
+  @Query(
+      """
+      SELECT mc FROM MemberCapacity mc
+      WHERE mc.effectiveFrom <= :end
+        AND (mc.effectiveTo IS NULL OR mc.effectiveTo >= :start)
+      ORDER BY mc.memberId, mc.effectiveFrom DESC
+      """)
+  List<MemberCapacity> findAllEffectiveInRange(
+      @Param("start") LocalDate start, @Param("end") LocalDate end);
 }

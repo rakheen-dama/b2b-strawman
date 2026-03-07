@@ -19,6 +19,10 @@ public final class UtilizationDtos {
       BigDecimal actualUtilizationPct,
       BigDecimal billableUtilizationPct) {}
 
+  /**
+   * @param weeklyCapacity Base weekly capacity as of the range start date (snapshot; does not
+   *     reflect mid-range capacity changes).
+   */
   public record MemberUtilizationSummary(
       UUID memberId,
       String memberName,

@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.capacity;
 
+import static io.b2mash.b2b.b2bstrawman.capacity.CapacityMathUtil.pct;
+
 import io.b2mash.b2b.b2bstrawman.capacity.dto.UtilizationDtos.MemberUtilizationSummary;
 import io.b2mash.b2b.b2bstrawman.capacity.dto.UtilizationDtos.TeamAverages;
 import io.b2mash.b2b.b2bstrawman.capacity.dto.UtilizationDtos.TeamUtilizationResponse;
@@ -112,19 +114,14 @@ public class UtilizationService {
           .put(row.getWeekStart(), row.getBillableHours());
     }
 
-    // Batch-query allocations
+    // Batch-query allocations and aggregate planned hours per member per week
     List<ResourceAllocation> allAllocations =
         allocationRepository.findByWeekStartBetween(weekStart, weekEnd);
     Map<UUID, Map<LocalDate, BigDecimal>> plannedByMemberWeek = new HashMap<>();
     for (ResourceAllocation alloc : allAllocations) {
       plannedByMemberWeek
           .computeIfAbsent(alloc.getMemberId(), k -> new HashMap<>())
-          .put(
-              alloc.getWeekStart(),
-              plannedByMemberWeek
-                  .computeIfAbsent(alloc.getMemberId(), k -> new HashMap<>())
-                  .getOrDefault(alloc.getWeekStart(), BigDecimal.ZERO)
-                  .add(alloc.getAllocatedHours()));
+          .merge(alloc.getWeekStart(), alloc.getAllocatedHours(), BigDecimal::add);
     }
 
     List<MemberUtilizationSummary> summaries = new ArrayList<>();
@@ -177,6 +174,10 @@ public class UtilizationService {
         current = current.plusWeeks(1);
       }
 
+      /**
+       * weeklyCapacity uses the member's base capacity as of the range start date. This is a
+       * snapshot for display purposes; it does not reflect mid-range capacity changes.
+       */
       BigDecimal weeklyCapacity = capacityService.getMemberCapacity(memberId, weekStart);
       BigDecimal avgPlannedPct = pct(sumPlanned, sumCapacity);
       BigDecimal avgActualPct = pct(sumActual, sumCapacity);
@@ -211,13 +212,5 @@ public class UtilizationService {
             : new TeamAverages(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
 
     return new TeamUtilizationResponse(summaries, averages);
-  }
-
-  /** Calculates percentage = (numerator / denominator) * 100. Returns ZERO if denominator is 0. */
-  private BigDecimal pct(BigDecimal numerator, BigDecimal denominator) {
-    if (denominator.compareTo(BigDecimal.ZERO) == 0) {
-      return BigDecimal.ZERO;
-    }
-    return numerator.multiply(BigDecimal.valueOf(100)).divide(denominator, 2, RoundingMode.HALF_UP);
   }
 }

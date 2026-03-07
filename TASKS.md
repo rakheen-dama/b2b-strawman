@@ -326,7 +326,7 @@
 | 287 | Frontend: Execution Log & Dashboard Widget | Frontend | 285 | M | 287A | **Done** (PR #567) |
 | 288 | End-to-End Integration Tests & Edge Cases | Backend | 283, 284 | M | 288A | **Done** (PR #568) |
 | **Phase 38 — Resource Planning & Capacity** | | | | | | See [tasks/phase38-resource-planning-capacity.md](tasks/phase38-resource-planning-capacity.md) |
-| 289 | Entity Foundation & Migration | Backend | -- | M | 289A, 289B | |
+| 289 | Entity Foundation & Migration | Backend | -- | M | 289A, 289B | 289A Done (PR #569) |
 | 290 | Capacity & Allocation Services | Backend | 289 | L | 290A, 290B, 290C | |
 | 291 | Utilization Service & Profitability Integration | Backend | 290 | M | 291A, 291B | |
 | 292 | Allocation Grid UI | Frontend | 290 | L | 292A, 292B | |

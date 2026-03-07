@@ -120,7 +120,7 @@ FRONTEND TRACK (after respective backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 0a | 289 | 289A | V58 tenant migration: CREATE TABLE member_capacities, resource_allocations, leave_blocks + ALTER TABLE org_settings ADD COLUMN default_weekly_capacity_hours + all indexes + constraints. ~1 new migration file. Backend only. | |
+| 0a | 289 | 289A | V62 tenant migration: CREATE TABLE member_capacities, resource_allocations, leave_blocks + ALTER TABLE org_settings ADD COLUMN default_weekly_capacity_hours + all indexes + constraints. ~1 new migration file. Backend only. | **Done** (PR #569) |
 
 ### Stage 1: Entity Foundation
 
@@ -204,7 +204,7 @@ Stage 7: [293A] // [293B] // [294B]                                (parallel)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **289A** | 289.1--289.4 | V58 tenant migration: CREATE TABLE member_capacities, resource_allocations, leave_blocks + ALTER TABLE org_settings + all indexes + constraints + CHECK constraints. ~1 new migration file. Backend only. | |
+| **289A** | 289.1--289.4 | V62 tenant migration: CREATE TABLE member_capacities, resource_allocations, leave_blocks + ALTER TABLE org_settings + all indexes + constraints + CHECK constraints. ~1 new migration file. Backend only. | **Done** (PR #569) |
 | **289B** | 289.5--289.14 | MemberCapacity + ResourceAllocation + LeaveBlock entities + 3 JPA repositories with JPQL queries + MemberOverAllocatedEvent record + OrgSettings extension (defaultWeeklyCapacityHours) + persistence integration tests (~12 tests). ~10 new files + ~1 modified file. Backend only. | |
 
 ### Tasks

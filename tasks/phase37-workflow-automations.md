@@ -143,7 +143,7 @@ FRONTEND TRACK (after respective backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 2a (parallel) | 281 | 281A | AutomationEventListener (@EventListener for DomainEvent) + trigger type mapping (event class to TriggerType) + trigger config matching logic (StatusChangeTriggerConfig, BudgetThresholdTriggerConfig, EmptyTriggerConfig matching against event data) + AutomationExecution creation for matched rules + integration tests (~10 tests). ~6 new files. Backend only. | |
+| 2a (parallel) | 281 | 281A | AutomationEventListener (@EventListener for DomainEvent) + trigger type mapping (event class to TriggerType) + trigger config matching logic (StatusChangeTriggerConfig, BudgetThresholdTriggerConfig, EmptyTriggerConfig matching against event data) + AutomationExecution creation for matched rules + integration tests (~10 tests). ~6 new files. Backend only. | **Done** (PR #557) |
 | 2b (parallel) | 281 | 281B | ConditionEvaluator (dot-notation field resolution, 9 operators, AND logic) + AutomationContext builder (builds context map per trigger type from event data) + context definitions for all 8 trigger types + fail-safe behavior (unknown fields) + unit tests (~12 tests). ~4 new files. Backend only. | |
 
 ### Stage 3: Action Executors
@@ -311,7 +311,7 @@ Stage 9: [288A]                                                    (after Stages
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **281A** | 281.1--281.6 | AutomationEventListener (@EventListener for DomainEvent) + trigger type mapping (event class -> TriggerType lookup table) + trigger config matching logic (StatusChangeTriggerConfig against event fromStatus/toStatus, BudgetThresholdTriggerConfig against threshold, EmptyTriggerConfig always matches) + AutomationExecution creation for matched rules + integration tests (~10 tests). ~6 new files. Backend only. | |
+| **281A** | 281.1--281.6 | AutomationEventListener (@EventListener for DomainEvent) + trigger type mapping (event class -> TriggerType lookup table) + trigger config matching logic (StatusChangeTriggerConfig against event fromStatus/toStatus, BudgetThresholdTriggerConfig against threshold, EmptyTriggerConfig always matches) + AutomationExecution creation for matched rules + integration tests (~10 tests). ~6 new files. Backend only. | **Done** (PR #557) |
 | **281B** | 281.7--281.12 | ConditionEvaluator (dot-notation field path resolution, 9 operators, AND logic, fail-safe for unknown fields) + AutomationContext builder (context map per trigger type, resolves entity + parent data) + context definitions for all 8 trigger types + unit tests (~12 tests). ~4 new files. Backend only. | |
 
 ### Tasks

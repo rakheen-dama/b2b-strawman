@@ -132,7 +132,7 @@ FRONTEND TRACK (after respective backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 2a (parallel) | 290 | 290A | CapacityService (capacity resolution chain, effective capacity with leave reduction) + MemberCapacityController (CRUD for capacity records) + DTOs + OrgSettingsService extension (expose defaultWeeklyCapacityHours) + integration tests (~12 tests). ~6 new files + ~2 modified files. Backend only. | |
+| 2a (parallel) | 290 | 290A | CapacityService (capacity resolution chain, effective capacity with leave reduction) + MemberCapacityController (CRUD for capacity records) + DTOs + OrgSettingsService extension (expose defaultWeeklyCapacityHours) + integration tests (~12 tests). ~6 new files + ~2 modified files. Backend only. | **Done** (PR #571) |
 | 2b (parallel) | 290 | 290B | LeaveBlockService (leave CRUD with date validation) + LeaveBlockController (CRUD endpoints, self-service + admin RBAC) + DTOs + integration tests (~10 tests). ~5 new files. Backend only. | |
 
 ### Stage 3: Allocation Service
@@ -274,7 +274,7 @@ Stage 7: [293A] // [293B] // [294B]                                (parallel)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **290A** | 290.1--290.8 | CapacityService (capacity resolution chain, effective capacity with leave) + MemberCapacityController (4 endpoints) + capacity DTOs + OrgSettingsService extension + integration tests (~12 tests). ~6 new files + ~2 modified files. Backend only. | |
+| **290A** | 290.1--290.8 | CapacityService (capacity resolution chain, effective capacity with leave) + MemberCapacityController (4 endpoints) + capacity DTOs + OrgSettingsService extension + integration tests (~12 tests). ~6 new files + ~2 modified files. Backend only. | **Done** (PR #571) |
 | **290B** | 290.9--290.14 | LeaveBlockService (leave CRUD, date validation) + LeaveBlockController (5 endpoints, self-service + admin RBAC) + leave DTOs + integration tests (~10 tests). ~5 new files. Backend only. | |
 | **290C** | 290.15--290.23 | ResourceAllocationService (allocation CRUD, bulk upsert, over-allocation check + event, auto-add ProjectMember) + ResourceAllocationController (5 endpoints) + allocation DTOs + integration tests (~15 tests). ~6 new files. Backend only. | |
 

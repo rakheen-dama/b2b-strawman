@@ -23,6 +23,14 @@ export async function updateCapacitySettings(
     return { success: false, error: "Only admins and owners can update capacity settings." };
   }
 
+  if (
+    !Number.isFinite(data.defaultWeeklyCapacityHours) ||
+    data.defaultWeeklyCapacityHours < 0 ||
+    data.defaultWeeklyCapacityHours > 168
+  ) {
+    return { success: false, error: "Hours must be between 0 and 168." };
+  }
+
   try {
     await api.patch("/api/settings/capacity", data);
   } catch (error) {

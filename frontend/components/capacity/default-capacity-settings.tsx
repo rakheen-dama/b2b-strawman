@@ -26,6 +26,13 @@ export function DefaultCapacitySettings({
     setMessage(null);
     setIsError(false);
 
+    if (!Number.isFinite(hours) || hours < 0 || hours > 168) {
+      setMessage("Hours must be between 0 and 168.");
+      setIsError(true);
+      setSaving(false);
+      return;
+    }
+
     try {
       const result = await updateCapacitySettings(slug, {
         defaultWeeklyCapacityHours: hours,
@@ -65,7 +72,10 @@ export function DefaultCapacitySettings({
             max={168}
             step={0.5}
             value={hours}
-            onChange={(e) => setHours(parseFloat(e.target.value) || 0)}
+            onChange={(e) => {
+              const val = parseFloat(e.target.value);
+              setHours(Number.isFinite(val) ? Math.max(0, Math.min(168, val)) : 0);
+            }}
           />
         </div>
       </div>

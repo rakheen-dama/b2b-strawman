@@ -28,7 +28,7 @@ Phase 37 adds a rule-based automation engine to the DocTeams platform. Firm admi
 | 284 | Rule CRUD API, Template Seeder & Execution Log API | Backend | 280, 281, 282, 283 | L | 284A, 284B | **Done** (PRs #562, #563) |
 | 285 | Frontend: Rule List, Template Gallery & Settings Nav | Frontend | 284 | M | 285A | **Done** (PR #564) |
 | 286 | Frontend: Rule Create/Edit Wizard | Frontend | 285 | L | 286A, 286B | **Done** (PRs #565, #566) |
-| 287 | Frontend: Execution Log & Dashboard Widget | Frontend | 285 | M | 287A | |
+| 287 | Frontend: Execution Log & Dashboard Widget | Frontend | 285 | M | 287A | **Done** (PR #567) |
 | 288 | End-to-End Integration Tests & Edge Cases | Backend | 283, 284 | M | 288A | |
 
 ---
@@ -177,7 +177,7 @@ FRONTEND TRACK (after respective backend epics)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 7a (parallel) | 286 | 286A | settings/automations/new/page.tsx + settings/automations/[id]/page.tsx + RuleForm layout (3-section scrollable) + TriggerConfigForm (dynamic config by trigger type) + ConditionBuilder (add/remove rows, field/operator/value) + server actions (create, update) + tests (~8 tests). ~7 new files. Frontend only. | **Done** (PR #565) |
-| 7b (parallel) | 287 | 287A | Execution log tab on rule detail page + settings/automations/executions/page.tsx (global log) + ExecutionLog DataTable + ExecutionDetail Sheet (per-action status/result/error) + AutomationsWidget (dashboard card: active rules, today's executions, failure badge) + dashboard integration + tests (~8 tests). ~7 new files. Frontend only. | |
+| 7b (parallel) | 287 | 287A | Execution log tab on rule detail page + settings/automations/executions/page.tsx (global log) + ExecutionLog DataTable + ExecutionDetail Sheet (per-action status/result/error) + AutomationsWidget (dashboard card: active rules, today's executions, failure badge) + dashboard integration + tests (~8 tests). ~7 new files. Frontend only. | **Done** (PR #567) |
 
 ### Stage 8: Frontend Actions Step
 
@@ -728,7 +728,7 @@ Stage 9: [288A]                                                    (after Stages
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **287A** | 287.1--287.8 | Execution log tab on rule detail page + settings/automations/executions/page.tsx (global log) + ExecutionLog DataTable + ExecutionDetail Sheet + AutomationsWidget (dashboard card) + dashboard integration + tests (~8 tests). ~7 new files + ~1 modified file. Frontend only. | |
+| **287A** | 287.1--287.8 | Execution log tab on rule detail page + settings/automations/executions/page.tsx (global log) + ExecutionLog DataTable + ExecutionDetail Sheet + AutomationsWidget (dashboard card) + dashboard integration + tests (~8 tests). ~7 new files + ~1 modified file. Frontend only. | **Done** (PR #567) |
 
 ### Tasks
 

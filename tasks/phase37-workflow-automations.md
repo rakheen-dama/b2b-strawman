@@ -150,7 +150,7 @@ FRONTEND TRACK (after respective backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 3a | 282 | 282A | ActionExecutor interface + CreateTaskActionExecutor (delegates to TaskService) + SendNotificationActionExecutor (delegates to NotificationService) + SendEmailActionExecutor (delegates to EmailNotificationChannel) + VariableResolver ({{variable}} substitution) + AutomationActionExecutor dispatcher (routes by ActionType) + ActionExecution recording (COMPLETED/FAILED) + integration tests (~12 tests). ~8 new files. Backend only. | |
+| 3a | 282 | 282A | ActionExecutor interface + CreateTaskActionExecutor (delegates to TaskService) + SendNotificationActionExecutor (delegates to NotificationService) + SendEmailActionExecutor (delegates to EmailNotificationChannel) + VariableResolver ({{variable}} substitution) + AutomationActionExecutor dispatcher (routes by ActionType) + ActionExecution recording (COMPLETED/FAILED) + integration tests (~12 tests). ~8 new files. Backend only. | **Done** (PR #559) |
 | 3b | 282 | 282B | UpdateStatusActionExecutor (delegates to entity-specific services) + CreateProjectActionExecutor (delegates to ProjectInstantiationService) + AssignMemberActionExecutor (delegates to ProjectMemberService) + error handling: failed action logged, subsequent actions still execute + AUTOMATION_ACTION_FAILED notification to org admins + integration tests (~10 tests). ~5 new files. Backend only. | |
 
 ### Stage 4: Scheduler & Cycle Detection
@@ -381,7 +381,7 @@ Stage 9: [288A]                                                    (after Stages
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **282A** | 282.1--282.8 | ActionExecutor interface + CreateTaskActionExecutor + SendNotificationActionExecutor + SendEmailActionExecutor + VariableResolver + AutomationActionExecutor dispatcher + ActionExecution recording (COMPLETED/FAILED) + integration tests (~12 tests). ~8 new files. Backend only. | |
+| **282A** | 282.1--282.8 | ActionExecutor interface + CreateTaskActionExecutor + SendNotificationActionExecutor + SendEmailActionExecutor + VariableResolver + AutomationActionExecutor dispatcher + ActionExecution recording (COMPLETED/FAILED) + integration tests (~12 tests). ~8 new files. Backend only. | **Done** (PR #559) |
 | **282B** | 282.9--282.14 | UpdateStatusActionExecutor + CreateProjectActionExecutor + AssignMemberActionExecutor + error handling (failed action does not short-circuit) + AUTOMATION_ACTION_FAILED notification to org admins + integration tests (~10 tests). ~5 new files. Backend only. | |
 
 ### Tasks

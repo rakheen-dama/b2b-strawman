@@ -25,7 +25,7 @@ Phase 38 adds resource planning and capacity management to the DocTeams platform
 | 291 | Utilization Service & Profitability Integration | Backend | 290 | M | 291A, 291B | **Done** (PRs #574, #575) |
 | 292 | Allocation Grid UI | Frontend | 290 | L | 292A, 292B | **Done** (PRs #576, #577) |
 | 293 | Utilization, Dashboard & Project Staffing UI | Frontend | 291, 292 | M | 293A, 293B | **Done** (PRs #578, #579) |
-| 294 | Notifications, Audit Events & Settings UI | Backend + Frontend | 290 | M | 294A, 294B | |
+| 294 | Notifications, Audit Events & Settings UI | Backend + Frontend | 290 | M | 294A, 294B | 294A **Done** (PR #580) |
 
 ---
 
@@ -146,7 +146,7 @@ FRONTEND TRACK (after respective backend epics)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 4a (parallel) | 291 | 291A | UtilizationService (planned vs actual combination) + CapacityController (team grid, member detail, project staffing, utilization endpoints) + DTOs + integration tests (~15 tests). ~5 new files. Backend only. | **Done** (PR #574) |
-| 4b (parallel) | 294 | 294A | Notification types (ALLOCATION_CHANGED, MEMBER_OVER_ALLOCATED, LEAVE_CREATED) + audit events (7 types) wired into capacity/allocation/leave services + integration tests (~12 tests). ~1 new file + ~3 modified files. Backend only. | |
+| 4b (parallel) | 294 | 294A | Notification types (ALLOCATION_CHANGED, MEMBER_OVER_ALLOCATED, LEAVE_CREATED) + audit events (7 types) wired into capacity/allocation/leave services + integration tests (~12 tests). ~1 new file + ~3 modified files. Backend only. | **Done** (PR #580) |
 
 ### Stage 5: Profitability Extension
 
@@ -589,7 +589,7 @@ Stage 7: [293A] // [293B] // [294B]                                (parallel)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **294A** | 294.1--294.8 | Notification types (ALLOCATION_CHANGED, MEMBER_OVER_ALLOCATED, LEAVE_CREATED) + 7 audit event types wired into services + integration tests (~12 tests). ~1 new file + ~3 modified files. Backend only. | |
+| **294A** | 294.1--294.8 | Notification types (ALLOCATION_CHANGED, MEMBER_OVER_ALLOCATED, LEAVE_CREATED) + 7 audit event types wired into services + integration tests (~12 tests). ~1 new file + ~3 modified files. Backend only. | **Done** (PR #580) |
 | **294B** | 294.9--294.14 | Settings capacity section (org default weekly capacity) + notification rendering for capacity types in NotificationBell/Notifications page + tests (~4 tests). ~3 new files + ~2 modified files. Frontend only. | |
 
 ### Tasks

@@ -21,7 +21,7 @@ Phase 38 adds resource planning and capacity management to the DocTeams platform
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 289 | Entity Foundation & Migration | Backend | -- | M | 289A, 289B | **Done** (PRs #569, #570) |
-| 290 | Capacity & Allocation Services | Backend | 289 | L | 290A, 290B, 290C | |
+| 290 | Capacity & Allocation Services | Backend | 289 | L | 290A, 290B, 290C | **Done** (PRs #571, #572, #573) |
 | 291 | Utilization Service & Profitability Integration | Backend | 290 | M | 291A, 291B | |
 | 292 | Allocation Grid UI | Frontend | 290 | L | 292A, 292B | |
 | 293 | Utilization, Dashboard & Project Staffing UI | Frontend | 291, 292 | M | 293A, 293B | |
@@ -139,7 +139,7 @@ FRONTEND TRACK (after respective backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 3a | 290 | 290C | ResourceAllocationService (allocation CRUD, bulk upsert, over-allocation check + event, auto-add ProjectMember) + ResourceAllocationController (CRUD + bulk endpoints) + DTOs + integration tests (~15 tests). ~6 new files. Backend only. | |
+| 3a | 290 | 290C | ResourceAllocationService (allocation CRUD, bulk upsert, over-allocation check + event, auto-add ProjectMember) + ResourceAllocationController (CRUD + bulk endpoints) + DTOs + integration tests (~15 tests). ~6 new files. Backend only. | **Done** (PR #573) |
 
 ### Stage 4: Utilization & Profitability + Notifications (parallel tracks)
 
@@ -276,7 +276,7 @@ Stage 7: [293A] // [293B] // [294B]                                (parallel)
 |-------|-------|---------|--------|
 | **290A** | 290.1--290.8 | CapacityService (capacity resolution chain, effective capacity with leave) + MemberCapacityController (4 endpoints) + capacity DTOs + OrgSettingsService extension + integration tests (~12 tests). ~6 new files + ~2 modified files. Backend only. | **Done** (PR #571) |
 | **290B** | 290.9--290.14 | LeaveBlockService (leave CRUD, date validation) + LeaveBlockController (5 endpoints, self-service + admin RBAC) + leave DTOs + integration tests (~10 tests). ~5 new files. Backend only. | **Done** (PR #572) |
-| **290C** | 290.15--290.23 | ResourceAllocationService (allocation CRUD, bulk upsert, over-allocation check + event, auto-add ProjectMember) + ResourceAllocationController (5 endpoints) + allocation DTOs + integration tests (~15 tests). ~6 new files. Backend only. | |
+| **290C** | 290.15--290.23 | ResourceAllocationService (allocation CRUD, bulk upsert, over-allocation check + event, auto-add ProjectMember) + ResourceAllocationController (5 endpoints) + allocation DTOs + integration tests (~15 tests). ~6 new files. Backend only. | **Done** (PR #573) |
 
 ### Tasks
 

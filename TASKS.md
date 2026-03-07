@@ -327,7 +327,7 @@
 | 288 | End-to-End Integration Tests & Edge Cases | Backend | 283, 284 | M | 288A | **Done** (PR #568) |
 | **Phase 38 — Resource Planning & Capacity** | | | | | | See [tasks/phase38-resource-planning-capacity.md](tasks/phase38-resource-planning-capacity.md) |
 | 289 | Entity Foundation & Migration | Backend | -- | M | 289A, 289B | **Done** (PRs #569, #570) |
-| 290 | Capacity & Allocation Services | Backend | 289 | L | 290A, 290B, 290C | 290A **Done** (PR #571), 290B **Done** (PR #572) |
+| 290 | Capacity & Allocation Services | Backend | 289 | L | 290A, 290B, 290C | **Done** (PRs #571, #572, #573) |
 | 291 | Utilization Service & Profitability Integration | Backend | 290 | M | 291A, 291B | |
 | 292 | Allocation Grid UI | Frontend | 290 | L | 292A, 292B | |
 | 293 | Utilization, Dashboard & Project Staffing UI | Frontend | 291, 292 | M | 293A, 293B | |

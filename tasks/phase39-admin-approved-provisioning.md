@@ -159,7 +159,7 @@ FRONTEND TRACK (after backend APIs)       |
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 5a | 301 | 301A | `AuthContext.groups` field, BFF `/bff/me` groups extraction update, `(platform-admin)` layout with route guard, sidebar nav link (conditional on group). ~6 new/modified files (~4 tests). Frontend only. | |
+| 5a | 301 | 301A | `AuthContext.groups` field, BFF `/bff/me` groups extraction update, `(platform-admin)` layout with route guard, sidebar nav link (conditional on group). ~6 new/modified files (~4 tests). Frontend only. | **Done** (PR #592) |
 | 5b | 301 | 301B | `AccessRequestsTable`, `ApproveDialog`, `RejectDialog`, server actions for approve/reject, status filtering. ~6 new files (~6 tests). Frontend only. | |
 
 ### Stage 6: Cleanup & Toggle (after Stage 2)
@@ -568,7 +568,7 @@ Stage 6: [302A]                                                        (after 29
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **301A** | 301.1--301.5 | Extend `AuthContext` with `groups: string[]`, update BFF `/bff/me` response parsing to extract groups, update keycloak-bff provider. Create `(platform-admin)` route group with layout and route guard. Add conditional "Platform Admin" nav link to sidebar. ~6 modified/new files (~4 tests). Frontend only. | |
+| **301A** | 301.1--301.5 | Extend `AuthContext` with `groups: string[]`, update BFF `/bff/me` response parsing to extract groups, update keycloak-bff provider. Create `(platform-admin)` route group with layout and route guard. Add conditional "Platform Admin" nav link to sidebar. ~6 modified/new files (~4 tests). Frontend only. | **Done** (PR #592) |
 | **301B** | 301.6--301.11 | `AccessRequestsTable` component with status filtering, `ApproveDialog` confirmation, `RejectDialog` confirmation, server actions for approve/reject/list, loading states. ~6 new files (~6 tests). Frontend only. | |
 
 ### Tasks

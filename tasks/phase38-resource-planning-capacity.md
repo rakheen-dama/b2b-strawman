@@ -22,7 +22,7 @@ Phase 38 adds resource planning and capacity management to the DocTeams platform
 |------|------|-------|------|--------|--------|--------|
 | 289 | Entity Foundation & Migration | Backend | -- | M | 289A, 289B | **Done** (PRs #569, #570) |
 | 290 | Capacity & Allocation Services | Backend | 289 | L | 290A, 290B, 290C | **Done** (PRs #571, #572, #573) |
-| 291 | Utilization Service & Profitability Integration | Backend | 290 | M | 291A, 291B | |
+| 291 | Utilization Service & Profitability Integration | Backend | 290 | M | 291A, 291B | **Done** (PRs #574, #575) |
 | 292 | Allocation Grid UI | Frontend | 290 | L | 292A, 292B | |
 | 293 | Utilization, Dashboard & Project Staffing UI | Frontend | 291, 292 | M | 293A, 293B | |
 | 294 | Notifications, Audit Events & Settings UI | Backend + Frontend | 290 | M | 294A, 294B | |
@@ -152,7 +152,7 @@ FRONTEND TRACK (after respective backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 5a | 291 | 291B | ProfitabilityReportService extension (includeProjections parameter, allocation-based revenue/cost projections via RateResolutionService) + integration tests (~8 tests). ~0 new files + ~2 modified files. Backend only. | |
+| 5a | 291 | 291B | ProfitabilityReportService extension (includeProjections parameter, allocation-based revenue/cost projections via RateResolutionService) + integration tests (~8 tests). ~0 new files + ~2 modified files. Backend only. | **Done** (PR #575) |
 
 ### Stage 6: Allocation Grid UI
 
@@ -363,7 +363,7 @@ Stage 7: [293A] // [293B] // [294B]                                (parallel)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **291A** | 291.1--291.8 | UtilizationService (planned vs actual combination, per-member per-week metrics) + CapacityController (5 endpoints: team grid, member detail, project staffing, team utilization, member utilization) + grid/utilization DTOs + integration tests (~15 tests). ~5 new files. Backend only. | **Done** (PR #574) |
-| **291B** | 291.9--291.13 | ProfitabilityReportService extension (includeProjections parameter, allocation-based revenue/cost via RateResolutionService and CostRateService) + integration tests (~8 tests). ~0 new files + ~2 modified files. Backend only. | |
+| **291B** | 291.9--291.13 | ProfitabilityReportService extension (includeProjections parameter, allocation-based revenue/cost via RateResolutionService and CostRateService) + integration tests (~8 tests). ~0 new files + ~2 modified files. Backend only. | **Done** (PR #575) |
 
 ### Tasks
 

@@ -21,7 +21,7 @@ Phase 39 replaces self-registration with an **admin-approved access request pipe
 | 298 | Approval Pipeline & Platform Admin API | Backend | 296, 297 | M | 298A, 298B | **Done** (PRs #587, #588) |
 | 299 | Keycloak Configuration & Gateway Routing | Infra | 297 | S | 299A | **Done** (PR #589) |
 | 300 | Public Access Request Form (Frontend) | Frontend | 296 | M | 300A, 300B | **Done** (PRs #590, #591) |
-| 301 | Platform Admin Panel (Frontend) | Frontend | 298, 300 | M | 301A, 301B | |
+| 301 | Platform Admin Panel (Frontend) | Frontend | 298, 300 | M | 301A, 301B | **Done** (PRs #592, #593) |
 | 302 | Self-Service Org Creation Gate & JIT Provisioning Toggle | Backend + Frontend | 298 | S | 302A | |
 
 ---
@@ -160,7 +160,7 @@ FRONTEND TRACK (after backend APIs)       |
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 5a | 301 | 301A | `AuthContext.groups` field, BFF `/bff/me` groups extraction update, `(platform-admin)` layout with route guard, sidebar nav link (conditional on group). ~6 new/modified files (~4 tests). Frontend only. | **Done** (PR #592) |
-| 5b | 301 | 301B | `AccessRequestsTable`, `ApproveDialog`, `RejectDialog`, server actions for approve/reject, status filtering. ~6 new files (~6 tests). Frontend only. | |
+| 5b | 301 | 301B | `AccessRequestsTable`, `ApproveDialog`, `RejectDialog`, server actions for approve/reject, status filtering. ~6 new files (~6 tests). Frontend only. | **Done** (PR #593) |
 
 ### Stage 6: Cleanup & Toggle (after Stage 2)
 
@@ -569,7 +569,7 @@ Stage 6: [302A]                                                        (after 29
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **301A** | 301.1--301.5 | Extend `AuthContext` with `groups: string[]`, update BFF `/bff/me` response parsing to extract groups, update keycloak-bff provider. Create `(platform-admin)` route group with layout and route guard. Add conditional "Platform Admin" nav link to sidebar. ~6 modified/new files (~4 tests). Frontend only. | **Done** (PR #592) |
-| **301B** | 301.6--301.11 | `AccessRequestsTable` component with status filtering, `ApproveDialog` confirmation, `RejectDialog` confirmation, server actions for approve/reject/list, loading states. ~6 new files (~6 tests). Frontend only. | |
+| **301B** | 301.6--301.11 | `AccessRequestsTable` component with status filtering, `ApproveDialog` confirmation, `RejectDialog` confirmation, server actions for approve/reject/list, loading states. ~6 new files (~6 tests). Frontend only. | **Done** (PR #593) |
 
 ### Tasks
 

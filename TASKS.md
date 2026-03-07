@@ -339,7 +339,7 @@
 | 298 | Approval Pipeline & Platform Admin API | Backend | 296, 297 | M | 298A, 298B | **Done** (PRs #587, #588) |
 | 299 | Keycloak Configuration & Gateway Routing | Infra | 297 | S | 299A | **Done** (PR #589) |
 | 300 | Public Access Request Form (Frontend) | Frontend | 296 | M | 300A, 300B | **Done** (PRs #590, #591) |
-| 301 | Platform Admin Panel (Frontend) | Frontend | 298, 300 | M | 301A, 301B | 301A **Done** (PR #592) |
+| 301 | Platform Admin Panel (Frontend) | Frontend | 298, 300 | M | 301A, 301B | **Done** (PRs #592, #593) |
 | 302 | Self-Service Org Creation Gate & JIT Provisioning Toggle | Backend + Frontend | 298 | S | 302A | |
 | **Phase 40 — Bulk Billing & Batch Operations** | | | | | | See [tasks/phase40-bulk-billing-batch-operations.md](tasks/phase40-bulk-billing-batch-operations.md) |
 | 303 | BillingRun Entity Foundation & Migration | Backend | -- | M | 303A, 303B | |

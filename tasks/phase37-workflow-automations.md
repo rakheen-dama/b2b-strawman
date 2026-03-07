@@ -21,7 +21,7 @@ Phase 37 adds a rule-based automation engine to the DocTeams platform. Firm admi
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 280 | Automation Entity Foundation & Migration | Backend | -- | M | 280A, 280B | |
+| 280 | Automation Entity Foundation & Migration | Backend | -- | M | 280A, 280B | **Done** (PRs #555, #556) |
 | 281 | Trigger Matching & Condition Evaluation Engine | Backend | 280 | L | 281A, 281B | |
 | 282 | Action Executors & Variable Resolution | Backend | 280, 281 | L | 282A, 282B | |
 | 283 | Delayed Action Scheduler & Cycle Detection | Backend | 282 | M | 283A | |
@@ -137,7 +137,7 @@ FRONTEND TRACK (after respective backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 1a | 280 | 280B | AutomationRule + AutomationAction + AutomationExecution + ActionExecution entities + 7 enums (TriggerType, ActionType, ExecutionStatus, ActionExecutionStatus, RuleSource, DelayUnit, ConditionOperator) + JPA repositories + sealed class hierarchies (TriggerConfig, ActionConfig, ActionResult) + config deserializer utility + persistence tests (~10 tests). ~12 new files. Backend only. | |
+| 1a | 280 | 280B | AutomationRule + AutomationAction + AutomationExecution + ActionExecution entities + 7 enums (TriggerType, ActionType, ExecutionStatus, ActionExecutionStatus, RuleSource, DelayUnit, ConditionOperator) + JPA repositories + sealed class hierarchies (TriggerConfig, ActionConfig, ActionResult) + config deserializer utility + persistence tests (~10 tests). ~12 new files. Backend only. | **Done** (PR #556) |
 
 ### Stage 2: Engine Core (parallel tracks)
 
@@ -229,7 +229,7 @@ Stage 9: [288A]                                                    (after Stages
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **280A** | 280.1--280.4 | V58 tenant migration: CREATE TABLE automation_rules, automation_actions, automation_executions, action_executions + all indexes + constraints + CHECK constraints. ~1 new migration file. Backend only. | **Done** (PR #555) |
-| **280B** | 280.5--280.18 | AutomationRule + AutomationAction + AutomationExecution + ActionExecution entities + 7 enums + JPA repositories + sealed class hierarchies (TriggerConfig, ActionConfig, ActionResult) + ConfigDeserializer utility + persistence integration tests (~10 tests). ~12 new files. Backend only. | |
+| **280B** | 280.5--280.18 | AutomationRule + AutomationAction + AutomationExecution + ActionExecution entities + 7 enums + JPA repositories + sealed class hierarchies (TriggerConfig, ActionConfig, ActionResult) + ConfigDeserializer utility + persistence integration tests (~10 tests). ~12 new files. Backend only. | **Done** (PR #556) |
 
 ### Tasks
 

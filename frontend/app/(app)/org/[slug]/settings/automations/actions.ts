@@ -5,12 +5,19 @@ import {
   toggleRule,
   deleteRule,
   activateTemplate,
+  updateRule,
+  duplicateRule,
+} from "@/lib/api/automations";
+import type {
+  UpdateRuleRequest,
+  AutomationRuleResponse,
 } from "@/lib/api/automations";
 import { revalidatePath } from "next/cache";
 
 interface ActionResult {
   success: boolean;
   error?: string;
+  data?: AutomationRuleResponse;
 }
 
 export async function toggleRuleAction(
@@ -80,4 +87,50 @@ export async function activateTemplateAction(
 
   revalidatePath(`/org/${slug}/settings/automations`);
   return { success: true };
+}
+
+export async function updateRuleAction(
+  slug: string,
+  id: string,
+  data: UpdateRuleRequest,
+): Promise<ActionResult> {
+  try {
+    const updated = await updateRule(id, data);
+    revalidatePath(`/org/${slug}/settings/automations`);
+    revalidatePath(`/org/${slug}/settings/automations/${id}`);
+    return { success: true, data: updated };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 403) {
+        return {
+          success: false,
+          error: "You do not have permission to update automation rules.",
+        };
+      }
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+}
+
+export async function duplicateRuleAction(
+  slug: string,
+  id: string,
+): Promise<ActionResult> {
+  try {
+    const duplicated = await duplicateRule(id);
+    revalidatePath(`/org/${slug}/settings/automations`);
+    return { success: true, data: duplicated };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 403) {
+        return {
+          success: false,
+          error: "You do not have permission to duplicate automation rules.",
+        };
+      }
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
 }

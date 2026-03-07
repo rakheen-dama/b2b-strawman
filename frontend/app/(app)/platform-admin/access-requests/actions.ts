@@ -28,9 +28,10 @@ export async function listAccessRequests(
   status?: string,
 ): Promise<{ success: boolean; data?: AccessRequest[]; error?: string }> {
   try {
-    const endpoint = status
-      ? `/api/platform-admin/access-requests?status=${status}`
-      : "/api/platform-admin/access-requests";
+    const params = new URLSearchParams();
+    if (status) params.set("status", status);
+    const qs = params.toString();
+    const endpoint = `/api/platform-admin/access-requests${qs ? `?${qs}` : ""}`;
     const response = await api.get<AccessRequestsResponse>(endpoint);
     return { success: true, data: response.content };
   } catch (error) {

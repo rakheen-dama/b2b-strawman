@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
@@ -150,6 +151,17 @@ public class OrgSettingsController {
             orgRole));
   }
 
+  @PatchMapping("/capacity")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<SettingsResponse> updateCapacitySettings(
+      @Valid @RequestBody UpdateCapacitySettingsRequest request) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+    return ResponseEntity.ok(
+        orgSettingsService.updateDefaultWeeklyCapacityHours(
+            request.defaultWeeklyCapacityHours(), memberId, orgRole));
+  }
+
   // --- DTOs ---
 
   public record SettingsResponse(
@@ -173,7 +185,8 @@ public class OrgSettingsController {
       String timeReminderDays,
       String timeReminderTime,
       Double timeReminderMinHours,
-      BigDecimal defaultExpenseMarkupPercent) {}
+      BigDecimal defaultExpenseMarkupPercent,
+      BigDecimal defaultWeeklyCapacityHours) {}
 
   public record UpdateSettingsRequest(
       @NotBlank(message = "defaultCurrency is required")
@@ -218,4 +231,9 @@ public class OrgSettingsController {
           String timeReminderTime,
       @Min(value = 0, message = "timeReminderMinMinutes must be non-negative")
           Integer timeReminderMinMinutes) {}
+
+  public record UpdateCapacitySettingsRequest(
+      @NotNull(message = "defaultWeeklyCapacityHours is required")
+          @Positive(message = "defaultWeeklyCapacityHours must be positive")
+          BigDecimal defaultWeeklyCapacityHours) {}
 }

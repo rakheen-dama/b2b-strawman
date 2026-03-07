@@ -19,7 +19,7 @@ Phase 39 replaces self-registration with an **admin-approved access request pipe
 | 296 | OTP Verification & Public Access Request API | Backend | 295 | M | 296A, 296B | **Done** (PR #583, #584) |
 | 297 | Platform Admin Identity & Security Infrastructure | Backend | 295 | M | 297A, 297B | **Done** (PRs #585, #586) |
 | 298 | Approval Pipeline & Platform Admin API | Backend | 296, 297 | M | 298A, 298B | **Done** (PRs #587, #588) |
-| 299 | Keycloak Configuration & Gateway Routing | Infra | 297 | S | 299A | |
+| 299 | Keycloak Configuration & Gateway Routing | Infra | 297 | S | 299A | **Done** (PR #589) |
 | 300 | Public Access Request Form (Frontend) | Frontend | 296 | M | 300A, 300B | |
 | 301 | Platform Admin Panel (Frontend) | Frontend | 298, 300 | M | 301A, 301B | |
 | 302 | Self-Service Org Creation Gate & JIT Provisioning Toggle | Backend + Frontend | 298 | S | 302A | |
@@ -146,7 +146,7 @@ FRONTEND TRACK (after backend APIs)       |
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 3a (parallel) | 299 | 299A | Keycloak seed script: create `platform-admins` group, add Group Membership Mapper to `gateway-bff` client scope, update `realm-export.json`, gateway route for `/api/platform-admin/**`. ~4 modified files. Infra only. | |
+| 3a (parallel) | 299 | 299A | Keycloak seed script: create `platform-admins` group, add Group Membership Mapper to `gateway-bff` client scope, update `realm-export.json`, gateway route for `/api/platform-admin/**`. ~4 modified files. Infra only. | **Done** (PR #589) |
 
 ### Stage 4: Public Frontend (after Stage 1)
 
@@ -457,7 +457,7 @@ Stage 6: [302A]                                                        (after 29
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **299A** | 299.1--299.5 | Keycloak seed script updates: create `platform-admins` group, add Group Membership Mapper to `gateway-bff` client scope, assign initial admin user to group. Update `realm-export.json`. Gateway `application.yml` route for `/api/platform-admin/**`. ~4 modified files. Infra only. | |
+| **299A** | 299.1--299.5 | Keycloak seed script updates: create `platform-admins` group, add Group Membership Mapper to `gateway-bff` client scope, assign initial admin user to group. Update `realm-export.json`. Gateway `application.yml` route for `/api/platform-admin/**`. ~4 modified files. Infra only. | **Done** (PR #589) |
 
 ### Tasks
 

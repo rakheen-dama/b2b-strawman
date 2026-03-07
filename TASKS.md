@@ -337,7 +337,7 @@
 | 296 | OTP Verification & Public Access Request API | Backend | 295 | M | 296A, 296B | **Done** (PR #583, #584) |
 | 297 | Platform Admin Identity & Security Infrastructure | Backend | 295 | M | 297A, 297B | **Done** (PRs #585, #586) |
 | 298 | Approval Pipeline & Platform Admin API | Backend | 296, 297 | M | 298A, 298B | **Done** (PRs #587, #588) |
-| 299 | Keycloak Configuration & Gateway Routing | Infra | 297 | S | 299A | |
+| 299 | Keycloak Configuration & Gateway Routing | Infra | 297 | S | 299A | **Done** (PR #589) |
 | 300 | Public Access Request Form (Frontend) | Frontend | 296 | M | 300A, 300B | |
 | 301 | Platform Admin Panel (Frontend) | Frontend | 298, 300 | M | 301A, 301B | |
 | 302 | Self-Service Org Creation Gate & JIT Provisioning Toggle | Backend + Frontend | 298 | S | 302A | |

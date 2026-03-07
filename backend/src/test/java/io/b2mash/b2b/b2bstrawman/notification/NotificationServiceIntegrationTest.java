@@ -335,7 +335,8 @@ class NotificationServiceIntegrationTest {
             "OPEN",
             "IN_PROGRESS",
             memberIdB,
-            "Status Changed Task");
+            "Status Changed Task",
+            null);
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
@@ -372,7 +373,8 @@ class NotificationServiceIntegrationTest {
             "OPEN",
             "DONE",
             memberIdA, // same as actor
-            "Self Status Task");
+            "Self Status Task",
+            null);
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)

@@ -73,4 +73,15 @@ public sealed interface DomainEvent
   Instant occurredAt();
 
   Map<String, Object> details();
+
+  /**
+   * Returns the automation execution ID if this event was triggered by an automation action. Used
+   * for cycle detection — events with a non-null execution ID are skipped by the automation engine
+   * to prevent infinite loops.
+   *
+   * @return the automation execution ID, or null if this event was not automation-triggered
+   */
+  default UUID automationExecutionId() {
+    return null;
+  }
 }

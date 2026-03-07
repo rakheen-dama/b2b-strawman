@@ -301,7 +301,8 @@ class AutomationEventListenerTest {
                       "OPEN",
                       "COMPLETED",
                       null,
-                      "Test Task");
+                      "Test Task",
+                      null);
 
               eventPublisher.publishEvent(event);
 
@@ -475,7 +476,8 @@ class AutomationEventListenerTest {
                     Map.of(),
                     ACTOR_MEMBER_ID,
                     "Test Project",
-                    false)))
+                    false,
+                    null)))
         .isEqualTo(TriggerType.PROJECT_STATUS_CHANGED);
 
     // ProjectArchivedEvent -> PROJECT_STATUS_CHANGED
@@ -710,7 +712,8 @@ class AutomationEventListenerTest {
                       "OPEN",
                       "COMPLETED",
                       null,
-                      "Cycle Task");
+                      "Cycle Task",
+                      null);
 
               eventPublisher.publishEvent(event);
 
@@ -749,6 +752,7 @@ class AutomationEventListenerTest {
         oldStatus,
         newStatus,
         null,
-        "Test Task");
+        "Test Task",
+        null);
   }
 }

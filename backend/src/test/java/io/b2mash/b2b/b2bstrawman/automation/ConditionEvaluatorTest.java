@@ -213,7 +213,8 @@ class ConditionEvaluatorTest {
             "OPEN",
             "COMPLETED",
             assigneeId,
-            "Fix the widget");
+            "Fix the widget",
+            null);
 
     var rule = createTestRule("Auto-close task", TriggerType.TASK_STATUS_CHANGED);
 

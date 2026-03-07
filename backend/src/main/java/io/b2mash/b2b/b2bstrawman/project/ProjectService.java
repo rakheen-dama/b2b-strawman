@@ -510,7 +510,8 @@ public class ProjectService {
             Map.of("name", project.getName()),
             memberId,
             project.getName(),
-            unbilledCount > 0 && acknowledgeUnbilledTime));
+            unbilledCount > 0 && acknowledgeUnbilledTime,
+            null));
 
     return project;
   }

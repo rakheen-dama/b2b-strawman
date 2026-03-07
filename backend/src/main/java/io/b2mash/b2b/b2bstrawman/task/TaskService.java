@@ -568,7 +568,8 @@ public class TaskService {
               oldStatus.name(),
               taskStatus.name(),
               task.getAssigneeId(),
-              task.getTitle()));
+              task.getTitle(),
+              null));
     }
 
     // Publish portal task event if project is customer-linked

@@ -18,5 +18,12 @@ public record TaskStatusChangedEvent(
     String oldStatus,
     String newStatus,
     UUID assigneeMemberId,
-    String taskTitle)
-    implements DomainEvent {}
+    String taskTitle,
+    UUID automationExecutionId)
+    implements DomainEvent {
+
+  @Override
+  public UUID automationExecutionId() {
+    return automationExecutionId;
+  }
+}

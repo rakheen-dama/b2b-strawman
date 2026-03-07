@@ -76,9 +76,11 @@ public class AutomationEventListener {
 
     // Step 2: Cycle detection placeholder — skip if event originated from automation
     if (isCycleDetected(event)) {
-      log.info(
-          "Skipping automation evaluation -- event originated from execution {}",
-          event.details().get("automationExecutionId"));
+      Object execId =
+          event.automationExecutionId() != null
+              ? event.automationExecutionId()
+              : (event.details() != null ? event.details().get("automationExecutionId") : null);
+      log.info("Skipping automation evaluation -- event originated from execution {}", execId);
       return;
     }
 
@@ -210,6 +212,11 @@ public class AutomationEventListener {
   }
 
   private boolean isCycleDetected(DomainEvent event) {
+    // Primary check: use the DomainEvent interface method (ADR-146)
+    if (event.automationExecutionId() != null) {
+      return true;
+    }
+    // Backward compatibility: check details map for legacy events
     Map<String, Object> details = event.details();
     if (details == null) {
       return false;

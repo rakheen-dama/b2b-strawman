@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.automation.ActionType;
 import io.b2mash.b2b.b2bstrawman.automation.config.ActionConfig;
 import io.b2mash.b2b.b2bstrawman.automation.config.ActionResult;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Strategy interface for executing a specific type of automation action. Implementations are
@@ -20,7 +21,9 @@ public interface ActionExecutor {
    *
    * @param config the deserialized action configuration
    * @param context the automation context map (entity key -> field map)
+   * @param automationExecutionId the parent execution ID for cycle detection propagation
    * @return the result of the execution
    */
-  ActionResult execute(ActionConfig config, Map<String, Map<String, Object>> context);
+  ActionResult execute(
+      ActionConfig config, Map<String, Map<String, Object>> context, UUID automationExecutionId);
 }

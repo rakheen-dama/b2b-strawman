@@ -107,6 +107,10 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers("/api/portal/acceptance/**")
                     .permitAll()
+                    // Wildcard covers POST /api/access-requests (submit) and
+                    // POST /api/access-requests/verify (296B) — both public endpoints
+                    .requestMatchers("/api/access-requests/**")
+                    .permitAll()
                     .requestMatchers("/internal/**")
                     .authenticated()
                     .requestMatchers("/api/**")

@@ -165,7 +165,7 @@ FRONTEND TRACK (after respective backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 7a (parallel) | 293 | 293A | resources/utilization/page.tsx + UtilizationTable component + utilization bar charts + tests (~6 tests). ~5 new files. Frontend only. | |
+| 7a (parallel) | 293 | 293A | resources/utilization/page.tsx + UtilizationTable component + utilization bar charts + tests (~6 tests). ~5 new files. Frontend only. | **Done** (PR #578) |
 | 7b (parallel) | 293 | 293B | Project detail "Staffing" tab + TeamCapacityWidget (dashboard) + MyScheduleWidget (dashboard) + profitability "Include Projections" toggle + tests (~8 tests). ~6 new files + ~2 modified files. Frontend only. | |
 | 7c (parallel) | 294 | 294B | Settings capacity section (org default weekly capacity hours) + capacity notification rendering in NotificationBell/Notifications page + tests (~4 tests). ~3 new files + ~2 modified files. Frontend only. | |
 
@@ -516,7 +516,7 @@ Stage 7: [293A] // [293B] // [294B]                                (parallel)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **293A** | 293.1--293.5 | resources/utilization/page.tsx + UtilizationTable component + utilization bar charts + tests (~6 tests). ~5 new files. Frontend only. | |
+| **293A** | 293.1--293.5 | resources/utilization/page.tsx + UtilizationTable component + utilization bar charts + tests (~6 tests). ~5 new files. Frontend only. | **Done** (PR #578) |
 | **293B** | 293.6--293.13 | Project detail "Staffing" tab + TeamCapacityWidget (dashboard) + MyScheduleWidget (dashboard) + profitability "Include Projections" toggle + tests (~8 tests). ~6 new files + ~2 modified files. Frontend only. | |
 
 ### Tasks

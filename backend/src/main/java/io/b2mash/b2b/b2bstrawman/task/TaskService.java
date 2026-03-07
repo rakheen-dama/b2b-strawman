@@ -569,7 +569,9 @@ public class TaskService {
               taskStatus.name(),
               task.getAssigneeId(),
               task.getTitle(),
-              null));
+              RequestScopes.AUTOMATION_EXECUTION_ID.isBound()
+                  ? RequestScopes.AUTOMATION_EXECUTION_ID.get()
+                  : null));
     }
 
     // Publish portal task event if project is customer-linked

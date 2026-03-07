@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.automation.config.ActionResult;
 import io.b2mash.b2b.b2bstrawman.automation.config.ActionSuccess;
 import io.b2mash.b2b.b2bstrawman.automation.config.AutomationConfigDeserializer;
 import io.b2mash.b2b.b2bstrawman.automation.executor.ActionExecutor;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -108,7 +109,11 @@ public class AutomationActionExecutor {
           configDeserializer.deserializeActionConfig(
               action.getActionType(), action.getActionConfig());
 
-      ActionResult result = executor.execute(config, context, executionId);
+      // Bind the automation execution ID so domain events published by services
+      // during action execution carry this ID for cycle detection (ADR-146).
+      ActionResult result =
+          ScopedValue.where(RequestScopes.AUTOMATION_EXECUTION_ID, executionId)
+              .call(() -> executor.execute(config, context, executionId));
 
       if (result.isSuccess()) {
         var success = (ActionSuccess) result;

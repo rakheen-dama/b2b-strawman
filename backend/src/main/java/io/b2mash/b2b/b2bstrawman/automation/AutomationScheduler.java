@@ -52,7 +52,7 @@ public class AutomationScheduler {
     this.objectMapper = objectMapper;
   }
 
-  @Scheduled(fixedRate = POLL_INTERVAL_MS)
+  @Scheduled(fixedDelay = POLL_INTERVAL_MS)
   public void pollDelayedActions() {
     log.debug("Automation scheduler started");
     var mappings = mappingRepository.findAll();
@@ -70,34 +70,42 @@ public class AutomationScheduler {
       }
     }
 
-    log.info("Automation scheduler completed: {} delayed actions processed", processed);
+    if (processed > 0) {
+      log.info("Automation scheduler completed: {} delayed actions processed", processed);
+    } else {
+      log.debug("Automation scheduler completed: 0 delayed actions processed");
+    }
   }
 
   private int processTenant() {
-    var dueActions =
+    Integer processed =
         transactionTemplate.execute(
-            tx ->
-                actionExecutionRepository.findByStatusAndScheduledForBefore(
-                    ActionExecutionStatus.SCHEDULED, Instant.now()));
+            tx -> {
+              var dueActions =
+                  actionExecutionRepository.findDueScheduledForUpdate(
+                      ActionExecutionStatus.SCHEDULED.name(), Instant.now());
 
-    if (dueActions == null || dueActions.isEmpty()) {
-      return 0;
-    }
+              if (dueActions == null || dueActions.isEmpty()) {
+                return 0;
+              }
 
-    int processed = 0;
-    for (var actionExecution : dueActions) {
-      try {
-        transactionTemplate.executeWithoutResult(tx -> executeDelayedAction(actionExecution));
-        processed++;
-      } catch (Exception e) {
-        log.error(
-            "Failed to execute delayed action execution {}: {}",
-            actionExecution.getId(),
-            e.getMessage(),
-            e);
-      }
-    }
-    return processed;
+              int count = 0;
+              for (var actionExecution : dueActions) {
+                try {
+                  executeDelayedAction(actionExecution);
+                  count++;
+                } catch (Exception e) {
+                  log.error(
+                      "Failed to execute delayed action execution {}: {}",
+                      actionExecution.getId(),
+                      e.getMessage(),
+                      e);
+                }
+              }
+              return count;
+            });
+
+    return processed != null ? processed : 0;
   }
 
   private void executeDelayedAction(ActionExecution actionExecution) {

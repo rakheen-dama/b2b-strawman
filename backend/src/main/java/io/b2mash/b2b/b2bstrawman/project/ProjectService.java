@@ -511,7 +511,9 @@ public class ProjectService {
             memberId,
             project.getName(),
             unbilledCount > 0 && acknowledgeUnbilledTime,
-            null));
+            RequestScopes.AUTOMATION_EXECUTION_ID.isBound()
+                ? RequestScopes.AUTOMATION_EXECUTION_ID.get()
+                : null));
 
     return project;
   }

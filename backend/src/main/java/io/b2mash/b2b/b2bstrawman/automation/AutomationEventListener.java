@@ -2,7 +2,6 @@ package io.b2mash.b2b.b2bstrawman.automation;
 
 import io.b2mash.b2b.b2bstrawman.automation.config.ActionFailure;
 import io.b2mash.b2b.b2bstrawman.event.DomainEvent;
-import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -34,7 +33,6 @@ public class AutomationEventListener {
   private final ConditionEvaluator conditionEvaluator;
   private final AutomationActionExecutor automationActionExecutor;
   private final NotificationService notificationService;
-  private final MemberRepository memberRepository;
 
   public AutomationEventListener(
       AutomationRuleRepository ruleRepository,
@@ -43,8 +41,7 @@ public class AutomationEventListener {
       TriggerConfigMatcher triggerConfigMatcher,
       ConditionEvaluator conditionEvaluator,
       AutomationActionExecutor automationActionExecutor,
-      NotificationService notificationService,
-      MemberRepository memberRepository) {
+      NotificationService notificationService) {
     this.ruleRepository = ruleRepository;
     this.executionRepository = executionRepository;
     this.actionRepository = actionRepository;
@@ -52,7 +49,6 @@ public class AutomationEventListener {
     this.conditionEvaluator = conditionEvaluator;
     this.automationActionExecutor = automationActionExecutor;
     this.notificationService = notificationService;
-    this.memberRepository = memberRepository;
   }
 
   @EventListener
@@ -193,29 +189,14 @@ public class AutomationEventListener {
 
   private void sendFailureNotification(AutomationRule rule, List<String> failureMessages) {
     try {
-      var admins = memberRepository.findByOrgRoleIn(List.of("admin", "owner"));
-      if (admins.isEmpty()) {
-        log.debug("No admins/owners to notify about automation action failure");
-        return;
-      }
-
       String title = "Automation action failed: " + rule.getName();
       String body = "The following action(s) failed: " + String.join("; ", failureMessages);
 
-      for (var admin : admins) {
-        notificationService.createNotification(
-            admin.getId(),
-            "AUTOMATION_ACTION_FAILED",
-            title,
-            body,
-            "AutomationRule",
-            rule.getId(),
-            null);
-      }
+      notificationService.notifyAdminsAndOwners(
+          "AUTOMATION_ACTION_FAILED", title, body, "AutomationRule", rule.getId());
 
       log.info(
-          "Sent AUTOMATION_ACTION_FAILED notification to {} admin(s) for rule {} ({})",
-          admins.size(),
+          "Sent AUTOMATION_ACTION_FAILED notification to admins/owners for rule {} ({})",
           rule.getId(),
           rule.getName());
     } catch (Exception e) {

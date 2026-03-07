@@ -44,6 +44,9 @@ public class CreateProjectActionExecutor implements ActionExecutor {
     try {
       String resolvedName = variableResolver.resolve(projectConfig.projectName(), context);
       UUID actorId = resolveActorId(context);
+      if (actorId == null) {
+        return new ActionFailure("No actor ID available in automation context", null);
+      }
 
       UUID customerId = null;
       if (projectConfig.linkToCustomer()) {

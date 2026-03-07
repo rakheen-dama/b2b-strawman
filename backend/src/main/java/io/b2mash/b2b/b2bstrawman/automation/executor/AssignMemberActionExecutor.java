@@ -21,6 +21,9 @@ public class AssignMemberActionExecutor implements ActionExecutor {
 
   private static final Logger log = LoggerFactory.getLogger(AssignMemberActionExecutor.class);
 
+  /** Project role value used when looking up project leads. Matches DB convention (uppercase). */
+  private static final String PROJECT_LEAD_ROLE = "LEAD";
+
   private final ProjectMemberService projectMemberService;
   private final ProjectMemberRepository projectMemberRepository;
 
@@ -62,6 +65,9 @@ public class AssignMemberActionExecutor implements ActionExecutor {
       }
 
       UUID actorId = resolveActorId(context);
+      if (actorId == null) {
+        return new ActionFailure("No actor ID available in automation context", null);
+      }
       projectMemberService.addMember(projectId, memberId, actorId);
 
       log.info("Automation assigned member {} to project {}", memberId, projectId);
@@ -83,7 +89,8 @@ public class AssignMemberActionExecutor implements ActionExecutor {
     return switch (assignTo) {
       case TRIGGER_ACTOR -> resolveActorId(context);
       case PROJECT_OWNER -> {
-        var leads = projectMemberRepository.findByProjectIdAndProjectRole(projectId, "LEAD");
+        var leads =
+            projectMemberRepository.findByProjectIdAndProjectRole(projectId, PROJECT_LEAD_ROLE);
         yield leads.isEmpty() ? null : leads.getFirst().getMemberId();
       }
       case SPECIFIC_MEMBER -> specificMemberId;

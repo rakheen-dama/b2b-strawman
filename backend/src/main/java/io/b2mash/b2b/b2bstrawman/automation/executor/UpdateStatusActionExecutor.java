@@ -24,6 +24,14 @@ public class UpdateStatusActionExecutor implements ActionExecutor {
 
   private static final Logger log = LoggerFactory.getLogger(UpdateStatusActionExecutor.class);
 
+  /**
+   * Automation actions execute with elevated (owner) privileges because they are system-initiated,
+   * not user-initiated. The actor ID from context identifies who triggered the event, but the role
+   * is always elevated to ensure automation rules can perform any action regardless of the
+   * triggering user's role.
+   */
+  private static final String SYSTEM_ACTOR_ROLE = "owner";
+
   private final TaskService taskService;
   private final TaskRepository taskRepository;
   private final ProjectService projectService;
@@ -107,6 +115,11 @@ public class UpdateStatusActionExecutor implements ActionExecutor {
     }
 
     UUID actorId = resolveActorId(context);
+    if (actorId == null) {
+      return new ActionFailure("No actor ID available in automation context", null);
+    }
+
+    // TODO: Add TaskService.updateTaskStatus() to avoid direct repo access
     taskService.updateTask(
         taskId,
         existingTask.getTitle(),
@@ -117,7 +130,7 @@ public class UpdateStatusActionExecutor implements ActionExecutor {
         existingTask.getDueDate(),
         existingTask.getAssigneeId(),
         actorId,
-        "owner");
+        SYSTEM_ACTOR_ROLE);
 
     log.info("Automation updated task {} status to {}", taskId, newStatus);
     return new ActionSuccess(Map.of("updatedEntityId", taskId.toString()));
@@ -131,20 +144,23 @@ public class UpdateStatusActionExecutor implements ActionExecutor {
     }
 
     UUID actorId = resolveActorId(context);
+    if (actorId == null) {
+      return new ActionFailure("No actor ID available in automation context", null);
+    }
 
     return switch (newStatus) {
       case "COMPLETED" -> {
-        projectService.completeProject(projectId, true, actorId, "owner");
+        projectService.completeProject(projectId, true, actorId, SYSTEM_ACTOR_ROLE);
         log.info("Automation completed project {}", projectId);
         yield new ActionSuccess(Map.of("updatedEntityId", projectId.toString()));
       }
       case "ARCHIVED" -> {
-        projectService.archiveProject(projectId, actorId, "owner");
+        projectService.archiveProject(projectId, actorId, SYSTEM_ACTOR_ROLE);
         log.info("Automation archived project {}", projectId);
         yield new ActionSuccess(Map.of("updatedEntityId", projectId.toString()));
       }
       case "ACTIVE" -> {
-        projectService.reopenProject(projectId, actorId, "owner");
+        projectService.reopenProject(projectId, actorId, SYSTEM_ACTOR_ROLE);
         log.info("Automation reopened project {}", projectId);
         yield new ActionSuccess(Map.of("updatedEntityId", projectId.toString()));
       }

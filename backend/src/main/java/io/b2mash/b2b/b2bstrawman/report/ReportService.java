@@ -1,5 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.report;
 
+import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateService;
+import io.b2mash.b2b.b2bstrawman.capacity.ResourceAllocation;
+import io.b2mash.b2b.b2bstrawman.capacity.ResourceAllocationRepository;
+import io.b2mash.b2b.b2bstrawman.costrate.CostRateService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
@@ -13,11 +17,15 @@ import io.b2mash.b2b.b2bstrawman.report.ReportController.MemberValueBreakdown;
 import io.b2mash.b2b.b2bstrawman.report.ReportController.OrgProfitabilityResponse;
 import io.b2mash.b2b.b2bstrawman.report.ReportController.ProjectProfitabilityResponse;
 import io.b2mash.b2b.b2bstrawman.report.ReportController.ProjectProfitabilitySummary;
+import io.b2mash.b2b.b2bstrawman.report.ReportController.ProjectionData;
 import io.b2mash.b2b.b2bstrawman.report.ReportController.UtilizationResponse;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Clock;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -35,23 +43,38 @@ public class ReportService {
 
   private static final Logger log = LoggerFactory.getLogger(ReportService.class);
 
+  /** Default projection horizon when no end date is specified. */
+  private static final long DEFAULT_PROJECTION_HORIZON_YEARS = 2;
+
+  private final Clock clock;
   private final ReportRepository reportRepository;
   private final ProjectAccessService projectAccessService;
   private final CustomerRepository customerRepository;
   private final CustomerProjectRepository customerProjectRepository;
   private final ProjectRepository projectRepository;
+  private final BillingRateService billingRateService;
+  private final CostRateService costRateService;
+  private final ResourceAllocationRepository resourceAllocationRepository;
 
   public ReportService(
+      Clock clock,
       ReportRepository reportRepository,
       ProjectAccessService projectAccessService,
       CustomerRepository customerRepository,
       CustomerProjectRepository customerProjectRepository,
-      ProjectRepository projectRepository) {
+      ProjectRepository projectRepository,
+      BillingRateService billingRateService,
+      CostRateService costRateService,
+      ResourceAllocationRepository resourceAllocationRepository) {
+    this.clock = clock;
     this.reportRepository = reportRepository;
     this.projectAccessService = projectAccessService;
     this.customerRepository = customerRepository;
     this.customerProjectRepository = customerProjectRepository;
     this.projectRepository = projectRepository;
+    this.billingRateService = billingRateService;
+    this.costRateService = costRateService;
+    this.resourceAllocationRepository = resourceAllocationRepository;
   }
 
   /**
@@ -60,7 +83,12 @@ public class ReportService {
    */
   @Transactional(readOnly = true)
   public ProjectProfitabilityResponse getProjectProfitability(
-      UUID projectId, LocalDate from, LocalDate to, UUID memberId, String orgRole) {
+      UUID projectId,
+      LocalDate from,
+      LocalDate to,
+      UUID memberId,
+      String orgRole,
+      boolean includeProjections) {
     projectAccessService.requireViewAccess(projectId, memberId, orgRole);
 
     var project =
@@ -74,9 +102,14 @@ public class ReportService {
 
     var currencies = mergeToCurrencyBreakdowns(revenueList, costList, expenseList);
 
+    ProjectionData projections = null;
+    if (includeProjections) {
+      projections = computeProjectProjections(projectId, from, to);
+    }
+
     log.debug("Project {} profitability: {} currency breakdown(s)", projectId, currencies.size());
 
-    return new ProjectProfitabilityResponse(projectId, project.getName(), currencies);
+    return new ProjectProfitabilityResponse(projectId, project.getName(), currencies, projections);
   }
 
   /**
@@ -85,7 +118,12 @@ public class ReportService {
    */
   @Transactional(readOnly = true)
   public CustomerProfitabilityResponse getCustomerProfitability(
-      UUID customerId, LocalDate from, LocalDate to, UUID memberId, String orgRole) {
+      UUID customerId,
+      LocalDate from,
+      LocalDate to,
+      UUID memberId,
+      String orgRole,
+      boolean includeProjections) {
     requireAdminOrOwner(orgRole);
 
     var customer =
@@ -99,9 +137,15 @@ public class ReportService {
 
     var currencies = mergeToCurrencyBreakdowns(revenueList, costList, expenseList);
 
+    ProjectionData projections = null;
+    if (includeProjections) {
+      projections = computeCustomerProjections(customerId, from, to);
+    }
+
     log.debug("Customer {} profitability: {} currency breakdown(s)", customerId, currencies.size());
 
-    return new CustomerProfitabilityResponse(customerId, customer.getName(), currencies);
+    return new CustomerProfitabilityResponse(
+        customerId, customer.getName(), currencies, projections);
   }
 
   /**
@@ -189,7 +233,12 @@ public class ReportService {
    */
   @Transactional(readOnly = true)
   public OrgProfitabilityResponse getOrgProfitability(
-      LocalDate from, LocalDate to, UUID customerId, UUID memberId, String orgRole) {
+      LocalDate from,
+      LocalDate to,
+      UUID customerId,
+      UUID memberId,
+      String orgRole,
+      boolean includeProjections) {
     requireAdminOrOwner(orgRole, "Org profitability is only accessible to admins and owners");
 
     var revenueList = reportRepository.getOrgProjectRevenue(from, to, customerId);
@@ -272,9 +321,14 @@ public class ReportService {
         Comparator.comparing(
             ProjectProfitabilitySummary::margin, Comparator.nullsLast(Comparator.reverseOrder())));
 
+    ProjectionData projections = null;
+    if (includeProjections) {
+      projections = computeOrgProjections(from, to, customerId);
+    }
+
     log.debug("Org profitability: {} project-currency entries", projects.size());
 
-    return new OrgProfitabilityResponse(projects);
+    return new OrgProfitabilityResponse(projects, projections);
   }
 
   /**
@@ -379,6 +433,131 @@ public class ReportService {
     }
 
     return new ArrayList<>(result.values());
+  }
+
+  /**
+   * Computes projections for a single project based on future resource allocations and resolved
+   * billing/cost rates.
+   */
+  private ProjectionData computeProjectProjections(UUID projectId, LocalDate from, LocalDate to) {
+    var futureWindow = resolveFutureWindow(from, to);
+    if (futureWindow == null) {
+      return new ProjectionData(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+    }
+
+    var allocations =
+        resourceAllocationRepository.findByProjectIdAndWeekStartBetween(
+            projectId, futureWindow.start(), futureWindow.end());
+
+    return aggregateProjections(allocations);
+  }
+
+  /**
+   * Computes projections for a customer by aggregating across all linked projects' future
+   * allocations.
+   */
+  private ProjectionData computeCustomerProjections(UUID customerId, LocalDate from, LocalDate to) {
+    var futureWindow = resolveFutureWindow(from, to);
+    if (futureWindow == null) {
+      return new ProjectionData(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+    }
+
+    var links = customerProjectRepository.findByCustomerId(customerId);
+    var projectIds = links.stream().map(l -> l.getProjectId()).toList();
+    if (projectIds.isEmpty()) {
+      return new ProjectionData(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+    }
+
+    var allAllocations =
+        resourceAllocationRepository.findByProjectIdInAndWeekStartBetween(
+            projectIds, futureWindow.start(), futureWindow.end());
+
+    return aggregateProjections(allAllocations);
+  }
+
+  /**
+   * Computes projections at the org level by aggregating all future allocations, optionally
+   * filtered by customer.
+   */
+  private ProjectionData computeOrgProjections(LocalDate from, LocalDate to, UUID customerId) {
+    var futureWindow = resolveFutureWindow(from, to);
+    if (futureWindow == null) {
+      return new ProjectionData(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+    }
+
+    List<ResourceAllocation> allocations;
+    if (customerId != null) {
+      var links = customerProjectRepository.findByCustomerId(customerId);
+      var projectIds = links.stream().map(l -> l.getProjectId()).toList();
+      if (projectIds.isEmpty()) {
+        return new ProjectionData(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+      }
+      allocations =
+          resourceAllocationRepository.findByProjectIdInAndWeekStartBetween(
+              projectIds, futureWindow.start(), futureWindow.end());
+    } else {
+      allocations =
+          resourceAllocationRepository.findByWeekStartBetween(
+              futureWindow.start(), futureWindow.end());
+    }
+
+    return aggregateProjections(allocations);
+  }
+
+  /**
+   * Aggregates projections from a list of allocations using resolved billing and cost rates.
+   * Conservative: missing billing rate excludes revenue, missing cost rate excludes cost.
+   */
+  private ProjectionData aggregateProjections(List<ResourceAllocation> allocations) {
+    BigDecimal projectedRevenue = BigDecimal.ZERO;
+    BigDecimal projectedCost = BigDecimal.ZERO;
+
+    for (var allocation : allocations) {
+      var billingRate =
+          billingRateService.resolveRate(
+              allocation.getMemberId(), allocation.getProjectId(), allocation.getWeekStart());
+      if (billingRate.isPresent()) {
+        projectedRevenue =
+            projectedRevenue.add(
+                allocation.getAllocatedHours().multiply(billingRate.get().hourlyRate()));
+      }
+
+      var costRate =
+          costRateService.resolveCostRate(allocation.getMemberId(), allocation.getWeekStart());
+      if (costRate.isPresent()) {
+        projectedCost =
+            projectedCost.add(allocation.getAllocatedHours().multiply(costRate.get().hourlyCost()));
+      }
+    }
+
+    BigDecimal projectedMargin = projectedRevenue.subtract(projectedCost);
+
+    return new ProjectionData(projectedRevenue, projectedCost, projectedMargin);
+  }
+
+  /**
+   * Resolves the future window for projection queries. Returns null if no future window exists
+   * (i.e., the entire date range is in the past). Current week (the Monday of this week) is
+   * included as "future" for projections.
+   */
+  private record FutureWindow(LocalDate start, LocalDate end) {}
+
+  private FutureWindow resolveFutureWindow(LocalDate from, LocalDate to) {
+    LocalDate today = LocalDate.now(clock);
+    LocalDate currentMonday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+
+    // Future starts at current Monday (current week counts as future for projections)
+    LocalDate futureStart = from != null && from.isAfter(currentMonday) ? from : currentMonday;
+
+    // Default to DEFAULT_PROJECTION_HORIZON_YEARS out if no end date
+    LocalDate futureEnd =
+        to != null ? to : currentMonday.plusYears(DEFAULT_PROJECTION_HORIZON_YEARS);
+
+    if (futureStart.isAfter(futureEnd)) {
+      return null;
+    }
+
+    return new FutureWindow(futureStart, futureEnd);
   }
 
   /**

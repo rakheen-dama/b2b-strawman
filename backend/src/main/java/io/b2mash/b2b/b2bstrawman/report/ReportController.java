@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.report;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -27,11 +28,14 @@ public class ReportController {
   public ResponseEntity<ProjectProfitabilityResponse> getProjectProfitability(
       @PathVariable UUID projectId,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+      @RequestParam(required = false, defaultValue = "false") boolean includeProjections) {
     UUID memberId = RequestScopes.requireMemberId();
     String orgRole = RequestScopes.getOrgRole();
 
-    var response = reportService.getProjectProfitability(projectId, from, to, memberId, orgRole);
+    var response =
+        reportService.getProjectProfitability(
+            projectId, from, to, memberId, orgRole, includeProjections);
     return ResponseEntity.ok(response);
   }
 
@@ -40,11 +44,14 @@ public class ReportController {
   public ResponseEntity<CustomerProfitabilityResponse> getCustomerProfitability(
       @PathVariable UUID customerId,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+      @RequestParam(required = false, defaultValue = "false") boolean includeProjections) {
     UUID memberId = RequestScopes.requireMemberId();
     String orgRole = RequestScopes.getOrgRole();
 
-    var response = reportService.getCustomerProfitability(customerId, from, to, memberId, orgRole);
+    var response =
+        reportService.getCustomerProfitability(
+            customerId, from, to, memberId, orgRole, includeProjections);
     return ResponseEntity.ok(response);
   }
 
@@ -66,15 +73,21 @@ public class ReportController {
   public ResponseEntity<OrgProfitabilityResponse> getOrgProfitability(
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
-      @RequestParam(required = false) UUID customerId) {
+      @RequestParam(required = false) UUID customerId,
+      @RequestParam(required = false, defaultValue = "false") boolean includeProjections) {
     UUID memberId = RequestScopes.requireMemberId();
     String orgRole = RequestScopes.getOrgRole();
 
-    var response = reportService.getOrgProfitability(from, to, customerId, memberId, orgRole);
+    var response =
+        reportService.getOrgProfitability(
+            from, to, customerId, memberId, orgRole, includeProjections);
     return ResponseEntity.ok(response);
   }
 
   // --- DTOs ---
+
+  public record ProjectionData(
+      BigDecimal projectedRevenue, BigDecimal projectedCost, BigDecimal projectedMargin) {}
 
   public record CurrencyBreakdown(
       String currency,
@@ -88,11 +101,19 @@ public class ReportController {
       BigDecimal totalExpenseCost,
       BigDecimal totalExpenseRevenue) {}
 
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   public record ProjectProfitabilityResponse(
-      UUID projectId, String projectName, List<CurrencyBreakdown> currencies) {}
+      UUID projectId,
+      String projectName,
+      List<CurrencyBreakdown> currencies,
+      ProjectionData projections) {}
 
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   public record CustomerProfitabilityResponse(
-      UUID customerId, String customerName, List<CurrencyBreakdown> currencies) {}
+      UUID customerId,
+      String customerName,
+      List<CurrencyBreakdown> currencies,
+      ProjectionData projections) {}
 
   public record MemberValueBreakdown(
       String currency, BigDecimal billableValue, BigDecimal costValue) {}
@@ -120,5 +141,7 @@ public class ReportController {
       BigDecimal margin,
       BigDecimal marginPercent) {}
 
-  public record OrgProfitabilityResponse(List<ProjectProfitabilitySummary> projects) {}
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  public record OrgProfitabilityResponse(
+      List<ProjectProfitabilitySummary> projects, ProjectionData projections) {}
 }

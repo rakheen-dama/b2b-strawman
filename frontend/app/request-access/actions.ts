@@ -1,5 +1,7 @@
 "use server";
 
+import { BLOCKED_EMAIL_DOMAINS } from "@/lib/access-request-data";
+
 const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
 const GATEWAY_URL = process.env.GATEWAY_URL || "http://localhost:8443";
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
@@ -39,6 +41,11 @@ export async function submitAccessRequest(
   }
   if (!industry?.trim()) {
     return { success: false, error: "Industry is required." };
+  }
+
+  const emailDomain = email.split("@")[1]?.toLowerCase();
+  if (emailDomain && BLOCKED_EMAIL_DOMAINS.includes(emailDomain)) {
+    return { success: false, error: "Please use a company email address." };
   }
 
   try {

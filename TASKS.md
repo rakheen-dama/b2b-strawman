@@ -333,7 +333,7 @@
 | 293 | Utilization, Dashboard & Project Staffing UI | Frontend | 291, 292 | M | 293A, 293B | **Done** (PRs #578, #579) |
 | 294 | Notifications, Audit Events & Settings UI | Backend + Frontend | 290 | M | 294A, 294B | **Done** (PRs #580, #581) |
 | **Phase 39 — Admin-Approved Org Provisioning** | | | | | | See [tasks/phase39-admin-approved-provisioning.md](tasks/phase39-admin-approved-provisioning.md) |
-| 295 | Access Request Entity Foundation & Migration | Backend | -- | M | 295A, 295B | |
+| 295 | Access Request Entity Foundation & Migration | Backend | -- | M | 295A, 295B | **Done** (PR #582) |
 | 296 | OTP Verification & Public Access Request API | Backend | 295 | M | 296A, 296B | |
 | 297 | Platform Admin Identity & Security Infrastructure | Backend | 295 | M | 297A, 297B | |
 | 298 | Approval Pipeline & Platform Admin API | Backend | 296, 297 | M | 298A, 298B | |

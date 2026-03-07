@@ -15,7 +15,7 @@ Phase 39 replaces self-registration with an **admin-approved access request pipe
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 295 | Access Request Entity Foundation & Migration | Backend | -- | M | 295A, 295B | |
+| 295 | Access Request Entity Foundation & Migration | Backend | -- | M | 295A, 295B | **Done** (PR #582) |
 | 296 | OTP Verification & Public Access Request API | Backend | 295 | M | 296A, 296B | |
 | 297 | Platform Admin Identity & Security Infrastructure | Backend | 295 | M | 297A, 297B | |
 | 298 | Approval Pipeline & Platform Admin API | Backend | 296, 297 | M | 298A, 298B | |
@@ -123,8 +123,8 @@ FRONTEND TRACK (after backend APIs)       |
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 0a | 295 | 295A | `AccessRequest` entity, `AccessRequestStatus` enum, `AccessRequestRepository`, DTO records, global migration `V15__create_access_requests.sql`. ~6 new files. Backend only. | |
-| 0b | 295 | 295B | `AccessRequestConfigProperties` (blocked domains, OTP expiry, max attempts), `EmailDomainValidator`, `PasswordEncoder` bean for OTP hashing. ~4 new files (~6 unit tests). Backend only. | |
+| 0a | 295 | 295A | `AccessRequest` entity, `AccessRequestStatus` enum, `AccessRequestRepository`, DTO records, global migration `V15__create_access_requests.sql`. ~6 new files. Backend only. | **Done** (PR #582) |
+| 0b | 295 | 295B | `AccessRequestConfigProperties` (blocked domains, OTP expiry, max attempts), `EmailDomainValidator`, `PasswordEncoder` bean for OTP hashing. ~4 new files (~6 unit tests). Backend only. | **Done** (PR #582) |
 
 ### Stage 1: Public API & Platform Admin Identity (parallel tracks)
 
@@ -202,8 +202,8 @@ Stage 6: [302A]                                                        (after 29
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **295A** | 295.1--295.5 | `AccessRequest` entity (JPA, public schema), `AccessRequestStatus` enum, `AccessRequestRepository` with custom queries, DTO records (`AccessRequestSubmission`, `AccessRequestResponse`, `OtpVerifyRequest`), global migration `V15__create_access_requests.sql`. ~6 new files. Backend only. | |
-| **295B** | 295.6--295.10 | `AccessRequestConfigProperties` record (blocked domains list, OTP expiry minutes, max attempts), `EmailDomainValidator` utility, `PasswordEncoder` bean registration for OTP BCrypt hashing, unit tests for domain validation and config binding. ~4 new files (~6 tests). Backend only. | |
+| **295A** | 295.1--295.5 | `AccessRequest` entity (JPA, public schema), `AccessRequestStatus` enum, `AccessRequestRepository` with custom queries, DTO records (`AccessRequestSubmission`, `AccessRequestResponse`, `OtpVerifyRequest`), global migration `V15__create_access_requests.sql`. ~6 new files. Backend only. | **Done** (PR #582) |
+| **295B** | 295.6--295.10 | `AccessRequestConfigProperties` record (blocked domains list, OTP expiry minutes, max attempts), `EmailDomainValidator` utility, `PasswordEncoder` bean registration for OTP BCrypt hashing, unit tests for domain validation and config binding. ~4 new files (~6 tests). Backend only. | **Done** (PR #582) |
 
 ### Tasks
 

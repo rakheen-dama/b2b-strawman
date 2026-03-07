@@ -65,6 +65,10 @@ const NOTIFICATION_TYPE_LABELS: Record<
   },
   // Time Tracking
   TIME_REMINDER: { label: "Time Reminders", category: "Time Tracking" },
+  // Resource Planning
+  ALLOCATION_CHANGED: { label: "Allocation Changed", category: "Resource Planning" },
+  MEMBER_OVER_ALLOCATED: { label: "Member Over-Allocated", category: "Resource Planning" },
+  LEAVE_CREATED: { label: "Leave Created", category: "Resource Planning" },
 };
 
 interface NotificationPreferencesFormProps {
@@ -127,6 +131,7 @@ export function NotificationPreferencesForm({
     "Scheduling",
     "Retainers",
     "Time Tracking",
+    "Resource Planning",
     "Other",
   ];
   const sortedCategories = categoryOrder.filter((c) => grouped[c]);

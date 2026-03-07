@@ -237,7 +237,7 @@ export function ActionList({
                       onChange={(e) => {
                         const val = parseInt(e.target.value, 10);
                         updateAction(index, {
-                          delayDuration: isNaN(val) ? 1 : val,
+                          delayDuration: isNaN(val) || val < 1 ? 1 : val,
                         });
                       }}
                       className="w-20"

@@ -26,7 +26,11 @@ import {
   duplicateRuleAction,
 } from "@/app/(app)/org/[slug]/settings/automations/actions";
 import { MoreHorizontal, Copy, Trash2 } from "lucide-react";
-import type { AutomationRuleResponse } from "@/lib/api/automations";
+import type {
+  AutomationRuleResponse,
+  ActionType,
+  DelayUnit,
+} from "@/lib/api/automations";
 
 interface RuleDetailClientProps {
   slug: string;
@@ -96,6 +100,13 @@ export function RuleDetailClient({ slug, rule }: RuleDetailClientProps) {
     triggerType: string;
     triggerConfig: Record<string, unknown>;
     conditions: Record<string, unknown>[];
+    actions?: {
+      actionType: string;
+      actionConfig: Record<string, unknown>;
+      sortOrder: number;
+      delayDuration: number | null;
+      delayUnit: string | null;
+    }[];
   }) {
     setIsSaving(true);
     try {
@@ -105,6 +116,13 @@ export function RuleDetailClient({ slug, rule }: RuleDetailClientProps) {
         triggerType: data.triggerType as Parameters<typeof updateRuleAction>[2]["triggerType"],
         triggerConfig: data.triggerConfig,
         conditions: data.conditions.length > 0 ? data.conditions : undefined,
+        actions: data.actions?.map((a) => ({
+          actionType: a.actionType as ActionType,
+          config: a.actionConfig,
+          sortOrder: a.sortOrder,
+          delayDuration: a.delayDuration,
+          delayUnit: a.delayUnit as DelayUnit | null,
+        })),
       });
       if (result.success) {
         toast.success("Rule updated successfully");

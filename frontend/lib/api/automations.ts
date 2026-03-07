@@ -118,12 +118,21 @@ export interface TemplateDefinitionResponse {
 
 // === Request DTOs ===
 
+export interface ActionRequest {
+  actionType: ActionType;
+  config: Record<string, unknown>;
+  sortOrder: number;
+  delayDuration?: number | null;
+  delayUnit?: DelayUnit | null;
+}
+
 export interface CreateRuleRequest {
   name: string;
   description?: string;
   triggerType: TriggerType;
   triggerConfig: Record<string, unknown>;
   conditions?: Record<string, unknown>[];
+  actions?: ActionRequest[];
 }
 
 export interface UpdateRuleRequest {
@@ -132,6 +141,7 @@ export interface UpdateRuleRequest {
   triggerType: TriggerType;
   triggerConfig: Record<string, unknown>;
   conditions?: Record<string, unknown>[];
+  actions?: ActionRequest[];
 }
 
 export interface TestRuleRequest {

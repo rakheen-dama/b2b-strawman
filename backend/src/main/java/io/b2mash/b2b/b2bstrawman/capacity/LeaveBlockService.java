@@ -87,12 +87,10 @@ public class LeaveBlockService {
   }
 
   private void enforceSelfServiceRbac(UUID memberId) {
+    UUID currentMemberId = RequestScopes.requireMemberId();
     String role = RequestScopes.getOrgRole();
-    if ("member".equals(role)) {
-      UUID currentMemberId = RequestScopes.requireMemberId();
-      if (!currentMemberId.equals(memberId)) {
-        throw new ForbiddenException("Access denied", "Members can only manage their own leave");
-      }
+    if ("member".equals(role) && !currentMemberId.equals(memberId)) {
+      throw new ForbiddenException("Access denied", "Members can only manage their own leave");
     }
   }
 

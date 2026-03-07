@@ -2,10 +2,10 @@
 -- Phase 38: Resource Planning & Capacity
 
 -- ─── Member Capacities ───
-CREATE TABLE member_capacities (
+CREATE TABLE IF NOT EXISTS member_capacities (
     id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     member_id      UUID         NOT NULL REFERENCES members(id) ON DELETE CASCADE,
-    weekly_hours   NUMERIC(5,2) NOT NULL CHECK (weekly_hours > 0),
+    weekly_hours   NUMERIC(5,2) NOT NULL CHECK (weekly_hours > 0 AND weekly_hours <= 168),
     effective_from DATE         NOT NULL CHECK (EXTRACT(ISODOW FROM effective_from) = 1),
     effective_to   DATE,
     note           VARCHAR(500),
@@ -22,7 +22,7 @@ COMMENT ON TABLE member_capacities IS 'Configurable weekly capacity per member w
 
 
 -- ─── Resource Allocations ───
-CREATE TABLE resource_allocations (
+CREATE TABLE IF NOT EXISTS resource_allocations (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     member_id       UUID         NOT NULL REFERENCES members(id) ON DELETE CASCADE,
     project_id      UUID         NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
@@ -53,7 +53,7 @@ COMMENT ON TABLE resource_allocations IS 'Planned hours per member per project p
 
 
 -- ─── Leave Blocks ───
-CREATE TABLE leave_blocks (
+CREATE TABLE IF NOT EXISTS leave_blocks (
     id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     member_id  UUID        NOT NULL REFERENCES members(id) ON DELETE CASCADE,
     start_date DATE        NOT NULL,
@@ -73,7 +73,7 @@ COMMENT ON TABLE leave_blocks IS 'Date-range unavailability markers that reduce 
 
 -- ─── OrgSettings Extension ───
 ALTER TABLE org_settings
-    ADD COLUMN default_weekly_capacity_hours NUMERIC(5,2) DEFAULT 40.00;
+    ADD COLUMN IF NOT EXISTS default_weekly_capacity_hours NUMERIC(5,2) DEFAULT 40.00;
 
 COMMENT ON COLUMN org_settings.default_weekly_capacity_hours
     IS 'Org-wide default weekly capacity when no MemberCapacity record exists for a member';

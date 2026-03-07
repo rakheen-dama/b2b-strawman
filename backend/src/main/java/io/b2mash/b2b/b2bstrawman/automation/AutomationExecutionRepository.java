@@ -6,4 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface AutomationExecutionRepository extends JpaRepository<AutomationExecution, UUID> {
   List<AutomationExecution> findByRuleIdOrderByStartedAtDesc(UUID ruleId);
+
+  List<AutomationExecution> findByStatus(ExecutionStatus status);
+
+  List<AutomationExecution> findByRuleIdAndStatus(UUID ruleId, ExecutionStatus status);
+
+  List<AutomationExecution> findAllByOrderByCreatedAtDesc();
 }

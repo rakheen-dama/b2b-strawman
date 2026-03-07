@@ -24,14 +24,17 @@ public class AutomationEventListener {
   private final AutomationRuleRepository ruleRepository;
   private final AutomationExecutionRepository executionRepository;
   private final TriggerConfigMatcher triggerConfigMatcher;
+  private final ConditionEvaluator conditionEvaluator;
 
   public AutomationEventListener(
       AutomationRuleRepository ruleRepository,
       AutomationExecutionRepository executionRepository,
-      TriggerConfigMatcher triggerConfigMatcher) {
+      TriggerConfigMatcher triggerConfigMatcher,
+      ConditionEvaluator conditionEvaluator) {
     this.ruleRepository = ruleRepository;
     this.executionRepository = executionRepository;
     this.triggerConfigMatcher = triggerConfigMatcher;
+    this.conditionEvaluator = conditionEvaluator;
   }
 
   @EventListener
@@ -103,8 +106,10 @@ public class AutomationEventListener {
     Map<String, Object> triggerEventData = buildEventSnapshot(event);
     String triggerEventType = event.getClass().getSimpleName();
 
-    // Placeholder condition evaluation: conditions always met for now (281B will implement)
-    boolean conditionsMet = true;
+    // Build context and evaluate conditions
+    TriggerType triggerType = rule.getTriggerType();
+    Map<String, Map<String, Object>> context = AutomationContext.build(triggerType, event, rule);
+    boolean conditionsMet = conditionEvaluator.evaluate(rule.getConditions(), context);
 
     // Create execution record
     ExecutionStatus status =

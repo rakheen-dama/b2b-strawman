@@ -609,8 +609,8 @@ class AutomationRuleControllerTest {
     mockMvc
         .perform(get("/api/automation-rules/" + ruleId + "/executions").with(ownerJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$").isArray())
-        .andExpect(jsonPath("$[0].ruleId").value(ruleId));
+        .andExpect(jsonPath("$.content").isArray())
+        .andExpect(jsonPath("$.content[0].ruleId").value(ruleId));
   }
 
   @Test
@@ -700,12 +700,13 @@ class AutomationRuleControllerTest {
             .andReturn();
     String ruleId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
 
-    // Check audit events in the tenant schema
-    String schema = tenantSchema;
+    // Check audit events in the tenant schema — validate schema name to prevent SQL injection
+    String safeSchema = sanitizeSchemaName(tenantSchema);
+
     Integer count =
         jdbcTemplate.queryForObject(
             "SELECT COUNT(*) FROM "
-                + schema
+                + safeSchema
                 + ".audit_events WHERE entity_id = ?::uuid AND event_type = 'automation_rule.created'",
             Integer.class,
             ruleId);
@@ -719,7 +720,7 @@ class AutomationRuleControllerTest {
     Integer disabledCount =
         jdbcTemplate.queryForObject(
             "SELECT COUNT(*) FROM "
-                + schema
+                + safeSchema
                 + ".audit_events WHERE entity_id = ?::uuid AND event_type = 'automation_rule.disabled'",
             Integer.class,
             ruleId);
@@ -735,7 +736,7 @@ class AutomationRuleControllerTest {
     Integer deletedCount =
         jdbcTemplate.queryForObject(
             "SELECT COUNT(*) FROM "
-                + schema
+                + safeSchema
                 + ".audit_events WHERE entity_id = ?::uuid AND event_type = 'automation_rule.deleted'",
             Integer.class,
             ruleId);
@@ -775,5 +776,16 @@ class AutomationRuleControllerTest {
     return jwt()
         .jwt(j -> j.subject("user_auto_member").claim("o", Map.of("id", ORG_ID, "rol", "member")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+
+  /**
+   * Validates that a schema name contains only safe characters (alphanumeric, underscores, hyphens)
+   * to prevent SQL injection when used in SET search_path.
+   */
+  private static String sanitizeSchemaName(String schema) {
+    if (schema == null || !schema.matches("^[a-zA-Z0-9_\\-]+$")) {
+      throw new IllegalArgumentException("Invalid schema name: " + schema);
+    }
+    return schema;
   }
 }

@@ -15,9 +15,14 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import jakarta.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -99,12 +104,11 @@ public class AutomationRuleService {
     } else {
       rules = ruleRepository.findAllByOrderByCreatedAtDesc();
     }
+    // Batch-fetch all actions for the returned rules to avoid N+1
+    List<UUID> ruleIds = rules.stream().map(AutomationRule::getId).toList();
+    Map<UUID, List<AutomationAction>> actionsByRuleId = batchFetchActionsByRuleIds(ruleIds);
     return rules.stream()
-        .map(
-            rule -> {
-              var actions = actionRepository.findByRuleIdOrderBySortOrder(rule.getId());
-              return toRuleResponse(rule, actions);
-            })
+        .map(rule -> toRuleResponse(rule, actionsByRuleId.getOrDefault(rule.getId(), List.of())))
         .toList();
   }
 
@@ -337,6 +341,17 @@ public class AutomationRuleService {
         .findById(ruleId)
         .orElseThrow(() -> new ResourceNotFoundException("Rule", ruleId));
     var actions = actionRepository.findByRuleIdOrderBySortOrder(ruleId);
+
+    // Validate that provided actionIds exactly match the rule's current action IDs
+    Set<UUID> currentActionIds =
+        actions.stream().map(AutomationAction::getId).collect(Collectors.toSet());
+    Set<UUID> providedActionIds = new HashSet<>(actionIds);
+    if (!currentActionIds.equals(providedActionIds)
+        || actionIds.size() != currentActionIds.size()) {
+      throw new IllegalArgumentException(
+          "Provided action IDs must exactly match the rule's current actions");
+    }
+
     Map<UUID, AutomationAction> actionMap = new HashMap<>();
     for (var action : actions) {
       actionMap.put(action.getId(), action);
@@ -350,9 +365,7 @@ public class AutomationRuleService {
     // Now set final sort orders
     for (int i = 0; i < actionIds.size(); i++) {
       var action = actionMap.get(actionIds.get(i));
-      if (action != null) {
-        action.setSortOrder(i);
-      }
+      action.setSortOrder(i);
     }
     actionRepository.saveAllAndFlush(actions);
     return actionRepository.findByRuleIdOrderBySortOrder(ruleId).stream()
@@ -363,18 +376,19 @@ public class AutomationRuleService {
   // --- Execution queries ---
 
   @Transactional(readOnly = true)
-  public List<AutomationExecutionResponse> listExecutions(UUID ruleId, ExecutionStatus status) {
-    List<AutomationExecution> executions;
+  public Page<AutomationExecutionResponse> listExecutions(
+      UUID ruleId, ExecutionStatus status, Pageable pageable) {
+    Page<AutomationExecution> executions;
     if (ruleId != null && status != null) {
-      executions = executionRepository.findByRuleIdAndStatus(ruleId, status);
+      executions = executionRepository.findByRuleIdAndStatus(ruleId, status, pageable);
     } else if (ruleId != null) {
-      executions = executionRepository.findByRuleIdOrderByStartedAtDesc(ruleId);
+      executions = executionRepository.findByRuleId(ruleId, pageable);
     } else if (status != null) {
-      executions = executionRepository.findByStatus(status);
+      executions = executionRepository.findByStatus(status, pageable);
     } else {
-      executions = executionRepository.findAllByOrderByCreatedAtDesc();
+      executions = executionRepository.findAllByOrderByCreatedAtDesc(pageable);
     }
-    return executions.stream().map(this::toExecutionResponse).toList();
+    return toExecutionResponsePage(executions);
   }
 
   @Transactional(readOnly = true)
@@ -383,17 +397,16 @@ public class AutomationRuleService {
         executionRepository
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Execution", id));
-    return toExecutionResponse(execution);
+    return toSingleExecutionResponse(execution);
   }
 
   @Transactional(readOnly = true)
-  public List<AutomationExecutionResponse> listExecutionsForRule(UUID ruleId) {
+  public Page<AutomationExecutionResponse> listExecutionsForRule(UUID ruleId, Pageable pageable) {
     ruleRepository
         .findById(ruleId)
         .orElseThrow(() -> new ResourceNotFoundException("Rule", ruleId));
-    return executionRepository.findByRuleIdOrderByStartedAtDesc(ruleId).stream()
-        .map(this::toExecutionResponse)
-        .toList();
+    var executions = executionRepository.findByRuleId(ruleId, pageable);
+    return toExecutionResponsePage(executions);
   }
 
   // --- Response mapping ---
@@ -429,7 +442,64 @@ public class AutomationRuleService {
         action.getUpdatedAt());
   }
 
-  private AutomationExecutionResponse toExecutionResponse(AutomationExecution execution) {
+  /**
+   * Batch-fetches actions grouped by rule ID for a list of rule IDs. Avoids N+1 queries when
+   * mapping multiple rules to responses.
+   */
+  private Map<UUID, List<AutomationAction>> batchFetchActionsByRuleIds(List<UUID> ruleIds) {
+    if (ruleIds.isEmpty()) {
+      return Map.of();
+    }
+    return actionRepository.findByRuleIdInOrderBySortOrder(ruleIds).stream()
+        .collect(Collectors.groupingBy(AutomationAction::getRuleId));
+  }
+
+  /**
+   * Converts a page of executions to responses with batch-fetched rules and action executions.
+   * Avoids N+1 queries for rule names and action execution lookups.
+   */
+  private Page<AutomationExecutionResponse> toExecutionResponsePage(
+      Page<AutomationExecution> executions) {
+    List<AutomationExecution> content = executions.getContent();
+    if (content.isEmpty()) {
+      return executions.map(e -> null); // empty page
+    }
+
+    // Batch-fetch rule names
+    List<UUID> ruleIds = content.stream().map(AutomationExecution::getRuleId).distinct().toList();
+    Map<UUID, String> ruleNameMap =
+        ruleRepository.findAllById(ruleIds).stream()
+            .collect(Collectors.toMap(AutomationRule::getId, AutomationRule::getName));
+
+    // Batch-fetch action executions
+    List<UUID> executionIds = content.stream().map(AutomationExecution::getId).toList();
+    Map<UUID, List<ActionExecution>> actionExecsByExecutionId =
+        actionExecutionRepository.findByExecutionIdIn(executionIds).stream()
+            .collect(Collectors.groupingBy(ActionExecution::getExecutionId));
+
+    // Batch-fetch action types for all action executions
+    List<UUID> actionIds =
+        actionExecsByExecutionId.values().stream()
+            .flatMap(List::stream)
+            .map(ActionExecution::getActionId)
+            .filter(id -> id != null)
+            .distinct()
+            .toList();
+    Map<UUID, ActionType> actionTypeMap =
+        actionRepository.findAllById(actionIds).stream()
+            .collect(Collectors.toMap(AutomationAction::getId, AutomationAction::getActionType));
+
+    return executions.map(
+        execution ->
+            toExecutionResponse(
+                execution,
+                ruleNameMap.getOrDefault(execution.getRuleId(), "(deleted rule)"),
+                actionExecsByExecutionId.getOrDefault(execution.getId(), List.of()),
+                actionTypeMap));
+  }
+
+  /** Maps a single execution to its response (used for getExecution by ID). */
+  private AutomationExecutionResponse toSingleExecutionResponse(AutomationExecution execution) {
     String ruleName =
         ruleRepository
             .findById(execution.getRuleId())
@@ -437,8 +507,27 @@ public class AutomationRuleService {
             .orElse("(deleted rule)");
 
     var actionExecutions = actionExecutionRepository.findByExecutionId(execution.getId());
+
+    List<UUID> actionIds =
+        actionExecutions.stream()
+            .map(ActionExecution::getActionId)
+            .filter(id -> id != null)
+            .distinct()
+            .toList();
+    Map<UUID, ActionType> actionTypeMap =
+        actionRepository.findAllById(actionIds).stream()
+            .collect(Collectors.toMap(AutomationAction::getId, AutomationAction::getActionType));
+
+    return toExecutionResponse(execution, ruleName, actionExecutions, actionTypeMap);
+  }
+
+  private AutomationExecutionResponse toExecutionResponse(
+      AutomationExecution execution,
+      String ruleName,
+      List<ActionExecution> actionExecutions,
+      Map<UUID, ActionType> actionTypeMap) {
     var actionExecutionResponses =
-        actionExecutions.stream().map(this::toActionExecutionResponse).toList();
+        actionExecutions.stream().map(ae -> toActionExecutionResponse(ae, actionTypeMap)).toList();
 
     return new AutomationExecutionResponse(
         execution.getId(),
@@ -456,14 +545,11 @@ public class AutomationRuleService {
   }
 
   private io.b2mash.b2b.b2bstrawman.automation.dto.AutomationDtos.ActionExecutionResponse
-      toActionExecutionResponse(ActionExecution actionExecution) {
+      toActionExecutionResponse(
+          ActionExecution actionExecution, Map<UUID, ActionType> actionTypeMap) {
     ActionType actionType = null;
     if (actionExecution.getActionId() != null) {
-      actionType =
-          actionRepository
-              .findById(actionExecution.getActionId())
-              .map(AutomationAction::getActionType)
-              .orElse(null);
+      actionType = actionTypeMap.get(actionExecution.getActionId());
     }
     return new io.b2mash.b2b.b2bstrawman.automation.dto.AutomationDtos.ActionExecutionResponse(
         actionExecution.getId(),

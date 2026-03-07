@@ -10,6 +10,8 @@ import org.springframework.data.repository.query.Param;
 public interface AutomationActionRepository extends JpaRepository<AutomationAction, UUID> {
   List<AutomationAction> findByRuleIdOrderBySortOrder(UUID ruleId);
 
+  List<AutomationAction> findByRuleIdInOrderBySortOrder(List<UUID> ruleIds);
+
   @Modifying(clearAutomatically = true)
   @Query("DELETE FROM AutomationAction a WHERE a.ruleId = :ruleId")
   void deleteByRuleId(@Param("ruleId") UUID ruleId);

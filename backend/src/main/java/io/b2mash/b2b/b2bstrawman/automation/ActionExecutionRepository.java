@@ -10,6 +10,8 @@ import org.springframework.data.repository.query.Param;
 public interface ActionExecutionRepository extends JpaRepository<ActionExecution, UUID> {
   List<ActionExecution> findByExecutionId(UUID executionId);
 
+  List<ActionExecution> findByExecutionIdIn(List<UUID> executionIds);
+
   List<ActionExecution> findByActionIdInAndStatus(
       List<UUID> actionIds, ActionExecutionStatus status);
 

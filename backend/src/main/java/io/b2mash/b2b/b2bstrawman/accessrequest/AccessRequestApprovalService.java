@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.accessrequest;
 
+import io.b2mash.b2b.b2bstrawman.accessrequest.dto.AccessRequestDtos.AccessRequestResponse;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
@@ -100,11 +101,14 @@ public class AccessRequestApprovalService {
    * @return list of access requests ordered by creation date ascending
    */
   @Transactional(readOnly = true)
-  public List<AccessRequest> listRequests(@Nullable AccessRequestStatus status) {
+  public List<AccessRequestResponse> listRequests(@Nullable AccessRequestStatus status) {
+    List<AccessRequest> requests;
     if (status != null) {
-      return accessRequestRepository.findByStatusOrderByCreatedAtAsc(status);
+      requests = accessRequestRepository.findByStatusOrderByCreatedAtAsc(status);
+    } else {
+      requests = accessRequestRepository.findAll(Sort.by("createdAt"));
     }
-    return accessRequestRepository.findAll(Sort.by("createdAt"));
+    return requests.stream().map(AccessRequestResponse::from).toList();
   }
 
   /**

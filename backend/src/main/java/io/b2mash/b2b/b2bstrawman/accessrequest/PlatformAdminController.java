@@ -28,8 +28,7 @@ public class PlatformAdminController {
   @GetMapping
   public ResponseEntity<List<AccessRequestResponse>> listRequests(
       @RequestParam(value = "status", required = false) AccessRequestStatus status) {
-    return ResponseEntity.ok(
-        approvalService.listRequests(status).stream().map(AccessRequestResponse::from).toList());
+    return ResponseEntity.ok(approvalService.listRequests(status));
   }
 
   @PostMapping("/{id}/approve")

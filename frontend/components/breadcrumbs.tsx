@@ -11,6 +11,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   settings: "Settings",
   billing: "Billing",
   resources: "Resources",
+  utilization: "Utilization",
 };
 
 /** Segments that contain dynamic child routes (e.g. /projects/[id]) */

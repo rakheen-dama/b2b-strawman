@@ -1,10 +1,8 @@
-import Link from "next/link";
 import { getAuthContext } from "@/lib/auth";
-import { api } from "@/lib/api";
-import { getTeamCapacityGrid } from "@/lib/api/capacity";
-import type { TeamCapacityGrid } from "@/lib/api/capacity";
-import type { Project } from "@/lib/types";
-import { AllocationGrid } from "@/components/capacity/allocation-grid";
+import { getTeamUtilization } from "@/lib/api/capacity";
+import type { TeamUtilizationResponse } from "@/lib/api/capacity";
+import { UtilizationTable } from "@/components/capacity/utilization-table";
+import { UtilizationChart } from "@/components/capacity/utilization-chart";
 import { WeekRangeSelector } from "@/components/capacity/week-range-selector";
 import { getCurrentMonday, formatDate, addWeeks } from "@/lib/date-utils";
 
@@ -15,7 +13,7 @@ function computeWeekCount(weekStart: string, weekEnd: string): number {
   return Math.round(diffMs / (7 * 24 * 60 * 60 * 1000));
 }
 
-export default async function ResourcesPage({
+export default async function UtilizationPage({
   params,
   searchParams,
 }: {
@@ -31,22 +29,19 @@ export default async function ResourcesPage({
   const weekEnd = sp.weekEnd ?? formatDate(addWeeks(defaultMonday, 4));
   const weekCount = computeWeekCount(weekStart, weekEnd);
 
-  let grid: TeamCapacityGrid = { members: [], weekSummaries: [] };
-  let projectOptions: { id: string; name: string }[] = [];
+  let data: TeamUtilizationResponse = {
+    members: [],
+    teamAverages: {
+      avgPlannedUtilizationPct: 0,
+      avgActualUtilizationPct: 0,
+      avgBillableUtilizationPct: 0,
+    },
+  };
 
   try {
-    grid = await getTeamCapacityGrid(weekStart, weekEnd);
+    data = await getTeamUtilization(weekStart, weekEnd);
   } catch (err) {
-    console.error("Failed to load team capacity grid", err);
-  }
-
-  try {
-    const projects = await api.get<Project[]>("/api/projects");
-    projectOptions = projects
-      .filter((p) => p.status === "ACTIVE")
-      .map((p) => ({ id: p.id, name: p.name }));
-  } catch (err) {
-    console.error("Failed to load projects", err);
+    console.error("Failed to load team utilization", err);
   }
 
   return (
@@ -54,22 +49,20 @@ export default async function ResourcesPage({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-            Resources
+            Utilization
           </h1>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Team capacity planning and allocation overview
+            Team utilization metrics and trends
           </p>
-          <Link
-            href={`/org/${slug}/resources/utilization`}
-            className="mt-2 inline-block text-sm font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
-          >
-            View Utilization →
-          </Link>
         </div>
         <WeekRangeSelector weekStart={weekStart} weekCount={weekCount} />
       </div>
 
-      <AllocationGrid grid={grid} projects={projectOptions} slug={slug} />
+      <UtilizationTable data={data} slug={slug} />
+
+      <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+        <UtilizationChart data={data} />
+      </div>
     </div>
   );
 }

@@ -27,7 +27,7 @@ Phase 37 adds a rule-based automation engine to the DocTeams platform. Firm admi
 | 283 | Delayed Action Scheduler & Cycle Detection | Backend | 282 | M | 283A | **Done** (PR #561) |
 | 284 | Rule CRUD API, Template Seeder & Execution Log API | Backend | 280, 281, 282, 283 | L | 284A, 284B | **Done** (PRs #562, #563) |
 | 285 | Frontend: Rule List, Template Gallery & Settings Nav | Frontend | 284 | M | 285A | **Done** (PR #564) |
-| 286 | Frontend: Rule Create/Edit Wizard | Frontend | 285 | L | 286A, 286B | |
+| 286 | Frontend: Rule Create/Edit Wizard | Frontend | 285 | L | 286A, 286B | **Done** (PRs #565, #566) |
 | 287 | Frontend: Execution Log & Dashboard Widget | Frontend | 285 | M | 287A | |
 | 288 | End-to-End Integration Tests & Edge Cases | Backend | 283, 284 | M | 288A | |
 
@@ -183,7 +183,7 @@ FRONTEND TRACK (after respective backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 8a | 286 | 286B | ActionList (sortable ordered list) + ActionForm (dynamic config per action type: CREATE_TASK, SEND_NOTIFICATION, SEND_EMAIL, UPDATE_STATUS, CREATE_PROJECT, ASSIGN_MEMBER) + VariableInserter (variable dropdown for text fields) + delay toggle (Switch + duration + unit) + reorder action + save/cancel form integration + tests (~8 tests). ~6 new files. Frontend only. | |
+| 8a | 286 | 286B | ActionList (sortable ordered list) + ActionForm (dynamic config per action type: CREATE_TASK, SEND_NOTIFICATION, SEND_EMAIL, UPDATE_STATUS, CREATE_PROJECT, ASSIGN_MEMBER) + VariableInserter (variable dropdown for text fields) + delay toggle (Switch + duration + unit) + reorder action + save/cancel form integration + tests (~8 tests). ~6 new files. Frontend only. | **Done** (PR #566) |
 
 ### Stage 9: End-to-End Integration Tests
 
@@ -657,7 +657,7 @@ Stage 9: [288A]                                                    (after Stages
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **286A** | 286.1--286.7 | settings/automations/new/page.tsx + settings/automations/[id]/page.tsx + RuleForm (3-section layout) + TriggerConfigForm (dynamic config by trigger type) + ConditionBuilder (add/remove condition rows) + create/update server actions + tests (~8 tests). ~7 new files. Frontend only. | **Done** (PR #565) |
-| **286B** | 286.8--286.14 | ActionList (sortable ordered list) + ActionForm (dynamic config per action type) + VariableInserter (dropdown for text fields) + delay toggle (Switch + duration + unit) + reorder integration + save/cancel form wiring + tests (~8 tests). ~6 new files. Frontend only. | |
+| **286B** | 286.8--286.14 | ActionList (sortable ordered list) + ActionForm (dynamic config per action type) + VariableInserter (dropdown for text fields) + delay toggle (Switch + duration + unit) + reorder integration + save/cancel form wiring + tests (~8 tests). ~6 new files. Frontend only. | **Done** (PR #566) |
 
 ### Tasks
 

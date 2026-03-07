@@ -247,7 +247,7 @@ export function RequestAccessForm() {
                 autoFocus
               />
               {otpError && (
-                <p className="text-sm text-red-600">{otpError}</p>
+                <p className="text-sm text-red-600" role="alert">{otpError}</p>
               )}
             </div>
 
@@ -297,7 +297,7 @@ export function RequestAccessForm() {
               variant="accent"
               size="lg"
               className="w-full"
-              disabled={otp.length !== 6 || isVerifying}
+              disabled={otp.length !== 6 || isVerifying || secondsLeft <= 0}
             >
               {isVerifying ? (
                 <>

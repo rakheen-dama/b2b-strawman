@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   Table,
@@ -13,7 +13,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { TriggerTypeBadge } from "@/components/automations/trigger-type-badge";
-import { ExecutionStatusBadge } from "@/components/automations/execution-status-badge";
 import { TemplateGallery } from "@/components/automations/template-gallery";
 import {
   toggleRuleAction,
@@ -25,7 +24,6 @@ import { Zap, Plus, LayoutGrid, Trash2 } from "lucide-react";
 import type {
   AutomationRuleResponse,
   TemplateDefinitionResponse,
-  ExecutionStatus,
 } from "@/lib/api/automations";
 
 interface RuleListProps {
@@ -41,6 +39,21 @@ export function RuleList({ slug, rules, templates, canManage }: RuleListProps) {
   const [isPending, startTransition] = useTransition();
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const confirmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (confirmDeleteId) {
+      confirmTimerRef.current = setTimeout(() => {
+        setConfirmDeleteId(null);
+      }, 3000);
+    }
+    return () => {
+      if (confirmTimerRef.current) {
+        clearTimeout(confirmTimerRef.current);
+        confirmTimerRef.current = null;
+      }
+    };
+  }, [confirmDeleteId]);
 
   const activatedSlugs = rules
     .filter((r) => r.templateSlug)
@@ -145,9 +158,8 @@ export function RuleList({ slug, rules, templates, canManage }: RuleListProps) {
               <TableHead>Name</TableHead>
               <TableHead>Trigger</TableHead>
               <TableHead>Enabled</TableHead>
-              <TableHead>Last Triggered</TableHead>
+              <TableHead>Last Updated</TableHead>
               <TableHead>Actions</TableHead>
-              <TableHead>Status</TableHead>
               {canManage && <TableHead className="w-10" />}
             </TableRow>
           </TableHeader>
@@ -194,13 +206,6 @@ export function RuleList({ slug, rules, templates, canManage }: RuleListProps) {
                   <span className="font-mono text-sm tabular-nums text-slate-600 dark:text-slate-400">
                     {rule.actions.length}
                   </span>
-                </TableCell>
-                <TableCell>
-                  {rule.enabled ? (
-                    <ExecutionStatusBadge status={"ACTIONS_COMPLETED" as ExecutionStatus} />
-                  ) : (
-                    <span className="text-xs text-slate-400">Disabled</span>
-                  )}
                 </TableCell>
                 {canManage && (
                   <TableCell>

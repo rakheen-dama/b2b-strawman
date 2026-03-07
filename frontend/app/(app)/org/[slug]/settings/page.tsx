@@ -154,6 +154,7 @@ const settingsCards: SettingsCard[] = [
     description: "Create rules to automate tasks, notifications, and workflows",
     href: "automations",
     comingSoon: false,
+    adminOnly: true,
   },
   {
     icon: Building2,

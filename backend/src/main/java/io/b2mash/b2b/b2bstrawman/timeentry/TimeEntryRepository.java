@@ -371,6 +371,54 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
   BudgetAmountProjection budgetAmountConsumed(
       @Param("projectId") UUID projectId, @Param("budgetCurrency") String budgetCurrency);
 
+  // --- Capacity & utilization weekly aggregation queries (Epic 291A) ---
+
+  /**
+   * Aggregates actual hours per ISO week for a member. Uses date_trunc('week', ...) which returns
+   * ISO Monday-start weeks, matching allocation week boundaries.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+      SELECT
+        date_trunc('week', te.date)::date AS weekStart,
+        COALESCE(SUM(te.duration_minutes), 0) / 60.0 AS actualHours,
+        COALESCE(SUM(CASE WHEN te.billable THEN te.duration_minutes ELSE 0 END), 0) / 60.0 AS billableHours
+      FROM time_entries te
+      WHERE te.member_id = CAST(:memberId AS UUID)
+        AND te.date >= CAST(:fromDate AS DATE)
+        AND te.date <= CAST(:toDate AS DATE)
+      GROUP BY date_trunc('week', te.date)
+      ORDER BY weekStart
+      """)
+  List<WeeklyActualHoursProjection> findWeeklyActualHours(
+      @Param("memberId") UUID memberId,
+      @Param("fromDate") LocalDate from,
+      @Param("toDate") LocalDate to);
+
+  /**
+   * Aggregates actual hours per ISO week per member for team-level utilization. Returns rows
+   * grouped by member_id and week.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+      SELECT
+        te.member_id AS memberId,
+        date_trunc('week', te.date)::date AS weekStart,
+        COALESCE(SUM(te.duration_minutes), 0) / 60.0 AS actualHours,
+        COALESCE(SUM(CASE WHEN te.billable THEN te.duration_minutes ELSE 0 END), 0) / 60.0 AS billableHours
+      FROM time_entries te
+      WHERE te.date >= CAST(:fromDate AS DATE)
+        AND te.date <= CAST(:toDate AS DATE)
+      GROUP BY te.member_id, date_trunc('week', te.date)
+      ORDER BY te.member_id, weekStart
+      """)
+  List<TeamWeeklyActualHoursProjection> findTeamWeeklyActualHours(
+      @Param("fromDate") LocalDate from, @Param("toDate") LocalDate to);
+
   // --- Delete protection guard queries (Epic 206A) ---
 
   /** Counts all time entries for tasks in a project. Used by delete protection guard. */

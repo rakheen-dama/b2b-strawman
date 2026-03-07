@@ -18,7 +18,7 @@ Phase 39 replaces self-registration with an **admin-approved access request pipe
 | 295 | Access Request Entity Foundation & Migration | Backend | -- | M | 295A, 295B | **Done** (PR #582) |
 | 296 | OTP Verification & Public Access Request API | Backend | 295 | M | 296A, 296B | **Done** (PR #583, #584) |
 | 297 | Platform Admin Identity & Security Infrastructure | Backend | 295 | M | 297A, 297B | **Done** (PRs #585, #586) |
-| 298 | Approval Pipeline & Platform Admin API | Backend | 296, 297 | M | 298A, 298B | |
+| 298 | Approval Pipeline & Platform Admin API | Backend | 296, 297 | M | 298A, 298B | **Done** (PRs #587, #588) |
 | 299 | Keycloak Configuration & Gateway Routing | Infra | 297 | S | 299A | |
 | 300 | Public Access Request Form (Frontend) | Frontend | 296 | M | 300A, 300B | |
 | 301 | Platform Admin Panel (Frontend) | Frontend | 298, 300 | M | 301A, 301B | |
@@ -140,7 +140,7 @@ FRONTEND TRACK (after backend APIs)       |
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 2a | 298 | 298A | `AccessRequestApprovalService.approve()` — orchestrates KC org creation (via backend's own Keycloak admin client or HTTP call to gateway), tenant provisioning, KC invitation. Idempotent. `reject()` method. ~3 new files (~8 tests). Backend only. | **Done** (PR #587) |
-| 2b | 298 | 298B | `PlatformAdminController` — `GET /api/platform-admin/access-requests`, `POST /{id}/approve`, `POST /{id}/reject`. `@PreAuthorize` guards. ~2 new files (~7 tests). Backend only. | |
+| 2b | 298 | 298B | `PlatformAdminController` — `GET /api/platform-admin/access-requests`, `POST /{id}/approve`, `POST /{id}/reject`. `@PreAuthorize` guards. ~2 new files (~7 tests). Backend only. | **Done** (PR #588) |
 
 ### Stage 3: Keycloak Configuration (parallel with Stage 1-2)
 
@@ -398,7 +398,7 @@ Stage 6: [302A]                                                        (after 29
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **298A** | 298.1--298.5 | `AccessRequestApprovalService` -- orchestrates approval: create KC org via `KeycloakAdminClient` (call gateway or add backend's own KC client), provision tenant schema via `TenantProvisioningService`, send KC invitation, mark `APPROVED`. `reject()` method. Idempotent retry support. ~3 new files (~8 integration tests). Backend only. | **Done** (PR #587) |
-| **298B** | 298.6--298.10 | `PlatformAdminController` with `@PreAuthorize("@platformSecurityService.isPlatformAdmin()")`. Endpoints: `GET /api/platform-admin/access-requests` (with optional `?status=` filter), `POST /api/platform-admin/access-requests/{id}/approve`, `POST /api/platform-admin/access-requests/{id}/reject`. Pure delegation to service. ~2 new files (~7 integration tests). Backend only. | |
+| **298B** | 298.6--298.10 | `PlatformAdminController` with `@PreAuthorize("@platformSecurityService.isPlatformAdmin()")`. Endpoints: `GET /api/platform-admin/access-requests` (with optional `?status=` filter), `POST /api/platform-admin/access-requests/{id}/approve`, `POST /api/platform-admin/access-requests/{id}/reject`. Pure delegation to service. ~2 new files (~7 integration tests). Backend only. | **Done** (PR #588) |
 
 ### Tasks
 

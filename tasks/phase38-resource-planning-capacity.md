@@ -23,7 +23,7 @@ Phase 38 adds resource planning and capacity management to the DocTeams platform
 | 289 | Entity Foundation & Migration | Backend | -- | M | 289A, 289B | **Done** (PRs #569, #570) |
 | 290 | Capacity & Allocation Services | Backend | 289 | L | 290A, 290B, 290C | **Done** (PRs #571, #572, #573) |
 | 291 | Utilization Service & Profitability Integration | Backend | 290 | M | 291A, 291B | **Done** (PRs #574, #575) |
-| 292 | Allocation Grid UI | Frontend | 290 | L | 292A, 292B | |
+| 292 | Allocation Grid UI | Frontend | 290 | L | 292A, 292B | **Done** (PRs #576, #577) |
 | 293 | Utilization, Dashboard & Project Staffing UI | Frontend | 291, 292 | M | 293A, 293B | |
 | 294 | Notifications, Audit Events & Settings UI | Backend + Frontend | 290 | M | 294A, 294B | |
 
@@ -159,7 +159,7 @@ FRONTEND TRACK (after respective backend epics)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 6a | 292 | 292A | resources/page.tsx + AllocationGrid component + CapacityCell component + WeekRangeSelector component + "Resources" sidebar nav item + lib/api/capacity.ts API client + server actions + tests (~8 tests). ~8 new files + ~1 modified file. Frontend only. | **Done** (PR #576) |
-| 6b | 292 | 292B | AllocationPopover (view/edit/add allocations per cell) + MemberDetailPanel (slide-over for capacity config + timeline) + LeaveDialog (add/edit leave block) + grid filters (member search, project filter, "show only over-allocated") + tests (~8 tests). ~6 new files + ~1 modified file. Frontend only. | |
+| 6b | 292 | 292B | AllocationPopover (view/edit/add allocations per cell) + MemberDetailPanel (slide-over for capacity config + timeline) + LeaveDialog (add/edit leave block) + grid filters (member search, project filter, "show only over-allocated") + tests (~8 tests). ~6 new files + ~1 modified file. Frontend only. | **Done** (PR #577) |
 
 ### Stage 7: Utilization UI + Dashboard + Settings (parallel tracks)
 
@@ -433,7 +433,7 @@ Stage 7: [293A] // [293B] // [294B]                                (parallel)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **292A** | 292.1--292.9 | resources/page.tsx (Resources page) + AllocationGrid component + CapacityCell component + WeekRangeSelector component + "Resources" sidebar nav item + lib/api/capacity.ts API client + server actions + tests (~8 tests). ~8 new files + ~1 modified file. Frontend only. | **Done** (PR #576) |
-| **292B** | 292.10--292.17 | AllocationPopover (click-to-edit per cell) + MemberDetailPanel (slide-over for capacity config + timeline) + LeaveDialog (add/edit leave block) + grid filters (member search, project filter, "show only over-allocated") + tests (~8 tests). ~6 new files + ~1 modified file. Frontend only. | |
+| **292B** | 292.10--292.17 | AllocationPopover (click-to-edit per cell) + MemberDetailPanel (slide-over for capacity config + timeline) + LeaveDialog (add/edit leave block) + grid filters (member search, project filter, "show only over-allocated") + tests (~8 tests). ~6 new files + ~1 modified file. Frontend only. | **Done** (PR #577) |
 
 ### Tasks
 

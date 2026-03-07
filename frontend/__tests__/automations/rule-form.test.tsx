@@ -50,9 +50,7 @@ describe("RuleForm", () => {
     expect(screen.getByText("Trigger")).toBeInTheDocument();
     expect(screen.getByText("Conditions")).toBeInTheDocument();
     expect(screen.getByText("Actions")).toBeInTheDocument();
-    expect(
-      screen.getByText("Actions will be configured in the next step."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Add Action")).toBeInTheDocument();
   });
 
   it("shows status change config when status trigger is selected", () => {

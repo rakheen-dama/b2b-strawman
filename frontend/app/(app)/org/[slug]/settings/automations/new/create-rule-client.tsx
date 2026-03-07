@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { RuleForm } from "@/components/automations/rule-form";
 import { createRuleAction } from "./actions";
+import type { ActionType, DelayUnit } from "@/lib/api/automations";
 
 interface CreateRuleClientProps {
   slug: string;
@@ -20,6 +21,13 @@ export function CreateRuleClient({ slug }: CreateRuleClientProps) {
     triggerType: string;
     triggerConfig: Record<string, unknown>;
     conditions: Record<string, unknown>[];
+    actions?: {
+      actionType: string;
+      actionConfig: Record<string, unknown>;
+      sortOrder: number;
+      delayDuration: number | null;
+      delayUnit: string | null;
+    }[];
   }) {
     setIsSaving(true);
     try {
@@ -29,6 +37,13 @@ export function CreateRuleClient({ slug }: CreateRuleClientProps) {
         triggerType: data.triggerType as Parameters<typeof createRuleAction>[1]["triggerType"],
         triggerConfig: data.triggerConfig,
         conditions: data.conditions.length > 0 ? data.conditions : undefined,
+        actions: data.actions?.map((a) => ({
+          actionType: a.actionType as ActionType,
+          config: a.actionConfig,
+          sortOrder: a.sortOrder,
+          delayDuration: a.delayDuration,
+          delayUnit: a.delayUnit as DelayUnit | null,
+        })),
       });
       if (result.success) {
         toast.success("Rule created successfully");

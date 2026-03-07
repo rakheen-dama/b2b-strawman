@@ -24,10 +24,16 @@ import {
   ConditionBuilder,
   type ConditionRow,
 } from "@/components/automations/condition-builder";
+import {
+  ActionList,
+  type ActionRow,
+} from "@/components/automations/action-list";
 import type {
   AutomationRuleResponse,
   TriggerType,
   ConditionOperator,
+  ActionType,
+  DelayUnit,
 } from "@/lib/api/automations";
 
 interface RuleFormData {
@@ -36,6 +42,13 @@ interface RuleFormData {
   triggerType: TriggerType | "";
   triggerConfig: Record<string, unknown>;
   conditions: Record<string, unknown>[];
+  actions: {
+    actionType: ActionType;
+    actionConfig: Record<string, unknown>;
+    sortOrder: number;
+    delayDuration: number | null;
+    delayUnit: DelayUnit | null;
+  }[];
 }
 
 interface RuleFormProps {
@@ -96,6 +109,18 @@ export function RuleForm({
   const [conditions, setConditions] = useState<ConditionRow[]>(
     rule?.conditions ? parseConditions(rule.conditions) : [],
   );
+  const [actions, setActions] = useState<ActionRow[]>(
+    rule?.actions
+      ? rule.actions.map((a) => ({
+          id: a.id,
+          actionType: a.actionType,
+          actionConfig: a.actionConfig,
+          sortOrder: a.sortOrder,
+          delayDuration: a.delayDuration,
+          delayUnit: a.delayUnit,
+        }))
+      : [],
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   function validate(): boolean {
@@ -118,6 +143,13 @@ export function RuleForm({
       triggerType,
       triggerConfig,
       conditions: serializeConditions(conditions),
+      actions: actions.map(({ actionType, actionConfig, sortOrder, delayDuration, delayUnit }) => ({
+        actionType,
+        actionConfig,
+        sortOrder,
+        delayDuration,
+        delayUnit,
+      })),
     });
   }
 
@@ -223,7 +255,7 @@ export function RuleForm({
         </CardContent>
       </Card>
 
-      {/* Section 3: Actions (placeholder for Epic 286B) */}
+      {/* Section 3: Actions */}
       <Card>
         <CardHeader>
           <CardTitle>Actions</CardTitle>
@@ -232,9 +264,11 @@ export function RuleForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Actions will be configured in the next step.
-          </p>
+          <ActionList
+            actions={actions}
+            onActionsChange={setActions}
+            triggerType={triggerType}
+          />
         </CardContent>
       </Card>
 

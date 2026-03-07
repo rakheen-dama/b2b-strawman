@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsController.SettingsResponse;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.Map;
@@ -23,6 +24,7 @@ public class OrgSettingsService {
 
   private static final Logger log = LoggerFactory.getLogger(OrgSettingsService.class);
   private static final String DEFAULT_CURRENCY = "USD";
+  private static final BigDecimal DEFAULT_WEEKLY_CAPACITY_HOURS = new BigDecimal("40.00");
   private static final Duration LOGO_URL_EXPIRY = Duration.ofHours(1);
 
   private final OrgSettingsRepository orgSettingsRepository;
@@ -78,7 +80,8 @@ public class OrgSettingsService {
                 "MON,TUE,WED,THU,FRI", // timeReminderDays
                 "17:00", // timeReminderTime
                 4.0, // timeReminderMinHours
-                null)); // defaultExpenseMarkupPercent
+                null, // defaultExpenseMarkupPercent
+                DEFAULT_WEEKLY_CAPACITY_HOURS)); // defaultWeeklyCapacityHours
   }
 
   /** Updates settings including branding fields. */
@@ -245,7 +248,10 @@ public class OrgSettingsService {
         settings.getTimeReminderDays(),
         settings.getTimeReminderTime() != null ? settings.getTimeReminderTime().toString() : null,
         settings.getTimeReminderMinHours(),
-        settings.getDefaultExpenseMarkupPercent());
+        settings.getDefaultExpenseMarkupPercent(),
+        settings.getDefaultWeeklyCapacityHours() != null
+            ? settings.getDefaultWeeklyCapacityHours()
+            : DEFAULT_WEEKLY_CAPACITY_HOURS);
   }
 
   /**
@@ -443,6 +449,49 @@ public class OrgSettingsService {
                     settings.isTimeReminderEnabled(),
                     "time_reminder_days",
                     settings.getTimeReminderDays() != null ? settings.getTimeReminderDays() : ""))
+            .build());
+
+    return toSettingsResponse(settings);
+  }
+
+  /**
+   * Returns the org default weekly capacity hours, falling back to 40.0 if no settings row or null
+   * field.
+   */
+  @Transactional(readOnly = true)
+  public BigDecimal getDefaultWeeklyCapacityHours() {
+    return orgSettingsRepository
+        .findForCurrentTenant()
+        .map(OrgSettings::getDefaultWeeklyCapacityHours)
+        .orElse(DEFAULT_WEEKLY_CAPACITY_HOURS);
+  }
+
+  /** Updates the default weekly capacity hours. Requires admin or owner role. */
+  @Transactional
+  public SettingsResponse updateDefaultWeeklyCapacityHours(
+      BigDecimal hours, UUID memberId, String orgRole) {
+    requireAdminOrOwner(orgRole);
+
+    var settings =
+        orgSettingsRepository
+            .findForCurrentTenant()
+            .orElseGet(
+                () -> {
+                  var s = new OrgSettings(DEFAULT_CURRENCY);
+                  return orgSettingsRepository.save(s);
+                });
+
+    settings.setDefaultWeeklyCapacityHours(hours);
+    settings = orgSettingsRepository.save(settings);
+
+    log.info("Updated default weekly capacity hours to {}", hours);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("org_settings.capacity_updated")
+            .entityType("org_settings")
+            .entityId(settings.getId())
+            .details(Map.of("default_weekly_capacity_hours", hours.toString()))
             .build());
 
     return toSettingsResponse(settings);

@@ -148,7 +148,7 @@ class AccessRequestVerifyTest {
                     {"email": "unknown@nowhere.com", "otp": "123456"}
                     """))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.title").value("Invalid request"));
+        .andExpect(jsonPath("$.title").value("Verification failed"));
   }
 
   @Test

@@ -98,14 +98,17 @@ public class AccessRequestService {
   @Transactional(noRollbackFor = {InvalidStateException.class, TooManyRequestsException.class})
   public VerifyResponse verifyOtp(String email, String otp) {
     String normalizedEmail = email.toLowerCase();
+    Instant now = Instant.now();
 
     var entity =
         accessRequestRepository
-            .findByEmailAndStatus(normalizedEmail, AccessRequestStatus.PENDING_VERIFICATION)
+            .findWithLockByEmailAndStatus(normalizedEmail, AccessRequestStatus.PENDING_VERIFICATION)
             .orElseThrow(
-                () ->
-                    new InvalidStateException(
-                        "Invalid request", "No pending verification found for this email"));
+                () -> new InvalidStateException("Verification failed", "Verification failed"));
+
+    if (now.isAfter(entity.getOtpExpiresAt())) {
+      throw new InvalidStateException("OTP expired", "Please submit a new access request");
+    }
 
     if (entity.getOtpAttempts() >= configProperties.otpMaxAttempts()) {
       throw new TooManyRequestsException(
@@ -115,16 +118,12 @@ public class AccessRequestService {
     entity.setOtpAttempts(entity.getOtpAttempts() + 1);
     accessRequestRepository.save(entity);
 
-    if (Instant.now().isAfter(entity.getOtpExpiresAt())) {
-      throw new InvalidStateException("OTP expired", "Please submit a new access request");
-    }
-
     if (!passwordEncoder.matches(otp, entity.getOtpHash())) {
       throw new InvalidStateException("Invalid OTP", "The verification code is incorrect");
     }
 
     entity.setStatus(AccessRequestStatus.PENDING);
-    entity.setOtpVerifiedAt(Instant.now());
+    entity.setOtpVerifiedAt(now);
     entity.setOtpHash(null);
     accessRequestRepository.save(entity);
 

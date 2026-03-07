@@ -51,10 +51,10 @@ public class CreateTaskActionExecutor implements ActionExecutor {
       String resolvedName = variableResolver.resolve(taskConfig.taskName(), context);
       String resolvedDescription = variableResolver.resolve(taskConfig.taskDescription(), context);
 
-      UUID projectId = resolveUuid(context, "project", "id");
+      UUID projectId = VariableResolver.resolveUuid(context, "project", "id");
       if (projectId == null) {
         // Try task context for project ID
-        projectId = resolveUuid(context, "task", "projectId");
+        projectId = VariableResolver.resolveUuid(context, "task", "projectId");
       }
       if (projectId == null) {
         return new ActionFailure("Cannot create task: no projectId in context", null);
@@ -64,6 +64,9 @@ public class CreateTaskActionExecutor implements ActionExecutor {
       UUID assigneeId =
           resolveAssignee(taskConfig.assignTo(), taskConfig.specificMemberId(), projectId, context);
 
+      // Automation-created tasks run with elevated "owner" privileges. This is intentional:
+      // the automation rule itself was configured by an admin/owner, so the resulting actions
+      // should not be blocked by the permission model.
       Task task =
           taskService.createTask(
               projectId,
@@ -106,26 +109,6 @@ public class CreateTaskActionExecutor implements ActionExecutor {
   }
 
   private UUID resolveActorId(Map<String, Map<String, Object>> context) {
-    return resolveUuid(context, "actor", "id");
-  }
-
-  private UUID resolveUuid(
-      Map<String, Map<String, Object>> context, String entityKey, String fieldKey) {
-    Map<String, Object> entityMap = context.get(entityKey);
-    if (entityMap == null) {
-      return null;
-    }
-    Object value = entityMap.get(fieldKey);
-    if (value == null) {
-      return null;
-    }
-    if (value instanceof UUID uuid) {
-      return uuid;
-    }
-    try {
-      return UUID.fromString(value.toString());
-    } catch (IllegalArgumentException e) {
-      return null;
-    }
+    return VariableResolver.resolveUuid(context, "actor", "id");
   }
 }

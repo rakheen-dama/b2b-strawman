@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class VariableResolverTest {
@@ -85,6 +86,38 @@ class VariableResolverTest {
     var context = buildContext("task", Map.of("name", "Deploy"));
     String result = resolver.resolve("{{task.name}} by {{actor.name}}", context);
     assertThat(result).isEqualTo("Deploy by {{actor.name}}");
+  }
+
+  @Test
+  void resolveUuid_fromUuidInstance() {
+    UUID expected = UUID.randomUUID();
+    var context = buildContext("task", Map.of("id", expected));
+    assertThat(VariableResolver.resolveUuid(context, "task", "id")).isEqualTo(expected);
+  }
+
+  @Test
+  void resolveUuid_fromString() {
+    UUID expected = UUID.randomUUID();
+    var context = buildContext("task", Map.of("id", expected.toString()));
+    assertThat(VariableResolver.resolveUuid(context, "task", "id")).isEqualTo(expected);
+  }
+
+  @Test
+  void resolveUuid_missingEntity_returnsNull() {
+    var context = buildContext("task", Map.of("id", UUID.randomUUID()));
+    assertThat(VariableResolver.resolveUuid(context, "project", "id")).isNull();
+  }
+
+  @Test
+  void resolveUuid_missingField_returnsNull() {
+    var context = buildContext("task", Map.of("name", "Test"));
+    assertThat(VariableResolver.resolveUuid(context, "task", "id")).isNull();
+  }
+
+  @Test
+  void resolveUuid_invalidString_returnsNull() {
+    var context = buildContext("task", Map.of("id", "not-a-uuid"));
+    assertThat(VariableResolver.resolveUuid(context, "task", "id")).isNull();
   }
 
   private Map<String, Map<String, Object>> buildContext(String key, Map<String, Object> fields) {

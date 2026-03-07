@@ -59,16 +59,46 @@ public class SendEmailActionExecutor implements ActionExecutor {
       String resolvedSubject = variableResolver.resolve(emailConfig.subject(), context);
       String resolvedBody = variableResolver.resolve(emailConfig.body(), context);
 
+      UUID refEntityId = resolveEntityId(context);
+      UUID refProjectId = resolveProjectId(context);
+
+      // ALL_ADMINS: send individual emails to each admin
+      if ("ALL_ADMINS".equals(emailConfig.recipientType())) {
+        var admins = memberRepository.findByOrgRoleIn(List.of("admin", "owner"));
+        if (admins.isEmpty()) {
+          return new ActionFailure(
+              "No email address resolved for recipient type: ALL_ADMINS", null);
+        }
+        int sent = 0;
+        for (var admin : admins) {
+          var notification =
+              notificationService.createNotification(
+                  admin.getId(),
+                  "AUTOMATION_EMAIL",
+                  resolvedSubject,
+                  resolvedBody,
+                  "AutomationRule",
+                  refEntityId,
+                  refProjectId);
+          emailChannel.deliver(notification, admin.getEmail());
+          sent++;
+        }
+        log.debug("Automation sent email to {} admin(s)", sent);
+        return new ActionSuccess(Map.of("emailsSent", sent));
+      }
+
+      // Single-recipient path
       String recipientEmail = resolveRecipientEmail(emailConfig.recipientType(), context);
       if (recipientEmail == null || recipientEmail.isBlank()) {
         return new ActionFailure(
             "No email address resolved for recipient type: " + emailConfig.recipientType(), null);
       }
 
-      // Create a notification record first, then deliver via email channel
       UUID recipientMemberId = resolveRecipientMemberId(emailConfig.recipientType(), context);
-      UUID refEntityId = resolveEntityId(context);
-      UUID refProjectId = resolveProjectId(context);
+      if (recipientMemberId == null) {
+        return new ActionFailure(
+            "No member ID resolved for recipient type: " + emailConfig.recipientType(), null);
+      }
 
       var notification =
           notificationService.createNotification(
@@ -82,7 +112,7 @@ public class SendEmailActionExecutor implements ActionExecutor {
 
       emailChannel.deliver(notification, recipientEmail);
 
-      log.info("Automation sent email to {}", recipientEmail);
+      log.debug("Automation sent email to recipient");
       return new ActionSuccess(Map.of("emailSentTo", recipientEmail));
     } catch (Exception e) {
       log.error("Failed to execute SEND_EMAIL action: {}", e.getMessage(), e);
@@ -97,25 +127,21 @@ public class SendEmailActionExecutor implements ActionExecutor {
     }
     return switch (recipientType) {
       case "TRIGGER_ACTOR" -> {
-        UUID actorId = resolveUuid(context, "actor", "id");
+        UUID actorId = VariableResolver.resolveUuid(context, "actor", "id");
         if (actorId == null) {
           yield null;
         }
         yield memberRepository.findById(actorId).map(Member::getEmail).orElse(null);
       }
       case "CUSTOMER_CONTACT" -> {
-        UUID customerId = resolveUuid(context, "customer", "id");
+        UUID customerId = VariableResolver.resolveUuid(context, "customer", "id");
         if (customerId == null) {
           yield null;
         }
         var contacts = portalContactService.listContactsForCustomer(customerId);
         yield contacts.isEmpty() ? null : contacts.getFirst().getEmail();
       }
-      case "ALL_ADMINS" -> {
-        // Send to first admin — for multi-recipient email, would need separate calls
-        var admins = memberRepository.findByOrgRoleIn(List.of("admin", "owner"));
-        yield admins.isEmpty() ? null : admins.getFirst().getEmail();
-      }
+      case "ALL_ADMINS" -> null; // Handled in execute() via multi-recipient path
       default -> null;
     };
   }
@@ -126,48 +152,25 @@ public class SendEmailActionExecutor implements ActionExecutor {
       return null;
     }
     return switch (recipientType) {
-      case "TRIGGER_ACTOR" -> resolveUuid(context, "actor", "id");
-      case "ALL_ADMINS" -> {
-        var admins = memberRepository.findByOrgRoleIn(List.of("admin", "owner"));
-        yield admins.isEmpty() ? null : admins.getFirst().getId();
-      }
-      default -> resolveUuid(context, "actor", "id"); // fallback to actor
+      case "TRIGGER_ACTOR" -> VariableResolver.resolveUuid(context, "actor", "id");
+      case "ALL_ADMINS" -> null; // Handled in execute() via multi-recipient path
+      default -> VariableResolver.resolveUuid(context, "actor", "id"); // fallback to actor
     };
   }
 
   private UUID resolveProjectId(Map<String, Map<String, Object>> context) {
-    UUID projectId = resolveUuid(context, "project", "id");
+    UUID projectId = VariableResolver.resolveUuid(context, "project", "id");
     if (projectId == null) {
-      projectId = resolveUuid(context, "task", "projectId");
+      projectId = VariableResolver.resolveUuid(context, "task", "projectId");
     }
     return projectId;
   }
 
   private UUID resolveEntityId(Map<String, Map<String, Object>> context) {
-    UUID entityId = resolveUuid(context, "task", "id");
+    UUID entityId = VariableResolver.resolveUuid(context, "task", "id");
     if (entityId == null) {
-      entityId = resolveUuid(context, "project", "id");
+      entityId = VariableResolver.resolveUuid(context, "project", "id");
     }
     return entityId;
-  }
-
-  private UUID resolveUuid(
-      Map<String, Map<String, Object>> context, String entityKey, String fieldKey) {
-    Map<String, Object> entityMap = context.get(entityKey);
-    if (entityMap == null) {
-      return null;
-    }
-    Object value = entityMap.get(fieldKey);
-    if (value == null) {
-      return null;
-    }
-    if (value instanceof UUID uuid) {
-      return uuid;
-    }
-    try {
-      return UUID.fromString(value.toString());
-    } catch (IllegalArgumentException e) {
-      return null;
-    }
   }
 }

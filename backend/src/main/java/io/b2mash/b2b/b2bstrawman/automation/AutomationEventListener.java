@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Central dispatch point for the automation engine. Subscribes to all {@link DomainEvent} instances
@@ -45,6 +46,7 @@ public class AutomationEventListener {
   }
 
   @EventListener
+  @Transactional
   public void onDomainEvent(DomainEvent event) {
     try {
       processEvent(event);

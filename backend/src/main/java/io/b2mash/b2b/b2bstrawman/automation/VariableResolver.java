@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.automation;
 
 import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.springframework.stereotype.Component;
@@ -60,5 +61,34 @@ public class VariableResolver {
     }
 
     return value.toString();
+  }
+
+  /**
+   * Resolves a UUID value from the automation context by entity key and field key. Handles both
+   * {@link UUID} instances and string representations.
+   *
+   * @param context the automation context map
+   * @param entityKey the top-level entity key (e.g. "task", "project", "actor")
+   * @param fieldKey the field within the entity map (e.g. "id", "projectId")
+   * @return the resolved UUID, or null if not found or unparseable
+   */
+  public static UUID resolveUuid(
+      Map<String, Map<String, Object>> context, String entityKey, String fieldKey) {
+    Map<String, Object> entityMap = context.get(entityKey);
+    if (entityMap == null) {
+      return null;
+    }
+    Object value = entityMap.get(fieldKey);
+    if (value == null) {
+      return null;
+    }
+    if (value instanceof UUID uuid) {
+      return uuid;
+    }
+    try {
+      return UUID.fromString(value.toString());
+    } catch (IllegalArgumentException e) {
+      return null;
+    }
   }
 }

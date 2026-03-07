@@ -10,7 +10,6 @@ import io.b2mash.b2b.b2bstrawman.automation.config.SendNotificationActionConfig;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -92,7 +91,7 @@ public class SendNotificationActionExecutor implements ActionExecutor {
     }
     return switch (recipientType) {
       case "TRIGGER_ACTOR" -> {
-        UUID actorId = resolveUuid(context, "actor", "id");
+        UUID actorId = VariableResolver.resolveUuid(context, "actor", "id");
         yield actorId != null ? List.of(actorId) : List.of();
       }
       case "PROJECT_OWNER" -> {
@@ -108,24 +107,22 @@ public class SendNotificationActionExecutor implements ActionExecutor {
         if (projectId == null) {
           yield List.of();
         }
-        var members = projectMemberRepository.findByProjectId(projectId);
-        List<UUID> ids = new ArrayList<>();
-        for (var m : members) {
-          ids.add(m.getMemberId());
-        }
-        yield ids;
+        yield projectMemberRepository.findByProjectId(projectId).stream()
+            .map(m -> m.getMemberId())
+            .toList();
       }
       case "ALL_ADMINS" -> {
-        var admins = memberRepository.findByOrgRoleIn(List.of("admin", "owner"));
-        List<UUID> ids = new ArrayList<>();
-        for (var m : admins) {
-          ids.add(m.getId());
-        }
-        yield ids;
+        yield memberRepository.findByOrgRoleIn(List.of("admin", "owner")).stream()
+            .map(m -> m.getId())
+            .toList();
       }
       case "SPECIFIC_MEMBER" -> {
-        // recipientType is SPECIFIC_MEMBER but member ID would need to come from config
-        // For now, try to get it from context or return empty
+        // SPECIFIC_MEMBER requires a specificMemberId field in the config, which is not
+        // currently supported by SendNotificationActionConfig. Return empty to trigger
+        // the "No recipients resolved" failure path with a clear error.
+        log.warn(
+            "SPECIFIC_MEMBER recipient type is not supported for SEND_NOTIFICATION — "
+                + "SendNotificationActionConfig does not have a specificMemberId field");
         yield List.of();
       }
       default -> List.of();
@@ -133,41 +130,21 @@ public class SendNotificationActionExecutor implements ActionExecutor {
   }
 
   private UUID resolveProjectId(Map<String, Map<String, Object>> context) {
-    UUID projectId = resolveUuid(context, "project", "id");
+    UUID projectId = VariableResolver.resolveUuid(context, "project", "id");
     if (projectId == null) {
-      projectId = resolveUuid(context, "task", "projectId");
+      projectId = VariableResolver.resolveUuid(context, "task", "projectId");
     }
     return projectId;
   }
 
   private UUID resolveEntityId(Map<String, Map<String, Object>> context) {
-    UUID entityId = resolveUuid(context, "task", "id");
+    UUID entityId = VariableResolver.resolveUuid(context, "task", "id");
     if (entityId == null) {
-      entityId = resolveUuid(context, "project", "id");
+      entityId = VariableResolver.resolveUuid(context, "project", "id");
     }
     if (entityId == null) {
-      entityId = resolveUuid(context, "rule", "id");
+      entityId = VariableResolver.resolveUuid(context, "rule", "id");
     }
     return entityId;
-  }
-
-  private UUID resolveUuid(
-      Map<String, Map<String, Object>> context, String entityKey, String fieldKey) {
-    Map<String, Object> entityMap = context.get(entityKey);
-    if (entityMap == null) {
-      return null;
-    }
-    Object value = entityMap.get(fieldKey);
-    if (value == null) {
-      return null;
-    }
-    if (value instanceof UUID uuid) {
-      return uuid;
-    }
-    try {
-      return UUID.fromString(value.toString());
-    } catch (IllegalArgumentException e) {
-      return null;
-    }
   }
 }

@@ -4,9 +4,11 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Sort;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -89,6 +91,20 @@ public class AccessRequestApprovalService {
       accessRequestRepository.save(request);
       throw e;
     }
+  }
+
+  /**
+   * Lists access requests, optionally filtered by status.
+   *
+   * @param status optional status filter; if null, returns all requests
+   * @return list of access requests ordered by creation date ascending
+   */
+  @Transactional(readOnly = true)
+  public List<AccessRequest> listRequests(@Nullable AccessRequestStatus status) {
+    if (status != null) {
+      return accessRequestRepository.findByStatusOrderByCreatedAtAsc(status);
+    }
+    return accessRequestRepository.findAll(Sort.by("createdAt"));
   }
 
   /**

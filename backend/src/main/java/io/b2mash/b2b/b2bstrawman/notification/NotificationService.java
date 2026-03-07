@@ -165,7 +165,10 @@ public class NotificationService {
           "PREREQUISITE_BLOCKED_ACTIVATION",
           "INFORMATION_REQUEST_ITEM_SUBMITTED",
           "INFORMATION_REQUEST_COMPLETED",
-          "INFORMATION_REQUEST_DRAFT_CREATED");
+          "INFORMATION_REQUEST_DRAFT_CREATED",
+          "ALLOCATION_CHANGED",
+          "MEMBER_OVER_ALLOCATED",
+          "LEAVE_CREATED");
 
   // --- Preference methods ---
 

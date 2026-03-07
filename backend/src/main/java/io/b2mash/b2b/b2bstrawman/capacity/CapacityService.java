@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.capacity;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
+import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.capacity.dto.CapacityDtos.CreateCapacityRequest;
 import io.b2mash.b2b.b2bstrawman.capacity.dto.CapacityDtos.MemberCapacityResponse;
 import io.b2mash.b2b.b2bstrawman.capacity.dto.CapacityDtos.UpdateCapacityRequest;
@@ -10,8 +12,10 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -30,14 +34,17 @@ public class CapacityService {
   private final MemberCapacityRepository memberCapacityRepository;
   private final LeaveBlockRepository leaveBlockRepository;
   private final OrgSettingsService orgSettingsService;
+  private final AuditService auditService;
 
   public CapacityService(
       MemberCapacityRepository memberCapacityRepository,
       LeaveBlockRepository leaveBlockRepository,
-      OrgSettingsService orgSettingsService) {
+      OrgSettingsService orgSettingsService,
+      AuditService auditService) {
     this.memberCapacityRepository = memberCapacityRepository;
     this.leaveBlockRepository = leaveBlockRepository;
     this.orgSettingsService = orgSettingsService;
+    this.auditService = auditService;
   }
 
   /**
@@ -105,6 +112,23 @@ public class CapacityService {
             request.note(),
             createdBy);
     record = memberCapacityRepository.save(record);
+
+    // Audit event: member_capacity.created
+    Map<String, Object> details = new HashMap<>();
+    details.put("member_id", memberId.toString());
+    details.put("weekly_hours", request.weeklyHours().toString());
+    details.put("effective_from", request.effectiveFrom().toString());
+    if (request.effectiveTo() != null) {
+      details.put("effective_to", request.effectiveTo().toString());
+    }
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("member_capacity.created")
+            .entityType("member_capacity")
+            .entityId(record.getId())
+            .details(details)
+            .build());
+
     return toResponse(record);
   }
 
@@ -120,9 +144,29 @@ public class CapacityService {
       throw new ResourceNotFoundException("MemberCapacity", id);
     }
 
+    BigDecimal oldWeeklyHours = record.getWeeklyHours();
+
     record.update(
         request.weeklyHours(), record.getEffectiveFrom(), request.effectiveTo(), request.note());
     record = memberCapacityRepository.save(record);
+
+    // Audit event: member_capacity.updated
+    Map<String, Object> details = new HashMap<>();
+    details.put("member_id", memberId.toString());
+    details.put("old_weekly_hours", oldWeeklyHours.toString());
+    details.put("new_weekly_hours", request.weeklyHours().toString());
+    details.put("effective_from", record.getEffectiveFrom().toString());
+    if (request.effectiveTo() != null) {
+      details.put("effective_to", request.effectiveTo().toString());
+    }
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("member_capacity.updated")
+            .entityType("member_capacity")
+            .entityId(record.getId())
+            .details(details)
+            .build());
+
     return toResponse(record);
   }
 
@@ -136,6 +180,23 @@ public class CapacityService {
     if (!record.getMemberId().equals(memberId)) {
       throw new ResourceNotFoundException("MemberCapacity", id);
     }
+
+    // Audit event: member_capacity.deleted (capture before delete)
+    Map<String, Object> details = new HashMap<>();
+    details.put("member_id", record.getMemberId().toString());
+    details.put("weekly_hours", record.getWeeklyHours().toString());
+    details.put("effective_from", record.getEffectiveFrom().toString());
+    if (record.getEffectiveTo() != null) {
+      details.put("effective_to", record.getEffectiveTo().toString());
+    }
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("member_capacity.deleted")
+            .entityType("member_capacity")
+            .entityId(record.getId())
+            .details(details)
+            .build());
+
     memberCapacityRepository.delete(record);
   }
 

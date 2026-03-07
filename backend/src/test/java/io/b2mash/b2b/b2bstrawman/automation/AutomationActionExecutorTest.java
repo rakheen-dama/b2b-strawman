@@ -252,7 +252,7 @@ class AutomationActionExecutorTest {
               var rule = createRule("Unknown action rule", TriggerType.TASK_STATUS_CHANGED);
               ruleRepository.save(rule);
 
-              // UPDATE_STATUS has no executor registered
+              // UPDATE_STATUS with invalid config (missing targetEntityType)
               var action =
                   new AutomationAction(
                       rule.getId(),
@@ -269,7 +269,7 @@ class AutomationActionExecutorTest {
 
               assertThat(result).isInstanceOf(ActionFailure.class);
               var failure = (ActionFailure) result;
-              assertThat(failure.errorMessage()).contains("No executor for action type");
+              assertThat(failure.errorMessage()).contains("Missing targetEntityType");
             });
   }
 
@@ -404,7 +404,7 @@ class AutomationActionExecutorTest {
               var rule = createRule("E2E failed action rule", TriggerType.TASK_STATUS_CHANGED);
               ruleRepository.save(rule);
 
-              // UPDATE_STATUS has no executor -> will fail
+              // UPDATE_STATUS with invalid config (missing targetEntityType) -> will fail
               var action =
                   new AutomationAction(
                       rule.getId(),

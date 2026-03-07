@@ -92,6 +92,8 @@ audit:
     purge-enabled: false
 
 app:
+  jit-provisioning:
+    enabled: false
   access-request:
     blocked-email-domains:
       - gmail.com

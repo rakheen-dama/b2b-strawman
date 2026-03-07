@@ -28,6 +28,8 @@ public final class TriggerTypeMapping {
           Map.entry(ProjectReopenedEvent.class, TriggerType.PROJECT_STATUS_CHANGED),
           Map.entry(BudgetThresholdEvent.class, TriggerType.BUDGET_THRESHOLD_REACHED),
           Map.entry(TimeEntryChangedEvent.class, TriggerType.TIME_ENTRY_CREATED),
+          // Document upload is treated as acceptance in this domain — there is no separate
+          // approval step, so uploading a document implicitly marks it as accepted.
           Map.entry(DocumentUploadedEvent.class, TriggerType.DOCUMENT_ACCEPTED),
           Map.entry(InvoiceSentEvent.class, TriggerType.INVOICE_STATUS_CHANGED),
           Map.entry(InvoicePaidEvent.class, TriggerType.INVOICE_STATUS_CHANGED),
@@ -40,8 +42,17 @@ public final class TriggerTypeMapping {
   /**
    * Returns the {@link TriggerType} for the given event, or {@code null} if the event type is not
    * mapped to any trigger.
+   *
+   * <p>For {@link TimeEntryChangedEvent}, only the {@code CREATED} action maps to {@link
+   * TriggerType#TIME_ENTRY_CREATED}. Updates and deletes return {@code null}, keeping the door open
+   * for future trigger types (e.g. TIME_ENTRY_UPDATED) without modifying the enum.
    */
   public static TriggerType getTriggerType(DomainEvent event) {
+    // TimeEntryChangedEvent carries an action field (CREATED/UPDATED/DELETED);
+    // only CREATED maps to TIME_ENTRY_CREATED — other actions are not yet wired.
+    if (event instanceof TimeEntryChangedEvent te && !"CREATED".equals(te.action())) {
+      return null;
+    }
     return MAPPINGS.get(event.getClass());
   }
 }

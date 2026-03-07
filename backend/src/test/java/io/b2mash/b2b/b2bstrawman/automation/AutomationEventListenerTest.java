@@ -318,8 +318,9 @@ class AutomationEventListenerTest {
   @Test
   void listenerErrorDoesNotPropagateToCallerOnRuleFailure() {
     // This test verifies that even if something goes wrong during rule processing,
-    // the outer try-catch prevents exceptions from escaping to the event publisher.
-    // We test this by creating a rule with invalid trigger config that will fail deserialization.
+    // the per-rule try-catch prevents exceptions from escaping to the event publisher.
+    // We use BUDGET_THRESHOLD_REACHED with a non-numeric thresholdPercent so that
+    // Jackson's convertValue genuinely fails when deserializing BudgetThresholdTriggerConfig.
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
         .where(RequestScopes.ORG_ID, ORG_ID)
         .run(
@@ -327,8 +328,8 @@ class AutomationEventListenerTest {
               var badRule =
                   createRule(
                       "Bad config rule",
-                      TriggerType.TASK_STATUS_CHANGED,
-                      Map.of("invalidField", 12345),
+                      TriggerType.BUDGET_THRESHOLD_REACHED,
+                      Map.of("thresholdPercent", "not_a_number"),
                       RuleSource.CUSTOM);
               ruleRepository.save(badRule);
 
@@ -336,14 +337,30 @@ class AutomationEventListenerTest {
               var goodRule =
                   createRule(
                       "Good rule",
-                      TriggerType.TASK_STATUS_CHANGED,
-                      Map.of("toStatus", "COMPLETED"),
+                      TriggerType.BUDGET_THRESHOLD_REACHED,
+                      Map.of("thresholdPercent", 50),
                       RuleSource.CUSTOM);
               ruleRepository.save(goodRule);
 
-              var event = taskStatusChangedEvent("OPEN", "COMPLETED");
+              var details = new LinkedHashMap<String, Object>();
+              details.put("project_name", "Test Project");
+              details.put("dimension", "HOURS");
+              details.put("consumed_pct", 90);
 
-              // Should NOT throw — errors are caught internally
+              var event =
+                  new BudgetThresholdEvent(
+                      "BUDGET_THRESHOLD",
+                      "Budget",
+                      UUID.randomUUID(),
+                      UUID.randomUUID(),
+                      ACTOR_MEMBER_ID,
+                      ACTOR_NAME,
+                      schemaName,
+                      ORG_ID,
+                      Instant.now(),
+                      details);
+
+              // Should NOT throw — errors are caught internally per-rule
               eventPublisher.publishEvent(event);
 
               // Good rule should still produce an execution despite bad rule failing
@@ -510,7 +527,7 @@ class AutomationEventListenerTest {
                     Map.of())))
         .isEqualTo(TriggerType.BUDGET_THRESHOLD_REACHED);
 
-    // TimeEntryChangedEvent -> TIME_ENTRY_CREATED
+    // TimeEntryChangedEvent with CREATED action -> TIME_ENTRY_CREATED
     assertThat(
             TriggerTypeMapping.getTriggerType(
                 new TimeEntryChangedEvent(
@@ -526,6 +543,40 @@ class AutomationEventListenerTest {
                     Instant.now(),
                     Map.of())))
         .isEqualTo(TriggerType.TIME_ENTRY_CREATED);
+
+    // TimeEntryChangedEvent with UPDATED action -> null (only CREATED is mapped)
+    assertThat(
+            TriggerTypeMapping.getTriggerType(
+                new TimeEntryChangedEvent(
+                    "TIME_ENTRY_CHANGED",
+                    "TimeEntry",
+                    UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    "UPDATED",
+                    ACTOR_MEMBER_ID,
+                    ACTOR_NAME,
+                    "test",
+                    "org",
+                    Instant.now(),
+                    Map.of())))
+        .isNull();
+
+    // TimeEntryChangedEvent with DELETED action -> null
+    assertThat(
+            TriggerTypeMapping.getTriggerType(
+                new TimeEntryChangedEvent(
+                    "TIME_ENTRY_CHANGED",
+                    "TimeEntry",
+                    UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    "DELETED",
+                    ACTOR_MEMBER_ID,
+                    ACTOR_NAME,
+                    "test",
+                    "org",
+                    Instant.now(),
+                    Map.of())))
+        .isNull();
 
     // DocumentUploadedEvent -> DOCUMENT_ACCEPTED
     assertThat(

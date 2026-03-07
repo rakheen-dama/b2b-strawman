@@ -85,6 +85,9 @@ public class TriggerConfigMatcher {
   }
 
   private boolean matchesBudgetThreshold(BudgetThresholdTriggerConfig config, DomainEvent event) {
+    if (event.details() == null) {
+      return false;
+    }
     Object consumedPctObj = event.details().get("consumed_pct");
     if (consumedPctObj == null) {
       return false;

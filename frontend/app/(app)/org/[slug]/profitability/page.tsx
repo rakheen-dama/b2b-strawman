@@ -4,9 +4,7 @@ import type {
   UtilizationResponse,
   OrgProfitabilityResponse,
 } from "@/lib/types";
-import { UtilizationTable } from "@/components/profitability/utilization-table";
-import { ProjectProfitabilityTable } from "@/components/profitability/project-profitability-table";
-import { CustomerProfitabilitySection } from "@/components/profitability/customer-profitability-section";
+import { ProfitabilityContent } from "@/components/profitability/profitability-content";
 
 /** Returns first day of current month and today as 'YYYY-MM-DD'. */
 function getCurrentMonthRange(): { from: string; to: string } {
@@ -70,20 +68,9 @@ export default async function ProfitabilityPage({
         </p>
       </div>
 
-      <UtilizationTable
-        initialData={utilization}
-        initialFrom={from}
-        initialTo={to}
-      />
-
-      <ProjectProfitabilityTable
-        initialData={profitability}
-        initialFrom={from}
-        initialTo={to}
-      />
-
-      <CustomerProfitabilitySection
-        initialData={profitability}
+      <ProfitabilityContent
+        initialUtilization={utilization}
+        initialProfitability={profitability}
         initialFrom={from}
         initialTo={to}
       />

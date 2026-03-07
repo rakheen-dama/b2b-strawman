@@ -42,6 +42,9 @@ import { formatDate, formatLocalDate, isOverdue } from "@/lib/format";
 import { SaveAsTemplateDialog } from "@/components/templates/SaveAsTemplateDialog";
 import { ProjectLifecycleActions } from "@/components/projects/project-lifecycle-actions";
 import { ArchivedProjectBanner } from "@/components/projects/archived-project-banner";
+import { ProjectStaffingTab } from "@/components/capacity/project-staffing-tab";
+import { getProjectStaffing, type ProjectStaffingResponse } from "@/lib/api/capacity";
+import { getCurrentMonday, formatDate as formatDateUtil, addWeeks } from "@/lib/date-utils";
 import { createSavedViewAction } from "./view-actions";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, AlertTriangle, Calendar, LayoutTemplate, Pencil, Receipt, Trash2 } from "lucide-react";
@@ -252,6 +255,20 @@ export default async function ProjectDetailPage({
     );
   } catch {
     // Non-fatal: 404 means no budget set, other errors show empty state
+  }
+
+  // Project staffing data for the "Staffing" tab
+  let projectStaffing: ProjectStaffingResponse | null = null;
+  try {
+    const monday = getCurrentMonday();
+    const weekEnd = addWeeks(monday, 4);
+    projectStaffing = await getProjectStaffing(
+      id,
+      formatDateUtil(monday),
+      formatDateUtil(weekEnd),
+    );
+  } catch {
+    // Non-fatal: staffing tab will show empty state
   }
 
   // Project profitability for the "Financials" tab (lead/admin/owner)
@@ -713,6 +730,9 @@ export default async function ProjectDetailPage({
           customers && customers.length > 0 ? (
             <ProjectCommentsSection projectId={id} orgSlug={slug} />
           ) : undefined
+        }
+        staffingPanel={
+          <ProjectStaffingTab staffing={projectStaffing} />
         }
         activityPanel={
           <ActivityFeed projectId={id} orgSlug={slug} />

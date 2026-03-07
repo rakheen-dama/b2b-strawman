@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.automation;
 
 import io.b2mash.b2b.b2bstrawman.event.DomainEvent;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,18 +24,24 @@ public class AutomationEventListener {
 
   private final AutomationRuleRepository ruleRepository;
   private final AutomationExecutionRepository executionRepository;
+  private final AutomationActionRepository actionRepository;
   private final TriggerConfigMatcher triggerConfigMatcher;
   private final ConditionEvaluator conditionEvaluator;
+  private final AutomationActionExecutor automationActionExecutor;
 
   public AutomationEventListener(
       AutomationRuleRepository ruleRepository,
       AutomationExecutionRepository executionRepository,
+      AutomationActionRepository actionRepository,
       TriggerConfigMatcher triggerConfigMatcher,
-      ConditionEvaluator conditionEvaluator) {
+      ConditionEvaluator conditionEvaluator,
+      AutomationActionExecutor automationActionExecutor) {
     this.ruleRepository = ruleRepository;
     this.executionRepository = executionRepository;
+    this.actionRepository = actionRepository;
     this.triggerConfigMatcher = triggerConfigMatcher;
     this.conditionEvaluator = conditionEvaluator;
+    this.automationActionExecutor = automationActionExecutor;
   }
 
   @EventListener
@@ -126,11 +133,49 @@ public class AutomationEventListener {
         rule.getName(),
         status);
 
-    // Placeholder: action execution will be wired in Epic 282A
     if (conditionsMet) {
-      log.debug(
-          "Conditions met for rule {} — action execution deferred to Epic 282A", rule.getId());
+      executeActions(rule, execution, context);
     }
+  }
+
+  private void executeActions(
+      AutomationRule rule,
+      AutomationExecution execution,
+      Map<String, Map<String, Object>> context) {
+    List<AutomationAction> actions = actionRepository.findByRuleIdOrderBySortOrder(rule.getId());
+    if (actions.isEmpty()) {
+      log.debug("No actions configured for rule {} ({})", rule.getId(), rule.getName());
+      execution.complete();
+      executionRepository.save(execution);
+      return;
+    }
+
+    boolean allSucceeded = true;
+    String failureMessage = null;
+
+    for (var action : actions) {
+      var result = automationActionExecutor.execute(action, execution.getId(), context);
+      if (!result.isSuccess()) {
+        allSucceeded = false;
+        var failure = (io.b2mash.b2b.b2bstrawman.automation.config.ActionFailure) result;
+        failureMessage = failure.errorMessage();
+        log.warn(
+            "Action {} (type {}) failed for rule {} ({}): {}",
+            action.getId(),
+            action.getActionType(),
+            rule.getId(),
+            rule.getName(),
+            failureMessage);
+        break; // Stop executing remaining actions on failure
+      }
+    }
+
+    if (allSucceeded) {
+      execution.complete();
+    } else {
+      execution.fail(failureMessage);
+    }
+    executionRepository.save(execution);
   }
 
   private boolean isCycleDetected(DomainEvent event) {

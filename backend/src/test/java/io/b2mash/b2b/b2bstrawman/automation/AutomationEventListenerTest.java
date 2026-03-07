@@ -105,7 +105,8 @@ class AutomationEventListenerTest {
 
               var executions = executionRepository.findByRuleIdOrderByStartedAtDesc(rule.getId());
               assertThat(executions).hasSize(1);
-              assertThat(executions.getFirst().getStatus()).isEqualTo(ExecutionStatus.TRIGGERED);
+              assertThat(executions.getFirst().getStatus())
+                  .isEqualTo(ExecutionStatus.ACTIONS_COMPLETED);
               assertThat(executions.getFirst().isConditionsMet()).isTrue();
               assertThat(executions.getFirst().getTriggerEventType())
                   .isEqualTo("TaskStatusChangedEvent");
@@ -131,7 +132,8 @@ class AutomationEventListenerTest {
 
               var executions = executionRepository.findByRuleIdOrderByStartedAtDesc(rule.getId());
               assertThat(executions).hasSize(1);
-              assertThat(executions.getFirst().getStatus()).isEqualTo(ExecutionStatus.TRIGGERED);
+              assertThat(executions.getFirst().getStatus())
+                  .isEqualTo(ExecutionStatus.ACTIONS_COMPLETED);
             });
   }
 
@@ -263,7 +265,8 @@ class AutomationEventListenerTest {
 
               var executions = executionRepository.findByRuleIdOrderByStartedAtDesc(rule.getId());
               assertThat(executions).hasSize(1);
-              assertThat(executions.getFirst().getStatus()).isEqualTo(ExecutionStatus.TRIGGERED);
+              assertThat(executions.getFirst().getStatus())
+                  .isEqualTo(ExecutionStatus.ACTIONS_COMPLETED);
             });
   }
 
@@ -406,7 +409,8 @@ class AutomationEventListenerTest {
 
               var executions = executionRepository.findByRuleIdOrderByStartedAtDesc(rule.getId());
               assertThat(executions).hasSize(1);
-              assertThat(executions.getFirst().getStatus()).isEqualTo(ExecutionStatus.TRIGGERED);
+              assertThat(executions.getFirst().getStatus())
+                  .isEqualTo(ExecutionStatus.ACTIONS_COMPLETED);
             });
   }
 

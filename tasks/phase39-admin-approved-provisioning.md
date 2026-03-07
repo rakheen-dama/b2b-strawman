@@ -20,7 +20,7 @@ Phase 39 replaces self-registration with an **admin-approved access request pipe
 | 297 | Platform Admin Identity & Security Infrastructure | Backend | 295 | M | 297A, 297B | **Done** (PRs #585, #586) |
 | 298 | Approval Pipeline & Platform Admin API | Backend | 296, 297 | M | 298A, 298B | **Done** (PRs #587, #588) |
 | 299 | Keycloak Configuration & Gateway Routing | Infra | 297 | S | 299A | **Done** (PR #589) |
-| 300 | Public Access Request Form (Frontend) | Frontend | 296 | M | 300A, 300B | 300A **Done** (PR #590) |
+| 300 | Public Access Request Form (Frontend) | Frontend | 296 | M | 300A, 300B | **Done** (PRs #590, #591) |
 | 301 | Platform Admin Panel (Frontend) | Frontend | 298, 300 | M | 301A, 301B | |
 | 302 | Self-Service Org Creation Gate & JIT Provisioning Toggle | Backend + Frontend | 298 | S | 302A | |
 
@@ -153,7 +153,7 @@ FRONTEND TRACK (after backend APIs)       |
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 4a | 300 | 300A | `/request-access` page + route, `RequestAccessForm` component (Step 1: email, name, org, country, industry), server action calling `POST /api/access-requests`, client-side blocked domain check. ~6 new files. Frontend only. | **Done** (PR #590) |
-| 4b | 300 | 300B | OTP verification step (Step 2: OTP input), success message (Step 3), error handling, retry flow. Server action calling `POST /api/access-requests/verify`. ~3 modified/new files (~6 tests). Frontend only. | |
+| 4b | 300 | 300B | OTP verification step (Step 2: OTP input), success message (Step 3), error handling, retry flow. Server action calling `POST /api/access-requests/verify`. ~3 modified/new files (~6 tests). Frontend only. | **Done** (PR #591) |
 
 ### Stage 5: Platform Admin Frontend (after Stage 2 + 4a)
 
@@ -505,7 +505,7 @@ Stage 6: [302A]                                                        (after 29
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **300A** | 300.1--300.6 | `/request-access` page + route (outside `(app)` layout), `RequestAccessForm` component (Step 1: email, full name, org name, country dropdown, industry dropdown), client-side blocked domain check, server action calling `POST /api/access-requests`. ~6 new files. Frontend only. | |
-| **300B** | 300.7--300.11 | OTP verification step (Step 2: 6-digit OTP input), success message (Step 3: "Your request has been submitted"), error handling (invalid OTP, expired, too many attempts), retry flow (resend OTP). Server action calling `POST /api/access-requests/verify`. ~3 modified/new files (~6 tests). Frontend only. | |
+| **300B** | 300.7--300.11 | OTP verification step (Step 2: 6-digit OTP input), success message (Step 3: "Your request has been submitted"), error handling (invalid OTP, expired, too many attempts), retry flow (resend OTP). Server action calling `POST /api/access-requests/verify`. ~3 modified/new files (~6 tests). Frontend only. | **Done** (PR #591) |
 
 ### Tasks
 

@@ -49,10 +49,9 @@ class AutomationEntityTest {
 
   @BeforeAll
   void provisionTenant() {
-    provisioningService.provisionTenant(ORG_ID, "Automation Entity Test Org");
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     schemaName =
         provisioningService.provisionTenant(ORG_ID, "Automation Entity Test Org").schemaName();
+    planSyncService.syncPlan(ORG_ID, "pro-plan");
   }
 
   @Test

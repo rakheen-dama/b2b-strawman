@@ -1,4 +1,3 @@
-import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
 interface UtilizationBadgeProps {
@@ -6,7 +5,7 @@ interface UtilizationBadgeProps {
 }
 
 export function UtilizationBadge({ percentage }: UtilizationBadgeProps) {
-  if (percentage === null || percentage === undefined) {
+  if (percentage === null) {
     return (
       <Badge variant="neutral" className="font-mono text-xs tabular-nums">
         --

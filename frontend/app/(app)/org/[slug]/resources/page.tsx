@@ -3,23 +3,7 @@ import { getTeamCapacityGrid } from "@/lib/api/capacity";
 import type { TeamCapacityGrid } from "@/lib/api/capacity";
 import { AllocationGrid } from "@/components/capacity/allocation-grid";
 import { WeekRangeSelector } from "@/components/capacity/week-range-selector";
-
-function getCurrentMonday(): Date {
-  const now = new Date();
-  const day = now.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate() + diff);
-}
-
-function formatDate(date: Date): string {
-  return date.toLocaleDateString("en-CA");
-}
-
-function addWeeks(date: Date, weeks: number): Date {
-  const result = new Date(date);
-  result.setDate(result.getDate() + weeks * 7);
-  return result;
-}
+import { getCurrentMonday, formatDate, addWeeks } from "@/lib/date-utils";
 
 function computeWeekCount(weekStart: string, weekEnd: string): number {
   const start = new Date(weekStart);
@@ -35,7 +19,7 @@ export default async function ResourcesPage({
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ weekStart?: string; weekEnd?: string }>;
 }) {
-  await params;
+  const { slug: _slug } = await params;
   const sp = await searchParams;
   await getAuthContext();
 
@@ -48,8 +32,8 @@ export default async function ResourcesPage({
 
   try {
     grid = await getTeamCapacityGrid(weekStart, weekEnd);
-  } catch {
-    // Non-fatal: show empty state
+  } catch (err) {
+    console.error("Failed to load team capacity grid", err);
   }
 
   return (

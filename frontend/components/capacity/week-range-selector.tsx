@@ -5,27 +5,11 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { getCurrentMonday, formatDate, addWeeks } from "@/lib/date-utils";
 
 interface WeekRangeSelectorProps {
   weekStart: string;
   weekCount: number;
-}
-
-function getCurrentMonday(): Date {
-  const now = new Date();
-  const day = now.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate() + diff);
-}
-
-function formatDate(date: Date): string {
-  return date.toLocaleDateString("en-CA");
-}
-
-function addWeeks(date: Date, weeks: number): Date {
-  const result = new Date(date);
-  result.setDate(result.getDate() + weeks * 7);
-  return result;
 }
 
 function parseDate(dateStr: string): Date {

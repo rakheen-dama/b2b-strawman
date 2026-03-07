@@ -197,9 +197,8 @@ export async function getTeamCapacityGrid(
   weekStart: string,
   weekEnd: string,
 ): Promise<TeamCapacityGrid> {
-  return api.get<TeamCapacityGrid>(
-    `/api/capacity/team?weekStart=${weekStart}&weekEnd=${weekEnd}`,
-  );
+  const qs = new URLSearchParams({ weekStart, weekEnd });
+  return api.get<TeamCapacityGrid>(`/api/capacity/team?${qs}`);
 }
 
 export async function getMemberCapacityDetail(
@@ -207,9 +206,8 @@ export async function getMemberCapacityDetail(
   weekStart: string,
   weekEnd: string,
 ): Promise<MemberRow> {
-  return api.get<MemberRow>(
-    `/api/capacity/members/${memberId}?weekStart=${weekStart}&weekEnd=${weekEnd}`,
-  );
+  const qs = new URLSearchParams({ weekStart, weekEnd });
+  return api.get<MemberRow>(`/api/capacity/members/${memberId}?${qs}`);
 }
 
 export async function getProjectStaffing(
@@ -217,8 +215,9 @@ export async function getProjectStaffing(
   weekStart: string,
   weekEnd: string,
 ): Promise<ProjectStaffingResponse> {
+  const qs = new URLSearchParams({ weekStart, weekEnd });
   return api.get<ProjectStaffingResponse>(
-    `/api/capacity/projects/${projectId}?weekStart=${weekStart}&weekEnd=${weekEnd}`,
+    `/api/capacity/projects/${projectId}?${qs}`,
   );
 }
 
@@ -226,9 +225,8 @@ export async function getTeamUtilization(
   weekStart: string,
   weekEnd: string,
 ): Promise<TeamUtilizationResponse> {
-  return api.get<TeamUtilizationResponse>(
-    `/api/utilization/team?weekStart=${weekStart}&weekEnd=${weekEnd}`,
-  );
+  const qs = new URLSearchParams({ weekStart, weekEnd });
+  return api.get<TeamUtilizationResponse>(`/api/utilization/team?${qs}`);
 }
 
 export async function getMemberUtilization(
@@ -236,8 +234,9 @@ export async function getMemberUtilization(
   weekStart: string,
   weekEnd: string,
 ): Promise<WeekUtilization[]> {
+  const qs = new URLSearchParams({ weekStart, weekEnd });
   return api.get<WeekUtilization[]>(
-    `/api/utilization/members/${memberId}?weekStart=${weekStart}&weekEnd=${weekEnd}`,
+    `/api/utilization/members/${memberId}?${qs}`,
   );
 }
 
@@ -355,7 +354,6 @@ export async function listAllLeave(
   startDate: string,
   endDate: string,
 ): Promise<LeaveBlockResponse[]> {
-  return api.get<LeaveBlockResponse[]>(
-    `/api/leave?startDate=${startDate}&endDate=${endDate}`,
-  );
+  const qs = new URLSearchParams({ startDate, endDate });
+  return api.get<LeaveBlockResponse[]>(`/api/leave?${qs}`);
 }

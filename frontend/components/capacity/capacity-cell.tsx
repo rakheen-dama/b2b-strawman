@@ -22,8 +22,16 @@ const PROJECT_COLOURS = [
   "bg-orange-400",
 ];
 
-function getProjectColour(index: number): string {
-  return PROJECT_COLOURS[index % PROJECT_COLOURS.length];
+function hashCode(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 31 + str.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash);
+}
+
+function getProjectColour(projectId: string): string {
+  return PROJECT_COLOURS[hashCode(projectId) % PROJECT_COLOURS.length];
 }
 
 function getUtilizationClasses(pct: number): {
@@ -96,7 +104,7 @@ export function CapacityCell({ cell, onClick }: CapacityCellProps) {
 
       {hasAllocations && (
         <div className="flex gap-0.5">
-          {cell.allocations.map((slot, i) => {
+          {cell.allocations.map((slot) => {
             const widthPct =
               cell.effectiveCapacity > 0
                 ? Math.min((slot.hours / cell.effectiveCapacity) * 100, 100)
@@ -106,7 +114,7 @@ export function CapacityCell({ cell, onClick }: CapacityCellProps) {
                 key={slot.projectId}
                 className={cn(
                   "h-1.5 rounded-full",
-                  getProjectColour(i),
+                  getProjectColour(slot.projectId),
                 )}
                 style={{ width: `${Math.max(widthPct, 8)}%` }}
                 title={`${slot.projectName}: ${slot.hours}h`}

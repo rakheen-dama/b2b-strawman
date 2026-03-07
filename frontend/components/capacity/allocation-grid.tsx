@@ -61,7 +61,8 @@ export function AllocationGrid({ grid }: AllocationGridProps) {
             >
               <td className="sticky left-0 z-10 bg-white px-4 py-2 dark:bg-slate-800">
                 <div className="flex items-center gap-2">
-                  {member.avatarUrl ? (
+                  {member.avatarUrl &&
+                  /^https?:\/\//.test(member.avatarUrl) ? (
                     <img
                       src={member.avatarUrl}
                       alt=""

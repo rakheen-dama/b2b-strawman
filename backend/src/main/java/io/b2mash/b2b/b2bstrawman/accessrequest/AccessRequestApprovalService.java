@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +26,7 @@ public class AccessRequestApprovalService {
 
   public AccessRequestApprovalService(
       AccessRequestRepository accessRequestRepository,
-      KeycloakProvisioningClient keycloakProvisioningClient,
+      @Nullable KeycloakProvisioningClient keycloakProvisioningClient,
       TenantProvisioningService tenantProvisioningService) {
     this.accessRequestRepository = accessRequestRepository;
     this.keycloakProvisioningClient = keycloakProvisioningClient;
@@ -40,15 +41,31 @@ public class AccessRequestApprovalService {
    * @param adminUserId the platform admin user ID performing the approval
    * @return the updated access request entity
    */
+  @Transactional(noRollbackFor = Exception.class)
   public AccessRequest approve(UUID requestId, String adminUserId) {
+    if (keycloakProvisioningClient == null) {
+      throw new IllegalStateException(
+          "Keycloak admin client not configured — set keycloak.admin.auth-server-url");
+    }
+
     var request = findPendingRequest(requestId);
 
     String orgName = request.getOrganizationName();
     String slug = slugify(orgName);
 
     try {
-      String kcOrgId = keycloakProvisioningClient.createOrganization(orgName, slug);
-      log.info("Created Keycloak organization '{}' with ID {}", orgName, kcOrgId);
+      // Idempotent: skip KC org creation if already done (retry after partial failure)
+      String kcOrgId = request.getKeycloakOrgId();
+      if (kcOrgId == null) {
+        kcOrgId = keycloakProvisioningClient.createOrganization(orgName, slug);
+        log.info("Created Keycloak organization '{}' with ID {}", orgName, kcOrgId);
+        // Persist kcOrgId immediately so retries won't create a duplicate org
+        request.setKeycloakOrgId(kcOrgId);
+        accessRequestRepository.save(request);
+      } else {
+        log.info(
+            "Keycloak org {} already exists for request {}, skipping creation", kcOrgId, requestId);
+      }
 
       tenantProvisioningService.provisionTenant(kcOrgId, orgName);
       log.info("Provisioned tenant schema for org {}", kcOrgId);
@@ -57,14 +74,18 @@ public class AccessRequestApprovalService {
       log.info("Sent invitation to {} for org {}", request.getEmail(), kcOrgId);
 
       request.setStatus(AccessRequestStatus.APPROVED);
-      request.setKeycloakOrgId(kcOrgId);
       request.setReviewedBy(adminUserId);
       request.setReviewedAt(Instant.now());
+      request.setProvisioningError(null);
 
       return accessRequestRepository.save(request);
     } catch (Exception e) {
       log.error("Approval failed for request {}: {}", requestId, e.getMessage(), e);
-      request.setProvisioningError(e.getMessage());
+      String errorMsg = e.getMessage();
+      if (errorMsg != null && errorMsg.length() > 500) {
+        errorMsg = errorMsg.substring(0, 500);
+      }
+      request.setProvisioningError(errorMsg);
       accessRequestRepository.save(request);
       throw e;
     }

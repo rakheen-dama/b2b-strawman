@@ -9,6 +9,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
@@ -21,8 +22,12 @@ import org.springframework.web.server.ResponseStatusException;
  * Client for the Keycloak Admin REST API used by the access-request approval pipeline. Uses the
  * master realm admin credentials (password grant) to authenticate. Caches the access token and
  * refreshes it before expiry.
+ *
+ * <p>This bean is only created when {@code keycloak.admin.auth-server-url} is configured,
+ * preventing startup failures in dev/test environments without Keycloak.
  */
 @Service
+@ConditionalOnProperty(prefix = "keycloak.admin", name = "auth-server-url")
 public class KeycloakProvisioningClient {
 
   private static final Logger log = LoggerFactory.getLogger(KeycloakProvisioningClient.class);
@@ -71,7 +76,11 @@ public class KeycloakProvisioningClient {
   /**
    * Creates an organization in Keycloak.
    *
-   * @return the organization ID from the Location header, or null if not returned
+   * <p>Note: Keycloak returns 409 Conflict if the alias already exists, which the error handler
+   * will surface as a ResponseStatusException.
+   *
+   * @return the organization ID extracted from the Location header
+   * @throws IllegalStateException if the Location header is missing from the response
    */
   public String createOrganization(String name, String slug) {
     var body = Map.of("name", name, "alias", slug, "enabled", true);
@@ -85,11 +94,12 @@ public class KeycloakProvisioningClient {
             .retrieve()
             .toBodilessEntity();
     var location = response.getHeaders().getLocation();
-    if (location != null) {
-      String path = location.getPath();
-      return path.substring(path.lastIndexOf('/') + 1);
+    if (location == null) {
+      throw new IllegalStateException(
+          "Keycloak org creation succeeded but no Location header returned");
     }
-    return null;
+    String path = location.getPath();
+    return path.substring(path.lastIndexOf('/') + 1);
   }
 
   /**

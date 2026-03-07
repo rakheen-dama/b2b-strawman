@@ -105,7 +105,7 @@ class AccessRequestApprovalServiceTest {
   }
 
   @Test
-  void approve_provisioningFails_savesErrorAndThrows() {
+  void approve_provisioningFails_savesErrorAndKeycloakOrgId() {
     var request = createPendingRequest("provision-fail@acme.com", "Fail Corp");
 
     when(keycloakProvisioningClient.createOrganization("Fail Corp", "fail-corp"))
@@ -120,7 +120,30 @@ class AccessRequestApprovalServiceTest {
     var saved = accessRequestRepository.findById(request.getId()).orElseThrow();
     assertThat(saved.getProvisioningError()).isEqualTo("Schema creation failed");
     assertThat(saved.getStatus()).isEqualTo(AccessRequestStatus.PENDING);
+    assertThat(saved.getKeycloakOrgId()).isEqualTo(KC_ORG_ID);
     verify(keycloakProvisioningClient, never()).inviteUser(anyString(), anyString());
+  }
+
+  @Test
+  void approve_retryAfterPartialFailure_skipsOrgCreation() {
+    var request = createPendingRequest("retry@acme.com", "Retry Corp");
+    // Simulate partial failure: kcOrgId already saved from first attempt
+    request.setKeycloakOrgId(KC_ORG_ID);
+    request.setProvisioningError("Schema creation failed");
+    accessRequestRepository.save(request);
+
+    when(tenantProvisioningService.provisionTenant(KC_ORG_ID, "Retry Corp"))
+        .thenReturn(ProvisioningResult.success("tenant_" + KC_ORG_ID));
+
+    var result = approvalService.approve(request.getId(), ADMIN_USER_ID);
+
+    assertThat(result.getStatus()).isEqualTo(AccessRequestStatus.APPROVED);
+    assertThat(result.getKeycloakOrgId()).isEqualTo(KC_ORG_ID);
+    assertThat(result.getProvisioningError()).isNull();
+    // Should NOT have called createOrganization again
+    verify(keycloakProvisioningClient, never()).createOrganization(anyString(), anyString());
+    verify(tenantProvisioningService).provisionTenant(KC_ORG_ID, "Retry Corp");
+    verify(keycloakProvisioningClient).inviteUser(KC_ORG_ID, "retry@acme.com");
   }
 
   @Test

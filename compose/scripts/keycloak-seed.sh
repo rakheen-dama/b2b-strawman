@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # keycloak-seed.sh — Seed Keycloak with development data.
-# Creates an organization, users, and assigns roles.
+# Creates an organization, users, assigns roles, and configures platform-admin group.
 #
 # Prerequisites:
 #   - Keycloak running on localhost:8180 with realm "docteams" imported
@@ -21,7 +21,7 @@ echo "=== Keycloak Seed ==="
 echo ""
 
 # ---- Wait for Keycloak to be ready ----
-echo "[1/5] Waiting for Keycloak..."
+echo "[1/8] Waiting for Keycloak..."
 MAX_WAIT=120
 ELAPSED=0
 while [[ $ELAPSED -lt $MAX_WAIT ]]; do
@@ -38,7 +38,7 @@ if [[ $ELAPSED -ge $MAX_WAIT ]]; then
 fi
 
 # ---- Authenticate admin ----
-echo "[2/5] Authenticating admin..."
+echo "[2/8] Authenticating admin..."
 $KCADM config credentials \
   --server "${KEYCLOAK_URL}" \
   --realm master \
@@ -46,7 +46,7 @@ $KCADM config credentials \
   --password "${KEYCLOAK_ADMIN_PASSWORD}"
 
 # ---- Create Organization ----
-echo "[3/5] Creating organization 'acme-corp'..."
+echo "[3/8] Creating organization 'acme-corp'..."
 ORG_ID=$($KCADM create organizations \
   -r "${REALM}" \
   -s name="Acme Corp" \
@@ -67,7 +67,7 @@ fi
 echo "  Organization ID: ${ORG_ID}"
 
 # ---- Create Users ----
-echo "[4/5] Creating users..."
+echo "[4/8] Creating users..."
 
 create_user() {
   local username="$1"
@@ -109,7 +109,7 @@ BOB_ID=$(create_user "bob" "bob@example.com" "Bob" "Admin" "password")
 CAROL_ID=$(create_user "carol" "carol@example.com" "Carol" "Member" "password")
 
 # ---- Assign Organization Membership & Roles ----
-echo "[5/5] Assigning organization membership and roles..."
+echo "[5/8] Assigning organization membership and roles..."
 
 assign_org_member() {
   local user_id="$1"
@@ -136,13 +136,72 @@ assign_org_member "${ALICE_ID}" "owner" "Alice"
 assign_org_member "${BOB_ID}" "admin" "Bob"
 assign_org_member "${CAROL_ID}" "member" "Carol"
 
+# ---- Create platform-admins group ----
+echo "[6/8] Creating 'platform-admins' group..."
+GROUP_ID=$($KCADM create groups \
+  -r "${REALM}" \
+  -s name="platform-admins" \
+  -i 2>/dev/null || true)
+
+if [[ -z "$GROUP_ID" ]]; then
+  # Group may already exist — look it up
+  GROUP_ID=$($KCADM get groups -r "${REALM}" --fields id,name \
+    | jq -r '.[] | select(.name=="platform-admins") | .id' 2>/dev/null || true)
+fi
+
+if [[ -z "$GROUP_ID" ]]; then
+  echo "  ERROR: Could not create or find group 'platform-admins'"
+  exit 1
+fi
+echo "  Group ID: ${GROUP_ID}"
+
+# ---- Add Group Membership Mapper to gateway-bff client ----
+echo "[7/8] Adding Group Membership Mapper to gateway-bff client..."
+
+# Find the gateway-bff client ID (Keycloak internal UUID, not the clientId string)
+CLIENT_KC_ID=$($KCADM get clients -r "${REALM}" --fields id,clientId \
+  | jq -r '.[] | select(.clientId=="gateway-bff") | .id' 2>/dev/null || true)
+
+if [[ -z "$CLIENT_KC_ID" ]]; then
+  echo "  ERROR: Could not find client 'gateway-bff'"
+  exit 1
+fi
+
+# Add protocol mapper directly to the client.
+# The mapper adds a "groups" claim (flat group names) to ID, access, and userinfo tokens.
+$KCADM create "clients/${CLIENT_KC_ID}/protocol-mappers/models" \
+  -r "${REALM}" \
+  -s name="groups" \
+  -s protocol="openid-connect" \
+  -s protocolMapper="oidc-group-membership-mapper" \
+  -s 'config."claim.name"=groups' \
+  -s 'config."full.path"=false' \
+  -s 'config."id.token.claim"=true' \
+  -s 'config."access.token.claim"=true' \
+  -s 'config."userinfo.token.claim"=true' \
+  2>/dev/null || true
+
+echo "  Group Membership Mapper added to gateway-bff client."
+
+# ---- Assign Alice to platform-admins group ----
+echo "[8/8] Assigning Alice to 'platform-admins' group..."
+$KCADM update "users/${ALICE_ID}/groups/${GROUP_ID}" \
+  -r "${REALM}" \
+  -s realm="${REALM}" \
+  -s userId="${ALICE_ID}" \
+  -s groupId="${GROUP_ID}" \
+  -n 2>/dev/null || true
+
+echo "  Alice assigned to platform-admins group."
+
 echo ""
 echo "=== Keycloak Seed Complete ==="
 echo ""
 echo "  Realm:        ${REALM}"
 echo "  Organization: acme-corp (${ORG_ID})"
+echo "  Group:        platform-admins (${GROUP_ID})"
 echo "  Users:"
-echo "    alice@example.com / password (owner)"
+echo "    alice@example.com / password (owner, platform-admin)"
 echo "    bob@example.com   / password (admin)"
 echo "    carol@example.com / password (member)"
 echo ""

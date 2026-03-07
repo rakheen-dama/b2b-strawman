@@ -37,6 +37,12 @@
   "defaultRole": {
     "name": "default-roles-docteams"
   },
+  "groups": [
+    {
+      "name": "platform-admins",
+      "path": "/platform-admins"
+    }
+  ],
   "clients": [
     {
       "clientId": "gateway-bff",
@@ -56,7 +62,22 @@
         "http://localhost:3000"
       ],
       "protocol": "openid-connect",
-      "fullScopeAllowed": true
+      "fullScopeAllowed": true,
+      "protocolMappers": [
+        {
+          "name": "groups",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "consentRequired": false,
+          "config": {
+            "full.path": "false",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "groups",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
     },
     {
       "clientId": "admin-cli",

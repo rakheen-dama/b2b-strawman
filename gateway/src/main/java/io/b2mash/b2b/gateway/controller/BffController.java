@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,9 +24,14 @@ public class BffController {
   private static final Logger log = LoggerFactory.getLogger(BffController.class);
 
   private final KeycloakAdminClient keycloakAdmin;
+  private final boolean selfServiceOrgCreationEnabled;
 
-  public BffController(KeycloakAdminClient keycloakAdmin) {
+  public BffController(
+      KeycloakAdminClient keycloakAdmin,
+      @Value("${app.self-service-org-creation.enabled:false}")
+          boolean selfServiceOrgCreationEnabled) {
     this.keycloakAdmin = keycloakAdmin;
+    this.selfServiceOrgCreationEnabled = selfServiceOrgCreationEnabled;
   }
 
   /** Response DTO for the /bff/me endpoint. */
@@ -88,6 +94,12 @@ public class BffController {
     }
     if (request.name() == null || request.name().isBlank()) {
       return ResponseEntity.badRequest().build();
+    }
+    if (!selfServiceOrgCreationEnabled) {
+      List<String> groups = extractGroups(user);
+      if (!groups.contains("platform-admins")) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+      }
     }
 
     String slug = toSlug(request.name());

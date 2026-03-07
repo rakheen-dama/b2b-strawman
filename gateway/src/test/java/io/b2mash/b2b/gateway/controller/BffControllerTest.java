@@ -1,10 +1,14 @@
 package io.b2mash.b2b.gateway.controller;
 
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import io.b2mash.b2b.gateway.service.KeycloakAdminClient;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +19,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -23,6 +28,7 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -44,6 +50,50 @@ import org.springframework.test.web.servlet.MockMvc;
 class BffControllerTest {
 
   @Autowired private MockMvc mockMvc;
+
+  @MockitoBean private KeycloakAdminClient keycloakAdminClient;
+
+  @Test
+  void createOrg_disabled_nonAdmin_returns403() throws Exception {
+    var oidcUser = buildOidcUser("user-uuid-123", "alice@example.com", "Alice", "owner");
+
+    mockMvc
+        .perform(
+            post("/bff/orgs")
+                .with(oidcLogin().oidcUser(oidcUser))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\": \"Test Org\"}"))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void createOrg_disabled_platformAdmin_passesThroughGate() throws Exception {
+    when(keycloakAdminClient.createOrganization(anyString(), anyString(), anyString()))
+        .thenReturn("org-admin-123");
+
+    OidcIdToken idToken =
+        OidcIdToken.withTokenValue("mock-token")
+            .subject("admin-user")
+            .claim("email", "admin@example.com")
+            .claim("name", "Platform Admin")
+            .claim("groups", List.of("platform-admins"))
+            .issuer("https://keycloak.example.com/realms/docteams")
+            .issuedAt(Instant.now())
+            .expiresAt(Instant.now().plusSeconds(3600))
+            .build();
+
+    var oidcUser = new DefaultOidcUser(List.of(new SimpleGrantedAuthority("ROLE_USER")), idToken);
+
+    mockMvc
+        .perform(
+            post("/bff/orgs")
+                .with(oidcLogin().oidcUser(oidcUser))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\": \"Admin Org\"}"))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.orgId").value("org-admin-123"))
+        .andExpect(jsonPath("$.slug").value("admin-org"));
+  }
 
   @Test
   void me_authenticated_returnsUserInfo() throws Exception {

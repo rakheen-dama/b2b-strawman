@@ -58,6 +58,10 @@ spring:
     virtual:
       enabled: true
 
+app:
+  self-service-org-creation:
+    enabled: false
+
 gateway:
   frontend-url: ${FRONTEND_URL:http://localhost:3000}
 

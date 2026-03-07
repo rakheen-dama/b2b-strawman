@@ -102,36 +102,33 @@ export default async function OrgDashboardPage({
   let myLeave: LeaveBlockResponse[] | null = null;
   let myWeeklyCapacity = 40;
 
-  try {
-    capacityGrid = await getTeamCapacityGrid(weekStartStr, weekEndStr);
-  } catch {
-    // Non-fatal: widget will show error state
-  }
+  // Fetch capacity grid, email, and members in parallel (all independent)
+  const [gridResult, emailResult, membersResult] = await Promise.all([
+    getTeamCapacityGrid(weekStartStr, weekEndStr).catch(() => null),
+    getCurrentUserEmail().catch(() => null),
+    api.get<OrgMember[]>("/api/members").catch(() => null as OrgMember[] | null),
+  ]);
+  capacityGrid = gridResult;
 
-  // Resolve current member ID for personal schedule widget
-  try {
-    const [email, orgMembers] = await Promise.all([
-      getCurrentUserEmail(),
-      api.get<OrgMember[]>("/api/members"),
-    ]);
-    if (email) {
-      const match = orgMembers.find((m) => m.email === email);
-      if (match) {
+  // Resolve current member for personal schedule widget
+  if (emailResult && membersResult) {
+    const match = membersResult.find((m) => m.email === emailResult);
+    if (match) {
+      try {
         const [allocRes, leaveRes] = await Promise.all([
           listAllocations({ memberId: match.id, weekStart: weekStartStr, weekEnd: weekEndStr }),
           listLeaveForMember(match.id),
         ]);
         myAllocations = allocRes;
         myLeave = leaveRes;
-        // If capacity grid has this member, use their effective capacity
         const memberRow = capacityGrid?.members.find((m) => m.memberId === match.id);
         if (memberRow && memberRow.weeks.length > 0) {
           myWeeklyCapacity = memberRow.weeks[0].effectiveCapacity;
         }
+      } catch {
+        // Non-fatal: my schedule widget will show error state
       }
     }
-  } catch {
-    // Non-fatal: my schedule widget will show error state
   }
 
   return (
@@ -154,6 +151,17 @@ export default async function OrgDashboardPage({
             allocations={myAllocations}
             leaveBlocks={myLeave}
             weeklyCapacity={myWeeklyCapacity}
+            projectNames={
+              capacityGrid
+                ? Object.fromEntries(
+                    capacityGrid.members.flatMap((m) =>
+                      m.weeks.flatMap((w) =>
+                        w.allocations.map((a) => [a.projectId, a.projectName]),
+                      ),
+                    ),
+                  )
+                : {}
+            }
           />
           {isAdmin && (
             <IncompleteProfilesWidget

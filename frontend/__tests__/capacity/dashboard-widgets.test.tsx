@@ -208,7 +208,7 @@ describe("MyScheduleWidget", () => {
     cleanup();
   });
 
-  it("shows this week's allocations", () => {
+  it("shows this week's allocations with project names", () => {
     const allocations = [
       makeAllocation({ id: "a1", allocatedHours: 20 }),
       makeAllocation({ id: "a2", projectId: "p2", allocatedHours: 15 }),
@@ -219,14 +219,51 @@ describe("MyScheduleWidget", () => {
         allocations={allocations}
         leaveBlocks={[]}
         weeklyCapacity={40}
+        projectNames={{ p1: "Project Alpha", p2: "Project Beta" }}
       />,
     );
 
     expect(screen.getByText("My Schedule")).toBeInTheDocument();
+    expect(screen.getByText("Project Alpha")).toBeInTheDocument();
+    expect(screen.getByText("Project Beta")).toBeInTheDocument();
     expect(screen.getByText("20h")).toBeInTheDocument();
     expect(screen.getByText("15h")).toBeInTheDocument();
     // Capacity remaining: 40 - 20 - 15 = 5h (in the summary box)
     expect(screen.getByText("capacity remaining")).toBeInTheDocument();
+  });
+
+  it("falls back to projectId when projectNames not provided", () => {
+    const allocations = [
+      makeAllocation({ id: "a1", projectId: "uuid-123", allocatedHours: 20 }),
+    ];
+
+    render(
+      <MyScheduleWidget
+        allocations={allocations}
+        leaveBlocks={[]}
+        weeklyCapacity={40}
+      />,
+    );
+
+    expect(screen.getByText("uuid-123")).toBeInTheDocument();
+  });
+
+  it("shows over-allocation warning when allocated exceeds capacity", () => {
+    const allocations = [
+      makeAllocation({ id: "a1", allocatedHours: 30 }),
+      makeAllocation({ id: "a2", projectId: "p2", allocatedHours: 20 }),
+    ];
+
+    render(
+      <MyScheduleWidget
+        allocations={allocations}
+        leaveBlocks={[]}
+        weeklyCapacity={40}
+      />,
+    );
+
+    expect(screen.getByText("Over by")).toBeInTheDocument();
+    expect(screen.getByText("10h")).toBeInTheDocument();
   });
 
   it("shows empty state when no allocations", () => {

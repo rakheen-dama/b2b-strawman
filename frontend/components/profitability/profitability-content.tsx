@@ -28,9 +28,12 @@ export function ProfitabilityContent({
   const [profitability, setProfitability] =
     useState<OrgProfitabilityResponse>(initialProfitability);
   const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
   function handleToggle(checked: boolean) {
+    const previousValue = includeProjections;
     setIncludeProjections(checked);
+    setError(null);
     startTransition(async () => {
       const result = await getOrgProfitability(
         initialFrom,
@@ -40,6 +43,9 @@ export function ProfitabilityContent({
       );
       if (result.data) {
         setProfitability(result.data);
+      } else {
+        setIncludeProjections(previousValue);
+        setError(result.error ?? "Failed to load profitability data.");
       }
     });
   }
@@ -61,6 +67,11 @@ export function ProfitabilityContent({
         {isPending && (
           <span className="text-xs text-slate-400 dark:text-slate-500">
             Loading...
+          </span>
+        )}
+        {error && (
+          <span className="text-xs text-red-600 dark:text-red-400">
+            {error}
           </span>
         )}
       </div>

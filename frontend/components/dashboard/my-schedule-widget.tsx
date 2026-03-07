@@ -13,6 +13,7 @@ interface MyScheduleWidgetProps {
   allocations: AllocationResponse[] | null;
   leaveBlocks: LeaveBlockResponse[] | null;
   weeklyCapacity: number;
+  projectNames?: Record<string, string>;
 }
 
 function formatLeaveRange(start: string, end: string): string {
@@ -28,6 +29,7 @@ export function MyScheduleWidget({
   allocations,
   leaveBlocks,
   weeklyCapacity,
+  projectNames = {},
 }: MyScheduleWidgetProps) {
   if (allocations === null) {
     return (
@@ -51,7 +53,8 @@ export function MyScheduleWidget({
     (sum, a) => sum + a.allocatedHours,
     0,
   );
-  const remaining = Math.max(0, weeklyCapacity - totalAllocated);
+  const remaining = weeklyCapacity - totalAllocated;
+  const isOverAllocated = remaining < 0;
 
   // Filter upcoming leave blocks (next 4 weeks)
   const now = new Date();
@@ -84,7 +87,7 @@ export function MyScheduleWidget({
                 className="flex items-center justify-between text-sm"
               >
                 <span className="text-slate-700 dark:text-slate-300 truncate">
-                  {a.projectId}
+                  {projectNames[a.projectId] ?? a.projectId}
                 </span>
                 <span className="font-mono tabular-nums text-slate-500 dark:text-slate-400">
                   {a.allocatedHours}h
@@ -94,14 +97,39 @@ export function MyScheduleWidget({
           </div>
         )}
 
-        {/* Capacity remaining */}
-        <div className="flex items-center gap-2 rounded-md bg-slate-50 px-3 py-2 dark:bg-slate-800/50">
-          <Clock className="h-3.5 w-3.5 text-slate-400" />
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            <span className="font-mono font-semibold tabular-nums">
-              {remaining}h
-            </span>{" "}
-            capacity remaining
+        {/* Capacity remaining / over-allocation warning */}
+        <div
+          className={`flex items-center gap-2 rounded-md px-3 py-2 ${
+            isOverAllocated
+              ? "bg-red-50 dark:bg-red-900/20"
+              : "bg-slate-50 dark:bg-slate-800/50"
+          }`}
+        >
+          <Clock
+            className={`h-3.5 w-3.5 ${isOverAllocated ? "text-red-500" : "text-slate-400"}`}
+          />
+          <p
+            className={`text-sm ${
+              isOverAllocated
+                ? "text-red-600 dark:text-red-400 font-medium"
+                : "text-slate-600 dark:text-slate-400"
+            }`}
+          >
+            {isOverAllocated ? (
+              <>
+                Over by{" "}
+                <span className="font-mono font-semibold tabular-nums">
+                  {Math.abs(remaining)}h
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="font-mono font-semibold tabular-nums">
+                  {remaining}h
+                </span>{" "}
+                capacity remaining
+              </>
+            )}
           </p>
         </div>
 

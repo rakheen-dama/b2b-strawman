@@ -19,6 +19,7 @@ import {
   Receipt,
   Clock,
   ClipboardList,
+  Zap,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getAuthContext } from "@/lib/auth";
@@ -146,6 +147,13 @@ const settingsCards: SettingsCard[] = [
     href: "email",
     comingSoon: false,
     adminOnly: true,
+  },
+  {
+    icon: Zap,
+    title: "Automations",
+    description: "Create rules to automate tasks, notifications, and workflows",
+    href: "automations",
+    comingSoon: false,
   },
   {
     icon: Building2,

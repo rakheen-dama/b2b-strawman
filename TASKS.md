@@ -331,7 +331,7 @@
 | 291 | Utilization Service & Profitability Integration | Backend | 290 | M | 291A, 291B | **Done** (PRs #574, #575) |
 | 292 | Allocation Grid UI | Frontend | 290 | L | 292A, 292B | **Done** (PRs #576, #577) |
 | 293 | Utilization, Dashboard & Project Staffing UI | Frontend | 291, 292 | M | 293A, 293B | **Done** (PRs #578, #579) |
-| 294 | Notifications, Audit Events & Settings UI | Backend + Frontend | 290 | M | 294A, 294B | 294A **Done** (PR #580) |
+| 294 | Notifications, Audit Events & Settings UI | Backend + Frontend | 290 | M | 294A, 294B | **Done** (PRs #580, #581) |
 | **Phase 39 — Admin-Approved Org Provisioning** | | | | | | See [tasks/phase39-admin-approved-provisioning.md](tasks/phase39-admin-approved-provisioning.md) |
 | 295 | Access Request Entity Foundation & Migration | Backend | -- | M | 295A, 295B | |
 | 296 | OTP Verification & Public Access Request API | Backend | 295 | M | 296A, 296B | |

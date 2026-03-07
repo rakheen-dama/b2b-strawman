@@ -176,7 +176,7 @@ FRONTEND TRACK (after respective backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 7a (parallel) | 286 | 286A | settings/automations/new/page.tsx + settings/automations/[id]/page.tsx + RuleForm layout (3-section scrollable) + TriggerConfigForm (dynamic config by trigger type) + ConditionBuilder (add/remove rows, field/operator/value) + server actions (create, update) + tests (~8 tests). ~7 new files. Frontend only. | |
+| 7a (parallel) | 286 | 286A | settings/automations/new/page.tsx + settings/automations/[id]/page.tsx + RuleForm layout (3-section scrollable) + TriggerConfigForm (dynamic config by trigger type) + ConditionBuilder (add/remove rows, field/operator/value) + server actions (create, update) + tests (~8 tests). ~7 new files. Frontend only. | **Done** (PR #565) |
 | 7b (parallel) | 287 | 287A | Execution log tab on rule detail page + settings/automations/executions/page.tsx (global log) + ExecutionLog DataTable + ExecutionDetail Sheet (per-action status/result/error) + AutomationsWidget (dashboard card: active rules, today's executions, failure badge) + dashboard integration + tests (~8 tests). ~7 new files. Frontend only. | |
 
 ### Stage 8: Frontend Actions Step
@@ -656,7 +656,7 @@ Stage 9: [288A]                                                    (after Stages
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **286A** | 286.1--286.7 | settings/automations/new/page.tsx + settings/automations/[id]/page.tsx + RuleForm (3-section layout) + TriggerConfigForm (dynamic config by trigger type) + ConditionBuilder (add/remove condition rows) + create/update server actions + tests (~8 tests). ~7 new files. Frontend only. | |
+| **286A** | 286.1--286.7 | settings/automations/new/page.tsx + settings/automations/[id]/page.tsx + RuleForm (3-section layout) + TriggerConfigForm (dynamic config by trigger type) + ConditionBuilder (add/remove condition rows) + create/update server actions + tests (~8 tests). ~7 new files. Frontend only. | **Done** (PR #565) |
 | **286B** | 286.8--286.14 | ActionList (sortable ordered list) + ActionForm (dynamic config per action type) + VariableInserter (dropdown for text fields) + delay toggle (Switch + duration + unit) + reorder integration + save/cancel form wiring + tests (~8 tests). ~6 new files. Frontend only. | |
 
 ### Tasks

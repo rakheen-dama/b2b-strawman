@@ -1,4 +1,5 @@
 import { CreateOrganization } from "@clerk/nextjs";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
@@ -23,12 +24,12 @@ export default function CreateOrgPage() {
             </p>
           </div>
           <div className="text-center">
-            <a
+            <Link
               href="/request-access"
               className="inline-flex w-full justify-center rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
             >
               Request Access
-            </a>
+            </Link>
           </div>
           <div className="text-center">
             <a

@@ -92,14 +92,14 @@ public class BffController {
     if (user == null) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
+    if (request.name() == null || request.name().isBlank()) {
+      return ResponseEntity.badRequest().build();
+    }
     if (!selfServiceOrgCreationEnabled) {
       List<String> groups = extractGroups(user);
       if (!groups.contains("platform-admins")) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
       }
-    }
-    if (request.name() == null || request.name().isBlank()) {
-      return ResponseEntity.badRequest().build();
     }
 
     String slug = toSlug(request.name());

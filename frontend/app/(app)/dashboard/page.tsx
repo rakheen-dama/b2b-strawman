@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AUTH_MODE, getAuthContext } from "@/lib/auth/server";
 
@@ -29,12 +30,12 @@ export default async function DashboardRedirectPage() {
             </p>
           </div>
           <div className="space-y-3 text-center">
-            <a
+            <Link
               href="/request-access"
               className="inline-flex w-full justify-center rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
             >
               Submit Access Request
-            </a>
+            </Link>
             <a
               href={`${GATEWAY_URL}/logout`}
               className="block text-sm text-slate-400 hover:text-slate-600"

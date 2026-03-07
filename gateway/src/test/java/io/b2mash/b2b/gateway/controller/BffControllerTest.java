@@ -1,5 +1,7 @@
 package io.b2mash.b2b.gateway.controller;
 
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -66,6 +68,9 @@ class BffControllerTest {
 
   @Test
   void createOrg_disabled_platformAdmin_passesThroughGate() throws Exception {
+    when(keycloakAdminClient.createOrganization(anyString(), anyString(), anyString()))
+        .thenReturn("org-admin-123");
+
     OidcIdToken idToken =
         OidcIdToken.withTokenValue("mock-token")
             .subject("admin-user")
@@ -79,16 +84,15 @@ class BffControllerTest {
 
     var oidcUser = new DefaultOidcUser(List.of(new SimpleGrantedAuthority("ROLE_USER")), idToken);
 
-    // KeycloakAdminClient is mocked, so createOrganization returns null.
-    // The endpoint should NOT return 403 (gate passes) — it returns 500 since
-    // the mocked admin client returns null for both create and find.
     mockMvc
         .perform(
             post("/bff/orgs")
                 .with(oidcLogin().oidcUser(oidcUser))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\": \"Admin Org\"}"))
-        .andExpect(status().isInternalServerError());
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.orgId").value("org-admin-123"))
+        .andExpect(jsonPath("$.slug").value("admin-org"));
   }
 
   @Test

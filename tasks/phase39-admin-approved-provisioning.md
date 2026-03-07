@@ -22,7 +22,7 @@ Phase 39 replaces self-registration with an **admin-approved access request pipe
 | 299 | Keycloak Configuration & Gateway Routing | Infra | 297 | S | 299A | **Done** (PR #589) |
 | 300 | Public Access Request Form (Frontend) | Frontend | 296 | M | 300A, 300B | **Done** (PRs #590, #591) |
 | 301 | Platform Admin Panel (Frontend) | Frontend | 298, 300 | M | 301A, 301B | **Done** (PRs #592, #593) |
-| 302 | Self-Service Org Creation Gate & JIT Provisioning Toggle | Backend + Frontend | 298 | S | 302A | |
+| 302 | Self-Service Org Creation Gate & JIT Provisioning Toggle | Backend + Frontend | 298 | S | 302A | **Done** (PR #594) |
 
 ---
 
@@ -166,7 +166,7 @@ FRONTEND TRACK (after backend APIs)       |
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 6a | 302 | 302A | Disable/gate self-service org creation on frontend (remove or hide create-org page for non-platform-admins), add `app.jit-provisioning.enabled` toggle to backend `TenantFilter`. ~4 modified files (~4 tests). Both. | |
+| 6a | 302 | 302A | Disable/gate self-service org creation on frontend (remove or hide create-org page for non-platform-admins), add `app.jit-provisioning.enabled` toggle to backend `TenantFilter`. ~4 modified files (~4 tests). Both. | **Done** (PR #594) |
 
 ### Timeline
 
@@ -633,7 +633,7 @@ Stage 6: [302A]                                                        (after 29
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **302A** | 302.1--302.5 | Gate/remove `POST /bff/orgs` (self-service org creation) for non-platform-admins or behind a feature flag. Add `app.jit-provisioning.enabled=false` config property to backend, conditional check in `TenantFilter` JIT provisioning path. Update frontend create-org page. ~4 modified files (~4 tests). Both. | |
+| **302A** | 302.1--302.5 | Gate/remove `POST /bff/orgs` (self-service org creation) for non-platform-admins or behind a feature flag. Add `app.jit-provisioning.enabled=false` config property to backend, conditional check in `TenantFilter` JIT provisioning path. Update frontend create-org page. ~4 modified files (~4 tests). Both. | **Done** (PR #594) |
 
 ### Tasks
 

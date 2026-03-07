@@ -130,7 +130,7 @@ FRONTEND TRACK (after backend APIs)       |
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 1a (parallel) | 296 | 296A | `AccessRequestService.submitRequest()` — OTP generation, email domain validation, OTP email sending via existing `EmailProvider`. `AccessRequestPublicController` with `POST /api/access-requests`. `SecurityConfig` update to permitAll on `/api/access-requests/**`. ~4 new/modified files (~8 tests). Backend only. | |
+| 1a (parallel) | 296 | 296A | `AccessRequestService.submitRequest()` — OTP generation, email domain validation, OTP email sending via existing `EmailProvider`. `AccessRequestPublicController` with `POST /api/access-requests`. `SecurityConfig` update to permitAll on `/api/access-requests/**`. ~4 new/modified files (~8 tests). Backend only. | **Done** (PR #583) |
 | 1b (parallel) | 296 | 296B | `AccessRequestService.verifyOtp()` — OTP verification, attempt tracking, expiry check, status promotion to PENDING. `POST /api/access-requests/verify` endpoint. ~2 modified files (~7 tests). Backend only. | |
 | 1c (parallel) | 297 | 297A | `RequestScopes.GROUPS` ScopedValue, `ClerkJwtUtils.extractGroups()`, `PlatformSecurityService.isPlatformAdmin()`. New `PlatformAdminFilter` binding groups from JWT. ~4 new/modified files (~6 unit tests). Backend only. | |
 | 1d | 297 | 297B | `SecurityConfig` filter chain update — `PlatformAdminFilter` ordering, `/api/platform-admin/**` requiring authentication. `@PreAuthorize("@platformSecurityService.isPlatformAdmin()")` integration test. ~2 modified files (~5 tests). Backend only. | |
@@ -269,7 +269,7 @@ Stage 6: [302A]                                                        (after 29
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **296A** | 296.1--296.6 | `AccessRequestService.submitRequest()` -- validate email domain, check duplicate pending, generate OTP, hash with BCrypt, save `PENDING_VERIFICATION` entity, send OTP email. `AccessRequestPublicController` with `POST /api/access-requests`. `SecurityConfig` update to permitAll on `/api/access-requests/**`. OTP email template method in service. ~4 new/modified files (~8 integration tests). Backend only. | |
+| **296A** | 296.1--296.6 | `AccessRequestService.submitRequest()` -- validate email domain, check duplicate pending, generate OTP, hash with BCrypt, save `PENDING_VERIFICATION` entity, send OTP email. `AccessRequestPublicController` with `POST /api/access-requests`. `SecurityConfig` update to permitAll on `/api/access-requests/**`. OTP email template method in service. ~4 new/modified files (~8 integration tests). Backend only. | **Done** (PR #583) |
 | **296B** | 296.7--296.11 | `AccessRequestService.verifyOtp()` -- look up by email + `PENDING_VERIFICATION` status, check attempt count, check expiry, match OTP against hash, promote to `PENDING`, clear OTP hash. `POST /api/access-requests/verify` endpoint. ~2 modified files (~7 integration tests). Backend only. | |
 
 ### Tasks

@@ -334,13 +334,23 @@
 | 294 | Notifications, Audit Events & Settings UI | Backend + Frontend | 290 | M | 294A, 294B | **Done** (PRs #580, #581) |
 | **Phase 39 — Admin-Approved Org Provisioning** | | | | | | See [tasks/phase39-admin-approved-provisioning.md](tasks/phase39-admin-approved-provisioning.md) |
 | 295 | Access Request Entity Foundation & Migration | Backend | -- | M | 295A, 295B | **Done** (PR #582) |
-| 296 | OTP Verification & Public Access Request API | Backend | 295 | M | 296A, 296B | |
+| 296 | OTP Verification & Public Access Request API | Backend | 295 | M | 296A, 296B | 296A **Done** (PR #583) |
 | 297 | Platform Admin Identity & Security Infrastructure | Backend | 295 | M | 297A, 297B | |
 | 298 | Approval Pipeline & Platform Admin API | Backend | 296, 297 | M | 298A, 298B | |
 | 299 | Keycloak Configuration & Gateway Routing | Infra | 297 | S | 299A | |
 | 300 | Public Access Request Form (Frontend) | Frontend | 296 | M | 300A, 300B | |
 | 301 | Platform Admin Panel (Frontend) | Frontend | 298, 300 | M | 301A, 301B | |
 | 302 | Self-Service Org Creation Gate & JIT Provisioning Toggle | Backend + Frontend | 298 | S | 302A | |
+| **Phase 40 — Bulk Billing & Batch Operations** | | | | | | See [tasks/phase40-bulk-billing-batch-operations.md](tasks/phase40-bulk-billing-batch-operations.md) |
+| 303 | BillingRun Entity Foundation & Migration | Backend | -- | M | 303A, 303B | |
+| 304 | Preview, Customer Discovery & Unbilled Summary | Backend | 303 | M | 304A, 304B | |
+| 305 | Entry Selection & Cherry-Pick | Backend | 304 | S | 305A | |
+| 306 | Batch Generation & Cancel | Backend | 305 | M | 306A, 306B | |
+| 307 | Batch Approve, Send & Notifications | Backend | 306 | M | 307A, 307B | |
+| 308 | Retainer Batch Close | Backend | 306 | S | 308A | |
+| 309 | Billing Run List & Detail Pages (Frontend) | Frontend | 307 | M | 309A, 309B | |
+| 310 | Billing Run Wizard (Frontend) | Frontend | 309 | L | 310A, 310B, 310C | |
+| 311 | Billing Settings & Polish (Frontend) | Frontend | 309 | S | 311A | |
 
 ---
 

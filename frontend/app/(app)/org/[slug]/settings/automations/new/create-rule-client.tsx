@@ -49,7 +49,6 @@ export function CreateRuleClient({ slug }: CreateRuleClientProps) {
 
   return (
     <RuleForm
-      slug={slug}
       onSave={handleSave}
       onCancel={handleCancel}
       isSaving={isSaving}

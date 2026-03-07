@@ -13,6 +13,7 @@ import { Plus, X } from "lucide-react";
 import type { TriggerType, ConditionOperator } from "@/lib/api/automations";
 
 export interface ConditionRow {
+  id: string;
   field: string;
   operator: ConditionOperator;
   value: string;
@@ -112,7 +113,7 @@ export function ConditionBuilder({
   function addCondition() {
     onConditionsChange([
       ...conditions,
-      { field: "", operator: "EQUALS", value: "" },
+      { id: crypto.randomUUID(), field: "", operator: "EQUALS", value: "" },
     ]);
   }
 
@@ -135,7 +136,7 @@ export function ConditionBuilder({
       </p>
 
       {conditions.map((condition, index) => (
-        <div key={index} className="flex items-start gap-2">
+        <div key={condition.id} className="flex items-start gap-2">
           <Select
             value={condition.field}
             onValueChange={(val) => updateCondition(index, { field: val })}

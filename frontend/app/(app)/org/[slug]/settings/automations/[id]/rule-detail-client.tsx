@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
@@ -38,6 +38,15 @@ export function RuleDetailClient({ slug, rule }: RuleDetailClientProps) {
   const [isPending, startTransition] = useTransition();
   const [isSaving, setIsSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const deleteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (deleteTimerRef.current) {
+        clearTimeout(deleteTimerRef.current);
+      }
+    };
+  }, []);
 
   function handleToggle() {
     startTransition(async () => {
@@ -67,7 +76,7 @@ export function RuleDetailClient({ slug, rule }: RuleDetailClientProps) {
   function handleDelete() {
     if (!confirmDelete) {
       setConfirmDelete(true);
-      setTimeout(() => setConfirmDelete(false), 3000);
+      deleteTimerRef.current = setTimeout(() => setConfirmDelete(false), 3000);
       return;
     }
     startTransition(async () => {
@@ -174,7 +183,6 @@ export function RuleDetailClient({ slug, rule }: RuleDetailClientProps) {
 
         <TabsContent value="configuration" className="mt-6">
           <RuleForm
-            slug={slug}
             rule={rule}
             onSave={handleSave}
             onCancel={handleCancel}

@@ -2,17 +2,9 @@
 
 import { ApiError } from "@/lib/api";
 import { createRule } from "@/lib/api/automations";
-import type {
-  CreateRuleRequest,
-  AutomationRuleResponse,
-} from "@/lib/api/automations";
+import type { CreateRuleRequest } from "@/lib/api/automations";
 import { revalidatePath } from "next/cache";
-
-interface ActionResult {
-  success: boolean;
-  error?: string;
-  data?: AutomationRuleResponse;
-}
+import type { ActionResult } from "../actions";
 
 export async function createRuleAction(
   slug: string,

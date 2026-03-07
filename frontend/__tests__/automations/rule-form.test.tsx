@@ -2,6 +2,17 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, fireEvent } from "@testing-library/react";
 import { RuleForm } from "@/components/automations/rule-form";
 
+// Ensure crypto.randomUUID is available in test environment
+if (!globalThis.crypto?.randomUUID) {
+  let counter = 0;
+  Object.defineProperty(globalThis, "crypto", {
+    value: {
+      ...globalThis.crypto,
+      randomUUID: () => `test-uuid-${++counter}`,
+    },
+  });
+}
+
 const mockPush = vi.fn();
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockPush }),
@@ -20,7 +31,6 @@ describe("RuleForm", () => {
   const mockOnCancel = vi.fn();
 
   const defaultProps = {
-    slug: "acme",
     onSave: mockOnSave,
     onCancel: mockOnCancel,
     isSaving: false,
@@ -231,5 +241,127 @@ describe("RuleForm", () => {
     );
 
     expect(screen.getByText("Save Changes")).toBeInTheDocument();
+  });
+
+  it("adds multiple condition rows and removes one from the middle", () => {
+    render(
+      <RuleForm
+        {...defaultProps}
+        rule={{
+          id: "r-7",
+          name: "Multi conditions",
+          description: null,
+          enabled: true,
+          triggerType: "TASK_STATUS_CHANGED",
+          triggerConfig: {},
+          conditions: [],
+          source: "MANUAL",
+          templateSlug: null,
+          createdBy: "user-1",
+          createdAt: "2026-01-01T00:00:00Z",
+          updatedAt: "2026-01-01T00:00:00Z",
+          actions: [],
+        }}
+      />,
+    );
+
+    const addButton = screen.getByText("Add Condition");
+    fireEvent.click(addButton);
+    fireEvent.click(addButton);
+    fireEvent.click(addButton);
+
+    const removeButtons = screen.getAllByLabelText("Remove condition");
+    expect(removeButtons).toHaveLength(3);
+
+    // Remove the middle one
+    fireEvent.click(removeButtons[1]);
+    expect(screen.getAllByLabelText("Remove condition")).toHaveLength(2);
+  });
+
+  it("hides value input for IS_NULL and IS_NOT_NULL operators", () => {
+    render(
+      <RuleForm
+        {...defaultProps}
+        rule={{
+          id: "r-8",
+          name: "Nullary op",
+          description: null,
+          enabled: true,
+          triggerType: "TASK_STATUS_CHANGED",
+          triggerConfig: {},
+          conditions: [
+            { field: "task.name", operator: "IS_NULL", value: "" },
+            { field: "task.status", operator: "EQUALS", value: "DONE" },
+          ],
+          source: "MANUAL",
+          templateSlug: null,
+          createdBy: "user-1",
+          createdAt: "2026-01-01T00:00:00Z",
+          updatedAt: "2026-01-01T00:00:00Z",
+          actions: [],
+        }}
+      />,
+    );
+
+    // There should be only ONE value input (for the EQUALS row), not two
+    const valueInputs = screen.getAllByPlaceholderText("Value");
+    expect(valueInputs).toHaveLength(1);
+  });
+
+  it("renders From/To status selects for status change trigger via rule prop", () => {
+    render(
+      <RuleForm
+        {...defaultProps}
+        rule={{
+          id: "r-9",
+          name: "Invoice status",
+          description: null,
+          enabled: true,
+          triggerType: "INVOICE_STATUS_CHANGED",
+          triggerConfig: { fromStatus: "DRAFT", toStatus: null },
+          conditions: [],
+          source: "MANUAL",
+          templateSlug: null,
+          createdBy: "user-1",
+          createdAt: "2026-01-01T00:00:00Z",
+          updatedAt: "2026-01-01T00:00:00Z",
+          actions: [],
+        }}
+      />,
+    );
+
+    expect(screen.getByLabelText("From Status")).toBeInTheDocument();
+    expect(screen.getByLabelText("To Status")).toBeInTheDocument();
+  });
+
+  it("renders budget threshold input and guards against NaN", () => {
+    render(
+      <RuleForm
+        {...defaultProps}
+        rule={{
+          id: "r-10",
+          name: "Budget guard",
+          description: null,
+          enabled: true,
+          triggerType: "BUDGET_THRESHOLD_REACHED",
+          triggerConfig: { thresholdPercent: 75 },
+          conditions: [],
+          source: "MANUAL",
+          templateSlug: null,
+          createdBy: "user-1",
+          createdAt: "2026-01-01T00:00:00Z",
+          updatedAt: "2026-01-01T00:00:00Z",
+          actions: [],
+        }}
+      />,
+    );
+
+    const input = screen.getByDisplayValue("75");
+    expect(input).toBeInTheDocument();
+
+    // Clearing input should not crash — NaN guard
+    fireEvent.change(input, { target: { value: "" } });
+    // Input should still be in the document (component didn't crash)
+    expect(screen.getByLabelText("Budget Threshold")).toBeInTheDocument();
   });
 });

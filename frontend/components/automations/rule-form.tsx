@@ -39,7 +39,6 @@ interface RuleFormData {
 }
 
 interface RuleFormProps {
-  slug: string;
   rule?: AutomationRuleResponse;
   onSave: (data: RuleFormData) => void;
   onCancel: () => void;
@@ -61,6 +60,7 @@ function parseConditions(
   raw: Record<string, unknown>[],
 ): ConditionRow[] {
   return raw.map((c) => ({
+    id: crypto.randomUUID(),
     field: (c.field as string) ?? "",
     operator: (c.operator as ConditionOperator) ?? "EQUALS",
     value: (c.value as string) ?? "",
@@ -72,10 +72,10 @@ function serializeConditions(
 ): Record<string, unknown>[] {
   return rows
     .filter((r) => r.field)
-    .map((r) => ({
-      field: r.field,
-      operator: r.operator,
-      value: r.value || undefined,
+    .map(({ field, operator, value }) => ({
+      field,
+      operator,
+      value: value || undefined,
     }));
 }
 

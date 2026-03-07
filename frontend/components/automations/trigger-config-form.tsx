@@ -70,8 +70,8 @@ export function TriggerConfigForm({
 
   if (STATUS_CHANGE_TRIGGERS.has(triggerType)) {
     const options = STATUS_OPTIONS[triggerType] ?? [];
-    const fromStatus = (triggerConfig.fromStatus as string) ?? "";
-    const toStatus = (triggerConfig.toStatus as string) ?? "";
+    const fromStatus = triggerConfig.fromStatus == null ? "ANY" : (triggerConfig.fromStatus as string);
+    const toStatus = triggerConfig.toStatus == null ? "ANY" : (triggerConfig.toStatus as string);
 
     return (
       <div className="grid gap-4 sm:grid-cols-2">
@@ -141,12 +141,15 @@ export function TriggerConfigForm({
             min={1}
             max={200}
             value={thresholdPercent}
-            onChange={(e) =>
-              onConfigChange({
-                ...triggerConfig,
-                thresholdPercent: Number(e.target.value),
-              })
-            }
+            onChange={(e) => {
+              const val = Number(e.target.value);
+              if (!Number.isNaN(val)) {
+                onConfigChange({
+                  ...triggerConfig,
+                  thresholdPercent: val,
+                });
+              }
+            }}
             className="w-24"
           />
           <span className="text-sm text-slate-600 dark:text-slate-400">

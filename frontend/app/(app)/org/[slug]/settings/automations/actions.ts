@@ -14,7 +14,7 @@ import type {
 } from "@/lib/api/automations";
 import { revalidatePath } from "next/cache";
 
-interface ActionResult {
+export interface ActionResult {
   success: boolean;
   error?: string;
   data?: AutomationRuleResponse;

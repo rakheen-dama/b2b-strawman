@@ -63,6 +63,28 @@ public final class AuditEventBuilder {
         .build();
   }
 
+  /** Convenience factory for billing_run.generated audit events. */
+  public static AuditEventRecord billingRunGenerated(
+      BillingRun run, int invoiceCount, int failedCount) {
+    return builder()
+        .eventType("billing_run.generated")
+        .entityType("billing_run")
+        .entityId(run.getId())
+        .details(
+            Map.of(
+                "name",
+                run.getName() != null ? run.getName() : "",
+                "period_from",
+                run.getPeriodFrom().toString(),
+                "period_to",
+                run.getPeriodTo().toString(),
+                "invoice_count",
+                invoiceCount,
+                "failed_count",
+                failedCount))
+        .build();
+  }
+
   public AuditEventBuilder eventType(String eventType) {
     this.eventType = eventType;
     return this;

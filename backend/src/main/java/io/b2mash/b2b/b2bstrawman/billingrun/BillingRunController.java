@@ -67,6 +67,13 @@ public class BillingRunController {
     return ResponseEntity.noContent().build();
   }
 
+  @PostMapping("/{id}/generate")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<BillingRunResponse> generate(@PathVariable UUID id) {
+    UUID actorMemberId = RequestScopes.requireMemberId();
+    return ResponseEntity.ok(billingRunService.generate(id, actorMemberId));
+  }
+
   @PostMapping("/{id}/preview")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<BillingRunPreviewResponse> loadPreview(

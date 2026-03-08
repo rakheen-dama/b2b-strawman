@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.billingrun;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.billingrun.BillingRunEvents.BillingRunCompletedEvent;
+import io.b2mash.b2b.b2bstrawman.billingrun.BillingRunEvents.BillingRunFailuresEvent;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BillingRunItemResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BillingRunPreviewResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BillingRunResponse;
@@ -13,10 +15,14 @@ import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.UpdateEntrySelect
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.expense.Expense;
 import io.b2mash.b2b.b2bstrawman.expense.ExpenseRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceService;
+import io.b2mash.b2b.b2bstrawman.invoice.dto.CreateInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteViolation;
@@ -33,12 +39,14 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Service
 public class BillingRunService {
@@ -54,6 +62,10 @@ public class BillingRunService {
   private final TimeEntryRepository timeEntryRepository;
   private final ExpenseRepository expenseRepository;
   private final EntityManager entityManager;
+  private final InvoiceService invoiceService;
+  private final InvoiceRepository invoiceRepository;
+  private final TransactionTemplate transactionTemplate;
+  private final ApplicationEventPublisher eventPublisher;
 
   public BillingRunService(
       BillingRunRepository billingRunRepository,
@@ -64,7 +76,11 @@ public class BillingRunService {
       PrerequisiteService prerequisiteService,
       TimeEntryRepository timeEntryRepository,
       ExpenseRepository expenseRepository,
-      EntityManager entityManager) {
+      EntityManager entityManager,
+      InvoiceService invoiceService,
+      InvoiceRepository invoiceRepository,
+      TransactionTemplate transactionTemplate,
+      ApplicationEventPublisher eventPublisher) {
     this.billingRunRepository = billingRunRepository;
     this.billingRunItemRepository = billingRunItemRepository;
     this.billingRunEntrySelectionRepository = billingRunEntrySelectionRepository;
@@ -74,6 +90,10 @@ public class BillingRunService {
     this.timeEntryRepository = timeEntryRepository;
     this.expenseRepository = expenseRepository;
     this.entityManager = entityManager;
+    this.invoiceService = invoiceService;
+    this.invoiceRepository = invoiceRepository;
+    this.transactionTemplate = transactionTemplate;
+    this.eventPublisher = eventPublisher;
   }
 
   @Transactional
@@ -467,6 +487,174 @@ public class BillingRunService {
     Map<UUID, Customer> customerMap =
         customer != null ? Map.of(customer.getId(), customer) : Map.of();
     return toItemResponse(item, customerMap);
+  }
+
+  /**
+   * Generates invoices for all PENDING items in the billing run. NOT @Transactional — each
+   * customer's invoice creation runs in its own transaction via TransactionTemplate for failure
+   * isolation.
+   */
+  public BillingRunResponse generate(UUID billingRunId, UUID actorMemberId) {
+    // Step 1: Validate status and check single-active-run guard
+    var run =
+        transactionTemplate.execute(
+            status -> {
+              var r =
+                  billingRunRepository
+                      .findByIdForUpdate(billingRunId)
+                      .orElseThrow(() -> new ResourceNotFoundException("BillingRun", billingRunId));
+
+              if (r.getStatus() != BillingRunStatus.PREVIEW) {
+                throw new InvalidStateException(
+                    "Cannot generate billing run",
+                    "Only billing runs in PREVIEW status can be generated. Current status: "
+                        + r.getStatus());
+              }
+
+              // Single-active-run guard
+              if (billingRunRepository.existsByStatusIn(List.of(BillingRunStatus.IN_PROGRESS))) {
+                throw new ResourceConflictException(
+                    "Billing run conflict", "Another billing run is already in progress");
+              }
+
+              r.startGeneration();
+              return billingRunRepository.save(r);
+            });
+
+    // Step 2: Process each PENDING item in its own transaction
+    var pendingItems =
+        billingRunItemRepository.findByBillingRunIdAndStatus(
+            billingRunId, BillingRunItemStatus.PENDING);
+
+    int successCount = 0;
+    int failureCount = 0;
+    BigDecimal totalAmount = BigDecimal.ZERO;
+
+    for (var item : pendingItems) {
+      try {
+        var invoiceTotal =
+            transactionTemplate.execute(
+                status -> {
+                  var freshItem = billingRunItemRepository.findById(item.getId()).orElseThrow();
+                  freshItem.markGenerating();
+                  billingRunItemRepository.save(freshItem);
+
+                  // Resolve selected entries
+                  List<UUID> timeEntryIds = resolveSelectedTimeEntryIds(freshItem);
+                  List<UUID> expenseIds = resolveSelectedExpenseIds(freshItem);
+
+                  // Build and execute invoice creation
+                  var invoiceRequest =
+                      new CreateInvoiceRequest(
+                          freshItem.getCustomerId(),
+                          run.getCurrency(),
+                          timeEntryIds.isEmpty() ? null : timeEntryIds,
+                          expenseIds.isEmpty() ? null : expenseIds,
+                          null,
+                          null,
+                          null);
+
+                  var invoiceResponse = invoiceService.createDraft(invoiceRequest, actorMemberId);
+
+                  // Link invoice to billing run
+                  var invoice = invoiceRepository.findById(invoiceResponse.id()).orElseThrow();
+                  invoice.setBillingRunId(billingRunId);
+                  invoiceRepository.save(invoice);
+
+                  // Mark item as generated
+                  freshItem.markGenerated(invoiceResponse.id());
+                  billingRunItemRepository.save(freshItem);
+
+                  return invoiceResponse.total();
+                });
+
+        successCount++;
+        if (invoiceTotal != null) {
+          totalAmount = totalAmount.add(invoiceTotal);
+        }
+      } catch (Exception e) {
+        failureCount++;
+        log.warn(
+            "Failed to generate invoice for item {} (customer {}): {}",
+            item.getId(),
+            item.getCustomerId(),
+            e.getMessage());
+
+        // Mark item as failed in its own transaction
+        try {
+          String reason = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
+          final String errorMessage = truncate(reason, 1000);
+          transactionTemplate.executeWithoutResult(
+              status -> {
+                var failedItem = billingRunItemRepository.findById(item.getId()).orElseThrow();
+                // Item may still be PENDING if markGenerating() was in the failed tx
+                if (failedItem.getStatus() == BillingRunItemStatus.PENDING) {
+                  failedItem.markGenerating();
+                }
+                failedItem.markFailed(errorMessage);
+                billingRunItemRepository.save(failedItem);
+              });
+        } catch (Exception innerEx) {
+          log.error("Failed to mark item {} as FAILED: {}", item.getId(), innerEx.getMessage());
+        }
+      }
+    }
+
+    // Step 3: Complete the run with stats
+    final int finalSuccessCount = successCount;
+    final int finalFailureCount = failureCount;
+    final BigDecimal finalTotalAmount = totalAmount;
+
+    var completedRun =
+        transactionTemplate.execute(
+            status -> {
+              var r = billingRunRepository.findById(billingRunId).orElseThrow();
+              r.complete(finalSuccessCount, finalFailureCount, finalTotalAmount);
+              r = billingRunRepository.save(r);
+
+              auditService.log(
+                  AuditEventBuilder.billingRunGenerated(r, finalSuccessCount, finalFailureCount));
+
+              return r;
+            });
+
+    // Step 4: Publish events
+    eventPublisher.publishEvent(
+        new BillingRunCompletedEvent(
+            completedRun.getId(), completedRun.getName(), finalSuccessCount));
+    if (finalFailureCount > 0) {
+      eventPublisher.publishEvent(
+          new BillingRunFailuresEvent(
+              completedRun.getId(), completedRun.getName(), finalFailureCount));
+    }
+
+    log.info(
+        "Completed billing run {} — {} invoices generated, {} failed, total: {}",
+        billingRunId,
+        finalSuccessCount,
+        finalFailureCount,
+        finalTotalAmount);
+
+    return BillingRunResponse.from(completedRun);
+  }
+
+  List<UUID> resolveSelectedTimeEntryIds(BillingRunItem item) {
+    return billingRunEntrySelectionRepository.findByBillingRunItemId(item.getId()).stream()
+        .filter(s -> s.getEntryType() == EntryType.TIME_ENTRY && s.isIncluded())
+        .map(BillingRunEntrySelection::getEntryId)
+        .toList();
+  }
+
+  List<UUID> resolveSelectedExpenseIds(BillingRunItem item) {
+    return billingRunEntrySelectionRepository.findByBillingRunItemId(item.getId()).stream()
+        .filter(s -> s.getEntryType() == EntryType.EXPENSE && s.isIncluded())
+        .map(BillingRunEntrySelection::getEntryId)
+        .toList();
+  }
+
+  private String truncate(String text, int maxLength) {
+    if (text == null) return null;
+    return text.length() <= maxLength ? text : text.substring(0, maxLength);
   }
 
   private void recalculateItemTotals(BillingRunItem item) {

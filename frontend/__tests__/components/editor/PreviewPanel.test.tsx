@@ -4,6 +4,7 @@ import {
   renderTiptapToHtml,
   buildPreviewContext,
   extractClauseIds,
+  formatValue,
 } from "@/components/editor/client-renderer";
 import type { TiptapNode } from "@/components/editor/client-renderer";
 
@@ -224,6 +225,110 @@ describe("renderTiptapToHtml (client-side renderer)", () => {
       "body { color: red; }</style><script>alert('xss')</script>",
     );
     expect(html).not.toContain("</style><script>");
+  });
+});
+
+describe("formatValue", () => {
+  it("formats currency values with rand sign (en-ZA)", () => {
+    expect(formatValue(50000, "currency")).toBe("R\u00a050\u00a0000,00");
+    expect(formatValue(1234.56, "currency")).toBe("R\u00a01\u00a0234,56");
+  });
+
+  it("formats date values as long date string", () => {
+    // Note: JS Date parses ISO dates, output depends on locale but we set en-US
+    const result = formatValue("2026-03-08", "date");
+    expect(result).toContain("March");
+    expect(result).toContain("2026");
+    expect(result).toContain("8");
+  });
+
+  it("formats ISO instant dates", () => {
+    const result = formatValue("2026-03-08T14:30:00Z", "date");
+    expect(result).toContain("March");
+    expect(result).toContain("2026");
+  });
+
+  it("formats numbers with spaces (en-ZA)", () => {
+    expect(formatValue(1234567, "number")).toBe("1\u00a0234\u00a0567");
+  });
+
+  it("returns empty string for null/undefined", () => {
+    expect(formatValue(null, "currency")).toBe("");
+    expect(formatValue(undefined, "date")).toBe("");
+  });
+
+  it("returns escaped raw string for unknown type hint", () => {
+    expect(formatValue("hello", "unknown")).toBe("hello");
+  });
+
+  it("returns escaped raw string for string type hint", () => {
+    expect(formatValue("hello", "string")).toBe("hello");
+  });
+
+  it("returns escaped raw string for no type hint", () => {
+    expect(formatValue("hello")).toBe("hello");
+  });
+
+  it("falls back to raw for invalid currency", () => {
+    expect(formatValue("not-a-number", "currency")).toBe("not-a-number");
+  });
+
+  it("falls back to raw for invalid date", () => {
+    expect(formatValue("not-a-date", "date")).toBe("not-a-date");
+  });
+
+  it("escapes HTML in output", () => {
+    expect(formatValue("<script>alert(1)</script>")).toContain("&lt;script&gt;");
+  });
+});
+
+describe("renderTiptapToHtml with formatHints", () => {
+  it("formats currency variable with format hints", () => {
+    const doc: TiptapNode = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "variable", attrs: { key: "invoice.total" } }],
+        },
+      ],
+    };
+    const context = { invoice: { total: 50000 } };
+    const hints = { "invoice.total": "currency" };
+    const html = renderTiptapToHtml(doc, context, new Map(), undefined, hints);
+    expect(html).toContain("R\u00a050\u00a0000,00");
+  });
+
+  it("formats date variable with format hints", () => {
+    const doc: TiptapNode = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "variable", attrs: { key: "invoice.issueDate" } }],
+        },
+      ],
+    };
+    const context = { invoice: { issueDate: "2026-03-08" } };
+    const hints = { "invoice.issueDate": "date" };
+    const html = renderTiptapToHtml(doc, context, new Map(), undefined, hints);
+    expect(html).toContain("March");
+    expect(html).toContain("2026");
+  });
+
+  it("renders raw when no format hints provided", () => {
+    const doc: TiptapNode = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "variable", attrs: { key: "project.name" } }],
+        },
+      ],
+    };
+    const context = { project: { name: "Test Project" } };
+    const html = renderTiptapToHtml(doc, context, new Map());
+    expect(html).toContain("Test Project");
   });
 });
 

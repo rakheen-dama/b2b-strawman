@@ -76,9 +76,50 @@ function escapeHtml(text: string): string {
     .replace(/'/g, "&#39;");
 }
 
+/**
+ * Formats a value based on its type hint for display in rendered templates.
+ * Mirrors backend VariableFormatter behavior.
+ */
+export function formatValue(value: unknown, typeHint?: string): string {
+  if (value == null) return "";
+  const str = String(value);
+  if (!typeHint || typeHint === "string") return escapeHtml(str);
+
+  switch (typeHint) {
+    case "currency": {
+      const num = Number(str);
+      if (isNaN(num)) return escapeHtml(str);
+      return escapeHtml(
+        new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR" }).format(num),
+      );
+    }
+    case "date": {
+      try {
+        const date = new Date(str);
+        if (isNaN(date.getTime())) return escapeHtml(str);
+        // Match backend format: "d MMMM yyyy" (e.g., "8 March 2026")
+        const d = date.getUTCDate();
+        const month = date.toLocaleString("en-US", { month: "long", timeZone: "UTC" });
+        const year = date.getUTCFullYear();
+        return escapeHtml(`${d} ${month} ${year}`);
+      } catch {
+        return escapeHtml(str);
+      }
+    }
+    case "number": {
+      const num = Number(str);
+      if (isNaN(num)) return escapeHtml(str);
+      return escapeHtml(new Intl.NumberFormat("en-ZA").format(num));
+    }
+    default:
+      return escapeHtml(str);
+  }
+}
+
 function resolveVariable(
   key: string | null | undefined,
   context: Record<string, unknown>,
+  formatHints?: Record<string, string>,
 ): string {
   if (!key || key.trim() === "") return "";
   const segments = key.split(".");
@@ -88,7 +129,8 @@ function resolveVariable(
     current = (current as Record<string, unknown>)[segment];
     if (current == null) return "";
   }
-  return escapeHtml(String(current));
+  const typeHint = formatHints?.[key];
+  return formatValue(current, typeHint);
 }
 
 function resolveDataSource(
@@ -190,6 +232,7 @@ function renderTableCell(
   context: Record<string, unknown>,
   clauses: Map<string, TiptapNode>,
   depth: number,
+  formatHints?: Record<string, string>,
 ): string {
   let sb = "<" + tag;
   const colspan = attrs.colspan;
@@ -201,7 +244,7 @@ function renderTableCell(
     sb += ` rowspan="${rowspan}"`;
   }
   sb += ">";
-  sb += renderChildren(node, context, clauses, depth);
+  sb += renderChildren(node, context, clauses, depth, formatHints);
   sb += "</" + tag + ">";
   return sb;
 }
@@ -211,11 +254,12 @@ function renderChildren(
   context: Record<string, unknown>,
   clauses: Map<string, TiptapNode>,
   depth: number,
+  formatHints?: Record<string, string>,
 ): string {
   if (!node.content) return "";
   let sb = "";
   for (const child of node.content) {
-    sb += renderNode(child, context, clauses, depth);
+    sb += renderNode(child, context, clauses, depth, formatHints);
   }
   return sb;
 }
@@ -226,8 +270,17 @@ function wrapTag(
   context: Record<string, unknown>,
   clauses: Map<string, TiptapNode>,
   depth: number,
+  formatHints?: Record<string, string>,
 ): string {
-  return "<" + tag + ">" + renderChildren(node, context, clauses, depth) + "</" + tag + ">";
+  return (
+    "<" +
+    tag +
+    ">" +
+    renderChildren(node, context, clauses, depth, formatHints) +
+    "</" +
+    tag +
+    ">"
+  );
 }
 
 function renderNode(
@@ -235,6 +288,7 @@ function renderNode(
   context: Record<string, unknown>,
   clauses: Map<string, TiptapNode>,
   depth: number,
+  formatHints?: Record<string, string>,
 ): string {
   const type = node.type;
   if (!type) return "";
@@ -242,25 +296,31 @@ function renderNode(
 
   switch (type) {
     case "doc":
-      return renderChildren(node, context, clauses, depth);
+      return renderChildren(node, context, clauses, depth, formatHints);
 
     case "heading": {
       const rawLevel = attrs.level ?? 1;
       const level = Math.max(1, Math.min(6, typeof rawLevel === "number" ? rawLevel : 1));
       return (
-        "<h" + level + ">" + renderChildren(node, context, clauses, depth) + "</h" + level + ">"
+        "<h" +
+        level +
+        ">" +
+        renderChildren(node, context, clauses, depth, formatHints) +
+        "</h" +
+        level +
+        ">"
       );
     }
 
     case "paragraph":
-      return "<p>" + renderChildren(node, context, clauses, depth) + "</p>";
+      return "<p>" + renderChildren(node, context, clauses, depth, formatHints) + "</p>";
 
     case "text":
       return renderText(node);
 
     case "variable": {
       const key = attrs.key as string | undefined;
-      return resolveVariable(key, context);
+      return resolveVariable(key, context, formatHints);
     }
 
     case "clauseBlock": {
@@ -277,7 +337,7 @@ function renderNode(
       if (clauseBody) {
         return (
           `<div class="clause-block" data-clause-slug="${escapeHtml(slug)}">` +
-          renderNode(clauseBody, context, clauses, depth + 1) +
+          renderNode(clauseBody, context, clauses, depth + 1, formatHints) +
           "</div>"
         );
       }
@@ -288,25 +348,25 @@ function renderNode(
       return renderLoopTable(attrs, context);
 
     case "bulletList":
-      return wrapTag("ul", node, context, clauses, depth);
+      return wrapTag("ul", node, context, clauses, depth, formatHints);
 
     case "orderedList":
-      return wrapTag("ol", node, context, clauses, depth);
+      return wrapTag("ol", node, context, clauses, depth, formatHints);
 
     case "listItem":
-      return wrapTag("li", node, context, clauses, depth);
+      return wrapTag("li", node, context, clauses, depth, formatHints);
 
     case "table":
-      return wrapTag("table", node, context, clauses, depth);
+      return wrapTag("table", node, context, clauses, depth, formatHints);
 
     case "tableRow":
-      return wrapTag("tr", node, context, clauses, depth);
+      return wrapTag("tr", node, context, clauses, depth, formatHints);
 
     case "tableCell":
-      return renderTableCell("td", attrs, node, context, clauses, depth);
+      return renderTableCell("td", attrs, node, context, clauses, depth, formatHints);
 
     case "tableHeader":
-      return renderTableCell("th", attrs, node, context, clauses, depth);
+      return renderTableCell("th", attrs, node, context, clauses, depth, formatHints);
 
     case "horizontalRule":
       return "<hr/>";
@@ -315,7 +375,7 @@ function renderNode(
       return "<br/>";
 
     default:
-      return renderChildren(node, context, clauses, depth);
+      return renderChildren(node, context, clauses, depth, formatHints);
   }
 }
 
@@ -326,6 +386,7 @@ function renderNode(
  * @param context - Nested context map for variable resolution (e.g., { project: { name: "..." } })
  * @param clauses - Map of clauseId (string) to clause body TiptapNode
  * @param templateCss - Optional custom CSS to append after default styles
+ * @param formatHints - Optional map of variable key to type hint (e.g., "currency", "date", "number")
  * @returns Complete HTML document string
  */
 export function renderTiptapToHtml(
@@ -333,8 +394,9 @@ export function renderTiptapToHtml(
   context: Record<string, unknown>,
   clauses: Map<string, TiptapNode>,
   templateCss?: string,
+  formatHints?: Record<string, string>,
 ): string {
-  const body = renderNode(doc, context, clauses, 0);
+  const body = renderNode(doc, context, clauses, 0, formatHints);
   const safeCss = templateCss ? templateCss.replace(/<\/style>/gi, "") : "";
 
   return (
@@ -388,4 +450,51 @@ export function extractClauseIds(node: TiptapNode): string[] {
   }
   walk(node);
   return ids;
+}
+
+/**
+ * Extracts all unique variable keys from a Tiptap document tree.
+ * Optionally walks clause bodies when a clauses map is provided.
+ */
+export function extractVariableKeys(
+  node: TiptapNode,
+  clauses?: Map<string, TiptapNode>,
+): string[] {
+  const keys = new Set<string>();
+  function walk(n: TiptapNode) {
+    if (n.type === "variable" && n.attrs?.key) {
+      keys.add(String(n.attrs.key));
+    }
+    if (n.type === "clauseBlock" && n.attrs?.clauseId && clauses) {
+      const clauseBody = clauses.get(String(n.attrs.clauseId));
+      if (clauseBody) walk(clauseBody);
+    }
+    if (n.content) {
+      for (const child of n.content) {
+        walk(child);
+      }
+    }
+  }
+  walk(node);
+  return Array.from(keys);
+}
+
+/**
+ * Identifies variable keys that resolve to empty values in a given context.
+ * Walks clause bodies when a clauses map is provided.
+ */
+export function findMissingVariables(
+  node: TiptapNode,
+  context: Record<string, unknown>,
+  clauses?: Map<string, TiptapNode>,
+): Set<string> {
+  const allKeys = extractVariableKeys(node, clauses);
+  const missing = new Set<string>();
+  for (const key of allKeys) {
+    const resolved = resolveVariable(key, context);
+    if (resolved === "") {
+      missing.add(key);
+    }
+  }
+  return missing;
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -200,12 +201,12 @@ export function RequestAccessForm() {
             Your access request has been submitted for review. We&apos;ll notify
             you by email once it&apos;s been reviewed.
           </p>
-          <a
+          <Link
             href="/"
             className="inline-block text-sm font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
           >
             Back to home
-          </a>
+          </Link>
         </CardContent>
       </Card>
     );

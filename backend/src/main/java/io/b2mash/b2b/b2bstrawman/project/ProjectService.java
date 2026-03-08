@@ -28,6 +28,8 @@ import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskStatus;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
@@ -68,6 +70,8 @@ public class ProjectService {
   private final CustomerLifecycleGuard customerLifecycleGuard;
   private final DocumentRepository documentRepository;
   private final InvoiceRepository invoiceRepository;
+  private final OrgSettingsRepository orgSettingsRepository;
+  private final ProjectNameResolver projectNameResolver;
 
   public ProjectService(
       ProjectRepository repository,
@@ -86,7 +90,9 @@ public class ProjectService {
       CustomerRepository customerRepository,
       CustomerLifecycleGuard customerLifecycleGuard,
       DocumentRepository documentRepository,
-      InvoiceRepository invoiceRepository) {
+      InvoiceRepository invoiceRepository,
+      OrgSettingsRepository orgSettingsRepository,
+      ProjectNameResolver projectNameResolver) {
     this.repository = repository;
     this.projectMemberRepository = projectMemberRepository;
     this.projectAccessService = projectAccessService;
@@ -104,6 +110,8 @@ public class ProjectService {
     this.customerLifecycleGuard = customerLifecycleGuard;
     this.documentRepository = documentRepository;
     this.invoiceRepository = invoiceRepository;
+    this.orgSettingsRepository = orgSettingsRepository;
+    this.projectNameResolver = projectNameResolver;
   }
 
   @Transactional(readOnly = true)
@@ -147,13 +155,15 @@ public class ProjectService {
       List<UUID> appliedFieldGroups,
       UUID customerId,
       LocalDate dueDate) {
-    // Validate customer link
+    // Validate customer link and resolve customer name for naming pattern
+    String customerName = null;
     if (customerId != null) {
       var customer =
           customerRepository
               .findById(customerId)
               .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
       customerLifecycleGuard.requireActionPermitted(customer, LifecycleAction.CREATE_PROJECT);
+      customerName = customer.getName();
     }
 
     // Validate custom fields
@@ -163,7 +173,19 @@ public class ProjectService {
             customFields != null ? customFields : new HashMap<>(),
             appliedFieldGroups);
 
-    var project = new Project(name, description, createdBy);
+    // Apply naming pattern if configured
+    String resolvedName = name;
+    var namingPattern =
+        orgSettingsRepository
+            .findForCurrentTenant()
+            .map(OrgSettings::getProjectNamingPattern)
+            .orElse(null);
+    if (namingPattern != null && !namingPattern.isBlank()) {
+      resolvedName =
+          projectNameResolver.resolve(namingPattern, name, validatedFields, customerName);
+    }
+
+    var project = new Project(resolvedName, description, createdBy);
     project.setCustomFields(validatedFields);
     if (appliedFieldGroups != null) {
       project.setAppliedFieldGroups(appliedFieldGroups);

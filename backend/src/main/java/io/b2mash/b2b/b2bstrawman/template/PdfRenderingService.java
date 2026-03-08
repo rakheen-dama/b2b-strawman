@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -32,16 +33,19 @@ public class PdfRenderingService {
   private final List<TemplateContextBuilder> contextBuilders;
   private final TemplateValidationService templateValidationService;
   private final TiptapRenderer tiptapRenderer;
+  private final VariableMetadataRegistry variableMetadataRegistry;
 
   public PdfRenderingService(
       DocumentTemplateRepository documentTemplateRepository,
       List<TemplateContextBuilder> contextBuilders,
       TemplateValidationService templateValidationService,
-      TiptapRenderer tiptapRenderer) {
+      TiptapRenderer tiptapRenderer,
+      VariableMetadataRegistry variableMetadataRegistry) {
     this.documentTemplateRepository = documentTemplateRepository;
     this.contextBuilders = contextBuilders;
     this.templateValidationService = templateValidationService;
     this.tiptapRenderer = tiptapRenderer;
+    this.variableMetadataRegistry = variableMetadataRegistry;
   }
 
   /**
@@ -188,7 +192,20 @@ public class PdfRenderingService {
     }
     Map<String, Object> content =
         template.getContent() != null ? template.getContent() : Map.of("type", "doc");
-    return tiptapRenderer.render(content, contextMap, clauseMap, template.getCss());
+    Map<String, String> formatHints = buildFormatHints(template.getPrimaryEntityType());
+    return tiptapRenderer.render(content, contextMap, clauseMap, template.getCss(), formatHints);
+  }
+
+  /** Builds format hints from variable metadata, mapping variable keys to their type hints. */
+  private Map<String, String> buildFormatHints(TemplateEntityType entityType) {
+    return variableMetadataRegistry.getVariables(entityType).groups().stream()
+        .flatMap(g -> g.variables().stream())
+        .filter(v -> v.type() != null && !"string".equals(v.type()))
+        .collect(
+            Collectors.toMap(
+                VariableMetadataRegistry.VariableInfo::key,
+                VariableMetadataRegistry.VariableInfo::type,
+                (a, b) -> a));
   }
 
   private TemplateContextBuilder findBuilder(TemplateEntityType entityType) {

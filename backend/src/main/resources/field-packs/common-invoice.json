@@ -1,0 +1,59 @@
+{
+  "packId": "common-invoice",
+  "version": 1,
+  "entityType": "INVOICE",
+  "group": {
+    "slug": "invoice_info",
+    "name": "Invoice Info",
+    "description": "Common invoice metadata fields",
+    "autoApply": true
+  },
+  "fields": [
+    {
+      "slug": "purchase_order_number",
+      "name": "Purchase Order Number",
+      "fieldType": "TEXT",
+      "description": "Client's PO number for this invoice",
+      "required": false,
+      "sortOrder": 1
+    },
+    {
+      "slug": "payment_reference",
+      "name": "Payment Reference",
+      "fieldType": "TEXT",
+      "description": "Payment reference for bank transfers",
+      "required": false,
+      "sortOrder": 2
+    },
+    {
+      "slug": "tax_type",
+      "name": "Tax Type",
+      "fieldType": "DROPDOWN",
+      "description": "Type of tax applied",
+      "required": false,
+      "options": [
+        { "value": "vat", "label": "VAT" },
+        { "value": "gst", "label": "GST" },
+        { "value": "sales_tax", "label": "Sales Tax" },
+        { "value": "none", "label": "No Tax" }
+      ],
+      "sortOrder": 3
+    },
+    {
+      "slug": "billing_period_start",
+      "name": "Billing Period Start",
+      "fieldType": "DATE",
+      "description": "Start date of the billing period",
+      "required": false,
+      "sortOrder": 4
+    },
+    {
+      "slug": "billing_period_end",
+      "name": "Billing Period End",
+      "fieldType": "DATE",
+      "description": "End date of the billing period",
+      "required": false,
+      "sortOrder": 5
+    }
+  ]
+}

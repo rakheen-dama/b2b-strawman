@@ -5,5 +5,6 @@ public enum BillingRunItemStatus {
   GENERATING,
   GENERATED,
   FAILED,
-  EXCLUDED
+  EXCLUDED,
+  CANCELLED
 }

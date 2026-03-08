@@ -118,7 +118,7 @@ public class BillingRun {
   }
 
   public void cancel() {
-    if (this.status == BillingRunStatus.COMPLETED || this.status == BillingRunStatus.CANCELLED) {
+    if (this.status == BillingRunStatus.CANCELLED) {
       throw new IllegalStateException("Cannot cancel a " + this.status + " run");
     }
     this.status = BillingRunStatus.CANCELLED;

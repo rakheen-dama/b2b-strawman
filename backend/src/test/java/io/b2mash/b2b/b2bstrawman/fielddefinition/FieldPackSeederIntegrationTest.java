@@ -123,7 +123,7 @@ class FieldPackSeederIntegrationTest {
                 tx -> {
                   var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
                   assertThat(settings.getFieldPackStatus()).isNotNull();
-                  assertThat(settings.getFieldPackStatus()).hasSize(3);
+                  assertThat(settings.getFieldPackStatus()).hasSize(4);
 
                   List<String> packIds =
                       settings.getFieldPackStatus().stream()
@@ -131,7 +131,7 @@ class FieldPackSeederIntegrationTest {
                           .toList();
                   assertThat(packIds)
                       .containsExactlyInAnyOrder(
-                          "common-customer", "common-project", "common-task");
+                          "common-customer", "common-invoice", "common-project", "common-task");
 
                   // Verify each entry has version and appliedAt
                   for (Map<String, Object> entry : settings.getFieldPackStatus()) {

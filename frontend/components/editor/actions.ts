@@ -61,6 +61,6 @@ export async function fetchAllVariableMetadata(): Promise<VariableMetadataRespon
 
   return {
     groups: Array.from(groupMap.values()),
-    loopSources: [],
+    loopSources: [], // Intentionally empty — clause scope doesn't use loop tables
   };
 }

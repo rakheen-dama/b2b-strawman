@@ -30,7 +30,7 @@ interface EditorToolbarProps {
   scope?: "template" | "clause";
 }
 
-export function EditorToolbar({ editor, entityType, scope }: EditorToolbarProps) {
+export function EditorToolbar({ editor, entityType, scope = "template" }: EditorToolbarProps) {
   const [variablePickerOpen, setVariablePickerOpen] = useState(false);
   const [clausePickerOpen, setClausePickerOpen] = useState(false);
 

@@ -82,26 +82,7 @@ public class DocumentTemplateService {
     var response = TemplateDetailResponse.from(dt);
     var enrichedContent = enrichClauseTitles(response.content());
     if (enrichedContent != response.content()) {
-      response =
-          new TemplateDetailResponse(
-              response.id(),
-              response.name(),
-              response.slug(),
-              response.description(),
-              response.category(),
-              response.primaryEntityType(),
-              enrichedContent,
-              response.legacyContent(),
-              response.css(),
-              response.source(),
-              response.sourceTemplateId(),
-              response.packId(),
-              response.packTemplateKey(),
-              response.active(),
-              response.sortOrder(),
-              response.requiredContextFields(),
-              response.createdAt(),
-              response.updatedAt());
+      response = response.withContent(enrichedContent);
     }
     return response;
   }
@@ -455,6 +436,11 @@ public class DocumentTemplateService {
     }
   }
 
+  /**
+   * Structural copy: creates new maps at each tree level, but leaf values (strings, numbers) and
+   * non-content map values (marks, attrs on non-clauseBlock nodes) share references with the
+   * original. Safe because the result is only serialized to JSON and getById() is read-only.
+   */
   @SuppressWarnings("unchecked")
   private Map<String, Object> walkAndUpdateTitles(
       Map<String, Object> node, Map<UUID, String> titleMap) {

@@ -276,5 +276,28 @@ public class DocumentTemplateController {
           dt.getCreatedAt(),
           dt.getUpdatedAt());
     }
+
+    /** Returns a copy with replaced content — avoids fragile 18-field manual reconstruction. */
+    public TemplateDetailResponse withContent(Map<String, Object> newContent) {
+      return new TemplateDetailResponse(
+          id,
+          name,
+          slug,
+          description,
+          category,
+          primaryEntityType,
+          newContent,
+          legacyContent,
+          css,
+          source,
+          sourceTemplateId,
+          packId,
+          packTemplateKey,
+          active,
+          sortOrder,
+          requiredContextFields,
+          createdAt,
+          updatedAt);
+    }
   }
 }

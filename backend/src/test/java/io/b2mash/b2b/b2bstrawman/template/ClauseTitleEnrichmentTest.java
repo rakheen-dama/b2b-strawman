@@ -171,6 +171,91 @@ class ClauseTitleEnrichmentTest {
                 }));
   }
 
+  @Test
+  void shouldReturnContentUnchangedWhenNoClauseBlocks() throws Exception {
+    // Create a template with no clauseBlock nodes
+    UUID plainTemplateId =
+        runInTenantReturn(
+            () ->
+                transactionTemplate.execute(
+                    tx -> {
+                      var content = new LinkedHashMap<String, Object>();
+                      content.put("type", "doc");
+                      content.put(
+                          "content",
+                          List.of(
+                              Map.of(
+                                  "type",
+                                  "paragraph",
+                                  "content",
+                                  List.of(Map.of("type", "text", "text", "Hello")))));
+                      var template =
+                          new DocumentTemplate(
+                              TemplateEntityType.PROJECT,
+                              "Plain Template",
+                              "plain-template-" + UUID.randomUUID().toString().substring(0, 8),
+                              TemplateCategory.ENGAGEMENT_LETTER,
+                              content);
+                      template = documentTemplateRepository.save(template);
+                      return template.getId();
+                    }));
+
+    var result =
+        mockMvc
+            .perform(get("/api/templates/" + plainTemplateId).with(ownerJwt()))
+            .andExpect(status().isOk())
+            .andReturn();
+
+    String json = result.getResponse().getContentAsString();
+    String text = JsonPath.read(json, "$.content.content[0].content[0].text");
+    assertThat(text).isEqualTo("Hello");
+  }
+
+  @Test
+  void shouldPreserveStaleTitle_whenClauseDeletedFromLibrary() throws Exception {
+    UUID deletedClauseId = UUID.randomUUID();
+    UUID templateWithDeletedClause =
+        runInTenantReturn(
+            () ->
+                transactionTemplate.execute(
+                    tx -> {
+                      var clauseBlockAttrs = new LinkedHashMap<String, Object>();
+                      clauseBlockAttrs.put("clauseId", deletedClauseId.toString());
+                      clauseBlockAttrs.put("title", "Deleted Clause Title");
+                      clauseBlockAttrs.put("required", false);
+
+                      var clauseBlockNode = new LinkedHashMap<String, Object>();
+                      clauseBlockNode.put("type", "clauseBlock");
+                      clauseBlockNode.put("attrs", clauseBlockAttrs);
+                      clauseBlockNode.put("content", List.of());
+
+                      var content = new LinkedHashMap<String, Object>();
+                      content.put("type", "doc");
+                      content.put("content", List.of(clauseBlockNode));
+
+                      var template =
+                          new DocumentTemplate(
+                              TemplateEntityType.PROJECT,
+                              "Deleted Clause Template",
+                              "deleted-clause-" + UUID.randomUUID().toString().substring(0, 8),
+                              TemplateCategory.ENGAGEMENT_LETTER,
+                              content);
+                      template = documentTemplateRepository.save(template);
+                      return template.getId();
+                    }));
+
+    var result =
+        mockMvc
+            .perform(get("/api/templates/" + templateWithDeletedClause).with(ownerJwt()))
+            .andExpect(status().isOk())
+            .andReturn();
+
+    String json = result.getResponse().getContentAsString();
+    // Stale title preserved because clause no longer exists in library
+    String title = JsonPath.read(json, "$.content.content[0].attrs.title");
+    assertThat(title).isEqualTo("Deleted Clause Title");
+  }
+
   // --- JWT Helpers ---
 
   private JwtRequestPostProcessor ownerJwt() {
@@ -190,6 +275,14 @@ class ClauseTitleEnrichmentTest {
         .where(RequestScopes.MEMBER_ID, UUID.fromString(memberIdOwner))
         .where(RequestScopes.ORG_ROLE, "owner")
         .run(action);
+  }
+
+  private <T> T runInTenantReturn(ScopedValue.CallableOp<T, RuntimeException> action) {
+    return ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, UUID.fromString(memberIdOwner))
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .call(action);
   }
 
   private String syncMember(

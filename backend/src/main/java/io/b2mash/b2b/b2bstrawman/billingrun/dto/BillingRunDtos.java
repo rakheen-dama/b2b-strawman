@@ -175,4 +175,16 @@ public final class BillingRunDtos {
   public record BatchFailure(UUID invoiceId, String reason) {}
 
   public record BatchSendRequest(LocalDate defaultDueDate, String defaultPaymentTerms) {}
+
+  public record RetainerPeriodPreview(
+      UUID agreementId,
+      UUID customerId,
+      String customerName,
+      LocalDate periodStart,
+      LocalDate periodEnd,
+      BigDecimal consumedHours,
+      BigDecimal estimatedAmount) {}
+
+  public record RetainerGenerateRequest(
+      @NotNull(message = "retainerAgreementIds is required") List<UUID> retainerAgreementIds) {}
 }

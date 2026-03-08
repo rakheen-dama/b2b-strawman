@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.retainer;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,4 +23,16 @@ public interface RetainerAgreementRepository extends JpaRepository<RetainerAgree
 
   /** Counts retainer agreements for a customer. Used by customer archive protection guard. */
   long countByCustomerId(UUID customerId);
+
+  /**
+   * Finds ACTIVE retainer agreements that have an OPEN period whose endDate falls within
+   * [periodFrom, periodTo]. Used by billing run retainer preview.
+   */
+  @Query(
+      "SELECT ra FROM RetainerAgreement ra WHERE ra.status = 'ACTIVE'"
+          + " AND EXISTS (SELECT rp FROM RetainerPeriod rp"
+          + " WHERE rp.agreementId = ra.id AND rp.status = 'OPEN'"
+          + " AND rp.periodEnd >= :periodFrom AND rp.periodEnd <= :periodTo)")
+  List<RetainerAgreement> findActiveWithDuePeriodsInRange(
+      @Param("periodFrom") LocalDate periodFrom, @Param("periodTo") LocalDate periodTo);
 }

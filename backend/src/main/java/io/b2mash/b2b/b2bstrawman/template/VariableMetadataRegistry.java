@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class VariableMetadataRegistry {
 
-  private static final Map<FieldType, String> FIELD_TYPE_TO_VARIABLE_TYPE =
+  static final Map<FieldType, String> FIELD_TYPE_TO_VARIABLE_TYPE =
       Map.of(
           FieldType.TEXT, "string",
           FieldType.NUMBER, "number",

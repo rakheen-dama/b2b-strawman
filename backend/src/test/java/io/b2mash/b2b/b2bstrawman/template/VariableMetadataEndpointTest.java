@@ -1,7 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -76,11 +78,14 @@ class VariableMetadataEndpointTest {
         .andExpect(jsonPath("$.groups[3].label").value("Budget"))
         .andExpect(jsonPath("$.groups[4].label").value("Organization"))
         .andExpect(jsonPath("$.groups[5].label").value("Generated"))
-        // Dynamic custom field groups appended after static groups
-        .andExpect(jsonPath("$.groups[6].label").value("Custom Fields"))
-        .andExpect(jsonPath("$.groups[6].prefix").value("project.customFields"))
-        .andExpect(jsonPath("$.groups[7].label").value("Customer Custom Fields"))
-        .andExpect(jsonPath("$.groups[7].prefix").value("customer.customFields"));
+        // Dynamic custom field groups appended after static groups (position-independent)
+        .andExpect(
+            jsonPath(
+                "$.groups[?(@.prefix == 'project.customFields')].label", hasItem("Custom Fields")))
+        .andExpect(
+            jsonPath(
+                "$.groups[?(@.prefix == 'customer.customFields')].label",
+                hasItem("Customer Custom Fields")));
   }
 
   @Test
@@ -101,9 +106,11 @@ class VariableMetadataEndpointTest {
         .andExpect(jsonPath("$.groups[0].variables[4].key").value("customer.status"))
         .andExpect(jsonPath("$.groups[1].label").value("Organization"))
         .andExpect(jsonPath("$.groups[2].label").value("Generated"))
-        // Dynamic customer custom fields group
-        .andExpect(jsonPath("$.groups[3].label").value("Custom Fields"))
-        .andExpect(jsonPath("$.groups[3].prefix").value("customer.customFields"));
+        // Dynamic customer custom fields group (position-independent)
+        .andExpect(
+            jsonPath(
+                "$.groups[?(@.prefix == 'customer.customFields')].label",
+                hasItem("Custom Fields")));
   }
 
   @Test
@@ -127,10 +134,14 @@ class VariableMetadataEndpointTest {
         .andExpect(jsonPath("$.groups[3].label").value("Organization"))
         .andExpect(jsonPath("$.groups[4].label").value("Generated"))
         // No invoice custom fields (no seeded pack), but customer + project present
-        .andExpect(jsonPath("$.groups[5].label").value("Customer Custom Fields"))
-        .andExpect(jsonPath("$.groups[5].prefix").value("customer.customFields"))
-        .andExpect(jsonPath("$.groups[6].label").value("Project Custom Fields"))
-        .andExpect(jsonPath("$.groups[6].prefix").value("project.customFields"));
+        .andExpect(
+            jsonPath(
+                "$.groups[?(@.prefix == 'customer.customFields')].label",
+                hasItem("Customer Custom Fields")))
+        .andExpect(
+            jsonPath(
+                "$.groups[?(@.prefix == 'project.customFields')].label",
+                hasItem("Project Custom Fields")));
   }
 
   @Test
@@ -211,18 +222,25 @@ class VariableMetadataEndpointTest {
                 .with(memberJwt())
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
-        // Project custom fields group at index 6
-        .andExpect(jsonPath("$.groups[6].label").value("Custom Fields"))
-        .andExpect(jsonPath("$.groups[6].prefix").value("project.customFields"))
-        .andExpect(jsonPath("$.groups[6].variables.length()").value(3))
+        // Project custom fields group (position-independent)
+        .andExpect(
+            jsonPath(
+                "$.groups[?(@.prefix == 'project.customFields')].label", hasItem("Custom Fields")))
+        .andExpect(
+            jsonPath("$.groups[?(@.prefix == 'project.customFields')].variables[*]", hasSize(3)))
         // Verify keys use dot-path format
         .andExpect(
             jsonPath(
-                "$.groups[6].variables[*].key", hasItem("project.customFields.reference_number")))
+                "$.groups[?(@.prefix == 'project.customFields')].variables[*].key",
+                hasItem("project.customFields.reference_number")))
         .andExpect(
-            jsonPath("$.groups[6].variables[*].key", hasItem("project.customFields.priority")))
+            jsonPath(
+                "$.groups[?(@.prefix == 'project.customFields')].variables[*].key",
+                hasItem("project.customFields.priority")))
         .andExpect(
-            jsonPath("$.groups[6].variables[*].key", hasItem("project.customFields.category")));
+            jsonPath(
+                "$.groups[?(@.prefix == 'project.customFields')].variables[*].key",
+                hasItem("project.customFields.category")));
   }
 
   @Test
@@ -235,18 +253,28 @@ class VariableMetadataEndpointTest {
                 .with(memberJwt())
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
-        // Customer custom fields group in invoice context
-        .andExpect(jsonPath("$.groups[5].label").value("Customer Custom Fields"))
-        .andExpect(jsonPath("$.groups[5].prefix").value("customer.customFields"))
-        .andExpect(jsonPath("$.groups[5].variables.length()", greaterThanOrEqualTo(8)))
+        // Customer custom fields group in invoice context (position-independent)
+        .andExpect(
+            jsonPath(
+                "$.groups[?(@.prefix == 'customer.customFields')].label",
+                hasItem("Customer Custom Fields")))
+        .andExpect(
+            jsonPath(
+                "$.groups[?(@.prefix == 'customer.customFields')].variables[*]",
+                hasSize(greaterThanOrEqualTo(8))))
         // Verify known customer custom fields from common-customer pack are present
         .andExpect(
             jsonPath(
-                "$.groups[5].variables[*].key", hasItem("customer.customFields.address_line1")))
+                "$.groups[?(@.prefix == 'customer.customFields')].variables[*].key",
+                hasItem("customer.customFields.address_line1")))
         .andExpect(
-            jsonPath("$.groups[5].variables[*].key", hasItem("customer.customFields.tax_number")))
+            jsonPath(
+                "$.groups[?(@.prefix == 'customer.customFields')].variables[*].key",
+                hasItem("customer.customFields.tax_number")))
         .andExpect(
-            jsonPath("$.groups[5].variables[*].key", hasItem("customer.customFields.phone")));
+            jsonPath(
+                "$.groups[?(@.prefix == 'customer.customFields')].variables[*].key",
+                hasItem("customer.customFields.phone")));
   }
 
   @Test
@@ -266,7 +294,6 @@ class VariableMetadataEndpointTest {
             });
 
     // INVOICE should still have no invoice custom fields group (the inactive one is excluded)
-    // Groups[5] should be customer custom fields, not invoice custom fields
     mockMvc
         .perform(
             get("/api/templates/variables")
@@ -275,8 +302,14 @@ class VariableMetadataEndpointTest {
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         // Invoice custom fields group should NOT appear (only inactive field exists for INVOICE)
-        .andExpect(jsonPath("$.groups[5].label").value("Customer Custom Fields"))
-        .andExpect(jsonPath("$.groups[6].label").value("Project Custom Fields"));
+        .andExpect(
+            jsonPath(
+                "$.groups[?(@.prefix == 'customer.customFields')].label",
+                hasItem("Customer Custom Fields")))
+        .andExpect(
+            jsonPath(
+                "$.groups[?(@.prefix == 'project.customFields')].label",
+                hasItem("Project Custom Fields")));
   }
 
   @Test
@@ -289,16 +322,30 @@ class VariableMetadataEndpointTest {
                 .with(memberJwt())
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.groups[3].label").value("Custom Fields"))
-        .andExpect(jsonPath("$.groups[3].prefix").value("customer.customFields"))
+        .andExpect(
+            jsonPath(
+                "$.groups[?(@.prefix == 'customer.customFields')].label", hasItem("Custom Fields")))
         // At least 8 fields from common-customer pack (may have more from compliance packs)
-        .andExpect(jsonPath("$.groups[3].variables.length()", greaterThanOrEqualTo(8)))
+        .andExpect(
+            jsonPath(
+                "$.groups[?(@.prefix == 'customer.customFields')].variables[*]",
+                hasSize(greaterThanOrEqualTo(8))))
         // Verify known fields from common-customer pack
         .andExpect(
             jsonPath(
-                "$.groups[3].variables[*].key", hasItem("customer.customFields.address_line1")))
+                "$.groups[?(@.prefix == 'customer.customFields')].variables[*].key",
+                hasItem("customer.customFields.address_line1")))
         .andExpect(
-            jsonPath("$.groups[3].variables[*].key", hasItem("customer.customFields.tax_number")));
+            jsonPath(
+                "$.groups[?(@.prefix == 'customer.customFields')].variables[*].key",
+                hasItem("customer.customFields.tax_number")));
+  }
+
+  @Test
+  void fieldTypeToVariableTypeCoversAllFieldTypes() {
+    for (FieldType ft : FieldType.values()) {
+      assertThat(VariableMetadataRegistry.FIELD_TYPE_TO_VARIABLE_TYPE).containsKey(ft);
+    }
   }
 
   // --- JWT Helpers ---

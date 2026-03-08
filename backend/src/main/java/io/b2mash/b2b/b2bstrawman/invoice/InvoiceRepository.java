@@ -41,4 +41,5 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
    * JPQL-based batch lookup scoped to the current tenant schema (search_path isolation), unlike
    * JpaRepository.findAllById which uses EntityManager.find directly.
    */
+  List<Invoice> findByBillingRunIdAndStatus(UUID billingRunId, InvoiceStatus status);
 }

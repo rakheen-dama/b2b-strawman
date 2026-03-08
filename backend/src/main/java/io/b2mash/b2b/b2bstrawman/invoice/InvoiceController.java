@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
+import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceValidationService.ValidationCheck;
@@ -16,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.dto.ValidateGenerationRequest;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import jakarta.validation.Valid;
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.MediaType;
@@ -75,6 +77,15 @@ public class InvoiceController {
   public ResponseEntity<String> preview(@PathVariable UUID id) {
     String html = invoiceService.renderPreview(id);
     return ResponseEntity.ok().contentType(MediaType.TEXT_HTML).body(html);
+  }
+
+  @GetMapping("/unbilled-summary")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<List<BillingRunDtos.CustomerUnbilledSummary>> getUnbilledSummary(
+      @RequestParam LocalDate periodFrom,
+      @RequestParam LocalDate periodTo,
+      @RequestParam String currency) {
+    return ResponseEntity.ok(invoiceService.getUnbilledSummary(periodFrom, periodTo, currency));
   }
 
   @GetMapping

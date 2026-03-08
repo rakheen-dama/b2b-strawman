@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.invoice;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos;
 import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleGuard;
 import io.b2mash.b2b.b2bstrawman.compliance.LifecycleAction;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
@@ -426,6 +427,103 @@ public class InvoiceService {
   }
 
   @Transactional(readOnly = true)
+  public List<BillingRunDtos.CustomerUnbilledSummary> getUnbilledSummary(
+      LocalDate periodFrom, LocalDate periodTo, String currency) {
+
+    String sql =
+        """
+        SELECT
+            c.id AS customer_id,
+            c.name AS customer_name,
+            c.email AS customer_email,
+            COALESCE(time_agg.unbilled_time_count, 0) AS unbilled_time_count,
+            COALESCE(time_agg.unbilled_time_amount, 0) AS unbilled_time_amount,
+            COALESCE(exp_agg.unbilled_expense_count, 0) AS unbilled_expense_count,
+            COALESCE(exp_agg.unbilled_expense_amount, 0) AS unbilled_expense_amount
+        FROM customers c
+        LEFT JOIN LATERAL (
+            SELECT
+                COUNT(*) AS unbilled_time_count,
+                SUM((te.duration_minutes / 60.0) * te.billing_rate_snapshot) AS unbilled_time_amount
+            FROM time_entries te
+            JOIN tasks t ON te.task_id = t.id
+            JOIN projects p ON t.project_id = p.id
+            JOIN customer_projects cp ON cp.project_id = p.id AND cp.customer_id = c.id
+            WHERE te.billable = true
+              AND te.invoice_id IS NULL
+              AND te.billing_rate_currency = :currency
+              AND te.date >= :periodFrom
+              AND te.date <= :periodTo
+        ) time_agg ON true
+        LEFT JOIN LATERAL (
+            SELECT
+                COUNT(*) AS unbilled_expense_count,
+                SUM(e.amount * (1 + COALESCE(e.markup_percent, 0) / 100.0)) AS unbilled_expense_amount
+            FROM expenses e
+            JOIN projects p ON e.project_id = p.id
+            JOIN customer_projects cp ON cp.project_id = p.id AND cp.customer_id = c.id
+            WHERE e.billable = true
+              AND e.invoice_id IS NULL
+              AND e.currency = :currency
+              AND e.date >= :periodFrom
+              AND e.date <= :periodTo
+        ) exp_agg ON true
+        WHERE c.lifecycle_status = 'ACTIVE'
+          AND (COALESCE(time_agg.unbilled_time_count, 0) > 0 OR COALESCE(exp_agg.unbilled_expense_count, 0) > 0)
+        ORDER BY c.name
+        """;
+
+    @SuppressWarnings("unchecked")
+    List<Tuple> rows =
+        entityManager
+            .createNativeQuery(sql, Tuple.class)
+            .setParameter("currency", currency)
+            .setParameter("periodFrom", periodFrom)
+            .setParameter("periodTo", periodTo)
+            .getResultList();
+
+    return rows.stream()
+        .map(
+            row -> {
+              UUID customerId = row.get("customer_id", UUID.class);
+              String customerName = row.get("customer_name", String.class);
+              String customerEmail = row.get("customer_email", String.class);
+              int timeCount = ((Number) row.get("unbilled_time_count")).intValue();
+              BigDecimal timeAmount =
+                  new BigDecimal(row.get("unbilled_time_amount").toString())
+                      .setScale(2, RoundingMode.HALF_UP);
+              int expenseCount = ((Number) row.get("unbilled_expense_count")).intValue();
+              BigDecimal expenseAmount =
+                  new BigDecimal(row.get("unbilled_expense_amount").toString())
+                      .setScale(2, RoundingMode.HALF_UP);
+              BigDecimal totalAmount = timeAmount.add(expenseAmount);
+
+              var prereqCheck =
+                  prerequisiteService.checkForContext(
+                      PrerequisiteContext.INVOICE_GENERATION, EntityType.CUSTOMER, customerId);
+              boolean hasIssues = !prereqCheck.passed();
+              String issueReason =
+                  hasIssues
+                      ? prereqCheck.violations().stream()
+                          .map(v -> v.message())
+                          .collect(Collectors.joining("; "))
+                      : null;
+
+              return new BillingRunDtos.CustomerUnbilledSummary(
+                  customerId,
+                  customerName,
+                  customerEmail,
+                  timeCount,
+                  timeAmount,
+                  expenseCount,
+                  expenseAmount,
+                  totalAmount,
+                  hasIssues,
+                  issueReason);
+            })
+        .toList();
+  }
+
   public UnbilledTimeResponse getUnbilledTime(UUID customerId, LocalDate from, LocalDate to) {
     var customer =
         customerRepository

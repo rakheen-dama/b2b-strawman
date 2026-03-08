@@ -119,6 +119,18 @@ public final class BillingRunDtos {
     }
   }
 
+  public record CustomerUnbilledSummary(
+      UUID customerId,
+      String customerName,
+      String customerEmail,
+      int unbilledTimeEntryCount,
+      BigDecimal unbilledTimeAmount,
+      int unbilledExpenseCount,
+      BigDecimal unbilledExpenseAmount,
+      BigDecimal totalUnbilledAmount,
+      boolean hasPrerequisiteIssues,
+      String prerequisiteIssueReason) {}
+
   public record ExpenseResponse(
       UUID id,
       UUID projectId,

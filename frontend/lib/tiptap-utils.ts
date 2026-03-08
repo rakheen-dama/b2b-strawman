@@ -13,7 +13,16 @@ export function extractTextFromBody(
         | Array<Record<string, unknown>>
         | undefined;
       if (!children) return "";
-      return children.map((child) => (child.text as string) ?? "").join("");
+      return children
+        .map((child) => {
+          if (child.type === "variable") {
+            const attrs = child.attrs as Record<string, unknown> | undefined;
+            const key = attrs?.key as string | undefined;
+            return key ? `{${key}}` : "";
+          }
+          return (child.text as string) ?? "";
+        })
+        .join("");
     })
     .join("\n")
     .trim();

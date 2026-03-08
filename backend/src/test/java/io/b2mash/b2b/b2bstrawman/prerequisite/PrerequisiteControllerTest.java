@@ -337,7 +337,25 @@ class PrerequisiteControllerTest {
 
   @Test
   void shouldReturnEmptyWhenNoAutoApplyGroups() throws Exception {
-    // INVOICE entity type has no auto-apply groups configured
+    // All standard entity types now have auto-apply field packs seeded during provisioning.
+    // To test the "no auto-apply groups" scenario, we disable auto-apply on all INVOICE groups
+    // within this tenant, then verify the intake endpoint returns empty.
+    runInTenant(
+        tenantSchema,
+        ORG_ID,
+        memberIdOwner,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var invoiceGroups =
+                      fieldGroupRepository.findByEntityTypeAndAutoApplyTrueAndActiveTrue(
+                          EntityType.INVOICE);
+                  for (var group : invoiceGroups) {
+                    group.setAutoApply(false);
+                    fieldGroupRepository.save(group);
+                  }
+                }));
+
     mockMvc
         .perform(
             get("/api/field-definitions/intake").with(ownerJwt()).param("entityType", "INVOICE"))

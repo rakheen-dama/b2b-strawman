@@ -27,6 +27,7 @@ import io.b2mash.b2b.b2bstrawman.member.ProjectAccess;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.util.List;
@@ -61,6 +62,8 @@ class ProjectServiceTest {
   @Mock private CustomerLifecycleGuard customerLifecycleGuard;
   @Mock private DocumentRepository documentRepository;
   @Mock private InvoiceRepository invoiceRepository;
+  @Mock private OrgSettingsRepository orgSettingsRepository;
+  @Mock private ProjectNameResolver projectNameResolver;
   @InjectMocks private ProjectService service;
 
   @Test

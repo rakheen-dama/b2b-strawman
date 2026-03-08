@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ConfigureStep } from "./configure-step";
 import { CustomerSelectionStep } from "./customer-selection-step";
+import { CherryPickStep } from "./cherry-pick-step";
+import type { BillingRunItem } from "@/lib/api/billing-runs";
 
 const STEP_LABELS = [
   "Configure",
@@ -30,11 +32,23 @@ export function BillingRunWizard({
   );
   // TODO: Read org's default currency from org settings when available
   const [currency, setCurrency] = useState("ZAR");
+  const [includeRetainers, setIncludeRetainers] = useState(false);
+  const [cherryPickItems, setCherryPickItems] = useState<BillingRunItem[]>([]);
 
-  function handleConfigureNext(newBillingRunId: string, runCurrency: string) {
+  function handleConfigureNext(
+    newBillingRunId: string,
+    runCurrency: string,
+    retainers?: boolean,
+  ) {
     setBillingRunId(newBillingRunId);
     setCurrency(runCurrency);
+    if (retainers !== undefined) setIncludeRetainers(retainers);
     setCurrentStep(2);
+  }
+
+  function handleCustomerSelectionNext(items: BillingRunItem[]) {
+    setCherryPickItems(items);
+    setCurrentStep(3);
   }
 
   function handleBack() {
@@ -96,12 +110,16 @@ export function BillingRunWizard({
           billingRunId={billingRunId}
           currency={currency}
           onBack={handleBack}
-          onNext={handleNext}
+          onNext={handleCustomerSelectionNext}
         />
       )}
-      {currentStep === 3 && (
-        <PlaceholderStep
-          title="Review & Cherry-Pick"
+      {currentStep === 3 && billingRunId && (
+        <CherryPickStep
+          slug={slug}
+          billingRunId={billingRunId}
+          currency={currency}
+          includeRetainers={includeRetainers}
+          items={cherryPickItems}
           onBack={handleBack}
           onNext={handleNext}
         />

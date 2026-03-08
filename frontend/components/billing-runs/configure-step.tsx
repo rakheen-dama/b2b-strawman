@@ -10,7 +10,7 @@ import { createBillingRunAction } from "@/app/(app)/org/[slug]/invoices/billing-
 
 interface ConfigureStepProps {
   slug: string;
-  onNext: (billingRunId: string, currency: string) => void;
+  onNext: (billingRunId: string, currency: string, includeRetainers?: boolean) => void;
 }
 
 export function ConfigureStep({ slug, onNext }: ConfigureStepProps) {
@@ -51,7 +51,7 @@ export function ConfigureStep({ slug, onNext }: ConfigureStepProps) {
         notes: notes || undefined,
       });
       if (result.success && result.billingRun) {
-        onNext(result.billingRun.id, result.billingRun.currency);
+        onNext(result.billingRun.id, result.billingRun.currency, result.billingRun.includeRetainers);
       } else {
         setError(result.error ?? "Failed to create billing run.");
       }

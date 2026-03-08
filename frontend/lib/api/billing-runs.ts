@@ -94,6 +94,33 @@ export interface RetainerPeriodPreview {
   estimatedAmount: number;
 }
 
+export interface UnbilledTimeEntry {
+  id: string;
+  taskId: string;
+  memberId: string;
+  date: string;
+  durationMinutes: number;
+  description: string | null;
+  billable: boolean;
+  billingRateSnapshot: number;
+  billingRateCurrency: string;
+  billableValue: number;
+}
+
+export interface UnbilledExpense {
+  id: string;
+  projectId: string;
+  memberId: string;
+  date: string;
+  description: string | null;
+  amount: number;
+  currency: string;
+  category: string;
+  billable: boolean;
+  markupPercent: number | null;
+  billableAmount: number;
+}
+
 // ---- Request Interfaces ----
 
 export interface CreateBillingRunRequest {
@@ -228,8 +255,8 @@ export async function includeCustomer(
 export async function getUnbilledTime(
   id: string,
   itemId: string,
-): Promise<unknown[]> {
-  return api.get<unknown[]>(
+): Promise<UnbilledTimeEntry[]> {
+  return api.get<UnbilledTimeEntry[]>(
     `/api/billing-runs/${id}/items/${itemId}/unbilled-time`,
   );
 }
@@ -237,8 +264,8 @@ export async function getUnbilledTime(
 export async function getUnbilledExpenses(
   id: string,
   itemId: string,
-): Promise<unknown[]> {
-  return api.get<unknown[]>(
+): Promise<UnbilledExpense[]> {
+  return api.get<UnbilledExpense[]>(
     `/api/billing-runs/${id}/items/${itemId}/unbilled-expenses`,
   );
 }

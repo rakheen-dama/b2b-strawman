@@ -85,6 +85,8 @@ const mockGeneratedItems: BillingRunItem[] = [
   },
 ];
 
+// After batchApprove, the backend still returns items with status GENERATED —
+// the approval is tracked at the billing run level, not per-item status.
 const mockApprovedItems: BillingRunItem[] = [
   {
     id: "item-1",

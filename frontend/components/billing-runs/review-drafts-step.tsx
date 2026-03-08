@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -74,12 +74,37 @@ export function ReviewDraftsStep({
   const [batchPaymentTerms, setBatchPaymentTerms] = useState("");
   const [isBatchUpdating, setIsBatchUpdating] = useState(false);
 
+  // Guard against duplicate generation when navigating back to this step
+  const hasGenerated = useRef(false);
+
   useEffect(() => {
     let cancelled = false;
 
     async function generateAndLoad() {
-      setIsGenerating(true);
       setError(null);
+
+      // If already generated, just reload items without re-generating
+      if (hasGenerated.current) {
+        setIsLoading(true);
+        try {
+          const itemsResult = await getItemsAction(billingRunId);
+          if (cancelled) return;
+          if (itemsResult.success && itemsResult.items) {
+            setItems(itemsResult.items);
+          } else {
+            setError(itemsResult.error ?? "Failed to load items.");
+          }
+        } catch {
+          if (!cancelled) {
+            setError("An unexpected error occurred.");
+          }
+        } finally {
+          if (!cancelled) setIsLoading(false);
+        }
+        return;
+      }
+
+      setIsGenerating(true);
       try {
         const genResult = await generateAction(billingRunId);
         if (cancelled) return;
@@ -88,6 +113,7 @@ export function ReviewDraftsStep({
           setIsGenerating(false);
           return;
         }
+        hasGenerated.current = true;
         setIsGenerating(false);
 
         setIsLoading(true);
@@ -135,6 +161,13 @@ export function ReviewDraftsStep({
     setSheetOpen(true);
   }
 
+  async function refreshItems() {
+    const itemsResult = await getItemsAction(billingRunId);
+    if (itemsResult.success && itemsResult.items) {
+      setItems(itemsResult.items);
+    }
+  }
+
   async function handleSaveInvoice() {
     if (!selectedItem?.invoiceId) return;
     setIsSaving(true);
@@ -154,6 +187,7 @@ export function ReviewDraftsStep({
         setError(result.error ?? "Failed to update invoice.");
       } else {
         setSheetOpen(false);
+        await refreshItems();
       }
     } catch {
       setError("Failed to save invoice changes.");
@@ -166,13 +200,22 @@ export function ReviewDraftsStep({
     if (!batchDueDate) return;
     setIsBatchUpdating(true);
     try {
-      for (const item of draftItems) {
-        if (item.invoiceId) {
-          await updateInvoice(slug, item.invoiceId, item.customerId, {
-            dueDate: batchDueDate,
-          });
-        }
+      const results = await Promise.allSettled(
+        draftItems
+          .filter((item) => item.invoiceId)
+          .map((item) =>
+            updateInvoice(slug, item.invoiceId!, item.customerId, {
+              dueDate: batchDueDate,
+            }),
+          ),
+      );
+      const failures = results.filter((r) => r.status === "rejected");
+      if (failures.length > 0) {
+        setError(
+          `Failed to set due date on ${failures.length} of ${results.length} invoices.`,
+        );
       }
+      await refreshItems();
     } catch {
       setError("Failed to batch set due date.");
     } finally {
@@ -184,13 +227,22 @@ export function ReviewDraftsStep({
     if (!batchPaymentTerms) return;
     setIsBatchUpdating(true);
     try {
-      for (const item of draftItems) {
-        if (item.invoiceId) {
-          await updateInvoice(slug, item.invoiceId, item.customerId, {
-            paymentTerms: batchPaymentTerms,
-          });
-        }
+      const results = await Promise.allSettled(
+        draftItems
+          .filter((item) => item.invoiceId)
+          .map((item) =>
+            updateInvoice(slug, item.invoiceId!, item.customerId, {
+              paymentTerms: batchPaymentTerms,
+            }),
+          ),
+      );
+      const failures = results.filter((r) => r.status === "rejected");
+      if (failures.length > 0) {
+        setError(
+          `Failed to set payment terms on ${failures.length} of ${results.length} invoices.`,
+        );
       }
+      await refreshItems();
     } catch {
       setError("Failed to batch set payment terms.");
     } finally {
@@ -365,6 +417,7 @@ export function ReviewDraftsStep({
                   </span>
                 </td>
                 <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
+                  {/* BillingRunItem has no invoiceNumber field — use truncated ID as placeholder */}
                   {item.invoiceId ? `INV-${item.invoiceId.slice(0, 8)}` : "—"}
                 </td>
                 <td className="px-4 py-3 text-right text-slate-500 dark:text-slate-400">

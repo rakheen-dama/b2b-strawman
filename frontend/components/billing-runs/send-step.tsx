@@ -59,8 +59,15 @@ export function SendStep({
         const result = await getItemsAction(billingRunId);
         if (cancelled) return;
         if (result.success && result.items) {
-          // Show only items that had invoices generated (GENERATED status means approved now)
-          setItems(result.items.filter((item) => item.invoiceId !== null));
+          // Show only approved items — exclude FAILED and EXCLUDED statuses
+          setItems(
+            result.items.filter(
+              (item) =>
+                item.status !== "FAILED" &&
+                item.status !== "EXCLUDED" &&
+                item.status !== "CANCELLED",
+            ),
+          );
         } else {
           setError(result.error ?? "Failed to load approved invoices.");
         }
@@ -90,12 +97,8 @@ export function SendStep({
     setIsSending(true);
     setError(null);
     try {
-      // Use today as default due date and NET_30 as default payment terms
-      const today = new Date().toISOString().split("T")[0];
-      const result = await batchSendAction(billingRunId, {
-        defaultDueDate: today,
-        defaultPaymentTerms: "NET_30",
-      });
+      // Let the backend use each invoice's own due date and payment terms set during review
+      const result = await batchSendAction(billingRunId, {});
       if (result.success && result.result) {
         setSendResult(result.result);
         // Also refresh the billing run to get final stats

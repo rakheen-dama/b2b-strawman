@@ -57,15 +57,13 @@ class ProjectNameResolverTest {
   }
 
   @Test
-  void patternWithMissingCustomerNameCleansTrailingSeparator() {
+  void patternWithMissingCustomerNameCollapsesMidStringSeparators() {
     Map<String, Object> fields = Map.of("reference_number", "REF-001");
     String result =
         resolver.resolve(
             "{reference_number} - {customer.name} - {name}", "Tax Return", fields, null);
-    // {customer.name} becomes empty -> "REF-001 -  - Tax Return"
-    // The resolve method replaces with empty string, trailing separator cleanup handles end of
-    // string
-    assertThat(result).isEqualTo("REF-001 -  - Tax Return");
+    // {customer.name} becomes empty -> double separator collapsed to single
+    assertThat(result).isEqualTo("REF-001 - Tax Return");
   }
 
   @Test
@@ -78,8 +76,8 @@ class ProjectNameResolverTest {
   @Test
   void patternWithNullProjectName() {
     String result = resolver.resolve("{name} - {customer.name}", null, null, "Acme Corp");
-    // {name} becomes "" -> " - Acme Corp"
-    assertThat(result).contains("Acme Corp");
+    // {name} becomes "" -> leading separator cleaned by trim + trailing cleanup
+    assertThat(result).isEqualTo("Acme Corp");
   }
 
   @Test
@@ -87,8 +85,8 @@ class ProjectNameResolverTest {
     Map<String, Object> fields = new java.util.HashMap<>();
     fields.put("reference_number", null);
     String result = resolver.resolve("{reference_number} - {name}", "Tax Return", fields, null);
-    // {reference_number} becomes "" -> " - Tax Return"
-    assertThat(result).contains("Tax Return");
+    // {reference_number} becomes "" -> leading separator cleaned
+    assertThat(result).isEqualTo("Tax Return");
   }
 
   @Test

@@ -41,7 +41,10 @@ public class ProjectNameResolver {
       }
     }
 
-    // Clean trailing separators (e.g., " - " at end when customer.name is empty)
-    return result.trim().replaceAll("\\s+-\\s*$", "").trim();
+    // Collapse mid-string double separators (e.g., " -  - " → " - ")
+    result = result.replaceAll("(\\s*-\\s*){2,}", " - ");
+    // Clean leading and trailing separators
+    result = result.trim().replaceAll("^-\\s*", "").replaceAll("\\s+-\\s*$", "").trim();
+    return result;
   }
 }

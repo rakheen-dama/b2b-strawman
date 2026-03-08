@@ -165,7 +165,7 @@ FRONTEND TRACK (after backend APIs)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 1a | 304 | 304A | `BillingRunService.loadPreview()` with auto-discovery, prerequisite pre-check, `BillingRunEntrySelection` creation during preview. Preview + item endpoints. ~3 modified files (~10 tests). Backend only. | |
+| 1a | 304 | 304A | `BillingRunService.loadPreview()` with auto-discovery, prerequisite pre-check, `BillingRunEntrySelection` creation during preview. Preview + item endpoints. ~3 modified files (~10 tests). Backend only. | **Done** (PR #597) |
 | 1b | 304 | 304B | `InvoiceService.getUnbilledSummary()` cross-customer query, `GET /api/invoices/unbilled-summary` endpoint, `CustomerUnbilledSummary` DTO. ~3 modified/new files (~5 tests). Backend only. | |
 
 ### Stage 2: Selection & Cherry-Pick
@@ -325,7 +325,7 @@ Stage 6: [310A] -> [310B] -> [310C] // [311A]                         (wizard se
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **304A** | 304.1--304.7 | `BillingRunService.loadPreview()` with auto-discovery SQL query, prerequisite pre-check via `PrerequisiteService`, `BillingRunEntrySelection` creation during preview (all entries included by default). Preview + item endpoints on `BillingRunController`. Preview/item response DTOs. ~3 modified files + 1 new test file (~10 tests). Backend only. | |
+| **304A** | 304.1--304.7 | `BillingRunService.loadPreview()` with auto-discovery SQL query, prerequisite pre-check via `PrerequisiteService`, `BillingRunEntrySelection` creation during preview (all entries included by default). Preview + item endpoints on `BillingRunController`. Preview/item response DTOs. ~3 modified files + 1 new test file (~10 tests). Backend only. | **Done** (PR #597) |
 | **304B** | 304.8--304.12 | `InvoiceService.getUnbilledSummary()` cross-customer native SQL query, `GET /api/invoices/unbilled-summary` endpoint on `InvoiceController`, `CustomerUnbilledSummary` DTO. ~3 modified/new files (~5 tests). Backend only. | |
 
 ### Tasks

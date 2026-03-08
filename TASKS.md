@@ -343,7 +343,7 @@
 | 302 | Self-Service Org Creation Gate & JIT Provisioning Toggle | Backend + Frontend | 298 | S | 302A | **Done** (PR #594) |
 | **Phase 40 — Bulk Billing & Batch Operations** | | | | | | See [tasks/phase40-bulk-billing-batch-operations.md](tasks/phase40-bulk-billing-batch-operations.md) |
 | 303 | BillingRun Entity Foundation & Migration | Backend | -- | M | 303A, 303B | **Done** (PRs #595, #596) |
-| 304 | Preview, Customer Discovery & Unbilled Summary | Backend | 303 | M | 304A, 304B | |
+| 304 | Preview, Customer Discovery & Unbilled Summary | Backend | 303 | M | 304A, 304B | 304A **Done** (PR #597) |
 | 305 | Entry Selection & Cherry-Pick | Backend | 304 | S | 305A | |
 | 306 | Batch Generation & Cancel | Backend | 305 | M | 306A, 306B | |
 | 307 | Batch Approve, Send & Notifications | Backend | 306 | M | 307A, 307B | |

@@ -732,6 +732,10 @@ public class BillingRunService {
         successCount,
         failures.size());
 
+    // Log audit event
+    final int finalSuccessCount = successCount;
+    auditService.log(AuditEventBuilder.billingRunApproved(run, finalSuccessCount));
+
     return new BatchOperationResult(successCount, failures.size(), failures);
   }
 

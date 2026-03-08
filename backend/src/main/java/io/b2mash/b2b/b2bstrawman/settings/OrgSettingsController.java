@@ -162,6 +162,21 @@ public class OrgSettingsController {
             request.defaultWeeklyCapacityHours(), memberId, orgRole));
   }
 
+  @PatchMapping("/batch-billing")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<SettingsResponse> updateBatchBillingSettings(
+      @Valid @RequestBody UpdateBatchBillingSettingsRequest request) {
+    UUID memberId = RequestScopes.requireMemberId();
+    String orgRole = RequestScopes.getOrgRole();
+    return ResponseEntity.ok(
+        orgSettingsService.updateBatchBillingSettings(
+            request.billingBatchAsyncThreshold(),
+            request.billingEmailRateLimit(),
+            request.defaultBillingRunCurrency(),
+            memberId,
+            orgRole));
+  }
+
   // --- DTOs ---
 
   public record SettingsResponse(
@@ -239,4 +254,14 @@ public class OrgSettingsController {
       @NotNull(message = "defaultWeeklyCapacityHours is required")
           @Positive(message = "defaultWeeklyCapacityHours must be positive")
           BigDecimal defaultWeeklyCapacityHours) {}
+
+  public record UpdateBatchBillingSettingsRequest(
+      @Min(value = 1, message = "billingBatchAsyncThreshold must be at least 1")
+          @Max(value = 1000, message = "billingBatchAsyncThreshold must be at most 1000")
+          Integer billingBatchAsyncThreshold,
+      @Min(value = 1, message = "billingEmailRateLimit must be at least 1")
+          @Max(value = 100, message = "billingEmailRateLimit must be at most 100")
+          Integer billingEmailRateLimit,
+      @Size(min = 3, max = 3, message = "defaultBillingRunCurrency must be exactly 3 characters")
+          String defaultBillingRunCurrency) {}
 }

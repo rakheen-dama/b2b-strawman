@@ -34,7 +34,6 @@ export function TaskSubItems({
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
 
     fetchTaskItems(taskId)
       .then((data) => {

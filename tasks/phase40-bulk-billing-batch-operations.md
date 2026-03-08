@@ -24,7 +24,7 @@ Phase 40 adds a **bulk billing system** to the DocTeams platform -- the ability 
 | 304 | Preview, Customer Discovery & Unbilled Summary | Backend | 303 | M | 304A, 304B | **Done** (PRs #597, #598) |
 | 305 | Entry Selection & Cherry-Pick | Backend | 304 | S | 305A | **Done** (PR #599) |
 | 306 | Batch Generation & Cancel | Backend | 305 | M | 306A, 306B | **Done** (PRs #600, #601) |
-| 307 | Batch Approve, Send & Notifications | Backend | 306 | M | 307A, 307B | |
+| 307 | Batch Approve, Send & Notifications | Backend | 306 | M | 307A, 307B | **Done** (PRs #602, #603) |
 | 308 | Retainer Batch Close | Backend | 306 | S | 308A | |
 | 309 | Billing Run List & Detail Pages (Frontend) | Frontend | 307 | M | 309A, 309B | |
 | 310 | Billing Run Wizard (Frontend) | Frontend | 309 | L | 310A, 310B, 310C | |
@@ -187,7 +187,7 @@ FRONTEND TRACK (after backend APIs)
 |-------|------|-------|---------|--------|
 | 4a (parallel) | 307 | 307A | `batchApprove()`, `batchSend()` with rate limiting, default due date/terms, progress tracking, approve + send endpoints, `BatchOperationResult`/`BatchSendRequest` DTOs. ~3 modified files (~8 tests). Backend only. | **Done** (PR #602) |
 | 4b (parallel) | 308 | 308A | `loadRetainerPreview()`, `generateRetainerInvoices()`, retainer-preview + retainer-generate endpoints, `RetainerPeriodPreview` DTO. ~3 modified files (~5 tests). Backend only. | |
-| 4c | 307 | 307B | 3 remaining audit events (APPROVED, SENT, CANCELLED), `BillingRunEventListener` with 3 notification types, OrgSettings batch billing settings update method + endpoint inclusion. ~4 new/modified files (~6 tests). Backend only. | |
+| 4c | 307 | 307B | 3 remaining audit events (APPROVED, SENT, CANCELLED), `BillingRunEventListener` with 3 notification types, OrgSettings batch billing settings update method + endpoint inclusion. ~4 new/modified files (~6 tests). Backend only. | **Done** (PR #603) |
 
 ### Stage 5: Frontend List & Detail
 
@@ -512,7 +512,7 @@ Stage 6: [310A] -> [310B] -> [310C] // [311A]                         (wizard se
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **307A** | 307.1--307.7 | `batchApprove()`, `batchSend()` with token-bucket rate limiting, default due date/terms application, progress tracking via `BillingRun.totalSent`, approve + send endpoints, `BatchOperationResult`/`BatchFailure`/`BatchSendRequest` DTOs. ~3 modified files + 1 new test file (~8 tests). Backend only. | **Done** (PR #602) |
-| **307B** | 307.8--307.14 | `BILLING_RUN_APPROVED`, `BILLING_RUN_SENT` audit event builders, `BillingRunEventListener` listening for 3 domain events (completed, sent, failures), 3 notification types via `NotificationService`, OrgSettings batch billing settings update method. ~4 new/modified files + 1 new test file (~6 tests). Backend only. | |
+| **307B** | 307.8--307.14 | `BILLING_RUN_APPROVED`, `BILLING_RUN_SENT` audit event builders, `BillingRunEventListener` listening for 3 domain events (completed, sent, failures), 3 notification types via `NotificationService`, OrgSettings batch billing settings update method. ~4 new/modified files + 1 new test file (~6 tests). Backend only. | **Done** (PR #603) |
 
 ### Tasks
 

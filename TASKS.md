@@ -346,11 +346,21 @@
 | 304 | Preview, Customer Discovery & Unbilled Summary | Backend | 303 | M | 304A, 304B | **Done** (PRs #597, #598) |
 | 305 | Entry Selection & Cherry-Pick | Backend | 304 | S | 305A | **Done** (PR #599) |
 | 306 | Batch Generation & Cancel | Backend | 305 | M | 306A, 306B | **Done** (PRs #600, #601) |
-| 307 | Batch Approve, Send & Notifications | Backend | 306 | M | 307A, 307B | 307A **Done** (PR #602) |
+| 307 | Batch Approve, Send & Notifications | Backend | 306 | M | 307A, 307B | **Done** (PRs #602, #603) |
 | 308 | Retainer Batch Close | Backend | 306 | S | 308A | |
 | 309 | Billing Run List & Detail Pages (Frontend) | Frontend | 307 | M | 309A, 309B | |
 | 310 | Billing Run Wizard (Frontend) | Frontend | 309 | L | 310A, 310B, 310C | |
 | 311 | Billing Settings & Polish (Frontend) | Frontend | 309 | S | 311A | |
+| **Phase 41 — Organisation Roles & Capability-Based Permissions** | | | | | | See [tasks/phase41-org-roles-capabilities.md](tasks/phase41-org-roles-capabilities.md) |
+| 312 | OrgRole Entity Foundation & Migration | Backend | -- | M | 312A, 312B | |
+| 313 | Capability Resolution & Authorization Infrastructure | Backend | 312 | M | 313A, 313B | |
+| 314 | @PreAuthorize Migration (Batch 1: Financial, Invoicing, Project) | Backend | 313 | M | 314A, 314B | |
+| 315 | @PreAuthorize Migration (Batch 2: Customer, Automation, Resource, Team) | Backend | 313 | M | 315A, 315B | |
+| 316 | OrgRole CRUD API & Member Role Assignment | Backend | 312 | M | 316A, 316B | |
+| 317 | Audit Events & Notifications | Backend | 316 | S | 317A | |
+| 318 | Frontend Capability Context & Sidebar Gating | Frontend | 313 | M | 318A, 318B | |
+| 319 | Settings: Roles & Permissions Page | Frontend | 316, 318 | M | 319A, 319B | |
+| 320 | Team Page: Member Role Management & Invite Extension | Frontend | 316, 318 | M | 320A, 320B | |
 
 ---
 

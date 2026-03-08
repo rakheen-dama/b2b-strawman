@@ -13,3 +13,10 @@ spring:
 app:
   jit-provisioning:
     enabled: true
+
+keycloak:
+  admin:
+    auth-server-url: ${KEYCLOAK_AUTH_SERVER_URL:http://localhost:8180}
+    realm: ${KEYCLOAK_REALM:docteams}
+    username: ${KEYCLOAK_ADMIN_USERNAME:admin}
+    password: ${KEYCLOAK_ADMIN_PASSWORD:admin}

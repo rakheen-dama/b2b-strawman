@@ -108,9 +108,5 @@ app:
     otp-expiry-minutes: 10
     otp-max-attempts: 5
 
-keycloak:
-  admin:
-    auth-server-url: ${KEYCLOAK_AUTH_SERVER_URL:}
-    realm: ${KEYCLOAK_REALM:docteams}
-    username: ${KEYCLOAK_ADMIN_USERNAME:}
-    password: ${KEYCLOAK_ADMIN_PASSWORD:}
+# keycloak.admin.* properties are defined in application-keycloak.yml
+# The KeycloakProvisioningClient bean is only created when that profile is active.

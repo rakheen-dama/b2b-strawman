@@ -15,9 +15,7 @@ export interface AccessRequest {
   createdAt: string;
 }
 
-interface AccessRequestsResponse {
-  content: AccessRequest[];
-}
+type AccessRequestsResponse = AccessRequest[];
 
 interface ActionResult {
   success: boolean;
@@ -33,7 +31,7 @@ export async function listAccessRequests(
     const qs = params.toString();
     const endpoint = `/api/platform-admin/access-requests${qs ? `?${qs}` : ""}`;
     const response = await api.get<AccessRequestsResponse>(endpoint);
-    return { success: true, data: response.content };
+    return { success: true, data: response };
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };

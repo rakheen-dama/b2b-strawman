@@ -16,7 +16,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMember;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMemberRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldType;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
 import io.b2mash.b2b.b2bstrawman.retention.RetentionPolicy;
 import io.b2mash.b2b.b2bstrawman.retention.RetentionPolicyRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
@@ -32,7 +32,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.ObjectMapper;
 
 /**
@@ -56,7 +55,7 @@ public class CompliancePackSeeder {
   private final FieldGroupMemberRepository fieldGroupMemberRepository;
   private final RetentionPolicyRepository retentionPolicyRepository;
   private final OrgSettingsRepository orgSettingsRepository;
-  private final TransactionTemplate transactionTemplate;
+  private final TenantTransactionHelper tenantTransactionHelper;
 
   public CompliancePackSeeder(
       ResourcePatternResolver resourceResolver,
@@ -68,7 +67,7 @@ public class CompliancePackSeeder {
       FieldGroupMemberRepository fieldGroupMemberRepository,
       RetentionPolicyRepository retentionPolicyRepository,
       OrgSettingsRepository orgSettingsRepository,
-      TransactionTemplate transactionTemplate) {
+      TenantTransactionHelper tenantTransactionHelper) {
     this.resourceResolver = resourceResolver;
     this.objectMapper = objectMapper;
     this.checklistTemplateRepository = checklistTemplateRepository;
@@ -78,13 +77,11 @@ public class CompliancePackSeeder {
     this.fieldGroupMemberRepository = fieldGroupMemberRepository;
     this.retentionPolicyRepository = retentionPolicyRepository;
     this.orgSettingsRepository = orgSettingsRepository;
-    this.transactionTemplate = transactionTemplate;
+    this.tenantTransactionHelper = tenantTransactionHelper;
   }
 
   public void seedPacksForTenant(String tenantId, String orgId) {
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantId)
-        .where(RequestScopes.ORG_ID, orgId)
-        .run(() -> transactionTemplate.executeWithoutResult(tx -> doSeedPacks(tenantId)));
+    tenantTransactionHelper.executeInTenantTransaction(tenantId, orgId, t -> doSeedPacks(t));
   }
 
   private void doSeedPacks(String tenantId) {

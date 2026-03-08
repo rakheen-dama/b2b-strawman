@@ -21,7 +21,7 @@ echo "=== Keycloak Seed ==="
 echo ""
 
 # ---- Wait for Keycloak to be ready ----
-echo "[1/8] Waiting for Keycloak..."
+echo "[1/9] Waiting for Keycloak..."
 MAX_WAIT=120
 ELAPSED=0
 while [[ $ELAPSED -lt $MAX_WAIT ]]; do
@@ -38,7 +38,7 @@ if [[ $ELAPSED -ge $MAX_WAIT ]]; then
 fi
 
 # ---- Authenticate admin ----
-echo "[2/8] Authenticating admin..."
+echo "[2/9] Authenticating admin..."
 $KCADM config credentials \
   --server "${KEYCLOAK_URL}" \
   --realm master \
@@ -46,7 +46,7 @@ $KCADM config credentials \
   --password "${KEYCLOAK_ADMIN_PASSWORD}"
 
 # ---- Create Organization ----
-echo "[3/8] Creating organization 'acme-corp'..."
+echo "[3/9] Creating organization 'acme-corp'..."
 ORG_ID=$($KCADM create organizations \
   -r "${REALM}" \
   -s name="Acme Corp" \
@@ -67,7 +67,7 @@ fi
 echo "  Organization ID: ${ORG_ID}"
 
 # ---- Create Users ----
-echo "[4/8] Creating users..."
+echo "[4/9] Creating users..."
 
 create_user() {
   local username="$1"
@@ -109,7 +109,7 @@ BOB_ID=$(create_user "bob" "bob@example.com" "Bob" "Admin" "password")
 CAROL_ID=$(create_user "carol" "carol@example.com" "Carol" "Member" "password")
 
 # ---- Assign Organization Membership & Roles ----
-echo "[5/8] Assigning organization membership and roles..."
+echo "[5/9] Assigning organization membership and roles..."
 
 assign_org_member() {
   local user_id="$1"
@@ -137,7 +137,7 @@ assign_org_member "${BOB_ID}" "admin" "Bob"
 assign_org_member "${CAROL_ID}" "member" "Carol"
 
 # ---- Create platform-admins group ----
-echo "[6/8] Creating 'platform-admins' group..."
+echo "[6/9] Creating 'platform-admins' group..."
 GROUP_ID=$($KCADM create groups \
   -r "${REALM}" \
   -s name="platform-admins" \
@@ -156,7 +156,7 @@ fi
 echo "  Group ID: ${GROUP_ID}"
 
 # ---- Add Group Membership Mapper to gateway-bff client ----
-echo "[7/8] Adding Group Membership Mapper to gateway-bff client..."
+echo "[7/9] Adding Group Membership Mapper to gateway-bff client..."
 
 # Find the gateway-bff client ID (Keycloak internal UUID, not the clientId string)
 CLIENT_KC_ID=$($KCADM get clients -r "${REALM}" --fields id,clientId \
@@ -192,18 +192,22 @@ else
   exit 1
 fi
 
-# ---- Assign Alice to platform-admins group ----
-echo "[8/8] Assigning Alice to 'platform-admins' group..."
-if [[ -z "$ALICE_ID" ]]; then
-  echo "  ERROR: ALICE_ID not set — skipping group assignment"
+# ---- Create platform admin user (separate from tenant users) ----
+echo "[8/9] Creating platform admin user..."
+PADMIN_ID=$(create_user "padmin" "padmin@docteams.local" "Platform" "Admin" "password")
+
+# ---- Assign platform admin to platform-admins group ----
+echo "[9/9] Assigning platform admin to 'platform-admins' group..."
+if [[ -z "$PADMIN_ID" ]]; then
+  echo "  ERROR: PADMIN_ID not set — skipping group assignment"
 else
-  $KCADM update "users/${ALICE_ID}/groups/${GROUP_ID}" \
+  $KCADM update "users/${PADMIN_ID}/groups/${GROUP_ID}" \
     -r "${REALM}" \
     -s realm="${REALM}" \
-    -s userId="${ALICE_ID}" \
+    -s userId="${PADMIN_ID}" \
     -s groupId="${GROUP_ID}" \
     -n 2>/dev/null || true
-  echo "  Alice assigned to platform-admins group."
+  echo "  Platform Admin assigned to platform-admins group."
 fi
 
 echo ""
@@ -213,9 +217,10 @@ echo "  Realm:        ${REALM}"
 echo "  Organization: acme-corp (${ORG_ID})"
 echo "  Group:        platform-admins (${GROUP_ID})"
 echo "  Users:"
-echo "    alice@example.com / password (owner, platform-admin)"
-echo "    bob@example.com   / password (admin)"
-echo "    carol@example.com / password (member)"
+echo "    padmin@docteams.local / password (platform-admin — NOT a tenant member)"
+echo "    alice@example.com     / password (owner)"
+echo "    bob@example.com       / password (admin)"
+echo "    carol@example.com     / password (member)"
 echo ""
 echo "  Admin Console: ${KEYCLOAK_URL}/admin/master/console/"
 echo "  Account:       ${KEYCLOAK_URL}/realms/${REALM}/account/"

@@ -15,7 +15,6 @@ import java.time.Duration;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,15 +29,11 @@ public class MemberFilter extends OncePerRequestFilter {
   private static final Logger log = LoggerFactory.getLogger(MemberFilter.class);
 
   private final MemberRepository memberRepository;
-  private final boolean jitProvisioningEnabled;
   private final Cache<String, UUID> memberCache =
       Caffeine.newBuilder().maximumSize(50_000).expireAfterWrite(Duration.ofHours(1)).build();
 
-  public MemberFilter(
-      MemberRepository memberRepository,
-      @Value("${app.jit-provisioning.enabled:false}") boolean jitProvisioningEnabled) {
+  public MemberFilter(MemberRepository memberRepository) {
     this.memberRepository = memberRepository;
-    this.jitProvisioningEnabled = jitProvisioningEnabled;
   }
 
   @Override
@@ -116,26 +111,25 @@ public class MemberFilter extends OncePerRequestFilter {
   }
 
   private UUID lazyCreateMember(String clerkUserId, String orgRole, Jwt jwt) {
-    String email;
-    String name;
+    // Always extract real email/name from JWT when available.
+    // Keycloak JWTs include email/name directly; Clerk JWTs may not (updated via webhook).
+    String jwtEmail = jwt.getClaimAsString("email");
+    String jwtName = jwt.getClaimAsString("name");
+    String email =
+        (jwtEmail != null && jwtEmail.contains("@"))
+            ? jwtEmail
+            : clerkUserId + "@placeholder.internal";
+    String name = jwtName;
 
-    if (jitProvisioningEnabled) {
-      // When JIT is enabled, try to extract real email/name from JWT
-      String jwtEmail = jwt.getClaimAsString("email");
-      String jwtName = jwt.getClaimAsString("name");
-      email =
-          (jwtEmail != null && jwtEmail.contains("@"))
-              ? jwtEmail
-              : clerkUserId + "@placeholder.internal";
-      name = jwtName != null ? jwtName : null;
-    } else {
-      email = clerkUserId + "@placeholder.internal";
-      name = null;
+    // First member in a newly-provisioned tenant becomes owner (founding user).
+    String effectiveRole = orgRole != null ? orgRole : Roles.ORG_MEMBER;
+    if (Roles.ORG_MEMBER.equals(effectiveRole) && memberRepository.count() == 0) {
+      effectiveRole = Roles.ORG_OWNER;
+      log.info("Promoting first member {} to owner (founding user)", clerkUserId);
     }
 
     try {
-      var member =
-          new Member(clerkUserId, email, name, null, orgRole != null ? orgRole : Roles.ORG_MEMBER);
+      var member = new Member(clerkUserId, email, name, null, effectiveRole);
       member = memberRepository.save(member);
       log.info(
           "Lazy-created member {} for user {} in tenant {}",

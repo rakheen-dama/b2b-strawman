@@ -5,6 +5,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpClient.Version;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +38,7 @@ public class KeycloakProvisioningClient {
   private final String tokenUrl;
   private final String adminUsername;
   private final String adminPassword;
+  private final String frontendBaseUrl;
 
   private volatile String cachedToken;
   private volatile Instant tokenExpiry = Instant.MIN;
@@ -45,7 +47,8 @@ public class KeycloakProvisioningClient {
       @Value("${keycloak.admin.auth-server-url}") String authServerUrl,
       @Value("${keycloak.admin.realm}") String realm,
       @Value("${keycloak.admin.username}") String adminUsername,
-      @Value("${keycloak.admin.password}") String adminPassword) {
+      @Value("${keycloak.admin.password}") String adminPassword,
+      @Value("${app.base-url:http://localhost:3000}") String frontendBaseUrl) {
     var httpClient = HttpClient.newBuilder().version(Version.HTTP_1_1).build();
     var requestFactory = new JdkClientHttpRequestFactory(httpClient);
     this.restClient =
@@ -71,40 +74,65 @@ public class KeycloakProvisioningClient {
     this.tokenUrl = authServerUrl + "/realms/master/protocol/openid-connect/token";
     this.adminUsername = adminUsername;
     this.adminPassword = adminPassword;
+    this.frontendBaseUrl = frontendBaseUrl;
   }
 
   /**
-   * Creates an organization in Keycloak.
+   * Creates an organization in Keycloak, or returns the existing org ID if one with the same
+   * name/alias already exists (409 Conflict).
    *
-   * <p>Note: Keycloak returns 409 Conflict if the alias already exists, which the error handler
-   * will surface as a ResponseStatusException.
-   *
-   * @return the organization ID extracted from the Location header
-   * @throws IllegalStateException if the Location header is missing from the response
+   * @return the organization ID
    */
+  @SuppressWarnings("unchecked")
   public String createOrganization(String name, String slug) {
-    var body = Map.of("name", name, "alias", slug, "enabled", true);
-    var response =
-        restClient
-            .post()
-            .uri("/organizations")
-            .header("Authorization", "Bearer " + getAdminToken())
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(body)
-            .retrieve()
-            .toBodilessEntity();
-    var location = response.getHeaders().getLocation();
-    if (location == null) {
-      throw new IllegalStateException(
-          "Keycloak org creation succeeded but no Location header returned");
+    var body = Map.of("name", name, "alias", slug, "enabled", true, "redirectUrl", frontendBaseUrl);
+    try {
+      var response =
+          restClient
+              .post()
+              .uri("/organizations")
+              .header("Authorization", "Bearer " + getAdminToken())
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(body)
+              .retrieve()
+              .toBodilessEntity();
+      var location = response.getHeaders().getLocation();
+      if (location == null) {
+        throw new IllegalStateException(
+            "Keycloak org creation succeeded but no Location header returned");
+      }
+      String path = location.getPath();
+      return path.substring(path.lastIndexOf('/') + 1);
+    } catch (ResponseStatusException e) {
+      if (e.getStatusCode().value() != 409) {
+        throw e;
+      }
+      // Org already exists — look it up by alias
+      log.info("Keycloak org with alias '{}' already exists, looking up ID", slug);
+      return findOrganizationByAlias(slug);
     }
-    String path = location.getPath();
-    return path.substring(path.lastIndexOf('/') + 1);
+  }
+
+  private String findOrganizationByAlias(String alias) {
+    var orgs =
+        restClient
+            .get()
+            .uri("/organizations?search={alias}&exact=true", alias)
+            .header("Authorization", "Bearer " + getAdminToken())
+            .retrieve()
+            .body(List.class);
+    if (orgs == null || orgs.isEmpty()) {
+      throw new IllegalStateException(
+          "Keycloak returned 409 but no org found with alias: " + alias);
+    }
+    var org = (Map<String, Object>) orgs.getFirst();
+    return (String) org.get("id");
   }
 
   /**
    * Invites a user to the organization by email. Keycloak 26.5 uses the {@code
-   * /members/invite-user} endpoint with form-urlencoded body.
+   * /members/invite-user} endpoint with form-urlencoded body. After inviting, sets the org's {@code
+   * creatorUserId} attribute so the gateway can identify the founding user.
    */
   public void inviteUser(String orgId, String email) {
     String formBody = "email=" + URLEncoder.encode(email, StandardCharsets.UTF_8);
@@ -116,6 +144,41 @@ public class KeycloakProvisioningClient {
         .body(formBody)
         .retrieve()
         .toBodilessEntity();
+  }
+
+  /**
+   * Sets the creatorUserId attribute on the organization. The gateway uses this to determine which
+   * member is the org owner (Keycloak org memberships don't carry roles by default).
+   */
+  public void setOrgCreator(String orgId, String email) {
+    String userId = findUserIdByEmail(email);
+    if (userId == null) {
+      log.warn("Could not find Keycloak user for email {} to set as org creator", email);
+      return;
+    }
+    restClient
+        .put()
+        .uri("/organizations/{orgId}", orgId)
+        .header("Authorization", "Bearer " + getAdminToken())
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(Map.of("attributes", Map.of("creatorUserId", List.of(userId))))
+        .retrieve()
+        .toBodilessEntity();
+    log.info("Set creatorUserId={} on org {}", userId, orgId);
+  }
+
+  @SuppressWarnings("unchecked")
+  private String findUserIdByEmail(String email) {
+    var users =
+        restClient
+            .get()
+            .uri("/users?email={email}&exact=true", email)
+            .header("Authorization", "Bearer " + getAdminToken())
+            .retrieve()
+            .body(List.class);
+    if (users == null || users.isEmpty()) return null;
+    var user = (Map<String, Object>) users.getFirst();
+    return (String) user.get("id");
   }
 
   @SuppressWarnings("unchecked")

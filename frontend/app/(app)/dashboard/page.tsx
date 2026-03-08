@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { AUTH_MODE, getAuthContext } from "@/lib/auth/server";
+import { AUTH_MODE, getAuthContext, getSessionIdentity } from "@/lib/auth/server";
 
 const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:8443";
 
@@ -16,7 +16,17 @@ export default async function DashboardRedirectPage() {
     if (orgSlug) {
       redirect(`/org/${orgSlug}/dashboard`);
     }
-    // No org -- show pending message
+    // No org — check if platform admin before showing pending message
+    let isPlatformAdmin = false;
+    try {
+      const identity = await getSessionIdentity();
+      isPlatformAdmin = identity.groups.includes("platform-admins");
+    } catch {
+      // not authenticated or no groups
+    }
+    if (isPlatformAdmin) {
+      redirect("/platform-admin/access-requests");
+    }
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50">
         <div className="w-full max-w-md space-y-6 rounded-xl border border-slate-200 bg-white p-8 shadow-sm">

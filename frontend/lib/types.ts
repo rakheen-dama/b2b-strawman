@@ -436,6 +436,16 @@ export interface OrgSettings {
   defaultRequestReminderDays?: number;
   // capacity defaults
   defaultWeeklyCapacityHours?: number;
+  // batch billing defaults
+  billingBatchAsyncThreshold?: number;
+  billingEmailRateLimit?: number;
+  defaultBillingRunCurrency?: string | null;
+}
+
+export interface UpdateBatchBillingSettingsRequest {
+  billingBatchAsyncThreshold: number;
+  billingEmailRateLimit: number;
+  defaultBillingRunCurrency?: string | null;
 }
 
 export interface UpdateTaxSettingsRequest {

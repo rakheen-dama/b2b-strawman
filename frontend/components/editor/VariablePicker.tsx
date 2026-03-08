@@ -19,11 +19,12 @@ import {
 import type { TemplateEntityType } from "@/lib/types";
 import {
   fetchVariableMetadata,
+  fetchAllVariableMetadata,
   type VariableMetadataResponse,
 } from "./actions";
 
 interface VariablePickerProps {
-  entityType: TemplateEntityType;
+  entityType?: TemplateEntityType;
   onSelect: (key: string) => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -41,7 +42,10 @@ export function VariablePicker({
 
   useEffect(() => {
     if (open) {
-      fetchVariableMetadata(entityType)
+      const fetchFn = entityType
+        ? () => fetchVariableMetadata(entityType)
+        : fetchAllVariableMetadata;
+      fetchFn()
         .then(setMetadata)
         .catch(() => setMetadata(null));
     }

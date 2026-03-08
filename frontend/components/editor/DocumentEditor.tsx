@@ -79,7 +79,7 @@ export function DocumentEditor({
 
   return (
     <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
-      {editable && <EditorToolbar editor={editor} entityType={entityType} />}
+      {editable && <EditorToolbar editor={editor} entityType={entityType} scope={scope} />}
       <div className="editor-content-wrapper p-6">
         <EditorContent editor={editor} />
       </div>

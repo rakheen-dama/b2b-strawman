@@ -27,9 +27,10 @@ import { ClausePicker } from "./ClausePicker";
 interface EditorToolbarProps {
   editor: Editor | null;
   entityType?: TemplateEntityType;
+  scope?: "template" | "clause";
 }
 
-export function EditorToolbar({ editor, entityType }: EditorToolbarProps) {
+export function EditorToolbar({ editor, entityType, scope }: EditorToolbarProps) {
   const [variablePickerOpen, setVariablePickerOpen] = useState(false);
   const [clausePickerOpen, setClausePickerOpen] = useState(false);
 
@@ -182,8 +183,8 @@ export function EditorToolbar({ editor, entityType }: EditorToolbarProps) {
           <Link className="size-3.5" />
         </Button>
 
-        {/* Variable Picker — only shown in template scope */}
-        {entityType && (
+        {/* Variable Picker — shown in template scope (with entityType) or clause scope */}
+        {(entityType || scope === "clause") && (
           <>
             <Separator orientation="vertical" className="mx-1 h-5" />
             <Button
@@ -196,51 +197,53 @@ export function EditorToolbar({ editor, entityType }: EditorToolbarProps) {
             >
               <Braces className="size-3.5" />
             </Button>
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              type="button"
-              onClick={() => setClausePickerOpen(true)}
-              aria-label="Insert clause"
-              title="Insert clause"
-            >
-              <FileText className="size-3.5" />
-            </Button>
+            {scope !== "clause" && (
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                type="button"
+                onClick={() => setClausePickerOpen(true)}
+                aria-label="Insert clause"
+                title="Insert clause"
+              >
+                <FileText className="size-3.5" />
+              </Button>
+            )}
           </>
         )}
       </div>
 
       {/* Picker dialogs — rendered outside toolbar div to avoid nesting issues */}
+      {(entityType || scope === "clause") && (
+        <VariablePicker
+          entityType={entityType}
+          open={variablePickerOpen}
+          onOpenChange={setVariablePickerOpen}
+          onSelect={(key) => {
+            editor.chain().focus().insertContent({ type: "variable", attrs: { key } }).run();
+          }}
+        />
+      )}
       {entityType && (
-        <>
-          <VariablePicker
-            entityType={entityType}
-            open={variablePickerOpen}
-            onOpenChange={setVariablePickerOpen}
-            onSelect={(key) => {
-              editor.chain().focus().insertContent({ type: "variable", attrs: { key } }).run();
-            }}
-          />
-          <ClausePicker
-            open={clausePickerOpen}
-            onOpenChange={setClausePickerOpen}
-            onSelect={(clause) => {
-              editor
-                .chain()
-                .focus()
-                .insertContent({
-                  type: "clauseBlock",
-                  attrs: {
-                    clauseId: clause.id,
-                    slug: clause.slug,
-                    title: clause.title,
-                    required: clause.required,
-                  },
-                })
-                .run();
-            }}
-          />
-        </>
+        <ClausePicker
+          open={clausePickerOpen}
+          onOpenChange={setClausePickerOpen}
+          onSelect={(clause) => {
+            editor
+              .chain()
+              .focus()
+              .insertContent({
+                type: "clauseBlock",
+                attrs: {
+                  clauseId: clause.id,
+                  slug: clause.slug,
+                  title: clause.title,
+                  required: clause.required,
+                },
+              })
+              .run();
+          }}
+        />
       )}
     </>
   );

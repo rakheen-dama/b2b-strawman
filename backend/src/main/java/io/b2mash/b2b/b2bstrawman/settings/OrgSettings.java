@@ -130,6 +130,15 @@ public class OrgSettings {
   @Column(name = "time_reminder_min_minutes")
   private Integer timeReminderMinMinutes;
 
+  @Column(name = "billing_batch_async_threshold")
+  private Integer billingBatchAsyncThreshold;
+
+  @Column(name = "billing_email_rate_limit")
+  private Integer billingEmailRateLimit;
+
+  @Column(name = "default_billing_run_currency", length = 3)
+  private String defaultBillingRunCurrency;
+
   protected OrgSettings() {}
 
   public OrgSettings(String defaultCurrency) {
@@ -141,6 +150,8 @@ public class OrgSettings {
     this.documentSigningEnabled = false;
     this.taxInclusive = false;
     this.timeReminderEnabled = false;
+    this.billingBatchAsyncThreshold = 50;
+    this.billingEmailRateLimit = 5;
   }
 
   public void updateCurrency(String currency) {
@@ -509,6 +520,33 @@ public class OrgSettings {
   /** Returns the minimum hours threshold, computed from minutes. Defaults to 4.0 if not set. */
   public double getTimeReminderMinHours() {
     return timeReminderMinMinutes != null ? timeReminderMinMinutes / 60.0 : 4.0;
+  }
+
+  public Integer getBillingBatchAsyncThreshold() {
+    return billingBatchAsyncThreshold;
+  }
+
+  public void setBillingBatchAsyncThreshold(Integer billingBatchAsyncThreshold) {
+    this.billingBatchAsyncThreshold = billingBatchAsyncThreshold;
+    this.updatedAt = Instant.now();
+  }
+
+  public Integer getBillingEmailRateLimit() {
+    return billingEmailRateLimit;
+  }
+
+  public void setBillingEmailRateLimit(Integer billingEmailRateLimit) {
+    this.billingEmailRateLimit = billingEmailRateLimit;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getDefaultBillingRunCurrency() {
+    return defaultBillingRunCurrency;
+  }
+
+  public void setDefaultBillingRunCurrency(String defaultBillingRunCurrency) {
+    this.defaultBillingRunCurrency = defaultBillingRunCurrency;
+    this.updatedAt = Instant.now();
   }
 
   private static final Map<String, DayOfWeek> DAY_ABBREVIATIONS =

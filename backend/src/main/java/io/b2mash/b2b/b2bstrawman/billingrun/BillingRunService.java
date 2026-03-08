@@ -6,17 +6,18 @@ import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BillingRunItemRes
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BillingRunPreviewResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BillingRunResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.CreateBillingRunRequest;
+import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.ExpenseResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.LoadPreviewRequest;
+import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.TimeEntryResponse;
+import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
-import io.b2mash.b2b.b2bstrawman.expense.Expense;
 import io.b2mash.b2b.b2bstrawman.expense.ExpenseRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteViolation;
-import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
@@ -26,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -276,7 +278,14 @@ public class BillingRunService {
         .orElseThrow(() -> new ResourceNotFoundException("BillingRun", billingRunId));
 
     var items = billingRunItemRepository.findByBillingRunId(billingRunId);
-    return items.stream().map(this::toItemResponse).toList();
+
+    // Batch-fetch all customers to avoid N+1
+    List<UUID> customerIds = items.stream().map(BillingRunItem::getCustomerId).toList();
+    Map<UUID, Customer> customerMap =
+        customerRepository.findAllById(customerIds).stream()
+            .collect(Collectors.toMap(Customer::getId, Function.identity()));
+
+    return items.stream().map(item -> toItemResponse(item, customerMap)).toList();
   }
 
   @Transactional(readOnly = true)
@@ -294,11 +303,16 @@ public class BillingRunService {
       throw new ResourceNotFoundException("BillingRunItem", itemId);
     }
 
-    return toItemResponse(item);
+    var customer = customerRepository.findById(item.getCustomerId()).orElse(null);
+    Map<UUID, Customer> customerMap =
+        customer != null ? Map.of(customer.getId(), customer) : Map.of();
+    return toItemResponse(item, customerMap);
   }
 
   @Transactional(readOnly = true)
-  public List<TimeEntry> getUnbilledTimeEntries(UUID billingRunItemId) {
+  public List<TimeEntryResponse> getUnbilledTimeEntries(UUID billingRunId, UUID billingRunItemId) {
+    validateItemBelongsToRun(billingRunId, billingRunItemId);
+
     var selections = billingRunEntrySelectionRepository.findByBillingRunItemId(billingRunItemId);
 
     List<UUID> timeEntryIds =
@@ -310,11 +324,15 @@ public class BillingRunService {
     if (timeEntryIds.isEmpty()) {
       return List.of();
     }
-    return timeEntryRepository.findAllById(timeEntryIds);
+    return timeEntryRepository.findAllById(timeEntryIds).stream()
+        .map(TimeEntryResponse::from)
+        .toList();
   }
 
   @Transactional(readOnly = true)
-  public List<Expense> getUnbilledExpenses(UUID billingRunItemId) {
+  public List<ExpenseResponse> getUnbilledExpenses(UUID billingRunId, UUID billingRunItemId) {
+    validateItemBelongsToRun(billingRunId, billingRunItemId);
+
     var selections = billingRunEntrySelectionRepository.findByBillingRunItemId(billingRunItemId);
 
     List<UUID> expenseIds =
@@ -326,7 +344,22 @@ public class BillingRunService {
     if (expenseIds.isEmpty()) {
       return List.of();
     }
-    return expenseRepository.findAllById(expenseIds);
+    return expenseRepository.findAllById(expenseIds).stream().map(ExpenseResponse::from).toList();
+  }
+
+  private void validateItemBelongsToRun(UUID billingRunId, UUID billingRunItemId) {
+    billingRunRepository
+        .findById(billingRunId)
+        .orElseThrow(() -> new ResourceNotFoundException("BillingRun", billingRunId));
+
+    var item =
+        billingRunItemRepository
+            .findById(billingRunItemId)
+            .orElseThrow(() -> new ResourceNotFoundException("BillingRunItem", billingRunItemId));
+
+    if (!item.getBillingRunId().equals(billingRunId)) {
+      throw new ResourceNotFoundException("BillingRunItem", billingRunItemId);
+    }
   }
 
   // --- Private helpers ---
@@ -339,62 +372,31 @@ public class BillingRunService {
       int unbilledExpenseCount,
       BigDecimal unbilledExpenseAmount) {}
 
-  @SuppressWarnings("unchecked")
   private List<CustomerDiscoveryRow> discoverCustomersWithUnbilledWork(
       LocalDate periodFrom, LocalDate periodTo, String currency) {
-    String sql =
-        """
-        SELECT
-            c.id AS customer_id,
-            c.name AS customer_name,
-            COUNT(DISTINCT te.id) AS unbilled_time_count,
-            COALESCE(SUM(
-                CASE WHEN te.id IS NOT NULL
-                THEN (te.duration_minutes / 60.0) * te.billing_rate_snapshot
-                ELSE 0 END
-            ), 0) AS unbilled_time_amount,
-            COUNT(DISTINCT e.id) AS unbilled_expense_count,
-            COALESCE(SUM(
-                CASE WHEN e.id IS NOT NULL
-                THEN e.amount * (1 + COALESCE(e.markup_percent, 0) / 100.0)
-                ELSE 0 END
-            ), 0) AS unbilled_expense_amount
-        FROM customers c
-        JOIN customer_projects cp ON cp.customer_id = c.id
-        JOIN projects p ON cp.project_id = p.id
-        LEFT JOIN tasks t ON t.project_id = p.id
-        LEFT JOIN time_entries te ON te.task_id = t.id
-            AND te.billable = true
-            AND te.invoice_id IS NULL
-            AND te.billing_rate_currency = :currency
-            AND te.date >= :periodFrom
-            AND te.date <= :periodTo
-        LEFT JOIN expenses e ON e.project_id = p.id
-            AND e.billable = true
-            AND e.invoice_id IS NULL
-            AND e.currency = :currency
-            AND e.date >= :periodFrom
-            AND e.date <= :periodTo
-        WHERE c.lifecycle_status = 'ACTIVE'
-        GROUP BY c.id, c.name
-        HAVING COUNT(DISTINCT te.id) > 0 OR COUNT(DISTINCT e.id) > 0
-        ORDER BY c.name
-        """;
-
-    List<Tuple> rows =
-        entityManager
-            .createNativeQuery(sql, Tuple.class)
-            .setParameter("currency", currency)
-            .setParameter("periodFrom", periodFrom)
-            .setParameter("periodTo", periodTo)
-            .getResultList();
-
-    return rows.stream().map(this::toDiscoveryRow).toList();
+    return discoverCustomers(null, periodFrom, periodTo, currency);
   }
 
-  @SuppressWarnings("unchecked")
   private List<CustomerDiscoveryRow> discoverSpecificCustomers(
       List<UUID> customerIds, LocalDate periodFrom, LocalDate periodTo, String currency) {
+    return discoverCustomers(customerIds, periodFrom, periodTo, currency);
+  }
+
+  /**
+   * Shared discovery query. When customerIds is null, auto-discovers all ACTIVE customers with
+   * unbilled work. When customerIds is provided, filters to those specific customers (still
+   * requiring ACTIVE status).
+   */
+  @SuppressWarnings("unchecked")
+  private List<CustomerDiscoveryRow> discoverCustomers(
+      List<UUID> customerIds, LocalDate periodFrom, LocalDate periodTo, String currency) {
+    String whereClause;
+    if (customerIds != null) {
+      whereClause = "WHERE c.lifecycle_status = 'ACTIVE' AND c.id IN :customerIds";
+    } else {
+      whereClause = "WHERE c.lifecycle_status = 'ACTIVE'";
+    }
+
     String sql =
         """
         SELECT
@@ -428,21 +430,25 @@ public class BillingRunService {
             AND e.currency = :currency
             AND e.date >= :periodFrom
             AND e.date <= :periodTo
-        WHERE c.id IN :customerIds
+        %s
         GROUP BY c.id, c.name
         HAVING COUNT(DISTINCT te.id) > 0 OR COUNT(DISTINCT e.id) > 0
         ORDER BY c.name
-        """;
+        """
+            .formatted(whereClause);
 
-    List<Tuple> rows =
+    var query =
         entityManager
             .createNativeQuery(sql, Tuple.class)
-            .setParameter("customerIds", customerIds)
             .setParameter("currency", currency)
             .setParameter("periodFrom", periodFrom)
-            .setParameter("periodTo", periodTo)
-            .getResultList();
+            .setParameter("periodTo", periodTo);
 
+    if (customerIds != null) {
+      query.setParameter("customerIds", customerIds);
+    }
+
+    List<Tuple> rows = query.getResultList();
     return rows.stream().map(this::toDiscoveryRow).toList();
   }
 
@@ -533,8 +539,9 @@ public class BillingRunService {
     }
   }
 
-  private BillingRunItemResponse toItemResponse(BillingRunItem item) {
-    var customer = customerRepository.findById(item.getCustomerId()).orElse(null);
+  private BillingRunItemResponse toItemResponse(
+      BillingRunItem item, Map<UUID, Customer> customerMap) {
+    var customer = customerMap.get(item.getCustomerId());
     String customerName = customer != null ? customer.getName() : "Unknown";
 
     BigDecimal timeAmount =

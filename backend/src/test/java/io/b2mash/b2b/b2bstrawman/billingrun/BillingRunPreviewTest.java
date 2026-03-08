@@ -67,6 +67,7 @@ class BillingRunPreviewTest {
   @Autowired private TimeEntryRepository timeEntryRepository;
   @Autowired private ExpenseRepository expenseRepository;
   @Autowired private BillingRunEntrySelectionRepository billingRunEntrySelectionRepository;
+  @Autowired private BillingRunRepository billingRunRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
   private String tenantSchema;
@@ -357,23 +358,33 @@ class BillingRunPreviewTest {
   @Test
   @Order(9)
   void loadPreview_nonPreviewRun_returns400() throws Exception {
-    // We can't easily transition a run out of PREVIEW without generation logic,
-    // so we test the validation by verifying that the PREVIEW status check works.
-    // The billing run in test 1 is still in PREVIEW, so this test creates
-    // a run, cancels it, then tries to preview it — cancel deletes the run,
-    // so we get 404 instead. This effectively tests that invalid runs can't be previewed.
-    String cancelRunId = createBillingRun("Cancel Test", "2026-03-01", "2026-03-31", "ZAR", false);
-    mockMvc
-        .perform(delete("/api/billing-runs/" + cancelRunId).with(ownerJwt()))
-        .andExpect(status().isNoContent());
+    // Create a run and transition it to IN_PROGRESS so preview is blocked
+    String statusTestRunId =
+        createBillingRun("Status Test", "2026-03-01", "2026-03-31", "ZAR", false);
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberIdOwner)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var run =
+                          billingRunRepository
+                              .findById(UUID.fromString(statusTestRunId))
+                              .orElseThrow();
+                      run.startGeneration();
+                      billingRunRepository.save(run);
+                    }));
 
     mockMvc
         .perform(
-            post("/api/billing-runs/" + cancelRunId + "/preview")
+            post("/api/billing-runs/" + statusTestRunId + "/preview")
                 .with(ownerJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
-        .andExpect(status().isNotFound());
+        .andExpect(status().isBadRequest());
   }
 
   @Test

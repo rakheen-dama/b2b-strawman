@@ -4,10 +4,10 @@ import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BillingRunItemRes
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BillingRunPreviewResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BillingRunResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.CreateBillingRunRequest;
+import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.ExpenseResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.LoadPreviewRequest;
-import io.b2mash.b2b.b2bstrawman.expense.Expense;
+import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.TimeEntryResponse;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
@@ -87,15 +87,15 @@ public class BillingRunController {
 
   @GetMapping("/{id}/items/{itemId}/unbilled-time")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
-  public ResponseEntity<List<TimeEntry>> getUnbilledTime(
+  public ResponseEntity<List<TimeEntryResponse>> getUnbilledTime(
       @PathVariable UUID id, @PathVariable UUID itemId) {
-    return ResponseEntity.ok(billingRunService.getUnbilledTimeEntries(itemId));
+    return ResponseEntity.ok(billingRunService.getUnbilledTimeEntries(id, itemId));
   }
 
   @GetMapping("/{id}/items/{itemId}/unbilled-expenses")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
-  public ResponseEntity<List<Expense>> getUnbilledExpenses(
+  public ResponseEntity<List<ExpenseResponse>> getUnbilledExpenses(
       @PathVariable UUID id, @PathVariable UUID itemId) {
-    return ResponseEntity.ok(billingRunService.getUnbilledExpenses(itemId));
+    return ResponseEntity.ok(billingRunService.getUnbilledExpenses(id, itemId));
   }
 }

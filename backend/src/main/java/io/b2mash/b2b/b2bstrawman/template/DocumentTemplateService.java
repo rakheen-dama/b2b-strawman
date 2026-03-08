@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.template;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.clause.Clause;
+import io.b2mash.b2b.b2bstrawman.clause.ClauseRepository;
 import io.b2mash.b2b.b2bstrawman.clause.TemplateClauseSync;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
@@ -12,10 +14,13 @@ import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.TemplateLis
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.UpdateTemplateRequest;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -30,14 +35,17 @@ public class DocumentTemplateService {
       Set.of("customer", "project", "invoice", "task", "org");
 
   private final DocumentTemplateRepository documentTemplateRepository;
+  private final ClauseRepository clauseRepository;
   private final AuditService auditService;
   private final TemplateClauseSync templateClauseSync;
 
   public DocumentTemplateService(
       DocumentTemplateRepository documentTemplateRepository,
+      ClauseRepository clauseRepository,
       AuditService auditService,
       TemplateClauseSync templateClauseSync) {
     this.documentTemplateRepository = documentTemplateRepository;
+    this.clauseRepository = clauseRepository;
     this.auditService = auditService;
     this.templateClauseSync = templateClauseSync;
   }
@@ -71,7 +79,31 @@ public class DocumentTemplateService {
         documentTemplateRepository
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", id));
-    return TemplateDetailResponse.from(dt);
+    var response = TemplateDetailResponse.from(dt);
+    var enrichedContent = enrichClauseTitles(response.content());
+    if (enrichedContent != response.content()) {
+      response =
+          new TemplateDetailResponse(
+              response.id(),
+              response.name(),
+              response.slug(),
+              response.description(),
+              response.category(),
+              response.primaryEntityType(),
+              enrichedContent,
+              response.legacyContent(),
+              response.css(),
+              response.source(),
+              response.sourceTemplateId(),
+              response.packId(),
+              response.packTemplateKey(),
+              response.active(),
+              response.sortOrder(),
+              response.requiredContextFields(),
+              response.createdAt(),
+              response.updatedAt());
+    }
+    return response;
   }
 
   @Transactional
@@ -370,5 +402,97 @@ public class DocumentTemplateService {
       suffix++;
     }
     return finalSlug;
+  }
+
+  /**
+   * Enriches clauseBlock nodes in the content tree with current clause titles from the library.
+   * Returns a deep copy with updated titles, or the original map if no clauseBlocks are found.
+   */
+  @SuppressWarnings("unchecked")
+  Map<String, Object> enrichClauseTitles(Map<String, Object> content) {
+    if (content == null) {
+      return null;
+    }
+
+    // 1. Extract all clauseIds from the content tree
+    Set<UUID> clauseIds = new HashSet<>();
+    extractClauseIds(content, clauseIds);
+    if (clauseIds.isEmpty()) {
+      return content;
+    }
+
+    // 2. Fetch current titles
+    Map<UUID, String> titleMap =
+        clauseRepository.findAllById(clauseIds).stream()
+            .collect(Collectors.toMap(Clause::getId, Clause::getTitle));
+
+    // 3. Deep-walk and update titles (returns a new map — no JPA mutation)
+    return walkAndUpdateTitles(content, titleMap);
+  }
+
+  @SuppressWarnings("unchecked")
+  private void extractClauseIds(Map<String, Object> node, Set<UUID> clauseIds) {
+    if ("clauseBlock".equals(node.get("type"))) {
+      var attrs = (Map<String, Object>) node.get("attrs");
+      if (attrs != null) {
+        Object clauseIdObj = attrs.get("clauseId");
+        if (clauseIdObj != null) {
+          try {
+            clauseIds.add(UUID.fromString(clauseIdObj.toString()));
+          } catch (IllegalArgumentException ignored) {
+            // Skip invalid UUIDs
+          }
+        }
+      }
+    }
+    Object contentObj = node.get("content");
+    if (contentObj instanceof List<?> contentList) {
+      for (Object child : contentList) {
+        if (child instanceof Map<?, ?> childMap) {
+          extractClauseIds((Map<String, Object>) childMap, clauseIds);
+        }
+      }
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private Map<String, Object> walkAndUpdateTitles(
+      Map<String, Object> node, Map<UUID, String> titleMap) {
+    var copy = new LinkedHashMap<>(node);
+
+    if ("clauseBlock".equals(copy.get("type"))) {
+      var attrs = (Map<String, Object>) copy.get("attrs");
+      if (attrs != null) {
+        Object clauseIdObj = attrs.get("clauseId");
+        if (clauseIdObj != null) {
+          try {
+            UUID clauseId = UUID.fromString(clauseIdObj.toString());
+            String currentTitle = titleMap.get(clauseId);
+            if (currentTitle != null) {
+              var attrsCopy = new LinkedHashMap<>(attrs);
+              attrsCopy.put("title", currentTitle);
+              copy.put("attrs", attrsCopy);
+            }
+          } catch (IllegalArgumentException ignored) {
+            // Skip invalid UUIDs
+          }
+        }
+      }
+    }
+
+    Object contentObj = copy.get("content");
+    if (contentObj instanceof List<?> contentList) {
+      List<Object> newContent = new ArrayList<>(contentList.size());
+      for (Object child : contentList) {
+        if (child instanceof Map<?, ?> childMap) {
+          newContent.add(walkAndUpdateTitles((Map<String, Object>) childMap, titleMap));
+        } else {
+          newContent.add(child);
+        }
+      }
+      copy.put("content", newContent);
+    }
+
+    return copy;
   }
 }

@@ -104,6 +104,21 @@ public final class AuditEventBuilder {
         .build();
   }
 
+  /** Convenience factory for billing_run.approved audit events. */
+  public static AuditEventRecord billingRunApproved(BillingRun run, int approvedCount) {
+    return builder()
+        .eventType("billing_run.approved")
+        .entityType("billing_run")
+        .entityId(run.getId())
+        .details(
+            Map.of(
+                "name",
+                run.getName() != null ? run.getName() : "",
+                "approved_count",
+                approvedCount))
+        .build();
+  }
+
   /** Convenience factory for billing_run.sent audit events. */
   public static AuditEventRecord billingRunSent(BillingRun run, int sentCount) {
     return builder()

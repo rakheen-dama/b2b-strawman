@@ -503,6 +503,63 @@ public class OrgSettingsService {
     return toSettingsResponse(settings);
   }
 
+  /** Updates batch billing settings. */
+  @Transactional
+  public SettingsResponse updateBatchBillingSettings(
+      Integer billingBatchAsyncThreshold,
+      Integer billingEmailRateLimit,
+      String defaultBillingRunCurrency,
+      UUID memberId,
+      String orgRole) {
+    requireAdminOrOwner(orgRole);
+
+    var settings =
+        orgSettingsRepository
+            .findForCurrentTenant()
+            .orElseGet(
+                () -> {
+                  var newSettings = new OrgSettings(DEFAULT_CURRENCY);
+                  return orgSettingsRepository.save(newSettings);
+                });
+
+    if (billingBatchAsyncThreshold != null) {
+      settings.setBillingBatchAsyncThreshold(billingBatchAsyncThreshold);
+    }
+    if (billingEmailRateLimit != null) {
+      settings.setBillingEmailRateLimit(billingEmailRateLimit);
+    }
+    if (defaultBillingRunCurrency != null) {
+      settings.setDefaultBillingRunCurrency(defaultBillingRunCurrency);
+    }
+    settings = orgSettingsRepository.save(settings);
+
+    log.info(
+        "Updated batch billing settings: asyncThreshold={}, rateLimit={}, currency={}",
+        billingBatchAsyncThreshold,
+        billingEmailRateLimit,
+        defaultBillingRunCurrency);
+
+    var auditDetails = new java.util.HashMap<String, Object>();
+    if (billingBatchAsyncThreshold != null) {
+      auditDetails.put("billing_batch_async_threshold", billingBatchAsyncThreshold);
+    }
+    if (billingEmailRateLimit != null) {
+      auditDetails.put("billing_email_rate_limit", billingEmailRateLimit);
+    }
+    if (defaultBillingRunCurrency != null) {
+      auditDetails.put("default_billing_run_currency", defaultBillingRunCurrency);
+    }
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("org_settings.batch_billing_updated")
+            .entityType("org_settings")
+            .entityId(settings.getId())
+            .details(auditDetails)
+            .build());
+
+    return toSettingsResponse(settings);
+  }
+
   private void requireAdminOrOwner(String orgRole) {
     if (!Roles.ORG_ADMIN.equals(orgRole) && !Roles.ORG_OWNER.equals(orgRole)) {
       throw new ForbiddenException(

@@ -1,5 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.notification;
 
+import io.b2mash.b2b.b2bstrawman.billingrun.BillingRunEvents.BillingRunCompletedEvent;
+import io.b2mash.b2b.b2bstrawman.billingrun.BillingRunEvents.BillingRunFailuresEvent;
+import io.b2mash.b2b.b2bstrawman.billingrun.BillingRunEvents.BillingRunSentEvent;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestAcceptedEvent;
 import io.b2mash.b2b.b2bstrawman.event.BudgetThresholdEvent;
 import io.b2mash.b2b.b2bstrawman.event.CommentCreatedEvent;
@@ -26,6 +29,7 @@ import io.b2mash.b2b.b2bstrawman.schedule.event.ScheduleSkippedEvent;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -417,6 +421,71 @@ public class NotificationEventHandler {
           } catch (Exception e) {
             log.warn(
                 "Failed to create notifications for proposal.sent event={}", event.entityId(), e);
+          }
+        });
+  }
+
+  @EventListener
+  public void onBillingRunCompleted(BillingRunCompletedEvent event) {
+    handleInTenantScope(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            var title =
+                "Billing run \"%s\" completed — %d invoices generated"
+                    .formatted(
+                        event.runName() != null ? event.runName() : "", event.totalInvoices());
+            notificationService.notifyAdminsAndOwners(
+                "BILLING_RUN_COMPLETED", title, null, "BILLING_RUN", event.billingRunId());
+          } catch (Exception e) {
+            log.warn(
+                "Failed to create notifications for billing_run.completed run={}",
+                event.billingRunId(),
+                e);
+          }
+        });
+  }
+
+  @EventListener
+  public void onBillingRunFailures(BillingRunFailuresEvent event) {
+    handleInTenantScope(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            var title =
+                "Billing run \"%s\" had %d failures"
+                    .formatted(
+                        event.runName() != null ? event.runName() : "", event.failureCount());
+            notificationService.notifyAdminsAndOwners(
+                "BILLING_RUN_FAILURES", title, null, "BILLING_RUN", event.billingRunId());
+          } catch (Exception e) {
+            log.warn(
+                "Failed to create notifications for billing_run.failures run={}",
+                event.billingRunId(),
+                e);
+          }
+        });
+  }
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onBillingRunSent(BillingRunSentEvent event) {
+    handleInTenantScope(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            var title =
+                "Billing run \"%s\" — %d invoices sent"
+                    .formatted(event.runName() != null ? event.runName() : "", event.totalSent());
+            notificationService.notifyAdminsAndOwners(
+                "BILLING_RUN_SENT", title, null, "BILLING_RUN", event.billingRunId());
+          } catch (Exception e) {
+            log.warn(
+                "Failed to create notifications for billing_run.sent run={}",
+                event.billingRunId(),
+                e);
           }
         });
   }

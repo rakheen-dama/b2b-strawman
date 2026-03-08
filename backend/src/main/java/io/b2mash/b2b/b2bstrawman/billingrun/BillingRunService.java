@@ -31,6 +31,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceService;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.CreateInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.SendInvoiceRequest;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteViolation;
@@ -661,14 +662,16 @@ public class BillingRunService {
               return r;
             });
 
-    // Step 4: Publish events
+    // Step 4: Publish events (capture tenant context at publish time)
+    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    String orgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
     eventPublisher.publishEvent(
         new BillingRunCompletedEvent(
-            completedRun.getId(), completedRun.getName(), finalSuccessCount));
+            completedRun.getId(), completedRun.getName(), finalSuccessCount, tenantId, orgId));
     if (finalFailureCount > 0) {
       eventPublisher.publishEvent(
           new BillingRunFailuresEvent(
-              completedRun.getId(), completedRun.getName(), finalFailureCount));
+              completedRun.getId(), completedRun.getName(), finalFailureCount, tenantId, orgId));
     }
 
     log.info(
@@ -731,6 +734,10 @@ public class BillingRunService {
         billingRunId,
         successCount,
         failures.size());
+
+    // Log audit event
+    final int finalSuccessCount = successCount;
+    auditService.log(AuditEventBuilder.billingRunApproved(run, finalSuccessCount));
 
     return new BatchOperationResult(successCount, failures.size(), failures);
   }
@@ -827,12 +834,16 @@ public class BillingRunService {
     // Log audit event and publish domain event inside the same transaction
     // so @TransactionalEventListener(phase = AFTER_COMMIT) fires correctly
     final int finalSuccessCount = successCount;
+    final String sendTenantId =
+        RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    final String sendOrgId = RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : null;
     transactionTemplate.executeWithoutResult(
         status -> {
           var freshRun = billingRunRepository.findById(billingRunId).orElseThrow();
           auditService.log(AuditEventBuilder.billingRunSent(freshRun, finalSuccessCount));
           eventPublisher.publishEvent(
-              new BillingRunSentEvent(billingRunId, freshRun.getName(), finalSuccessCount));
+              new BillingRunSentEvent(
+                  billingRunId, freshRun.getName(), finalSuccessCount, sendTenantId, sendOrgId));
         });
 
     log.info(

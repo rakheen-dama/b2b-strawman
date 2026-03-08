@@ -168,7 +168,10 @@ public class NotificationService {
           "INFORMATION_REQUEST_DRAFT_CREATED",
           "ALLOCATION_CHANGED",
           "MEMBER_OVER_ALLOCATED",
-          "LEAVE_CREATED");
+          "LEAVE_CREATED",
+          "BILLING_RUN_COMPLETED",
+          "BILLING_RUN_SENT",
+          "BILLING_RUN_FAILURES");
 
   // --- Preference methods ---
 

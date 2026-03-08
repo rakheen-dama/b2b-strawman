@@ -97,9 +97,11 @@ export function formatValue(value: unknown, typeHint?: string): string {
       try {
         const date = new Date(str);
         if (isNaN(date.getTime())) return escapeHtml(str);
-        return escapeHtml(
-          date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
-        );
+        // Match backend format: "d MMMM yyyy" (e.g., "8 March 2026")
+        const d = date.getUTCDate();
+        const month = date.toLocaleString("en-US", { month: "long", timeZone: "UTC" });
+        const year = date.getUTCFullYear();
+        return escapeHtml(`${d} ${month} ${year}`);
       } catch {
         return escapeHtml(str);
       }

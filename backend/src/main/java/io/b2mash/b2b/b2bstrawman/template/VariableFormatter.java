@@ -39,6 +39,7 @@ public final class VariableFormatter {
     };
   }
 
+  // TODO: Support multi-currency via OrgSettings.defaultCurrency / invoice.currency (ADR-041)
   private static String formatCurrency(Object value) {
     try {
       BigDecimal amount = new BigDecimal(String.valueOf(value));

@@ -12,7 +12,9 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,18 +63,7 @@ public class BillingRunService {
         run.getPeriodFrom(),
         run.getPeriodTo());
 
-    auditService.log(
-        AuditEventBuilder.builder()
-            .eventType("billing_run.created")
-            .entityType("billing_run")
-            .entityId(run.getId())
-            .details(
-                Map.of(
-                    "name", run.getName() != null ? run.getName() : "",
-                    "period_from", run.getPeriodFrom().toString(),
-                    "period_to", run.getPeriodTo().toString(),
-                    "currency", run.getCurrency()))
-            .build());
+    auditService.log(AuditEventBuilder.billingRunCreated(run));
 
     return BillingRunResponse.from(run);
   }
@@ -91,6 +82,23 @@ public class BillingRunService {
               + run.getStatus());
     }
 
+    // Audit before delete so the event captures the run details
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("billing_run.cancelled")
+            .entityType("billing_run")
+            .entityId(billingRunId)
+            .details(
+                Map.of(
+                    "name", run.getName() != null ? run.getName() : "",
+                    "period_from", run.getPeriodFrom().toString(),
+                    "period_to", run.getPeriodTo().toString(),
+                    "status", run.getStatus().name()))
+            .build());
+
+    // Hard delete is appropriate here: PREVIEW-only billing runs have no generated invoices
+    // or financial impact. Later slices (306B) will implement soft cancel for
+    // IN_PROGRESS/COMPLETED runs that have associated invoices.
     billingRunEntrySelectionRepository.deleteByBillingRunId(billingRunId);
     billingRunItemRepository.deleteByBillingRunId(billingRunId);
     billingRunRepository.delete(run);
@@ -109,12 +117,23 @@ public class BillingRunService {
 
   @Transactional(readOnly = true)
   public Page<BillingRunResponse> listRuns(Pageable pageable, List<BillingRunStatus> statuses) {
+    Pageable effectivePageable = applyDefaultSort(pageable);
     Page<BillingRun> page;
     if (statuses != null && !statuses.isEmpty()) {
-      page = billingRunRepository.findByStatusIn(statuses, pageable);
+      page = billingRunRepository.findByStatusIn(statuses, effectivePageable);
     } else {
-      page = billingRunRepository.findAllByOrderByCreatedAtDesc(pageable);
+      page = billingRunRepository.findAll(effectivePageable);
     }
     return page.map(BillingRunResponse::from);
+  }
+
+  private Pageable applyDefaultSort(Pageable pageable) {
+    if (pageable.getSort().isSorted()) {
+      return pageable;
+    }
+    return PageRequest.of(
+        pageable.getPageNumber(),
+        pageable.getPageSize(),
+        Sort.by(Sort.Direction.DESC, "createdAt"));
   }
 }

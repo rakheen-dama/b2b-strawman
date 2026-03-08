@@ -183,6 +183,28 @@ public class Invoice {
     this.updatedAt = Instant.now();
   }
 
+  /**
+   * Applies default due date and payment terms to an APPROVED invoice that is missing them. Used by
+   * batch send to fill in defaults before sending.
+   */
+  public void applyDefaults(LocalDate defaultDueDate, String defaultPaymentTerms) {
+    if (this.status != InvoiceStatus.APPROVED) {
+      throw new IllegalStateException("Defaults can only be applied to approved invoices");
+    }
+    boolean changed = false;
+    if (this.dueDate == null && defaultDueDate != null) {
+      this.dueDate = defaultDueDate;
+      changed = true;
+    }
+    if (this.paymentTerms == null && defaultPaymentTerms != null) {
+      this.paymentTerms = defaultPaymentTerms;
+      changed = true;
+    }
+    if (changed) {
+      this.updatedAt = Instant.now();
+    }
+  }
+
   public void markSent() {
     if (this.status != InvoiceStatus.APPROVED) {
       throw new IllegalStateException("Only approved invoices can be sent");

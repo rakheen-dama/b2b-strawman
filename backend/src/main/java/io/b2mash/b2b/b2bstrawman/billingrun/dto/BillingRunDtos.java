@@ -168,4 +168,11 @@ public final class BillingRunDtos {
       @NotNull(message = "entryType is required") EntryType entryType,
       @NotNull(message = "entryId is required") UUID entryId,
       boolean included) {}
+
+  public record BatchOperationResult(
+      int successCount, int failureCount, List<BatchFailure> failures) {}
+
+  public record BatchFailure(UUID invoiceId, String reason) {}
+
+  public record BatchSendRequest(LocalDate defaultDueDate, String defaultPaymentTerms) {}
 }

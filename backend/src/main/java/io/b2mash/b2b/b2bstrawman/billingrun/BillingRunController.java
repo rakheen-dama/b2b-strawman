@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.billingrun;
 
+import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BatchOperationResult;
+import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BatchSendRequest;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BillingRunItemResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BillingRunPreviewResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BillingRunResponse;
@@ -129,5 +131,20 @@ public class BillingRunController {
   public ResponseEntity<BillingRunItemResponse> includeCustomer(
       @PathVariable UUID id, @PathVariable UUID itemId) {
     return ResponseEntity.ok(billingRunService.includeCustomer(id, itemId));
+  }
+
+  @PostMapping("/{id}/approve")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<BatchOperationResult> approveBatch(@PathVariable UUID id) {
+    UUID actorMemberId = RequestScopes.requireMemberId();
+    return ResponseEntity.ok(billingRunService.batchApprove(id, actorMemberId));
+  }
+
+  @PostMapping("/{id}/send")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<BatchOperationResult> sendBatch(
+      @PathVariable UUID id, @RequestBody BatchSendRequest request) {
+    UUID actorMemberId = RequestScopes.requireMemberId();
+    return ResponseEntity.ok(billingRunService.batchSend(id, request, actorMemberId));
   }
 }

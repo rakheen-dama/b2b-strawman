@@ -12,4 +12,7 @@ public final class BillingRunEvents {
 
   /** Published only when at least one item failed during generation. */
   public record BillingRunFailuresEvent(UUID billingRunId, String runName, int failureCount) {}
+
+  /** Published after batch send completes. */
+  public record BillingRunSentEvent(UUID billingRunId, String runName, int totalSent) {}
 }

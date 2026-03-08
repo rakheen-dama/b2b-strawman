@@ -4,6 +4,10 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.billingrun.BillingRunEvents.BillingRunCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.billingrun.BillingRunEvents.BillingRunFailuresEvent;
+import io.b2mash.b2b.b2bstrawman.billingrun.BillingRunEvents.BillingRunSentEvent;
+import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BatchFailure;
+import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BatchOperationResult;
+import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BatchSendRequest;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BillingRunItemResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BillingRunPreviewResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BillingRunResponse;
@@ -20,14 +24,17 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.expense.Expense;
 import io.b2mash.b2b.b2bstrawman.expense.ExpenseRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
+import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceService;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.CreateInvoiceRequest;
+import io.b2mash.b2b.b2bstrawman.invoice.dto.SendInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteViolation;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
@@ -69,6 +76,7 @@ public class BillingRunService {
   private final InvoiceLineRepository invoiceLineRepository;
   private final TransactionTemplate transactionTemplate;
   private final ApplicationEventPublisher eventPublisher;
+  private final OrgSettingsRepository orgSettingsRepository;
 
   public BillingRunService(
       BillingRunRepository billingRunRepository,
@@ -84,7 +92,8 @@ public class BillingRunService {
       InvoiceRepository invoiceRepository,
       InvoiceLineRepository invoiceLineRepository,
       TransactionTemplate transactionTemplate,
-      ApplicationEventPublisher eventPublisher) {
+      ApplicationEventPublisher eventPublisher,
+      OrgSettingsRepository orgSettingsRepository) {
     this.billingRunRepository = billingRunRepository;
     this.billingRunItemRepository = billingRunItemRepository;
     this.billingRunEntrySelectionRepository = billingRunEntrySelectionRepository;
@@ -99,6 +108,7 @@ public class BillingRunService {
     this.invoiceLineRepository = invoiceLineRepository;
     this.transactionTemplate = transactionTemplate;
     this.eventPublisher = eventPublisher;
+    this.orgSettingsRepository = orgSettingsRepository;
   }
 
   @Transactional
@@ -669,6 +679,180 @@ public class BillingRunService {
         finalTotalAmount);
 
     return BillingRunResponse.from(completedRun);
+  }
+
+  /**
+   * Approves all DRAFT invoices linked to GENERATED billing run items. Each invoice is approved
+   * individually; failures are captured without aborting the batch.
+   */
+  public BatchOperationResult batchApprove(UUID billingRunId, UUID actorMemberId) {
+    var run =
+        billingRunRepository
+            .findById(billingRunId)
+            .orElseThrow(() -> new ResourceNotFoundException("BillingRun", billingRunId));
+
+    if (run.getStatus() != BillingRunStatus.COMPLETED) {
+      throw new InvalidStateException(
+          "Cannot approve billing run",
+          "Only COMPLETED billing runs can be approved. Current status: " + run.getStatus());
+    }
+
+    var generatedItems =
+        billingRunItemRepository.findByBillingRunIdAndStatus(
+            billingRunId, BillingRunItemStatus.GENERATED);
+
+    int successCount = 0;
+    List<BatchFailure> failures = new ArrayList<>();
+
+    for (var item : generatedItems) {
+      if (item.getInvoiceId() == null) {
+        continue;
+      }
+      try {
+        // Each approval runs in its own transaction for true failure isolation.
+        // invoiceService.approve() is @Transactional, so Spring creates a new
+        // transaction per call. A failure in one invoice does not roll back others.
+        transactionTemplate.executeWithoutResult(
+            status -> invoiceService.approve(item.getInvoiceId(), actorMemberId));
+        successCount++;
+      } catch (Exception e) {
+        String reason = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
+        failures.add(new BatchFailure(item.getInvoiceId(), reason));
+        log.warn(
+            "Failed to approve invoice {} for billing run {}: {}",
+            item.getInvoiceId(),
+            billingRunId,
+            reason);
+      }
+    }
+
+    log.info(
+        "Batch approve for billing run {} — {} succeeded, {} failed",
+        billingRunId,
+        successCount,
+        failures.size());
+
+    return new BatchOperationResult(successCount, failures.size(), failures);
+  }
+
+  /**
+   * Sends all APPROVED invoices linked to a COMPLETED billing run in rate-limited bursts. Applies
+   * default due date and payment terms to invoices missing them before sending.
+   */
+  public BatchOperationResult batchSend(
+      UUID billingRunId, BatchSendRequest request, UUID actorMemberId) {
+    var run =
+        billingRunRepository
+            .findById(billingRunId)
+            .orElseThrow(() -> new ResourceNotFoundException("BillingRun", billingRunId));
+
+    if (run.getStatus() != BillingRunStatus.COMPLETED) {
+      throw new InvalidStateException(
+          "Cannot send billing run",
+          "Only COMPLETED billing runs can be sent. Current status: " + run.getStatus());
+    }
+
+    // Get rate limit from org settings
+    int rateLimit =
+        orgSettingsRepository
+            .findForCurrentTenant()
+            .map(s -> s.getBillingEmailRateLimit())
+            .orElse(5);
+
+    // Find APPROVED invoice IDs linked to this billing run (load IDs only, not entities)
+    var approvedInvoiceIds =
+        invoiceRepository.findByBillingRunIdAndStatus(billingRunId, InvoiceStatus.APPROVED).stream()
+            .map(Invoice::getId)
+            .toList();
+
+    if (approvedInvoiceIds.isEmpty()) {
+      return new BatchOperationResult(0, 0, List.of());
+    }
+
+    // Apply default due date/payment terms inside a transaction so entities are managed
+    if (request != null) {
+      transactionTemplate.executeWithoutResult(
+          status -> {
+            var invoices = invoiceRepository.findAllById(approvedInvoiceIds);
+            for (Invoice invoice : invoices) {
+              invoice.applyDefaults(request.defaultDueDate(), request.defaultPaymentTerms());
+              invoiceRepository.save(invoice);
+            }
+          });
+    }
+
+    // Partition invoice IDs into rate-limited bursts
+    List<List<UUID>> bursts = partition(approvedInvoiceIds, rateLimit);
+
+    int successCount = 0;
+    List<BatchFailure> failures = new ArrayList<>();
+
+    for (int i = 0; i < bursts.size(); i++) {
+      // Rate-limit delay between bursts (ADR-160 token-bucket rate limiting).
+      // Intentionally outside any transaction boundary.
+      if (i > 0) {
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          break;
+        }
+      }
+
+      for (UUID invoiceId : bursts.get(i)) {
+        try {
+          // Batch sends override warnings — invoices have already been reviewed during
+          // the preview/approve phase, so warning-level prerequisite failures are expected
+          // and should not block sending.
+          invoiceService.send(invoiceId, new SendInvoiceRequest(true));
+          successCount++;
+        } catch (Exception e) {
+          String reason = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
+          failures.add(new BatchFailure(invoiceId, reason));
+          log.warn(
+              "Failed to send invoice {} for billing run {}: {}", invoiceId, billingRunId, reason);
+        }
+      }
+
+      // Update progress after each burst
+      final int currentSuccessCount = successCount;
+      transactionTemplate.executeWithoutResult(
+          status -> {
+            var freshRun = billingRunRepository.findById(billingRunId).orElseThrow();
+            freshRun.setTotalSent(currentSuccessCount);
+            billingRunRepository.save(freshRun);
+          });
+    }
+
+    // Log audit event and publish domain event inside the same transaction
+    // so @TransactionalEventListener(phase = AFTER_COMMIT) fires correctly
+    final int finalSuccessCount = successCount;
+    transactionTemplate.executeWithoutResult(
+        status -> {
+          var freshRun = billingRunRepository.findById(billingRunId).orElseThrow();
+          auditService.log(AuditEventBuilder.billingRunSent(freshRun, finalSuccessCount));
+          eventPublisher.publishEvent(
+              new BillingRunSentEvent(billingRunId, freshRun.getName(), finalSuccessCount));
+        });
+
+    log.info(
+        "Batch send for billing run {} — {} sent, {} failed",
+        billingRunId,
+        successCount,
+        failures.size());
+
+    return new BatchOperationResult(successCount, failures.size(), failures);
+  }
+
+  static <T> List<List<T>> partition(List<T> list, int size) {
+    if (size <= 0) {
+      throw new IllegalArgumentException("Partition size must be positive");
+    }
+    List<List<T>> partitions = new ArrayList<>();
+    for (int i = 0; i < list.size(); i += size) {
+      partitions.add(list.subList(i, Math.min(i + size, list.size())));
+    }
+    return partitions;
   }
 
   List<UUID> resolveSelectedTimeEntryIds(BillingRunItem item) {

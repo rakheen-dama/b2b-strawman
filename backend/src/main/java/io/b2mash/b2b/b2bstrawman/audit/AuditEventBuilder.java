@@ -104,6 +104,23 @@ public final class AuditEventBuilder {
         .build();
   }
 
+  /** Convenience factory for billing_run.sent audit events. */
+  public static AuditEventRecord billingRunSent(BillingRun run, int sentCount) {
+    return builder()
+        .eventType("billing_run.sent")
+        .entityType("billing_run")
+        .entityId(run.getId())
+        .details(
+            Map.of(
+                "name",
+                run.getName() != null ? run.getName() : "",
+                "sent_count",
+                sentCount,
+                "total_amount",
+                run.getTotalAmount() != null ? run.getTotalAmount().toString() : "0"))
+        .build();
+  }
+
   public AuditEventBuilder eventType(String eventType) {
     this.eventType = eventType;
     return this;

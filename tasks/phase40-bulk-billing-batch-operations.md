@@ -27,7 +27,7 @@ Phase 40 adds a **bulk billing system** to the DocTeams platform -- the ability 
 | 307 | Batch Approve, Send & Notifications | Backend | 306 | M | 307A, 307B | **Done** (PRs #602, #603) |
 | 308 | Retainer Batch Close | Backend | 306 | S | 308A | **Done** (PR #604) |
 | 309 | Billing Run List & Detail Pages (Frontend) | Frontend | 307 | M | 309A, 309B | **Done** (PRs #605, #606) |
-| 310 | Billing Run Wizard (Frontend) | Frontend | 309 | L | 310A, 310B, 310C | |
+| 310 | Billing Run Wizard (Frontend) | Frontend | 309 | L | 310A, 310B, 310C | 310A **Done** (PR #607), 310B **Done** (PR #608) |
 | 311 | Billing Settings & Polish (Frontend) | Frontend | 309 | S | 311A | |
 
 ---
@@ -202,7 +202,7 @@ FRONTEND TRACK (after backend APIs)
 |-------|------|-------|---------|--------|
 | 6a (parallel) | 311 | 311A | Batch billing settings section on Settings page (async threshold, email rate limit, default currency), server action for update. ~3 modified/new files (~4 tests). Frontend only. | |
 | 6b | 310 | 310A | Wizard scaffold (`billing-run-wizard.tsx`) with step navigation, Step 1 (`configure-step.tsx`), Step 2 (`customer-selection-step.tsx`), new billing run page route. ~6 new files (~6 tests). Frontend only. | **Done** (PR #607) |
-| 6c | 310 | 310B | Step 3 (`cherry-pick-step.tsx`) -- accordion per customer, time entry table, expense table, entry-level checkboxes, subtotal recalculation, server actions for selection updates. ~4 new files (~5 tests). Frontend only. | |
+| 6c | 310 | 310B | Step 3 (`cherry-pick-step.tsx`) -- accordion per customer, time entry table, expense table, entry-level checkboxes, subtotal recalculation, server actions for selection updates. ~4 new files (~5 tests). Frontend only. | **Done** (PR #608) |
 | 6d | 310 | 310C | Step 4 (`review-drafts-step.tsx`) + Step 5 (`send-step.tsx`) -- draft table, inline editing (due date, payment terms), batch set actions, approve all, send with progress indicator, confirmation dialog, final summary. ~5 new files (~6 tests). Frontend only. | |
 
 ### Timeline
@@ -710,7 +710,7 @@ Stage 6: [310A] -> [310B] -> [310C] // [311A]                         (wizard se
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **310A** | 310.1--310.7 | Wizard scaffold with step navigation (`billing-run-wizard.tsx`), Step 1 configure (`configure-step.tsx`), Step 2 customer selection (`customer-selection-step.tsx`), new billing run page route. ~6 new files (~6 tests). Frontend only. | **Done** (PR #607) |
-| **310B** | 310.8--310.12 | Step 3 cherry-pick (`cherry-pick-step.tsx`) -- accordion per customer, time entry table, expense table, per-entry checkboxes, subtotal recalculation, server actions for selection updates. ~4 new files (~5 tests). Frontend only. | |
+| **310B** | 310.8--310.12 | Step 3 cherry-pick (`cherry-pick-step.tsx`) -- accordion per customer, time entry table, expense table, per-entry checkboxes, subtotal recalculation, server actions for selection updates. ~4 new files (~5 tests). Frontend only. | **Done** (PR #608) |
 | **310C** | 310.13--310.18 | Step 4 review drafts (`review-drafts-step.tsx`) + Step 5 send (`send-step.tsx`) -- draft invoice table, inline editing (due date, payment terms), batch set actions, approve all button, send with progress indicator, confirmation dialog, final summary, done button. ~5 new files (~6 tests). Frontend only. | |
 
 ### Tasks

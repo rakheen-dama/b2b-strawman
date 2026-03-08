@@ -26,7 +26,7 @@ Phase 40 adds a **bulk billing system** to the DocTeams platform -- the ability 
 | 306 | Batch Generation & Cancel | Backend | 305 | M | 306A, 306B | **Done** (PRs #600, #601) |
 | 307 | Batch Approve, Send & Notifications | Backend | 306 | M | 307A, 307B | **Done** (PRs #602, #603) |
 | 308 | Retainer Batch Close | Backend | 306 | S | 308A | **Done** (PR #604) |
-| 309 | Billing Run List & Detail Pages (Frontend) | Frontend | 307 | M | 309A, 309B | |
+| 309 | Billing Run List & Detail Pages (Frontend) | Frontend | 307 | M | 309A, 309B | **Done** (PRs #605, #606) |
 | 310 | Billing Run Wizard (Frontend) | Frontend | 309 | L | 310A, 310B, 310C | |
 | 311 | Billing Settings & Polish (Frontend) | Frontend | 309 | S | 311A | |
 
@@ -194,7 +194,7 @@ FRONTEND TRACK (after backend APIs)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 5a | 309 | 309A | `lib/api/billing-runs.ts` API client, `billing-run-status-badge.tsx`, `billing-run-item-status-badge.tsx`, billing runs list page (`invoices/billing-runs/page.tsx`), "Billing Runs" tab addition to invoices page. ~7 new/modified files (~6 tests). Frontend only. | **Done** (PR #605) |
-| 5b | 309 | 309B | Billing run detail page (`invoices/billing-runs/[id]/page.tsx`), summary stat cards, items table with status column, action buttons (Resume, Cancel, Approve Remaining, Send Remaining), server actions. ~5 new files (~5 tests). Frontend only. | |
+| 5b | 309 | 309B | Billing run detail page (`invoices/billing-runs/[id]/page.tsx`), summary stat cards, items table with status column, action buttons (Resume, Cancel, Approve Remaining, Send Remaining), server actions. ~5 new files (~5 tests). Frontend only. | **Done** (PR #606) |
 
 ### Stage 6: Wizard & Settings (parallel tracks)
 
@@ -638,7 +638,7 @@ Stage 6: [310A] -> [310B] -> [310C] // [311A]                         (wizard se
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **309A** | 309.1--309.7 | `lib/api/billing-runs.ts` API client with all billing run endpoint functions, `billing-run-status-badge.tsx`, `billing-run-item-status-badge.tsx`, billing runs list page, "Billing Runs" tab addition to invoices page. ~7 new/modified files (~6 tests). Frontend only. | **Done** (PR #605) |
-| **309B** | 309.8--309.13 | Billing run detail page with summary stat cards, items table (color-coded status), action buttons (Resume, Cancel, Approve Remaining, Send Remaining), server actions for detail page operations. ~5 new files (~5 tests). Frontend only. | |
+| **309B** | 309.8--309.13 | Billing run detail page with summary stat cards, items table (color-coded status), action buttons (Resume, Cancel, Approve Remaining, Send Remaining), server actions for detail page operations. ~5 new files (~5 tests). Frontend only. | **Done** (PR #606) |
 
 ### Tasks
 

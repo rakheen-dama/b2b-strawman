@@ -35,6 +35,27 @@ All fixes so far are committed. One remaining bug needs fixing.
 - `frontend/components/access-request/approve-dialog.tsx` — how it handles the action result
 - `frontend/components/access-request/access-requests-table.tsx` — how approve result triggers UI update
 
+### Bug 3: No `organizations` / `org_schema_mapping` row created on approval
+
+**Symptom**: After approval, a tenant schema is created and a Keycloak org exists, but the `organizations` and/or `org_schema_mapping` table in the `public` schema has no row for the new org. This means the `TenantFilter` can't resolve the org ID → schema, so the approved user gets "Organization not provisioned" (403) when they log in.
+
+**Root cause**: `AccessRequestApprovalService.approve()` calls `tenantProvisioningService.provisionTenant(kcOrgId, orgName)` which creates the schema + runs Flyway migrations. But check whether `provisionTenant()` also inserts into `organizations` and `org_schema_mapping`. If it does, check if the Keycloak org ID format matches what the `TenantFilter` looks up (the KC org ID from the JWT `organization` claim must match the `clerk_org_id` column in `org_schema_mapping`).
+
+**Files to investigate**:
+- `backend/.../provisioning/TenantProvisioningService.java` — does `provisionTenant()` insert into `org_schema_mapping`?
+- `backend/.../multitenancy/OrgSchemaMapping.java` — entity for the mapping table
+- `backend/.../multitenancy/TenantFilter.java` — how it looks up the schema (line 59: `ClerkJwtUtils.extractOrgId(jwt)`)
+- `backend/.../security/ClerkJwtUtils.java` — `extractKeycloakOrgId()` extracts from `organization` claim — verify the KC org ID format matches what was stored
+
+**The fix likely needs**: Either `provisionTenant()` already inserts the mapping (verify it ran without error), or `AccessRequestApprovalService.approve()` needs to explicitly create the `OrgSchemaMapping` row after provisioning.
+
+**Quick debug**: Query the database directly:
+```sql
+SELECT * FROM public.org_schema_mapping ORDER BY id DESC LIMIT 5;
+SELECT * FROM public.organizations ORDER BY id DESC LIMIT 5;
+-- Check if the new KC org ID appears
+```
+
 **Quick debug**: Add `console.log` to `approveAccessRequest()`:
 ```typescript
 export async function approveAccessRequest(id: string): Promise<ActionResult> {

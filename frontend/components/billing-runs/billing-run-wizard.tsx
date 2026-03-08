@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { ConfigureStep } from "./configure-step";
 import { CustomerSelectionStep } from "./customer-selection-step";
 import { CherryPickStep } from "./cherry-pick-step";
+import { ReviewDraftsStep } from "./review-drafts-step";
+import { SendStep } from "./send-step";
 import type { BillingRunItem } from "@/lib/api/billing-runs";
 
 const STEP_LABELS = [
@@ -123,44 +125,24 @@ export function BillingRunWizard({
           onNext={handleNext}
         />
       )}
-      {currentStep === 4 && (
-        <PlaceholderStep
-          title="Review Drafts"
+      {currentStep === 4 && billingRunId && (
+        <ReviewDraftsStep
+          slug={slug}
+          billingRunId={billingRunId}
+          currency={currency}
           onBack={handleBack}
           onNext={handleNext}
         />
       )}
-      {currentStep === 5 && (
-        <PlaceholderStep title="Send" onBack={handleBack} />
+      {currentStep === 5 && billingRunId && (
+        <SendStep
+          slug={slug}
+          billingRunId={billingRunId}
+          currency={currency}
+          onBack={handleBack}
+        />
       )}
     </div>
   );
 }
 
-function PlaceholderStep({
-  title,
-  onBack,
-  onNext,
-}: {
-  title: string;
-  onBack: () => void;
-  onNext?: () => void;
-}) {
-  return (
-    <div className="rounded-lg border border-slate-200 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-950">
-      <p className="text-slate-500 dark:text-slate-400">
-        {title} — coming soon
-      </p>
-      <div className="mt-6 flex justify-center gap-3">
-        <Button variant="outline" onClick={onBack}>
-          Back
-        </Button>
-        {onNext && (
-          <Button variant="default" onClick={onNext}>
-            Next
-          </Button>
-        )}
-      </div>
-    </div>
-  );
-}

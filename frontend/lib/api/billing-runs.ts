@@ -135,8 +135,8 @@ export interface CreateBillingRunRequest {
 }
 
 export interface BatchSendRequest {
-  defaultDueDate: string;
-  defaultPaymentTerms: string;
+  defaultDueDate?: string;
+  defaultPaymentTerms?: string;
 }
 
 export interface UpdateEntrySelectionsRequest {

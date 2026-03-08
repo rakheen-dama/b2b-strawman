@@ -158,7 +158,7 @@ FRONTEND TRACK (after backend APIs)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 0a | 303 | 303A | `BillingRun`, `BillingRunItem`, `BillingRunEntrySelection` entities, 3 enums (`BillingRunStatus`, `BillingRunItemStatus`, `EntryType`), V63 tenant migration. ~7 new files. Backend only. | |
+| 0a | 303 | 303A | `BillingRun`, `BillingRunItem`, `BillingRunEntrySelection` entities, 3 enums (`BillingRunStatus`, `BillingRunItemStatus`, `EntryType`), V63 tenant migration. ~7 new files. Backend only. | **Done** (PR #595) |
 | 0b | 303 | 303B | `BillingRunRepository`, `BillingRunItemRepository`, `BillingRunEntrySelectionRepository`, `BillingRunService` (create + cancel-preview), `BillingRunController` (CRUD), DTO records, `Invoice.billingRunId` extension, `OrgSettings` 3-field extension, audit event. ~10 new/modified files (~12 tests). Backend only. | |
 
 ### Stage 1: Preview & Discovery
@@ -239,7 +239,7 @@ Stage 6: [310A] -> [310B] -> [310C] // [311A]                         (wizard se
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **303A** | 303.1--303.7 | `BillingRun`, `BillingRunItem`, `BillingRunEntrySelection` entities, `BillingRunStatus`, `BillingRunItemStatus`, `EntryType` enums, V63 tenant migration with 3 new tables + Invoice/OrgSettings column additions. ~7 new files. Backend only. | |
+| **303A** | 303.1--303.7 | `BillingRun`, `BillingRunItem`, `BillingRunEntrySelection` entities, `BillingRunStatus`, `BillingRunItemStatus`, `EntryType` enums, V63 tenant migration with 3 new tables + Invoice/OrgSettings column additions. ~7 new files. Backend only. | **Done** (PR #595) |
 | **303B** | 303.8--303.17 | `BillingRunRepository`, `BillingRunItemRepository`, `BillingRunEntrySelectionRepository`, `BillingRunService` (create + cancel-preview-only), `BillingRunController` (4 CRUD endpoints), DTO records (`CreateBillingRunRequest`, `BillingRunResponse`), `Invoice.billingRunId` field addition, `OrgSettings` 3-field extension, `BILLING_RUN_CREATED` audit event builder. ~10 new/modified files (~12 tests). Backend only. | |
 
 ### Tasks

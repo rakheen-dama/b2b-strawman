@@ -517,6 +517,91 @@ class TiptapRendererTest {
     assertThat(html).contains("<!-- invalid clauseId -->");
   }
 
+  // --- Format hints tests ---
+
+  @Test
+  void variable_currency_formatted() {
+    var doc =
+        doc(
+            Map.<String, Object>of(
+                "type",
+                "paragraph",
+                "content",
+                List.of(
+                    Map.<String, Object>of(
+                        "type",
+                        "variable",
+                        "attrs",
+                        Map.<String, Object>of("key", "invoice.total")))));
+    var context = new HashMap<String, Object>();
+    context.put("invoice", Map.<String, Object>of("total", 50000.00));
+    var hints = Map.of("invoice.total", "currency");
+    String html = renderer.render(doc, context, Map.of(), null, hints);
+    assertThat(html).contains("$50,000.00");
+  }
+
+  @Test
+  void variable_date_formatted() {
+    var doc =
+        doc(
+            Map.<String, Object>of(
+                "type",
+                "paragraph",
+                "content",
+                List.of(
+                    Map.<String, Object>of(
+                        "type",
+                        "variable",
+                        "attrs",
+                        Map.<String, Object>of("key", "invoice.issueDate")))));
+    var context = new HashMap<String, Object>();
+    context.put("invoice", Map.<String, Object>of("issueDate", "2026-03-08"));
+    var hints = Map.of("invoice.issueDate", "date");
+    String html = renderer.render(doc, context, Map.of(), null, hints);
+    assertThat(html).contains("8 March 2026");
+  }
+
+  @Test
+  void variable_number_formatted() {
+    var doc =
+        doc(
+            Map.<String, Object>of(
+                "type",
+                "paragraph",
+                "content",
+                List.of(
+                    Map.<String, Object>of(
+                        "type",
+                        "variable",
+                        "attrs",
+                        Map.<String, Object>of("key", "budget.amount")))));
+    var context = new HashMap<String, Object>();
+    context.put("budget", Map.<String, Object>of("amount", 1234567));
+    var hints = Map.of("budget.amount", "number");
+    String html = renderer.render(doc, context, Map.of(), null, hints);
+    assertThat(html).contains("1,234,567");
+  }
+
+  @Test
+  void variable_without_hint_renders_raw() {
+    var doc =
+        doc(
+            Map.<String, Object>of(
+                "type",
+                "paragraph",
+                "content",
+                List.of(
+                    Map.<String, Object>of(
+                        "type",
+                        "variable",
+                        "attrs",
+                        Map.<String, Object>of("key", "project.name")))));
+    var context = new HashMap<String, Object>();
+    context.put("project", Map.<String, Object>of("name", "Test Project"));
+    String html = renderer.render(doc, context, Map.of(), null);
+    assertThat(html).contains("Test Project");
+  }
+
   // --- Test helpers ---
 
   private Map<String, Object> doc(Map<String, Object> childNode) {

@@ -63,8 +63,27 @@ public class TiptapRenderer {
       Map<String, Object> context,
       Map<UUID, Clause> clauses,
       String templateCss) {
+    return render(document, context, clauses, templateCss, Map.of());
+  }
+
+  /**
+   * Renders a Tiptap document JSON tree to a complete HTML document string with format hints.
+   *
+   * @param document the root Tiptap JSON node (type: "doc"), as a {@code Map<String, Object>}
+   * @param context the rendering context (dot-path variable lookups)
+   * @param clauses resolved clauses by UUID for clauseBlock rendering
+   * @param templateCss template-specific CSS to append after the default CSS; may be null
+   * @param formatHints map of variable key to type hint (e.g., "currency", "date", "number")
+   * @return a complete {@code <!DOCTYPE html>} document string
+   */
+  public String render(
+      Map<String, Object> document,
+      Map<String, Object> context,
+      Map<UUID, Clause> clauses,
+      String templateCss,
+      Map<String, String> formatHints) {
     var body = new StringBuilder();
-    renderNode(document, context, clauses, body, 0);
+    renderNode(document, context, clauses, body, 0, formatHints);
 
     String safeCss = templateCss != null ? templateCss.replaceAll("(?i)</style>", "") : "";
 
@@ -83,29 +102,30 @@ public class TiptapRenderer {
       Map<String, Object> context,
       Map<UUID, Clause> clauses,
       StringBuilder sb,
-      int depth) {
+      int depth,
+      Map<String, String> formatHints) {
     String type = (String) node.get("type");
     if (type == null) return;
     Map<String, Object> attrs = (Map<String, Object>) node.getOrDefault("attrs", Map.of());
 
     switch (type) {
-      case "doc" -> renderChildren(node, context, clauses, sb, depth);
+      case "doc" -> renderChildren(node, context, clauses, sb, depth, formatHints);
       case "heading" -> {
         Object rawLevel = attrs.getOrDefault("level", 1);
         int level = rawLevel instanceof Number n ? n.intValue() : 1;
         sb.append("<h").append(level).append(">");
-        renderChildren(node, context, clauses, sb, depth);
+        renderChildren(node, context, clauses, sb, depth, formatHints);
         sb.append("</h").append(level).append(">");
       }
       case "paragraph" -> {
         sb.append("<p>");
-        renderChildren(node, context, clauses, sb, depth);
+        renderChildren(node, context, clauses, sb, depth, formatHints);
         sb.append("</p>");
       }
       case "text" -> renderText(node, sb);
       case "variable" -> {
         String key = (String) attrs.get("key");
-        sb.append(resolveVariable(key, context));
+        sb.append(resolveVariable(key, context, formatHints));
       }
       case "clauseBlock" -> {
         if (depth >= MAX_CLAUSE_DEPTH) {
@@ -134,25 +154,27 @@ public class TiptapRenderer {
           sb.append("<div class=\"clause-block\" data-clause-slug=\"")
               .append(HtmlUtils.htmlEscape(slug))
               .append("\">");
-          renderNode(bodyJson, context, clauses, sb, depth + 1);
+          renderNode(bodyJson, context, clauses, sb, depth + 1, formatHints);
           sb.append("</div>");
         } else {
           sb.append("<!-- clause not found: ").append(HtmlUtils.htmlEscape(slug)).append(" -->");
         }
       }
       case "loopTable" -> renderLoopTable(attrs, context, sb);
-      case "bulletList" -> wrapTag("ul", node, context, clauses, sb, depth);
-      case "orderedList" -> wrapTag("ol", node, context, clauses, sb, depth);
-      case "listItem" -> wrapTag("li", node, context, clauses, sb, depth);
-      case "table" -> wrapTag("table", node, context, clauses, sb, depth);
-      case "tableRow" -> wrapTag("tr", node, context, clauses, sb, depth);
-      case "tableCell" -> renderTableCell("td", attrs, node, context, clauses, sb, depth);
-      case "tableHeader" -> renderTableCell("th", attrs, node, context, clauses, sb, depth);
+      case "bulletList" -> wrapTag("ul", node, context, clauses, sb, depth, formatHints);
+      case "orderedList" -> wrapTag("ol", node, context, clauses, sb, depth, formatHints);
+      case "listItem" -> wrapTag("li", node, context, clauses, sb, depth, formatHints);
+      case "table" -> wrapTag("table", node, context, clauses, sb, depth, formatHints);
+      case "tableRow" -> wrapTag("tr", node, context, clauses, sb, depth, formatHints);
+      case "tableCell" ->
+          renderTableCell("td", attrs, node, context, clauses, sb, depth, formatHints);
+      case "tableHeader" ->
+          renderTableCell("th", attrs, node, context, clauses, sb, depth, formatHints);
       case "horizontalRule" -> sb.append("<hr/>");
       case "hardBreak" -> sb.append("<br/>");
       case "legacyHtml" ->
           sb.append(Jsoup.clean((String) attrs.getOrDefault("html", ""), LEGACY_HTML_SAFELIST));
-      default -> renderChildren(node, context, clauses, sb, depth);
+      default -> renderChildren(node, context, clauses, sb, depth, formatHints);
     }
   }
 
@@ -162,11 +184,12 @@ public class TiptapRenderer {
       Map<String, Object> context,
       Map<UUID, Clause> clauses,
       StringBuilder sb,
-      int depth) {
+      int depth,
+      Map<String, String> formatHints) {
     var content = (List<Map<String, Object>>) node.get("content");
     if (content == null) return;
     for (var child : content) {
-      renderNode(child, context, clauses, sb, depth);
+      renderNode(child, context, clauses, sb, depth, formatHints);
     }
   }
 
@@ -217,7 +240,8 @@ public class TiptapRenderer {
   }
 
   @SuppressWarnings("unchecked")
-  private String resolveVariable(String key, Map<String, Object> context) {
+  private String resolveVariable(
+      String key, Map<String, Object> context, Map<String, String> formatHints) {
     if (key == null || key.isBlank()) return "";
     String[] segments = key.split("\\.");
     Object current = context;
@@ -226,7 +250,8 @@ public class TiptapRenderer {
       current = ((Map<?, ?>) current).get(segment);
       if (current == null) return "";
     }
-    return HtmlUtils.htmlEscape(String.valueOf(current));
+    String typeHint = formatHints != null ? formatHints.get(key) : null;
+    return VariableFormatter.format(current, typeHint);
   }
 
   @SuppressWarnings("unchecked")
@@ -283,9 +308,10 @@ public class TiptapRenderer {
       Map<String, Object> context,
       Map<UUID, Clause> clauses,
       StringBuilder sb,
-      int depth) {
+      int depth,
+      Map<String, String> formatHints) {
     sb.append("<").append(tag).append(">");
-    renderChildren(node, context, clauses, sb, depth);
+    renderChildren(node, context, clauses, sb, depth, formatHints);
     sb.append("</").append(tag).append(">");
   }
 
@@ -297,7 +323,8 @@ public class TiptapRenderer {
       Map<String, Object> context,
       Map<UUID, Clause> clauses,
       StringBuilder sb,
-      int depth) {
+      int depth,
+      Map<String, String> formatHints) {
     sb.append("<").append(tag);
     Object colspan = attrs.get("colspan");
     Object rowspan = attrs.get("rowspan");
@@ -308,7 +335,7 @@ public class TiptapRenderer {
       sb.append(" rowspan=\"").append(n.intValue()).append("\"");
     }
     sb.append(">");
-    renderChildren(node, context, clauses, sb, depth);
+    renderChildren(node, context, clauses, sb, depth, formatHints);
     sb.append("</").append(tag).append(">");
   }
 }

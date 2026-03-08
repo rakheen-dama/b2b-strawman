@@ -123,6 +123,15 @@ public class BillingRunItem {
     this.updatedAt = Instant.now();
   }
 
+  public void reInclude() {
+    if (this.status != BillingRunItemStatus.EXCLUDED) {
+      throw new IllegalStateException("Only EXCLUDED items can be re-included");
+    }
+    this.status = BillingRunItemStatus.PENDING;
+    this.failureReason = null;
+    this.updatedAt = Instant.now();
+  }
+
   public UUID getInvoiceId() {
     return invoiceId;
   }

@@ -9,10 +9,12 @@ import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.CreateBillingRunR
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.ExpenseResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.LoadPreviewRequest;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.TimeEntryResponse;
+import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.UpdateEntrySelectionsRequest;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.expense.Expense;
 import io.b2mash.b2b.b2bstrawman.expense.ExpenseRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
@@ -345,6 +347,166 @@ public class BillingRunService {
       return List.of();
     }
     return expenseRepository.findAllById(expenseIds).stream().map(ExpenseResponse::from).toList();
+  }
+
+  @Transactional
+  public BillingRunItemResponse updateEntrySelection(
+      UUID billingRunId, UUID billingRunItemId, UpdateEntrySelectionsRequest request) {
+    var run =
+        billingRunRepository
+            .findById(billingRunId)
+            .orElseThrow(() -> new ResourceNotFoundException("BillingRun", billingRunId));
+
+    if (run.getStatus() != BillingRunStatus.PREVIEW) {
+      throw new InvalidStateException(
+          "Cannot update selections",
+          "Only billing runs in PREVIEW status allow selection changes. Current status: "
+              + run.getStatus());
+    }
+
+    var item =
+        billingRunItemRepository
+            .findById(billingRunItemId)
+            .orElseThrow(() -> new ResourceNotFoundException("BillingRunItem", billingRunItemId));
+
+    if (!item.getBillingRunId().equals(billingRunId)) {
+      throw new ResourceNotFoundException("BillingRunItem", billingRunItemId);
+    }
+
+    for (var selection : request.selections()) {
+      var entrySelection =
+          billingRunEntrySelectionRepository
+              .findByBillingRunItemIdAndEntryTypeAndEntryId(
+                  billingRunItemId, selection.entryType(), selection.entryId())
+              .orElseThrow(
+                  () ->
+                      new ResourceNotFoundException(
+                          "BillingRunEntrySelection",
+                          "item="
+                              + billingRunItemId
+                              + ", type="
+                              + selection.entryType()
+                              + ", entry="
+                              + selection.entryId()));
+      entrySelection.setIncluded(selection.included());
+      billingRunEntrySelectionRepository.save(entrySelection);
+    }
+
+    recalculateItemTotals(item);
+    item = billingRunItemRepository.save(item);
+
+    var customer = customerRepository.findById(item.getCustomerId()).orElse(null);
+    Map<UUID, Customer> customerMap =
+        customer != null ? Map.of(customer.getId(), customer) : Map.of();
+    return toItemResponse(item, customerMap);
+  }
+
+  @Transactional
+  public BillingRunItemResponse excludeCustomer(UUID billingRunId, UUID billingRunItemId) {
+    var run =
+        billingRunRepository
+            .findById(billingRunId)
+            .orElseThrow(() -> new ResourceNotFoundException("BillingRun", billingRunId));
+
+    if (run.getStatus() != BillingRunStatus.PREVIEW) {
+      throw new InvalidStateException(
+          "Cannot exclude customer",
+          "Only billing runs in PREVIEW status allow exclusions. Current status: "
+              + run.getStatus());
+    }
+
+    var item =
+        billingRunItemRepository
+            .findById(billingRunItemId)
+            .orElseThrow(() -> new ResourceNotFoundException("BillingRunItem", billingRunItemId));
+
+    if (!item.getBillingRunId().equals(billingRunId)) {
+      throw new ResourceNotFoundException("BillingRunItem", billingRunItemId);
+    }
+
+    item.markExcluded();
+    item = billingRunItemRepository.save(item);
+
+    log.info("Excluded customer item {} from billing run {}", billingRunItemId, billingRunId);
+
+    var customer = customerRepository.findById(item.getCustomerId()).orElse(null);
+    Map<UUID, Customer> customerMap =
+        customer != null ? Map.of(customer.getId(), customer) : Map.of();
+    return toItemResponse(item, customerMap);
+  }
+
+  @Transactional
+  public BillingRunItemResponse includeCustomer(UUID billingRunId, UUID billingRunItemId) {
+    var run =
+        billingRunRepository
+            .findById(billingRunId)
+            .orElseThrow(() -> new ResourceNotFoundException("BillingRun", billingRunId));
+
+    if (run.getStatus() != BillingRunStatus.PREVIEW) {
+      throw new InvalidStateException(
+          "Cannot include customer",
+          "Only billing runs in PREVIEW status allow inclusions. Current status: "
+              + run.getStatus());
+    }
+
+    var item =
+        billingRunItemRepository
+            .findById(billingRunItemId)
+            .orElseThrow(() -> new ResourceNotFoundException("BillingRunItem", billingRunItemId));
+
+    if (!item.getBillingRunId().equals(billingRunId)) {
+      throw new ResourceNotFoundException("BillingRunItem", billingRunItemId);
+    }
+
+    item.reInclude();
+    item = billingRunItemRepository.save(item);
+
+    log.info("Re-included customer item {} in billing run {}", billingRunItemId, billingRunId);
+
+    var customer = customerRepository.findById(item.getCustomerId()).orElse(null);
+    Map<UUID, Customer> customerMap =
+        customer != null ? Map.of(customer.getId(), customer) : Map.of();
+    return toItemResponse(item, customerMap);
+  }
+
+  private void recalculateItemTotals(BillingRunItem item) {
+    List<BillingRunEntrySelection> selections =
+        billingRunEntrySelectionRepository.findByBillingRunItemId(item.getId());
+
+    List<UUID> includedTimeEntryIds =
+        selections.stream()
+            .filter(s -> s.getEntryType() == EntryType.TIME_ENTRY && s.isIncluded())
+            .map(BillingRunEntrySelection::getEntryId)
+            .toList();
+
+    List<UUID> includedExpenseIds =
+        selections.stream()
+            .filter(s -> s.getEntryType() == EntryType.EXPENSE && s.isIncluded())
+            .map(BillingRunEntrySelection::getEntryId)
+            .toList();
+
+    BigDecimal timeAmount = BigDecimal.ZERO;
+    if (!includedTimeEntryIds.isEmpty()) {
+      var timeEntries = timeEntryRepository.findAllById(includedTimeEntryIds);
+      timeAmount =
+          timeEntries.stream()
+              .map(te -> te.getBillableValue() != null ? te.getBillableValue() : BigDecimal.ZERO)
+              .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    BigDecimal expenseAmount = BigDecimal.ZERO;
+    if (!includedExpenseIds.isEmpty()) {
+      var expenses = expenseRepository.findAllById(includedExpenseIds);
+      expenseAmount =
+          expenses.stream()
+              .map(Expense::getBillableAmount)
+              .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    item.setUnbilledTimeAmount(timeAmount);
+    item.setUnbilledTimeCount(includedTimeEntryIds.size());
+    item.setUnbilledExpenseAmount(expenseAmount);
+    item.setUnbilledExpenseCount(includedExpenseIds.size());
   }
 
   private void validateItemBelongsToRun(UUID billingRunId, UUID billingRunItemId) {

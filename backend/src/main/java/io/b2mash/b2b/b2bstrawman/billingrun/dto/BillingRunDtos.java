@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.billingrun.dto;
 import io.b2mash.b2b.b2bstrawman.billingrun.BillingRun;
 import io.b2mash.b2b.b2bstrawman.billingrun.BillingRunItemStatus;
 import io.b2mash.b2b.b2bstrawman.billingrun.BillingRunStatus;
+import io.b2mash.b2b.b2bstrawman.billingrun.EntryType;
 import io.b2mash.b2b.b2bstrawman.expense.Expense;
 import io.b2mash.b2b.b2bstrawman.expense.ExpenseCategory;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
@@ -159,4 +160,12 @@ public final class BillingRunDtos {
           e.getBillableAmount());
     }
   }
+
+  public record UpdateEntrySelectionsRequest(
+      @NotNull(message = "selections is required") List<EntrySelectionDto> selections) {}
+
+  public record EntrySelectionDto(
+      @NotNull(message = "entryType is required") EntryType entryType,
+      @NotNull(message = "entryId is required") UUID entryId,
+      boolean included) {}
 }

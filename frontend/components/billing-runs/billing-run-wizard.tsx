@@ -115,7 +115,6 @@ export function BillingRunWizard({
       )}
       {currentStep === 3 && billingRunId && (
         <CherryPickStep
-          slug={slug}
           billingRunId={billingRunId}
           currency={currency}
           includeRetainers={includeRetainers}

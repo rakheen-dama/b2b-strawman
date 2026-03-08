@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
@@ -21,7 +22,6 @@ import type {
 } from "@/lib/api/billing-runs";
 
 interface CherryPickStepProps {
-  slug: string;
   billingRunId: string;
   currency: string;
   includeRetainers: boolean;
@@ -90,6 +90,13 @@ export function CherryPickStep({
 
     loadRetainers();
   }, [billingRunId, includeRetainers, retainersLoaded]);
+
+  // Clean up debounce timers on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(debounceTimers.current).forEach(clearTimeout);
+    };
+  }, []);
 
   const loadCustomerData = useCallback(
     async (itemId: string) => {
@@ -181,17 +188,22 @@ export function CherryPickStep({
 
     updateSelectionsAction(billingRunId, itemId, {
       selections: selectionsToSend,
-    }).then((result) => {
-      if (!result.success) {
-        // Revert optimistic updates on failure
+    })
+      .then((result) => {
+        if (!result.success) {
+          // Revert optimistic updates on failure
+          loadCustomerData(itemId);
+        } else if (result.item) {
+          setItemStates((prev) => ({
+            ...prev,
+            [itemId]: result.item!,
+          }));
+        }
+      })
+      .catch(() => {
+        // Revert optimistic updates on network/unexpected error
         loadCustomerData(itemId);
-      } else if (result.item) {
-        setItemStates((prev) => ({
-          ...prev,
-          [itemId]: result.item!,
-        }));
-      }
-    });
+      });
   }
 
   function scheduleFlush(itemId: string) {
@@ -358,13 +370,9 @@ export function CherryPickStep({
                       aria-expanded={isExpanded}
                     >
                       <div className="flex items-center gap-3">
-                        <svg
+                        <ChevronRight
                           className={`size-4 text-slate-500 transition-transform ${isExpanded ? "rotate-90" : ""}`}
-                          viewBox="0 0 16 16"
-                          fill="currentColor"
-                        >
-                          <path d="M6 4l4 4-4 4V4z" />
-                        </svg>
+                        />
                         <span
                           className={`font-medium ${isExcluded ? "text-slate-400 line-through dark:text-slate-500" : "text-slate-950 dark:text-slate-50"}`}
                         >
@@ -480,11 +488,10 @@ export function CherryPickStep({
                                             {formatLocalDate(entry.date)}
                                           </td>
                                           <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">
-                                            {entry.memberId.substring(0, 8)}
+                                            Member
                                           </td>
                                           <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">
-                                            {entry.description ??
-                                              entry.taskId.substring(0, 8)}
+                                            {entry.description ?? "Task"}
                                           </td>
                                           <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">
                                             {(

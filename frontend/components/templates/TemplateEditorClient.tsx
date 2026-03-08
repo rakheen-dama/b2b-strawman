@@ -31,6 +31,7 @@ import {
   renderTiptapToHtml,
   buildPreviewContext,
   extractClauseIds,
+  findMissingVariables,
 } from "@/components/editor";
 import type { TiptapNode } from "@/components/editor";
 import {
@@ -89,6 +90,9 @@ export function TemplateEditorClient({
   const [entityPickerOpen, setEntityPickerOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
+  const [missingVariables, setMissingVariables] = useState<Set<string>>(
+    new Set(),
+  );
   const [previewLoading, startPreviewTransition] = useTransition();
 
   const handleEditorUpdate = useCallback(
@@ -139,6 +143,10 @@ export function TemplateEditorClient({
           clausesMap.set(clauseIds[i], clause.body as unknown as TiptapNode);
         }
       }
+
+      // Identify variables that resolve to empty with the selected entity
+      const missing = findMissingVariables(doc, context);
+      setMissingVariables(missing);
 
       const html = renderTiptapToHtml(doc, context, clausesMap, css || undefined);
       setPreviewHtml(html);
@@ -346,6 +354,27 @@ export function TemplateEditorClient({
         )}
       </div>
 
+      {/* Missing variables indicator */}
+      {missingVariables.size > 0 && (
+        <div className="mt-4 flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 dark:border-amber-800 dark:bg-amber-950">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="size-4 text-amber-600 dark:text-amber-400" />
+            <span className="text-sm text-amber-800 dark:text-amber-200">
+              {missingVariables.size} variable{missingVariables.size !== 1 ? "s" : ""}{" "}
+              {missingVariables.size !== 1 ? "have" : "has"} no value for the
+              selected entity
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setMissingVariables(new Set())}
+            className="text-xs text-amber-700 hover:text-amber-900 dark:text-amber-300 dark:hover:text-amber-100"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {/* Document Editor */}
       <div className="mt-4 flex-1">
         <DocumentEditor
@@ -354,6 +383,7 @@ export function TemplateEditorClient({
           scope="template"
           editable={!readOnly}
           entityType={template.primaryEntityType}
+          missingVariables={missingVariables}
         />
       </div>
 

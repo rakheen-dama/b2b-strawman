@@ -451,3 +451,40 @@ export function extractClauseIds(node: TiptapNode): string[] {
   walk(node);
   return ids;
 }
+
+/**
+ * Extracts all unique variable keys from a Tiptap document tree.
+ */
+export function extractVariableKeys(node: TiptapNode): string[] {
+  const keys = new Set<string>();
+  function walk(n: TiptapNode) {
+    if (n.type === "variable" && n.attrs?.key) {
+      keys.add(String(n.attrs.key));
+    }
+    if (n.content) {
+      for (const child of n.content) {
+        walk(child);
+      }
+    }
+  }
+  walk(node);
+  return Array.from(keys);
+}
+
+/**
+ * Identifies variable keys that resolve to empty values in a given context.
+ */
+export function findMissingVariables(
+  node: TiptapNode,
+  context: Record<string, unknown>,
+): Set<string> {
+  const allKeys = extractVariableKeys(node);
+  const missing = new Set<string>();
+  for (const key of allKeys) {
+    const resolved = resolveVariable(key, context);
+    if (resolved === "") {
+      missing.add(key);
+    }
+  }
+  return missing;
+}

@@ -178,7 +178,7 @@ FRONTEND TRACK (after backend APIs)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 3a | 306 | 306A | `generate()` with failure isolation, entry resolution, single-active-run guard, `billingRunId` linking, stats computation, generate endpoint. ~3 modified files (~10 tests). Backend only. | |
+| 3a | 306 | 306A | `generate()` with failure isolation, entry resolution, single-active-run guard, `billingRunId` linking, stats computation, generate endpoint. ~3 modified files (~10 tests). Backend only. | **Done** (PR #600) |
 | 3b | 306 | 306B | Extended `cancelRun()` for IN_PROGRESS/COMPLETED (void drafts, unbill entries), `BILLING_RUN_GENERATED` audit event. ~3 modified files (~6 tests). Backend only. | |
 
 ### Stage 4: Approve, Send & Retainers (parallel tracks)
@@ -444,7 +444,7 @@ Stage 6: [310A] -> [310B] -> [310C] // [311A]                         (wizard se
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **306A** | 306.1--306.7 | `BillingRunService.generate()` with per-customer `TransactionTemplate`, entry resolution from `BillingRunEntrySelection`, single-active-run guard, `Invoice.billingRunId` linking, summary stats computation, generate endpoint. ~3 modified files + 1 new test file (~10 tests). Backend only. | |
+| **306A** | 306.1--306.7 | `BillingRunService.generate()` with per-customer `TransactionTemplate`, entry resolution from `BillingRunEntrySelection`, single-active-run guard, `Invoice.billingRunId` linking, summary stats computation, generate endpoint. ~3 modified files + 1 new test file (~10 tests). Backend only. | **Done** (PR #600) |
 | **306B** | 306.8--306.12 | Extended `cancelRun()` for IN_PROGRESS/COMPLETED (void DRAFT invoices, unbill time entries/expenses, mark CANCELLED), `BILLING_RUN_GENERATED` audit event builder method. ~3 modified files + 1 new test file (~6 tests). Backend only. | |
 
 ### Tasks

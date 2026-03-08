@@ -142,6 +142,12 @@ public class BillingRunService {
           "Cannot cancel billing run", "Billing run is already cancelled");
     }
 
+    if (run.getStatus() == BillingRunStatus.IN_PROGRESS) {
+      throw new InvalidStateException(
+          "Cannot cancel billing run",
+          "Cannot cancel a billing run while generation is in progress");
+    }
+
     if (run.getStatus() == BillingRunStatus.PREVIEW) {
       // Existing behavior: hard delete for PREVIEW runs
       auditService.log(AuditEventBuilder.billingRunCancelled(run, 0));
@@ -152,41 +158,40 @@ public class BillingRunService {
       return;
     }
 
-    // IN_PROGRESS or COMPLETED: soft cancel
-    // 1. Find DRAFT invoices linked to this run
+    // COMPLETED: soft cancel
+    // 1. Find DRAFT invoice IDs linked to this run
     var draftInvoices =
         invoiceRepository.findByBillingRunIdAndStatus(billingRunId, InvoiceStatus.DRAFT);
+    List<UUID> draftInvoiceIds = draftInvoices.stream().map(i -> i.getId()).toList();
 
     int voidedCount = 0;
-    for (var invoice : draftInvoices) {
+    for (var invoiceId : draftInvoiceIds) {
       // 2. Unbill time entries and expenses linked to this invoice
-      timeEntryRepository.unbillByInvoiceId(invoice.getId());
-      expenseRepository.unbillByInvoiceId(invoice.getId());
+      timeEntryRepository.unbillByInvoiceId(invoiceId);
+      expenseRepository.unbillByInvoiceId(invoiceId);
 
       // 3. Delete invoice lines
-      invoiceLineRepository.deleteByInvoiceId(invoice.getId());
+      invoiceLineRepository.deleteByInvoiceId(invoiceId);
 
-      // 4. Void the draft invoice
-      invoice.voidDraft();
-      invoiceRepository.save(invoice);
+      // 4. Void the draft invoice (re-fetch after PC clear from @Modifying queries)
+      var freshInvoice = invoiceRepository.findById(invoiceId).orElseThrow();
+      freshInvoice.voidDraft();
+      invoiceRepository.save(freshInvoice);
+      entityManager.flush();
       voidedCount++;
     }
 
-    // 5. Set GENERATED items to CANCELLED
-    var generatedItems =
-        billingRunItemRepository.findByBillingRunIdAndStatus(
-            billingRunId, BillingRunItemStatus.GENERATED);
-    for (var item : generatedItems) {
-      item.setStatus(BillingRunItemStatus.CANCELLED);
-      billingRunItemRepository.save(item);
-    }
+    // 5. Set GENERATED items to CANCELLED (bulk update to avoid N+1)
+    billingRunItemRepository.updateStatusByBillingRunIdAndStatus(
+        billingRunId, BillingRunItemStatus.GENERATED, BillingRunItemStatus.CANCELLED);
 
-    // 6. Cancel the run
-    run.cancel();
-    billingRunRepository.save(run);
+    // 6. Cancel the run (re-fetch after PC clear from @Modifying queries)
+    var freshRun = billingRunRepository.findById(billingRunId).orElseThrow();
+    freshRun.cancel();
+    billingRunRepository.save(freshRun);
 
     // 7. Log audit event
-    auditService.log(AuditEventBuilder.billingRunCancelled(run, voidedCount));
+    auditService.log(AuditEventBuilder.billingRunCancelled(freshRun, voidedCount));
 
     log.info("Cancelled billing run {} — {} invoices voided", billingRunId, voidedCount);
   }

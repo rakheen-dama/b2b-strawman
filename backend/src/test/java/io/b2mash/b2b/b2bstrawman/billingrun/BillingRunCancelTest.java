@@ -440,6 +440,28 @@ class BillingRunCancelTest {
                     }));
   }
 
+  @Test
+  @Order(7)
+  void cancelCancelled_throwsInvalidState() throws Exception {
+    seedUnbilledEntries("cancelDouble", false);
+    String runId = createBillingRunWithPreview("Cancel Double Run", false);
+
+    // Generate invoices
+    mockMvc
+        .perform(post("/api/billing-runs/" + runId + "/generate").with(ownerJwt()))
+        .andExpect(status().isOk());
+
+    // First cancel — should succeed
+    mockMvc
+        .perform(delete("/api/billing-runs/" + runId).with(ownerJwt()))
+        .andExpect(status().isNoContent());
+
+    // Second cancel — should fail with 400 (InvalidStateException)
+    mockMvc
+        .perform(delete("/api/billing-runs/" + runId).with(ownerJwt()))
+        .andExpect(status().isBadRequest());
+  }
+
   // --- Helpers ---
 
   private String createBillingRunWithPreview(String name, boolean includeExpenses)

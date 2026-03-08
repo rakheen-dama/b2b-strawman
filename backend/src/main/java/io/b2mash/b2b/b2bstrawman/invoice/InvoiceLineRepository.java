@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface InvoiceLineRepository extends JpaRepository<InvoiceLine, UUID> {
-  @Modifying
+  @Modifying(clearAutomatically = true)
   @Query("DELETE FROM InvoiceLine il WHERE il.invoiceId = :invoiceId")
   void deleteByInvoiceId(@Param("invoiceId") UUID invoiceId);
 

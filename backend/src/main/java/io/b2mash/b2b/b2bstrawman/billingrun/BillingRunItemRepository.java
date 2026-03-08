@@ -16,4 +16,13 @@ public interface BillingRunItemRepository extends JpaRepository<BillingRunItem, 
   @Modifying
   @Query("DELETE FROM BillingRunItem i WHERE i.billingRunId = :billingRunId")
   void deleteByBillingRunId(@Param("billingRunId") UUID billingRunId);
+
+  @Modifying(clearAutomatically = true)
+  @Query(
+      "UPDATE BillingRunItem i SET i.status = :newStatus"
+          + " WHERE i.billingRunId = :billingRunId AND i.status = :oldStatus")
+  int updateStatusByBillingRunIdAndStatus(
+      @Param("billingRunId") UUID billingRunId,
+      @Param("oldStatus") BillingRunItemStatus oldStatus,
+      @Param("newStatus") BillingRunItemStatus newStatus);
 }

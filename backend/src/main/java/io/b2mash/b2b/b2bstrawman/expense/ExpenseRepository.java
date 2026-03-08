@@ -12,7 +12,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface ExpenseRepository extends JpaRepository<Expense, UUID> {
 
-  @Modifying
+  @Modifying(clearAutomatically = true)
   @Query("UPDATE Expense e SET e.invoiceId = NULL WHERE e.invoiceId = :invoiceId")
   void unbillByInvoiceId(@Param("invoiceId") UUID invoiceId);
 

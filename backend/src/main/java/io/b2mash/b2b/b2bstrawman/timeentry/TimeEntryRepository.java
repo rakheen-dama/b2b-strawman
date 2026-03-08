@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
-  @Modifying
+  @Modifying(clearAutomatically = true)
   @Query("UPDATE TimeEntry t SET t.invoiceId = NULL WHERE t.invoiceId = :invoiceId")
   void unbillByInvoiceId(@Param("invoiceId") UUID invoiceId);
 

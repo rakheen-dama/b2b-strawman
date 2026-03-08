@@ -348,7 +348,7 @@
 | 306 | Batch Generation & Cancel | Backend | 305 | M | 306A, 306B | **Done** (PRs #600, #601) |
 | 307 | Batch Approve, Send & Notifications | Backend | 306 | M | 307A, 307B | **Done** (PRs #602, #603) |
 | 308 | Retainer Batch Close | Backend | 306 | S | 308A | **Done** (PR #604) |
-| 309 | Billing Run List & Detail Pages (Frontend) | Frontend | 307 | M | 309A, 309B | |
+| 309 | Billing Run List & Detail Pages (Frontend) | Frontend | 307 | M | 309A, 309B | 309A **Done** (PR #605) |
 | 310 | Billing Run Wizard (Frontend) | Frontend | 309 | L | 310A, 310B, 310C | |
 | 311 | Billing Settings & Polish (Frontend) | Frontend | 309 | S | 311A | |
 | **Phase 41 — Organisation Roles & Capability-Based Permissions** | | | | | | See [tasks/phase41-org-roles-capabilities.md](tasks/phase41-org-roles-capabilities.md) |

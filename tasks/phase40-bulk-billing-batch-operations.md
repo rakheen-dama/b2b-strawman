@@ -193,7 +193,7 @@ FRONTEND TRACK (after backend APIs)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 5a | 309 | 309A | `lib/api/billing-runs.ts` API client, `billing-run-status-badge.tsx`, `billing-run-item-status-badge.tsx`, billing runs list page (`invoices/billing-runs/page.tsx`), "Billing Runs" tab addition to invoices page. ~7 new/modified files (~6 tests). Frontend only. | |
+| 5a | 309 | 309A | `lib/api/billing-runs.ts` API client, `billing-run-status-badge.tsx`, `billing-run-item-status-badge.tsx`, billing runs list page (`invoices/billing-runs/page.tsx`), "Billing Runs" tab addition to invoices page. ~7 new/modified files (~6 tests). Frontend only. | **Done** (PR #605) |
 | 5b | 309 | 309B | Billing run detail page (`invoices/billing-runs/[id]/page.tsx`), summary stat cards, items table with status column, action buttons (Resume, Cancel, Approve Remaining, Send Remaining), server actions. ~5 new files (~5 tests). Frontend only. | |
 
 ### Stage 6: Wizard & Settings (parallel tracks)
@@ -637,7 +637,7 @@ Stage 6: [310A] -> [310B] -> [310C] // [311A]                         (wizard se
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **309A** | 309.1--309.7 | `lib/api/billing-runs.ts` API client with all billing run endpoint functions, `billing-run-status-badge.tsx`, `billing-run-item-status-badge.tsx`, billing runs list page, "Billing Runs" tab addition to invoices page. ~7 new/modified files (~6 tests). Frontend only. | |
+| **309A** | 309.1--309.7 | `lib/api/billing-runs.ts` API client with all billing run endpoint functions, `billing-run-status-badge.tsx`, `billing-run-item-status-badge.tsx`, billing runs list page, "Billing Runs" tab addition to invoices page. ~7 new/modified files (~6 tests). Frontend only. | **Done** (PR #605) |
 | **309B** | 309.8--309.13 | Billing run detail page with summary stat cards, items table (color-coded status), action buttons (Resume, Cancel, Approve Remaining, Send Remaining), server actions for detail page operations. ~5 new files (~5 tests). Frontend only. | |
 
 ### Tasks

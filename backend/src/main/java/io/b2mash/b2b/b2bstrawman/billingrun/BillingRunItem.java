@@ -80,8 +80,46 @@ public class BillingRunItem {
     return status;
   }
 
-  public void setStatus(BillingRunItemStatus status) {
+  /**
+   * Package-private — used by BillingRunService for bulk status updates. Prefer named transition
+   * methods.
+   */
+  void setStatus(BillingRunItemStatus status) {
     this.status = status;
+    this.updatedAt = Instant.now();
+  }
+
+  public void markGenerating() {
+    if (this.status != BillingRunItemStatus.PENDING) {
+      throw new IllegalStateException("Only PENDING items can start generating");
+    }
+    this.status = BillingRunItemStatus.GENERATING;
+    this.updatedAt = Instant.now();
+  }
+
+  public void markGenerated(UUID invoiceId) {
+    if (this.status != BillingRunItemStatus.GENERATING) {
+      throw new IllegalStateException("Only GENERATING items can be marked generated");
+    }
+    this.status = BillingRunItemStatus.GENERATED;
+    this.invoiceId = invoiceId;
+    this.updatedAt = Instant.now();
+  }
+
+  public void markFailed(String error) {
+    if (this.status != BillingRunItemStatus.GENERATING) {
+      throw new IllegalStateException("Only GENERATING items can be marked failed");
+    }
+    this.status = BillingRunItemStatus.FAILED;
+    this.failureReason = error;
+    this.updatedAt = Instant.now();
+  }
+
+  public void markExcluded() {
+    if (this.status != BillingRunItemStatus.PENDING) {
+      throw new IllegalStateException("Only PENDING items can be excluded");
+    }
+    this.status = BillingRunItemStatus.EXCLUDED;
     this.updatedAt = Instant.now();
   }
 

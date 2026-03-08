@@ -88,6 +88,11 @@ public class BillingRun {
     this.includeRetainers = includeRetainers;
     this.status = BillingRunStatus.PREVIEW;
     this.createdBy = createdBy;
+    this.totalCustomers = 0;
+    this.totalInvoices = 0;
+    this.totalAmount = BigDecimal.ZERO;
+    this.totalSent = 0;
+    this.totalFailed = 0;
     this.createdAt = Instant.now();
     this.updatedAt = Instant.now();
   }
@@ -101,6 +106,9 @@ public class BillingRun {
   }
 
   public void complete(int totalInvoices, int totalFailed, BigDecimal totalAmount) {
+    if (this.status != BillingRunStatus.IN_PROGRESS) {
+      throw new IllegalStateException("Only IN_PROGRESS runs can be completed");
+    }
     this.status = BillingRunStatus.COMPLETED;
     this.totalInvoices = totalInvoices;
     this.totalFailed = totalFailed;
@@ -110,6 +118,9 @@ public class BillingRun {
   }
 
   public void cancel() {
+    if (this.status == BillingRunStatus.COMPLETED || this.status == BillingRunStatus.CANCELLED) {
+      throw new IllegalStateException("Cannot cancel a " + this.status + " run");
+    }
     this.status = BillingRunStatus.CANCELLED;
     this.completedAt = Instant.now();
     this.updatedAt = Instant.now();

@@ -6,10 +6,15 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface ExpenseRepository extends JpaRepository<Expense, UUID> {
+
+  @Modifying
+  @Query("UPDATE Expense e SET e.invoiceId = NULL WHERE e.invoiceId = :invoiceId")
+  void unbillByInvoiceId(@Param("invoiceId") UUID invoiceId);
 
   Page<Expense> findByProjectId(UUID projectId, Pageable pageable);
 

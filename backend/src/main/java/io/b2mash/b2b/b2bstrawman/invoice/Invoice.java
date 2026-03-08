@@ -209,6 +209,15 @@ public class Invoice {
     this.updatedAt = Instant.now();
   }
 
+  /** Voids a draft invoice — used when cancelling a billing run. */
+  public void voidDraft() {
+    if (this.status != InvoiceStatus.DRAFT) {
+      throw new IllegalStateException("Only draft invoices can be voided via voidDraft");
+    }
+    this.status = InvoiceStatus.VOID;
+    this.updatedAt = Instant.now();
+  }
+
   // --- Getters ---
 
   public UUID getId() {

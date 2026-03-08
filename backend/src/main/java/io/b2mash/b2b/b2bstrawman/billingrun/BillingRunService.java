@@ -20,8 +20,10 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.expense.Expense;
 import io.b2mash.b2b.b2bstrawman.expense.ExpenseRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceService;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.CreateInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
@@ -64,6 +66,7 @@ public class BillingRunService {
   private final EntityManager entityManager;
   private final InvoiceService invoiceService;
   private final InvoiceRepository invoiceRepository;
+  private final InvoiceLineRepository invoiceLineRepository;
   private final TransactionTemplate transactionTemplate;
   private final ApplicationEventPublisher eventPublisher;
 
@@ -79,6 +82,7 @@ public class BillingRunService {
       EntityManager entityManager,
       InvoiceService invoiceService,
       InvoiceRepository invoiceRepository,
+      InvoiceLineRepository invoiceLineRepository,
       TransactionTemplate transactionTemplate,
       ApplicationEventPublisher eventPublisher) {
     this.billingRunRepository = billingRunRepository;
@@ -92,6 +96,7 @@ public class BillingRunService {
     this.entityManager = entityManager;
     this.invoiceService = invoiceService;
     this.invoiceRepository = invoiceRepository;
+    this.invoiceLineRepository = invoiceLineRepository;
     this.transactionTemplate = transactionTemplate;
     this.eventPublisher = eventPublisher;
   }
@@ -132,35 +137,58 @@ public class BillingRunService {
             .findById(billingRunId)
             .orElseThrow(() -> new ResourceNotFoundException("BillingRun", billingRunId));
 
-    if (run.getStatus() != BillingRunStatus.PREVIEW) {
+    if (run.getStatus() == BillingRunStatus.CANCELLED) {
       throw new InvalidStateException(
-          "Cannot cancel billing run",
-          "Only billing runs in PREVIEW status can be cancelled. Current status: "
-              + run.getStatus());
+          "Cannot cancel billing run", "Billing run is already cancelled");
     }
 
-    // Audit before delete so the event captures the run details
-    auditService.log(
-        AuditEventBuilder.builder()
-            .eventType("billing_run.cancelled")
-            .entityType("billing_run")
-            .entityId(billingRunId)
-            .details(
-                Map.of(
-                    "name", run.getName() != null ? run.getName() : "",
-                    "period_from", run.getPeriodFrom().toString(),
-                    "period_to", run.getPeriodTo().toString(),
-                    "status", run.getStatus().name()))
-            .build());
+    if (run.getStatus() == BillingRunStatus.PREVIEW) {
+      // Existing behavior: hard delete for PREVIEW runs
+      auditService.log(AuditEventBuilder.billingRunCancelled(run, 0));
+      billingRunEntrySelectionRepository.deleteByBillingRunId(billingRunId);
+      billingRunItemRepository.deleteByBillingRunId(billingRunId);
+      billingRunRepository.delete(run);
+      log.info("Cancelled and deleted billing run {} (PREVIEW)", billingRunId);
+      return;
+    }
 
-    // Hard delete is appropriate here: PREVIEW-only billing runs have no generated invoices
-    // or financial impact. Later slices (306B) will implement soft cancel for
-    // IN_PROGRESS/COMPLETED runs that have associated invoices.
-    billingRunEntrySelectionRepository.deleteByBillingRunId(billingRunId);
-    billingRunItemRepository.deleteByBillingRunId(billingRunId);
-    billingRunRepository.delete(run);
+    // IN_PROGRESS or COMPLETED: soft cancel
+    // 1. Find DRAFT invoices linked to this run
+    var draftInvoices =
+        invoiceRepository.findByBillingRunIdAndStatus(billingRunId, InvoiceStatus.DRAFT);
 
-    log.info("Cancelled and deleted billing run {}", billingRunId);
+    int voidedCount = 0;
+    for (var invoice : draftInvoices) {
+      // 2. Unbill time entries and expenses linked to this invoice
+      timeEntryRepository.unbillByInvoiceId(invoice.getId());
+      expenseRepository.unbillByInvoiceId(invoice.getId());
+
+      // 3. Delete invoice lines
+      invoiceLineRepository.deleteByInvoiceId(invoice.getId());
+
+      // 4. Void the draft invoice
+      invoice.voidDraft();
+      invoiceRepository.save(invoice);
+      voidedCount++;
+    }
+
+    // 5. Set GENERATED items to CANCELLED
+    var generatedItems =
+        billingRunItemRepository.findByBillingRunIdAndStatus(
+            billingRunId, BillingRunItemStatus.GENERATED);
+    for (var item : generatedItems) {
+      item.setStatus(BillingRunItemStatus.CANCELLED);
+      billingRunItemRepository.save(item);
+    }
+
+    // 6. Cancel the run
+    run.cancel();
+    billingRunRepository.save(run);
+
+    // 7. Log audit event
+    auditService.log(AuditEventBuilder.billingRunCancelled(run, voidedCount));
+
+    log.info("Cancelled billing run {} — {} invoices voided", billingRunId, voidedCount);
   }
 
   @Transactional(readOnly = true)

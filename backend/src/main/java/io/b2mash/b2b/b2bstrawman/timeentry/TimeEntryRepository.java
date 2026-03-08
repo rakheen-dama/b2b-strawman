@@ -4,10 +4,15 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
+  @Modifying
+  @Query("UPDATE TimeEntry t SET t.invoiceId = NULL WHERE t.invoiceId = :invoiceId")
+  void unbillByInvoiceId(@Param("invoiceId") UUID invoiceId);
+
   @Query(
       """
       SELECT te FROM TimeEntry te, Task t

@@ -4,10 +4,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface InvoiceLineRepository extends JpaRepository<InvoiceLine, UUID> {
+  @Modifying
+  @Query("DELETE FROM InvoiceLine il WHERE il.invoiceId = :invoiceId")
+  void deleteByInvoiceId(@Param("invoiceId") UUID invoiceId);
+
   /** JPQL-based query scoped to the current tenant schema via search_path. */
   @Query("SELECT il FROM InvoiceLine il WHERE il.invoiceId = :invoiceId ORDER BY il.sortOrder")
   List<InvoiceLine> findByInvoiceIdOrderBySortOrder(@Param("invoiceId") UUID invoiceId);

@@ -7,7 +7,7 @@
   "enabled": true,
   "registrationAllowed": false,
   "registrationEmailAsUsername": true,
-  "verifyEmail": true,
+  "verifyEmail": false,
   "loginWithEmailAllowed": true,
   "duplicateEmailsAllowed": false,
   "resetPasswordAllowed": true,

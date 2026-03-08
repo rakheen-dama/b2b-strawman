@@ -47,10 +47,10 @@ export default function Info(
             className="inline-flex h-9 w-full items-center justify-center rounded-full bg-slate-950 px-4 text-sm font-medium text-white transition-all hover:bg-slate-950/90 active:scale-[0.97]"
           >
             {pageRedirectUri
-              ? advancedMsgStr("backToApplication")
+              ? "Back to application"
               : actionUri
-                ? advancedMsgStr("proceedWithAction")
-                : advancedMsgStr("backToApplication")}
+                ? "Click here to proceed"
+                : "Back to application"}
           </a>
         </div>
       )}

@@ -454,12 +454,20 @@ export function extractClauseIds(node: TiptapNode): string[] {
 
 /**
  * Extracts all unique variable keys from a Tiptap document tree.
+ * Optionally walks clause bodies when a clauses map is provided.
  */
-export function extractVariableKeys(node: TiptapNode): string[] {
+export function extractVariableKeys(
+  node: TiptapNode,
+  clauses?: Map<string, TiptapNode>,
+): string[] {
   const keys = new Set<string>();
   function walk(n: TiptapNode) {
     if (n.type === "variable" && n.attrs?.key) {
       keys.add(String(n.attrs.key));
+    }
+    if (n.type === "clauseBlock" && n.attrs?.clauseId && clauses) {
+      const clauseBody = clauses.get(String(n.attrs.clauseId));
+      if (clauseBody) walk(clauseBody);
     }
     if (n.content) {
       for (const child of n.content) {
@@ -473,12 +481,14 @@ export function extractVariableKeys(node: TiptapNode): string[] {
 
 /**
  * Identifies variable keys that resolve to empty values in a given context.
+ * Walks clause bodies when a clauses map is provided.
  */
 export function findMissingVariables(
   node: TiptapNode,
   context: Record<string, unknown>,
+  clauses?: Map<string, TiptapNode>,
 ): Set<string> {
-  const allKeys = extractVariableKeys(node);
+  const allKeys = extractVariableKeys(node, clauses);
   const missing = new Set<string>();
   for (const key of allKeys) {
     const resolved = resolveVariable(key, context);

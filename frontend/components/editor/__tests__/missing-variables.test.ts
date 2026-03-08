@@ -57,6 +57,31 @@ describe("extractVariableKeys", () => {
     const node = doc();
     expect(extractVariableKeys(node)).toEqual([]);
   });
+
+  it("extracts keys from clause bodies when clauses map is provided", () => {
+    const clauseBody: TiptapNode = doc(
+      paragraph(variable("customer.email"), variable("org.name")),
+    );
+    const clauses = new Map<string, TiptapNode>([["clause-1", clauseBody]]);
+    const node = doc(
+      paragraph(variable("project.name")),
+      { type: "clauseBlock", attrs: { clauseId: "clause-1" } },
+    );
+    const keys = extractVariableKeys(node, clauses);
+    expect(keys).toEqual(
+      expect.arrayContaining(["project.name", "customer.email", "org.name"]),
+    );
+    expect(keys).toHaveLength(3);
+  });
+
+  it("ignores clause blocks when no clauses map is provided", () => {
+    const node = doc(
+      paragraph(variable("project.name")),
+      { type: "clauseBlock", attrs: { clauseId: "clause-1" } },
+    );
+    const keys = extractVariableKeys(node);
+    expect(keys).toEqual(["project.name"]);
+  });
 });
 
 describe("findMissingVariables", () => {
@@ -105,5 +130,19 @@ describe("findMissingVariables", () => {
     const context = { project: { name: "Test", customFields: {} } };
     const missing = findMissingVariables(node, context);
     expect(missing).toEqual(new Set(["project.customFields.tax_ref"]));
+  });
+
+  it("detects missing variables inside clause bodies", () => {
+    const clauseBody: TiptapNode = doc(
+      paragraph(variable("customer.email")),
+    );
+    const clauses = new Map<string, TiptapNode>([["c1", clauseBody]]);
+    const node = doc(
+      paragraph(variable("project.name")),
+      { type: "clauseBlock", attrs: { clauseId: "c1" } },
+    );
+    const context = { project: { name: "Test" } };
+    const missing = findMissingVariables(node, context, clauses);
+    expect(missing).toEqual(new Set(["customer.email"]));
   });
 });

@@ -98,6 +98,7 @@ export function TemplateEditorClient({
   const handleEditorUpdate = useCallback(
     (json: Record<string, unknown>) => {
       setEditorContent(json);
+      setMissingVariables(new Set());
     },
     [],
   );
@@ -145,7 +146,8 @@ export function TemplateEditorClient({
       }
 
       // Identify variables that resolve to empty with the selected entity
-      const missing = findMissingVariables(doc, context);
+      // (walks clause bodies too so clause-embedded variables are flagged)
+      const missing = findMissingVariables(doc, context, clausesMap);
       setMissingVariables(missing);
 
       const html = renderTiptapToHtml(doc, context, clausesMap, css || undefined);

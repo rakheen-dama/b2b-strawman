@@ -63,6 +63,7 @@ public class OrgSettingsController {
             request.accountingEnabled(),
             request.aiEnabled(),
             request.documentSigningEnabled(),
+            request.projectNamingPattern(),
             memberId,
             orgRole));
   }
@@ -204,7 +205,8 @@ public class OrgSettingsController {
       BigDecimal defaultWeeklyCapacityHours,
       Integer billingBatchAsyncThreshold,
       Integer billingEmailRateLimit,
-      String defaultBillingRunCurrency) {}
+      String defaultBillingRunCurrency,
+      String projectNamingPattern) {}
 
   public record UpdateSettingsRequest(
       @NotBlank(message = "defaultCurrency is required")
@@ -215,7 +217,9 @@ public class OrgSettingsController {
       String documentFooterText,
       Boolean accountingEnabled,
       Boolean aiEnabled,
-      Boolean documentSigningEnabled) {}
+      Boolean documentSigningEnabled,
+      @Size(max = 500, message = "projectNamingPattern must be at most 500 characters")
+          String projectNamingPattern) {}
 
   public record UpdateComplianceSettingsRequest(
       @Positive(message = "dormancyThresholdDays must be positive") Integer dormancyThresholdDays,

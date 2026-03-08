@@ -440,6 +440,8 @@ export interface OrgSettings {
   billingBatchAsyncThreshold?: number;
   billingEmailRateLimit?: number;
   defaultBillingRunCurrency?: string | null;
+  // project naming
+  projectNamingPattern?: string | null;
 }
 
 export interface UpdateBatchBillingSettingsRequest {

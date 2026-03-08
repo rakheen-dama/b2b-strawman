@@ -84,7 +84,8 @@ public class OrgSettingsService {
                 DEFAULT_WEEKLY_CAPACITY_HOURS, // defaultWeeklyCapacityHours
                 50, // billingBatchAsyncThreshold
                 5, // billingEmailRateLimit
-                null)); // defaultBillingRunCurrency
+                null, // defaultBillingRunCurrency
+                null)); // projectNamingPattern
   }
 
   /** Updates settings including branding fields. */
@@ -96,6 +97,7 @@ public class OrgSettingsService {
       Boolean accountingEnabled,
       Boolean aiEnabled,
       Boolean documentSigningEnabled,
+      String projectNamingPattern,
       UUID memberId,
       String orgRole) {
     requireAdminOrOwner(orgRole);
@@ -121,6 +123,9 @@ public class OrgSettingsService {
         documentSigningEnabled != null
             ? documentSigningEnabled
             : settings.isDocumentSigningEnabled());
+
+    // projectNamingPattern can be explicitly set to null/empty to clear it
+    settings.setProjectNamingPattern(projectNamingPattern);
 
     settings = orgSettingsRepository.save(settings);
 
@@ -257,7 +262,8 @@ public class OrgSettingsService {
             : DEFAULT_WEEKLY_CAPACITY_HOURS,
         settings.getBillingBatchAsyncThreshold(),
         settings.getBillingEmailRateLimit(),
-        settings.getDefaultBillingRunCurrency());
+        settings.getDefaultBillingRunCurrency(),
+        settings.getProjectNamingPattern());
   }
 
   /**

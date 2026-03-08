@@ -139,6 +139,9 @@ public class OrgSettings {
   @Column(name = "default_billing_run_currency", length = 3)
   private String defaultBillingRunCurrency;
 
+  @Column(name = "project_naming_pattern", length = 500)
+  private String projectNamingPattern;
+
   protected OrgSettings() {}
 
   public OrgSettings(String defaultCurrency) {
@@ -546,6 +549,15 @@ public class OrgSettings {
 
   public void setDefaultBillingRunCurrency(String defaultBillingRunCurrency) {
     this.defaultBillingRunCurrency = defaultBillingRunCurrency;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getProjectNamingPattern() {
+    return projectNamingPattern;
+  }
+
+  public void setProjectNamingPattern(String projectNamingPattern) {
+    this.projectNamingPattern = projectNamingPattern;
     this.updatedAt = Instant.now();
   }
 

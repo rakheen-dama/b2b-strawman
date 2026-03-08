@@ -129,6 +129,13 @@ const settingsCards: SettingsCard[] = [
     comingSoon: false,
   },
   {
+    icon: FileText,
+    title: "Project Naming",
+    description: "Configure auto-naming patterns for new projects",
+    href: "project-naming",
+    comingSoon: false,
+  },
+  {
     icon: ClipboardList,
     title: "Request Templates",
     description: "Create and manage reusable information request templates",

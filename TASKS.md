@@ -350,7 +350,7 @@
 | 308 | Retainer Batch Close | Backend | 306 | S | 308A | **Done** (PR #604) |
 | 309 | Billing Run List & Detail Pages (Frontend) | Frontend | 307 | M | 309A, 309B | **Done** (PRs #605, #606) |
 | 310 | Billing Run Wizard (Frontend) | Frontend | 309 | L | 310A, 310B, 310C | **Done** (PRs #607, #608, #609) |
-| 311 | Billing Settings & Polish (Frontend) | Frontend | 309 | S | 311A | |
+| 311 | Billing Settings & Polish (Frontend) | Frontend | 309 | S | 311A | **Done** (PR #610) |
 | **Phase 41 — Organisation Roles & Capability-Based Permissions** | | | | | | See [tasks/phase41-org-roles-capabilities.md](tasks/phase41-org-roles-capabilities.md) |
 | 312 | OrgRole Entity Foundation & Migration | Backend | -- | M | 312A, 312B | |
 | 313 | Capability Resolution & Authorization Infrastructure | Backend | 312 | M | 313A, 313B | |

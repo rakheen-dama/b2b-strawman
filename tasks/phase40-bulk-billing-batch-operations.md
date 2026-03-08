@@ -28,7 +28,7 @@ Phase 40 adds a **bulk billing system** to the DocTeams platform -- the ability 
 | 308 | Retainer Batch Close | Backend | 306 | S | 308A | **Done** (PR #604) |
 | 309 | Billing Run List & Detail Pages (Frontend) | Frontend | 307 | M | 309A, 309B | **Done** (PRs #605, #606) |
 | 310 | Billing Run Wizard (Frontend) | Frontend | 309 | L | 310A, 310B, 310C | **Done** (PRs #607, #608, #609) |
-| 311 | Billing Settings & Polish (Frontend) | Frontend | 309 | S | 311A | |
+| 311 | Billing Settings & Polish (Frontend) | Frontend | 309 | S | 311A | **Done** (PR #610) |
 
 ---
 
@@ -200,7 +200,7 @@ FRONTEND TRACK (after backend APIs)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 6a (parallel) | 311 | 311A | Batch billing settings section on Settings page (async threshold, email rate limit, default currency), server action for update. ~3 modified/new files (~4 tests). Frontend only. | |
+| 6a (parallel) | 311 | 311A | Batch billing settings section on Settings page (async threshold, email rate limit, default currency), server action for update. ~3 modified/new files (~4 tests). Frontend only. | **Done** (PR #610) |
 | 6b | 310 | 310A | Wizard scaffold (`billing-run-wizard.tsx`) with step navigation, Step 1 (`configure-step.tsx`), Step 2 (`customer-selection-step.tsx`), new billing run page route. ~6 new files (~6 tests). Frontend only. | **Done** (PR #607) |
 | 6c | 310 | 310B | Step 3 (`cherry-pick-step.tsx`) -- accordion per customer, time entry table, expense table, entry-level checkboxes, subtotal recalculation, server actions for selection updates. ~4 new files (~5 tests). Frontend only. | **Done** (PR #608) |
 | 6d | 310 | 310C | Step 4 (`review-drafts-step.tsx`) + Step 5 (`send-step.tsx`) -- draft table, inline editing (due date, payment terms), batch set actions, approve all, send with progress indicator, confirmation dialog, final summary. ~5 new files (~6 tests). Frontend only. | **Done** (PR #609) |
@@ -795,7 +795,7 @@ Stage 6: [310A] -> [310B] -> [310C] // [311A]                         (wizard se
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **311A** | 311.1--311.5 | Batch billing settings section on Settings page (3 fields: async threshold, email rate limit, default currency), server action for update. ~3 modified/new files (~4 tests). Frontend only. | |
+| **311A** | 311.1--311.5 | Batch billing settings section on Settings page (3 fields: async threshold, email rate limit, default currency), server action for update. ~3 modified/new files (~4 tests). Frontend only. | **Done** (PR #610) |
 
 ### Tasks
 

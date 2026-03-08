@@ -10,6 +10,7 @@ import type { BillingRunItem } from "@/lib/api/billing-runs";
 interface CustomerSelectionStepProps {
   slug: string;
   billingRunId: string;
+  currency: string;
   onBack: () => void;
   onNext: () => void;
 }
@@ -17,6 +18,7 @@ interface CustomerSelectionStepProps {
 export function CustomerSelectionStep({
   slug,
   billingRunId,
+  currency,
   onBack,
   onNext,
 }: CustomerSelectionStepProps) {
@@ -166,13 +168,13 @@ export function CustomerSelectionStep({
                       {item.customerName}
                     </td>
                     <td className="py-3 pr-4 text-right text-slate-600 dark:text-slate-400">
-                      {formatCurrency(item.unbilledTimeAmount, "ZAR")}
+                      {formatCurrency(item.unbilledTimeAmount, currency)}
                     </td>
                     <td className="py-3 pr-4 text-right text-slate-600 dark:text-slate-400">
-                      {formatCurrency(item.unbilledExpenseAmount, "ZAR")}
+                      {formatCurrency(item.unbilledExpenseAmount, currency)}
                     </td>
                     <td className="py-3 text-right font-medium text-slate-950 dark:text-slate-50">
-                      {formatCurrency(item.totalUnbilledAmount, "ZAR")}
+                      {formatCurrency(item.totalUnbilledAmount, currency)}
                     </td>
                   </tr>
                 ))}
@@ -190,7 +192,7 @@ export function CustomerSelectionStep({
           </span>{" "}
           {selectedIds.size === 1 ? "customer" : "customers"} selected,{" "}
           <span className="font-medium text-slate-950 dark:text-slate-50">
-            {formatCurrency(selectedTotal, "ZAR")}
+            {formatCurrency(selectedTotal, currency)}
           </span>{" "}
           total
         </p>

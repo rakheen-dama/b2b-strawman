@@ -28,9 +28,12 @@ export function BillingRunWizard({
   const [billingRunId, setBillingRunId] = useState<string | null>(
     initialBillingRunId ?? null,
   );
+  // TODO: Read org's default currency from org settings when available
+  const [currency, setCurrency] = useState("ZAR");
 
-  function handleConfigureNext(newBillingRunId: string) {
+  function handleConfigureNext(newBillingRunId: string, runCurrency: string) {
     setBillingRunId(newBillingRunId);
+    setCurrency(runCurrency);
     setCurrentStep(2);
   }
 
@@ -91,6 +94,7 @@ export function BillingRunWizard({
         <CustomerSelectionStep
           slug={slug}
           billingRunId={billingRunId}
+          currency={currency}
           onBack={handleBack}
           onNext={handleNext}
         />

@@ -10,7 +10,7 @@ import { createBillingRunAction } from "@/app/(app)/org/[slug]/invoices/billing-
 
 interface ConfigureStepProps {
   slug: string;
-  onNext: (billingRunId: string) => void;
+  onNext: (billingRunId: string, currency: string) => void;
 }
 
 export function ConfigureStep({ slug, onNext }: ConfigureStepProps) {
@@ -40,15 +40,18 @@ export function ConfigureStep({ slug, onNext }: ConfigureStepProps) {
     setError(null);
     setIsSubmitting(true);
     try {
+      // TODO: Read org's default currency from org settings when available
       const result = await createBillingRunAction(slug, {
         periodFrom,
         periodTo,
         currency: "ZAR",
         includeExpenses: true,
         includeRetainers,
+        cutOffDate: cutOffDate || undefined,
+        notes: notes || undefined,
       });
       if (result.success && result.billingRun) {
-        onNext(result.billingRun.id);
+        onNext(result.billingRun.id, result.billingRun.currency);
       } else {
         setError(result.error ?? "Failed to create billing run.");
       }

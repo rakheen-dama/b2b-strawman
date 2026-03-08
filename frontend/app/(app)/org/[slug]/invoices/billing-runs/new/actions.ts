@@ -1,5 +1,6 @@
 "use server";
 
+import { getAuthContext } from "@/lib/auth";
 import { ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import {
@@ -27,6 +28,11 @@ export async function createBillingRunAction(
   slug: string,
   data: CreateBillingRunRequest,
 ): Promise<CreateBillingRunResult> {
+  const { orgRole } = await getAuthContext();
+  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+    return { success: false, error: "Permission denied." };
+  }
+
   try {
     const billingRun = await createBillingRun(data);
     revalidatePath(`/org/${slug}/invoices/billing-runs`);
@@ -43,6 +49,11 @@ export async function loadPreviewAction(
   slug: string,
   billingRunId: string,
 ): Promise<LoadPreviewResult> {
+  const { orgRole } = await getAuthContext();
+  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+    return { success: false, error: "Permission denied." };
+  }
+
   try {
     const preview = await loadPreview(billingRunId);
     return { success: true, preview };

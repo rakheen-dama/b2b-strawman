@@ -123,6 +123,7 @@ describe("CustomerSelectionStep", () => {
       <CustomerSelectionStep
         slug="test-org"
         billingRunId="run-1"
+        currency="ZAR"
         onBack={vi.fn()}
         onNext={vi.fn()}
       />,
@@ -146,6 +147,7 @@ describe("CustomerSelectionStep", () => {
       <CustomerSelectionStep
         slug="test-org"
         billingRunId="run-1"
+        currency="ZAR"
         onBack={vi.fn()}
         onNext={vi.fn()}
       />,
@@ -175,6 +177,7 @@ describe("CustomerSelectionStep", () => {
       <CustomerSelectionStep
         slug="test-org"
         billingRunId="run-1"
+        currency="ZAR"
         onBack={vi.fn()}
         onNext={vi.fn()}
       />,

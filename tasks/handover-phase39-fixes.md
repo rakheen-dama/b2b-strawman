@@ -16,27 +16,46 @@ All fixes so far are committed. One remaining bug needs fixing.
 
 **The fix is likely**: Add the correct `keycloak.admin.*` properties to `application-keycloak.yml` pointing to `http://localhost:8180` with admin/admin credentials. The properties are already in `application.yml` under `keycloak.admin` — just verify `KeycloakProvisioningClient` reads from the same prefix.
 
-### Bug 2: Approve button does nothing — no backend logs, no errors
+### Bug 2: Approve succeeds on backend but frontend doesn't reflect it
 
-**Symptom**: Clicking Approve on the platform admin panel produces no backend logs, no gateway logs, and no visible error on the frontend. Nothing happens.
+**Symptom**: Clicking Approve provisions the Keycloak org + tenant schema (backend succeeds), but the frontend approve dialog stays open, the list still shows PENDING, and no success/error feedback appears.
 
-**Likely cause**: The approve action uses `api.post()` which in keycloak/BFF mode forwards the SESSION cookie and includes a CSRF token (`X-XSRF-TOKEN` from the `XSRF-TOKEN` cookie). The gateway has CSRF protection enabled for non-BFF/non-API paths. Check:
+**Root cause (confirmed pattern)**: The backend approval endpoint returns `AccessRequestResponse` (a single object) but the frontend's `api.post()` response handling may be failing. The `approveAccessRequest()` server action catches errors silently — if the response parsing fails or a `revalidatePath` redirect is swallowed, the client component never gets the success signal.
 
-1. **CSRF token missing**: The `api.post()` in `getAuthFetchOptions()` reads `XSRF-TOKEN` cookie. If this cookie isn't set on the frontend domain, the POST will be rejected silently by the gateway's CSRF filter. However, the gateway config ignores CSRF for `/bff/**` and `/api/**` so this shouldn't be the issue.
+**Most likely issues** (investigate in order):
 
-2. **Gateway not proxying POST**: The gateway route `Path=/api/**` should catch POST requests too. Check if the gateway even receives the request — add debug logging to gateway.
+1. **`revalidatePath()` throws NEXT_REDIRECT inside try-catch**: Look at `approveAccessRequest()` in `actions.ts` — after `api.post()` succeeds, it calls `revalidatePath("/platform-admin/access-requests")` then returns `{ success: true }`. If `revalidatePath` throws (it can in some Next.js versions), the catch block swallows it and returns `{ success: false, error: "An unexpected error occurred." }`. The client component may not be handling that error.
 
-3. **Frontend server action swallowing errors**: The `approveAccessRequest()` function in `actions.ts` catches all errors. The `api.post()` may be failing (redirect to sign-in, connection error, etc.) but the error is caught and returned as `{ success: false, error: "..." }`. The `AccessRequestsTable` component may not be displaying the error result from the approve action.
+2. **Approve dialog not closing on result**: Check `approve-dialog.tsx` — does it check the result of `approveAccessRequest()` and close itself? If the action returns `{ success: false }` (due to issue #1), the dialog may stay open.
 
-4. **`redirect("/sign-in")` swallowed**: In `apiRequest()`, if `getAuthFetchOptions()` throws, `redirect("/sign-in")` is called. But this is inside a server action called from a client component — the redirect may be swallowed. Check if the SESSION cookie is actually available when the approve server action runs.
+3. **`api.post()` response parsing**: The backend returns a single `AccessRequestResponse` object. `api.post()` parses this as JSON. If the response is unexpected (e.g., gateway returns HTML redirect), parsing fails silently.
 
 **Files to investigate**:
-- `frontend/app/(app)/platform-admin/access-requests/actions.ts` — `approveAccessRequest()`
-- `frontend/components/access-request/access-requests-table.tsx` — how approve result is handled
-- `frontend/components/access-request/approve-dialog.tsx` — the approve UI component
-- `frontend/lib/api.ts` — `apiRequest()` and `getAuthFetchOptions()`
+- `frontend/app/(app)/platform-admin/access-requests/actions.ts` — `approveAccessRequest()` — add console.log before/after api.post() and revalidatePath()
+- `frontend/components/access-request/approve-dialog.tsx` — how it handles the action result
+- `frontend/components/access-request/access-requests-table.tsx` — how approve result triggers UI update
 
-**Debug approach**: Add `console.log` to `approveAccessRequest()` (same pattern as was done for `listAccessRequests`) to see if the server action is called and what error it returns.
+**Quick debug**: Add `console.log` to `approveAccessRequest()`:
+```typescript
+export async function approveAccessRequest(id: string): Promise<ActionResult> {
+  try {
+    console.log("[approve] calling api.post for", id);
+    await api.post(`/api/platform-admin/access-requests/${id}/approve`);
+    console.log("[approve] api.post succeeded");
+  } catch (error) {
+    console.error("[approve] api.post failed:", error);
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  console.log("[approve] calling revalidatePath");
+  revalidatePath("/platform-admin/access-requests");
+  console.log("[approve] returning success");
+  return { success: true };
+}
+```
 
 ## What Was Fixed (already committed)
 

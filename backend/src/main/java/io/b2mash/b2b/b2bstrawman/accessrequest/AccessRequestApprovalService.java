@@ -93,9 +93,10 @@ public class AccessRequestApprovalService {
       tenantProvisioningService.provisionTenant(slug, orgName);
       log.info("Provisioned tenant schema for org {} (slug={})", kcOrgId, slug);
 
-      // Step 4: Invite user via Keycloak
+      // Step 4: Invite user via Keycloak and mark as org creator
       keycloakProvisioningClient.inviteUser(kcOrgId, request.getEmail());
       log.info("Sent invitation to {} for org {}", request.getEmail(), kcOrgId);
+      keycloakProvisioningClient.setOrgCreator(kcOrgId, request.getEmail());
 
       // Step 5: Mark as approved (short transaction)
       return txTemplate.execute(

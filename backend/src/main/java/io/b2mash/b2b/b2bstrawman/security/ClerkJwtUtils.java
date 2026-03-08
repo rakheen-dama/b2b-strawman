@@ -118,11 +118,11 @@ public final class ClerkJwtUtils {
         }
       }
     }
-    // List format has no roles — default to owner for org members.
-    // In Keycloak JIT mode, the first user creates the org and should be owner.
-    // TODO: Implement proper role mapping via Keycloak Script Mapper (ADR-139)
+    // List format has no roles — default to member.
+    // The first user to log into a newly-provisioned tenant gets promoted to owner
+    // by MemberFilter (see lazyCreateMember).
     if (orgClaim instanceof List<?> list && !list.isEmpty()) {
-      return Roles.ORG_OWNER;
+      return Roles.ORG_MEMBER;
     }
     return null;
   }

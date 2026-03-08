@@ -131,7 +131,8 @@ public class KeycloakProvisioningClient {
 
   /**
    * Invites a user to the organization by email. Keycloak 26.5 uses the {@code
-   * /members/invite-user} endpoint with form-urlencoded body.
+   * /members/invite-user} endpoint with form-urlencoded body. After inviting, sets the org's {@code
+   * creatorUserId} attribute so the gateway can identify the founding user.
    */
   public void inviteUser(String orgId, String email) {
     String formBody = "email=" + URLEncoder.encode(email, StandardCharsets.UTF_8);
@@ -143,6 +144,41 @@ public class KeycloakProvisioningClient {
         .body(formBody)
         .retrieve()
         .toBodilessEntity();
+  }
+
+  /**
+   * Sets the creatorUserId attribute on the organization. The gateway uses this to determine which
+   * member is the org owner (Keycloak org memberships don't carry roles by default).
+   */
+  public void setOrgCreator(String orgId, String email) {
+    String userId = findUserIdByEmail(email);
+    if (userId == null) {
+      log.warn("Could not find Keycloak user for email {} to set as org creator", email);
+      return;
+    }
+    restClient
+        .put()
+        .uri("/organizations/{orgId}", orgId)
+        .header("Authorization", "Bearer " + getAdminToken())
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(Map.of("attributes", Map.of("creatorUserId", List.of(userId))))
+        .retrieve()
+        .toBodilessEntity();
+    log.info("Set creatorUserId={} on org {}", userId, orgId);
+  }
+
+  @SuppressWarnings("unchecked")
+  private String findUserIdByEmail(String email) {
+    var users =
+        restClient
+            .get()
+            .uri("/users?email={email}&exact=true", email)
+            .header("Authorization", "Bearer " + getAdminToken())
+            .retrieve()
+            .body(List.class);
+    if (users == null || users.isEmpty()) return null;
+    var user = (Map<String, Object>) users.getFirst();
+    return (String) user.get("id");
   }
 
   @SuppressWarnings("unchecked")

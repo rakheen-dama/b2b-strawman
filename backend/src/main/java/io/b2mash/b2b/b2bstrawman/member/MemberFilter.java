@@ -121,9 +121,15 @@ public class MemberFilter extends OncePerRequestFilter {
             : clerkUserId + "@placeholder.internal";
     String name = jwtName;
 
+    // First member in a newly-provisioned tenant becomes owner (founding user).
+    String effectiveRole = orgRole != null ? orgRole : Roles.ORG_MEMBER;
+    if (Roles.ORG_MEMBER.equals(effectiveRole) && memberRepository.count() == 0) {
+      effectiveRole = Roles.ORG_OWNER;
+      log.info("Promoting first member {} to owner (founding user)", clerkUserId);
+    }
+
     try {
-      var member =
-          new Member(clerkUserId, email, name, null, orgRole != null ? orgRole : Roles.ORG_MEMBER);
+      var member = new Member(clerkUserId, email, name, null, effectiveRole);
       member = memberRepository.save(member);
       log.info(
           "Lazy-created member {} for user {} in tenant {}",

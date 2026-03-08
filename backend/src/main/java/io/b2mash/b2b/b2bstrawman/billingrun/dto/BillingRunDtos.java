@@ -1,12 +1,17 @@
 package io.b2mash.b2b.b2bstrawman.billingrun.dto;
 
 import io.b2mash.b2b.b2bstrawman.billingrun.BillingRun;
+import io.b2mash.b2b.b2bstrawman.billingrun.BillingRunItemStatus;
 import io.b2mash.b2b.b2bstrawman.billingrun.BillingRunStatus;
+import io.b2mash.b2b.b2bstrawman.expense.Expense;
+import io.b2mash.b2b.b2bstrawman.expense.ExpenseCategory;
+import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 public final class BillingRunDtos {
@@ -61,6 +66,85 @@ public final class BillingRunDtos {
           run.getCreatedAt(),
           run.getUpdatedAt(),
           run.getCompletedAt());
+    }
+  }
+
+  public record LoadPreviewRequest(List<UUID> customerIds) {}
+
+  public record BillingRunPreviewResponse(
+      UUID billingRunId,
+      int totalCustomers,
+      BigDecimal totalUnbilledAmount,
+      List<BillingRunItemResponse> items) {}
+
+  public record BillingRunItemResponse(
+      UUID id,
+      UUID customerId,
+      String customerName,
+      BillingRunItemStatus status,
+      BigDecimal unbilledTimeAmount,
+      BigDecimal unbilledExpenseAmount,
+      int unbilledTimeCount,
+      int unbilledExpenseCount,
+      BigDecimal totalUnbilledAmount,
+      boolean hasPrerequisiteIssues,
+      String prerequisiteIssueReason,
+      UUID invoiceId,
+      String failureReason) {}
+
+  public record TimeEntryResponse(
+      UUID id,
+      UUID taskId,
+      UUID memberId,
+      LocalDate date,
+      int durationMinutes,
+      String description,
+      boolean billable,
+      BigDecimal billingRateSnapshot,
+      String billingRateCurrency,
+      BigDecimal billableValue) {
+
+    public static TimeEntryResponse from(TimeEntry te) {
+      return new TimeEntryResponse(
+          te.getId(),
+          te.getTaskId(),
+          te.getMemberId(),
+          te.getDate(),
+          te.getDurationMinutes(),
+          te.getDescription(),
+          te.isBillable(),
+          te.getBillingRateSnapshot(),
+          te.getBillingRateCurrency(),
+          te.getBillableValue());
+    }
+  }
+
+  public record ExpenseResponse(
+      UUID id,
+      UUID projectId,
+      UUID memberId,
+      LocalDate date,
+      String description,
+      BigDecimal amount,
+      String currency,
+      ExpenseCategory category,
+      boolean billable,
+      BigDecimal markupPercent,
+      BigDecimal billableAmount) {
+
+    public static ExpenseResponse from(Expense e) {
+      return new ExpenseResponse(
+          e.getId(),
+          e.getProjectId(),
+          e.getMemberId(),
+          e.getDate(),
+          e.getDescription(),
+          e.getAmount(),
+          e.getCurrency(),
+          e.getCategory(),
+          e.isBillable(),
+          e.getMarkupPercent(),
+          e.getBillableAmount());
     }
   }
 }

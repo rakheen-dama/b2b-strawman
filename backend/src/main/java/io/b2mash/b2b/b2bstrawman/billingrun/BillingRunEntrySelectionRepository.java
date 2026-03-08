@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.billingrun;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -11,6 +12,9 @@ public interface BillingRunEntrySelectionRepository
     extends JpaRepository<BillingRunEntrySelection, UUID> {
 
   List<BillingRunEntrySelection> findByBillingRunItemId(UUID billingRunItemId);
+
+  Optional<BillingRunEntrySelection> findByBillingRunItemIdAndEntryTypeAndEntryId(
+      UUID billingRunItemId, EntryType entryType, UUID entryId);
 
   @Modifying
   @Query("DELETE FROM BillingRunEntrySelection s WHERE s.billingRunItemId = :billingRunItemId")

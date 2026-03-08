@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.CreateBillingRunR
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.ExpenseResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.LoadPreviewRequest;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.TimeEntryResponse;
+import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.UpdateEntrySelectionsRequest;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -97,5 +99,28 @@ public class BillingRunController {
   public ResponseEntity<List<ExpenseResponse>> getUnbilledExpenses(
       @PathVariable UUID id, @PathVariable UUID itemId) {
     return ResponseEntity.ok(billingRunService.getUnbilledExpenses(id, itemId));
+  }
+
+  @PutMapping("/{id}/items/{itemId}/selections")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<BillingRunItemResponse> updateSelections(
+      @PathVariable UUID id,
+      @PathVariable UUID itemId,
+      @Valid @RequestBody UpdateEntrySelectionsRequest request) {
+    return ResponseEntity.ok(billingRunService.updateEntrySelection(id, itemId, request));
+  }
+
+  @PutMapping("/{id}/items/{itemId}/exclude")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<BillingRunItemResponse> excludeCustomer(
+      @PathVariable UUID id, @PathVariable UUID itemId) {
+    return ResponseEntity.ok(billingRunService.excludeCustomer(id, itemId));
+  }
+
+  @PutMapping("/{id}/items/{itemId}/include")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<BillingRunItemResponse> includeCustomer(
+      @PathVariable UUID id, @PathVariable UUID itemId) {
+    return ResponseEntity.ok(billingRunService.includeCustomer(id, itemId));
   }
 }

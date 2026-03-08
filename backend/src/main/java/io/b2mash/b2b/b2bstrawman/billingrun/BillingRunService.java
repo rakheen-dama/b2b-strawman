@@ -14,6 +14,8 @@ import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BillingRunRespons
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.CreateBillingRunRequest;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.ExpenseResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.LoadPreviewRequest;
+import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.RetainerGenerateRequest;
+import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.RetainerPeriodPreview;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.TimeEntryResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.UpdateEntrySelectionsRequest;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
@@ -35,6 +37,10 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteViolation;
+import io.b2mash.b2b.b2bstrawman.retainer.PeriodStatus;
+import io.b2mash.b2b.b2bstrawman.retainer.RetainerAgreementRepository;
+import io.b2mash.b2b.b2bstrawman.retainer.RetainerPeriodRepository;
+import io.b2mash.b2b.b2bstrawman.retainer.RetainerPeriodService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import jakarta.persistence.EntityManager;
@@ -78,6 +84,9 @@ public class BillingRunService {
   private final TransactionTemplate transactionTemplate;
   private final ApplicationEventPublisher eventPublisher;
   private final OrgSettingsRepository orgSettingsRepository;
+  private final RetainerAgreementRepository retainerAgreementRepository;
+  private final RetainerPeriodRepository retainerPeriodRepository;
+  private final RetainerPeriodService retainerPeriodService;
 
   public BillingRunService(
       BillingRunRepository billingRunRepository,
@@ -94,7 +103,10 @@ public class BillingRunService {
       InvoiceLineRepository invoiceLineRepository,
       TransactionTemplate transactionTemplate,
       ApplicationEventPublisher eventPublisher,
-      OrgSettingsRepository orgSettingsRepository) {
+      OrgSettingsRepository orgSettingsRepository,
+      RetainerAgreementRepository retainerAgreementRepository,
+      RetainerPeriodRepository retainerPeriodRepository,
+      RetainerPeriodService retainerPeriodService) {
     this.billingRunRepository = billingRunRepository;
     this.billingRunItemRepository = billingRunItemRepository;
     this.billingRunEntrySelectionRepository = billingRunEntrySelectionRepository;
@@ -110,6 +122,9 @@ public class BillingRunService {
     this.transactionTemplate = transactionTemplate;
     this.eventPublisher = eventPublisher;
     this.orgSettingsRepository = orgSettingsRepository;
+    this.retainerAgreementRepository = retainerAgreementRepository;
+    this.retainerPeriodRepository = retainerPeriodRepository;
+    this.retainerPeriodService = retainerPeriodService;
   }
 
   @Transactional
@@ -878,6 +893,196 @@ public class BillingRunService {
         .filter(s -> s.getEntryType() == EntryType.EXPENSE && s.isIncluded())
         .map(BillingRunEntrySelection::getEntryId)
         .toList();
+  }
+
+  @Transactional(readOnly = true)
+  public List<RetainerPeriodPreview> loadRetainerPreview(UUID billingRunId) {
+    var run =
+        billingRunRepository
+            .findById(billingRunId)
+            .orElseThrow(() -> new ResourceNotFoundException("BillingRun", billingRunId));
+
+    if (!run.isIncludeRetainers()) {
+      return List.of();
+    }
+
+    var agreements =
+        retainerAgreementRepository.findActiveWithDuePeriodsInRange(
+            run.getPeriodFrom(), run.getPeriodTo());
+
+    return agreements.stream()
+        .map(
+            agreement -> {
+              var openPeriod =
+                  retainerPeriodRepository
+                      .findByAgreementIdAndStatus(agreement.getId(), PeriodStatus.OPEN)
+                      .orElse(null);
+              if (openPeriod == null) {
+                return null;
+              }
+              String customerName =
+                  customerRepository
+                      .findById(agreement.getCustomerId())
+                      .map(Customer::getName)
+                      .orElse("Unknown");
+              return new RetainerPeriodPreview(
+                  agreement.getId(),
+                  agreement.getCustomerId(),
+                  customerName,
+                  openPeriod.getPeriodStart(),
+                  openPeriod.getPeriodEnd(),
+                  openPeriod.getConsumedHours(),
+                  agreement.getPeriodFee());
+            })
+        .filter(p -> p != null)
+        .toList();
+  }
+
+  /**
+   * Generates retainer invoices by delegating to RetainerPeriodService.closePeriod(). Each
+   * agreement is processed in its own transaction via transactionTemplate for failure isolation.
+   * closePeriod() uses default REQUIRED propagation and joins the transactionTemplate transaction.
+   * The initial status check also runs inside a transactionTemplate call (consistent with
+   * generate()).
+   */
+  public List<BillingRunItemResponse> generateRetainerInvoices(
+      UUID billingRunId, RetainerGenerateRequest request, UUID actorMemberId) {
+    // Validate status inside a transaction to avoid TOCTOU race (consistent with generate())
+    transactionTemplate.execute(
+        status -> {
+          var run =
+              billingRunRepository
+                  .findById(billingRunId)
+                  .orElseThrow(() -> new ResourceNotFoundException("BillingRun", billingRunId));
+
+          if (run.getStatus() != BillingRunStatus.PREVIEW
+              && run.getStatus() != BillingRunStatus.COMPLETED) {
+            throw new InvalidStateException(
+                "Cannot generate retainer invoices",
+                "Only billing runs in PREVIEW or COMPLETED status can generate retainer invoices. Current status: "
+                    + run.getStatus());
+          }
+          return null;
+        });
+
+    List<BillingRunItemResponse> results = new ArrayList<>();
+
+    for (UUID agreementId : request.retainerAgreementIds()) {
+      try {
+        var result =
+            transactionTemplate.execute(
+                status -> {
+                  // Delegate to RetainerPeriodService.closePeriod()
+                  var closeResult = retainerPeriodService.closePeriod(agreementId, actorMemberId);
+
+                  // Link the generated invoice to the billing run
+                  var invoice = closeResult.generatedInvoice();
+                  invoice.setBillingRunId(billingRunId);
+                  invoiceRepository.save(invoice);
+
+                  // Create BillingRunItem for tracking — use invoice's customerId directly
+                  UUID customerId = invoice.getCustomerId();
+                  var item = new BillingRunItem(billingRunId, customerId);
+                  item.markGenerating();
+                  item.markGenerated(invoice.getId());
+                  item = billingRunItemRepository.save(item);
+
+                  String customerName =
+                      customerRepository
+                          .findById(customerId)
+                          .map(Customer::getName)
+                          .orElse("Unknown");
+
+                  return new BillingRunItemResponse(
+                      item.getId(),
+                      customerId,
+                      customerName,
+                      item.getStatus(),
+                      BigDecimal.ZERO,
+                      BigDecimal.ZERO,
+                      0,
+                      0,
+                      invoice.getTotal() != null ? invoice.getTotal() : BigDecimal.ZERO,
+                      false,
+                      null,
+                      invoice.getId(),
+                      null);
+                });
+        if (result != null) {
+          results.add(result);
+        }
+      } catch (Exception e) {
+        log.warn(
+            "Failed to generate retainer invoice for agreement {}: {}",
+            agreementId,
+            e.getMessage());
+
+        try {
+          String reason = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
+          final String errorMessage = truncate(reason, 1000);
+
+          // Look up agreement to get customerId — if it doesn't exist, we can't create a
+          // BillingRunItem (FK constraint), so just return a response without persisting.
+          var agreementOpt = retainerAgreementRepository.findById(agreementId);
+          if (agreementOpt.isPresent()) {
+            var failedResult =
+                transactionTemplate.execute(
+                    status -> {
+                      var agreement = agreementOpt.get();
+                      UUID customerId = agreement.getCustomerId();
+                      String customerName =
+                          customerRepository
+                              .findById(customerId)
+                              .map(Customer::getName)
+                              .orElse("Unknown");
+                      var item = new BillingRunItem(billingRunId, customerId);
+                      item.markGenerating();
+                      item.markFailed(errorMessage);
+                      item = billingRunItemRepository.save(item);
+                      return new BillingRunItemResponse(
+                          item.getId(),
+                          customerId,
+                          customerName,
+                          item.getStatus(),
+                          BigDecimal.ZERO,
+                          BigDecimal.ZERO,
+                          0,
+                          0,
+                          BigDecimal.ZERO,
+                          false,
+                          null,
+                          null,
+                          errorMessage);
+                    });
+            if (failedResult != null) {
+              results.add(failedResult);
+            }
+          } else {
+            // Agreement not found — return failure response without persisting
+            results.add(
+                new BillingRunItemResponse(
+                    null,
+                    null,
+                    "Unknown",
+                    BillingRunItemStatus.FAILED,
+                    BigDecimal.ZERO,
+                    BigDecimal.ZERO,
+                    0,
+                    0,
+                    BigDecimal.ZERO,
+                    false,
+                    null,
+                    null,
+                    errorMessage));
+          }
+        } catch (Exception innerEx) {
+          log.error(
+              "Failed to record failure for agreement {}: {}", agreementId, innerEx.getMessage());
+        }
+      }
+    }
+
+    return results;
   }
 
   private String truncate(String text, int maxLength) {

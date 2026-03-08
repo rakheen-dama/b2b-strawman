@@ -8,6 +8,8 @@ import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BillingRunRespons
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.CreateBillingRunRequest;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.ExpenseResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.LoadPreviewRequest;
+import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.RetainerGenerateRequest;
+import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.RetainerPeriodPreview;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.TimeEntryResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.UpdateEntrySelectionsRequest;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -146,5 +148,20 @@ public class BillingRunController {
       @PathVariable UUID id, @RequestBody BatchSendRequest request) {
     UUID actorMemberId = RequestScopes.requireMemberId();
     return ResponseEntity.ok(billingRunService.batchSend(id, request, actorMemberId));
+  }
+
+  @GetMapping("/{id}/retainer-preview")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<List<RetainerPeriodPreview>> retainerPreview(@PathVariable UUID id) {
+    return ResponseEntity.ok(billingRunService.loadRetainerPreview(id));
+  }
+
+  @PostMapping("/{id}/retainer-generate")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<List<BillingRunItemResponse>> retainerGenerate(
+      @PathVariable UUID id, @Valid @RequestBody RetainerGenerateRequest request) {
+    UUID actorMemberId = RequestScopes.requireMemberId();
+    return ResponseEntity.ok(
+        billingRunService.generateRetainerInvoices(id, request, actorMemberId));
   }
 }

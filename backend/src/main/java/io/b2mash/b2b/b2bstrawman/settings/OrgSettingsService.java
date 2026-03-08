@@ -81,7 +81,10 @@ public class OrgSettingsService {
                 "17:00", // timeReminderTime
                 4.0, // timeReminderMinHours
                 null, // defaultExpenseMarkupPercent
-                DEFAULT_WEEKLY_CAPACITY_HOURS)); // defaultWeeklyCapacityHours
+                DEFAULT_WEEKLY_CAPACITY_HOURS, // defaultWeeklyCapacityHours
+                50, // billingBatchAsyncThreshold
+                5, // billingEmailRateLimit
+                null)); // defaultBillingRunCurrency
   }
 
   /** Updates settings including branding fields. */
@@ -251,7 +254,10 @@ public class OrgSettingsService {
         settings.getDefaultExpenseMarkupPercent(),
         settings.getDefaultWeeklyCapacityHours() != null
             ? settings.getDefaultWeeklyCapacityHours()
-            : DEFAULT_WEEKLY_CAPACITY_HOURS);
+            : DEFAULT_WEEKLY_CAPACITY_HOURS,
+        settings.getBillingBatchAsyncThreshold(),
+        settings.getBillingEmailRateLimit(),
+        settings.getDefaultBillingRunCurrency());
   }
 
   /**

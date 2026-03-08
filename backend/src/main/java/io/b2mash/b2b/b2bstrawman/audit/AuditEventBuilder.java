@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.audit;
 
+import io.b2mash.b2b.b2bstrawman.billingrun.BillingRun;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
@@ -45,6 +46,21 @@ public final class AuditEventBuilder {
 
   public static AuditEventBuilder builder() {
     return new AuditEventBuilder();
+  }
+
+  /** Convenience factory for billing_run.created audit events. */
+  public static AuditEventRecord billingRunCreated(BillingRun run) {
+    return builder()
+        .eventType("billing_run.created")
+        .entityType("billing_run")
+        .entityId(run.getId())
+        .details(
+            Map.of(
+                "name", run.getName() != null ? run.getName() : "",
+                "period_from", run.getPeriodFrom().toString(),
+                "period_to", run.getPeriodTo().toString(),
+                "currency", run.getCurrency()))
+        .build();
   }
 
   public AuditEventBuilder eventType(String eventType) {

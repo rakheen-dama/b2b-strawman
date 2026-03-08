@@ -108,6 +108,9 @@ public class Invoice {
   @Column(name = "payment_destination", nullable = false, length = 50)
   private String paymentDestination;
 
+  @Column(name = "billing_run_id")
+  private UUID billingRunId;
+
   protected Invoice() {}
 
   public Invoice(
@@ -338,6 +341,15 @@ public class Invoice {
 
   public void setPaymentDestination(String paymentDestination) {
     this.paymentDestination = paymentDestination;
+    this.updatedAt = Instant.now();
+  }
+
+  public UUID getBillingRunId() {
+    return billingRunId;
+  }
+
+  public void setBillingRunId(UUID billingRunId) {
+    this.billingRunId = billingRunId;
     this.updatedAt = Instant.now();
   }
 }

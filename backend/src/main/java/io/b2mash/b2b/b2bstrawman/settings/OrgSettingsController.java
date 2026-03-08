@@ -186,7 +186,10 @@ public class OrgSettingsController {
       String timeReminderTime,
       Double timeReminderMinHours,
       BigDecimal defaultExpenseMarkupPercent,
-      BigDecimal defaultWeeklyCapacityHours) {}
+      BigDecimal defaultWeeklyCapacityHours,
+      Integer billingBatchAsyncThreshold,
+      Integer billingEmailRateLimit,
+      String defaultBillingRunCurrency) {}
 
   public record UpdateSettingsRequest(
       @NotBlank(message = "defaultCurrency is required")

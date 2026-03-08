@@ -143,7 +143,7 @@ public class BillingRunController {
   @PostMapping("/{id}/send")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<BatchOperationResult> sendBatch(
-      @PathVariable UUID id, @RequestBody(required = false) BatchSendRequest request) {
+      @PathVariable UUID id, @RequestBody BatchSendRequest request) {
     UUID actorMemberId = RequestScopes.requireMemberId();
     return ResponseEntity.ok(billingRunService.batchSend(id, request, actorMemberId));
   }

@@ -191,13 +191,18 @@ public class Invoice {
     if (this.status != InvoiceStatus.APPROVED) {
       throw new IllegalStateException("Defaults can only be applied to approved invoices");
     }
+    boolean changed = false;
     if (this.dueDate == null && defaultDueDate != null) {
       this.dueDate = defaultDueDate;
+      changed = true;
     }
     if (this.paymentTerms == null && defaultPaymentTerms != null) {
       this.paymentTerms = defaultPaymentTerms;
+      changed = true;
     }
-    this.updatedAt = Instant.now();
+    if (changed) {
+      this.updatedAt = Instant.now();
+    }
   }
 
   public void markSent() {

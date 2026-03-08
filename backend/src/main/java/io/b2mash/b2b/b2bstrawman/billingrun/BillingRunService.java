@@ -685,7 +685,6 @@ public class BillingRunService {
    * Approves all DRAFT invoices linked to GENERATED billing run items. Each invoice is approved
    * individually; failures are captured without aborting the batch.
    */
-  @Transactional
   public BatchOperationResult batchApprove(UUID billingRunId, UUID actorMemberId) {
     var run =
         billingRunRepository
@@ -710,7 +709,11 @@ public class BillingRunService {
         continue;
       }
       try {
-        invoiceService.approve(item.getInvoiceId(), actorMemberId);
+        // Each approval runs in its own transaction for true failure isolation.
+        // invoiceService.approve() is @Transactional, so Spring creates a new
+        // transaction per call. A failure in one invoice does not roll back others.
+        transactionTemplate.executeWithoutResult(
+            status -> invoiceService.approve(item.getInvoiceId(), actorMemberId));
         successCount++;
       } catch (Exception e) {
         String reason = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
@@ -756,35 +759,37 @@ public class BillingRunService {
             .map(s -> s.getBillingEmailRateLimit())
             .orElse(5);
 
-    // Find APPROVED invoices linked to this billing run
-    var approvedInvoices =
-        invoiceRepository.findByBillingRunIdAndStatus(billingRunId, InvoiceStatus.APPROVED);
+    // Find APPROVED invoice IDs linked to this billing run (load IDs only, not entities)
+    var approvedInvoiceIds =
+        invoiceRepository.findByBillingRunIdAndStatus(billingRunId, InvoiceStatus.APPROVED).stream()
+            .map(Invoice::getId)
+            .toList();
 
-    if (approvedInvoices.isEmpty()) {
+    if (approvedInvoiceIds.isEmpty()) {
       return new BatchOperationResult(0, 0, List.of());
     }
 
-    // Apply default due date/payment terms to invoices missing them
+    // Apply default due date/payment terms inside a transaction so entities are managed
     if (request != null) {
       transactionTemplate.executeWithoutResult(
           status -> {
-            for (Invoice invoice : approvedInvoices) {
-              if ((request.defaultDueDate() != null && invoice.getDueDate() == null)
-                  || (request.defaultPaymentTerms() != null && invoice.getPaymentTerms() == null)) {
-                invoice.applyDefaults(request.defaultDueDate(), request.defaultPaymentTerms());
-                invoiceRepository.save(invoice);
-              }
+            var invoices = invoiceRepository.findAllById(approvedInvoiceIds);
+            for (Invoice invoice : invoices) {
+              invoice.applyDefaults(request.defaultDueDate(), request.defaultPaymentTerms());
+              invoiceRepository.save(invoice);
             }
           });
     }
 
-    // Partition into rate-limited bursts
-    List<List<Invoice>> bursts = partition(approvedInvoices, rateLimit);
+    // Partition invoice IDs into rate-limited bursts
+    List<List<UUID>> bursts = partition(approvedInvoiceIds, rateLimit);
 
     int successCount = 0;
     List<BatchFailure> failures = new ArrayList<>();
 
     for (int i = 0; i < bursts.size(); i++) {
+      // Rate-limit delay between bursts (ADR-160 token-bucket rate limiting).
+      // Intentionally outside any transaction boundary.
       if (i > 0) {
         try {
           Thread.sleep(1000);
@@ -794,18 +799,18 @@ public class BillingRunService {
         }
       }
 
-      for (Invoice invoice : bursts.get(i)) {
+      for (UUID invoiceId : bursts.get(i)) {
         try {
-          invoiceService.send(invoice.getId(), new SendInvoiceRequest(true));
+          // Batch sends override warnings — invoices have already been reviewed during
+          // the preview/approve phase, so warning-level prerequisite failures are expected
+          // and should not block sending.
+          invoiceService.send(invoiceId, new SendInvoiceRequest(true));
           successCount++;
         } catch (Exception e) {
           String reason = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
-          failures.add(new BatchFailure(invoice.getId(), reason));
+          failures.add(new BatchFailure(invoiceId, reason));
           log.warn(
-              "Failed to send invoice {} for billing run {}: {}",
-              invoice.getId(),
-              billingRunId,
-              reason);
+              "Failed to send invoice {} for billing run {}: {}", invoiceId, billingRunId, reason);
         }
       }
 
@@ -819,16 +824,16 @@ public class BillingRunService {
           });
     }
 
-    // Log audit event and publish domain event
+    // Log audit event and publish domain event inside the same transaction
+    // so @TransactionalEventListener(phase = AFTER_COMMIT) fires correctly
     final int finalSuccessCount = successCount;
     transactionTemplate.executeWithoutResult(
         status -> {
           var freshRun = billingRunRepository.findById(billingRunId).orElseThrow();
           auditService.log(AuditEventBuilder.billingRunSent(freshRun, finalSuccessCount));
+          eventPublisher.publishEvent(
+              new BillingRunSentEvent(billingRunId, freshRun.getName(), finalSuccessCount));
         });
-
-    eventPublisher.publishEvent(
-        new BillingRunSentEvent(billingRunId, run.getName(), finalSuccessCount));
 
     log.info(
         "Batch send for billing run {} — {} sent, {} failed",

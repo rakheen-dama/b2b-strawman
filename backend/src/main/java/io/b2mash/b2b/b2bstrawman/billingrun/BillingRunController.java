@@ -1,8 +1,13 @@
 package io.b2mash.b2b.b2bstrawman.billingrun;
 
+import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BillingRunItemResponse;
+import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BillingRunPreviewResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BillingRunResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.CreateBillingRunRequest;
+import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.LoadPreviewRequest;
+import io.b2mash.b2b.b2bstrawman.expense.Expense;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
@@ -58,5 +63,39 @@ public class BillingRunController {
     UUID actorMemberId = RequestScopes.requireMemberId();
     billingRunService.cancelRun(id, actorMemberId);
     return ResponseEntity.noContent().build();
+  }
+
+  @PostMapping("/{id}/preview")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<BillingRunPreviewResponse> loadPreview(
+      @PathVariable UUID id, @RequestBody(required = false) LoadPreviewRequest request) {
+    return ResponseEntity.ok(billingRunService.loadPreview(id, request));
+  }
+
+  @GetMapping("/{id}/items")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<List<BillingRunItemResponse>> getItems(@PathVariable UUID id) {
+    return ResponseEntity.ok(billingRunService.getItems(id));
+  }
+
+  @GetMapping("/{id}/items/{itemId}")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<BillingRunItemResponse> getItem(
+      @PathVariable UUID id, @PathVariable UUID itemId) {
+    return ResponseEntity.ok(billingRunService.getItem(id, itemId));
+  }
+
+  @GetMapping("/{id}/items/{itemId}/unbilled-time")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<List<TimeEntry>> getUnbilledTime(
+      @PathVariable UUID id, @PathVariable UUID itemId) {
+    return ResponseEntity.ok(billingRunService.getUnbilledTimeEntries(itemId));
+  }
+
+  @GetMapping("/{id}/items/{itemId}/unbilled-expenses")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<List<Expense>> getUnbilledExpenses(
+      @PathVariable UUID id, @PathVariable UUID itemId) {
+    return ResponseEntity.ok(billingRunService.getUnbilledExpenses(itemId));
   }
 }

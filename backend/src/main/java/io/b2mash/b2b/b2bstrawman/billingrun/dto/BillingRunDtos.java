@@ -1,12 +1,14 @@
 package io.b2mash.b2b.b2bstrawman.billingrun.dto;
 
 import io.b2mash.b2b.b2bstrawman.billingrun.BillingRun;
+import io.b2mash.b2b.b2bstrawman.billingrun.BillingRunItemStatus;
 import io.b2mash.b2b.b2bstrawman.billingrun.BillingRunStatus;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 public final class BillingRunDtos {
@@ -63,4 +65,27 @@ public final class BillingRunDtos {
           run.getCompletedAt());
     }
   }
+
+  public record LoadPreviewRequest(List<UUID> customerIds) {}
+
+  public record BillingRunPreviewResponse(
+      UUID billingRunId,
+      int totalCustomers,
+      BigDecimal totalUnbilledAmount,
+      List<BillingRunItemResponse> items) {}
+
+  public record BillingRunItemResponse(
+      UUID id,
+      UUID customerId,
+      String customerName,
+      BillingRunItemStatus status,
+      BigDecimal unbilledTimeAmount,
+      BigDecimal unbilledExpenseAmount,
+      int unbilledTimeCount,
+      int unbilledExpenseCount,
+      BigDecimal totalUnbilledAmount,
+      boolean hasPrerequisiteIssues,
+      String prerequisiteIssueReason,
+      UUID invoiceId,
+      String failureReason) {}
 }

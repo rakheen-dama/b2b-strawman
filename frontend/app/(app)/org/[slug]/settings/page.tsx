@@ -21,6 +21,7 @@ import {
   ClipboardList,
   Zap,
   Users,
+  Gauge,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getAuthContext } from "@/lib/auth";
@@ -140,6 +141,15 @@ const settingsCards: SettingsCard[] = [
     description: "Configure default reminder interval for information requests",
     href: "request-settings",
     comingSoon: false,
+  },
+  {
+    icon: Gauge,
+    title: "Batch Billing",
+    description:
+      "Configure async thresholds, email rate limits, and default billing currency",
+    href: "batch-billing",
+    comingSoon: false,
+    adminOnly: true,
   },
   {
     icon: Users,

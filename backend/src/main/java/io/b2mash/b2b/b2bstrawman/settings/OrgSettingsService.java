@@ -124,8 +124,9 @@ public class OrgSettingsService {
             ? documentSigningEnabled
             : settings.isDocumentSigningEnabled());
 
-    // projectNamingPattern can be explicitly set to null/empty to clear it
-    settings.setProjectNamingPattern(projectNamingPattern);
+    if (projectNamingPattern != null) {
+      settings.setProjectNamingPattern(projectNamingPattern);
+    }
 
     settings = orgSettingsRepository.save(settings);
 

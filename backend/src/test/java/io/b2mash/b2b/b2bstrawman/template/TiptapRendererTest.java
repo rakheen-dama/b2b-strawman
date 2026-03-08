@@ -537,7 +537,7 @@ class TiptapRendererTest {
     context.put("invoice", Map.<String, Object>of("total", 50000.00));
     var hints = Map.of("invoice.total", "currency");
     String html = renderer.render(doc, context, Map.of(), null, hints);
-    assertThat(html).contains("$50,000.00");
+    assertThat(html).contains("R50&nbsp;000,00");
   }
 
   @Test
@@ -579,7 +579,7 @@ class TiptapRendererTest {
     context.put("budget", Map.<String, Object>of("amount", 1234567));
     var hints = Map.of("budget.amount", "number");
     String html = renderer.render(doc, context, Map.of(), null, hints);
-    assertThat(html).contains("1,234,567");
+    assertThat(html).contains("1&nbsp;234&nbsp;567");
   }
 
   @Test

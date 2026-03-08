@@ -51,6 +51,9 @@ public class VariableMetadataRegistry {
         List.copyOf(groups), loopSourcesByType.getOrDefault(entityType, List.of()));
   }
 
+  // TODO: Batch DB queries — replace per-EntityType findByEntityTypeAndActiveTrueOrderBySortOrder()
+  // calls with a single findByEntityTypeInAndActiveTrueOrderBySortOrder(List<EntityType>) for
+  // performance (currently up to 3 separate queries for INVOICE templates).
   private void appendCustomFieldGroups(
       List<VariableGroup> groups, TemplateEntityType templateEntityType) {
     switch (templateEntityType) {

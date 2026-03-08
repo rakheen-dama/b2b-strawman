@@ -80,9 +80,11 @@ public class DocumentTemplateService {
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", id));
     var response = TemplateDetailResponse.from(dt);
-    var enrichedContent = enrichClauseTitles(response.content());
-    if (enrichedContent != response.content()) {
-      response = response.withContent(enrichedContent);
+    // Extract clauseIds first to avoid unnecessary deep copy when no clauses are present
+    Set<UUID> clauseIds = new HashSet<>();
+    extractClauseIds(response.content(), clauseIds);
+    if (!clauseIds.isEmpty()) {
+      response = response.withContent(enrichClauseTitles(response.content()));
     }
     return response;
   }

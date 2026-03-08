@@ -229,9 +229,9 @@ describe("renderTiptapToHtml (client-side renderer)", () => {
 });
 
 describe("formatValue", () => {
-  it("formats currency values with dollar sign and commas", () => {
-    expect(formatValue(50000, "currency")).toBe("$50,000.00");
-    expect(formatValue(1234.56, "currency")).toBe("$1,234.56");
+  it("formats currency values with rand sign (en-ZA)", () => {
+    expect(formatValue(50000, "currency")).toBe("R\u00a050\u00a0000,00");
+    expect(formatValue(1234.56, "currency")).toBe("R\u00a01\u00a0234,56");
   });
 
   it("formats date values as long date string", () => {
@@ -248,8 +248,8 @@ describe("formatValue", () => {
     expect(result).toContain("2026");
   });
 
-  it("formats numbers with commas", () => {
-    expect(formatValue(1234567, "number")).toBe("1,234,567");
+  it("formats numbers with spaces (en-ZA)", () => {
+    expect(formatValue(1234567, "number")).toBe("1\u00a0234\u00a0567");
   });
 
   it("returns empty string for null/undefined", () => {
@@ -296,7 +296,7 @@ describe("renderTiptapToHtml with formatHints", () => {
     const context = { invoice: { total: 50000 } };
     const hints = { "invoice.total": "currency" };
     const html = renderTiptapToHtml(doc, context, new Map(), undefined, hints);
-    expect(html).toContain("$50,000.00");
+    expect(html).toContain("R\u00a050\u00a0000,00");
   });
 
   it("formats date variable with format hints", () => {

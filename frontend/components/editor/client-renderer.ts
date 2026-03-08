@@ -90,7 +90,7 @@ export function formatValue(value: unknown, typeHint?: string): string {
       const num = Number(str);
       if (isNaN(num)) return escapeHtml(str);
       return escapeHtml(
-        new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(num),
+        new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR" }).format(num),
       );
     }
     case "date": {
@@ -109,7 +109,7 @@ export function formatValue(value: unknown, typeHint?: string): string {
     case "number": {
       const num = Number(str);
       if (isNaN(num)) return escapeHtml(str);
-      return escapeHtml(new Intl.NumberFormat("en-US").format(num));
+      return escapeHtml(new Intl.NumberFormat("en-ZA").format(num));
     }
     default:
       return escapeHtml(str);

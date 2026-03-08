@@ -40,11 +40,14 @@ public final class VariableFormatter {
   }
 
   // TODO: Support multi-currency via OrgSettings.defaultCurrency / invoice.currency (ADR-041)
+  private static final Locale ZA_LOCALE = Locale.of("en", "ZA");
+
   private static String formatCurrency(Object value) {
     try {
       BigDecimal amount = new BigDecimal(String.valueOf(value));
       // NumberFormat is not thread-safe, so create a new instance each time
-      NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(Locale.US);
+      // Default to South African Rand formatting (ZAR / "R" prefix)
+      NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(ZA_LOCALE);
       return HtmlUtils.htmlEscape(currencyFormat.format(amount));
     } catch (NumberFormatException e) {
       return HtmlUtils.htmlEscape(String.valueOf(value));
@@ -70,7 +73,7 @@ public final class VariableFormatter {
   private static String formatNumber(Object value) {
     try {
       BigDecimal num = new BigDecimal(String.valueOf(value));
-      return HtmlUtils.htmlEscape(NumberFormat.getInstance(Locale.US).format(num));
+      return HtmlUtils.htmlEscape(NumberFormat.getInstance(ZA_LOCALE).format(num));
     } catch (NumberFormatException e) {
       return HtmlUtils.htmlEscape(String.valueOf(value));
     }

@@ -7,18 +7,18 @@ import org.junit.jupiter.api.Test;
 class VariableFormatterTest {
 
   @Test
-  void currency_formats_with_dollar_sign_and_commas() {
-    assertThat(VariableFormatter.format(50000.00, "currency")).isEqualTo("$50,000.00");
+  void currency_formats_with_rand_sign_and_spaces() {
+    assertThat(VariableFormatter.format(50000.00, "currency")).isEqualTo("R50&nbsp;000,00");
   }
 
   @Test
   void currency_formats_string_value() {
-    assertThat(VariableFormatter.format("1234.56", "currency")).isEqualTo("$1,234.56");
+    assertThat(VariableFormatter.format("1234.56", "currency")).isEqualTo("R1&nbsp;234,56");
   }
 
   @Test
   void currency_formats_zero() {
-    assertThat(VariableFormatter.format(0, "currency")).isEqualTo("$0.00");
+    assertThat(VariableFormatter.format(0, "currency")).isEqualTo("R0,00");
   }
 
   @Test
@@ -48,13 +48,14 @@ class VariableFormatterTest {
   }
 
   @Test
-  void number_formats_with_commas() {
-    assertThat(VariableFormatter.format(1234567, "number")).isEqualTo("1,234,567");
+  void number_formats_with_spaces() {
+    assertThat(VariableFormatter.format(1234567, "number")).isEqualTo("1&nbsp;234&nbsp;567");
   }
 
   @Test
   void number_formats_decimal() {
-    assertThat(VariableFormatter.format("1234567.89", "number")).isEqualTo("1,234,567.89");
+    assertThat(VariableFormatter.format("1234567.89", "number"))
+        .isEqualTo("1&nbsp;234&nbsp;567,89");
   }
 
   @Test

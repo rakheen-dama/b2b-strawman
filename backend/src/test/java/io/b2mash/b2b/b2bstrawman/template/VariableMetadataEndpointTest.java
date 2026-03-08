@@ -1,11 +1,18 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldType;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
@@ -36,6 +43,7 @@ class VariableMetadataEndpointTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
+  @Autowired private FieldDefinitionRepository fieldDefinitionRepository;
 
   @BeforeAll
   void setup() throws Exception {
@@ -46,7 +54,8 @@ class VariableMetadataEndpointTest {
   }
 
   @Test
-  void getVariables_project_returnsProjectGroups() throws Exception {
+  void getVariables_project_returnsStaticAndCustomFieldGroups() throws Exception {
+    // 6 static groups + dynamic custom field groups (project + customer custom fields)
     mockMvc
         .perform(
             get("/api/templates/variables")
@@ -55,7 +64,9 @@ class VariableMetadataEndpointTest {
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.groups").isArray())
-        .andExpect(jsonPath("$.groups.length()").value(6))
+        // At least 6 static + 2 custom field groups
+        .andExpect(jsonPath("$.groups.length()", greaterThanOrEqualTo(8)))
+        // Static groups in order
         .andExpect(jsonPath("$.groups[0].label").value("Project"))
         .andExpect(jsonPath("$.groups[0].prefix").value("project"))
         .andExpect(jsonPath("$.groups[0].variables[0].key").value("project.id"))
@@ -64,11 +75,17 @@ class VariableMetadataEndpointTest {
         .andExpect(jsonPath("$.groups[2].label").value("Lead"))
         .andExpect(jsonPath("$.groups[3].label").value("Budget"))
         .andExpect(jsonPath("$.groups[4].label").value("Organization"))
-        .andExpect(jsonPath("$.groups[5].label").value("Generated"));
+        .andExpect(jsonPath("$.groups[5].label").value("Generated"))
+        // Dynamic custom field groups appended after static groups
+        .andExpect(jsonPath("$.groups[6].label").value("Custom Fields"))
+        .andExpect(jsonPath("$.groups[6].prefix").value("project.customFields"))
+        .andExpect(jsonPath("$.groups[7].label").value("Customer Custom Fields"))
+        .andExpect(jsonPath("$.groups[7].prefix").value("customer.customFields"));
   }
 
   @Test
-  void getVariables_customer_returnsCustomerGroups() throws Exception {
+  void getVariables_customer_returnsStaticAndCustomFieldGroups() throws Exception {
+    // 3 static groups + 1 custom field group (customer custom fields)
     mockMvc
         .perform(
             get("/api/templates/variables")
@@ -77,17 +94,21 @@ class VariableMetadataEndpointTest {
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.groups").isArray())
-        .andExpect(jsonPath("$.groups.length()").value(3))
+        .andExpect(jsonPath("$.groups.length()", greaterThanOrEqualTo(4)))
         .andExpect(jsonPath("$.groups[0].label").value("Customer"))
         .andExpect(jsonPath("$.groups[0].variables.length()").value(5))
         .andExpect(jsonPath("$.groups[0].variables[3].key").value("customer.phone"))
         .andExpect(jsonPath("$.groups[0].variables[4].key").value("customer.status"))
         .andExpect(jsonPath("$.groups[1].label").value("Organization"))
-        .andExpect(jsonPath("$.groups[2].label").value("Generated"));
+        .andExpect(jsonPath("$.groups[2].label").value("Generated"))
+        // Dynamic customer custom fields group
+        .andExpect(jsonPath("$.groups[3].label").value("Custom Fields"))
+        .andExpect(jsonPath("$.groups[3].prefix").value("customer.customFields"));
   }
 
   @Test
-  void getVariables_invoice_returnsInvoiceGroups() throws Exception {
+  void getVariables_invoice_returnsStaticAndCustomFieldGroups() throws Exception {
+    // 5 static groups + custom field groups (no invoice pack, but customer + project)
     mockMvc
         .perform(
             get("/api/templates/variables")
@@ -96,7 +117,7 @@ class VariableMetadataEndpointTest {
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.groups").isArray())
-        .andExpect(jsonPath("$.groups.length()").value(5))
+        .andExpect(jsonPath("$.groups.length()", greaterThanOrEqualTo(7)))
         .andExpect(jsonPath("$.groups[0].label").value("Invoice"))
         .andExpect(jsonPath("$.groups[0].variables.length()").value(10))
         .andExpect(jsonPath("$.groups[0].variables[0].key").value("invoice.id"))
@@ -104,7 +125,12 @@ class VariableMetadataEndpointTest {
         .andExpect(jsonPath("$.groups[1].label").value("Customer"))
         .andExpect(jsonPath("$.groups[2].label").value("Project"))
         .andExpect(jsonPath("$.groups[3].label").value("Organization"))
-        .andExpect(jsonPath("$.groups[4].label").value("Generated"));
+        .andExpect(jsonPath("$.groups[4].label").value("Generated"))
+        // No invoice custom fields (no seeded pack), but customer + project present
+        .andExpect(jsonPath("$.groups[5].label").value("Customer Custom Fields"))
+        .andExpect(jsonPath("$.groups[5].prefix").value("customer.customFields"))
+        .andExpect(jsonPath("$.groups[6].label").value("Project Custom Fields"))
+        .andExpect(jsonPath("$.groups[6].prefix").value("project.customFields"));
   }
 
   @Test
@@ -172,6 +198,107 @@ class VariableMetadataEndpointTest {
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.groups").isArray());
+  }
+
+  @Test
+  void getVariables_project_customFieldsHaveCorrectKeysAndTypes() throws Exception {
+    // Verify seeded project custom fields have correct dot-path keys and mapped types
+    // common-project pack seeds: reference_number (TEXT), priority (DROPDOWN), category (TEXT)
+    mockMvc
+        .perform(
+            get("/api/templates/variables")
+                .param("entityType", "PROJECT")
+                .with(memberJwt())
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        // Project custom fields group at index 6
+        .andExpect(jsonPath("$.groups[6].label").value("Custom Fields"))
+        .andExpect(jsonPath("$.groups[6].prefix").value("project.customFields"))
+        .andExpect(jsonPath("$.groups[6].variables.length()").value(3))
+        // Verify keys use dot-path format
+        .andExpect(
+            jsonPath(
+                "$.groups[6].variables[*].key", hasItem("project.customFields.reference_number")))
+        .andExpect(
+            jsonPath("$.groups[6].variables[*].key", hasItem("project.customFields.priority")))
+        .andExpect(
+            jsonPath("$.groups[6].variables[*].key", hasItem("project.customFields.category")));
+  }
+
+  @Test
+  void getVariables_customerCustomFieldsAppearInInvoiceGroups() throws Exception {
+    // Customer custom fields should appear in INVOICE variable groups
+    mockMvc
+        .perform(
+            get("/api/templates/variables")
+                .param("entityType", "INVOICE")
+                .with(memberJwt())
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        // Customer custom fields group in invoice context
+        .andExpect(jsonPath("$.groups[5].label").value("Customer Custom Fields"))
+        .andExpect(jsonPath("$.groups[5].prefix").value("customer.customFields"))
+        .andExpect(jsonPath("$.groups[5].variables.length()", greaterThanOrEqualTo(8)))
+        // Verify known customer custom fields from common-customer pack are present
+        .andExpect(
+            jsonPath(
+                "$.groups[5].variables[*].key", hasItem("customer.customFields.address_line1")))
+        .andExpect(
+            jsonPath("$.groups[5].variables[*].key", hasItem("customer.customFields.tax_number")))
+        .andExpect(
+            jsonPath("$.groups[5].variables[*].key", hasItem("customer.customFields.phone")));
+  }
+
+  @Test
+  void getVariables_inactiveFieldsExcluded() throws Exception {
+    // Create an inactive custom field and verify it does not appear
+    String tenantSchema =
+        io.b2mash.b2b.b2bstrawman.provisioning.SchemaNameGenerator.generateSchemaName(ORG_ID);
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .run(
+            () -> {
+              var inactive =
+                  new FieldDefinition(
+                      EntityType.INVOICE, "Hidden Field", "hidden_field", FieldType.TEXT);
+              inactive.deactivate();
+              inactive.setSortOrder(100);
+              fieldDefinitionRepository.save(inactive);
+            });
+
+    // INVOICE should still have no invoice custom fields group (the inactive one is excluded)
+    // Groups[5] should be customer custom fields, not invoice custom fields
+    mockMvc
+        .perform(
+            get("/api/templates/variables")
+                .param("entityType", "INVOICE")
+                .with(memberJwt())
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        // Invoice custom fields group should NOT appear (only inactive field exists for INVOICE)
+        .andExpect(jsonPath("$.groups[5].label").value("Customer Custom Fields"))
+        .andExpect(jsonPath("$.groups[6].label").value("Project Custom Fields"));
+  }
+
+  @Test
+  void getVariables_customer_includesCustomerCustomFields() throws Exception {
+    // Customer template should include customer custom fields from seeded packs
+    mockMvc
+        .perform(
+            get("/api/templates/variables")
+                .param("entityType", "CUSTOMER")
+                .with(memberJwt())
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.groups[3].label").value("Custom Fields"))
+        .andExpect(jsonPath("$.groups[3].prefix").value("customer.customFields"))
+        // At least 8 fields from common-customer pack (may have more from compliance packs)
+        .andExpect(jsonPath("$.groups[3].variables.length()", greaterThanOrEqualTo(8)))
+        // Verify known fields from common-customer pack
+        .andExpect(
+            jsonPath(
+                "$.groups[3].variables[*].key", hasItem("customer.customFields.address_line1")))
+        .andExpect(
+            jsonPath("$.groups[3].variables[*].key", hasItem("customer.customFields.tax_number")));
   }
 
   // --- JWT Helpers ---

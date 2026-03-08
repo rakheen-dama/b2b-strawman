@@ -1,5 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
+import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldType;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -7,18 +11,32 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 
 /**
- * Static registry of available template variables per entity type. Powers the variable metadata
- * endpoint and the frontend variable picker. Manually curated — not introspected from context
- * builders.
+ * Registry of available template variables per entity type. Powers the variable metadata endpoint
+ * and the frontend variable picker. Static groups are manually curated; custom field groups are
+ * dynamically loaded from the tenant's FieldDefinition records.
  */
 @Component
 public class VariableMetadataRegistry {
 
-  private final Map<TemplateEntityType, List<VariableGroup>> groupsByType;
-  private final Map<TemplateEntityType, List<LoopSource>> loopSourcesByType;
+  private static final Map<FieldType, String> FIELD_TYPE_TO_VARIABLE_TYPE =
+      Map.of(
+          FieldType.TEXT, "string",
+          FieldType.NUMBER, "number",
+          FieldType.DATE, "date",
+          FieldType.CURRENCY, "currency",
+          FieldType.BOOLEAN, "boolean",
+          FieldType.DROPDOWN, "string",
+          FieldType.URL, "string",
+          FieldType.EMAIL, "string",
+          FieldType.PHONE, "string");
 
-  public VariableMetadataRegistry() {
-    groupsByType = new EnumMap<>(TemplateEntityType.class);
+  private final Map<TemplateEntityType, List<VariableGroup>> staticGroupsByType;
+  private final Map<TemplateEntityType, List<LoopSource>> loopSourcesByType;
+  private final FieldDefinitionRepository fieldDefinitionRepository;
+
+  public VariableMetadataRegistry(FieldDefinitionRepository fieldDefinitionRepository) {
+    this.fieldDefinitionRepository = fieldDefinitionRepository;
+    staticGroupsByType = new EnumMap<>(TemplateEntityType.class);
     loopSourcesByType = new EnumMap<>(TemplateEntityType.class);
 
     registerProjectVariables();
@@ -27,9 +45,47 @@ public class VariableMetadataRegistry {
   }
 
   public VariableMetadataResponse getVariables(TemplateEntityType entityType) {
+    var groups = new ArrayList<>(staticGroupsByType.getOrDefault(entityType, List.of()));
+    appendCustomFieldGroups(groups, entityType);
     return new VariableMetadataResponse(
-        groupsByType.getOrDefault(entityType, List.of()),
-        loopSourcesByType.getOrDefault(entityType, List.of()));
+        List.copyOf(groups), loopSourcesByType.getOrDefault(entityType, List.of()));
+  }
+
+  private void appendCustomFieldGroups(
+      List<VariableGroup> groups, TemplateEntityType templateEntityType) {
+    switch (templateEntityType) {
+      case PROJECT -> {
+        addCustomFieldGroup(groups, EntityType.PROJECT, "project", "Custom Fields");
+        addCustomFieldGroup(groups, EntityType.CUSTOMER, "customer", "Customer Custom Fields");
+      }
+      case CUSTOMER -> {
+        addCustomFieldGroup(groups, EntityType.CUSTOMER, "customer", "Custom Fields");
+      }
+      case INVOICE -> {
+        addCustomFieldGroup(groups, EntityType.INVOICE, "invoice", "Custom Fields");
+        addCustomFieldGroup(groups, EntityType.CUSTOMER, "customer", "Customer Custom Fields");
+        addCustomFieldGroup(groups, EntityType.PROJECT, "project", "Project Custom Fields");
+      }
+    }
+  }
+
+  private void addCustomFieldGroup(
+      List<VariableGroup> groups, EntityType entityType, String prefix, String label) {
+    List<FieldDefinition> fields =
+        fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(entityType);
+    if (fields.isEmpty()) {
+      return;
+    }
+    var variables =
+        fields.stream()
+            .map(
+                fd ->
+                    new VariableInfo(
+                        prefix + ".customFields." + fd.getSlug(),
+                        fd.getName(),
+                        FIELD_TYPE_TO_VARIABLE_TYPE.getOrDefault(fd.getFieldType(), "string")))
+            .toList();
+    groups.add(new VariableGroup(label, prefix + ".customFields", variables));
   }
 
   private void registerProjectVariables() {
@@ -75,7 +131,7 @@ public class VariableMetadataRegistry {
     groups.add(buildOrgGroup());
     groups.add(buildGeneratedGroup());
 
-    groupsByType.put(TemplateEntityType.PROJECT, List.copyOf(groups));
+    staticGroupsByType.put(TemplateEntityType.PROJECT, List.copyOf(groups));
 
     loopSourcesByType.put(
         TemplateEntityType.PROJECT,
@@ -106,7 +162,7 @@ public class VariableMetadataRegistry {
     groups.add(buildOrgGroup());
     groups.add(buildGeneratedGroup());
 
-    groupsByType.put(TemplateEntityType.CUSTOMER, List.copyOf(groups));
+    staticGroupsByType.put(TemplateEntityType.CUSTOMER, List.copyOf(groups));
 
     loopSourcesByType.put(
         TemplateEntityType.CUSTOMER,
@@ -155,7 +211,7 @@ public class VariableMetadataRegistry {
     groups.add(buildOrgGroup());
     groups.add(buildGeneratedGroup());
 
-    groupsByType.put(TemplateEntityType.INVOICE, List.copyOf(groups));
+    staticGroupsByType.put(TemplateEntityType.INVOICE, List.copyOf(groups));
 
     loopSourcesByType.put(
         TemplateEntityType.INVOICE,

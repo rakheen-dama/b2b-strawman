@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.billingrun.EntryType;
 import io.b2mash.b2b.b2bstrawman.expense.Expense;
 import io.b2mash.b2b.b2bstrawman.expense.ExpenseCategory;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
@@ -186,5 +187,8 @@ public final class BillingRunDtos {
       BigDecimal estimatedAmount) {}
 
   public record RetainerGenerateRequest(
-      @NotNull(message = "retainerAgreementIds is required") List<UUID> retainerAgreementIds) {}
+      @NotNull(message = "retainerAgreementIds is required")
+          @NotEmpty(message = "retainerAgreementIds must not be empty")
+          @Size(max = 100, message = "retainerAgreementIds must contain at most 100 entries")
+          List<UUID> retainerAgreementIds) {}
 }

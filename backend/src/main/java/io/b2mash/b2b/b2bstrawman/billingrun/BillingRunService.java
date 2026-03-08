@@ -940,23 +940,30 @@ public class BillingRunService {
 
   /**
    * Generates retainer invoices by delegating to RetainerPeriodService.closePeriod(). Each
-   * agreement is processed individually with failure isolation. NOT @Transactional — each close
-   * runs in its own transaction via the called service.
+   * agreement is processed in its own transaction via transactionTemplate for failure isolation.
+   * closePeriod() uses default REQUIRED propagation and joins the transactionTemplate transaction.
+   * The initial status check also runs inside a transactionTemplate call (consistent with
+   * generate()).
    */
   public List<BillingRunItemResponse> generateRetainerInvoices(
       UUID billingRunId, RetainerGenerateRequest request, UUID actorMemberId) {
-    var run =
-        billingRunRepository
-            .findById(billingRunId)
-            .orElseThrow(() -> new ResourceNotFoundException("BillingRun", billingRunId));
+    // Validate status inside a transaction to avoid TOCTOU race (consistent with generate())
+    transactionTemplate.execute(
+        status -> {
+          var run =
+              billingRunRepository
+                  .findById(billingRunId)
+                  .orElseThrow(() -> new ResourceNotFoundException("BillingRun", billingRunId));
 
-    if (run.getStatus() != BillingRunStatus.PREVIEW
-        && run.getStatus() != BillingRunStatus.COMPLETED) {
-      throw new InvalidStateException(
-          "Cannot generate retainer invoices",
-          "Only billing runs in PREVIEW or COMPLETED status can generate retainer invoices. Current status: "
-              + run.getStatus());
-    }
+          if (run.getStatus() != BillingRunStatus.PREVIEW
+              && run.getStatus() != BillingRunStatus.COMPLETED) {
+            throw new InvalidStateException(
+                "Cannot generate retainer invoices",
+                "Only billing runs in PREVIEW or COMPLETED status can generate retainer invoices. Current status: "
+                    + run.getStatus());
+          }
+          return null;
+        });
 
     List<BillingRunItemResponse> results = new ArrayList<>();
 
@@ -973,22 +980,22 @@ public class BillingRunService {
                   invoice.setBillingRunId(billingRunId);
                   invoiceRepository.save(invoice);
 
-                  // Create BillingRunItem for tracking
-                  var agreement = retainerAgreementRepository.findById(agreementId).orElseThrow();
-                  var item = new BillingRunItem(billingRunId, agreement.getCustomerId());
+                  // Create BillingRunItem for tracking — use invoice's customerId directly
+                  UUID customerId = invoice.getCustomerId();
+                  var item = new BillingRunItem(billingRunId, customerId);
                   item.markGenerating();
                   item.markGenerated(invoice.getId());
                   item = billingRunItemRepository.save(item);
 
                   String customerName =
                       customerRepository
-                          .findById(agreement.getCustomerId())
+                          .findById(customerId)
                           .map(Customer::getName)
                           .orElse("Unknown");
 
                   return new BillingRunItemResponse(
                       item.getId(),
-                      agreement.getCustomerId(),
+                      customerId,
                       customerName,
                       item.getStatus(),
                       BigDecimal.ZERO,
@@ -1055,7 +1062,7 @@ public class BillingRunService {
             results.add(
                 new BillingRunItemResponse(
                     null,
-                    agreementId,
+                    null,
                     "Unknown",
                     BillingRunItemStatus.FAILED,
                     BigDecimal.ZERO,

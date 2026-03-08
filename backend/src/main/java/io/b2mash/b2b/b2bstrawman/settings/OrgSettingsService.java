@@ -539,19 +539,22 @@ public class OrgSettingsService {
         billingEmailRateLimit,
         defaultBillingRunCurrency);
 
+    var auditDetails = new java.util.HashMap<String, Object>();
+    if (billingBatchAsyncThreshold != null) {
+      auditDetails.put("billing_batch_async_threshold", billingBatchAsyncThreshold);
+    }
+    if (billingEmailRateLimit != null) {
+      auditDetails.put("billing_email_rate_limit", billingEmailRateLimit);
+    }
+    if (defaultBillingRunCurrency != null) {
+      auditDetails.put("default_billing_run_currency", defaultBillingRunCurrency);
+    }
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("org_settings.batch_billing_updated")
             .entityType("org_settings")
             .entityId(settings.getId())
-            .details(
-                Map.of(
-                    "billing_batch_async_threshold",
-                    billingBatchAsyncThreshold != null ? billingBatchAsyncThreshold : "",
-                    "billing_email_rate_limit",
-                    billingEmailRateLimit != null ? billingEmailRateLimit : "",
-                    "default_billing_run_currency",
-                    defaultBillingRunCurrency != null ? defaultBillingRunCurrency : ""))
+            .details(auditDetails)
             .build());
 
     return toSettingsResponse(settings);

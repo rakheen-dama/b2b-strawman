@@ -56,6 +56,8 @@ class BillingRunNotificationTest {
 
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_br_notif_test";
+  private static final com.fasterxml.jackson.databind.ObjectMapper OBJECT_MAPPER =
+      new com.fasterxml.jackson.databind.ObjectMapper();
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
@@ -336,9 +338,7 @@ class BillingRunNotificationTest {
           String detailsJson = rs.getString("details");
           if (detailsJson != null) {
             try {
-              details =
-                  new com.fasterxml.jackson.databind.ObjectMapper()
-                      .readValue(detailsJson, Map.class);
+              details = OBJECT_MAPPER.readValue(detailsJson, Map.class);
             } catch (Exception ignored) {
             }
           }

@@ -37,6 +37,7 @@ public class KeycloakProvisioningClient {
   private final String tokenUrl;
   private final String adminUsername;
   private final String adminPassword;
+  private final String frontendBaseUrl;
 
   private volatile String cachedToken;
   private volatile Instant tokenExpiry = Instant.MIN;
@@ -45,7 +46,8 @@ public class KeycloakProvisioningClient {
       @Value("${keycloak.admin.auth-server-url}") String authServerUrl,
       @Value("${keycloak.admin.realm}") String realm,
       @Value("${keycloak.admin.username}") String adminUsername,
-      @Value("${keycloak.admin.password}") String adminPassword) {
+      @Value("${keycloak.admin.password}") String adminPassword,
+      @Value("${app.base-url:http://localhost:3000}") String frontendBaseUrl) {
     var httpClient = HttpClient.newBuilder().version(Version.HTTP_1_1).build();
     var requestFactory = new JdkClientHttpRequestFactory(httpClient);
     this.restClient =
@@ -71,6 +73,7 @@ public class KeycloakProvisioningClient {
     this.tokenUrl = authServerUrl + "/realms/master/protocol/openid-connect/token";
     this.adminUsername = adminUsername;
     this.adminPassword = adminPassword;
+    this.frontendBaseUrl = frontendBaseUrl;
   }
 
   /**
@@ -83,7 +86,7 @@ public class KeycloakProvisioningClient {
    * @throws IllegalStateException if the Location header is missing from the response
    */
   public String createOrganization(String name, String slug) {
-    var body = Map.of("name", name, "alias", slug, "enabled", true);
+    var body = Map.of("name", name, "alias", slug, "enabled", true, "redirectUrl", frontendBaseUrl);
     var response =
         restClient
             .post()

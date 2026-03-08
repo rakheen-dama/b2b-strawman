@@ -103,6 +103,8 @@ export interface CreateBillingRunRequest {
   currency: string;
   includeExpenses: boolean;
   includeRetainers: boolean;
+  cutOffDate?: string;
+  notes?: string;
 }
 
 export interface BatchSendRequest {

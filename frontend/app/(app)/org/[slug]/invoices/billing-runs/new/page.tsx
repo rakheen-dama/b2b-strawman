@@ -1,0 +1,42 @@
+import { getAuthContext } from "@/lib/auth";
+import { BillingRunWizard } from "@/components/billing-runs/billing-run-wizard";
+
+export default async function NewBillingRunPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ billingRunId?: string }>;
+}) {
+  const { slug } = await params;
+  const search = await searchParams;
+  const { orgRole } = await getAuthContext();
+
+  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+
+  if (!isAdmin) {
+    return (
+      <div className="space-y-8">
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
+          New Billing Run
+        </h1>
+        <p className="text-slate-600 dark:text-slate-400">
+          You do not have permission to create billing runs. Only admins and
+          owners can access this page.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
+        New Billing Run
+      </h1>
+      <BillingRunWizard
+        slug={slug}
+        billingRunId={search.billingRunId}
+      />
+    </div>
+  );
+}

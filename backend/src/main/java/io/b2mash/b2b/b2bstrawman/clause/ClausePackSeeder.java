@@ -1,6 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.clause;
 
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.ObjectMapper;
 
 /** Seeds clause packs for newly provisioned tenants. */
@@ -31,7 +30,7 @@ public class ClausePackSeeder {
   private final TemplateClauseRepository templateClauseRepository;
   private final DocumentTemplateRepository documentTemplateRepository;
   private final OrgSettingsRepository orgSettingsRepository;
-  private final TransactionTemplate transactionTemplate;
+  private final TenantTransactionHelper tenantTransactionHelper;
 
   public ClausePackSeeder(
       ResourcePatternResolver resourceResolver,
@@ -40,21 +39,19 @@ public class ClausePackSeeder {
       TemplateClauseRepository templateClauseRepository,
       DocumentTemplateRepository documentTemplateRepository,
       OrgSettingsRepository orgSettingsRepository,
-      TransactionTemplate transactionTemplate) {
+      TenantTransactionHelper tenantTransactionHelper) {
     this.resourceResolver = resourceResolver;
     this.objectMapper = objectMapper;
     this.clauseRepository = clauseRepository;
     this.templateClauseRepository = templateClauseRepository;
     this.documentTemplateRepository = documentTemplateRepository;
     this.orgSettingsRepository = orgSettingsRepository;
-    this.transactionTemplate = transactionTemplate;
+    this.tenantTransactionHelper = tenantTransactionHelper;
   }
 
   /** Seeds all discovered clause packs for the given tenant. */
   public void seedPacksForTenant(String tenantId, String orgId) {
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantId)
-        .where(RequestScopes.ORG_ID, orgId)
-        .run(() -> transactionTemplate.executeWithoutResult(tx -> doSeedPacks(tenantId)));
+    tenantTransactionHelper.executeInTenantTransaction(tenantId, orgId, t -> doSeedPacks(t));
   }
 
   private void doSeedPacks(String tenantId) {

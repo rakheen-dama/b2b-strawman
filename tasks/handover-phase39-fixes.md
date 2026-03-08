@@ -2,114 +2,85 @@
 
 ## Branch: `fix/phase39-platform-admin-flow`
 
-All fixes so far are committed. One remaining bug needs fixing.
+Two commits + uncommitted changes. One remaining bug needs fixing.
 
-## Remaining Bugs (2 issues)
+## FIXED: Seeders query `public` schema instead of tenant schema
 
-### Bug 1: Approval fails with "URI with undefined scheme"
+### Symptom
+When platform admin clicks approve:
+1. KC org created ✓
+2. Tenant schema created ✓
+3. Flyway 62 migrations applied ✓
+4. `FieldPackSeeder` fails: `ERROR: relation "org_settings" does not exist`
+5. Nothing committed — no `public.organizations` row, no `public.org_schema_mapping` row
+6. Access request stays PENDING, dialog shows error
 
-**Error**: `KeycloakProvisioningClient.getAdminToken()` (line 140) throws `IllegalArgumentException: URI with undefined scheme` when platform admin approves an access request.
+### Root Cause (confirmed via logs, NOT yet fixed)
+`FieldPackSeeder.seedPacksForTenant()` (line 60-63) does:
+```java
+ScopedValue.where(RequestScopes.TENANT_ID, tenantId)
+    .where(RequestScopes.ORG_ID, orgId)
+    .run(() -> transactionTemplate.executeWithoutResult(tx -> doSeedPacks(tenantId)));
+```
 
-**Root cause**: The `keycloak.admin.auth-server-url` property resolves to empty string in the local profile. The backend's `application-keycloak.yml` doesn't include Keycloak admin credentials, and `application-local.yml` doesn't either. The default in `application.yml` uses `${KEYCLOAK_ADMIN_URL:http://localhost:8180}` but that's under the `keycloak:` prefix which may not map to what `KeycloakProvisioningClient` expects.
-
-**File to investigate**: `backend/src/main/java/io/b2mash/b2b/b2bstrawman/accessrequest/KeycloakProvisioningClient.java` — check what config properties it reads for the admin URL, username, and password. Then ensure `application-keycloak.yml` (or `application-local.yml`) provides them.
-
-**The fix is likely**: Add the correct `keycloak.admin.*` properties to `application-keycloak.yml` pointing to `http://localhost:8180` with admin/admin credentials. The properties are already in `application.yml` under `keycloak.admin` — just verify `KeycloakProvisioningClient` reads from the same prefix.
-
-### Bug 2: Approve succeeds on backend but frontend doesn't reflect it
-
-**Symptom**: Clicking Approve provisions the Keycloak org + tenant schema (backend succeeds), but the frontend approve dialog stays open, the list still shows PENDING, and no success/error feedback appears.
-
-**Root cause (confirmed pattern)**: The backend approval endpoint returns `AccessRequestResponse` (a single object) but the frontend's `api.post()` response handling may be failing. The `approveAccessRequest()` server action catches errors silently — if the response parsing fails or a `revalidatePath` redirect is swallowed, the client component never gets the success signal.
-
-**Most likely issues** (investigate in order):
-
-1. **`revalidatePath()` throws NEXT_REDIRECT inside try-catch**: Look at `approveAccessRequest()` in `actions.ts` — after `api.post()` succeeds, it calls `revalidatePath("/platform-admin/access-requests")` then returns `{ success: true }`. If `revalidatePath` throws (it can in some Next.js versions), the catch block swallows it and returns `{ success: false, error: "An unexpected error occurred." }`. The client component may not be handling that error.
-
-2. **Approve dialog not closing on result**: Check `approve-dialog.tsx` — does it check the result of `approveAccessRequest()` and close itself? If the action returns `{ success: false }` (due to issue #1), the dialog may stay open.
-
-3. **`api.post()` response parsing**: The backend returns a single `AccessRequestResponse` object. `api.post()` parses this as JSON. If the response is unexpected (e.g., gateway returns HTML redirect), parsing fails silently.
-
-**Files to investigate**:
-- `frontend/app/(app)/platform-admin/access-requests/actions.ts` — `approveAccessRequest()` — add console.log before/after api.post() and revalidatePath()
-- `frontend/components/access-request/approve-dialog.tsx` — how it handles the action result
-- `frontend/components/access-request/access-requests-table.tsx` — how approve result triggers UI update
-
-### Bug 3: No `organizations` / `org_schema_mapping` row created on approval
-
-**Symptom**: After approval, a tenant schema is created and a Keycloak org exists, but the `organizations` and/or `org_schema_mapping` table in the `public` schema has no row for the new org. This means the `TenantFilter` can't resolve the org ID → schema, so the approved user gets "Organization not provisioned" (403) when they log in.
-
-**Root cause**: `AccessRequestApprovalService.approve()` calls `tenantProvisioningService.provisionTenant(kcOrgId, orgName)` which creates the schema + runs Flyway migrations. But check whether `provisionTenant()` also inserts into `organizations` and `org_schema_mapping`. If it does, check if the Keycloak org ID format matches what the `TenantFilter` looks up (the KC org ID from the JWT `organization` claim must match the `clerk_org_id` column in `org_schema_mapping`).
-
-**Files to investigate**:
-- `backend/.../provisioning/TenantProvisioningService.java` — does `provisionTenant()` insert into `org_schema_mapping`?
-- `backend/.../multitenancy/OrgSchemaMapping.java` — entity for the mapping table
-- `backend/.../multitenancy/TenantFilter.java` — how it looks up the schema (line 59: `ClerkJwtUtils.extractOrgId(jwt)`)
-- `backend/.../security/ClerkJwtUtils.java` — `extractKeycloakOrgId()` extracts from `organization` claim — verify the KC org ID format matches what was stored
-
-**The fix likely needs**: Either `provisionTenant()` already inserts the mapping (verify it ran without error), or `AccessRequestApprovalService.approve()` needs to explicitly create the `OrgSchemaMapping` row after provisioning.
-
-**Quick debug**: Query the database directly:
+`doSeedPacks()` calls `orgSettingsRepository.findForCurrentTenant()` which generates:
 ```sql
-SELECT * FROM public.org_schema_mapping ORDER BY id DESC LIMIT 5;
-SELECT * FROM public.organizations ORDER BY id DESC LIMIT 5;
--- Check if the new KC org ID appears
+SELECT ... FROM org_settings
 ```
 
-**Quick debug**: Add `console.log` to `approveAccessRequest()`:
-```typescript
-export async function approveAccessRequest(id: string): Promise<ActionResult> {
-  try {
-    console.log("[approve] calling api.post for", id);
-    await api.post(`/api/platform-admin/access-requests/${id}/approve`);
-    console.log("[approve] api.post succeeded");
-  } catch (error) {
-    console.error("[approve] api.post failed:", error);
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "An unexpected error occurred." };
-  }
+This runs against `public` schema. The `org_settings` table is in `tenant_xxx` (created by Flyway V17).
 
-  console.log("[approve] calling revalidatePath");
-  revalidatePath("/platform-admin/access-requests");
-  console.log("[approve] returning success");
-  return { success: true };
-}
-```
+**The `TransactionTemplate` (default `PROPAGATION_REQUIRED`) gets a connection from HikariCP that has `search_path = public`.** Binding `TENANT_ID` via ScopedValue tells the `TenantIdentifierResolver` the right schema, but the Hibernate `MultiTenantConnectionProvider` is NOT invoked to set `search_path` on the connection.
 
-## What Was Fixed (already committed)
+### What was tried (did NOT fix it)
+1. Removed `keycloak.admin.*` from `application.yml` (empty defaults → URI crash) — moved to `application-keycloak.yml` ✓ fixed the URI crash
+2. Removed `@Transactional` from `approve()`, used explicit `TransactionTemplate` calls so provisioning runs outside any transaction — **still fails** because seeders' own `TransactionTemplate` connections still get `search_path = public`
 
-1. **Dashboard routing** (`frontend/app/(app)/dashboard/page.tsx`): Platform admins redirected to `/platform-admin/access-requests` instead of "Waiting for Access". Fixed `redirect()` inside try-catch (Next.js throws NEXT_REDIRECT which was swallowed).
+### The actual problem to solve
+The Hibernate multitenancy connection routing (`MultiTenantConnectionProvider.getConnection(tenantId)`) is not being invoked when seeders use `TransactionTemplate`. The seeder binds `TENANT_ID` ScopedValue, and `TenantIdentifierResolver` reads it, but the connection provider doesn't set `search_path`.
 
-2. **Create-org routing** (`frontend/app/(app)/create-org/page.tsx`): Same platform admin redirect fix.
+### Fix applied
 
-3. **Gateway security** (`gateway/.../GatewaySecurityConfig.java`): Added `permitAll()` for `/api/access-requests` and `/api/access-requests/verify` — these are public endpoints but were blocked by `/api/**` authenticated rule.
+Created `TenantTransactionHelper` in `multitenancy/` — explicitly sets `search_path` via native query on the transactional `EntityManager` before running seeder logic. All 7 seeders updated to use it instead of raw `ScopedValue.where() + TransactionTemplate`.
 
-4. **Access requests response type** (`frontend/.../platform-admin/access-requests/actions.ts`): Backend returns `List<AccessRequestResponse>` (plain array), not `{ content: [...] }`. Fixed `AccessRequestsResponse` type and removed `.content` accessor. Data was loading but silently returning undefined.
+**Root cause**: Hibernate's `MultiTenantConnectionProvider.getConnection(tenantId)` is not invoked for JDBC connections obtained via `TransactionTemplate` during provisioning. The `JpaTransactionManager` creates an `EntityManager` but the underlying connection retains `search_path = public` from HikariCP's `connection-init-sql`. The `ScopedValue` binding and `TenantIdentifierResolver` correctly resolve the tenant, but the connection provider's `setSearchPath()` never fires.
 
-5. **Error visibility** (`frontend/.../platform-admin/access-requests/page.tsx`): Added error banner — previously API failures showed as empty list with no feedback.
+**Files changed**:
+- NEW: `multitenancy/TenantTransactionHelper.java` — binds ScopedValues, starts transaction, forces `search_path`, runs callback
+- `fielddefinition/FieldPackSeeder.java` — uses `TenantTransactionHelper`
+- `template/TemplatePackSeeder.java` — uses `TenantTransactionHelper`
+- `clause/ClausePackSeeder.java` — uses `TenantTransactionHelper`
+- `compliance/CompliancePackSeeder.java` — uses `TenantTransactionHelper`
+- `reporting/StandardReportPackSeeder.java` — uses `TenantTransactionHelper`
+- `informationrequest/RequestPackSeeder.java` — uses `TenantTransactionHelper`
+- `automation/template/AutomationTemplateSeeder.java` — uses `TenantTransactionHelper`
 
-6. **Landing page links** (`frontend/components/marketing/hero-section.tsx`, `pricing-preview.tsx`): "Get Started" now goes to `/request-access` in keycloak mode instead of `/sign-up` (Keycloak login).
+All 4909 backend tests pass.
 
-7. **Keycloak registration disabled** (`compose/keycloak/realm-export.json`): `registrationAllowed: false` — prevents bypassing admin-approved flow via Keycloak's built-in registration page. Note: existing Keycloak instances need manual update via Admin Console or kcadm.
+## What Was Fixed (committed — dff9c032)
 
-8. **Seed script** (`compose/scripts/keycloak-seed.sh`): Creates dedicated `padmin@docteams.local` platform admin user instead of making Alice (tenant owner) a platform admin. Platform admins should never be tenant members.
+1. Dashboard routing — platform admin redirect
+2. Create-org routing — same fix
+3. Gateway security — `permitAll()` for public access-request endpoints
+4. Access requests response type — plain array, not paginated
+5. Error visibility — error banner on page
+6. Landing page links — `/request-access` in keycloak mode
+7. Keycloak registration disabled
+8. Seed script — dedicated platform admin user
+9. Mail config — Mailpit SMTP
 
-9. **Mail config** (`backend/src/main/resources/application-local.yml`): Added Mailpit SMTP settings (localhost:1025, no auth) so OTP emails work locally.
+## Uncommitted changes
 
-## Key Architecture Notes
+1. `backend/src/main/resources/application.yml` — removed `keycloak.admin.*` block (empty defaults caused URI crash)
+2. `backend/src/main/resources/application-keycloak.yml` — added `keycloak.admin.*` with local defaults
+3. `backend/.../accessrequest/AccessRequestApprovalService.java` — removed `@Transactional` from `approve()`, uses explicit `TransactionTemplate` (did NOT fix seeder issue but is a better design regardless)
 
-- **Platform admins have no org** — they authenticate via Keycloak but have no `organization` claim in their JWT. The `TenantFilter` falls through (line 107), `PlatformAdminFilter` binds groups from JWT `groups` claim.
-- **Gateway BFF mode**: Frontend → SESSION cookie → gateway `/bff/me` → returns groups. Frontend `api.get()` forwards SESSION cookie to gateway which uses `TokenRelay` to proxy to backend with access token.
-- **Keycloak groups protocol mapper** must exist on `gateway-bff` client for `groups` claim to appear in tokens. Defined in `realm-export.json` but only applies on fresh realm import.
-- The `@ConditionalOnProperty` on `KeycloakProvisioningClient` means it's only created when keycloak admin config is present — if the bean is null, `AccessRequestApprovalService` catches it with the null check on line 49.
+## Testing
 
-## Testing After Fix
-
-1. Start Mailpit + Postgres: `bash compose/scripts/dev-up.sh`
-2. Start backend with keycloak profile: `SPRING_PROFILES_ACTIVE=local,keycloak ./mvnw spring-boot:run`
-3. Start gateway: `cd gateway && ./mvnw spring-boot:run`
-4. Start frontend: `cd frontend && NODE_OPTIONS="" pnpm dev`
-5. Navigate to `http://localhost:3000` → "Get Started" → fill request access form → check OTP in Mailpit (localhost:8025) → verify
-6. Login as platform admin → should redirect to access requests page → approve → should provision KC org + tenant schema
+1. Clean up: `DROP SCHEMA IF EXISTS tenant_d9b590647a21 CASCADE;`
+2. Start: `bash compose/scripts/dev-up.sh`
+3. Backend: `SPRING_PROFILES_ACTIVE=local,keycloak ./mvnw spring-boot:run`
+4. Gateway: `cd gateway && ./mvnw spring-boot:run`
+5. Frontend: `cd frontend && NODE_OPTIONS="" pnpm dev`
+6. Submit new access request → verify OTP via Mailpit (localhost:8025) → login as `padmin@docteams.local` / `Admin123!` → approve
+7. Check: `public.organizations` and `public.org_schema_mapping` should have rows

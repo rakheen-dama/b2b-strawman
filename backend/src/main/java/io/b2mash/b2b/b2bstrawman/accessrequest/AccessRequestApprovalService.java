@@ -13,6 +13,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Orchestrates the approval and rejection of access requests. On approval, provisions a Keycloak
@@ -26,70 +27,96 @@ public class AccessRequestApprovalService {
   private final AccessRequestRepository accessRequestRepository;
   private final KeycloakProvisioningClient keycloakProvisioningClient;
   private final TenantProvisioningService tenantProvisioningService;
+  private final TransactionTemplate txTemplate;
 
   public AccessRequestApprovalService(
       AccessRequestRepository accessRequestRepository,
       @Nullable KeycloakProvisioningClient keycloakProvisioningClient,
-      TenantProvisioningService tenantProvisioningService) {
+      TenantProvisioningService tenantProvisioningService,
+      TransactionTemplate txTemplate) {
     this.accessRequestRepository = accessRequestRepository;
     this.keycloakProvisioningClient = keycloakProvisioningClient;
     this.tenantProvisioningService = tenantProvisioningService;
+    this.txTemplate = txTemplate;
   }
 
   /**
    * Approves a pending access request. Provisions a Keycloak org, tenant schema, and sends an
    * invitation to the requester.
    *
+   * <p>This method intentionally does NOT use a single @Transactional because tenant provisioning
+   * (seeders) needs its own DB connections with the correct tenant search_path. An outer
+   * transaction would force seeders to reuse the platform admin's connection (search_path=public),
+   * causing "relation does not exist" errors.
+   *
    * @param requestId the access request ID
    * @param adminUserId the platform admin user ID performing the approval
-   * @return the updated access request entity
+   * @return the updated access request
    */
-  @Transactional(noRollbackFor = Exception.class)
   public AccessRequest approve(UUID requestId, String adminUserId) {
     if (keycloakProvisioningClient == null) {
       throw new IllegalStateException(
           "Keycloak admin client not configured — set keycloak.admin.auth-server-url");
     }
 
-    var request = findPendingRequest(requestId);
+    // Step 1: Validate and load the request (short transaction)
+    var request =
+        txTemplate.execute(
+            tx -> {
+              var req = findPendingRequest(requestId);
+              return req;
+            });
 
     String orgName = request.getOrganizationName();
     String slug = slugify(orgName);
 
     try {
-      // Idempotent: skip KC org creation if already done (retry after partial failure)
+      // Step 2: Create KC org if needed, persist kcOrgId immediately
       String kcOrgId = request.getKeycloakOrgId();
       if (kcOrgId == null) {
         kcOrgId = keycloakProvisioningClient.createOrganization(orgName, slug);
         log.info("Created Keycloak organization '{}' with ID {}", orgName, kcOrgId);
-        // Persist kcOrgId immediately so retries won't create a duplicate org
-        request.setKeycloakOrgId(kcOrgId);
-        accessRequestRepository.save(request);
+        final String orgId = kcOrgId;
+        txTemplate.executeWithoutResult(
+            tx -> {
+              request.setKeycloakOrgId(orgId);
+              accessRequestRepository.save(request);
+            });
       } else {
         log.info(
             "Keycloak org {} already exists for request {}, skipping creation", kcOrgId, requestId);
       }
 
-      tenantProvisioningService.provisionTenant(kcOrgId, orgName);
-      log.info("Provisioned tenant schema for org {}", kcOrgId);
+      // Step 3: Provision tenant schema (NO outer transaction — seeders manage their own)
+      // Use the slug (= Keycloak org alias) as the org identifier for schema mapping,
+      // because Keycloak JWTs include the alias in the "organization" claim, not the UUID.
+      tenantProvisioningService.provisionTenant(slug, orgName);
+      log.info("Provisioned tenant schema for org {} (slug={})", kcOrgId, slug);
 
+      // Step 4: Invite user via Keycloak
       keycloakProvisioningClient.inviteUser(kcOrgId, request.getEmail());
       log.info("Sent invitation to {} for org {}", request.getEmail(), kcOrgId);
 
-      request.setStatus(AccessRequestStatus.APPROVED);
-      request.setReviewedBy(adminUserId);
-      request.setReviewedAt(Instant.now());
-      request.setProvisioningError(null);
-
-      return accessRequestRepository.save(request);
+      // Step 5: Mark as approved (short transaction)
+      return txTemplate.execute(
+          tx -> {
+            request.setStatus(AccessRequestStatus.APPROVED);
+            request.setReviewedBy(adminUserId);
+            request.setReviewedAt(Instant.now());
+            request.setProvisioningError(null);
+            return accessRequestRepository.save(request);
+          });
     } catch (Exception e) {
       log.error("Approval failed for request {}: {}", requestId, e.getMessage(), e);
-      String errorMsg = e.getMessage();
-      if (errorMsg != null && errorMsg.length() > 500) {
-        errorMsg = errorMsg.substring(0, 500);
-      }
-      request.setProvisioningError(errorMsg);
-      accessRequestRepository.save(request);
+      String rawMsg = e.getMessage();
+      String errorMsg =
+          (rawMsg != null && rawMsg.length() > 500) ? rawMsg.substring(0, 500) : rawMsg;
+      // Persist the error (separate transaction so it always commits)
+      txTemplate.executeWithoutResult(
+          tx -> {
+            request.setProvisioningError(errorMsg);
+            accessRequestRepository.save(request);
+          });
       throw e;
     }
   }

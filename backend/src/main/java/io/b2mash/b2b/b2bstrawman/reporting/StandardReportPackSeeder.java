@@ -1,6 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.reporting;
 
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.util.List;
@@ -8,7 +8,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Seeds standard report definitions (Timesheet, Invoice Aging, Project Profitability) for newly
@@ -23,21 +22,19 @@ public class StandardReportPackSeeder {
 
   private final ReportDefinitionRepository reportDefinitionRepository;
   private final OrgSettingsRepository orgSettingsRepository;
-  private final TransactionTemplate transactionTemplate;
+  private final TenantTransactionHelper tenantTransactionHelper;
 
   public StandardReportPackSeeder(
       ReportDefinitionRepository reportDefinitionRepository,
       OrgSettingsRepository orgSettingsRepository,
-      TransactionTemplate transactionTemplate) {
+      TenantTransactionHelper tenantTransactionHelper) {
     this.reportDefinitionRepository = reportDefinitionRepository;
     this.orgSettingsRepository = orgSettingsRepository;
-    this.transactionTemplate = transactionTemplate;
+    this.tenantTransactionHelper = tenantTransactionHelper;
   }
 
   public void seedForTenant(String tenantId, String orgId) {
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantId)
-        .where(RequestScopes.ORG_ID, orgId)
-        .run(() -> transactionTemplate.executeWithoutResult(tx -> doSeed(tenantId)));
+    tenantTransactionHelper.executeInTenantTransaction(tenantId, orgId, t -> doSeed(t));
   }
 
   private void doSeed(String tenantId) {

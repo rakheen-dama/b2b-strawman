@@ -22,7 +22,7 @@ Phase 40 adds a **bulk billing system** to the DocTeams platform -- the ability 
 |------|------|-------|------|--------|--------|--------|
 | 303 | BillingRun Entity Foundation & Migration | Backend | -- | M | 303A, 303B | **Done** (PRs #595, #596) |
 | 304 | Preview, Customer Discovery & Unbilled Summary | Backend | 303 | M | 304A, 304B | **Done** (PRs #597, #598) |
-| 305 | Entry Selection & Cherry-Pick | Backend | 304 | S | 305A | |
+| 305 | Entry Selection & Cherry-Pick | Backend | 304 | S | 305A | **Done** (PR #599) |
 | 306 | Batch Generation & Cancel | Backend | 305 | M | 306A, 306B | |
 | 307 | Batch Approve, Send & Notifications | Backend | 306 | M | 307A, 307B | |
 | 308 | Retainer Batch Close | Backend | 306 | S | 308A | |
@@ -172,7 +172,7 @@ FRONTEND TRACK (after backend APIs)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 2a | 305 | 305A | `updateEntrySelection()`, `excludeCustomer()`, `includeCustomer()`, total recalculation, 3 selection endpoints. ~2 modified files (~8 tests). Backend only. | |
+| 2a | 305 | 305A | `updateEntrySelection()`, `excludeCustomer()`, `includeCustomer()`, total recalculation, 3 selection endpoints. ~2 modified files (~8 tests). Backend only. | **Done** (PR #599) |
 
 ### Stage 3: Generation & Cancel
 
@@ -394,7 +394,7 @@ Stage 6: [310A] -> [310B] -> [310C] // [311A]                         (wizard se
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **305A** | 305.1--305.6 | `updateEntrySelection()` upsert logic, `excludeCustomer()`, `includeCustomer()`, `recalculateItemTotals()`, 3 selection endpoints on controller, DTOs (`UpdateEntrySelectionsRequest`, `EntrySelectionDto`). ~2 modified files + 1 new test file (~8 tests). Backend only. | |
+| **305A** | 305.1--305.6 | `updateEntrySelection()` upsert logic, `excludeCustomer()`, `includeCustomer()`, `recalculateItemTotals()`, 3 selection endpoints on controller, DTOs (`UpdateEntrySelectionsRequest`, `EntrySelectionDto`). ~2 modified files + 1 new test file (~8 tests). Backend only. | **Done** (PR #599) |
 
 ### Tasks
 

@@ -344,7 +344,7 @@
 | **Phase 40 — Bulk Billing & Batch Operations** | | | | | | See [tasks/phase40-bulk-billing-batch-operations.md](tasks/phase40-bulk-billing-batch-operations.md) |
 | 303 | BillingRun Entity Foundation & Migration | Backend | -- | M | 303A, 303B | **Done** (PRs #595, #596) |
 | 304 | Preview, Customer Discovery & Unbilled Summary | Backend | 303 | M | 304A, 304B | **Done** (PRs #597, #598) |
-| 305 | Entry Selection & Cherry-Pick | Backend | 304 | S | 305A | |
+| 305 | Entry Selection & Cherry-Pick | Backend | 304 | S | 305A | **Done** (PR #599) |
 | 306 | Batch Generation & Cancel | Backend | 305 | M | 306A, 306B | |
 | 307 | Batch Approve, Send & Notifications | Backend | 306 | M | 307A, 307B | |
 | 308 | Retainer Batch Close | Backend | 306 | S | 308A | |

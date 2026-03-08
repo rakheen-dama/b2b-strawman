@@ -23,7 +23,7 @@ Phase 40 adds a **bulk billing system** to the DocTeams platform -- the ability 
 | 303 | BillingRun Entity Foundation & Migration | Backend | -- | M | 303A, 303B | **Done** (PRs #595, #596) |
 | 304 | Preview, Customer Discovery & Unbilled Summary | Backend | 303 | M | 304A, 304B | **Done** (PRs #597, #598) |
 | 305 | Entry Selection & Cherry-Pick | Backend | 304 | S | 305A | **Done** (PR #599) |
-| 306 | Batch Generation & Cancel | Backend | 305 | M | 306A, 306B | |
+| 306 | Batch Generation & Cancel | Backend | 305 | M | 306A, 306B | **Done** (PRs #600, #601) |
 | 307 | Batch Approve, Send & Notifications | Backend | 306 | M | 307A, 307B | |
 | 308 | Retainer Batch Close | Backend | 306 | S | 308A | |
 | 309 | Billing Run List & Detail Pages (Frontend) | Frontend | 307 | M | 309A, 309B | |
@@ -179,7 +179,7 @@ FRONTEND TRACK (after backend APIs)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 3a | 306 | 306A | `generate()` with failure isolation, entry resolution, single-active-run guard, `billingRunId` linking, stats computation, generate endpoint. ~3 modified files (~10 tests). Backend only. | **Done** (PR #600) |
-| 3b | 306 | 306B | Extended `cancelRun()` for IN_PROGRESS/COMPLETED (void drafts, unbill entries), `BILLING_RUN_GENERATED` audit event. ~3 modified files (~6 tests). Backend only. | |
+| 3b | 306 | 306B | Extended `cancelRun()` for IN_PROGRESS/COMPLETED (void drafts, unbill entries), `BILLING_RUN_GENERATED` audit event. ~3 modified files (~6 tests). Backend only. | **Done** (PR #601) |
 
 ### Stage 4: Approve, Send & Retainers (parallel tracks)
 
@@ -445,7 +445,7 @@ Stage 6: [310A] -> [310B] -> [310C] // [311A]                         (wizard se
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **306A** | 306.1--306.7 | `BillingRunService.generate()` with per-customer `TransactionTemplate`, entry resolution from `BillingRunEntrySelection`, single-active-run guard, `Invoice.billingRunId` linking, summary stats computation, generate endpoint. ~3 modified files + 1 new test file (~10 tests). Backend only. | **Done** (PR #600) |
-| **306B** | 306.8--306.12 | Extended `cancelRun()` for IN_PROGRESS/COMPLETED (void DRAFT invoices, unbill time entries/expenses, mark CANCELLED), `BILLING_RUN_GENERATED` audit event builder method. ~3 modified files + 1 new test file (~6 tests). Backend only. | |
+| **306B** | 306.8--306.12 | Extended `cancelRun()` for IN_PROGRESS/COMPLETED (void DRAFT invoices, unbill time entries/expenses, mark CANCELLED), `BILLING_RUN_GENERATED` audit event builder method. ~3 modified files + 1 new test file (~6 tests). Backend only. | **Done** (PR #601) |
 
 ### Tasks
 

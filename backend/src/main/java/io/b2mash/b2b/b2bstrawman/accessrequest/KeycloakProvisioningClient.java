@@ -5,6 +5,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpClient.Version;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,32 +78,55 @@ public class KeycloakProvisioningClient {
   }
 
   /**
-   * Creates an organization in Keycloak.
+   * Creates an organization in Keycloak, or returns the existing org ID if one with the same
+   * name/alias already exists (409 Conflict).
    *
-   * <p>Note: Keycloak returns 409 Conflict if the alias already exists, which the error handler
-   * will surface as a ResponseStatusException.
-   *
-   * @return the organization ID extracted from the Location header
-   * @throws IllegalStateException if the Location header is missing from the response
+   * @return the organization ID
    */
+  @SuppressWarnings("unchecked")
   public String createOrganization(String name, String slug) {
     var body = Map.of("name", name, "alias", slug, "enabled", true, "redirectUrl", frontendBaseUrl);
-    var response =
-        restClient
-            .post()
-            .uri("/organizations")
-            .header("Authorization", "Bearer " + getAdminToken())
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(body)
-            .retrieve()
-            .toBodilessEntity();
-    var location = response.getHeaders().getLocation();
-    if (location == null) {
-      throw new IllegalStateException(
-          "Keycloak org creation succeeded but no Location header returned");
+    try {
+      var response =
+          restClient
+              .post()
+              .uri("/organizations")
+              .header("Authorization", "Bearer " + getAdminToken())
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(body)
+              .retrieve()
+              .toBodilessEntity();
+      var location = response.getHeaders().getLocation();
+      if (location == null) {
+        throw new IllegalStateException(
+            "Keycloak org creation succeeded but no Location header returned");
+      }
+      String path = location.getPath();
+      return path.substring(path.lastIndexOf('/') + 1);
+    } catch (ResponseStatusException e) {
+      if (e.getStatusCode().value() != 409) {
+        throw e;
+      }
+      // Org already exists — look it up by alias
+      log.info("Keycloak org with alias '{}' already exists, looking up ID", slug);
+      return findOrganizationByAlias(slug);
     }
-    String path = location.getPath();
-    return path.substring(path.lastIndexOf('/') + 1);
+  }
+
+  private String findOrganizationByAlias(String alias) {
+    var orgs =
+        restClient
+            .get()
+            .uri("/organizations?search={alias}&exact=true", alias)
+            .header("Authorization", "Bearer " + getAdminToken())
+            .retrieve()
+            .body(List.class);
+    if (orgs == null || orgs.isEmpty()) {
+      throw new IllegalStateException(
+          "Keycloak returned 409 but no org found with alias: " + alias);
+    }
+    var org = (Map<String, Object>) orgs.getFirst();
+    return (String) org.get("id");
   }
 
   /**

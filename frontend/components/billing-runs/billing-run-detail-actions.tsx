@@ -45,10 +45,10 @@ export function BillingRunDetailActions({
       const result = await cancelBillingRunAction(slug, billingRunId);
       if (!result.success) {
         setError(result.error ?? "Failed to cancel billing run.");
-        setIsCancelling(false);
       }
     } catch {
       setError("An unexpected error occurred.");
+    } finally {
       setIsCancelling(false);
     }
   }
@@ -75,7 +75,7 @@ export function BillingRunDetailActions({
   return (
     <div className="flex flex-wrap items-center gap-3">
       {error && (
-        <p className="w-full text-sm text-destructive">{error}</p>
+        <p role="alert" className="w-full text-sm text-destructive">{error}</p>
       )}
 
       {canApprove && (

@@ -21,6 +21,12 @@ vi.mock(
       mockCreateBillingRun(...args),
     loadPreviewAction: (...args: unknown[]) => mockLoadPreview(...args),
     getUnbilledSummaryAction: vi.fn().mockResolvedValue({ success: true }),
+    getUnbilledTimeAction: vi.fn().mockResolvedValue({ success: true, entries: [] }),
+    getUnbilledExpensesAction: vi.fn().mockResolvedValue({ success: true, entries: [] }),
+    updateSelectionsAction: vi.fn().mockResolvedValue({ success: true }),
+    excludeCustomerAction: vi.fn().mockResolvedValue({ success: true }),
+    includeCustomerAction: vi.fn().mockResolvedValue({ success: true }),
+    getRetainerPreviewAction: vi.fn().mockResolvedValue({ success: true, retainers: [] }),
   }),
 );
 

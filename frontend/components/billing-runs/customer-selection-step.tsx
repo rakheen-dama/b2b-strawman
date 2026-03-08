@@ -12,7 +12,7 @@ interface CustomerSelectionStepProps {
   billingRunId: string;
   currency: string;
   onBack: () => void;
-  onNext: () => void;
+  onNext: (selectedItems: BillingRunItem[]) => void;
 }
 
 export function CustomerSelectionStep({
@@ -202,7 +202,9 @@ export function CustomerSelectionStep({
           </Button>
           <Button
             variant="default"
-            onClick={onNext}
+            onClick={() =>
+              onNext(items.filter((item) => selectedIds.has(item.id)))
+            }
             disabled={selectedIds.size === 0}
           >
             Next

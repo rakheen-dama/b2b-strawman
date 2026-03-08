@@ -25,7 +25,7 @@ Phase 40 adds a **bulk billing system** to the DocTeams platform -- the ability 
 | 305 | Entry Selection & Cherry-Pick | Backend | 304 | S | 305A | **Done** (PR #599) |
 | 306 | Batch Generation & Cancel | Backend | 305 | M | 306A, 306B | **Done** (PRs #600, #601) |
 | 307 | Batch Approve, Send & Notifications | Backend | 306 | M | 307A, 307B | **Done** (PRs #602, #603) |
-| 308 | Retainer Batch Close | Backend | 306 | S | 308A | |
+| 308 | Retainer Batch Close | Backend | 306 | S | 308A | **Done** (PR #604) |
 | 309 | Billing Run List & Detail Pages (Frontend) | Frontend | 307 | M | 309A, 309B | |
 | 310 | Billing Run Wizard (Frontend) | Frontend | 309 | L | 310A, 310B, 310C | |
 | 311 | Billing Settings & Polish (Frontend) | Frontend | 309 | S | 311A | |
@@ -186,7 +186,7 @@ FRONTEND TRACK (after backend APIs)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 4a (parallel) | 307 | 307A | `batchApprove()`, `batchSend()` with rate limiting, default due date/terms, progress tracking, approve + send endpoints, `BatchOperationResult`/`BatchSendRequest` DTOs. ~3 modified files (~8 tests). Backend only. | **Done** (PR #602) |
-| 4b (parallel) | 308 | 308A | `loadRetainerPreview()`, `generateRetainerInvoices()`, retainer-preview + retainer-generate endpoints, `RetainerPeriodPreview` DTO. ~3 modified files (~5 tests). Backend only. | |
+| 4b (parallel) | 308 | 308A | `loadRetainerPreview()`, `generateRetainerInvoices()`, retainer-preview + retainer-generate endpoints, `RetainerPeriodPreview` DTO. ~3 modified files (~5 tests). Backend only. | **Done** (PR #604) |
 | 4c | 307 | 307B | 3 remaining audit events (APPROVED, SENT, CANCELLED), `BillingRunEventListener` with 3 notification types, OrgSettings batch billing settings update method + endpoint inclusion. ~4 new/modified files (~6 tests). Backend only. | **Done** (PR #603) |
 
 ### Stage 5: Frontend List & Detail
@@ -586,7 +586,7 @@ Stage 6: [310A] -> [310B] -> [310C] // [311A]                         (wizard se
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **308A** | 308.1--308.6 | `loadRetainerPreview()`, `generateRetainerInvoices()`, retainer-preview + retainer-generate endpoints, `RetainerPeriodPreview` DTO. ~3 modified files + 1 new test file (~5 tests). Backend only. | |
+| **308A** | 308.1--308.6 | `loadRetainerPreview()`, `generateRetainerInvoices()`, retainer-preview + retainer-generate endpoints, `RetainerPeriodPreview` DTO. ~3 modified files + 1 new test file (~5 tests). Backend only. | **Done** (PR #604) |
 
 ### Tasks
 

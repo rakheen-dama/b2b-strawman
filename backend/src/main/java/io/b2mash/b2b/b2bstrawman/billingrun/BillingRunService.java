@@ -501,7 +501,7 @@ public class BillingRunService {
             status -> {
               var r =
                   billingRunRepository
-                      .findById(billingRunId)
+                      .findByIdForUpdate(billingRunId)
                       .orElseThrow(() -> new ResourceNotFoundException("BillingRun", billingRunId));
 
               if (r.getStatus() != BillingRunStatus.PREVIEW) {
@@ -582,7 +582,8 @@ public class BillingRunService {
 
         // Mark item as failed in its own transaction
         try {
-          final String errorMessage = truncate(e.getMessage(), 1000);
+          String reason = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
+          final String errorMessage = truncate(reason, 1000);
           transactionTemplate.executeWithoutResult(
               status -> {
                 var failedItem = billingRunItemRepository.findById(item.getId()).orElseThrow();
@@ -618,9 +619,13 @@ public class BillingRunService {
             });
 
     // Step 4: Publish events
-    eventPublisher.publishEvent(new BillingRunCompletedEvent(completedRun));
+    eventPublisher.publishEvent(
+        new BillingRunCompletedEvent(
+            completedRun.getId(), completedRun.getName(), finalSuccessCount));
     if (finalFailureCount > 0) {
-      eventPublisher.publishEvent(new BillingRunFailuresEvent(completedRun, finalFailureCount));
+      eventPublisher.publishEvent(
+          new BillingRunFailuresEvent(
+              completedRun.getId(), completedRun.getName(), finalFailureCount));
     }
 
     log.info(

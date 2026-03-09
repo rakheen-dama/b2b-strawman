@@ -83,6 +83,23 @@ public class DocumentTemplate {
   @Column(name = "required_context_fields", columnDefinition = "jsonb")
   private List<Map<String, String>> requiredContextFields;
 
+  @Enumerated(EnumType.STRING)
+  @Column(name = "format", nullable = false, length = 20)
+  private TemplateFormat format = TemplateFormat.TIPTAP;
+
+  @Column(name = "docx_s3_key", length = 500)
+  private String docxS3Key;
+
+  @Column(name = "docx_file_name", length = 255)
+  private String docxFileName;
+
+  @Column(name = "docx_file_size")
+  private Long docxFileSize;
+
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "discovered_fields", columnDefinition = "jsonb")
+  private List<Map<String, Object>> discoveredFields;
+
   protected DocumentTemplate() {}
 
   public DocumentTemplate(
@@ -96,6 +113,7 @@ public class DocumentTemplate {
     this.slug = slug;
     this.category = category;
     this.content = content;
+    this.format = TemplateFormat.TIPTAP;
     this.source = TemplateSource.ORG_CUSTOM;
     this.active = true;
     this.sortOrder = 0;
@@ -221,6 +239,26 @@ public class DocumentTemplate {
     return updatedAt;
   }
 
+  public TemplateFormat getFormat() {
+    return format;
+  }
+
+  public String getDocxS3Key() {
+    return docxS3Key;
+  }
+
+  public String getDocxFileName() {
+    return docxFileName;
+  }
+
+  public Long getDocxFileSize() {
+    return docxFileSize;
+  }
+
+  public List<Map<String, Object>> getDiscoveredFields() {
+    return discoveredFields;
+  }
+
   // --- Setters for mutable fields ---
 
   public void setCss(String css) {
@@ -261,5 +299,25 @@ public class DocumentTemplate {
 
   public void setRequiredContextFields(List<Map<String, String>> requiredContextFields) {
     this.requiredContextFields = requiredContextFields;
+  }
+
+  public void setFormat(TemplateFormat format) {
+    this.format = format;
+  }
+
+  public void setDocxS3Key(String docxS3Key) {
+    this.docxS3Key = docxS3Key;
+  }
+
+  public void setDocxFileName(String docxFileName) {
+    this.docxFileName = docxFileName;
+  }
+
+  public void setDocxFileSize(Long docxFileSize) {
+    this.docxFileSize = docxFileSize;
+  }
+
+  public void setDiscoveredFields(List<Map<String, Object>> discoveredFields) {
+    this.discoveredFields = discoveredFields;
   }
 }

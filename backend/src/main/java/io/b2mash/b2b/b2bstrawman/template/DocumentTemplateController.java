@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/templates")
@@ -90,6 +91,19 @@ public class DocumentTemplateController {
   public ResponseEntity<TemplateDetailResponse> createTemplate(
       @Valid @RequestBody CreateTemplateRequest request) {
     var response = documentTemplateService.create(request);
+    return ResponseEntity.created(URI.create("/api/templates/" + response.id())).body(response);
+  }
+
+  @PostMapping(value = "/docx/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<TemplateDetailResponse> uploadDocxTemplate(
+      @RequestParam("file") MultipartFile file,
+      @RequestParam("name") String name,
+      @RequestParam(value = "description", required = false) String description,
+      @RequestParam("category") String category,
+      @RequestParam("entityType") String entityType) {
+    var response =
+        documentTemplateService.uploadDocxTemplate(file, name, description, category, entityType);
     return ResponseEntity.created(URI.create("/api/templates/" + response.id())).body(response);
   }
 

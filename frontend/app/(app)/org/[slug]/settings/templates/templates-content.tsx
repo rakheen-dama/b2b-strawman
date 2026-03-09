@@ -1,9 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { FileUp, Plus } from "lucide-react";
+import { FileText, FileUp, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -23,6 +31,7 @@ import {
 import type {
   TemplateListResponse,
   TemplateCategory,
+  TemplateFormat,
   OrgSettings,
 } from "@/lib/types";
 
@@ -33,6 +42,12 @@ const CATEGORY_LABELS: Record<TemplateCategory, string> = {
   PROJECT_SUMMARY: "Project Summary",
   NDA: "NDA",
 };
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 interface TemplatesContentProps {
   slug: string;
@@ -47,8 +62,16 @@ export function TemplatesContent({
   settings,
   canManage,
 }: TemplatesContentProps) {
+  const [formatFilter, setFormatFilter] = useState<TemplateFormat | "ALL">("ALL");
+
+  // Filter templates by format
+  const filteredTemplates =
+    formatFilter === "ALL"
+      ? templates
+      : templates.filter((t) => t.format === formatFilter);
+
   // Group templates by category
-  const grouped = templates.reduce<
+  const grouped = filteredTemplates.reduce<
     Record<string, TemplateListResponse[]>
   >((acc, t) => {
     const key = t.category;
@@ -62,23 +85,38 @@ export function TemplatesContent({
   return (
     <div className="space-y-8">
       {canManage && (
-        <div className="flex justify-end gap-2">
-          <UploadDocxDialog slug={slug}>
-            <Button size="sm" variant="soft">
-              <FileUp className="mr-1 size-4" />
-              Upload Word Template
-            </Button>
-          </UploadDocxDialog>
-          <Link href={`/org/${slug}/settings/templates/new`}>
-            <Button size="sm">
-              <Plus className="mr-1 size-4" />
-              New Template
-            </Button>
-          </Link>
+        <div className="flex items-center justify-between">
+          <Select
+            value={formatFilter}
+            onValueChange={(v) => setFormatFilter(v as TemplateFormat | "ALL")}
+          >
+            <SelectTrigger className="w-40" data-testid="format-filter">
+              <SelectValue placeholder="All Formats" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">All Formats</SelectItem>
+              <SelectItem value="TIPTAP">Tiptap</SelectItem>
+              <SelectItem value="DOCX">Word</SelectItem>
+            </SelectContent>
+          </Select>
+          <div className="flex gap-2">
+            <UploadDocxDialog slug={slug}>
+              <Button size="sm" variant="soft">
+                <FileUp className="mr-1 size-4" />
+                Upload Word Template
+              </Button>
+            </UploadDocxDialog>
+            <Link href={`/org/${slug}/settings/templates/new`}>
+              <Button size="sm">
+                <Plus className="mr-1 size-4" />
+                New Template
+              </Button>
+            </Link>
+          </div>
         </div>
       )}
 
-      {templates.length === 0 ? (
+      {filteredTemplates.length === 0 ? (
         <p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
           No templates found. Create one or wait for platform templates to be
           seeded.
@@ -93,6 +131,7 @@ export function TemplatesContent({
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
+                  <TableHead>Format</TableHead>
                   <TableHead>Entity Type</TableHead>
                   <TableHead>Source</TableHead>
                   <TableHead>Status</TableHead>
@@ -115,6 +154,23 @@ export function TemplatesContent({
                         <p className="text-xs text-slate-500 dark:text-slate-400">
                           {template.description}
                         </p>
+                      )}
+                      {template.format === "DOCX" && template.docxFileName && (
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          {template.docxFileName}
+                          {template.docxFileSize != null &&
+                            ` (${formatFileSize(template.docxFileSize)})`}
+                        </p>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {template.format === "DOCX" ? (
+                        <Badge variant="success">
+                          <FileText className="size-3" />
+                          Word
+                        </Badge>
+                      ) : (
+                        <Badge variant="neutral">Tiptap</Badge>
                       )}
                     </TableCell>
                     <TableCell>

@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useCallback, useTransition, useEffect } from "react";
+import { useState, useCallback, useTransition, useEffect, useRef } from "react";
 // TODO(214B): Re-add requiredContextFields management UI in the settings panel.
 // The old TemplateEditorForm had UI for this; intentionally omitted in 214A.
 // The save handler preserves existing values so they are not lost.
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ChevronLeft,
   ChevronDown,
@@ -13,6 +14,12 @@ import {
   Eye,
   CheckCircle2,
   Package,
+  FileText,
+  Download,
+  RefreshCw,
+  Upload,
+  Copy,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,14 +47,21 @@ import type { TiptapNode } from "@/components/editor";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 import {
   updateTemplateAction,
   fetchRequiredFieldPacksAction,
+  replaceDocxFileAction,
+  downloadDocxTemplateAction,
+  fetchVariableMetadataAction,
 } from "@/app/(app)/org/[slug]/settings/templates/actions";
 import type { FieldPackStatus } from "@/app/(app)/org/[slug]/settings/templates/actions";
+import type { VariableMetadataResponse } from "@/components/editor/actions";
 import { getClause } from "@/lib/actions/clause-actions";
 import { FieldDiscoveryResults } from "@/app/(app)/org/[slug]/settings/templates/FieldDiscoveryResults";
 import type {
@@ -55,6 +69,27 @@ import type {
   TemplateCategory,
   TemplateEntityType,
 } from "@/lib/types";
+
+const DOCX_MIME_TYPE =
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+const MAX_DOCX_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_DOCX_SIZE_LABEL = "10 MB";
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function validateDocxFile(f: File): string | null {
+  if (f.type !== DOCX_MIME_TYPE && !f.name.toLowerCase().endsWith(".docx")) {
+    return "Only .docx files are accepted.";
+  }
+  if (f.size > MAX_DOCX_SIZE) {
+    return `File size exceeds ${MAX_DOCX_SIZE_LABEL}.`;
+  }
+  return null;
+}
 
 const CATEGORIES: { value: TemplateCategory; label: string }[] = [
   { value: "ENGAGEMENT_LETTER", label: "Engagement Letter" },
@@ -81,6 +116,9 @@ export function TemplateEditorClient({
   template,
   readOnly,
 }: TemplateEditorClientProps) {
+  const router = useRouter();
+  const isDocx = template.format === "DOCX";
+
   const [name, setName] = useState(template.name);
   const [description, setDescription] = useState(template.description ?? "");
   const category = template.category;
@@ -104,6 +142,19 @@ export function TemplateEditorClient({
   const [previewLoading, startPreviewTransition] = useTransition();
   const [fieldPacks, setFieldPacks] = useState<FieldPackStatus[]>([]);
 
+  // DOCX-specific state
+  const [replaceDialogOpen, setReplaceDialogOpen] = useState(false);
+  const [replaceFile, setReplaceFile] = useState<File | null>(null);
+  const [replaceFileError, setReplaceFileError] = useState<string | null>(null);
+  const [isReplacing, setIsReplacing] = useState(false);
+  const [replaceError, setReplaceError] = useState<string | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const replaceInputRef = useRef<HTMLInputElement>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [variableMetadata, setVariableMetadata] =
+    useState<VariableMetadataResponse | null>(null);
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
   useEffect(() => {
     fetchRequiredFieldPacksAction(template.id).then((result) => {
       if (result.success && result.data) {
@@ -111,6 +162,15 @@ export function TemplateEditorClient({
       }
     });
   }, [template.id]);
+
+  // Fetch variable metadata for DOCX templates
+  useEffect(() => {
+    if (isDocx) {
+      fetchVariableMetadataAction(template.primaryEntityType).then(
+        (data) => setVariableMetadata(data),
+      ).catch(() => setVariableMetadata(null));
+    }
+  }, [isDocx, template.primaryEntityType]);
 
   const handleEditorUpdate = useCallback(
     (json: Record<string, unknown>) => {
@@ -129,8 +189,8 @@ export function TemplateEditorClient({
       const result = await updateTemplateAction(slug, template.id, {
         name,
         description: description || undefined,
-        content: editorContent,
-        css: css || undefined,
+        content: isDocx ? template.content : editorContent,
+        css: isDocx ? undefined : css || undefined,
         requiredContextFields: template.requiredContextFields,
       });
 
@@ -173,6 +233,105 @@ export function TemplateEditorClient({
     });
   }
 
+  // DOCX-specific handlers
+  function handleReplaceFileSelected(f: File) {
+    const validationError = validateDocxFile(f);
+    if (validationError) {
+      setReplaceFileError(validationError);
+      setReplaceFile(null);
+    } else {
+      setReplaceFileError(null);
+      setReplaceFile(f);
+    }
+  }
+
+  const handleReplaceDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  }, []);
+
+  const handleReplaceDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  }, []);
+
+  const handleReplaceDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  }, []);
+
+  const handleReplaceDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      handleReplaceFileSelected(files[0]);
+    }
+  }, []);
+
+  const handleReplaceInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(e.target.files ?? []);
+      if (files.length > 0) {
+        handleReplaceFileSelected(files[0]);
+      }
+      e.target.value = "";
+    },
+    [],
+  );
+
+  async function handleReplaceSubmit() {
+    if (!replaceFile) return;
+    setIsReplacing(true);
+    setReplaceError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", replaceFile);
+      const result = await replaceDocxFileAction(slug, template.id, formData);
+
+      if (result.success) {
+        setReplaceDialogOpen(false);
+        setReplaceFile(null);
+        setReplaceFileError(null);
+        router.refresh();
+      } else {
+        setReplaceError(result.error ?? "Failed to replace file.");
+      }
+    } catch {
+      setReplaceError("An unexpected error occurred.");
+    } finally {
+      setIsReplacing(false);
+    }
+  }
+
+  async function handleDownload() {
+    setIsDownloading(true);
+    try {
+      const result = await downloadDocxTemplateAction(template.id);
+      if (result.success && result.url) {
+        window.open(result.url, "_blank");
+      } else {
+        setError(result.error ?? "Failed to download template.");
+      }
+    } catch {
+      setError("An unexpected error occurred.");
+    } finally {
+      setIsDownloading(false);
+    }
+  }
+
+  function handleCopyVariable(key: string) {
+    navigator.clipboard.writeText(`{{${key}}}`).then(() => {
+      setCopiedKey(key);
+      setTimeout(() => setCopiedKey(null), 2000);
+    });
+  }
+
   const hasLegacyContent = template.legacyContent != null;
 
   return (
@@ -199,22 +358,57 @@ export function TemplateEditorClient({
               aria-label="Template name"
             />
           )}
+          {isDocx && (
+            <Badge variant="success">
+              <FileText className="size-3" />
+              Word
+            </Badge>
+          )}
         </div>
         <div className="flex items-center gap-3">
-          <TemplatePreviewDialog
-            templateId={template.id}
-            entityType={template.primaryEntityType}
-          />
-          <Button
-            type="button"
-            variant="soft"
-            size="sm"
-            onClick={() => setEntityPickerOpen(true)}
-            disabled={previewLoading}
-          >
-            <Eye className="mr-1 size-4" />
-            {previewLoading ? "Loading..." : "Preview with data"}
-          </Button>
+          {!isDocx && (
+            <>
+              <TemplatePreviewDialog
+                templateId={template.id}
+                entityType={template.primaryEntityType}
+              />
+              <Button
+                type="button"
+                variant="soft"
+                size="sm"
+                onClick={() => setEntityPickerOpen(true)}
+                disabled={previewLoading}
+              >
+                <Eye className="mr-1 size-4" />
+                {previewLoading ? "Loading..." : "Preview with data"}
+              </Button>
+            </>
+          )}
+          {isDocx && !readOnly && (
+            <>
+              <Button
+                type="button"
+                variant="soft"
+                size="sm"
+                onClick={handleDownload}
+                disabled={isDownloading}
+                data-testid="download-template-btn"
+              >
+                <Download className="mr-1 size-4" />
+                {isDownloading ? "Downloading..." : "Download Template"}
+              </Button>
+              <Button
+                type="button"
+                variant="soft"
+                size="sm"
+                onClick={() => setReplaceDialogOpen(true)}
+                data-testid="replace-file-btn"
+              >
+                <RefreshCw className="mr-1 size-4" />
+                Replace File
+              </Button>
+            </>
+          )}
           {successMsg && (
             <span className="text-sm text-teal-600">{successMsg}</span>
           )}
@@ -271,46 +465,146 @@ export function TemplateEditorClient({
         </div>
       )}
 
-      {/* Discovered fields for DOCX templates */}
-      {template.format === "DOCX" && template.discoveredFields && (
-        <div className="mt-4">
-          <FieldDiscoveryResults fields={template.discoveredFields} />
-        </div>
-      )}
-
-      {/* Legacy content banner */}
-      {hasLegacyContent && (
-        <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="mt-0.5 size-5 text-amber-600 dark:text-amber-400" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-                Migration needed
-              </p>
-              <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
-                This template was migrated from legacy HTML content. The
-                original HTML is preserved below for reference.
-              </p>
-              <button
-                type="button"
-                onClick={() => setLegacyExpanded(!legacyExpanded)}
-                className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-amber-800 hover:text-amber-900 dark:text-amber-200 dark:hover:text-amber-100"
-              >
-                {legacyExpanded ? "Hide" : "Show"} original HTML
-                {legacyExpanded ? (
-                  <ChevronUp className="size-4" />
-                ) : (
-                  <ChevronDown className="size-4" />
-                )}
-              </button>
-              {legacyExpanded && (
-                <pre className="mt-2 max-h-64 overflow-auto rounded border border-amber-200 bg-white p-3 font-mono text-xs text-slate-800 dark:border-amber-800 dark:bg-slate-900 dark:text-slate-200">
-                  {template.legacyContent}
-                </pre>
-              )}
+      {/* DOCX Detail Variant */}
+      {isDocx ? (
+        <div className="mt-4 space-y-6">
+          {/* File Info Panel */}
+          <div
+            className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
+            data-testid="docx-file-info"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <FileText className="size-4 text-slate-500 dark:text-slate-400" />
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                File Information
+              </span>
             </div>
+            <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div>
+                <dt className="text-xs text-slate-500 dark:text-slate-400">
+                  File Name
+                </dt>
+                <dd className="text-sm font-medium text-slate-950 dark:text-slate-50">
+                  {template.docxFileName ?? "N/A"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-slate-500 dark:text-slate-400">
+                  File Size
+                </dt>
+                <dd className="text-sm font-medium text-slate-950 dark:text-slate-50">
+                  {template.docxFileSize != null
+                    ? formatFileSize(template.docxFileSize)
+                    : "N/A"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-slate-500 dark:text-slate-400">
+                  Uploaded
+                </dt>
+                <dd className="text-sm font-medium text-slate-950 dark:text-slate-50">
+                  {new Date(template.createdAt).toLocaleDateString()}
+                </dd>
+              </div>
+            </dl>
           </div>
+
+          {/* Discovered Fields */}
+          {template.discoveredFields && (
+            <FieldDiscoveryResults fields={template.discoveredFields} />
+          )}
+
+          {/* Variable Reference Panel */}
+          {variableMetadata && variableMetadata.groups.length > 0 && (
+            <div
+              className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
+              data-testid="variable-reference-panel"
+            >
+              <h3 className="text-sm font-medium text-slate-950 dark:text-slate-50 mb-3">
+                Available Variables
+              </h3>
+              <div className="space-y-4">
+                {variableMetadata.groups.map((group) => (
+                  <div key={group.prefix}>
+                    <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
+                      {group.label}
+                    </h4>
+                    <ul className="space-y-1">
+                      {group.variables.map((variable) => (
+                        <li
+                          key={variable.key}
+                          className="flex items-center justify-between rounded px-2 py-1 hover:bg-slate-100 dark:hover:bg-slate-800"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <span className="font-mono text-xs text-teal-700 dark:text-teal-300">
+                              {"{{"}
+                              {variable.key}
+                              {"}}"}
+                            </span>
+                            <span className="ml-2 text-xs text-slate-500 dark:text-slate-400">
+                              {variable.label}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyVariable(variable.key)}
+                            className="ml-2 shrink-0 rounded p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                            title="Copy variable"
+                          >
+                            {copiedKey === variable.key ? (
+                              <Check className="size-3 text-teal-600" />
+                            ) : (
+                              <Copy className="size-3" />
+                            )}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
+      ) : (
+        <>
+          {/* Discovered fields for DOCX templates (legacy position, kept for non-DOCX) */}
+
+          {/* Legacy content banner */}
+          {hasLegacyContent && (
+            <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="mt-0.5 size-5 text-amber-600 dark:text-amber-400" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                    Migration needed
+                  </p>
+                  <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
+                    This template was migrated from legacy HTML content. The
+                    original HTML is preserved below for reference.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setLegacyExpanded(!legacyExpanded)}
+                    className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-amber-800 hover:text-amber-900 dark:text-amber-200 dark:hover:text-amber-100"
+                  >
+                    {legacyExpanded ? "Hide" : "Show"} original HTML
+                    {legacyExpanded ? (
+                      <ChevronUp className="size-4" />
+                    ) : (
+                      <ChevronDown className="size-4" />
+                    )}
+                  </button>
+                  {legacyExpanded && (
+                    <pre className="mt-2 max-h-64 overflow-auto rounded border border-amber-200 bg-white p-3 font-mono text-xs text-slate-800 dark:border-amber-800 dark:bg-slate-900 dark:text-slate-200">
+                      {template.legacyContent}
+                    </pre>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Collapsible settings panel */}
@@ -390,90 +684,206 @@ export function TemplateEditorClient({
               </div>
             </div>
 
-            {/* Advanced section */}
-            <div>
-              <button
-                type="button"
-                onClick={() => setAdvancedOpen(!advancedOpen)}
-                className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
-              >
-                {advancedOpen ? (
-                  <ChevronUp className="size-4" />
-                ) : (
-                  <ChevronDown className="size-4" />
-                )}
-                Advanced
-              </button>
+            {/* Advanced section — only for Tiptap templates */}
+            {!isDocx && (
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setAdvancedOpen(!advancedOpen)}
+                  className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                >
+                  {advancedOpen ? (
+                    <ChevronUp className="size-4" />
+                  ) : (
+                    <ChevronDown className="size-4" />
+                  )}
+                  Advanced
+                </button>
 
-              {advancedOpen && (
-                <div className="mt-3 space-y-2">
-                  <Label htmlFor="settings-css">Custom CSS</Label>
-                  <Textarea
-                    id="settings-css"
-                    value={css}
-                    onChange={(e) => setCss(e.target.value)}
-                    placeholder="/* Custom styles */"
-                    rows={8}
-                    className="font-mono text-sm"
-                    disabled={readOnly}
-                  />
-                </div>
-              )}
-            </div>
+                {advancedOpen && (
+                  <div className="mt-3 space-y-2">
+                    <Label htmlFor="settings-css">Custom CSS</Label>
+                    <Textarea
+                      id="settings-css"
+                      value={css}
+                      onChange={(e) => setCss(e.target.value)}
+                      placeholder="/* Custom styles */"
+                      rows={8}
+                      className="font-mono text-sm"
+                      disabled={readOnly}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
 
-      {/* Missing variables indicator */}
-      {missingVariables.size > 0 && (
-        <div className="mt-4 flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 dark:border-amber-800 dark:bg-amber-950">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="size-4 text-amber-600 dark:text-amber-400" />
-            <span className="text-sm text-amber-800 dark:text-amber-200">
-              {missingVariables.size} variable{missingVariables.size !== 1 ? "s" : ""}{" "}
-              {missingVariables.size !== 1 ? "have" : "has"} no value for the
-              selected entity
-            </span>
+      {/* Tiptap-only sections */}
+      {!isDocx && (
+        <>
+          {/* Missing variables indicator */}
+          {missingVariables.size > 0 && (
+            <div className="mt-4 flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 dark:border-amber-800 dark:bg-amber-950">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="size-4 text-amber-600 dark:text-amber-400" />
+                <span className="text-sm text-amber-800 dark:text-amber-200">
+                  {missingVariables.size} variable{missingVariables.size !== 1 ? "s" : ""}{" "}
+                  {missingVariables.size !== 1 ? "have" : "has"} no value for the
+                  selected entity
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMissingVariables(new Set())}
+                className="text-xs text-amber-700 hover:text-amber-900 dark:text-amber-300 dark:hover:text-amber-100"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
+
+          {/* Document Editor */}
+          <div className="mt-4 flex-1">
+            <DocumentEditor
+              content={editorContent}
+              onUpdate={handleEditorUpdate}
+              scope="template"
+              editable={!readOnly}
+              entityType={template.primaryEntityType}
+              missingVariables={missingVariables}
+            />
           </div>
-          <button
-            type="button"
-            onClick={() => setMissingVariables(new Set())}
-            className="text-xs text-amber-700 hover:text-amber-900 dark:text-amber-300 dark:hover:text-amber-100"
-          >
-            Dismiss
-          </button>
-        </div>
+
+          {/* Client-side preview entity picker */}
+          <EntityPicker
+            entityType={template.primaryEntityType}
+            open={entityPickerOpen}
+            onOpenChange={setEntityPickerOpen}
+            onSelect={handleEntitySelect}
+          />
+
+          {/* Client-side preview dialog */}
+          <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+            <DialogContent className="max-w-3xl">
+              <DialogHeader>
+                <DialogTitle>Client-Side Preview</DialogTitle>
+              </DialogHeader>
+              {previewHtml && <PreviewPanel html={previewHtml} />}
+            </DialogContent>
+          </Dialog>
+        </>
       )}
 
-      {/* Document Editor */}
-      <div className="mt-4 flex-1">
-        <DocumentEditor
-          content={editorContent}
-          onUpdate={handleEditorUpdate}
-          scope="template"
-          editable={!readOnly}
-          entityType={template.primaryEntityType}
-          missingVariables={missingVariables}
-        />
-      </div>
+      {/* Replace File Dialog (DOCX only) */}
+      {isDocx && (
+        <Dialog
+          open={replaceDialogOpen}
+          onOpenChange={(open) => {
+            setReplaceDialogOpen(open);
+            if (!open) {
+              setReplaceFile(null);
+              setReplaceFileError(null);
+              setReplaceError(null);
+              setIsDragOver(false);
+            }
+          }}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Replace Template File</DialogTitle>
+              <DialogDescription>
+                This will update the template file. Existing generated documents
+                are not affected.
+              </DialogDescription>
+            </DialogHeader>
 
-      {/* Client-side preview entity picker */}
-      <EntityPicker
-        entityType={template.primaryEntityType}
-        open={entityPickerOpen}
-        onOpenChange={setEntityPickerOpen}
-        onSelect={handleEntitySelect}
-      />
+            <div className="space-y-4">
+              <div>
+                <Label>File</Label>
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => replaceInputRef.current?.click()}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      replaceInputRef.current?.click();
+                    }
+                  }}
+                  onDragEnter={handleReplaceDragEnter}
+                  onDragOver={handleReplaceDragOver}
+                  onDragLeave={handleReplaceDragLeave}
+                  onDrop={handleReplaceDrop}
+                  className={cn(
+                    "mt-1 cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors",
+                    isDragOver
+                      ? "border-primary bg-primary/5"
+                      : "border-slate-300 hover:border-slate-400 dark:border-slate-600 dark:hover:border-slate-500",
+                    isReplacing && "cursor-not-allowed opacity-50",
+                  )}
+                >
+                  <input
+                    ref={replaceInputRef}
+                    type="file"
+                    accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    onChange={handleReplaceInputChange}
+                    className="hidden"
+                    disabled={isReplacing}
+                    data-testid="replace-file-input"
+                  />
+                  {replaceFile ? (
+                    <div>
+                      <p className="text-sm font-medium text-slate-950 dark:text-slate-50">
+                        {replaceFile.name}
+                      </p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        {formatFileSize(replaceFile.size)}
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      <Upload className="mx-auto size-8 text-slate-400" />
+                      <p className="mt-2 text-sm font-medium">
+                        Drag and drop a .docx file, or click to browse
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                        Max {MAX_DOCX_SIZE_LABEL}
+                      </p>
+                    </>
+                  )}
+                </div>
+                {replaceFileError && (
+                  <p className="mt-1 text-sm text-destructive">
+                    {replaceFileError}
+                  </p>
+                )}
+              </div>
 
-      {/* Client-side preview dialog */}
-      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Client-Side Preview</DialogTitle>
-          </DialogHeader>
-          {previewHtml && <PreviewPanel html={previewHtml} />}
-        </DialogContent>
-      </Dialog>
+              {replaceError && (
+                <p className="text-sm text-destructive">{replaceError}</p>
+              )}
+            </div>
+
+            <DialogFooter>
+              <Button
+                variant="soft"
+                onClick={() => setReplaceDialogOpen(false)}
+                disabled={isReplacing}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleReplaceSubmit}
+                disabled={isReplacing || !replaceFile}
+              >
+                {isReplacing ? "Replacing..." : "Replace File"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

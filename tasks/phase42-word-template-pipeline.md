@@ -138,7 +138,7 @@ FRONTEND TRACK (after E323 backend APIs ready)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 1a | 322 | 322A | `DocxMergeService` core: `mergeParagraph()` with run concatenation, `{{...}}` regex, right-to-left `replaceAcrossRuns()`, `resolveVariable()` dot-path navigation. Apache POI dependency. Test `.docx` resources (4 files). ~4 new files + ~10 unit tests. Backend only. | |
+| 1a | 322 | 322A | `DocxMergeService` core: `mergeParagraph()` with run concatenation, `{{...}}` regex, right-to-left `replaceAcrossRuns()`, `resolveVariable()` dot-path navigation. Apache POI dependency. Test `.docx` resources (4 files). ~4 new files + ~10 unit tests. Backend only. | **Done** (PR #615) |
 | 1b | 322 | 322B | `discoverFields()` method, `DocxFieldValidator` (validates against `VariableMetadataRegistry`), headers/footers/tables processing in merge, `mergeTable()` recursive, edge cases (empty fields, no-fields doc, single-run fields). ~3 new/modified files + ~10 tests. Backend only. | |
 
 ### Stage 2: Upload & CRUD Endpoints (parallel tracks)
@@ -274,7 +274,7 @@ Stage 5: [326A] -> [326B]                                           (sequential,
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **322A** | 322.1--322.8 | Apache POI dependency. `DocxMergeService` core: `mergeParagraph()` with run concatenation + offset tracking, `{{...}}` regex matching, right-to-left `replaceAcrossRuns()`, `resolveVariable()` dot-path navigation, `merge()` for document body only. Test `.docx` resource files (4 files). ~4 new files + ~10 unit tests. Backend only. | |
+| **322A** | 322.1--322.8 | Apache POI dependency. `DocxMergeService` core: `mergeParagraph()` with run concatenation + offset tracking, `{{...}}` regex matching, right-to-left `replaceAcrossRuns()`, `resolveVariable()` dot-path navigation, `merge()` for document body only. Test `.docx` resource files (4 files). ~4 new files + ~10 unit tests. Backend only. | **Done** (PR #615) |
 | **322B** | 322.9--322.15 | `discoverFields()` method on `DocxMergeService`, `DocxFieldValidator` (validates against `VariableMetadataRegistry`), extend `merge()` for headers/footers/tables, `mergeTable()` with recursive nested table support, edge cases (empty fields, no-fields doc, single-run). Additional test `.docx` resources. ~3 new/modified files + ~10 tests. Backend only. | |
 
 ### Tasks

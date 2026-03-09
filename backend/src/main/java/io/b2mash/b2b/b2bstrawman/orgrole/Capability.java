@@ -17,9 +17,13 @@ public enum Capability {
       Arrays.stream(values()).map(Enum::name).collect(Collectors.toUnmodifiableSet());
 
   public static Capability fromString(String value) {
+    if (value == null) {
+      throw new IllegalArgumentException(
+          "Invalid capability: null. Valid values: %s".formatted(ALL_NAMES));
+    }
     try {
       return valueOf(value);
-    } catch (IllegalArgumentException | NullPointerException e) {
+    } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException(
           "Invalid capability: '%s'. Valid values: %s".formatted(value, ALL_NAMES));
     }

@@ -110,7 +110,7 @@ public class Member {
   }
 
   public void setCapabilityOverrides(Set<String> capabilityOverrides) {
-    this.capabilityOverrides = capabilityOverrides;
+    this.capabilityOverrides = new HashSet<>(capabilityOverrides);
   }
 
   public void updateFrom(String email, String name, String avatarUrl, String orgRole) {

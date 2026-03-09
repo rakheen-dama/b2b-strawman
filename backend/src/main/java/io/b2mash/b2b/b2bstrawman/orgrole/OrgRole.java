@@ -4,6 +4,8 @@ import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -38,8 +40,9 @@ public class OrgRole {
 
   @ElementCollection
   @CollectionTable(name = "org_role_capabilities", joinColumns = @JoinColumn(name = "org_role_id"))
+  @Enumerated(EnumType.STRING)
   @Column(name = "capability")
-  private Set<String> capabilities = new HashSet<>();
+  private Set<Capability> capabilities = new HashSet<>();
 
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
@@ -99,12 +102,12 @@ public class OrgRole {
     return isSystem;
   }
 
-  public Set<String> getCapabilities() {
+  public Set<Capability> getCapabilities() {
     return capabilities;
   }
 
-  public void setCapabilities(Set<String> capabilities) {
-    this.capabilities = capabilities;
+  public void setCapabilities(Set<Capability> capabilities) {
+    this.capabilities = new HashSet<>(capabilities);
   }
 
   public Instant getCreatedAt() {

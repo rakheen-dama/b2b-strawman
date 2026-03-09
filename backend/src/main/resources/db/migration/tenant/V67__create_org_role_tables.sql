@@ -16,8 +16,6 @@ CREATE TABLE org_roles (
     CONSTRAINT uq_org_roles_slug UNIQUE (slug)
 );
 
-CREATE INDEX idx_org_roles_slug ON org_roles (slug);
-CREATE INDEX idx_org_roles_is_system ON org_roles (is_system);
 
 -- -----------------------------------------------------------------------------
 -- 2. org_role_capabilities -- capabilities assigned to a role

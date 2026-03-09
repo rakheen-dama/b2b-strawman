@@ -58,6 +58,10 @@
         "http://localhost:8443/login/oauth2/code/keycloak",
         "http://localhost:3000/*"
       ],
+      "postLogoutRedirectUris": [
+        "http://localhost:3000",
+        "http://localhost:3000/*"
+      ],
       "webOrigins": [
         "http://localhost:3000"
       ],

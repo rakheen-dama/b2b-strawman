@@ -30,4 +30,62 @@ describe("Keycloak login/logout URLs", () => {
 
     expect(getKeycloakLogoutUrl()).toBe("http://localhost:8443/logout");
   });
+
+  it("performKeycloakLogout fetches CSRF token and submits form POST", async () => {
+    // Mock fetch to return a CSRF token
+    const mockFetch = vi.fn().mockResolvedValue({
+      json: () =>
+        Promise.resolve({
+          token: "test-csrf-token",
+          parameterName: "_csrf",
+          headerName: "X-XSRF-TOKEN",
+        }),
+    });
+    vi.stubGlobal("fetch", mockFetch);
+
+    // Mock form submission
+    const mockSubmit = vi.fn();
+    const mockAppendChild = vi.fn();
+    const mockCreateElement = vi.spyOn(document, "createElement");
+
+    let capturedForm: any;
+    mockCreateElement.mockImplementation((tag: string) => {
+      if (tag === "form") {
+        capturedForm = {
+          method: "",
+          action: "",
+          appendChild: mockAppendChild,
+          submit: mockSubmit,
+        };
+        return capturedForm as any;
+      }
+      if (tag === "input") {
+        return { type: "", name: "", value: "" } as any;
+      }
+      return document.createElement(tag);
+    });
+
+    vi.spyOn(document.body, "appendChild").mockImplementation((node) => node);
+
+    const { performKeycloakLogout } = await import(
+      "@/components/auth/user-menu-bff"
+    );
+
+    await performKeycloakLogout();
+
+    // Verify CSRF token was fetched from gateway
+    expect(mockFetch).toHaveBeenCalledWith(
+      "http://localhost:8443/bff/csrf",
+      { credentials: "include" },
+    );
+
+    // Verify form was created with correct action and method
+    expect(capturedForm.method).toBe("POST");
+    expect(capturedForm.action).toBe("http://localhost:8443/logout");
+
+    // Verify form was submitted
+    expect(mockSubmit).toHaveBeenCalled();
+
+    mockCreateElement.mockRestore();
+  });
 });

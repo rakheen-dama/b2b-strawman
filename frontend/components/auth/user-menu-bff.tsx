@@ -63,6 +63,33 @@ export function getKeycloakLogoutUrl(): string {
 }
 
 /**
+ * Performs Keycloak logout by fetching the CSRF token from the gateway
+ * and submitting a hidden form POST to the gateway logout endpoint.
+ * This is required because Spring Security's LogoutFilter only accepts POST with CSRF.
+ */
+export async function performKeycloakLogout(): Promise<void> {
+  // Fetch CSRF token from the gateway BFF endpoint (CSRF-exempt under /bff/**)
+  const res = await fetch(`${GATEWAY_URL}/bff/csrf`, { credentials: "include" });
+  const data = await res.json();
+
+  // Create and submit a hidden form POST to the gateway logout endpoint
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = `${GATEWAY_URL}/logout`;
+
+  if (data.token) {
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = data.parameterName || "_csrf";
+    input.value = data.token;
+    form.appendChild(input);
+  }
+
+  document.body.appendChild(form);
+  form.submit();
+}
+
+/**
  * BFF user menu component for Keycloak auth mode.
  * Displays user avatar initials + name with a sign-out dropdown.
  * Fetches user info client-side from the gateway /bff/me endpoint.
@@ -85,8 +112,7 @@ export function UserMenuBff() {
   const initials = user ? getInitials(user.name) : "?";
 
   function handleSignOut() {
-    // Full navigation to gateway logout endpoint — not a client-side route
-    window.location.href = getKeycloakLogoutUrl();
+    performKeycloakLogout();
   }
 
   return (

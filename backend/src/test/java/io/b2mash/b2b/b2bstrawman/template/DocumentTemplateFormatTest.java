@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -87,32 +88,9 @@ class DocumentTemplateFormatTest {
 
   @Test
   @Order(2)
-  void createTemplate_docxFormat_setsFields() throws Exception {
-    // DOCX templates can't be created via the API endpoint (which is TIPTAP-only),
-    // so we create one directly via the repository
-    var dt =
-        new DocumentTemplate(
-            TemplateEntityType.PROJECT,
-            "Format Test DOCX",
-            "format-test-docx",
-            TemplateCategory.ENGAGEMENT_LETTER,
-            null);
-    dt.setFormat(TemplateFormat.DOCX);
-    dt.setDocxS3Key("templates/docx/test-format.docx");
-    dt.setDocxFileName("test-format.docx");
-    dt.setDocxFileSize(12345L);
-    dt.setDiscoveredFields(
-        List.of(
-            Map.of("name", "client_name", "type", "text"),
-            Map.of("name", "project_date", "type", "date")));
-
-    // Need to run within the tenant schema
-    mockMvc.perform(get("/api/templates").with(ownerJwt())).andExpect(status().isOk());
-
-    // Save via repository within tenant context by using a helper approach:
-    // We'll use the list endpoint to establish tenant context, then save directly
-    // Actually, the repository needs tenant context. Let's use a different approach -
-    // create a TIPTAP template via API first, then update it to DOCX via repository.
+  void createTemplate_secondTiptap_setsFormatAndTracksId() throws Exception {
+    // Creates a second TIPTAP template via the API (the only format the create endpoint supports).
+    // TODO: Add a true DOCX creation test when the DOCX upload API is implemented (Epic 324).
     var content = TestDocumentBuilder.doc().paragraph("Placeholder").build();
     var request =
         Map.of(
@@ -130,20 +108,10 @@ class DocumentTemplateFormatTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.format").value("TIPTAP"))
             .andReturn();
 
     docxTemplateId = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
-
-    // Now fetch and verify it was created, then we'll test DOCX fields via the detail endpoint
-    // after modifying the template directly in the DB via the repository
-    // For this test, let's verify the detail endpoint shows DOCX fields when present
-    // by using a GET on the DOCX template we just created
-
-    // Verify that the template shows format=TIPTAP initially
-    mockMvc
-        .perform(get("/api/templates/" + docxTemplateId).with(ownerJwt()))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.format").value("TIPTAP"));
   }
 
   @Test
@@ -178,9 +146,9 @@ class DocumentTemplateFormatTest {
     // Verify format field is present in list response
     String response = result.getResponse().getContentAsString();
     List<String> formats = JsonPath.read(response, "$[*].format");
-    // All returned templates should have a format field
+    // All returned templates should have a valid format field
     for (String format : formats) {
-      assert format.equals("TIPTAP") || format.equals("DOCX") : "Unexpected format: " + format;
+      assertThat(format).isIn("TIPTAP", "DOCX");
     }
   }
 
@@ -196,17 +164,10 @@ class DocumentTemplateFormatTest {
 
   @Test
   @Order(6)
-  void validateFormat_tiptapWithDocxS3Key_throws() throws Exception {
-    // Try to create a TIPTAP template — the template constructor defaults to TIPTAP.
-    // We can't set docxS3Key via the create endpoint (it's not in CreateTemplateRequest).
-    // Instead, we verify the service-level validation by creating a template
-    // and then trying to save it with inconsistent format data via direct repository access.
-    // This test verifies the validation logic is wired up correctly.
-
-    // The API create endpoint always creates TIPTAP templates. Validation is tested
-    // indirectly: if someone sets docxS3Key on a TIPTAP template and saves,
-    // the service catches it. We test this via a detail check:
-    // The TIPTAP template we created should NOT have docxFileName or docxFileSize
+  void tiptapTemplate_hasNoDocxFields() throws Exception {
+    // Verifies that TIPTAP templates have no DOCX-specific fields set.
+    // Direct validation-throws testing requires setting docxS3Key on a TIPTAP entity,
+    // which can't be done via the API (docxS3Key is not in CreateTemplateRequest).
     mockMvc
         .perform(get("/api/templates/" + tiptapTemplateId).with(ownerJwt()))
         .andExpect(status().isOk())

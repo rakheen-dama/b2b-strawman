@@ -54,17 +54,8 @@ public class DocumentTemplateController {
       @RequestParam(required = false) TemplateCategory category,
       @RequestParam(required = false) TemplateEntityType primaryEntityType,
       @RequestParam(required = false) TemplateFormat format) {
-    List<TemplateListResponse> templates;
-    if (category != null) {
-      templates = documentTemplateService.listByCategory(category);
-    } else if (primaryEntityType != null) {
-      templates = documentTemplateService.listByEntityType(primaryEntityType);
-    } else if (format != null) {
-      templates = documentTemplateService.listByFormat(format);
-    } else {
-      templates = documentTemplateService.listAll();
-    }
-    return ResponseEntity.ok(templates);
+    return ResponseEntity.ok(
+        documentTemplateService.listTemplates(category, primaryEntityType, format));
   }
 
   @GetMapping("/readiness")

@@ -142,7 +142,7 @@ public class GeneratedDocumentService {
     var templateDetail = documentTemplateService.getById(templateId);
 
     // 3. Upload to storage
-    String tenantId = RequestScopes.TENANT_ID.get();
+    String tenantId = RequestScopes.requireTenantId();
     String s3Key = "org/" + tenantId + "/generated/" + pdfResult.fileName();
     uploadToStorage(s3Key, pdfResult.pdfBytes());
 
@@ -286,8 +286,7 @@ public class GeneratedDocumentService {
    * uploads the result, and persists a GeneratedDocument record.
    */
   @Transactional
-  public GenerateDocxResult generateDocx(
-      UUID templateId, UUID entityId, String outputFormat, UUID memberId) {
+  public GenerateDocxResult generateDocx(UUID templateId, UUID entityId, UUID memberId) {
     // 1. Load template and verify format
     var template =
         documentTemplateRepository
@@ -301,6 +300,13 @@ public class GeneratedDocumentService {
               + template.getFormat()
               + " template. "
               + "Only DOCX templates are supported for DOCX generation.");
+    }
+
+    if (template.getDocxS3Key() == null) {
+      throw new InvalidStateException(
+          "Missing DOCX Template File",
+          "The template does not have an uploaded DOCX file. "
+              + "Please upload a DOCX file before generating documents.");
     }
 
     // 2. Download template .docx from S3
@@ -323,7 +329,7 @@ public class GeneratedDocumentService {
     String fileName = buildDocxFileName(template.getSlug(), entityName, "docx");
 
     // 6. Upload merged document to S3
-    String tenantId = RequestScopes.TENANT_ID.get();
+    String tenantId = RequestScopes.requireTenantId();
     String s3Key = "org/" + tenantId + "/generated/" + fileName;
     try {
       storageService.upload(s3Key, mergedBytes, DOCX_CONTENT_TYPE);
@@ -348,8 +354,8 @@ public class GeneratedDocumentService {
             s3Key,
             mergedBytes.length,
             memberId,
-            contextSnapshot);
-    generatedDoc.setOutputFormat(OutputFormat.DOCX);
+            contextSnapshot,
+            OutputFormat.DOCX);
 
     // 9. Audit event
     var auditDetails = new HashMap<String, Object>();
@@ -408,10 +414,33 @@ public class GeneratedDocumentService {
       long fileSize,
       UUID generatedBy,
       Map<String, Object> contextSnapshot) {
+    return createRecord(
+        templateId,
+        entityType,
+        entityId,
+        fileName,
+        s3Key,
+        fileSize,
+        generatedBy,
+        contextSnapshot,
+        OutputFormat.PDF);
+  }
+
+  private GeneratedDocument createRecord(
+      UUID templateId,
+      TemplateEntityType entityType,
+      UUID entityId,
+      String fileName,
+      String s3Key,
+      long fileSize,
+      UUID generatedBy,
+      Map<String, Object> contextSnapshot,
+      OutputFormat outputFormat) {
     var generatedDocument =
         new GeneratedDocument(
             templateId, entityType, entityId, fileName, s3Key, fileSize, generatedBy);
     generatedDocument.setContextSnapshot(contextSnapshot);
+    generatedDocument.setOutputFormat(outputFormat);
     generatedDocument = generatedDocumentRepository.save(generatedDocument);
     log.info(
         "Created generated document: id={}, template={}, entity={}/{}",

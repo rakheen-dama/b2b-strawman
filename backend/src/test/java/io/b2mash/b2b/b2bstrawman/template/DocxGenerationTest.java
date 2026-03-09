@@ -128,8 +128,7 @@ class DocxGenerationTest {
   @Test
   @Order(1)
   void generateDocx_validTemplate_returnsMergedDocument() throws Exception {
-    var requestBody =
-        objectMapper.writeValueAsString(Map.of("entityId", projectId, "outputFormat", "DOCX"));
+    var requestBody = objectMapper.writeValueAsString(Map.of("entityId", projectId));
 
     mockMvc
         .perform(
@@ -149,8 +148,7 @@ class DocxGenerationTest {
   @Test
   @Order(2)
   void generateDocx_tiptapTemplate_returns400() throws Exception {
-    var requestBody =
-        objectMapper.writeValueAsString(Map.of("entityId", projectId, "outputFormat", "DOCX"));
+    var requestBody = objectMapper.writeValueAsString(Map.of("entityId", projectId));
 
     mockMvc
         .perform(
@@ -164,8 +162,7 @@ class DocxGenerationTest {
   @Test
   @Order(3)
   void generateDocx_templateNotFound_returns404() throws Exception {
-    var requestBody =
-        objectMapper.writeValueAsString(Map.of("entityId", projectId, "outputFormat", "DOCX"));
+    var requestBody = objectMapper.writeValueAsString(Map.of("entityId", projectId));
 
     mockMvc
         .perform(
@@ -179,9 +176,7 @@ class DocxGenerationTest {
   @Test
   @Order(4)
   void generateDocx_entityNotFound_returns404() throws Exception {
-    var requestBody =
-        objectMapper.writeValueAsString(
-            Map.of("entityId", UUID.randomUUID(), "outputFormat", "DOCX"));
+    var requestBody = objectMapper.writeValueAsString(Map.of("entityId", UUID.randomUUID()));
 
     mockMvc
         .perform(
@@ -195,8 +190,7 @@ class DocxGenerationTest {
   @Test
   @Order(5)
   void generateDocx_setsOutputFormatDocx() throws Exception {
-    var requestBody =
-        objectMapper.writeValueAsString(Map.of("entityId", projectId, "outputFormat", "DOCX"));
+    var requestBody = objectMapper.writeValueAsString(Map.of("entityId", projectId));
 
     mockMvc
         .perform(
@@ -211,8 +205,7 @@ class DocxGenerationTest {
   @Test
   @Order(6)
   void generateDocx_createsGeneratedDocumentRecord() throws Exception {
-    var requestBody =
-        objectMapper.writeValueAsString(Map.of("entityId", projectId, "outputFormat", "DOCX"));
+    var requestBody = objectMapper.writeValueAsString(Map.of("entityId", projectId));
 
     var result =
         mockMvc
@@ -240,8 +233,7 @@ class DocxGenerationTest {
   @Test
   @Order(7)
   void generateDocx_createsAuditEvent() throws Exception {
-    var requestBody =
-        objectMapper.writeValueAsString(Map.of("entityId", projectId, "outputFormat", "DOCX"));
+    var requestBody = objectMapper.writeValueAsString(Map.of("entityId", projectId));
 
     // Generate a DOCX document
     var result =
@@ -267,8 +259,7 @@ class DocxGenerationTest {
   @Test
   @Order(8)
   void generateDocx_fileNameFollowsPattern() throws Exception {
-    var requestBody =
-        objectMapper.writeValueAsString(Map.of("entityId", projectId, "outputFormat", "DOCX"));
+    var requestBody = objectMapper.writeValueAsString(Map.of("entityId", projectId));
 
     var result =
         mockMvc

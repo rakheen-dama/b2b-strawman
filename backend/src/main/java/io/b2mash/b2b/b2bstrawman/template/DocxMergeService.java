@@ -18,11 +18,13 @@ import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.apache.poi.xwpf.usermodel.XWPFTableCell;
 import org.apache.poi.xwpf.usermodel.XWPFTableRow;
+import org.springframework.stereotype.Service;
 
 /**
  * Merges {{variable}} placeholders in .docx templates with values from a context map. Handles the
  * "split run" problem where MS Word fragments a single placeholder across multiple XML runs.
  */
+@Service
 public class DocxMergeService {
 
   private static final Pattern FIELD_PATTERN = Pattern.compile("\\{\\{([^{}]+)\\}\\}");

@@ -12,10 +12,13 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.CreateTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.TemplateDetailResponse;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.TemplateListResponse;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.UpdateTemplateRequest;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class DocumentTemplateService {
@@ -38,6 +42,10 @@ public class DocumentTemplateService {
   private static final Set<String> VALID_ENTITY_KEYS =
       Set.of("customer", "project", "invoice", "task", "org");
 
+  private static final String DOCX_CONTENT_TYPE =
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+  private static final long MAX_DOCX_SIZE = 10 * 1024 * 1024; // 10MB
+
   private final DocumentTemplateRepository documentTemplateRepository;
   private final ClauseRepository clauseRepository;
   private final AuditService auditService;
@@ -45,6 +53,8 @@ public class DocumentTemplateService {
   private final FieldDefinitionRepository fieldDefinitionRepository;
   private final TemplateVariableAnalyzer templateVariableAnalyzer;
   private final StorageService storageService;
+  private final DocxMergeService docxMergeService;
+  private final DocxFieldValidator docxFieldValidator;
 
   public DocumentTemplateService(
       DocumentTemplateRepository documentTemplateRepository,
@@ -53,7 +63,9 @@ public class DocumentTemplateService {
       TemplateClauseSync templateClauseSync,
       FieldDefinitionRepository fieldDefinitionRepository,
       TemplateVariableAnalyzer templateVariableAnalyzer,
-      StorageService storageService) {
+      StorageService storageService,
+      DocxMergeService docxMergeService,
+      DocxFieldValidator docxFieldValidator) {
     this.documentTemplateRepository = documentTemplateRepository;
     this.clauseRepository = clauseRepository;
     this.auditService = auditService;
@@ -61,6 +73,8 @@ public class DocumentTemplateService {
     this.fieldDefinitionRepository = fieldDefinitionRepository;
     this.templateVariableAnalyzer = templateVariableAnalyzer;
     this.storageService = storageService;
+    this.docxMergeService = docxMergeService;
+    this.docxFieldValidator = docxFieldValidator;
   }
 
   /**
@@ -147,6 +161,134 @@ public class DocumentTemplateService {
                     "name", dt.getName(),
                     "slug", dt.getSlug(),
                     "primary_entity_type", dt.getPrimaryEntityType().name()))
+            .build());
+
+    return TemplateDetailResponse.from(dt);
+  }
+
+  /**
+   * Uploads a .docx template file with multipart validation, S3 storage, and automatic field
+   * discovery.
+   */
+  @Transactional
+  public TemplateDetailResponse uploadDocxTemplate(
+      MultipartFile file, String name, String description, String category, String entityType) {
+    // Validate MIME type
+    String contentType = file.getContentType();
+    if (!DOCX_CONTENT_TYPE.equals(contentType)) {
+      throw new InvalidStateException(
+          "Invalid file type",
+          "Expected MIME type '" + DOCX_CONTENT_TYPE + "' but got '" + contentType + "'");
+    }
+
+    // Validate file size
+    if (file.getSize() > MAX_DOCX_SIZE) {
+      throw new InvalidStateException(
+          "File too large",
+          "Maximum file size is 10MB, but the uploaded file is "
+              + (file.getSize() / (1024 * 1024))
+              + "MB");
+    }
+
+    // Validate name
+    if (name == null || name.isBlank()) {
+      throw new InvalidStateException("Invalid name", "Template name must not be blank");
+    }
+
+    // Parse enums
+    TemplateCategory templateCategory;
+    try {
+      templateCategory = TemplateCategory.valueOf(category);
+    } catch (IllegalArgumentException | NullPointerException e) {
+      throw new InvalidStateException("Invalid category", "Invalid category value: " + category);
+    }
+
+    TemplateEntityType templateEntityType;
+    try {
+      templateEntityType = TemplateEntityType.valueOf(entityType);
+    } catch (IllegalArgumentException | NullPointerException e) {
+      throw new InvalidStateException(
+          "Invalid entity type", "Invalid entity type value: " + entityType);
+    }
+
+    // Generate unique slug
+    String baseSlug = DocumentTemplate.generateSlug(name);
+    String finalSlug = resolveUniqueSlug(baseSlug);
+
+    // Create entity with DOCX format
+    var dt = new DocumentTemplate(templateEntityType, name, finalSlug, templateCategory, null);
+    dt.setFormat(TemplateFormat.DOCX);
+    dt.setDescription(description);
+    dt.setDocxFileName(file.getOriginalFilename());
+    dt.setDocxFileSize(file.getSize());
+
+    try {
+      dt = documentTemplateRepository.save(dt);
+    } catch (DataIntegrityViolationException ex) {
+      throw new ResourceConflictException(
+          "Duplicate slug", "A document template with slug '" + finalSlug + "' already exists");
+    }
+
+    // Upload to S3
+    String tenantId = RequestScopes.requireTenantId();
+    String s3Key = "org/" + tenantId + "/templates/" + dt.getId() + "/template.docx";
+    byte[] fileBytes;
+    try {
+      fileBytes = file.getBytes();
+    } catch (IOException e) {
+      throw new InvalidStateException("Upload failed", "Could not read the uploaded file");
+    }
+    storageService.upload(s3Key, fileBytes, DOCX_CONTENT_TYPE);
+    dt.setDocxS3Key(s3Key);
+
+    // Discover and validate fields
+    List<String> fieldPaths;
+    try {
+      fieldPaths = docxMergeService.discoverFields(new ByteArrayInputStream(fileBytes));
+    } catch (Exception e) {
+      throw new InvalidStateException(
+          "Corrupt file", "The uploaded file could not be parsed as a valid .docx document");
+    }
+
+    var validationResults = docxFieldValidator.validateFields(fieldPaths, templateEntityType);
+    List<Map<String, Object>> discoveredFields =
+        validationResults.stream()
+            .map(
+                r -> {
+                  Map<String, Object> field = new HashMap<>();
+                  field.put("path", r.path());
+                  field.put("status", r.status());
+                  if (r.label() != null) {
+                    field.put("label", r.label());
+                  }
+                  return field;
+                })
+            .toList();
+    dt.setDiscoveredFields(discoveredFields);
+
+    dt = documentTemplateRepository.save(dt);
+
+    log.info(
+        "Uploaded DOCX template: id={}, slug={}, fields={}",
+        dt.getId(),
+        dt.getSlug(),
+        fieldPaths.size());
+
+    // Audit event
+    long unknownCount =
+        validationResults.stream().filter(r -> "UNKNOWN".equals(r.status())).count();
+    var auditDetails = new HashMap<String, Object>();
+    auditDetails.put("templateId", dt.getId().toString());
+    auditDetails.put("fileName", dt.getDocxFileName());
+    auditDetails.put("fileSize", dt.getDocxFileSize());
+    auditDetails.put("fieldCount", fieldPaths.size());
+    auditDetails.put("unknownFieldCount", unknownCount);
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("docx_template.uploaded")
+            .entityType("document_template")
+            .entityId(dt.getId())
+            .details(auditDetails)
             .build());
 
     return TemplateDetailResponse.from(dt);

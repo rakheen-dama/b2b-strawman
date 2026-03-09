@@ -21,7 +21,7 @@ The backend surface is minimal: one V66 migration adding a column to `org_settin
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 327 | i18n Message Catalog Foundation | Frontend | -- | S | 327A | |
+| 327 | i18n Message Catalog Foundation | Frontend | -- | S | 327A | **Done** (PR #626) |
 | 328 | Empty States System & Page Integration | Frontend | 327 | M | 328A, 328B | |
 | 329 | Getting Started Checklist | Both | 327 | M | 329A, 329B | |
 | 330 | Inline Contextual Help | Frontend | 327 | M | 330A, 330B | |
@@ -80,7 +80,7 @@ EMPTY STATES TRACK    ONBOARDING TRACK    HELP TRACK       ERROR TRACK
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 0a | 327 | 327A | `useMessage` hook, TypeScript types, 5 JSON namespace files (`empty-states.json`, `help.json`, `errors.json`, `getting-started.json`, `common.json`). ~8 new files (~6 tests). Frontend only. | |
+| 0a | 327 | 327A | `useMessage` hook, TypeScript types, 5 JSON namespace files (`empty-states.json`, `help.json`, `errors.json`, `getting-started.json`, `common.json`). ~8 new files (~6 tests). Frontend only. | **Done** (PR #626) |
 
 ### Stage 1: Parallel Feature Tracks (4 concurrent)
 
@@ -130,7 +130,7 @@ Stage 2: [328B] // [329B] // [330B] // [331B]                     (4 parallel tr
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **327A** | 327.1--327.8 | `useMessage` hook with `{{variable}}` interpolation, dev-mode missing-key warnings, 5 JSON namespace files with all Phase 43 copy, TypeScript types for namespaces and hook return. ~8 new files (~6 tests). Frontend only. | |
+| **327A** | 327.1--327.8 | `useMessage` hook with `{{variable}}` interpolation, dev-mode missing-key warnings, 5 JSON namespace files with all Phase 43 copy, TypeScript types for namespaces and hook return. ~8 new files (~6 tests). Frontend only. | **Done** (PR #626) |
 
 ### Tasks
 

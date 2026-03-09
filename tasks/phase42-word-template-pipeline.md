@@ -131,7 +131,7 @@ FRONTEND TRACK (after E323 backend APIs ready)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 0a | 321 | 321A | `TemplateFormat` enum, `OutputFormat` enum, extend `DocumentTemplate` entity with 5 new fields (`format`, `docxS3Key`, `docxFileName`, `docxFileSize`, `discoveredFields`), V65 tenant migration (ALTER TABLE x2, CHECK constraints, index). ~6 new/modified files. Backend only. | |
+| 0a | 321 | 321A | `TemplateFormat` enum, `OutputFormat` enum, extend `DocumentTemplate` entity with 5 new fields (`format`, `docxS3Key`, `docxFileName`, `docxFileSize`, `discoveredFields`), V65 tenant migration (ALTER TABLE x2, CHECK constraints, index). ~6 new/modified files. Backend only. | **Done** (PR #613) |
 | 0b | 321 | 321B | Extend `GeneratedDocument` entity with 2 fields (`outputFormat`, `docxS3Key`), format-aware validation in `DocumentTemplateService`, update list/detail DTOs to include format + DOCX fields, add `?format=` query param to list endpoint, update delete to clean up S3 `.docx`. ~6 modified files + ~8 tests. Backend only. | |
 
 ### Stage 1: DOCX Processing Engine
@@ -202,7 +202,7 @@ Stage 5: [326A] -> [326B]                                           (sequential,
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **321A** | 321.1--321.5 | `TemplateFormat` enum (`TIPTAP`, `DOCX`), `OutputFormat` enum (`PDF`, `DOCX`), extend `DocumentTemplate` entity with `format`, `docxS3Key`, `docxFileName`, `docxFileSize`, `discoveredFields` (JSONB) fields. V65 tenant migration (2 ALTER TABLEs, CHECK constraints, index). ~6 new/modified files. Backend only. | |
+| **321A** | 321.1--321.5 | `TemplateFormat` enum (`TIPTAP`, `DOCX`), `OutputFormat` enum (`PDF`, `DOCX`), extend `DocumentTemplate` entity with `format`, `docxS3Key`, `docxFileName`, `docxFileSize`, `discoveredFields` (JSONB) fields. V65 tenant migration (2 ALTER TABLEs, CHECK constraints, index). ~6 new/modified files. Backend only. | **Done** (PR #613) |
 | **321B** | 321.6--321.12 | Extend `GeneratedDocument` with `outputFormat` and `docxS3Key`. Format-aware validation in `DocumentTemplateService`. Update list/detail DTO responses to include `format`, DOCX fields. Add `?format=` query param filter. Update delete logic to clean S3 `.docx` file. ~6 modified files + 1 test file (~8 tests). Backend only. | |
 
 ### Tasks

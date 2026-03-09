@@ -361,6 +361,13 @@
 | 318 | Frontend Capability Context & Sidebar Gating | Frontend | 313 | M | 318A, 318B | |
 | 319 | Settings: Roles & Permissions Page | Frontend | 316, 318 | M | 319A, 319B | |
 | 320 | Team Page: Member Role Management & Invite Extension | Frontend | 316, 318 | M | 320A, 320B | |
+| **Phase 42 — Word Template Pipeline** | | | | | | See [tasks/phase42-word-template-pipeline.md](tasks/phase42-word-template-pipeline.md) |
+| 321 | Entity Extension, Enums & Migration | Backend | -- | M | 321A, 321B | |
+| 322 | DocxMergeService — Field Discovery & Split-Run Engine | Backend | 321 | L | 322A, 322B | |
+| 323 | DOCX Upload, Replace & Download Endpoints | Backend | 321, 322 | M | 323A, 323B | |
+| 324 | DOCX Generation Pipeline & PDF Conversion | Backend | 322, 323 | M | 324A, 324B | |
+| 325 | Frontend — Upload & Template Management | Frontend | 323 | M | 325A, 325B | |
+| 326 | Frontend — Generation Dialog & Integration | Frontend | 324, 325 | M | 326A, 326B | |
 
 ---
 

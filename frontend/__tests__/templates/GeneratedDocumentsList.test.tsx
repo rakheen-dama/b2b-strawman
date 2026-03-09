@@ -6,6 +6,7 @@ import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocument
 const mockFetchGeneratedDocuments = vi.fn();
 const mockDeleteGeneratedDocument = vi.fn();
 const mockDownloadGeneratedDocument = vi.fn();
+const mockDownloadDocxGeneratedDocument = vi.fn();
 
 vi.mock("@/app/(app)/org/[slug]/settings/templates/actions", () => ({
   fetchGeneratedDocumentsAction: (...args: unknown[]) =>
@@ -14,6 +15,8 @@ vi.mock("@/app/(app)/org/[slug]/settings/templates/actions", () => ({
     mockDeleteGeneratedDocument(...args),
   downloadGeneratedDocumentAction: (...args: unknown[]) =>
     mockDownloadGeneratedDocument(...args),
+  downloadDocxGeneratedDocumentAction: (...args: unknown[]) =>
+    mockDownloadDocxGeneratedDocument(...args),
 }));
 
 vi.mock("@/lib/format", () => ({
@@ -151,7 +154,7 @@ describe("GeneratedDocumentsList", () => {
     });
 
     const user = userEvent.setup();
-    await user.click(screen.getByTitle("Download"));
+    await user.click(screen.getByTitle("Download PDF"));
 
     await waitFor(() => {
       expect(mockDownloadGeneratedDocument).toHaveBeenCalledWith("gen-1");
@@ -190,7 +193,7 @@ describe("GeneratedDocumentsList", () => {
     });
 
     const user = userEvent.setup();
-    await user.click(screen.getByTitle("Download"));
+    await user.click(screen.getByTitle("Download PDF"));
 
     await waitFor(() => {
       expect(screen.getByText("Access denied")).toBeInTheDocument();

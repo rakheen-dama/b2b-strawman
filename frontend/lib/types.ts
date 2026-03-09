@@ -1191,6 +1191,8 @@ export interface GeneratedDocumentListResponse {
   fileSize: number;
   generatedByName: string;
   generatedAt: string;
+  outputFormat?: string;
+  hasDocxDownload?: boolean;
 }
 
 export interface GenerateDocxResult {

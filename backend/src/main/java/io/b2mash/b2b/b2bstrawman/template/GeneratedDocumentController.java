@@ -62,6 +62,13 @@ public class GeneratedDocumentController {
     return ResponseEntity.status(302).header(HttpHeaders.LOCATION, presigned.url()).build();
   }
 
+  @GetMapping("/{id}/download-docx")
+  @PreAuthorize("isAuthenticated()")
+  public ResponseEntity<Void> downloadDocxGeneratedDocument(@PathVariable UUID id) {
+    String url = generatedDocumentService.getDocxDownloadUrl(id);
+    return ResponseEntity.status(302).header(HttpHeaders.LOCATION, url).build();
+  }
+
   @DeleteMapping("/{id}")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> deleteGeneratedDocument(@PathVariable UUID id) {

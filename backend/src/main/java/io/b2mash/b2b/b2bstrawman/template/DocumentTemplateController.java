@@ -172,7 +172,8 @@ public class DocumentTemplateController {
       @PathVariable UUID id, @Valid @RequestBody GenerateDocxRequest request) {
     UUID memberId = RequestScopes.requireMemberId();
     return ResponseEntity.ok(
-        generatedDocumentService.generateDocx(id, request.entityId(), memberId));
+        generatedDocumentService.generateDocx(
+            id, request.entityId(), request.outputFormat(), memberId));
   }
 
   @PostMapping("/{id}/generate")
@@ -221,7 +222,7 @@ public class DocumentTemplateController {
 
   // PreviewResponse lives in PdfRenderingService to keep the dependency direction correct.
 
-  public record GenerateDocxRequest(@NotNull UUID entityId) {}
+  public record GenerateDocxRequest(@NotNull UUID entityId, String outputFormat) {}
 
   public record GenerateDocumentRequest(
       @NotNull UUID entityId,

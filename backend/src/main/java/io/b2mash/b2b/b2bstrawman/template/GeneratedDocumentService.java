@@ -25,6 +25,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +59,7 @@ public class GeneratedDocumentService {
   private final ClauseResolver clauseResolver;
   private final PrerequisiteService prerequisiteService;
   private final DocxMergeService docxMergeService;
+  private final PdfConversionService pdfConversionService;
   private final List<TemplateContextBuilder> contextBuilders;
 
   public GeneratedDocumentService(
@@ -73,6 +76,7 @@ public class GeneratedDocumentService {
       ClauseResolver clauseResolver,
       PrerequisiteService prerequisiteService,
       DocxMergeService docxMergeService,
+      PdfConversionService pdfConversionService,
       List<TemplateContextBuilder> contextBuilders) {
     this.generatedDocumentRepository = generatedDocumentRepository;
     this.documentTemplateRepository = documentTemplateRepository;
@@ -87,6 +91,7 @@ public class GeneratedDocumentService {
     this.clauseResolver = clauseResolver;
     this.prerequisiteService = prerequisiteService;
     this.docxMergeService = docxMergeService;
+    this.pdfConversionService = pdfConversionService;
     this.contextBuilders = contextBuilders;
   }
 
@@ -286,7 +291,11 @@ public class GeneratedDocumentService {
    * uploads the result, and persists a GeneratedDocument record.
    */
   @Transactional
-  public GenerateDocxResult generateDocx(UUID templateId, UUID entityId, UUID memberId) {
+  public GenerateDocxResult generateDocx(
+      UUID templateId, UUID entityId, String rawOutputFormat, UUID memberId) {
+    // 0. Resolve and validate output format
+    OutputFormat requestedFormat = resolveOutputFormat(rawOutputFormat);
+
     // 1. Load template and verify format
     var template =
         documentTemplateRepository
@@ -324,46 +333,102 @@ public class GeneratedDocumentService {
       throw new DocxGenerationException("Failed to merge DOCX template", e);
     }
 
-    // 5. Generate file name
+    // 5. Generate file names
     String entityName = extractEntityName(template.getPrimaryEntityType(), context);
-    String fileName = buildDocxFileName(template.getSlug(), entityName, "docx");
+    String docxFileName = buildDocxFileName(template.getSlug(), entityName, "docx");
 
-    // 6. Upload merged document to S3
+    // 6. Upload merged DOCX to S3
     String tenantId = RequestScopes.requireTenantId();
-    String s3Key = "org/" + tenantId + "/generated/" + fileName;
+    String docxS3Key = "org/" + tenantId + "/generated/" + docxFileName;
     try {
-      storageService.upload(s3Key, mergedBytes, DOCX_CONTENT_TYPE);
+      storageService.upload(docxS3Key, mergedBytes, DOCX_CONTENT_TYPE);
     } catch (Exception e) {
       throw new DocxGenerationException("Failed to upload generated DOCX to storage", e);
     }
 
-    // 7. Build context snapshot directly from template entity (avoids getById which NPEs on DOCX
-    // templates due to null Tiptap content)
+    // 7. Handle PDF conversion if requested
+    boolean wantsPdf = requestedFormat == OutputFormat.PDF || requestedFormat == OutputFormat.BOTH;
+    String pdfDownloadUrl = null;
+    String pdfS3Key = null;
+    long pdfFileSize = 0;
+    var warnings = new ArrayList<String>();
+    OutputFormat storedFormat = OutputFormat.DOCX;
+
+    if (wantsPdf) {
+      var pdfBytes = pdfConversionService.convertToPdf(mergedBytes);
+      if (pdfBytes.isPresent()) {
+        pdfFileSize = pdfBytes.get().length;
+        String pdfFileName = buildDocxFileName(template.getSlug(), entityName, "pdf");
+        pdfS3Key = "org/" + tenantId + "/generated/" + pdfFileName;
+        try {
+          storageService.upload(pdfS3Key, pdfBytes.get(), "application/pdf");
+        } catch (Exception e) {
+          throw new DocxGenerationException("Failed to upload generated PDF to storage", e);
+        }
+        var pdfPresigned = storageService.generateDownloadUrl(pdfS3Key, DOWNLOAD_URL_EXPIRY);
+        pdfDownloadUrl = pdfPresigned.url();
+
+        // For PDF-only: primary output is PDF, store DOCX as secondary
+        if (requestedFormat == OutputFormat.PDF) {
+          storedFormat = OutputFormat.PDF;
+        }
+        // For BOTH: primary output is DOCX (storedFormat stays DOCX)
+      } else {
+        warnings.add("PDF conversion unavailable. DOCX output returned instead.");
+      }
+    }
+
+    // 8. Build context snapshot
     var contextSnapshot = new HashMap<String, Object>();
     contextSnapshot.put("template_name", template.getName());
     contextSnapshot.put("entity_type", template.getPrimaryEntityType().name());
     contextSnapshot.put("entity_id", entityId.toString());
 
-    // 8. Create GeneratedDocument record
+    // 9. Create GeneratedDocument record
+    // Determine s3Key and docxS3Key based on stored format
+    String primaryS3Key;
+    String secondaryDocxS3Key = null;
+    if (storedFormat == OutputFormat.PDF && pdfS3Key != null) {
+      // Primary output is PDF
+      primaryS3Key = pdfS3Key;
+      secondaryDocxS3Key = docxS3Key;
+    } else {
+      // Primary output is DOCX (including BOTH and fallback)
+      primaryS3Key = docxS3Key;
+    }
+
+    String primaryFileName =
+        storedFormat == OutputFormat.PDF && pdfS3Key != null
+            ? buildDocxFileName(template.getSlug(), entityName, "pdf")
+            : docxFileName;
+
+    long fileSize =
+        storedFormat == OutputFormat.PDF && pdfS3Key != null ? pdfFileSize : mergedBytes.length;
+
     var generatedDoc =
         createRecord(
             templateId,
             template.getPrimaryEntityType(),
             entityId,
-            fileName,
-            s3Key,
-            mergedBytes.length,
+            primaryFileName,
+            primaryS3Key,
+            fileSize,
             memberId,
             contextSnapshot,
-            OutputFormat.DOCX);
+            storedFormat);
 
-    // 9. Audit event
+    if (secondaryDocxS3Key != null) {
+      generatedDoc.setDocxS3Key(secondaryDocxS3Key);
+    }
+
+    // 10. Audit event
     var auditDetails = new HashMap<String, Object>();
     auditDetails.put("templateId", templateId.toString());
     auditDetails.put("entityType", template.getPrimaryEntityType().name());
     auditDetails.put("entityId", entityId.toString());
-    auditDetails.put("outputFormat", "DOCX");
-    auditDetails.put("fileName", fileName);
+    auditDetails.put("outputFormat", storedFormat.name());
+    auditDetails.put("requestedFormat", requestedFormat.name());
+    auditDetails.put("fileName", primaryFileName);
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("docx_document.generated")
@@ -372,23 +437,42 @@ public class GeneratedDocumentService {
             .details(auditDetails)
             .build());
 
-    // 10. Generate presigned download URL
-    var presigned = storageService.generateDownloadUrl(s3Key, DOWNLOAD_URL_EXPIRY);
+    // 11. Generate presigned download URL for DOCX
+    // Per spec: downloadUrl = DOCX, pdfDownloadUrl = PDF
+    var docxPresigned = storageService.generateDownloadUrl(docxS3Key, DOWNLOAD_URL_EXPIRY);
+    String downloadUrl = docxPresigned.url();
 
     return new GenerateDocxResult(
         generatedDoc.getId(),
         templateId,
         template.getName(),
-        "DOCX",
-        fileName,
-        presigned.url(),
-        null,
-        (long) mergedBytes.length,
+        storedFormat.name(),
+        primaryFileName,
+        downloadUrl,
+        pdfDownloadUrl,
+        fileSize,
         generatedDoc.getGeneratedAt(),
-        List.of());
+        warnings);
   }
 
   // --- Private helpers ---
+
+  private OutputFormat resolveOutputFormat(String rawOutputFormat) {
+    if (rawOutputFormat == null || rawOutputFormat.isBlank()) {
+      return OutputFormat.DOCX;
+    }
+    try {
+      return OutputFormat.valueOf(rawOutputFormat.toUpperCase());
+    } catch (IllegalArgumentException e) {
+      throw new InvalidStateException(
+          "Invalid Output Format",
+          "'"
+              + rawOutputFormat
+              + "' is not a valid output format. "
+              + "Valid values: "
+              + Arrays.toString(OutputFormat.values()));
+    }
+  }
 
   private List<Map<String, Object>> buildClauseSnapshots(List<Clause> resolvedClauses) {
     var snapshots = new java.util.ArrayList<Map<String, Object>>();

@@ -19,7 +19,7 @@ echo "=== Dev Stack ==="
 echo ""
 
 # Start infrastructure services only (exclude backend/frontend by default)
-SERVICES="postgres localstack mailpit keycloak gateway"
+SERVICES="postgres localstack mailpit keycloak"
 if [[ "${1:-}" == "--all" ]]; then
   SERVICES=""
   echo "Starting all services (including backend + frontend)..."
@@ -108,32 +108,34 @@ if [[ $ELAPSED -ge 120 ]]; then
   exit 1
 fi
 
-# Disable HTTPS requirement on master realm (allows admin console over HTTP in dev).
+# Disable HTTPS requirement on all realms (allows admin console + login over HTTP in dev).
 # Uses direct SQL — more reliable than kcadm.sh which can fail if Keycloak is still initializing.
-printf "  Keycloak master realm SSL fix... "
-if docker exec b2b-postgres psql -U postgres -d keycloak \
-  -c "UPDATE realm SET ssl_required = 'NONE' WHERE name = 'master' AND ssl_required != 'NONE';" \
-  > /dev/null 2>&1; then
-  echo "done"
-else
-  echo "skipped (keycloak DB not ready yet — non-critical)"
-fi
-
-# Wait for Gateway
-ELAPSED=0
-printf "  Gateway (localhost:8443)... "
-while [[ $ELAPSED -lt 120 ]]; do
-  if curl -sf http://localhost:8443/actuator/health > /dev/null 2>&1; then
-    echo "ready"
-    break
+# After updating, restart Keycloak so it reloads the setting from the DB.
+printf "  Keycloak SSL fix (all realms)... "
+ROWS_UPDATED=$(docker exec b2b-postgres psql -U postgres -d keycloak -t -A \
+  -c "UPDATE realm SET ssl_required = 'NONE' WHERE ssl_required <> 'NONE' RETURNING name;" \
+  2>/dev/null || true)
+if [[ -n "$ROWS_UPDATED" ]]; then
+  echo "updated — restarting Keycloak to apply..."
+  docker restart b2b-keycloak > /dev/null 2>&1
+  # Wait for Keycloak to come back
+  ELAPSED=0
+  printf "  Keycloak restart... "
+  while [[ $ELAPSED -lt 120 ]]; do
+    if curl -sf http://localhost:8180/realms/docteams > /dev/null 2>&1; then
+      echo "ready"
+      break
+    fi
+    sleep $INTERVAL
+    ELAPSED=$((ELAPSED + INTERVAL))
+  done
+  if [[ $ELAPSED -ge 120 ]]; then
+    echo "TIMEOUT (120s)"
+    echo "Check logs: docker compose -f $COMPOSE_FILE logs keycloak"
+    exit 1
   fi
-  sleep $INTERVAL
-  ELAPSED=$((ELAPSED + INTERVAL))
-done
-if [[ $ELAPSED -ge 120 ]]; then
-  echo "TIMEOUT (120s)"
-  echo "Check logs: docker compose -f $COMPOSE_FILE logs gateway"
-  exit 1
+else
+  echo "already set (no restart needed)"
 fi
 
 # If --all was requested, wait for backend and frontend too
@@ -151,6 +153,22 @@ if [[ "${1:-}" == "--all" ]]; then
   if [[ $ELAPSED -ge 300 ]]; then
     echo "TIMEOUT (300s)"
     echo "Check logs: docker compose -f $COMPOSE_FILE logs backend"
+    exit 1
+  fi
+
+  ELAPSED=0
+  printf "  Gateway (localhost:8443)... "
+  while [[ $ELAPSED -lt 120 ]]; do
+    if curl -sf http://localhost:8443/actuator/health > /dev/null 2>&1; then
+      echo "ready"
+      break
+    fi
+    sleep $INTERVAL
+    ELAPSED=$((ELAPSED + INTERVAL))
+  done
+  if [[ $ELAPSED -ge 120 ]]; then
+    echo "TIMEOUT (120s)"
+    echo "Check logs: docker compose -f $COMPOSE_FILE logs gateway"
     exit 1
   fi
 
@@ -179,7 +197,6 @@ echo "  LocalStack S3:  localhost:4566"
 echo "  Mailpit SMTP:   localhost:1025"
 echo "  Mailpit UI:     http://localhost:8025"
 echo "  Keycloak:       http://localhost:8180 (admin/admin)"
-echo "  Gateway:        http://localhost:8443"
 if [[ "${1:-}" == "--all" ]]; then
   echo "  Backend:        http://localhost:8080"
   echo "  Frontend:       http://localhost:3000"

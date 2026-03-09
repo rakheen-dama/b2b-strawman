@@ -5,6 +5,8 @@ import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { Project, Customer, CreateProjectRequest, UpdateProjectRequest } from "@/lib/types";
+import { classifyError } from "@/lib/error-handler";
+import { createMessages } from "@/lib/messages";
 
 interface ActionResult {
   success: boolean;
@@ -26,10 +28,11 @@ export async function createProject(slug: string, formData: FormData): Promise<A
   try {
     await api.post<Project>("/api/projects", body);
   } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "An unexpected error occurred." };
+    const message =
+      error instanceof ApiError
+        ? error.message
+        : createMessages("errors").t(classifyError(error).messageCode);
+    return { success: false, error: message };
   }
 
   revalidatePath(`/org/${slug}/projects`);
@@ -59,10 +62,11 @@ export async function updateProject(
   try {
     await api.put<Project>(`/api/projects/${id}`, body);
   } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "An unexpected error occurred." };
+    const message =
+      error instanceof ApiError
+        ? error.message
+        : createMessages("errors").t(classifyError(error).messageCode);
+    return { success: false, error: message };
   }
 
   revalidatePath(`/org/${slug}/projects`);
@@ -81,10 +85,11 @@ export async function deleteProject(slug: string, id: string): Promise<ActionRes
   try {
     await api.delete(`/api/projects/${id}`);
   } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "An unexpected error occurred." };
+    const message =
+      error instanceof ApiError
+        ? error.message
+        : createMessages("errors").t(classifyError(error).messageCode);
+    return { success: false, error: message };
   }
 
   revalidatePath(`/org/${slug}/projects`);
@@ -107,10 +112,11 @@ export async function completeProject(
     const body = acknowledgeUnbilledTime ? { acknowledgeUnbilledTime } : undefined;
     await api.patch<Project>(`/api/projects/${projectId}/complete`, body);
   } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "An unexpected error occurred." };
+    const message =
+      error instanceof ApiError
+        ? error.message
+        : createMessages("errors").t(classifyError(error).messageCode);
+    return { success: false, error: message };
   }
 
   revalidatePath(`/org/${slug}/projects`);
@@ -132,10 +138,11 @@ export async function archiveProject(
   try {
     await api.patch<Project>(`/api/projects/${projectId}/archive`);
   } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "An unexpected error occurred." };
+    const message =
+      error instanceof ApiError
+        ? error.message
+        : createMessages("errors").t(classifyError(error).messageCode);
+    return { success: false, error: message };
   }
 
   revalidatePath(`/org/${slug}/projects`);
@@ -157,10 +164,11 @@ export async function reopenProject(
   try {
     await api.patch<Project>(`/api/projects/${projectId}/reopen`);
   } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "An unexpected error occurred." };
+    const message =
+      error instanceof ApiError
+        ? error.message
+        : createMessages("errors").t(classifyError(error).messageCode);
+    return { success: false, error: message };
   }
 
   revalidatePath(`/org/${slug}/projects`);

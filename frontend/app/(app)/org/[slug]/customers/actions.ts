@@ -4,6 +4,8 @@ import { getAuthContext } from "@/lib/auth";
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import type { Customer, CustomerType, UpdateCustomerRequest } from "@/lib/types";
+import { classifyError } from "@/lib/error-handler";
+import { createMessages } from "@/lib/messages";
 
 interface ActionResult {
   success: boolean;
@@ -48,10 +50,11 @@ export async function createCustomer(slug: string, data: CreateCustomerData): Pr
   try {
     await api.post<Customer>("/api/customers", body);
   } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "An unexpected error occurred." };
+    const message =
+      error instanceof ApiError
+        ? error.message
+        : createMessages("errors").t(classifyError(error).messageCode);
+    return { success: false, error: message };
   }
 
   revalidatePath(`/org/${slug}/customers`);
@@ -89,10 +92,11 @@ export async function updateCustomer(
   try {
     await api.put<Customer>(`/api/customers/${id}`, body);
   } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "An unexpected error occurred." };
+    const message =
+      error instanceof ApiError
+        ? error.message
+        : createMessages("errors").t(classifyError(error).messageCode);
+    return { success: false, error: message };
   }
 
   revalidatePath(`/org/${slug}/customers`);
@@ -111,10 +115,11 @@ export async function archiveCustomer(slug: string, id: string): Promise<ActionR
   try {
     await api.delete(`/api/customers/${id}`);
   } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "An unexpected error occurred." };
+    const message =
+      error instanceof ApiError
+        ? error.message
+        : createMessages("errors").t(classifyError(error).messageCode);
+    return { success: false, error: message };
   }
 
   revalidatePath(`/org/${slug}/customers`);

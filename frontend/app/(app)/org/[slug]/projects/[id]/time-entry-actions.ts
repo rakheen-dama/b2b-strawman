@@ -3,6 +3,8 @@
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import type { TimeEntry, CreateTimeEntryRequest, UpdateTimeEntryRequest, ResolvedRate } from "@/lib/types";
+import { classifyError } from "@/lib/error-handler";
+import { createMessages } from "@/lib/messages";
 
 interface ActionResult {
   success: boolean;
@@ -48,10 +50,11 @@ export async function createTimeEntry(
   try {
     await api.post<TimeEntry>(`/api/tasks/${taskId}/time-entries`, body);
   } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "An unexpected error occurred." };
+    const message =
+      error instanceof ApiError
+        ? error.message
+        : createMessages("errors").t(classifyError(error).messageCode);
+    return { success: false, error: message };
   }
 
   revalidatePath(`/org/${slug}/projects/${projectId}`);
@@ -71,15 +74,13 @@ export async function updateTimeEntry(
     await api.put<TimeEntry>(`/api/time-entries/${timeEntryId}`, data);
   } catch (error) {
     if (error instanceof ApiError) {
-      if (error.status === 403) {
-        return {
-          success: false,
-          error: "You do not have permission to edit this time entry.",
-        };
-      }
       return { success: false, error: error.message };
     }
-    return { success: false, error: "An unexpected error occurred." };
+    const classified = classifyError(error);
+    return {
+      success: false,
+      error: createMessages("errors").t(classified.messageCode),
+    };
   }
 
   revalidatePath(`/org/${slug}/projects/${projectId}`);
@@ -97,15 +98,13 @@ export async function deleteTimeEntry(
     await api.delete(`/api/time-entries/${timeEntryId}`);
   } catch (error) {
     if (error instanceof ApiError) {
-      if (error.status === 403) {
-        return {
-          success: false,
-          error: "You do not have permission to delete this time entry.",
-        };
-      }
       return { success: false, error: error.message };
     }
-    return { success: false, error: "An unexpected error occurred." };
+    const classified = classifyError(error);
+    return {
+      success: false,
+      error: createMessages("errors").t(classified.messageCode),
+    };
   }
 
   revalidatePath(`/org/${slug}/projects/${projectId}`);

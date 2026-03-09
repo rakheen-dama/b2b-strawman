@@ -3,6 +3,8 @@
 import { getAuthContext, AUTH_MODE } from "@/lib/auth";
 import { api } from "@/lib/api";
 import { headers } from "next/headers";
+import { classifyError } from "@/lib/error-handler";
+import { createMessages } from "@/lib/messages";
 
 interface ActionResult {
   success: boolean;
@@ -108,7 +110,9 @@ async function inviteMemberBff(
     return { success: true };
   } catch (err: unknown) {
     const message =
-      err instanceof Error ? err.message : "Failed to send invitation.";
+      err instanceof Error
+        ? err.message
+        : createMessages("errors").t(classifyError(err).messageCode);
     return { success: false, error: message };
   }
 }
@@ -129,7 +133,9 @@ async function revokeInvitationBff(id: string): Promise<ActionResult> {
     return { success: true };
   } catch (err: unknown) {
     const message =
-      err instanceof Error ? err.message : "Failed to revoke invitation.";
+      err instanceof Error
+        ? err.message
+        : createMessages("errors").t(classifyError(err).messageCode);
     return { success: false, error: message };
   }
 }

@@ -17,7 +17,7 @@ Phase 41 replaces the coarse three-role authorization model (Owner/Admin/Member)
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 312 | OrgRole Entity Foundation & Migration | Backend | -- | M | 312A, 312B | |
+| 312 | OrgRole Entity Foundation & Migration | Backend | -- | M | 312A, 312B | 312A Done (PR #636) |
 | 313 | Capability Resolution & Authorization Infrastructure | Backend | 312 | M | 313A, 313B | |
 | 314 | @PreAuthorize Migration (Batch 1: Financial, Invoicing, Project) | Backend | 313 | M | 314A, 314B | |
 | 315 | @PreAuthorize Migration (Batch 2: Customer, Automation, Resource, Team) | Backend | 313 | M | 315A, 315B | |
@@ -130,7 +130,7 @@ FRONTEND TRACK (after E313 backend APIs ready)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 0a | 312 | 312A | `OrgRole` entity, `Capability` enum, `Member` extension (org_role_id + overrides), V64 migration (3 tables + 1 ALTER + system role seed). ~7 new files. Backend only. | |
+| 0a | 312 | 312A | `OrgRole` entity, `Capability` enum, `Member` extension (org_role_id + overrides), V67 migration (3 tables + 1 ALTER + system role seed). ~4 new/modified files. Backend only. | **Done** (PR #636) |
 | 0b | 312 | 312B | `OrgRoleRepository`, `OrgRoleService` (resolution algorithm + CRUD shell), DTO records, slug generation utility. ~6 new files (~8 tests). Backend only. | |
 
 ### Stage 1: Authorization Infrastructure & OrgRole CRUD (parallel tracks)
@@ -206,7 +206,7 @@ Stage 5: [319A] -> [319B] // [320A] -> [320B]                         (two paral
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **312A** | 312.1--312.6 | `OrgRole` entity, `Capability` enum, `Member` entity extension (org_role_id FK + capability overrides `@ElementCollection`), V64 tenant migration (3 new tables: `org_roles`, `org_role_capabilities`, `member_capability_overrides` + ALTER members + system role seed data). ~7 new/modified files. Backend only. | |
+| **312A** | 312.1--312.6 | `OrgRole` entity, `Capability` enum, `Member` entity extension (org_role_id FK + capability overrides `@ElementCollection`), V67 tenant migration (3 new tables: `org_roles`, `org_role_capabilities`, `member_capability_overrides` + ALTER members + system role seed data). ~4 new/modified files. Backend only. | **Done** (PR #636) |
 | **312B** | 312.7--312.14 | `OrgRoleRepository`, `OrgRoleService` (capability resolution algorithm + CRUD shell methods), DTO records (`OrgRoleResponse`, `CreateOrgRoleRequest`, `UpdateOrgRoleRequest`, `AssignRoleRequest`, `MemberCapabilitiesResponse`), slug generation utility, existing member backfill data migration in V64. ~6 new files + 1 test file (~8 tests). Backend only. | |
 
 ### Tasks

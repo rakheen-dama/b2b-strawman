@@ -145,7 +145,7 @@ FRONTEND TRACK (after E323 backend APIs ready)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 2a (parallel) | 323 | 323A | `POST /api/templates/docx/upload` endpoint (multipart), MIME type + size validation, S3 upload at `org/{tenantId}/templates/{templateId}/template.docx`, field discovery integration, `DOCX_TEMPLATE_UPLOADED` audit event. ~4 new/modified files + ~8 tests. Backend only. | |
+| 2a (parallel) | 323 | 323A | `POST /api/templates/docx/upload` endpoint (multipart), MIME type + size validation, S3 upload at `org/{tenantId}/templates/{templateId}/template.docx`, field discovery integration, `DOCX_TEMPLATE_UPLOADED` audit event. ~4 new/modified files + ~8 tests. Backend only. | **Done** (PR #617) |
 | 2b (parallel) | 323 | 323B | `GET /api/templates/{id}/docx/fields` endpoint, `GET /api/templates/{id}/docx/download` endpoint (presigned URL redirect), `PUT /api/templates/{id}/docx/replace` endpoint (multipart, S3 overwrite, re-discovery), `DOCX_TEMPLATE_REPLACED` audit event. ~3 modified files + ~8 tests. Backend only. | |
 
 ### Stage 3: Generation Pipeline
@@ -348,7 +348,7 @@ Stage 5: [326A] -> [326B]                                           (sequential,
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **323A** | 323.1--323.7 | `POST /api/templates/docx/upload` endpoint on existing `DocumentTemplateController` (multipart), MIME type + size validation in service, S3 upload, `discoverFields()` + `validateFields()` integration, slug generation, `DOCX_TEMPLATE_UPLOADED` audit event. ~4 modified files + ~8 tests. Backend only. | |
+| **323A** | 323.1--323.7 | `POST /api/templates/docx/upload` endpoint on existing `DocumentTemplateController` (multipart), MIME type + size validation in service, S3 upload, `discoverFields()` + `validateFields()` integration, slug generation, `DOCX_TEMPLATE_UPLOADED` audit event. ~4 modified files + ~8 tests. Backend only. | **Done** (PR #617) |
 | **323B** | 323.8--323.13 | `GET /api/templates/{id}/docx/fields` endpoint, `GET /api/templates/{id}/docx/download` (presigned URL redirect), `PUT /api/templates/{id}/docx/replace` endpoint (multipart, S3 overwrite, re-discovery), `DOCX_TEMPLATE_REPLACED` audit event. ~3 modified files + ~8 tests. Backend only. | |
 
 ### Tasks

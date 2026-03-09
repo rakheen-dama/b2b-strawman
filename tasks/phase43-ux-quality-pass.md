@@ -87,7 +87,7 @@ EMPTY STATES TRACK    ONBOARDING TRACK    HELP TRACK       ERROR TRACK
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 1a (parallel) | 328 | 328A | Enhanced `EmptyState` component (`onAction`, `secondaryLink` props, `max-w-md`), Tier 1 pages (projects, customers, team, my work, documents) + Tier 2 pages (time entries, invoices, templates). ~10 modified files (~6 tests). Frontend only. | **Done** (PR #627) |
-| 1b (parallel) | 329 | 329A | V66 migration (`onboarding_dismissed_at` on `org_settings`), `OrgSettings` entity update, `OnboardingService`, `OnboardingController` (2 endpoints), DTOs. ~7 new/modified files (~10 tests). Backend only. | |
+| 1b (parallel) | 329 | 329A | V66 migration (`onboarding_dismissed_at` on `org_settings`), `OrgSettings` entity update, `OnboardingService`, `OnboardingController` (2 endpoints), DTOs. ~7 new/modified files (~10 tests). Backend only. | **Done** (PR #629) |
 | 1c (parallel) | 330 | 330A | `HelpTip` component (Popover + CircleHelp icon), help points #1-#11 (rates, budgets, invoicing). ~8 new/modified files (~5 tests). Frontend only. | |
 | 1d (parallel) | 331 | 331A | `classifyError()` utility, `ErrorBoundary` + `ErrorFallback` components, `showToast()` wrapper, ErrorBoundary integration in org layout. ~6 new/modified files (~8 tests). Frontend only. | |
 
@@ -262,7 +262,7 @@ Stage 2: [328B] // [329B] // [330B] // [331B]                     (4 parallel tr
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **329A** | 329.1--329.7 | V66 migration (`onboarding_dismissed_at` on `org_settings`), `OrgSettings` entity update, `OnboardingService` (computed-on-read from 6 repositories), `OnboardingController` (2 endpoints), DTO records, role-based dismiss. ~7 new/modified files (~10 tests). Backend only. | |
+| **329A** | 329.1--329.7 | V66 migration (`onboarding_dismissed_at` on `org_settings`), `OrgSettings` entity update, `OnboardingService` (computed-on-read from 6 repositories), `OnboardingController` (2 endpoints), DTO records, role-based dismiss. ~7 new/modified files (~10 tests). Backend only. | **Done** (PR #629) |
 | **329B** | 329.8--329.13 | `GettingStartedCard` component, `useOnboardingProgress` SWR hook, dashboard integration (card above grid), dismiss flow with confirmation popover, auto-hide on completion. ~5 new/modified files (~5 tests). Frontend only. | |
 
 ### Tasks

@@ -18,7 +18,7 @@ Phase 42 adds a **Word document (.docx) template pipeline** to the DocTeams plat
 |------|------|-------|------|--------|--------|--------|
 | 321 | Entity Extension, Enums & Migration | Backend | — | M | 321A, 321B | **Done** (PRs #613, #614) |
 | 322 | DocxMergeService — Field Discovery & Split-Run Engine | Backend | 321 | L | 322A, 322B | **Done** (PRs #615, #616) |
-| 323 | DOCX Upload, Replace & Download Endpoints | Backend | 321, 322 | M | 323A, 323B | |
+| 323 | DOCX Upload, Replace & Download Endpoints | Backend | 321, 322 | M | 323A, 323B | **Done** (PRs #617, #618) |
 | 324 | DOCX Generation Pipeline & PDF Conversion | Backend | 322, 323 | M | 324A, 324B | |
 | 325 | Frontend — Upload & Template Management | Frontend | 323 | M | 325A, 325B | |
 | 326 | Frontend — Generation Dialog & Integration | Frontend | 324, 325 | M | 326A, 326B | |
@@ -146,7 +146,7 @@ FRONTEND TRACK (after E323 backend APIs ready)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 2a (parallel) | 323 | 323A | `POST /api/templates/docx/upload` endpoint (multipart), MIME type + size validation, S3 upload at `org/{tenantId}/templates/{templateId}/template.docx`, field discovery integration, `DOCX_TEMPLATE_UPLOADED` audit event. ~4 new/modified files + ~8 tests. Backend only. | **Done** (PR #617) |
-| 2b (parallel) | 323 | 323B | `GET /api/templates/{id}/docx/fields` endpoint, `GET /api/templates/{id}/docx/download` endpoint (presigned URL redirect), `PUT /api/templates/{id}/docx/replace` endpoint (multipart, S3 overwrite, re-discovery), `DOCX_TEMPLATE_REPLACED` audit event. ~3 modified files + ~8 tests. Backend only. | |
+| 2b (parallel) | 323 | 323B | `GET /api/templates/{id}/docx/fields` endpoint, `GET /api/templates/{id}/docx/download` endpoint (presigned URL redirect), `PUT /api/templates/{id}/docx/replace` endpoint (multipart, S3 overwrite, re-discovery), `DOCX_TEMPLATE_REPLACED` audit event. ~3 modified files + ~8 tests. Backend only. | **Done** (PR #618) |
 
 ### Stage 3: Generation Pipeline
 
@@ -349,7 +349,7 @@ Stage 5: [326A] -> [326B]                                           (sequential,
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **323A** | 323.1--323.7 | `POST /api/templates/docx/upload` endpoint on existing `DocumentTemplateController` (multipart), MIME type + size validation in service, S3 upload, `discoverFields()` + `validateFields()` integration, slug generation, `DOCX_TEMPLATE_UPLOADED` audit event. ~4 modified files + ~8 tests. Backend only. | **Done** (PR #617) |
-| **323B** | 323.8--323.13 | `GET /api/templates/{id}/docx/fields` endpoint, `GET /api/templates/{id}/docx/download` (presigned URL redirect), `PUT /api/templates/{id}/docx/replace` endpoint (multipart, S3 overwrite, re-discovery), `DOCX_TEMPLATE_REPLACED` audit event. ~3 modified files + ~8 tests. Backend only. | |
+| **323B** | 323.8--323.13 | `GET /api/templates/{id}/docx/fields` endpoint, `GET /api/templates/{id}/docx/download` (presigned URL redirect), `PUT /api/templates/{id}/docx/replace` endpoint (multipart, S3 overwrite, re-discovery), `DOCX_TEMPLATE_REPLACED` audit event. ~3 modified files + ~8 tests. Backend only. | **Done** (PR #618) |
 
 ### Tasks
 

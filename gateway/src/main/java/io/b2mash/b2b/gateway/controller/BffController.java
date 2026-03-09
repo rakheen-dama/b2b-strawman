@@ -1,7 +1,9 @@
 package io.b2mash.b2b.gateway.controller;
 
 import io.b2mash.b2b.gateway.service.KeycloakAdminClient;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -57,6 +60,22 @@ public class BffController {
 
   /** Response DTO after creating an organization. */
   public record CreateOrgResponse(String orgId, String slug) {}
+
+  /** Returns the current CSRF token so the SPA can perform form POSTs (e.g., logout). */
+  @GetMapping("/csrf")
+  public ResponseEntity<Map<String, String>> csrf(HttpServletRequest request) {
+    CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
+    if (csrfToken == null) {
+      return ResponseEntity.ok(Map.of());
+    }
+    // Force lazy token generation
+    String token = csrfToken.getToken();
+    return ResponseEntity.ok(
+        Map.of(
+            "token", token,
+            "parameterName", csrfToken.getParameterName(),
+            "headerName", csrfToken.getHeaderName()));
+  }
 
   @GetMapping("/me")
   public ResponseEntity<BffUserInfo> me(@AuthenticationPrincipal OidcUser user) {

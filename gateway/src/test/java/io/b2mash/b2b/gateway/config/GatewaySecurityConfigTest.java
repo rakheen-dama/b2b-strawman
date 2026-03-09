@@ -3,11 +3,13 @@ package io.b2mash.b2b.gateway.config;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oauth2Login;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,6 +71,13 @@ class GatewaySecurityConfigTest {
   }
 
   @Test
+  void bffCsrf_returnsTokenUnauthenticated() throws Exception {
+    var result = mockMvc.perform(get("/bff/csrf")).andReturn();
+    int statusCode = result.getResponse().getStatus();
+    assertThat(statusCode).as("/bff/csrf should be publicly accessible").isIn(PUBLIC_OK_STATUSES);
+  }
+
+  @Test
   void protectedEndpoints_apiRequiresAuth() throws Exception {
     mockMvc
         .perform(get("/api/projects"))
@@ -121,10 +130,37 @@ class GatewaySecurityConfigTest {
   }
 
   @Test
-  void logout_invalidatesSessionAndRedirects() throws Exception {
-    mockMvc
-        .perform(post("/logout").with(oauth2Login()).with(csrf().asHeader()))
-        .andExpect(status().is3xxRedirection());
+  void logout_invalidatesSessionAndRedirectsToFrontend() throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                post("/logout")
+                    .with(oidcLogin().clientRegistration(mockClientRegistration()))
+                    .with(csrf().asHeader()))
+            .andExpect(status().is3xxRedirection())
+            .andReturn();
+    String redirectUrl = result.getResponse().getRedirectedUrl();
+    // OidcClientInitiatedLogoutSuccessHandler redirects to the IdP end_session_endpoint
+    // with post_logout_redirect_uri pointing to the frontend URL (not the gateway)
+    assertThat(redirectUrl).contains("example.com/logout");
+    assertThat(redirectUrl).contains("post_logout_redirect_uri");
+    assertThat(redirectUrl).contains("localhost:3000");
+  }
+
+  private static ClientRegistration mockClientRegistration() {
+    return ClientRegistration.withRegistrationId("keycloak")
+        .clientId("test")
+        .clientSecret("test")
+        .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+        .redirectUri("{baseUrl}/login/oauth2/code/{registrationId}")
+        .scope("openid", "profile", "email")
+        .authorizationUri("https://example.com/auth")
+        .tokenUri("https://example.com/token")
+        .jwkSetUri("https://example.com/jwks")
+        .userInfoUri("https://example.com/userinfo")
+        .userNameAttributeName("sub")
+        .providerConfigurationMetadata(Map.of("end_session_endpoint", "https://example.com/logout"))
+        .build();
   }
 
   @TestConfiguration
@@ -132,19 +168,7 @@ class GatewaySecurityConfigTest {
 
     @Bean
     ClientRegistrationRepository clientRegistrationRepository() {
-      ClientRegistration registration =
-          ClientRegistration.withRegistrationId("keycloak")
-              .clientId("test")
-              .clientSecret("test")
-              .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-              .redirectUri("{baseUrl}/login/oauth2/code/{registrationId}")
-              .scope("openid", "profile", "email")
-              .authorizationUri("https://example.com/auth")
-              .tokenUri("https://example.com/token")
-              .jwkSetUri("https://example.com/jwks")
-              .userInfoUri("https://example.com/userinfo")
-              .userNameAttributeName("sub")
-              .build();
+      ClientRegistration registration = mockClientRegistration();
       return new InMemoryClientRegistrationRepository(registration);
     }
   }

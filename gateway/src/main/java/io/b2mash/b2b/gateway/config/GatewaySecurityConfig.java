@@ -86,7 +86,7 @@ public class GatewaySecurityConfig {
   private LogoutSuccessHandler oidcLogoutSuccessHandler() {
     OidcClientInitiatedLogoutSuccessHandler handler =
         new OidcClientInitiatedLogoutSuccessHandler(clientRegistrationRepository);
-    handler.setPostLogoutRedirectUri("{baseUrl}/");
+    handler.setPostLogoutRedirectUri(frontendUrl);
     return handler;
   }
 }

@@ -18,6 +18,7 @@ import { CurrencySelector } from "@/components/rates/currency-selector";
 import { AddRateDialog } from "@/components/rates/add-rate-dialog";
 import { EditRateDialog } from "@/components/rates/edit-rate-dialog";
 import { DeleteRateDialog } from "@/components/rates/delete-rate-dialog";
+import { HelpTip } from "@/components/help-tip";
 import { updateDefaultCurrency } from "@/app/(app)/org/[slug]/settings/rates/actions";
 import { createMessages } from "@/lib/messages";
 import { formatCurrency, formatDate } from "@/lib/format";
@@ -112,8 +113,9 @@ export function MemberRatesTable({
       <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
+            <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-950 dark:text-slate-50">
               Default Currency
+              <HelpTip code="rates.currency" />
             </h2>
             <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
               This currency will be pre-selected when creating new rates.
@@ -136,6 +138,14 @@ export function MemberRatesTable({
             {currencyMessage}
           </p>
         )}
+      </div>
+
+      {/* Rate snapshots info */}
+      <div className="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+        <HelpTip code="rates.snapshots" />
+        <p className="text-sm text-slate-600 dark:text-slate-400">
+          Rate changes only affect new time entries. Existing entries and invoices retain their original snapshotted rate.
+        </p>
       </div>
 
       {/* Rates tabs */}
@@ -282,6 +292,10 @@ export function MemberRatesTable({
         </TabsContent>
 
         <TabsContent value="cost" className="mt-4">
+          <h3 className="mb-3 flex items-center gap-2 text-lg font-semibold text-slate-950 dark:text-slate-50">
+            Cost Rates
+            <HelpTip code="rates.costVsBilling" />
+          </h3>
           <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
             <Table>
               <TableHeader>

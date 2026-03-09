@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CurrencySelector } from "@/components/rates/currency-selector";
+import { HelpTip } from "@/components/help-tip";
 import { upsertBudget } from "@/app/(app)/org/[slug]/projects/[id]/budget-actions";
 import type { BudgetStatusResponse, UpsertBudgetRequest } from "@/lib/types";
 
@@ -112,8 +113,9 @@ export function BudgetConfigDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
             {existing ? "Edit Budget" : "Set Budget"}
+            <HelpTip code="budget.types" />
           </DialogTitle>
           <DialogDescription>
             Configure budget limits for this project. Set hours, amount, or
@@ -158,8 +160,9 @@ export function BudgetConfigDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="alertThresholdPct">
+            <Label htmlFor="alertThresholdPct" className="flex items-center gap-2">
               Alert Threshold (%)
+              <HelpTip code="budget.alerts" />
             </Label>
             <Input
               id="alertThresholdPct"

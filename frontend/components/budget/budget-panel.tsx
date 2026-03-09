@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BudgetConfigDialog } from "@/components/budget/budget-config-dialog";
 import { DeleteBudgetDialog } from "@/components/budget/delete-budget-dialog";
+import { HelpTip } from "@/components/help-tip";
 import { createMessages } from "@/lib/messages";
 import { formatCurrency, formatDuration } from "@/lib/format";
 import type { BudgetStatus, BudgetStatusResponse } from "@/lib/types";
@@ -120,8 +121,9 @@ export function BudgetPanel({
       {/* Header with status and actions */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h3 className="font-display text-lg text-slate-950 dark:text-slate-50">
+          <h3 className="flex items-center gap-2 font-display text-lg text-slate-950 dark:text-slate-50">
             Budget Status
+            <HelpTip code="budget.vsActual" />
           </h3>
           <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
         </div>

@@ -22,6 +22,7 @@ import { formatCurrency, formatDuration } from "@/lib/format";
 import type { ResolvedRate } from "@/lib/types";
 import type { RetainerSummaryResponse } from "@/lib/types";
 import { RetainerIndicator } from "@/components/time-entries/retainer-indicator";
+import { HelpTip } from "@/components/help-tip";
 
 /** Maps backend source enum to human-readable label */
 function formatRateSource(source: string): string {
@@ -272,6 +273,7 @@ export function LogTimeDialog({
             <Label htmlFor="time-billable" className="font-normal">
               Billable
             </Label>
+            <HelpTip code="rates.billableTime" />
           </div>
 
           {/* Rate Preview */}

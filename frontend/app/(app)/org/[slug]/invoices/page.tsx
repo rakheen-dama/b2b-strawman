@@ -7,6 +7,7 @@ import { createMessages } from "@/lib/messages";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { Receipt, CreditCard } from "lucide-react";
 import Link from "next/link";
+import { HelpTip } from "@/components/help-tip";
 
 function computeSummary(invoices: InvoiceResponse[]) {
   const now = new Date();
@@ -106,8 +107,9 @@ export default async function InvoicesPage({
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
+          <h1 className="flex items-center gap-2 font-display text-3xl text-slate-950 dark:text-slate-50">
             Invoices
+            <HelpTip code="invoices.lifecycle" />
           </h1>
           {invoices.length > 0 && (
             <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-300">

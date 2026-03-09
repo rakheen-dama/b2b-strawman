@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/invoices/status-badge";
 import { InvoiceLineTable } from "@/components/invoices/invoice-line-table";
 import { Eye, Copy, Check, RefreshCw } from "lucide-react";
+import { HelpTip } from "@/components/help-tip";
 import { formatCurrency, formatDate } from "@/lib/format";
 import {
   Select,
@@ -408,8 +409,9 @@ export function InvoiceDetailClient({
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-3">
-            <h1 className="font-display text-2xl text-slate-950 dark:text-slate-50">
+            <h1 className="flex items-center gap-2 font-display text-2xl text-slate-950 dark:text-slate-50">
               {invoice.invoiceNumber ?? "Draft Invoice"}
+              <HelpTip code="invoices.numbering" />
             </h1>
             <StatusBadge status={invoice.status} />
           </div>

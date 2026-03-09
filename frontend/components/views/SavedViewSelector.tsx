@@ -3,6 +3,7 @@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Eye, Plus } from "lucide-react";
+import { HelpTip } from "@/components/help-tip";
 import type { EntityType, SavedViewResponse } from "@/lib/types";
 
 interface SavedViewSelectorProps {
@@ -26,7 +27,10 @@ export function SavedViewSelector({
       className="flex items-center gap-3"
       data-testid="saved-view-selector"
     >
-      <Eye className="size-4 text-slate-400" />
+      <div className="flex items-center gap-1">
+        <Eye className="size-4 text-slate-400" />
+        <HelpTip code="views.saved" />
+      </div>
       <Tabs
         value={currentViewId ?? "all"}
         onValueChange={(val) => onViewChange(val === "all" ? null : val)}

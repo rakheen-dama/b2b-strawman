@@ -22,6 +22,7 @@ import {
   Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { HelpTip } from "@/components/help-tip";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -342,16 +343,20 @@ export function TemplateEditorClient({
             Templates
           </Link>
           {readOnly ? (
-            <h1 className="font-display text-lg text-slate-950 dark:text-slate-50">
+            <h1 className="flex items-center gap-2 font-display text-lg text-slate-950 dark:text-slate-50">
               {name}
+              <HelpTip code="templates.variables" />
             </h1>
           ) : (
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="h-8 w-64 font-display text-lg"
-              aria-label="Template name"
-            />
+            <div className="flex items-center gap-2">
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="h-8 w-64 font-display text-lg"
+                aria-label="Template name"
+              />
+              <HelpTip code="templates.variables" />
+            </div>
           )}
           {isDocx && (
             <Badge variant="success">

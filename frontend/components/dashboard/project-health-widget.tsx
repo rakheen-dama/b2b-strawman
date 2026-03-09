@@ -14,6 +14,7 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
+import { HelpTip } from "@/components/help-tip";
 import { HealthBadge } from "@/components/dashboard/health-badge";
 import { CompletionProgressBar } from "@/components/dashboard/completion-progress-bar";
 import type { ProjectHealth } from "@/lib/dashboard-types";
@@ -45,7 +46,10 @@ export function ProjectHealthWidget({
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Project Health</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            Project Health
+            <HelpTip code="dashboard.projectHealth" />
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <EmptyState

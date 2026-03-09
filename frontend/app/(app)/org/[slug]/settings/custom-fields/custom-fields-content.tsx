@@ -33,6 +33,7 @@ import {
   PREREQUISITE_CONTEXT_LABELS,
 } from "@/components/prerequisite/types";
 import { EmptyState } from "@/components/empty-state";
+import { HelpTip } from "@/components/help-tip";
 import { createMessages } from "@/lib/messages";
 
 const ENTITY_TYPE_TABS: { value: EntityType; label: string }[] = [
@@ -70,13 +71,16 @@ export function CustomFieldsContent({
       value={activeTab}
       onValueChange={(v) => setActiveTab(v as EntityType)}
     >
-      <TabsList variant="line">
-        {ENTITY_TYPE_TABS.map((tab) => (
-          <TabsTrigger key={tab.value} value={tab.value}>
-            {tab.label}
-          </TabsTrigger>
-        ))}
-      </TabsList>
+      <div className="flex items-center gap-2">
+        <TabsList variant="line">
+          {ENTITY_TYPE_TABS.map((tab) => (
+            <TabsTrigger key={tab.value} value={tab.value}>
+              {tab.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        <HelpTip code="fields.scoping" />
+      </div>
 
       {ENTITY_TYPE_TABS.map((tab) => (
         <TabsContent key={tab.value} value={tab.value} className="space-y-8">

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { getAuthContext } from "@/lib/auth";
 import { getTags } from "@/lib/api";
+import { HelpTip } from "@/components/help-tip";
 import { TagsContent } from "./tags-content";
 import type { TagResponse } from "@/lib/types";
 
@@ -33,8 +34,9 @@ export default async function TagsSettingsPage({
       </Link>
 
       <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
+        <h1 className="flex items-center gap-2 font-display text-3xl text-slate-950 dark:text-slate-50">
           Tags
+          <HelpTip code="tags.overview" />
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Manage tags for projects, tasks, and customers.

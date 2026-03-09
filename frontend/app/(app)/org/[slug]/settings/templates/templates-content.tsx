@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/table";
 import { TemplateActionsMenu } from "@/components/templates/TemplateActionsMenu";
 import { EmptyState } from "@/components/empty-state";
+import { HelpTip } from "@/components/help-tip";
 import { createMessages } from "@/lib/messages";
 import { UploadDocxDialog } from "./UploadDocxDialog";
 import { BrandingSection } from "./branding-section";
@@ -83,6 +84,7 @@ export function TemplatesContent({
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
         <Select
           value={formatFilter}
           onValueChange={(v) => setFormatFilter(v as TemplateFormat | "ALL")}
@@ -96,6 +98,8 @@ export function TemplatesContent({
             <SelectItem value="DOCX">Word</SelectItem>
           </SelectContent>
         </Select>
+        <HelpTip code="templates.packs" />
+        </div>
         {canManage && (
           <div className="flex gap-2">
             <UploadDocxDialog slug={slug}>

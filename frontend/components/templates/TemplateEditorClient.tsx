@@ -64,6 +64,7 @@ import type { FieldPackStatus } from "@/app/(app)/org/[slug]/settings/templates/
 import type { VariableMetadataResponse } from "@/components/editor/actions";
 import { getClause } from "@/lib/actions/clause-actions";
 import { FieldDiscoveryResults } from "@/app/(app)/org/[slug]/settings/templates/FieldDiscoveryResults";
+import { formatFileSize } from "@/lib/format";
 import type {
   TemplateDetailResponse,
   TemplateCategory,
@@ -74,12 +75,6 @@ const DOCX_MIME_TYPE =
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 const MAX_DOCX_SIZE = 10 * 1024 * 1024; // 10MB
 const MAX_DOCX_SIZE_LABEL = "10 MB";
-
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
 
 function validateDocxFile(f: File): string | null {
   if (f.type !== DOCX_MIME_TYPE && !f.name.toLowerCase().endsWith(".docx")) {
@@ -234,7 +229,7 @@ export function TemplateEditorClient({
   }
 
   // DOCX-specific handlers
-  function handleReplaceFileSelected(f: File) {
+  const handleReplaceFileSelected = useCallback((f: File) => {
     const validationError = validateDocxFile(f);
     if (validationError) {
       setReplaceFileError(validationError);
@@ -243,7 +238,7 @@ export function TemplateEditorClient({
       setReplaceFileError(null);
       setReplaceFile(f);
     }
-  }
+  }, []);
 
   const handleReplaceDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -271,7 +266,7 @@ export function TemplateEditorClient({
     if (files.length > 0) {
       handleReplaceFileSelected(files[0]);
     }
-  }, []);
+  }, [handleReplaceFileSelected]);
 
   const handleReplaceInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -281,7 +276,7 @@ export function TemplateEditorClient({
       }
       e.target.value = "";
     },
-    [],
+    [handleReplaceFileSelected],
   );
 
   async function handleReplaceSubmit() {
@@ -329,7 +324,7 @@ export function TemplateEditorClient({
     navigator.clipboard.writeText(`{{${key}}}`).then(() => {
       setCopiedKey(key);
       setTimeout(() => setCopiedKey(null), 2000);
-    });
+    }).catch(() => { /* clipboard access denied — silently ignore */ });
   }
 
   const hasLegacyContent = template.legacyContent != null;
@@ -568,8 +563,6 @@ export function TemplateEditorClient({
         </div>
       ) : (
         <>
-          {/* Discovered fields for DOCX templates (legacy position, kept for non-DOCX) */}
-
           {/* Legacy content banner */}
           {hasLegacyContent && (
             <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950">

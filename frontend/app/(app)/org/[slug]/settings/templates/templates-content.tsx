@@ -28,6 +28,7 @@ import {
   deleteLogoAction,
   saveBrandingAction,
 } from "./actions";
+import { formatFileSize } from "@/lib/format";
 import type {
   TemplateListResponse,
   TemplateCategory,
@@ -42,12 +43,6 @@ const CATEGORY_LABELS: Record<TemplateCategory, string> = {
   PROJECT_SUMMARY: "Project Summary",
   NDA: "NDA",
 };
-
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
 
 interface TemplatesContentProps {
   slug: string;
@@ -84,21 +79,21 @@ export function TemplatesContent({
 
   return (
     <div className="space-y-8">
-      {canManage && (
-        <div className="flex items-center justify-between">
-          <Select
-            value={formatFilter}
-            onValueChange={(v) => setFormatFilter(v as TemplateFormat | "ALL")}
-          >
-            <SelectTrigger className="w-40" data-testid="format-filter">
-              <SelectValue placeholder="All Formats" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">All Formats</SelectItem>
-              <SelectItem value="TIPTAP">Tiptap</SelectItem>
-              <SelectItem value="DOCX">Word</SelectItem>
-            </SelectContent>
-          </Select>
+      <div className="flex items-center justify-between">
+        <Select
+          value={formatFilter}
+          onValueChange={(v) => setFormatFilter(v as TemplateFormat | "ALL")}
+        >
+          <SelectTrigger className="w-40" data-testid="format-filter">
+            <SelectValue placeholder="All Formats" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">All Formats</SelectItem>
+            <SelectItem value="TIPTAP">Tiptap</SelectItem>
+            <SelectItem value="DOCX">Word</SelectItem>
+          </SelectContent>
+        </Select>
+        {canManage && (
           <div className="flex gap-2">
             <UploadDocxDialog slug={slug}>
               <Button size="sm" variant="soft">
@@ -113,13 +108,14 @@ export function TemplatesContent({
               </Button>
             </Link>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {filteredTemplates.length === 0 ? (
         <p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
-          No templates found. Create one or wait for platform templates to be
-          seeded.
+          {formatFilter !== "ALL"
+            ? "No templates match the selected format."
+            : "No templates found. Create one or wait for platform templates to be seeded."}
         </p>
       ) : (
         categories.map((cat) => (

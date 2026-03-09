@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { generateDocxAction } from "@/app/(app)/org/[slug]/settings/templates/actions";
-import type { GenerateDocxResult } from "@/lib/types";
+import type { GenerateDocxResult, OutputFormat } from "@/lib/types";
 
 interface GenerateDocxDialogProps {
   templateId: string;
@@ -23,8 +23,6 @@ interface GenerateDocxDialogProps {
 }
 
 type DialogState = "idle" | "generating" | "success" | "error";
-
-type OutputFormat = "DOCX" | "PDF" | "BOTH";
 
 const OUTPUT_FORMAT_OPTIONS: { value: OutputFormat; label: string }[] = [
   { value: "DOCX", label: "Word Document (.docx)" },

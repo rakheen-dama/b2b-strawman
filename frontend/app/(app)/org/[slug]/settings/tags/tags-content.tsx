@@ -2,6 +2,8 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/empty-state";
+import { createMessages } from "@/lib/messages";
 import { TagDialog } from "@/components/tags/TagDialog";
 import { DeleteTagDialog } from "@/components/tags/DeleteTagDialog";
 import { Pencil, Plus, Trash2, Tag } from "lucide-react";
@@ -22,6 +24,7 @@ interface TagsContentProps {
 }
 
 export function TagsContent({ slug, tags, canManage }: TagsContentProps) {
+  const { t } = createMessages("empty-states");
   return (
     <div className="space-y-6">
       {/* Actions */}
@@ -38,27 +41,21 @@ export function TagsContent({ slug, tags, canManage }: TagsContentProps) {
 
       {/* Tags Table or Empty State */}
       {tags.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <Tag className="size-12 text-slate-300 dark:text-slate-700" />
-          <h2 className="mt-4 font-display text-lg text-slate-900 dark:text-slate-100">
-            No tags yet
-          </h2>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            {canManage
-              ? "Create your first tag to organize projects, tasks, and customers."
-              : "No tags have been created yet."}
-          </p>
-          {canManage && (
-            <div className="mt-4">
+        <EmptyState
+          icon={Tag}
+          title={t("tags.list.heading")}
+          description={t("tags.list.description")}
+          action={
+            canManage ? (
               <TagDialog slug={slug}>
                 <Button size="sm">
                   <Plus className="mr-1.5 size-4" />
-                  Add Tag
+                  {t("tags.list.cta")}
                 </Button>
               </TagDialog>
-            </div>
-          )}
-        </div>
+            ) : undefined
+          }
+        />
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full">

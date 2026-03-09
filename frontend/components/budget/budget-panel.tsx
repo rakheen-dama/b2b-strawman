@@ -1,12 +1,13 @@
 "use client";
 
-import { Wallet, Pencil, Trash2 } from "lucide-react";
+import { PiggyBank, Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BudgetConfigDialog } from "@/components/budget/budget-config-dialog";
 import { DeleteBudgetDialog } from "@/components/budget/delete-budget-dialog";
+import { createMessages } from "@/lib/messages";
 import { formatCurrency, formatDuration } from "@/lib/format";
 import type { BudgetStatus, BudgetStatusResponse } from "@/lib/types";
 
@@ -86,12 +87,14 @@ export function BudgetPanel({
   canManage,
   defaultCurrency,
 }: BudgetPanelProps) {
+  const { t } = createMessages("empty-states");
+
   if (!budget) {
     return (
       <EmptyState
-        icon={Wallet}
-        title="No budget set"
-        description="Configure a budget to track hours and costs against targets."
+        icon={PiggyBank}
+        title={t("budget.tab.heading")}
+        description={t("budget.tab.description")}
         action={
           canManage ? (
             <BudgetConfigDialog
@@ -100,7 +103,7 @@ export function BudgetPanel({
               existing={null}
               defaultCurrency={defaultCurrency}
             >
-              <Button>Set Budget</Button>
+              <Button>{t("budget.tab.cta")}</Button>
             </BudgetConfigDialog>
           ) : undefined
         }

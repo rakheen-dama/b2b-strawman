@@ -1,5 +1,6 @@
 import { Activity } from "lucide-react";
 import { fetchProjectActivity } from "@/lib/actions/activity";
+import { createMessages } from "@/lib/messages";
 import { EmptyState } from "@/components/empty-state";
 import { ActivityFeedClient } from "@/components/activity/activity-feed-client";
 
@@ -19,11 +20,12 @@ export async function ActivityFeed({ projectId }: ActivityFeedProps) {
   }
 
   if (!initialItems || initialItems.content.length === 0) {
+    const { t } = createMessages("empty-states");
     return (
       <EmptyState
         icon={Activity}
-        title="No activity yet"
-        description="Activity will appear here as team members work on this project."
+        title={t("activity.feed.heading")}
+        description={t("activity.feed.description")}
       />
     );
   }

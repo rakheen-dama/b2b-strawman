@@ -10,6 +10,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { MiniProgressRing } from "@/components/dashboard/mini-progress-ring";
 import type { TeamCapacityGrid } from "@/lib/api/capacity";
@@ -50,9 +51,11 @@ export function TeamCapacityWidget({ data, orgSlug }: TeamCapacityWidgetProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground italic">
-            No team members with capacity data.
-          </p>
+          <EmptyState
+            icon={Users}
+            title="No capacity data"
+            description="Team members with scheduled capacity will appear here."
+          />
         </CardContent>
       </Card>
     );

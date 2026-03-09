@@ -90,7 +90,7 @@ describe("NotificationsPageClient", () => {
       />
     );
 
-    expect(screen.getByText("No notifications")).toBeInTheDocument();
+    expect(screen.getByText("You're all caught up")).toBeInTheDocument();
   });
 
   it("filter toggle switches between all and unread", async () => {

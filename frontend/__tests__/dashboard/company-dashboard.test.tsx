@@ -110,7 +110,7 @@ describe("TeamWorkloadWidget", () => {
     render(<TeamWorkloadWidget data={[]} isAdmin={true} />);
     expect(screen.getByText("Team Workload")).toBeInTheDocument();
     expect(
-      screen.getByText("No time logged this period.")
+      screen.getByText("No time logged")
     ).toBeInTheDocument();
   });
 
@@ -158,7 +158,7 @@ describe("RecentActivityWidget", () => {
     render(<RecentActivityWidget items={[]} orgSlug="acme" />);
     expect(screen.getByText("Recent Activity")).toBeInTheDocument();
     expect(
-      screen.getByText("No recent activity across your projects.")
+      screen.getByText("No recent activity")
     ).toBeInTheDocument();
   });
 

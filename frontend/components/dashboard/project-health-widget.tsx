@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
+import { HeartPulse } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/empty-state";
 import {
   Card,
   CardHeader,
@@ -46,9 +48,11 @@ export function ProjectHealthWidget({
           <CardTitle>Project Health</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground italic">
-            No projects yet...
-          </p>
+          <EmptyState
+            icon={HeartPulse}
+            title="No projects yet"
+            description="Create a project to start tracking health status."
+          />
         </CardContent>
       </Card>
     );

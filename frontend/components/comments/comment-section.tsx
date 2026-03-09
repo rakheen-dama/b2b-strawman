@@ -1,5 +1,6 @@
 import { MessageSquare } from "lucide-react";
 import { fetchComments } from "@/lib/actions/comments";
+import { createMessages } from "@/lib/messages";
 import { EmptyState } from "@/components/empty-state";
 import { AddCommentForm } from "@/components/comments/add-comment-form";
 import { CommentItem } from "@/components/comments/comment-item";
@@ -22,6 +23,7 @@ export async function CommentSection({
   canManageVisibility,
 }: CommentSectionProps) {
   const comments = await fetchComments(projectId, entityType, entityId);
+  const { t } = createMessages("empty-states");
 
   return (
     <div className="space-y-4">
@@ -32,8 +34,8 @@ export async function CommentSection({
       {comments.length === 0 ? (
         <EmptyState
           icon={MessageSquare}
-          title="No comments yet"
-          description="Be the first to add a comment."
+          title={t("comments.section.heading")}
+          description={t("comments.section.description")}
         />
       ) : (
         <div className="space-y-4">

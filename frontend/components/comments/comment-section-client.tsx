@@ -1,8 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { MessageSquare } from "lucide-react";
 import { fetchComments } from "@/lib/actions/comments";
 import type { Comment } from "@/lib/actions/comments";
+import { createMessages } from "@/lib/messages";
+import { EmptyState } from "@/components/empty-state";
 import { AddCommentForm } from "@/components/comments/add-comment-form";
 import { CommentItem } from "@/components/comments/comment-item";
 
@@ -23,6 +26,7 @@ export function CommentSectionClient({
   currentMemberId,
   canManageVisibility,
 }: CommentSectionClientProps) {
+  const { t } = createMessages("empty-states");
   const [comments, setComments] = useState<Comment[] | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -68,9 +72,11 @@ export function CommentSectionClient({
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       {comments.length === 0 && !error ? (
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          No comments yet. Be the first to add one.
-        </p>
+        <EmptyState
+          icon={MessageSquare}
+          title={t("comments.section.heading")}
+          description={t("comments.section.description")}
+        />
       ) : (
         <div className="space-y-3">
           {comments.map((comment) => (

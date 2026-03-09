@@ -57,12 +57,12 @@ describe("ProjectHealthWidget", () => {
 
   it("renders empty state when projects is null", () => {
     render(<ProjectHealthWidget projects={null} orgSlug="acme" />);
-    expect(screen.getByText("No projects yet...")).toBeInTheDocument();
+    expect(screen.getByText("No projects yet")).toBeInTheDocument();
   });
 
   it("renders empty state when projects is empty", () => {
     render(<ProjectHealthWidget projects={[]} orgSlug="acme" />);
-    expect(screen.getByText("No projects yet...")).toBeInTheDocument();
+    expect(screen.getByText("No projects yet")).toBeInTheDocument();
   });
 
   it("renders all projects by default", () => {

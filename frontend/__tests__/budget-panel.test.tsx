@@ -56,14 +56,14 @@ describe("BudgetPanel", () => {
       />
     );
 
-    expect(screen.getByText("No budget set")).toBeInTheDocument();
+    expect(screen.getByText("No budget configured")).toBeInTheDocument();
     expect(
       screen.getByText(
-        "Configure a budget to track hours and costs against targets."
+        "Set a budget to track spending against your project plan. Choose between fixed-price or time-and-materials."
       )
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Set Budget" })
+      screen.getByRole("button", { name: "Configure budget" })
     ).toBeInTheDocument();
   });
 
@@ -78,9 +78,9 @@ describe("BudgetPanel", () => {
       />
     );
 
-    expect(screen.getByText("No budget set")).toBeInTheDocument();
+    expect(screen.getByText("No budget configured")).toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: "Set Budget" })
+      screen.queryByRole("button", { name: "Configure budget" })
     ).not.toBeInTheDocument();
   });
 

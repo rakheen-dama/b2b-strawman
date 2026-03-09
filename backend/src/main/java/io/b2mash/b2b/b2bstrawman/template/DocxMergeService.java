@@ -106,7 +106,7 @@ public class DocxMergeService {
   /**
    * Extracts field paths from a paragraph by concatenating run text and finding {{...}} patterns.
    */
-  List<String> extractFieldPaths(XWPFParagraph para) {
+  private List<String> extractFieldPaths(XWPFParagraph para) {
     List<XWPFRun> runs = para.getRuns();
     if (runs == null || runs.isEmpty()) return List.of();
 
@@ -125,7 +125,7 @@ public class DocxMergeService {
   }
 
   /** Merges {{variable}} placeholders in all cells of a table, including nested tables. */
-  void mergeTable(XWPFTable table, Map<String, Object> context) {
+  private void mergeTable(XWPFTable table, Map<String, Object> context) {
     for (XWPFTableRow row : table.getRows()) {
       for (XWPFTableCell cell : row.getTableCells()) {
         for (XWPFParagraph para : cell.getParagraphs()) {

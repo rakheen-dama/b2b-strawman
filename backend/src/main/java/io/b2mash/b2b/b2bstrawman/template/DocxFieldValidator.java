@@ -13,6 +13,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class DocxFieldValidator {
 
+  /** Result of validating a single field path against the variable metadata registry. */
+  public record FieldValidationResult(String path, String status, String label) {}
+
   private final VariableMetadataRegistry registry;
 
   public DocxFieldValidator(VariableMetadataRegistry registry) {
@@ -24,9 +27,9 @@ public class DocxFieldValidator {
    *
    * @param fieldPaths the field paths discovered from a .docx template
    * @param entityType the template entity type to validate against
-   * @return list of maps with keys: "path", "status" ("VALID"/"UNKNOWN"), "label" (or null)
+   * @return list of validation results with path, status ("VALID"/"UNKNOWN"), and label (or null)
    */
-  public List<Map<String, Object>> validateFields(
+  public List<FieldValidationResult> validateFields(
       List<String> fieldPaths, TemplateEntityType entityType) {
     var response = registry.getVariables(entityType);
 
@@ -42,16 +45,11 @@ public class DocxFieldValidator {
         .map(
             path -> {
               var info = lookup.get(path);
-              Map<String, Object> result = new HashMap<>();
-              result.put("path", path);
               if (info != null) {
-                result.put("status", "VALID");
-                result.put("label", info.label());
+                return new FieldValidationResult(path, "VALID", info.label());
               } else {
-                result.put("status", "UNKNOWN");
-                result.put("label", null);
+                return new FieldValidationResult(path, "UNKNOWN", null);
               }
-              return result;
             })
         .toList();
   }

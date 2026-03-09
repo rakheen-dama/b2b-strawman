@@ -382,21 +382,4 @@ class DocxMergeServiceTest {
       return out.toByteArray();
     }
   }
-
-  private byte[] createMixedFormattingDocx() throws Exception {
-    try (XWPFDocument doc = new XWPFDocument()) {
-      XWPFParagraph para = doc.createParagraph();
-      XWPFRun run1 = para.createRun();
-      run1.setBold(true);
-      run1.setText("Bold: {{");
-      XWPFRun run2 = para.createRun();
-      run2.setItalic(true);
-      run2.setText("customer.name");
-      XWPFRun run3 = para.createRun();
-      run3.setText("}} end");
-      ByteArrayOutputStream out = new ByteArrayOutputStream();
-      doc.write(out);
-      return out.toByteArray();
-    }
-  }
 }

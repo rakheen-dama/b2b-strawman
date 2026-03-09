@@ -7,7 +7,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.SchemaNameGenerator;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -44,19 +43,19 @@ class DocxFieldValidatorTest {
 
     assertThat(results).hasSize(3);
 
-    Map<String, Object> customerName = results.get(0);
-    assertThat(customerName.get("path")).isEqualTo("customer.name");
-    assertThat(customerName.get("status")).isEqualTo("VALID");
-    assertThat(customerName.get("label")).isEqualTo("Customer Name");
+    var customerName = results.get(0);
+    assertThat(customerName.path()).isEqualTo("customer.name");
+    assertThat(customerName.status()).isEqualTo("VALID");
+    assertThat(customerName.label()).isEqualTo("Customer Name");
 
-    Map<String, Object> projectName = results.get(1);
-    assertThat(projectName.get("path")).isEqualTo("project.name");
-    assertThat(projectName.get("status")).isEqualTo("VALID");
-    assertThat(projectName.get("label")).isEqualTo("Project Name");
+    var projectName = results.get(1);
+    assertThat(projectName.path()).isEqualTo("project.name");
+    assertThat(projectName.status()).isEqualTo("VALID");
+    assertThat(projectName.label()).isEqualTo("Project Name");
 
-    Map<String, Object> unknown = results.get(2);
-    assertThat(unknown.get("path")).isEqualTo("nonexistent.field");
-    assertThat(unknown.get("status")).isEqualTo("UNKNOWN");
-    assertThat(unknown.get("label")).isNull();
+    var unknown = results.get(2);
+    assertThat(unknown.path()).isEqualTo("nonexistent.field");
+    assertThat(unknown.status()).isEqualTo("UNKNOWN");
+    assertThat(unknown.label()).isNull();
   }
 }

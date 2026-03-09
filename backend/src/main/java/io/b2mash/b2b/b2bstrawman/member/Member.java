@@ -1,12 +1,17 @@
 package io.b2mash.b2b.b2bstrawman.member;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -34,6 +39,16 @@ public class Member {
 
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
+
+  @Column(name = "org_role_id")
+  private UUID orgRoleId;
+
+  @ElementCollection
+  @CollectionTable(
+      name = "member_capability_overrides",
+      joinColumns = @JoinColumn(name = "member_id"))
+  @Column(name = "override_value")
+  private Set<String> capabilityOverrides = new HashSet<>();
 
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
@@ -80,6 +95,22 @@ public class Member {
 
   public Instant getUpdatedAt() {
     return updatedAt;
+  }
+
+  public UUID getOrgRoleId() {
+    return orgRoleId;
+  }
+
+  public void setOrgRoleId(UUID orgRoleId) {
+    this.orgRoleId = orgRoleId;
+  }
+
+  public Set<String> getCapabilityOverrides() {
+    return capabilityOverrides;
+  }
+
+  public void setCapabilityOverrides(Set<String> capabilityOverrides) {
+    this.capabilityOverrides = new HashSet<>(capabilityOverrides);
   }
 
   public void updateFrom(String email, String name, String avatarUrl, String orgRole) {

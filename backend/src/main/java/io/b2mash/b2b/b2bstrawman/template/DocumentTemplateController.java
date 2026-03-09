@@ -52,12 +52,15 @@ public class DocumentTemplateController {
   @PreAuthorize("isAuthenticated()")
   public ResponseEntity<List<TemplateListResponse>> listTemplates(
       @RequestParam(required = false) TemplateCategory category,
-      @RequestParam(required = false) TemplateEntityType primaryEntityType) {
+      @RequestParam(required = false) TemplateEntityType primaryEntityType,
+      @RequestParam(required = false) TemplateFormat format) {
     List<TemplateListResponse> templates;
     if (category != null) {
       templates = documentTemplateService.listByCategory(category);
     } else if (primaryEntityType != null) {
       templates = documentTemplateService.listByEntityType(primaryEntityType);
+    } else if (format != null) {
+      templates = documentTemplateService.listByFormat(format);
     } else {
       templates = documentTemplateService.listAll();
     }
@@ -221,6 +224,9 @@ public class DocumentTemplateController {
       UUID sourceTemplateId,
       boolean active,
       int sortOrder,
+      String format,
+      String docxFileName,
+      Long docxFileSize,
       Instant createdAt,
       Instant updatedAt) {
 
@@ -236,6 +242,9 @@ public class DocumentTemplateController {
           dt.getSourceTemplateId(),
           dt.isActive(),
           dt.getSortOrder(),
+          dt.getFormat().name(),
+          dt.getDocxFileName(),
+          dt.getDocxFileSize(),
           dt.getCreatedAt(),
           dt.getUpdatedAt());
     }
@@ -258,6 +267,8 @@ public class DocumentTemplateController {
       boolean active,
       int sortOrder,
       List<Map<String, String>> requiredContextFields,
+      String format,
+      List<Map<String, Object>> discoveredFields,
       Instant createdAt,
       Instant updatedAt) {
 
@@ -279,11 +290,13 @@ public class DocumentTemplateController {
           dt.isActive(),
           dt.getSortOrder(),
           dt.getRequiredContextFields(),
+          dt.getFormat().name(),
+          dt.getDiscoveredFields(),
           dt.getCreatedAt(),
           dt.getUpdatedAt());
     }
 
-    /** Returns a copy with replaced content — avoids fragile 18-field manual reconstruction. */
+    /** Returns a copy with replaced content — avoids fragile manual reconstruction. */
     public TemplateDetailResponse withContent(Map<String, Object> newContent) {
       return new TemplateDetailResponse(
           id,
@@ -302,6 +315,8 @@ public class DocumentTemplateController {
           active,
           sortOrder,
           requiredContextFields,
+          format,
+          discoveredFields,
           createdAt,
           updatedAt);
     }

@@ -23,6 +23,12 @@ public interface DocumentTemplateRepository extends JpaRepository<DocumentTempla
   List<DocumentTemplate> findByPrimaryEntityTypeAndActiveTrueOrderBySortOrder(
       @Param("entityType") TemplateEntityType entityType);
 
+  @Query(
+      "SELECT dt FROM DocumentTemplate dt WHERE dt.format = :format AND dt.active = true"
+          + " ORDER BY dt.sortOrder, dt.name")
+  List<DocumentTemplate> findByFormatAndActiveTrueOrderBySortOrder(
+      @Param("format") TemplateFormat format);
+
   @Query("SELECT dt FROM DocumentTemplate dt WHERE dt.slug = :slug")
   Optional<DocumentTemplate> findBySlug(@Param("slug") String slug);
 

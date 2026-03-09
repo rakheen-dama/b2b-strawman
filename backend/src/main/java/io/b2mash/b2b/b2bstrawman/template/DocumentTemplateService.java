@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
+import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.CreateTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.TemplateDetailResponse;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.TemplateListResponse;
@@ -43,6 +44,7 @@ public class DocumentTemplateService {
   private final TemplateClauseSync templateClauseSync;
   private final FieldDefinitionRepository fieldDefinitionRepository;
   private final TemplateVariableAnalyzer templateVariableAnalyzer;
+  private final StorageService storageService;
 
   public DocumentTemplateService(
       DocumentTemplateRepository documentTemplateRepository,
@@ -50,13 +52,15 @@ public class DocumentTemplateService {
       AuditService auditService,
       TemplateClauseSync templateClauseSync,
       FieldDefinitionRepository fieldDefinitionRepository,
-      TemplateVariableAnalyzer templateVariableAnalyzer) {
+      TemplateVariableAnalyzer templateVariableAnalyzer,
+      StorageService storageService) {
     this.documentTemplateRepository = documentTemplateRepository;
     this.clauseRepository = clauseRepository;
     this.auditService = auditService;
     this.templateClauseSync = templateClauseSync;
     this.fieldDefinitionRepository = fieldDefinitionRepository;
     this.templateVariableAnalyzer = templateVariableAnalyzer;
+    this.storageService = storageService;
   }
 
   @Transactional(readOnly = true)
@@ -78,6 +82,13 @@ public class DocumentTemplateService {
     return documentTemplateRepository
         .findByPrimaryEntityTypeAndActiveTrueOrderBySortOrder(entityType)
         .stream()
+        .map(TemplateListResponse::from)
+        .toList();
+  }
+
+  @Transactional(readOnly = true)
+  public List<TemplateListResponse> listByFormat(TemplateFormat format) {
+    return documentTemplateRepository.findByFormatAndActiveTrueOrderBySortOrder(format).stream()
         .map(TemplateListResponse::from)
         .toList();
   }
@@ -114,6 +125,7 @@ public class DocumentTemplateService {
         new DocumentTemplate(entityType, request.name(), finalSlug, category, request.content());
     dt.setDescription(request.description());
     dt.setCss(request.css());
+    validateFormatConsistency(dt);
     if (request.requiredContextFields() != null) {
       validateRequiredContextFieldEntries(request.requiredContextFields());
       dt.setRequiredContextFields(request.requiredContextFields());
@@ -156,6 +168,7 @@ public class DocumentTemplateService {
             .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", id));
 
     validateTiptapContent(request.content());
+    validateFormatConsistency(dt);
 
     // Track changed fields for audit
     var changedFields = new ArrayList<String>();
@@ -226,6 +239,12 @@ public class DocumentTemplateService {
         documentTemplateRepository
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", id));
+
+    // Clean up DOCX S3 file if present
+    if (dt.getFormat() == TemplateFormat.DOCX && dt.getDocxS3Key() != null) {
+      storageService.delete(dt.getDocxS3Key());
+      log.info("Deleted DOCX S3 file: key={}", dt.getDocxS3Key());
+    }
 
     dt.deactivate();
     documentTemplateRepository.save(dt);
@@ -426,6 +445,20 @@ public class DocumentTemplateService {
     void addMissing(String variableKey) {
       missingFields.add(variableKey);
     }
+  }
+
+  private void validateFormatConsistency(DocumentTemplate dt) {
+    if (dt.getFormat() == TemplateFormat.TIPTAP) {
+      if (dt.getDocxS3Key() != null) {
+        throw new InvalidStateException(
+            "Invalid format consistency", "TIPTAP templates must not have a DOCX S3 key set");
+      }
+      if (dt.getDocxFileName() != null) {
+        throw new InvalidStateException(
+            "Invalid format consistency", "TIPTAP templates must not have a DOCX file name set");
+      }
+    }
+    // DOCX templates: content may be null, docxS3Key may be null pre-upload
   }
 
   private void validateRequiredContextFieldEntries(List<Map<String, String>> entries) {

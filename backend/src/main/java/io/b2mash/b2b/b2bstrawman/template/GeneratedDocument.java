@@ -60,6 +60,13 @@ public class GeneratedDocument {
   @Column(name = "clause_snapshots", columnDefinition = "jsonb")
   private List<Map<String, Object>> clauseSnapshots;
 
+  @Enumerated(EnumType.STRING)
+  @Column(name = "output_format", nullable = false)
+  private OutputFormat outputFormat = OutputFormat.PDF;
+
+  @Column(name = "docx_s3_key", length = 500)
+  private String docxS3Key;
+
   @Column(name = "generated_at", nullable = false, updatable = false)
   private Instant generatedAt;
 
@@ -151,5 +158,21 @@ public class GeneratedDocument {
 
   public Instant getGeneratedAt() {
     return generatedAt;
+  }
+
+  public OutputFormat getOutputFormat() {
+    return outputFormat;
+  }
+
+  public void setOutputFormat(OutputFormat outputFormat) {
+    this.outputFormat = outputFormat;
+  }
+
+  public String getDocxS3Key() {
+    return docxS3Key;
+  }
+
+  public void setDocxS3Key(String docxS3Key) {
+    this.docxS3Key = docxS3Key;
   }
 }

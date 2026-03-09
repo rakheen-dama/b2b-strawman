@@ -33,6 +33,11 @@ public class GatewaySecurityConfig {
   }
 
   @Bean
+  public CookieCsrfTokenRepository csrfTokenRepository() {
+    return CookieCsrfTokenRepository.withHttpOnlyFalse();
+  }
+
+  @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .authorizeHttpRequests(
@@ -56,7 +61,7 @@ public class GatewaySecurityConfig {
                     .deleteCookies("SESSION"))
         .csrf(
             csrf ->
-                csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                csrf.csrfTokenRepository(csrfTokenRepository())
                     .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
                     // All requests come server-to-server from Next.js, not from browser JS.
                     // SESSION cookie + SameSite=Lax + CORS provide sufficient CSRF protection.

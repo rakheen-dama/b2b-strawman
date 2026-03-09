@@ -114,8 +114,9 @@ class GatewaySecurityConfigTest {
 
   @Test
   void csrf_postWithoutTokenReturns403() throws Exception {
-    // POST without CSRF token should be rejected even for authenticated users
-    mockMvc.perform(post("/bff/me").with(oauth2Login())).andExpect(status().isForbidden());
+    // POST without CSRF token should be rejected on CSRF-protected paths.
+    // /bff/** is CSRF-exempt, so use /logout which requires CSRF.
+    mockMvc.perform(post("/logout").with(oauth2Login())).andExpect(status().isForbidden());
   }
 
   @Test

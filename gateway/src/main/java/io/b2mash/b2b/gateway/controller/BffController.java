@@ -2,6 +2,7 @@ package io.b2mash.b2b.gateway.controller;
 
 import io.b2mash.b2b.gateway.service.KeycloakAdminClient;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -12,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,13 +29,16 @@ public class BffController {
   private static final Logger log = LoggerFactory.getLogger(BffController.class);
 
   private final KeycloakAdminClient keycloakAdmin;
+  private final CookieCsrfTokenRepository csrfTokenRepository;
   private final boolean selfServiceOrgCreationEnabled;
 
   public BffController(
       KeycloakAdminClient keycloakAdmin,
+      CookieCsrfTokenRepository csrfTokenRepository,
       @Value("${app.self-service-org-creation.enabled:false}")
           boolean selfServiceOrgCreationEnabled) {
     this.keycloakAdmin = keycloakAdmin;
+    this.csrfTokenRepository = csrfTokenRepository;
     this.selfServiceOrgCreationEnabled = selfServiceOrgCreationEnabled;
   }
 
@@ -61,18 +66,25 @@ public class BffController {
   /** Response DTO after creating an organization. */
   public record CreateOrgResponse(String orgId, String slug) {}
 
-  /** Returns the current CSRF token so the SPA can perform form POSTs (e.g., logout). */
+  /**
+   * Returns the current CSRF token so the SPA can perform form POSTs (e.g., logout).
+   *
+   * <p>Loads the raw token directly from the {@link CookieCsrfTokenRepository} instead of the
+   * request attribute, which is XOR-masked by {@code SpaCsrfTokenRequestHandler}. Form submissions
+   * use the plain CSRF resolver (no header), so the submitted value must match the raw cookie
+   * value. XOR-masked tokens only work when sent via the {@code X-XSRF-TOKEN} header.
+   */
   @GetMapping("/csrf")
-  public ResponseEntity<Map<String, String>> csrf(HttpServletRequest request) {
-    CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
+  public ResponseEntity<Map<String, String>> csrf(
+      HttpServletRequest request, HttpServletResponse response) {
+    CsrfToken csrfToken = csrfTokenRepository.loadToken(request);
     if (csrfToken == null) {
-      return ResponseEntity.ok(Map.of());
+      csrfToken = csrfTokenRepository.generateToken(request);
+      csrfTokenRepository.saveToken(csrfToken, request, response);
     }
-    // Force lazy token generation
-    String token = csrfToken.getToken();
     return ResponseEntity.ok(
         Map.of(
-            "token", token,
+            "token", csrfToken.getToken(),
             "parameterName", csrfToken.getParameterName(),
             "headerName", csrfToken.getHeaderName()));
   }

@@ -1,0 +1,19 @@
+{
+  "permission": {
+    "denied": {
+      "heading": "You don't have access to this feature",
+      "description": "Contact your organisation admin to update your role.",
+      "cta": "Go to dashboard"
+    }
+  },
+  "actions": {
+    "retry": "Try again",
+    "refresh": "Refresh page",
+    "goBack": "Go back",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "create": "Create",
+    "edit": "Edit"
+  }
+}

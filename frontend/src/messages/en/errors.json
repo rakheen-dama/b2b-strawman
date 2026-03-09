@@ -1,0 +1,23 @@
+{
+  "api": {
+    "validation": "The submitted data is invalid. Please check the highlighted fields and try again.",
+    "forbidden": "You don't have permission to perform this action. Contact your organisation admin to update your role.",
+    "notFound": "The requested resource could not be found. It may have been deleted or moved.",
+    "conflict": "This record was updated by someone else. Refresh the page to see the latest version.",
+    "serverError": "Something went wrong on our end. Please try again in a moment.",
+    "networkError": "Unable to reach the server. Check your connection and try again.",
+    "rateLimited": "Too many requests. Please wait a moment and try again."
+  },
+  "validation": {
+    "required": "This field is required.",
+    "email": "Please enter a valid email address.",
+    "positiveNumber": "Must be a positive number.",
+    "maxLength": "Must be {{max}} characters or fewer.",
+    "minLength": "Must be at least {{min}} characters.",
+    "url": "Please enter a valid URL."
+  },
+  "boundary": {
+    "heading": "Something went wrong",
+    "description": "An unexpected error occurred while loading this page. Try refreshing, or go back and try again."
+  }
+}

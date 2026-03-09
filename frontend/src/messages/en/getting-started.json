@@ -1,0 +1,35 @@
+{
+  "card": {
+    "title": "Getting started with DocTeams",
+    "subtitle": "Complete these steps to set up your organisation",
+    "progress": "{{completed}} of {{total}} complete",
+    "allComplete": "You're all set! Your organisation is ready to go.",
+    "dismiss": "Dismiss",
+    "dismissConfirm": "Are you sure? This can't be undone.",
+    "dismissCancel": "Cancel"
+  },
+  "create_project": {
+    "label": "Create your first project",
+    "description": "Projects are where your team organises work, tracks time, and manages documents."
+  },
+  "add_customer": {
+    "label": "Add a customer",
+    "description": "Customers represent the organisations you serve. Link them to projects for invoicing."
+  },
+  "invite_member": {
+    "label": "Invite a team member",
+    "description": "Collaboration is better together. Invite colleagues to start working as a team."
+  },
+  "log_time": {
+    "label": "Log time on a task",
+    "description": "Time tracking powers invoicing, budgets, and profitability reports."
+  },
+  "setup_rates": {
+    "label": "Set up your rate card",
+    "description": "Define billing and cost rates to enable profitability tracking and accurate invoicing."
+  },
+  "create_invoice": {
+    "label": "Generate your first invoice",
+    "description": "Pull tracked time into a professional invoice. Send it to your client directly from DocTeams."
+  }
+}

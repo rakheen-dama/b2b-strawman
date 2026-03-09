@@ -1,0 +1,108 @@
+{
+  "rates": {
+    "hierarchy": {
+      "title": "Rate card hierarchy",
+      "body": "Rates follow a three-level hierarchy: organisation defaults, project overrides, and customer overrides. A more specific rate always takes precedence. For example, a customer-specific rate overrides the project rate, which overrides the org default."
+    },
+    "costVsBilling": {
+      "title": "Cost rates vs. billing rates",
+      "body": "Billing rates are what you charge your clients per hour. Cost rates represent your internal cost per team member — typically their salary or contractor rate divided by working hours. The difference between billing and cost rates drives your profitability metrics."
+    },
+    "billableTime": {
+      "title": "Billable vs. non-billable time",
+      "body": "Billable time is work that can be charged to a client and appears on invoices. Non-billable time — such as internal meetings, admin, or professional development — is tracked for effort visibility but is not invoiced."
+    },
+    "currency": {
+      "title": "Currency settings",
+      "body": "Your organisation's currency applies to all rates, budgets, and invoices. Choose the currency you invoice your clients in. This setting affects display formatting across the platform."
+    },
+    "snapshots": {
+      "title": "Rate snapshots",
+      "body": "When a time entry is logged or an invoice is generated, the current rate is captured as a snapshot. If you change a rate later, existing time entries and invoices retain their original rate. This ensures historical accuracy in your financial records."
+    }
+  },
+  "budget": {
+    "types": {
+      "title": "Budget types",
+      "body": "A fixed budget sets a capped monetary amount for the project. Time and materials tracks hours worked against an estimated total. Choose fixed for predictable-cost projects and T&M for ongoing or variable-scope work."
+    },
+    "alerts": {
+      "title": "Alert thresholds",
+      "body": "Set percentage thresholds (e.g., 75%, 90%) to receive notifications when your project budget reaches those levels. Alerts help you take action before a budget is fully consumed."
+    },
+    "vsActual": {
+      "title": "Budget vs. actual",
+      "body": "This comparison shows your budgeted amount alongside actual costs calculated from logged time and cost rates. It helps you gauge whether a project is on track financially or heading over budget."
+    }
+  },
+  "invoices": {
+    "lifecycle": {
+      "title": "Invoice lifecycle",
+      "body": "Invoices start as drafts, where you can edit line items and details. Once sent to a client, an invoice is locked. It then moves to paid when payment is received, or marked overdue if payment is late. Only draft invoices can be modified."
+    },
+    "unbilledTime": {
+      "title": "Unbilled time",
+      "body": "Unbilled time entries are hours logged against tasks that have not yet been included on an invoice. Use the invoice generator to pull unbilled time into a new invoice for a specific customer and date range."
+    },
+    "numbering": {
+      "title": "Invoice numbering",
+      "body": "Invoice numbers are generated sequentially (e.g., INV-001, INV-002). The format uses a prefix followed by a zero-padded counter that increments automatically. This ensures every invoice has a unique, sortable reference."
+    }
+  },
+  "templates": {
+    "variables": {
+      "title": "Template variables",
+      "body": "Use {{variable}} syntax in your templates to insert dynamic data. When a document is generated, variables like {{project.name}}, {{customer.name}}, and {{invoice.total}} are replaced with real values from your project, customer, or invoice."
+    },
+    "tiptapVsWord": {
+      "title": "Tiptap vs. Word templates",
+      "body": "Tiptap templates are rich-text templates edited directly in your browser with a visual editor. Word (.docx) templates are uploaded files that use mail-merge style placeholders. Choose Tiptap for simple documents and Word for complex formatting needs."
+    },
+    "packs": {
+      "title": "Template packs",
+      "body": "Template packs are pre-built collections of common document types — proposals, engagement letters, invoices. Clone a pack to get started quickly, then customise the templates to match your organisation's branding and terminology."
+    }
+  },
+  "fields": {
+    "types": {
+      "title": "Field types",
+      "body": "Choose from text, number, date, single-select, or multi-select field types. Text fields capture free-form input. Number and date fields validate their format. Select fields let you define a list of options to choose from."
+    },
+    "scoping": {
+      "title": "Field scoping",
+      "body": "Custom fields can be scoped to projects, customers, or tasks. A project-scoped field appears on all projects but not on customers or tasks. This keeps forms focused and avoids irrelevant fields cluttering your data entry."
+    }
+  },
+  "dashboard": {
+    "utilisation": {
+      "title": "Utilisation rate",
+      "body": "Utilisation measures the percentage of total tracked time that is billable. A higher rate means more of your team's effort is generating revenue. Industry benchmarks typically range from 60% to 80%."
+    },
+    "projectHealth": {
+      "title": "Project health",
+      "body": "Project health combines budget usage, timeline progress, and task completion into an overall status indicator. It provides a quick visual signal to help you identify projects that may need attention."
+    },
+    "profitability": {
+      "title": "Profitability margin",
+      "body": "Profitability is calculated as revenue (from billing rates) minus cost (from cost rates), shown as a percentage. It tells you how much margin you're earning on each project, customer, or across the organisation."
+    }
+  },
+  "views": {
+    "saved": {
+      "title": "Saved views",
+      "body": "Save your current filter, sort, and column configuration as a named view. Switch between views to see your data from different angles — for example, a view for active projects only, or tasks due this week."
+    }
+  },
+  "tags": {
+    "overview": {
+      "title": "Tags",
+      "body": "Tags are colour-coded labels you can attach to projects, tasks, and customers. Use them to categorise work by type, priority, department, or any system that fits your workflow. Items can have multiple tags."
+    }
+  },
+  "notifications": {
+    "preferences": {
+      "title": "Notification preferences",
+      "body": "Control which events trigger notifications and how you receive them. For each event type — such as task assignments, comments, or budget alerts — choose between in-app notifications, email, or both."
+    }
+  }
+}

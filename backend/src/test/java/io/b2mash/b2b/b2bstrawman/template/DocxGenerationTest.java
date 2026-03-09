@@ -279,6 +279,106 @@ class DocxGenerationTest {
     assertThat(fileName).contains("test-project-alpha");
   }
 
+  @Test
+  @Order(9)
+  void generateDocx_outputFormatDocx_noPdfGenerated() throws Exception {
+    var requestBody =
+        objectMapper.writeValueAsString(Map.of("entityId", projectId, "outputFormat", "DOCX"));
+
+    mockMvc
+        .perform(
+            post("/api/templates/{id}/generate-docx", docxTemplateId)
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.outputFormat").value("DOCX"))
+        .andExpect(jsonPath("$.downloadUrl").exists())
+        .andExpect(jsonPath("$.pdfDownloadUrl").doesNotExist());
+  }
+
+  @Test
+  @Order(10)
+  void generateDocx_outputFormatPdf_converterUnavailable_returnsDocxWithWarning() throws Exception {
+    // In CI/test env, LibreOffice is not installed and docx4j may fail on simple DOCX
+    // so this tests the graceful degradation path
+    var requestBody =
+        objectMapper.writeValueAsString(Map.of("entityId", projectId, "outputFormat", "PDF"));
+
+    var result =
+        mockMvc
+            .perform(
+                post("/api/templates/{id}/generate-docx", docxTemplateId)
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.downloadUrl").exists())
+            .andReturn();
+
+    String responseBody = result.getResponse().getContentAsString();
+    String outputFormat = JsonPath.read(responseBody, "$.outputFormat");
+
+    // Either PDF conversion succeeded or graceful degradation to DOCX with warning
+    if ("DOCX".equals(outputFormat)) {
+      List<String> warnings = JsonPath.read(responseBody, "$.warnings");
+      assertThat(warnings).contains("PDF conversion unavailable. DOCX output returned instead.");
+    } else {
+      assertThat(outputFormat).isEqualTo("PDF");
+    }
+  }
+
+  @Test
+  @Order(11)
+  void generateDocx_outputFormatBoth_returnsBothOrDocxWithWarning() throws Exception {
+    var requestBody =
+        objectMapper.writeValueAsString(Map.of("entityId", projectId, "outputFormat", "BOTH"));
+
+    var result =
+        mockMvc
+            .perform(
+                post("/api/templates/{id}/generate-docx", docxTemplateId)
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.downloadUrl").exists())
+            .andReturn();
+
+    String responseBody = result.getResponse().getContentAsString();
+    String outputFormat = JsonPath.read(responseBody, "$.outputFormat");
+
+    // BOTH is request-only — stored format is always DOCX
+    assertThat(outputFormat).isEqualTo("DOCX");
+
+    // If converter was available, we get pdfDownloadUrl; otherwise a warning
+    String pdfUrl = JsonPath.read(responseBody, "$.pdfDownloadUrl");
+    List<String> warnings = JsonPath.read(responseBody, "$.warnings");
+
+    if (pdfUrl == null) {
+      assertThat(warnings).contains("PDF conversion unavailable. DOCX output returned instead.");
+    } else {
+      assertThat(pdfUrl).isNotEmpty();
+    }
+  }
+
+  @Test
+  @Order(12)
+  void generateDocx_noOutputFormat_defaultsToDocx() throws Exception {
+    // Omit outputFormat — should default to DOCX
+    var requestBody = objectMapper.writeValueAsString(Map.of("entityId", projectId));
+
+    mockMvc
+        .perform(
+            post("/api/templates/{id}/generate-docx", docxTemplateId)
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.outputFormat").value("DOCX"))
+        .andExpect(jsonPath("$.pdfDownloadUrl").doesNotExist());
+  }
+
   // --- Helpers ---
 
   private byte[] createTestDocx(String text) throws Exception {

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { FileText, ChevronDown, Loader2 } from "lucide-react";
+import { FileText, FileType, ChevronDown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { GenerateDocumentDialog } from "@/components/templates/GenerateDocumentDialog";
+import { GenerateDocxDialog } from "@/components/templates/GenerateDocxDialog";
 import { PrerequisiteModal } from "@/components/prerequisite/prerequisite-modal";
 import { checkPrerequisitesAction } from "@/lib/actions/prerequisite-actions";
 import type { PrerequisiteViolation } from "@/components/prerequisite/types";
@@ -109,13 +110,18 @@ export function GenerateDocumentDropdown({
                 }
               }}
             >
+              {tpl.format === "DOCX" ? (
+                <FileType className="mr-1.5 size-4 text-blue-600" />
+              ) : (
+                <FileText className="mr-1.5 size-4" />
+              )}
               {tpl.name}
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {selectedTemplate && (
+      {selectedTemplate && selectedTemplate.format !== "DOCX" && (
         <GenerateDocumentDialog
           templateId={selectedTemplate.id}
           templateName={selectedTemplate.name}
@@ -126,6 +132,17 @@ export function GenerateDocumentDropdown({
           onSaved={onDocumentSaved}
           customerId={customerId}
           isAdmin={isAdmin}
+        />
+      )}
+
+      {selectedTemplate && selectedTemplate.format === "DOCX" && (
+        <GenerateDocxDialog
+          templateId={selectedTemplate.id}
+          templateName={selectedTemplate.name}
+          entityId={entityId}
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          onGenerated={onDocumentSaved}
         />
       )}
 

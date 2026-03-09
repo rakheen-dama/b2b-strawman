@@ -1193,6 +1193,19 @@ export interface GeneratedDocumentListResponse {
   generatedAt: string;
 }
 
+export interface GenerateDocxResult {
+  id: string;
+  templateId: string;
+  templateName: string;
+  outputFormat: string;
+  fileName: string;
+  downloadUrl: string;
+  pdfDownloadUrl: string | null;
+  fileSize: number;
+  generatedAt: string;
+  warnings: string[];
+}
+
 // ---- Checklist Templates (from ChecklistTemplateController.java) ----
 
 export interface ChecklistTemplateItemResponse {

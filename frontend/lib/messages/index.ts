@@ -11,7 +11,7 @@ export type MessageNamespace =
   | "getting-started"
   | "common";
 
-export interface UseMessageReturn {
+export interface MessagesReturn {
   t: (code: string, interpolations?: Record<string, string>) => string;
 }
 
@@ -41,10 +41,10 @@ function resolve(
   return typeof result === "string" ? result : undefined;
 }
 
-export function useMessage(
+// TODO: add locale parameter when multi-locale support is needed
+export function createMessages(
   namespace: MessageNamespace,
-  _locale?: string,
-): UseMessageReturn {
+): MessagesReturn {
   const messages = namespaces[namespace];
 
   const t = (
@@ -55,7 +55,7 @@ export function useMessage(
 
     if (value === undefined) {
       if (process.env.NODE_ENV === "development") {
-        console.warn(`[useMessage] Missing key: ${namespace}.${code}`);
+        console.warn(`[createMessages] Missing key: ${namespace}.${code}`);
       }
       return code;
     }

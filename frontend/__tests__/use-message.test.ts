@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { useMessage } from "@/src/messages";
+import { createMessages } from "@/lib/messages";
 
-describe("useMessage hook", () => {
+describe("createMessages", () => {
   const originalNodeEnv = process.env.NODE_ENV;
 
   afterEach(() => {
@@ -10,7 +10,7 @@ describe("useMessage hook", () => {
   });
 
   it("resolves a simple key from namespace", () => {
-    const { t } = useMessage("errors");
+    const { t } = createMessages("errors");
     const result = t("api.forbidden");
     expect(result).toBeTypeOf("string");
     expect(result.length).toBeGreaterThan(0);
@@ -18,7 +18,7 @@ describe("useMessage hook", () => {
   });
 
   it("resolves a nested dot-path key", () => {
-    const { t } = useMessage("empty-states");
+    const { t } = createMessages("empty-states");
     const result = t("projects.list.heading");
     expect(result).toBeTypeOf("string");
     expect(result.length).toBeGreaterThan(0);
@@ -26,14 +26,14 @@ describe("useMessage hook", () => {
   });
 
   it("interpolates {{variable}} tokens", () => {
-    const { t } = useMessage("errors");
+    const { t } = createMessages("errors");
     const result = t("validation.maxLength", { max: "100" });
     expect(result).toContain("100");
     expect(result).not.toContain("{{max}}");
   });
 
   it("interpolates multiple variables", () => {
-    const { t } = useMessage("getting-started");
+    const { t } = createMessages("getting-started");
     const result = t("card.progress", { completed: "3", total: "6" });
     expect(result).toContain("3");
     expect(result).toContain("6");
@@ -43,7 +43,7 @@ describe("useMessage hook", () => {
   it("returns raw code for missing key in production", () => {
     process.env.NODE_ENV = "production";
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const { t } = useMessage("errors");
+    const { t } = createMessages("errors");
     const result = t("nonexistent.key.here");
     expect(result).toBe("nonexistent.key.here");
     expect(warnSpy).not.toHaveBeenCalled();
@@ -52,10 +52,10 @@ describe("useMessage hook", () => {
   it("logs console.warn for missing key in development", () => {
     process.env.NODE_ENV = "development";
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const { t } = useMessage("errors");
+    const { t } = createMessages("errors");
     t("nonexistent.key.here");
     expect(warnSpy).toHaveBeenCalledWith(
-      "[useMessage] Missing key: errors.nonexistent.key.here",
+      "[createMessages] Missing key: errors.nonexistent.key.here",
     );
   });
 });

@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.apache.poi.UnsupportedFileFormatException;
+import org.apache.poi.ooxml.POIXMLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -240,7 +242,7 @@ public class DocumentTemplateService {
     List<String> fieldPaths;
     try {
       fieldPaths = docxMergeService.discoverFields(new ByteArrayInputStream(fileBytes));
-    } catch (Exception e) {
+    } catch (IOException | POIXMLException | UnsupportedFileFormatException e) {
       throw new InvalidStateException(
           "Corrupt file", "The uploaded file could not be parsed as a valid .docx document");
     }
@@ -694,7 +696,7 @@ public class DocumentTemplateService {
     List<String> fieldPaths;
     try {
       fieldPaths = docxMergeService.discoverFields(new ByteArrayInputStream(fileBytes));
-    } catch (Exception e) {
+    } catch (IOException | POIXMLException | UnsupportedFileFormatException e) {
       throw new InvalidStateException(
           "Corrupt file", "The uploaded file could not be parsed as a valid .docx document");
     }
@@ -715,16 +717,19 @@ public class DocumentTemplateService {
                 })
             .toList();
 
-    // Overwrite existing S3 object with same key
-    storageService.upload(dt.getDocxS3Key(), fileBytes, DOCX_CONTENT_TYPE);
-
-    // Update entity metadata
+    // Update entity metadata and save BEFORE S3 upload — if DB save fails, old S3 file is
+    // preserved.
+    // If S3 upload fails after DB commit, metadata is slightly ahead but the old file is intact,
+    // which is recoverable. The reverse (S3 overwrite before DB save) risks permanent file loss.
     dt.setDocxFileName(safeFilename);
     dt.setDocxFileSize(file.getSize());
     dt.setDiscoveredFields(discoveredFields);
     dt.touchUpdatedAt();
 
     dt = documentTemplateRepository.save(dt);
+
+    // Overwrite existing S3 object with same key AFTER DB save
+    storageService.upload(dt.getDocxS3Key(), fileBytes, DOCX_CONTENT_TYPE);
 
     log.info(
         "Replaced DOCX template file: id={}, slug={}, fields={}",

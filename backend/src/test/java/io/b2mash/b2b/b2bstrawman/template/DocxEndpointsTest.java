@@ -46,6 +46,7 @@ class DocxEndpointsTest {
 
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_docx_endpoints_test";
+  private static final String ORG_ID_B = "org_docx_endpoints_test_b";
   private static final String DOCX_CONTENT_TYPE =
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
@@ -63,6 +64,16 @@ class DocxEndpointsTest {
         ORG_ID, "user_endpoints_owner", "endpoints_owner@test.com", "Endpoints Owner", "owner");
     syncMember(
         ORG_ID, "user_endpoints_member", "endpoints_member@test.com", "Endpoints Member", "member");
+
+    // --- Tenant B (for cross-tenant isolation test) ---
+    provisioningService.provisionTenant(ORG_ID_B, "DOCX Endpoints Test Org B");
+    planSyncService.syncPlan(ORG_ID_B, "pro-plan");
+    syncMember(
+        ORG_ID_B,
+        "user_endpoints_owner_b",
+        "endpoints_owner_b@test.com",
+        "Endpoints Owner B",
+        "owner");
 
     // Upload a DOCX template for use in subsequent tests
     byte[] docxBytes = createTestDocx("Hello {{customer.name}}, project {{project.name}}!");
@@ -99,6 +110,15 @@ class DocxEndpointsTest {
                 j.subject("user_endpoints_member")
                     .claim("o", Map.of("id", ORG_ID, "rol", "member")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+
+  private JwtRequestPostProcessor ownerJwtTenantB() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_endpoints_owner_b")
+                    .claim("o", Map.of("id", ORG_ID_B, "rol", "owner")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
   }
 
   // --- Member sync helper ---
@@ -291,5 +311,15 @@ class DocxEndpointsTest {
                     })
                 .with(memberJwt()))
         .andExpect(status().isForbidden());
+  }
+
+  @Test
+  @Order(9)
+  void getFields_crossTenant_returns404() throws Exception {
+    // Tenant B's owner tries to access Tenant A's template — should get 404 (schema isolation)
+    mockMvc
+        .perform(
+            get("/api/templates/" + uploadedTemplateId + "/docx/fields").with(ownerJwtTenantB()))
+        .andExpect(status().isNotFound());
   }
 }

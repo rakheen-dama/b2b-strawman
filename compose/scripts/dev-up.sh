@@ -108,13 +108,16 @@ if [[ $ELAPSED -ge 120 ]]; then
   exit 1
 fi
 
-# Disable HTTPS requirement on master realm (allows admin console over HTTP in dev)
+# Disable HTTPS requirement on master realm (allows admin console over HTTP in dev).
+# Uses direct SQL — more reliable than kcadm.sh which can fail if Keycloak is still initializing.
 printf "  Keycloak master realm SSL fix... "
-docker exec b2b-keycloak /opt/keycloak/bin/kcadm.sh config credentials \
-  --server http://localhost:8180 --realm master --user admin --password admin > /dev/null 2>&1 \
-  && docker exec b2b-keycloak /opt/keycloak/bin/kcadm.sh update realms/master \
-  -s sslRequired=NONE > /dev/null 2>&1 \
-  && echo "done" || echo "skipped (non-critical)"
+if docker exec b2b-postgres psql -U postgres -d keycloak \
+  -c "UPDATE realm SET ssl_required = 'NONE' WHERE name = 'master' AND ssl_required != 'NONE';" \
+  > /dev/null 2>&1; then
+  echo "done"
+else
+  echo "skipped (keycloak DB not ready yet — non-critical)"
+fi
 
 # Wait for Gateway
 ELAPSED=0

@@ -3,6 +3,7 @@ import { ChevronLeft } from "lucide-react";
 import { getAuthContext } from "@/lib/auth";
 import { api } from "@/lib/api";
 import { MemberRatesTable } from "@/components/rates/member-rates-table";
+import { HelpTip } from "@/components/help-tip";
 import type { OrgSettings, OrgMember, BillingRate, CostRate } from "@/lib/types";
 
 export default async function RatesSettingsPage({
@@ -66,8 +67,9 @@ export default async function RatesSettingsPage({
       </Link>
 
       <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
+        <h1 className="flex items-center gap-2 font-display text-3xl text-slate-950 dark:text-slate-50">
           Rates & Currency
+          <HelpTip code="rates.hierarchy" />
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Manage billing rates, cost rates, and the default currency for your

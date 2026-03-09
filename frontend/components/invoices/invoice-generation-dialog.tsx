@@ -27,6 +27,7 @@ import type {
   ValidationCheck,
 } from "@/lib/types";
 import { Plus, ArrowLeft, CheckCircle2, AlertTriangle, Loader2 } from "lucide-react";
+import { HelpTip } from "@/components/help-tip";
 import { PrerequisiteModal } from "@/components/prerequisite/prerequisite-modal";
 import { checkPrerequisitesAction } from "@/lib/actions/prerequisite-actions";
 import type { PrerequisiteViolation } from "@/components/prerequisite/types";
@@ -323,8 +324,9 @@ export function InvoiceGenerationDialog({
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className={step === 2 ? "sm:max-w-2xl" : undefined}>
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
             {step === 1 ? "Generate Invoice" : "Select Unbilled Items"}
+            {step === 1 && <HelpTip code="invoices.unbilledTime" />}
           </DialogTitle>
           <DialogDescription>
             {step === 1

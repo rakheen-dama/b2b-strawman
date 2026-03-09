@@ -268,6 +268,21 @@ public class OrgSettingsService {
   }
 
   /**
+   * Returns the OrgSettings for the current tenant, creating a default row (with "USD" currency) if
+   * none exists. Centralises the get-or-create pattern used across settings mutations.
+   */
+  @Transactional
+  public OrgSettings getOrCreateForCurrentTenant() {
+    return orgSettingsRepository
+        .findForCurrentTenant()
+        .orElseGet(
+            () -> {
+              var newSettings = new OrgSettings(DEFAULT_CURRENCY);
+              return orgSettingsRepository.save(newSettings);
+            });
+  }
+
+  /**
    * Returns the stored default currency for the current tenant, or "USD" if no settings row exists.
    * Useful for other services that need the org default currency.
    */

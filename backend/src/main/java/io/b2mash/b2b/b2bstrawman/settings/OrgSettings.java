@@ -142,6 +142,9 @@ public class OrgSettings {
   @Column(name = "project_naming_pattern", length = 500)
   private String projectNamingPattern;
 
+  @Column(name = "onboarding_dismissed_at")
+  private Instant onboardingDismissedAt;
+
   protected OrgSettings() {}
 
   public OrgSettings(String defaultCurrency) {
@@ -592,5 +595,25 @@ public class OrgSettings {
     this.timeReminderTime = time;
     this.timeReminderMinMinutes = minMinutes;
     this.updatedAt = Instant.now();
+  }
+
+  public Instant getOnboardingDismissedAt() {
+    return onboardingDismissedAt;
+  }
+
+  public void setOnboardingDismissedAt(Instant onboardingDismissedAt) {
+    this.onboardingDismissedAt = onboardingDismissedAt;
+    this.updatedAt = Instant.now();
+  }
+
+  /** Sets the onboarding dismissed timestamp to now. Idempotent — overwrites any previous value. */
+  public void dismissOnboarding() {
+    this.onboardingDismissedAt = Instant.now();
+    this.updatedAt = Instant.now();
+  }
+
+  /** Returns true if onboarding has been dismissed. */
+  public boolean isOnboardingDismissed() {
+    return onboardingDismissedAt != null;
   }
 }

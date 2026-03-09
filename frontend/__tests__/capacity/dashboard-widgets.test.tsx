@@ -190,7 +190,7 @@ describe("TeamCapacityWidget", () => {
     );
 
     expect(
-      screen.getByText("No team members with capacity data."),
+      screen.getByText("No capacity data"),
     ).toBeInTheDocument();
   });
 

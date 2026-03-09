@@ -1,8 +1,10 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { CheckCheck } from "lucide-react";
+import { Bell, CheckCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/empty-state";
+import { createMessages } from "@/lib/messages";
 import { NotificationItem } from "@/components/notifications/notification-item";
 import {
   fetchNotifications,
@@ -83,6 +85,7 @@ export function NotificationsPageClient({
     reload(filter);
   }
 
+  const { t } = createMessages("empty-states");
   const hasUnread = notifications.some((n) => !n.isRead);
   const hasMore = page + 1 < totalPages;
 
@@ -131,22 +134,24 @@ export function NotificationsPageClient({
       </div>
 
       {/* Notification list */}
-      <div className="divide-y divide-slate-100 rounded-lg border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-950">
-        {notifications.length === 0 && (
-          <p className="px-4 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
-            No notifications
-          </p>
-        )}
-
-        {notifications.map((notification) => (
-          <NotificationItem
-            key={notification.id}
-            notification={notification}
-            orgSlug={orgSlug}
-            onRead={handleItemRead}
-          />
-        ))}
-      </div>
+      {notifications.length === 0 ? (
+        <EmptyState
+          icon={Bell}
+          title={t("notifications.page.heading")}
+          description={t("notifications.page.description")}
+        />
+      ) : (
+        <div className="divide-y divide-slate-100 rounded-lg border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-950">
+          {notifications.map((notification) => (
+            <NotificationItem
+              key={notification.id}
+              notification={notification}
+              orgSlug={orgSlug}
+              onRead={handleItemRead}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Load more */}
       {hasMore && (

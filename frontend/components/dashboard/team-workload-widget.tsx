@@ -1,11 +1,13 @@
 "use client";
 
+import { BarChart3 } from "lucide-react";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
 } from "@/components/ui/card";
+import { EmptyState } from "@/components/empty-state";
 import { HorizontalBarChart } from "@/components/dashboard/horizontal-bar-chart";
 import type { TeamWorkloadEntry } from "@/lib/dashboard-types";
 
@@ -69,9 +71,11 @@ export function TeamWorkloadWidget({ data, isAdmin }: TeamWorkloadWidgetProps) {
           <CardTitle>Team Workload</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground italic">
-            No time logged this period.
-          </p>
+          <EmptyState
+            icon={BarChart3}
+            title="No time logged"
+            description="Log time against tasks to see team workload distribution."
+          />
         </CardContent>
       </Card>
     );

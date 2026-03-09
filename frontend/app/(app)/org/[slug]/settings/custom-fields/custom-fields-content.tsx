@@ -18,7 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Plus, Layers } from "lucide-react";
+import { MoreHorizontal, Plus, Layers, Settings2 } from "lucide-react";
 import { FieldDefinitionDialog } from "@/components/field-definitions/FieldDefinitionDialog";
 import { FieldGroupDialog } from "@/components/field-definitions/FieldGroupDialog";
 import { DeleteFieldDialog } from "@/components/field-definitions/DeleteFieldDialog";
@@ -32,6 +32,8 @@ import {
   type PrerequisiteContext,
   PREREQUISITE_CONTEXT_LABELS,
 } from "@/components/prerequisite/types";
+import { EmptyState } from "@/components/empty-state";
+import { createMessages } from "@/lib/messages";
 
 const ENTITY_TYPE_TABS: { value: EntityType; label: string }[] = [
   { value: "PROJECT", label: "Projects" },
@@ -53,6 +55,7 @@ export function CustomFieldsContent({
   groupsByType,
   canManage,
 }: CustomFieldsContentProps) {
+  const { t } = createMessages("empty-states");
   const [activeTab, setActiveTab] = useState<EntityType>("PROJECT");
 
   const allFields = [
@@ -94,9 +97,11 @@ export function CustomFieldsContent({
             </div>
 
             {fieldsByType[tab.value].length === 0 ? (
-              <p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
-                No field definitions for {tab.label.toLowerCase()} yet.
-              </p>
+              <EmptyState
+                icon={Settings2}
+                title={t("customFields.settings.heading")}
+                description={t("customFields.settings.description")}
+              />
             ) : (
               <Table>
                 <TableHeader>

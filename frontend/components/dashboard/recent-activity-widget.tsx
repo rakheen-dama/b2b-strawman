@@ -18,6 +18,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/empty-state";
 import { formatRelativeDate } from "@/lib/format";
 import type { CrossProjectActivityItem } from "@/lib/dashboard-types";
 
@@ -76,9 +77,11 @@ export function RecentActivityWidget({
           <CardTitle>Recent Activity</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground italic">
-            No recent activity across your projects.
-          </p>
+          <EmptyState
+            icon={Activity}
+            title="No recent activity"
+            description="Activity will appear as your team works on projects."
+          />
         </CardContent>
       </Card>
     );

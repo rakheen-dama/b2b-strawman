@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Pencil, Plus, Trash2, Users } from "lucide-react";
+import { DollarSign, Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -19,6 +19,7 @@ import { AddRateDialog } from "@/components/rates/add-rate-dialog";
 import { EditRateDialog } from "@/components/rates/edit-rate-dialog";
 import { DeleteRateDialog } from "@/components/rates/delete-rate-dialog";
 import { updateDefaultCurrency } from "@/app/(app)/org/[slug]/settings/rates/actions";
+import { createMessages } from "@/lib/messages";
 import { formatCurrency, formatDate } from "@/lib/format";
 import type { OrgMember, BillingRate, CostRate } from "@/lib/types";
 
@@ -93,12 +94,14 @@ export function MemberRatesTable({
     }
   }
 
+  const { t } = createMessages("empty-states");
+
   if (members.length === 0) {
     return (
       <EmptyState
-        icon={Users}
-        title="No members found"
-        description="Organization members will appear here."
+        icon={DollarSign}
+        title={t("rates.settings.heading")}
+        description={t("rates.settings.description")}
       />
     );
   }

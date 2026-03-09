@@ -1,5 +1,8 @@
+import { TrendingUp } from "lucide-react";
 import { getAuthContext } from "@/lib/auth";
 import { api } from "@/lib/api";
+import { createMessages } from "@/lib/messages";
+import { EmptyState } from "@/components/empty-state";
 import type {
   UtilizationResponse,
   OrgProfitabilityResponse,
@@ -21,8 +24,9 @@ export default async function ProfitabilityPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  await params;
+  const { slug } = await params;
   const { orgRole } = await getAuthContext();
+  const { t } = createMessages("empty-states");
 
   if (orgRole !== "org:admin" && orgRole !== "org:owner") {
     return (
@@ -68,12 +72,24 @@ export default async function ProfitabilityPage({
         </p>
       </div>
 
-      <ProfitabilityContent
-        initialUtilization={utilization}
-        initialProfitability={profitability}
-        initialFrom={from}
-        initialTo={to}
-      />
+      {utilization.members.length === 0 && profitability.projects.length === 0 ? (
+        <EmptyState
+          icon={TrendingUp}
+          title={t("profitability.page.heading")}
+          description={t("profitability.page.description")}
+          secondaryLink={{
+            label: t("profitability.page.link"),
+            href: `/org/${slug}/settings/rates`,
+          }}
+        />
+      ) : (
+        <ProfitabilityContent
+          initialUtilization={utilization}
+          initialProfitability={profitability}
+          initialFrom={from}
+          initialTo={to}
+        />
+      )}
     </div>
   );
 }

@@ -180,7 +180,7 @@ describe("CustomFieldsContent", () => {
     await user.click(screen.getByRole("tab", { name: "Tasks" }));
 
     expect(
-      screen.getByText("No field definitions for tasks yet."),
+      screen.getByText("No custom fields yet"),
     ).toBeInTheDocument();
     expect(
       screen.getByText("No field groups for tasks yet."),

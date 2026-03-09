@@ -18,7 +18,7 @@ describe("RecentActivityWidget", () => {
   it("renders empty state message when items is empty", () => {
     render(<RecentActivityWidget items={[]} orgSlug="acme" />);
     expect(
-      screen.getByText("No recent activity across your projects.")
+      screen.getByText("No recent activity")
     ).toBeInTheDocument();
   });
 

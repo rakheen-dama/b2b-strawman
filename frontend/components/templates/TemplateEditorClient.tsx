@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useTransition } from "react";
+import { useState, useCallback, useTransition, useEffect } from "react";
 // TODO(214B): Re-add requiredContextFields management UI in the settings panel.
 // The old TemplateEditorForm had UI for this; intentionally omitted in 214A.
 // The save handler preserves existing values so they are not lost.
@@ -11,11 +11,14 @@ import {
   ChevronUp,
   AlertTriangle,
   Eye,
+  CheckCircle2,
+  Package,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -40,7 +43,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { updateTemplateAction } from "@/app/(app)/org/[slug]/settings/templates/actions";
+import {
+  updateTemplateAction,
+  fetchRequiredFieldPacksAction,
+} from "@/app/(app)/org/[slug]/settings/templates/actions";
+import type { FieldPackStatus } from "@/app/(app)/org/[slug]/settings/templates/actions";
 import { getClause } from "@/lib/actions/clause-actions";
 import type {
   TemplateDetailResponse,
@@ -94,6 +101,15 @@ export function TemplateEditorClient({
     new Set(),
   );
   const [previewLoading, startPreviewTransition] = useTransition();
+  const [fieldPacks, setFieldPacks] = useState<FieldPackStatus[]>([]);
+
+  useEffect(() => {
+    fetchRequiredFieldPacksAction(template.id).then((result) => {
+      if (result.success && result.data) {
+        setFieldPacks(result.data);
+      }
+    });
+  }, [template.id]);
 
   const handleEditorUpdate = useCallback(
     (json: Record<string, unknown>) => {
@@ -209,6 +225,50 @@ export function TemplateEditorClient({
           )}
         </div>
       </div>
+
+      {/* Required Field Packs */}
+      {fieldPacks.length > 0 && (
+        <div
+          className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
+          data-testid="field-pack-status"
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <Package className="size-4 text-slate-500 dark:text-slate-400" />
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              Required Field Packs
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {fieldPacks.map((pack) => (
+              <div key={pack.packId} className="flex flex-col gap-1">
+                <Badge
+                  variant={pack.applied ? "success" : "warning"}
+                  className="gap-1.5"
+                >
+                  {pack.applied ? (
+                    <CheckCircle2 className="size-3" />
+                  ) : (
+                    <AlertTriangle className="size-3" />
+                  )}
+                  {pack.packId}
+                </Badge>
+                {!pack.applied && (
+                  <p className="text-xs text-amber-700 dark:text-amber-300">
+                    This template references fields from{" "}
+                    <span className="font-medium">{pack.packId}</span> which
+                    hasn&apos;t been applied to your organisation.
+                  </p>
+                )}
+                {pack.missingFields.length > 0 && (
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Missing: {pack.missingFields.join(", ")}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Legacy content banner */}
       {hasLegacyContent && (

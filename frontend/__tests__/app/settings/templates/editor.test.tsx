@@ -38,6 +38,7 @@ vi.mock(
       mockUpdateTemplateAction(...args),
     createTemplateAction: vi.fn(),
     fetchVariableMetadataAction: vi.fn(),
+    fetchRequiredFieldPacksAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
   }),
 );
 

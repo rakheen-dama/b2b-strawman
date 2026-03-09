@@ -85,6 +85,12 @@ public class DocumentTemplateController {
     return ResponseEntity.ok(documentTemplateService.getById(id));
   }
 
+  @GetMapping("/{id}/required-field-packs")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<List<FieldPackStatus>> getRequiredFieldPacks(@PathVariable UUID id) {
+    return ResponseEntity.ok(documentTemplateService.getRequiredFieldPacks(id));
+  }
+
   @PostMapping
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<TemplateDetailResponse> createTemplate(

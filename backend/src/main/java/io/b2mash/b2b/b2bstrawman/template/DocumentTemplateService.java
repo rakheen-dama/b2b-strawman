@@ -8,6 +8,9 @@ import io.b2mash.b2b.b2bstrawman.clause.TemplateClauseSync;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.CreateTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.TemplateDetailResponse;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.TemplateListResponse;
@@ -38,16 +41,22 @@ public class DocumentTemplateService {
   private final ClauseRepository clauseRepository;
   private final AuditService auditService;
   private final TemplateClauseSync templateClauseSync;
+  private final FieldDefinitionRepository fieldDefinitionRepository;
+  private final TemplateVariableAnalyzer templateVariableAnalyzer;
 
   public DocumentTemplateService(
       DocumentTemplateRepository documentTemplateRepository,
       ClauseRepository clauseRepository,
       AuditService auditService,
-      TemplateClauseSync templateClauseSync) {
+      TemplateClauseSync templateClauseSync,
+      FieldDefinitionRepository fieldDefinitionRepository,
+      TemplateVariableAnalyzer templateVariableAnalyzer) {
     this.documentTemplateRepository = documentTemplateRepository;
     this.clauseRepository = clauseRepository;
     this.auditService = auditService;
     this.templateClauseSync = templateClauseSync;
+    this.fieldDefinitionRepository = fieldDefinitionRepository;
+    this.templateVariableAnalyzer = templateVariableAnalyzer;
   }
 
   @Transactional(readOnly = true)
@@ -341,6 +350,82 @@ public class DocumentTemplateService {
             .entityId(cloneId)
             .details(Map.of("source_template_id", clone.getSourceTemplateId().toString()))
             .build());
+  }
+
+  /**
+   * Computes which field packs a template requires based on its custom field variable references,
+   * and whether each pack is applied in the current org (i.e., matching FieldDefinitions exist).
+   */
+  @Transactional(readOnly = true)
+  public List<FieldPackStatus> getRequiredFieldPacks(UUID templateId) {
+    var dt =
+        documentTemplateRepository
+            .findById(templateId)
+            .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", templateId));
+
+    Map<String, Set<String>> entitySlugs =
+        templateVariableAnalyzer.extractCustomFieldSlugs(dt.getContent());
+    if (entitySlugs.isEmpty()) {
+      return List.of();
+    }
+
+    // Collect all referenced slugs with their resolved FieldDefinitions
+    // Key: packId, Value: { packName, set of referenced slugs, set of found slugs }
+    Map<String, PackAccumulator> packMap = new LinkedHashMap<>();
+
+    for (var entry : entitySlugs.entrySet()) {
+      String entityPrefix = entry.getKey();
+      Set<String> slugs = entry.getValue();
+
+      EntityType entityType;
+      try {
+        entityType = EntityType.valueOf(entityPrefix.toUpperCase());
+      } catch (IllegalArgumentException e) {
+        // Unknown entity prefix — skip
+        continue;
+      }
+
+      for (String slug : slugs) {
+        var fdOpt = fieldDefinitionRepository.findByEntityTypeAndSlug(entityType, slug);
+        if (fdOpt.isPresent()) {
+          FieldDefinition fd = fdOpt.get();
+          String packId = fd.getPackId();
+          if (packId != null) {
+            packMap.computeIfAbsent(packId, k -> new PackAccumulator(packId));
+          }
+        } else {
+          // Field not found — try to identify which pack it might belong to by convention
+          // (packId matches the entity prefix pattern). We mark it as missing in an
+          // "unknown" pack keyed by entityPrefix.
+          String syntheticPackId = "common-" + entityPrefix;
+          packMap.computeIfAbsent(syntheticPackId, k -> new PackAccumulator(syntheticPackId));
+          packMap.get(syntheticPackId).addMissing(entityPrefix + ".customFields." + slug);
+        }
+      }
+    }
+
+    return packMap.values().stream()
+        .map(
+            acc -> {
+              boolean applied = fieldDefinitionRepository.existsByPackIdAndActiveTrue(acc.packId);
+              return new FieldPackStatus(
+                  acc.packId, acc.packId, applied, List.copyOf(acc.missingFields));
+            })
+        .toList();
+  }
+
+  /** Mutable accumulator used during field pack status computation. */
+  private static class PackAccumulator {
+    final String packId;
+    final List<String> missingFields = new ArrayList<>();
+
+    PackAccumulator(String packId) {
+      this.packId = packId;
+    }
+
+    void addMissing(String variableKey) {
+      missingFields.add(variableKey);
+    }
   }
 
   private void validateRequiredContextFieldEntries(List<Map<String, String>> entries) {

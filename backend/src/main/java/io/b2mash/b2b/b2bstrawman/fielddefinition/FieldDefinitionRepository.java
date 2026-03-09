@@ -27,4 +27,9 @@ public interface FieldDefinitionRepository extends JpaRepository<FieldDefinition
       nativeQuery = true)
   List<FieldDefinition> findRequiredForContext(
       @Param("entityType") String entityType, @Param("context") String context);
+
+  @Query(
+      "SELECT CASE WHEN COUNT(fd) > 0 THEN true ELSE false END FROM FieldDefinition fd"
+          + " WHERE fd.packId = :packId AND fd.active = true")
+  boolean existsByPackIdAndActiveTrue(@Param("packId") String packId);
 }

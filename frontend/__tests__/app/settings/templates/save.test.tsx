@@ -26,6 +26,7 @@ vi.mock(
     updateTemplateAction: (...args: unknown[]) => mockUpdateTemplateAction(...args),
     createTemplateAction: (...args: unknown[]) => mockCreateTemplateAction(...args),
     fetchVariableMetadataAction: vi.fn(),
+    fetchRequiredFieldPacksAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
   }),
 );
 

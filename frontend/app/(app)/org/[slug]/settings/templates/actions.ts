@@ -319,6 +319,31 @@ export async function saveBrandingAction(
   }
 }
 
+// ---- Field Pack Linkage Action ----
+
+export interface FieldPackStatus {
+  packId: string;
+  packName: string;
+  applied: boolean;
+  missingFields: string[];
+}
+
+export async function fetchRequiredFieldPacksAction(
+  templateId: string,
+): Promise<{ success: boolean; data?: FieldPackStatus[]; error?: string }> {
+  try {
+    const data = await api.get<FieldPackStatus[]>(
+      `/api/templates/${templateId}/required-field-packs`,
+    );
+    return { success: true, data };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to fetch field pack status." };
+  }
+}
+
 // ---- Variable Metadata Action ----
 
 export async function fetchVariableMetadataAction(

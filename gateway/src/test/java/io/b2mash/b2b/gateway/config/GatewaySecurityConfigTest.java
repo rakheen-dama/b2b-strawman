@@ -69,6 +69,13 @@ class GatewaySecurityConfigTest {
   }
 
   @Test
+  void bffCsrf_returnsTokenUnauthenticated() throws Exception {
+    var result = mockMvc.perform(get("/bff/csrf")).andReturn();
+    int statusCode = result.getResponse().getStatus();
+    assertThat(statusCode).as("/bff/csrf should be publicly accessible").isIn(PUBLIC_OK_STATUSES);
+  }
+
+  @Test
   void protectedEndpoints_apiRequiresAuth() throws Exception {
     mockMvc
         .perform(get("/api/projects"))

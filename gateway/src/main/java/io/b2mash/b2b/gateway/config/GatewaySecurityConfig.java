@@ -37,7 +37,7 @@ public class GatewaySecurityConfig {
     http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .authorizeHttpRequests(
             auth ->
-                auth.requestMatchers("/", "/error", "/actuator/health", "/bff/me")
+                auth.requestMatchers("/", "/error", "/actuator/health", "/bff/me", "/bff/csrf")
                     .permitAll()
                     .requestMatchers("/api/access-requests", "/api/access-requests/verify")
                     .permitAll()

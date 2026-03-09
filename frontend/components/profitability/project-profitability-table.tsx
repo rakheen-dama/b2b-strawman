@@ -12,6 +12,7 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/table";
+import { HelpTip } from "@/components/help-tip";
 import { formatCurrency, formatCurrencySafe } from "@/lib/format";
 import { getOrgProfitability } from "@/app/(app)/org/[slug]/profitability/actions";
 import type {
@@ -111,7 +112,10 @@ export function ProjectProfitabilityTable({
     <Card>
       <CardHeader>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <CardTitle>Project Profitability</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            Project Profitability
+            <HelpTip code="dashboard.profitability" />
+          </CardTitle>
           <div className="flex items-center gap-2">
             <label
               htmlFor="prof-from"

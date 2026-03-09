@@ -11,6 +11,7 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/table";
+import { HelpTip } from "@/components/help-tip";
 import { formatCurrencySafe } from "@/lib/format";
 import { getUtilization } from "@/app/(app)/org/[slug]/profitability/actions";
 import type {
@@ -115,7 +116,10 @@ export function UtilizationTable({
     <Card>
       <CardHeader>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <CardTitle>Team Utilization</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            Team Utilization
+            <HelpTip code="dashboard.utilisation" />
+          </CardTitle>
           <div className="flex items-center gap-2">
             <label htmlFor="util-from" className="text-sm text-slate-600 dark:text-slate-400">
               From

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+import { HelpTip } from "@/components/help-tip";
 import { fetchNotificationPreferences } from "@/lib/actions/notifications";
 import type { PreferencesResponse } from "@/lib/actions/notifications";
 import { NotificationPreferencesForm } from "@/components/notifications/notification-preferences-form";
@@ -31,8 +32,9 @@ export default async function NotificationPreferencesPage({
 
       {/* Page header */}
       <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
+        <h1 className="flex items-center gap-2 font-display text-3xl text-slate-950 dark:text-slate-50">
           Notification Preferences
+          <HelpTip code="notifications.preferences" />
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Choose which notifications you receive and how they are delivered.

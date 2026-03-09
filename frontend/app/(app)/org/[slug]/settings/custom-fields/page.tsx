@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { getAuthContext } from "@/lib/auth";
 import { api } from "@/lib/api";
+import { HelpTip } from "@/components/help-tip";
 import { CustomFieldsContent } from "./custom-fields-content";
 import type {
   FieldDefinitionResponse,
@@ -31,8 +32,9 @@ export default async function CustomFieldsSettingsPage({
           <ChevronLeft className="size-4" />
           Settings
         </Link>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
+        <h1 className="flex items-center gap-2 font-display text-3xl text-slate-950 dark:text-slate-50">
           Custom Fields
+          <HelpTip code="fields.types" />
         </h1>
         <p className="text-slate-600 dark:text-slate-400">
           You do not have permission to manage custom fields. Only admins and
@@ -84,8 +86,9 @@ export default async function CustomFieldsSettingsPage({
       </Link>
 
       <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
+        <h1 className="flex items-center gap-2 font-display text-3xl text-slate-950 dark:text-slate-50">
           Custom Fields
+          <HelpTip code="fields.types" />
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Define custom fields and groups for projects, tasks, customers, and invoices.

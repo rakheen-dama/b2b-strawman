@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { getAuthContext } from "@/lib/auth";
 import { getTemplates, getOrgSettings } from "@/lib/api";
+import { HelpTip } from "@/components/help-tip";
 import { TemplatesContent } from "./templates-content";
 import type { TemplateListResponse, OrgSettings } from "@/lib/types";
 
@@ -35,8 +36,9 @@ export default async function TemplatesSettingsPage({
       </Link>
 
       <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
+        <h1 className="flex items-center gap-2 font-display text-3xl text-slate-950 dark:text-slate-50">
           Templates
+          <HelpTip code="templates.tiptapVsWord" />
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Manage document templates for engagement letters, statements of work,

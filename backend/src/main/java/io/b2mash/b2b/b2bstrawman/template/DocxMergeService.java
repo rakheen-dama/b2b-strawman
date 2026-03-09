@@ -19,7 +19,7 @@ import org.apache.poi.xwpf.usermodel.XWPFRun;
  */
 public class DocxMergeService {
 
-  private static final Pattern FIELD_PATTERN = Pattern.compile("\\{\\{([^}]+)\\}\\}");
+  private static final Pattern FIELD_PATTERN = Pattern.compile("\\{\\{([^{}]+)\\}\\}");
 
   record FieldMatch(int start, int end, String path) {}
 

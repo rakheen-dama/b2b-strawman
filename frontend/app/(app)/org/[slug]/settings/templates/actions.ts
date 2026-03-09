@@ -215,6 +215,25 @@ export async function generateDocumentAction(
   }
 }
 
+export async function generateDocxAction(
+  templateId: string,
+  entityId: string,
+  outputFormat: string,
+): Promise<{ success: boolean; data?: import("@/lib/types").GenerateDocxResult; error?: string }> {
+  try {
+    const data = await api.post<import("@/lib/types").GenerateDocxResult>(
+      `/api/templates/${templateId}/generate-docx`,
+      { entityId, outputFormat },
+    );
+    return { success: true, data };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to generate document." };
+  }
+}
+
 export async function fetchGeneratedDocumentsAction(
   entityType: import("@/lib/types").TemplateEntityType,
   entityId: string,

@@ -11,6 +11,8 @@ import type {
   RecordPaymentRequest,
   ValidationCheck,
 } from "@/lib/types";
+import { classifyError } from "@/lib/error-handler";
+import { createMessages } from "@/lib/messages";
 
 interface ActionResult {
   success: boolean;
@@ -49,10 +51,11 @@ export async function fetchInvoice(
     const invoice = await api.get<InvoiceResponse>(`/api/invoices/${invoiceId}`);
     return { success: true, invoice };
   } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "Failed to fetch invoice." };
+    const message =
+      error instanceof ApiError
+        ? error.message
+        : createMessages("errors").t(classifyError(error).messageCode);
+    return { success: false, error: message };
   }
 }
 
@@ -74,10 +77,11 @@ export async function fetchInvoices(
     const invoices = await api.get<InvoiceResponse[]>(url);
     return { success: true, invoices };
   } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "Failed to fetch invoices." };
+    const message =
+      error instanceof ApiError
+        ? error.message
+        : createMessages("errors").t(classifyError(error).messageCode);
+    return { success: false, error: message };
   }
 }
 
@@ -100,10 +104,11 @@ export async function updateInvoice(
     revalidateInvoicePaths(slug, invoiceId, customerId);
     return { success: true, invoice };
   } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "Failed to update invoice." };
+    const message =
+      error instanceof ApiError
+        ? error.message
+        : createMessages("errors").t(classifyError(error).messageCode);
+    return { success: false, error: message };
   }
 }
 
@@ -122,10 +127,11 @@ export async function deleteInvoice(
     revalidateInvoicePaths(slug, invoiceId, customerId);
     return { success: true };
   } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "Failed to delete invoice." };
+    const message =
+      error instanceof ApiError
+        ? error.message
+        : createMessages("errors").t(classifyError(error).messageCode);
+    return { success: false, error: message };
   }
 }
 
@@ -146,10 +152,11 @@ export async function approveInvoice(
     revalidateInvoicePaths(slug, invoiceId, customerId);
     return { success: true, invoice };
   } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "Failed to approve invoice." };
+    const message =
+      error instanceof ApiError
+        ? error.message
+        : createMessages("errors").t(classifyError(error).messageCode);
+    return { success: false, error: message };
   }
 }
 
@@ -185,7 +192,11 @@ export async function sendInvoice(
       }
       return { success: false, error: error.message };
     }
-    return { success: false, error: "Failed to send invoice." };
+    const classified = classifyError(error);
+    return {
+      success: false,
+      error: createMessages("errors").t(classified.messageCode),
+    };
   }
 }
 
@@ -211,10 +222,11 @@ export async function recordPayment(
     revalidateInvoicePaths(slug, invoiceId, customerId);
     return { success: true, invoice };
   } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "Failed to record payment." };
+    const message =
+      error instanceof ApiError
+        ? error.message
+        : createMessages("errors").t(classifyError(error).messageCode);
+    return { success: false, error: message };
   }
 }
 
@@ -235,10 +247,11 @@ export async function voidInvoice(
     revalidateInvoicePaths(slug, invoiceId, customerId);
     return { success: true, invoice };
   } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "Failed to void invoice." };
+    const message =
+      error instanceof ApiError
+        ? error.message
+        : createMessages("errors").t(classifyError(error).messageCode);
+    return { success: false, error: message };
   }
 }
 
@@ -261,10 +274,11 @@ export async function addLineItem(
     revalidateInvoicePaths(slug, invoiceId, customerId);
     return { success: true, invoice };
   } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "Failed to add line item." };
+    const message =
+      error instanceof ApiError
+        ? error.message
+        : createMessages("errors").t(classifyError(error).messageCode);
+    return { success: false, error: message };
   }
 }
 
@@ -291,10 +305,11 @@ export async function updateLineItem(
     revalidateInvoicePaths(slug, invoiceId, customerId);
     return { success: true, invoice };
   } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "Failed to update line item." };
+    const message =
+      error instanceof ApiError
+        ? error.message
+        : createMessages("errors").t(classifyError(error).messageCode);
+    return { success: false, error: message };
   }
 }
 
@@ -317,10 +332,11 @@ export async function deleteLineItem(
     revalidateInvoicePaths(slug, invoiceId, customerId);
     return { success: true };
   } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "Failed to delete line item." };
+    const message =
+      error instanceof ApiError
+        ? error.message
+        : createMessages("errors").t(classifyError(error).messageCode);
+    return { success: false, error: message };
   }
 }
 
@@ -344,10 +360,11 @@ export async function refreshPaymentLink(
     revalidateInvoicePaths(slug, invoiceId, customerId);
     return { success: true, invoice };
   } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "Failed to regenerate payment link." };
+    const message =
+      error instanceof ApiError
+        ? error.message
+        : createMessages("errors").t(classifyError(error).messageCode);
+    return { success: false, error: message };
   }
 }
 

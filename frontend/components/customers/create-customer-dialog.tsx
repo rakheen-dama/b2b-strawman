@@ -16,6 +16,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Plus } from "lucide-react";
 import { createCustomer } from "@/app/(app)/org/[slug]/customers/actions";
+import { createMessages } from "@/lib/messages";
+import { scrollToFirstError } from "@/lib/error-handler";
 import { fetchIntakeFields } from "@/app/(app)/org/[slug]/customers/intake-actions";
 import {
   IntakeFieldsSection,
@@ -104,10 +106,17 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
   }
 
   async function handleNext() {
+    const { t } = createMessages("errors");
     setError(null);
 
-    if (!baseFields.name.trim() || !baseFields.email.trim()) {
-      setError("Name and Email are required.");
+    if (!baseFields.name.trim()) {
+      setError(t("validation.required"));
+      scrollToFirstError();
+      return;
+    }
+    if (!baseFields.email.trim()) {
+      setError(t("validation.email"));
+      scrollToFirstError();
       return;
     }
 
@@ -152,10 +161,13 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
         setOpen(false);
         resetForm();
       } else {
-        setError(result.error ?? "Failed to create customer.");
+        const { t } = createMessages("errors");
+        setError(result.error ?? t("api.serverError"));
+        scrollToFirstError();
       }
     } catch {
-      setError("An unexpected error occurred.");
+      const { t } = createMessages("errors");
+      setError(t("api.networkError"));
     } finally {
       setIsSubmitting(false);
     }

@@ -17,6 +17,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { createProject, fetchActiveCustomers } from "@/app/(app)/org/[slug]/projects/actions";
 import type { Customer } from "@/lib/types";
 import { Plus } from "lucide-react";
+import { createMessages } from "@/lib/messages";
+import { scrollToFirstError } from "@/lib/error-handler";
 
 interface CreateProjectDialogProps {
   slug: string;
@@ -38,6 +40,7 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
   }, [open]);
 
   async function handleSubmit(formData: FormData) {
+    const { t } = createMessages("errors");
     setError(null);
     setIsSubmitting(true);
 
@@ -47,10 +50,11 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
         formRef.current?.reset();
         setOpen(false);
       } else {
-        setError(result.error ?? "Failed to create project.");
+        setError(result.error ?? t("api.serverError"));
+        scrollToFirstError();
       }
     } catch {
-      setError("An unexpected error occurred.");
+      setError(t("api.networkError"));
     } finally {
       setIsSubmitting(false);
     }

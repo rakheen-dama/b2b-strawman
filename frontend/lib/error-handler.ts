@@ -157,3 +157,15 @@ export function showToast(
 
   toast[type](message, toastOptions);
 }
+
+// --- scrollToFirstError ---
+
+export function scrollToFirstError(): void {
+  const invalid = document.querySelector<HTMLElement>(
+    '[aria-invalid="true"], .text-red-600',
+  );
+  if (invalid) {
+    invalid.scrollIntoView({ behavior: "smooth", block: "center" });
+    invalid.focus();
+  }
+}

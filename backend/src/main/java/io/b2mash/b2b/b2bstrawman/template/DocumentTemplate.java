@@ -320,4 +320,9 @@ public class DocumentTemplate {
   public void setDiscoveredFields(List<Map<String, Object>> discoveredFields) {
     this.discoveredFields = discoveredFields;
   }
+
+  /** Explicitly bumps updatedAt — use when mutating DOCX metadata outside updateContent(). */
+  void touchUpdatedAt() {
+    this.updatedAt = Instant.now();
+  }
 }

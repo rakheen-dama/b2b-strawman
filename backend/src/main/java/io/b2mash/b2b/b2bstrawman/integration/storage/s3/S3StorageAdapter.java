@@ -30,7 +30,7 @@ public class S3StorageAdapter implements StorageService {
   /** Validates that S3 keys follow the expected org-scoped path structure. */
   private static final Pattern S3_KEY_PATTERN =
       Pattern.compile(
-          "^org/[^/]+/(project/[^/]+|org-docs|customer/[^/]+|branding|generated|exports)/[^/]+$");
+          "^org/[^/]+/(project/[^/]+|org-docs|customer/[^/]+|branding|generated|exports|templates/[^/]+)/[^/]+$");
 
   private final S3Client s3Client;
   private final S3Presigner s3Presigner;

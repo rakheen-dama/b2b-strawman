@@ -135,6 +135,27 @@ public class DocumentTemplateController {
     return ResponseEntity.noContent().build();
   }
 
+  @GetMapping("/{id}/docx/fields")
+  @PreAuthorize("isAuthenticated()")
+  public ResponseEntity<List<Map<String, Object>>> getDocxFields(@PathVariable UUID id) {
+    return ResponseEntity.ok(documentTemplateService.getDocxFields(id));
+  }
+
+  @GetMapping("/{id}/docx/download")
+  @PreAuthorize("isAuthenticated()")
+  public ResponseEntity<Void> downloadDocxTemplate(@PathVariable UUID id) {
+    return ResponseEntity.status(302)
+        .header(HttpHeaders.LOCATION, documentTemplateService.getDocxDownloadUrl(id))
+        .build();
+  }
+
+  @PutMapping(value = "/{id}/docx/replace", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<TemplateDetailResponse> replaceDocxFile(
+      @PathVariable UUID id, @RequestParam("file") MultipartFile file) {
+    return ResponseEntity.ok(documentTemplateService.replaceDocxFile(id, file));
+  }
+
   @PostMapping("/{id}/preview")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<PdfRenderingService.PreviewResponse> previewTemplate(

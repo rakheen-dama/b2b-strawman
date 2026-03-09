@@ -20,6 +20,7 @@ import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.UpdateTempl
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,6 +30,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.apache.poi.UnsupportedFileFormatException;
+import org.apache.poi.ooxml.POIXMLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -46,6 +49,7 @@ public class DocumentTemplateService {
   private static final String DOCX_CONTENT_TYPE =
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
   private static final long MAX_DOCX_SIZE = 10 * 1024 * 1024; // 10MB
+  private static final Duration URL_EXPIRY = Duration.ofHours(1);
 
   private final DocumentTemplateRepository documentTemplateRepository;
   private final ClauseRepository clauseRepository;
@@ -238,7 +242,7 @@ public class DocumentTemplateService {
     List<String> fieldPaths;
     try {
       fieldPaths = docxMergeService.discoverFields(new ByteArrayInputStream(fileBytes));
-    } catch (Exception e) {
+    } catch (IOException | POIXMLException | UnsupportedFileFormatException e) {
       throw new InvalidStateException(
           "Corrupt file", "The uploaded file could not be parsed as a valid .docx document");
     }
@@ -599,6 +603,158 @@ public class DocumentTemplateService {
     void addMissing(String variableKey) {
       missingFields.add(variableKey);
     }
+  }
+
+  /** Returns the discovered merge fields for a DOCX template. */
+  @Transactional(readOnly = true)
+  public List<Map<String, Object>> getDocxFields(UUID templateId) {
+    var dt =
+        documentTemplateRepository
+            .findById(templateId)
+            .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", templateId));
+
+    if (dt.getFormat() != TemplateFormat.DOCX) {
+      throw new InvalidStateException(
+          "Not a DOCX template", "Only DOCX templates have discoverable fields");
+    }
+
+    var fields = dt.getDiscoveredFields();
+    return fields != null ? fields : List.of();
+  }
+
+  /** Generates a presigned download URL for a DOCX template's S3 file. */
+  @Transactional(readOnly = true)
+  public String getDocxDownloadUrl(UUID templateId) {
+    var dt =
+        documentTemplateRepository
+            .findById(templateId)
+            .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", templateId));
+
+    if (dt.getFormat() != TemplateFormat.DOCX) {
+      throw new InvalidStateException(
+          "Not a DOCX template", "Only DOCX templates can be downloaded");
+    }
+
+    if (dt.getDocxS3Key() == null) {
+      throw new InvalidStateException(
+          "No file uploaded", "This DOCX template does not have an uploaded file");
+    }
+
+    var presigned = storageService.generateDownloadUrl(dt.getDocxS3Key(), URL_EXPIRY);
+    return presigned.url();
+  }
+
+  /** Replaces the DOCX file for an existing template, re-discovering and validating fields. */
+  @Transactional
+  public TemplateDetailResponse replaceDocxFile(UUID templateId, MultipartFile file) {
+    var dt =
+        documentTemplateRepository
+            .findById(templateId)
+            .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", templateId));
+
+    if (dt.getFormat() != TemplateFormat.DOCX) {
+      throw new InvalidStateException(
+          "Not a DOCX template", "Only DOCX templates can have their file replaced");
+    }
+
+    // Validate MIME type
+    String contentType = file.getContentType();
+    if (!DOCX_CONTENT_TYPE.equals(contentType)) {
+      throw new InvalidStateException(
+          "Invalid file type",
+          "Expected MIME type '" + DOCX_CONTENT_TYPE + "' but got '" + contentType + "'");
+    }
+
+    // Validate file size
+    if (file.getSize() > MAX_DOCX_SIZE) {
+      throw new InvalidStateException(
+          "File too large",
+          "Maximum file size is 10MB, but the uploaded file is "
+              + (file.getSize() / (1024 * 1024))
+              + "MB");
+    }
+
+    // Sanitize filename
+    String originalFilename = file.getOriginalFilename();
+    String safeFilename = null;
+    if (originalFilename != null && !originalFilename.isBlank()) {
+      safeFilename = Path.of(originalFilename).getFileName().toString();
+    }
+    if (safeFilename == null || safeFilename.isBlank()) {
+      safeFilename = "template.docx";
+    }
+
+    // Read file bytes
+    byte[] fileBytes;
+    try {
+      fileBytes = file.getBytes();
+    } catch (IOException e) {
+      throw new InvalidStateException("Upload failed", "Could not read the uploaded file");
+    }
+
+    // Discover and validate fields
+    List<String> fieldPaths;
+    try {
+      fieldPaths = docxMergeService.discoverFields(new ByteArrayInputStream(fileBytes));
+    } catch (IOException | POIXMLException | UnsupportedFileFormatException e) {
+      throw new InvalidStateException(
+          "Corrupt file", "The uploaded file could not be parsed as a valid .docx document");
+    }
+
+    var validationResults =
+        docxFieldValidator.validateFields(fieldPaths, dt.getPrimaryEntityType());
+    List<Map<String, Object>> discoveredFields =
+        validationResults.stream()
+            .map(
+                r -> {
+                  Map<String, Object> field = new HashMap<>();
+                  field.put("path", r.path());
+                  field.put("status", r.status());
+                  if (r.label() != null) {
+                    field.put("label", r.label());
+                  }
+                  return field;
+                })
+            .toList();
+
+    // Update entity metadata and save BEFORE S3 upload — if DB save fails, old S3 file is
+    // preserved.
+    // If S3 upload fails after DB commit, metadata is slightly ahead but the old file is intact,
+    // which is recoverable. The reverse (S3 overwrite before DB save) risks permanent file loss.
+    dt.setDocxFileName(safeFilename);
+    dt.setDocxFileSize(file.getSize());
+    dt.setDiscoveredFields(discoveredFields);
+    dt.touchUpdatedAt();
+
+    dt = documentTemplateRepository.save(dt);
+
+    // Overwrite existing S3 object with same key AFTER DB save
+    storageService.upload(dt.getDocxS3Key(), fileBytes, DOCX_CONTENT_TYPE);
+
+    log.info(
+        "Replaced DOCX template file: id={}, slug={}, fields={}",
+        dt.getId(),
+        dt.getSlug(),
+        fieldPaths.size());
+
+    // Audit event
+    long unknownCount =
+        validationResults.stream().filter(r -> "UNKNOWN".equals(r.status())).count();
+    var auditDetails = new HashMap<String, Object>();
+    auditDetails.put("templateId", dt.getId().toString());
+    auditDetails.put("fileName", dt.getDocxFileName());
+    auditDetails.put("fileSize", dt.getDocxFileSize());
+    auditDetails.put("fieldCount", fieldPaths.size());
+    auditDetails.put("unknownFieldCount", unknownCount);
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("docx_template.replaced")
+            .entityType("document_template")
+            .entityId(dt.getId())
+            .details(auditDetails)
+            .build());
+
+    return TemplateDetailResponse.from(dt);
   }
 
   private void validateFormatConsistency(DocumentTemplate dt) {

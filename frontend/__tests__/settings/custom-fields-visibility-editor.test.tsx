@@ -14,6 +14,8 @@ vi.mock(
       mockCreateFieldDefinition(...args),
     updateFieldDefinitionAction: (...args: unknown[]) =>
       mockUpdateFieldDefinition(...args),
+    fetchFieldUsageAction: () =>
+      Promise.resolve({ templates: [], clauses: [] }),
   }),
 );
 

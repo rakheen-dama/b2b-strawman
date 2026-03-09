@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.fielddefinition;
 
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.CreateFieldDefinitionRequest;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldUsageInfo;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.IntakeFieldGroupResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.PatchFieldDefinitionRequest;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.UpdateFieldDefinitionRequest;
@@ -63,6 +64,12 @@ public class FieldDefinitionController {
   public ResponseEntity<Void> delete(@PathVariable UUID id) {
     fieldDefinitionService.deactivate(id);
     return ResponseEntity.noContent().build();
+  }
+
+  @GetMapping("/{id}/usage")
+  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  public ResponseEntity<FieldUsageInfo> getFieldUsage(@PathVariable UUID id) {
+    return ResponseEntity.ok(fieldDefinitionService.getFieldUsage(id));
   }
 
   @GetMapping("/intake")

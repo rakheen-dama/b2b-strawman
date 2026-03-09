@@ -34,4 +34,12 @@ public interface DocumentTemplateRepository extends JpaRepository<DocumentTempla
           + " AND dt.packTemplateKey = :packTemplateKey")
   Optional<DocumentTemplate> findByPackIdAndPackTemplateKey(
       @Param("packId") String packId, @Param("packTemplateKey") String packTemplateKey);
+
+  @Query(
+      value =
+          "SELECT * FROM document_templates WHERE active = true"
+              + " AND CAST(content AS text) LIKE %:variableKey%",
+      nativeQuery = true)
+  List<DocumentTemplate> findActiveTemplatesContainingVariable(
+      @Param("variableKey") String variableKey);
 }

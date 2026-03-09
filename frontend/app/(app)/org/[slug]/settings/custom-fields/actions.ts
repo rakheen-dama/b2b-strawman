@@ -179,6 +179,23 @@ export async function deleteFieldGroupAction(
   return { success: true };
 }
 
+// ---- Field Usage ----
+
+export interface FieldUsageInfo {
+  templates: Array<{ id: string; name: string; category: string }>;
+  clauses: Array<{ id: string; title: string }>;
+}
+
+export async function fetchFieldUsageAction(
+  fieldId: string,
+): Promise<FieldUsageInfo | null> {
+  try {
+    return await api.get<FieldUsageInfo>(`/api/field-definitions/${fieldId}/usage`);
+  } catch {
+    return null;
+  }
+}
+
 // ---- Entity Custom Field Value Actions ----
 
 export async function updateEntityCustomFieldsAction(

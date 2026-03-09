@@ -2,15 +2,18 @@ package io.b2mash.b2b.b2bstrawman.fielddefinition;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.clause.ClauseRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.CreateFieldDefinitionRequest;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldUsageInfo;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.IntakeFieldGroupResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.PatchFieldDefinitionRequest;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.UpdateFieldDefinitionRequest;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
+import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
 import jakarta.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,18 +44,24 @@ public class FieldDefinitionService {
   private final EntityManager entityManager;
   private final FieldGroupRepository fieldGroupRepository;
   private final FieldGroupMemberRepository fieldGroupMemberRepository;
+  private final DocumentTemplateRepository documentTemplateRepository;
+  private final ClauseRepository clauseRepository;
 
   public FieldDefinitionService(
       FieldDefinitionRepository fieldDefinitionRepository,
       AuditService auditService,
       EntityManager entityManager,
       FieldGroupRepository fieldGroupRepository,
-      FieldGroupMemberRepository fieldGroupMemberRepository) {
+      FieldGroupMemberRepository fieldGroupMemberRepository,
+      DocumentTemplateRepository documentTemplateRepository,
+      ClauseRepository clauseRepository) {
     this.fieldDefinitionRepository = fieldDefinitionRepository;
     this.auditService = auditService;
     this.entityManager = entityManager;
     this.fieldGroupRepository = fieldGroupRepository;
     this.fieldGroupMemberRepository = fieldGroupMemberRepository;
+    this.documentTemplateRepository = documentTemplateRepository;
+    this.clauseRepository = clauseRepository;
   }
 
   public record IntakeFieldGroup(UUID id, String name, String slug, List<FieldDefinition> fields) {}
@@ -228,6 +237,32 @@ public class FieldDefinitionService {
             .build());
 
     return FieldDefinitionResponse.from(fd);
+  }
+
+  @Transactional(readOnly = true)
+  public FieldUsageInfo getFieldUsage(UUID fieldId) {
+    var fd =
+        fieldDefinitionRepository
+            .findById(fieldId)
+            .orElseThrow(() -> new ResourceNotFoundException("FieldDefinition", fieldId));
+
+    String entityPrefix = fd.getEntityType().name().toLowerCase();
+    String variableKey = entityPrefix + ".customFields." + fd.getSlug();
+
+    var templates =
+        documentTemplateRepository.findActiveTemplatesContainingVariable(variableKey).stream()
+            .map(
+                t ->
+                    new FieldUsageInfo.TemplateReference(
+                        t.getId(), t.getName(), t.getCategory().name()))
+            .toList();
+
+    var clauses =
+        clauseRepository.findActiveClausesContainingVariable(variableKey).stream()
+            .map(c -> new FieldUsageInfo.ClauseReference(c.getId(), c.getTitle()))
+            .toList();
+
+    return new FieldUsageInfo(templates, clauses);
   }
 
   @Transactional

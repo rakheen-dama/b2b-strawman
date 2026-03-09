@@ -29,4 +29,11 @@ public interface ClauseRepository extends JpaRepository<Clause, UUID> {
       value = "SELECT COUNT(*) FROM template_clauses WHERE clause_id = :clauseId",
       nativeQuery = true)
   long countTemplateClauseReferences(@Param("clauseId") UUID clauseId);
+
+  @Query(
+      value =
+          "SELECT * FROM clauses WHERE active = true"
+              + " AND CAST(body AS text) LIKE %:variableKey%",
+      nativeQuery = true)
+  List<Clause> findActiveClausesContainingVariable(@Param("variableKey") String variableKey);
 }

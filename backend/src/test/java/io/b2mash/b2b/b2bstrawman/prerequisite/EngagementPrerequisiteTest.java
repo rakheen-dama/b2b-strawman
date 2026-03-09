@@ -62,6 +62,11 @@ class EngagementPrerequisiteTest {
   @Mock private EntityManager entityManager;
   @Mock private FieldGroupRepository fieldGroupRepository;
   @Mock private FieldGroupMemberRepository fieldGroupMemberRepository;
+
+  @Mock
+  private io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository documentTemplateRepository;
+
+  @Mock private io.b2mash.b2b.b2bstrawman.clause.ClauseRepository clauseRepository;
   @Mock private Query nativeQuery;
   @Mock private TemplateTaskRepository templateTaskRepository;
   @Mock private TemplateTaskItemRepository templateTaskItemRepository;
@@ -214,7 +219,9 @@ class EngagementPrerequisiteTest {
             auditService,
             entityManager,
             fieldGroupRepository,
-            fieldGroupMemberRepository);
+            fieldGroupMemberRepository,
+            documentTemplateRepository,
+            clauseRepository);
     fieldDefService.deactivate(fieldId);
 
     verify(entityManager).createNativeQuery(anyString());

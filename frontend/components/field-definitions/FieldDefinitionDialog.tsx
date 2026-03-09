@@ -1,7 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Dialog,
   DialogContent,
@@ -15,10 +20,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { X } from "lucide-react";
+import { ChevronRight, X } from "lucide-react";
 import {
   createFieldDefinitionAction,
   updateFieldDefinitionAction,
+  fetchFieldUsageAction,
+  type FieldUsageInfo,
 } from "@/app/(app)/org/[slug]/settings/custom-fields/actions";
 import type {
   EntityType,
@@ -134,6 +141,24 @@ export function FieldDefinitionDialog({
     if (Array.isArray(v)) return v.join(", ");
     return typeof v === "string" ? v : "";
   });
+
+  // Field usage info (only for editing existing fields)
+  const [fieldUsage, setFieldUsage] = useState<FieldUsageInfo | null>(null);
+  const [usageOpen, setUsageOpen] = useState(false);
+
+  useEffect(() => {
+    if (open && isEditing && field?.id) {
+      fetchFieldUsageAction(field.id).then((usage) => {
+        setFieldUsage(usage);
+      });
+    } else if (!open) {
+      setFieldUsage(null);
+      setUsageOpen(false);
+    }
+  }, [open, isEditing, field?.id]);
+
+  const totalUsageCount =
+    (fieldUsage?.templates.length ?? 0) + (fieldUsage?.clauses.length ?? 0);
 
   const availableControllingFields = (allFieldsForType ?? []).filter(
     (f) => f.active && f.id !== field?.id,
@@ -833,6 +858,87 @@ export function FieldDefinitionDialog({
                 </div>
               </div>
             </div>
+          )}
+
+          {/* Used In section (only for editing) */}
+          {isEditing && fieldUsage && (
+            <Collapsible open={usageOpen} onOpenChange={setUsageOpen}>
+              <CollapsibleTrigger className="flex w-full items-center gap-2 rounded-md border border-slate-200 p-3 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+                <ChevronRight
+                  className={`size-4 shrink-0 text-slate-400 transition-transform ${usageOpen ? "rotate-90" : ""}`}
+                />
+                <span>
+                  Used in {fieldUsage.templates.length}{" "}
+                  {fieldUsage.templates.length === 1
+                    ? "template"
+                    : "templates"}
+                  , {fieldUsage.clauses.length}{" "}
+                  {fieldUsage.clauses.length === 1 ? "clause" : "clauses"}
+                </span>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="mt-2 space-y-2 rounded-md border border-slate-200 p-3 dark:border-slate-700">
+                  {fieldUsage.templates.length > 0 && (
+                    <div>
+                      <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        Templates
+                      </p>
+                      <ul className="space-y-1">
+                        {fieldUsage.templates.map((t) => (
+                          <li
+                            key={t.id}
+                            className="text-sm text-slate-600 dark:text-slate-300"
+                          >
+                            {t.name}
+                            <span className="ml-1.5 text-xs text-slate-400">
+                              ({t.category.replace(/_/g, " ").toLowerCase()})
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {fieldUsage.clauses.length > 0 && (
+                    <div>
+                      <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        Clauses
+                      </p>
+                      <ul className="space-y-1">
+                        {fieldUsage.clauses.map((c) => (
+                          <li
+                            key={c.id}
+                            className="text-sm text-slate-600 dark:text-slate-300"
+                          >
+                            {c.title}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {fieldUsage.templates.length === 0 &&
+                    fieldUsage.clauses.length === 0 && (
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        This field is not referenced by any templates or clauses.
+                      </p>
+                    )}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          )}
+
+          {/* Warning when field is used and about to be deactivated */}
+          {isEditing && totalUsageCount > 0 && (
+            <p className="text-sm text-amber-600 dark:text-amber-400">
+              Warning: This field is used in {fieldUsage?.templates.length ?? 0}{" "}
+              {(fieldUsage?.templates.length ?? 0) === 1
+                ? "template"
+                : "templates"}{" "}
+              and {fieldUsage?.clauses.length ?? 0}{" "}
+              {(fieldUsage?.clauses.length ?? 0) === 1
+                ? "clause"
+                : "clauses"}
+              . Changes may affect generated documents.
+            </p>
           )}
 
           {error && <p className="text-sm text-destructive">{error}</p>}

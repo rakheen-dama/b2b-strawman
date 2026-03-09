@@ -7,11 +7,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFFooter;
+import org.apache.poi.xwpf.usermodel.XWPFHeader;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
+import org.apache.poi.xwpf.usermodel.XWPFTable;
+import org.apache.poi.xwpf.usermodel.XWPFTableCell;
+import org.apache.poi.xwpf.usermodel.XWPFTableRow;
 
 /**
  * Merges {{variable}} placeholders in .docx templates with values from a context map. Handles the
@@ -32,12 +38,104 @@ public class DocxMergeService {
    */
   public byte[] merge(InputStream templateStream, Map<String, Object> context) throws IOException {
     try (XWPFDocument doc = new XWPFDocument(templateStream)) {
+      // Process body paragraphs
       for (XWPFParagraph para : doc.getParagraphs()) {
         mergeParagraph(para, context);
+      }
+      // Process body tables
+      for (XWPFTable table : doc.getTables()) {
+        mergeTable(table, context);
+      }
+      // Process headers
+      for (XWPFHeader header : doc.getHeaderList()) {
+        header.getParagraphs().forEach(p -> mergeParagraph(p, context));
+        header.getTables().forEach(t -> mergeTable(t, context));
+      }
+      // Process footers
+      for (XWPFFooter footer : doc.getFooterList()) {
+        footer.getParagraphs().forEach(p -> mergeParagraph(p, context));
+        footer.getTables().forEach(t -> mergeTable(t, context));
       }
       ByteArrayOutputStream out = new ByteArrayOutputStream();
       doc.write(out);
       return out.toByteArray();
+    }
+  }
+
+  /**
+   * Discovers all {{variable}} field paths in a .docx template.
+   *
+   * @param docxStream the .docx template as an input stream
+   * @return deduplicated, alphabetically sorted list of field paths
+   */
+  public List<String> discoverFields(InputStream docxStream) throws IOException {
+    try (XWPFDocument doc = new XWPFDocument(docxStream)) {
+      TreeSet<String> fields = new TreeSet<>();
+
+      // Body paragraphs
+      for (XWPFParagraph para : doc.getParagraphs()) {
+        fields.addAll(extractFieldPaths(para));
+      }
+      // Body tables
+      for (XWPFTable table : doc.getTables()) {
+        collectFieldsFromTable(table, fields);
+      }
+      // Headers
+      for (XWPFHeader header : doc.getHeaderList()) {
+        for (XWPFParagraph para : header.getParagraphs()) {
+          fields.addAll(extractFieldPaths(para));
+        }
+        for (XWPFTable table : header.getTables()) {
+          collectFieldsFromTable(table, fields);
+        }
+      }
+      // Footers
+      for (XWPFFooter footer : doc.getFooterList()) {
+        for (XWPFParagraph para : footer.getParagraphs()) {
+          fields.addAll(extractFieldPaths(para));
+        }
+        for (XWPFTable table : footer.getTables()) {
+          collectFieldsFromTable(table, fields);
+        }
+      }
+
+      return List.copyOf(fields);
+    }
+  }
+
+  /**
+   * Extracts field paths from a paragraph by concatenating run text and finding {{...}} patterns.
+   */
+  List<String> extractFieldPaths(XWPFParagraph para) {
+    List<XWPFRun> runs = para.getRuns();
+    if (runs == null || runs.isEmpty()) return List.of();
+
+    StringBuilder fullText = new StringBuilder();
+    for (XWPFRun run : runs) {
+      String text = run.getText(0);
+      if (text != null) fullText.append(text);
+    }
+
+    Matcher matcher = FIELD_PATTERN.matcher(fullText);
+    List<String> paths = new ArrayList<>();
+    while (matcher.find()) {
+      paths.add(matcher.group(1));
+    }
+    return paths;
+  }
+
+  /** Merges {{variable}} placeholders in all cells of a table, including nested tables. */
+  void mergeTable(XWPFTable table, Map<String, Object> context) {
+    for (XWPFTableRow row : table.getRows()) {
+      for (XWPFTableCell cell : row.getTableCells()) {
+        for (XWPFParagraph para : cell.getParagraphs()) {
+          mergeParagraph(para, context);
+        }
+        // Recursively process nested tables
+        for (XWPFTable nestedTable : cell.getTables()) {
+          mergeTable(nestedTable, context);
+        }
+      }
     }
   }
 
@@ -130,5 +228,18 @@ public class DocxMergeService {
       current = map.get(part);
     }
     return current == null ? "" : current.toString();
+  }
+
+  private void collectFieldsFromTable(XWPFTable table, TreeSet<String> fields) {
+    for (XWPFTableRow row : table.getRows()) {
+      for (XWPFTableCell cell : row.getTableCells()) {
+        for (XWPFParagraph para : cell.getParagraphs()) {
+          fields.addAll(extractFieldPaths(para));
+        }
+        for (XWPFTable nestedTable : cell.getTables()) {
+          collectFieldsFromTable(nestedTable, fields);
+        }
+      }
+    }
   }
 }

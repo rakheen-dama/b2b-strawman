@@ -4,15 +4,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.List;
 import java.util.Map;
+import org.apache.poi.wp.usermodel.HeaderFooterType;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFFooter;
+import org.apache.poi.xwpf.usermodel.XWPFHeader;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
+import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.junit.jupiter.api.Test;
 
 class DocxMergeServiceTest {
 
   private final DocxMergeService service = new DocxMergeService();
+
+  // --- Existing merge tests ---
 
   @Test
   void merge_singleRunField_replacesCorrectly() throws Exception {
@@ -146,6 +153,132 @@ class DocxMergeServiceTest {
     }
   }
 
+  // --- Field discovery tests (322.14) ---
+
+  @Test
+  void discoverFields_simpleDoc_findsAllFields() throws Exception {
+    byte[] docx = createMultipleFieldsDocx();
+
+    List<String> fields = service.discoverFields(new ByteArrayInputStream(docx));
+
+    assertThat(fields).containsExactly("customer.name", "project.name");
+  }
+
+  @Test
+  void discoverFields_splitRuns_findsFields() throws Exception {
+    byte[] docx = createSplitRunDocx();
+
+    List<String> fields = service.discoverFields(new ByteArrayInputStream(docx));
+
+    assertThat(fields).containsExactly("customer.name");
+  }
+
+  @Test
+  void discoverFields_headersFooters_findsFields() throws Exception {
+    byte[] docx = createHeaderFooterDocx();
+
+    List<String> fields = service.discoverFields(new ByteArrayInputStream(docx));
+
+    assertThat(fields).containsExactly("customer.name", "generatedAt", "org.name");
+  }
+
+  @Test
+  void discoverFields_tableCells_findsFields() throws Exception {
+    byte[] docx = createTableFieldsDocx();
+
+    List<String> fields = service.discoverFields(new ByteArrayInputStream(docx));
+
+    assertThat(fields).containsExactly("customer.email", "customer.name");
+  }
+
+  @Test
+  void discoverFields_noFields_returnsEmpty() throws Exception {
+    byte[] docx = createNoFieldsDocx();
+
+    List<String> fields = service.discoverFields(new ByteArrayInputStream(docx));
+
+    assertThat(fields).isEmpty();
+  }
+
+  // --- Header/footer/table merge tests (322.15) ---
+
+  @Test
+  void merge_headerField_replacesInHeader() throws Exception {
+    byte[] docx = createHeaderFooterDocx();
+    Map<String, Object> context =
+        Map.of(
+            "customer", Map.of("name", "Acme Corp"),
+            "org", Map.of("name", "DocTeams"),
+            "generatedAt", "2026-03-09");
+
+    byte[] result = service.merge(new ByteArrayInputStream(docx), context);
+
+    try (XWPFDocument merged = new XWPFDocument(new ByteArrayInputStream(result))) {
+      XWPFHeader header = merged.getHeaderList().get(0);
+      String headerText =
+          header.getParagraphs().stream()
+              .map(XWPFParagraph::getText)
+              .filter(t -> t != null && !t.isBlank())
+              .findFirst()
+              .orElse("");
+      assertThat(headerText).contains("DocTeams");
+    }
+  }
+
+  @Test
+  void merge_footerField_replacesInFooter() throws Exception {
+    byte[] docx = createHeaderFooterDocx();
+    Map<String, Object> context =
+        Map.of(
+            "customer", Map.of("name", "Acme Corp"),
+            "org", Map.of("name", "DocTeams"),
+            "generatedAt", "2026-03-09");
+
+    byte[] result = service.merge(new ByteArrayInputStream(docx), context);
+
+    try (XWPFDocument merged = new XWPFDocument(new ByteArrayInputStream(result))) {
+      XWPFFooter footer = merged.getFooterList().get(0);
+      String footerText =
+          footer.getParagraphs().stream()
+              .map(XWPFParagraph::getText)
+              .filter(t -> t != null && !t.isBlank())
+              .findFirst()
+              .orElse("");
+      assertThat(footerText).contains("2026-03-09");
+    }
+  }
+
+  @Test
+  void merge_tableField_replacesInCell() throws Exception {
+    byte[] docx = createTableFieldsDocx();
+    Map<String, Object> context =
+        Map.of("customer", Map.of("name", "Acme Corp", "email", "info@acme.com"));
+
+    byte[] result = service.merge(new ByteArrayInputStream(docx), context);
+
+    try (XWPFDocument merged = new XWPFDocument(new ByteArrayInputStream(result))) {
+      XWPFTable table = merged.getTables().get(0);
+      String cellText = table.getRow(0).getCell(1).getText();
+      assertThat(cellText).isEqualTo("Acme Corp");
+      String cellText2 = table.getRow(1).getCell(1).getText();
+      assertThat(cellText2).isEqualTo("info@acme.com");
+    }
+  }
+
+  @Test
+  void merge_emptyField_ignored() throws Exception {
+    byte[] docx = createDocxWithField("Before {{}} after");
+    Map<String, Object> context = Map.of("customer", Map.of("name", "Acme Corp"));
+
+    byte[] result = service.merge(new ByteArrayInputStream(docx), context);
+
+    try (XWPFDocument merged = new XWPFDocument(new ByteArrayInputStream(result))) {
+      String text = merged.getParagraphs().get(0).getText();
+      // The regex [^{}]+ requires at least one char, so {{}} is not matched and stays as-is
+      assertThat(text).isEqualTo("Before {{}} after");
+    }
+  }
+
   // --- Test document creators ---
 
   private byte[] createSimpleMergeDocx() throws Exception {
@@ -202,6 +335,65 @@ class DocxMergeServiceTest {
       XWPFParagraph para = doc.createParagraph();
       XWPFRun run = para.createRun();
       run.setText(text);
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      doc.write(out);
+      return out.toByteArray();
+    }
+  }
+
+  private byte[] createHeaderFooterDocx() throws Exception {
+    try (XWPFDocument doc = new XWPFDocument()) {
+      // Body paragraph
+      XWPFParagraph bodyPara = doc.createParagraph();
+      bodyPara.createRun().setText("Body text with {{customer.name}}");
+
+      // Header
+      XWPFHeader header = doc.createHeader(HeaderFooterType.DEFAULT);
+      XWPFParagraph headerPara = header.createParagraph();
+      headerPara.createRun().setText("Header: {{org.name}}");
+
+      // Footer
+      XWPFFooter footer = doc.createFooter(HeaderFooterType.DEFAULT);
+      XWPFParagraph footerPara = footer.createParagraph();
+      footerPara.createRun().setText("Footer: {{generatedAt}}");
+
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      doc.write(out);
+      return out.toByteArray();
+    }
+  }
+
+  private byte[] createTableFieldsDocx() throws Exception {
+    try (XWPFDocument doc = new XWPFDocument()) {
+      XWPFTable table = doc.createTable(2, 2);
+      // Row 0, Cell 0
+      table.getRow(0).getCell(0).setText("Name:");
+      // Row 0, Cell 1 - with merge field
+      XWPFParagraph cellPara = table.getRow(0).getCell(1).getParagraphArray(0);
+      cellPara.createRun().setText("{{customer.name}}");
+      // Row 1, Cell 0
+      table.getRow(1).getCell(0).setText("Email:");
+      // Row 1, Cell 1
+      XWPFParagraph cellPara2 = table.getRow(1).getCell(1).getParagraphArray(0);
+      cellPara2.createRun().setText("{{customer.email}}");
+
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      doc.write(out);
+      return out.toByteArray();
+    }
+  }
+
+  private byte[] createMixedFormattingDocx() throws Exception {
+    try (XWPFDocument doc = new XWPFDocument()) {
+      XWPFParagraph para = doc.createParagraph();
+      XWPFRun run1 = para.createRun();
+      run1.setBold(true);
+      run1.setText("Bold: {{");
+      XWPFRun run2 = para.createRun();
+      run2.setItalic(true);
+      run2.setText("customer.name");
+      XWPFRun run3 = para.createRun();
+      run3.setText("}} end");
       ByteArrayOutputStream out = new ByteArrayOutputStream();
       doc.write(out);
       return out.toByteArray();

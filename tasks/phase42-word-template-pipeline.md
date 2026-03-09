@@ -19,7 +19,7 @@ Phase 42 adds a **Word document (.docx) template pipeline** to the DocTeams plat
 | 321 | Entity Extension, Enums & Migration | Backend | — | M | 321A, 321B | **Done** (PRs #613, #614) |
 | 322 | DocxMergeService — Field Discovery & Split-Run Engine | Backend | 321 | L | 322A, 322B | **Done** (PRs #615, #616) |
 | 323 | DOCX Upload, Replace & Download Endpoints | Backend | 321, 322 | M | 323A, 323B | **Done** (PRs #617, #618) |
-| 324 | DOCX Generation Pipeline & PDF Conversion | Backend | 322, 323 | M | 324A, 324B | |
+| 324 | DOCX Generation Pipeline & PDF Conversion | Backend | 322, 323 | M | 324A, 324B | 324A **Done** (PR #619) |
 | 325 | Frontend — Upload & Template Management | Frontend | 323 | M | 325A, 325B | |
 | 326 | Frontend — Generation Dialog & Integration | Frontend | 324, 325 | M | 326A, 326B | |
 
@@ -152,7 +152,7 @@ FRONTEND TRACK (after E323 backend APIs ready)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 3a | 324 | 324A | `POST /api/templates/{id}/generate-docx` endpoint, `TemplateContextBuilder` integration (reuse existing), `DocxMergeService.merge()` invocation, merged `.docx` S3 upload, `GeneratedDocument` creation, file naming (`{slug}-{entity}-{date}.docx`), `DOCX_DOCUMENT_GENERATED` audit event. ~4 new/modified files + ~8 tests. Backend only. | |
+| 3a | 324 | 324A | `POST /api/templates/{id}/generate-docx` endpoint, `TemplateContextBuilder` integration (reuse existing), `DocxMergeService.merge()` invocation, merged `.docx` S3 upload, `GeneratedDocument` creation, file naming (`{slug}-{entity}-{date}.docx`), `DOCX_DOCUMENT_GENERATED` audit event. ~4 new/modified files + ~8 tests. Backend only. | **Done** (PR #619) |
 | 3b | 324 | 324B | `PdfConversionService`: LibreOffice headless via `ProcessBuilder` (30s timeout), docx4j fallback (optional dependency), graceful degradation (return DOCX-only + warning), `outputFormat` handling (DOCX/PDF/BOTH), dual presigned URL generation. Spring multipart config. ~4 new/modified files + ~6 tests. Backend only. | |
 
 ### Stage 4: Frontend — Upload & Management
@@ -419,7 +419,7 @@ Stage 5: [326A] -> [326B]                                           (sequential,
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **324A** | 324.1--324.7 | `POST /api/templates/{id}/generate-docx` endpoint, `TemplateContextBuilder` integration (reuse existing), `DocxMergeService.merge()` invocation, merged `.docx` S3 upload, `GeneratedDocument` creation with `outputFormat`, file naming (`{slug}-{entity}-{date}.docx`), presigned URL generation, `DOCX_DOCUMENT_GENERATED` audit event. ~4 modified files + ~8 tests. Backend only. | |
+| **324A** | 324.1--324.7 | `POST /api/templates/{id}/generate-docx` endpoint, `TemplateContextBuilder` integration (reuse existing), `DocxMergeService.merge()` invocation, merged `.docx` S3 upload, `GeneratedDocument` creation with `outputFormat`, file naming (`{slug}-{entity}-{date}.docx`), presigned URL generation, `DOCX_DOCUMENT_GENERATED` audit event. ~4 modified files + ~8 tests. Backend only. | **Done** (PR #619) |
 | **324B** | 324.8--324.14 | `PdfConversionService`: LibreOffice headless via `ProcessBuilder` (30s timeout, startup availability check), docx4j fallback (optional dependency check), graceful degradation (DOCX-only + warning). `outputFormat` handling for `DOCX`/`PDF`/`BOTH`. Dual presigned URLs. ~4 new/modified files + ~6 tests. Backend only. | |
 
 ### Tasks

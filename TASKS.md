@@ -365,7 +365,7 @@
 | 321 | Entity Extension, Enums & Migration | Backend | -- | M | 321A, 321B | **Done** (PRs #613, #614) |
 | 322 | DocxMergeService — Field Discovery & Split-Run Engine | Backend | 321 | L | 322A, 322B | **Done** (PRs #615, #616) |
 | 323 | DOCX Upload, Replace & Download Endpoints | Backend | 321, 322 | M | 323A, 323B | **Done** (PRs #617, #618) |
-| 324 | DOCX Generation Pipeline & PDF Conversion | Backend | 322, 323 | M | 324A, 324B | |
+| 324 | DOCX Generation Pipeline & PDF Conversion | Backend | 322, 323 | M | 324A, 324B | 324A **Done** (PR #619) |
 | 325 | Frontend — Upload & Template Management | Frontend | 323 | M | 325A, 325B | |
 | 326 | Frontend — Generation Dialog & Integration | Frontend | 324, 325 | M | 326A, 326B | |
 

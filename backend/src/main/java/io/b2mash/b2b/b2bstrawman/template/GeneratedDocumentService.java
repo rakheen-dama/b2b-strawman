@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.clause.ClauseResolver;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.event.DocumentGeneratedEvent;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.PrerequisiteNotMetException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.exception.ValidationWarningException;
@@ -18,7 +19,12 @@ import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.ClauseSelection;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.TemplateDetailResponse;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +40,10 @@ public class GeneratedDocumentService {
 
   private static final Logger log = LoggerFactory.getLogger(GeneratedDocumentService.class);
 
+  private static final String DOCX_CONTENT_TYPE =
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+  private static final Duration DOWNLOAD_URL_EXPIRY = Duration.ofHours(1);
+
   private final GeneratedDocumentRepository generatedDocumentRepository;
   private final DocumentTemplateRepository documentTemplateRepository;
   private final MemberNameResolver memberNameResolver;
@@ -46,6 +56,8 @@ public class GeneratedDocumentService {
   private final ApplicationEventPublisher eventPublisher;
   private final ClauseResolver clauseResolver;
   private final PrerequisiteService prerequisiteService;
+  private final DocxMergeService docxMergeService;
+  private final List<TemplateContextBuilder> contextBuilders;
 
   public GeneratedDocumentService(
       GeneratedDocumentRepository generatedDocumentRepository,
@@ -59,7 +71,9 @@ public class GeneratedDocumentService {
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
       ClauseResolver clauseResolver,
-      PrerequisiteService prerequisiteService) {
+      PrerequisiteService prerequisiteService,
+      DocxMergeService docxMergeService,
+      List<TemplateContextBuilder> contextBuilders) {
     this.generatedDocumentRepository = generatedDocumentRepository;
     this.documentTemplateRepository = documentTemplateRepository;
     this.memberNameResolver = memberNameResolver;
@@ -72,6 +86,8 @@ public class GeneratedDocumentService {
     this.eventPublisher = eventPublisher;
     this.clauseResolver = clauseResolver;
     this.prerequisiteService = prerequisiteService;
+    this.docxMergeService = docxMergeService;
+    this.contextBuilders = contextBuilders;
   }
 
   /**
@@ -126,7 +142,7 @@ public class GeneratedDocumentService {
     var templateDetail = documentTemplateService.getById(templateId);
 
     // 3. Upload to storage
-    String tenantId = RequestScopes.TENANT_ID.get();
+    String tenantId = RequestScopes.requireTenantId();
     String s3Key = "org/" + tenantId + "/generated/" + pdfResult.fileName();
     uploadToStorage(s3Key, pdfResult.pdfBytes());
 
@@ -264,6 +280,114 @@ public class GeneratedDocumentService {
     log.info("Deleted generated document: id={}", id);
   }
 
+  /**
+   * Generates a filled DOCX document by merging a DOCX template with entity context data. Downloads
+   * the template from S3, resolves context via the appropriate builder, merges placeholders,
+   * uploads the result, and persists a GeneratedDocument record.
+   */
+  @Transactional
+  public GenerateDocxResult generateDocx(UUID templateId, UUID entityId, UUID memberId) {
+    // 1. Load template and verify format
+    var template =
+        documentTemplateRepository
+            .findById(templateId)
+            .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", templateId));
+
+    if (template.getFormat() != TemplateFormat.DOCX) {
+      throw new InvalidStateException(
+          "Invalid Template Format",
+          "Cannot generate DOCX from a "
+              + template.getFormat()
+              + " template. "
+              + "Only DOCX templates are supported for DOCX generation.");
+    }
+
+    if (template.getDocxS3Key() == null) {
+      throw new InvalidStateException(
+          "Missing DOCX Template File",
+          "The template does not have an uploaded DOCX file. "
+              + "Please upload a DOCX file before generating documents.");
+    }
+
+    // 2. Download template .docx from S3
+    byte[] templateBytes = storageService.download(template.getDocxS3Key());
+
+    // 3. Build context using appropriate builder
+    var builder = findBuilder(template.getPrimaryEntityType());
+    var context = builder.buildContext(entityId, memberId);
+
+    // 4. Merge template with context
+    byte[] mergedBytes;
+    try {
+      mergedBytes = docxMergeService.merge(new ByteArrayInputStream(templateBytes), context);
+    } catch (IOException e) {
+      throw new DocxGenerationException("Failed to merge DOCX template", e);
+    }
+
+    // 5. Generate file name
+    String entityName = extractEntityName(template.getPrimaryEntityType(), context);
+    String fileName = buildDocxFileName(template.getSlug(), entityName, "docx");
+
+    // 6. Upload merged document to S3
+    String tenantId = RequestScopes.requireTenantId();
+    String s3Key = "org/" + tenantId + "/generated/" + fileName;
+    try {
+      storageService.upload(s3Key, mergedBytes, DOCX_CONTENT_TYPE);
+    } catch (Exception e) {
+      throw new DocxGenerationException("Failed to upload generated DOCX to storage", e);
+    }
+
+    // 7. Build context snapshot directly from template entity (avoids getById which NPEs on DOCX
+    // templates due to null Tiptap content)
+    var contextSnapshot = new HashMap<String, Object>();
+    contextSnapshot.put("template_name", template.getName());
+    contextSnapshot.put("entity_type", template.getPrimaryEntityType().name());
+    contextSnapshot.put("entity_id", entityId.toString());
+
+    // 8. Create GeneratedDocument record
+    var generatedDoc =
+        createRecord(
+            templateId,
+            template.getPrimaryEntityType(),
+            entityId,
+            fileName,
+            s3Key,
+            mergedBytes.length,
+            memberId,
+            contextSnapshot,
+            OutputFormat.DOCX);
+
+    // 9. Audit event
+    var auditDetails = new HashMap<String, Object>();
+    auditDetails.put("templateId", templateId.toString());
+    auditDetails.put("entityType", template.getPrimaryEntityType().name());
+    auditDetails.put("entityId", entityId.toString());
+    auditDetails.put("outputFormat", "DOCX");
+    auditDetails.put("fileName", fileName);
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("docx_document.generated")
+            .entityType("generated_document")
+            .entityId(generatedDoc.getId())
+            .details(auditDetails)
+            .build());
+
+    // 10. Generate presigned download URL
+    var presigned = storageService.generateDownloadUrl(s3Key, DOWNLOAD_URL_EXPIRY);
+
+    return new GenerateDocxResult(
+        generatedDoc.getId(),
+        templateId,
+        template.getName(),
+        "DOCX",
+        fileName,
+        presigned.url(),
+        null,
+        (long) mergedBytes.length,
+        generatedDoc.getGeneratedAt(),
+        List.of());
+  }
+
   // --- Private helpers ---
 
   private List<Map<String, Object>> buildClauseSnapshots(List<Clause> resolvedClauses) {
@@ -290,10 +414,33 @@ public class GeneratedDocumentService {
       long fileSize,
       UUID generatedBy,
       Map<String, Object> contextSnapshot) {
+    return createRecord(
+        templateId,
+        entityType,
+        entityId,
+        fileName,
+        s3Key,
+        fileSize,
+        generatedBy,
+        contextSnapshot,
+        OutputFormat.PDF);
+  }
+
+  private GeneratedDocument createRecord(
+      UUID templateId,
+      TemplateEntityType entityType,
+      UUID entityId,
+      String fileName,
+      String s3Key,
+      long fileSize,
+      UUID generatedBy,
+      Map<String, Object> contextSnapshot,
+      OutputFormat outputFormat) {
     var generatedDocument =
         new GeneratedDocument(
             templateId, entityType, entityId, fileName, s3Key, fileSize, generatedBy);
     generatedDocument.setContextSnapshot(contextSnapshot);
+    generatedDocument.setOutputFormat(outputFormat);
     generatedDocument = generatedDocumentRepository.save(generatedDocument);
     log.info(
         "Created generated document: id={}, template={}, entity={}/{}",
@@ -431,4 +578,69 @@ public class GeneratedDocumentService {
       String generatedByName,
       Instant generatedAt,
       UUID documentId) {}
+
+  /** Result DTO for DOCX generation. */
+  public record GenerateDocxResult(
+      UUID id,
+      UUID templateId,
+      String templateName,
+      String outputFormat,
+      String fileName,
+      String downloadUrl,
+      String pdfDownloadUrl,
+      Long fileSize,
+      Instant generatedAt,
+      List<String> warnings) {}
+
+  private TemplateContextBuilder findBuilder(TemplateEntityType entityType) {
+    return contextBuilders.stream()
+        .filter(b -> b.supports() == entityType)
+        .findFirst()
+        .orElseThrow(
+            () ->
+                new IllegalStateException(
+                    "No context builder registered for entity type: " + entityType));
+  }
+
+  @SuppressWarnings("unchecked")
+  private String extractEntityName(TemplateEntityType entityType, Map<String, Object> context) {
+    return switch (entityType) {
+      case PROJECT -> {
+        var project = (Map<String, Object>) context.get("project");
+        yield project != null ? (String) project.get("name") : "document";
+      }
+      case CUSTOMER -> {
+        var customer = (Map<String, Object>) context.get("customer");
+        yield customer != null ? (String) customer.get("name") : "document";
+      }
+      case INVOICE -> {
+        var invoice = (Map<String, Object>) context.get("invoice");
+        yield invoice != null && invoice.get("invoiceNumber") != null
+            ? (String) invoice.get("invoiceNumber")
+            : "document";
+      }
+    };
+  }
+
+  private String slugifyName(String text) {
+    if (text == null || text.isBlank()) {
+      return "document";
+    }
+    String slugified =
+        text.toLowerCase()
+            .replaceAll("[\\s]+", "-")
+            .replaceAll("[^a-z0-9-]", "")
+            .replaceAll("-+", "-")
+            .replaceAll("^-|-$", "");
+    if (slugified.isEmpty()) {
+      return "document";
+    }
+    return slugified.length() > 50 ? slugified.substring(0, 50) : slugified;
+  }
+
+  private String buildDocxFileName(String templateSlug, String entityName, String extension) {
+    String slugifiedName = slugifyName(entityName);
+    String date = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+    return templateSlug + "-" + slugifiedName + "-" + date + "." + extension;
+  }
 }

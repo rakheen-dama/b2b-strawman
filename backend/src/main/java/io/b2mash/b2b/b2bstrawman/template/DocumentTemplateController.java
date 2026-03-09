@@ -166,6 +166,15 @@ public class DocumentTemplateController {
             id, request.entityId(), request.clauses(), memberId));
   }
 
+  @PostMapping("/{id}/generate-docx")
+  @PreAuthorize("isAuthenticated()")
+  public ResponseEntity<GeneratedDocumentService.GenerateDocxResult> generateDocx(
+      @PathVariable UUID id, @Valid @RequestBody GenerateDocxRequest request) {
+    UUID memberId = RequestScopes.requireMemberId();
+    return ResponseEntity.ok(
+        generatedDocumentService.generateDocx(id, request.entityId(), memberId));
+  }
+
   @PostMapping("/{id}/generate")
   @PreAuthorize("isAuthenticated()")
   public ResponseEntity<?> generateDocument(
@@ -211,6 +220,8 @@ public class DocumentTemplateController {
   public record PreviewRequest(@NotNull UUID entityId, @Valid List<ClauseSelection> clauses) {}
 
   // PreviewResponse lives in PdfRenderingService to keep the dependency direction correct.
+
+  public record GenerateDocxRequest(@NotNull UUID entityId) {}
 
   public record GenerateDocumentRequest(
       @NotNull UUID entityId,

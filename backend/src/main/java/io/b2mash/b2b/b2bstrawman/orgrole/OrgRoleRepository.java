@@ -14,4 +14,6 @@ public interface OrgRoleRepository extends JpaRepository<OrgRole, UUID> {
   boolean existsByNameIgnoreCase(String name);
 
   boolean existsBySlugAndIdNot(String slug, UUID id);
+
+  boolean existsByNameIgnoreCaseAndIdNot(String name, UUID id);
 }

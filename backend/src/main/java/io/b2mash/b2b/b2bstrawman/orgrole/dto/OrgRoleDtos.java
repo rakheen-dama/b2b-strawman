@@ -2,6 +2,9 @@ package io.b2mash.b2b.b2bstrawman.orgrole.dto;
 
 import io.b2mash.b2b.b2bstrawman.orgrole.Capability;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRole;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
@@ -11,9 +14,15 @@ public final class OrgRoleDtos {
 
   private OrgRoleDtos() {}
 
-  public record CreateOrgRoleRequest(String name, String description, Set<String> capabilities) {}
+  public record CreateOrgRoleRequest(
+      @NotBlank @Size(max = 100) String name,
+      @Size(max = 500) String description,
+      @NotNull Set<String> capabilities) {}
 
-  public record UpdateOrgRoleRequest(String name, String description, Set<String> capabilities) {}
+  public record UpdateOrgRoleRequest(
+      @Size(max = 100) String name,
+      @Size(max = 500) String description,
+      Set<String> capabilities) {}
 
   public record OrgRoleResponse(
       UUID id,

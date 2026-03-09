@@ -68,25 +68,33 @@ export function getKeycloakLogoutUrl(): string {
  * This is required because Spring Security's LogoutFilter only accepts POST with CSRF.
  */
 export async function performKeycloakLogout(): Promise<void> {
-  // Fetch CSRF token from the gateway BFF endpoint (CSRF-exempt under /bff/**)
-  const res = await fetch(`${GATEWAY_URL}/bff/csrf`, { credentials: "include" });
-  const data = await res.json();
+  try {
+    // Fetch CSRF token from the gateway BFF endpoint (CSRF-exempt under /bff/**)
+    const res = await fetch(`${GATEWAY_URL}/bff/csrf`, {
+      credentials: "include",
+    });
+    const data = await res.json();
 
-  // Create and submit a hidden form POST to the gateway logout endpoint
-  const form = document.createElement("form");
-  form.method = "POST";
-  form.action = `${GATEWAY_URL}/logout`;
+    // Create and submit a hidden form POST to the gateway logout endpoint
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = `${GATEWAY_URL}/logout`;
 
-  if (data.token) {
-    const input = document.createElement("input");
-    input.type = "hidden";
-    input.name = data.parameterName || "_csrf";
-    input.value = data.token;
-    form.appendChild(input);
+    if (data.token) {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = data.parameterName || "_csrf";
+      input.value = data.token;
+      form.appendChild(input);
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+  } catch {
+    // Fallback: navigate directly (GET will likely fail with 403, but
+    // the user ends up on the gateway which redirects to login)
+    window.location.href = getKeycloakLogoutUrl();
   }
-
-  document.body.appendChild(form);
-  form.submit();
 }
 
 /**
@@ -112,7 +120,11 @@ export function UserMenuBff() {
   const initials = user ? getInitials(user.name) : "?";
 
   function handleSignOut() {
-    performKeycloakLogout();
+    performKeycloakLogout().catch(() => {
+      // Last resort fallback — should not reach here since performKeycloakLogout
+      // already has internal error handling
+      window.location.href = getKeycloakLogoutUrl();
+    });
   }
 
   return (

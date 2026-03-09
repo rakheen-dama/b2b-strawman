@@ -69,10 +69,10 @@ public class BffController {
       return ResponseEntity.ok(Map.of());
     }
     // Force lazy token generation
-    csrfToken.getToken();
+    String token = csrfToken.getToken();
     return ResponseEntity.ok(
         Map.of(
-            "token", csrfToken.getToken(),
+            "token", token,
             "parameterName", csrfToken.getParameterName(),
             "headerName", csrfToken.getHeaderName()));
   }

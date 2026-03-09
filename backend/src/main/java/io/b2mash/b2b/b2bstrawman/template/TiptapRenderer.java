@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.template;
 import io.b2mash.b2b.b2bstrawman.clause.Clause;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -377,7 +378,7 @@ public class TiptapRenderer {
       case "contains" -> asString(fieldValue).contains(asString(condValue));
       case "in" -> {
         String csv = asString(condValue);
-        Set<String> allowed = Set.of(csv.split("\\s*,\\s*"));
+        Set<String> allowed = new HashSet<>(List.of(csv.split("\\s*,\\s*")));
         yield allowed.contains(asString(fieldValue));
       }
       default -> true; // Unknown operator -> render (fail-open)

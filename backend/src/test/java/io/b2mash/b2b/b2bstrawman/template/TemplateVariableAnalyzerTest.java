@@ -214,4 +214,39 @@ class TemplateVariableAnalyzerTest {
     var keys = analyzer.extractVariableKeys(doc);
     assertThat(keys).containsExactly("customer.name");
   }
+
+  @Test
+  void shouldExtractFieldKeyFromConditionalBlock() {
+    Map<String, Object> doc =
+        Map.of(
+            "type",
+            "doc",
+            "content",
+            List.of(
+                Map.of(
+                    "type",
+                    "conditionalBlock",
+                    "attrs",
+                    Map.of(
+                        "fieldKey",
+                        "customer.customFields.tax_type",
+                        "operator",
+                        "eq",
+                        "value",
+                        "vat"),
+                    "content",
+                    List.of(
+                        Map.of(
+                            "type",
+                            "paragraph",
+                            "content",
+                            List.of(Map.of("type", "text", "text", "VAT content")))))));
+
+    var keys = analyzer.extractVariableKeys(doc);
+    assertThat(keys).contains("customer.customFields.tax_type");
+
+    var slugs = analyzer.extractCustomFieldSlugs(doc);
+    assertThat(slugs).containsKey("customer");
+    assertThat(slugs.get("customer")).contains("tax_type");
+  }
 }

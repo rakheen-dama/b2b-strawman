@@ -225,6 +225,15 @@ class ConditionalBlockRenderTest {
     return block;
   }
 
+  @Test
+  void conditionalBlock_in_handlesDuplicateValues() {
+    var block =
+        conditionalBlock("project.status", "in", "ACTIVE, CLOSED, ACTIVE", "Visible content");
+    var context = Map.<String, Object>of("project", Map.of("status", "ACTIVE"));
+    String html = renderer.render(doc(block), context, Map.of(), null, null);
+    assertThat(html).contains("Visible content");
+  }
+
   private Map<String, Object> doc(Map<String, Object> childNode) {
     return Map.of("type", "doc", "content", List.of(childNode));
   }

@@ -77,6 +77,12 @@ public class TemplateVariableAnalyzer {
           keys.add(key);
         }
       }
+      case "conditionalBlock" -> {
+        String fieldKey = (String) attrs.get("fieldKey");
+        if (fieldKey != null && !fieldKey.isBlank()) {
+          keys.add(fieldKey);
+        }
+      }
       case "clauseBlock" -> {
         if (depth >= MAX_CLAUSE_DEPTH) return;
         String clauseIdStr = (String) attrs.get("clauseId");

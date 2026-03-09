@@ -23,7 +23,7 @@ The backend surface is minimal: one V66 migration adding a column to `org_settin
 |------|------|-------|------|--------|--------|--------|
 | 327 | i18n Message Catalog Foundation | Frontend | -- | S | 327A | **Done** (PR #626) |
 | 328 | Empty States System & Page Integration | Frontend | 327 | M | 328A, 328B | **Done** (PR #627, #628) |
-| 329 | Getting Started Checklist | Both | 327 | M | 329A, 329B | |
+| 329 | Getting Started Checklist | Both | 327 | M | 329A, 329B | **Done** (PR #629, #630) |
 | 330 | Inline Contextual Help | Frontend | 327 | M | 330A, 330B | |
 | 331 | Error Recovery & Feedback | Frontend | 327 | M | 331A, 331B | |
 
@@ -96,7 +96,7 @@ EMPTY STATES TRACK    ONBOARDING TRACK    HELP TRACK       ERROR TRACK
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 2a (parallel) | 328 | 328B | Tier 3 pages (profitability, budget tab, activity, notifications, comments) + Tier 4 pages (rate cards, custom fields, saved views, tags) + dashboard widget empty states. ~12 modified files (~4 tests). Frontend only. | **Done** (PR #628) |
-| 2b (parallel) | 329 | 329B | `GettingStartedCard` component, `useOnboardingProgress` SWR hook, dashboard integration (card above grid), dismiss flow. ~5 new/modified files (~5 tests). Frontend only. | |
+| 2b (parallel) | 329 | 329B | `GettingStartedCard` component, `useOnboardingProgress` SWR hook, dashboard integration (card above grid), dismiss flow. ~5 new/modified files (~5 tests). Frontend only. | **Done** (PR #630) |
 | 2c (parallel) | 330 | 330B | Help points #12-#22 (templates, custom fields, dashboard/reports, other). ~11 modified files (~3 tests). Frontend only. | |
 | 2d (parallel) | 331 | 331B | `PermissionDenied` component, form validation improvements (scroll-to-error, catalog messages), integration into ~5 mutation handlers. ~8 new/modified files (~5 tests). Frontend only. | |
 
@@ -263,7 +263,7 @@ Stage 2: [328B] // [329B] // [330B] // [331B]                     (4 parallel tr
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **329A** | 329.1--329.7 | V66 migration (`onboarding_dismissed_at` on `org_settings`), `OrgSettings` entity update, `OnboardingService` (computed-on-read from 6 repositories), `OnboardingController` (2 endpoints), DTO records, role-based dismiss. ~7 new/modified files (~10 tests). Backend only. | **Done** (PR #629) |
-| **329B** | 329.8--329.13 | `GettingStartedCard` component, `useOnboardingProgress` SWR hook, dashboard integration (card above grid), dismiss flow with confirmation popover, auto-hide on completion. ~5 new/modified files (~5 tests). Frontend only. | |
+| **329B** | 329.8--329.13 | `GettingStartedCard` component, `useOnboardingProgress` SWR hook, dashboard integration (card above grid), dismiss flow with confirmation popover, auto-hide on completion. ~5 new/modified files (~5 tests). Frontend only. | **Done** (PR #630) |
 
 ### Tasks
 

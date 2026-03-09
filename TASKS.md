@@ -371,7 +371,7 @@
 | **Phase 43 — UX Quality Pass: Empty States, Contextual Help & Error Recovery** | | | | | | See [tasks/phase43-ux-quality-pass.md](tasks/phase43-ux-quality-pass.md) |
 | 327 | i18n Message Catalog Foundation | Frontend | -- | S | 327A | **Done** (PR #626) |
 | 328 | Empty States System & Page Integration | Frontend | 327 | M | 328A, 328B | **Done** (PR #627, #628) |
-| 329 | Getting Started Checklist | Both | 327 | M | 329A, 329B | 329A **Done** (PR #629) |
+| 329 | Getting Started Checklist | Both | 327 | M | 329A, 329B | **Done** (PR #629, #630) |
 | 330 | Inline Contextual Help | Frontend | 327 | M | 330A, 330B | |
 | 331 | Error Recovery & Feedback | Frontend | 327 | M | 331A, 331B | |
 

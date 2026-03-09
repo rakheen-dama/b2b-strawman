@@ -10,6 +10,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import { VariableExtension } from "./extensions/variable";
 import { LoopTableExtension } from "./extensions/loopTable";
 import { ClauseBlockExtension } from "./extensions/clauseBlock";
+import { ConditionalBlockExtension } from "./extensions/conditionalBlock";
 import { EditorToolbar } from "./EditorToolbar";
 import { MissingVariablesContext } from "./MissingVariablesContext";
 import type { TemplateEntityType } from "@/lib/types";
@@ -39,7 +40,7 @@ export function DocumentEditor({
 
   const customExtensions =
     scope === "template"
-      ? [VariableExtension, LoopTableExtension, ClauseBlockExtension]
+      ? [VariableExtension, LoopTableExtension, ClauseBlockExtension, ConditionalBlockExtension]
       : [VariableExtension];
 
   const editor = useEditor({

@@ -133,6 +133,49 @@ function resolveVariable(
   return formatValue(current, typeHint);
 }
 
+function resolveVariableRaw(
+  key: string | null | undefined,
+  context: Record<string, unknown>,
+): unknown {
+  if (!key || key.trim() === "") return null;
+  const segments = key.split(".");
+  let current: unknown = context;
+  for (const segment of segments) {
+    if (typeof current !== "object" || current === null) return null;
+    current = (current as Record<string, unknown>)[segment];
+    if (current == null) return null;
+  }
+  return current;
+}
+
+export function evaluateCondition(
+  fieldValue: unknown,
+  operator: string,
+  condValue: unknown,
+): boolean {
+  const asStr = (o: unknown): string => (o == null ? "" : String(o));
+
+  switch (operator) {
+    case "eq":
+      return asStr(fieldValue) === asStr(condValue);
+    case "neq":
+      return asStr(fieldValue) !== asStr(condValue);
+    case "isEmpty":
+      return fieldValue == null || String(fieldValue).trim() === "";
+    case "isNotEmpty":
+      return fieldValue != null && String(fieldValue).trim() !== "";
+    case "contains":
+      return asStr(fieldValue).includes(asStr(condValue));
+    case "in": {
+      const csv = asStr(condValue);
+      const allowed = new Set(csv.split(/\s*,\s*/));
+      return allowed.has(asStr(fieldValue));
+    }
+    default:
+      return true; // Unknown operator -> render (fail-open)
+  }
+}
+
 function resolveDataSource(
   path: string | null | undefined,
   context: Record<string, unknown>,
@@ -346,6 +389,21 @@ function renderNode(
 
     case "loopTable":
       return renderLoopTable(attrs, context);
+
+    case "conditionalBlock": {
+      const fieldKey = attrs.fieldKey as string | undefined;
+      const operator = (attrs.operator as string) || "isNotEmpty";
+      const condValue = attrs.value;
+      if (!fieldKey || fieldKey.trim() === "") {
+        // Unconfigured — render children unconditionally
+        return renderChildren(node, context, clauses, depth, formatHints);
+      }
+      const fieldValue = resolveVariableRaw(fieldKey, context);
+      if (evaluateCondition(fieldValue, operator, condValue)) {
+        return renderChildren(node, context, clauses, depth, formatHints);
+      }
+      return "";
+    }
 
     case "bulletList":
       return wrapTag("ul", node, context, clauses, depth, formatHints);

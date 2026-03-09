@@ -16,6 +16,7 @@ import {
   Link,
   Braces,
   FileText,
+  GitBranch,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -198,16 +199,39 @@ export function EditorToolbar({ editor, entityType, scope = "template" }: Editor
               <Braces className="size-3.5" />
             </Button>
             {scope !== "clause" && (
-              <Button
-                variant="ghost"
-                size="icon-xs"
-                type="button"
-                onClick={() => setClausePickerOpen(true)}
-                aria-label="Insert clause"
-                title="Insert clause"
-              >
-                <FileText className="size-3.5" />
-              </Button>
+              <>
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  type="button"
+                  onClick={() => setClausePickerOpen(true)}
+                  aria-label="Insert clause"
+                  title="Insert clause"
+                >
+                  <FileText className="size-3.5" />
+                </Button>
+                {entityType && (
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    type="button"
+                    onClick={() =>
+                      editor
+                        .chain()
+                        .focus()
+                        .insertContent({
+                          type: "conditionalBlock",
+                          content: [{ type: "paragraph" }],
+                        })
+                        .run()
+                    }
+                    aria-label="Insert conditional block"
+                    title="Insert conditional block"
+                  >
+                    <GitBranch className="size-3.5" />
+                  </Button>
+                )}
+              </>
             )}
           </>
         )}

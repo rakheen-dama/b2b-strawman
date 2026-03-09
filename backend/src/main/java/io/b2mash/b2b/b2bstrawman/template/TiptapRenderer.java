@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Safelist;
@@ -161,6 +163,20 @@ public class TiptapRenderer {
         }
       }
       case "loopTable" -> renderLoopTable(attrs, context, sb);
+      case "conditionalBlock" -> {
+        String fieldKey = (String) attrs.get("fieldKey");
+        String operator = (String) attrs.getOrDefault("operator", "isNotEmpty");
+        Object condValue = attrs.get("value");
+        if (fieldKey == null || fieldKey.isBlank()) {
+          // Unconfigured — render children unconditionally
+          renderChildren(node, context, clauses, sb, depth, formatHints);
+        } else {
+          Object fieldValue = resolveVariableRaw(fieldKey, context);
+          if (evaluateCondition(fieldValue, operator, condValue)) {
+            renderChildren(node, context, clauses, sb, depth, formatHints);
+          }
+        }
+      }
       case "bulletList" -> wrapTag("ul", node, context, clauses, sb, depth, formatHints);
       case "orderedList" -> wrapTag("ol", node, context, clauses, sb, depth, formatHints);
       case "listItem" -> wrapTag("li", node, context, clauses, sb, depth, formatHints);
@@ -337,5 +353,38 @@ public class TiptapRenderer {
     sb.append(">");
     renderChildren(node, context, clauses, sb, depth, formatHints);
     sb.append("</").append(tag).append(">");
+  }
+
+  @SuppressWarnings("unchecked")
+  private Object resolveVariableRaw(String key, Map<String, Object> context) {
+    if (key == null || key.isBlank()) return null;
+    String[] segments = key.split("\\.");
+    Object current = context;
+    for (String segment : segments) {
+      if (!(current instanceof Map)) return null;
+      current = ((Map<?, ?>) current).get(segment);
+      if (current == null) return null;
+    }
+    return current;
+  }
+
+  boolean evaluateCondition(Object fieldValue, String operator, Object condValue) {
+    return switch (operator) {
+      case "eq" -> Objects.equals(asString(fieldValue), asString(condValue));
+      case "neq" -> !Objects.equals(asString(fieldValue), asString(condValue));
+      case "isEmpty" -> fieldValue == null || String.valueOf(fieldValue).isBlank();
+      case "isNotEmpty" -> fieldValue != null && !String.valueOf(fieldValue).isBlank();
+      case "contains" -> asString(fieldValue).contains(asString(condValue));
+      case "in" -> {
+        String csv = asString(condValue);
+        Set<String> allowed = Set.of(csv.split("\\s*,\\s*"));
+        yield allowed.contains(asString(fieldValue));
+      }
+      default -> true; // Unknown operator -> render (fail-open)
+    };
+  }
+
+  private String asString(Object o) {
+    return o == null ? "" : String.valueOf(o);
   }
 }

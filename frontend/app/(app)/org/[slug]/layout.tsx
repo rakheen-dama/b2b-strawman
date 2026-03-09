@@ -6,6 +6,7 @@ import { Breadcrumbs } from "@/components/breadcrumbs";
 import { PlanBadge } from "@/components/billing/plan-badge";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { PageTransition } from "@/components/page-transition";
+import { ErrorBoundary } from "@/components/error-boundary";
 import { AuthHeaderControls } from "@/components/auth-header-controls";
 
 export default async function OrgLayout({
@@ -47,7 +48,9 @@ export default async function OrgLayout({
         </header>
         <main className="flex-1 bg-background dark:bg-slate-950">
           <div className="mx-auto max-w-7xl px-6 py-6 lg:px-10">
-            <PageTransition>{children}</PageTransition>
+            <ErrorBoundary>
+              <PageTransition>{children}</PageTransition>
+            </ErrorBoundary>
           </div>
         </main>
       </div>

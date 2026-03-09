@@ -223,6 +223,16 @@ public class KeycloakAdminClient {
    */
   @SuppressWarnings("unchecked")
   public void ensureUserProfileAttribute(String attributeName) {
+    if (orgRoleProfileRegistered) return;
+    synchronized (this) {
+      if (orgRoleProfileRegistered) return;
+      registerProfileAttribute(attributeName);
+      orgRoleProfileRegistered = true;
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private void registerProfileAttribute(String attributeName) {
     Map<String, Object> profile =
         restClient
             .get()

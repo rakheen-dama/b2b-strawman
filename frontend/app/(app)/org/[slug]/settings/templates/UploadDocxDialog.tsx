@@ -71,7 +71,7 @@ export function UploadDocxDialog({ slug, children }: UploadDocxDialogProps) {
   }
 
   function validateFile(f: File): string | null {
-    if (f.type !== DOCX_MIME_TYPE) {
+    if (f.type !== DOCX_MIME_TYPE && !f.name.toLowerCase().endsWith(".docx")) {
       return "Only .docx files are accepted.";
     }
     if (f.size > MAX_DOCX_SIZE) {

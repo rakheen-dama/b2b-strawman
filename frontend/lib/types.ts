@@ -565,7 +565,7 @@ export type OutputFormat = "PDF" | "DOCX" | "BOTH";
 
 export interface DiscoveredField {
   path: string;
-  status: string;
+  status: "VALID" | "UNKNOWN";
   label: string | null;
 }
 
@@ -580,7 +580,7 @@ export interface TemplateListResponse {
   sourceTemplateId: string | null;
   active: boolean;
   sortOrder: number;
-  format: string;
+  format: TemplateFormat;
   docxFileName: string | null;
   docxFileSize: number | null;
   createdAt: string;
@@ -602,7 +602,7 @@ export interface TemplateDetailResponse {
   packId: string | null;
   packTemplateKey: string | null;
   requiredContextFields?: Array<{ entity: string; field: string }> | null;
-  format: string;
+  format: TemplateFormat;
   discoveredFields: DiscoveredField[] | null;
   active: boolean;
   sortOrder: number;

@@ -367,7 +367,7 @@
 | 323 | DOCX Upload, Replace & Download Endpoints | Backend | 321, 322 | M | 323A, 323B | **Done** (PRs #617, #618) |
 | 324 | DOCX Generation Pipeline & PDF Conversion | Backend | 322, 323 | M | 324A, 324B | **Done** (PRs #619, #621) |
 | 325 | Frontend — Upload & Template Management | Frontend | 323 | M | 325A, 325B | **Done** (PRs #622, #623) |
-| 326 | Frontend — Generation Dialog & Integration | Frontend | 324, 325 | M | 326A, 326B | |
+| 326 | Frontend — Generation Dialog & Integration | Frontend | 324, 325 | M | 326A, 326B | 326A **Done** (PR #624) |
 | **Phase 43 — UX Quality Pass: Empty States, Contextual Help & Error Recovery** | | | | | | See [tasks/phase43-ux-quality-pass.md](tasks/phase43-ux-quality-pass.md) |
 | 327 | i18n Message Catalog Foundation | Frontend | -- | S | 327A | |
 | 328 | Empty States System & Page Integration | Frontend | 327 | M | 328A, 328B | |

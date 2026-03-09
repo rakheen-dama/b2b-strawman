@@ -19,6 +19,7 @@ import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.TemplateLis
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.UpdateTemplateRequest;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -215,33 +216,25 @@ public class DocumentTemplateService {
     String baseSlug = DocumentTemplate.generateSlug(name);
     String finalSlug = resolveUniqueSlug(baseSlug);
 
-    // Create entity with DOCX format
-    var dt = new DocumentTemplate(templateEntityType, name, finalSlug, templateCategory, null);
-    dt.setFormat(TemplateFormat.DOCX);
-    dt.setDescription(description);
-    dt.setDocxFileName(file.getOriginalFilename());
-    dt.setDocxFileSize(file.getSize());
-
-    try {
-      dt = documentTemplateRepository.save(dt);
-    } catch (DataIntegrityViolationException ex) {
-      throw new ResourceConflictException(
-          "Duplicate slug", "A document template with slug '" + finalSlug + "' already exists");
+    // Sanitize filename — strip directory components and reject null/blank
+    String originalFilename = file.getOriginalFilename();
+    String safeFilename = null;
+    if (originalFilename != null && !originalFilename.isBlank()) {
+      safeFilename = Path.of(originalFilename).getFileName().toString();
+    }
+    if (safeFilename == null || safeFilename.isBlank()) {
+      safeFilename = "template.docx";
     }
 
-    // Upload to S3
-    String tenantId = RequestScopes.requireTenantId();
-    String s3Key = "org/" + tenantId + "/templates/" + dt.getId() + "/template.docx";
+    // Read file bytes early — needed for both field discovery and S3 upload
     byte[] fileBytes;
     try {
       fileBytes = file.getBytes();
     } catch (IOException e) {
       throw new InvalidStateException("Upload failed", "Could not read the uploaded file");
     }
-    storageService.upload(s3Key, fileBytes, DOCX_CONTENT_TYPE);
-    dt.setDocxS3Key(s3Key);
 
-    // Discover and validate fields
+    // Discover and validate fields BEFORE S3 upload — rejects corrupt/malicious files early
     List<String> fieldPaths;
     try {
       fieldPaths = docxMergeService.discoverFields(new ByteArrayInputStream(fileBytes));
@@ -264,7 +257,27 @@ public class DocumentTemplateService {
                   return field;
                 })
             .toList();
+
+    // Create entity with DOCX format
+    var dt = new DocumentTemplate(templateEntityType, name, finalSlug, templateCategory, null);
+    dt.setFormat(TemplateFormat.DOCX);
+    dt.setDescription(description);
+    dt.setDocxFileName(safeFilename);
+    dt.setDocxFileSize(file.getSize());
     dt.setDiscoveredFields(discoveredFields);
+
+    try {
+      dt = documentTemplateRepository.save(dt);
+    } catch (DataIntegrityViolationException ex) {
+      throw new ResourceConflictException(
+          "Duplicate slug", "A document template with slug '" + finalSlug + "' already exists");
+    }
+
+    // Upload to S3 LAST — after all validation and DB save, to avoid orphaned S3 objects
+    String tenantId = RequestScopes.requireTenantId();
+    String s3Key = "org/" + tenantId + "/templates/" + dt.getId() + "/template.docx";
+    storageService.upload(s3Key, fileBytes, DOCX_CONTENT_TYPE);
+    dt.setDocxS3Key(s3Key);
 
     dt = documentTemplateRepository.save(dt);
 

@@ -278,6 +278,26 @@ class DocxUploadEndpointTest {
 
   @Test
   @Order(8)
+  void upload_exceedsMaxSize_returns400() throws Exception {
+    // Create a byte array just over 10MB
+    byte[] oversizedContent = new byte[10 * 1024 * 1024 + 1];
+    MockMultipartFile file =
+        new MockMultipartFile("file", "large.docx", DOCX_CONTENT_TYPE, oversizedContent);
+
+    mockMvc
+        .perform(
+            multipart("/api/templates/docx/upload")
+                .file(file)
+                .param("name", "Oversized Template")
+                .param("category", "ENGAGEMENT_LETTER")
+                .param("entityType", "PROJECT")
+                .with(ownerJwt()))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("File too large"));
+  }
+
+  @Test
+  @Order(9)
   void upload_noFields_returns201WithEmptyDiscoveredFields() throws Exception {
     byte[] docxBytes = createTestDocx("No merge fields here, just plain text.");
     MockMultipartFile file =

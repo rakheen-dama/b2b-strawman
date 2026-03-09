@@ -89,7 +89,7 @@ EMPTY STATES TRACK    ONBOARDING TRACK    HELP TRACK       ERROR TRACK
 | 1a (parallel) | 328 | 328A | Enhanced `EmptyState` component (`onAction`, `secondaryLink` props, `max-w-md`), Tier 1 pages (projects, customers, team, my work, documents) + Tier 2 pages (time entries, invoices, templates). ~10 modified files (~6 tests). Frontend only. | **Done** (PR #627) |
 | 1b (parallel) | 329 | 329A | V66 migration (`onboarding_dismissed_at` on `org_settings`), `OrgSettings` entity update, `OnboardingService`, `OnboardingController` (2 endpoints), DTOs. ~7 new/modified files (~10 tests). Backend only. | **Done** (PR #629) |
 | 1c (parallel) | 330 | 330A | `HelpTip` component (Popover + CircleHelp icon), help points #1-#11 (rates, budgets, invoicing). ~8 new/modified files (~5 tests). Frontend only. | **Done** (PR #631) |
-| 1d (parallel) | 331 | 331A | `classifyError()` utility, `ErrorBoundary` + `ErrorFallback` components, `showToast()` wrapper, ErrorBoundary integration in org layout. ~6 new/modified files (~8 tests). Frontend only. | |
+| 1d (parallel) | 331 | 331A | `classifyError()` utility, `ErrorBoundary` + `ErrorFallback` components, `showToast()` wrapper, ErrorBoundary integration in org layout. ~6 new/modified files (~8 tests). Frontend only. | **Done** (PR #633) |
 
 ### Stage 2: Dependent Second Slices (4 concurrent)
 
@@ -410,7 +410,7 @@ Stage 2: [328B] // [329B] // [330B] // [331B]                     (4 parallel tr
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **331A** | 331.1--331.6 | `classifyError()` utility, `ErrorBoundary` + `ErrorFallback` components, `showToast()` wrapper, ErrorBoundary integration in org layout. ~6 new/modified files (~8 tests). Frontend only. | |
+| **331A** | 331.1--331.6 | `classifyError()` utility, `ErrorBoundary` + `ErrorFallback` components, `showToast()` wrapper, ErrorBoundary integration in org layout. ~6 new/modified files (~8 tests). Frontend only. | **Done** (PR #633) |
 | **331B** | 331.7--331.12 | `PermissionDenied` component, form validation improvements (scroll-to-error, catalog messages), integration of `classifyError` + `showToast` into ~5 mutation handlers. ~8 new/modified files (~5 tests). Frontend only. | |
 
 ### Tasks

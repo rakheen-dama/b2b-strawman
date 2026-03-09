@@ -18,4 +18,8 @@ public interface MemberRepository extends JpaRepository<Member, UUID> {
 
   @Query("SELECT m FROM Member m WHERE m.orgRole IN :roles")
   List<Member> findByOrgRoleIn(@Param("roles") List<String> roles);
+
+  long countByOrgRoleId(UUID orgRoleId);
+
+  List<Member> findByOrgRoleId(UUID orgRoleId);
 }

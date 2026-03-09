@@ -722,6 +722,40 @@ export async function downloadGeneratedDocument(id: string): Promise<Blob> {
   return response.blob();
 }
 
+export async function downloadDocxGeneratedDocument(id: string): Promise<Blob> {
+  let authOptions: { headers: Record<string, string>; credentials?: RequestCredentials };
+  try {
+    authOptions = await getAuthFetchOptions("GET");
+  } catch {
+    redirect("/sign-in");
+  }
+
+  const response = await fetch(
+    `${API_BASE}/api/generated-documents/${id}/download-docx`,
+    {
+      method: "GET",
+      headers: {
+        ...authOptions.headers,
+      },
+      redirect: "follow",
+      credentials: authOptions.credentials,
+    },
+  );
+
+  if (!response.ok) {
+    let message = response.statusText;
+    try {
+      const detail = await response.json();
+      message = detail?.detail || detail?.title || message;
+    } catch {
+      // ignore
+    }
+    throw new ApiError(response.status, message);
+  }
+
+  return response.blob();
+}
+
 export async function downloadCertificateBlob(id: string): Promise<Blob> {
   let authOptions: { headers: Record<string, string>; credentials?: RequestCredentials };
   try {

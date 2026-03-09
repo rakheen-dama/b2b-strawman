@@ -282,6 +282,23 @@ export async function downloadGeneratedDocumentAction(
   }
 }
 
+export async function downloadDocxGeneratedDocumentAction(
+  id: string,
+): Promise<{ success: boolean; docxBase64?: string; fileName?: string; error?: string }> {
+  try {
+    const { downloadDocxGeneratedDocument } = await import("@/lib/api");
+    const blob = await downloadDocxGeneratedDocument(id);
+    const arrayBuffer = await blob.arrayBuffer();
+    const base64 = Buffer.from(arrayBuffer).toString("base64");
+    return { success: true, docxBase64: base64 };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to download DOCX document." };
+  }
+}
+
 // ---- DOCX Template Actions ----
 
 export async function uploadDocxTemplateAction(

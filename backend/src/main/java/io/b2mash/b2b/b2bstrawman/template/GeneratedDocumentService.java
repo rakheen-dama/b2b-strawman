@@ -632,7 +632,9 @@ public class GeneratedDocumentService {
         gd.getFileSize(),
         generatedByName,
         gd.getGeneratedAt(),
-        gd.getDocumentId());
+        gd.getDocumentId(),
+        gd.getOutputFormat().name(),
+        gd.getDocxS3Key());
   }
 
   private String resolveTemplateName(UUID templateId) {
@@ -661,7 +663,9 @@ public class GeneratedDocumentService {
       long fileSize,
       String generatedByName,
       Instant generatedAt,
-      UUID documentId) {}
+      UUID documentId,
+      String outputFormat,
+      String docxS3Key) {}
 
   /** Result DTO for DOCX generation. */
   public record GenerateDocxResult(

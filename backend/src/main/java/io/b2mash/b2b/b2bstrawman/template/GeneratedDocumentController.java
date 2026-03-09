@@ -62,6 +62,23 @@ public class GeneratedDocumentController {
     return ResponseEntity.status(302).header(HttpHeaders.LOCATION, presigned.url()).build();
   }
 
+  @GetMapping("/{id}/download-docx")
+  @PreAuthorize("isAuthenticated()")
+  public ResponseEntity<Void> downloadDocxGeneratedDocument(@PathVariable UUID id) {
+    var generatedDoc = generatedDocumentService.getById(id);
+    if (generatedDoc.getPrimaryEntityType() == TemplateEntityType.PROJECT) {
+      UUID memberId = RequestScopes.requireMemberId();
+      String orgRole = RequestScopes.getOrgRole();
+      projectAccessService.requireViewAccess(generatedDoc.getPrimaryEntityId(), memberId, orgRole);
+    }
+    String docxKey = generatedDoc.getDocxS3Key();
+    if (docxKey == null) {
+      docxKey = generatedDoc.getS3Key();
+    }
+    var presigned = storageService.generateDownloadUrl(docxKey, URL_EXPIRY);
+    return ResponseEntity.status(302).header(HttpHeaders.LOCATION, presigned.url()).build();
+  }
+
   @DeleteMapping("/{id}")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> deleteGeneratedDocument(@PathVariable UUID id) {

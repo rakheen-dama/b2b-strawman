@@ -21,7 +21,7 @@ Phase 42 adds a **Word document (.docx) template pipeline** to the DocTeams plat
 | 323 | DOCX Upload, Replace & Download Endpoints | Backend | 321, 322 | M | 323A, 323B | **Done** (PRs #617, #618) |
 | 324 | DOCX Generation Pipeline & PDF Conversion | Backend | 322, 323 | M | 324A, 324B | **Done** (PRs #619, #621) |
 | 325 | Frontend — Upload & Template Management | Frontend | 323 | M | 325A, 325B | **Done** (PRs #622, #623) |
-| 326 | Frontend — Generation Dialog & Integration | Frontend | 324, 325 | M | 326A, 326B | |
+| 326 | Frontend — Generation Dialog & Integration | Frontend | 324, 325 | M | 326A, 326B | **Done** (PRs #624, #625) |
 
 ---
 
@@ -167,7 +167,7 @@ FRONTEND TRACK (after E323 backend APIs ready)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 5a | 326 | 326A | `GenerateDocumentDropdown` shows DOCX templates with Word icon badge. DOCX generation dialog (no HTML preview): output format selector (Word/PDF/Both), generate button, success state with download links, PDF unavailability warning. Server action `generateDocxAction`. ~5 new/modified files + ~5 tests. Frontend only. | **Done** (PR #624) |
-| 5b | 326 | 326B | Generated documents list: output format badge, dual download links (DOCX + PDF), format indicator on project/customer/invoice detail pages. Update existing `GeneratedDocumentsList` component for new fields. ~4 modified files + ~4 tests. Frontend only. | |
+| 5b | 326 | 326B | Generated documents list: output format badge, dual download links (DOCX + PDF), format indicator on project/customer/invoice detail pages. Update existing `GeneratedDocumentsList` component for new fields. ~4 modified files + ~4 tests. Frontend only. | **Done** (PR #625) |
 
 ### Timeline
 
@@ -568,7 +568,7 @@ Stage 5: [326A] -> [326B]                                           (sequential,
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **326A** | 326.1--326.6 | `GenerateDocumentDropdown` shows DOCX templates with Word icon. DOCX generation dialog: output format selector (Word .docx / PDF / Both), generate button, loading state, success with download links, PDF unavailability warning. Server action `generateDocxAction`. ~5 new/modified files + ~5 tests. Frontend only. | **Done** (PR #624) |
-| **326B** | 326.7--326.11 | Generated documents list: output format badge, dual download links (DOCX + PDF when both available), format indicator on project/customer/invoice detail generate dropdowns. ~4 modified files + ~4 tests. Frontend only. | |
+| **326B** | 326.7--326.11 | Generated documents list: output format badge, dual download links (DOCX + PDF when both available), format indicator on project/customer/invoice detail generate dropdowns. ~4 modified files + ~4 tests. Frontend only. | **Done** (PR #625) |
 
 ### Tasks
 

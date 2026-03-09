@@ -18,6 +18,8 @@ import { formatDate, formatLocalDate, isOverdue } from "@/lib/format";
 import type { ProjectStatus } from "@/lib/types";
 import { AlertTriangle, Calendar, Clock, FileText, FolderOpen, Users } from "lucide-react";
 import Link from "next/link";
+import { EmptyState } from "@/components/empty-state";
+import { createMessages } from "@/lib/messages";
 
 const PROJECT_STATUS_BADGE: Record<
   ProjectStatus,
@@ -168,6 +170,8 @@ export default async function ProjectsPage({
     return createSavedViewAction(slug, req);
   }
 
+  const { t } = createMessages("empty-states");
+
   return (
     <div className="space-y-8">
       {/* Page Header */}
@@ -227,20 +231,12 @@ export default async function ProjectsPage({
 
       {/* Projects Grid or Empty State */}
       {projects.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 text-center">
-          <FolderOpen className="size-16 text-slate-300 dark:text-slate-700" />
-          <h2 className="font-display mt-6 text-xl text-slate-900 dark:text-slate-100">
-            No projects yet
-          </h2>
-          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-            {isAdmin
-              ? "Create your first project to get started."
-              : "You\u2019re not on any projects yet."}
-          </p>
-          <div className="mt-6">
-            <CreateProjectDialog slug={slug} />
-          </div>
-        </div>
+        <EmptyState
+          icon={FolderOpen}
+          title={t("projects.list.heading")}
+          description={t("projects.list.description")}
+          action={<CreateProjectDialog slug={slug} />}
+        />
       ) : (
         <div className="grid auto-rows-fr grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {projects.map((project) => {

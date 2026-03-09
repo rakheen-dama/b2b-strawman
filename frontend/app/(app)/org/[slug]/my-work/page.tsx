@@ -32,6 +32,9 @@ import { createMyWorkViewAction } from "./view-actions";
 import { fetchPersonalDashboard } from "@/lib/actions/dashboard";
 import { getMyExpenses } from "@/lib/actions/expense-actions";
 import { ApiError } from "@/lib/api";
+import { EmptyState } from "@/components/empty-state";
+import { createMessages } from "@/lib/messages";
+import { ClipboardList } from "lucide-react";
 
 /**
  * Resolves date range from search params, defaulting to current week
@@ -199,6 +202,9 @@ export default async function MyWorkPage({
   // Determine period label from date range for KPIs
   const periodLabel = resolvedSearchParams.from ? undefined : "This Week";
 
+  const { t } = createMessages("empty-states");
+  const hasNoTasks = tasksData.assigned.length === 0 && tasksData.unassigned.length === 0;
+
   return (
     <div className="space-y-8">
       {/* Page Header with Date Range Selector */}
@@ -221,22 +227,32 @@ export default async function MyWorkPage({
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         {/* Tasks Column (wider) */}
         <div className="space-y-8 lg:col-span-2">
-          <MyWorkTasksClient
-            assigned={tasksData.assigned}
-            unassigned={tasksData.unassigned}
-            slug={slug}
-            orgRole={orgRole ?? ""}
-            canManage={canManage}
-            canCreateShared={canCreateShared}
-            currentMemberId={currentMemberId}
-            members={members}
-            allTags={allTags}
-            fieldDefinitions={fieldDefinitions}
-            fieldGroups={fieldGroups}
-            groupMembers={groupMembers}
-            savedViews={savedViews}
-            onSave={handleCreateTaskView}
-          />
+          {hasNoTasks ? (
+            <EmptyState
+              icon={ClipboardList}
+              title={t("myWork.list.heading")}
+              description={t("myWork.list.description")}
+              actionLabel={t("myWork.list.cta")}
+              actionHref={`/org/${slug}/projects`}
+            />
+          ) : (
+            <MyWorkTasksClient
+              assigned={tasksData.assigned}
+              unassigned={tasksData.unassigned}
+              slug={slug}
+              orgRole={orgRole ?? ""}
+              canManage={canManage}
+              canCreateShared={canCreateShared}
+              currentMemberId={currentMemberId}
+              members={members}
+              allTags={allTags}
+              fieldDefinitions={fieldDefinitions}
+              fieldGroups={fieldGroups}
+              groupMembers={groupMembers}
+              savedViews={savedViews}
+              onSave={handleCreateTaskView}
+            />
+          )}
         </div>
 
         {/* Time Summary Column */}

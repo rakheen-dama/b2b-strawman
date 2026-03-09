@@ -174,24 +174,26 @@ describe("ProjectsPage", () => {
   });
 
   describe("empty state", () => {
-    it("shows member-specific message for org:member", async () => {
+    it("shows catalog empty state message for org:member", async () => {
       mockAuth.mockResolvedValue({ orgId: "org_1", orgSlug: "acme", userId: "user_1", orgRole: "org:member", has: () => false });
       mockApiGet.mockResolvedValue([]);
 
       const jsx = await ProjectsPage({ params, searchParams });
       render(jsx);
 
-      expect(screen.getByText(/not on any projects yet/)).toBeInTheDocument();
+      expect(screen.getByText("No projects yet")).toBeInTheDocument();
+      expect(screen.getByText(/Projects organise your work/)).toBeInTheDocument();
     });
 
-    it("shows admin message for org:admin", async () => {
+    it("shows catalog empty state message for org:admin", async () => {
       mockAuth.mockResolvedValue({ orgId: "org_1", orgSlug: "acme", userId: "user_1", orgRole: "org:admin", has: () => false });
       mockApiGet.mockResolvedValue([]);
 
       const jsx = await ProjectsPage({ params, searchParams });
       render(jsx);
 
-      expect(screen.getByText("Create your first project to get started.")).toBeInTheDocument();
+      expect(screen.getByText("No projects yet")).toBeInTheDocument();
+      expect(screen.getByText(/Projects organise your work/)).toBeInTheDocument();
     });
 
     it("shows New Project button in empty state for members", async () => {

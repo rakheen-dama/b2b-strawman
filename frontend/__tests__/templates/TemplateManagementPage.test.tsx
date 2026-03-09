@@ -154,7 +154,7 @@ describe("TemplatesContent", () => {
       />,
     );
 
-    expect(screen.getByText(/no templates found/i)).toBeInTheDocument();
+    expect(screen.getByText("No templates yet")).toBeInTheDocument();
   });
 
   it("shows actions menu for PLATFORM template with Clone action", async () => {

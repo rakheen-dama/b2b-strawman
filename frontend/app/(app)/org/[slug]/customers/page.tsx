@@ -10,8 +10,10 @@ import { ViewSelectorClient } from "@/components/views/ViewSelectorClient";
 import { createSavedViewAction } from "./view-actions";
 import { formatDate } from "@/lib/format";
 import { LifecycleStatusBadge } from "@/components/compliance/LifecycleStatusBadge";
-import { UserRound } from "lucide-react";
+import { UserRound, Users } from "lucide-react";
 import Link from "next/link";
+import { EmptyState } from "@/components/empty-state";
+import { createMessages } from "@/lib/messages";
 
 const VALID_LIFECYCLE_STATUSES: ReadonlySet<LifecycleStatus> = new Set([
   "PROSPECT",
@@ -166,6 +168,8 @@ export default async function CustomersPage({
     ? buildFilteredUrl(slug, resolvedSearchParams, { showIncomplete: undefined })
     : buildFilteredUrl(slug, resolvedSearchParams, { showIncomplete: "true" });
 
+  const { t } = createMessages("empty-states");
+
   // Build sort toggle URL for completeness column
   const completenessSortUrl =
     sortBy === "completeness" && sortDir === "asc"
@@ -239,24 +243,20 @@ export default async function CustomersPage({
 
       {/* Customer Table or Empty State */}
       {displayCustomers.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 text-center">
-          <UserRound className="size-16 text-slate-300 dark:text-slate-700" />
-          <h2 className="mt-6 font-display text-xl text-slate-900 dark:text-slate-100">
-            {showIncomplete ? "All customers are complete" : "No customers yet"}
-          </h2>
-          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-            {showIncomplete
-              ? "All customers have 100% completeness."
-              : isAdmin
-                ? "Add your first customer to get started."
-                : "No customers have been added yet."}
-          </p>
-          {!showIncomplete && isAdmin && (
-            <div className="mt-6">
-              <CreateCustomerDialog slug={slug} />
-            </div>
-          )}
-        </div>
+        showIncomplete ? (
+          <EmptyState
+            icon={UserRound}
+            title="All customers are complete"
+            description="All customers have 100% completeness."
+          />
+        ) : (
+          <EmptyState
+            icon={Users}
+            title={t("customers.list.heading")}
+            description={t("customers.list.description")}
+            action={isAdmin ? <CreateCustomerDialog slug={slug} /> : undefined}
+          />
+        )
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full">

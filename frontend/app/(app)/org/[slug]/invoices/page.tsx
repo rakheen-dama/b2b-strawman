@@ -3,6 +3,7 @@ import { api } from "@/lib/api";
 import type { InvoiceResponse, InvoiceStatus } from "@/lib/types";
 import { StatusBadge } from "@/components/invoices/status-badge";
 import { EmptyState } from "@/components/empty-state";
+import { createMessages } from "@/lib/messages";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { Receipt, CreditCard } from "lucide-react";
 import Link from "next/link";
@@ -190,15 +191,20 @@ export default async function InvoicesPage({
 
       {/* Invoice Table or Empty State */}
       {invoices.length === 0 ? (
-        <EmptyState
-          icon={Receipt}
-          title="No invoices found"
-          description={
-            search.status
-              ? `No ${search.status.toLowerCase()} invoices found.`
-              : "Create invoices from customer unbilled time."
-          }
-        />
+        (() => {
+          const { t } = createMessages("empty-states");
+          return (
+            <EmptyState
+              icon={Receipt}
+              title={search.status ? "No invoices found" : t("invoices.list.heading")}
+              description={
+                search.status
+                  ? `No ${search.status.toLowerCase()} invoices found.`
+                  : t("invoices.list.description")
+              }
+            />
+          );
+        })()
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full">

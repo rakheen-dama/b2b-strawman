@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class OnboardingService {
 
   private final OrgSettingsRepository orgSettingsRepository;
+  private final OrgSettingsService orgSettingsService;
   private final ProjectRepository projectRepository;
   private final CustomerRepository customerRepository;
   private final MemberRepository memberRepository;
@@ -25,6 +27,7 @@ public class OnboardingService {
 
   public OnboardingService(
       OrgSettingsRepository orgSettingsRepository,
+      OrgSettingsService orgSettingsService,
       ProjectRepository projectRepository,
       CustomerRepository customerRepository,
       MemberRepository memberRepository,
@@ -32,6 +35,7 @@ public class OnboardingService {
       BillingRateRepository billingRateRepository,
       InvoiceRepository invoiceRepository) {
     this.orgSettingsRepository = orgSettingsRepository;
+    this.orgSettingsService = orgSettingsService;
     this.projectRepository = projectRepository;
     this.customerRepository = customerRepository;
     this.memberRepository = memberRepository;
@@ -64,15 +68,7 @@ public class OnboardingService {
 
   @Transactional
   public void dismiss() {
-    var settings =
-        orgSettingsRepository
-            .findForCurrentTenant()
-            .orElseGet(
-                () -> {
-                  var newSettings = new OrgSettings("USD");
-                  return orgSettingsRepository.save(newSettings);
-                });
-
+    var settings = orgSettingsService.getOrCreateForCurrentTenant();
     settings.dismissOnboarding();
     orgSettingsRepository.save(settings);
   }

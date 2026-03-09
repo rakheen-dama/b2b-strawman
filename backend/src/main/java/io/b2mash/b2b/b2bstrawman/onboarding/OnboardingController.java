@@ -18,6 +18,7 @@ public class OnboardingController {
   }
 
   @GetMapping("/progress")
+  @PreAuthorize("hasAnyAuthority('ROLE_ORG_MEMBER', 'ROLE_ORG_ADMIN', 'ROLE_ORG_OWNER')")
   public ResponseEntity<OnboardingProgressResponse> getProgress() {
     return ResponseEntity.ok(onboardingService.getProgress());
   }

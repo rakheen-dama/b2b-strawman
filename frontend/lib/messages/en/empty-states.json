@@ -3,6 +3,7 @@
     "list": {
       "heading": "No projects yet",
       "description": "Projects organise your work, documents, and time tracking. Create your first project to get started.",
+      "descriptionMember": "You\u2019re not on any projects yet.",
       "cta": "Create project"
     }
   },
@@ -10,6 +11,7 @@
     "list": {
       "heading": "No customers yet",
       "description": "Customers represent the organisations you work with. Add your first customer to start managing relationships.",
+      "descriptionMember": "No customers have been added yet.",
       "cta": "Add customer"
     }
   },

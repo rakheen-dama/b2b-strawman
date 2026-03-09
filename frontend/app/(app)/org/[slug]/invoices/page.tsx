@@ -3,6 +3,7 @@ import { api } from "@/lib/api";
 import type { InvoiceResponse, InvoiceStatus } from "@/lib/types";
 import { StatusBadge } from "@/components/invoices/status-badge";
 import { EmptyState } from "@/components/empty-state";
+import { createMessages } from "@/lib/messages";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { Receipt, CreditCard } from "lucide-react";
 import Link from "next/link";
@@ -89,6 +90,8 @@ export default async function InvoicesPage({
 
   // Compute summary from all invoices (when no filter applied, or from filtered set)
   const summary = computeSummary(invoices);
+
+  const { t } = createMessages("empty-states");
 
   const statusOptions: InvoiceStatus[] = [
     "DRAFT",
@@ -192,11 +195,11 @@ export default async function InvoicesPage({
       {invoices.length === 0 ? (
         <EmptyState
           icon={Receipt}
-          title="No invoices found"
+          title={search.status ? "No invoices found" : t("invoices.list.heading")}
           description={
             search.status
               ? `No ${search.status.toLowerCase()} invoices found.`
-              : "Create invoices from customer unbilled time."
+              : t("invoices.list.description")
           }
         />
       ) : (

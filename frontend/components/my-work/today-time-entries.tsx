@@ -2,6 +2,8 @@
 
 import { Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/empty-state";
+import { createMessages } from "@/lib/messages";
 import { formatDuration } from "@/lib/format";
 import type { MyWorkTimeEntryItem } from "@/lib/types";
 
@@ -12,6 +14,7 @@ interface TodayTimeEntriesProps {
 }
 
 export function TodayTimeEntries({ entries }: TodayTimeEntriesProps) {
+  const { t } = createMessages("empty-states");
   const totalMinutes = entries.reduce(
     (sum, entry) => sum + entry.durationMinutes,
     0
@@ -31,11 +34,12 @@ export function TodayTimeEntries({ entries }: TodayTimeEntriesProps) {
       </div>
 
       {entries.length === 0 ? (
-        <div className="mt-4 flex flex-col items-center gap-2 py-8 text-center">
-          <Clock className="size-8 text-slate-300 dark:text-slate-700" />
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            No time logged today
-          </p>
+        <div className="mt-4">
+          <EmptyState
+            icon={Clock}
+            title={t("timeEntries.list.heading")}
+            description={t("timeEntries.list.description")}
+          />
         </div>
       ) : (
         <div className="mt-4 space-y-3">

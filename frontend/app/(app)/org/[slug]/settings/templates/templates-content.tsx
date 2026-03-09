@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { FileText, FileUp, Plus } from "lucide-react";
+import { FileText, FileUp, LayoutTemplate, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +21,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { TemplateActionsMenu } from "@/components/templates/TemplateActionsMenu";
+import { EmptyState } from "@/components/empty-state";
+import { createMessages } from "@/lib/messages";
 import { UploadDocxDialog } from "./UploadDocxDialog";
 import { BrandingSection } from "./branding-section";
 import {
@@ -58,6 +60,7 @@ export function TemplatesContent({
   canManage,
 }: TemplatesContentProps) {
   const [formatFilter, setFormatFilter] = useState<TemplateFormat | "ALL">("ALL");
+  const { t } = createMessages("empty-states");
 
   // Filter templates by format
   const filteredTemplates =
@@ -112,11 +115,19 @@ export function TemplatesContent({
       </div>
 
       {filteredTemplates.length === 0 ? (
-        <p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
-          {formatFilter !== "ALL"
-            ? "No templates match the selected format."
-            : "No templates found. Create one or wait for platform templates to be seeded."}
-        </p>
+        formatFilter !== "ALL" ? (
+          <p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+            No templates match the selected format.
+          </p>
+        ) : (
+          <EmptyState
+            icon={LayoutTemplate}
+            title={t("templates.list.heading")}
+            description={t("templates.list.description")}
+            actionLabel={t("templates.list.cta")}
+            actionHref={`/org/${slug}/settings/templates/new`}
+          />
+        )
       ) : (
         categories.map((cat) => (
           <div key={cat} className="space-y-3">

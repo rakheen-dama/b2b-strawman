@@ -9,6 +9,8 @@ interface EmptyStateProps {
   action?: React.ReactNode;
   actionLabel?: string;
   actionHref?: string;
+  onAction?: () => void;
+  secondaryLink?: { label: string; href: string };
 }
 
 export function EmptyState({
@@ -18,6 +20,8 @@ export function EmptyState({
   action,
   actionLabel,
   actionHref,
+  onAction,
+  secondaryLink,
 }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center py-24 text-center gap-4">
@@ -25,15 +29,28 @@ export function EmptyState({
       <h2 className="font-display text-xl text-slate-900 dark:text-slate-100">
         {title}
       </h2>
-      <p className="text-sm text-slate-600 dark:text-slate-400">
+      <p className="max-w-md text-sm text-slate-600 dark:text-slate-400">
         {description}
       </p>
-      {actionLabel && actionHref && (
+      {actionLabel && onAction && (
+        <Button size="sm" variant="outline" onClick={onAction}>
+          {actionLabel}
+        </Button>
+      )}
+      {actionLabel && actionHref && !onAction && (
         <Button asChild size="sm" variant="outline">
           <Link href={actionHref}>{actionLabel}</Link>
         </Button>
       )}
       {action}
+      {secondaryLink && (
+        <Link
+          href={secondaryLink.href}
+          className="text-sm text-teal-600 hover:text-teal-700"
+        >
+          {secondaryLink.label}
+        </Link>
+      )}
     </div>
   );
 }

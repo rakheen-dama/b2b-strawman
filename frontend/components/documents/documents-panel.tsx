@@ -40,6 +40,7 @@ import {
   getDownloadUrl,
 } from "@/app/(app)/org/[slug]/projects/[id]/actions";
 import { cn } from "@/lib/utils";
+import { createMessages } from "@/lib/messages";
 import type { Document, DocumentStatus, DocumentScope } from "@/lib/types";
 
 // --- Upload state reducer ---
@@ -142,6 +143,7 @@ export function DocumentsPanel({
   canManageVisibility = false,
 }: DocumentsPanelProps) {
   const router = useRouter();
+  const { t } = createMessages("empty-states");
   const [uploads, dispatch] = useReducer(uploadReducer, []);
   const xhrMapRef = useRef<Map<string, XMLHttpRequest>>(new Map());
   const fileMapRef = useRef<Map<string, { file: File; mimeType: string }>>(new Map());
@@ -342,8 +344,8 @@ export function DocumentsPanel({
       {documents.length === 0 && uploads.length === 0 ? (
         <EmptyState
           icon={FileText}
-          title="No documents yet"
-          description="Upload proposals, contracts, and deliverables for this project."
+          title={t("documents.list.heading")}
+          description={t("documents.list.description")}
         />
       ) : (
         <div className="rounded-lg border border-slate-200 dark:border-slate-800">

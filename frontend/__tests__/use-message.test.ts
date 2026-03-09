@@ -58,4 +58,22 @@ describe("createMessages", () => {
       "[createMessages] Missing key: errors.nonexistent.key.here",
     );
   });
+
+  it("resolves role-variant keys for projects empty state", () => {
+    const { t } = createMessages("empty-states");
+    const adminDesc = t("projects.list.description");
+    const memberDesc = t("projects.list.descriptionMember");
+    expect(adminDesc).toContain("Create your first project");
+    expect(memberDesc).toContain("not on any projects");
+    expect(adminDesc).not.toBe(memberDesc);
+  });
+
+  it("resolves role-variant keys for customers empty state", () => {
+    const { t } = createMessages("empty-states");
+    const adminDesc = t("customers.list.description");
+    const memberDesc = t("customers.list.descriptionMember");
+    expect(adminDesc).toContain("Add your first customer");
+    expect(memberDesc).toContain("No customers have been added");
+    expect(adminDesc).not.toBe(memberDesc);
+  });
 });

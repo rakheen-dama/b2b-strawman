@@ -1,0 +1,126 @@
+{
+  "projects": {
+    "list": {
+      "heading": "No projects yet",
+      "description": "Projects organise your work, documents, and time tracking. Create your first project to get started.",
+      "cta": "Create project"
+    }
+  },
+  "customers": {
+    "list": {
+      "heading": "No customers yet",
+      "description": "Customers represent the organisations you work with. Add your first customer to start managing relationships.",
+      "cta": "Add customer"
+    }
+  },
+  "team": {
+    "list": {
+      "heading": "Just you for now",
+      "description": "Invite team members to collaborate on projects, track time, and share documents.",
+      "cta": "Invite team member"
+    }
+  },
+  "myWork": {
+    "list": {
+      "heading": "No tasks assigned to you",
+      "description": "Tasks assigned to you across all projects will appear here. Head to a project to create or pick up tasks.",
+      "cta": "Browse projects"
+    }
+  },
+  "documents": {
+    "list": {
+      "heading": "No documents yet",
+      "description": "Documents live inside projects. Create proposals, contracts, reports, or any other document your team needs.",
+      "cta": "Create document"
+    }
+  },
+  "timeEntries": {
+    "list": {
+      "heading": "No time entries yet",
+      "description": "Track time against tasks to monitor effort, calculate costs, and generate accurate invoices.",
+      "cta": "Log time"
+    }
+  },
+  "invoices": {
+    "list": {
+      "heading": "No invoices yet",
+      "description": "Generate invoices from tracked time or create them manually. You'll need at least one project with logged time.",
+      "cta": "Create invoice"
+    }
+  },
+  "templates": {
+    "list": {
+      "heading": "No templates yet",
+      "description": "Document templates let you generate professional proposals, contracts, and reports with your branding and data pre-filled.",
+      "cta": "Create template"
+    }
+  },
+  "profitability": {
+    "page": {
+      "heading": "No profitability data yet",
+      "description": "Set up rate cards in Settings to start tracking project profitability. You'll need billing rates and logged time to see margins.",
+      "link": "Go to rate card settings"
+    }
+  },
+  "budget": {
+    "tab": {
+      "heading": "No budget configured",
+      "description": "Set a budget to track spending against your project plan. Choose between fixed-price or time-and-materials.",
+      "cta": "Configure budget"
+    }
+  },
+  "activity": {
+    "feed": {
+      "heading": "No activity yet",
+      "description": "Actions on this project — task updates, document changes, time entries, and comments — will appear here as they happen."
+    }
+  },
+  "notifications": {
+    "page": {
+      "heading": "You're all caught up",
+      "description": "When there are new comments, task assignments, or status changes, they'll appear here."
+    }
+  },
+  "comments": {
+    "section": {
+      "heading": "No comments yet",
+      "description": "Start a conversation about this item. Comments are visible to all project members.",
+      "cta": "Add a comment"
+    }
+  },
+  "dashboard": {
+    "overview": {
+      "heading": "Nothing to show yet",
+      "description": "Your dashboard will come to life as you create projects, log time, and track budgets.",
+      "link": "Create your first project"
+    }
+  },
+  "rates": {
+    "settings": {
+      "heading": "No rate cards yet",
+      "description": "Rate cards define what you charge clients and what your team costs. Set up rates to enable profitability tracking and invoicing.",
+      "cta": "Add rate card"
+    }
+  },
+  "customFields": {
+    "settings": {
+      "heading": "No custom fields yet",
+      "description": "Custom fields let you capture data unique to your workflow — text, numbers, dates, or selection lists on projects, customers, and tasks.",
+      "cta": "Create custom field"
+    }
+  },
+  "views": {
+    "list": {
+      "heading": "No saved views yet",
+      "description": "Save your current filters and sort order as a named view. Quickly switch between different ways of looking at your data.",
+      "cta": "Create view"
+    }
+  },
+  "tags": {
+    "list": {
+      "heading": "No tags yet",
+      "description": "Tags are colour-coded labels for organising projects, tasks, and customers. Create a tagging system that fits your workflow.",
+      "cta": "Create tag"
+    }
+  }
+}

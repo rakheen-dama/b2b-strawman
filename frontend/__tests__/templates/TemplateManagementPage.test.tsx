@@ -36,6 +36,9 @@ const PLATFORM_TEMPLATE: TemplateListResponse = {
   sourceTemplateId: null,
   active: true,
   sortOrder: 0,
+  format: "TIPTAP",
+  docxFileName: null,
+  docxFileSize: null,
   createdAt: "2026-01-01T00:00:00Z",
   updatedAt: "2026-01-01T00:00:00Z",
 };
@@ -51,6 +54,9 @@ const CUSTOM_TEMPLATE: TemplateListResponse = {
   sourceTemplateId: "tpl-source-1",
   active: true,
   sortOrder: 0,
+  format: "TIPTAP",
+  docxFileName: null,
+  docxFileSize: null,
   createdAt: "2026-01-02T00:00:00Z",
   updatedAt: "2026-01-02T00:00:00Z",
 };

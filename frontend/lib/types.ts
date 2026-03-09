@@ -603,6 +603,8 @@ export interface TemplateDetailResponse {
   packTemplateKey: string | null;
   requiredContextFields?: Array<{ entity: string; field: string }> | null;
   format: TemplateFormat;
+  docxFileName: string | null;
+  docxFileSize: number | null;
   discoveredFields: DiscoveredField[] | null;
   active: boolean;
   sortOrder: number;

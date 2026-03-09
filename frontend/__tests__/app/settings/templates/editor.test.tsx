@@ -71,6 +71,13 @@ vi.mock("@/components/templates/TemplatePreviewDialog", () => ({
   ),
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    refresh: vi.fn(),
+  }),
+}));
+
 // Must import after mocks
 import { TemplateEditorClient } from "@/components/templates/TemplateEditorClient";
 
@@ -92,6 +99,10 @@ function makeTemplate(
     packId: null,
     packTemplateKey: null,
     requiredContextFields: null,
+    format: "TIPTAP",
+    docxFileName: null,
+    docxFileSize: null,
+    discoveredFields: null,
     active: true,
     sortOrder: 0,
     createdAt: "2026-01-01T00:00:00Z",

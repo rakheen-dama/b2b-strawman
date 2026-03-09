@@ -362,7 +362,7 @@
 | 319 | Settings: Roles & Permissions Page | Frontend | 316, 318 | M | 319A, 319B | |
 | 320 | Team Page: Member Role Management & Invite Extension | Frontend | 316, 318 | M | 320A, 320B | |
 | **Phase 42 — Word Template Pipeline** | | | | | | See [tasks/phase42-word-template-pipeline.md](tasks/phase42-word-template-pipeline.md) |
-| 321 | Entity Extension, Enums & Migration | Backend | -- | M | 321A, 321B | 321A **Done** (PR #613) |
+| 321 | Entity Extension, Enums & Migration | Backend | -- | M | 321A, 321B | **Done** (PRs #613, #614) |
 | 322 | DocxMergeService — Field Discovery & Split-Run Engine | Backend | 321 | L | 322A, 322B | |
 | 323 | DOCX Upload, Replace & Download Endpoints | Backend | 321, 322 | M | 323A, 323B | |
 | 324 | DOCX Generation Pipeline & PDF Conversion | Backend | 322, 323 | M | 324A, 324B | |

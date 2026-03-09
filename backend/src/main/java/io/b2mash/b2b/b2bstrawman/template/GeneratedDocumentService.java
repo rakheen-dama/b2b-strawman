@@ -14,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ValidationWarningException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
+import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
@@ -60,6 +61,7 @@ public class GeneratedDocumentService {
   private final PrerequisiteService prerequisiteService;
   private final DocxMergeService docxMergeService;
   private final PdfConversionService pdfConversionService;
+  private final ProjectAccessService projectAccessService;
   private final List<TemplateContextBuilder> contextBuilders;
 
   public GeneratedDocumentService(
@@ -77,6 +79,7 @@ public class GeneratedDocumentService {
       PrerequisiteService prerequisiteService,
       DocxMergeService docxMergeService,
       PdfConversionService pdfConversionService,
+      ProjectAccessService projectAccessService,
       List<TemplateContextBuilder> contextBuilders) {
     this.generatedDocumentRepository = generatedDocumentRepository;
     this.documentTemplateRepository = documentTemplateRepository;
@@ -92,6 +95,7 @@ public class GeneratedDocumentService {
     this.prerequisiteService = prerequisiteService;
     this.docxMergeService = docxMergeService;
     this.pdfConversionService = pdfConversionService;
+    this.projectAccessService = projectAccessService;
     this.contextBuilders = contextBuilders;
   }
 
@@ -455,6 +459,27 @@ public class GeneratedDocumentService {
         warnings);
   }
 
+  /**
+   * Returns a presigned download URL for the DOCX version of a generated document. Verifies project
+   * access if the document is project-scoped. Throws if no DOCX version is available.
+   */
+  @Transactional(readOnly = true)
+  public String getDocxDownloadUrl(UUID id) {
+    var generatedDoc = getById(id);
+    if (generatedDoc.getPrimaryEntityType() == TemplateEntityType.PROJECT) {
+      UUID memberId = RequestScopes.requireMemberId();
+      String orgRole = RequestScopes.getOrgRole();
+      projectAccessService.requireViewAccess(generatedDoc.getPrimaryEntityId(), memberId, orgRole);
+    }
+    String docxKey = generatedDoc.getDocxS3Key();
+    if (docxKey == null) {
+      throw ResourceNotFoundException.withDetail(
+          "DOCX Not Available", "DOCX version not available for this document");
+    }
+    var presigned = storageService.generateDownloadUrl(docxKey, DOWNLOAD_URL_EXPIRY);
+    return presigned.url();
+  }
+
   // --- Private helpers ---
 
   private OutputFormat resolveOutputFormat(String rawOutputFormat) {
@@ -634,7 +659,7 @@ public class GeneratedDocumentService {
         gd.getGeneratedAt(),
         gd.getDocumentId(),
         gd.getOutputFormat().name(),
-        gd.getDocxS3Key());
+        gd.getDocxS3Key() != null);
   }
 
   private String resolveTemplateName(UUID templateId) {
@@ -665,7 +690,7 @@ public class GeneratedDocumentService {
       Instant generatedAt,
       UUID documentId,
       String outputFormat,
-      String docxS3Key) {}
+      boolean hasDocxDownload) {}
 
   /** Result DTO for DOCX generation. */
   public record GenerateDocxResult(

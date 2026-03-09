@@ -1192,7 +1192,7 @@ export interface GeneratedDocumentListResponse {
   generatedByName: string;
   generatedAt: string;
   outputFormat?: string;
-  docxS3Key?: string | null;
+  hasDocxDownload?: boolean;
 }
 
 export interface GenerateDocxResult {

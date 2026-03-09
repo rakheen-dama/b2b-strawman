@@ -69,7 +69,7 @@ describe("GeneratedDocumentsListDocx", () => {
           generatedByName: "Alice",
           generatedAt: "2026-03-01T10:00:00Z",
           outputFormat: "DOCX",
-          docxS3Key: "tenants/t1/docs/proposal.docx",
+          hasDocxDownload: true,
         },
       ],
     });
@@ -104,7 +104,7 @@ describe("GeneratedDocumentsListDocx", () => {
           generatedByName: "Bob",
           generatedAt: "2026-03-01T11:00:00Z",
           outputFormat: "PDF",
-          docxS3Key: null,
+          hasDocxDownload: false,
         },
       ],
     });
@@ -138,7 +138,7 @@ describe("GeneratedDocumentsListDocx", () => {
           generatedByName: "Carol",
           generatedAt: "2026-03-01T12:00:00Z",
           outputFormat: "BOTH",
-          docxS3Key: "tenants/t1/docs/contract.docx",
+          hasDocxDownload: true,
         },
       ],
     });
@@ -179,7 +179,7 @@ describe("GeneratedDocumentsListDocx", () => {
           generatedByName: "Alice",
           generatedAt: "2026-03-01T13:00:00Z",
           outputFormat: "DOCX",
-          docxS3Key: "tenants/t1/docs/letter.docx",
+          hasDocxDownload: true,
         },
       ],
     });

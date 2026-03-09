@@ -249,6 +249,46 @@ class GeneratedDocumentControllerTest {
     assertThat(templateName).isEqualTo("GenDocCtrl Template");
   }
 
+  @Test
+  void downloadDocxReturns404WhenNoDocxAvailable() throws Exception {
+    // The document generated in setup is PDF-only (no docxS3Key), so download-docx should 404
+    var listResult =
+        mockMvc
+            .perform(
+                get("/api/generated-documents")
+                    .with(ownerJwt())
+                    .param("entityType", "PROJECT")
+                    .param("entityId", testProjectId.toString()))
+            .andExpect(status().isOk())
+            .andReturn();
+
+    String generatedDocId = JsonPath.read(listResult.getResponse().getContentAsString(), "$[0].id");
+
+    mockMvc
+        .perform(
+            get("/api/generated-documents/" + generatedDocId + "/download-docx").with(ownerJwt()))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void listResponseIncludesHasDocxDownloadField() throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                get("/api/generated-documents")
+                    .with(ownerJwt())
+                    .param("entityType", "PROJECT")
+                    .param("entityId", testProjectId.toString()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].hasDocxDownload").value(false))
+            .andExpect(jsonPath("$[0].outputFormat").value("PDF"))
+            .andReturn();
+
+    // Verify that docxS3Key is NOT exposed in the response
+    String responseBody = result.getResponse().getContentAsString();
+    assertThat(responseBody).doesNotContain("docxS3Key");
+  }
+
   // --- JWT Helpers ---
 
   private JwtRequestPostProcessor ownerJwt() {

@@ -8,7 +8,7 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ back: vi.fn() }),
 }));
 
-import { classifyError } from "@/src/lib/error-handler";
+import { classifyError } from "@/lib/error-handler";
 import { ErrorBoundary } from "@/components/error-boundary";
 
 describe("classifyError", () => {

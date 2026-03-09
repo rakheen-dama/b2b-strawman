@@ -18,6 +18,9 @@
   },
   "boundary": {
     "heading": "Something went wrong",
-    "description": "An unexpected error occurred while loading this page. Try refreshing, or go back and try again."
+    "description": "An unexpected error occurred while loading this page. Try refreshing, or go back and try again.",
+    "tryAgain": "Try again",
+    "refreshPage": "Refresh page",
+    "goBack": "Go back"
   }
 }

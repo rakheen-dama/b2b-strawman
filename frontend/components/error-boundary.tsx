@@ -27,17 +27,17 @@ export function ErrorFallback({ onReset }: ErrorFallbackProps) {
       </p>
       <div className="flex gap-2">
         <Button size="sm" variant="outline" onClick={onReset}>
-          Try again
+          {t("boundary.tryAgain")}
         </Button>
         <Button
           size="sm"
           variant="outline"
           onClick={() => window.location.reload()}
         >
-          Refresh page
+          {t("boundary.refreshPage")}
         </Button>
         <Button size="sm" variant="outline" onClick={() => router.back()}>
-          Go back
+          {t("boundary.goBack")}
         </Button>
       </div>
     </div>
@@ -70,7 +70,9 @@ export class ErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
-    console.error("[ErrorBoundary]", error, errorInfo);
+    if (process.env.NODE_ENV === "development") {
+      console.error("[ErrorBoundary]", error, errorInfo);
+    }
   }
 
   private handleReset = () => {

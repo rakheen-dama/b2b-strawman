@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
+import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.CreateTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.TemplateDetailResponse;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.TemplateListResponse;
@@ -43,6 +44,7 @@ public class DocumentTemplateService {
   private final TemplateClauseSync templateClauseSync;
   private final FieldDefinitionRepository fieldDefinitionRepository;
   private final TemplateVariableAnalyzer templateVariableAnalyzer;
+  private final StorageService storageService;
 
   public DocumentTemplateService(
       DocumentTemplateRepository documentTemplateRepository,
@@ -50,36 +52,37 @@ public class DocumentTemplateService {
       AuditService auditService,
       TemplateClauseSync templateClauseSync,
       FieldDefinitionRepository fieldDefinitionRepository,
-      TemplateVariableAnalyzer templateVariableAnalyzer) {
+      TemplateVariableAnalyzer templateVariableAnalyzer,
+      StorageService storageService) {
     this.documentTemplateRepository = documentTemplateRepository;
     this.clauseRepository = clauseRepository;
     this.auditService = auditService;
     this.templateClauseSync = templateClauseSync;
     this.fieldDefinitionRepository = fieldDefinitionRepository;
     this.templateVariableAnalyzer = templateVariableAnalyzer;
+    this.storageService = storageService;
   }
 
+  /**
+   * Lists templates with optional filters. Filter priority: category > primaryEntityType > format.
+   * At most one filter is applied; if none are provided, all active templates are returned.
+   */
   @Transactional(readOnly = true)
-  public List<TemplateListResponse> listAll() {
-    return documentTemplateRepository.findByActiveTrueOrderBySortOrder().stream()
-        .map(TemplateListResponse::from)
-        .toList();
-  }
-
-  @Transactional(readOnly = true)
-  public List<TemplateListResponse> listByCategory(TemplateCategory category) {
-    return documentTemplateRepository.findByCategoryAndActiveTrueOrderBySortOrder(category).stream()
-        .map(TemplateListResponse::from)
-        .toList();
-  }
-
-  @Transactional(readOnly = true)
-  public List<TemplateListResponse> listByEntityType(TemplateEntityType entityType) {
-    return documentTemplateRepository
-        .findByPrimaryEntityTypeAndActiveTrueOrderBySortOrder(entityType)
-        .stream()
-        .map(TemplateListResponse::from)
-        .toList();
+  public List<TemplateListResponse> listTemplates(
+      TemplateCategory category, TemplateEntityType primaryEntityType, TemplateFormat format) {
+    List<DocumentTemplate> templates;
+    if (category != null) {
+      templates = documentTemplateRepository.findByCategoryAndActiveTrueOrderBySortOrder(category);
+    } else if (primaryEntityType != null) {
+      templates =
+          documentTemplateRepository.findByPrimaryEntityTypeAndActiveTrueOrderBySortOrder(
+              primaryEntityType);
+    } else if (format != null) {
+      templates = documentTemplateRepository.findByFormatAndActiveTrueOrderBySortOrder(format);
+    } else {
+      templates = documentTemplateRepository.findByActiveTrueOrderBySortOrder();
+    }
+    return templates.stream().map(TemplateListResponse::from).toList();
   }
 
   @Transactional(readOnly = true)
@@ -114,6 +117,7 @@ public class DocumentTemplateService {
         new DocumentTemplate(entityType, request.name(), finalSlug, category, request.content());
     dt.setDescription(request.description());
     dt.setCss(request.css());
+    validateFormatConsistency(dt);
     if (request.requiredContextFields() != null) {
       validateRequiredContextFieldEntries(request.requiredContextFields());
       dt.setRequiredContextFields(request.requiredContextFields());
@@ -197,6 +201,9 @@ public class DocumentTemplateService {
     }
     dt.setRequiredContextFields(request.requiredContextFields());
 
+    // Validate format consistency AFTER all fields are applied but BEFORE save
+    validateFormatConsistency(dt);
+
     dt = documentTemplateRepository.save(dt);
 
     // Sync clause associations from document JSON only when content changed (ADR-123)
@@ -226,6 +233,17 @@ public class DocumentTemplateService {
         documentTemplateRepository
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", id));
+
+    // Clean up DOCX S3 file if present — best-effort, template deactivation must succeed
+    if (dt.getFormat() == TemplateFormat.DOCX && dt.getDocxS3Key() != null) {
+      try {
+        storageService.delete(dt.getDocxS3Key());
+        log.info("Deleted DOCX S3 file: key={}", dt.getDocxS3Key());
+      } catch (Exception e) {
+        log.warn(
+            "Failed to delete DOCX S3 file: key={}, error={}", dt.getDocxS3Key(), e.getMessage());
+      }
+    }
 
     dt.deactivate();
     documentTemplateRepository.save(dt);
@@ -426,6 +444,20 @@ public class DocumentTemplateService {
     void addMissing(String variableKey) {
       missingFields.add(variableKey);
     }
+  }
+
+  private void validateFormatConsistency(DocumentTemplate dt) {
+    if (dt.getFormat() == TemplateFormat.TIPTAP) {
+      if (dt.getDocxS3Key() != null) {
+        throw new InvalidStateException(
+            "Invalid format consistency", "TIPTAP templates must not have a DOCX S3 key set");
+      }
+      if (dt.getDocxFileName() != null) {
+        throw new InvalidStateException(
+            "Invalid format consistency", "TIPTAP templates must not have a DOCX file name set");
+      }
+    }
+    // DOCX templates: content may be null, docxS3Key may be null pre-upload
   }
 
   private void validateRequiredContextFieldEntries(List<Map<String, String>> entries) {

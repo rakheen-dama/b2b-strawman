@@ -49,39 +49,54 @@ describe("UserMenuBff", () => {
     expect(screen.getByText("alice@example.com")).toBeInTheDocument();
   });
 
-  it("renders sign-out button that navigates to gateway logout", async () => {
-    // Mock window.location.href
-    const originalLocation = window.location;
-    const locationMock = {
-      ...originalLocation,
-      href: "",
-    };
-    Object.defineProperty(window, "location", {
-      writable: true,
-      value: locationMock,
-    });
+  it("renders sign-out button that fetches CSRF and submits form POST", async () => {
+    // Mock fetch: first call returns /bff/me, second returns /bff/csrf
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(defaultBffResponse),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            token: "test-csrf-token",
+            parameterName: "_csrf",
+            headerName: "X-XSRF-TOKEN",
+          }),
+      });
 
     render(<UserMenuBff />);
 
-    // Wait for user data to load
     await waitFor(() => {
       expect(screen.getByText("AS")).toBeInTheDocument();
     });
 
-    // Open dropdown
     fireEvent.click(screen.getByText("AS"));
 
-    // Click sign out
     const signOutButton = screen.getByText("Sign out");
     expect(signOutButton).toBeInTheDocument();
     fireEvent.click(signOutButton);
 
-    expect(window.location.href).toBe("http://localhost:8443/logout");
+    // Verify CSRF token was fetched from gateway
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        "http://localhost:8443/bff/csrf",
+        expect.objectContaining({ credentials: "include" }),
+      );
+    });
 
-    // Restore
-    Object.defineProperty(window, "location", {
-      writable: true,
-      value: originalLocation,
+    // Verify the hidden form was appended to the body
+    await waitFor(() => {
+      const form = document.body.querySelector(
+        'form[action="http://localhost:8443/logout"]',
+      );
+      expect(form).not.toBeNull();
+      expect(form?.getAttribute("method")).toBe("POST");
+      // Verify CSRF token input
+      const csrfInput = form?.querySelector('input[name="_csrf"]');
+      expect(csrfInput).not.toBeNull();
+      expect(csrfInput?.getAttribute("value")).toBe("test-csrf-token");
     });
   });
 

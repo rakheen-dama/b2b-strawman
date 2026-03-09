@@ -131,7 +131,7 @@ public class PdfConversionService {
       byte[] pdfBytes = outputStream.toByteArray();
       log.info("docx4j conversion succeeded: {} bytes", pdfBytes.length);
       return Optional.of(pdfBytes);
-    } catch (Throwable e) {
+    } catch (Exception | NoClassDefFoundError | NoSuchMethodError | ExceptionInInitializerError e) {
       log.warn("docx4j conversion failed: {}", e.getMessage());
       return Optional.empty();
     }

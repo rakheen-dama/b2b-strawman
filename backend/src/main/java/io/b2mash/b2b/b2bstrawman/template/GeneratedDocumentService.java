@@ -26,6 +26,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -291,7 +292,10 @@ public class GeneratedDocumentService {
    */
   @Transactional
   public GenerateDocxResult generateDocx(
-      UUID templateId, UUID entityId, OutputFormat requestedFormat, UUID memberId) {
+      UUID templateId, UUID entityId, String rawOutputFormat, UUID memberId) {
+    // 0. Resolve and validate output format
+    OutputFormat requestedFormat = resolveOutputFormat(rawOutputFormat);
+
     // 1. Load template and verify format
     var template =
         documentTemplateRepository
@@ -346,12 +350,14 @@ public class GeneratedDocumentService {
     boolean wantsPdf = requestedFormat == OutputFormat.PDF || requestedFormat == OutputFormat.BOTH;
     String pdfDownloadUrl = null;
     String pdfS3Key = null;
+    long pdfFileSize = 0;
     var warnings = new ArrayList<String>();
     OutputFormat storedFormat = OutputFormat.DOCX;
 
     if (wantsPdf) {
       var pdfBytes = pdfConversionService.convertToPdf(mergedBytes);
       if (pdfBytes.isPresent()) {
+        pdfFileSize = pdfBytes.get().length;
         String pdfFileName = buildDocxFileName(template.getSlug(), entityName, "pdf");
         pdfS3Key = "org/" + tenantId + "/generated/" + pdfFileName;
         try {
@@ -396,6 +402,9 @@ public class GeneratedDocumentService {
             ? buildDocxFileName(template.getSlug(), entityName, "pdf")
             : docxFileName;
 
+    long fileSize =
+        storedFormat == OutputFormat.PDF && pdfS3Key != null ? pdfFileSize : mergedBytes.length;
+
     var generatedDoc =
         createRecord(
             templateId,
@@ -403,7 +412,7 @@ public class GeneratedDocumentService {
             entityId,
             primaryFileName,
             primaryS3Key,
-            mergedBytes.length,
+            fileSize,
             memberId,
             contextSnapshot,
             storedFormat);
@@ -429,18 +438,9 @@ public class GeneratedDocumentService {
             .build());
 
     // 11. Generate presigned download URL for DOCX
+    // Per spec: downloadUrl = DOCX, pdfDownloadUrl = PDF
     var docxPresigned = storageService.generateDownloadUrl(docxS3Key, DOWNLOAD_URL_EXPIRY);
-
-    // For PDF-only, downloadUrl is the PDF; for DOCX/BOTH, downloadUrl is the DOCX
-    String downloadUrl;
-    if (storedFormat == OutputFormat.PDF && pdfDownloadUrl != null) {
-      downloadUrl = pdfDownloadUrl;
-      // Also provide DOCX download URL — repurpose pdfDownloadUrl field... actually:
-      // per spec: downloadUrl = DOCX, pdfDownloadUrl = PDF
-      downloadUrl = docxPresigned.url();
-    } else {
-      downloadUrl = docxPresigned.url();
-    }
+    String downloadUrl = docxPresigned.url();
 
     return new GenerateDocxResult(
         generatedDoc.getId(),
@@ -450,12 +450,29 @@ public class GeneratedDocumentService {
         primaryFileName,
         downloadUrl,
         pdfDownloadUrl,
-        (long) mergedBytes.length,
+        fileSize,
         generatedDoc.getGeneratedAt(),
         warnings);
   }
 
   // --- Private helpers ---
+
+  private OutputFormat resolveOutputFormat(String rawOutputFormat) {
+    if (rawOutputFormat == null || rawOutputFormat.isBlank()) {
+      return OutputFormat.DOCX;
+    }
+    try {
+      return OutputFormat.valueOf(rawOutputFormat.toUpperCase());
+    } catch (IllegalArgumentException e) {
+      throw new InvalidStateException(
+          "Invalid Output Format",
+          "'"
+              + rawOutputFormat
+              + "' is not a valid output format. "
+              + "Valid values: "
+              + Arrays.toString(OutputFormat.values()));
+    }
+  }
 
   private List<Map<String, Object>> buildClauseSnapshots(List<Clause> resolvedClauses) {
     var snapshots = new java.util.ArrayList<Map<String, Object>>();

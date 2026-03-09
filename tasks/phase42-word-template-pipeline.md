@@ -159,7 +159,7 @@ FRONTEND TRACK (after E323 backend APIs ready)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 4a | 325 | 325A | TypeScript types (`TemplateFormat`, `OutputFormat`, `DiscoveredField`, `DiscoveredFieldsResult`), API client functions (`uploadDocxTemplate`, `replaceDocxFile`, `getDocxFields`, `downloadDocxTemplate`), "Upload Word Template" dialog (drag-drop, name/description/category/entityType fields, 10MB validation, field discovery results display). ~6 new files + ~5 tests. Frontend only. | |
+| 4a | 325 | 325A | TypeScript types (`TemplateFormat`, `OutputFormat`, `DiscoveredField`, `DiscoveredFieldsResult`), API client functions (`uploadDocxTemplate`, `replaceDocxFile`, `getDocxFields`, `downloadDocxTemplate`), "Upload Word Template" dialog (drag-drop, name/description/category/entityType fields, 10MB validation, field discovery results display). ~6 new files + ~5 tests. Frontend only. | **Done** (PR #622) |
 | 4b | 325 | 325B | Template list: format badge (Tiptap/Word), file name + size for DOCX, format filter dropdown. Template detail DOCX variant: file info panel, discovered fields table (valid/unknown badges), "Replace File" button + flow, "Download Template" button, variable reference panel. ~6 modified files + ~5 tests. Frontend only. | |
 
 ### Stage 5: Frontend — Generation & Polish
@@ -491,7 +491,7 @@ Stage 5: [326A] -> [326B]                                           (sequential,
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **325A** | 325.1--325.7 | TypeScript types (`TemplateFormat`, `OutputFormat`, `DiscoveredField`, `DiscoveredFieldsResult`), API client functions for DOCX endpoints, "Upload Word Template" dialog with drag-drop zone, name/description/category/entityType form fields, 10MB client-side validation, field discovery results display after upload. Server action `uploadDocxTemplateAction`. ~6 new files + ~5 tests. Frontend only. | |
+| **325A** | 325.1--325.7 | TypeScript types (`TemplateFormat`, `OutputFormat`, `DiscoveredField`, `DiscoveredFieldsResult`), API client functions for DOCX endpoints, "Upload Word Template" dialog with drag-drop zone, name/description/category/entityType form fields, 10MB client-side validation, field discovery results display after upload. Server action `uploadDocxTemplateAction`. ~6 new files + ~5 tests. Frontend only. | **Done** (PR #622) |
 | **325B** | 325.8--325.14 | Template list: format badge (Tiptap blue/Word green), file name + size for DOCX rows, format filter dropdown (All/Tiptap/Word). Template detail DOCX variant: file info panel, discovered fields table (valid/unknown badges + counts), "Replace File" button + dialog, "Download Template" button. Variable reference panel. ~6 modified files + ~5 tests. Frontend only. | |
 
 ### Tasks

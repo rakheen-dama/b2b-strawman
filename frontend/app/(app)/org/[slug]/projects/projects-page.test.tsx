@@ -182,7 +182,7 @@ describe("ProjectsPage", () => {
       render(jsx);
 
       expect(screen.getByText("No projects yet")).toBeInTheDocument();
-      expect(screen.getByText(/Projects organise your work/)).toBeInTheDocument();
+      expect(screen.getByText(/not on any projects yet/)).toBeInTheDocument();
     });
 
     it("shows catalog empty state message for org:admin", async () => {

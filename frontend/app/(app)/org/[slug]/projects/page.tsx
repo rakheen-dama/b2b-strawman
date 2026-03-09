@@ -234,7 +234,7 @@ export default async function ProjectsPage({
         <EmptyState
           icon={FolderOpen}
           title={t("projects.list.heading")}
-          description={t("projects.list.description")}
+          description={isAdmin ? t("projects.list.description") : t("projects.list.descriptionMember")}
           action={<CreateProjectDialog slug={slug} />}
         />
       ) : (

@@ -91,6 +91,8 @@ export default async function InvoicesPage({
   // Compute summary from all invoices (when no filter applied, or from filtered set)
   const summary = computeSummary(invoices);
 
+  const { t } = createMessages("empty-states");
+
   const statusOptions: InvoiceStatus[] = [
     "DRAFT",
     "APPROVED",
@@ -191,20 +193,15 @@ export default async function InvoicesPage({
 
       {/* Invoice Table or Empty State */}
       {invoices.length === 0 ? (
-        (() => {
-          const { t } = createMessages("empty-states");
-          return (
-            <EmptyState
-              icon={Receipt}
-              title={search.status ? "No invoices found" : t("invoices.list.heading")}
-              description={
-                search.status
-                  ? `No ${search.status.toLowerCase()} invoices found.`
-                  : t("invoices.list.description")
-              }
-            />
-          );
-        })()
+        <EmptyState
+          icon={Receipt}
+          title={search.status ? "No invoices found" : t("invoices.list.heading")}
+          description={
+            search.status
+              ? `No ${search.status.toLowerCase()} invoices found.`
+              : t("invoices.list.description")
+          }
+        />
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full">

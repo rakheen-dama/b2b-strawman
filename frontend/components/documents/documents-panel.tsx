@@ -143,6 +143,7 @@ export function DocumentsPanel({
   canManageVisibility = false,
 }: DocumentsPanelProps) {
   const router = useRouter();
+  const { t } = createMessages("empty-states");
   const [uploads, dispatch] = useReducer(uploadReducer, []);
   const xhrMapRef = useRef<Map<string, XMLHttpRequest>>(new Map());
   const fileMapRef = useRef<Map<string, { file: File; mimeType: string }>>(new Map());
@@ -341,16 +342,11 @@ export function DocumentsPanel({
       <h2 className="font-semibold text-slate-900 dark:text-slate-100">Documents</h2>
 
       {documents.length === 0 && uploads.length === 0 ? (
-        (() => {
-          const { t } = createMessages("empty-states");
-          return (
-            <EmptyState
-              icon={FileText}
-              title={t("documents.list.heading")}
-              description={t("documents.list.description")}
-            />
-          );
-        })()
+        <EmptyState
+          icon={FileText}
+          title={t("documents.list.heading")}
+          description={t("documents.list.description")}
+        />
       ) : (
         <div className="rounded-lg border border-slate-200 dark:border-slate-800">
           <Table>

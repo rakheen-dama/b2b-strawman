@@ -60,6 +60,7 @@ export function TemplatesContent({
   canManage,
 }: TemplatesContentProps) {
   const [formatFilter, setFormatFilter] = useState<TemplateFormat | "ALL">("ALL");
+  const { t } = createMessages("empty-states");
 
   // Filter templates by format
   const filteredTemplates =
@@ -114,25 +115,19 @@ export function TemplatesContent({
       </div>
 
       {filteredTemplates.length === 0 ? (
-        (() => {
-          if (formatFilter !== "ALL") {
-            return (
-              <p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
-                No templates match the selected format.
-              </p>
-            );
-          }
-          const { t } = createMessages("empty-states");
-          return (
-            <EmptyState
-              icon={LayoutTemplate}
-              title={t("templates.list.heading")}
-              description={t("templates.list.description")}
-              actionLabel={t("templates.list.cta")}
-              actionHref={`/org/${slug}/settings/templates/new`}
-            />
-          );
-        })()
+        formatFilter !== "ALL" ? (
+          <p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+            No templates match the selected format.
+          </p>
+        ) : (
+          <EmptyState
+            icon={LayoutTemplate}
+            title={t("templates.list.heading")}
+            description={t("templates.list.description")}
+            actionLabel={t("templates.list.cta")}
+            actionHref={`/org/${slug}/settings/templates/new`}
+          />
+        )
       ) : (
         categories.map((cat) => (
           <div key={cat} className="space-y-3">

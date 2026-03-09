@@ -14,6 +14,7 @@ interface TodayTimeEntriesProps {
 }
 
 export function TodayTimeEntries({ entries }: TodayTimeEntriesProps) {
+  const { t } = createMessages("empty-states");
   const totalMinutes = entries.reduce(
     (sum, entry) => sum + entry.durationMinutes,
     0
@@ -33,18 +34,13 @@ export function TodayTimeEntries({ entries }: TodayTimeEntriesProps) {
       </div>
 
       {entries.length === 0 ? (
-        (() => {
-          const { t } = createMessages("empty-states");
-          return (
-            <div className="mt-4">
-              <EmptyState
-                icon={Clock}
-                title={t("timeEntries.list.heading")}
-                description={t("timeEntries.list.description")}
-              />
-            </div>
-          );
-        })()
+        <div className="mt-4">
+          <EmptyState
+            icon={Clock}
+            title={t("timeEntries.list.heading")}
+            description={t("timeEntries.list.description")}
+          />
+        </div>
       ) : (
         <div className="mt-4 space-y-3">
           {entries.map((entry) => (

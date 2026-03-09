@@ -253,7 +253,7 @@ export default async function CustomersPage({
           <EmptyState
             icon={Users}
             title={t("customers.list.heading")}
-            description={t("customers.list.description")}
+            description={isAdmin ? t("customers.list.description") : t("customers.list.descriptionMember")}
             action={isAdmin ? <CreateCustomerDialog slug={slug} /> : undefined}
           />
         )

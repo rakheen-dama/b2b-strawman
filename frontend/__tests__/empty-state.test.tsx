@@ -139,6 +139,56 @@ describe("EmptyState", () => {
     ).toBeInTheDocument();
   });
 
+  it("renders admin description for projects when user is admin", () => {
+    // Simulates admin role: uses the admin description from the catalog
+    render(
+      <EmptyState
+        icon={FolderOpen}
+        title="No projects yet"
+        description="Projects organise your work, documents, and time tracking. Create your first project to get started."
+        action={<button type="button">Create project</button>}
+      />,
+    );
+
+    expect(
+      screen.getByText(
+        "Projects organise your work, documents, and time tracking. Create your first project to get started.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Create project" })).toBeInTheDocument();
+  });
+
+  it("renders member description for projects when user is member", () => {
+    // Simulates member role: uses the member-specific description from the catalog
+    render(
+      <EmptyState
+        icon={FolderOpen}
+        title="No projects yet"
+        description={`You\u2019re not on any projects yet.`}
+        action={<button type="button">Create project</button>}
+      />,
+    );
+
+    expect(
+      screen.getByText(/not on any projects yet/),
+    ).toBeInTheDocument();
+  });
+
+  it("renders member description for customers when user is member", () => {
+    // Simulates member role: uses the member-specific description from the catalog
+    render(
+      <EmptyState
+        icon={Users}
+        title="No customers yet"
+        description="No customers have been added yet."
+      />,
+    );
+
+    expect(
+      screen.getByText("No customers have been added yet."),
+    ).toBeInTheDocument();
+  });
+
   it("prefers onAction over actionHref when both provided", async () => {
     const user = userEvent.setup();
     const handleAction = vi.fn();

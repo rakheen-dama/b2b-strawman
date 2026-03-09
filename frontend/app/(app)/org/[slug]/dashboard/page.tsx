@@ -31,6 +31,7 @@ import {
 } from "@/lib/api/capacity";
 import { resolveDateRange, getCurrentMonday, formatDate as formatDateUtil, addWeeks } from "@/lib/date-utils";
 import type { OrgMember } from "@/lib/types";
+import { GettingStartedCard } from "@/components/dashboard/getting-started-card";
 
 export default async function OrgDashboardPage({
   params,
@@ -134,6 +135,8 @@ export default async function OrgDashboardPage({
   return (
     <div className="space-y-8">
       <DashboardHeader from={from} to={to} />
+
+      <GettingStartedCard />
 
       <KpiCardRow kpis={kpis ?? null} isAdmin={isAdmin} orgSlug={slug} />
 

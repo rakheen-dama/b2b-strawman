@@ -559,6 +559,16 @@ export type TemplateEntityType = "PROJECT" | "CUSTOMER" | "INVOICE";
 
 export type TemplateSource = "PLATFORM" | "ORG_CUSTOM";
 
+export type TemplateFormat = "TIPTAP" | "DOCX";
+
+export type OutputFormat = "PDF" | "DOCX" | "BOTH";
+
+export interface DiscoveredField {
+  path: string;
+  status: "VALID" | "UNKNOWN";
+  label: string | null;
+}
+
 export interface TemplateListResponse {
   id: string;
   name: string;
@@ -570,6 +580,9 @@ export interface TemplateListResponse {
   sourceTemplateId: string | null;
   active: boolean;
   sortOrder: number;
+  format: TemplateFormat;
+  docxFileName: string | null;
+  docxFileSize: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -589,6 +602,8 @@ export interface TemplateDetailResponse {
   packId: string | null;
   packTemplateKey: string | null;
   requiredContextFields?: Array<{ entity: string; field: string }> | null;
+  format: TemplateFormat;
+  discoveredFields: DiscoveredField[] | null;
   active: boolean;
   sortOrder: number;
   createdAt: string;

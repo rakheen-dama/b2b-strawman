@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { FileUp, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { TemplateActionsMenu } from "@/components/templates/TemplateActionsMenu";
+import { UploadDocxDialog } from "./UploadDocxDialog";
 import { BrandingSection } from "./branding-section";
 import {
   uploadLogoAction,
@@ -61,7 +62,13 @@ export function TemplatesContent({
   return (
     <div className="space-y-8">
       {canManage && (
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-2">
+          <UploadDocxDialog slug={slug}>
+            <Button size="sm" variant="soft">
+              <FileUp className="mr-1 size-4" />
+              Upload Word Template
+            </Button>
+          </UploadDocxDialog>
           <Link href={`/org/${slug}/settings/templates/new`}>
             <Button size="sm">
               <Plus className="mr-1 size-4" />

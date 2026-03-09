@@ -49,6 +49,7 @@ import {
 } from "@/app/(app)/org/[slug]/settings/templates/actions";
 import type { FieldPackStatus } from "@/app/(app)/org/[slug]/settings/templates/actions";
 import { getClause } from "@/lib/actions/clause-actions";
+import { FieldDiscoveryResults } from "@/app/(app)/org/[slug]/settings/templates/FieldDiscoveryResults";
 import type {
   TemplateDetailResponse,
   TemplateCategory,
@@ -267,6 +268,13 @@ export function TemplateEditorClient({
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Discovered fields for DOCX templates */}
+      {template.format === "DOCX" && template.discoveredFields && (
+        <div className="mt-4">
+          <FieldDiscoveryResults fields={template.discoveredFields} />
         </div>
       )}
 

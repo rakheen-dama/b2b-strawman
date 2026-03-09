@@ -36,6 +36,7 @@ public class KeycloakAdminClient {
 
   private volatile String cachedToken;
   private volatile Instant tokenExpiry = Instant.MIN;
+  private volatile boolean orgRoleProfileRegistered = false;
 
   public KeycloakAdminClient(
       @Value("${keycloak.admin.auth-server-url}") String authServerUrl,
@@ -187,20 +188,118 @@ public class KeycloakAdminClient {
   }
 
   /**
-   * Ensures an organization role exists (creates it if not found), then grants it to the member.
-   * Keycloak 26 organizations require roles to be created before they can be assigned.
+   * Updates a member's organization role. Sets the {@code org_role} user attribute (used by the JWT
+   * protocol mapper) and attempts to assign the Keycloak org role (may fail on KC 26.x).
    */
   public void updateMemberRole(String orgId, String userId, String role) {
-    // Step 1: Ensure the role exists in the organization
-    Map<String, Object> orgRole = ensureOrgRole(orgId, role);
+    // Always set the user attribute — this is the reliable path for KC 26.x.
+    // The oidc-usermodel-attribute-mapper maps this to the org_role JWT claim.
+    // Ensure the attribute is registered in the user profile first (idempotent).
+    ensureUserProfileAttribute("org_role");
+    setUserAttribute(userId, "org_role", role);
 
-    // Step 2: Grant the role to the member
+    // Also attempt the native org role API (may 404 on KC 26.x — that's OK)
+    try {
+      Map<String, Object> orgRole = ensureOrgRole(orgId, role);
+      restClient
+          .post()
+          .uri("/organizations/{orgId}/members/{userId}/organization-roles/grant", orgId, userId)
+          .header("Authorization", "Bearer " + getAdminToken())
+          .contentType(MediaType.APPLICATION_JSON)
+          .body(List.of(orgRole))
+          .retrieve()
+          .toBodilessEntity();
+    } catch (Exception e) {
+      log.debug(
+          "KC org role assignment failed (expected on KC 26.x): {} — user attribute fallback used",
+          e.getMessage());
+    }
+  }
+
+  /**
+   * Ensures a custom attribute is registered in the realm's user profile. Keycloak 26.x strict
+   * profile silently strips unregistered attributes. Must be called once before setting the
+   * attribute on any user. Idempotent — skips if the attribute already exists.
+   */
+  @SuppressWarnings("unchecked")
+  public void ensureUserProfileAttribute(String attributeName) {
+    Map<String, Object> profile =
+        restClient
+            .get()
+            .uri("/users/profile")
+            .header("Authorization", "Bearer " + getAdminToken())
+            .retrieve()
+            .body(new ParameterizedTypeReference<>() {});
+    if (profile == null) return;
+
+    List<Map<String, Object>> attrs = (List<Map<String, Object>>) profile.get("attributes");
+    boolean exists =
+        attrs != null && attrs.stream().anyMatch(a -> attributeName.equals(a.get("name")));
+    if (exists) return;
+
+    if (attrs == null) attrs = new java.util.ArrayList<>();
+    else attrs = new java.util.ArrayList<>(attrs);
+    attrs.add(
+        Map.of(
+            "name",
+            attributeName,
+            "displayName",
+            "Organization Role",
+            "permissions",
+            Map.of("view", List.of("admin"), "edit", List.of("admin")),
+            "multivalued",
+            false));
+
+    profile = new java.util.HashMap<>(profile);
+    profile.put("attributes", attrs);
+
     restClient
-        .post()
-        .uri("/organizations/{orgId}/members/{userId}/organization-roles/grant", orgId, userId)
+        .put()
+        .uri("/users/profile")
         .header("Authorization", "Bearer " + getAdminToken())
         .contentType(MediaType.APPLICATION_JSON)
-        .body(List.of(orgRole))
+        .body(profile)
+        .retrieve()
+        .toBodilessEntity();
+    log.info("Registered '{}' in Keycloak user profile", attributeName);
+  }
+
+  /**
+   * Sets a single-valued user attribute in Keycloak. Fetches the full user representation first,
+   * merges the attribute, and PUTs the entire object back. KC 26.x strict user profile blanks any
+   * fields omitted from the PUT body.
+   */
+  @SuppressWarnings("unchecked")
+  public void setUserAttribute(String userId, String attribute, String value) {
+    Map<String, Object> user =
+        restClient
+            .get()
+            .uri("/users/{userId}", userId)
+            .header("Authorization", "Bearer " + getAdminToken())
+            .retrieve()
+            .body(new ParameterizedTypeReference<>() {});
+    if (user == null) {
+      log.warn("Cannot set attribute — user {} not found", userId);
+      return;
+    }
+
+    // Merge the new attribute into existing attributes
+    Map<String, Object> attributes =
+        user.get("attributes") instanceof Map<?, ?>
+            ? new java.util.HashMap<>((Map<String, Object>) user.get("attributes"))
+            : new java.util.HashMap<>();
+    attributes.put(attribute, List.of(value));
+
+    // Send the full user representation to avoid blanking required fields
+    var body = new java.util.HashMap<>(user);
+    body.put("attributes", attributes);
+
+    restClient
+        .put()
+        .uri("/users/{userId}", userId)
+        .header("Authorization", "Bearer " + getAdminToken())
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(body)
         .retrieve()
         .toBodilessEntity();
   }

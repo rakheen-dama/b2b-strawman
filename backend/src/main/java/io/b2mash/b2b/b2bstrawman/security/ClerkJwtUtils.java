@@ -103,6 +103,15 @@ public final class ClerkJwtUtils {
     return null;
   }
 
+  /**
+   * Returns true if the JWT is Keycloak format with a flat list (no inline roles). This means the
+   * role came from a default, not from the token itself.
+   */
+  public static boolean isKeycloakFlatListFormat(Jwt jwt) {
+    Object orgClaim = jwt.getClaim(KEYCLOAK_ORG_CLAIM);
+    return orgClaim instanceof List<?>;
+  }
+
   @SuppressWarnings("unchecked")
   private static String extractKeycloakOrgRole(Jwt jwt) {
     Object orgClaim = jwt.getClaim(KEYCLOAK_ORG_CLAIM);
@@ -117,6 +126,11 @@ public final class ClerkJwtUtils {
           return role.startsWith("org:") ? role.substring(4) : role;
         }
       }
+    }
+    // Check for org_role claim (user attribute mapper workaround for KC 26.x)
+    String orgRoleClaim = jwt.getClaimAsString("org_role");
+    if (orgRoleClaim != null && !orgRoleClaim.isBlank()) {
+      return orgRoleClaim.startsWith("org:") ? orgRoleClaim.substring(4) : orgRoleClaim;
     }
     // List format has no roles — default to member.
     // The first user to log into a newly-provisioned tenant gets promoted to owner

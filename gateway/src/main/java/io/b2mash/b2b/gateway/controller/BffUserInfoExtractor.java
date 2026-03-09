@@ -31,13 +31,18 @@ public final class BffUserInfoExtractor {
     }
 
     // Keycloak 26.x built-in org scope emits a List<String> of org aliases
-    // (no roles in this format). Default to owner — the list format only occurs before
-    // Keycloak processes the role assignment, which means the user is the org creator.
-    // Use bare "owner" to match the rich format convention (no "org:" prefix here).
+    // (no roles in this format). Check the separate org_role claim (user attribute mapper)
+    // before defaulting to member. The backend DB lookup is the ultimate fallback.
     if (raw instanceof List<?> list) {
       if (list.isEmpty()) return null;
       String alias = (String) list.getFirst();
-      return new OrgInfo(alias, alias, "owner");
+      // org_role claim is set by oidc-usermodel-attribute-mapper (KC 26.x workaround)
+      Object orgRoleClaim = user.getClaim("org_role");
+      String role =
+          (orgRoleClaim instanceof String r && !r.isBlank())
+              ? (r.startsWith("org:") ? r.substring(4) : r)
+              : "member";
+      return new OrgInfo(alias, alias, role);
     }
 
     // Rich format: Map<alias, {id, roles}>

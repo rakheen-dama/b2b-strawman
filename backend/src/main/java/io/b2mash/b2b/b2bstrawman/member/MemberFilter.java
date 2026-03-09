@@ -29,7 +29,7 @@ public class MemberFilter extends OncePerRequestFilter {
   private static final Logger log = LoggerFactory.getLogger(MemberFilter.class);
 
   private final MemberRepository memberRepository;
-  private final Cache<String, UUID> memberCache =
+  private final Cache<String, MemberInfo> memberCache =
       Caffeine.newBuilder().maximumSize(50_000).expireAfterWrite(Duration.ofHours(1)).build();
 
   public MemberFilter(MemberRepository memberRepository) {
@@ -81,16 +81,16 @@ public class MemberFilter extends OncePerRequestFilter {
 
     Jwt jwt = jwtAuth.getToken();
     String clerkUserId = jwt.getSubject();
-    String orgRole = ClerkJwtUtils.extractOrgRole(jwt);
+    String jwtOrgRole = ClerkJwtUtils.extractOrgRole(jwt);
 
     if (clerkUserId == null) {
       return null;
     }
 
     String cacheKey = tenantId + ":" + clerkUserId;
-    UUID memberId;
+    MemberInfo info;
     try {
-      memberId = memberCache.get(cacheKey, k -> resolveOrCreateMember(clerkUserId, orgRole, jwt));
+      info = memberCache.get(cacheKey, k -> resolveOrCreateMember(clerkUserId, jwtOrgRole, jwt));
     } catch (Exception e) {
       log.warn(
           "Failed to resolve/create member for user {} in tenant {}: {}",
@@ -100,17 +100,22 @@ public class MemberFilter extends OncePerRequestFilter {
       return null;
     }
 
-    return new MemberInfo(memberId, orgRole);
+    // If JWT has an explicit role (rich format, Clerk, or org_role claim), prefer it.
+    // Otherwise (flat list default), trust the DB role — it was set correctly during onboarding.
+    boolean jwtHasExplicitRole =
+        !ClerkJwtUtils.isKeycloakFlatListFormat(jwt) || jwt.getClaimAsString("org_role") != null;
+    String effectiveRole = jwtHasExplicitRole ? jwtOrgRole : info.orgRole();
+    return new MemberInfo(info.memberId(), effectiveRole);
   }
 
-  private UUID resolveOrCreateMember(String clerkUserId, String orgRole, Jwt jwt) {
+  private MemberInfo resolveOrCreateMember(String clerkUserId, String orgRole, Jwt jwt) {
     return memberRepository
         .findByClerkUserId(clerkUserId)
-        .map(Member::getId)
+        .map(m -> new MemberInfo(m.getId(), m.getOrgRole()))
         .orElseGet(() -> lazyCreateMember(clerkUserId, orgRole, jwt));
   }
 
-  private UUID lazyCreateMember(String clerkUserId, String orgRole, Jwt jwt) {
+  private MemberInfo lazyCreateMember(String clerkUserId, String orgRole, Jwt jwt) {
     // Always extract real email/name from JWT when available.
     // Keycloak JWTs include email/name directly; Clerk JWTs may not (updated via webhook).
     String jwtEmail = jwt.getClaimAsString("email");
@@ -136,12 +141,12 @@ public class MemberFilter extends OncePerRequestFilter {
           member.getId(),
           clerkUserId,
           RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : "unknown");
-      return member.getId();
+      return new MemberInfo(member.getId(), effectiveRole);
     } catch (DataIntegrityViolationException e) {
       // Race condition: another instance already created this member
       return memberRepository
           .findByClerkUserId(clerkUserId)
-          .map(Member::getId)
+          .map(m -> new MemberInfo(m.getId(), m.getOrgRole()))
           .orElseThrow(
               () ->
                   new IllegalStateException(

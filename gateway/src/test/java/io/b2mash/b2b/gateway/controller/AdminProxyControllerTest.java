@@ -211,6 +211,35 @@ class AdminProxyControllerTest {
 
   @Test
   void changeRole_asAdmin_succeeds() throws Exception {
+    // Stub: user profile (ensureUserProfileAttribute reads then updates)
+    wireMock.stubFor(
+        WireMock.get(urlPathEqualTo("/admin/realms/" + REALM + "/users/profile"))
+            .willReturn(
+                aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(
+                        """
+                        {"attributes":[{"name":"org_role"}],"groups":[]}
+                        """)));
+
+    // Stub: get user (setUserAttribute fetches user to include email)
+    wireMock.stubFor(
+        WireMock.get(urlPathEqualTo("/admin/realms/" + REALM + "/users/user-1"))
+            .willReturn(
+                aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(
+                        """
+                        {"id":"user-1","email":"alice@test.com","attributes":{}}
+                        """)));
+
+    // Stub: update user (setUserAttribute PUTs the attribute)
+    wireMock.stubFor(
+        WireMock.put(urlPathEqualTo("/admin/realms/" + REALM + "/users/user-1"))
+            .willReturn(aResponse().withStatus(204)));
+
     // Stub: list existing org roles (returns the "admin" role already exists)
     wireMock.stubFor(
         WireMock.get(

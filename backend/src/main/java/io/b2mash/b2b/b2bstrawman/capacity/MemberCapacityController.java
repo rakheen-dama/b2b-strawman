@@ -4,12 +4,12 @@ import io.b2mash.b2b.b2bstrawman.capacity.dto.CapacityDtos.CreateCapacityRequest
 import io.b2mash.b2b.b2bstrawman.capacity.dto.CapacityDtos.MemberCapacityResponse;
 import io.b2mash.b2b.b2bstrawman.capacity.dto.CapacityDtos.UpdateCapacityRequest;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,13 +30,13 @@ public class MemberCapacityController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("RESOURCE_PLANNING")
   public ResponseEntity<List<MemberCapacityResponse>> listCapacity(@PathVariable UUID memberId) {
     return ResponseEntity.ok(capacityService.listCapacityRecords(memberId));
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("RESOURCE_PLANNING")
   public ResponseEntity<MemberCapacityResponse> createCapacity(
       @PathVariable UUID memberId, @Valid @RequestBody CreateCapacityRequest request) {
     UUID createdBy = RequestScopes.requireMemberId();
@@ -45,7 +45,7 @@ public class MemberCapacityController {
   }
 
   @PutMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("RESOURCE_PLANNING")
   public ResponseEntity<MemberCapacityResponse> updateCapacity(
       @PathVariable UUID memberId,
       @PathVariable UUID id,
@@ -54,7 +54,7 @@ public class MemberCapacityController {
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("RESOURCE_PLANNING")
   public ResponseEntity<Void> deleteCapacity(@PathVariable UUID memberId, @PathVariable UUID id) {
     capacityService.deleteCapacityRecord(memberId, id);
     return ResponseEntity.noContent().build();

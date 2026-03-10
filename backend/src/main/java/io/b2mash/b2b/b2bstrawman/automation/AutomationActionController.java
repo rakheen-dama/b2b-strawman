@@ -4,12 +4,12 @@ import io.b2mash.b2b.b2bstrawman.automation.dto.AutomationDtos.AutomationActionR
 import io.b2mash.b2b.b2bstrawman.automation.dto.AutomationDtos.CreateActionRequest;
 import io.b2mash.b2b.b2bstrawman.automation.dto.AutomationDtos.ReorderActionsRequest;
 import io.b2mash.b2b.b2bstrawman.automation.dto.AutomationDtos.UpdateActionRequest;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,7 +27,7 @@ public class AutomationActionController {
   }
 
   @PostMapping("/api/automation-rules/{ruleId}/actions")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("AUTOMATIONS")
   public ResponseEntity<AutomationActionResponse> addAction(
       @PathVariable UUID ruleId, @Valid @RequestBody CreateActionRequest request) {
     var response = automationRuleService.addAction(ruleId, request);
@@ -37,7 +37,7 @@ public class AutomationActionController {
   }
 
   @PutMapping("/api/automation-rules/{ruleId}/actions/{actionId}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("AUTOMATIONS")
   public ResponseEntity<AutomationActionResponse> updateAction(
       @PathVariable UUID ruleId,
       @PathVariable UUID actionId,
@@ -46,14 +46,14 @@ public class AutomationActionController {
   }
 
   @DeleteMapping("/api/automation-rules/{ruleId}/actions/{actionId}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("AUTOMATIONS")
   public ResponseEntity<Void> removeAction(@PathVariable UUID ruleId, @PathVariable UUID actionId) {
     automationRuleService.removeAction(ruleId, actionId);
     return ResponseEntity.noContent().build();
   }
 
   @PutMapping("/api/automation-rules/{ruleId}/actions/reorder")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("AUTOMATIONS")
   public ResponseEntity<List<AutomationActionResponse>> reorderActions(
       @PathVariable UUID ruleId, @Valid @RequestBody ReorderActionsRequest request) {
     return ResponseEntity.ok(automationRuleService.reorderActions(ruleId, request.actionIds()));

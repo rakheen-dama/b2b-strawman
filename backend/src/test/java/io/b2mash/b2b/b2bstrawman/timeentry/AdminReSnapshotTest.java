@@ -9,14 +9,17 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateService;
 import io.b2mash.b2b.b2bstrawman.costrate.CostRateService;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -52,10 +55,14 @@ class AdminReSnapshotTest {
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private BillingRateService billingRateService;
   @Autowired private CostRateService costRateService;
+  @Autowired private OrgRoleService orgRoleService;
+  @Autowired private MemberRepository memberRepository;
 
   private String tenantSchema;
   private UUID memberIdOwner;
   private UUID memberIdMember;
+  private UUID customRoleMemberId;
+  private UUID noCapMemberId;
   private String projectId1;
   private String projectId2;
   private String taskId1;
@@ -172,6 +179,23 @@ class AdminReSnapshotTest {
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.billingRateSnapshot").doesNotExist());
 
+    customRoleMemberId =
+        UUID.fromString(
+            syncMember(
+                ORG_ID,
+                "user_resnap_315b_custom",
+                "resnap_custom@test.com",
+                "ReSnap Custom",
+                "member"));
+    noCapMemberId =
+        UUID.fromString(
+            syncMember(
+                ORG_ID,
+                "user_resnap_315b_nocap",
+                "resnap_nocap@test.com",
+                "ReSnap NoCap",
+                "member"));
+
     // Now configure rates for the owner (after entries were created)
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
@@ -197,6 +221,22 @@ class AdminReSnapshotTest {
                   null,
                   memberIdOwner,
                   "owner");
+
+              var withCapRole =
+                  orgRoleService.createRole(
+                      new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                          "Team Oversight Manager", "Can oversee team", Set.of("TEAM_OVERSIGHT")));
+              var customMember = memberRepository.findById(customRoleMemberId).orElseThrow();
+              customMember.setOrgRoleId(withCapRole.id());
+              memberRepository.save(customMember);
+
+              var withoutCapRole =
+                  orgRoleService.createRole(
+                      new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                          "Invoicer ReSnap", "Can manage invoices", Set.of("INVOICING")));
+              var noCapMember = memberRepository.findById(noCapMemberId).orElseThrow();
+              noCapMember.setOrgRoleId(withoutCapRole.id());
+              memberRepository.save(noCapMember);
             });
   }
 
@@ -275,6 +315,40 @@ class AdminReSnapshotTest {
         .andExpect(status().isForbidden());
   }
 
+  // --- Capability Tests (added in Epic 315B) ---
+
+  @Test
+  @Order(5)
+  void customRoleWithCapability_accessesReSnapshot_returns200() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/admin/time-entries/re-snapshot")
+                .with(customRoleJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"memberId": "%s"}
+                    """
+                        .formatted(memberIdOwner)))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  @Order(6)
+  void customRoleWithoutCapability_accessesReSnapshot_returns403() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/admin/time-entries/re-snapshot")
+                .with(noCapabilityJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"memberId": "%s"}
+                    """
+                        .formatted(memberIdOwner)))
+        .andExpect(status().isForbidden());
+  }
+
   // --- JWT helpers ---
 
   private JwtRequestPostProcessor ownerJwt() {
@@ -286,6 +360,24 @@ class AdminReSnapshotTest {
   private JwtRequestPostProcessor memberJwt() {
     return jwt()
         .jwt(j -> j.subject("user_resnap_member").claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+
+  private JwtRequestPostProcessor customRoleJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_resnap_315b_custom")
+                    .claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+
+  private JwtRequestPostProcessor noCapabilityJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_resnap_315b_nocap")
+                    .claim("o", Map.of("id", ORG_ID, "rol", "member")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
   }
 

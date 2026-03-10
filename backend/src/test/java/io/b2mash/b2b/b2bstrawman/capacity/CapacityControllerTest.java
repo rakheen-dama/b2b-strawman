@@ -9,8 +9,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.capacity.dto.AllocationDtos.CreateAllocationRequest;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
@@ -19,6 +21,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,11 +51,15 @@ class CapacityControllerTest {
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private ResourceAllocationService allocationService;
   @Autowired private ProjectService projectService;
+  @Autowired private OrgRoleService orgRoleService;
+  @Autowired private MemberRepository memberRepository;
 
   private String tenantSchema;
   private UUID memberIdOwner;
   private String memberIdOwnerStr;
   private UUID projectId;
+  private UUID customRoleMemberId;
+  private UUID noCapMemberId;
 
   private static final LocalDate WEEK_START = LocalDate.of(2026, 4, 6); // Monday
   private static final LocalDate WEEK_END = LocalDate.of(2026, 4, 13); // Monday
@@ -67,6 +74,19 @@ class CapacityControllerTest {
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 
+    customRoleMemberId =
+        UUID.fromString(
+            syncMember(
+                ORG_ID,
+                "user_cap_315b_custom",
+                "cap_custom@test.com",
+                "Cap Custom User",
+                "member"));
+    noCapMemberId =
+        UUID.fromString(
+            syncMember(
+                ORG_ID, "user_cap_315b_nocap", "cap_nocap@test.com", "Cap NoCap User", "member"));
+
     runInTenant(
         () -> {
           Project project = projectService.createProject("Cap Ctrl Project", "desc", memberIdOwner);
@@ -77,6 +97,23 @@ class CapacityControllerTest {
               new CreateAllocationRequest(
                   memberIdOwner, projectId, WEEK_START, new BigDecimal("25.00"), "sprint"),
               memberIdOwner);
+
+          var withCapRole =
+              orgRoleService.createRole(
+                  new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                      "Resource Planner", "Can plan resources", Set.of("RESOURCE_PLANNING")));
+          var customMember = memberRepository.findById(customRoleMemberId).orElseThrow();
+          customMember.setOrgRoleId(withCapRole.id());
+          memberRepository.save(customMember);
+
+          var withoutCapRole =
+              orgRoleService.createRole(
+                  new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                      "Team Lead Cap", "Can manage teams", Set.of("TEAM_OVERSIGHT")));
+          var noCapMember = memberRepository.findById(noCapMemberId).orElseThrow();
+          noCapMember.setOrgRoleId(withoutCapRole.id());
+          memberRepository.save(noCapMember);
+
           return null;
         });
   }
@@ -175,6 +212,39 @@ class CapacityControllerTest {
         .andExpect(jsonPath("$.memberName").value("Cap Owner"))
         .andExpect(jsonPath("$.weeks").isArray())
         .andExpect(jsonPath("$.weeks[0].allocations[0].projectName").value("Cap Ctrl Project"));
+  }
+
+  // --- Capability Tests (added in Epic 315B) ---
+
+  @Test
+  @Order(10)
+  void customRoleWithCapability_accessesMemberCapacity_returns200() throws Exception {
+    mockMvc
+        .perform(get("/api/members/{memberId}/capacity", memberIdOwner).with(customRoleJwt()))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  @Order(11)
+  void customRoleWithoutCapability_accessesMemberCapacity_returns403() throws Exception {
+    mockMvc
+        .perform(get("/api/members/{memberId}/capacity", memberIdOwner).with(noCapabilityJwt()))
+        .andExpect(status().isForbidden());
+  }
+
+  private JwtRequestPostProcessor customRoleJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_cap_315b_custom").claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+
+  private JwtRequestPostProcessor noCapabilityJwt() {
+    return jwt()
+        .jwt(
+            j -> j.subject("user_cap_315b_nocap").claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
   }
 
   // --- Helpers ---

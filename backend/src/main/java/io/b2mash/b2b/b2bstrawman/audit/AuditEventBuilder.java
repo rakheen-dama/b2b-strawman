@@ -1,9 +1,12 @@
 package io.b2mash.b2b.b2bstrawman.audit;
 
 import io.b2mash.b2b.b2bstrawman.billingrun.BillingRun;
+import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRole;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -133,6 +136,72 @@ public final class AuditEventBuilder {
                 sentCount,
                 "total_amount",
                 run.getTotalAmount() != null ? run.getTotalAmount().toString() : "0"))
+        .build();
+  }
+
+  /** Convenience factory for role.created audit events. */
+  public static AuditEventRecord roleCreated(OrgRole role) {
+    return builder()
+        .eventType("role.created")
+        .entityType("org_role")
+        .entityId(role.getId())
+        .details(
+            Map.of(
+                "name",
+                role.getName(),
+                "slug",
+                role.getSlug(),
+                "capabilities",
+                role.getCapabilities().stream()
+                    .map(io.b2mash.b2b.b2bstrawman.orgrole.Capability::name)
+                    .sorted()
+                    .toList()))
+        .build();
+  }
+
+  /** Convenience factory for role.updated audit events. */
+  public static AuditEventRecord roleUpdated(
+      OrgRole role, Set<String> addedCaps, Set<String> removedCaps, long affectedMemberCount) {
+    return builder()
+        .eventType("role.updated")
+        .entityType("org_role")
+        .entityId(role.getId())
+        .details(
+            Map.of(
+                "name", role.getName(),
+                "addedCapabilities", addedCaps.stream().sorted().toList(),
+                "removedCapabilities", removedCaps.stream().sorted().toList(),
+                "affectedMemberCount", affectedMemberCount))
+        .build();
+  }
+
+  /** Convenience factory for role.deleted audit events. */
+  public static AuditEventRecord roleDeleted(OrgRole role) {
+    return builder()
+        .eventType("role.deleted")
+        .entityType("org_role")
+        .entityId(role.getId())
+        .details(
+            Map.of(
+                "name", role.getName(),
+                "slug", role.getSlug()))
+        .build();
+  }
+
+  /** Convenience factory for member.role_changed audit events. */
+  public static AuditEventRecord memberRoleChanged(
+      Member member, String previousRole, String newRole, Set<String> overrides) {
+    return builder()
+        .eventType("member.role_changed")
+        .entityType("member")
+        .entityId(member.getId())
+        .details(
+            Map.of(
+                "memberId", member.getId().toString(),
+                "memberName", member.getName() != null ? member.getName() : "",
+                "previousRole", previousRole != null ? previousRole : "",
+                "newRole", newRole != null ? newRole : "",
+                "overrides", overrides.stream().sorted().toList()))
         .build();
   }
 

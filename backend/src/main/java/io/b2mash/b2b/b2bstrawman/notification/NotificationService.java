@@ -171,7 +171,8 @@ public class NotificationService {
           "LEAVE_CREATED",
           "BILLING_RUN_COMPLETED",
           "BILLING_RUN_SENT",
-          "BILLING_RUN_FAILURES");
+          "BILLING_RUN_FAILURES",
+          "ROLE_PERMISSIONS_CHANGED");
 
   // --- Preference methods ---
 

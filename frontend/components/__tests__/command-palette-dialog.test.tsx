@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 
 // Mock next/navigation
@@ -19,8 +19,18 @@ vi.mock("motion/react", () => ({
   ),
 }));
 
+// Mock recent-items-provider — control recentItems in tests
+vi.mock("@/components/recent-items-provider", () => ({
+  useRecentItems: vi.fn(() => ({ items: [], addItem: vi.fn() })),
+}));
+
 import { CapabilityProvider } from "@/lib/capabilities";
 import { CommandPaletteDialog } from "@/components/command-palette-dialog";
+import { useRecentItems } from "@/components/recent-items-provider";
+
+beforeEach(() => {
+  vi.mocked(useRecentItems).mockReturnValue({ items: [], addItem: vi.fn() });
+});
 
 afterEach(() => {
   cleanup();
@@ -92,5 +102,16 @@ describe("CommandPaletteDialog", () => {
       role: "member",
     });
     expect(screen.queryByText("Batch Billing")).not.toBeInTheDocument();
+  });
+
+  it("shows Recent group heading when recentItems is non-empty", () => {
+    vi.mocked(useRecentItems).mockReturnValue({
+      items: [{ href: "/org/test-org/projects/abc", label: "Alpha Project" }],
+      addItem: vi.fn(),
+    });
+    renderDialog();
+    const recentHeadings = screen.getAllByText("Recent");
+    expect(recentHeadings.length).toBeGreaterThan(0);
+    expect(screen.getByText("Alpha Project")).toBeInTheDocument();
   });
 });

@@ -135,12 +135,12 @@ describe("RolesSettingsPage", () => {
     ).toBeInTheDocument();
 
     // Capability pills (underscores replaced with spaces)
-    // "FINANCIAL VISIBILITY" appears on Owner, Admin, and Bookkeeper cards
+    // "FINANCIAL VISIBILITY" appears on Owner, Admin, and Bookkeeper cards (3 total)
     const financialBadges = screen.getAllByText("FINANCIAL VISIBILITY");
-    expect(financialBadges.length).toBeGreaterThanOrEqual(1);
-    // "INVOICING" appears on Owner, Admin, and Bookkeeper cards
+    expect(financialBadges).toHaveLength(3);
+    // "INVOICING" appears on Owner, Admin, and Bookkeeper cards (3 total)
     const invoicingBadges = screen.getAllByText("INVOICING");
-    expect(invoicingBadges.length).toBeGreaterThanOrEqual(1);
+    expect(invoicingBadges).toHaveLength(3);
   });
 
   it("renders member count per role", async () => {

@@ -20,15 +20,16 @@ export default async function RolesSettingsPage({
   const capData = await fetchMyCapabilities();
 
   if (!capData.isAdmin && !capData.isOwner) {
-    notFound();
+    return notFound();
   }
 
   let roles: OrgRole[] = [];
 
   try {
     roles = await fetchOrgRoles();
-  } catch {
+  } catch (error) {
     // Non-fatal: show empty state on API failure
+    console.error("Failed to fetch org roles:", error);
   }
 
   const systemRoles = roles.filter((r) => r.isSystem);
@@ -127,7 +128,8 @@ export default async function RolesSettingsPage({
               Create roles with specific capabilities for your team.
             </p>
           </div>
-          <Button size="sm">
+          {/* Wired to create dialog in 319B */}
+          <Button size="sm" disabled>
             <Plus className="mr-1.5 size-4" />
             New Role
           </Button>

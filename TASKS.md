@@ -376,7 +376,7 @@
 | 331 | Error Recovery & Feedback | Frontend | 327 | M | 331A, 331B | **Done** (PR #633, #634) |
 | **Phase 44 — Navigation Zones, Command Palette & Settings Modernization** | | | | | | See [tasks/phase44-navigation-zones-command-palette-settings.md](tasks/phase44-navigation-zones-command-palette-settings.md) |
 | 332 | Nav-Items Data Model Restructure | Frontend | -- | S | 332A | **Done** (PR #653) |
-| 333 | Desktop Sidebar Zone Rendering | Frontend | 332 | M | 333A, 333B | |
+| 333 | Desktop Sidebar Zone Rendering | Frontend | 332 | M | 333A, 333B | 333A **Done** (PR #654) |
 | 334 | Mobile Sidebar Zone Rendering | Frontend | 332, 333 | S | 334A | |
 | 335 | Command Palette (⌘K) | Frontend | 332 | M | 335A, 335B | |
 | 336 | Settings Layout Shell & Sidebar | Frontend | -- | M | 336A, 336B | |

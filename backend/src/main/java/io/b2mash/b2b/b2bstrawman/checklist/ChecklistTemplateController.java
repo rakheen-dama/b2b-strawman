@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.checklist;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateDtos.ChecklistTemplateResponse;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateDtos.CreateChecklistTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateDtos.UpdateChecklistTemplateRequest;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
@@ -44,7 +45,7 @@ public class ChecklistTemplateController {
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<ChecklistTemplateResponse> createTemplate(
       @Valid @RequestBody CreateChecklistTemplateRequest request) {
     var response = checklistTemplateService.create(request);
@@ -53,21 +54,21 @@ public class ChecklistTemplateController {
   }
 
   @PutMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<ChecklistTemplateResponse> updateTemplate(
       @PathVariable UUID id, @Valid @RequestBody UpdateChecklistTemplateRequest request) {
     return ResponseEntity.ok(checklistTemplateService.update(id, request));
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<Void> deactivateTemplate(@PathVariable UUID id) {
     checklistTemplateService.deactivate(id);
     return ResponseEntity.noContent().build();
   }
 
   @PostMapping("/{id}/clone")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<ChecklistTemplateResponse> cloneTemplate(@PathVariable UUID id) {
     var response = checklistTemplateService.cloneTemplate(id);
     return ResponseEntity.created(URI.create("/api/checklist-templates/" + response.id()))

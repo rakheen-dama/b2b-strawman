@@ -10,12 +10,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.SchemaNameGenerator;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -43,6 +49,10 @@ class InformationRequestControllerTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
+  @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
+  @Autowired private OrgRoleService orgRoleService;
+  @Autowired private OrgRoleRepository orgRoleRepository;
+  @Autowired private MemberRepository memberRepository;
   @Autowired private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
   private String memberIdOwner;
@@ -51,6 +61,10 @@ class InformationRequestControllerTest {
   private String customerId;
   private String portalContactId;
   private String templateId;
+  private String tenantSchema;
+  private UUID memberIdOwnerUuid;
+  private UUID customRoleMemberId;
+  private UUID noCapMemberId;
 
   @BeforeAll
   void provisionTenantAndSeedData() throws Exception {
@@ -58,6 +72,7 @@ class InformationRequestControllerTest {
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberIdOwner =
         syncMember("user_inforeq_owner", "inforeq_owner@test.com", "InfoReq Owner", "owner");
+    memberIdOwnerUuid = UUID.fromString(memberIdOwner);
     memberIdAdmin =
         syncMember("user_inforeq_admin", "inforeq_admin@test.com", "InfoReq Admin", "admin");
     memberIdMember =
@@ -65,6 +80,49 @@ class InformationRequestControllerTest {
     customerId = createCustomer(ownerJwt());
     portalContactId = createPortalContact(customerId, "contact@test.com", "Test Contact");
     templateId = createRequestTemplate();
+
+    tenantSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+
+    customRoleMemberId =
+        UUID.fromString(
+            syncMember(
+                "user_inforeq_315a_custom",
+                "inforeq_custom@test.com",
+                "InfoReq Custom User",
+                "member"));
+    noCapMemberId =
+        UUID.fromString(
+            syncMember(
+                "user_inforeq_315a_nocap",
+                "inforeq_nocap@test.com",
+                "InfoReq NoCap User",
+                "member"));
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberIdOwnerUuid)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              var withCapRole =
+                  orgRoleService.createRole(
+                      new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                          "InfoReq Manager",
+                          "Can manage information requests",
+                          Set.of("CUSTOMER_MANAGEMENT")));
+              var customMember = memberRepository.findById(customRoleMemberId).orElseThrow();
+              customMember.setOrgRoleId(withCapRole.id());
+              memberRepository.save(customMember);
+
+              var withoutCapRole =
+                  orgRoleService.createRole(
+                      new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                          "Team Lead IR", "Can manage teams", Set.of("TEAM_OVERSIGHT")));
+              var noCapMember = memberRepository.findById(noCapMemberId).orElseThrow();
+              noCapMember.setOrgRoleId(withoutCapRole.id());
+              memberRepository.save(noCapMember);
+            });
   }
 
   // ========== Create Tests ==========
@@ -794,6 +852,38 @@ class InformationRequestControllerTest {
     return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 
+  // --- Capability Tests (added in Epic 315A) ---
+
+  @Test
+  void customRoleWithCapability_accessesInfoReqEndpoint_returns201() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/information-requests")
+                .with(customRoleJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"requestTemplateId": "%s", "customerId": "%s", "portalContactId": "%s"}
+                    """
+                        .formatted(templateId, customerId, portalContactId)))
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  void customRoleWithoutCapability_accessesInfoReqEndpoint_returns403() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/information-requests")
+                .with(noCapabilityJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"requestTemplateId": "%s", "customerId": "%s", "portalContactId": "%s"}
+                    """
+                        .formatted(templateId, customerId, portalContactId)))
+        .andExpect(status().isForbidden());
+  }
+
   private JwtRequestPostProcessor ownerJwt() {
     return jwt()
         .jwt(j -> j.subject("user_inforeq_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")))
@@ -810,6 +900,24 @@ class InformationRequestControllerTest {
     return jwt()
         .jwt(
             j -> j.subject("user_inforeq_member").claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+
+  private JwtRequestPostProcessor customRoleJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_inforeq_315a_custom")
+                    .claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+
+  private JwtRequestPostProcessor noCapabilityJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_inforeq_315a_nocap")
+                    .claim("o", Map.of("id", ORG_ID, "rol", "member")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
   }
 }

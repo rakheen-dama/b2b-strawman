@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.acceptance;
 
 import io.b2mash.b2b.b2bstrawman.acceptance.dto.AcceptanceRequestResponse;
 import io.b2mash.b2b.b2bstrawman.acceptance.dto.CreateAcceptanceRequest;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
@@ -30,7 +31,7 @@ public class AcceptanceController {
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<AcceptanceRequestResponse> create(
       @Valid @RequestBody CreateAcceptanceRequest request) {
     var response =
@@ -55,13 +56,13 @@ public class AcceptanceController {
   }
 
   @PostMapping("/{id}/remind")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<AcceptanceRequestResponse> remind(@PathVariable UUID id) {
     return ResponseEntity.ok(acceptanceService.remindResponse(id));
   }
 
   @PostMapping("/{id}/revoke")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<AcceptanceRequestResponse> revoke(@PathVariable UUID id) {
     return ResponseEntity.ok(acceptanceService.revokeResponse(id));
   }

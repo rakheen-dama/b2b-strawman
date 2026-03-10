@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -20,7 +21,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -57,7 +57,7 @@ public class DataRequestController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<List<DataRequestResponse>> listRequests(
       @RequestParam(required = false) String status) {
     var requests =
@@ -79,7 +79,7 @@ public class DataRequestController {
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<DataRequestResponse> getRequest(@PathVariable UUID id) {
     var request = dataSubjectRequestService.getById(id);
     var memberNames = resolveMemberNames(List.of(request));
@@ -90,7 +90,7 @@ public class DataRequestController {
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<DataRequestResponse> createRequest(
       @Valid @RequestBody CreateDataRequestBody body) {
     var actorId = RequestScopes.requireMemberId();
@@ -107,7 +107,7 @@ public class DataRequestController {
   }
 
   @PutMapping("/{id}/status")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<DataRequestResponse> updateStatus(
       @PathVariable UUID id, @Valid @RequestBody StatusTransitionBody body) {
     var actorId = RequestScopes.requireMemberId();
@@ -128,7 +128,7 @@ public class DataRequestController {
   }
 
   @PostMapping("/{id}/export")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<ExportResponse> generateExport(@PathVariable UUID id) {
     var actorId = RequestScopes.requireMemberId();
     var s3Key = dataExportService.generateExport(id, actorId);
@@ -136,7 +136,7 @@ public class DataRequestController {
   }
 
   @GetMapping("/{id}/export/download")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<DownloadResponse> downloadExport(@PathVariable UUID id) {
     var request = dataSubjectRequestService.getById(id);
     if (request.getExportFileKey() == null) {
@@ -148,7 +148,7 @@ public class DataRequestController {
   }
 
   @PostMapping("/{id}/execute-deletion")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<Map<String, Object>> executeDeletion(
       @PathVariable UUID id, @Valid @RequestBody ExecuteDeletionBody body) {
     var actorId = RequestScopes.requireMemberId();
@@ -168,7 +168,7 @@ public class DataRequestController {
   }
 
   @PostMapping("/check-deadlines")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<Map<String, Object>> checkDeadlines() {
     int flagged = dataSubjectRequestService.checkDeadlines();
     return ResponseEntity.ok(Map.of("flagged", flagged));

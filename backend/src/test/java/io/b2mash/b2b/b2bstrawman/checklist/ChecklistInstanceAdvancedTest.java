@@ -14,13 +14,17 @@ import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerType;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.member.MemberSyncService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import org.junit.jupiter.api.AfterEach;
@@ -62,10 +66,15 @@ class ChecklistInstanceAdvancedTest {
   @Autowired private PlanSyncService planSyncService;
   @Autowired private MemberSyncService memberSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
+  @Autowired private OrgRoleService orgRoleService;
+  @Autowired private OrgRoleRepository orgRoleRepository;
+  @Autowired private MemberRepository memberRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
   private String tenantSchema;
   private UUID memberId;
+  private UUID customRoleMemberId;
+  private UUID noCapMemberId;
   private int emailCounter = 0;
 
   @BeforeAll
@@ -79,6 +88,46 @@ class ChecklistInstanceAdvancedTest {
         memberSyncService.syncMember(
             ORG_ID, "user_adv_owner", "adv_owner@test.com", "Adv Owner", null, "owner");
     memberId = syncResult.memberId();
+
+    var customSync =
+        memberSyncService.syncMember(
+            ORG_ID,
+            "user_adv_315a_custom",
+            "adv_custom@test.com",
+            "Adv Custom User",
+            null,
+            "member");
+    customRoleMemberId = customSync.memberId();
+
+    var noCapSync =
+        memberSyncService.syncMember(
+            ORG_ID, "user_adv_315a_nocap", "adv_nocap@test.com", "Adv NoCap User", null, "member");
+    noCapMemberId = noCapSync.memberId();
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              var withCapRole =
+                  orgRoleService.createRole(
+                      new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                          "Checklist Instance Manager",
+                          "Can manage checklist instances",
+                          Set.of("CUSTOMER_MANAGEMENT")));
+              var customMember = memberRepository.findById(customRoleMemberId).orElseThrow();
+              customMember.setOrgRoleId(withCapRole.id());
+              memberRepository.save(customMember);
+
+              var withoutCapRole =
+                  orgRoleService.createRole(
+                      new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                          "Team Lead CI", "Can manage teams", Set.of("TEAM_OVERSIGHT")));
+              var noCapMember = memberRepository.findById(noCapMemberId).orElseThrow();
+              noCapMember.setOrgRoleId(withoutCapRole.id());
+              memberRepository.save(noCapMember);
+            });
   }
 
   @AfterEach
@@ -618,6 +667,46 @@ class ChecklistInstanceAdvancedTest {
     return UUID.randomUUID().toString().substring(0, 8);
   }
 
+  // --- Capability Tests (added in Epic 315A) ---
+
+  @Test
+  void customRoleWithCapability_accessesChecklistInstanceEndpoint_returns201() throws Exception {
+    var ids =
+        runInTenant(
+            () -> {
+              var templateId = createSimpleTemplate(1, false);
+              var customerId = createCustomer();
+              return new UUID[] {templateId, customerId};
+            });
+
+    mockMvc
+        .perform(
+            post("/api/customers/" + ids[1] + "/checklists")
+                .with(customRoleJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"templateId\": \"%s\"}".formatted(ids[0])))
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  void customRoleWithoutCapability_accessesChecklistInstanceEndpoint_returns403() throws Exception {
+    var ids =
+        runInTenant(
+            () -> {
+              var templateId = createSimpleTemplate(1, false);
+              var customerId = createCustomer();
+              return new UUID[] {templateId, customerId};
+            });
+
+    mockMvc
+        .perform(
+            post("/api/customers/" + ids[1] + "/checklists")
+                .with(noCapabilityJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"templateId\": \"%s\"}".formatted(ids[0])))
+        .andExpect(status().isForbidden());
+  }
+
   private JwtRequestPostProcessor ownerJwt() {
     return jwt()
         .jwt(j -> j.subject("user_adv_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")))
@@ -627,6 +716,21 @@ class ChecklistInstanceAdvancedTest {
   private JwtRequestPostProcessor memberJwt() {
     return jwt()
         .jwt(j -> j.subject("user_adv_member").claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+
+  private JwtRequestPostProcessor customRoleJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_adv_315a_custom").claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+
+  private JwtRequestPostProcessor noCapabilityJwt() {
+    return jwt()
+        .jwt(
+            j -> j.subject("user_adv_315a_nocap").claim("o", Map.of("id", ORG_ID, "rol", "member")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
   }
 

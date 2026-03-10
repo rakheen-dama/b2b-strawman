@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledTimeResponse;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.setupstatus.AggregatedCompletenessResponse;
 import io.b2mash.b2b.b2bstrawman.setupstatus.CompletenessScore;
@@ -157,7 +158,7 @@ public class CustomerController {
   }
 
   @GetMapping("/lifecycle-summary")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<Map<String, Long>> getLifecycleSummary() {
     return ResponseEntity.ok(customerService.getLifecycleSummary());
   }
@@ -170,7 +171,7 @@ public class CustomerController {
   }
 
   @GetMapping("/completeness-summary/aggregated")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<AggregatedCompletenessResponse> getAggregatedCompletenessSummary() {
     return ResponseEntity.ok(customerReadinessService.getAggregatedSummary(10));
   }
@@ -185,7 +186,7 @@ public class CustomerController {
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<CustomerResponse> createCustomer(
       @Valid @RequestBody CreateCustomerRequest request) {
     UUID createdBy = RequestScopes.requireMemberId();
@@ -206,7 +207,7 @@ public class CustomerController {
   }
 
   @PutMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<CustomerResponse> updateCustomer(
       @PathVariable UUID id, @Valid @RequestBody UpdateCustomerRequest request) {
     var customer =
@@ -225,7 +226,7 @@ public class CustomerController {
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<CustomerResponse> archiveCustomer(@PathVariable UUID id) {
     var customer = customerService.archiveCustomer(id);
     var tags = entityTagService.getEntityTags("CUSTOMER", id);
@@ -234,7 +235,7 @@ public class CustomerController {
   }
 
   @PostMapping("/{id}/unarchive")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<CustomerResponse> unarchiveCustomer(@PathVariable UUID id) {
     var customer = customerService.unarchiveCustomer(id);
     var tags = entityTagService.getEntityTags("CUSTOMER", id);
@@ -278,7 +279,7 @@ public class CustomerController {
   }
 
   @GetMapping("/{id}/unbilled-summary")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<UnbilledTimeSummary> getUnbilledSummary(@PathVariable UUID id) {
     return ResponseEntity.ok(unbilledTimeSummaryService.getCustomerUnbilledSummary(id));
   }
@@ -290,7 +291,7 @@ public class CustomerController {
   }
 
   @GetMapping("/{id}/unbilled-time")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<UnbilledTimeResponse> getUnbilledTime(
       @PathVariable UUID id,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,

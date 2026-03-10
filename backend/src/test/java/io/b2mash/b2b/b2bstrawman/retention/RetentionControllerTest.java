@@ -10,10 +10,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -41,16 +47,68 @@ class RetentionControllerTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
+  @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
+  @Autowired private OrgRoleService orgRoleService;
+  @Autowired private OrgRoleRepository orgRoleRepository;
+  @Autowired private MemberRepository memberRepository;
 
   private String customerId;
+  private String tenantSchema;
+  private UUID memberIdOwner;
+  private UUID customRoleMemberId;
+  private UUID noCapMemberId;
 
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Retention Controller Test Org");
     planSyncService.syncPlan(ORG_ID, "pro-plan");
-    syncMember(ORG_ID, "user_retctrl_owner", "retctrl_owner@test.com", "RetCtrl Owner", "owner");
+    memberIdOwner =
+        UUID.fromString(
+            syncMember(
+                ORG_ID, "user_retctrl_owner", "retctrl_owner@test.com", "RetCtrl Owner", "owner"));
     syncMember(
         ORG_ID, "user_retctrl_member", "retctrl_member@test.com", "RetCtrl Member", "member");
+
+    tenantSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+
+    customRoleMemberId =
+        UUID.fromString(
+            syncMember(
+                ORG_ID,
+                "user_ret_315a_custom",
+                "ret_custom@test.com",
+                "Ret Custom User",
+                "member"));
+    noCapMemberId =
+        UUID.fromString(
+            syncMember(
+                ORG_ID, "user_ret_315a_nocap", "ret_nocap@test.com", "Ret NoCap User", "member"));
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberIdOwner)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              var withCapRole =
+                  orgRoleService.createRole(
+                      new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                          "Retention Manager",
+                          "Can manage retention",
+                          Set.of("CUSTOMER_MANAGEMENT")));
+              var customMember = memberRepository.findById(customRoleMemberId).orElseThrow();
+              customMember.setOrgRoleId(withCapRole.id());
+              memberRepository.save(customMember);
+
+              var withoutCapRole =
+                  orgRoleService.createRole(
+                      new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                          "Team Lead Ret", "Can manage teams", Set.of("TEAM_OVERSIGHT")));
+              var noCapMember = memberRepository.findById(noCapMemberId).orElseThrow();
+              noCapMember.setOrgRoleId(withoutCapRole.id());
+              memberRepository.save(noCapMember);
+            });
 
     // Create a customer for purge tests
     var result =
@@ -284,6 +342,22 @@ class RetentionControllerTest {
         .andExpect(status().isForbidden());
   }
 
+  // --- Capability Tests (added in Epic 315A) ---
+
+  @Test
+  void customRoleWithCapability_accessesRetentionEndpoint_returns200() throws Exception {
+    mockMvc
+        .perform(get("/api/retention-policies").with(customRoleJwt()))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void customRoleWithoutCapability_accessesRetentionEndpoint_returns403() throws Exception {
+    mockMvc
+        .perform(get("/api/retention-policies").with(noCapabilityJwt()))
+        .andExpect(status().isForbidden());
+  }
+
   private JwtRequestPostProcessor ownerJwt() {
     return jwt()
         .jwt(j -> j.subject("user_retctrl_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")))
@@ -294,6 +368,21 @@ class RetentionControllerTest {
     return jwt()
         .jwt(
             j -> j.subject("user_retctrl_member").claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+
+  private JwtRequestPostProcessor customRoleJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_ret_315a_custom").claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+
+  private JwtRequestPostProcessor noCapabilityJwt() {
+    return jwt()
+        .jwt(
+            j -> j.subject("user_ret_315a_nocap").claim("o", Map.of("id", ORG_ID, "rol", "member")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
   }
 

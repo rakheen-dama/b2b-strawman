@@ -10,11 +10,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -48,11 +53,16 @@ class AcceptanceControllerIntegrationTest {
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
+  @Autowired private OrgRoleService orgRoleService;
+  @Autowired private OrgRoleRepository orgRoleRepository;
+  @Autowired private MemberRepository memberRepository;
   @Autowired private JdbcTemplate jdbcTemplate;
   @Autowired private StorageService storageService;
 
   private String schema;
   private String ownerMemberId;
+  private UUID customRoleMemberId;
+  private UUID noCapMemberId;
   private final UUID customerId = UUID.randomUUID();
   private final UUID portalContactId = UUID.randomUUID();
   private final UUID templateId = UUID.randomUUID();
@@ -71,6 +81,45 @@ class AcceptanceControllerIntegrationTest {
     syncMember(ORG_ID, "user_acc_ctrl_member", "acc_ctrl_member@test.com", "Acc Member", "member");
 
     schema = orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+
+    customRoleMemberId =
+        UUID.fromString(
+            syncMember(
+                ORG_ID,
+                "user_acc_315a_custom",
+                "acc_custom@test.com",
+                "Acc Custom User",
+                "member"));
+    noCapMemberId =
+        UUID.fromString(
+            syncMember(
+                ORG_ID, "user_acc_315a_nocap", "acc_nocap@test.com", "Acc NoCap User", "member"));
+
+    UUID ownerUuid = UUID.fromString(ownerMemberId);
+    ScopedValue.where(RequestScopes.TENANT_ID, schema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, ownerUuid)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              var withCapRole =
+                  orgRoleService.createRole(
+                      new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                          "Acceptance Manager",
+                          "Can manage acceptance requests",
+                          Set.of("CUSTOMER_MANAGEMENT")));
+              var customMember = memberRepository.findById(customRoleMemberId).orElseThrow();
+              customMember.setOrgRoleId(withCapRole.id());
+              memberRepository.save(customMember);
+
+              var withoutCapRole =
+                  orgRoleService.createRole(
+                      new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                          "Team Lead Acc", "Can manage teams", Set.of("TEAM_OVERSIGHT")));
+              var noCapMember = memberRepository.findById(noCapMemberId).orElseThrow();
+              noCapMember.setOrgRoleId(withoutCapRole.id());
+              memberRepository.save(noCapMember);
+            });
 
     // Seed customer
     jdbcTemplate.update(
@@ -333,6 +382,40 @@ class AcceptanceControllerIntegrationTest {
         .andExpect(status().isNotFound());
   }
 
+  // --- Capability Tests (added in Epic 315A) ---
+
+  @Test
+  @Order(50)
+  void customRoleWithCapability_accessesAcceptanceEndpoint_returns201() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/acceptance-requests")
+                .with(customRoleJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"generatedDocumentId":"%s","portalContactId":"%s","expiryDays":14}
+                    """
+                        .formatted(generatedDocumentId, portalContactId)))
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  @Order(51)
+  void customRoleWithoutCapability_accessesAcceptanceEndpoint_returns403() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/acceptance-requests")
+                .with(noCapabilityJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"generatedDocumentId":"%s","portalContactId":"%s"}
+                    """
+                        .formatted(generatedDocumentId, portalContactId)))
+        .andExpect(status().isForbidden());
+  }
+
   // --- Helper: sync member ---
   private String syncMember(
       String orgId, String clerkUserId, String email, String name, String orgRole)
@@ -371,6 +454,21 @@ class AcceptanceControllerIntegrationTest {
         .jwt(
             j ->
                 j.subject("user_acc_ctrl_member").claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+
+  private JwtRequestPostProcessor customRoleJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_acc_315a_custom").claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+
+  private JwtRequestPostProcessor noCapabilityJwt() {
+    return jwt()
+        .jwt(
+            j -> j.subject("user_acc_315a_nocap").claim("o", Map.of("id", ORG_ID, "rol", "member")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
   }
 }

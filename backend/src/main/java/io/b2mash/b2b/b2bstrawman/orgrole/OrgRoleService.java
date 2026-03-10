@@ -1,10 +1,14 @@
 package io.b2mash.b2b.b2bstrawman.orgrole;
 
+import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest;
+import io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.MemberCapabilitiesResponse;
+import io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.MyCapabilitiesResponse;
 import io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.OrgRoleResponse;
 import io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.UpdateOrgRoleRequest;
 import java.util.Collections;
@@ -64,6 +68,66 @@ public class OrgRoleService {
     }
 
     return effective;
+  }
+
+  @Transactional(readOnly = true)
+  public MyCapabilitiesResponse getMyCapabilities(UUID memberId) {
+    var member =
+        memberRepository
+            .findById(memberId)
+            .orElseThrow(() -> new ResourceNotFoundException("Member", memberId));
+
+    String roleName = null;
+    if (member.getOrgRoleId() != null) {
+      roleName =
+          orgRoleRepository.findById(member.getOrgRoleId()).map(OrgRole::getName).orElse(null);
+    }
+
+    Set<String> capabilities = RequestScopes.getCapabilities();
+    String orgRole = RequestScopes.getOrgRole();
+    boolean isAdmin = "admin".equals(orgRole);
+    boolean isOwner = "owner".equals(orgRole);
+
+    return new MyCapabilitiesResponse(capabilities, roleName, isAdmin, isOwner);
+  }
+
+  @Transactional(readOnly = true)
+  public MemberCapabilitiesResponse getMemberCapabilities(UUID memberId) {
+    UUID callerId = RequestScopes.requireMemberId();
+    String callerRole = RequestScopes.getOrgRole();
+    boolean isSelf = callerId.equals(memberId);
+    boolean isAdminOrOwner = "admin".equals(callerRole) || "owner".equals(callerRole);
+    if (!isSelf && !isAdminOrOwner) {
+      throw new ForbiddenException(
+          "Capability access denied",
+          "You can only view your own capabilities or must be an admin/owner");
+    }
+
+    var member =
+        memberRepository
+            .findById(memberId)
+            .orElseThrow(() -> new ResourceNotFoundException("Member", memberId));
+
+    String roleName = null;
+    Set<String> roleCapabilities = Collections.emptySet();
+
+    if (member.getOrgRoleId() != null) {
+      var role = orgRoleRepository.findById(member.getOrgRoleId()).orElse(null);
+      if (role != null) {
+        roleName = role.getName();
+        roleCapabilities =
+            role.getCapabilities().stream().map(Capability::name).collect(Collectors.toSet());
+      }
+    }
+
+    Set<String> effectiveCapabilities = resolveCapabilities(memberId);
+
+    return new MemberCapabilitiesResponse(
+        memberId,
+        roleName,
+        roleCapabilities,
+        member.getCapabilityOverrides(),
+        effectiveCapabilities);
   }
 
   @Transactional(readOnly = true)

@@ -1,8 +1,9 @@
 "use client";
 
+import { Fragment } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Shield } from "lucide-react";
+import { Shield, Search } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { NAV_GROUPS, UTILITY_ITEMS } from "@/lib/nav-items";
@@ -12,9 +13,10 @@ import { SidebarUserFooter } from "@/components/sidebar-user-footer";
 interface DesktopSidebarProps {
   slug: string;
   groups?: string[];
+  onOpenCommandPalette?: () => void;
 }
 
-export function DesktopSidebar({ slug, groups = [] }: DesktopSidebarProps) {
+export function DesktopSidebar({ slug, groups = [], onOpenCommandPalette }: DesktopSidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -29,10 +31,27 @@ export function DesktopSidebar({ slug, groups = [] }: DesktopSidebarProps) {
       </div>
       <div className="mx-4 border-t border-white/10" />
 
+      {/* Search pill — ⌘K trigger */}
+      <button
+        type="button"
+        aria-label="Search, Command K"
+        onClick={() => onOpenCommandPalette?.()}
+        className="mx-4 mb-2 flex w-[calc(100%-2rem)] items-center gap-2 rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/40 hover:bg-white/10 hover:text-white/60 transition-colors"
+      >
+        <Search className="h-3.5 w-3.5" />
+        Search...
+        <kbd className="ml-auto rounded bg-white/10 px-1 py-0.5 text-[10px] font-mono">⌘K</kbd>
+      </button>
+
       {/* Nav body — zone-based */}
-      <nav aria-label="Main navigation" className="flex flex-1 flex-col gap-1 p-2">
-        {NAV_GROUPS.map((group) => (
-          <NavZone key={group.id} zone={group} slug={slug} />
+      <nav aria-label="Main navigation" className="flex flex-1 flex-col gap-0 p-2">
+        {NAV_GROUPS.map((group, index) => (
+          <Fragment key={group.id}>
+            {index > 0 && (
+              <div className="my-1 mx-2 border-t border-white/5" />
+            )}
+            <NavZone zone={group} slug={slug} />
+          </Fragment>
         ))}
       </nav>
 

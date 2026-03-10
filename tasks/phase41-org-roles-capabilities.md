@@ -24,7 +24,7 @@ Phase 41 replaces the coarse three-role authorization model (Owner/Admin/Member)
 | 316 | OrgRole CRUD API & Member Role Assignment | Backend | 312 | M | 316A, 316B | **Done** (PRs #644, #645) |
 | 317 | Audit Events & Notifications | Backend | 316 | S | 317A | **Done** (PR #646) |
 | 318 | Frontend Capability Context & Sidebar Gating | Frontend | 313 | M | 318A, 318B | **Done** (PRs #647, #648) |
-| 319 | Settings: Roles & Permissions Page | Frontend | 316, 318 | M | 319A, 319B | |
+| 319 | Settings: Roles & Permissions Page | Frontend | 316, 318 | M | 319A, 319B | **Done** (PRs #649, #650) |
 | 320 | Team Page: Member Role Management & Invite Extension | Frontend | 316, 318 | M | 320A, 320B | |
 
 ---
@@ -169,7 +169,7 @@ FRONTEND TRACK (after E313 backend APIs ready)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 5a (parallel) | 319 | 319A | Settings > Roles & Permissions page, `lib/api/org-roles.ts` API client, system roles section (read-only), custom role cards with capability pills + member count, capability reference section, settings hub card. ~6 new/modified files (~5 tests). Frontend only. | **Done** (PR #649) |
-| 5b | 319 | 319B | Create/Edit role dialog with name, description, and 7 capability checkboxes. Delete role confirmation dialog. Server actions for CRUD. ~4 new files (~5 tests). Frontend only. | |
+| 5b | 319 | 319B | Create/Edit role dialog with name, description, and 7 capability checkboxes. Delete role confirmation dialog. Server actions for CRUD. ~4 new files (~5 tests). Frontend only. | **Done** (PR #650) |
 | 5c (parallel with 5a) | 320 | 320A | Team page: role name badge column, override indicator, member detail panel with role dropdown and capability toggle overrides. Server actions for role assignment. ~5 modified/new files (~5 tests). Frontend only. | |
 | 5d | 320 | 320B | Invite form: role dropdown showing system + custom roles, capability summary preview, "Customize for this user" overrides section. ~3 modified files (~4 tests). Frontend only. | |
 
@@ -652,7 +652,7 @@ Stage 5: [319A] -> [319B] // [320A] -> [320B]                         (two paral
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **319A** | 319.1--319.6 | `lib/api/org-roles.ts` API client, Settings > Roles & Permissions page with system roles section (read-only cards), custom role cards (name, capability pills, member count, edit/delete actions), capability reference collapsible section, settings hub card link. ~6 new/modified files (~5 tests). Frontend only. | **Done** (PR #649) |
-| **319B** | 319.7--319.12 | Create/Edit role dialog with name, description, and 7 capability checkboxes with descriptions. Delete role confirmation dialog with member reassignment warning. Server actions for create, update, delete. ~4 new files (~5 tests). Frontend only. | |
+| **319B** | 319.7--319.12 | Create/Edit role dialog with name, description, and 7 capability checkboxes with descriptions. Delete role confirmation dialog with member reassignment warning. Server actions for create, update, delete. ~4 new files (~5 tests). Frontend only. | **Done** (PR #650) |
 
 ### Tasks
 

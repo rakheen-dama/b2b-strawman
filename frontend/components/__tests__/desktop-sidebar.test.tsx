@@ -102,4 +102,13 @@ describe("DesktopSidebar", () => {
     expect(screen.getByText("Search...")).toBeInTheDocument();
     expect(screen.getByText("⌘K")).toBeInTheDocument();
   });
+
+  it("calls onOpenCommandPalette when search pill is clicked", async () => {
+    const user = userEvent.setup();
+    const handler = vi.fn();
+    mockUsePathname.mockReturnValue("/org/test-org/other");
+    renderSidebar({ onOpenCommandPalette: handler });
+    await user.click(screen.getByText("Search..."));
+    expect(handler).toHaveBeenCalledOnce();
+  });
 });

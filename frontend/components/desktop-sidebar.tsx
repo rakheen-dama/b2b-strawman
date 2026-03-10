@@ -34,6 +34,7 @@ export function DesktopSidebar({ slug, groups = [], onOpenCommandPalette }: Desk
       {/* Search pill — ⌘K trigger */}
       <button
         type="button"
+        aria-label="Search, Command K"
         onClick={() => onOpenCommandPalette?.()}
         className="mx-4 mb-2 flex w-[calc(100%-2rem)] items-center gap-2 rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/40 hover:bg-white/10 hover:text-white/60 transition-colors"
       >

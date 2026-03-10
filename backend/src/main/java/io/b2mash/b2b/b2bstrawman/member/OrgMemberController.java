@@ -31,7 +31,7 @@ public class OrgMemberController {
   }
 
   @GetMapping("/{id}/capabilities")
-  @PreAuthorize("isAuthenticated()")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<MemberCapabilitiesResponse> getMemberCapabilities(@PathVariable UUID id) {
     return ResponseEntity.ok(orgRoleService.getMemberCapabilities(id));
   }

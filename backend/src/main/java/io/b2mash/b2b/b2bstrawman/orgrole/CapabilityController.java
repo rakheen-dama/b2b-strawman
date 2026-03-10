@@ -19,7 +19,7 @@ public class CapabilityController {
   }
 
   @GetMapping("/capabilities")
-  @PreAuthorize("isAuthenticated()")
+  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<MyCapabilitiesResponse> getMyCapabilities() {
     return ResponseEntity.ok(orgRoleService.getMyCapabilities(RequestScopes.requireMemberId()));
   }

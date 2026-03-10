@@ -18,7 +18,7 @@ A **frontend-only** UX structural overhaul addressing accumulated navigation deb
 |------|------|-------|------|--------|--------|--------|
 | 332 | Nav-Items Data Model Restructure | Frontend | -- | S | 332A | **Done** (PR #653) |
 | 333 | Desktop Sidebar Zone Rendering | Frontend | 332 | M | 333A, 333B | **Done** (PRs #654, #655) |
-| 334 | Mobile Sidebar Zone Rendering | Frontend | 332, 333 | S | 334A | |
+| 334 | Mobile Sidebar Zone Rendering | Frontend | 332, 333 | S | 334A | **Done** (PR #656) |
 | 335 | Command Palette (⌘K) | Frontend | 332 | M | 335A, 335B | |
 | 336 | Settings Layout Shell & Sidebar | Frontend | -- | M | 336A, 336B | |
 | 337 | Settings Hub Redirect & Breadcrumb Update | Frontend | 336 | S | 337A | |
@@ -98,7 +98,7 @@ SIDEBAR TRACK                CMD PALETTE TRACK           SETTINGS TRACK (indepen
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 2a (parallel) | 333 | 333B | Search trigger `⌘K` pill added to `DesktopSidebar` header area (below org slug). Utility footer items (Notifications with unread badge passthrough, Settings) pinned below zone list with `border-t`. Empty zone hidden via `!items.length` guard. Integration tests confirming zone collapse, capability filter, utility footer render. ~2 modified files (~4 tests). Frontend only. | **Done** (PR #655) |
-| 2b (parallel) | 334 | 334A | `MobileSidebar` refactored to render `NAV_GROUPS` via the same `NavZone` component from Epic 333A. Sheet close-on-nav preserved via `onClose` prop threading. Utility footer items rendered. Mobile-specific light-background zone header styling. ~1 modified file (~4 tests). Frontend only. | |
+| 2b (parallel) | 334 | 334A | `MobileSidebar` refactored to render `NAV_GROUPS` via the same `NavZone` component from Epic 333A. Sheet close-on-nav preserved via `onClose` prop threading. Utility footer items rendered. Mobile-specific light-background zone header styling. ~1 modified file (~4 tests). Frontend only. | **Done** (PR #656) |
 | 2c (parallel) | 335 | 335B | `RecentItemsContext` provider added to org layout — observes `pathname` changes to build a `RecentItem[]` list (max 5, project/customer pages only, extracts label from `<title>` or a pre-populated lookup). `CommandPaletteDialog` gains a "Recent" group rendered when cache is non-empty. Integration test: palette shows recent item after navigation. ~3 new/modified files (~4 tests). Frontend only. | |
 | 2d (parallel) | 336 | 336B | `SettingsSidebar` visual polish: active item teal left-border (`border-l-2 border-teal-600`), group header uppercase muted labels, "Coming soon" `Badge` on Organization/Security items (non-clickable), admin-only item hiding via `orgRole` prop, mobile horizontal scrollable tab row alternative. Settings page content area padding/max-width alignment. ~2 modified files (~5 tests). Frontend only. | |
 
@@ -255,7 +255,7 @@ Stage 3: [337A]                                                    (single, inte
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **334A** | 334.1–334.5 | `MobileSidebar` refactored to render `NAV_GROUPS` via `NavZone`. Sheet close-on-nav preserved. Utility footer items rendered. ~1 modified file, 1 test file (~4 tests). Frontend only. | |
+| **334A** | 334.1–334.5 | `MobileSidebar` refactored to render `NAV_GROUPS` via `NavZone`. Sheet close-on-nav preserved. Utility footer items rendered. ~1 modified file, 1 test file (~4 tests). Frontend only. | **Done** (PR #656) |
 
 ### Tasks
 

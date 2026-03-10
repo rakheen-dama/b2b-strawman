@@ -6,6 +6,7 @@ import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { MemberList } from "@/components/team/member-list";
 import { PendingInvitations } from "@/components/team/pending-invitations";
+import type { OrgRole } from "@/lib/api/org-roles";
 
 const tabs = [
   { id: "members", label: "Members" },
@@ -16,9 +17,11 @@ type TabId = (typeof tabs)[number]["id"];
 
 interface TeamTabsProps {
   isAdmin: boolean;
+  roles: OrgRole[];
+  slug: string;
 }
 
-export function TeamTabs({ isAdmin }: TeamTabsProps) {
+export function TeamTabs({ isAdmin, roles, slug }: TeamTabsProps) {
   const [activeTab, setActiveTab] = useState<TabId>("members");
 
   return (
@@ -49,7 +52,7 @@ export function TeamTabs({ isAdmin }: TeamTabsProps) {
       </TabsPrimitive.List>
 
       <TabsPrimitive.Content value="members" className="pt-6 outline-none">
-        <MemberList />
+        <MemberList isAdmin={isAdmin} roles={roles} slug={slug} />
       </TabsPrimitive.Content>
       <TabsPrimitive.Content value="invitations" className="pt-6 outline-none">
         <PendingInvitations isAdmin={isAdmin} />

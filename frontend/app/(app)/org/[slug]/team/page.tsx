@@ -3,6 +3,8 @@ import { InviteMemberForm } from "@/components/team/invite-member-form";
 import { TeamTabs } from "@/components/team/team-tabs";
 import { api } from "@/lib/api";
 import type { BillingResponse } from "@/lib/internal-api";
+import { fetchOrgRoles } from "@/lib/api/org-roles";
+import type { OrgRole } from "@/lib/api/org-roles";
 
 export default async function TeamPage({
   params,
@@ -15,6 +17,15 @@ export default async function TeamPage({
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
 
   const billing = await api.get<BillingResponse>("/api/billing/subscription");
+
+  let roles: OrgRole[] = [];
+  if (isAdmin) {
+    try {
+      roles = await fetchOrgRoles();
+    } catch {
+      // Non-fatal — panel will show empty dropdown
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -40,7 +51,7 @@ export default async function TeamPage({
       )}
 
       {/* Members / Pending Invitations tabs */}
-      <TeamTabs isAdmin={isAdmin} />
+      <TeamTabs isAdmin={isAdmin} roles={roles} slug={slug} />
     </div>
   );
 }

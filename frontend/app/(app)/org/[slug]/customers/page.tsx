@@ -1,6 +1,9 @@
 import { Suspense } from "react";
+import { notFound } from "next/navigation";
 import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, handleApiError, getFieldDefinitions, getViews, getTags } from "@/lib/api";
+import { RequiresCapability } from "@/lib/capabilities";
 import type { Customer, CustomerStatus, CompletenessScore, FieldDefinitionResponse, LifecycleStatus, SavedViewResponse, TagResponse } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { CreateCustomerDialog } from "@/components/customers/create-customer-dialog";
@@ -73,6 +76,11 @@ export default async function CustomersPage({
   const { slug } = await params;
   const resolvedSearchParams = await searchParams;
   const { orgRole } = await getAuthContext();
+  const capData = await fetchMyCapabilities();
+
+  if (!capData.isAdmin && !capData.isOwner && !capData.capabilities.includes("CUSTOMER_MANAGEMENT")) {
+    notFound();
+  }
 
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
 
@@ -188,7 +196,11 @@ export default async function CustomersPage({
             {customers.length}
           </span>
         </div>
-        {isAdmin && <CreateCustomerDialog slug={slug} />}
+        {isAdmin && (
+          <RequiresCapability cap="CUSTOMER_MANAGEMENT">
+            <CreateCustomerDialog slug={slug} />
+          </RequiresCapability>
+        )}
       </div>
 
       {/* Saved View Selector */}

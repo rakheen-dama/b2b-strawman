@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { listRules, listTemplates } from "@/lib/api/automations";
 import { RuleList } from "@/components/automations/rule-list";
 import type {
@@ -14,9 +15,13 @@ export default async function AutomationsSettingsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { orgRole } = await getAuthContext();
+  const capData = await fetchMyCapabilities();
 
-  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+  if (!capData.isAdmin && !capData.isOwner && !capData.capabilities.includes("AUTOMATIONS")) {
+    notFound();
+  }
+
+  const isAdmin = capData.isAdmin || capData.isOwner;
 
   let rules: AutomationRuleResponse[] = [];
   let templates: TemplateDefinitionResponse[] = [];

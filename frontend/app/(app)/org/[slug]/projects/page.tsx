@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { getAuthContext, hasPlan } from "@/lib/auth";
+import { RequiresCapability } from "@/lib/capabilities";
 import { api, handleApiError, getFieldDefinitions, getViews, getTags } from "@/lib/api";
 import { fetchRetainerSummary } from "@/lib/api/retainers";
 import type { RetainerSummaryResponse } from "@/lib/types";
@@ -182,15 +183,17 @@ export default async function ProjectsPage({
             {projects.length} {projects.length === 1 ? "project" : "projects"}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <NewFromTemplateWrapper
-            slug={slug}
-            templates={activeTemplates}
-            orgMembers={orgMembers}
-            customers={allCustomers}
-          />
-          <CreateProjectDialog slug={slug} />
-        </div>
+        <RequiresCapability cap="PROJECT_MANAGEMENT">
+          <div className="flex items-center gap-2">
+            <NewFromTemplateWrapper
+              slug={slug}
+              templates={activeTemplates}
+              orgMembers={orgMembers}
+              customers={allCustomers}
+            />
+            <CreateProjectDialog slug={slug} />
+          </div>
+        </RequiresCapability>
       </div>
 
       {/* Upgrade Prompt (Starter only) */}

@@ -1,3 +1,4 @@
+import React from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -11,6 +12,19 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: vi.fn(),
     refresh: vi.fn(),
+  }),
+}));
+
+// Mock capabilities (RequiresCapability used inside InvoiceDetailClient)
+vi.mock("@/lib/capabilities", () => ({
+  RequiresCapability: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  useCapabilities: () => ({
+    capabilities: new Set(),
+    role: "Admin",
+    isAdmin: true,
+    isOwner: false,
+    isLoading: false,
+    hasCapability: () => true,
   }),
 }));
 

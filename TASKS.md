@@ -357,7 +357,7 @@
 | 314 | @PreAuthorize Migration (Batch 1: Financial, Invoicing, Project) | Backend | 313 | M | 314A, 314B | **Done** (PRs #640, #641) |
 | 315 | @PreAuthorize Migration (Batch 2: Customer, Automation, Resource, Team) | Backend | 313 | M | 315A, 315B | **Done** (PRs #642, #643) |
 | 316 | OrgRole CRUD API & Member Role Assignment | Backend | 312 | M | 316A, 316B | **Done** (PRs #644, #645) |
-| 317 | Audit Events & Notifications | Backend | 316 | S | 317A | |
+| 317 | Audit Events & Notifications | Backend | 316 | S | 317A | **Done** (PR #646) |
 | 318 | Frontend Capability Context & Sidebar Gating | Frontend | 313 | M | 318A, 318B | |
 | 319 | Settings: Roles & Permissions Page | Frontend | 316, 318 | M | 319A, 319B | |
 | 320 | Team Page: Member Role Management & Invite Extension | Frontend | 316, 318 | M | 320A, 320B | |

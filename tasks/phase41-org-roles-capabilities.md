@@ -22,7 +22,7 @@ Phase 41 replaces the coarse three-role authorization model (Owner/Admin/Member)
 | 314 | @PreAuthorize Migration (Batch 1: Financial, Invoicing, Project) | Backend | 313 | M | 314A, 314B | **Done** (PRs #640, #641) |
 | 315 | @PreAuthorize Migration (Batch 2: Customer, Automation, Resource, Team) | Backend | 313 | M | 315A, 315B | **Done** (PRs #642, #643) |
 | 316 | OrgRole CRUD API & Member Role Assignment | Backend | 312 | M | 316A, 316B | **Done** (PRs #644, #645) |
-| 317 | Audit Events & Notifications | Backend | 316 | S | 317A | |
+| 317 | Audit Events & Notifications | Backend | 316 | S | 317A | **Done** (PR #646) |
 | 318 | Frontend Capability Context & Sidebar Gating | Frontend | 313 | M | 318A, 318B | |
 | 319 | Settings: Roles & Permissions Page | Frontend | 316, 318 | M | 319A, 319B | |
 | 320 | Team Page: Member Role Management & Invite Extension | Frontend | 316, 318 | M | 320A, 320B | |
@@ -155,7 +155,7 @@ FRONTEND TRACK (after E313 backend APIs ready)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 3a | 317 | 317A | 4 audit event types (`ROLE_CREATED`, `ROLE_UPDATED`, `ROLE_DELETED`, `MEMBER_ROLE_CHANGED`), `AuditEventBuilder` additions, capability-change notification via `NotificationService`. ~3 modified files (~6 tests). Backend only. | |
+| 3a | 317 | 317A | 4 audit event types (`ROLE_CREATED`, `ROLE_UPDATED`, `ROLE_DELETED`, `MEMBER_ROLE_CHANGED`), `AuditEventBuilder` additions, capability-change notification via `NotificationService`. ~3 modified files (~6 tests). Backend only. | **Done** (PR #646) |
 
 ### Stage 4: Frontend Capability Context
 
@@ -537,7 +537,7 @@ Stage 5: [319A] -> [319B] // [320A] -> [320B]                         (two paral
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **317A** | 317.1--317.6 | 4 audit event types (ROLE_CREATED, ROLE_UPDATED, ROLE_DELETED, MEMBER_ROLE_CHANGED) via `AuditEventBuilder`, in-app notification on capability change via `NotificationService`. ~3 modified files + 1 test file (~6 tests). Backend only. | |
+| **317A** | 317.1--317.6 | 4 audit event types (ROLE_CREATED, ROLE_UPDATED, ROLE_DELETED, MEMBER_ROLE_CHANGED) via `AuditEventBuilder`, in-app notification on capability change via `NotificationService`. ~3 modified files + 1 test file (~6 tests). Backend only. | **Done** (PR #646) |
 
 ### Tasks
 

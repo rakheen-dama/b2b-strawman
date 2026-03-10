@@ -19,6 +19,12 @@ vi.mock("motion/react", () => ({
   ),
 }));
 
+// Mock recent-items-provider — control recentItems in tests
+const mockRecentItems: { href: string; label: string }[] = [];
+vi.mock("@/components/recent-items-provider", () => ({
+  useRecentItems: vi.fn(() => ({ items: mockRecentItems, addItem: vi.fn() })),
+}));
+
 import { CapabilityProvider } from "@/lib/capabilities";
 import { CommandPaletteDialog } from "@/components/command-palette-dialog";
 
@@ -92,5 +98,15 @@ describe("CommandPaletteDialog", () => {
       role: "member",
     });
     expect(screen.queryByText("Batch Billing")).not.toBeInTheDocument();
+  });
+
+  it("shows Recent group heading when recentItems is non-empty", () => {
+    mockRecentItems.push({ href: "/org/test-org/projects/abc", label: "Alpha Project" });
+    renderDialog();
+    const recentHeadings = screen.getAllByText("Recent");
+    expect(recentHeadings.length).toBeGreaterThan(0);
+    expect(screen.getByText("Alpha Project")).toBeInTheDocument();
+    // Clean up for other tests
+    mockRecentItems.length = 0;
   });
 });

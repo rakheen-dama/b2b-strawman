@@ -20,6 +20,11 @@ vi.mock("motion/react", () => ({
   ),
 }));
 
+// Mock recent-items-provider — CommandPaletteDialog uses useRecentItems
+vi.mock("@/components/recent-items-provider", () => ({
+  useRecentItems: vi.fn(() => ({ items: [], addItem: vi.fn() })),
+}));
+
 // Mock SidebarUserFooter — uses Clerk hooks
 vi.mock("@/components/sidebar-user-footer", () => ({
   SidebarUserFooter: () => <div data-testid="sidebar-user-footer" />,

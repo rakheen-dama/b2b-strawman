@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Settings } from "lucide-react";
+import { Settings, Clock } from "lucide-react";
 import {
   CommandDialog,
   CommandInput,
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/command";
 import { NAV_GROUPS, UTILITY_ITEMS, SETTINGS_ITEMS } from "@/lib/nav-items";
 import { useCapabilities } from "@/lib/capabilities";
+import { useRecentItems } from "@/components/recent-items-provider";
 
 interface CommandPaletteDialogProps {
   slug: string;
@@ -22,6 +23,7 @@ interface CommandPaletteDialogProps {
 export function CommandPaletteDialog({ slug, open, onOpenChange }: CommandPaletteDialogProps) {
   const router = useRouter();
   const { hasCapability, isAdmin } = useCapabilities();
+  const { items: recentItems } = useRecentItems();
 
   const pages = [
     ...NAV_GROUPS.flatMap((g) => g.items),
@@ -47,6 +49,20 @@ export function CommandPaletteDialog({ slug, open, onOpenChange }: CommandPalett
       <CommandInput placeholder="Search pages, settings..." />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
+        {recentItems.length > 0 && (
+          <CommandGroup heading="Recent">
+            {recentItems.map((item) => (
+              <CommandItem
+                key={`recent:${item.href}`}
+                value={`recent:${item.href}`}
+                onSelect={() => navigate(item.href)}
+              >
+                <Clock className="h-4 w-4" />
+                {item.label}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
         <CommandGroup heading="Pages">
           {pages.map((item) => (
             <CommandItem

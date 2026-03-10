@@ -355,7 +355,7 @@
 | 312 | OrgRole Entity Foundation & Migration | Backend | -- | M | 312A, 312B | **Done** (PRs #636, #637) |
 | 313 | Capability Resolution & Authorization Infrastructure | Backend | 312 | M | 313A, 313B | **Done** (PRs #638, #639) |
 | 314 | @PreAuthorize Migration (Batch 1: Financial, Invoicing, Project) | Backend | 313 | M | 314A, 314B | **Done** (PRs #640, #641) |
-| 315 | @PreAuthorize Migration (Batch 2: Customer, Automation, Resource, Team) | Backend | 313 | M | 315A, 315B | |
+| 315 | @PreAuthorize Migration (Batch 2: Customer, Automation, Resource, Team) | Backend | 313 | M | 315A, 315B | 315A **Done** (PR #642) |
 | 316 | OrgRole CRUD API & Member Role Assignment | Backend | 312 | M | 316A, 316B | |
 | 317 | Audit Events & Notifications | Backend | 316 | S | 317A | |
 | 318 | Frontend Capability Context & Sidebar Gating | Frontend | 313 | M | 318A, 318B | |

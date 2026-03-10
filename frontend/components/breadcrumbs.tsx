@@ -5,18 +5,48 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
 const SEGMENT_LABELS: Record<string, string> = {
+  // Core nav
   dashboard: "Dashboard",
   projects: "Projects",
   team: "Team",
   settings: "Settings",
-  billing: "Billing",
   resources: "Resources",
   utilization: "Utilization",
+  // Settings sub-segments
+  billing: "Billing",
+  notifications: "Notifications",
+  rates: "Rates & Currency",
+  tax: "Tax",
+  "time-tracking": "Time Tracking",
+  "custom-fields": "Custom Fields",
+  tags: "Tags",
+  templates: "Templates",
+  clauses: "Clauses",
+  checklists: "Checklists",
+  acceptance: "Document Acceptance",
+  compliance: "Compliance",
+  "project-templates": "Project Templates",
+  "project-naming": "Project Naming",
+  "request-templates": "Request Templates",
+  "request-settings": "Request Settings",
+  "batch-billing": "Batch Billing",
+  capacity: "Capacity",
+  email: "Email",
+  automations: "Automations",
+  roles: "Roles & Permissions",
+  integrations: "Integrations",
+  // Additional segments
+  "my-work": "My Work",
+  schedules: "Recurring Schedules",
+  retainers: "Retainers",
 };
 
 /** Segments that contain dynamic child routes (e.g. /projects/[id]) */
 const PARENT_SEGMENT_FALLBACKS: Record<string, string> = {
   projects: "Project",
+  settings: "Settings",
+  customers: "Customer",
+  invoices: "Invoice",
 };
 
 function isUuid(value: string): boolean {

@@ -8,7 +8,7 @@ interface CommandPaletteContextValue {
   setOpen: (open: boolean) => void;
 }
 
-const CommandPaletteContext = createContext<CommandPaletteContextValue | null>(null);
+export const CommandPaletteContext = createContext<CommandPaletteContextValue | null>(null);
 
 export function useCommandPalette(): CommandPaletteContextValue {
   const ctx = useContext(CommandPaletteContext);

@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import { SETTINGS_NAV_GROUPS } from "./settings-nav-groups";
 
 interface SettingsSidebarProps {
@@ -24,7 +25,7 @@ export function SettingsSidebar({ slug, isAdmin }: SettingsSidebarProps) {
       <div className="mb-4 md:hidden">
         <div className="flex gap-1 overflow-x-auto pb-2">
           {allVisibleItems.map((item) => {
-            const isActive = pathname.endsWith(`/settings/${item.href}`);
+            const isActive = pathname === `/org/${slug}/settings/${item.href}`;
             return (
               <Link
                 key={item.href}
@@ -44,8 +45,11 @@ export function SettingsSidebar({ slug, isAdmin }: SettingsSidebarProps) {
       </div>
 
       {/* Desktop: grouped nav */}
-      <nav aria-label="Settings navigation">
-        {SETTINGS_NAV_GROUPS.map((group) => {
+      <nav
+        aria-label="Settings navigation"
+        className="sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto py-4"
+      >
+        {SETTINGS_NAV_GROUPS.map((group, index) => {
           const visibleItems = group.items.filter(
             (item) => !item.adminOnly || isAdmin,
           );
@@ -53,18 +57,23 @@ export function SettingsSidebar({ slug, isAdmin }: SettingsSidebarProps) {
 
           return (
             <div key={group.id}>
+              {index > 0 && <div className="my-2 border-t border-slate-100" />}
               <div className="px-3 pb-1 pt-3 text-[11px] font-medium uppercase tracking-widest text-slate-400 dark:text-slate-500">
                 {group.label}
               </div>
               {visibleItems.map((item) => {
-                const isActive = pathname.endsWith(`/settings/${item.href}`);
+                const isActive = pathname === `/org/${slug}/settings/${item.href}`;
                 if (item.comingSoon) {
                   return (
                     <span
                       key={item.href || item.label}
-                      className="flex cursor-not-allowed items-center py-1.5 pl-3 text-sm text-muted-foreground opacity-50"
+                      aria-disabled="true"
+                      className="flex cursor-not-allowed items-center pl-3 py-1.5 text-sm rounded-r-md border-l-2 border-transparent text-slate-600 opacity-50"
                     >
                       {item.label}
+                      <Badge variant="neutral" className="ml-auto text-[10px] py-0">
+                        Coming soon
+                      </Badge>
                     </span>
                   );
                 }
@@ -73,10 +82,10 @@ export function SettingsSidebar({ slug, isAdmin }: SettingsSidebarProps) {
                     key={item.href}
                     href={`/org/${slug}/settings/${item.href}`}
                     className={cn(
-                      "flex items-center py-1.5 pl-3 text-sm transition-colors",
+                      "flex items-center pl-3 py-1.5 text-sm rounded-r-md transition-colors",
                       isActive
-                        ? "bg-muted text-foreground font-medium"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/80",
+                        ? "border-l-2 border-teal-600 bg-teal-50 text-slate-900 font-medium"
+                        : "border-l-2 border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50",
                     )}
                   >
                     {item.label}

@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.AssignRoleRequest;
 import io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest;
 import io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.MemberCapabilitiesResponse;
 import io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.MyCapabilitiesResponse;
@@ -210,6 +211,65 @@ public class OrgRoleService {
   }
 
   @Transactional
+  public MemberCapabilitiesResponse assignRole(UUID memberId, AssignRoleRequest request) {
+    var member =
+        memberRepository
+            .findById(memberId)
+            .orElseThrow(() -> new ResourceNotFoundException("Member", memberId));
+
+    // Owner protection: cannot change the owner's role
+    if ("owner".equals(member.getOrgRole())) {
+      throw new ForbiddenException(
+          "Owner role protected", "Cannot change the role of the organization owner");
+    }
+
+    var role =
+        orgRoleRepository
+            .findById(request.orgRoleId())
+            .orElseThrow(() -> new ResourceNotFoundException("OrgRole", request.orgRoleId()));
+
+    // Cannot assign the OWNER system role to anyone
+    if (role.isSystem() && "owner".equals(role.getSlug())) {
+      throw new ForbiddenException(
+          "Owner role assignment forbidden", "Cannot assign the Owner system role to a member");
+    }
+
+    // ADMIN system role can only be assigned by owners
+    if (role.isSystem() && "admin".equals(role.getSlug())) {
+      String callerRole = RequestScopes.getOrgRole();
+      if (!"owner".equals(callerRole)) {
+        throw new ForbiddenException(
+            "Admin role assignment restricted", "Only owners can assign the Admin system role");
+      }
+    }
+
+    // Validate override format
+    Set<String> overrides =
+        request.capabilityOverrides() != null ? request.capabilityOverrides() : Set.of();
+    for (String override : overrides) {
+      if (override.length() < 2 || (!override.startsWith("+") && !override.startsWith("-"))) {
+        throw new InvalidStateException(
+            "Invalid override format",
+            "Each override must start with '+' or '-' followed by a capability name: '"
+                + override
+                + "'");
+      }
+      String capName = override.substring(1);
+      if (!Capability.ALL_NAMES.contains(capName)) {
+        throw new InvalidStateException(
+            "Invalid capability override",
+            "Unknown capability: '" + capName + "'. Valid values: " + Capability.ALL_NAMES);
+      }
+    }
+
+    member.setOrgRoleId(request.orgRoleId());
+    member.setCapabilityOverrides(overrides);
+    memberRepository.save(member);
+
+    return getMemberCapabilities(memberId);
+  }
+
+  @Transactional
   public void deleteRole(UUID id) {
     var role =
         orgRoleRepository
@@ -232,6 +292,15 @@ public class OrgRoleService {
     }
 
     orgRoleRepository.delete(role);
+  }
+
+  /**
+   * Looks up a system role by its slug (e.g. "owner", "admin", "member"). Returns empty if not
+   * found.
+   */
+  @Transactional(readOnly = true)
+  public java.util.Optional<OrgRole> findSystemRoleBySlug(String slug) {
+    return orgRoleRepository.findBySlug(slug).filter(OrgRole::isSystem);
   }
 
   static String generateSlug(String name) {

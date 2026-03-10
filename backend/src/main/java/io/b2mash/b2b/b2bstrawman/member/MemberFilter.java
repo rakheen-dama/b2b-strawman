@@ -151,7 +151,14 @@ public class MemberFilter extends OncePerRequestFilter {
 
     try {
       var member = new Member(clerkUserId, email, name, null, effectiveRole);
-      member = memberRepository.save(member);
+
+      // Assign default system role based on the effective org role before persisting
+      orgRoleService
+          .findSystemRoleBySlug(effectiveRole)
+          .ifPresent(systemRole -> member.setOrgRoleId(systemRole.getId()));
+
+      memberRepository.save(member);
+
       log.info(
           "Lazy-created member {} for user {} in tenant {}",
           member.getId(),

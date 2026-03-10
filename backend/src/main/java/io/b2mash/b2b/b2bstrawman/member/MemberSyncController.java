@@ -44,7 +44,8 @@ public class MemberSyncController {
             request.email(),
             request.name(),
             request.avatarUrl(),
-            request.orgRole());
+            request.orgRole(),
+            request.orgRoleId());
 
     var response =
         new SyncMemberResponse(
@@ -80,7 +81,8 @@ public class MemberSyncController {
       @NotBlank(message = "email is required") String email,
       String name,
       String avatarUrl,
-      @NotBlank(message = "orgRole is required") String orgRole) {}
+      @NotBlank(message = "orgRole is required") String orgRole,
+      UUID orgRoleId) {}
 
   public record SyncMemberResponse(UUID memberId, String clerkUserId, String action) {}
 

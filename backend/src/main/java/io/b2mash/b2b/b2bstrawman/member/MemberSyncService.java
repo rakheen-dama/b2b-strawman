@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.exception.PlanLimitExceededException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanLimits;
 import java.util.List;
@@ -29,6 +30,7 @@ public class MemberSyncService {
   private final MemberFilter memberFilter;
   private final TransactionTemplate txTemplate;
   private final AuditService auditService;
+  private final OrgRoleRepository orgRoleRepository;
 
   public MemberSyncService(
       MemberRepository memberRepository,
@@ -36,7 +38,8 @@ public class MemberSyncService {
       OrganizationRepository organizationRepository,
       MemberFilter memberFilter,
       PlatformTransactionManager txManager,
-      AuditService auditService) {
+      AuditService auditService,
+      OrgRoleRepository orgRoleRepository) {
     this.memberRepository = memberRepository;
     this.mappingRepository = mappingRepository;
     this.organizationRepository = organizationRepository;
@@ -44,6 +47,7 @@ public class MemberSyncService {
     this.txTemplate = new TransactionTemplate(txManager);
     this.txTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     this.auditService = auditService;
+    this.orgRoleRepository = orgRoleRepository;
   }
 
   public SyncResult syncMember(
@@ -53,6 +57,17 @@ public class MemberSyncService {
       String name,
       String avatarUrl,
       String orgRole) {
+    return syncMember(clerkOrgId, clerkUserId, email, name, avatarUrl, orgRole, null);
+  }
+
+  public SyncResult syncMember(
+      String clerkOrgId,
+      String clerkUserId,
+      String email,
+      String name,
+      String avatarUrl,
+      String orgRole,
+      UUID orgRoleId) {
     String schemaName = resolveSchemaWithRetry(clerkOrgId);
     var result =
         ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
@@ -69,6 +84,9 @@ public class MemberSyncService {
                             String oldRole = member.getOrgRole();
 
                             member.updateFrom(email, name, avatarUrl, orgRole);
+                            if (orgRoleId != null) {
+                              member.setOrgRoleId(orgRoleId);
+                            }
                             memberRepository.save(member);
                             log.info("Updated member {} in tenant {}", clerkUserId, schemaName);
 
@@ -93,6 +111,13 @@ public class MemberSyncService {
                           enforceMemberLimit(clerkOrgId);
 
                           var member = new Member(clerkUserId, email, name, avatarUrl, orgRole);
+                          if (orgRoleId != null) {
+                            member.setOrgRoleId(orgRoleId);
+                          } else if (orgRole != null) {
+                            orgRoleRepository
+                                .findBySlug(orgRole)
+                                .ifPresent(systemRole -> member.setOrgRoleId(systemRole.getId()));
+                          }
                           memberRepository.save(member);
                           log.info("Created member {} in tenant {}", clerkUserId, schemaName);
 

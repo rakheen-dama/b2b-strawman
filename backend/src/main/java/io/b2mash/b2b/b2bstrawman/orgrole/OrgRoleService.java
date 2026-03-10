@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
@@ -21,11 +22,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class OrgRoleService {
+
+  private static final Logger log = LoggerFactory.getLogger(OrgRoleService.class);
 
   private final OrgRoleRepository orgRoleRepository;
   private final MemberRepository memberRepository;
@@ -230,21 +235,26 @@ public class OrgRoleService {
           request.capabilities().stream().map(Capability::valueOf).collect(Collectors.toSet()));
     }
 
-    long affectedMemberCount = capsChanged ? memberRepository.countByOrgRoleId(id) : 0L;
+    List<Member> affectedMembers = capsChanged ? memberRepository.findByOrgRoleId(id) : List.of();
     role = orgRoleRepository.save(role);
     auditService.log(
-        AuditEventBuilder.roleUpdated(role, addedCaps, removedCaps, affectedMemberCount));
+        AuditEventBuilder.roleUpdated(role, addedCaps, removedCaps, affectedMembers.size()));
 
     if (capsChanged) {
-      for (var affectedMember : memberRepository.findByOrgRoleId(id)) {
-        notificationService.createIfEnabled(
-            affectedMember.getId(),
-            "ROLE_PERMISSIONS_CHANGED",
-            "Your permissions have been updated.",
-            null,
-            "ORG_ROLE",
-            role.getId(),
-            null);
+      try {
+        for (var affectedMember : affectedMembers) {
+          notificationService.createIfEnabled(
+              affectedMember.getId(),
+              "ROLE_PERMISSIONS_CHANGED",
+              "Your permissions have been updated.",
+              null,
+              "ORG_ROLE",
+              role.getId(),
+              null);
+        }
+      } catch (Exception e) {
+        log.warn(
+            "Best-effort notification failed for role update (roleId={}): {}", id, e.getMessage());
       }
     }
 
@@ -310,9 +320,9 @@ public class OrgRoleService {
           orgRoleRepository
               .findById(member.getOrgRoleId())
               .map(OrgRole::getName)
-              .orElse(member.getOrgRole());
+              .orElse(displayName(member.getOrgRole()));
     } else {
-      previousRole = member.getOrgRole();
+      previousRole = displayName(member.getOrgRole());
     }
 
     member.setOrgRoleId(request.orgRoleId());
@@ -373,6 +383,19 @@ public class OrgRoleService {
         .replaceAll("[^a-z0-9]+", "-")
         .replaceAll("-+", "-")
         .replaceAll("^-|-$", "");
+  }
+
+  /** Maps a Clerk role slug (e.g. "owner") to a human-readable display name. */
+  private static String displayName(String clerkRole) {
+    if (clerkRole == null) {
+      return "None";
+    }
+    return switch (clerkRole) {
+      case "owner" -> "Owner";
+      case "admin" -> "Admin";
+      case "member" -> "Member";
+      default -> clerkRole;
+    };
   }
 
   private void validateCapabilities(Set<String> capabilities) {

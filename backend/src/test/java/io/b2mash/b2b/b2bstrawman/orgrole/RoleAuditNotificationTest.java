@@ -238,6 +238,8 @@ class RoleAuditNotificationTest {
     UUID roleId =
         UUID.fromString(JsonPath.read(roleResult.getResponse().getContentAsString(), "$.id"));
 
+    Instant before = Instant.now();
+
     mockMvc
         .perform(
             put("/api/members/" + regularMemberId + "/role")
@@ -259,9 +261,9 @@ class RoleAuditNotificationTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "member", regularMemberId, null, "member.role_changed", null, null),
+                          "member", regularMemberId, null, "member.role_changed", before, null),
                       PageRequest.of(0, 10));
-              assertThat(page.getTotalElements()).isGreaterThanOrEqualTo(1);
+              assertThat(page.getTotalElements()).isEqualTo(1);
               var event = page.getContent().getFirst();
               assertThat(event.getEventType()).isEqualTo("member.role_changed");
               assertThat(event.getEntityType()).isEqualTo("member");

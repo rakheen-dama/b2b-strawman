@@ -23,7 +23,7 @@ Phase 41 replaces the coarse three-role authorization model (Owner/Admin/Member)
 | 315 | @PreAuthorize Migration (Batch 2: Customer, Automation, Resource, Team) | Backend | 313 | M | 315A, 315B | **Done** (PRs #642, #643) |
 | 316 | OrgRole CRUD API & Member Role Assignment | Backend | 312 | M | 316A, 316B | **Done** (PRs #644, #645) |
 | 317 | Audit Events & Notifications | Backend | 316 | S | 317A | **Done** (PR #646) |
-| 318 | Frontend Capability Context & Sidebar Gating | Frontend | 313 | M | 318A, 318B | |
+| 318 | Frontend Capability Context & Sidebar Gating | Frontend | 313 | M | 318A, 318B | **Done** (PRs #647, #648) |
 | 319 | Settings: Roles & Permissions Page | Frontend | 316, 318 | M | 319A, 319B | |
 | 320 | Team Page: Member Role Management & Invite Extension | Frontend | 316, 318 | M | 320A, 320B | |
 
@@ -162,7 +162,7 @@ FRONTEND TRACK (after E313 backend APIs ready)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 4a | 318 | 318A | `lib/api/capabilities.ts` API client, `lib/capabilities.tsx` `CapabilityProvider` context, `RequiresCapability` wrapper component, integration into org layout. ~5 new/modified files (~6 tests). Frontend only. | **Done** (PR #647) |
-| 4b | 318 | 318B | Sidebar nav gating in `nav-items.ts` + `desktop-sidebar.tsx`, page-level protection on 6 gated routes (invoices, customers, profitability, resources, compliance, settings/automations), action button gating (Create Project, Generate Invoice, Approve time). ~8 modified files (~6 tests). Frontend only. | |
+| 4b | 318 | 318B | Sidebar nav gating in `nav-items.ts` + `desktop-sidebar.tsx`, page-level protection on 6 gated routes (invoices, customers, profitability, resources, compliance, settings/automations), action button gating (Create Project, Generate Invoice, Approve time). ~8 modified files (~6 tests). Frontend only. | **Done** (PR #648) |
 
 ### Stage 5: Settings & Team Pages (parallel tracks)
 
@@ -587,7 +587,7 @@ Stage 5: [319A] -> [319B] // [320A] -> [320B]                         (two paral
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **318A** | 318.1--318.6 | `lib/api/capabilities.ts` API client, `lib/capabilities.tsx` `CapabilityProvider` context with `useCapabilities()` hook, `RequiresCapability` wrapper component, integration into org layout. ~5 new/modified files (~6 tests). Frontend only. | **Done** (PR #647) |
-| **318B** | 318.7--318.12 | Sidebar nav gating (conditional nav items based on capabilities), page-level `notFound()` protection on 6+ gated routes, component-level action button gating (Create Project, Generate Invoice, Approve time). ~8 modified files (~6 tests). Frontend only. | |
+| **318B** | 318.7--318.12 | Sidebar nav gating (conditional nav items based on capabilities), page-level `notFound()` protection on 6+ gated routes, component-level action button gating (Create Project, Generate Invoice, Approve time). ~8 modified files (~6 tests). Frontend only. | **Done** (PR #648) |
 
 ### Tasks
 

@@ -15,6 +15,48 @@ export const CAPABILITIES = {
   RESOURCE_PLANNING: "RESOURCE_PLANNING",
 } as const;
 
+/** Capability metadata — single source of truth for labels, descriptions, and enum values. */
+export const CAPABILITY_META = [
+  {
+    value: CAPABILITIES.FINANCIAL_VISIBILITY,
+    label: "Financial Visibility",
+    description:
+      "View financial data including rates, budgets, and profitability reports",
+  },
+  {
+    value: CAPABILITIES.INVOICING,
+    label: "Invoicing",
+    description: "Create, edit, and send invoices to customers",
+  },
+  {
+    value: CAPABILITIES.PROJECT_MANAGEMENT,
+    label: "Project Management",
+    description: "Create and manage projects, tasks, and documents",
+  },
+  {
+    value: CAPABILITIES.TEAM_OVERSIGHT,
+    label: "Team Oversight",
+    description:
+      "View team members' work, time entries, and assignments",
+  },
+  {
+    value: CAPABILITIES.CUSTOMER_MANAGEMENT,
+    label: "Customer Management",
+    description: "Create and manage customer records and relationships",
+  },
+  {
+    value: CAPABILITIES.AUTOMATIONS,
+    label: "Automations",
+    description: "Configure workflow automations and scheduling rules",
+  },
+  {
+    value: CAPABILITIES.RESOURCE_PLANNING,
+    label: "Resource Planning",
+    description:
+      "View and manage resource allocation and capacity planning",
+  },
+] as const;
+
 // ---- Context Types ----
 
 interface CapabilityContextValue {

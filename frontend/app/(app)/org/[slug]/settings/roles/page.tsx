@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, Plus, Users } from "lucide-react";
+import { ChevronLeft, Users } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { fetchOrgRoles } from "@/lib/api/org-roles";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { RoleCard } from "@/components/roles/role-card";
 import { CAPABILITIES } from "@/lib/capabilities";
+import { CustomRolesSection } from "@/components/roles/custom-roles-section";
+import { CapabilityReference } from "./capability-reference";
 import type { OrgRole } from "@/lib/api/org-roles";
 
 const ALL_CAPABILITIES = Object.values(CAPABILITIES);
@@ -118,38 +118,10 @@ export default async function RolesSettingsPage({
       </div>
 
       {/* Custom Roles Section */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-              Custom Roles
-            </h2>
-            <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-400">
-              Create roles with specific capabilities for your team.
-            </p>
-          </div>
-          {/* Wired to create dialog in 319B */}
-          <Button size="sm" disabled>
-            <Plus className="mr-1.5 size-4" />
-            New Role
-          </Button>
-        </div>
+      <CustomRolesSection slug={slug} customRoles={customRoles} />
 
-        {customRoles.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-8 text-center dark:border-slate-700 dark:bg-slate-900">
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              No custom roles yet. Create one to assign granular permissions to
-              team members.
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {customRoles.map((role) => (
-              <RoleCard key={role.id} role={role} />
-            ))}
-          </div>
-        )}
-      </div>
+      {/* Capability Reference */}
+      <CapabilityReference />
     </div>
   );
 }

@@ -1,7 +1,8 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { getAuthContext, AUTH_MODE } from "@/lib/auth";
-import { api } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 import { headers } from "next/headers";
 import { classifyError } from "@/lib/error-handler";
 import { createMessages } from "@/lib/messages";
@@ -28,6 +29,9 @@ export interface BffMember {
   email: string;
   name: string;
   role: string;
+  orgRoleId?: string;
+  orgRoleName?: string;
+  capabilityOverridesCount?: number;
 }
 
 /** UI-ready invitation shape used by components. */
@@ -218,4 +222,69 @@ export async function listMembers(): Promise<BffMember[]> {
 
   // Clerk/mock modes handle member listing client-side
   return [];
+}
+
+// --- Member role assignment ---
+
+export interface MemberCapabilities {
+  memberId: string;
+  roleName: string;
+  roleCapabilities: string[];
+  overrides: string[];
+  effectiveCapabilities: string[];
+}
+
+export async function fetchMemberCapabilities(
+  memberId: string,
+): Promise<MemberCapabilities | null> {
+  try {
+    return await api.get<MemberCapabilities>(
+      `/api/members/${encodeURIComponent(memberId)}/capabilities`,
+    );
+  } catch {
+    return null;
+  }
+}
+
+export async function assignMemberRole(
+  slug: string,
+  memberId: string,
+  orgRoleId: string,
+  capabilityOverrides: string[],
+): Promise<ActionResult> {
+  const { orgRole } = await getAuthContext();
+
+  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+    return {
+      success: false,
+      error: "You must be an admin to change member roles.",
+    };
+  }
+
+  try {
+    await api.put<unknown>(
+      `/api/members/${encodeURIComponent(memberId)}/role`,
+      {
+        orgRoleId,
+        capabilityOverrides,
+      },
+    );
+  } catch (err: unknown) {
+    if (err instanceof ApiError) {
+      if (err.status === 403) {
+        return {
+          success: false,
+          error: "You do not have permission to change this member's role.",
+        };
+      }
+      if (err.status === 422) {
+        return { success: false, error: "Invalid role assignment." };
+      }
+      return { success: false, error: err.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${slug}/team`);
+  return { success: true };
 }

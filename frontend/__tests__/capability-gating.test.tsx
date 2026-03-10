@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
@@ -9,8 +10,13 @@ vi.mock("next/navigation", () => ({
 // Mock motion/react to avoid animation issues in tests
 vi.mock("motion/react", () => ({
   motion: {
-    div: (props: React.ComponentProps<"div">) => <div {...props} />,
+    div: ({ children, ...props }: React.ComponentProps<"div">) => (
+      <div {...props}>{children}</div>
+    ),
   },
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
 }));
 
 // Mock server-only
@@ -44,7 +50,8 @@ describe("Sidebar capability gating", () => {
     expect(screen.queryByText("Invoices")).not.toBeInTheDocument();
   });
 
-  it("shows Invoices when user has INVOICING capability", () => {
+  it("shows Invoices when user has INVOICING capability", async () => {
+    const user = userEvent.setup();
     render(
       <CapabilityProvider
         capabilities={["INVOICING"]}
@@ -56,10 +63,15 @@ describe("Sidebar capability gating", () => {
       </CapabilityProvider>,
     );
 
+    // Finance zone starts collapsed (defaultExpanded: false) — expand it
+    const financeHeader = screen.getByText("Finance");
+    await user.click(financeHeader.closest("button")!);
+
     expect(screen.getByText("Invoices")).toBeInTheDocument();
   });
 
-  it("shows all nav items for admin users", () => {
+  it("shows all nav items for admin users", async () => {
+    const user = userEvent.setup();
     render(
       <CapabilityProvider
         capabilities={[]}
@@ -70,6 +82,12 @@ describe("Sidebar capability gating", () => {
         <DesktopSidebar slug="test-org" />
       </CapabilityProvider>,
     );
+
+    // Expand collapsed zones (Clients and Finance have defaultExpanded: false)
+    const clientsHeader = screen.getByText("Clients");
+    await user.click(clientsHeader.closest("button")!);
+    const financeHeader = screen.getByText("Finance");
+    await user.click(financeHeader.closest("button")!);
 
     expect(screen.getByText("Invoices")).toBeInTheDocument();
     expect(screen.getByText("Customers")).toBeInTheDocument();

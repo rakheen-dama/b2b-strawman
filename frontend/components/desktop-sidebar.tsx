@@ -5,8 +5,8 @@ import Link from "next/link";
 import { Shield } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
-import { NAV_ITEMS } from "@/lib/nav-items";
-import { useCapabilities } from "@/lib/capabilities";
+import { NAV_GROUPS, UTILITY_ITEMS } from "@/lib/nav-items";
+import { NavZone } from "@/components/nav-zone";
 import { SidebarUserFooter } from "@/components/sidebar-user-footer";
 
 interface DesktopSidebarProps {
@@ -16,11 +16,6 @@ interface DesktopSidebarProps {
 
 export function DesktopSidebar({ slug, groups = [] }: DesktopSidebarProps) {
   const pathname = usePathname();
-  const { hasCapability } = useCapabilities();
-
-  const visibleItems = NAV_ITEMS.filter(
-    (item) => !item.requiredCapability || hasCapability(item.requiredCapability),
-  );
 
   return (
     <aside className="hidden w-60 flex-col bg-slate-950 md:flex">
@@ -34,9 +29,38 @@ export function DesktopSidebar({ slug, groups = [] }: DesktopSidebarProps) {
       </div>
       <div className="mx-4 border-t border-white/10" />
 
-      {/* Nav body */}
+      {/* Nav body — zone-based */}
       <nav aria-label="Main navigation" className="flex flex-1 flex-col gap-1 p-2">
-        {visibleItems.map((item) => {
+        {NAV_GROUPS.map((group) => (
+          <NavZone key={group.id} zone={group} slug={slug} />
+        ))}
+      </nav>
+
+      {/* Platform Admin */}
+      {groups.includes("platform-admins") && (
+        <>
+          <div className="mx-4 border-t border-white/10" />
+          <div className="p-2">
+            <Link
+              href="/platform-admin/access-requests"
+              className={cn(
+                "relative flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
+                pathname.startsWith("/platform-admin")
+                  ? "bg-white/5 text-white"
+                  : "text-white/60 hover:bg-slate-800 hover:text-white",
+              )}
+            >
+              <Shield className="h-4 w-4" />
+              Platform Admin
+            </Link>
+          </div>
+        </>
+      )}
+
+      {/* Utility footer — Notifications + Settings */}
+      <div className="mx-4 border-t border-white/10" />
+      <div className="p-2">
+        {UTILITY_ITEMS.map((item) => {
           const href = item.href(slug);
           const isActive = item.exact
             ? pathname === href
@@ -50,7 +74,7 @@ export function DesktopSidebar({ slug, groups = [] }: DesktopSidebarProps) {
                 "relative flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
                 isActive
                   ? "bg-white/5 text-white"
-                  : "text-white/60 hover:bg-slate-800 hover:text-white"
+                  : "text-white/60 hover:bg-slate-800 hover:text-white",
               )}
             >
               {isActive && (
@@ -66,28 +90,7 @@ export function DesktopSidebar({ slug, groups = [] }: DesktopSidebarProps) {
             </Link>
           );
         })}
-      </nav>
-
-      {/* Platform Admin */}
-      {groups.includes("platform-admins") && (
-        <>
-          <div className="mx-4 border-t border-white/10" />
-          <div className="p-2">
-            <Link
-              href="/platform-admin/access-requests"
-              className={cn(
-                "relative flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
-                pathname.startsWith("/platform-admin")
-                  ? "bg-white/5 text-white"
-                  : "text-white/60 hover:bg-slate-800 hover:text-white"
-              )}
-            >
-              <Shield className="h-4 w-4" />
-              Platform Admin
-            </Link>
-          </div>
-        </>
-      )}
+      </div>
 
       {/* Footer */}
       <SidebarUserFooter />

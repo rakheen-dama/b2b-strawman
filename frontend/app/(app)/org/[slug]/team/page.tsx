@@ -46,6 +46,7 @@ export default async function TeamPage({
             currentMembers={billing.limits.currentMembers}
             planTier={billing.tier}
             orgSlug={slug}
+            roles={roles}
           />
         </div>
       )}

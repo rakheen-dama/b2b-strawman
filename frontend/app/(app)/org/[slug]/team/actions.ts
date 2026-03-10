@@ -103,14 +103,23 @@ async function inviteMemberClerk(
 async function inviteMemberBff(
   email: string,
   role: "org:member" | "org:admin",
+  orgRoleId?: string,
+  capabilityOverrides?: string[],
 ): Promise<ActionResult> {
   try {
     // Gateway expects bare role names (member, admin) — strip org: prefix
     const bareRole = role.replace("org:", "");
-    await api.post<{ success: boolean }>("/bff/admin/invite", {
+    const body: Record<string, unknown> = {
       email,
       role: bareRole,
-    });
+    };
+    if (orgRoleId) {
+      body.orgRoleId = orgRoleId;
+    }
+    if (capabilityOverrides && capabilityOverrides.length > 0) {
+      body.capabilityOverrides = capabilityOverrides;
+    }
+    await api.post<{ success: boolean }>("/bff/admin/invite", body);
     return { success: true };
   } catch (err: unknown) {
     const message =
@@ -159,6 +168,8 @@ async function listMembersBff(): Promise<BffMember[]> {
 export async function inviteMember(
   emailAddress: string,
   role: "org:member" | "org:admin",
+  orgRoleId?: string,
+  capabilityOverrides?: string[],
 ): Promise<ActionResult> {
   const { orgRole } = await getAuthContext();
 
@@ -174,9 +185,10 @@ export async function inviteMember(
   }
 
   if (AUTH_MODE === "keycloak") {
-    return inviteMemberBff(emailAddress, role);
+    return inviteMemberBff(emailAddress, role, orgRoleId, capabilityOverrides);
   }
 
+  // Clerk path ignores orgRoleId and capabilityOverrides — Clerk manages roles separately
   return inviteMemberClerk(emailAddress, role);
 }
 

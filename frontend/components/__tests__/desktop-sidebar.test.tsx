@@ -5,6 +5,7 @@ import userEvent from "@testing-library/user-event";
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   usePathname: vi.fn(() => "/org/test-org/dashboard"),
+  useRouter: vi.fn(() => ({ push: vi.fn() })),
 }));
 
 // Mock motion/react — avoid animation issues in tests
@@ -27,6 +28,7 @@ vi.mock("@/components/sidebar-user-footer", () => ({
 import { usePathname } from "next/navigation";
 import { CapabilityProvider } from "@/lib/capabilities";
 import { DesktopSidebar } from "@/components/desktop-sidebar";
+import { CommandPaletteProvider } from "@/components/command-palette-provider";
 
 const mockUsePathname = vi.mocked(usePathname);
 
@@ -45,7 +47,7 @@ const ALL_CAPABILITIES = [
   "RESOURCE_PLANNING",
 ];
 
-function renderSidebar(props: { onOpenCommandPalette?: () => void } = {}) {
+function renderSidebar() {
   return render(
     <CapabilityProvider
       capabilities={ALL_CAPABILITIES}
@@ -53,7 +55,9 @@ function renderSidebar(props: { onOpenCommandPalette?: () => void } = {}) {
       isAdmin={false}
       isOwner={true}
     >
-      <DesktopSidebar slug="test-org" {...props} />
+      <CommandPaletteProvider slug="test-org">
+        <DesktopSidebar slug="test-org" />
+      </CommandPaletteProvider>
     </CapabilityProvider>,
   );
 }
@@ -103,12 +107,12 @@ describe("DesktopSidebar", () => {
     expect(screen.getByText("⌘K")).toBeInTheDocument();
   });
 
-  it("calls onOpenCommandPalette when search pill is clicked", async () => {
+  it("opens command palette when search pill is clicked", async () => {
     const user = userEvent.setup();
-    const handler = vi.fn();
     mockUsePathname.mockReturnValue("/org/test-org/other");
-    renderSidebar({ onOpenCommandPalette: handler });
+    renderSidebar();
     await user.click(screen.getByText("Search..."));
-    expect(handler).toHaveBeenCalledOnce();
+    // CommandPaletteDialog renders the dialog — verify it opened by checking for search input
+    expect(screen.getByPlaceholderText("Search pages, settings...")).toBeInTheDocument();
   });
 });

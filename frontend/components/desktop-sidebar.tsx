@@ -9,15 +9,16 @@ import { cn } from "@/lib/utils";
 import { NAV_GROUPS, UTILITY_ITEMS } from "@/lib/nav-items";
 import { NavZone } from "@/components/nav-zone";
 import { SidebarUserFooter } from "@/components/sidebar-user-footer";
+import { useCommandPalette } from "@/components/command-palette-provider";
 
 interface DesktopSidebarProps {
   slug: string;
   groups?: string[];
-  onOpenCommandPalette?: () => void;
 }
 
-export function DesktopSidebar({ slug, groups = [], onOpenCommandPalette }: DesktopSidebarProps) {
+export function DesktopSidebar({ slug, groups = [] }: DesktopSidebarProps) {
   const pathname = usePathname();
+  const { setOpen } = useCommandPalette();
 
   return (
     <aside className="hidden w-60 flex-col bg-slate-950 md:flex">
@@ -35,7 +36,7 @@ export function DesktopSidebar({ slug, groups = [], onOpenCommandPalette }: Desk
       <button
         type="button"
         aria-label="Search, Command K"
-        onClick={() => onOpenCommandPalette?.()}
+        onClick={() => setOpen(true)}
         className="mx-4 mb-2 flex w-[calc(100%-2rem)] items-center gap-2 rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/40 hover:bg-white/10 hover:text-white/60 transition-colors"
       >
         <Search className="h-3.5 w-3.5" />

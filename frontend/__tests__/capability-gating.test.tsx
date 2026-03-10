@@ -27,6 +27,12 @@ vi.mock("@/components/sidebar-user-footer", () => ({
   SidebarUserFooter: () => <div data-testid="sidebar-user-footer" />,
 }));
 
+// Mock command-palette-provider — DesktopSidebar calls useCommandPalette()
+vi.mock("@/components/command-palette-provider", () => ({
+  useCommandPalette: vi.fn(() => ({ open: false, setOpen: vi.fn() })),
+  CommandPaletteProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 import { CapabilityProvider, RequiresCapability } from "@/lib/capabilities";
 import { DesktopSidebar } from "@/components/desktop-sidebar";
 

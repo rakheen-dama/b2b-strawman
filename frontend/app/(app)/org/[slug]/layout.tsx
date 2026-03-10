@@ -10,6 +10,7 @@ import { PageTransition } from "@/components/page-transition";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { AuthHeaderControls } from "@/components/auth-header-controls";
 import { CapabilityProvider } from "@/lib/capabilities";
+import { CommandPaletteProvider } from "@/components/command-palette-provider";
 
 export default async function OrgLayout({
   children,
@@ -55,6 +56,7 @@ export default async function OrgLayout({
       isAdmin={capData.isAdmin}
       isOwner={capData.isOwner}
     >
+      <CommandPaletteProvider slug={slug}>
       <div className="flex min-h-screen">
         <DesktopSidebar slug={slug} groups={groups} />
         <div className="flex flex-1 flex-col">
@@ -76,6 +78,7 @@ export default async function OrgLayout({
           </main>
         </div>
       </div>
+      </CommandPaletteProvider>
     </CapabilityProvider>
   );
 }

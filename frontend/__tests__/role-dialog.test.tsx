@@ -99,15 +99,11 @@ describe("RoleDialog", () => {
     ).toBeInTheDocument();
 
     // Financial Visibility and Invoicing should be checked
-    const checkboxes = screen.getAllByRole("checkbox");
-    const financialCb = checkboxes[0]; // FINANCIAL_VISIBILITY is first
-    const invoicingCb = checkboxes[1]; // INVOICING is second
-    expect(financialCb).toHaveAttribute("data-state", "checked");
-    expect(invoicingCb).toHaveAttribute("data-state", "checked");
+    expect(screen.getByRole("checkbox", { name: /Financial Visibility/i })).toHaveAttribute("data-state", "checked");
+    expect(screen.getByRole("checkbox", { name: /Invoicing/i })).toHaveAttribute("data-state", "checked");
 
     // Project Management should not be checked
-    const projectCb = checkboxes[2]; // PROJECT_MANAGEMENT is third
-    expect(projectCb).toHaveAttribute("data-state", "unchecked");
+    expect(screen.getByRole("checkbox", { name: /Project Management/i })).toHaveAttribute("data-state", "unchecked");
   });
 
   it("updates capabilities in edit mode", async () => {

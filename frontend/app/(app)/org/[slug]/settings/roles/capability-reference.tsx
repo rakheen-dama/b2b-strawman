@@ -8,40 +8,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-
-const CAPABILITY_DESCRIPTIONS = [
-  {
-    name: "Financial Visibility",
-    description:
-      "View financial data including rates, budgets, and profitability reports",
-  },
-  {
-    name: "Invoicing",
-    description: "Create, edit, and send invoices to customers",
-  },
-  {
-    name: "Project Management",
-    description: "Create and manage projects, tasks, and documents",
-  },
-  {
-    name: "Team Oversight",
-    description:
-      "View team members' work, time entries, and assignments",
-  },
-  {
-    name: "Customer Management",
-    description: "Create and manage customer records and relationships",
-  },
-  {
-    name: "Automations",
-    description: "Configure workflow automations and scheduling rules",
-  },
-  {
-    name: "Resource Planning",
-    description:
-      "View and manage resource allocation and capacity planning",
-  },
-];
+import { CAPABILITY_META } from "@/lib/capabilities";
 
 export function CapabilityReference() {
   const [isOpen, setIsOpen] = useState(false);
@@ -70,17 +37,17 @@ export function CapabilityReference() {
               </tr>
             </thead>
             <tbody>
-              {CAPABILITY_DESCRIPTIONS.map((cap, i) => (
+              {CAPABILITY_META.map((cap, i) => (
                 <tr
-                  key={cap.name}
+                  key={cap.value}
                   className={
-                    i < CAPABILITY_DESCRIPTIONS.length - 1
+                    i < CAPABILITY_META.length - 1
                       ? "border-b border-slate-200 dark:border-slate-800"
                       : ""
                   }
                 >
                   <td className="px-4 py-2.5 font-medium text-slate-950 dark:text-slate-50">
-                    {cap.name}
+                    {cap.label}
                   </td>
                   <td className="px-4 py-2.5 text-slate-600 dark:text-slate-400">
                     {cap.description}

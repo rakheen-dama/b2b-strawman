@@ -18,48 +18,8 @@ import {
   createRoleAction,
   updateRoleAction,
 } from "@/app/(app)/org/[slug]/settings/roles/actions";
+import { CAPABILITY_META } from "@/lib/capabilities";
 import type { OrgRole } from "@/lib/api/org-roles";
-
-const CAPABILITY_OPTIONS = [
-  {
-    value: "FINANCIAL_VISIBILITY",
-    label: "Financial Visibility",
-    description:
-      "View financial data including rates, budgets, and profitability reports",
-  },
-  {
-    value: "INVOICING",
-    label: "Invoicing",
-    description: "Create, edit, and send invoices to customers",
-  },
-  {
-    value: "PROJECT_MANAGEMENT",
-    label: "Project Management",
-    description: "Create and manage projects, tasks, and documents",
-  },
-  {
-    value: "TEAM_OVERSIGHT",
-    label: "Team Oversight",
-    description:
-      "View team members' work, time entries, and assignments",
-  },
-  {
-    value: "CUSTOMER_MANAGEMENT",
-    label: "Customer Management",
-    description: "Create and manage customer records and relationships",
-  },
-  {
-    value: "AUTOMATIONS",
-    label: "Automations",
-    description: "Configure workflow automations and scheduling rules",
-  },
-  {
-    value: "RESOURCE_PLANNING",
-    label: "Resource Planning",
-    description:
-      "View and manage resource allocation and capacity planning",
-  },
-] as const;
 
 interface RoleDialogProps {
   slug: string;
@@ -178,7 +138,7 @@ export function RoleDialog({ slug, role, open, onOpenChange }: RoleDialogProps) 
             <div className="space-y-3">
               <Label>Capabilities</Label>
               <div className="space-y-3">
-                {CAPABILITY_OPTIONS.map((cap) => (
+                {CAPABILITY_META.map((cap) => (
                   <label
                     key={cap.value}
                     className="flex items-start gap-3 cursor-pointer"

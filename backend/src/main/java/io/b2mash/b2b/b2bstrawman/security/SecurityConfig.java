@@ -4,14 +4,20 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditAuthenticationEntryPoint;
 import io.b2mash.b2b.b2bstrawman.member.MemberFilter;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantFilter;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantLoggingFilter;
+import io.b2mash.b2b.b2bstrawman.orgrole.CapabilityAuthorizationManager;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.portal.CustomerAuthFilter;
 import java.util.List;
+import org.springframework.aop.Advisor;
+import org.springframework.aop.support.annotation.AnnotationMatchingPointcut;
 import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
+import org.springframework.security.authorization.method.AuthorizationInterceptorsOrder;
+import org.springframework.security.authorization.method.AuthorizationManagerBeforeMethodInterceptor;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -132,6 +138,19 @@ public class SecurityConfig {
         .addFilterAfter(tenantLoggingFilter, PlatformAdminFilter.class);
 
     return http.build();
+  }
+
+  /**
+   * Registers {@link CapabilityAuthorizationManager} as a method-security interceptor that targets
+   * methods annotated with {@link RequiresCapability}. Runs after {@code @PreAuthorize} so both can
+   * coexist on the same method.
+   */
+  @Bean
+  static Advisor requiresCapabilityAdvisor(CapabilityAuthorizationManager manager) {
+    var pointcut = new AnnotationMatchingPointcut(null, RequiresCapability.class);
+    var interceptor = new AuthorizationManagerBeforeMethodInterceptor(pointcut, manager);
+    interceptor.setOrder(AuthorizationInterceptorsOrder.PRE_AUTHORIZE.getOrder() + 1);
+    return interceptor;
   }
 
   @Bean

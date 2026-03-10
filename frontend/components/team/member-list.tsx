@@ -26,8 +26,13 @@ const ROLE_BADGES: Record<
 
 interface MemberListProps {
   isAdmin?: boolean;
-  roles?: OrgRole[];
-  slug?: string;
+  roles: OrgRole[];
+  slug: string;
+}
+
+interface InnerMemberListProps {
+  isAdmin?: boolean;
+  onRowClick: (member: MemberRowData) => void;
 }
 
 interface MemberRowData {
@@ -42,20 +47,14 @@ interface MemberRowData {
 
 function ClerkMemberList({
   isAdmin,
-  roles,
-  slug,
-}: MemberListProps) {
+  onRowClick,
+}: InnerMemberListProps) {
   const { memberships, isLoaded } = useOrganization({
     memberships: {
       infinite: true,
       keepPreviousData: true,
     },
   });
-
-  const [selectedMember, setSelectedMember] = useState<MemberRowData | null>(
-    null,
-  );
-  const [panelOpen, setPanelOpen] = useState(false);
 
   if (!isLoaded) {
     return (
@@ -73,12 +72,6 @@ function ClerkMemberList({
         description="Organization members will appear here"
       />
     );
-  }
-
-  function handleRowClick(member: MemberRowData) {
-    if (!isAdmin) return;
-    setSelectedMember(member);
-    setPanelOpen(true);
   }
 
   return (
@@ -100,7 +93,7 @@ function ClerkMemberList({
               key={member.id}
               member={row}
               isAdmin={isAdmin}
-              onRowClick={handleRowClick}
+              onRowClick={onRowClick}
             />
           );
         })}
@@ -117,30 +110,15 @@ function ClerkMemberList({
           </button>
         </div>
       )}
-
-      {isAdmin && (
-        <MemberDetailPanel
-          open={panelOpen}
-          onOpenChange={setPanelOpen}
-          member={selectedMember}
-          roles={roles ?? []}
-          slug={slug ?? ""}
-        />
-      )}
     </div>
   );
 }
 
 function MockMemberList({
   isAdmin,
-  roles,
-  slug,
-}: MemberListProps) {
+  onRowClick,
+}: InnerMemberListProps) {
   const { members, isLoaded } = useOrgMembers();
-  const [selectedMember, setSelectedMember] = useState<MemberRowData | null>(
-    null,
-  );
-  const [panelOpen, setPanelOpen] = useState(false);
 
   if (!isLoaded) {
     return (
@@ -160,58 +138,35 @@ function MockMemberList({
     );
   }
 
-  function handleRowClick(member: MemberRowData) {
-    if (!isAdmin) return;
-    setSelectedMember(member);
-    setPanelOpen(true);
-  }
-
   return (
-    <>
-      <MemberTable>
-        {members.map((member) => {
-          const row: MemberRowData = {
-            id: member.id,
-            name: member.name ?? "Unknown",
-            email: member.email,
-            role: member.role,
-            joinedAt: "\u2014",
-          };
-          return (
-            <MemberRow
-              key={member.id}
-              member={row}
-              isAdmin={isAdmin}
-              onRowClick={handleRowClick}
-            />
-          );
-        })}
-      </MemberTable>
-
-      {isAdmin && (
-        <MemberDetailPanel
-          open={panelOpen}
-          onOpenChange={setPanelOpen}
-          member={selectedMember}
-          roles={roles ?? []}
-          slug={slug ?? ""}
-        />
-      )}
-    </>
+    <MemberTable>
+      {members.map((member) => {
+        const row: MemberRowData = {
+          id: member.id,
+          name: member.name ?? "Unknown",
+          email: member.email,
+          role: member.role,
+          joinedAt: "\u2014",
+        };
+        return (
+          <MemberRow
+            key={member.id}
+            member={row}
+            isAdmin={isAdmin}
+            onRowClick={onRowClick}
+          />
+        );
+      })}
+    </MemberTable>
   );
 }
 
 function KeycloakBffMemberList({
   isAdmin,
-  roles,
-  slug,
-}: MemberListProps) {
+  onRowClick,
+}: InnerMemberListProps) {
   const [members, setMembers] = useState<BffMember[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [selectedMember, setSelectedMember] = useState<MemberRowData | null>(
-    null,
-  );
-  const [panelOpen, setPanelOpen] = useState(false);
 
   useEffect(() => {
     listMembers()
@@ -239,46 +194,28 @@ function KeycloakBffMemberList({
     );
   }
 
-  function handleRowClick(member: MemberRowData) {
-    if (!isAdmin) return;
-    setSelectedMember(member);
-    setPanelOpen(true);
-  }
-
   return (
-    <>
-      <MemberTable>
-        {members.map((member) => {
-          const row: MemberRowData = {
-            id: member.id,
-            name: member.name ?? "Unknown",
-            email: member.email,
-            role: member.role,
-            joinedAt: "\u2014",
-            orgRoleName: member.orgRoleName,
-            capabilityOverridesCount: member.capabilityOverridesCount,
-          };
-          return (
-            <MemberRow
-              key={member.id}
-              member={row}
-              isAdmin={isAdmin}
-              onRowClick={handleRowClick}
-            />
-          );
-        })}
-      </MemberTable>
-
-      {isAdmin && (
-        <MemberDetailPanel
-          open={panelOpen}
-          onOpenChange={setPanelOpen}
-          member={selectedMember}
-          roles={roles ?? []}
-          slug={slug ?? ""}
-        />
-      )}
-    </>
+    <MemberTable>
+      {members.map((member) => {
+        const row: MemberRowData = {
+          id: member.id,
+          name: member.name ?? "Unknown",
+          email: member.email,
+          role: member.role,
+          joinedAt: "\u2014",
+          orgRoleName: member.orgRoleName,
+          capabilityOverridesCount: member.capabilityOverridesCount,
+        };
+        return (
+          <MemberRow
+            key={member.id}
+            member={row}
+            isAdmin={isAdmin}
+            onRowClick={onRowClick}
+          />
+        );
+      })}
+    </MemberTable>
   );
 }
 
@@ -370,11 +307,38 @@ function MemberRow({
 }
 
 export function MemberList({ isAdmin, roles, slug }: MemberListProps) {
-  if (AUTH_MODE === "mock")
-    return <MockMemberList isAdmin={isAdmin} roles={roles} slug={slug} />;
-  if (AUTH_MODE === "keycloak")
-    return (
-      <KeycloakBffMemberList isAdmin={isAdmin} roles={roles} slug={slug} />
-    );
-  return <ClerkMemberList isAdmin={isAdmin} roles={roles} slug={slug} />;
+  const [selectedMember, setSelectedMember] = useState<MemberRowData | null>(
+    null,
+  );
+  const [panelOpen, setPanelOpen] = useState(false);
+
+  function handleRowClick(member: MemberRowData) {
+    if (!isAdmin) return;
+    setSelectedMember(member);
+    setPanelOpen(true);
+  }
+
+  const innerProps: InnerMemberListProps = { isAdmin, onRowClick: handleRowClick };
+
+  return (
+    <>
+      {AUTH_MODE === "mock" ? (
+        <MockMemberList {...innerProps} />
+      ) : AUTH_MODE === "keycloak" ? (
+        <KeycloakBffMemberList {...innerProps} />
+      ) : (
+        <ClerkMemberList {...innerProps} />
+      )}
+
+      {isAdmin && (
+        <MemberDetailPanel
+          open={panelOpen}
+          onOpenChange={setPanelOpen}
+          member={selectedMember}
+          roles={roles}
+          slug={slug}
+        />
+      )}
+    </>
+  );
 }

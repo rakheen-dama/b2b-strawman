@@ -237,6 +237,12 @@ export interface MemberCapabilities {
 export async function fetchMemberCapabilities(
   memberId: string,
 ): Promise<MemberCapabilities | null> {
+  const { orgRole } = await getAuthContext();
+
+  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+    return null;
+  }
+
   try {
     return await api.get<MemberCapabilities>(
       `/api/members/${encodeURIComponent(memberId)}/capabilities`,

@@ -17,8 +17,8 @@ type TabId = (typeof tabs)[number]["id"];
 
 interface TeamTabsProps {
   isAdmin: boolean;
-  roles?: OrgRole[];
-  slug?: string;
+  roles: OrgRole[];
+  slug: string;
 }
 
 export function TeamTabs({ isAdmin, roles, slug }: TeamTabsProps) {

@@ -118,51 +118,11 @@ describe("MemberList", () => {
     vi.clearAllMocks();
   });
 
-  it("renders role badge for system role members", async () => {
-    // Override the env to use keycloak mode for BFF member list
-    const origEnv = process.env.NEXT_PUBLIC_AUTH_MODE;
-    process.env.NEXT_PUBLIC_AUTH_MODE = "keycloak";
-
-    mockListMembers.mockResolvedValue([
-      {
-        id: "m1",
-        email: "alice@example.com",
-        name: "Alice",
-        role: "org:owner",
-      },
-      {
-        id: "m2",
-        email: "bob@example.com",
-        name: "Bob",
-        role: "org:admin",
-      },
-    ]);
-
-    // Need to re-import to get updated AUTH_MODE
-    // Instead, test the mock mode which we can control
-    process.env.NEXT_PUBLIC_AUTH_MODE = origEnv;
-
-    // Use mock mode with useOrgMembers mock
-    const { useOrgMembers } = await import("@/lib/auth/client");
-    vi.mocked(useOrgMembers).mockReturnValue({
-      members: [
-        { id: "m1", email: "alice@test.com", name: "Alice", role: "org:owner" },
-        { id: "m2", email: "bob@test.com", name: "Bob", role: "org:admin" },
-      ],
-      isLoaded: true,
-    });
-
-    // MemberList reads AUTH_MODE at module level, so it's "clerk" by default in tests.
-    // We'll test with the mock auth mode by re-mocking.
-    // The component still renders MemberRow which we can test through MemberDetailPanel tests.
-    // For this test, render MemberList directly — it will use ClerkMemberList by default.
-    // Instead, let's directly test the rendering by checking Badge output via the mock path.
-
-    // Re-import with mocked useOrgMembers
+  it("renders empty state when no members are loaded (clerk mode)", async () => {
+    // MemberList reads AUTH_MODE at module level, defaulting to "clerk" in tests.
+    // The Clerk mock returns empty memberships, so we expect the empty state.
     render(<MemberList isAdmin={true} roles={allRoles} slug="test-org" />);
 
-    // In clerk mode with mocked empty memberships, it shows empty state
-    // Let's verify rendering works without errors
     await waitFor(() => {
       expect(screen.getByText("No members found")).toBeInTheDocument();
     });

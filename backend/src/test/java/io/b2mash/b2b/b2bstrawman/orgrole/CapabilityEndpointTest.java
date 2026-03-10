@@ -164,7 +164,7 @@ class CapabilityEndpointTest {
         .andExpect(jsonPath("$.isOwner").value(false))
         .andExpect(jsonPath("$.capabilities").isArray())
         .andExpect(jsonPath("$.capabilities.length()").value(0))
-        .andExpect(jsonPath("$.role").isEmpty());
+        .andExpect(jsonPath("$.role").value("Member"));
   }
 
   @Test

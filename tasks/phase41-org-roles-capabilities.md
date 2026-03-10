@@ -20,7 +20,7 @@ Phase 41 replaces the coarse three-role authorization model (Owner/Admin/Member)
 | 312 | OrgRole Entity Foundation & Migration | Backend | -- | M | 312A, 312B | **Done** (PRs #636, #637) |
 | 313 | Capability Resolution & Authorization Infrastructure | Backend | 312 | M | 313A, 313B | **Done** (PRs #638, #639) |
 | 314 | @PreAuthorize Migration (Batch 1: Financial, Invoicing, Project) | Backend | 313 | M | 314A, 314B | **Done** (PRs #640, #641) |
-| 315 | @PreAuthorize Migration (Batch 2: Customer, Automation, Resource, Team) | Backend | 313 | M | 315A, 315B | |
+| 315 | @PreAuthorize Migration (Batch 2: Customer, Automation, Resource, Team) | Backend | 313 | M | 315A, 315B | **Done** (PRs #642, #643) |
 | 316 | OrgRole CRUD API & Member Role Assignment | Backend | 312 | M | 316A, 316B | |
 | 317 | Audit Events & Notifications | Backend | 316 | S | 317A | |
 | 318 | Frontend Capability Context & Sidebar Gating | Frontend | 313 | M | 318A, 318B | |
@@ -149,7 +149,7 @@ FRONTEND TRACK (after E313 backend APIs ready)
 | 2a (parallel) | 314 | 314A | Migrate `@PreAuthorize` to `@RequiresCapability` on: `InvoiceController` (19), `BillingRunController` (15), `CostRateController` (4), `ReportController` profitability endpoints (2), `ExpenseController` approve (2). ~5 modified controller files + test updates (~10 test adjustments). Backend only. | **Done** (PR #640) |
 | 2b (parallel) | 314 | 314B | Migrate `@PreAuthorize` to `@RequiresCapability` on: `ProjectController` creates/edits (5), `ProjectTemplateController` writes (4), `RecurringScheduleController` writes (4), `ProposalController` writes (3). ~4 modified controller files + test updates (~8 test adjustments). Backend only. | **Done** (PR #641) |
 | 2c (parallel) | 315 | 315A | Migrate `@PreAuthorize` to `@RequiresCapability` on: `CustomerController` (8), `CompliancePackController` (1), `RetentionController` (6), `DataRequestController` (8), `ChecklistTemplateController` writes (3), `ChecklistInstanceController` writes (3), `InformationRequestController` admin writes (5), `RequestTemplateController` writes (3), `AcceptanceController` admin (3). ~9 modified controller files + test updates (~10 test adjustments). Backend only. | **Done** (PR #642) |
-| 2d (parallel) | 315 | 315B | Migrate `@PreAuthorize` to `@RequiresCapability` on: `AutomationRuleController` (8), `AutomationActionController` (4), `AutomationExecutionController` (3), `AutomationTemplateController` (2), `MemberCapacityController` (4), `ResourceAllocationController` writes (3), `AdminTimeEntryController` (1). ~7 modified controller files + test updates (~8 test adjustments). Backend only. | |
+| 2d (parallel) | 315 | 315B | Migrate `@PreAuthorize` to `@RequiresCapability` on: `AutomationRuleController` (8), `AutomationActionController` (4), `AutomationExecutionController` (3), `AutomationTemplateController` (2), `MemberCapacityController` (4), `ResourceAllocationController` writes (3), `AdminTimeEntryController` (1). ~7 modified controller files + test updates (~8 test adjustments). Backend only. | **Done** (PR #643) |
 
 ### Stage 3: Audit & Notifications
 
@@ -414,7 +414,7 @@ Stage 5: [319A] -> [319B] // [320A] -> [320B]                         (two paral
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **315A** | 315.1--315.4 | Migrate `CustomerController` (8), `CompliancePackController` (1), `RetentionController` (6), `DataRequestController` (8), `ChecklistTemplateController` writes (3), `ChecklistInstanceController` writes (3), `InformationRequestController` admin (5), `RequestTemplateController` writes (3), `AcceptanceController` admin (3) all to `CUSTOMER_MANAGEMENT`. ~9 modified controllers + test updates (~10 test adjustments). Backend only. | **Done** (PR #642) |
-| **315B** | 315.5--315.8 | Migrate `AutomationRuleController` (8), `AutomationActionController` (4), `AutomationExecutionController` (3), `AutomationTemplateController` (2) to `AUTOMATIONS`. Migrate `MemberCapacityController` (4), `ResourceAllocationController` writes (3) to `RESOURCE_PLANNING`. Migrate `AdminTimeEntryController` (1) to `TEAM_OVERSIGHT`. ~7 modified controllers + test updates (~8 test adjustments). Backend only. | |
+| **315B** | 315.5--315.8 | Migrate `AutomationRuleController` (8), `AutomationActionController` (4), `AutomationExecutionController` (3), `AutomationTemplateController` (2) to `AUTOMATIONS`. Migrate `MemberCapacityController` (4), `ResourceAllocationController` writes (3) to `RESOURCE_PLANNING`. Migrate `AdminTimeEntryController` (1) to `TEAM_OVERSIGHT`. ~7 modified controllers + test updates (~8 test adjustments). Backend only. | **Done** (PR #643) |
 
 ### Tasks
 

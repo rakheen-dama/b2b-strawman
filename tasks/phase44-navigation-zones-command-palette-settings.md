@@ -16,7 +16,7 @@ A **frontend-only** UX structural overhaul addressing accumulated navigation deb
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 332 | Nav-Items Data Model Restructure | Frontend | -- | S | 332A | |
+| 332 | Nav-Items Data Model Restructure | Frontend | -- | S | 332A | **Done** (PR #653) |
 | 333 | Desktop Sidebar Zone Rendering | Frontend | 332 | M | 333A, 333B | |
 | 334 | Mobile Sidebar Zone Rendering | Frontend | 332, 333 | S | 334A | |
 | 335 | Command Palette (⌘K) | Frontend | 332 | M | 335A, 335B | |
@@ -83,7 +83,7 @@ SIDEBAR TRACK                CMD PALETTE TRACK           SETTINGS TRACK (indepen
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 0a | 332 | 332A | `NavGroup` and `NavItem` interfaces with optional `group` field, `NAV_GROUPS` grouped array (5 zones), `UTILITY_ITEMS` constant (Notifications + Settings), `SETTINGS_ITEMS` flat array for command palette indexing, backward-compat `NAV_ITEMS` derived re-export. ~3 modified/new files (~6 unit tests). Frontend only. | |
+| 0a | 332 | 332A | `NavGroup` and `NavItem` interfaces with optional `group` field, `NAV_GROUPS` grouped array (5 zones), `UTILITY_ITEMS` constant (Notifications + Settings), `SETTINGS_ITEMS` flat array for command palette indexing, backward-compat `NAV_ITEMS` derived re-export. ~3 modified/new files (~6 unit tests). Frontend only. | **Done** (PR #653) |
 
 ### Stage 1: Parallel Feature Tracks (3 concurrent)
 
@@ -139,7 +139,7 @@ Stage 3: [337A]                                                    (single, inte
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **332A** | 332.1–332.8 | `NavGroup` interface, `NAV_GROUPS` grouped array (5 zones × N items), `UTILITY_ITEMS` array (Notifications, Settings), `SETTINGS_ITEMS` flat array for command palette, backward-compat `NAV_ITEMS` re-export derived from `NAV_GROUPS`. ~3 modified/new files (~6 unit tests). Frontend only. | |
+| **332A** | 332.1–332.8 | `NavGroup` interface, `NAV_GROUPS` grouped array (5 zones × N items), `UTILITY_ITEMS` array (Notifications, Settings), `SETTINGS_ITEMS` flat array for command palette, backward-compat `NAV_ITEMS` re-export derived from `NAV_GROUPS`. ~3 modified/new files (~6 unit tests). Frontend only. | **Done** (PR #653) |
 
 ### Tasks
 

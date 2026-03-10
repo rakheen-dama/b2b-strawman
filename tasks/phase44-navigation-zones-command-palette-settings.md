@@ -20,7 +20,7 @@ A **frontend-only** UX structural overhaul addressing accumulated navigation deb
 | 333 | Desktop Sidebar Zone Rendering | Frontend | 332 | M | 333A, 333B | **Done** (PRs #654, #655) |
 | 334 | Mobile Sidebar Zone Rendering | Frontend | 332, 333 | S | 334A | **Done** (PR #656) |
 | 335 | Command Palette (⌘K) | Frontend | 332 | M | 335A, 335B | **Done** (PRs #657, #658) |
-| 336 | Settings Layout Shell & Sidebar | Frontend | -- | M | 336A, 336B | |
+| 336 | Settings Layout Shell & Sidebar | Frontend | -- | M | 336A, 336B | **Done** (PRs #659, #660) |
 | 337 | Settings Hub Redirect & Breadcrumb Update | Frontend | 336 | S | 337A | |
 
 ---
@@ -100,7 +100,7 @@ SIDEBAR TRACK                CMD PALETTE TRACK           SETTINGS TRACK (indepen
 | 2a (parallel) | 333 | 333B | Search trigger `⌘K` pill added to `DesktopSidebar` header area (below org slug). Utility footer items (Notifications with unread badge passthrough, Settings) pinned below zone list with `border-t`. Empty zone hidden via `!items.length` guard. Integration tests confirming zone collapse, capability filter, utility footer render. ~2 modified files (~4 tests). Frontend only. | **Done** (PR #655) |
 | 2b (parallel) | 334 | 334A | `MobileSidebar` refactored to render `NAV_GROUPS` via the same `NavZone` component from Epic 333A. Sheet close-on-nav preserved via `onClose` prop threading. Utility footer items rendered. Mobile-specific light-background zone header styling. ~1 modified file (~4 tests). Frontend only. | **Done** (PR #656) |
 | 2c (parallel) | 335 | 335B | `RecentItemsContext` provider added to org layout — observes `pathname` changes to build a `RecentItem[]` list (max 5, project/customer pages only, extracts label from `<title>` or a pre-populated lookup). `CommandPaletteDialog` gains a "Recent" group rendered when cache is non-empty. Integration test: palette shows recent item after navigation. ~3 new/modified files (~4 tests). Frontend only. | **Done** (PR #658) |
-| 2d (parallel) | 336 | 336B | `SettingsSidebar` visual polish: active item teal left-border (`border-l-2 border-teal-600`), group header uppercase muted labels, "Coming soon" `Badge` on Organization/Security items (non-clickable), admin-only item hiding via `orgRole` prop, mobile horizontal scrollable tab row alternative. Settings page content area padding/max-width alignment. ~2 modified files (~5 tests). Frontend only. | |
+| 2d (parallel) | 336 | 336B | `SettingsSidebar` visual polish: active item teal left-border (`border-l-2 border-teal-600`), group header uppercase muted labels, "Coming soon" `Badge` on Organization/Security items (non-clickable), admin-only item hiding via `orgRole` prop, mobile horizontal scrollable tab row alternative. Settings page content area padding/max-width alignment. ~2 modified files (~5 tests). Frontend only. | **Done** (PR #660) |
 
 ### Stage 3: Integration & Wiring
 
@@ -373,8 +373,8 @@ Stage 3: [337A]                                                    (single, inte
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **336A** | 336.1–336.5 | New `settings/layout.tsx` rendering `SettingsSidebar` + `{children}`. `SettingsSidebar` component with 6 setting groups config, sticky behavior, mobile dropdown. ~3 new files (~4 tests). Frontend only. | |
-| **336B** | 336.6–336.9 | `SettingsSidebar` visual polish: active item teal highlight, group header labels, Coming Soon badges, admin-only gating, mobile horizontal scrollable tabs, content area max-width. ~2 modified files (~5 tests). Frontend only. | |
+| **336A** | 336.1–336.5 | New `settings/layout.tsx` rendering `SettingsSidebar` + `{children}`. `SettingsSidebar` component with 6 setting groups config, sticky behavior, mobile dropdown. ~3 new files (~4 tests). Frontend only. | **Done** (PR #659) |
+| **336B** | 336.6–336.9 | `SettingsSidebar` visual polish: active item teal highlight, group header labels, Coming Soon badges, admin-only gating, mobile horizontal scrollable tabs, content area max-width. ~2 modified files (~5 tests). Frontend only. | **Done** (PR #660) |
 
 ### Tasks
 

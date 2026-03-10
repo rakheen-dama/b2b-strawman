@@ -176,11 +176,9 @@ function InviteFormUI({
     setOverrides([]);
     setCustomizeOpen(false);
 
-    if (value === "system:member") {
-      setRole("org:member");
-      setSelectedRoleId(undefined);
-    } else if (value === "system:admin") {
-      setRole("org:admin");
+    if (systemSelectValues.has(value)) {
+      // System role selected — map to auth role, clear custom role
+      setRole(value === SYSTEM_ADMIN_VALUE ? "org:admin" : "org:member");
       setSelectedRoleId(undefined);
     } else {
       // Custom role — auth role stays member, store orgRoleId
@@ -223,11 +221,16 @@ function InviteFormUI({
     }
   }
 
+  // Well-known select values for system roles (not derived from role IDs)
+  const SYSTEM_MEMBER_VALUE = "system:member";
+  const SYSTEM_ADMIN_VALUE = "system:admin";
+  const systemSelectValues = new Set([SYSTEM_MEMBER_VALUE, SYSTEM_ADMIN_VALUE]);
+
   // Compute the select value from current state
   function getSelectValue(): string {
     if (selectedRoleId) return selectedRoleId;
-    if (role === "org:admin") return "system:admin";
-    return "system:member";
+    if (role === "org:admin") return SYSTEM_ADMIN_VALUE;
+    return SYSTEM_MEMBER_VALUE;
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -304,8 +307,8 @@ function InviteFormUI({
               <SelectContent>
                 <SelectGroup>
                   <SelectLabel>System</SelectLabel>
-                  <SelectItem value="system:member">Member</SelectItem>
-                  <SelectItem value="system:admin">Admin</SelectItem>
+                  <SelectItem value={SYSTEM_MEMBER_VALUE}>Member</SelectItem>
+                  <SelectItem value={SYSTEM_ADMIN_VALUE}>Admin</SelectItem>
                 </SelectGroup>
                 {customRoles.length > 0 && (
                   <SelectGroup>

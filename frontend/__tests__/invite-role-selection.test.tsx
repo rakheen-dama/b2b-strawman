@@ -11,11 +11,9 @@ vi.stubEnv("NEXT_PUBLIC_AUTH_MODE", "mock");
 // Mock motion/react (Collapsible may use motion internally)
 vi.mock("motion/react", () => ({
   motion: {
-    div: ({
-      children,
-      ...props
-    }: React.PropsWithChildren<Record<string, unknown>>) => {
-      const { initial, animate, transition, ...rest } = props;
+    div: (props: React.PropsWithChildren<Record<string, unknown>>) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { children, initial, animate, transition, ...rest } = props;
       return <div {...rest}>{children}</div>;
     },
   },

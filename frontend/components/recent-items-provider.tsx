@@ -1,12 +1,11 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { usePathname } from "next/navigation";
 
 export type RecentItem = {
   href: string;
   label: string;
-  icon?: string;
 };
 
 interface RecentItemsContextValue {
@@ -32,13 +31,13 @@ export function RecentItemsProvider({ children }: RecentItemsProviderProps) {
   const [items, setItems] = useState<RecentItem[]>([]);
   const pathname = usePathname();
 
-  const addItem = (item: RecentItem) => {
+  const addItem = useCallback((item: RecentItem) => {
     setItems((prev) => {
       // Deduplicate by href, then prepend, cap at 5
       const filtered = prev.filter((i) => i.href !== item.href);
       return [item, ...filtered].slice(0, 5);
     });
-  };
+  }, []);
 
   useEffect(() => {
     // Match /org/[slug]/projects/[id] or /org/[slug]/customers/[id]
@@ -46,24 +45,15 @@ export function RecentItemsProvider({ children }: RecentItemsProviderProps) {
     const customerMatch = pathname.match(/^\/org\/[^/]+\/customers\/([^/]+)$/);
 
     if (projectMatch || customerMatch) {
-      // Derive label: prefer document.title, fallback to title-cased last segment
+      // Derive label: title-case the last path segment (reliable in App Router)
       const lastSegment = pathname.split("/").pop() ?? "";
-      let label = "";
-      if (typeof document !== "undefined" && document.title) {
-        // document.title typically includes the page title set by Next.js metadata
-        // Strip the site name suffix if present (e.g., "Project Alpha | DocTeams" → "Project Alpha")
-        label = document.title.split("|")[0].trim();
-      }
-      if (!label || label === "") {
-        // Fallback: title-case the last segment (ID-based slug)
-        label = lastSegment
-          .split("-")
-          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-          .join(" ");
-      }
+      const label = lastSegment
+        .split("-")
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" ");
       addItem({ href: pathname, label });
     }
-  }, [pathname]);
+  }, [pathname, addItem]);
 
   return (
     <RecentItemsContext.Provider value={{ items, addItem }}>

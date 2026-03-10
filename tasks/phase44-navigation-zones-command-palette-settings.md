@@ -21,7 +21,7 @@ A **frontend-only** UX structural overhaul addressing accumulated navigation deb
 | 334 | Mobile Sidebar Zone Rendering | Frontend | 332, 333 | S | 334A | **Done** (PR #656) |
 | 335 | Command Palette (⌘K) | Frontend | 332 | M | 335A, 335B | **Done** (PRs #657, #658) |
 | 336 | Settings Layout Shell & Sidebar | Frontend | -- | M | 336A, 336B | **Done** (PRs #659, #660) |
-| 337 | Settings Hub Redirect & Breadcrumb Update | Frontend | 336 | S | 337A | |
+| 337 | Settings Hub Redirect & Breadcrumb Update | Frontend | 336 | S | 337A | **Done** (PR #661) |
 
 ---
 
@@ -106,7 +106,7 @@ SIDEBAR TRACK                CMD PALETTE TRACK           SETTINGS TRACK (indepen
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 3a | 337 | 337A | `settings/page.tsx` converted to `redirect(\`/org/\${slug}/settings/billing\`)`. `breadcrumbs.tsx` gains `SEGMENT_LABELS` entries for all 23 settings segments (`rates`, `tax`, `time-tracking`, etc.) and a two-level display path when on settings subpages (`Settings > Rates & Currency`). `CommandPaletteDialog` mounted in org layout (wiring task). ~3 modified files (~5 tests). Frontend only. | |
+| 3a | 337 | 337A | `settings/page.tsx` converted to `redirect(\`/org/\${slug}/settings/billing\`)`. `breadcrumbs.tsx` gains `SEGMENT_LABELS` entries for all 23 settings segments (`rates`, `tax`, `time-tracking`, etc.) and a two-level display path when on settings subpages (`Settings > Rates & Currency`). `CommandPaletteDialog` mounted in org layout (wiring task). ~3 modified files (~5 tests). Frontend only. | **Done** (PR #661) |
 
 ### Timeline
 
@@ -434,7 +434,7 @@ Stage 3: [337A]                                                    (single, inte
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **337A** | 337.1–337.6 | `settings/page.tsx` converted to redirect. `breadcrumbs.tsx` gains all settings segment labels and two-level settings path rendering. `CommandPaletteProvider` wired to `DesktopSidebar` via context. ~3 modified files (~5 tests). Frontend only. | |
+| **337A** | 337.1–337.6 | `settings/page.tsx` converted to redirect. `breadcrumbs.tsx` gains all settings segment labels and two-level settings path rendering. `CommandPaletteProvider` wired to `DesktopSidebar` via context. ~3 modified files (~5 tests). Frontend only. | **Done** (PR #661) |
 
 ### Tasks
 

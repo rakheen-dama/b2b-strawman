@@ -11,7 +11,6 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
@@ -47,7 +46,6 @@ class DataRequestControllerTest {
   @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private OrgRoleService orgRoleService;
-  @Autowired private OrgRoleRepository orgRoleRepository;
   @Autowired private MemberRepository memberRepository;
 
   private String customerId;
@@ -188,6 +186,20 @@ class DataRequestControllerTest {
   void customRoleWithoutCapability_accessesDsrEndpoint_returns403() throws Exception {
     mockMvc
         .perform(get("/api/data-requests").with(noCapabilityJwt()))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void customRoleWithCapability_canCheckDeadlines() throws Exception {
+    mockMvc
+        .perform(post("/api/data-requests/check-deadlines").with(customRoleJwt()))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void customRoleWithoutCapability_cannotCheckDeadlines() throws Exception {
+    mockMvc
+        .perform(post("/api/data-requests/check-deadlines").with(noCapabilityJwt()))
         .andExpect(status().isForbidden());
   }
 

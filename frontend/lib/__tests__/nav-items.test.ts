@@ -71,28 +71,26 @@ describe("UTILITY_ITEMS", () => {
 });
 
 describe("NAV_ITEMS (backward compat)", () => {
-  it("is a flat array of all group items", () => {
-    const expected = NAV_GROUPS.flatMap((g) => g.items);
+  it("is a flat array of all group items plus utility items", () => {
+    const expected = [
+      ...NAV_GROUPS.flatMap((g) => g.items),
+      ...UTILITY_ITEMS,
+    ];
     expect(NAV_ITEMS).toEqual(expected);
   });
 
-  it("total count matches NAV_GROUPS flattened count", () => {
-    const groupTotal = NAV_GROUPS.reduce((sum, g) => sum + g.items.length, 0);
-    expect(NAV_ITEMS).toHaveLength(groupTotal);
+  it("total count is 16 (14 group items + 2 utility items)", () => {
+    expect(NAV_ITEMS).toHaveLength(16);
   });
 
-  it("does not include Notifications or Settings", () => {
+  it("includes Notifications and Settings from UTILITY_ITEMS", () => {
     const labels = NAV_ITEMS.map((i) => i.label);
-    expect(labels).not.toContain("Notifications");
-    expect(labels).not.toContain("Settings");
+    expect(labels).toContain("Notifications");
+    expect(labels).toContain("Settings");
   });
 });
 
 describe("SETTINGS_ITEMS", () => {
-  it("contains at least 20 entries", () => {
-    expect(SETTINGS_ITEMS.length).toBeGreaterThanOrEqual(20);
-  });
-
   it("has exactly 24 entries", () => {
     expect(SETTINGS_ITEMS).toHaveLength(24);
   });

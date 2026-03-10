@@ -334,8 +334,11 @@ export const SETTINGS_ITEMS: SettingsItem[] = [
 ];
 
 /**
- * Backward-compatible flat array derived from NAV_GROUPS.
- * Used by DesktopSidebar and MobileSidebar.
- * Note: Does NOT include UTILITY_ITEMS (Notifications, Settings).
+ * Backward-compatible flat array derived from NAV_GROUPS + UTILITY_ITEMS.
+ * Used by DesktopSidebar and MobileSidebar which iterate over this array
+ * to render all 16 sidebar items including Notifications and Settings.
  */
-export const NAV_ITEMS: NavItem[] = NAV_GROUPS.flatMap((g) => g.items);
+export const NAV_ITEMS: NavItem[] = [
+  ...NAV_GROUPS.flatMap((g) => g.items),
+  ...UTILITY_ITEMS,
+];

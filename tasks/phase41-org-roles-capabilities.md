@@ -25,7 +25,7 @@ Phase 41 replaces the coarse three-role authorization model (Owner/Admin/Member)
 | 317 | Audit Events & Notifications | Backend | 316 | S | 317A | **Done** (PR #646) |
 | 318 | Frontend Capability Context & Sidebar Gating | Frontend | 313 | M | 318A, 318B | **Done** (PRs #647, #648) |
 | 319 | Settings: Roles & Permissions Page | Frontend | 316, 318 | M | 319A, 319B | **Done** (PRs #649, #650) |
-| 320 | Team Page: Member Role Management & Invite Extension | Frontend | 316, 318 | M | 320A, 320B | |
+| 320 | Team Page: Member Role Management & Invite Extension | Frontend | 316, 318 | M | 320A, 320B | **Done** (PRs #651, #652) |
 
 ---
 
@@ -171,7 +171,7 @@ FRONTEND TRACK (after E313 backend APIs ready)
 | 5a (parallel) | 319 | 319A | Settings > Roles & Permissions page, `lib/api/org-roles.ts` API client, system roles section (read-only), custom role cards with capability pills + member count, capability reference section, settings hub card. ~6 new/modified files (~5 tests). Frontend only. | **Done** (PR #649) |
 | 5b | 319 | 319B | Create/Edit role dialog with name, description, and 7 capability checkboxes. Delete role confirmation dialog. Server actions for CRUD. ~4 new files (~5 tests). Frontend only. | **Done** (PR #650) |
 | 5c (parallel with 5a) | 320 | 320A | Team page: role name badge column, override indicator, member detail panel with role dropdown and capability toggle overrides. Server actions for role assignment. ~5 modified/new files (~5 tests). Frontend only. | **Done** (PR #651) |
-| 5d | 320 | 320B | Invite form: role dropdown showing system + custom roles, capability summary preview, "Customize for this user" overrides section. ~3 modified files (~4 tests). Frontend only. | |
+| 5d | 320 | 320B | Invite form: role dropdown showing system + custom roles, capability summary preview, "Customize for this user" overrides section. ~3 modified files (~4 tests). Frontend only. | **Done** (PR #652) |
 
 ### Timeline
 
@@ -719,7 +719,7 @@ Stage 5: [319A] -> [319B] // [320A] -> [320B]                         (two paral
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **320A** | 320.1--320.6 | Team page: role name badge column in member list, override indicator (+N or "custom"), member detail side panel with role dropdown + capability toggle overrides, server action for role assignment. ~5 modified/new files (~5 tests). Frontend only. | **Done** (PR #651) |
-| **320B** | 320.7--320.11 | Invite form: role dropdown showing system + custom roles (grouped), capability summary preview below dropdown, "Customize for this user" expandable override section, server action extension for orgRoleId. ~3 modified files (~4 tests). Frontend only. | |
+| **320B** | 320.7--320.11 | Invite form: role dropdown showing system + custom roles (grouped), capability summary preview below dropdown, "Customize for this user" expandable override section, server action extension for orgRoleId. ~3 modified files (~4 tests). Frontend only. | **Done** (PR #652) |
 
 ### Tasks
 

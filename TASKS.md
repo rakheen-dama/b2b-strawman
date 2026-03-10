@@ -360,7 +360,7 @@
 | 317 | Audit Events & Notifications | Backend | 316 | S | 317A | **Done** (PR #646) |
 | 318 | Frontend Capability Context & Sidebar Gating | Frontend | 313 | M | 318A, 318B | **Done** (PRs #647, #648) |
 | 319 | Settings: Roles & Permissions Page | Frontend | 316, 318 | M | 319A, 319B | **Done** (PRs #649, #650) |
-| 320 | Team Page: Member Role Management & Invite Extension | Frontend | 316, 318 | M | 320A, 320B | 320A **Done** (PR #651) |
+| 320 | Team Page: Member Role Management & Invite Extension | Frontend | 316, 318 | M | 320A, 320B | **Done** (PRs #651, #652) |
 | **Phase 42 — Word Template Pipeline** | | | | | | See [tasks/phase42-word-template-pipeline.md](tasks/phase42-word-template-pipeline.md) |
 | 321 | Entity Extension, Enums & Migration | Backend | -- | M | 321A, 321B | **Done** (PRs #613, #614) |
 | 322 | DocxMergeService — Field Discovery & Split-Run Engine | Backend | 321 | L | 322A, 322B | **Done** (PRs #615, #616) |

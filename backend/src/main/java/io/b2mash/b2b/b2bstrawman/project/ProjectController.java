@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.setupstatus.ProjectSetupStatus;
 import io.b2mash.b2b.b2bstrawman.setupstatus.ProjectSetupStatusService;
@@ -256,7 +257,7 @@ public class ProjectController {
   }
 
   @PatchMapping("/{id}/complete")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<ProjectResponse> completeProject(
       @PathVariable UUID id, @RequestBody(required = false) CompleteProjectRequest request) {
     UUID memberId = RequestScopes.requireMemberId();
@@ -269,7 +270,7 @@ public class ProjectController {
   }
 
   @PatchMapping("/{id}/archive")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<ProjectResponse> archiveProject(@PathVariable UUID id) {
     UUID memberId = RequestScopes.requireMemberId();
     String orgRole = RequestScopes.getOrgRole();
@@ -280,7 +281,7 @@ public class ProjectController {
   }
 
   @PatchMapping("/{id}/reopen")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<ProjectResponse> reopenProject(@PathVariable UUID id) {
     UUID memberId = RequestScopes.requireMemberId();
     String orgRole = RequestScopes.getOrgRole();
@@ -291,7 +292,7 @@ public class ProjectController {
   }
 
   @PutMapping("/{id}/field-groups")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<List<FieldDefinitionResponse>> setFieldGroups(
       @PathVariable UUID id, @Valid @RequestBody SetFieldGroupsRequest request) {
     UUID memberId = RequestScopes.requireMemberId();
@@ -331,7 +332,7 @@ public class ProjectController {
   }
 
   @GetMapping("/{id}/unbilled-summary")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<UnbilledTimeSummary> getUnbilledSummary(@PathVariable UUID id) {
     return ResponseEntity.ok(unbilledTimeSummaryService.getProjectUnbilledSummary(id));
   }

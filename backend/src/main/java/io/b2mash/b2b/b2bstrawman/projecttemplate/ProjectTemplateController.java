@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.projecttemplate;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
 import io.b2mash.b2b.b2bstrawman.prerequisite.dto.PrerequisiteCheckResponse;
 import io.b2mash.b2b.b2bstrawman.project.ProjectController;
@@ -51,7 +52,7 @@ public class ProjectTemplateController {
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<ProjectTemplateResponse> createTemplate(
       @Valid @RequestBody CreateTemplateRequest request) {
     UUID memberId = RequestScopes.requireMemberId();
@@ -61,21 +62,21 @@ public class ProjectTemplateController {
   }
 
   @PutMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<ProjectTemplateResponse> updateTemplate(
       @PathVariable UUID id, @Valid @RequestBody UpdateTemplateRequest request) {
     return ResponseEntity.ok(projectTemplateService.update(id, request));
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<Void> deleteTemplate(@PathVariable UUID id) {
     projectTemplateService.delete(id);
     return ResponseEntity.noContent().build();
   }
 
   @PostMapping("/{id}/duplicate")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<ProjectTemplateResponse> duplicateTemplate(@PathVariable UUID id) {
     UUID memberId = RequestScopes.requireMemberId();
     var response = projectTemplateService.duplicate(id, memberId);
@@ -105,7 +106,7 @@ public class ProjectTemplateController {
   }
 
   @PutMapping("/{id}/required-customer-fields")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<ProjectTemplateResponse> updateRequiredCustomerFields(
       @PathVariable UUID id, @RequestBody UpdateRequiredFieldsRequest request) {
     return ResponseEntity.ok(

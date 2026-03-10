@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.proposal;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.proposal.dto.MilestoneRequest;
 import io.b2mash.b2b.b2bstrawman.proposal.dto.ProposalFilterCriteria;
 import io.b2mash.b2b.b2bstrawman.proposal.dto.ProposalStats;
@@ -40,7 +41,7 @@ public class ProposalController {
   // --- 231.9: CRUD endpoints ---
 
   @PostMapping("/api/proposals")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<ProposalResponse> createProposal(
       @Valid @RequestBody CreateProposalRequest request) {
     UUID createdById = RequestScopes.requireMemberId();
@@ -85,7 +86,7 @@ public class ProposalController {
   }
 
   @PutMapping("/api/proposals/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<ProposalResponse> updateProposal(
       @PathVariable UUID id, @Valid @RequestBody UpdateProposalRequest request) {
     var proposal =
@@ -117,7 +118,7 @@ public class ProposalController {
   // --- 231.10: Milestone and team endpoints ---
 
   @PutMapping("/api/proposals/{id}/milestones")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<List<MilestoneResponse>> replaceMilestones(
       @PathVariable UUID id, @Valid @RequestBody List<MilestoneRequest> milestones) {
     var saved = proposalService.replaceMilestones(id, milestones);
@@ -125,7 +126,7 @@ public class ProposalController {
   }
 
   @PutMapping("/api/proposals/{id}/team")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<List<TeamMemberResponse>> replaceTeamMembers(
       @PathVariable UUID id, @Valid @RequestBody List<TeamMemberRequest> members) {
     var saved = proposalService.replaceTeamMembers(id, members);
@@ -135,7 +136,7 @@ public class ProposalController {
   // --- 232.12: Send and withdraw endpoints ---
 
   @PostMapping("/api/proposals/{id}/send")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<ProposalResponse> sendProposal(
       @PathVariable UUID id, @Valid @RequestBody SendProposalRequest request) {
     var proposal = proposalService.sendProposal(id, request.portalContactId());
@@ -143,7 +144,7 @@ public class ProposalController {
   }
 
   @PostMapping("/api/proposals/{id}/withdraw")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<ProposalResponse> withdrawProposal(@PathVariable UUID id) {
     var proposal = proposalService.withdrawProposal(id);
     return ResponseEntity.ok(ProposalResponse.from(proposal));
@@ -152,7 +153,7 @@ public class ProposalController {
   // --- 231.11: Stats and customer-scoped endpoints ---
 
   @GetMapping("/api/proposals/stats")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<ProposalStats> getStats() {
     return ResponseEntity.ok(proposalService.getStats());
   }

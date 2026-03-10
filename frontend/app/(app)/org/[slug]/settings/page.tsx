@@ -22,6 +22,7 @@ import {
   Zap,
   Users,
   Gauge,
+  ShieldCheck,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getAuthContext } from "@/lib/auth";
@@ -178,6 +179,14 @@ const settingsCards: SettingsCard[] = [
     title: "Automations",
     description: "Create rules to automate tasks, notifications, and workflows",
     href: "automations",
+    comingSoon: false,
+    adminOnly: true,
+  },
+  {
+    icon: ShieldCheck,
+    title: "Roles & Permissions",
+    description: "Define custom roles and manage team permissions.",
+    href: "roles",
     comingSoon: false,
     adminOnly: true,
   },

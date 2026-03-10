@@ -196,11 +196,9 @@ export default async function CustomersPage({
             {customers.length}
           </span>
         </div>
-        {isAdmin && (
-          <RequiresCapability cap="CUSTOMER_MANAGEMENT">
-            <CreateCustomerDialog slug={slug} />
-          </RequiresCapability>
-        )}
+        <RequiresCapability cap="CUSTOMER_MANAGEMENT">
+          <CreateCustomerDialog slug={slug} />
+        </RequiresCapability>
       </div>
 
       {/* Saved View Selector */}

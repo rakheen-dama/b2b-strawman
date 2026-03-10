@@ -1,4 +1,8 @@
 import { LayoutDashboard, ClipboardList, CalendarDays, FolderOpen, FileText, Users, UserRound, Bell, TrendingUp, BarChart3, Receipt, CalendarClock, ShieldCheck, Settings, type LucideIcon } from "lucide-react";
+import type { CAPABILITIES } from "@/lib/capabilities";
+
+/** Union of all known capability strings */
+type CapabilityName = (typeof CAPABILITIES)[keyof typeof CAPABILITIES];
 
 export interface NavItem {
   label: string;
@@ -7,7 +11,7 @@ export interface NavItem {
   /** Use exact match instead of startsWith for active detection */
   exact?: boolean;
   /** If set, sidebar only shows this item when the user has this capability */
-  requiredCapability?: string;
+  requiredCapability?: CapabilityName;
 }
 
 export const NAV_ITEMS: NavItem[] = [

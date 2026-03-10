@@ -21,7 +21,7 @@ Phase 41 replaces the coarse three-role authorization model (Owner/Admin/Member)
 | 313 | Capability Resolution & Authorization Infrastructure | Backend | 312 | M | 313A, 313B | **Done** (PRs #638, #639) |
 | 314 | @PreAuthorize Migration (Batch 1: Financial, Invoicing, Project) | Backend | 313 | M | 314A, 314B | **Done** (PRs #640, #641) |
 | 315 | @PreAuthorize Migration (Batch 2: Customer, Automation, Resource, Team) | Backend | 313 | M | 315A, 315B | **Done** (PRs #642, #643) |
-| 316 | OrgRole CRUD API & Member Role Assignment | Backend | 312 | M | 316A, 316B | |
+| 316 | OrgRole CRUD API & Member Role Assignment | Backend | 312 | M | 316A, 316B | **Done** (PRs #644, #645) |
 | 317 | Audit Events & Notifications | Backend | 316 | S | 317A | |
 | 318 | Frontend Capability Context & Sidebar Gating | Frontend | 313 | M | 318A, 318B | |
 | 319 | Settings: Roles & Permissions Page | Frontend | 316, 318 | M | 319A, 319B | |
@@ -140,7 +140,7 @@ FRONTEND TRACK (after E313 backend APIs ready)
 | 1a (parallel) | 313 | 313A | `RequestScopes.CAPABILITIES` ScopedValue, `CapabilityAuthorizationService`, `@RequiresCapability` annotation, `CapabilityAuthorizationManager`, `MemberFilter` extension to resolve + bind capabilities. ~7 new/modified files (~10 tests). Backend only. | **Done** (PR #638) |
 | 1b | 313 | 313B | `GET /api/me/capabilities` endpoint, `GET /api/members/{id}/capabilities` endpoint, edge cases (unassigned role, empty overrides, admin bypass). ~3 new/modified files (~8 tests). Backend only. | **Done** (PR #639) |
 | 1c (parallel with 1a) | 316 | 316A | `OrgRoleController` with 5 CRUD endpoints (list, get, create, update, delete), validation rules (name uniqueness, system role guard, delete-with-members guard). ~3 new/modified files (~12 tests). Backend only. | **Done** (PR #644) |
-| 1d | 316 | 316B | `PUT /api/members/{id}/role` endpoint, `GET /api/members/{id}/capabilities`, override validation, invite flow extension (`MemberFilter.lazyCreateMember` with orgRoleId). ~4 modified files (~10 tests). Backend only. | |
+| 1d | 316 | 316B | `PUT /api/members/{id}/role` endpoint, `GET /api/members/{id}/capabilities`, override validation, invite flow extension (`MemberFilter.lazyCreateMember` with orgRoleId). ~4 modified files (~10 tests). Backend only. | **Done** (PR #645) |
 
 ### Stage 2: @PreAuthorize Migration (parallel batches)
 
@@ -475,7 +475,7 @@ Stage 5: [319A] -> [319B] // [320A] -> [320B]                         (two paral
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **316A** | 316.1--316.6 | `OrgRoleController` with 5 CRUD endpoints (list, get, create, update, delete), validation (name uniqueness, system role guard, capabilities subset, delete-with-members guard). ~2 new files + 1 test file (~12 tests). Backend only. | **Done** (PR #644) |
-| **316B** | 316.7--316.13 | `PUT /api/members/{id}/role` endpoint, role assignment service logic with override validation, `MemberFilter.lazyCreateMember` extension for invite flow (assign orgRoleId on first login). ~4 modified files + 1 test file (~10 tests). Backend only. | |
+| **316B** | 316.7--316.13 | `PUT /api/members/{id}/role` endpoint, role assignment service logic with override validation, `MemberFilter.lazyCreateMember` extension for invite flow (assign orgRoleId on first login). ~4 modified files + 1 test file (~10 tests). Backend only. | **Done** (PR #645) |
 
 ### Tasks
 

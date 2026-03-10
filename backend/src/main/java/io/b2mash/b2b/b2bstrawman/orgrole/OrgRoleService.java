@@ -1,11 +1,15 @@
 package io.b2mash.b2b.b2bstrawman.orgrole;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
+import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.AssignRoleRequest;
 import io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest;
 import io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.MemberCapabilitiesResponse;
@@ -18,18 +22,30 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class OrgRoleService {
 
+  private static final Logger log = LoggerFactory.getLogger(OrgRoleService.class);
+
   private final OrgRoleRepository orgRoleRepository;
   private final MemberRepository memberRepository;
+  private final AuditService auditService;
+  private final NotificationService notificationService;
 
-  public OrgRoleService(OrgRoleRepository orgRoleRepository, MemberRepository memberRepository) {
+  public OrgRoleService(
+      OrgRoleRepository orgRoleRepository,
+      MemberRepository memberRepository,
+      AuditService auditService,
+      NotificationService notificationService) {
     this.orgRoleRepository = orgRoleRepository;
     this.memberRepository = memberRepository;
+    this.auditService = auditService;
+    this.notificationService = notificationService;
   }
 
   @Transactional(readOnly = true)
@@ -172,6 +188,7 @@ public class OrgRoleService {
     }
 
     role = orgRoleRepository.save(role);
+    auditService.log(AuditEventBuilder.roleCreated(role));
     return OrgRoleResponse.from(role, 0);
   }
 
@@ -200,13 +217,47 @@ public class OrgRoleService {
       role.setDescription(request.description());
     }
 
+    Set<String> addedCaps = Set.of();
+    Set<String> removedCaps = Set.of();
+    boolean capsChanged = false;
+
     if (request.capabilities() != null) {
       validateCapabilities(request.capabilities());
+      Set<String> beforeCaps =
+          role.getCapabilities().stream().map(Capability::name).collect(Collectors.toSet());
+      Set<String> afterCaps = new HashSet<>(request.capabilities());
+      addedCaps =
+          afterCaps.stream().filter(c -> !beforeCaps.contains(c)).collect(Collectors.toSet());
+      removedCaps =
+          beforeCaps.stream().filter(c -> !afterCaps.contains(c)).collect(Collectors.toSet());
+      capsChanged = !addedCaps.isEmpty() || !removedCaps.isEmpty();
       role.setCapabilities(
           request.capabilities().stream().map(Capability::valueOf).collect(Collectors.toSet()));
     }
 
+    List<Member> affectedMembers = capsChanged ? memberRepository.findByOrgRoleId(id) : List.of();
     role = orgRoleRepository.save(role);
+    auditService.log(
+        AuditEventBuilder.roleUpdated(role, addedCaps, removedCaps, affectedMembers.size()));
+
+    if (capsChanged) {
+      try {
+        for (var affectedMember : affectedMembers) {
+          notificationService.createIfEnabled(
+              affectedMember.getId(),
+              "ROLE_PERMISSIONS_CHANGED",
+              "Your permissions have been updated.",
+              null,
+              "ORG_ROLE",
+              role.getId(),
+              null);
+        }
+      } catch (Exception e) {
+        log.warn(
+            "Best-effort notification failed for role update (roleId={}): {}", id, e.getMessage());
+      }
+    }
+
     return OrgRoleResponse.from(role, memberRepository.countByOrgRoleId(id));
   }
 
@@ -262,9 +313,32 @@ public class OrgRoleService {
       }
     }
 
+    // Resolve previous role name for audit
+    String previousRole;
+    if (member.getOrgRoleId() != null) {
+      previousRole =
+          orgRoleRepository
+              .findById(member.getOrgRoleId())
+              .map(OrgRole::getName)
+              .orElse(displayName(member.getOrgRole()));
+    } else {
+      previousRole = displayName(member.getOrgRole());
+    }
+
     member.setOrgRoleId(request.orgRoleId());
     member.setCapabilityOverrides(overrides);
     memberRepository.save(member);
+
+    auditService.log(
+        AuditEventBuilder.memberRoleChanged(member, previousRole, role.getName(), overrides));
+    notificationService.createIfEnabled(
+        member.getId(),
+        "ROLE_PERMISSIONS_CHANGED",
+        "Your permissions have been updated.",
+        null,
+        "ORG_ROLE",
+        role.getId(),
+        null);
 
     return getMemberCapabilities(memberId);
   }
@@ -291,6 +365,7 @@ public class OrgRoleService {
               + " member(s)");
     }
 
+    auditService.log(AuditEventBuilder.roleDeleted(role));
     orgRoleRepository.delete(role);
   }
 
@@ -308,6 +383,19 @@ public class OrgRoleService {
         .replaceAll("[^a-z0-9]+", "-")
         .replaceAll("-+", "-")
         .replaceAll("^-|-$", "");
+  }
+
+  /** Maps a Clerk role slug (e.g. "owner") to a human-readable display name. */
+  private static String displayName(String clerkRole) {
+    if (clerkRole == null) {
+      return "None";
+    }
+    return switch (clerkRole) {
+      case "owner" -> "Owner";
+      case "admin" -> "Admin";
+      case "member" -> "Member";
+      default -> clerkRole;
+    };
   }
 
   private void validateCapabilities(Set<String> capabilities) {

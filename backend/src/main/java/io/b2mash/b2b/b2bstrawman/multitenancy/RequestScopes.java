@@ -38,6 +38,9 @@ public final class RequestScopes {
    */
   public static final ScopedValue<UUID> AUTOMATION_EXECUTION_ID = ScopedValue.newInstance();
 
+  /** Effective capability names for the current member. Bound by MemberFilter. */
+  public static final ScopedValue<Set<String>> CAPABILITIES = ScopedValue.newInstance();
+
   /** JWT group memberships (e.g., "platform-admins"). Bound by PlatformAdminFilter. */
   public static final ScopedValue<Set<String>> GROUPS = ScopedValue.newInstance();
 
@@ -109,6 +112,19 @@ public final class RequestScopes {
   /** Returns true if the current request has the platform-admins group. */
   public static boolean isPlatformAdmin() {
     return getGroups().contains(PLATFORM_ADMINS_GROUP);
+  }
+
+  /** Returns the effective capabilities, or an empty set if not bound. */
+  public static Set<String> getCapabilities() {
+    return CAPABILITIES.isBound() ? CAPABILITIES.get() : Collections.emptySet();
+  }
+
+  /**
+   * Returns true if the current member has the given capability. Owner/admin system roles have all
+   * individual capability names resolved into the set by {@code OrgRoleService}.
+   */
+  public static boolean hasCapability(String capability) {
+    return getCapabilities().contains(capability);
   }
 
   private RequestScopes() {}

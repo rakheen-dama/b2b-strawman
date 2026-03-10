@@ -4,6 +4,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ScopedFilterChain;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.security.ClerkJwtUtils;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import jakarta.servlet.FilterChain;
@@ -12,6 +13,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Collections;
+import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,11 +32,13 @@ public class MemberFilter extends OncePerRequestFilter {
   private static final Logger log = LoggerFactory.getLogger(MemberFilter.class);
 
   private final MemberRepository memberRepository;
+  private final OrgRoleService orgRoleService;
   private final Cache<String, MemberInfo> memberCache =
       Caffeine.newBuilder().maximumSize(50_000).expireAfterWrite(Duration.ofHours(1)).build();
 
-  public MemberFilter(MemberRepository memberRepository) {
+  public MemberFilter(MemberRepository memberRepository, OrgRoleService orgRoleService) {
     this.memberRepository = memberRepository;
+    this.orgRoleService = orgRoleService;
   }
 
   @Override
@@ -50,6 +55,17 @@ public class MemberFilter extends OncePerRequestFilter {
         if (info.orgRole() != null) {
           carrier = carrier.where(RequestScopes.ORG_ROLE, info.orgRole());
         }
+
+        Set<String> capabilities;
+        try {
+          capabilities = orgRoleService.resolveCapabilities(info.memberId());
+        } catch (Exception e) {
+          log.warn(
+              "Failed to resolve capabilities for member {}: {}", info.memberId(), e.getMessage());
+          capabilities = Collections.emptySet();
+        }
+        carrier = carrier.where(RequestScopes.CAPABILITIES, capabilities);
+
         ScopedFilterChain.runScoped(carrier, filterChain, request, response);
         return;
       }

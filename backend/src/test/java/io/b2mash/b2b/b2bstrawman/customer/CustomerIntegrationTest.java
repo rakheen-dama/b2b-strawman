@@ -14,10 +14,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -48,6 +54,14 @@ class CustomerIntegrationTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
+  @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
+  @Autowired private OrgRoleService orgRoleService;
+  @Autowired private MemberRepository memberRepository;
+
+  private String tenantSchema;
+  private UUID memberIdOwner;
+  private UUID customRoleMemberId;
+  private UUID noCapMemberId;
 
   @BeforeAll
   void provisionTenants() throws Exception {
@@ -56,10 +70,57 @@ class CustomerIntegrationTest {
     provisioningService.provisionTenant(ORG_B_ID, "Customer Test Org B");
     planSyncService.syncPlan(ORG_B_ID, "pro-plan");
 
-    syncMember(ORG_ID, "user_cust_owner", "cust_owner@test.com", "Owner", "owner");
+    memberIdOwner =
+        UUID.fromString(
+            syncMember(ORG_ID, "user_cust_owner", "cust_owner@test.com", "Owner", "owner"));
     syncMember(ORG_ID, "user_cust_admin", "cust_admin@test.com", "Admin", "admin");
     syncMember(ORG_ID, "user_cust_member", "cust_member@test.com", "Member", "member");
     syncMember(ORG_B_ID, "user_cust_tenant_b", "cust_tenantb@test.com", "Tenant B User", "owner");
+
+    tenantSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+
+    customRoleMemberId =
+        UUID.fromString(
+            syncMember(
+                ORG_ID,
+                "user_cust_315a_custom",
+                "cust_custom@test.com",
+                "Cust Custom User",
+                "member"));
+    noCapMemberId =
+        UUID.fromString(
+            syncMember(
+                ORG_ID,
+                "user_cust_315a_nocap",
+                "cust_nocap@test.com",
+                "Cust NoCap User",
+                "member"));
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberIdOwner)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              var withCapRole =
+                  orgRoleService.createRole(
+                      new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                          "Customer Manager",
+                          "Can manage customers",
+                          Set.of("CUSTOMER_MANAGEMENT")));
+              var customMember = memberRepository.findById(customRoleMemberId).orElseThrow();
+              customMember.setOrgRoleId(withCapRole.id());
+              memberRepository.save(customMember);
+
+              var withoutCapRole =
+                  orgRoleService.createRole(
+                      new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                          "Team Lead Cust", "Can manage teams", Set.of("TEAM_OVERSIGHT")));
+              var noCapMember = memberRepository.findById(noCapMemberId).orElseThrow();
+              noCapMember.setOrgRoleId(withoutCapRole.id());
+              memberRepository.save(noCapMember);
+            });
   }
 
   // --- CRUD happy path ---
@@ -289,6 +350,36 @@ class CustomerIntegrationTest {
         .andExpect(status().isNotFound());
   }
 
+  // --- Capability Tests (added in Epic 315A) ---
+
+  @Test
+  void customRoleWithCapability_accessesCustomerEndpoint_returns201() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/customers")
+                .with(customRoleJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"name": "Capability Test Customer", "email": "cap315a@test.com"}
+                    """))
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  void customRoleWithoutCapability_accessesCustomerEndpoint_returns403() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/customers")
+                .with(noCapabilityJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"name": "NoCap Customer", "email": "nocap315a@test.com"}
+                    """))
+        .andExpect(status().isForbidden());
+  }
+
   // --- RBAC ---
 
   @Test
@@ -380,6 +471,23 @@ class CustomerIntegrationTest {
             .andReturn();
 
     return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
+  }
+
+  private JwtRequestPostProcessor customRoleJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_cust_315a_custom")
+                    .claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+
+  private JwtRequestPostProcessor noCapabilityJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_cust_315a_nocap").claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
   }
 
   private JwtRequestPostProcessor memberJwt() {

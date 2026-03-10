@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.informationrequest;
 import io.b2mash.b2b.b2bstrawman.informationrequest.dto.RequestTemplateDtos.CreateRequestTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.informationrequest.dto.RequestTemplateDtos.RequestTemplateResponse;
 import io.b2mash.b2b.b2bstrawman.informationrequest.dto.RequestTemplateDtos.UpdateRequestTemplateRequest;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
@@ -43,7 +44,7 @@ public class RequestTemplateController {
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<RequestTemplateResponse> createTemplate(
       @Valid @RequestBody CreateRequestTemplateRequest request) {
     var response = requestTemplateService.create(request);
@@ -52,21 +53,21 @@ public class RequestTemplateController {
   }
 
   @PutMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<RequestTemplateResponse> updateTemplate(
       @PathVariable UUID id, @Valid @RequestBody UpdateRequestTemplateRequest request) {
     return ResponseEntity.ok(requestTemplateService.update(id, request));
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<Void> deactivateTemplate(@PathVariable UUID id) {
     requestTemplateService.deactivate(id);
     return ResponseEntity.noContent().build();
   }
 
   @PostMapping("/{id}/duplicate")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<RequestTemplateResponse> duplicateTemplate(@PathVariable UUID id) {
     var response = requestTemplateService.duplicate(id);
     return ResponseEntity.created(URI.create("/api/request-templates/" + response.id()))

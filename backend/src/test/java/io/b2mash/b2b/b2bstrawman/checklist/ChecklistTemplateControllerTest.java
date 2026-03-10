@@ -10,10 +10,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -44,15 +50,62 @@ class ChecklistTemplateControllerTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
+  @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
+  @Autowired private OrgRoleService orgRoleService;
+  @Autowired private MemberRepository memberRepository;
 
   private String createdTemplateId;
+  private String tenantSchema;
+  private UUID memberIdOwner;
+  private UUID customRoleMemberId;
+  private UUID noCapMemberId;
 
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Checklist Controller Test Org");
     planSyncService.syncPlan(ORG_ID, "pro-plan");
-    syncMember(ORG_ID, "user_cl_ctrl_owner", "cl_ctrl_owner@test.com", "CL Owner", "owner");
+    memberIdOwner =
+        UUID.fromString(
+            syncMember(
+                ORG_ID, "user_cl_ctrl_owner", "cl_ctrl_owner@test.com", "CL Owner", "owner"));
     syncMember(ORG_ID, "user_cl_ctrl_member", "cl_ctrl_member@test.com", "CL Member", "member");
+
+    tenantSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+
+    customRoleMemberId =
+        UUID.fromString(
+            syncMember(
+                ORG_ID, "user_cl_315a_custom", "cl_custom@test.com", "CL Custom User", "member"));
+    noCapMemberId =
+        UUID.fromString(
+            syncMember(
+                ORG_ID, "user_cl_315a_nocap", "cl_nocap@test.com", "CL NoCap User", "member"));
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberIdOwner)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              var withCapRole =
+                  orgRoleService.createRole(
+                      new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                          "Checklist Manager",
+                          "Can manage checklists",
+                          Set.of("CUSTOMER_MANAGEMENT")));
+              var customMember = memberRepository.findById(customRoleMemberId).orElseThrow();
+              customMember.setOrgRoleId(withCapRole.id());
+              memberRepository.save(customMember);
+
+              var withoutCapRole =
+                  orgRoleService.createRole(
+                      new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                          "Team Lead CL", "Can manage teams", Set.of("TEAM_OVERSIGHT")));
+              var noCapMember = memberRepository.findById(noCapMemberId).orElseThrow();
+              noCapMember.setOrgRoleId(withoutCapRole.id());
+              memberRepository.save(noCapMember);
+            });
   }
 
   @Test
@@ -254,6 +307,48 @@ class ChecklistTemplateControllerTest {
         .andExpect(jsonPath("$[?(@.customerType == 'COMPANY')]").doesNotExist());
   }
 
+  // --- Capability Tests (added in Epic 315A) ---
+
+  @Test
+  @Order(100)
+  void customRoleWithCapability_accessesChecklistTemplateEndpoint_returns201() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/checklist-templates")
+                .with(customRoleJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "name": "Cap Test Template",
+                      "customerType": "ANY",
+                      "autoInstantiate": false,
+                      "items": []
+                    }
+                    """))
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  @Order(101)
+  void customRoleWithoutCapability_accessesChecklistTemplateEndpoint_returns403() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/checklist-templates")
+                .with(noCapabilityJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "name": "NoCap Template",
+                      "customerType": "ANY",
+                      "autoInstantiate": false,
+                      "items": []
+                    }
+                    """))
+        .andExpect(status().isForbidden());
+  }
+
   private JwtRequestPostProcessor ownerJwt() {
     return jwt()
         .jwt(j -> j.subject("user_cl_ctrl_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")))
@@ -264,6 +359,19 @@ class ChecklistTemplateControllerTest {
     return jwt()
         .jwt(
             j -> j.subject("user_cl_ctrl_member").claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+
+  private JwtRequestPostProcessor customRoleJwt() {
+    return jwt()
+        .jwt(
+            j -> j.subject("user_cl_315a_custom").claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+
+  private JwtRequestPostProcessor noCapabilityJwt() {
+    return jwt()
+        .jwt(j -> j.subject("user_cl_315a_nocap").claim("o", Map.of("id", ORG_ID, "rol", "member")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
   }
 

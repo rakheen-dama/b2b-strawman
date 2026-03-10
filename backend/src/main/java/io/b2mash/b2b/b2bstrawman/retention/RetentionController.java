@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.retention;
 
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -10,7 +11,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,14 +34,14 @@ public class RetentionController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<List<PolicyResponse>> listPolicies() {
     var policies = policyService.listActive().stream().map(PolicyResponse::from).toList();
     return ResponseEntity.ok(policies);
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<PolicyResponse> createPolicy(@Valid @RequestBody CreatePolicyRequest body) {
     var policy =
         policyService.create(
@@ -51,7 +51,7 @@ public class RetentionController {
   }
 
   @PutMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<PolicyResponse> updatePolicy(
       @PathVariable UUID id, @Valid @RequestBody UpdatePolicyRequest body) {
     var policy = policyService.update(id, body.retentionDays(), body.action());
@@ -59,21 +59,21 @@ public class RetentionController {
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<Void> deletePolicy(@PathVariable UUID id) {
     policyService.delete(id);
     return ResponseEntity.noContent().build();
   }
 
   @PostMapping("/check")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<RetentionCheckResult> runCheck() {
     var result = retentionService.runCheck();
     return ResponseEntity.ok(result);
   }
 
   @PostMapping("/purge")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<RetentionService.PurgeResult> executePurge(
       @Valid @RequestBody PurgeRequest body) {
     var result = retentionService.executePurge(body.recordType(), body.recordIds());

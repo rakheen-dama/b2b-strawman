@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceDtos.SkipItemRequest
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
@@ -51,7 +52,7 @@ public class ChecklistInstanceController {
   }
 
   @PostMapping("/api/customers/{customerId}/checklists")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<ChecklistInstanceResponse> instantiateChecklist(
       @PathVariable UUID customerId, @Valid @RequestBody InstantiateChecklistRequest request) {
     var response =
@@ -61,7 +62,7 @@ public class ChecklistInstanceController {
   }
 
   @PutMapping("/api/checklist-items/{id}/complete")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<ChecklistInstanceItemResponse> completeItem(
       @PathVariable UUID id, @Valid @RequestBody CompleteItemRequest request) {
     UUID actorId = RequestScopes.requireMemberId();
@@ -71,7 +72,7 @@ public class ChecklistInstanceController {
   }
 
   @PutMapping("/api/checklist-items/{id}/skip")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<ChecklistInstanceItemResponse> skipItem(
       @PathVariable UUID id, @Valid @RequestBody SkipItemRequest request) {
     UUID actorId = RequestScopes.requireMemberId();
@@ -80,7 +81,7 @@ public class ChecklistInstanceController {
   }
 
   @PutMapping("/api/checklist-items/{id}/reopen")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<ChecklistInstanceItemResponse> reopenItem(@PathVariable UUID id) {
     UUID actorId = RequestScopes.requireMemberId();
     var item = checklistInstanceService.reopenItem(id, actorId);

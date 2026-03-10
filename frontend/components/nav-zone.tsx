@@ -12,9 +12,10 @@ import type { NavGroup } from "@/lib/nav-items";
 export interface NavZoneProps {
   zone: NavGroup;
   slug: string;
+  onNavItemClick?: () => void;
 }
 
-export function NavZone({ zone, slug }: NavZoneProps) {
+export function NavZone({ zone, slug, onNavItemClick }: NavZoneProps) {
   const [expanded, setExpanded] = useState(zone.defaultExpanded ?? true);
   const pathname = usePathname();
   const { hasCapability } = useCapabilities();
@@ -65,6 +66,7 @@ export function NavZone({ zone, slug }: NavZoneProps) {
                 <Link
                   key={item.href(slug)}
                   href={href}
+                  onClick={onNavItemClick}
                   className={cn(
                     "relative flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
                     isActive

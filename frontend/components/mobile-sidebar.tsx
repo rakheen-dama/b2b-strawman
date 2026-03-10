@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Menu, Shield } from "lucide-react";
@@ -14,8 +14,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { NAV_ITEMS } from "@/lib/nav-items";
-import { useCapabilities } from "@/lib/capabilities";
+import { NAV_GROUPS, UTILITY_ITEMS } from "@/lib/nav-items";
+import { NavZone } from "@/components/nav-zone";
 import { SidebarUserFooter } from "@/components/sidebar-user-footer";
 
 interface MobileSidebarProps {
@@ -26,11 +26,6 @@ interface MobileSidebarProps {
 export function MobileSidebar({ slug, groups = [] }: MobileSidebarProps) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
-  const { hasCapability } = useCapabilities();
-
-  const visibleItems = NAV_ITEMS.filter(
-    (item) => !item.requiredCapability || hasCapability(item.requiredCapability),
-  );
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -59,43 +54,16 @@ export function MobileSidebar({ slug, groups = [] }: MobileSidebarProps) {
         </div>
         <div className="mx-4 border-t border-white/10" />
 
-        {/* Nav body */}
-        <nav aria-label="Main navigation" className="flex flex-1 flex-col gap-1 p-2">
-          {visibleItems.map((item) => {
-            const href = item.href(slug);
-            const isActive = item.exact
-              ? pathname === href
-              : pathname.startsWith(href);
-
-            return (
-              <Link
-                key={item.label}
-                href={href}
-                onClick={() => setOpen(false)}
-                className={cn(
-                  "relative flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
-                  isActive
-                    ? "bg-white/5 text-white"
-                    : "text-white/60 hover:bg-slate-800 hover:text-white"
-                )}
-              >
-                {isActive && (
-                  <motion.div
-                    layoutId="mobile-sidebar-indicator"
-                    aria-hidden="true"
-                    className="absolute left-0 top-1 bottom-1 w-0.5 rounded-full bg-teal-500"
-                    transition={{
-                      type: "spring",
-                      stiffness: 350,
-                      damping: 30,
-                    }}
-                  />
-                )}
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </Link>
-            );
-          })}
+        {/* Nav body — zone-based */}
+        <nav aria-label="Main navigation" className="flex flex-1 flex-col gap-0 p-2">
+          {NAV_GROUPS.map((group, index) => (
+            <Fragment key={group.id}>
+              {index > 0 && (
+                <div className="my-1 mx-2 border-t border-white/5" />
+              )}
+              <NavZone zone={group} slug={slug} onNavItemClick={() => setOpen(false)} />
+            </Fragment>
+          ))}
         </nav>
 
         {/* Platform Admin */}
@@ -119,6 +87,42 @@ export function MobileSidebar({ slug, groups = [] }: MobileSidebarProps) {
             </div>
           </>
         )}
+
+        {/* Utility footer — Notifications + Settings */}
+        <div className="mx-4 border-t border-white/10" />
+        <div className="p-2">
+          {UTILITY_ITEMS.map((item) => {
+            const href = item.href(slug);
+            const isActive = item.exact
+              ? pathname === href
+              : pathname.startsWith(href);
+
+            return (
+              <Link
+                key={item.label}
+                href={href}
+                onClick={() => setOpen(false)}
+                className={cn(
+                  "relative flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
+                  isActive
+                    ? "bg-white/5 text-white"
+                    : "text-white/60 hover:bg-slate-800 hover:text-white",
+                )}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="mobile-sidebar-indicator"
+                    aria-hidden="true"
+                    className="absolute left-0 top-1 bottom-1 w-0.5 rounded-full bg-teal-500"
+                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                  />
+                )}
+                <item.icon className="h-4 w-4" />
+                {item.label}
+              </Link>
+            );
+          })}
+        </div>
 
         {/* Footer */}
         <SidebarUserFooter />

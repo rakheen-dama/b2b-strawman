@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.orgrole;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -148,11 +149,12 @@ class CapabilityAuthorizationTest {
   }
 
   @Test
-  void requiresCapability_withAllCapability_returns200() throws Exception {
+  void requiresCapability_withAllIndividualCapabilities_returns200() throws Exception {
+    String allCaps = String.join(",", Capability.ALL_NAMES);
     mockMvc
         .perform(
             get(INVOICING_ENDPOINT)
-                .header(CAPABILITIES_HEADER, "ALL")
+                .header(CAPABILITIES_HEADER, allCaps)
                 .with(jwt().jwt(j -> j.subject("user_admin"))))
         .andExpect(status().isOk())
         .andExpect(content().string("invoicing-access-granted"));
@@ -212,6 +214,6 @@ class CapabilityAuthorizationTest {
   @Test
   void capabilityAuthorizationService_isInjectable() {
     // Verify the service is available in the Spring context
-    assert capabilityAuthorizationService != null;
+    assertThat(capabilityAuthorizationService).isNotNull();
   }
 }

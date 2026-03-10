@@ -120,12 +120,11 @@ public final class RequestScopes {
   }
 
   /**
-   * Returns true if the current member has the given capability, or has the special "ALL"
-   * capability (granted to owner/admin system roles).
+   * Returns true if the current member has the given capability. Owner/admin system roles have all
+   * individual capability names resolved into the set by {@code OrgRoleService}.
    */
   public static boolean hasCapability(String capability) {
-    Set<String> caps = getCapabilities();
-    return caps.contains(capability) || caps.contains("ALL");
+    return getCapabilities().contains(capability);
   }
 
   private RequestScopes() {}

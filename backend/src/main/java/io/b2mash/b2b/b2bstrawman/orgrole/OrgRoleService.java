@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest;
 import io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.OrgRoleResponse;
 import io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.UpdateOrgRoleRequest;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,8 +35,7 @@ public class OrgRoleService {
             .orElseThrow(() -> new ResourceNotFoundException("Member", memberId));
 
     if (member.getOrgRoleId() == null) {
-      throw new ResourceNotFoundException(
-          "OrgRole", "null (member " + memberId + " has no role assigned)");
+      return Collections.emptySet();
     }
 
     var role =

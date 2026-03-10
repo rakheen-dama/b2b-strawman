@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -13,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,10 +49,12 @@ class ReportCapabilityTest {
   @Autowired private OrgRoleService orgRoleService;
   @Autowired private OrgRoleRepository orgRoleRepository;
   @Autowired private MemberRepository memberRepository;
+  @Autowired private CustomerRepository customerRepository;
 
   private UUID ownerMemberId;
   private UUID customRoleMemberId;
   private UUID noCapMemberId;
+  private UUID testCustomerId;
 
   @BeforeAll
   void setup() throws Exception {
@@ -103,6 +107,12 @@ class ReportCapabilityTest {
               var noCapMember = memberRepository.findById(noCapMemberId).orElseThrow();
               noCapMember.setOrgRoleId(withoutCapRole.id());
               memberRepository.save(noCapMember);
+
+              // Create a customer for customer profitability tests
+              var customer =
+                  TestCustomerFactory.createActiveCustomer(
+                      "Report Cap Test Customer", "rptcap@test.com", ownerMemberId);
+              testCustomerId = customerRepository.save(customer).getId();
             });
   }
 
@@ -122,6 +132,28 @@ class ReportCapabilityTest {
     mockMvc
         .perform(
             get("/api/reports/profitability")
+                .param("from", "2026-01-01")
+                .param("to", "2026-12-31")
+                .with(noCapabilityJwt()))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void customRoleWithCapability_accessesCustomerProfitability_returns200() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/customers/{customerId}/profitability", testCustomerId)
+                .param("from", "2026-01-01")
+                .param("to", "2026-12-31")
+                .with(customRoleJwt()))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void customRoleWithoutCapability_accessesCustomerProfitability_returns403() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/customers/{customerId}/profitability", testCustomerId)
                 .param("from", "2026-01-01")
                 .param("to", "2026-12-31")
                 .with(noCapabilityJwt()))

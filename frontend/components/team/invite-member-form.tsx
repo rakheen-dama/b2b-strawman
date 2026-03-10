@@ -3,12 +3,31 @@
 import { useOrganization } from "@clerk/nextjs";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { CAPABILITY_META } from "@/lib/capabilities";
 import {
   inviteMember,
   listInvitations,
 } from "@/app/(app)/org/[slug]/team/actions";
+import type { OrgRole } from "@/lib/api/org-roles";
 
 const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
 
@@ -17,6 +36,7 @@ interface InviteMemberFormProps {
   currentMembers: number;
   planTier: string;
   orgSlug: string;
+  roles: OrgRole[];
 }
 
 function ClerkInviteMemberForm({
@@ -24,6 +44,7 @@ function ClerkInviteMemberForm({
   currentMembers,
   planTier,
   orgSlug,
+  roles,
 }: InviteMemberFormProps) {
   const { organization, invitations } = useOrganization({
     invitations: {
@@ -41,6 +62,7 @@ function ClerkInviteMemberForm({
       pendingInvitations={pendingInvitations}
       planTier={planTier}
       orgSlug={orgSlug}
+      roles={roles}
       onInviteSent={() => invitations?.revalidate?.()}
       ready={!!organization}
     />
@@ -52,6 +74,7 @@ function MockInviteMemberForm({
   currentMembers,
   planTier,
   orgSlug,
+  roles,
 }: InviteMemberFormProps) {
   return (
     <InviteFormUI
@@ -60,6 +83,7 @@ function MockInviteMemberForm({
       pendingInvitations={0}
       planTier={planTier}
       orgSlug={orgSlug}
+      roles={roles}
       onInviteSent={() => {}}
       ready={true}
     />
@@ -71,6 +95,7 @@ function KeycloakBffInviteMemberForm({
   currentMembers,
   planTier,
   orgSlug,
+  roles,
 }: InviteMemberFormProps) {
   const [pendingCount, setPendingCount] = useState(0);
 
@@ -94,6 +119,7 @@ function KeycloakBffInviteMemberForm({
       pendingInvitations={pendingCount}
       planTier={planTier}
       orgSlug={orgSlug}
+      roles={roles}
       onInviteSent={handleInviteSent}
       ready={true}
     />
@@ -106,6 +132,7 @@ function InviteFormUI({
   pendingInvitations,
   planTier,
   orgSlug,
+  roles,
   onInviteSent,
   ready,
 }: {
@@ -114,22 +141,97 @@ function InviteFormUI({
   pendingInvitations: number;
   planTier: string;
   orgSlug: string;
+  roles: OrgRole[];
   onInviteSent: () => void;
   ready: boolean;
 }) {
   const [emailAddress, setEmailAddress] = useState("");
   const [role, setRole] = useState<"org:member" | "org:admin">("org:member");
+  const [selectedRoleId, setSelectedRoleId] = useState<string | undefined>(
+    undefined,
+  );
+  const [overrides, setOverrides] = useState<string[]>([]);
+  const [customizeOpen, setCustomizeOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
   if (!ready) return null;
 
+  const customRoles = roles.filter((r) => !r.isSystem);
+  const selectedRole = selectedRoleId
+    ? roles.find((r) => r.id === selectedRoleId)
+    : undefined;
+  const isCustomRole = selectedRole && !selectedRole.isSystem;
+  const roleCapabilities = new Set(selectedRole?.capabilities ?? []);
+
   const totalUsed = currentMembers + pendingInvitations;
   const isAtLimit = maxMembers > 0 && totalUsed >= maxMembers;
   const fillPercent =
     maxMembers > 0 ? Math.min((totalUsed / maxMembers) * 100, 100) : 0;
   const isPro = planTier === "DEDICATED";
+
+  function handleRoleSelectChange(value: string) {
+    // Reset overrides and close customize section when role changes
+    setOverrides([]);
+    setCustomizeOpen(false);
+
+    if (systemSelectValues.has(value)) {
+      // System role selected — map to auth role, clear custom role
+      setRole(value === SYSTEM_ADMIN_VALUE ? "org:admin" : "org:member");
+      setSelectedRoleId(undefined);
+    } else {
+      // Custom role — auth role stays member, store orgRoleId
+      setRole("org:member");
+      setSelectedRoleId(value);
+    }
+  }
+
+  function isEffectivelyEnabled(cap: string): boolean {
+    if (overrides.includes(`-${cap}`)) return false;
+    if (overrides.includes(`+${cap}`)) return true;
+    return roleCapabilities.has(cap);
+  }
+
+  function getOverrideStatus(
+    cap: string,
+  ): "added" | "removed" | "default" {
+    if (overrides.includes(`+${cap}`)) return "added";
+    if (overrides.includes(`-${cap}`)) return "removed";
+    return "default";
+  }
+
+  function toggleCapability(cap: string) {
+    const inRole = roleCapabilities.has(cap);
+    const hasPlus = overrides.includes(`+${cap}`);
+    const hasMinus = overrides.includes(`-${cap}`);
+
+    if (inRole) {
+      if (hasMinus) {
+        setOverrides((prev) => prev.filter((o) => o !== `-${cap}`));
+      } else {
+        setOverrides((prev) => [...prev, `-${cap}`]);
+      }
+    } else {
+      if (hasPlus) {
+        setOverrides((prev) => prev.filter((o) => o !== `+${cap}`));
+      } else {
+        setOverrides((prev) => [...prev, `+${cap}`]);
+      }
+    }
+  }
+
+  // Well-known select values for system roles (not derived from role IDs)
+  const SYSTEM_MEMBER_VALUE = "system:member";
+  const SYSTEM_ADMIN_VALUE = "system:admin";
+  const systemSelectValues = new Set([SYSTEM_MEMBER_VALUE, SYSTEM_ADMIN_VALUE]);
+
+  // Compute the select value from current state
+  function getSelectValue(): string {
+    if (selectedRoleId) return selectedRoleId;
+    if (role === "org:admin") return SYSTEM_ADMIN_VALUE;
+    return SYSTEM_MEMBER_VALUE;
+  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -144,7 +246,12 @@ function InviteFormUI({
 
     setIsSubmitting(true);
     try {
-      const result = await inviteMember(trimmedEmail, role);
+      const result = await inviteMember(
+        trimmedEmail,
+        role,
+        selectedRoleId,
+        overrides.length > 0 ? overrides : undefined,
+      );
       if (!result.success) {
         setError(result.error ?? "Failed to send invitation.");
         return;
@@ -190,22 +297,102 @@ function InviteFormUI({
             <label htmlFor="invite-role" className="text-sm font-medium">
               Role
             </label>
-            <select
-              id="invite-role"
-              value={role}
-              onChange={(e) =>
-                setRole(e.target.value as "org:member" | "org:admin")
-              }
-              className="border-input bg-background h-9 rounded-md border px-3 text-sm shadow-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500"
+            <Select
+              value={getSelectValue()}
+              onValueChange={handleRoleSelectChange}
             >
-              <option value="org:member">Member</option>
-              <option value="org:admin">Admin</option>
-            </select>
+              <SelectTrigger className="h-9 w-full min-w-[140px]" id="invite-role">
+                <SelectValue placeholder="Select a role..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>System</SelectLabel>
+                  <SelectItem value={SYSTEM_MEMBER_VALUE}>Member</SelectItem>
+                  <SelectItem value={SYSTEM_ADMIN_VALUE}>Admin</SelectItem>
+                </SelectGroup>
+                {customRoles.length > 0 && (
+                  <SelectGroup>
+                    <SelectLabel>Custom</SelectLabel>
+                    {customRoles.map((r) => (
+                      <SelectItem key={r.id} value={r.id}>
+                        {r.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                )}
+              </SelectContent>
+            </Select>
           </div>
           <Button type="submit" disabled={isSubmitting} size="sm">
             {isSubmitting ? "Sending..." : "Send Invite"}
           </Button>
         </form>
+      )}
+
+      {/* Capability summary pills — only for custom roles */}
+      {isCustomRole && selectedRole && (
+        <div className="flex flex-wrap gap-1.5">
+          {CAPABILITY_META.filter((cap) =>
+            selectedRole.capabilities.includes(cap.value),
+          ).map((cap) => (
+            <Badge key={cap.value} variant="secondary">
+              {cap.label}
+            </Badge>
+          ))}
+        </div>
+      )}
+
+      {/* Customize for this user — only for custom roles */}
+      {isCustomRole && (
+        <Collapsible open={customizeOpen} onOpenChange={setCustomizeOpen}>
+          <CollapsibleTrigger className="flex items-center gap-1 text-sm font-medium text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100">
+            <ChevronRight
+              className={`size-4 transition-transform ${customizeOpen ? "rotate-90" : ""}`}
+            />
+            Customize for this user
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="mt-3 space-y-3">
+              {CAPABILITY_META.map((cap) => {
+                const enabled = isEffectivelyEnabled(cap.value);
+                const status = getOverrideStatus(cap.value);
+
+                return (
+                  <label
+                    key={cap.value}
+                    className="flex cursor-pointer items-start gap-3"
+                  >
+                    <Checkbox
+                      checked={enabled}
+                      onCheckedChange={() => toggleCapability(cap.value)}
+                      aria-label={cap.label}
+                    />
+                    <div className="flex-1 space-y-0.5">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-medium leading-none">
+                          {cap.label}
+                        </span>
+                        {status === "added" && (
+                          <span className="text-xs font-medium text-teal-600">
+                            +
+                          </span>
+                        )}
+                        {status === "removed" && (
+                          <span className="text-destructive text-xs font-medium">
+                            &minus;
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        {cap.description}
+                      </p>
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       )}
 
       {/* At-limit message */}

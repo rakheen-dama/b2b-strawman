@@ -43,7 +43,7 @@ function mockOrg(overrides: Record<string, unknown> = {}) {
 describe("InviteMemberForm", () => {
   it("renders form when under member limit", () => {
     mockUseOrganization.mockReturnValue(mockOrg());
-    render(<InviteMemberForm maxMembers={2} currentMembers={1} planTier="SHARED" orgSlug="acme" />);
+    render(<InviteMemberForm maxMembers={2} currentMembers={1} planTier="SHARED" orgSlug="acme" roles={[]} />);
 
     expect(screen.getByLabelText("Email address")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Send Invite" })).toBeInTheDocument();
@@ -51,7 +51,7 @@ describe("InviteMemberForm", () => {
 
   it("shows upgrade message when at member limit", () => {
     mockUseOrganization.mockReturnValue(mockOrg());
-    render(<InviteMemberForm maxMembers={2} currentMembers={2} planTier="SHARED" orgSlug="acme" />);
+    render(<InviteMemberForm maxMembers={2} currentMembers={2} planTier="SHARED" orgSlug="acme" roles={[]} />);
 
     expect(screen.queryByLabelText("Email address")).not.toBeInTheDocument();
     expect(screen.getByText(/Member limit reached/)).toBeInTheDocument();
@@ -59,7 +59,7 @@ describe("InviteMemberForm", () => {
 
   it("counts pending invitations toward the limit", () => {
     mockUseOrganization.mockReturnValue(mockOrg({ pendingInvitationsCount: 1 }));
-    render(<InviteMemberForm maxMembers={2} currentMembers={1} planTier="SHARED" orgSlug="acme" />);
+    render(<InviteMemberForm maxMembers={2} currentMembers={1} planTier="SHARED" orgSlug="acme" roles={[]} />);
 
     expect(screen.queryByLabelText("Email address")).not.toBeInTheDocument();
     expect(screen.getByText(/Member limit reached/)).toBeInTheDocument();
@@ -67,14 +67,14 @@ describe("InviteMemberForm", () => {
 
   it("renders form when maxMembers is 0 (unlimited)", () => {
     mockUseOrganization.mockReturnValue(mockOrg());
-    render(<InviteMemberForm maxMembers={0} currentMembers={50} planTier="DEDICATED" orgSlug="acme" />);
+    render(<InviteMemberForm maxMembers={0} currentMembers={50} planTier="DEDICATED" orgSlug="acme" roles={[]} />);
 
     expect(screen.getByLabelText("Email address")).toBeInTheDocument();
   });
 
   it("shows billing link with correct slug", () => {
     mockUseOrganization.mockReturnValue(mockOrg());
-    render(<InviteMemberForm maxMembers={2} currentMembers={2} planTier="SHARED" orgSlug="my-org" />);
+    render(<InviteMemberForm maxMembers={2} currentMembers={2} planTier="SHARED" orgSlug="my-org" roles={[]} />);
 
     const link = screen.getByRole("link", { name: "Upgrade" });
     expect(link).toHaveAttribute("href", "/org/my-org/settings/billing");
@@ -86,7 +86,7 @@ describe("InviteMemberForm", () => {
       invitations: null,
     });
     const { container } = render(
-      <InviteMemberForm maxMembers={2} currentMembers={1} planTier="SHARED" orgSlug="acme" />
+      <InviteMemberForm maxMembers={2} currentMembers={1} planTier="SHARED" orgSlug="acme" roles={[]} />
     );
 
     expect(container.innerHTML).toBe("");
@@ -94,7 +94,7 @@ describe("InviteMemberForm", () => {
 
   it("shows progress bar with member count", () => {
     mockUseOrganization.mockReturnValue(mockOrg());
-    render(<InviteMemberForm maxMembers={10} currentMembers={3} planTier="SHARED" orgSlug="acme" />);
+    render(<InviteMemberForm maxMembers={10} currentMembers={3} planTier="SHARED" orgSlug="acme" roles={[]} />);
 
     expect(screen.getByText("3 of 10 members")).toBeInTheDocument();
   });
@@ -104,13 +104,13 @@ describe("InviteMemberForm", () => {
     mockUseOrganization.mockReturnValue(mockOrg());
     mockInviteMember.mockResolvedValue({ success: true });
 
-    render(<InviteMemberForm maxMembers={10} currentMembers={1} planTier="SHARED" orgSlug="acme" />);
+    render(<InviteMemberForm maxMembers={10} currentMembers={1} planTier="SHARED" orgSlug="acme" roles={[]} />);
 
     await user.type(screen.getByLabelText("Email address"), "test@example.com");
     await user.click(screen.getByRole("button", { name: "Send Invite" }));
 
     await waitFor(() => {
-      expect(mockInviteMember).toHaveBeenCalledWith("test@example.com", "org:member");
+      expect(mockInviteMember).toHaveBeenCalledWith("test@example.com", "org:member", undefined, undefined);
     });
     expect(await screen.findByText(/Invitation sent to test@example.com/)).toBeInTheDocument();
   });
@@ -120,7 +120,7 @@ describe("InviteMemberForm", () => {
     mockUseOrganization.mockReturnValue(mockOrg());
     mockInviteMember.mockResolvedValue({ success: false, error: "Already invited" });
 
-    render(<InviteMemberForm maxMembers={10} currentMembers={1} planTier="SHARED" orgSlug="acme" />);
+    render(<InviteMemberForm maxMembers={10} currentMembers={1} planTier="SHARED" orgSlug="acme" roles={[]} />);
 
     await user.type(screen.getByLabelText("Email address"), "dup@example.com");
     await user.click(screen.getByRole("button", { name: "Send Invite" }));

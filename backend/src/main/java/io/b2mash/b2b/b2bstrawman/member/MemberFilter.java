@@ -4,7 +4,6 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ScopedFilterChain;
-import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.security.ClerkJwtUtils;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
@@ -34,17 +33,12 @@ public class MemberFilter extends OncePerRequestFilter {
 
   private final MemberRepository memberRepository;
   private final OrgRoleService orgRoleService;
-  private final OrgRoleRepository orgRoleRepository;
   private final Cache<String, MemberInfo> memberCache =
       Caffeine.newBuilder().maximumSize(50_000).expireAfterWrite(Duration.ofHours(1)).build();
 
-  public MemberFilter(
-      MemberRepository memberRepository,
-      OrgRoleService orgRoleService,
-      OrgRoleRepository orgRoleRepository) {
+  public MemberFilter(MemberRepository memberRepository, OrgRoleService orgRoleService) {
     this.memberRepository = memberRepository;
     this.orgRoleService = orgRoleService;
-    this.orgRoleRepository = orgRoleRepository;
   }
 
   @Override
@@ -157,18 +151,13 @@ public class MemberFilter extends OncePerRequestFilter {
 
     try {
       var member = new Member(clerkUserId, email, name, null, effectiveRole);
-      member = memberRepository.save(member);
 
-      // Assign default system role based on the effective org role
-      String roleSlug = effectiveRole;
-      var finalMember = member;
-      orgRoleRepository
-          .findBySlug(roleSlug)
-          .ifPresent(
-              systemRole -> {
-                finalMember.setOrgRoleId(systemRole.getId());
-                memberRepository.save(finalMember);
-              });
+      // Assign default system role based on the effective org role before persisting
+      orgRoleService
+          .findSystemRoleBySlug(effectiveRole)
+          .ifPresent(systemRole -> member.setOrgRoleId(systemRole.getId()));
+
+      memberRepository.save(member);
 
       log.info(
           "Lazy-created member {} for user {} in tenant {}",

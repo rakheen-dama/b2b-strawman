@@ -191,6 +191,23 @@ class RoleAssignmentTest {
   }
 
   @Test
+  void assignRole_adminCannotAssignAdminRole_returns403() throws Exception {
+    String adminSystemRoleId = findSystemRoleId("admin");
+
+    mockMvc
+        .perform(
+            put("/api/members/" + memberMemberId + "/role")
+                .with(adminJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"orgRoleId": "%s", "capabilityOverrides": []}
+                    """
+                        .formatted(adminSystemRoleId)))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
   void assignRole_adminCanAssignCustomRole() throws Exception {
     String roleId = createCustomRole("Admin Assign Role", Set.of("INVOICING"));
 

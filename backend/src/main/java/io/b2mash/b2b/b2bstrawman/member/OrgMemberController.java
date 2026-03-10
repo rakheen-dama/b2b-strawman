@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.member;
 
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.AssignRoleRequest;
 import io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.MemberCapabilitiesResponse;
 import jakarta.validation.Valid;
@@ -41,7 +42,7 @@ public class OrgMemberController {
   }
 
   @PutMapping("/{id}/role")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<MemberCapabilitiesResponse> assignRole(
       @PathVariable UUID id, @Valid @RequestBody AssignRoleRequest request) {
     return ResponseEntity.ok(orgRoleService.assignRole(id, request));

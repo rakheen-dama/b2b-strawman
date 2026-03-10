@@ -49,7 +49,7 @@ public final class OrgRoleDtos {
     }
   }
 
-  public record AssignRoleRequest(UUID orgRoleId, Set<String> capabilityOverrides) {}
+  public record AssignRoleRequest(@NotNull UUID orgRoleId, Set<String> capabilityOverrides) {}
 
   public record MemberCapabilitiesResponse(
       UUID memberId,

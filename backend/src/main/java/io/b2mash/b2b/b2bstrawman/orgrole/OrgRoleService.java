@@ -294,6 +294,15 @@ public class OrgRoleService {
     orgRoleRepository.delete(role);
   }
 
+  /**
+   * Looks up a system role by its slug (e.g. "owner", "admin", "member"). Returns empty if not
+   * found.
+   */
+  @Transactional(readOnly = true)
+  public java.util.Optional<OrgRole> findSystemRoleBySlug(String slug) {
+    return orgRoleRepository.findBySlug(slug).filter(OrgRole::isSystem);
+  }
+
   static String generateSlug(String name) {
     return name.toLowerCase()
         .replaceAll("[^a-z0-9]+", "-")

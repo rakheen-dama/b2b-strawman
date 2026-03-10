@@ -12,11 +12,10 @@ import type { NavGroup } from "@/lib/nav-items";
 export interface NavZoneProps {
   zone: NavGroup;
   slug: string;
-  defaultExpanded?: boolean;
 }
 
-export function NavZone({ zone, slug, defaultExpanded }: NavZoneProps) {
-  const [expanded, setExpanded] = useState(zone.defaultExpanded ?? defaultExpanded ?? true);
+export function NavZone({ zone, slug }: NavZoneProps) {
+  const [expanded, setExpanded] = useState(zone.defaultExpanded ?? true);
   const pathname = usePathname();
   const { hasCapability } = useCapabilities();
 
@@ -31,6 +30,7 @@ export function NavZone({ zone, slug, defaultExpanded }: NavZoneProps) {
       {/* Zone header */}
       <button
         type="button"
+        aria-expanded={expanded}
         onClick={() => setExpanded((prev) => !prev)}
         className="flex w-full items-center justify-between px-3 py-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
       >
@@ -63,7 +63,7 @@ export function NavZone({ zone, slug, defaultExpanded }: NavZoneProps) {
 
               return (
                 <Link
-                  key={item.label}
+                  key={item.href(slug)}
                   href={href}
                   className={cn(
                     "relative flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
@@ -74,7 +74,7 @@ export function NavZone({ zone, slug, defaultExpanded }: NavZoneProps) {
                 >
                   {isActive && (
                     <motion.div
-                      layoutId="sidebar-indicator"
+                      layoutId={`sidebar-indicator-${zone.id}`}
                       aria-hidden="true"
                       className="absolute left-0 top-1 bottom-1 w-0.5 rounded-full bg-teal-500"
                       transition={{ type: "spring", stiffness: 350, damping: 30 }}

@@ -139,7 +139,7 @@ FRONTEND TRACK (after E313 backend APIs ready)
 |-------|------|-------|---------|--------|
 | 1a (parallel) | 313 | 313A | `RequestScopes.CAPABILITIES` ScopedValue, `CapabilityAuthorizationService`, `@RequiresCapability` annotation, `CapabilityAuthorizationManager`, `MemberFilter` extension to resolve + bind capabilities. ~7 new/modified files (~10 tests). Backend only. | **Done** (PR #638) |
 | 1b | 313 | 313B | `GET /api/me/capabilities` endpoint, `GET /api/members/{id}/capabilities` endpoint, edge cases (unassigned role, empty overrides, admin bypass). ~3 new/modified files (~8 tests). Backend only. | **Done** (PR #639) |
-| 1c (parallel with 1a) | 316 | 316A | `OrgRoleController` with 5 CRUD endpoints (list, get, create, update, delete), validation rules (name uniqueness, system role guard, delete-with-members guard). ~3 new/modified files (~12 tests). Backend only. | |
+| 1c (parallel with 1a) | 316 | 316A | `OrgRoleController` with 5 CRUD endpoints (list, get, create, update, delete), validation rules (name uniqueness, system role guard, delete-with-members guard). ~3 new/modified files (~12 tests). Backend only. | **Done** (PR #644) |
 | 1d | 316 | 316B | `PUT /api/members/{id}/role` endpoint, `GET /api/members/{id}/capabilities`, override validation, invite flow extension (`MemberFilter.lazyCreateMember` with orgRoleId). ~4 modified files (~10 tests). Backend only. | |
 
 ### Stage 2: @PreAuthorize Migration (parallel batches)
@@ -474,7 +474,7 @@ Stage 5: [319A] -> [319B] // [320A] -> [320B]                         (two paral
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **316A** | 316.1--316.6 | `OrgRoleController` with 5 CRUD endpoints (list, get, create, update, delete), validation (name uniqueness, system role guard, capabilities subset, delete-with-members guard). ~2 new files + 1 test file (~12 tests). Backend only. | |
+| **316A** | 316.1--316.6 | `OrgRoleController` with 5 CRUD endpoints (list, get, create, update, delete), validation (name uniqueness, system role guard, capabilities subset, delete-with-members guard). ~2 new files + 1 test file (~12 tests). Backend only. | **Done** (PR #644) |
 | **316B** | 316.7--316.13 | `PUT /api/members/{id}/role` endpoint, role assignment service logic with override validation, `MemberFilter.lazyCreateMember` extension for invite flow (assign orgRoleId on first login). ~4 modified files + 1 test file (~10 tests). Backend only. | |
 
 ### Tasks

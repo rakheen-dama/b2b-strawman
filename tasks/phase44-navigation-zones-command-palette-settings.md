@@ -19,7 +19,7 @@ A **frontend-only** UX structural overhaul addressing accumulated navigation deb
 | 332 | Nav-Items Data Model Restructure | Frontend | -- | S | 332A | **Done** (PR #653) |
 | 333 | Desktop Sidebar Zone Rendering | Frontend | 332 | M | 333A, 333B | **Done** (PRs #654, #655) |
 | 334 | Mobile Sidebar Zone Rendering | Frontend | 332, 333 | S | 334A | **Done** (PR #656) |
-| 335 | Command Palette (⌘K) | Frontend | 332 | M | 335A, 335B | |
+| 335 | Command Palette (⌘K) | Frontend | 332 | M | 335A, 335B | 335A **Done** (PR #657) |
 | 336 | Settings Layout Shell & Sidebar | Frontend | -- | M | 336A, 336B | |
 | 337 | Settings Hub Redirect & Breadcrumb Update | Frontend | 336 | S | 337A | |
 
@@ -90,7 +90,7 @@ SIDEBAR TRACK                CMD PALETTE TRACK           SETTINGS TRACK (indepen
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 1a (parallel) | 333 | 333A | `NavZone` collapsible component with Motion `AnimatePresence` expand/collapse, capability-filtered items, empty-zone auto-hide, active-item detection. `DesktopSidebar` refactored to render `NAV_GROUPS` via `NavZone` + utility footer from `UTILITY_ITEMS`. ~4 new/modified files (~5 tests). Frontend only. | **Done** (PR #654) |
-| 1b (parallel) | 335 | 335A | `CommandPaletteDialog` built on `CommandDialog` from `components/ui/command.tsx`. Indexes `NAV_GROUPS` + `UTILITY_ITEMS` as "Pages" group and `SETTINGS_ITEMS` as "Settings" group. Capability-filtered. `useEffect` global `⌘K`/`Ctrl+K` listener in org layout. Empty state "No results". Router.push on select + close. ~3 new/modified files (~5 tests). Frontend only. | |
+| 1b (parallel) | 335 | 335A | `CommandPaletteDialog` built on `CommandDialog` from `components/ui/command.tsx`. Indexes `NAV_GROUPS` + `UTILITY_ITEMS` as "Pages" group and `SETTINGS_ITEMS` as "Settings" group. Capability-filtered. `useEffect` global `⌘K`/`Ctrl+K` listener in org layout. Empty state "No results". Router.push on select + close. ~3 new/modified files (~5 tests). Frontend only. | **Done** (PR #657) |
 | 1c (parallel) | 336 | 336A | New `app/(app)/org/[slug]/settings/layout.tsx` rendering `SettingsSidebar` + `{children}`. `SettingsSidebar` is a new component with `SETTINGS_NAV_GROUPS` config (6 groups from architecture doc). Sticky sidebar. Mobile: dropdown `<select>`-style switcher below `md` breakpoint. ~3 new files (~4 tests). Frontend only. | |
 
 ### Stage 2: Dependent Second Slices (3 concurrent)
@@ -305,7 +305,7 @@ Stage 3: [337A]                                                    (single, inte
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **335A** | 335.1–335.6 | `CommandPaletteDialog` component with "Pages" and "Settings" groups. Global `⌘K`/`Ctrl+K` listener. Capability and admin filtering. Router.push on select. Empty state. Mounted in org layout. ~3 new/modified files (~5 tests). Frontend only. | |
+| **335A** | 335.1–335.6 | `CommandPaletteDialog` component with "Pages" and "Settings" groups. Global `⌘K`/`Ctrl+K` listener. Capability and admin filtering. Router.push on select. Empty state. Mounted in org layout. ~3 new/modified files (~5 tests). Frontend only. | **Done** (PR #657) |
 | **335B** | 335.7–335.10 | `RecentItemsContext` provider tracking last 5 visited project/customer pages. "Recent" group added to `CommandPaletteDialog` when cache non-empty. Provider mounted in org layout. ~3 new/modified files (~4 tests). Frontend only. | |
 
 ### Tasks

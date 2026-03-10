@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.capacity.dto.AllocationDtos.BulkAllocationRespo
 import io.b2mash.b2b.b2bstrawman.capacity.dto.AllocationDtos.CreateAllocationRequest;
 import io.b2mash.b2b.b2bstrawman.capacity.dto.AllocationDtos.UpdateAllocationRequest;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
@@ -43,7 +44,7 @@ public class ResourceAllocationController {
   }
 
   @PostMapping("/api/resource-allocations")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("RESOURCE_PLANNING")
   public ResponseEntity<AllocationResponse> createAllocation(
       @Valid @RequestBody CreateAllocationRequest request) {
     return ResponseEntity.status(HttpStatus.CREATED)
@@ -51,21 +52,21 @@ public class ResourceAllocationController {
   }
 
   @PutMapping("/api/resource-allocations/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("RESOURCE_PLANNING")
   public ResponseEntity<AllocationResponse> updateAllocation(
       @PathVariable UUID id, @Valid @RequestBody UpdateAllocationRequest request) {
     return ResponseEntity.ok(allocationService.updateAllocation(id, request));
   }
 
   @DeleteMapping("/api/resource-allocations/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("RESOURCE_PLANNING")
   public ResponseEntity<Void> deleteAllocation(@PathVariable UUID id) {
     allocationService.deleteAllocation(id);
     return ResponseEntity.noContent().build();
   }
 
   @PostMapping("/api/resource-allocations/bulk")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("RESOURCE_PLANNING")
   public ResponseEntity<BulkAllocationResponse> bulkUpsertAllocations(
       @Valid @RequestBody BulkAllocationRequest request) {
     return ResponseEntity.ok(

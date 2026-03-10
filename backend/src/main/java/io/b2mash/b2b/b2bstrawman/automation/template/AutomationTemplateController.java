@@ -2,10 +2,10 @@ package io.b2mash.b2b.b2bstrawman.automation.template;
 
 import io.b2mash.b2b.b2bstrawman.automation.dto.AutomationDtos.AutomationRuleResponse;
 import io.b2mash.b2b.b2bstrawman.automation.template.AutomationTemplateDefinition.TemplateDefinitionResponse;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import java.net.URI;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,13 +21,13 @@ public class AutomationTemplateController {
   }
 
   @GetMapping("/api/automation-templates")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("AUTOMATIONS")
   public ResponseEntity<List<TemplateDefinitionResponse>> listTemplates() {
     return ResponseEntity.ok(automationTemplateService.listTemplates());
   }
 
   @PostMapping("/api/automation-templates/{slug}/activate")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("AUTOMATIONS")
   public ResponseEntity<AutomationRuleResponse> activateTemplate(@PathVariable String slug) {
     var response = automationTemplateService.activateTemplate(slug);
     return ResponseEntity.created(URI.create("/api/automation-rules/" + response.id()))

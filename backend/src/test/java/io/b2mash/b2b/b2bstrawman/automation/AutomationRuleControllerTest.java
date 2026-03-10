@@ -8,13 +8,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -47,9 +50,13 @@ class AutomationRuleControllerTest {
   @Autowired private ActionExecutionRepository actionExecutionRepository;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private JdbcTemplate jdbcTemplate;
+  @Autowired private OrgRoleService orgRoleService;
+  @Autowired private MemberRepository memberRepository;
 
   private String memberIdOwner;
   private String tenantSchema;
+  private UUID customRoleMemberId;
+  private UUID noCapMemberId;
 
   @BeforeAll
   void provisionTenantAndSeedData() throws Exception {
@@ -59,6 +66,37 @@ class AutomationRuleControllerTest {
     syncMember("user_auto_member", "auto_member@test.com", "Auto Member", "member");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+
+    customRoleMemberId =
+        UUID.fromString(
+            syncMember(
+                "user_auto_315b_custom", "auto_custom@test.com", "Auto Custom User", "member"));
+    noCapMemberId =
+        UUID.fromString(
+            syncMember("user_auto_315b_nocap", "auto_nocap@test.com", "Auto NoCap User", "member"));
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, UUID.fromString(memberIdOwner))
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              var withCapRole =
+                  orgRoleService.createRole(
+                      new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                          "Automation Manager", "Can manage automations", Set.of("AUTOMATIONS")));
+              var customMember = memberRepository.findById(customRoleMemberId).orElseThrow();
+              customMember.setOrgRoleId(withCapRole.id());
+              memberRepository.save(customMember);
+
+              var withoutCapRole =
+                  orgRoleService.createRole(
+                      new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                          "Team Lead Auto", "Can manage teams", Set.of("TEAM_OVERSIGHT")));
+              var noCapMember = memberRepository.findById(noCapMemberId).orElseThrow();
+              noCapMember.setOrgRoleId(withoutCapRole.id());
+              memberRepository.save(noCapMember);
+            });
   }
 
   @Test
@@ -745,6 +783,36 @@ class AutomationRuleControllerTest {
         "Expected at least one audit event for rule deletion");
   }
 
+  // --- Capability Tests (added in Epic 315B) ---
+
+  @Test
+  void customRoleWithCapability_accessesAutomationEndpoint_returns201() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/automation-rules")
+                .with(customRoleJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"name": "Cap Test Rule", "triggerType": "TASK_STATUS_CHANGED", "triggerConfig": {}}
+                    """))
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  void customRoleWithoutCapability_accessesAutomationEndpoint_returns403() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/automation-rules")
+                .with(noCapabilityJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"name": "NoCap Rule", "triggerType": "TASK_STATUS_CHANGED", "triggerConfig": {}}
+                    """))
+        .andExpect(status().isForbidden());
+  }
+
   // --- Helper methods ---
 
   private String syncMember(String clerkUserId, String email, String name, String orgRole)
@@ -775,6 +843,23 @@ class AutomationRuleControllerTest {
   private JwtRequestPostProcessor memberJwt() {
     return jwt()
         .jwt(j -> j.subject("user_auto_member").claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+
+  private JwtRequestPostProcessor customRoleJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_auto_315b_custom")
+                    .claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+
+  private JwtRequestPostProcessor noCapabilityJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_auto_315b_nocap").claim("o", Map.of("id", ORG_ID, "rol", "member")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
   }
 

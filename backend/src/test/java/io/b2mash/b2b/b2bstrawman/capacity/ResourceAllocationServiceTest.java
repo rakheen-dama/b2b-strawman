@@ -13,8 +13,10 @@ import io.b2mash.b2b.b2bstrawman.capacity.dto.AllocationDtos.CreateAllocationReq
 import io.b2mash.b2b.b2bstrawman.capacity.dto.AllocationDtos.UpdateAllocationRequest;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
@@ -23,6 +25,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +60,8 @@ class ResourceAllocationServiceTest {
   @Autowired private ResourceAllocationRepository allocationRepository;
   @Autowired private ProjectService projectService;
   @Autowired private ApplicationEvents events;
+  @Autowired private OrgRoleService orgRoleService;
+  @Autowired private MemberRepository memberRepository;
 
   private String tenantSchema;
   private UUID memberIdOwner;
@@ -66,6 +71,8 @@ class ResourceAllocationServiceTest {
   private UUID projectId;
   private UUID archivedProjectId;
   private UUID createdAllocationId;
+  private UUID customRoleMemberId;
+  private UUID noCapMemberId;
 
   @BeforeAll
   void provisionAndSeed() throws Exception {
@@ -80,6 +87,19 @@ class ResourceAllocationServiceTest {
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 
+    customRoleMemberId =
+        UUID.fromString(
+            syncMember(
+                ORG_ID,
+                "user_alloc_315b_custom",
+                "alloc_custom@test.com",
+                "Alloc Custom",
+                "member"));
+    noCapMemberId =
+        UUID.fromString(
+            syncMember(
+                ORG_ID, "user_alloc_315b_nocap", "alloc_nocap@test.com", "Alloc NoCap", "member"));
+
     // Create projects in tenant scope
     runInTenant(
         () -> {
@@ -90,6 +110,23 @@ class ResourceAllocationServiceTest {
               projectService.createProject("Archived Project", "desc", memberIdOwner);
           archivedProjectId = archived.getId();
           projectService.archiveProject(archivedProjectId, memberIdOwner, "owner");
+
+          var withCapRole =
+              orgRoleService.createRole(
+                  new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                      "Resource Planner Alloc", "Can plan resources", Set.of("RESOURCE_PLANNING")));
+          var customMember = memberRepository.findById(customRoleMemberId).orElseThrow();
+          customMember.setOrgRoleId(withCapRole.id());
+          memberRepository.save(customMember);
+
+          var withoutCapRole =
+              orgRoleService.createRole(
+                  new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                      "Team Lead Alloc", "Can manage teams", Set.of("TEAM_OVERSIGHT")));
+          var noCapMember = memberRepository.findById(noCapMemberId).orElseThrow();
+          noCapMember.setOrgRoleId(withoutCapRole.id());
+          memberRepository.save(noCapMember);
+
           return null;
         });
   }
@@ -681,5 +718,69 @@ class ResourceAllocationServiceTest {
                 .param("weekStart", "2026-01-01")
                 .param("weekEnd", "2026-12-31"))
         .andExpect(status().isOk());
+  }
+
+  // --- Capability Tests (added in Epic 315B) ---
+
+  @Test
+  @Order(30)
+  void controller_customRoleWithCapability_canCreateAllocation() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/resource-allocations")
+                .with(customRoleJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "memberId": "%s",
+                      "projectId": "%s",
+                      "weekStart": "2026-12-14",
+                      "allocatedHours": 10.0,
+                      "note": "Capability test"
+                    }
+                    """
+                        .formatted(customRoleMemberId, projectId)))
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  @Order(31)
+  void controller_customRoleWithoutCapability_cannotCreateAllocation() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/resource-allocations")
+                .with(noCapabilityJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "memberId": "%s",
+                      "projectId": "%s",
+                      "weekStart": "2026-12-21",
+                      "allocatedHours": 10.0,
+                      "note": "NoCap test"
+                    }
+                    """
+                        .formatted(noCapMemberId, projectId)))
+        .andExpect(status().isForbidden());
+  }
+
+  private JwtRequestPostProcessor customRoleJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_alloc_315b_custom")
+                    .claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+
+  private JwtRequestPostProcessor noCapabilityJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_alloc_315b_nocap")
+                    .claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
   }
 }

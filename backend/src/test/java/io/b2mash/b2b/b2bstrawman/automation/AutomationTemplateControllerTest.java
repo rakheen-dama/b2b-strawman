@@ -13,12 +13,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.automation.template.AutomationTemplateSeeder;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -48,9 +52,13 @@ class AutomationTemplateControllerTest {
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private AutomationTemplateSeeder automationTemplateSeeder;
   @Autowired private AutomationRuleRepository ruleRepository;
+  @Autowired private OrgRoleService orgRoleService;
+  @Autowired private MemberRepository memberRepository;
 
   private String memberIdOwner;
   private String tenantSchema;
+  private UUID customRoleMemberId;
+  private UUID noCapMemberId;
 
   @BeforeAll
   void provisionTenantAndSeedData() throws Exception {
@@ -60,6 +68,39 @@ class AutomationTemplateControllerTest {
     syncMember("user_tmpl_member", "tmpl_member@test.com", "Tmpl Member", "member");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+
+    customRoleMemberId =
+        UUID.fromString(
+            syncMember(
+                "user_tmpl_315b_custom", "tmpl_custom@test.com", "Tmpl Custom User", "member"));
+    noCapMemberId =
+        UUID.fromString(
+            syncMember("user_tmpl_315b_nocap", "tmpl_nocap@test.com", "Tmpl NoCap User", "member"));
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, UUID.fromString(memberIdOwner))
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              var withCapRole =
+                  orgRoleService.createRole(
+                      new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                          "Automation Tmpl Manager",
+                          "Can manage automations",
+                          Set.of("AUTOMATIONS")));
+              var customMember = memberRepository.findById(customRoleMemberId).orElseThrow();
+              customMember.setOrgRoleId(withCapRole.id());
+              memberRepository.save(customMember);
+
+              var withoutCapRole =
+                  orgRoleService.createRole(
+                      new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                          "Team Lead Tmpl", "Can manage teams", Set.of("TEAM_OVERSIGHT")));
+              var noCapMember = memberRepository.findById(noCapMemberId).orElseThrow();
+              noCapMember.setOrgRoleId(withoutCapRole.id());
+              memberRepository.save(noCapMember);
+            });
   }
 
   @Test
@@ -191,6 +232,22 @@ class AutomationTemplateControllerTest {
     assertTrue(hasDisabled, "Seeder should create disabled template rules");
   }
 
+  // --- Capability Tests (added in Epic 315B) ---
+
+  @Test
+  void customRoleWithCapability_accessesTemplateEndpoint_returns200() throws Exception {
+    mockMvc
+        .perform(get("/api/automation-templates").with(customRoleJwt()))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void customRoleWithoutCapability_accessesTemplateEndpoint_returns403() throws Exception {
+    mockMvc
+        .perform(get("/api/automation-templates").with(noCapabilityJwt()))
+        .andExpect(status().isForbidden());
+  }
+
   private String syncMember(String clerkUserId, String email, String name, String orgRole)
       throws Exception {
     var result =
@@ -219,6 +276,23 @@ class AutomationTemplateControllerTest {
   private JwtRequestPostProcessor memberJwt() {
     return jwt()
         .jwt(j -> j.subject("user_tmpl_member").claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+
+  private JwtRequestPostProcessor customRoleJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_tmpl_315b_custom")
+                    .claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+
+  private JwtRequestPostProcessor noCapabilityJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_tmpl_315b_nocap").claim("o", Map.of("id", ORG_ID, "rol", "member")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
   }
 }

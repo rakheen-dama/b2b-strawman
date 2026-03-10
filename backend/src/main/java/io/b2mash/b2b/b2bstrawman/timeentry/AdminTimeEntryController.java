@@ -1,11 +1,11 @@
 package io.b2mash.b2b.b2bstrawman.timeentry;
 
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,7 +22,7 @@ public class AdminTimeEntryController {
   }
 
   @PostMapping("/re-snapshot")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<ReSnapshotResponse> reSnapshot(
       @Valid @RequestBody ReSnapshotRequest request) {
     if (request.projectId() == null

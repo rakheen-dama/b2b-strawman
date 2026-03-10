@@ -47,10 +47,10 @@ describe("SettingsSidebar", () => {
     render(<SettingsSidebar slug="test-org" isAdmin={true} />);
 
     // getAllByText because mobile + desktop both render them
-    expect(screen.getAllByText("Email").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("Automations").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("Batch Billing").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("Roles & Permissions").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Email").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText("Automations").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText("Batch Billing").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText("Roles & Permissions").length).toBeGreaterThanOrEqual(2);
   });
 
   it("renders Coming Soon items as non-clickable (not anchor elements)", () => {
@@ -59,13 +59,15 @@ describe("SettingsSidebar", () => {
     render(<SettingsSidebar slug="test-org" isAdmin={true} />);
 
     // "Organization" and "Security" are comingSoon — should not be <a> tags
-    // getAllByText because mobile + desktop both render them
+    // They only appear in desktop nav (filtered out of mobile)
     const orgElements = screen.getAllByText("Organization");
+    expect(orgElements.length).toBe(1); // desktop only
     for (const el of orgElements) {
       expect(el.tagName).not.toBe("A");
     }
 
     const secElements = screen.getAllByText("Security");
+    expect(secElements.length).toBe(1); // desktop only
     for (const el of secElements) {
       expect(el.tagName).not.toBe("A");
     }

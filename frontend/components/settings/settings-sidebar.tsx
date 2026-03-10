@@ -13,9 +13,9 @@ interface SettingsSidebarProps {
 export function SettingsSidebar({ slug, isAdmin }: SettingsSidebarProps) {
   const pathname = usePathname();
 
-  // Flatten all visible items for mobile tab row
+  // Flatten all visible items for mobile tab row (exclude comingSoon)
   const allVisibleItems = SETTINGS_NAV_GROUPS.flatMap((group) =>
-    group.items.filter((item) => !item.adminOnly || isAdmin),
+    group.items.filter((item) => (!item.adminOnly || isAdmin) && !item.comingSoon),
   );
 
   return (
@@ -25,19 +25,6 @@ export function SettingsSidebar({ slug, isAdmin }: SettingsSidebarProps) {
         <div className="flex gap-1 overflow-x-auto pb-2">
           {allVisibleItems.map((item) => {
             const isActive = pathname.endsWith(`/settings/${item.href}`);
-            if (item.comingSoon) {
-              return (
-                <span
-                  key={item.href}
-                  className={cn(
-                    "shrink-0 rounded-full px-3 py-1.5 text-sm whitespace-nowrap",
-                    "bg-slate-100 text-slate-400 cursor-not-allowed opacity-50",
-                  )}
-                >
-                  {item.label}
-                </span>
-              );
-            }
             return (
               <Link
                 key={item.href}
@@ -46,7 +33,7 @@ export function SettingsSidebar({ slug, isAdmin }: SettingsSidebarProps) {
                   "shrink-0 rounded-full px-3 py-1.5 text-sm whitespace-nowrap transition-colors",
                   isActive
                     ? "bg-teal-600 text-white"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200",
+                    : "bg-muted text-muted-foreground hover:bg-muted/80",
                 )}
               >
                 {item.label}
@@ -66,15 +53,16 @@ export function SettingsSidebar({ slug, isAdmin }: SettingsSidebarProps) {
 
           return (
             <div key={group.id}>
-              <div className="px-3 pb-1 pt-3 text-[11px] font-medium uppercase tracking-widest text-slate-400">
+              <div className="px-3 pb-1 pt-3 text-[11px] font-medium uppercase tracking-widest text-slate-400 dark:text-slate-500">
                 {group.label}
               </div>
               {visibleItems.map((item) => {
+                const isActive = pathname.endsWith(`/settings/${item.href}`);
                 if (item.comingSoon) {
                   return (
                     <span
-                      key={item.href}
-                      className="flex cursor-not-allowed items-center py-1.5 pl-3 text-sm text-slate-400 opacity-50"
+                      key={item.href || item.label}
+                      className="flex cursor-not-allowed items-center py-1.5 pl-3 text-sm text-muted-foreground opacity-50"
                     >
                       {item.label}
                     </span>
@@ -86,7 +74,9 @@ export function SettingsSidebar({ slug, isAdmin }: SettingsSidebarProps) {
                     href={`/org/${slug}/settings/${item.href}`}
                     className={cn(
                       "flex items-center py-1.5 pl-3 text-sm transition-colors",
-                      "text-slate-600 hover:text-slate-900 hover:bg-slate-50",
+                      isActive
+                        ? "bg-muted text-foreground font-medium"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/80",
                     )}
                   >
                     {item.label}

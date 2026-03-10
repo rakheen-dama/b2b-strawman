@@ -16,11 +16,11 @@ export const SETTINGS_NAV_GROUPS: SettingsNavGroup[] = [
     id: "general",
     label: "General",
     items: [
-      { label: "Organization", href: "organization", comingSoon: true },
+      { label: "Organization", href: "", comingSoon: true },
       { label: "Billing", href: "billing" },
       { label: "Notifications", href: "notifications" },
       { label: "Email", href: "email", adminOnly: true },
-      { label: "Security", href: "security", comingSoon: true },
+      { label: "Security", href: "", comingSoon: true },
     ],
   },
   {

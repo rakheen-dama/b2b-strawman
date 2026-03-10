@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.costrate;
 
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -16,7 +17,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,7 +41,7 @@ public class CostRateController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<ListResponse<CostRateResponse>> listCostRates(
       @RequestParam(required = false) UUID memberId) {
     String orgRole = RequestScopes.getOrgRole();
@@ -53,7 +53,7 @@ public class CostRateController {
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<CostRateResponse> createCostRate(
       @Valid @RequestBody CreateCostRateRequest request) {
     UUID actorMemberId = RequestScopes.requireMemberId();
@@ -75,7 +75,7 @@ public class CostRateController {
   }
 
   @PutMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<CostRateResponse> updateCostRate(
       @PathVariable UUID id, @Valid @RequestBody UpdateCostRateRequest request) {
     UUID actorMemberId = RequestScopes.requireMemberId();
@@ -96,7 +96,7 @@ public class CostRateController {
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<Void> deleteCostRate(@PathVariable UUID id) {
     UUID actorMemberId = RequestScopes.requireMemberId();
     String orgRole = RequestScopes.getOrgRole();

@@ -39,6 +39,13 @@ public class OrgRoleService {
             .orElseThrow(() -> new ResourceNotFoundException("Member", memberId));
 
     if (member.getOrgRoleId() == null) {
+      // Fallback: if no explicit OrgRole is assigned, derive capabilities from the legacy orgRole
+      // string. This ensures owner/admin members who predate the OrgRole system still get full
+      // capabilities resolved.
+      String legacyRole = member.getOrgRole();
+      if ("owner".equals(legacyRole) || "admin".equals(legacyRole)) {
+        return Set.copyOf(Capability.ALL_NAMES);
+      }
       return Collections.emptySet();
     }
 

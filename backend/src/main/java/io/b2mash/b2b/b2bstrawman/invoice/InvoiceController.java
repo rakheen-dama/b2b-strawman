@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.dto.UpdateInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UpdateLineItemRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.ValidateGenerationRequest;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.time.LocalDate;
@@ -22,7 +23,6 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -44,7 +44,7 @@ public class InvoiceController {
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<InvoiceResponse> createDraft(
       @Valid @RequestBody CreateInvoiceRequest request) {
     UUID createdBy = RequestScopes.requireMemberId();
@@ -53,34 +53,34 @@ public class InvoiceController {
   }
 
   @PutMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<InvoiceResponse> updateDraft(
       @PathVariable UUID id, @Valid @RequestBody UpdateInvoiceRequest request) {
     return ResponseEntity.ok(invoiceService.updateDraft(id, request));
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<Void> deleteDraft(@PathVariable UUID id) {
     invoiceService.deleteDraft(id);
     return ResponseEntity.noContent().build();
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<InvoiceResponse> getInvoice(@PathVariable UUID id) {
     return ResponseEntity.ok(invoiceService.findById(id));
   }
 
   @GetMapping("/{id}/preview")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<String> preview(@PathVariable UUID id) {
     String html = invoiceService.renderPreview(id);
     return ResponseEntity.ok().contentType(MediaType.TEXT_HTML).body(html);
   }
 
   @GetMapping("/unbilled-summary")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<List<BillingRunDtos.CustomerUnbilledSummary>> getUnbilledSummary(
       @RequestParam LocalDate periodFrom,
       @RequestParam LocalDate periodTo,
@@ -89,7 +89,7 @@ public class InvoiceController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<List<InvoiceResponse>> listInvoices(
       @RequestParam(required = false) UUID customerId,
       @RequestParam(required = false) InvoiceStatus status,
@@ -100,14 +100,14 @@ public class InvoiceController {
   // --- Custom fields ---
 
   @PutMapping("/{id}/custom-fields")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<InvoiceResponse> updateCustomFields(
       @PathVariable UUID id, @Valid @RequestBody UpdateCustomFieldsRequest request) {
     return ResponseEntity.ok(invoiceService.updateCustomFields(id, request.customFields()));
   }
 
   @PutMapping("/{id}/field-groups")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<List<FieldDefinitionResponse>> setFieldGroups(
       @PathVariable UUID id, @Valid @RequestBody SetFieldGroupsRequest request) {
     return ResponseEntity.ok(invoiceService.setFieldGroups(id, request.appliedFieldGroups()));
@@ -116,7 +116,7 @@ public class InvoiceController {
   // --- Line item CRUD ---
 
   @PostMapping("/{id}/lines")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<InvoiceResponse> addLineItem(
       @PathVariable UUID id, @Valid @RequestBody AddLineItemRequest request) {
     var response = invoiceService.addLineItem(id, request);
@@ -124,7 +124,7 @@ public class InvoiceController {
   }
 
   @PutMapping("/{id}/lines/{lineId}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<InvoiceResponse> updateLineItem(
       @PathVariable UUID id,
       @PathVariable UUID lineId,
@@ -133,7 +133,7 @@ public class InvoiceController {
   }
 
   @DeleteMapping("/{id}/lines/{lineId}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<Void> deleteLineItem(@PathVariable UUID id, @PathVariable UUID lineId) {
     invoiceService.deleteLineItem(id, lineId);
     return ResponseEntity.noContent().build();
@@ -142,7 +142,7 @@ public class InvoiceController {
   // --- Validation ---
 
   @PostMapping("/validate-generation")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<List<ValidationCheck>> validateGeneration(
       @Valid @RequestBody ValidateGenerationRequest request) {
     return ResponseEntity.ok(
@@ -153,21 +153,21 @@ public class InvoiceController {
   // --- Lifecycle transitions ---
 
   @PostMapping("/{id}/approve")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<InvoiceResponse> approveInvoice(@PathVariable UUID id) {
     UUID approvedBy = RequestScopes.requireMemberId();
     return ResponseEntity.ok(invoiceService.approve(id, approvedBy));
   }
 
   @PostMapping("/{id}/send")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<InvoiceResponse> sendInvoice(
       @PathVariable UUID id, @RequestBody(required = false) SendInvoiceRequest request) {
     return ResponseEntity.ok(invoiceService.send(id, request));
   }
 
   @PostMapping("/{id}/payment")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<InvoiceResponse> recordPayment(
       @PathVariable UUID id, @RequestBody(required = false) RecordPaymentRequest request) {
     String paymentReference = request != null ? request.paymentReference() : null;
@@ -175,19 +175,19 @@ public class InvoiceController {
   }
 
   @GetMapping("/{id}/payment-events")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<List<PaymentEventResponse>> getPaymentEvents(@PathVariable UUID id) {
     return ResponseEntity.ok(invoiceService.getPaymentEvents(id));
   }
 
   @PostMapping("/{id}/refresh-payment-link")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<InvoiceResponse> refreshPaymentLink(@PathVariable UUID id) {
     return ResponseEntity.ok(invoiceService.refreshPaymentLink(id));
   }
 
   @PostMapping("/{id}/void")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<InvoiceResponse> voidInvoice(@PathVariable UUID id) {
     return ResponseEntity.ok(invoiceService.voidInvoice(id));
   }

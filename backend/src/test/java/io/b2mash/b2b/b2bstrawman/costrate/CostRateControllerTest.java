@@ -10,10 +10,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -45,6 +52,10 @@ class CostRateControllerTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
+  @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
+  @Autowired private OrgRoleService orgRoleService;
+  @Autowired private OrgRoleRepository orgRoleRepository;
+  @Autowired private MemberRepository memberRepository;
 
   private String memberIdOwner;
   private String memberIdAdmin;
@@ -55,6 +66,10 @@ class CostRateControllerTest {
 
   // Stored rate ID for subsequent tests
   private String createdCostRateId;
+
+  // Custom role members for capability tests
+  private UUID customRoleMemberId;
+  private UUID noCapMemberId;
 
   @BeforeAll
   void provisionAndSeed() throws Exception {
@@ -74,6 +89,96 @@ class CostRateControllerTest {
     planSyncService.syncPlan(ORG_ID_B, "pro-plan");
     memberIdOwnerB =
         syncMember(ORG_ID_B, "user_crc_owner_b", "crc_owner_b@test.com", "CRC Owner B", "owner");
+
+    var tenantSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+
+    // Assign system owner/admin roles for capability-based auth
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, UUID.fromString(memberIdOwner))
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              var ownerRole =
+                  orgRoleRepository.findAll().stream()
+                      .filter(r -> r.isSystem() && "owner".equals(r.getSlug()))
+                      .findFirst()
+                      .orElseThrow();
+              var ownerMember =
+                  memberRepository.findById(UUID.fromString(memberIdOwner)).orElseThrow();
+              ownerMember.setOrgRoleId(ownerRole.getId());
+              memberRepository.save(ownerMember);
+
+              var adminRole =
+                  orgRoleRepository.findAll().stream()
+                      .filter(r -> r.isSystem() && "admin".equals(r.getSlug()))
+                      .findFirst()
+                      .orElseThrow();
+              var adminMember =
+                  memberRepository.findById(UUID.fromString(memberIdAdmin)).orElseThrow();
+              adminMember.setOrgRoleId(adminRole.getId());
+              memberRepository.save(adminMember);
+            });
+
+    // Assign system owner role in tenant B
+    var tenantSchemaB =
+        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID_B).orElseThrow().getSchemaName();
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchemaB)
+        .where(RequestScopes.ORG_ID, ORG_ID_B)
+        .where(RequestScopes.MEMBER_ID, UUID.fromString(memberIdOwnerB))
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              var ownerRole =
+                  orgRoleRepository.findAll().stream()
+                      .filter(r -> r.isSystem() && "owner".equals(r.getSlug()))
+                      .findFirst()
+                      .orElseThrow();
+              var ownerMember =
+                  memberRepository.findById(UUID.fromString(memberIdOwnerB)).orElseThrow();
+              ownerMember.setOrgRoleId(ownerRole.getId());
+              memberRepository.save(ownerMember);
+            });
+
+    // Sync custom-role members for capability tests
+    customRoleMemberId =
+        UUID.fromString(
+            syncMember(
+                ORG_ID,
+                "user_crc_314a_custom",
+                "crc_custom@test.com",
+                "CRC Custom User",
+                "member"));
+    noCapMemberId =
+        UUID.fromString(
+            syncMember(
+                ORG_ID, "user_crc_314a_nocap", "crc_nocap@test.com", "CRC NoCap User", "member"));
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, UUID.fromString(memberIdOwner))
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              var withCapRole =
+                  orgRoleService.createRole(
+                      new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                          "Financials Viewer",
+                          "Can view financials",
+                          Set.of("FINANCIAL_VISIBILITY")));
+              var customMember = memberRepository.findById(customRoleMemberId).orElseThrow();
+              customMember.setOrgRoleId(withCapRole.id());
+              memberRepository.save(customMember);
+
+              var withoutCapRole =
+                  orgRoleService.createRole(
+                      new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                          "Team Lead", "Can manage teams", Set.of("TEAM_OVERSIGHT")));
+              var noCapMember = memberRepository.findById(noCapMemberId).orElseThrow();
+              noCapMember.setOrgRoleId(withoutCapRole.id());
+              memberRepository.save(noCapMember);
+            });
   }
 
   // --- CRUD Tests ---
@@ -293,6 +398,20 @@ class CostRateControllerTest {
         .andExpect(jsonPath("$.content.length()").value(0));
   }
 
+  @Test
+  @Order(12)
+  void customRoleWithCapability_accessesCostRateEndpoint_returns200() throws Exception {
+    mockMvc.perform(get("/api/cost-rates").with(customRoleJwt())).andExpect(status().isOk());
+  }
+
+  @Test
+  @Order(13)
+  void customRoleWithoutCapability_accessesCostRateEndpoint_returns403() throws Exception {
+    mockMvc
+        .perform(get("/api/cost-rates").with(noCapabilityJwt()))
+        .andExpect(status().isForbidden());
+  }
+
   // --- Helpers ---
 
   private String syncMember(
@@ -344,5 +463,20 @@ class CostRateControllerTest {
     return jwt()
         .jwt(j -> j.subject("user_crc_owner_b").claim("o", Map.of("id", ORG_ID_B, "rol", "owner")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
+  }
+
+  private JwtRequestPostProcessor customRoleJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_crc_314a_custom").claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+
+  private JwtRequestPostProcessor noCapabilityJwt() {
+    return jwt()
+        .jwt(
+            j -> j.subject("user_crc_314a_nocap").claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
   }
 }

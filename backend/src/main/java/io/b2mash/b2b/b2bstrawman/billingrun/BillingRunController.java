@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.RetainerPeriodPre
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.TimeEntryResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.UpdateEntrySelectionsRequest;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
@@ -20,7 +21,6 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,7 +42,7 @@ public class BillingRunController {
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<BillingRunResponse> createRun(
       @Valid @RequestBody CreateBillingRunRequest request) {
     UUID actorMemberId = RequestScopes.requireMemberId();
@@ -51,20 +51,20 @@ public class BillingRunController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<Page<BillingRunResponse>> listRuns(
       @RequestParam(required = false) List<BillingRunStatus> status, Pageable pageable) {
     return ResponseEntity.ok(billingRunService.listRuns(pageable, status));
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<BillingRunResponse> getRun(@PathVariable UUID id) {
     return ResponseEntity.ok(billingRunService.getRun(id));
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<Void> cancelRun(@PathVariable UUID id) {
     UUID actorMemberId = RequestScopes.requireMemberId();
     billingRunService.cancelRun(id, actorMemberId);
@@ -72,48 +72,48 @@ public class BillingRunController {
   }
 
   @PostMapping("/{id}/generate")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<BillingRunResponse> generate(@PathVariable UUID id) {
     UUID actorMemberId = RequestScopes.requireMemberId();
     return ResponseEntity.ok(billingRunService.generate(id, actorMemberId));
   }
 
   @PostMapping("/{id}/preview")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<BillingRunPreviewResponse> loadPreview(
       @PathVariable UUID id, @RequestBody(required = false) LoadPreviewRequest request) {
     return ResponseEntity.ok(billingRunService.loadPreview(id, request));
   }
 
   @GetMapping("/{id}/items")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<List<BillingRunItemResponse>> getItems(@PathVariable UUID id) {
     return ResponseEntity.ok(billingRunService.getItems(id));
   }
 
   @GetMapping("/{id}/items/{itemId}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<BillingRunItemResponse> getItem(
       @PathVariable UUID id, @PathVariable UUID itemId) {
     return ResponseEntity.ok(billingRunService.getItem(id, itemId));
   }
 
   @GetMapping("/{id}/items/{itemId}/unbilled-time")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<List<TimeEntryResponse>> getUnbilledTime(
       @PathVariable UUID id, @PathVariable UUID itemId) {
     return ResponseEntity.ok(billingRunService.getUnbilledTimeEntries(id, itemId));
   }
 
   @GetMapping("/{id}/items/{itemId}/unbilled-expenses")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<List<ExpenseResponse>> getUnbilledExpenses(
       @PathVariable UUID id, @PathVariable UUID itemId) {
     return ResponseEntity.ok(billingRunService.getUnbilledExpenses(id, itemId));
   }
 
   @PutMapping("/{id}/items/{itemId}/selections")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<BillingRunItemResponse> updateSelections(
       @PathVariable UUID id,
       @PathVariable UUID itemId,
@@ -122,28 +122,28 @@ public class BillingRunController {
   }
 
   @PutMapping("/{id}/items/{itemId}/exclude")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<BillingRunItemResponse> excludeCustomer(
       @PathVariable UUID id, @PathVariable UUID itemId) {
     return ResponseEntity.ok(billingRunService.excludeCustomer(id, itemId));
   }
 
   @PutMapping("/{id}/items/{itemId}/include")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<BillingRunItemResponse> includeCustomer(
       @PathVariable UUID id, @PathVariable UUID itemId) {
     return ResponseEntity.ok(billingRunService.includeCustomer(id, itemId));
   }
 
   @PostMapping("/{id}/approve")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<BatchOperationResult> approveBatch(@PathVariable UUID id) {
     UUID actorMemberId = RequestScopes.requireMemberId();
     return ResponseEntity.ok(billingRunService.batchApprove(id, actorMemberId));
   }
 
   @PostMapping("/{id}/send")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<BatchOperationResult> sendBatch(
       @PathVariable UUID id, @RequestBody BatchSendRequest request) {
     UUID actorMemberId = RequestScopes.requireMemberId();
@@ -151,13 +151,13 @@ public class BillingRunController {
   }
 
   @GetMapping("/{id}/retainer-preview")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<List<RetainerPeriodPreview>> retainerPreview(@PathVariable UUID id) {
     return ResponseEntity.ok(billingRunService.loadRetainerPreview(id));
   }
 
   @PostMapping("/{id}/retainer-generate")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<List<BillingRunItemResponse>> retainerGenerate(
       @PathVariable UUID id, @Valid @RequestBody RetainerGenerateRequest request) {
     UUID actorMemberId = RequestScopes.requireMemberId();

@@ -435,10 +435,14 @@ public class ExpenseService {
   }
 
   private void requireAdminPermission(String orgRole) {
-    if (!Roles.ORG_ADMIN.equals(orgRole) && !Roles.ORG_OWNER.equals(orgRole)) {
-      throw new ForbiddenException(
-          "Insufficient permissions", "Only org admins and owners can perform this action");
+    if (Roles.ORG_ADMIN.equals(orgRole) || Roles.ORG_OWNER.equals(orgRole)) {
+      return;
     }
+    if (RequestScopes.hasCapability("FINANCIAL_VISIBILITY")) {
+      return;
+    }
+    throw new ForbiddenException(
+        "Insufficient permissions", "Only org admins and owners can perform this action");
   }
 
   private void publishExpenseCreatedEvent(Expense expense) {

@@ -13,8 +13,11 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
@@ -28,6 +31,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -63,6 +67,9 @@ class InvoiceControllerIntegrationTest {
   @Autowired private TaskRepository taskRepository;
   @Autowired private TimeEntryRepository timeEntryRepository;
   @Autowired private TransactionTemplate transactionTemplate;
+  @Autowired private OrgRoleService orgRoleService;
+  @Autowired private OrgRoleRepository orgRoleRepository;
+  @Autowired private MemberRepository memberRepository;
 
   private String tenantSchema;
   private UUID memberIdOwner;
@@ -72,6 +79,8 @@ class InvoiceControllerIntegrationTest {
   private UUID timeEntryId1;
   private UUID timeEntryId2;
   private UUID nonBillableTimeEntryId;
+  private UUID customRoleMemberId;
+  private UUID noCapMemberId;
 
   @BeforeAll
   void setUp() throws Exception {
@@ -165,6 +174,55 @@ class InvoiceControllerIntegrationTest {
                       te3 = timeEntryRepository.save(te3);
                       nonBillableTimeEntryId = te3.getId();
                     }));
+
+    // Assign system owner role to owner member for capability-based auth
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberIdOwner)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              var ownerRole =
+                  orgRoleRepository.findAll().stream()
+                      .filter(r -> r.isSystem() && "owner".equals(r.getSlug()))
+                      .findFirst()
+                      .orElseThrow();
+              var ownerMember = memberRepository.findById(memberIdOwner).orElseThrow();
+              ownerMember.setOrgRoleId(ownerRole.getId());
+              memberRepository.save(ownerMember);
+            });
+
+    // Sync custom-role members for capability tests
+    customRoleMemberId =
+        UUID.fromString(
+            syncMember("user_inv_314a_custom", "inv_custom@test.com", "Inv Custom User", "member"));
+    noCapMemberId =
+        UUID.fromString(
+            syncMember("user_inv_314a_nocap", "inv_nocap@test.com", "Inv NoCap User", "member"));
+
+    // Assign OrgRoles within tenant scope
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberIdOwner)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              var withCapRole =
+                  orgRoleService.createRole(
+                      new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                          "Invoicer", "Can invoice", Set.of("INVOICING")));
+              var customMember = memberRepository.findById(customRoleMemberId).orElseThrow();
+              customMember.setOrgRoleId(withCapRole.id());
+              memberRepository.save(customMember);
+
+              var withoutCapRole =
+                  orgRoleService.createRole(
+                      new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                          "Team Lead", "Can manage teams", Set.of("TEAM_OVERSIGHT")));
+              var noCapMember = memberRepository.findById(noCapMemberId).orElseThrow();
+              noCapMember.setOrgRoleId(withoutCapRole.id());
+              memberRepository.save(noCapMember);
+            });
   }
 
   @Test
@@ -572,7 +630,34 @@ class InvoiceControllerIntegrationTest {
         .andExpect(status().isForbidden());
   }
 
+  // --- Capability Tests ---
+
+  @Test
+  void customRoleWithCapability_accessesInvoicingEndpoint_returns200() throws Exception {
+    mockMvc.perform(get("/api/invoices").with(customRoleJwt())).andExpect(status().isOk());
+  }
+
+  @Test
+  void customRoleWithoutCapability_accessesInvoicingEndpoint_returns403() throws Exception {
+    mockMvc.perform(get("/api/invoices").with(noCapabilityJwt())).andExpect(status().isForbidden());
+  }
+
   // --- JWT Helpers ---
+
+  private JwtRequestPostProcessor customRoleJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_inv_314a_custom").claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+
+  private JwtRequestPostProcessor noCapabilityJwt() {
+    return jwt()
+        .jwt(
+            j -> j.subject("user_inv_314a_nocap").claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
 
   private JwtRequestPostProcessor ownerJwt() {
     return jwt()

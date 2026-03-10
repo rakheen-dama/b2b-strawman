@@ -353,7 +353,7 @@
 | 311 | Billing Settings & Polish (Frontend) | Frontend | 309 | S | 311A | **Done** (PR #610) |
 | **Phase 41 — Organisation Roles & Capability-Based Permissions** | | | | | | See [tasks/phase41-org-roles-capabilities.md](tasks/phase41-org-roles-capabilities.md) |
 | 312 | OrgRole Entity Foundation & Migration | Backend | -- | M | 312A, 312B | **Done** (PRs #636, #637) |
-| 313 | Capability Resolution & Authorization Infrastructure | Backend | 312 | M | 313A, 313B | 313A **Done** (PR #638) |
+| 313 | Capability Resolution & Authorization Infrastructure | Backend | 312 | M | 313A, 313B | **Done** (PRs #638, #639) |
 | 314 | @PreAuthorize Migration (Batch 1: Financial, Invoicing, Project) | Backend | 313 | M | 314A, 314B | |
 | 315 | @PreAuthorize Migration (Batch 2: Customer, Automation, Resource, Team) | Backend | 313 | M | 315A, 315B | |
 | 316 | OrgRole CRUD API & Member Role Assignment | Backend | 312 | M | 316A, 316B | |

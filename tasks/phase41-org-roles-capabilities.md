@@ -18,7 +18,7 @@ Phase 41 replaces the coarse three-role authorization model (Owner/Admin/Member)
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 312 | OrgRole Entity Foundation & Migration | Backend | -- | M | 312A, 312B | **Done** (PRs #636, #637) |
-| 313 | Capability Resolution & Authorization Infrastructure | Backend | 312 | M | 313A, 313B | |
+| 313 | Capability Resolution & Authorization Infrastructure | Backend | 312 | M | 313A, 313B | **Done** (PRs #638, #639) |
 | 314 | @PreAuthorize Migration (Batch 1: Financial, Invoicing, Project) | Backend | 313 | M | 314A, 314B | |
 | 315 | @PreAuthorize Migration (Batch 2: Customer, Automation, Resource, Team) | Backend | 313 | M | 315A, 315B | |
 | 316 | OrgRole CRUD API & Member Role Assignment | Backend | 312 | M | 316A, 316B | |
@@ -138,7 +138,7 @@ FRONTEND TRACK (after E313 backend APIs ready)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 1a (parallel) | 313 | 313A | `RequestScopes.CAPABILITIES` ScopedValue, `CapabilityAuthorizationService`, `@RequiresCapability` annotation, `CapabilityAuthorizationManager`, `MemberFilter` extension to resolve + bind capabilities. ~7 new/modified files (~10 tests). Backend only. | **Done** (PR #638) |
-| 1b | 313 | 313B | `GET /api/me/capabilities` endpoint, `GET /api/members/{id}/capabilities` endpoint, edge cases (unassigned role, empty overrides, admin bypass). ~3 new/modified files (~8 tests). Backend only. | |
+| 1b | 313 | 313B | `GET /api/me/capabilities` endpoint, `GET /api/members/{id}/capabilities` endpoint, edge cases (unassigned role, empty overrides, admin bypass). ~3 new/modified files (~8 tests). Backend only. | **Done** (PR #639) |
 | 1c (parallel with 1a) | 316 | 316A | `OrgRoleController` with 5 CRUD endpoints (list, get, create, update, delete), validation rules (name uniqueness, system role guard, delete-with-members guard). ~3 new/modified files (~12 tests). Backend only. | |
 | 1d | 316 | 316B | `PUT /api/members/{id}/role` endpoint, `GET /api/members/{id}/capabilities`, override validation, invite flow extension (`MemberFilter.lazyCreateMember` with orgRoleId). ~4 modified files (~10 tests). Backend only. | |
 
@@ -283,7 +283,7 @@ Stage 5: [319A] -> [319B] // [320A] -> [320B]                         (two paral
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **313A** | 313.1--313.8 | Add `CAPABILITIES` ScopedValue to `RequestScopes`, `CapabilityAuthorizationService`, `@RequiresCapability` annotation, `CapabilityAuthorizationManager` (Spring Security `AuthorizationManager<MethodInvocation>`), extend `MemberFilter.doFilterInternal` to resolve + bind capabilities, register manager in `SecurityConfig`. ~7 new/modified files (~10 tests). Backend only. | **Done** (PR #638) |
-| **313B** | 313.9--313.14 | `GET /api/me/capabilities` endpoint on new `CapabilityController`, `GET /api/members/{id}/capabilities` on `OrgMemberController`, edge case tests (unassigned role, empty overrides, admin bypass, member self-access). ~3 new/modified files (~8 tests). Backend only. | |
+| **313B** | 313.9--313.14 | `GET /api/me/capabilities` endpoint on new `CapabilityController`, `GET /api/members/{id}/capabilities` on `OrgMemberController`, edge case tests (unassigned role, empty overrides, admin bypass, member self-access). ~3 new/modified files (~8 tests). Backend only. | **Done** (PR #639) |
 
 ### Tasks
 

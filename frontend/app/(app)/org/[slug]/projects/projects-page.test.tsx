@@ -28,6 +28,19 @@ vi.mock("@/lib/api/templates", () => ({
   getProjectTemplates: vi.fn().mockResolvedValue([]),
 }));
 
+// Mock capabilities (RequiresCapability wraps create buttons on projects page)
+vi.mock("@/lib/capabilities", () => ({
+  RequiresCapability: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  useCapabilities: () => ({
+    capabilities: new Set(),
+    role: "Admin",
+    isAdmin: true,
+    isOwner: false,
+    isLoading: false,
+    hasCapability: () => true,
+  }),
+}));
+
 // Import page after mocks are set up
 import ProjectsPage from "./page";
 

@@ -1,4 +1,5 @@
-import { getAuthContext } from "@/lib/auth";
+import { notFound } from "next/navigation";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getComplianceDashboardData } from "./actions";
 import { LifecycleDistributionSection } from "@/components/compliance/LifecycleDistributionSection";
 import { OnboardingPipelineSection } from "@/components/compliance/OnboardingPipelineSection";
@@ -11,20 +12,10 @@ export default async function ComplianceDashboardPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { orgRole } = await getAuthContext();
+  const capData = await fetchMyCapabilities();
 
-  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
-
-  if (!isAdmin) {
-    return (
-      <div className="space-y-8">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Compliance</h1>
-        <p className="text-slate-600 dark:text-slate-400">
-          You do not have permission to view compliance data. Only admins and owners can access this
-          page.
-        </p>
-      </div>
-    );
+  if (!capData.isAdmin && !capData.isOwner && !capData.capabilities.includes("CUSTOMER_MANAGEMENT")) {
+    notFound();
   }
 
   const result = await getComplianceDashboardData(slug);

@@ -1,4 +1,8 @@
 import { LayoutDashboard, ClipboardList, CalendarDays, FolderOpen, FileText, Users, UserRound, Bell, TrendingUp, BarChart3, Receipt, CalendarClock, ShieldCheck, Settings, type LucideIcon } from "lucide-react";
+import type { CAPABILITIES } from "@/lib/capabilities";
+
+/** Union of all known capability strings */
+type CapabilityName = (typeof CAPABILITIES)[keyof typeof CAPABILITIES];
 
 export interface NavItem {
   label: string;
@@ -6,6 +10,8 @@ export interface NavItem {
   icon: LucideIcon;
   /** Use exact match instead of startsWith for active detection */
   exact?: boolean;
+  /** If set, sidebar only shows this item when the user has this capability */
+  requiredCapability?: CapabilityName;
 }
 
 export const NAV_ITEMS: NavItem[] = [
@@ -42,6 +48,7 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Customers",
     href: (slug) => `/org/${slug}/customers`,
     icon: UserRound,
+    requiredCapability: "CUSTOMER_MANAGEMENT",
   },
   {
     label: "Team",
@@ -60,38 +67,45 @@ export const NAV_ITEMS: NavItem[] = [
     href: (slug) => `/org/${slug}/resources`,
     icon: Users,
     exact: true,
+    requiredCapability: "RESOURCE_PLANNING",
   },
   {
     label: "Profitability",
     href: (slug) => `/org/${slug}/profitability`,
     icon: TrendingUp,
     exact: true,
+    requiredCapability: "FINANCIAL_VISIBILITY",
   },
   {
     label: "Reports",
     href: (slug) => `/org/${slug}/reports`,
     icon: BarChart3,
     exact: true,
+    requiredCapability: "FINANCIAL_VISIBILITY",
   },
   {
     label: "Invoices",
     href: (slug) => `/org/${slug}/invoices`,
     icon: Receipt,
+    requiredCapability: "INVOICING",
   },
   {
     label: "Recurring Schedules",
     href: (slug) => `/org/${slug}/schedules`,
     icon: CalendarClock,
+    requiredCapability: "PROJECT_MANAGEMENT",
   },
   {
     label: "Retainers",
     href: (slug) => `/org/${slug}/retainers`,
     icon: FileText,
+    requiredCapability: "INVOICING",
   },
   {
     label: "Compliance",
     href: (slug) => `/org/${slug}/compliance`,
     icon: ShieldCheck,
+    requiredCapability: "CUSTOMER_MANAGEMENT",
   },
   {
     label: "Settings",

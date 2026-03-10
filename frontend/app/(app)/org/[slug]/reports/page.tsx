@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { BarChart3 } from "lucide-react";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getReportDefinitions } from "@/lib/api/reports";
 import type { ReportListResponse } from "@/lib/api/reports";
 import {
@@ -17,6 +19,11 @@ export default async function ReportsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const capData = await fetchMyCapabilities();
+
+  if (!capData.isAdmin && !capData.isOwner && !capData.capabilities.includes("FINANCIAL_VISIBILITY")) {
+    notFound();
+  }
 
   let data: ReportListResponse = { categories: [] };
   let fetchError = false;

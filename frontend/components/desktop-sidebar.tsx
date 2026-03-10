@@ -6,6 +6,7 @@ import { Shield } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "@/lib/nav-items";
+import { useCapabilities } from "@/lib/capabilities";
 import { SidebarUserFooter } from "@/components/sidebar-user-footer";
 
 interface DesktopSidebarProps {
@@ -15,6 +16,11 @@ interface DesktopSidebarProps {
 
 export function DesktopSidebar({ slug, groups = [] }: DesktopSidebarProps) {
   const pathname = usePathname();
+  const { hasCapability } = useCapabilities();
+
+  const visibleItems = NAV_ITEMS.filter(
+    (item) => !item.requiredCapability || hasCapability(item.requiredCapability),
+  );
 
   return (
     <aside className="hidden w-60 flex-col bg-slate-950 md:flex">
@@ -30,7 +36,7 @@ export function DesktopSidebar({ slug, groups = [] }: DesktopSidebarProps) {
 
       {/* Nav body */}
       <nav aria-label="Main navigation" className="flex flex-1 flex-col gap-1 p-2">
-        {NAV_ITEMS.map((item) => {
+        {visibleItems.map((item) => {
           const href = item.href(slug);
           const isActive = item.exact
             ? pathname === href

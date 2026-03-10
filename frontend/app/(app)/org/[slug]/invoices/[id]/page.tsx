@@ -1,4 +1,6 @@
+import { notFound } from "next/navigation";
 import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import {
   api,
   handleApiError,
@@ -31,22 +33,13 @@ export default async function InvoiceDetailPage({
 }) {
   const { slug, id } = await params;
   const { orgRole } = await getAuthContext();
+  const caps = await fetchMyCapabilities();
+
+  if (!caps.capabilities.includes("INVOICING") && !caps.isAdmin && !caps.isOwner) {
+    notFound();
+  }
 
   const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
-
-  if (!isAdmin) {
-    return (
-      <div className="space-y-8">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Invoice
-        </h1>
-        <p className="text-slate-600 dark:text-slate-400">
-          You do not have permission to view invoices. Only admins and owners can
-          access this page.
-        </p>
-      </div>
-    );
-  }
 
   let invoice: InvoiceResponse;
   try {

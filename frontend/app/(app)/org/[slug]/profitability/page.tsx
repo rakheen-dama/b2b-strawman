@@ -1,5 +1,6 @@
 import { TrendingUp } from "lucide-react";
-import { getAuthContext } from "@/lib/auth";
+import { notFound } from "next/navigation";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { createMessages } from "@/lib/messages";
 import { EmptyState } from "@/components/empty-state";
@@ -25,21 +26,11 @@ export default async function ProfitabilityPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { orgRole } = await getAuthContext();
+  const capData = await fetchMyCapabilities();
   const { t } = createMessages("empty-states");
 
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
-    return (
-      <div className="space-y-8">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Profitability
-        </h1>
-        <p className="text-slate-600 dark:text-slate-400">
-          You do not have permission to view profitability reports. Only admins
-          and owners can access this page.
-        </p>
-      </div>
-    );
+  if (!capData.isAdmin && !capData.isOwner && !capData.capabilities.includes("FINANCIAL_VISIBILITY")) {
+    notFound();
   }
 
   const { from, to } = getCurrentMonthRange();

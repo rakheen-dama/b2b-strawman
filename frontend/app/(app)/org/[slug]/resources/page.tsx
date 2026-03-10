@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { getAuthContext } from "@/lib/auth";
+import { notFound } from "next/navigation";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { getTeamCapacityGrid } from "@/lib/api/capacity";
 import type { TeamCapacityGrid } from "@/lib/api/capacity";
@@ -24,7 +25,11 @@ export default async function ResourcesPage({
 }) {
   const { slug } = await params;
   const sp = await searchParams;
-  await getAuthContext();
+  const capData = await fetchMyCapabilities();
+
+  if (!capData.isAdmin && !capData.isOwner && !capData.capabilities.includes("RESOURCE_PLANNING")) {
+    notFound();
+  }
 
   const defaultMonday = getCurrentMonday();
   const weekStart = sp.weekStart ?? formatDate(defaultMonday);

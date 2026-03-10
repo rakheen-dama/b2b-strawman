@@ -37,6 +37,7 @@ import {
   refreshPaymentLink,
 } from "@/app/(app)/org/[slug]/invoices/actions";
 import { PaymentEventHistory } from "@/components/invoices/PaymentEventHistory";
+import { RequiresCapability } from "@/lib/capabilities";
 
 interface InvoiceDetailClientProps {
   invoice: InvoiceResponse;
@@ -437,14 +438,16 @@ export function InvoiceDetailClient({
               </Button>
               {isDraft && (
                 <>
-                  <Button
-                    variant="accent"
-                    size="sm"
-                    onClick={handleApprove}
-                    disabled={isPending}
-                  >
-                    Approve
-                  </Button>
+                  <RequiresCapability cap="INVOICING">
+                    <Button
+                      variant="accent"
+                      size="sm"
+                      onClick={handleApprove}
+                      disabled={isPending}
+                    >
+                      Approve
+                    </Button>
+                  </RequiresCapability>
                   <Button
                     variant="destructive"
                     size="sm"

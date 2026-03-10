@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { DefaultCapacitySettings } from "@/components/capacity/default-capacity-settings";
 import type { OrgSettings } from "@/lib/types";
@@ -11,27 +12,10 @@ export default async function CapacitySettingsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { orgRole } = await getAuthContext();
+  const capData = await fetchMyCapabilities();
 
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
-    return (
-      <div className="space-y-8">
-        <Link
-          href={`/org/${slug}/settings`}
-          className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-        >
-          <ChevronLeft className="size-4" />
-          Settings
-        </Link>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Capacity
-        </h1>
-        <p className="text-slate-600 dark:text-slate-400">
-          You do not have permission to manage capacity settings. Only admins and
-          owners can access this page.
-        </p>
-      </div>
-    );
+  if (!capData.isAdmin && !capData.isOwner && !capData.capabilities.includes("RESOURCE_PLANNING")) {
+    notFound();
   }
 
   let settings: OrgSettings = { defaultCurrency: "USD" };

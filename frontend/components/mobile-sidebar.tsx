@@ -15,6 +15,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { NAV_ITEMS } from "@/lib/nav-items";
+import { useCapabilities } from "@/lib/capabilities";
 import { SidebarUserFooter } from "@/components/sidebar-user-footer";
 
 interface MobileSidebarProps {
@@ -25,6 +26,11 @@ interface MobileSidebarProps {
 export function MobileSidebar({ slug, groups = [] }: MobileSidebarProps) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const { hasCapability } = useCapabilities();
+
+  const visibleItems = NAV_ITEMS.filter(
+    (item) => !item.requiredCapability || hasCapability(item.requiredCapability),
+  );
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -55,7 +61,7 @@ export function MobileSidebar({ slug, groups = [] }: MobileSidebarProps) {
 
         {/* Nav body */}
         <nav aria-label="Main navigation" className="flex flex-1 flex-col gap-1 p-2">
-          {NAV_ITEMS.map((item) => {
+          {visibleItems.map((item) => {
             const href = item.href(slug);
             const isActive = item.exact
               ? pathname === href

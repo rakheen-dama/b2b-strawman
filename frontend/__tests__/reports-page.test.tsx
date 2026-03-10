@@ -12,6 +12,16 @@ vi.mock("@clerk/nextjs/server", () => ({
   }),
 }));
 
+// Mock capabilities API (fetchMyCapabilities used for page-level gating)
+vi.mock("@/lib/api/capabilities", () => ({
+  fetchMyCapabilities: vi.fn().mockResolvedValue({
+    capabilities: ["FINANCIAL_VISIBILITY"],
+    role: "Admin",
+    isAdmin: true,
+    isOwner: false,
+  }),
+}));
+
 // Mock the reports API module
 const mockGetReportDefinitions = vi.fn();
 

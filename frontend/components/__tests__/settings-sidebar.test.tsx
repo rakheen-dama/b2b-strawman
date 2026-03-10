@@ -114,7 +114,7 @@ describe("SettingsSidebar", () => {
     // "Organization" and "Security" are comingSoon — each should show a badge
     const badges = screen.getAllByText("Coming soon");
     // 2 comingSoon items in SETTINGS_NAV_GROUPS: Organization and Security
-    expect(badges.length).toBeGreaterThanOrEqual(2);
+    expect(badges.length).toBe(2);
   });
 
   it("renders Coming Soon items as <span> not <a>", () => {

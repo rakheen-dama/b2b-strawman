@@ -47,7 +47,7 @@ export function SettingsSidebar({ slug, isAdmin }: SettingsSidebarProps) {
       {/* Desktop: grouped nav */}
       <nav
         aria-label="Settings navigation"
-        className="sticky top-0 h-[calc(100vh-3.5rem)] overflow-y-auto py-4"
+        className="sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto py-4"
       >
         {SETTINGS_NAV_GROUPS.map((group, index) => {
           const visibleItems = group.items.filter(
@@ -58,7 +58,7 @@ export function SettingsSidebar({ slug, isAdmin }: SettingsSidebarProps) {
           return (
             <div key={group.id}>
               {index > 0 && <div className="my-2 border-t border-slate-100" />}
-              <div className="px-3 pb-1 pt-3 text-[11px] font-medium uppercase tracking-widest text-slate-400">
+              <div className="px-3 pb-1 pt-3 text-[11px] font-medium uppercase tracking-widest text-slate-400 dark:text-slate-500">
                 {group.label}
               </div>
               {visibleItems.map((item) => {
@@ -67,6 +67,7 @@ export function SettingsSidebar({ slug, isAdmin }: SettingsSidebarProps) {
                   return (
                     <span
                       key={item.href || item.label}
+                      aria-disabled="true"
                       className="flex cursor-not-allowed items-center pl-3 py-1.5 text-sm rounded-r-md border-l-2 border-transparent text-slate-600 opacity-50"
                     >
                       {item.label}

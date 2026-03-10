@@ -13,8 +13,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplate;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
@@ -22,6 +25,7 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -59,6 +63,9 @@ class RecurringScheduleControllerTest {
   @Autowired private RecurringScheduleRepository scheduleRepository;
   @Autowired private ProjectTemplateRepository templateRepository;
   @Autowired private CustomerRepository customerRepository;
+  @Autowired private OrgRoleService orgRoleService;
+  @Autowired private OrgRoleRepository orgRoleRepository;
+  @Autowired private MemberRepository memberRepository;
 
   private String tenantSchema;
   private UUID ownerMemberId;
@@ -67,6 +74,8 @@ class RecurringScheduleControllerTest {
   private UUID customerId;
   private String createdScheduleId;
   private UUID activeScheduleId;
+  private UUID customRoleMemberId;
+  private UUID noCapMemberId;
 
   @BeforeAll
   void setup() throws Exception {
@@ -126,6 +135,61 @@ class RecurringScheduleControllerTest {
                                   ownerMemberId));
                       activeScheduleId = activeSchedule.getId();
                     }));
+
+    // Assign system owner role to owner member for capability-based auth
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, ownerMemberId)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              var ownerRole =
+                  orgRoleRepository.findAll().stream()
+                      .filter(r -> r.isSystem() && "owner".equals(r.getSlug()))
+                      .findFirst()
+                      .orElseThrow();
+              var ownerMember = memberRepository.findById(ownerMemberId).orElseThrow();
+              ownerMember.setOrgRoleId(ownerRole.getId());
+              memberRepository.save(ownerMember);
+            });
+
+    // Sync custom-role members for capability tests
+    customRoleMemberId =
+        UUID.fromString(
+            syncMember(
+                ORG_ID,
+                "user_sched_314b_custom",
+                "sched_custom@test.com",
+                "Custom User",
+                "member"));
+    noCapMemberId =
+        UUID.fromString(
+            syncMember(
+                ORG_ID, "user_sched_314b_nocap", "sched_nocap@test.com", "NoCap User", "member"));
+
+    // Assign OrgRoles within tenant scope
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, ownerMemberId)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              var withCapRole =
+                  orgRoleService.createRole(
+                      new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                          "Project Manager", "Has project cap", Set.of("PROJECT_MANAGEMENT")));
+              var customMember = memberRepository.findById(customRoleMemberId).orElseThrow();
+              customMember.setOrgRoleId(withCapRole.id());
+              memberRepository.save(customMember);
+
+              var withoutCapRole =
+                  orgRoleService.createRole(
+                      new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                          "Team Lead", "No project cap", Set.of("TEAM_OVERSIGHT")));
+              var noCapMember = memberRepository.findById(noCapMemberId).orElseThrow();
+              noCapMember.setOrgRoleId(withoutCapRole.id());
+              memberRepository.save(noCapMember);
+            });
   }
 
   // --- CRUD Tests ---
@@ -363,6 +427,52 @@ class RecurringScheduleControllerTest {
         .andExpect(jsonPath("$.length()").value(greaterThanOrEqualTo(1)));
   }
 
+  // --- Capability Tests ---
+
+  @Test
+  @Order(20)
+  void customRoleWithCapability_accessesScheduleEndpoint_returns201() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/schedules")
+                .with(customRoleJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "templateId": "%s",
+                      "customerId": "%s",
+                      "frequency": "MONTHLY",
+                      "startDate": "2026-06-01",
+                      "leadTimeDays": 3
+                    }
+                    """
+                        .formatted(templateId, customerId)))
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  @Order(21)
+  void customRoleWithoutCapability_accessesScheduleEndpoint_returns403() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/schedules")
+                .with(noCapabilityJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "templateId": "%s",
+                      "customerId": "%s",
+                      "frequency": "MONTHLY",
+                      "startDate": "2026-06-01",
+                      "leadTimeDays": 3
+                    }
+                    """
+                        .formatted(templateId, customerId)))
+        .andExpect(status().isForbidden());
+  }
+
   // --- Helper methods ---
 
   private JwtRequestPostProcessor ownerJwt() {
@@ -399,5 +509,23 @@ class RecurringScheduleControllerTest {
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
+  }
+
+  private JwtRequestPostProcessor customRoleJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_sched_314b_custom")
+                    .claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+
+  private JwtRequestPostProcessor noCapabilityJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_sched_314b_nocap")
+                    .claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
   }
 }

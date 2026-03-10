@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.schedule;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.schedule.dto.CreateScheduleRequest;
 import io.b2mash.b2b.b2bstrawman.schedule.dto.ScheduleExecutionResponse;
 import io.b2mash.b2b.b2bstrawman.schedule.dto.ScheduleResponse;
@@ -47,7 +48,7 @@ public class RecurringScheduleController {
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<ScheduleResponse> createSchedule(
       @Valid @RequestBody CreateScheduleRequest request) {
     UUID memberId = RequestScopes.requireMemberId();
@@ -56,27 +57,27 @@ public class RecurringScheduleController {
   }
 
   @PutMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<ScheduleResponse> updateSchedule(
       @PathVariable UUID id, @Valid @RequestBody UpdateScheduleRequest request) {
     return ResponseEntity.ok(scheduleService.update(id, request));
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<Void> deleteSchedule(@PathVariable UUID id) {
     scheduleService.delete(id);
     return ResponseEntity.noContent().build();
   }
 
   @PostMapping("/{id}/pause")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<ScheduleResponse> pauseSchedule(@PathVariable UUID id) {
     return ResponseEntity.ok(scheduleService.pause(id));
   }
 
   @PostMapping("/{id}/resume")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<ScheduleResponse> resumeSchedule(@PathVariable UUID id) {
     return ResponseEntity.ok(scheduleService.resume(id));
   }

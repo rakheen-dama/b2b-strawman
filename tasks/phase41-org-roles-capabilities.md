@@ -19,7 +19,7 @@ Phase 41 replaces the coarse three-role authorization model (Owner/Admin/Member)
 |------|------|-------|------|--------|--------|--------|
 | 312 | OrgRole Entity Foundation & Migration | Backend | -- | M | 312A, 312B | **Done** (PRs #636, #637) |
 | 313 | Capability Resolution & Authorization Infrastructure | Backend | 312 | M | 313A, 313B | **Done** (PRs #638, #639) |
-| 314 | @PreAuthorize Migration (Batch 1: Financial, Invoicing, Project) | Backend | 313 | M | 314A, 314B | |
+| 314 | @PreAuthorize Migration (Batch 1: Financial, Invoicing, Project) | Backend | 313 | M | 314A, 314B | **Done** (PRs #640, #641) |
 | 315 | @PreAuthorize Migration (Batch 2: Customer, Automation, Resource, Team) | Backend | 313 | M | 315A, 315B | |
 | 316 | OrgRole CRUD API & Member Role Assignment | Backend | 312 | M | 316A, 316B | |
 | 317 | Audit Events & Notifications | Backend | 316 | S | 317A | |
@@ -147,7 +147,7 @@ FRONTEND TRACK (after E313 backend APIs ready)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 2a (parallel) | 314 | 314A | Migrate `@PreAuthorize` to `@RequiresCapability` on: `InvoiceController` (19), `BillingRunController` (15), `CostRateController` (4), `ReportController` profitability endpoints (2), `ExpenseController` approve (2). ~5 modified controller files + test updates (~10 test adjustments). Backend only. | **Done** (PR #640) |
-| 2b (parallel) | 314 | 314B | Migrate `@PreAuthorize` to `@RequiresCapability` on: `ProjectController` creates/edits (5), `ProjectTemplateController` writes (4), `RecurringScheduleController` writes (4), `ProposalController` writes (3). ~4 modified controller files + test updates (~8 test adjustments). Backend only. | |
+| 2b (parallel) | 314 | 314B | Migrate `@PreAuthorize` to `@RequiresCapability` on: `ProjectController` creates/edits (5), `ProjectTemplateController` writes (4), `RecurringScheduleController` writes (4), `ProposalController` writes (3). ~4 modified controller files + test updates (~8 test adjustments). Backend only. | **Done** (PR #641) |
 | 2c (parallel) | 315 | 315A | Migrate `@PreAuthorize` to `@RequiresCapability` on: `CustomerController` (8), `CompliancePackController` (1), `RetentionController` (6), `DataRequestController` (8), `ChecklistTemplateController` writes (3), `ChecklistInstanceController` writes (3), `InformationRequestController` admin writes (5), `RequestTemplateController` writes (3), `AcceptanceController` admin (3). ~9 modified controller files + test updates (~10 test adjustments). Backend only. | |
 | 2d (parallel) | 315 | 315B | Migrate `@PreAuthorize` to `@RequiresCapability` on: `AutomationRuleController` (8), `AutomationActionController` (4), `AutomationExecutionController` (3), `AutomationTemplateController` (2), `MemberCapacityController` (4), `ResourceAllocationController` writes (3), `AdminTimeEntryController` (1). ~7 modified controller files + test updates (~8 test adjustments). Backend only. | |
 
@@ -354,7 +354,7 @@ Stage 5: [319A] -> [319B] // [320A] -> [320B]                         (two paral
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **314A** | 314.1--314.5 | Migrate `InvoiceController` (19 annotations -> `INVOICING`), `BillingRunController` (15 annotations -> `INVOICING`), `CostRateController` (4 annotations -> `FINANCIAL_VISIBILITY`), `ReportController` profitability endpoints (2 -> `FINANCIAL_VISIBILITY`), `ExpenseController` approve endpoints (2 -> `FINANCIAL_VISIBILITY`). Update corresponding integration tests to use custom-role JWT fixtures. ~5 modified controllers + ~5 modified test files. Backend only. | **Done** (PR #640) |
-| **314B** | 314.6--314.9 | Migrate `ProjectController` admin endpoints (5 annotations -> `PROJECT_MANAGEMENT`, delete stays `ORG_OWNER`), `ProjectTemplateController` writes (4 -> `PROJECT_MANAGEMENT`), `RecurringScheduleController` writes (4 -> `PROJECT_MANAGEMENT`), `ProposalController` admin writes (3 -> `INVOICING`, delete stays `ORG_OWNER`). Update tests. ~4 modified controllers + ~4 modified test files. Backend only. | |
+| **314B** | 314.6--314.9 | Migrate `ProjectController` admin endpoints (5 annotations -> `PROJECT_MANAGEMENT`, delete stays `ORG_OWNER`), `ProjectTemplateController` writes (4 -> `PROJECT_MANAGEMENT`), `RecurringScheduleController` writes (4 -> `PROJECT_MANAGEMENT`), `ProposalController` admin writes (3 -> `INVOICING`, delete stays `ORG_OWNER`). Update tests. ~4 modified controllers + ~4 modified test files. Backend only. | **Done** (PR #641) |
 
 ### Tasks
 

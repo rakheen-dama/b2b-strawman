@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.expense;
 
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -134,7 +135,7 @@ public class ExpenseController {
   }
 
   @PatchMapping("/api/projects/{projectId}/expenses/{id}/write-off")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<ExpenseResponse> writeOffExpense(
       @PathVariable UUID projectId, @PathVariable UUID id) {
     UUID memberId = RequestScopes.requireMemberId();
@@ -145,7 +146,7 @@ public class ExpenseController {
   }
 
   @PatchMapping("/api/projects/{projectId}/expenses/{id}/restore")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<ExpenseResponse> restoreExpense(
       @PathVariable UUID projectId, @PathVariable UUID id) {
     UUID memberId = RequestScopes.requireMemberId();

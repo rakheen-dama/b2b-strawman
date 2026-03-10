@@ -11,10 +11,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -43,6 +49,10 @@ class ExpenseControllerTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
+  @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
+  @Autowired private OrgRoleService orgRoleService;
+  @Autowired private OrgRoleRepository orgRoleRepository;
+  @Autowired private MemberRepository memberRepository;
 
   private String projectId;
   private String projectId2;
@@ -50,6 +60,8 @@ class ExpenseControllerTest {
   private String memberIdAdmin;
   private String memberIdMember;
   private String memberIdMember2;
+  private UUID customRoleMemberId;
+  private UUID noCapMemberId;
 
   @BeforeAll
   void provisionTenantAndSeedData() throws Exception {
@@ -105,6 +117,84 @@ class ExpenseControllerTest {
             .andExpect(status().isCreated())
             .andReturn();
     projectId2 = extractIdFromLocation(project2Result);
+
+    // Assign system owner/admin roles for capability-based auth
+    var tenantSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, UUID.fromString(memberIdOwner))
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              var ownerRole =
+                  orgRoleRepository.findAll().stream()
+                      .filter(r -> r.isSystem() && "owner".equals(r.getSlug()))
+                      .findFirst()
+                      .orElseThrow();
+              var ownerMember =
+                  memberRepository.findById(UUID.fromString(memberIdOwner)).orElseThrow();
+              ownerMember.setOrgRoleId(ownerRole.getId());
+              memberRepository.save(ownerMember);
+
+              var adminRole =
+                  orgRoleRepository.findAll().stream()
+                      .filter(r -> r.isSystem() && "admin".equals(r.getSlug()))
+                      .findFirst()
+                      .orElseThrow();
+              var adminMember =
+                  memberRepository.findById(UUID.fromString(memberIdAdmin)).orElseThrow();
+              adminMember.setOrgRoleId(adminRole.getId());
+              memberRepository.save(adminMember);
+            });
+
+    // Sync custom-role members for capability tests
+    customRoleMemberId =
+        UUID.fromString(
+            syncMember("user_exp_314a_custom", "exp_custom@test.com", "EXP Custom User", "member"));
+    noCapMemberId =
+        UUID.fromString(
+            syncMember("user_exp_314a_nocap", "exp_nocap@test.com", "EXP NoCap User", "member"));
+
+    // Add custom role members to the project so they can create expenses for the write-off test
+    for (String mid : List.of(customRoleMemberId.toString(), noCapMemberId.toString())) {
+      mockMvc
+          .perform(
+              post("/api/projects/" + projectId + "/members")
+                  .with(ownerJwt())
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(
+                      """
+                      {"memberId": "%s"}
+                      """
+                          .formatted(mid)))
+          .andExpect(status().isCreated());
+    }
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, UUID.fromString(memberIdOwner))
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              var withCapRole =
+                  orgRoleService.createRole(
+                      new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                          "Financials Viewer",
+                          "Can view financials",
+                          Set.of("FINANCIAL_VISIBILITY")));
+              var customMember = memberRepository.findById(customRoleMemberId).orElseThrow();
+              customMember.setOrgRoleId(withCapRole.id());
+              memberRepository.save(customMember);
+
+              var withoutCapRole =
+                  orgRoleService.createRole(
+                      new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
+                          "Team Lead", "Can manage teams", Set.of("TEAM_OVERSIGHT")));
+              var noCapMember = memberRepository.findById(noCapMemberId).orElseThrow();
+              noCapMember.setOrgRoleId(withoutCapRole.id());
+              memberRepository.save(noCapMember);
+            });
   }
 
   // ==================== 219.11: CRUD happy paths ====================
@@ -446,6 +536,30 @@ class ExpenseControllerTest {
         .andExpect(status().isConflict());
   }
 
+  // ==================== Capability Tests ====================
+
+  @Test
+  void customRoleWithCapability_accessesWriteOffEndpoint_returns200() throws Exception {
+    var expenseId = createExpense(customRoleJwt(), "Cap write-off test", "100.00", "OTHER");
+
+    mockMvc
+        .perform(
+            patch("/api/projects/" + projectId + "/expenses/" + expenseId + "/write-off")
+                .with(customRoleJwt()))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void customRoleWithoutCapability_accessesWriteOffEndpoint_returns403() throws Exception {
+    var expenseId = createExpense(ownerJwt(), "NoCap write-off test", "100.00", "OTHER");
+
+    mockMvc
+        .perform(
+            patch("/api/projects/" + projectId + "/expenses/" + expenseId + "/write-off")
+                .with(noCapabilityJwt()))
+        .andExpect(status().isForbidden());
+  }
+
   // ==================== Helpers ====================
 
   private String createExpense(
@@ -519,6 +633,21 @@ class ExpenseControllerTest {
   private JwtRequestPostProcessor member2Jwt() {
     return jwt()
         .jwt(j -> j.subject("user_exp_member2").claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+
+  private JwtRequestPostProcessor customRoleJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_exp_314a_custom").claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+  }
+
+  private JwtRequestPostProcessor noCapabilityJwt() {
+    return jwt()
+        .jwt(
+            j -> j.subject("user_exp_314a_nocap").claim("o", Map.of("id", ORG_ID, "rol", "member")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
   }
 }

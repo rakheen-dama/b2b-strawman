@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -217,6 +218,9 @@ public class CostRateService {
    */
   private void requireAdminOrOwner(String orgRole) {
     if (Roles.ORG_ADMIN.equals(orgRole) || Roles.ORG_OWNER.equals(orgRole)) {
+      return;
+    }
+    if (RequestScopes.hasCapability("FINANCIAL_VISIBILITY")) {
       return;
     }
     throw new ForbiddenException(

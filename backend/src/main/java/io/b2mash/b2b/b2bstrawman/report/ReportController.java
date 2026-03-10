@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.report;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -69,7 +70,7 @@ public class ReportController {
   }
 
   @GetMapping("/api/reports/profitability")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<OrgProfitabilityResponse> getOrgProfitability(
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,

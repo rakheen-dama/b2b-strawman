@@ -277,6 +277,30 @@ class OrgRoleServiceTest {
   }
 
   @Test
+  void resolveCapabilities_legacyOwnerWithoutOrgRoleId_returnsAll() {
+    var member = memberWithLegacyRole(MEMBER_ID, "owner");
+
+    when(memberRepository.findById(MEMBER_ID)).thenReturn(Optional.of(member));
+
+    var result = service.resolveCapabilities(MEMBER_ID);
+
+    assertThat(result).containsExactlyInAnyOrderElementsOf(Capability.ALL_NAMES);
+    verify(orgRoleRepository, never()).findById(any());
+  }
+
+  @Test
+  void resolveCapabilities_legacyMemberWithoutOrgRoleId_returnsEmpty() {
+    var member = memberWithLegacyRole(MEMBER_ID, "member");
+
+    when(memberRepository.findById(MEMBER_ID)).thenReturn(Optional.of(member));
+
+    var result = service.resolveCapabilities(MEMBER_ID);
+
+    assertThat(result).isEmpty();
+    verify(orgRoleRepository, never()).findById(any());
+  }
+
+  @Test
   void resolveCapabilities_invalidOverride_skipped() {
     var member = memberWithIdAndRole(MEMBER_ID, ROLE_ID, Set.of("+NONEXISTENT_CAP"));
     var role = orgRoleWithId(ROLE_ID, "Custom", "custom", false);
@@ -324,6 +348,20 @@ class OrgRoleServiceTest {
     }
     member.setOrgRoleId(orgRoleId);
     member.setCapabilityOverrides(overrides);
+    return member;
+  }
+
+  /** Creates a member with the given legacy orgRole string and NO orgRoleId assigned. */
+  private static Member memberWithLegacyRole(UUID memberId, String orgRole) {
+    var member = new Member("clerk_user", "test@test.com", "Test", null, orgRole);
+    try {
+      var idField = Member.class.getDeclaredField("id");
+      idField.setAccessible(true);
+      idField.set(member, memberId);
+    } catch (ReflectiveOperationException e) {
+      throw new RuntimeException("Failed to set member ID", e);
+    }
+    // orgRoleId is null by default — no explicit OrgRole assigned
     return member;
   }
 }

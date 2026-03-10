@@ -379,7 +379,7 @@
 | 333 | Desktop Sidebar Zone Rendering | Frontend | 332 | M | 333A, 333B | **Done** (PRs #654, #655) |
 | 334 | Mobile Sidebar Zone Rendering | Frontend | 332, 333 | S | 334A | **Done** (PR #656) |
 | 335 | Command Palette (⌘K) | Frontend | 332 | M | 335A, 335B | **Done** (PRs #657, #658) |
-| 336 | Settings Layout Shell & Sidebar | Frontend | -- | M | 336A, 336B | |
+| 336 | Settings Layout Shell & Sidebar | Frontend | -- | M | 336A, 336B | 336A **Done** (PR #659) |
 | 337 | Settings Hub Redirect & Breadcrumb Update | Frontend | 336 | S | 337A | |
 
 ---

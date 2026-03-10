@@ -91,7 +91,7 @@ SIDEBAR TRACK                CMD PALETTE TRACK           SETTINGS TRACK (indepen
 |-------|------|-------|---------|--------|
 | 1a (parallel) | 333 | 333A | `NavZone` collapsible component with Motion `AnimatePresence` expand/collapse, capability-filtered items, empty-zone auto-hide, active-item detection. `DesktopSidebar` refactored to render `NAV_GROUPS` via `NavZone` + utility footer from `UTILITY_ITEMS`. ~4 new/modified files (~5 tests). Frontend only. | **Done** (PR #654) |
 | 1b (parallel) | 335 | 335A | `CommandPaletteDialog` built on `CommandDialog` from `components/ui/command.tsx`. Indexes `NAV_GROUPS` + `UTILITY_ITEMS` as "Pages" group and `SETTINGS_ITEMS` as "Settings" group. Capability-filtered. `useEffect` global `⌘K`/`Ctrl+K` listener in org layout. Empty state "No results". Router.push on select + close. ~3 new/modified files (~5 tests). Frontend only. | **Done** (PR #657) |
-| 1c (parallel) | 336 | 336A | New `app/(app)/org/[slug]/settings/layout.tsx` rendering `SettingsSidebar` + `{children}`. `SettingsSidebar` is a new component with `SETTINGS_NAV_GROUPS` config (6 groups from architecture doc). Sticky sidebar. Mobile: dropdown `<select>`-style switcher below `md` breakpoint. ~3 new files (~4 tests). Frontend only. | |
+| 1c (parallel) | 336 | 336A | New `app/(app)/org/[slug]/settings/layout.tsx` rendering `SettingsSidebar` + `{children}`. `SettingsSidebar` is a new component with `SETTINGS_NAV_GROUPS` config (6 groups from architecture doc). Sticky sidebar. Mobile: dropdown `<select>`-style switcher below `md` breakpoint. ~3 new files (~4 tests). Frontend only. | **Done** (PR #659) |
 
 ### Stage 2: Dependent Second Slices (3 concurrent)
 

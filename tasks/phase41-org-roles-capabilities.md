@@ -161,7 +161,7 @@ FRONTEND TRACK (after E313 backend APIs ready)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 4a | 318 | 318A | `lib/api/capabilities.ts` API client, `lib/capabilities.tsx` `CapabilityProvider` context, `RequiresCapability` wrapper component, integration into org layout. ~5 new/modified files (~6 tests). Frontend only. | |
+| 4a | 318 | 318A | `lib/api/capabilities.ts` API client, `lib/capabilities.tsx` `CapabilityProvider` context, `RequiresCapability` wrapper component, integration into org layout. ~5 new/modified files (~6 tests). Frontend only. | **Done** (PR #647) |
 | 4b | 318 | 318B | Sidebar nav gating in `nav-items.ts` + `desktop-sidebar.tsx`, page-level protection on 6 gated routes (invoices, customers, profitability, resources, compliance, settings/automations), action button gating (Create Project, Generate Invoice, Approve time). ~8 modified files (~6 tests). Frontend only. | |
 
 ### Stage 5: Settings & Team Pages (parallel tracks)
@@ -586,7 +586,7 @@ Stage 5: [319A] -> [319B] // [320A] -> [320B]                         (two paral
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **318A** | 318.1--318.6 | `lib/api/capabilities.ts` API client, `lib/capabilities.tsx` `CapabilityProvider` context with `useCapabilities()` hook, `RequiresCapability` wrapper component, integration into org layout. ~5 new/modified files (~6 tests). Frontend only. | |
+| **318A** | 318.1--318.6 | `lib/api/capabilities.ts` API client, `lib/capabilities.tsx` `CapabilityProvider` context with `useCapabilities()` hook, `RequiresCapability` wrapper component, integration into org layout. ~5 new/modified files (~6 tests). Frontend only. | **Done** (PR #647) |
 | **318B** | 318.7--318.12 | Sidebar nav gating (conditional nav items based on capabilities), page-level `notFound()` protection on 6+ gated routes, component-level action button gating (Create Project, Generate Invoice, Approve time). ~8 modified files (~6 tests). Frontend only. | |
 
 ### Tasks

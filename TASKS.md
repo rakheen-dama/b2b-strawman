@@ -358,7 +358,7 @@
 | 315 | @PreAuthorize Migration (Batch 2: Customer, Automation, Resource, Team) | Backend | 313 | M | 315A, 315B | **Done** (PRs #642, #643) |
 | 316 | OrgRole CRUD API & Member Role Assignment | Backend | 312 | M | 316A, 316B | **Done** (PRs #644, #645) |
 | 317 | Audit Events & Notifications | Backend | 316 | S | 317A | **Done** (PR #646) |
-| 318 | Frontend Capability Context & Sidebar Gating | Frontend | 313 | M | 318A, 318B | |
+| 318 | Frontend Capability Context & Sidebar Gating | Frontend | 313 | M | 318A, 318B | 318A **Done** (PR #647) |
 | 319 | Settings: Roles & Permissions Page | Frontend | 316, 318 | M | 319A, 319B | |
 | 320 | Team Page: Member Role Management & Invite Extension | Frontend | 316, 318 | M | 320A, 320B | |
 | **Phase 42 — Word Template Pipeline** | | | | | | See [tasks/phase42-word-template-pipeline.md](tasks/phase42-word-template-pipeline.md) |

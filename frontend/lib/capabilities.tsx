@@ -3,6 +3,7 @@
 import { createContext, useContext, useMemo } from "react";
 
 // ---- Capability Constants ----
+// Must stay in sync with backend Capability enum (com.docteams.backend.orgrole.Capability)
 
 export const CAPABILITIES = {
   FINANCIAL_VISIBILITY: "FINANCIAL_VISIBILITY",
@@ -46,6 +47,10 @@ export function CapabilityProvider({
   isOwner,
   children,
 }: CapabilityProviderProps) {
+  // Stabilize useMemo: capabilities is a string[] (new reference each render from server),
+  // so we serialize it to avoid recomputation on every render.
+  const capKey = JSON.stringify(capabilities);
+
   const value = useMemo<CapabilityContextValue>(() => {
     const capSet = new Set(capabilities);
     return {
@@ -54,9 +59,12 @@ export function CapabilityProvider({
       isAdmin,
       isOwner,
       isLoading: false,
+      // Defense-in-depth: backend resolves all capabilities for admin/owner,
+      // but we short-circuit here too to avoid UI flicker on gated components
       hasCapability: (cap: string) => isAdmin || isOwner || capSet.has(cap),
     };
-  }, [capabilities, role, isAdmin, isOwner]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [capKey, role, isAdmin, isOwner]);
 
   return (
     <CapabilityContext.Provider value={value}>

@@ -116,6 +116,30 @@ describe("CapabilityProvider", () => {
 
     expect(screen.getByTestId("admin-has-resource")).toHaveTextContent("true");
   });
+
+  it("isOwner bypasses capability check — hasCapability always true", () => {
+    function OwnerBypassChecker() {
+      const { hasCapability } = useCapabilities();
+      return (
+        <span data-testid="owner-has-resource">
+          {String(hasCapability(CAPABILITIES.RESOURCE_PLANNING))}
+        </span>
+      );
+    }
+
+    render(
+      <CapabilityProvider
+        capabilities={[]}
+        role="Owner"
+        isAdmin={false}
+        isOwner={true}
+      >
+        <OwnerBypassChecker />
+      </CapabilityProvider>,
+    );
+
+    expect(screen.getByTestId("owner-has-resource")).toHaveTextContent("true");
+  });
 });
 
 describe("RequiresCapability", () => {
@@ -151,5 +175,21 @@ describe("RequiresCapability", () => {
     );
 
     expect(screen.queryByText("Invoice Section Hidden")).not.toBeInTheDocument();
+  });
+});
+
+describe("useCapabilities outside provider", () => {
+  it("throws when used without CapabilityProvider", () => {
+    function Orphan() {
+      useCapabilities();
+      return <span>should not render</span>;
+    }
+
+    // Suppress React error boundary console noise
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    expect(() => render(<Orphan />)).toThrow(
+      "useCapabilities must be used within a CapabilityProvider",
+    );
+    spy.mockRestore();
   });
 });

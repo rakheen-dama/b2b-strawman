@@ -43,8 +43,9 @@ export default async function OrgLayout({
   };
   try {
     capData = await fetchMyCapabilities();
-  } catch {
-    // Capabilities unavailable — degrade gracefully
+  } catch (err) {
+    // Capabilities unavailable — degrade gracefully, backend still enforces access control
+    console.error("Failed to fetch capabilities, falling back to empty:", err);
   }
 
   return (
